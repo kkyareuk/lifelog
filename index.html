@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
 <!-- config.js는 운영자 설정 파일입니다. 캐시된 빈 설정을 다시 쓰지 않도록 항상 최신 파일을 요청합니다. -->
-<script src="./config.js?v=20260729-v25"></script>
+<script src="./config.js?v=20260729-v26"></script>
 <style>
 :root{--accent:#6f7cff;--accent2:#b36cff;--bg:#eef1f7;--panel:#ffffff;--panel2:#f5f7fb;--ink:#1e2230;--muted:#72798c;--line:#dfe4ee;--danger:#dc6674;--ok:#58a989;--shadow:0 18px 50px rgba(38,46,75,.14);--r:24px}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:"Do Hyeon","Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:radial-gradient(circle at 10% 0,color-mix(in srgb,var(--accent) 18%,transparent),transparent 31%),radial-gradient(circle at 100% 12%,color-mix(in srgb,var(--accent2) 14%,transparent),transparent 30%),var(--bg);color:var(--ink)}
@@ -57,6 +57,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 .character-theme-preview{background:linear-gradient(135deg,color-mix(in srgb,var(--char-accent) 15%,var(--panel2)),color-mix(in srgb,var(--char-secondary) 17%,var(--panel2)))!important;border-color:color-mix(in srgb,var(--char-accent) 30%,var(--line))!important}.character-theme-preview .mini-orb{background:linear-gradient(135deg,var(--char-accent),var(--char-secondary))!important}input[type="color"]{display:block;width:100%!important;height:48px!important;min-height:48px;padding:4px!important;border-radius:13px;cursor:pointer}.google-avatar-marker{position:absolute!important;width:62px!important;height:62px!important;min-width:62px!important;padding:0!important;border-width:5px!important;z-index:2147483000!important;pointer-events:auto!important;cursor:pointer!important;transform:translate(-50%,-50%)!important}.google-avatar-marker img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
 @media(max-width:1050px){.topbar{flex-wrap:wrap}.quick{display:flex!important;width:100%;order:3}.quick>a{flex:1;text-align:center}.quick select{flex:2;min-width:130px}}
 @media(max-width:700px){.quick{display:grid!important;grid-template-columns:1fr 1fr;width:100%;gap:7px}.quick>a{display:block;padding:10px 8px!important;text-align:center}.quick select{grid-column:1/-1;min-width:0}.logo{min-width:0}.logo h1{font-size:25px}}
+.routine-quick-add{display:grid;grid-template-columns:90px 105px 105px minmax(150px,1fr) 120px auto;gap:8px;align-items:end;margin-bottom:14px}.week-board{display:grid;grid-template-columns:repeat(7,minmax(130px,1fr));gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:12px}.week-day-column{min-height:190px;border:1px solid var(--line);border-radius:16px;background:var(--panel2);padding:8px}.week-day-column>strong{display:block;text-align:center;padding:6px;border-bottom:1px solid var(--line);color:var(--accent);font-size:15px}.week-event{margin-top:7px;padding:8px;border-radius:11px;background:color-mix(in srgb,var(--event-color,var(--accent)) 13%,var(--panel));border-left:4px solid var(--event-color,var(--accent));font-size:11px;line-height:1.35}.week-event b,.week-event span{display:block}.week-event span{color:var(--muted);font-size:9px;margin-top:3px}.routine-row{grid-template-columns:92px 92px minmax(130px,1fr) 125px 40px!important}.routine-conflict{border-color:var(--danger)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--danger) 14%,transparent)}@media(max-width:850px){.routine-quick-add{grid-template-columns:1fr 1fr}.routine-quick-add #quickRoutineTitle{grid-column:1/-1}.routine-quick-add button{grid-column:1/-1}.week-board{grid-template-columns:repeat(7,150px)}}@media(max-width:520px){.routine-row{grid-template-columns:1fr 1fr!important}.routine-row input:nth-child(3),.routine-row select{grid-column:1/-1}.routine-row button{grid-column:2;justify-self:end}}
 </style>
 </head>
 <body>
@@ -76,13 +77,13 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 </div></section>
 <section class="view" id="view-characters"><div class="two"><aside class="card sidebar"><div class="title-row"><h3>캐릭터 목록</h3><button class="btn" id="newChar">＋ 생성</button></div><div class="character-list" id="characterList"></div></aside><div class="card panel">
 <div class="section"><h3>프로필</h3><div class="fields"><div><label>캐릭터 이름</label><input id="charName"></div><div><label>직업</label><input id="charJob"></div><div><label>프로필 사진</label><input type="file" accept="image/*" id="charPhoto"></div><div><label>현재 기분 기본값</label><select id="charMood"><option>평온함</option><option>즐거움</option><option>피곤함</option><option>예민함</option><option>들뜸</option></select></div><div><label>큰 이미지 가로 위치</label><input type="range" id="photoPositionX" min="0" max="100" value="50"></div><div><label>큰 이미지 세로 위치</label><input type="range" id="photoPositionY" min="0" max="100" value="50"></div><div><label>집 생활권</label><input id="charHome" placeholder="예: 망포역"></div><div><label>직장·학교 생활권</label><input id="charWork" placeholder="예: 광교중앙역"></div></div></div>
-<div class="section"><h3>캐릭터 테마</h3><div class="character-theme-preview" id="charThemePreview"><div class="mini-orb"></div><div><strong>이 캐릭터만의 색</strong><div class="meta">대표색은 화면과 프로필 테두리에 함께 적용됩니다. 보조색을 켜면 그라데이션이 생겨요.</div></div></div><div class="fields" style="margin-top:12px"><div class="full"><label>대표 테마색 · 프로필 테두리색</label><input type="color" id="charAccent" value="#6f7cff"><input type="color" id="charRing" value="#6f7cff" hidden></div><label class="check-option full"><input type="checkbox" id="charUseSecondary"> 보조색으로 그라데이션 사용</label><div class="full" id="charSecondaryWrap"><label>그라데이션 보조색</label><input type="color" id="charSecondary" value="#b36cff"></div></div></div>
+<div class="section"><h3>캐릭터 테마</h3><div class="character-theme-preview" id="charThemePreview"><div class="mini-orb"></div><div><strong>이 캐릭터만의 색</strong><div class="meta">대표색은 화면과 이 캐릭터의 프로필 테두리에 항상 함께 적용됩니다. 보조색은 그라데이션에만 사용돼요.</div></div></div><div class="fields" style="margin-top:12px"><div class="full"><label>대표 테마색 · 프로필 테두리색</label><input type="color" id="charAccent" value="#6f7cff"></div><label class="check-option full"><input type="checkbox" id="charUseSecondary"> 보조색으로 그라데이션 사용</label><div class="full" id="charSecondaryWrap"><label>그라데이션 보조색</label><input type="color" id="charSecondary" value="#b36cff"></div></div></div>
 <div class="section"><h3>생활 조건</h3><div class="fields"><div><label>소득 수준</label><select id="charIncome"><option value="low">빠듯함</option><option value="mid">보통</option><option value="upper">여유 있음</option><option value="rich">고소득</option></select></div><div><label>소비 성향</label><select id="charSpending"><option value="save">절약형</option><option value="normal">균형형</option><option value="impulse">충동형</option><option value="luxury">고급 소비형</option></select></div><div><label>생활 리듬</label><select id="charRhythm"><option>아침형</option><option>보통</option><option>야행성</option></select></div><div><label>이동 방식</label><select id="charTransport"><option>도보 + 대중교통</option><option>자가용</option><option>도보 위주</option><option>택시 선호</option></select></div></div></div>
 <div class="section"><h3>취향과 관심사 — 선택형</h3><div class="subhead">입맛</div><div class="chips" id="tasteChips"></div><div class="subhead">관심사</div><div class="chips" id="interestChips"></div><div class="subhead">취미</div><div class="chips" id="hobbyChips"></div></div>
 <div class="section"><div class="notice">창작 캐릭터의 가상 생활을 관찰하는 서비스입니다. 타인의 실제 위치, 일정, 주소 또는 이동 동선을 추적·재현하는 목적으로 사용하지 마세요.</div><div class="actions"><button class="btn" id="saveChar">캐릭터 저장</button><button class="btn danger" id="deleteChar">삭제</button></div></div>
 </div></div></section>
 <section class="view" id="view-relations"><div class="card panel"><div class="section"><h3>관계 설정</h3><div class="fields"><div><label>캐릭터 A</label><select id="relA"></select></div><div><label>캐릭터 B</label><select id="relB"></select></div><div><label>관계</label><select id="relType"><option>부부</option><option>연인</option><option>짝사랑</option><option>가족</option><option>절친</option><option>친구</option><option>직장 동료</option><option>라이벌</option><option>혐관</option></select></div><div><label>친밀도</label><input type="range" id="relClose" min="0" max="100" value="75"></div><div><label>갈등도</label><input type="range" id="relConflict" min="0" max="100" value="20"></div><div><label>함께 사는가</label><select id="relCohabit"><option value="yes">함께 거주</option><option value="no">따로 거주</option></select></div><div><label>만날 수 있는 최대 생활반경</label><select id="relDistance"><option value="3">3km 이내</option><option value="8" selected>8km 이내</option><option value="15">15km 이내</option><option value="30">30km 이내</option><option value="999">거리 제한 없음</option></select></div><div><label>마중 빈도</label><select id="relPickupChance"><option value="35">가끔</option><option value="70" selected>자주</option><option value="100">가능하면 항상</option></select></div><div class="full"><label>실제로 적용할 관계 행동</label><div class="check-grid"><label class="check-option"><input type="checkbox" id="relPickupOvertime" checked> 야근하면 데리러 가기</label><label class="check-option"><input type="checkbox" id="relPickupRain" checked> 비 오면 데리러 가기</label><label class="check-option"><input type="checkbox" id="relMeetAfterWork" checked> 퇴근 후 함께 귀가하기</label><label class="check-option"><input type="checkbox" id="relSharedMeal" checked> 함께 식사하기</label><label class="check-option"><input type="checkbox" id="relHospital"> 아프면 병원 동행하기</label><label class="check-option"><input type="checkbox" id="relCheckHome"> 늦은 귀가 확인하기</label></div></div><div class="full"><label>관계 메모 (선택)</label><textarea id="relMemo" placeholder="짝사랑은 A가 B를 좋아하는 방향으로 저장됩니다."></textarea></div></div><div class="actions"><button class="btn" id="addRelation">관계 저장</button></div></div><div class="section"><h3>관계가 실제 생활에 미치는 영향</h3><div class="notice">관계 종류는 직접 수정할 때만 바뀝니다. 친밀도나 갈등도가 변하고 다툼·화해가 생겨도 부부·연인·짝사랑 같은 관계 유형은 자동 변경되지 않습니다.</div><div class="relation-grid" id="relationList" style="margin-top:12px"></div></div></div></section>
-<section class="view" id="view-routine"><div class="card panel"><div class="section"><h3>요일별 고정 루틴</h3><div class="routine-days" id="routineDays"></div><div class="routine-list" id="routineList"></div><div class="actions"><button class="btn secondary" id="addRoutine">＋ 일정 추가</button><button class="btn" id="saveRoutine">저장하고 오늘 일정 갱신</button></div></div><div class="section"><h3>자율 행동 설정</h3><div class="fields"><div><label>하루 탐험·위치 이동 횟수</label><select id="exploreCount"><option value="0">외출 없음</option><option value="1">1번</option><option value="2">2번</option><option value="3">3번</option><option value="4">4번</option><option value="5">5번</option><option value="6">6번</option></select></div><div><label>점심 외식</label><input type="range" id="lunchChance" min="0" max="100"></div><div><label>퇴근 후 외출</label><input type="range" id="afterChance" min="0" max="100"></div><div><label>관계 행동</label><input type="range" id="relationChance" min="0" max="100"></div><div><label>우발 사건</label><input type="range" id="eventChance" min="0" max="100"></div></div><div class="notice" style="margin-top:12px">하루 일정은 날짜가 바뀔 때 자동 생성됩니다. 탐험 로그는 설정한 횟수만큼 오전부터 밤 사이에 배치되고, 해당 시간이 지난 뒤에만 관찰 화면에 나타납니다.</div></div></div></section>
+<section class="view" id="view-routine"><div class="card panel"><div class="section"><h3>요일별 고정 루틴 시간표</h3><div class="routine-quick-add"><select id="quickRoutineDay"></select><input type="time" id="quickRoutineStart" value="19:00"><input type="time" id="quickRoutineEnd" value="20:00"><input id="quickRoutineTitle" placeholder="일정 이름"><select id="quickRoutinePriority"><option>필수</option><option>높은 확률</option><option>격주</option><option>월간</option><option>조건부</option></select><button class="btn" id="quickAddRoutine">＋ 시간표에 추가</button></div><div class="notice" id="routineConflictNotice" style="display:none;margin-top:9px"></div><div class="week-board" id="routineWeekBoard"></div><div class="routine-days" id="routineDays"></div><div class="routine-list" id="routineList"></div><div class="actions"><button class="btn secondary" id="addRoutine">＋ 선택 요일에 추가</button><button class="btn" id="saveRoutine">저장하고 오늘 일정 갱신</button></div></div><div class="section"><h3>자율 행동 설정</h3><div class="fields"><div><label>하루 탐험·위치 이동 횟수</label><select id="exploreCount"><option value="0">외출 없음</option><option value="1">1번</option><option value="2">2번</option><option value="3">3번</option><option value="4">4번</option><option value="5">5번</option><option value="6">6번</option></select></div><div><label>점심 외식</label><input type="range" id="lunchChance" min="0" max="100"></div><div><label>퇴근 후 외출</label><input type="range" id="afterChance" min="0" max="100"></div><div><label>관계 행동</label><input type="range" id="relationChance" min="0" max="100"></div><div><label>우발 사건</label><input type="range" id="eventChance" min="0" max="100"></div></div><div class="notice" style="margin-top:12px">하루 일정은 날짜가 바뀔 때 자동 생성됩니다. 탐험 로그는 설정한 횟수만큼 오전부터 밤 사이에 배치되고, 해당 시간이 지난 뒤에만 관찰 화면에 나타납니다.</div></div></div></section>
 <section class="view" id="view-places"><div class="place-layout"><div class="card panel"><div class="title-row"><h3>Google Places 장소 탐색</h3><span id="googleApiStatus">연결 확인 중</span></div><div class="searchbar"><input id="placeArea" placeholder="지역명: 망포역, 홍대입구역"><select id="placeCategory"><option value="restaurant">음식점</option><option value="cafe">카페</option><option value="hospital">병원</option><option value="pharmacy">약국</option><option value="books">서점·도서관</option><option value="anime">애니·굿즈</option><option value="perfume">향수·공방</option><option value="shopping">쇼핑</option><option value="park">공원</option></select><button class="btn" id="searchPlaces">실제 장소 찾기</button></div><div class="notice" style="margin-top:10px">Google Places에서 실제 상호, 주소, 평점, 가격대와 매장 사진을 불러옵니다. 검색 결과의 사진은 Google Places 제공 사진이며 사진 제공자 표기를 함께 표시합니다.</div><div class="notice" id="apiUsageStatus" style="margin-top:8px"></div><div class="place-results" id="placeResults"></div></div><div class="card panel"><h3>캐릭터의 장소 후보</h3><div id="savedPlaces"></div></div></div></section>
 <section class="view" id="view-theme"><div class="card panel"><div class="section"><h3>앱 설정 · 화면 테마</h3><div class="theme-row"><div><label>밝기</label><select id="themeMode"><option value="light">라이트 모드</option><option value="dark">다크 모드</option></select></div><div><label>직접 지정한 테마색</label><input type="color" id="customColor" value="#6f7cff"></div></div><div class="subhead">빠른 테마색</div><div class="swatches" id="swatches"></div><div class="actions"><button class="btn" id="saveTheme">테마 적용</button></div></div><div class="section"><h3>Google 실제 장소 연결</h3><div class="notice"><b>필요한 API는 정확히 2개입니다.</b><br>① Maps JavaScript API<br>② Places API (New)<br><br>Google 정책상 결제 계정 연결도 필요합니다. API 키는 각 사용자의 브라우저에만 저장되고 백업에는 포함되지 않습니다.</div><details class="api-guide" open><summary>처음 발급하는 사람용 5단계 안내</summary><ol><li><a href="https://console.cloud.google.com/google/maps-apis/start" target="_blank" rel="noopener">Google Maps Platform 시작 페이지</a>에서 프로젝트를 만들고 결제 계정을 연결합니다.</li><li><b>API 및 서비스 → 라이브러리</b>에서 <b>Maps JavaScript API</b>를 사용 설정합니다.</li><li>같은 곳에서 <b>Places API (New)</b>를 사용 설정합니다. 이름에 (New)가 없는 예전 API만 켜면 검색이 실패합니다.</li><li><b>API 및 서비스 → 사용자 인증 정보 → 사용자 인증 정보 만들기 → API 키</b>를 누릅니다.</li><li>키 수정에서 애플리케이션 제한은 <b>웹사이트</b>, API 제한은 위의 두 API만 선택하고 아래 주소를 허용 웹사이트에 추가합니다.</li></ol><div class="referrer-box"><code id="requiredReferrer">현재 사이트 주소 확인 중…</code><button class="icon-btn" id="copyReferrer">복사</button></div><p class="meta">변경 적용에는 몇 분 걸릴 수 있습니다. 비용이 걱정되면 일일 할당량과 예산 알림도 설정하세요.</p></details><div class="fields" style="margin-top:12px"><div class="full"><label>Google Maps API 키</label><input id="googleApiKey" type="password" autocomplete="off" placeholder="AIza…"></div></div><div class="actions"><button class="btn" id="saveGoogleApi">연결 확인</button><button class="btn secondary" id="removeGoogleApi">키 삭제</button><span id="googleApiMessage" class="meta"></span></div></div><div class="section"><h3>데이터 백업</h3><div class="notice">업데이트 파일로 교체해도 같은 주소와 브라우저를 사용하면 기존 설정은 유지됩니다. 브라우저 데이터 삭제나 주소 변경에 대비해 백업 파일을 보관할 수 있습니다.</div><div class="backup-box" style="margin-top:12px"><button class="btn secondary" id="exportData">설정 내보내기</button><label class="btn secondary" style="cursor:pointer">설정 불러오기<input type="file" id="importData" accept="application/json" hidden></label></div></div></div></section>
 </main></div></div><div class="toast" id="toast"></div>
@@ -361,18 +362,18 @@ function areaCatalog(area,cat){const key=Object.keys(AREA_PLACE_CATALOG).find(k=
 function ensureCharTheme(c){c.theme=c.theme||{accent:state.theme?.color||'#6f7cff',secondary:state.theme?.color||'#6f7cff',ring:state.theme?.color||'#6f7cff',useSecondary:false};if(c.theme.useSecondary==null)c.theme.useSecondary=false;c.theme.ring=c.theme.accent;return c.theme}
 state.characters.forEach(ensureCharTheme);
 function shadeCharacterColor(hex,factor=.72){const v=String(hex||'#6f7cff').replace('#','').padEnd(6,'0'),part=i=>Math.max(0,Math.min(255,Math.round(parseInt(v.slice(i,i+2),16)*factor))).toString(16).padStart(2,'0');return '#'+part(0)+part(2)+part(4)}
-function applyActiveCharacterTheme(){const c=active(),t=ensureCharTheme(c),dark=state.theme.mode==='dark',rawSecondary=t.useSecondary?t.secondary:t.accent,accent=dark?shadeCharacterColor(t.accent,.68):t.accent,secondary=dark?shadeCharacterColor(rawSecondary,.58):rawSecondary;document.documentElement.style.setProperty('--char-accent',accent);document.documentElement.style.setProperty('--char-secondary',secondary);document.documentElement.style.setProperty('--char-ring',t.ring);document.documentElement.style.setProperty('--accent',accent);document.documentElement.style.setProperty('--accent2',secondary);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',accent)}
+function applyActiveCharacterTheme(){const c=active(),t=ensureCharTheme(c),dark=state.theme.mode==='dark',rawSecondary=t.useSecondary?t.secondary:t.accent,accent=dark?shadeCharacterColor(t.accent,.68):t.accent,secondary=dark?shadeCharacterColor(rawSecondary,.58):rawSecondary;document.documentElement.style.setProperty('--char-accent',accent);document.documentElement.style.setProperty('--char-secondary',secondary);document.documentElement.style.setProperty('--char-ring',accent);document.documentElement.style.setProperty('--accent',accent);document.documentElement.style.setProperty('--accent2',secondary);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',accent)}
 const oldApplyTheme=applyTheme;applyTheme=function(){oldApplyTheme();applyActiveCharacterTheme()}
 function updateThemePreview(){const c=active(),t=ensureCharTheme(c),box=$('#charThemePreview');if(!box)return;box.style.setProperty('--char-accent',t.accent);box.style.setProperty('--char-secondary',t.useSecondary?t.secondary:t.accent)}
-const oldFillForm=fillForm;fillForm=function(){oldFillForm();const t=ensureCharTheme(active());$('#charAccent').value=t.accent;$('#charSecondary').value=t.secondary;$('#charRing').value=t.ring;$('#charUseSecondary').checked=!!t.useSecondary;$('#charSecondaryWrap').style.display=t.useSecondary?'block':'none';updateThemePreview()}
+const oldFillForm=fillForm;fillForm=function(){oldFillForm();const t=ensureCharTheme(active());$('#charAccent').value=t.accent;$('#charSecondary').value=t.secondary;$('#charUseSecondary').checked=!!t.useSecondary;$('#charSecondaryWrap').style.display=t.useSecondary?'block':'none';updateThemePreview()}
 const oldCollectCharacterForm=collectCharacterForm;collectCharacterForm=function(){const c=oldCollectCharacterForm(),old=ensureCharTheme(c),accent=$('#charAccent')?.value||old.accent;c.theme={accent,secondary:$('#charSecondary')?.value||old.secondary,ring:accent,useSecondary:!!$('#charUseSecondary')?.checked};applyActiveCharacterTheme();updateThemePreview();return c}
-['charAccent','charSecondary','charRing','charUseSecondary'].forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id){if(id==='charUseSecondary')$('#charSecondaryWrap').style.display=e.target.checked?'block':'none';collectCharacterForm();save();renderObserve();updateMarkers()}}));
+['charAccent','charSecondary','charUseSecondary'].forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id){if(id==='charUseSecondary')$('#charSecondaryWrap').style.display=e.target.checked?'block':'none';collectCharacterForm();save();renderObserve();renderCharacters();renderObserveCharacterPicker();updateMarkers()}}));
 function moveCharacter(id,dir){const i=state.characters.findIndex(c=>c.id===id),j=i+dir;if(i<0||j<0||j>=state.characters.length)return;[state.characters[i],state.characters[j]]=[state.characters[j],state.characters[i]];save();renderAll()}
 renderCharacters=function(){const c=active();$('#quickChar').innerHTML=state.characters.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');$('#quickChar').value=c.id;const list=$('#characterList');list.innerHTML='';state.characters.forEach((x,i)=>{const t=ensureCharTheme(x),secondary=t.useSecondary?t.secondary:t.accent,el=document.createElement('div');el.className='char-item '+(x.id===c.id?'active':'');el.style.setProperty('--char-ring',t.accent);el.innerHTML=`${x.photo?`<img class="avatar" src="${x.photo}">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${secondary})!important">${esc(x.name.slice(0,1))}</div>`}<div><strong><i class="char-theme-dot" style="background:${t.accent}"></i>${esc(x.name)}</strong><span>${esc(x.job)} · ${esc(x.home)}</span></div><div class="char-order"><button class="icon-btn up" ${i===0?'disabled':''}>↑</button><button class="icon-btn down" ${i===state.characters.length-1?'disabled':''}>↓</button></div><button class="icon-btn open">보기</button>`;el.querySelector('.up').onclick=e=>{e.stopPropagation();moveCharacter(x.id,-1)};el.querySelector('.down').onclick=e=>{e.stopPropagation();moveCharacter(x.id,1)};const open=()=>{state.activeId=x.id;save();applyActiveCharacterTheme();renderAll();const nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(x,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(x,i);map.setView(pos,15,{animate:true})};el.querySelector('.open').onclick=open;el.querySelector('.avatar').onclick=open;el.querySelector('div:nth-child(2)').onclick=open;list.appendChild(el)});fillForm()}
 function createAvatarMarkerContent(c){
  const t=ensureCharTheme(c),secondary=t.useSecondary?t.secondary:t.accent,button=document.createElement('button');
  button.type='button';button.className='google-avatar-marker';button.title=c.name;
- button.style.setProperty('--marker-color',t.ring||'#ffffff');
+ button.style.setProperty('--marker-color',t.accent);
  button.style.background=`linear-gradient(135deg,${t.accent},${secondary})`;
  if(c.photo){const img=document.createElement('img');img.src=c.photo;img.alt=c.name;button.appendChild(img)}
  else button.textContent=String(c.name||'?').slice(0,1);
@@ -405,7 +406,7 @@ function bindCharacterDrag(el,c){el.draggable=true;el.addEventListener('dragstar
 function renderObserveCharacterPicker(){
  const box=$('#observeCharacterPicker');if(!box)return;box.innerHTML='';
  state.characters.forEach((c,i)=>{
-  const t=ensureCharTheme(c),el=document.createElement('div');el.className='observe-character-card '+(c.id===active().id?'active':'');el.style.setProperty('--card-accent',t.accent);el.style.setProperty('--card-ring',t.ring);
+  const t=ensureCharTheme(c),el=document.createElement('div');el.className='observe-character-card '+(c.id===active().id?'active':'');el.style.setProperty('--card-accent',t.accent);el.style.setProperty('--card-ring',t.accent);
   const avatar=c.photo?`<img class="avatar" src="${c.photo}" alt="">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${t.secondary})!important">${esc(c.name.slice(0,1))}</div>`;
   el.innerHTML=`${avatar}<button class="character-focus" style="border:0;background:transparent;color:inherit;text-align:left;padding:0"><strong>${esc(c.name)}</strong><small>${esc(c.job||c.home||'생활 중')}</small></button><span class="observe-order"><button class="icon-btn prev" title="앞으로 이동" ${i===0?'disabled':''}>◀</button><button class="icon-btn next" title="뒤로 이동" ${i===state.characters.length-1?'disabled':''}>▶</button></span>`;
   el.querySelector('.character-focus').onclick=()=>focusCharacter(c,i);el.querySelector('.avatar').onclick=()=>focusCharacter(c,i);
@@ -491,7 +492,7 @@ if(firebaseReady){
   if(list){
    list.innerHTML='';
    state.characters.forEach((c,index)=>{
-    const t=ensureCharTheme(c),row=document.createElement('div');row.className='char-item '+(c.id===current.id?'active':'');row.style.setProperty('--char-ring',t.ring);
+    const t=ensureCharTheme(c),row=document.createElement('div');row.className='char-item '+(c.id===current.id?'active':'');row.style.setProperty('--char-ring',t.accent);
     const avatar=c.photo?`<img class="avatar" src="${c.photo}" alt="">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${t.secondary})!important">${esc(c.name.slice(0,1))}</div>`;
     row.innerHTML=`${avatar}<button class="character-open" style="border:0;background:transparent;color:inherit;text-align:left;padding:0"><strong>${esc(c.name)}</strong><span>${esc(c.job)} · ${esc(c.home)}</span></button><div class="char-order"><button class="icon-btn up" ${index===0?'disabled':''}>▲</button><button class="icon-btn down" ${index===state.characters.length-1?'disabled':''}>▼</button></div>`;
     row.querySelector('.character-open').onclick=()=>selectCharacter(c,index);row.querySelector('.avatar').onclick=()=>selectCharacter(c,index);
@@ -504,7 +505,7 @@ if(firebaseReady){
  function renderObservationBar(){
   const box=document.querySelector('#observeCharacterPicker');if(!box)return;box.innerHTML='';
   state.characters.forEach((c,index)=>{
-   const t=ensureCharTheme(c),card=document.createElement('div');card.className='observe-character-card '+(c.id===active().id?'active':'');card.style.setProperty('--card-accent',t.accent);card.style.setProperty('--card-ring',t.ring);
+   const t=ensureCharTheme(c),card=document.createElement('div');card.className='observe-character-card '+(c.id===active().id?'active':'');card.style.setProperty('--card-accent',t.accent);card.style.setProperty('--card-ring',t.accent);
    const secondary=t.useSecondary?t.secondary:t.accent,avatar=c.photo?`<img class="avatar" src="${c.photo}" alt="">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${secondary})!important">${esc(c.name.slice(0,1))}</div>`;
    card.innerHTML=`${avatar}<button class="character-focus" style="border:0;background:transparent;color:inherit;text-align:left;padding:0"><strong>${esc(c.name)}</strong><small>${esc(c.job||c.home||'생활 중')}</small></button><span class="observe-order"><button class="icon-btn prev" ${index===0?'disabled':''}>◀</button><button class="icon-btn next" ${index===state.characters.length-1?'disabled':''}>▶</button></span>`;
    card.querySelector('.character-focus').onclick=()=>selectCharacter(c,index);card.querySelector('.avatar').onclick=()=>selectCharacter(c,index);
@@ -557,7 +558,6 @@ if(firebaseReady){
   const {character,theme,accent,secondary,useSecondary}=themeColorsFromControls(),gradientEnd=useSecondary?secondary:accent;
   theme.accent=accent;theme.secondary=secondary;theme.ring=accent;theme.useSecondary=useSecondary;
   character.theme=theme;
-  const ringInput=document.querySelector('#charRing');if(ringInput)ringInput.value=accent;
   const dark=state.theme.mode==='dark',shownAccent=dark?shadeCharacterColor(accent,.68):accent,shownSecondary=dark?shadeCharacterColor(gradientEnd,.58):gradientEnd;
   const root=document.documentElement;
   root.style.setProperty('--accent',shownAccent);root.style.setProperty('--accent2',shownSecondary);
@@ -617,7 +617,7 @@ if(firebaseReady){
   if(Number.isFinite(Number(raw?.[0]))&&Number.isFinite(Number(raw?.[1])))googleObservationMap.panTo({lat:Number(raw[0]),lng:Number(raw[1])});
  };
  const oldFill=fillForm;
- fillForm=function(){oldFill();const t=ensureCharTheme(active()),toggle=document.querySelector('#charUseSecondary'),wrap=document.querySelector('#charSecondaryWrap'),ring=document.querySelector('#charRing');if(toggle)toggle.checked=!!t.useSecondary;if(wrap)wrap.style.display=t.useSecondary?'block':'none';if(ring)ring.value=t.accent;bindImmediateTheme()};
+ fillForm=function(){oldFill();const t=ensureCharTheme(active()),toggle=document.querySelector('#charUseSecondary'),wrap=document.querySelector('#charSecondaryWrap');if(toggle)toggle.checked=!!t.useSecondary;if(wrap)wrap.style.display=t.useSecondary?'block':'none';bindImmediateTheme()};
  const renderObserveWithTheme=renderObserve;
  renderObserve=function(){
   renderObserveWithTheme();
@@ -636,6 +636,53 @@ if(firebaseReady){
   const c=active();c.photoPosition={x:+document.querySelector('#photoPositionX').value,y:+document.querySelector('#photoPositionY').value};save();
   const image=document.querySelector('#portrait img');if(image)image.style.objectPosition=`${c.photoPosition.x}% ${c.photoPosition.y}%`;
  }));
+ function routineEndValue(r){return r.end||time(mins(r.time||'19:00')+60)}
+ function routinesOverlap(a,b){return mins(a.time)<mins(routineEndValue(b))&&mins(routineEndValue(a))>mins(b.time)}
+ function canPlaceRoutine(day,candidate,skipIndex=-1){
+  if(!candidate.title.trim()||mins(candidate.end)<=mins(candidate.time))return false;
+  return !active().routines[day].some((item,index)=>index!==skipIndex&&routinesOverlap(candidate,item));
+ }
+ function showRoutineConflict(message){
+  const notice=$('#routineConflictNotice');notice.textContent=message;notice.style.display='block';notice.classList.add('api-bad');
+  setTimeout(()=>notice.style.display='none',3500);
+ }
+ function renderRoutineWeekBoard(){
+  const c=active(),board=$('#routineWeekBoard');if(!board)return;ensureRoutines(c);board.innerHTML='';
+  c.routines.forEach((items,day)=>{
+   const column=document.createElement('div');column.className='week-day-column';column.innerHTML=`<strong>${DAYS[day]}요일</strong>`;
+   items.slice().sort((a,b)=>a.time.localeCompare(b.time)).forEach(item=>{item.end=routineEndValue(item);const event=document.createElement('div');event.className='week-event';event.style.setProperty('--event-color',ensureCharTheme(c).accent);event.innerHTML=`<b>${esc(item.time)}–${esc(item.end)}</b><span>${esc(item.title)} · ${esc(item.priority)}</span>`;column.appendChild(event)});
+   column.onclick=()=>{activeDay=day;renderRoutine()};board.appendChild(column);
+  });
+ }
+ const renderRoutineLegacy=renderRoutine;
+ renderRoutine=function(){
+  const c=active();ensureRoutines(c);c.routines.forEach(day=>day.forEach(item=>item.end=routineEndValue(item)));
+  $('#routineDays').innerHTML='';
+  DAYS.forEach((day,index)=>{const button=document.createElement('button');button.className='day '+(index===activeDay?'active':'');button.textContent=day;button.onclick=()=>{activeDay=index;renderRoutine()};$('#routineDays').appendChild(button)});
+  const box=$('#routineList');box.innerHTML='';
+  c.routines[activeDay].sort((a,b)=>a.time.localeCompare(b.time)).forEach((routine,index)=>{
+   const row=document.createElement('div');row.className='routine-row';row.innerHTML=`<input type="time" value="${routine.time}"><input type="time" value="${routine.end}"><input value="${esc(routine.title)}"><select><option>필수</option><option>높은 확률</option><option>격주</option><option>월간</option><option>조건부</option></select><button class="icon-btn">×</button>`;row.querySelector('select').value=routine.priority;
+   const controls=row.querySelectorAll('input,select');
+   controls[0].onchange=e=>{const before=routine.time,candidate={...routine,time:e.target.value};if(canPlaceRoutine(activeDay,candidate,index)){routine.time=e.target.value;renderRoutine()}else{e.target.value=before;showRoutineConflict('같은 요일의 다른 일정과 시간이 겹쳐서 추가할 수 없어요.')}};
+   controls[1].onchange=e=>{const before=routine.end,candidate={...routine,end:e.target.value};if(canPlaceRoutine(activeDay,candidate,index)){routine.end=e.target.value;renderRoutine()}else{e.target.value=before;showRoutineConflict('종료 시각이 시작보다 빠르거나 다른 일정과 겹쳐요.')}};
+   controls[2].oninput=e=>routine.title=e.target.value;controls[3].onchange=e=>routine.priority=e.target.value;
+   row.querySelector('button').onclick=()=>{c.routines[activeDay].splice(index,1);renderRoutine()};box.appendChild(row);
+  });
+  $('#exploreCount').value=c.settings?.exploreCount??3;$('#lunchChance').value=c.settings?.lunch??80;$('#afterChance').value=c.settings?.after??55;$('#relationChance').value=c.settings?.relation??70;$('#eventChance').value=c.settings?.event??25;
+  $('#quickRoutineDay').innerHTML=DAYS.map((day,index)=>`<option value="${index}">${day}요일</option>`).join('');$('#quickRoutineDay').value=String(activeDay);
+  renderRoutineWeekBoard();
+ };
+ $('#quickAddRoutine').onclick=()=>{
+  const day=+$('#quickRoutineDay').value,candidate={time:$('#quickRoutineStart').value,end:$('#quickRoutineEnd').value,title:$('#quickRoutineTitle').value.trim(),priority:$('#quickRoutinePriority').value};
+  if(!canPlaceRoutine(day,candidate)){showRoutineConflict('제목·시각을 확인해 주세요. 같은 요일에 겹치는 일정은 추가할 수 없어요.');return}
+  active().routines[day].push(candidate);activeDay=day;save();renderRoutine();$('#quickRoutineTitle').value='';
+ };
+ $('#addRoutine').onclick=()=>{
+  const candidate={time:'19:00',end:'20:00',title:'새 일정',priority:'높은 확률'};
+  if(!canPlaceRoutine(activeDay,candidate)){showRoutineConflict('19:00–20:00에 이미 일정이 있어요. 위의 빠른 추가에서 빈 시간을 골라 주세요.');return}
+  active().routines[activeDay].push(candidate);save();renderRoutine();
+ };
+ $('#saveRoutine').onclick=async()=>{const c=active();c.settings={lunch:+$('#lunchChance').value,after:+$('#afterChance').value,relation:+$('#relationChance').value,event:+$('#eventChance').value,exploreCount:+$('#exploreCount').value};save();await generateDay(c);synchronizeRelationshipSchedules();save();renderAll();toast('시간표와 공동 일정을 함께 갱신했습니다.')};
  const categoryForCharacter=c=>{
   const pool=['cafe','restaurant','park'];
   if(c.interests?.includes('향수'))pool.push('perfume');
@@ -692,9 +739,38 @@ if(firebaseReady){
    if(event.loc&&event.place?.address){near=event.loc;nearLabel=event.place.address}
   }
  }
+ function fixedRoutineAt(character,event){
+  const day=(new Date().getDay()+6)%7;ensureRoutines(character);
+  return character.routines[day].some(routine=>routine.time===event.time&&routine.title===event.title);
+ }
+ async function synchronizeRelationshipSchedules(){
+  const dateKey=new Date().toISOString().slice(0,10);
+  state.characters.forEach(character=>{character.today=(character.today||[]).filter(event=>!event.syncedRelation)});
+  for(const relation of state.relations){
+   const a=state.characters.find(character=>character.id===relation.a),b=state.characters.find(character=>character.id===relation.b);if(!a||!b||!a.today||!b.today)continue;
+   const distance=haversine(a.location||eventCoord(a,'home'),b.location||eventCoord(b,'home'));
+   if(distance>(relation.maxDistance??8))continue;
+   const behavior=relation.behaviors||{};let eventTime='',verb='',category='';
+   if(behavior.sharedMeal){eventTime='19:45';verb='함께 저녁 식사';category='restaurant'}
+   else if(state.weather.rain&&behavior.pickupRain){eventTime='18:35';verb='우산을 들고 마중';category='cafe'}
+   else if(behavior.meetAfterWork||behavior.pickupOvertime){eventTime='18:40';verb='퇴근 후 만나 함께 귀가';category='cafe'}
+   else if(behavior.checkHome){eventTime='21:30';verb='늦은 귀가를 확인';category='cafe'}
+   else continue;
+   const day=(new Date().getDay()+6)%7,preferred=eventTime,candidates=[preferred,'18:40','19:45','20:30','21:15'];
+   eventTime=candidates.find(candidate=>[a,b].every(character=>{ensureRoutines(character);const point=mins(candidate);return !character.routines[day].some(routine=>point>=mins(routine.time)-30&&point<mins(routineEndValue(routine))+30)}))||'21:45';
+   const center=mins(eventTime);
+   for(const character of [a,b])character.today=character.today.filter(event=>fixedRoutineAt(character,event)||Math.abs(mins(event.time)-center)>=70);
+   const activity=concreteActivity(a,category),sharedId=`${dateKey}-${relation.id}`,base={time:eventTime,detail:`${relation.type} 관계 행동 · 두 캐릭터에게 동일하게 적용됨`,kind:'relation',syncedRelation:true,sharedId,place:activity.place,anchorArea:a.work||a.home,routeReset:true,loc:{lat:(eventCoord(a,'home').lat+eventCoord(b,'home').lat)/2,lng:(eventCoord(a,'home').lng+eventCoord(b,'home').lng)/2}};
+   const eventA={...base,title:`${b.name}와 ${verb}`,togetherWith:b.id};
+   await resolveRealEventPlace(a,eventA,null,a.work||a.home);
+   const sharedPlace=eventA.place?{...eventA.place}:null,sharedLoc=eventA.loc?{...eventA.loc}:null;
+   const eventB={...base,title:`${a.name}와 ${verb}`,togetherWith:a.id,place:sharedPlace,loc:sharedLoc};
+   a.today.push(eventA);b.today.push(eventB);a.today.sort((x,y)=>x.time.localeCompare(y.time));b.today.sort((x,y)=>x.time.localeCompare(y.time));
+  }
+ }
  generateDay=async function(target=active()){
   const c=target;c.settings=c.settings||{};c.settings.exploreCount=c.settings.exploreCount??3;c.photoPosition=c.photoPosition||{x:50,y:50};
-  c.todayDate=new Date().toISOString().slice(0,10);c.todayExploreCount=c.settings.exploreCount;c.todayAlgorithmVersion=2;ensureRoutines(c);await refreshWeather(c);
+  c.todayDate=new Date().toISOString().slice(0,10);c.todayExploreCount=c.settings.exploreCount;c.todayAlgorithmVersion=3;ensureRoutines(c);await refreshWeather(c);
   const day=(new Date().getDay()+6)%7,list=[];
   list.push({time:c.rhythm==='아침형'?'06:50':c.rhythm==='야행성'?'09:10':'07:40',title:'기상',detail:`${c.home||'집'}에서 하루를 시작함`,loc:c.location||eventCoord(c,'home')});
   list.push(...c.routines[day].map(r=>({time:r.time,title:r.title,detail:r.priority,loc:/직장|근무|출근|야근/.test(r.title)?eventCoord(c,'work'):eventCoord(c,'home')})));
@@ -708,20 +784,19 @@ if(firebaseReady){
    const action=main?'오늘의 주요 외출 목적지':category==='restaurant'?'주요 목적지 근처에서 식사':category==='cafe'?'주요 목적지에서 걸어갈 수 있는 카페':'귀갓길에 필요한 볼일';
    list.push({time:time(minute),title:`${activity.place.name} ${main?'방문':'들르기'}`,detail:`${action} · ${activity.detail}`,place:activity.place,kind:'explore',anchorArea:main?(c.work||c.home):'',routeReset:main,loc:main?eventCoord(c,'work'):variedExploreLocation(c,i)});
   }
-  relationEvents(c,list);
   if(Math.random()*100<(c.settings.event??25)){const rainy=state.weather.rain;list.push({time:'16:20',title:rainy?'비가 거세짐':'잠깐 쉬어가기',detail:rainy?'가까운 실내 장소에서 비를 피함':'근처에서 잠시 숨을 돌림',loc:variedExploreLocation(c,count+1)})}
   list.push({time:'22:45',title:'하루 정리',detail:'집에서 오늘의 기록을 정리함',loc:c.location||eventCoord(c,'home')});
   await resolveRealPlacesForDay(c,list);
-  c.today=list.sort((a,b)=>a.time.localeCompare(b.time));save();if(c.id===active().id){renderObserve();updateMarkers()}return c.today;
+  c.today=list.sort((a,b)=>a.time.localeCompare(b.time));await synchronizeRelationshipSchedules();save();if(c.id===active().id){renderObserve();updateMarkers()}return c.today;
  };
  async function ensureEveryCharacterHasToday(){
   const today=new Date().toISOString().slice(0,10);
   for(const c of state.characters){
    const wanted=c.settings?.exploreCount??3;
-   if(c.todayDate!==today||!c.today?.length||c.todayExploreCount!==wanted||c.todayAlgorithmVersion!==2)await generateDay(c);
+   if(c.todayDate!==today||!c.today?.length||c.todayExploreCount!==wanted||c.todayAlgorithmVersion!==3)await generateDay(c);
    else await resolveRealPlacesForDay(c,c.today);
   }
-  save();renderObserve();updateMarkers();
+  await synchronizeRelationshipSchedules();save();renderObserve();updateMarkers();
  }
  window.addEventListener('load',()=>{bindImmediateTheme();setTimeout(()=>{bindImmediateTheme();updateMarkers()},1000)});
  window.addEventListener('pageshow',()=>setTimeout(()=>{bindImmediateTheme();updateMarkers()},250));
