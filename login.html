@@ -26,7 +26,7 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-ap
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 const status=document.querySelector('#status'),button=document.querySelector('#googleLogin'),logout=document.querySelector('#logout'),box=document.querySelector('#user'),config=window.PARALLEL_CITY_CONFIG?.firebase||{};
 const ready=config.apiKey&&config.authDomain&&config.projectId&&config.appId;
-if(!ready){status.textContent='config.js에 Firebase 웹 앱 설정을 먼저 입력해 주세요.';button.disabled=true}
+if(!ready){status.textContent='Google 로그인은 아직 준비 중이에요. 운영자가 Firebase 연결을 완료하면 사용할 수 있습니다.';button.disabled=true;button.textContent='Google 로그인 준비 중'}
 else{
  const app=initializeApp(config),auth=getAuth(app),provider=new GoogleAuthProvider();auth.languageCode='ko';
  button.onclick=async()=>{status.textContent='Google 로그인창을 여는 중…';try{if(matchMedia('(max-width: 700px)').matches)await signInWithRedirect(auth,provider);else await signInWithPopup(auth,provider)}catch(error){status.textContent=error.code==='auth/unauthorized-domain'?'Firebase 승인된 도메인에 kkyareuk.github.io를 추가해 주세요.':(error.message||String(error))}};
