@@ -311,7 +311,8 @@ const AREA_PLACE_CATALOG={
 function areaCatalog(area,cat){const key=Object.keys(AREA_PLACE_CATALOG).find(k=>area.includes(k));return key?(AREA_PLACE_CATALOG[key][cat]||[]):[]}
 function ensureCharTheme(c){c.theme=c.theme||{accent:state.theme?.color||'#6f7cff',secondary:'#b36cff',ring:'#ffffff'};return c.theme}
 state.characters.forEach(ensureCharTheme);
-function applyActiveCharacterTheme(){const c=active(),t=ensureCharTheme(c);document.documentElement.style.setProperty('--char-accent',t.accent);document.documentElement.style.setProperty('--char-secondary',t.secondary);document.documentElement.style.setProperty('--char-ring',t.ring);document.documentElement.style.setProperty('--accent',t.accent);document.documentElement.style.setProperty('--accent2',t.secondary);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',t.accent)}
+function shadeCharacterColor(hex,factor=.72){const v=String(hex||'#6f7cff').replace('#','').padEnd(6,'0'),part=i=>Math.max(0,Math.min(255,Math.round(parseInt(v.slice(i,i+2),16)*factor))).toString(16).padStart(2,'0');return '#'+part(0)+part(2)+part(4)}
+function applyActiveCharacterTheme(){const c=active(),t=ensureCharTheme(c),dark=state.theme.mode==='dark',accent=dark?shadeCharacterColor(t.accent,.76):t.accent,secondary=dark?shadeCharacterColor(t.secondary,.68):t.secondary;document.documentElement.style.setProperty('--char-accent',accent);document.documentElement.style.setProperty('--char-secondary',secondary);document.documentElement.style.setProperty('--char-ring',t.ring);document.documentElement.style.setProperty('--accent',accent);document.documentElement.style.setProperty('--accent2',secondary);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',accent)}
 const oldApplyTheme=applyTheme;applyTheme=function(){oldApplyTheme();applyActiveCharacterTheme()}
 function updateThemePreview(){const c=active(),t=ensureCharTheme(c),box=$('#charThemePreview');if(!box)return;box.style.setProperty('--char-accent',t.accent);box.style.setProperty('--char-secondary',t.secondary)}
 const oldFillForm=fillForm;fillForm=function(){oldFillForm();const t=ensureCharTheme(active());$('#charAccent').value=t.accent;$('#charSecondary').value=t.secondary;$('#charRing').value=t.ring;updateThemePreview()}
@@ -329,7 +330,7 @@ function createGoogleAvatarOverlay(position,c,onClick){
  const overlay=new AvatarOverlay();overlay.setMap(googleObservationMap);return overlay;
 }
 updateMarkers=function(){
- if(!googleObservationMap){if(getGoogleKey())ensureGoogleObservationMap().catch(()=>{});return}
+ if(!googleObservationMap)return;
  googleMarkerOverlays.forEach(m=>m.setMap(null));googleMarkerOverlays=[];
  const nm=new Date().getHours()*60+new Date().getMinutes(),occupied=new globalThis.Map();
  state.characters.forEach((c,i)=>{const e=currentEvent(c,nm);let pos=e?.loc?[e.loc.lat,e.loc.lng]:pseudoCoord(c,i);if(e?.sharedId&&occupied.has(e.sharedId))pos=occupied.get(e.sharedId);else if(e?.sharedId)occupied.set(e.sharedId,pos);googleMarkerOverlays.push(createGoogleAvatarOverlay(pos,c,()=>focusCharacter(c,i)))});
@@ -356,8 +357,71 @@ function renderObserveCharacterPicker(){
 }
 const renderCharactersBase=renderCharacters;renderCharacters=function(){renderCharactersBase();renderObserveCharacterPicker();$$('#characterList .char-item').forEach((el,i)=>bindCharacterDrag(el,state.characters[i]))};
 let lastMinute=-1;function tick(){let d=new Date();$('#clock').textContent=d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});$('#date').textContent=d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});if(d.getMinutes()!==lastMinute){lastMinute=d.getMinutes();renderObserve()}}
-function bootApp(){renderObserveCharacterPicker();renderAll();renderObserveCharacterPicker();const todayKey=new Date().toISOString().slice(0,10);if(!active().today.length||active().todayDate!==todayKey)generateDay();ensureGoogleObservationMap().catch(()=>{});setTimeout(()=>{map.invalidateSize();updateMarkers();renderObserveCharacterPicker()},350)}
+function bootApp(){renderObserveCharacterPicker();renderAll();renderObserveCharacterPicker();const todayKey=new Date().toISOString().slice(0,10);if(!active().today.length||active().todayDate!==todayKey)generateDay();setTimeout(()=>{map.invalidateSize();renderObserveCharacterPicker()},350)}
 tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
+</script>
+<script>
+/* v13: first-load recovery layer. Each feature initializes independently. */
+(function(){
+ function safeRun(label,fn){try{return fn()}catch(error){console.error('[평행도시 초기화] '+label,error);return null}}
+ function renderCharacterSurfaces(){
+  const current=active();
+  const quick=document.querySelector('#quickChar');
+  if(quick){quick.innerHTML=state.characters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');quick.value=current.id}
+  const list=document.querySelector('#characterList');
+  if(list){
+   list.innerHTML='';
+   state.characters.forEach((c,index)=>{
+    const t=ensureCharTheme(c),row=document.createElement('div');row.className='char-item '+(c.id===current.id?'active':'');row.style.setProperty('--char-ring',t.ring);
+    const avatar=c.photo?`<img class="avatar" src="${c.photo}" alt="">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${t.secondary})!important">${esc(c.name.slice(0,1))}</div>`;
+    row.innerHTML=`${avatar}<button class="character-open" style="border:0;background:transparent;color:inherit;text-align:left;padding:0"><strong>${esc(c.name)}</strong><span>${esc(c.job)} · ${esc(c.home)}</span></button><div class="char-order"><button class="icon-btn up" ${index===0?'disabled':''}>▲</button><button class="icon-btn down" ${index===state.characters.length-1?'disabled':''}>▼</button></div>`;
+    row.querySelector('.character-open').onclick=()=>selectCharacter(c,index);row.querySelector('.avatar').onclick=()=>selectCharacter(c,index);
+    row.querySelector('.up').onclick=()=>moveAndRefresh(c.id,-1);row.querySelector('.down').onclick=()=>moveAndRefresh(c.id,1);list.appendChild(row);
+   })
+  }
+  renderObservationBar();
+  safeRun('캐릭터 입력값',()=>fillForm());
+ }
+ function renderObservationBar(){
+  const box=document.querySelector('#observeCharacterPicker');if(!box)return;box.innerHTML='';
+  state.characters.forEach((c,index)=>{
+   const t=ensureCharTheme(c),card=document.createElement('div');card.className='observe-character-card '+(c.id===active().id?'active':'');card.style.setProperty('--card-accent',t.accent);card.style.setProperty('--card-ring',t.ring);
+   const avatar=c.photo?`<img class="avatar" src="${c.photo}" alt="">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${t.secondary})!important">${esc(c.name.slice(0,1))}</div>`;
+   card.innerHTML=`${avatar}<button class="character-focus" style="border:0;background:transparent;color:inherit;text-align:left;padding:0"><strong>${esc(c.name)}</strong><small>${esc(c.job||c.home||'생활 중')}</small></button><span class="observe-order"><button class="icon-btn prev" ${index===0?'disabled':''}>◀</button><button class="icon-btn next" ${index===state.characters.length-1?'disabled':''}>▶</button></span>`;
+   card.querySelector('.character-focus').onclick=()=>selectCharacter(c,index);card.querySelector('.avatar').onclick=()=>selectCharacter(c,index);
+   card.querySelector('.prev').onclick=()=>moveAndRefresh(c.id,-1);card.querySelector('.next').onclick=()=>moveAndRefresh(c.id,1);box.appendChild(card);
+  })
+ }
+ function moveAndRefresh(id,direction){
+  const from=state.characters.findIndex(c=>c.id===id),to=from+direction;if(from<0||to<0||to>=state.characters.length)return;
+  const moved=state.characters.splice(from,1)[0];state.characters.splice(to,0,moved);save();renderCharacterSurfaces();safeRun('마커 정렬',()=>updateMarkers());
+ }
+ function selectCharacter(c,index){
+  state.activeId=c.id;save();applyActiveCharacterTheme();renderCharacterSurfaces();safeRun('관찰 정보',()=>renderObserve());
+  const now=new Date(),event=currentEvent(c,now.getHours()*60+now.getMinutes()),position=event?.loc?[event.loc.lat,event.loc.lng]:pseudoCoord(c,index);map.setView(position,14);
+ }
+ async function forceGoogleMap(){
+  const el=document.querySelector('#map');
+  try{
+   await loadGooglePlaces();
+   if(!window.google?.maps)throw new Error('Google Maps JavaScript API가 준비되지 않았습니다.');
+   if(!googleObservationMap){el.replaceChildren();googleObservationMap=new google.maps.Map(el,{center:DEFAULT_CENTER,zoom:13,mapTypeId:google.maps.MapTypeId.ROADMAP,streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'cooperative'})}
+   updateMarkers();
+  }catch(error){
+   const message=esc(error?.message||String(error));el.innerHTML=`<div class="map-loading"><div>Google 지도를 불러오지 못했습니다.<br><small>설정에서 API 연결을 다시 눌러 주세요.</small><code>${message}</code></div></div>`;
+  }
+ }
+ async function recoverFirstLoad(){
+  safeRun('캐릭터 목록',renderCharacterSurfaces);
+  safeRun('관계',renderRelations);safeRun('루틴',renderRoutine);safeRun('저장 장소',renderSaved);safeRun('관찰 화면',renderObserve);
+  applyActiveCharacterTheme();
+  await forceGoogleMap();
+  safeRun('지도 마커',updateMarkers);safeRun('캐릭터 순서',renderCharacterSurfaces);
+ }
+ window.addEventListener('load',()=>{recoverFirstLoad();setTimeout(recoverFirstLoad,800)});
+ window.addEventListener('pageshow',()=>setTimeout(recoverFirstLoad,120));
+ window.__parallelCityRecover=recoverFirstLoad;
+})();
 </script>
 <script>
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
