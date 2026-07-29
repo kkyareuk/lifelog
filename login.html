@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>로그인 · 평행도시</title>
+<script src="./config.js"></script>
+<style>
+:root{--a:#6f7cff;--b:#b36cff;--ink:#202334;--muted:#73798d;--line:#e1e5ef}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:radial-gradient(circle at 8% 4%,#dce2ff,transparent 34%),radial-gradient(circle at 96% 5%,#efdfff,transparent 32%),#f4f6fb}
+.card{width:min(460px,calc(100% - 28px));background:#fff;border:1px solid var(--line);border-radius:30px;padding:30px;box-shadow:0 24px 70px #31385620}.logo{width:72px;height:72px;border-radius:23px;margin:0 auto 18px;display:grid;place-items:center;color:#fff;font-weight:900;font-size:24px;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 13px 35px #6f7cff4a}.center{text-align:center}h1{margin:0 0 8px;font-size:29px}p{color:var(--muted);font-size:13px;line-height:1.7;margin:0}.google{margin-top:22px;width:100%;border:1px solid #d9deea;background:#fff;border-radius:15px;padding:14px;display:flex;justify-content:center;align-items:center;gap:11px;font-weight:900;font-size:15px;cursor:pointer}.google:hover{background:#f7f8fc}.g{font:900 22px Arial;color:#4285f4}.status{margin-top:14px;min-height:22px;color:#db5d70;font-size:12px;line-height:1.55;text-align:center}.user{display:none;margin-top:20px;padding:16px;border-radius:18px;background:#f5f6fb;border:1px solid var(--line);align-items:center;gap:12px}.user img{width:52px;height:52px;border-radius:50%;object-fit:cover}.user b,.user small{display:block}.user small{color:var(--muted);margin-top:4px}.actions{display:flex;gap:8px;margin-top:16px}.button{flex:1;text-decoration:none;text-align:center;border:0;border-radius:13px;padding:12px;background:linear-gradient(135deg,var(--a),var(--b));color:#fff;font-weight:900;cursor:pointer}.secondary{background:#f5f6fb;color:var(--ink);border:1px solid var(--line)}.help{margin-top:20px;padding:14px;border-radius:16px;background:#f6f4ff;border:1px solid #ded8ff;color:var(--muted);font-size:11px;line-height:1.65}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="logo">평행</div>
+  <div class="center"><h1>평행도시 로그인</h1><p>Google 계정으로 캐릭터와 쿠키를 안전하게 이어서 사용할 준비를 해요.</p></div>
+  <button class="google" id="googleLogin"><span class="g">G</span> Google 계정으로 계속하기</button>
+  <div class="status" id="status"></div>
+  <div class="user" id="user"><img id="photo" alt=""><div><b id="name"></b><small id="email"></small></div></div>
+  <div class="actions"><a class="button" href="./index.html">평행도시로 이동</a><button class="button secondary" id="logout" hidden>로그아웃</button></div>
+  <div class="help">처음 로그인할 때 Firebase에 등록한 승인 도메인이 아니면 로그인이 차단됩니다. Firebase Authentication의 승인된 도메인에 <b>kkyareuk.github.io</b>를 추가해 주세요.</div>
+</main>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+const status=document.querySelector('#status'),button=document.querySelector('#googleLogin'),logout=document.querySelector('#logout'),box=document.querySelector('#user'),config=window.PARALLEL_CITY_CONFIG?.firebase||{};
+const ready=config.apiKey&&config.authDomain&&config.projectId&&config.appId;
+if(!ready){status.textContent='config.js에 Firebase 웹 앱 설정을 먼저 입력해 주세요.';button.disabled=true}
+else{
+ const app=initializeApp(config),auth=getAuth(app),provider=new GoogleAuthProvider();auth.languageCode='ko';
+ button.onclick=async()=>{status.textContent='Google 로그인창을 여는 중…';try{if(matchMedia('(max-width: 700px)').matches)await signInWithRedirect(auth,provider);else await signInWithPopup(auth,provider)}catch(error){status.textContent=error.code==='auth/unauthorized-domain'?'Firebase 승인된 도메인에 kkyareuk.github.io를 추가해 주세요.':(error.message||String(error))}};
+ logout.onclick=()=>signOut(auth);
+ onAuthStateChanged(auth,async user=>{
+  if(user){const saved={uid:user.uid,name:user.displayName||'',email:user.email||'',photo:user.photoURL||''};localStorage.setItem('parallelCityAuthUser',JSON.stringify(saved));box.style.display='flex';document.querySelector('#name').textContent=saved.name;document.querySelector('#email').textContent=saved.email;document.querySelector('#photo').src=saved.photo;button.hidden=true;logout.hidden=false;status.textContent='로그인됐어요. 이제 클라우드 자동 저장을 연결할 수 있어요.'}
+  else{localStorage.removeItem('parallelCityAuthUser');box.style.display='none';button.hidden=false;logout.hidden=true;status.textContent=''}
+ });
+}
+</script>
+</body>
+</html>

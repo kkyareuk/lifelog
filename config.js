@@ -14,5 +14,19 @@ window.PARALLEL_CITY_CONFIG = {
    * 시크릿 키는 절대로 이 파일이나 GitHub에 넣지 마세요.
    */
   tossPaymentsClientKey: '',
-  paymentBackendUrl: ''
+  paymentBackendUrl: '',
+
+  /*
+   * Firebase 콘솔 → 프로젝트 설정 → 내 앱 → 웹 앱의 firebaseConfig를
+   * 아래 항목에 옮겨 적으세요. 이 설정값은 웹용 식별 정보라 공개될 수
+   * 있지만 Firestore 보안 규칙은 반드시 로그인 사용자 기준으로 설정해야 합니다.
+   */
+  firebase: {
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    storageBucket: '',
+    messagingSenderId: '',
+    appId: ''
+  }
 };
