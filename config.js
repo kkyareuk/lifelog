@@ -5,7 +5,7 @@
  * "웹사이트" 제한과 GitHub Pages 주소 제한을 설정해야 합니다.
  */
 window.PARALLEL_CITY_CONFIG = {
-  googleMapsApiKey: 'AIzaSyD64oi3UtFZLk0VdTQi1JErDZLMSpR4MSg',
+  googleMapsApiKey: '여기에_본인_API_키를_입력하세요',
   dailyFreePlaceSearches: 20,
   minPlaceSearchIntervalMs: 30000,
 
@@ -15,6 +15,7 @@ window.PARALLEL_CITY_CONFIG = {
    */
   tossPaymentsClientKey: '',
   paymentBackendUrl: '',
+  paymentsEnabled: false,
 
   /*
    * Firebase 콘솔 → 프로젝트 설정 → 내 앱 → 웹 앱의 firebaseConfig를
@@ -22,11 +23,11 @@ window.PARALLEL_CITY_CONFIG = {
    * 있지만 Firestore 보안 규칙은 반드시 로그인 사용자 기준으로 설정해야 합니다.
    */
   firebase: {
-    apiKey: 'AIzaSyAC9QuqnZK48KA4IzcsqPxAGvHeaX2IqTs',
-    authDomain: 'lifelog-98fff.firebaseapp.com',
-    projectId: 'lifelog-98fff',
-    storageBucket: 'lifelog-98fff.firebasestorage.app',
-    messagingSenderId: '115165634004',
-    appId: '1:115165634004:web:2cd1e788a55b511643ca41'
+    apiKey: '',
+    authDomain: '',
+    projectId: '',
+    storageBucket: '',
+    messagingSenderId: '',
+    appId: ''
   }
 };
