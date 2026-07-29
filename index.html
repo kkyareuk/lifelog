@@ -60,7 +60,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 <nav class="tabs">
 <button class="tab active" data-view="observe">관찰</button><button class="tab" data-view="characters">캐릭터</button><button class="tab" data-view="relations">관계</button><button class="tab" data-view="routine">주간 루틴</button><button class="tab" data-view="places">장소</button><button class="tab" data-view="theme">설정</button>
 </nav>
-<div class="quick"><a class="btn secondary" href="./login.html" style="text-decoration:none">Google 로그인</a><a class="btn secondary" href="./payment.html" style="text-decoration:none">🍪 쿠키 충전</a><select id="quickChar" aria-label="관찰할 캐릭터"></select></div>
+<div class="quick"><a class="btn secondary" href="./login.html" style="text-decoration:none">Google 로그인</a><a class="btn secondary" href="./payment.html" style="text-decoration:none">🥤 콜라 충전</a><select id="quickChar" aria-label="관찰할 캐릭터"></select></div>
 </header>
 <main>
 <section class="view active" id="view-observe"><div class="observe-character-picker" id="observeCharacterPicker" aria-label="캐릭터 선택 및 정렬"></div><div class="observe-grid">
@@ -70,7 +70,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 </div></section>
 <section class="view" id="view-characters"><div class="two"><aside class="card sidebar"><div class="title-row"><h3>캐릭터 목록</h3><button class="btn" id="newChar">＋ 생성</button></div><div class="character-list" id="characterList"></div></aside><div class="card panel">
 <div class="section"><h3>프로필</h3><div class="fields"><div><label>캐릭터 이름</label><input id="charName"></div><div><label>직업</label><input id="charJob"></div><div><label>프로필 사진</label><input type="file" accept="image/*" id="charPhoto"></div><div><label>현재 기분 기본값</label><select id="charMood"><option>평온함</option><option>즐거움</option><option>피곤함</option><option>예민함</option><option>들뜸</option></select></div><div><label>집 생활권</label><input id="charHome" placeholder="예: 망포역"></div><div><label>직장·학교 생활권</label><input id="charWork" placeholder="예: 광교중앙역"></div></div></div>
-<div class="section"><h3>캐릭터 테마</h3><div class="character-theme-preview" id="charThemePreview"><div class="mini-orb"></div><div><strong>이 캐릭터만의 색</strong><div class="meta">대표색 하나가 화면 전체에 적용됩니다. 원할 때만 보조색을 켤 수 있어요.</div></div></div><div class="fields" style="margin-top:12px"><div><label>대표 테마색</label><input type="color" id="charAccent" value="#6f7cff"></div><div><label>프로필 원 테두리색</label><input type="color" id="charRing" value="#ffffff"></div><label class="check-option full"><input type="checkbox" id="charUseSecondary"> 보조색 사용</label><div class="full" id="charSecondaryWrap"><label>보조색</label><input type="color" id="charSecondary" value="#b36cff"></div></div></div>
+<div class="section"><h3>캐릭터 테마</h3><div class="character-theme-preview" id="charThemePreview"><div class="mini-orb"></div><div><strong>이 캐릭터만의 색</strong><div class="meta">대표색은 화면과 프로필 테두리에 함께 적용됩니다. 보조색을 켜면 그라데이션이 생겨요.</div></div></div><div class="fields" style="margin-top:12px"><div class="full"><label>대표 테마색 · 프로필 테두리색</label><input type="color" id="charAccent" value="#6f7cff"><input type="color" id="charRing" value="#6f7cff" hidden></div><label class="check-option full"><input type="checkbox" id="charUseSecondary"> 보조색으로 그라데이션 사용</label><div class="full" id="charSecondaryWrap"><label>그라데이션 보조색</label><input type="color" id="charSecondary" value="#b36cff"></div></div></div>
 <div class="section"><h3>생활 조건</h3><div class="fields"><div><label>소득 수준</label><select id="charIncome"><option value="low">빠듯함</option><option value="mid">보통</option><option value="upper">여유 있음</option><option value="rich">고소득</option></select></div><div><label>소비 성향</label><select id="charSpending"><option value="save">절약형</option><option value="normal">균형형</option><option value="impulse">충동형</option><option value="luxury">고급 소비형</option></select></div><div><label>생활 리듬</label><select id="charRhythm"><option>아침형</option><option>보통</option><option>야행성</option></select></div><div><label>이동 방식</label><select id="charTransport"><option>도보 + 대중교통</option><option>자가용</option><option>도보 위주</option><option>택시 선호</option></select></div></div></div>
 <div class="section"><h3>취향과 관심사 — 선택형</h3><div class="subhead">입맛</div><div class="chips" id="tasteChips"></div><div class="subhead">관심사</div><div class="chips" id="interestChips"></div><div class="subhead">취미</div><div class="chips" id="hobbyChips"></div></div>
 <div class="section"><div class="notice">창작 캐릭터의 가상 생활을 관찰하는 서비스입니다. 타인의 실제 위치, 일정, 주소 또는 이동 동선을 추적·재현하는 목적으로 사용하지 마세요.</div><div class="actions"><button class="btn" id="saveChar">캐릭터 저장</button><button class="btn danger" id="deleteChar">삭제</button></div></div>
@@ -102,7 +102,7 @@ function chipBox(id,options,key){const box=$('#'+id);box.innerHTML='';options.fo
 chipBox('tasteChips',tasteOptions,'tastes');chipBox('interestChips',interestOptions,'interests');chipBox('hobbyChips',hobbyOptions,'hobbies');
 function renderCharacters(){const c=active();$('#quickChar').innerHTML=state.characters.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');$('#quickChar').value=c.id;const list=$('#characterList');list.innerHTML='';state.characters.forEach(x=>{let el=document.createElement('div');el.className='char-item '+(x.id===c.id?'active':'');el.innerHTML=`${x.photo?`<img class="avatar" src="${x.photo}">`:`<div class="avatar">${esc(x.name.slice(0,1))}</div>`}<div><strong>${esc(x.name)}</strong><span>${esc(x.job)} · ${esc(x.home)}</span></div><button class="icon-btn">열기</button>`;el.querySelector('button').onclick=()=>{state.activeId=x.id;save();renderAll()};list.appendChild(el)});fillForm()}
 function fillForm(){const c=active();['Name','Job','Home','Work'].forEach(k=>$('#char'+k).value=c[k.toLowerCase()]||'');$('#charMood').value=c.mood;$('#charIncome').value=c.income;$('#charSpending').value=c.spending;$('#charRhythm').value=c.rhythm;$('#charTransport').value=c.transport;['tastes','interests','hobbies'].forEach((key,j)=>{const id=['tasteChips','interestChips','hobbyChips'][j];[...$('#'+id).children].forEach(b=>b.classList.toggle('selected',(c[key]||[]).includes(b.textContent)))})}
-$('#quickChar').onchange=e=>{state.activeId=e.target.value;save();renderAll()};$('#newChar').onclick=()=>{let c=newCharacter('새 캐릭터');state.characters.push(c);state.activeId=c.id;save();renderAll();toast('새 캐릭터를 만들었습니다.')};
+$('#quickChar').onchange=e=>{state.activeId=e.target.value;save();renderAll();const c=active(),i=state.characters.indexOf(c),nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(c,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(c,i);map.setView(pos,15)};$('#newChar').onclick=()=>{let c=newCharacter('새 캐릭터');state.characters.push(c);state.activeId=c.id;save();renderAll();toast('새 캐릭터를 만들었습니다.')};
 function collectCharacterForm(){const c=active();c.name=$('#charName').value.trim()||c.name||'이름 없음';c.job=$('#charJob').value.trim();c.home=$('#charHome').value.trim();c.work=$('#charWork').value.trim();c.mood=$('#charMood').value;c.income=$('#charIncome').value;c.spending=$('#charSpending').value;c.rhythm=$('#charRhythm').value;c.transport=$('#charTransport').value;return c}
 $('#charPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;const c=collectCharacterForm();const r=new FileReader();r.onload=()=>{c.photo=r.result;save();renderAll();toast('작성 중인 내용과 사진을 함께 저장했습니다.')};r.readAsDataURL(f)};
 $('#saveChar').onclick=()=>{collectCharacterForm();save();renderAll();toast('캐릭터를 저장했습니다.')};
@@ -324,17 +324,17 @@ const AREA_PLACE_CATALOG={
   cafe:['테라로사 포스코센터점','카멜커피 도산점','센터커피 강남점'], shopping:['신세계백화점 강남점','스타필드 코엑스몰'], perfume:['르라보 가로수길','바이레도 도산','탬버린즈 신사 플래그십'], books:['별마당도서관','교보문고 강남점']}
 };
 function areaCatalog(area,cat){const key=Object.keys(AREA_PLACE_CATALOG).find(k=>area.includes(k));return key?(AREA_PLACE_CATALOG[key][cat]||[]):[]}
-function ensureCharTheme(c){c.theme=c.theme||{accent:state.theme?.color||'#6f7cff',secondary:state.theme?.color||'#6f7cff',ring:'#ffffff',useSecondary:false};if(c.theme.useSecondary==null)c.theme.useSecondary=false;return c.theme}
+function ensureCharTheme(c){c.theme=c.theme||{accent:state.theme?.color||'#6f7cff',secondary:state.theme?.color||'#6f7cff',ring:state.theme?.color||'#6f7cff',useSecondary:false};if(c.theme.useSecondary==null)c.theme.useSecondary=false;c.theme.ring=c.theme.accent;return c.theme}
 state.characters.forEach(ensureCharTheme);
 function shadeCharacterColor(hex,factor=.72){const v=String(hex||'#6f7cff').replace('#','').padEnd(6,'0'),part=i=>Math.max(0,Math.min(255,Math.round(parseInt(v.slice(i,i+2),16)*factor))).toString(16).padStart(2,'0');return '#'+part(0)+part(2)+part(4)}
 function applyActiveCharacterTheme(){const c=active(),t=ensureCharTheme(c),dark=state.theme.mode==='dark',rawSecondary=t.useSecondary?t.secondary:t.accent,accent=dark?shadeCharacterColor(t.accent,.68):t.accent,secondary=dark?shadeCharacterColor(rawSecondary,.58):rawSecondary;document.documentElement.style.setProperty('--char-accent',accent);document.documentElement.style.setProperty('--char-secondary',secondary);document.documentElement.style.setProperty('--char-ring',t.ring);document.documentElement.style.setProperty('--accent',accent);document.documentElement.style.setProperty('--accent2',secondary);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',accent)}
 const oldApplyTheme=applyTheme;applyTheme=function(){oldApplyTheme();applyActiveCharacterTheme()}
 function updateThemePreview(){const c=active(),t=ensureCharTheme(c),box=$('#charThemePreview');if(!box)return;box.style.setProperty('--char-accent',t.accent);box.style.setProperty('--char-secondary',t.useSecondary?t.secondary:t.accent)}
 const oldFillForm=fillForm;fillForm=function(){oldFillForm();const t=ensureCharTheme(active());$('#charAccent').value=t.accent;$('#charSecondary').value=t.secondary;$('#charRing').value=t.ring;$('#charUseSecondary').checked=!!t.useSecondary;$('#charSecondaryWrap').style.display=t.useSecondary?'block':'none';updateThemePreview()}
-const oldCollectCharacterForm=collectCharacterForm;collectCharacterForm=function(){const c=oldCollectCharacterForm(),old=ensureCharTheme(c);c.theme={accent:$('#charAccent')?.value||old.accent,secondary:$('#charSecondary')?.value||old.secondary,ring:$('#charRing')?.value||old.ring,useSecondary:!!$('#charUseSecondary')?.checked};applyActiveCharacterTheme();updateThemePreview();return c}
+const oldCollectCharacterForm=collectCharacterForm;collectCharacterForm=function(){const c=oldCollectCharacterForm(),old=ensureCharTheme(c),accent=$('#charAccent')?.value||old.accent;c.theme={accent,secondary:$('#charSecondary')?.value||old.secondary,ring:accent,useSecondary:!!$('#charUseSecondary')?.checked};applyActiveCharacterTheme();updateThemePreview();return c}
 ['charAccent','charSecondary','charRing','charUseSecondary'].forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id){if(id==='charUseSecondary')$('#charSecondaryWrap').style.display=e.target.checked?'block':'none';collectCharacterForm();save();renderObserve();updateMarkers()}}));
 function moveCharacter(id,dir){const i=state.characters.findIndex(c=>c.id===id),j=i+dir;if(i<0||j<0||j>=state.characters.length)return;[state.characters[i],state.characters[j]]=[state.characters[j],state.characters[i]];save();renderAll()}
-renderCharacters=function(){const c=active();$('#quickChar').innerHTML=state.characters.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');$('#quickChar').value=c.id;const list=$('#characterList');list.innerHTML='';state.characters.forEach((x,i)=>{const t=ensureCharTheme(x),el=document.createElement('div');el.className='char-item '+(x.id===c.id?'active':'');el.style.setProperty('--char-ring',t.ring);el.innerHTML=`${x.photo?`<img class="avatar" src="${x.photo}">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${t.secondary})!important">${esc(x.name.slice(0,1))}</div>`}<div><strong><i class="char-theme-dot" style="background:${t.accent}"></i>${esc(x.name)}</strong><span>${esc(x.job)} · ${esc(x.home)}</span></div><div class="char-order"><button class="icon-btn up" ${i===0?'disabled':''}>↑</button><button class="icon-btn down" ${i===state.characters.length-1?'disabled':''}>↓</button></div><button class="icon-btn open">보기</button>`;el.querySelector('.up').onclick=e=>{e.stopPropagation();moveCharacter(x.id,-1)};el.querySelector('.down').onclick=e=>{e.stopPropagation();moveCharacter(x.id,1)};const open=()=>{state.activeId=x.id;save();applyActiveCharacterTheme();renderAll();const nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(x,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(x,i);map.setView(pos,14,{animate:true})};el.querySelector('.open').onclick=open;el.querySelector('.avatar').onclick=open;el.querySelector('div:nth-child(2)').onclick=open;list.appendChild(el)});fillForm()}
+renderCharacters=function(){const c=active();$('#quickChar').innerHTML=state.characters.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');$('#quickChar').value=c.id;const list=$('#characterList');list.innerHTML='';state.characters.forEach((x,i)=>{const t=ensureCharTheme(x),secondary=t.useSecondary?t.secondary:t.accent,el=document.createElement('div');el.className='char-item '+(x.id===c.id?'active':'');el.style.setProperty('--char-ring',t.accent);el.innerHTML=`${x.photo?`<img class="avatar" src="${x.photo}">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${secondary})!important">${esc(x.name.slice(0,1))}</div>`}<div><strong><i class="char-theme-dot" style="background:${t.accent}"></i>${esc(x.name)}</strong><span>${esc(x.job)} · ${esc(x.home)}</span></div><div class="char-order"><button class="icon-btn up" ${i===0?'disabled':''}>↑</button><button class="icon-btn down" ${i===state.characters.length-1?'disabled':''}>↓</button></div><button class="icon-btn open">보기</button>`;el.querySelector('.up').onclick=e=>{e.stopPropagation();moveCharacter(x.id,-1)};el.querySelector('.down').onclick=e=>{e.stopPropagation();moveCharacter(x.id,1)};const open=()=>{state.activeId=x.id;save();applyActiveCharacterTheme();renderAll();const nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(x,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(x,i);map.setView(pos,15,{animate:true})};el.querySelector('.open').onclick=open;el.querySelector('.avatar').onclick=open;el.querySelector('div:nth-child(2)').onclick=open;list.appendChild(el)});fillForm()}
 function createAvatarMarkerContent(c){
  const t=ensureCharTheme(c),secondary=t.useSecondary?t.secondary:t.accent,button=document.createElement('button');
  button.type='button';button.className='google-avatar-marker';button.title=c.name;
@@ -366,7 +366,7 @@ const oldRenderObserve=renderObserve;renderObserve=function(){applyActiveCharact
 const oldRenderAll=renderAll;renderAll=function(){applyActiveCharacterTheme();oldRenderAll()}
 let draggedCharacterId=null;
 function reorderCharacterBefore(sourceId,targetId){if(!sourceId||!targetId||sourceId===targetId)return;const from=state.characters.findIndex(c=>c.id===sourceId),to=state.characters.findIndex(c=>c.id===targetId);if(from<0||to<0)return;const [moved]=state.characters.splice(from,1);state.characters.splice(to,0,moved);save();renderAll()}
-function focusCharacter(c,index){state.activeId=c.id;save();applyActiveCharacterTheme();renderAll();const nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(c,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(c,index);map.setView(pos,14,{animate:true})}
+function focusCharacter(c,index){state.activeId=c.id;save();applyActiveCharacterTheme();renderAll();const nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(c,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(c,index);map.setView(pos,15,{animate:true})}
 function bindCharacterDrag(el,c){el.draggable=true;el.addEventListener('dragstart',e=>{draggedCharacterId=c.id;el.classList.add('dragging');e.dataTransfer.effectAllowed='move'});el.addEventListener('dragend',()=>{draggedCharacterId=null;el.classList.remove('dragging');$$('.drag-over').forEach(x=>x.classList.remove('drag-over'))});el.addEventListener('dragover',e=>{e.preventDefault();el.classList.add('drag-over')});el.addEventListener('dragleave',()=>el.classList.remove('drag-over'));el.addEventListener('drop',e=>{e.preventDefault();el.classList.remove('drag-over');reorderCharacterBefore(draggedCharacterId,c.id)})}
 function renderObserveCharacterPicker(){
  const box=$('#observeCharacterPicker');if(!box)return;box.innerHTML='';
@@ -410,7 +410,7 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   const box=document.querySelector('#observeCharacterPicker');if(!box)return;box.innerHTML='';
   state.characters.forEach((c,index)=>{
    const t=ensureCharTheme(c),card=document.createElement('div');card.className='observe-character-card '+(c.id===active().id?'active':'');card.style.setProperty('--card-accent',t.accent);card.style.setProperty('--card-ring',t.ring);
-   const avatar=c.photo?`<img class="avatar" src="${c.photo}" alt="">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${t.secondary})!important">${esc(c.name.slice(0,1))}</div>`;
+   const secondary=t.useSecondary?t.secondary:t.accent,avatar=c.photo?`<img class="avatar" src="${c.photo}" alt="">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${secondary})!important">${esc(c.name.slice(0,1))}</div>`;
    card.innerHTML=`${avatar}<button class="character-focus" style="border:0;background:transparent;color:inherit;text-align:left;padding:0"><strong>${esc(c.name)}</strong><small>${esc(c.job||c.home||'생활 중')}</small></button><span class="observe-order"><button class="icon-btn prev" ${index===0?'disabled':''}>◀</button><button class="icon-btn next" ${index===state.characters.length-1?'disabled':''}>▶</button></span>`;
    card.querySelector('.character-focus').onclick=()=>selectCharacter(c,index);card.querySelector('.avatar').onclick=()=>selectCharacter(c,index);
    card.querySelector('.prev').onclick=()=>moveAndRefresh(c.id,-1);card.querySelector('.next').onclick=()=>moveAndRefresh(c.id,1);box.appendChild(card);
@@ -422,7 +422,7 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
  }
  function selectCharacter(c,index){
   state.activeId=c.id;save();applyActiveCharacterTheme();renderCharacterSurfaces();safeRun('관찰 정보',()=>renderObserve());
-  const now=new Date(),event=currentEvent(c,now.getHours()*60+now.getMinutes()),position=event?.loc?[event.loc.lat,event.loc.lng]:pseudoCoord(c,index);map.setView(position,14);
+  const now=new Date(),event=currentEvent(c,now.getHours()*60+now.getMinutes()),position=event?.loc?[event.loc.lat,event.loc.lng]:pseudoCoord(c,index);map.setView(position,15);
  }
  async function forceGoogleMap(){
   const el=document.querySelector('#map');
@@ -455,17 +455,18 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   const character=active(),theme=ensureCharTheme(character);
   const accent=document.querySelector('#charAccent')?.value||theme.accent;
   const secondary=document.querySelector('#charSecondary')?.value||theme.secondary||accent;
-  const ring=document.querySelector('#charRing')?.value||theme.ring||'#ffffff';
-  return{character,theme,accent,secondary,ring};
+  const useSecondary=!!document.querySelector('#charUseSecondary')?.checked;
+  return{character,theme,accent,secondary,useSecondary};
  }
  function applyThemeImmediately(saveValue=true){
-  const {character,theme,accent,secondary,ring}=themeColorsFromControls();
-  theme.accent=accent;theme.secondary=secondary;theme.ring=ring;theme.useSecondary=true;
+  const {character,theme,accent,secondary,useSecondary}=themeColorsFromControls(),gradientEnd=useSecondary?secondary:accent;
+  theme.accent=accent;theme.secondary=secondary;theme.ring=accent;theme.useSecondary=useSecondary;
   character.theme=theme;
-  const dark=state.theme.mode==='dark',shownAccent=dark?shadeCharacterColor(accent,.68):accent,shownSecondary=dark?shadeCharacterColor(secondary,.58):secondary;
+  const ringInput=document.querySelector('#charRing');if(ringInput)ringInput.value=accent;
+  const dark=state.theme.mode==='dark',shownAccent=dark?shadeCharacterColor(accent,.68):accent,shownSecondary=dark?shadeCharacterColor(gradientEnd,.58):gradientEnd;
   const root=document.documentElement;
   root.style.setProperty('--accent',shownAccent);root.style.setProperty('--accent2',shownSecondary);
-  root.style.setProperty('--char-accent',shownAccent);root.style.setProperty('--char-secondary',shownSecondary);root.style.setProperty('--char-ring',ring);
+  root.style.setProperty('--char-accent',shownAccent);root.style.setProperty('--char-secondary',shownSecondary);root.style.setProperty('--char-ring',shownAccent);
   const preview=document.querySelector('#charThemePreview');
   if(preview){preview.style.setProperty('--char-accent',shownAccent);preview.style.setProperty('--char-secondary',shownSecondary)}
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content',shownAccent);
@@ -473,12 +474,11 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
  }
  function bindImmediateTheme(){
   const secondaryToggle=document.querySelector('#charUseSecondary'),secondaryWrap=document.querySelector('#charSecondaryWrap');
-  if(secondaryToggle){secondaryToggle.checked=true;secondaryToggle.closest('label')?.setAttribute('hidden','');}
-  if(secondaryWrap)secondaryWrap.style.display='block';
-  ['charAccent','charSecondary','charRing'].forEach(id=>{
+  if(secondaryWrap&&secondaryToggle)secondaryWrap.style.display=secondaryToggle.checked?'block':'none';
+  ['charAccent','charSecondary','charUseSecondary'].forEach(id=>{
    const input=document.getElementById(id);if(!input||input.dataset.instantTheme)return;
    input.dataset.instantTheme='1';
-   input.addEventListener('input',()=>{applyThemeImmediately();updateMarkers();renderObservationBar?.()});
+   input.addEventListener('input',()=>{if(id==='charUseSecondary'&&secondaryWrap)secondaryWrap.style.display=input.checked?'block':'none';applyThemeImmediately();updateMarkers();renderObservationBar?.()});
    input.addEventListener('change',()=>{applyThemeImmediately();renderAll()});
   });
   applyThemeImmediately(false);
@@ -489,10 +489,10 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   CharacterProjectionOverlay=class extends google.maps.OverlayView{
   constructor(position,character,index,generation){super();this.position=new google.maps.LatLng(position.lat,position.lng);this.character=character;this.index=index;this.generation=generation}
   onAdd(){
-   const c=this.character,t=ensureCharTheme(c),secondary=t.secondary||t.accent;
+   const c=this.character,t=ensureCharTheme(c),secondary=t.useSecondary?t.secondary:t.accent;
    this.el=document.createElement('button');this.el.type='button';this.el.className='google-avatar-marker';
    this.el.title=`${c.name} 위치`;this.el.setAttribute('aria-label',`${c.name} 위치`);
-   this.el.style.setProperty('--marker-color',t.ring||'#ffffff');
+   this.el.style.setProperty('--marker-color',t.accent);
    this.el.style.background=`linear-gradient(135deg,${t.accent},${secondary})`;
    if(c.photo){const image=document.createElement('img');image.src=c.photo;image.alt='';this.el.appendChild(image)}
    else this.el.textContent=String(c.name||'?').slice(0,1);
@@ -522,7 +522,7 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   if(Number.isFinite(Number(raw?.[0]))&&Number.isFinite(Number(raw?.[1])))googleObservationMap.panTo({lat:Number(raw[0]),lng:Number(raw[1])});
  };
  const oldFill=fillForm;
- fillForm=function(){oldFill();const t=ensureCharTheme(active());t.useSecondary=true;const toggle=document.querySelector('#charUseSecondary');if(toggle)toggle.checked=true;const wrap=document.querySelector('#charSecondaryWrap');if(wrap)wrap.style.display='block';bindImmediateTheme()};
+ fillForm=function(){oldFill();const t=ensureCharTheme(active()),toggle=document.querySelector('#charUseSecondary'),wrap=document.querySelector('#charSecondaryWrap'),ring=document.querySelector('#charRing');if(toggle)toggle.checked=!!t.useSecondary;if(wrap)wrap.style.display=t.useSecondary?'block':'none';if(ring)ring.value=t.accent;bindImmediateTheme()};
  window.addEventListener('load',()=>{bindImmediateTheme();setTimeout(()=>{bindImmediateTheme();updateMarkers()},1000)});
  window.addEventListener('pageshow',()=>setTimeout(()=>{bindImmediateTheme();updateMarkers()},250));
 })();

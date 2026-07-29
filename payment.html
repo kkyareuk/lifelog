@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>평행도시 · 쿠키 충전소</title>
+<title>평행도시 · 콜라 충전소</title>
 <script src="./config.js"></script>
 <script src="https://js.tosspayments.com/v2/standard"></script>
 <style>
@@ -14,28 +14,29 @@
 </head>
 <body>
 <main class="wrap">
-  <div class="top"><a class="back" href="./index.html">← 평행도시로 돌아가기</a><span class="balance">🍪 <span id="balance">로그인 후 확인</span></span></div>
-  <section class="hero"><h1>쿠키 충전소 🍪</h1><p>캐릭터가 현실의 새로운 장소를 발견할 때 사용하는 쿠키예요.<br>한 번 찾은 장소는 저장해서 같은 일정에 중복으로 소모하지 않아요.</p></section>
+  <div class="top"><a class="back" href="./index.html">← 평행도시로 돌아가기</a><span class="balance">🥤 <span id="balance">로그인 후 확인</span></span></div>
+  <section class="hero"><h1>콜라 충전소 🥤</h1><p>캐릭터가 현실의 새로운 장소를 발견할 때 사용하는 콜라예요.<br>한 번 찾은 장소는 저장해서 같은 일정에 중복으로 소모하지 않아요.</p></section>
   <section class="grid" id="packages">
-    <button class="pack" data-id="cookie_100" data-cookies="100" data-price="1000"><b>가볍게</b><strong>100 쿠키</strong><small>₩1,000</small></button>
-    <button class="pack active" data-id="cookie_450" data-cookies="450" data-price="3900"><span class="best">인기</span><b>넉넉하게</b><strong>450 쿠키</strong><small>₩3,900 · 50개 보너스</small></button>
-    <button class="pack" data-id="cookie_1000" data-cookies="1000" data-price="7900"><b>오래 관찰하기</b><strong>1,000 쿠키</strong><small>₩7,900 · 210개 보너스</small></button>
+    <button class="pack" data-id="cola_100" data-colas="100" data-price="1000"><b>한 캔</b><strong>100 콜라</strong><small>₩1,000</small></button>
+    <button class="pack active" data-id="cola_450" data-colas="450" data-price="3900"><span class="best">인기</span><b>한 팩</b><strong>450 콜라</strong><small>₩3,900 · 50개 보너스</small></button>
+    <button class="pack" data-id="cola_1000" data-colas="1000" data-price="7900"><b>냉장고 채우기</b><strong>1,000 콜라</strong><small>₩7,900 · 210개 보너스</small></button>
   </section>
   <section class="checkout">
     <div class="card"><h2>결제수단</h2><div class="paylist"><span class="pill">카카오페이</span><span class="pill">토스페이</span><span class="pill">네이버페이</span><span class="pill">신용·체크카드</span><span class="pill">계좌이체</span></div><div class="notice">실제 제공되는 간편결제 수단은 토스페이먼츠 상점 계약 상태에 따라 달라져요. 결제창에서 가능한 수단을 선택할 수 있습니다.</div></div>
-    <div class="card"><h2>주문 확인</h2><div class="summary"><span>충전 쿠키</span><b id="cookieCount">450개</b></div><div class="summary total"><span>결제금액</span><b id="price">₩3,900</b></div><button class="pay" id="payButton">로그인하고 결제하기</button><div class="status" id="status"></div><div class="legal">결제 인증 후 서버에서 금액과 주문을 다시 검증하고 승인해야 쿠키가 충전됩니다. 결제 시크릿 키는 이 페이지에 저장되지 않습니다.</div></div>
+    <div class="card"><h2>주문 확인</h2><div class="summary"><span>충전 콜라</span><b id="colaCount">450개</b></div><div class="summary total"><span>결제금액</span><b id="price">₩3,900</b></div><button class="pay" id="payButton" disabled>사업자 등록 심사 중 · 준비 중</button><div class="status" id="status">지금은 결제할 수 없어요. 사업자 등록과 결제 심사가 끝난 뒤 열립니다.</div><div class="legal">결제 인증 후 서버에서 금액과 주문 정보를 검증하고 승인해야 콜라가 충전됩니다. 결제 시크릿 키는 이 페이지에 저장되지 않습니다.</div></div>
   </section>
 </main>
 <script>
 const cfg=window.PARALLEL_CITY_CONFIG||{};
 let selected=document.querySelector('.pack.active');
 const won=n=>'₩'+Number(n).toLocaleString('ko-KR');
-function paint(){document.querySelector('#cookieCount').textContent=selected.dataset.cookies+'개';document.querySelector('#price').textContent=won(selected.dataset.price)}
+function paint(){document.querySelector('#colaCount').textContent=selected.dataset.colas+'개';document.querySelector('#price').textContent=won(selected.dataset.price)}
 document.querySelectorAll('.pack').forEach(button=>button.onclick=()=>{document.querySelectorAll('.pack').forEach(x=>x.classList.remove('active'));button.classList.add('active');selected=button;paint()});
 document.querySelector('#payButton').onclick=async()=>{
  const status=document.querySelector('#status'),clientKey=String(cfg.tossPaymentsClientKey||'').trim(),backend=String(cfg.paymentBackendUrl||'').replace(/\/$/,'');
+ if(!cfg.paymentsEnabled){status.textContent='사업자 등록과 결제 심사가 끝난 뒤 이용할 수 있어요.';return}
  if(!clientKey){status.textContent='config.js에 토스페이먼츠 클라이언트 키를 설정해 주세요. 시크릿 키는 넣으면 안 됩니다.';return}
- if(!backend){status.textContent='결제 승인 서버 주소가 아직 설정되지 않았어요. 서버 없이 결제를 승인하거나 쿠키를 지급할 수 없습니다.';return}
+ if(!backend){status.textContent='결제 승인 서버 주소가 아직 설정되지 않았어요. 서버 없이 결제를 승인하거나 콜라를 지급할 수 없습니다.';return}
  const button=document.querySelector('#payButton');button.disabled=true;status.textContent='안전한 주문을 만드는 중이에요…';
  try{
   const response=await fetch(backend+'/payments/orders',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({packageId:selected.dataset.id})});
@@ -46,6 +47,7 @@ document.querySelector('#payButton').onclick=async()=>{
  }catch(error){status.textContent=error.message||String(error);button.disabled=false}
 };
 paint();
+if(cfg.paymentsEnabled){document.querySelector('#payButton').disabled=false;document.querySelector('#payButton').textContent='로그인하고 결제하기';document.querySelector('#status').textContent=''}
 </script>
 </body>
 </html>
