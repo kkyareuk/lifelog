@@ -7,12 +7,12 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <meta name="theme-color" content="#6f7cff">
 <meta property="og:title" content="평행도시 · 캐릭터 생활 관찰">
-<meta property="og:description" content="창작 캐릭터들이 현실의 도시와 집에서 살아가는 모습을 관찰해 보세요.">
+<meta property="og:description" content="창작 캐릭터들이 가상의 마을과 집에서 살아가는 모습을 관찰해 보세요.">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://kkyareuk.github.io/lifelog/social-preview.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="평행도시 · 캐릭터 생활 관찰">
-<meta name="twitter:description" content="캐릭터들이 도시와 집에서 살아가는 관찰 시뮬레이터">
+<meta name="twitter:description" content="캐릭터들이 가상 마을과 집에서 살아가는 관찰 시뮬레이터">
 <meta name="twitter:image" content="https://kkyareuk.github.io/lifelog/social-preview.png">
 <meta name="application-name" content="평행도시">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -75,6 +75,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 .house-edit-panel{margin-bottom:15px;padding:16px}.house-edit-panel[hidden]{display:none!important}.house-edit-panel #homeRoomEditorSlot{margin-top:14px}.house-edit-panel .section{border-top:1px solid var(--line);padding-top:14px}
 .photo-room-grid{grid-template-columns:repeat(12,minmax(0,1fr))!important;grid-auto-flow:dense;grid-auto-rows:118px;padding:10px;background:color-mix(in srgb,var(--ink) 14%,var(--panel));border-radius:20px}.photo-room{min-height:0!important;grid-column:span 4;grid-row:span 2;border:4px solid color-mix(in srgb,var(--panel) 94%,#fff);border-radius:9px!important}.photo-room.type-living{grid-column:span 7;grid-row:span 3}.photo-room.type-kitchen{grid-column:span 5;grid-row:span 2}.photo-room.type-bath{grid-column:span 3;grid-row:span 1}.photo-room.type-bedroom{grid-column:span 4;grid-row:span 2}.photo-room.type-study{grid-column:span 5;grid-row:span 2}.photo-room.type-other{grid-column:span 4;grid-row:span 1}.photo-room-grid.layout-studio .type-living{grid-column:span 8;grid-row:span 3}.photo-room-grid.layout-studio .type-kitchen{grid-column:span 4;grid-row:span 2}.photo-room-grid.layout-studio .type-bedroom{grid-column:span 8;grid-row:span 2}.photo-room-grid.layout-mansion .type-living{grid-column:span 8;grid-row:span 4}.photo-room-grid.layout-mansion .type-kitchen{grid-column:span 4;grid-row:span 3}.photo-room-title{font-size:13px!important}.photo-room-empty{text-align:center;padding:15px}.photo-room.has-photo{background-position:center;background-size:cover}@media(max-width:700px){.photo-room-grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-auto-rows:92px}.photo-room.type-living,.photo-room-grid.layout-studio .type-living,.photo-room-grid.layout-mansion .type-living{grid-column:span 6;grid-row:span 3}.photo-room.type-kitchen,.photo-room-grid.layout-studio .type-kitchen{grid-column:span 4;grid-row:span 2}.photo-room.type-bedroom,.photo-room-grid.layout-studio .type-bedroom{grid-column:span 4;grid-row:span 2}.photo-room.type-bath{grid-column:span 2;grid-row:span 1}}
 .photo-room .home-person{position:relative;display:flex!important;align-items:center!important;gap:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;width:max-content;max-width:100%}.photo-room .home-person>img,.photo-room .home-person>span{position:relative;z-index:2;width:54px!important;height:54px!important;border-width:4px!important;box-shadow:0 5px 14px #0005}.photo-room .home-person>div{position:relative;z-index:1;margin-left:-8px;min-width:145px;max-width:210px;padding:8px 11px 8px 17px;border-radius:10px;background:color-mix(in srgb,var(--panel) 96%,transparent);box-shadow:0 5px 14px #0003;color:var(--ink)}.photo-room .home-person b{font-size:12px!important}.photo-room .home-person small{font-size:10px!important;line-height:1.35}.photo-room-people{align-items:end}.photo-room .home-pet{border-radius:10px!important}.photo-room .home-pet>img,.photo-room .home-pet>span{border-radius:50%!important}@media(max-width:700px){.photo-room .home-person>img,.photo-room .home-person>span{width:46px!important;height:46px!important}.photo-room .home-person>div{min-width:120px;max-width:165px;padding:7px 9px 7px 15px}.photo-room .home-person small{font-size:9px!important}}
+.virtual-village-card{overflow:hidden;background:#cfe8d1}.village-map{position:relative;width:100%;height:100%;min-height:350px;overflow:hidden;background:linear-gradient(180deg,#bde3f5 0 18%,#b6dca7 18% 100%)}.village-sky{position:absolute;z-index:20;left:16px;top:16px;display:grid;padding:9px 12px;border-radius:13px;background:#fffddd;box-shadow:0 6px 18px #3353}.village-sky b{font-size:18px}.village-sky span{font-size:9px;color:#647064}.village-river{position:absolute;left:-10%;top:54%;width:120%;height:12%;background:#80c7e8;transform:rotate(-6deg);border-block:4px solid #dff4ff}.village-road{position:absolute;background:#e8dfc8;border:4px solid #fff8;box-shadow:0 0 0 2px #aa9e86}.road-a{left:48%;top:10%;width:8%;height:95%;transform:rotate(7deg)}.road-b{left:-5%;top:45%;width:110%;height:9%;transform:rotate(-3deg)}.village-building{position:absolute;z-index:4;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:92px;min-height:68px;padding:7px;border:3px solid #fff;border-radius:13px;background:color-mix(in srgb,var(--building) 72%,#fff);box-shadow:0 7px 0 color-mix(in srgb,var(--building) 55%,#58616d),0 10px 18px #3454;color:#24303c;display:grid;grid-template-columns:29px 1fr;text-align:left;align-items:center}.village-building i{font-style:normal;font-size:25px;grid-row:1/3}.village-building b{font-size:10px;line-height:1.1}.village-building small{font-size:8px;opacity:.7}.village-building.peek{z-index:30;transform:translate(-50%,-50%) scale(1.14)}.village-character{position:absolute;z-index:40;left:var(--x);top:calc(var(--y) - 42px);transform:translate(-50%,-50%);border:0;background:none;padding:0}.village-character>img,.village-character>span{display:grid;place-items:center;width:50px;height:50px;border-radius:50%;object-fit:cover;background:var(--person);color:#fff;border:4px solid var(--person);box-shadow:0 6px 15px #0005}.village-character.active>img,.village-character.active>span{box-shadow:0 0 0 5px #fff9,0 7px 17px #0006}.village-character em{position:absolute;left:43px;top:5px;width:max-content;max-width:130px;padding:5px 8px;border-radius:8px;background:#fff;color:#28313c;box-shadow:0 4px 10px #0003;font-style:normal;font-size:9px;text-align:left}.village-character em small{display:block;color:#737c88}.village-editor-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);gap:14px}.village-edit-row{display:grid;grid-template-columns:42px 1fr auto auto;align-items:center;gap:8px;padding:9px;border-bottom:1px solid var(--line)}.building-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:var(--panel2);font-size:23px}.village-edit-row strong,.village-edit-row span{display:block}.village-edit-row span{font-size:9px;color:var(--muted)}@media(max-width:800px){.village-editor-layout{grid-template-columns:1fr}.village-building{width:72px;min-height:58px}.village-building i{font-size:20px}.village-building b{font-size:9px}.village-character em{display:none}.village-map{min-height:440px}}
 </style>
 </head>
 <body>
@@ -84,7 +85,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 <nav class="tabs">
 <button class="tab active" data-view="observe">관찰</button><button class="tab" data-view="home">집</button><button class="tab" data-view="characters">캐릭터</button><button class="tab" data-view="relations">관계</button><button class="tab" data-view="routine">주간 루틴</button><button class="tab" data-view="places">장소</button><button class="tab" data-view="theme">설정</button>
 </nav>
-<div class="quick"><span id="cloudSyncStatus" class="meta cloud-sync-status" title="Google 계정 동기화 상태">기기 저장</span><a class="btn secondary" href="./login.html" style="text-decoration:none">Google 로그인</a><a class="btn secondary" href="./payment.html" style="text-decoration:none">🥤 콜라 충전</a><select id="quickChar" aria-label="관찰할 캐릭터"></select></div>
+<div class="quick"><span id="cloudSyncStatus" class="meta cloud-sync-status" title="Google 계정 동기화 상태">기기 저장</span><a class="btn secondary" href="./login.html" style="text-decoration:none">Google 로그인</a><select id="quickChar" aria-label="관찰할 캐릭터"></select></div>
 </header>
 <main>
 <section class="view active" id="view-observe"><div class="observe-character-picker" id="observeCharacterPicker" aria-label="캐릭터 선택 및 정렬"></div><div class="observe-grid">
@@ -197,26 +198,14 @@ const map={
  scrollWheelZoom:{disable(){}},doubleClickZoom:{disable(){}},touchZoom:{enable(){}},options:{},eachLayer(){},removeLayer(){}
 };
 async function ensureGoogleObservationMap(){
- if(googleObservationMap)return googleObservationMap;
- const el=$('#map');el.innerHTML='<div class="map-loading">Google 지도를 불러오는 중…</div>';
- try{
-  await loadGooglePlaces();
-  const {Map}=await google.maps.importLibrary('maps');
-  el.replaceChildren();
-  googleObservationMap=new Map(el,{center:DEFAULT_CENTER,zoom:13,mapTypeId:'roadmap',streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'cooperative'});
-  await updateMarkers();
-  return googleObservationMap;
- }catch(e){
-  const reason=esc(e?.message||String(e));
-  el.innerHTML=`<div class="map-loading"><div>Google 지도를 표시하지 못했습니다.<br><small>설정에서 API 키를 다시 연결해 주세요.</small><code>${reason}</code></div></div>`;
-  throw e;
- }
+ window.ParallelCityVillage?.render?.();
+ return{setCenter(){},setZoom(){},panTo(){},getCenter(){return{lat:()=>0,lng:()=>0}}};
 }
 function markerIcon(){return null}
 function pseudoCoord(c,i){let base=c.location||{lat:37.2516,lng:127.0711};let seed=[...c.id].reduce((a,x)=>a+x.charCodeAt(0),0);return[base.lat+Math.sin(seed+i)*.008,base.lng+Math.cos(seed*.7+i)*.01]}
 function updateMarkers(){}
 function scorePlace(name,c,cat){let s=45,why=[];if(c.income==='low'&&['perfume','shopping'].includes(cat)){s-=8;why.push('예산 고려')}if(c.income==='rich'&&['perfume','shopping'].includes(cat)){s+=14;why.push('소득과 잘 맞음')}if(c.interests.includes('향수')&&cat==='perfume'){s+=36;why.push('향수 관심사')}if((c.interests.includes('애니메이션')||c.hobbies.includes('덕질'))&&cat==='anime'){s+=38;why.push('덕질 관심사')}if(c.hobbies.includes('독서')&&cat==='books'){s+=30;why.push('독서 취미')}if(c.hobbies.includes('카페 탐방')&&cat==='cafe'){s+=25;why.push('카페 취미')}return{score:Math.max(1,Math.min(99,s)),why:why.join(' · ')||'생활권과 취향 기준'}}
-async function geocodeArea(area){const u='https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ko&q='+encodeURIComponent(area+', 대한민국');let r=await fetch(u,{headers:{'Accept':'application/json'}});if(!r.ok)throw Error();let j=await r.json();if(!j[0])throw Error();return{lat:+j[0].lat,lng:+j[0].lon}}
+async function geocodeArea(){return{lat:0,lng:0}}
 function fallbackPlaces(area,cat){return(defaultPlaces[cat]||[]).map((name,i)=>({name,address:`${area} 생활권 · 공개 장소 후보`,lat:map.getCenter().lat+(i-3)*.0018,lng:map.getCenter().lng+Math.sin(i)*.0022}))}
 $('#searchPlaces').onclick=()=>searchGooglePlaces();
 function renderPlaces(list,cat){const c=active(),box=$('#placeResults');box.innerHTML='';list.forEach(p=>{let sc=scorePlace(p.name,c,cat),el=document.createElement('div');el.className='place';el.innerHTML=`<strong>${esc(p.name)}</strong><span>${esc(p.address)}</span><div class="place-score"><b>적합도 ${sc.score}</b><span>${esc(sc.why)}</span></div><button class="btn secondary" style="width:100%;margin-top:8px">후보 저장</button>`;el.onclick=e=>{if(e.target.tagName!=='BUTTON')map.setView([p.lat,p.lng],17)};el.querySelector('button').onclick=e=>{e.stopPropagation();c.savedPlaces.push({...p,cat,score:sc.score,why:sc.why});save();renderSaved();toast('장소 후보를 저장했습니다.')};box.appendChild(el)})}
@@ -231,8 +220,8 @@ function renderAll(){renderCharacters();renderRelations();renderRoutine();render
 const GOOGLE_KEY_STORAGE='lifelog_google_maps_api_key';
 let googlePlacesReady=null;
 function sharedGoogleKey(){const key=String(window.PARALLEL_CITY_CONFIG?.googleMapsApiKey||'').trim();return key&&!key.includes('여기에_')?key:''}
-function getGoogleKey(){return sharedGoogleKey()||localStorage.getItem(GOOGLE_KEY_STORAGE)||''}
-function isSharedGoogleKey(){return !!sharedGoogleKey()}
+function getGoogleKey(){return''}
+function isSharedGoogleKey(){return false}
 const PLACE_USAGE_STORAGE='parallel_city_place_usage_v1';
 function placeQuotaConfig(){return{daily:Math.max(1,Number(window.PARALLEL_CITY_CONFIG?.dailyFreePlaceSearches)||20),interval:Math.max(0,Number(window.PARALLEL_CITY_CONFIG?.minPlaceSearchIntervalMs)||30000)}}
 function placeUsage(){const today=new Date().toLocaleDateString('sv-SE'),raw=JSON.parse(localStorage.getItem(PLACE_USAGE_STORAGE)||'null');return raw?.date===today?raw:{date:today,count:0,lastCall:0}}
@@ -240,20 +229,7 @@ function updatePlaceUsageStatus(){const el=$('#apiUsageStatus');if(!el)return;co
 function consumePlaceQuota(){const u=placeUsage(),q=placeQuotaConfig(),now=Date.now(),wait=q.interval-(now-u.lastCall);if(u.count>=q.daily)return{ok:false,message:`오늘의 무료 실제 장소 검색 ${q.daily}회를 모두 사용했어요.`};if(wait>0)return{ok:false,message:`너무 빠르게 다시 불렀어요. ${Math.ceil(wait/1000)}초 뒤에 검색해 주세요.`};u.count++;u.lastCall=now;localStorage.setItem(PLACE_USAGE_STORAGE,JSON.stringify(u));updatePlaceUsageStatus();return{ok:true}}
 function updateGoogleStatus(text,ok=false){const el=$('#googleApiStatus');if(el){el.textContent=text;el.className=ok?'api-ok':'api-bad'}const msg=$('#googleApiMessage');if(msg){msg.textContent=text;msg.className='meta '+(ok?'api-ok':'api-bad')}}
 function loadGooglePlaces(){
- const key=getGoogleKey();
- if(!key){updateGoogleStatus('API 키 미연결');return Promise.reject(new Error('Google API 키가 없습니다.'))}
- if(window.google?.maps?.importLibrary)return Promise.resolve(window.google);
- if(googlePlacesReady)return googlePlacesReady;
- googlePlacesReady=new Promise((resolve,reject)=>{
-  const cb='__lifelogGoogleReady'+Date.now();
-  window[cb]=()=>{delete window[cb];updateGoogleStatus('장소 검색 권한 확인 전');resolve(window.google)};
-  const sc=document.createElement('script');
-  sc.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&v=weekly&loading=async&callback=${cb}`;
-  sc.async=true;sc.defer=true;
-  sc.onerror=()=>{googlePlacesReady=null;updateGoogleStatus('API 연결 실패');reject(new Error('Google Maps 스크립트를 불러오지 못했습니다.'))};
-  document.head.appendChild(sc);
- });
- return googlePlacesReady;
+ return Promise.resolve(null);
 }
 let lastActivityPhotoKey='';
 async function updateCurrentPlacePhoto(event){
@@ -573,15 +549,7 @@ if(firebaseReady){
   const now=new Date(),event=currentEvent(c,now.getHours()*60+now.getMinutes());if(event&&(event.home||event.kind==='home'||/기상|하루 정리|귀가|집에서|잠든|취침/.test(event.title||''))){document.querySelector('.tab[data-view="home"]')?.click();return}const position=event?.loc?[event.loc.lat,event.loc.lng]:pseudoCoord(c,index);map.setView(position,15);
  }
  async function forceGoogleMap(){
-  const el=document.querySelector('#map');
-  try{
-   await loadGooglePlaces();
-   if(!window.google?.maps)throw new Error('Google Maps JavaScript API가 준비되지 않았습니다.');
-   if(!googleObservationMap){el.replaceChildren();googleObservationMap=new google.maps.Map(el,{center:DEFAULT_CENTER,zoom:13,mapTypeId:google.maps.MapTypeId.ROADMAP,streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'cooperative'})}
-   await updateMarkers();
-  }catch(error){
-   const message=esc(error?.message||String(error));el.innerHTML=`<div class="map-loading"><div>Google 지도를 불러오지 못했습니다.<br><small>설정에서 API 연결을 다시 눌러 주세요.</small><code>${message}</code></div></div>`;
-  }
+  window.ParallelCityVillage?.render?.();return null;
  }
  async function recoverFirstLoad(){
   safeRun('캐릭터 목록',renderCharacterSurfaces);
@@ -1044,24 +1012,7 @@ currentEvent=function(character,minute){
   return{time:'00:00',title:'취침 중',detail:'정해 둔 취침 시간에 맞춰 자는 중',kind:'home',home:true,room:'bedroom',loc:character.location||null};
  return null;
 };
-const v31OriginalGoogleLoader=loadGooglePlaces;
-let v31ConfigReloadPromise=null;
-function reloadPublicConfig(){
- if(v31ConfigReloadPromise)return v31ConfigReloadPromise;
- v31ConfigReloadPromise=new Promise((resolve,reject)=>{
-  const script=document.createElement('script');
-  script.src=`./config.js?fresh=${Date.now()}`;
-  script.async=true;
-  script.onload=()=>resolve(window.PARALLEL_CITY_CONFIG||{});
-  script.onerror=()=>reject(new Error('config.js를 다시 불러오지 못했습니다.'));
-  document.head.appendChild(script);
- });
- return v31ConfigReloadPromise;
-}
-loadGooglePlaces=async function(){
- if(!getGoogleKey())await reloadPublicConfig();
- return v31OriginalGoogleLoader();
-};
+loadGooglePlaces=async function(){return null};
 document.querySelector('#characterList')?.addEventListener('click',event=>{
  const orderButton=event.target.closest('.char-order button');if(orderButton)return;
  const row=event.target.closest('.char-item');if(!row)return;
@@ -1078,4 +1029,5 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   });
 }
 </script>
+<script src="./village-v39.js?v=20260730"></script>
 </body></html>
