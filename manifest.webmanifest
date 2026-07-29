@@ -1,19 +1,14 @@
 {
-  "name": "LIFELOG: Parallel City",
-  "short_name": "LIFELOG",
-  "description": "현실 지도 위에서 자율적으로 살아가는 창작 캐릭터 관찰 시뮬레이터",
-  "lang": "ko-KR",
+  "name": "평행도시",
+  "short_name": "평행도시",
+  "description": "캐릭터 생활 관찰 시뮬레이터",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#eef1f7",
-  "theme_color": "#6f7cff",
-  "categories": ["games", "entertainment", "lifestyle"],
+  "background_color": "#ffffff",
+  "theme_color": "#20232a",
   "icons": [
     {"src":"./icons/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
-    {"src":"./icons/icon-maskable-192.png","sizes":"192x192","type":"image/png","purpose":"maskable"},
-    {"src":"./icons/icon-maskable-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+    {"src":"./icons/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }
