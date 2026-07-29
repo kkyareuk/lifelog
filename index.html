@@ -16,7 +16,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
 <!-- config.js는 운영자 설정 파일입니다. 캐시된 빈 설정을 다시 쓰지 않도록 항상 최신 파일을 요청합니다. -->
-<script src="./config.js?v=20260729-v24"></script>
+<script src="./config.js?v=20260729-v25"></script>
 <style>
 :root{--accent:#6f7cff;--accent2:#b36cff;--bg:#eef1f7;--panel:#ffffff;--panel2:#f5f7fb;--ink:#1e2230;--muted:#72798c;--line:#dfe4ee;--danger:#dc6674;--ok:#58a989;--shadow:0 18px 50px rgba(38,46,75,.14);--r:24px}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:"Do Hyeon","Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:radial-gradient(circle at 10% 0,color-mix(in srgb,var(--accent) 18%,transparent),transparent 31%),radial-gradient(circle at 100% 12%,color-mix(in srgb,var(--accent2) 14%,transparent),transparent 30%),var(--bg);color:var(--ink)}
@@ -66,12 +66,12 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 <nav class="tabs">
 <button class="tab active" data-view="observe">관찰</button><button class="tab" data-view="characters">캐릭터</button><button class="tab" data-view="relations">관계</button><button class="tab" data-view="routine">주간 루틴</button><button class="tab" data-view="places">장소</button><button class="tab" data-view="theme">설정</button>
 </nav>
-<div class="quick"><a class="btn secondary" href="./login.html" style="text-decoration:none">Google 로그인</a><a class="btn secondary" href="./payment.html" style="text-decoration:none">🥤 콜라 충전</a><select id="quickChar" aria-label="관찰할 캐릭터"></select></div>
+<div class="quick"><span id="cloudSyncStatus" class="meta" title="Google 계정 동기화 상태">기기 저장</span><a class="btn secondary" href="./login.html" style="text-decoration:none">Google 로그인</a><a class="btn secondary" href="./payment.html" style="text-decoration:none">🥤 콜라 충전</a><select id="quickChar" aria-label="관찰할 캐릭터"></select></div>
 </header>
 <main>
 <section class="view active" id="view-observe"><div class="observe-character-picker" id="observeCharacterPicker" aria-label="캐릭터 선택 및 정렬"></div><div class="observe-grid">
 <div class="card map-card"><div id="map" class="map"></div><div class="privacy-map-note">위성 지도는 가상 생활권을 대략 표시합니다. 실제 주소·실시간 GPS가 아닙니다.</div><div class="map-hud"><div class="hud"><small>현재 시각</small><strong><span id="clock"></span> · <span id="date"></span></strong></div><div class="hud"><small>관찰 중</small><strong id="mapState">이동 중</strong></div></div></div>
-<div class="side"><div class="card profile"><div class="portrait" id="portrait"></div><div class="name-row"><div><h2 id="profileName">캐릭터</h2><div class="meta" id="profileMeta"></div></div><span class="mood" id="profileMood">평온함</span></div><div class="activity"><div class="eyebrow">CURRENT SCENE</div><h3 id="activityTitle">일정을 생성해 주세요</h3><p id="activityDetail">캐릭터의 현재 행동이 표시됩니다.</p><p id="activityLocation" style="display:none;margin-top:8px;padding:9px 11px;border-radius:12px;background:color-mix(in srgb,var(--accent) 9%,transparent);font-weight:800"></p><div class="bar"><i id="dayProgress"></i></div></div></div>
+<div class="side"><div class="card profile"><div class="portrait" id="portrait"></div><div class="name-row"><div><h2 id="profileName">캐릭터</h2><div class="meta" id="profileMeta"></div></div><span class="mood" id="profileMood">평온함</span></div><div class="activity"><div class="eyebrow">CURRENT SCENE</div><h3 id="activityTitle">일정을 생성해 주세요</h3><p id="activityDetail">캐릭터의 현재 행동이 표시됩니다.</p><p id="activityLocation" style="display:none;margin-top:8px;padding:9px 11px;border-radius:12px;background:color-mix(in srgb,var(--accent) 9%,transparent);font-weight:800"></p><figure id="activityPlacePhoto" style="display:none;margin:10px 0 0"><img alt="" style="display:block;width:100%;height:150px;object-fit:cover;border-radius:14px"><figcaption style="margin-top:5px;font-size:9px;color:var(--muted)"></figcaption></figure><div class="bar"><i id="dayProgress"></i></div></div></div>
 <div class="card timeline-card"><div class="title-row"><h3>오늘의 생활 로그</h3><span>현재 시각까지 자동 기록</span></div><div class="timeline" id="timeline"></div></div></div>
 </div></section>
 <section class="view" id="view-characters"><div class="two"><aside class="card sidebar"><div class="title-row"><h3>캐릭터 목록</h3><button class="btn" id="newChar">＋ 생성</button></div><div class="character-list" id="characterList"></div></aside><div class="card panel">
@@ -94,11 +94,12 @@ const interestOptions=['향수','애니메이션','만화','게임','패션','�
 const hobbyOptions=['덕질','독서','카페 탐방','쇼핑','운동','사진','전시 관람','공방 체험','산책','요리','피규어 수집','코스프레'];
 const presetColors=['#6f7cff','#b65f86','#2f9d83','#d18b3f','#8858b8','#466f9d','#be5b4f','#252a36'];
 const defaultPlaces={restaurant:['담소소사골순대육개장','한촌설렁탕','홍콩반점0410','역전우동0410','백소정','미분당','육대장','봉추찜닭'],cafe:['메가MGC커피','컴포즈커피','투썸플레이스','커피빈','폴바셋','로컬 로스터리 카페','조용한 북카페'],hospital:['365연합의원','서울이비인후과','바른정형외과','연세내과','맑은피부과'],pharmacy:['중앙약국','메디팜약국','온누리약국','참좋은약국'],books:['교보문고','알라딘 중고서점','영풍문고','시립도서관','독립서점'],anime:['애니메이트','애니플러스샵','코믹존','굿즈 전문점','피규어 프라자'],perfume:['향수 편집숍','니치 향수 매장','향수 공방','조향 클래스 스튜디오'],shopping:['올리브영','다이소','무신사 스탠다드','백화점','쇼핑몰','소품 편집숍'],park:['도심 공원','호수공원','산책로','근린공원']};
+window.PARALLEL_CITY_HAD_LOCAL_DATA=Boolean(localStorage.getItem('parallelCityV2'));
 let state=JSON.parse(localStorage.getItem('parallelCityV2')||'null')||{characters:[],relations:[],activeId:null,theme:{mode:'light',color:'#6f7cff'}};
 state.schemaVersion=3;state.weather=state.weather||{rain:false,label:'날씨 확인 전',checkedAt:0};
 function newCharacter(name='네리네'){return{id:crypto.randomUUID(),name,job:'출판 편집자',photo:'',photoPosition:{x:50,y:50},mood:'평온함',home:'망포역',work:'광교중앙역',income:'mid',spending:'normal',rhythm:'보통',transport:'도보 + 대중교통',tastes:['한식파'],interests:['향수'],hobbies:['독서'],settings:{lunch:80,after:55,relation:70,event:25,exploreCount:3},routines:Array.from({length:7},()=>[]),savedPlaces:[],today:[],location:{lat:37.2516,lng:127.0711}}}
 if(!state.characters.length){let a=newCharacter('네리네'),b=newCharacter('크로');b.job='법무팀 팀장';b.interests=['게임','기계'];b.hobbies=['독서'];b.home='망포역';state.characters=[a,b];state.activeId=a.id;state.relations=[{id:crypto.randomUUID(),a:a.id,b:b.id,type:'부부',close:84,conflict:24,cohabit:'yes',memo:'',maxDistance:8,pickupChance:70,behaviors:{pickupOvertime:true,pickupRain:true,meetAfterWork:true,sharedMeal:true,hospital:false,checkHome:false}}]}
-const save=()=>localStorage.setItem('parallelCityV2',JSON.stringify(state)); const active=()=>state.characters.find(c=>c.id===state.activeId)||state.characters[0];
+const save=()=>{state.cloudUpdatedAt=Date.now();localStorage.setItem('parallelCityV2',JSON.stringify(state));window.queueParallelCityCloudSync?.()}; const active=()=>state.characters.find(c=>c.id===state.activeId)||state.characters[0];
 state.relations.forEach(r=>{r.lockedType=true;r.maxDistance=r.maxDistance??8;r.pickupChance=r.pickupChance??70;r.behaviors={pickupOvertime:true,pickupRain:true,meetAfterWork:true,sharedMeal:true,hospital:false,checkHome:false,...(r.behaviors||{})}});
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800)}
 function applyTheme(){document.body.classList.toggle('dark',state.theme.mode==='dark');document.documentElement.style.setProperty('--accent',state.theme.color);let h=state.theme.color.replace('#','');let r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);let mix=n=>Math.min(255,Math.round(n*.65+120)).toString(16).padStart(2,'0');document.documentElement.style.setProperty('--accent2','#'+mix(r)+mix(g)+mix(b));$('#themeMode').value=state.theme.mode;$('#customColor').value=state.theme.color}
@@ -110,7 +111,15 @@ function renderCharacters(){const c=active();$('#quickChar').innerHTML=state.cha
 function fillForm(){const c=active();c.photoPosition=c.photoPosition||{x:50,y:50};['Name','Job','Home','Work'].forEach(k=>$('#char'+k).value=c[k.toLowerCase()]||'');$('#charMood').value=c.mood;$('#charIncome').value=c.income;$('#charSpending').value=c.spending;$('#charRhythm').value=c.rhythm;$('#charTransport').value=c.transport;$('#photoPositionX').value=c.photoPosition.x;$('#photoPositionY').value=c.photoPosition.y;['tastes','interests','hobbies'].forEach((key,j)=>{const id=['tasteChips','interestChips','hobbyChips'][j];[...$('#'+id).children].forEach(b=>b.classList.toggle('selected',(c[key]||[]).includes(b.textContent)))})}
 $('#quickChar').onchange=e=>{state.activeId=e.target.value;save();renderAll();const c=active(),i=state.characters.indexOf(c),nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(c,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(c,i);map.setView(pos,15)};$('#newChar').onclick=()=>{let c=newCharacter('새 캐릭터');state.characters.push(c);state.activeId=c.id;save();renderAll();toast('새 캐릭터를 만들었습니다.')};
 function collectCharacterForm(){const c=active();c.name=$('#charName').value.trim()||c.name||'이름 없음';c.job=$('#charJob').value.trim();c.home=$('#charHome').value.trim();c.work=$('#charWork').value.trim();c.mood=$('#charMood').value;c.income=$('#charIncome').value;c.spending=$('#charSpending').value;c.rhythm=$('#charRhythm').value;c.transport=$('#charTransport').value;c.photoPosition={x:Number($('#photoPositionX').value),y:Number($('#photoPositionY').value)};return c}
-$('#charPhoto').onchange=e=>{const f=e.target.files[0];if(!f)return;const c=collectCharacterForm();const r=new FileReader();r.onload=()=>{c.photo=r.result;save();renderAll();toast('작성 중인 내용과 사진을 함께 저장했습니다.')};r.readAsDataURL(f)};
+async function compactCharacterPhoto(file){
+ const source=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsDataURL(file)});
+ const image=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=source});
+ const max=900,scale=Math.min(1,max/Math.max(image.width,image.height)),canvas=document.createElement('canvas');
+ canvas.width=Math.max(1,Math.round(image.width*scale));canvas.height=Math.max(1,Math.round(image.height*scale));
+ canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);
+ return canvas.toDataURL('image/jpeg',.82);
+}
+$('#charPhoto').onchange=async e=>{const f=e.target.files[0];if(!f)return;const c=collectCharacterForm();try{c.photo=await compactCharacterPhoto(f);save();renderAll();toast('작성 내용과 최적화된 사진을 함께 저장했습니다.')}catch(error){toast('사진을 읽지 못했습니다.')}e.target.value=''};
 $('#saveChar').onclick=()=>{collectCharacterForm();save();renderAll();toast('캐릭터를 저장했습니다.')};
 $('#deleteChar').onclick=()=>{if(state.characters.length===1)return toast('캐릭터는 한 명 이상 필요합니다.');const id=active().id;state.characters=state.characters.filter(c=>c.id!==id);state.relations=state.relations.filter(r=>r.a!==id&&r.b!==id);state.activeId=state.characters[0].id;save();renderAll()};
 function renderRelations(){['relA','relB'].forEach(id=>$('#'+id).innerHTML=state.characters.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join(''));if(state.characters[1])$('#relB').value=state.characters[1].id;const box=$('#relationList');box.innerHTML=state.relations.length?'':'<div class="empty">관계를 추가해 주세요.</div>';state.relations.forEach((r,i)=>{const a=state.characters.find(x=>x.id===r.a),b=state.characters.find(x=>x.id===r.b);if(!a||!b)return;let el=document.createElement('div');el.className='relation-card';const pair=r.type==='짝사랑'?`${esc(a.name)} → ${esc(b.name)}`:`${esc(a.name)} × ${esc(b.name)}`;el.innerHTML=`<strong>${pair}</strong><span>${esc(r.type)} · ${r.cohabit==='yes'?'함께 거주':'따로 거주'}<br>친밀도 ${r.close} · 갈등도 ${r.conflict}<br><b>관계 유형 고정</b> · 자동 변경 없음<br>${esc(r.memo||'')}</span><div class="meter"><i style="width:${r.close}%"></i></div><button class="icon-btn" style="margin-top:8px">삭제</button>`;el.querySelector('button').onclick=()=>{state.relations.splice(i,1);save();renderRelations()};box.appendChild(el)})}
@@ -218,6 +227,25 @@ function loadGooglePlaces(){
   document.head.appendChild(sc);
  });
  return googlePlacesReady;
+}
+let lastActivityPhotoKey='';
+async function updateCurrentPlacePhoto(event){
+ const figure=$('#activityPlacePhoto'),image=figure?.querySelector('img'),caption=figure?.querySelector('figcaption');
+ const name=event?.place?.name||event?.placeName||'';
+ if(!figure||!image||!name){if(figure)figure.style.display='none';lastActivityPhotoKey='';return}
+ const key=`${name}|${event?.place?.address||''}`;
+ if(lastActivityPhotoKey===key&&figure.style.display!=='none')return;
+ lastActivityPhotoKey=key;figure.style.display='none';
+ try{
+  await loadGooglePlaces();
+  const {Place}=await google.maps.importLibrary('places');
+  const {places=[]}=await Place.searchByText({textQuery:key.replace('|',' '),fields:['displayName','photos'],language:'ko-KR',region:'kr',maxResultCount:1});
+  const photo=places[0]?.photos?.[0];if(!photo)return;
+  image.src=photo.getURI({maxWidth:900,maxHeight:500});image.alt=`${name} 장소 사진`;
+  const attrs=photo.authorAttributions||[];
+  caption.innerHTML=attrs.length?`Google Places 사진 · ${attrs.map(a=>a.uri?`<a href="${a.uri}" target="_blank" rel="noopener">${esc(a.displayName||'사진 제공자')}</a>`:esc(a.displayName||'사진 제공자')).join(' · ')}`:'Google Places 장소 사진';
+  figure.style.display='block';
+ }catch(error){console.warn('현재 장소 사진을 불러오지 못했습니다.',error)}
 }
 async function testGooglePlacesAccess(){
  await loadGooglePlaces();
@@ -390,6 +418,67 @@ let lastMinute=-1;function tick(){let d=new Date();$('#clock').textContent=d.toL
 function bootApp(){renderObserveCharacterPicker();renderAll();renderObserveCharacterPicker();const todayKey=new Date().toISOString().slice(0,10);if(!active().today.length||active().todayDate!==todayKey)generateDay();setTimeout(()=>{map.invalidateSize();renderObserveCharacterPicker()},350)}
 tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
 </script>
+<script type="module">
+import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import{getAuth,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+const syncStatus=document.querySelector('#cloudSyncStatus');
+const firebaseConfig=window.PARALLEL_CITY_CONFIG?.firebase||{};
+const firebaseReady=Boolean(firebaseConfig.apiKey&&firebaseConfig.authDomain&&firebaseConfig.projectId&&firebaseConfig.appId);
+let cloudUser=null,cloudDb=null,syncTimer=0,syncing=false;
+const setSyncStatus=(text,bad=false)=>{if(syncStatus){syncStatus.textContent=text;syncStatus.style.color=bad?'var(--danger)':''}};
+
+async function pushCloudState(){
+ if(!cloudUser||!cloudDb||syncing)return;
+ const payload=localStorage.getItem('parallelCityV2')||'';
+ if(!payload)return;
+ if(new Blob([payload]).size>950000){setSyncStatus('동기화 용량 초과',true);return}
+ syncing=true;setSyncStatus('동기화 중…');
+ try{
+  const parsed=JSON.parse(payload);
+  await setDoc(doc(cloudDb,'users',cloudUser.uid),{payload,clientUpdatedAt:Number(parsed.cloudUpdatedAt)||Date.now(),updatedAt:serverTimestamp()},{merge:true});
+  localStorage.setItem('parallelCityLastCloudUid',cloudUser.uid);
+  setSyncStatus('☁ 자동 저장됨');
+ }catch(error){
+  console.error(error);
+  setSyncStatus(error?.code==='permission-denied'?'Firestore 규칙 확인 필요':'동기화 실패',true);
+ }finally{syncing=false}
+}
+window.queueParallelCityCloudSync=()=>{
+ clearTimeout(syncTimer);
+ syncTimer=setTimeout(pushCloudState,1200);
+};
+
+if(firebaseReady){
+ try{
+  const app=getApps()[0]||initializeApp(firebaseConfig),auth=getAuth(app);
+  cloudDb=getFirestore(app);
+  onAuthStateChanged(auth,async user=>{
+   cloudUser=user||null;
+   if(!user){setSyncStatus('기기 저장');return}
+   setSyncStatus('계정 데이터 확인 중…');
+   try{
+    const ref=doc(cloudDb,'users',user.uid),snapshot=await getDoc(ref);
+    if(snapshot.exists()&&snapshot.data()?.payload){
+     const remotePayload=snapshot.data().payload,remote=JSON.parse(remotePayload),local=JSON.parse(localStorage.getItem('parallelCityV2')||'{}');
+     if(Number(remote.cloudUpdatedAt||0)>Number(local.cloudUpdatedAt||0)||localStorage.getItem('parallelCityLastCloudUid')!==user.uid){
+      localStorage.setItem('parallelCityV2',remotePayload);
+      localStorage.setItem('parallelCityLastCloudUid',user.uid);
+      setSyncStatus('☁ 불러오는 중…');
+      location.reload();
+      return;
+     }
+    }
+    await pushCloudState();
+   }catch(error){
+    console.error(error);
+    setSyncStatus(error?.code==='permission-denied'?'Firestore 규칙 확인 필요':'클라우드 연결 실패',true);
+   }
+  });
+ }catch(error){console.error(error);setSyncStatus('Firebase 연결 실패',true)}
+}
+</script>
 <script>
 /* v13: first-load recovery layer. Each feature initializes independently. */
 (function(){
@@ -541,6 +630,7 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
    location.textContent=label?`📍 ${label}${address?` · ${address}`:''}`:'';
    location.style.display=label?'block':'none';
   }
+  updateCurrentPlacePhoto(event);
  };
  ['photoPositionX','photoPositionY'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>{
   const c=active();c.photoPosition={x:+document.querySelector('#photoPositionX').value,y:+document.querySelector('#photoPositionY').value};save();
@@ -558,13 +648,13 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   const base=eventCoord(c,'leisure'),angle=(index+1)*2.17,range=.0035+(index%3)*.0018;
   return{lat:Number(base.lat)+Math.sin(angle)*range,lng:Number(base.lng)+Math.cos(angle)*range};
  }
- const AUTO_PLACE_CACHE='parallel_city_auto_place_cache_v1';
+ const AUTO_PLACE_CACHE='parallel_city_auto_place_cache_v2';
  function automaticPlaceCache(){
   try{return JSON.parse(localStorage.getItem(AUTO_PLACE_CACHE)||'{}')||{}}catch(e){return{}}
  }
- async function resolveRealEventPlace(character,event){
+ async function resolveRealEventPlace(character,event,nearLocation=null,nearLabel=''){
   if(!event?.place?.name)return event;
-  const area=character.home||character.work||'';
+  const area=nearLabel||event.anchorArea||character.home||character.work||'';
   const cache=automaticPlaceCache(),key=`${area}|${event.place.name}`;
   let found=cache[key];
   if(!found){
@@ -576,9 +666,11 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
     const {places=[]}=await Place.searchByText({
      textQuery:`${area} ${event.place.name}`,
      fields:['displayName','formattedAddress','location','googleMapsURI'],
-     language:'ko-KR',region:'kr',maxResultCount:1
+     language:'ko-KR',region:'kr',maxResultCount:8
     });
-    const place=places[0],lat=place?.location?.lat(),lng=place?.location?.lng();
+    const candidates=places.filter(place=>Number.isFinite(place?.location?.lat())&&Number.isFinite(place?.location?.lng()));
+    const place=nearLocation?candidates.sort((a,b)=>haversine(nearLocation,{lat:a.location.lat(),lng:a.location.lng()})-haversine(nearLocation,{lat:b.location.lat(),lng:b.location.lng()}))[0]:candidates[0];
+    const lat=place?.location?.lat(),lng=place?.location?.lng();
     if(Number.isFinite(lat)&&Number.isFinite(lng)){
      found={name:place.displayName||event.place.name,address:place.formattedAddress||'',lat,lng,googleMapsURI:place.googleMapsURI||''};
      cache[key]=found;localStorage.setItem(AUTO_PLACE_CACHE,JSON.stringify(cache));
@@ -590,22 +682,31 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
    event.place={...event.place,...found};event.loc={lat:found.lat,lng:found.lng};event.title=`${found.name}${suffix}`;
    if(!String(event.detail).includes('실제 장소 기준'))event.detail=`${event.detail} · 실제 장소 기준`;
   }
-  return event;
+ return event;
  }
  async function resolveRealPlacesForDay(character,list){
-  for(const event of list.filter(item=>item.place?.name))await resolveRealEventPlace(character,event);
+  let near=null,nearLabel='';
+  for(const event of list.filter(item=>item.place?.name).sort((a,b)=>a.time.localeCompare(b.time))){
+   if(event.routeReset){near=null;nearLabel=''}
+   await resolveRealEventPlace(character,event,near,nearLabel);
+   if(event.loc&&event.place?.address){near=event.loc;nearLabel=event.place.address}
+  }
  }
  generateDay=async function(target=active()){
   const c=target;c.settings=c.settings||{};c.settings.exploreCount=c.settings.exploreCount??3;c.photoPosition=c.photoPosition||{x:50,y:50};
-  c.todayDate=new Date().toISOString().slice(0,10);c.todayExploreCount=c.settings.exploreCount;ensureRoutines(c);await refreshWeather(c);
+  c.todayDate=new Date().toISOString().slice(0,10);c.todayExploreCount=c.settings.exploreCount;c.todayAlgorithmVersion=2;ensureRoutines(c);await refreshWeather(c);
   const day=(new Date().getDay()+6)%7,list=[];
   list.push({time:c.rhythm==='아침형'?'06:50':c.rhythm==='야행성'?'09:10':'07:40',title:'기상',detail:`${c.home||'집'}에서 하루를 시작함`,loc:c.location||eventCoord(c,'home')});
   list.push(...c.routines[day].map(r=>({time:r.time,title:r.title,detail:r.priority,loc:/직장|근무|출근|야근/.test(r.title)?eventCoord(c,'work'):eventCoord(c,'home')})));
-  if(Math.random()*100<(c.settings.lunch??80)){const activity=concreteActivity(c,'restaurant');list.push({time:'12:14',title:`${activity.place.name}에서 점심`,detail:activity.detail,place:activity.place,loc:eventCoord(c,'work')})}
+  if(Math.random()*100<(c.settings.lunch??80)){const activity=concreteActivity(c,'restaurant');list.push({time:'12:14',title:`${activity.place.name}에서 점심`,detail:`직장·학교에서 걸어갈 수 있는 점심 장소 · ${activity.detail}`,place:activity.place,anchorArea:c.work||c.home,routeReset:true,loc:eventCoord(c,'work')})}
   const categories=categoryForCharacter(c),count=Math.max(0,Math.min(6,Number(c.settings.exploreCount)||0));
+  const purposeCategories=categories.filter(category=>!['restaurant','cafe'].includes(category));
+  const mainCategory=purposeCategories[(String(c.id).length+day)%Math.max(1,purposeCategories.length)]||'park';
+  const routePlan=count<=0?[]:count===1?[mainCategory]:count===2?[mainCategory,'restaurant']:count===3?[mainCategory,'cafe','restaurant']:[mainCategory,'cafe','restaurant',...Array(count-3).fill('shopping')];
   for(let i=0;i<count;i++){
-   const minute=count===1?1110:570+Math.round(i*(690/Math.max(1,count-1))),category=categories[(i+String(c.id).length)%categories.length],activity=concreteActivity(c,category);
-   list.push({time:time(minute),title:`${activity.place.name} 탐험`,detail:`새로운 장소를 둘러보는 중 · ${activity.detail}`,place:activity.place,kind:'explore',loc:variedExploreLocation(c,i)});
+   const minute=count===1?1110:1090+Math.round(i*(190/Math.max(1,count-1))),category=routePlan[i],activity=concreteActivity(c,category),main=i===0;
+   const action=main?'오늘의 주요 외출 목적지':category==='restaurant'?'주요 목적지 근처에서 식사':category==='cafe'?'주요 목적지에서 걸어갈 수 있는 카페':'귀갓길에 필요한 볼일';
+   list.push({time:time(minute),title:`${activity.place.name} ${main?'방문':'들르기'}`,detail:`${action} · ${activity.detail}`,place:activity.place,kind:'explore',anchorArea:main?(c.work||c.home):'',routeReset:main,loc:main?eventCoord(c,'work'):variedExploreLocation(c,i)});
   }
   relationEvents(c,list);
   if(Math.random()*100<(c.settings.event??25)){const rainy=state.weather.rain;list.push({time:'16:20',title:rainy?'비가 거세짐':'잠깐 쉬어가기',detail:rainy?'가까운 실내 장소에서 비를 피함':'근처에서 잠시 숨을 돌림',loc:variedExploreLocation(c,count+1)})}
@@ -617,7 +718,7 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   const today=new Date().toISOString().slice(0,10);
   for(const c of state.characters){
    const wanted=c.settings?.exploreCount??3;
-   if(c.todayDate!==today||!c.today?.length||c.todayExploreCount!==wanted)await generateDay(c);
+   if(c.todayDate!==today||!c.today?.length||c.todayExploreCount!==wanted||c.todayAlgorithmVersion!==2)await generateDay(c);
    else await resolveRealPlacesForDay(c,c.today);
   }
   save();renderObserve();updateMarkers();
