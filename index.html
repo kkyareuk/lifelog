@@ -13,7 +13,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="./icons/icon-32.png">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <!-- config.js는 운영자 설정 파일입니다. 캐시된 빈 설정을 다시 쓰지 않도록 항상 최신 파일을 요청합니다. -->
-<script src="./config.js?v=20260729-v22"></script>
+<script src="./config.js?v=20260729-v23"></script>
 <style>
 :root{--accent:#6f7cff;--accent2:#b36cff;--bg:#eef1f7;--panel:#ffffff;--panel2:#f5f7fb;--ink:#1e2230;--muted:#72798c;--line:#dfe4ee;--danger:#dc6674;--ok:#58a989;--shadow:0 18px 50px rgba(38,46,75,.14);--r:24px}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Pretendard,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:radial-gradient(circle at 10% 0,color-mix(in srgb,var(--accent) 18%,transparent),transparent 31%),radial-gradient(circle at 100% 12%,color-mix(in srgb,var(--accent2) 14%,transparent),transparent 30%),var(--bg);color:var(--ink)}
@@ -66,7 +66,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 <main>
 <section class="view active" id="view-observe"><div class="observe-character-picker" id="observeCharacterPicker" aria-label="캐릭터 선택 및 정렬"></div><div class="observe-grid">
 <div class="card map-card"><div id="map" class="map"></div><div class="privacy-map-note">위성 지도는 가상 생활권을 대략 표시합니다. 실제 주소·실시간 GPS가 아닙니다.</div><div class="map-hud"><div class="hud"><small>현재 시각</small><strong><span id="clock"></span> · <span id="date"></span></strong></div><div class="hud"><small>관찰 중</small><strong id="mapState">이동 중</strong></div></div></div>
-<div class="side"><div class="card profile"><div class="portrait" id="portrait"></div><div class="name-row"><div><h2 id="profileName">캐릭터</h2><div class="meta" id="profileMeta"></div></div><span class="mood" id="profileMood">평온함</span></div><div class="activity"><div class="eyebrow">CURRENT SCENE</div><h3 id="activityTitle">일정을 생성해 주세요</h3><p id="activityDetail">캐릭터의 현재 행동이 표시됩니다.</p><div class="bar"><i id="dayProgress"></i></div></div></div>
+<div class="side"><div class="card profile"><div class="portrait" id="portrait"></div><div class="name-row"><div><h2 id="profileName">캐릭터</h2><div class="meta" id="profileMeta"></div></div><span class="mood" id="profileMood">평온함</span></div><div class="activity"><div class="eyebrow">CURRENT SCENE</div><h3 id="activityTitle">일정을 생성해 주세요</h3><p id="activityDetail">캐릭터의 현재 행동이 표시됩니다.</p><p id="activityLocation" style="display:none;margin-top:8px;padding:9px 11px;border-radius:12px;background:color-mix(in srgb,var(--accent) 9%,transparent);font-weight:800"></p><div class="bar"><i id="dayProgress"></i></div></div></div>
 <div class="card timeline-card"><div class="title-row"><h3>오늘의 생활 로그</h3><span>현재 시각까지 자동 기록</span></div><div class="timeline" id="timeline"></div></div></div>
 </div></section>
 <section class="view" id="view-characters"><div class="two"><aside class="card sidebar"><div class="title-row"><h3>캐릭터 목록</h3><button class="btn" id="newChar">＋ 생성</button></div><div class="character-list" id="characterList"></div></aside><div class="card panel">
@@ -529,6 +529,13 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   renderObserveWithTheme();
   const c=active(),position=c.photoPosition||{x:50,y:50},image=document.querySelector('#portrait img');
   if(image)image.style.objectPosition=`${position.x}% ${position.y}%`;
+  const now=new Date(),event=currentEvent(c,now.getHours()*60+now.getMinutes()),location=document.querySelector('#activityLocation');
+  if(location){
+   const label=event?.place?.name||event?.placeName||'';
+   const address=event?.place?.address||event?.placeAddress||'';
+   location.textContent=label?`📍 ${label}${address?` · ${address}`:''}`:'';
+   location.style.display=label?'block':'none';
+  }
  };
  ['photoPositionX','photoPositionY'].forEach(id=>document.getElementById(id)?.addEventListener('input',()=>{
   const c=active();c.photoPosition={x:+document.querySelector('#photoPositionX').value,y:+document.querySelector('#photoPositionY').value};save();
@@ -546,6 +553,43 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   const base=eventCoord(c,'leisure'),angle=(index+1)*2.17,range=.0035+(index%3)*.0018;
   return{lat:Number(base.lat)+Math.sin(angle)*range,lng:Number(base.lng)+Math.cos(angle)*range};
  }
+ const AUTO_PLACE_CACHE='parallel_city_auto_place_cache_v1';
+ function automaticPlaceCache(){
+  try{return JSON.parse(localStorage.getItem(AUTO_PLACE_CACHE)||'{}')||{}}catch(e){return{}}
+ }
+ async function resolveRealEventPlace(character,event){
+  if(!event?.place?.name)return event;
+  const area=character.home||character.work||'';
+  const cache=automaticPlaceCache(),key=`${area}|${event.place.name}`;
+  let found=cache[key];
+  if(!found){
+   const quota=consumePlaceQuota();
+   if(!quota.ok)return event;
+   try{
+    await loadGooglePlaces();
+    const {Place}=await google.maps.importLibrary('places');
+    const {places=[]}=await Place.searchByText({
+     textQuery:`${area} ${event.place.name}`,
+     fields:['displayName','formattedAddress','location','googleMapsURI'],
+     language:'ko-KR',region:'kr',maxResultCount:1
+    });
+    const place=places[0],lat=place?.location?.lat(),lng=place?.location?.lng();
+    if(Number.isFinite(lat)&&Number.isFinite(lng)){
+     found={name:place.displayName||event.place.name,address:place.formattedAddress||'',lat,lng,googleMapsURI:place.googleMapsURI||''};
+     cache[key]=found;localStorage.setItem(AUTO_PLACE_CACHE,JSON.stringify(cache));
+    }
+   }catch(error){console.warn('자동 장소 좌표 확인 실패',error)}
+  }
+  if(found){
+   const suffix=/에서 점심$/.test(event.title)?'에서 점심':/탐험$/.test(event.title)?' 탐험':' 방문';
+   event.place={...event.place,...found};event.loc={lat:found.lat,lng:found.lng};event.title=`${found.name}${suffix}`;
+   if(!String(event.detail).includes('실제 장소 기준'))event.detail=`${event.detail} · 실제 장소 기준`;
+  }
+  return event;
+ }
+ async function resolveRealPlacesForDay(character,list){
+  for(const event of list.filter(item=>item.place?.name))await resolveRealEventPlace(character,event);
+ }
  generateDay=async function(target=active()){
   const c=target;c.settings=c.settings||{};c.settings.exploreCount=c.settings.exploreCount??3;c.photoPosition=c.photoPosition||{x:50,y:50};
   c.todayDate=new Date().toISOString().slice(0,10);c.todayExploreCount=c.settings.exploreCount;ensureRoutines(c);await refreshWeather(c);
@@ -561,11 +605,17 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   relationEvents(c,list);
   if(Math.random()*100<(c.settings.event??25)){const rainy=state.weather.rain;list.push({time:'16:20',title:rainy?'비가 거세짐':'잠깐 쉬어가기',detail:rainy?'가까운 실내 장소에서 비를 피함':'근처에서 잠시 숨을 돌림',loc:variedExploreLocation(c,count+1)})}
   list.push({time:'22:45',title:'하루 정리',detail:'집에서 오늘의 기록을 정리함',loc:c.location||eventCoord(c,'home')});
+  await resolveRealPlacesForDay(c,list);
   c.today=list.sort((a,b)=>a.time.localeCompare(b.time));save();if(c.id===active().id){renderObserve();updateMarkers()}return c.today;
  };
  async function ensureEveryCharacterHasToday(){
   const today=new Date().toISOString().slice(0,10);
-  for(const c of state.characters){const wanted=c.settings?.exploreCount??3;if(c.todayDate!==today||!c.today?.length||c.todayExploreCount!==wanted)await generateDay(c)}
+  for(const c of state.characters){
+   const wanted=c.settings?.exploreCount??3;
+   if(c.todayDate!==today||!c.today?.length||c.todayExploreCount!==wanted)await generateDay(c);
+   else await resolveRealPlacesForDay(c,c.today);
+  }
+  save();renderObserve();updateMarkers();
  }
  window.addEventListener('load',()=>{bindImmediateTheme();setTimeout(()=>{bindImmediateTheme();updateMarkers()},1000)});
  window.addEventListener('pageshow',()=>setTimeout(()=>{bindImmediateTheme();updateMarkers()},250));
