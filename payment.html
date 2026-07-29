@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>평행도시 · 쿠키 충전소</title>
+<script src="./config.js"></script>
+<script src="https://js.tosspayments.com/v2/standard"></script>
+<style>
+:root{--a:#6f7cff;--b:#b36cff;--ink:#202334;--muted:#73798d;--line:#e2e6f0;--panel:#fff;--soft:#f5f6fb}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;background:radial-gradient(circle at 10% 0,#dfe3ff,transparent 32%),radial-gradient(circle at 95% 4%,#f2ddff,transparent 30%),#f3f5fa;color:var(--ink)}
+.wrap{width:min(1060px,calc(100% - 28px));margin:28px auto}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.back{color:var(--ink);text-decoration:none;font-weight:900}.balance{background:#fff;border:1px solid var(--line);padding:10px 14px;border-radius:999px;font-weight:900}.hero{background:linear-gradient(135deg,var(--a),var(--b));color:#fff;border-radius:30px;padding:32px;box-shadow:0 22px 55px #6f7cff35}.hero h1{font-size:34px;margin:0 0 8px}.hero p{margin:0;opacity:.86;line-height:1.65}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.pack{position:relative;border:2px solid transparent;background:var(--panel);border-radius:24px;padding:22px;text-align:left;color:var(--ink);box-shadow:0 12px 32px #343a6212;cursor:pointer}.pack:hover{transform:translateY(-2px)}.pack.active{border-color:var(--a);box-shadow:0 0 0 4px #6f7cff18,0 14px 36px #343a6218}.pack b{display:block;font-size:22px}.pack strong{display:block;font-size:28px;margin:14px 0 4px}.pack small{color:var(--muted)}.best{position:absolute;right:14px;top:14px;background:linear-gradient(135deg,var(--a),var(--b));color:#fff;padding:5px 8px;border-radius:999px;font-size:10px}.checkout{display:grid;grid-template-columns:1fr 340px;gap:16px;margin-top:18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:22px}.card h2{margin:0 0 14px}.paylist{display:flex;flex-wrap:wrap;gap:8px}.pill{background:var(--soft);border:1px solid var(--line);padding:9px 12px;border-radius:999px;font-size:12px}.notice{background:#f6f4ff;border:1px solid #dcd6ff;border-radius:16px;padding:14px;color:var(--muted);font-size:12px;line-height:1.65;margin-top:15px}.summary{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)}.summary.total{font-size:20px;border:0}.pay{width:100%;border:0;border-radius:15px;padding:15px;background:linear-gradient(135deg,var(--a),var(--b));color:#fff;font-weight:900;font-size:16px;cursor:pointer}.pay:disabled{opacity:.5;cursor:not-allowed}.status{min-height:22px;margin-top:10px;color:#db5d70;font-size:12px;line-height:1.55}.legal{font-size:10px;color:var(--muted);line-height:1.65;margin-top:12px}@media(max-width:760px){.grid,.checkout{grid-template-columns:1fr}.hero{padding:25px}.hero h1{font-size:28px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="top"><a class="back" href="./index.html">← 평행도시로 돌아가기</a><span class="balance">🍪 <span id="balance">로그인 후 확인</span></span></div>
+  <section class="hero"><h1>쿠키 충전소 🍪</h1><p>캐릭터가 현실의 새로운 장소를 발견할 때 사용하는 쿠키예요.<br>한 번 찾은 장소는 저장해서 같은 일정에 중복으로 소모하지 않아요.</p></section>
+  <section class="grid" id="packages">
+    <button class="pack" data-id="cookie_100" data-cookies="100" data-price="1000"><b>가볍게</b><strong>100 쿠키</strong><small>₩1,000</small></button>
+    <button class="pack active" data-id="cookie_450" data-cookies="450" data-price="3900"><span class="best">인기</span><b>넉넉하게</b><strong>450 쿠키</strong><small>₩3,900 · 50개 보너스</small></button>
+    <button class="pack" data-id="cookie_1000" data-cookies="1000" data-price="7900"><b>오래 관찰하기</b><strong>1,000 쿠키</strong><small>₩7,900 · 210개 보너스</small></button>
+  </section>
+  <section class="checkout">
+    <div class="card"><h2>결제수단</h2><div class="paylist"><span class="pill">카카오페이</span><span class="pill">토스페이</span><span class="pill">네이버페이</span><span class="pill">신용·체크카드</span><span class="pill">계좌이체</span></div><div class="notice">실제 제공되는 간편결제 수단은 토스페이먼츠 상점 계약 상태에 따라 달라져요. 결제창에서 가능한 수단을 선택할 수 있습니다.</div></div>
+    <div class="card"><h2>주문 확인</h2><div class="summary"><span>충전 쿠키</span><b id="cookieCount">450개</b></div><div class="summary total"><span>결제금액</span><b id="price">₩3,900</b></div><button class="pay" id="payButton">로그인하고 결제하기</button><div class="status" id="status"></div><div class="legal">결제 인증 후 서버에서 금액과 주문을 다시 검증하고 승인해야 쿠키가 충전됩니다. 결제 시크릿 키는 이 페이지에 저장되지 않습니다.</div></div>
+  </section>
+</main>
+<script>
+const cfg=window.PARALLEL_CITY_CONFIG||{};
+let selected=document.querySelector('.pack.active');
+const won=n=>'₩'+Number(n).toLocaleString('ko-KR');
+function paint(){document.querySelector('#cookieCount').textContent=selected.dataset.cookies+'개';document.querySelector('#price').textContent=won(selected.dataset.price)}
+document.querySelectorAll('.pack').forEach(button=>button.onclick=()=>{document.querySelectorAll('.pack').forEach(x=>x.classList.remove('active'));button.classList.add('active');selected=button;paint()});
+document.querySelector('#payButton').onclick=async()=>{
+ const status=document.querySelector('#status'),clientKey=String(cfg.tossPaymentsClientKey||'').trim(),backend=String(cfg.paymentBackendUrl||'').replace(/\/$/,'');
+ if(!clientKey){status.textContent='config.js에 토스페이먼츠 클라이언트 키를 설정해 주세요. 시크릿 키는 넣으면 안 됩니다.';return}
+ if(!backend){status.textContent='결제 승인 서버 주소가 아직 설정되지 않았어요. 서버 없이 결제를 승인하거나 쿠키를 지급할 수 없습니다.';return}
+ const button=document.querySelector('#payButton');button.disabled=true;status.textContent='안전한 주문을 만드는 중이에요…';
+ try{
+  const response=await fetch(backend+'/payments/orders',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({packageId:selected.dataset.id})});
+  if(response.status===401)throw new Error('Google 로그인이 필요해요.');
+  if(!response.ok)throw new Error('주문을 만들지 못했어요.');
+  const order=await response.json(),toss=TossPayments(clientKey),payment=toss.payment({customerKey:order.customerKey});
+  await payment.requestPayment({method:'CARD',amount:{currency:'KRW',value:order.amount},orderId:order.orderId,orderName:order.orderName,customerEmail:order.customerEmail,customerName:order.customerName,successUrl:new URL('./payment-success.html',location.href).href,failUrl:new URL('./payment-fail.html',location.href).href});
+ }catch(error){status.textContent=error.message||String(error);button.disabled=false}
+};
+paint();
+</script>
+</body>
+</html>

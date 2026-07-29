@@ -5,7 +5,14 @@
  * "웹사이트" 제한과 GitHub Pages 주소 제한을 설정해야 합니다.
  */
 window.PARALLEL_CITY_CONFIG = {
-  googleMapsApiKey: 'AIzaSyB6QPBpyZoyBT6aKgykiPSGSoVkW9eLBRc',
+  googleMapsApiKey: '여기에_본인_API_키를_입력하세요',
   dailyFreePlaceSearches: 20,
-  minPlaceSearchIntervalMs: 30000
+  minPlaceSearchIntervalMs: 30000,
+
+  /*
+   * 토스페이먼츠의 "클라이언트 키"만 입력할 수 있습니다.
+   * 시크릿 키는 절대로 이 파일이나 GitHub에 넣지 마세요.
+   */
+  tossPaymentsClientKey: '',
+  paymentBackendUrl: ''
 };
