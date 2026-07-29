@@ -160,8 +160,8 @@ async function ensureGoogleObservationMap(){
   await loadGooglePlaces();
   const {Map}=await google.maps.importLibrary('maps');
   el.replaceChildren();
-  googleObservationMap=new Map(el,{center:DEFAULT_CENTER,zoom:13,mapTypeId:'roadmap',streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'cooperative'});
-  updateMarkers();
+  googleObservationMap=new Map(el,{center:DEFAULT_CENTER,zoom:13,mapId:'DEMO_MAP_ID',mapTypeId:'roadmap',streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'cooperative'});
+  await updateMarkers();
   return googleObservationMap;
  }catch(e){
   const reason=esc(e?.message||String(e));
@@ -334,23 +334,29 @@ const oldCollectCharacterForm=collectCharacterForm;collectCharacterForm=function
 ['charAccent','charSecondary','charRing','charUseSecondary'].forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id){if(id==='charUseSecondary')$('#charSecondaryWrap').style.display=e.target.checked?'block':'none';collectCharacterForm();save();renderObserve();updateMarkers()}}));
 function moveCharacter(id,dir){const i=state.characters.findIndex(c=>c.id===id),j=i+dir;if(i<0||j<0||j>=state.characters.length)return;[state.characters[i],state.characters[j]]=[state.characters[j],state.characters[i]];save();renderAll()}
 renderCharacters=function(){const c=active();$('#quickChar').innerHTML=state.characters.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');$('#quickChar').value=c.id;const list=$('#characterList');list.innerHTML='';state.characters.forEach((x,i)=>{const t=ensureCharTheme(x),el=document.createElement('div');el.className='char-item '+(x.id===c.id?'active':'');el.style.setProperty('--char-ring',t.ring);el.innerHTML=`${x.photo?`<img class="avatar" src="${x.photo}">`:`<div class="avatar" style="background:linear-gradient(135deg,${t.accent},${t.secondary})!important">${esc(x.name.slice(0,1))}</div>`}<div><strong><i class="char-theme-dot" style="background:${t.accent}"></i>${esc(x.name)}</strong><span>${esc(x.job)} · ${esc(x.home)}</span></div><div class="char-order"><button class="icon-btn up" ${i===0?'disabled':''}>↑</button><button class="icon-btn down" ${i===state.characters.length-1?'disabled':''}>↓</button></div><button class="icon-btn open">보기</button>`;el.querySelector('.up').onclick=e=>{e.stopPropagation();moveCharacter(x.id,-1)};el.querySelector('.down').onclick=e=>{e.stopPropagation();moveCharacter(x.id,1)};const open=()=>{state.activeId=x.id;save();applyActiveCharacterTheme();renderAll();const nm=new Date().getHours()*60+new Date().getMinutes(),ev=currentEvent(x,nm),pos=ev?.loc?[ev.loc.lat,ev.loc.lng]:pseudoCoord(x,i);map.setView(pos,14,{animate:true})};el.querySelector('.open').onclick=open;el.querySelector('.avatar').onclick=open;el.querySelector('div:nth-child(2)').onclick=open;list.appendChild(el)});fillForm()}
-function markerSvgUrl(c){
- const t=ensureCharTheme(c),secondary=t.useSecondary?t.secondary:t.accent,ring=t.ring||'#ffffff';
- const name=String(c.name||'?').slice(0,1).replace(/[&<>"]/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
- const photo=String(c.photo||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;');
- const content=photo?`<image href="${photo}" x="6" y="6" width="52" height="52" preserveAspectRatio="xMidYMid slice" clip-path="url(#clip)"/>`:`<circle cx="32" cy="32" r="26" fill="url(#g)"/><text x="32" y="40" text-anchor="middle" font-size="24" font-weight="800" fill="white">${name}</text>`;
- const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${t.accent}"/><stop offset="1" stop-color="${secondary}"/></linearGradient><clipPath id="clip"><circle cx="32" cy="32" r="26"/></clipPath></defs><circle cx="32" cy="32" r="31" fill="${ring}"/><circle cx="32" cy="32" r="28" fill="${t.accent}"/>${content}</svg>`;
- return 'data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(svg);
+function createAvatarMarkerContent(c){
+ const t=ensureCharTheme(c),secondary=t.useSecondary?t.secondary:t.accent,button=document.createElement('button');
+ button.type='button';button.className='google-avatar-marker';button.title=c.name;
+ button.style.setProperty('--marker-color',t.ring||'#ffffff');
+ button.style.background=`linear-gradient(135deg,${t.accent},${secondary})`;
+ if(c.photo){const img=document.createElement('img');img.src=c.photo;img.alt=c.name;button.appendChild(img)}
+ else button.textContent=String(c.name||'?').slice(0,1);
+ return button;
 }
-function createGoogleAvatarMarker(position,c,onClick){
- const marker=new google.maps.Marker({position:{lat:+position[0],lng:+position[1]},map:googleObservationMap,title:c.name,optimized:false,zIndex:c.id===active().id?999:100,icon:{url:markerSvgUrl(c),scaledSize:new google.maps.Size(58,58),anchor:new google.maps.Point(29,29)}});
- marker.addListener('click',onClick);return marker;
-}
-updateMarkers=function(){
+updateMarkers=async function(){
  if(!googleObservationMap)return;
- googleMarkerOverlays.forEach(m=>m.setMap(null));googleMarkerOverlays=[];
+ googleMarkerOverlays.forEach(m=>{if('map'in m)m.map=null;else m.setMap?.(null)});googleMarkerOverlays=[];
+ let AdvancedMarkerElement;
+ try{({AdvancedMarkerElement}=await google.maps.importLibrary('marker'))}catch(error){console.error('캐릭터 마커 라이브러리 오류',error);return}
  const nm=new Date().getHours()*60+new Date().getMinutes(),occupied=new globalThis.Map();
- state.characters.forEach((c,i)=>{const e=currentEvent(c,nm);let pos=e?.loc?[e.loc.lat,e.loc.lng]:pseudoCoord(c,i);if(e?.sharedId&&occupied.has(e.sharedId))pos=occupied.get(e.sharedId);else if(e?.sharedId)occupied.set(e.sharedId,pos);googleMarkerOverlays.push(createGoogleAvatarMarker(pos,c,()=>focusCharacter(c,i)))});
+ state.characters.forEach((c,i)=>{
+  const e=currentEvent(c,nm);let pos=e?.loc?[e.loc.lat,e.loc.lng]:pseudoCoord(c,i);
+  if(e?.sharedId&&occupied.has(e.sharedId))pos=occupied.get(e.sharedId);else if(e?.sharedId)occupied.set(e.sharedId,pos);
+  const lat=Number(pos[0]),lng=Number(pos[1]);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+  const content=createAvatarMarkerContent(c);
+  const marker=new AdvancedMarkerElement({map:googleObservationMap,position:{lat,lng},title:c.name,content,zIndex:c.id===active().id?999:100});
+  content.onclick=()=>focusCharacter(c,i);googleMarkerOverlays.push(marker);
+ });
  const c=active(),e=currentEvent(c,nm),pos=e?.loc?[e.loc.lat,e.loc.lng]:pseudoCoord(c,state.characters.indexOf(c));googleObservationMap.panTo({lat:+pos[0],lng:+pos[1]});
 }
 fallbackPlaces=function(area,cat){let names=areaCatalog(area,cat);if(!names.length)names=(defaultPlaces[cat]||[]);return names.map((name,i)=>({name,address:`${area} 생활권 · ${cat==='restaurant'?'식당':cat==='cafe'?'카페':'공개 장소'}`,lat:map.getCenter().lat+(i-(names.length-1)/2)*.0014,lng:map.getCenter().lng+Math.sin(i*1.7)*.0018,photo:PLACE_PHOTOS[cat]}))}
@@ -422,8 +428,8 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
   try{
    await loadGooglePlaces();
    if(!window.google?.maps)throw new Error('Google Maps JavaScript API가 준비되지 않았습니다.');
-   if(!googleObservationMap){el.replaceChildren();googleObservationMap=new google.maps.Map(el,{center:DEFAULT_CENTER,zoom:13,mapTypeId:google.maps.MapTypeId.ROADMAP,streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'cooperative'})}
-   updateMarkers();
+   if(!googleObservationMap){el.replaceChildren();googleObservationMap=new google.maps.Map(el,{center:DEFAULT_CENTER,zoom:13,mapId:'DEMO_MAP_ID',mapTypeId:google.maps.MapTypeId.ROADMAP,streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'cooperative'})}
+   await updateMarkers();
   }catch(error){
    const message=esc(error?.message||String(error));el.innerHTML=`<div class="map-loading"><div>Google 지도를 불러오지 못했습니다.<br><small>설정에서 API 연결을 다시 눌러 주세요.</small><code>${message}</code></div></div>`;
   }
