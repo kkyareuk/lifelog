@@ -5,7 +5,7 @@
  * "웹사이트" 제한과 GitHub Pages 주소 제한을 설정해야 합니다.
  */
 window.PARALLEL_CITY_CONFIG = {
-  googleMapsApiKey: '여기에_본인_API_키를_입력하세요',
+  googleMapsApiKey: 'AIzaSyB6QPBpyZoyBT6aKgykiPSGSoVkW9eLBRc',
   dailyFreePlaceSearches: 20,
   minPlaceSearchIntervalMs: 30000
 };
