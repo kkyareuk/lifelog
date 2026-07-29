@@ -102,6 +102,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 #portraitOnly{display:none!important}
 .activity-place-v43{display:none;margin-top:12px}.activity-place-v43.show{display:block}.activity-place-v43 .place-line{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--accent) 9%,transparent);font-weight:900}.activity-place-v43 .place-photo{height:190px;margin-top:10px;overflow:hidden;border-radius:16px;background:#dde2e8 center/cover no-repeat}.activity-place-v43 .place-photo.sprite{background-image:url('./place-assets/default-venues-v43.png');background-size:300% 200%}.activity-place-v43 .place-photo[data-kind="cafe"]{background-position:0 0}.activity-place-v43 .place-photo[data-kind="restaurant"]{background-position:50% 0}.activity-place-v43 .place-photo[data-kind="shop"]{background-position:100% 0}.activity-place-v43 .place-photo[data-kind="park"]{background-position:0 100%}.activity-place-v43 .place-photo[data-kind="office"]{background-position:50% 100%}.activity-place-v43 .place-photo[data-kind="clinic"]{background-position:100% 100%}.activity-place-v43 figcaption{margin-top:6px;font-size:9px;color:var(--muted)}.world-building{touch-action:none;user-select:none}
 .observation-mode-switch{display:flex;align-items:center;gap:7px;padding:8px 10px;margin-bottom:9px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.observation-mode-switch b{margin-right:auto}.observation-mode-switch button{border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:7px 10px;font:inherit;font-weight:900;cursor:pointer}.observation-mode-switch button.active{color:#fff;background:var(--accent);border-color:var(--accent)}.google-mode-error{height:100%;display:grid;place-content:center;gap:10px;text-align:center;padding:25px}.google-mode-error span{color:var(--muted)}.google-mode-error button{border:0;border-radius:12px;padding:10px 14px;background:var(--accent);color:#fff;font:inherit;font-weight:900}
+.job-picker-v45{display:grid;gap:7px}.job-picker-v45 select,.job-picker-v45 input{width:100%}
 .privacy-map-note{display:none!important}.map-card{height:auto!important;min-height:0!important;overflow:hidden}.map-card #map{position:relative!important;width:100%!important;height:auto!important;aspect-ratio:16/9;min-height:0!important}.world-map,.world-map.edit-mode{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:16/9;background-size:100% 100%!important;background-position:center!important}.world-building{width:clamp(46px,6.7vw,106px)!important;min-height:clamp(42px,5vw,78px)!important;padding:clamp(3px,.45vw,7px)!important;border-width:clamp(2px,.25vw,3px)!important}.world-building i{font-size:clamp(13px,1.5vw,22px)!important}.world-building>img{width:clamp(25px,3vw,48px);height:clamp(25px,3vw,48px);object-fit:contain}.world-building b{font-size:clamp(6px,.72vw,11px)!important;max-width:100%!important;white-space:normal!important}.world-building small{font-size:clamp(5px,.6vw,9px)!important}.world-character>img,.world-character>span{width:clamp(30px,3.7vw,58px)!important;height:clamp(30px,3.7vw,58px)!important;border-width:clamp(2px,.3vw,5px)!important}.world-roads{pointer-events:none}.home-clean{display:grid;grid-template-columns:auto minmax(100px,1fr) auto auto;align-items:center;gap:9px;margin:0 0 12px;padding:9px 11px;border-radius:13px;background:var(--panel2);font-size:10px}.home-clean>div{height:9px;border-radius:99px;background:color-mix(in srgb,var(--ink) 10%,transparent);overflow:hidden}.home-clean i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ef8c76,#f1c867,#71c995)}.home-clean button{border:1px solid var(--line);border-radius:9px;background:var(--panel);padding:6px 9px;font:inherit;font-weight:800}.home-pet em{display:block;margin-top:3px;color:var(--accent);font-size:9px;font-style:normal}@media(max-width:700px){.map-card #map,.world-map,.world-map.edit-mode{aspect-ratio:16/9!important;min-height:0!important}.world-map-head{left:54px!important;top:7px!important}.world-navigator{display:flex!important;width:auto!important;max-width:calc(100% - 4px);gap:3px!important}.world-navigator select{width:auto!important;min-width:0!important;max-width:31%;padding:4px 15px 4px 4px!important;font-size:7px!important}.world-location-roster{display:none!important}.home-clean{grid-template-columns:1fr auto}.home-clean>div{grid-column:1/-1;grid-row:2}.home-clean button{grid-column:2;grid-row:1}}
 </style>
 </head>
@@ -138,7 +139,7 @@ const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], e
 const DAYS=['월','화','수','목','금','토','일'];
 const tasteOptions=['아재 입맛','어린이 입맛','맵부심','한식파','면 요리 선호','디저트광','커피 못 마심','신상 맛집파','편식 심함','건강식 선호'];
 const interestOptions=['향수','애니메이션','만화','게임','패션','미술','음악','영화','문구','인테리어','역사','기계'];
-const hobbyOptions=['취미 없음','집에서 뒹굴기','외출 안 함','인터넷 서핑','커뮤니티 눈팅','영상 정주행','낮잠','덕질','독서','웹소설','카페 탐방','쇼핑','운동','사진','전시 관람','공방 체험','산책','요리','베이킹','뜨개질','식물 키우기','반려동물 돌보기','일기','악기','보드게임','TRPG','코딩','여행 계획','드라이브','낚시','등산','자전거','러닝','클라이밍','피규어 수집','코스프레'];
+const hobbyOptions=['취미 없음','집에서 뒹굴기','외출 안 함','인터넷 서핑','커뮤니티 눈팅','영상 정주행','낮잠','청소','정리정돈','덕질','독서','웹소설','카페 탐방','쇼핑','운동','사진','전시 관람','공방 체험','산책','요리','베이킹','뜨개질','식물 키우기','반려동물 돌보기','일기','악기','보드게임','TRPG','코딩','여행 계획','드라이브','낚시','등산','자전거','러닝','클라이밍','피규어 수집','코스프레'];
 const presetColors=['#6f7cff','#b65f86','#2f9d83','#d18b3f','#8858b8','#466f9d','#be5b4f','#252a36'];
 const defaultPlaces={restaurant:['담소소사골순대육개장','한촌설렁탕','홍콩반점0410','역전우동0410','백소정','미분당','육대장','봉추찜닭'],cafe:['메가MGC커피','컴포즈커피','투썸플레이스','커피빈','폴바셋','로컬 로스터리 카페','조용한 북카페'],hospital:['365연합의원','서울이비인후과','바른정형외과','연세내과','맑은피부과'],pharmacy:['중앙약국','메디팜약국','온누리약국','참좋은약국'],books:['교보문고','알라딘 중고서점','영풍문고','시립도서관','독립서점'],anime:['애니메이트','애니플러스샵','코믹존','굿즈 전문점','피규어 프라자'],perfume:['향수 편집숍','니치 향수 매장','향수 공방','조향 클래스 스튜디오'],shopping:['올리브영','다이소','무신사 스탠다드','백화점','쇼핑몰','소품 편집숍'],park:['도심 공원','호수공원','산책로','근린공원']};
 window.PARALLEL_CITY_HAD_LOCAL_DATA=Boolean(localStorage.getItem('parallelCityV2'));
@@ -1063,8 +1064,8 @@ if(firebaseReady){
  setInterval(ensureEveryCharacterHasToday,60000);
 })();
 </script>
-<script src="./house-v44.js?v=20260730-v44"></script>
-<script src="./home-v44.js?v=20260730-v44"></script>
+<script src="./house-v45.js?v=20260730-v45"></script>
+<script src="./home-v45.js?v=20260730-v45"></script>
 <script>
 const v31OriginalCurrentEvent=currentEvent;
 currentEvent=function(character,minute){
@@ -1092,6 +1093,6 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 </script>
 <script src="./google-bridge-v44.js?v=20260730-v44"></script>
-<script src="./world-v44.js?v=20260730-v44"></script>
-<script src="./stability-v44.js?v=20260730-v44"></script>
+<script src="./world-v45.js?v=20260730-v45"></script>
+<script src="./stability-v45.js?v=20260730-v45"></script>
 </body></html>
