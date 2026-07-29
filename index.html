@@ -101,6 +101,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 @media(max-width:900px){.world-editor-layout{grid-template-columns:1fr}.world-map{min-height:620px}.world-map-head{left:72px;right:8px;align-items:flex-start}.world-map-head>small{display:none}.world-navigator{display:grid;grid-template-columns:1fr 1fr;padding:5px}.world-navigator select{min-width:0;width:100%;padding:6px 23px 6px 7px;font-size:10px}.world-navigator select:last-child{grid-column:1/-1}.world-building{width:78px;min-height:62px;padding:5px}.world-building i{font-size:19px}.world-building b{font-size:9px;max-width:70px}.world-building small{font-size:8px}.world-character em{display:none}}
 #portraitOnly{display:none!important}
 .activity-place-v43{display:none;margin-top:12px}.activity-place-v43.show{display:block}.activity-place-v43 .place-line{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--accent) 9%,transparent);font-weight:900}.activity-place-v43 .place-photo{height:190px;margin-top:10px;overflow:hidden;border-radius:16px;background:#dde2e8 center/cover no-repeat}.activity-place-v43 .place-photo.sprite{background-image:url('./place-assets/default-venues-v43.png');background-size:300% 200%}.activity-place-v43 .place-photo[data-kind="cafe"]{background-position:0 0}.activity-place-v43 .place-photo[data-kind="restaurant"]{background-position:50% 0}.activity-place-v43 .place-photo[data-kind="shop"]{background-position:100% 0}.activity-place-v43 .place-photo[data-kind="park"]{background-position:0 100%}.activity-place-v43 .place-photo[data-kind="office"]{background-position:50% 100%}.activity-place-v43 .place-photo[data-kind="clinic"]{background-position:100% 100%}.activity-place-v43 figcaption{margin-top:6px;font-size:9px;color:var(--muted)}.world-building{touch-action:none;user-select:none}
+.observation-mode-switch{display:flex;align-items:center;gap:7px;padding:8px 10px;margin-bottom:9px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.observation-mode-switch b{margin-right:auto}.observation-mode-switch button{border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:7px 10px;font:inherit;font-weight:900;cursor:pointer}.observation-mode-switch button.active{color:#fff;background:var(--accent);border-color:var(--accent)}.google-mode-error{height:100%;display:grid;place-content:center;gap:10px;text-align:center;padding:25px}.google-mode-error span{color:var(--muted)}.google-mode-error button{border:0;border-radius:12px;padding:10px 14px;background:var(--accent);color:#fff;font:inherit;font-weight:900}
 .privacy-map-note{display:none!important}.map-card{height:auto!important;min-height:0!important;overflow:hidden}.map-card #map{position:relative!important;width:100%!important;height:auto!important;aspect-ratio:16/9;min-height:0!important}.world-map,.world-map.edit-mode{width:100%!important;height:auto!important;min-height:0!important;aspect-ratio:16/9;background-size:100% 100%!important;background-position:center!important}.world-building{width:clamp(46px,6.7vw,106px)!important;min-height:clamp(42px,5vw,78px)!important;padding:clamp(3px,.45vw,7px)!important;border-width:clamp(2px,.25vw,3px)!important}.world-building i{font-size:clamp(13px,1.5vw,22px)!important}.world-building>img{width:clamp(25px,3vw,48px);height:clamp(25px,3vw,48px);object-fit:contain}.world-building b{font-size:clamp(6px,.72vw,11px)!important;max-width:100%!important;white-space:normal!important}.world-building small{font-size:clamp(5px,.6vw,9px)!important}.world-character>img,.world-character>span{width:clamp(30px,3.7vw,58px)!important;height:clamp(30px,3.7vw,58px)!important;border-width:clamp(2px,.3vw,5px)!important}.world-roads{pointer-events:none}.home-clean{display:grid;grid-template-columns:auto minmax(100px,1fr) auto auto;align-items:center;gap:9px;margin:0 0 12px;padding:9px 11px;border-radius:13px;background:var(--panel2);font-size:10px}.home-clean>div{height:9px;border-radius:99px;background:color-mix(in srgb,var(--ink) 10%,transparent);overflow:hidden}.home-clean i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#ef8c76,#f1c867,#71c995)}.home-clean button{border:1px solid var(--line);border-radius:9px;background:var(--panel);padding:6px 9px;font:inherit;font-weight:800}.home-pet em{display:block;margin-top:3px;color:var(--accent);font-size:9px;font-style:normal}@media(max-width:700px){.map-card #map,.world-map,.world-map.edit-mode{aspect-ratio:16/9!important;min-height:0!important}.world-map-head{left:54px!important;top:7px!important}.world-navigator{display:flex!important;width:auto!important;max-width:calc(100% - 4px);gap:3px!important}.world-navigator select{width:auto!important;min-width:0!important;max-width:31%;padding:4px 15px 4px 4px!important;font-size:7px!important}.world-location-roster{display:none!important}.home-clean{grid-template-columns:1fr auto}.home-clean>div{grid-column:1/-1;grid-row:2}.home-clean button{grid-column:2;grid-row:1}}
 </style>
 </head>
@@ -226,8 +227,14 @@ const map={
  scrollWheelZoom:{disable(){}},doubleClickZoom:{disable(){}},touchZoom:{enable(){}},options:{},eachLayer(){},removeLayer(){}
 };
 async function ensureGoogleObservationMap(){
- window.ParallelCityVillage?.render?.();
- return{setCenter(){},setZoom(){},panTo(){},getCenter(){return{lat:()=>0,lng:()=>0}}};
+ await loadGooglePlaces();
+ const container=$('#map');if(!container)throw new Error('지도 영역을 찾지 못했습니다.');
+ if(googleObservationMap&&!container.querySelector('.gm-style'))googleObservationMap=null;
+ if(!googleObservationMap){
+  container.innerHTML='';
+  googleObservationMap=new google.maps.Map(container,{center:DEFAULT_CENTER,zoom:14,mapTypeId:'roadmap',streetViewControl:false,mapTypeControl:false,fullscreenControl:false,gestureHandling:'greedy'});
+ }
+ return googleObservationMap;
 }
 function markerIcon(){return null}
 function pseudoCoord(c,i){let base=c.location||{lat:37.2516,lng:127.0711};let seed=[...c.id].reduce((a,x)=>a+x.charCodeAt(0),0);return[base.lat+Math.sin(seed+i)*.008,base.lng+Math.cos(seed*.7+i)*.01]}
@@ -248,8 +255,8 @@ function renderAll(){renderCharacters();renderRelations();renderRoutine();render
 const GOOGLE_KEY_STORAGE='lifelog_google_maps_api_key';
 let googlePlacesReady=null;
 function sharedGoogleKey(){const key=String(window.PARALLEL_CITY_CONFIG?.googleMapsApiKey||'').trim();return key&&!key.includes('여기에_')?key:''}
-function getGoogleKey(){return''}
-function isSharedGoogleKey(){return false}
+function getGoogleKey(){return sharedGoogleKey()||String(localStorage.getItem(GOOGLE_KEY_STORAGE)||'').trim()}
+function isSharedGoogleKey(){return Boolean(sharedGoogleKey())}
 const PLACE_USAGE_STORAGE='parallel_city_place_usage_v1';
 function placeQuotaConfig(){return{daily:Math.max(1,Number(window.PARALLEL_CITY_CONFIG?.dailyFreePlaceSearches)||20),interval:Math.max(0,Number(window.PARALLEL_CITY_CONFIG?.minPlaceSearchIntervalMs)||30000)}}
 function placeUsage(){const today=new Date().toLocaleDateString('sv-SE'),raw=JSON.parse(localStorage.getItem(PLACE_USAGE_STORAGE)||'null');return raw?.date===today?raw:{date:today,count:0,lastCall:0}}
@@ -257,7 +264,19 @@ function updatePlaceUsageStatus(){const el=$('#apiUsageStatus');if(!el)return;co
 function consumePlaceQuota(){const u=placeUsage(),q=placeQuotaConfig(),now=Date.now(),wait=q.interval-(now-u.lastCall);if(u.count>=q.daily)return{ok:false,message:`오늘의 무료 실제 장소 검색 ${q.daily}회를 모두 사용했어요.`};if(wait>0)return{ok:false,message:`너무 빠르게 다시 불렀어요. ${Math.ceil(wait/1000)}초 뒤에 검색해 주세요.`};u.count++;u.lastCall=now;localStorage.setItem(PLACE_USAGE_STORAGE,JSON.stringify(u));updatePlaceUsageStatus();return{ok:true}}
 function updateGoogleStatus(text,ok=false){const el=$('#googleApiStatus');if(el){el.textContent=text;el.className=ok?'api-ok':'api-bad'}const msg=$('#googleApiMessage');if(msg){msg.textContent=text;msg.className='meta '+(ok?'api-ok':'api-bad')}}
 function loadGooglePlaces(){
- return Promise.resolve(null);
+ if(window.google?.maps?.importLibrary)return Promise.resolve(window.google.maps);
+ if(googlePlacesReady)return googlePlacesReady;
+ const key=getGoogleKey();if(!key)return Promise.reject(new Error('설정에서 Google Maps API 키를 연결해 주세요.'));
+ googlePlacesReady=new Promise((resolve,reject)=>{
+  const old=document.querySelector('script[data-parallel-google]');if(old)old.remove();
+  const callback=`parallelGoogleReady_${Date.now()}`;
+  window[callback]=()=>{delete window[callback];resolve(window.google.maps)};
+  const script=document.createElement('script');script.dataset.parallelGoogle='1';script.async=true;
+  script.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places,marker&language=ko&region=KR&callback=${callback}`;
+  script.onerror=()=>{delete window[callback];googlePlacesReady=null;reject(new Error('Google 지도 스크립트를 불러오지 못했습니다.'))};
+  document.head.appendChild(script);
+ });
+ return googlePlacesReady;
 }
 let lastActivityPhotoKey='';
 async function updateCurrentPlacePhoto(event){
@@ -461,7 +480,9 @@ let cloudUser=null,cloudDb=null,syncTimer=0,syncing=false,cloudUnsubscribe=null;
 const setSyncStatus=(text,bad=false)=>{if(syncStatus){syncStatus.textContent=text;syncStatus.style.color=bad?'var(--danger)':''}};
 function applyCloudPayload(payload,userId){
  try{
+  const selectedId=state.activeId;
   const incoming=JSON.parse(payload);
+  if(incoming.characters?.some(character=>character.id===selectedId))incoming.activeId=selectedId;
   incoming.cloudOwnerUid=userId;
   state=incoming;
   localStorage.setItem('parallelCityV2',JSON.stringify(incoming));
@@ -1042,8 +1063,8 @@ if(firebaseReady){
  setInterval(ensureEveryCharacterHasToday,60000);
 })();
 </script>
-<script src="./house-v43.js?v=20260730-v43"></script>
-<script src="./home-v43.js?v=20260730-v43"></script>
+<script src="./house-v44.js?v=20260730-v44"></script>
+<script src="./home-v44.js?v=20260730-v44"></script>
 <script>
 const v31OriginalCurrentEvent=currentEvent;
 currentEvent=function(character,minute){
@@ -1070,6 +1091,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   });
 }
 </script>
-<script src="./world-v43.js?v=20260730-v43"></script>
-<script src="./stability-v43.js?v=20260730-v43"></script>
+<script src="./google-bridge-v44.js?v=20260730-v44"></script>
+<script src="./world-v44.js?v=20260730-v44"></script>
+<script src="./stability-v44.js?v=20260730-v44"></script>
 </body></html>
