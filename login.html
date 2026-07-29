@@ -29,6 +29,7 @@
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import{getFirestore,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const status=document.querySelector('#status');
 const button=document.querySelector('#googleLogin');
@@ -57,6 +58,7 @@ if(!ready){
   try{
     const app=initializeApp(config);
     const auth=getAuth(app);
+    const database=getFirestore(app);
     const provider=new GoogleAuthProvider();
     auth.languageCode='ko';
 
@@ -73,8 +75,9 @@ if(!ready){
       }catch(error){showError(error)}
     };
     logout.onclick=()=>signOut(auth);
-    onAuthStateChanged(auth,user=>{
+    onAuthStateChanged(auth,async user=>{
       if(user){
+        try{const ref=doc(database,'users',user.uid),snapshot=await getDoc(ref);if(!snapshot.data()?.consent?.acceptedAt)await setDoc(ref,{consent:{termsVersion:'2026-07-29',privacyVersion:'2026-07-29',acceptedAt:serverTimestamp()}},{merge:true})}catch(error){showError(error);return}
         const saved={uid:user.uid,name:user.displayName||'',email:user.email||'',photo:user.photoURL||''};
         localStorage.setItem('parallelCityAuthUser',JSON.stringify(saved));
         box.style.display='flex';

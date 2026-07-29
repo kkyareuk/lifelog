@@ -575,7 +575,8 @@ if(firebaseReady){
   character.bedCount=Math.max(1,Number(character.bedCount)||1);
   character.sleepArrangement=character.sleepArrangement||'oneBed';
   character.pet=character.pet||'none';
-  character.petBreed=character.petBreed||'mixed';
+  character.dogBreed=character.dogBreed||character.petBreed||'mixed';
+  character.catBreed=character.catBreed||'korean';
   character.petColor=character.petColor||'brown';
  }
  if(!window.PARALLEL_CITY_HAD_LOCAL_DATA){
@@ -590,10 +591,10 @@ if(firebaseReady){
    const home=source.home||a.home||b.home||'',layout=source.homeLayout||a.homeLayout||b.homeLayout||'apartmentA';
    const beds=Number(source.bedCount)||Math.max(Number(a.bedCount)||1,Number(b.bedCount)||1);
    const sleep=source.sleepArrangement||a.sleepArrangement||b.sleepArrangement||'oneBed';
-   const pet=preferredId?source.pet:(a.pet!=='none'?a.pet:(b.pet||'none')),petBreed=source.petBreed||a.petBreed||b.petBreed||'mixed',petColor=source.petColor||a.petColor||b.petColor||'brown';
+   const pet=preferredId?source.pet:(a.pet!=='none'?a.pet:(b.pet||'none')),dogBreed=source.dogBreed||a.dogBreed||b.dogBreed||'mixed',catBreed=source.catBreed||a.catBreed||b.catBreed||'korean',petColor=source.petColor||a.petColor||b.petColor||'brown';
    [a,b].forEach(c=>{
     if(c.home!==home||c.homeLayout!==layout||c.homeType!==layout||c.bedCount!==beds||c.sleepArrangement!==sleep||c.pet!==pet)changed=true;
-    Object.assign(c,{home,homeLayout:layout,homeType:layout,bedCount:beds,sleepArrangement:sleep,pet,petBreed,petColor});
+    Object.assign(c,{home,homeLayout:layout,homeType:layout,bedCount:beds,sleepArrangement:sleep,pet,dogBreed,catBreed,petColor});
    });
   });
   if(changed){state.cloudUpdatedAt=Date.now();localStorage.setItem('parallelCityV2',JSON.stringify(state));window.queueParallelCityCloudSync?.()}
@@ -609,13 +610,14 @@ if(firebaseReady){
   select.previousElementSibling.textContent='집 평면도';
   select.innerHTML='<option value="studio">원룸</option><option value="apartmentA">아파트 A형</option><option value="apartmentB">아파트 B형</option><option value="mansion">대저택</option>';
   select.parentElement.insertAdjacentHTML('afterend','<div><label>침대 개수</label><select id="charBedCount"><option value="1">1개</option><option value="2">2개</option><option value="3">3개</option><option value="4">4개</option><option value="5">5개</option></select></div><div><label>잠자리 구성</label><select id="charSleepArrangement"><option value="oneBed">한 방 · 한 침대</option><option value="sameRoom">한 방 · 각자 침대</option><option value="separateRooms">각방 사용</option></select></div>');
-  const pet=document.querySelector('#charPet');pet?.parentElement.insertAdjacentHTML('afterend','<div><label>강아지 종류</label><select id="charPetBreed"><option value="mixed">믹스견</option><option value="maltese">말티즈</option><option value="poodle">푸들</option><option value="retriever">리트리버</option><option value="shiba">시바견</option><option value="corgi">웰시코기</option><option value="jindo">진돗개</option></select></div><div><label>반려동물 색</label><select id="charPetColor"><option value="brown">갈색</option><option value="white">흰색</option><option value="black">검은색</option><option value="gray">회색</option><option value="orange">치즈색</option><option value="tuxedo">턱시도</option><option value="calico">삼색</option></select></div>');
+  const pet=document.querySelector('#charPet');pet?.parentElement.insertAdjacentHTML('afterend','<div id="dogBreedField"><label>강아지 종류</label><select id="charDogBreed"><option value="mixed">믹스견</option><option value="maltese">말티즈</option><option value="poodle">푸들</option><option value="retriever">리트리버</option><option value="shiba">시바견</option><option value="corgi">웰시코기</option><option value="jindo">진돗개</option></select></div><div id="catBreedField"><label>고양이 종류</label><select id="charCatBreed"><option value="korean">코리안 쇼트헤어</option><option value="persian">페르시안</option><option value="ragdoll">랙돌</option><option value="siamese">샴</option><option value="british">브리티시 쇼트헤어</option><option value="mainecoon">메인쿤</option><option value="scottish">스코티시 폴드</option></select></div><div><label>반려동물 색</label><select id="charPetColor"><option value="brown">갈색</option><option value="white">흰색</option><option value="black">검은색</option><option value="gray">회색</option><option value="orange">치즈색</option><option value="tuxedo">턱시도</option><option value="calico">삼색</option></select></div>');
+  const togglePetFields=()=>{const type=pet.value;document.querySelector('#dogBreedField').style.display=type==='dog'?'block':'none';document.querySelector('#catBreedField').style.display=type==='cat'?'block':'none';document.querySelector('#charPetColor').parentElement.style.display=type==='none'?'none':'block'};pet?.addEventListener('change',togglePetFields);togglePetFields();
  }
  installHomeControls();
  const previousFill=fillForm;
- fillForm=function(){previousFill();installHomeControls();const c=active();migrateHomeFields(c);$('#charHomeType').value=c.homeLayout;$('#charBedCount').value=String(c.bedCount);$('#charSleepArrangement').value=c.sleepArrangement;if($('#charPetBreed'))$('#charPetBreed').value=c.petBreed;if($('#charPetColor'))$('#charPetColor').value=c.petColor};
+ fillForm=function(){previousFill();installHomeControls();const c=active();migrateHomeFields(c);$('#charHomeType').value=c.homeLayout;$('#charBedCount').value=String(c.bedCount);$('#charSleepArrangement').value=c.sleepArrangement;if($('#charDogBreed'))$('#charDogBreed').value=c.dogBreed;if($('#charCatBreed'))$('#charCatBreed').value=c.catBreed;if($('#charPetColor'))$('#charPetColor').value=c.petColor;$('#charPet')?.dispatchEvent(new Event('change'))};
  const previousCollect=collectCharacterForm;
- collectCharacterForm=function(){const c=previousCollect();c.homeLayout=$('#charHomeType').value;c.homeType=c.homeLayout;c.bedCount=Number($('#charBedCount').value);c.sleepArrangement=$('#charSleepArrangement').value;c.petBreed=$('#charPetBreed')?.value||'mixed';c.petColor=$('#charPetColor')?.value||'brown';syncCohabitHomes(c.id);return c};
+ collectCharacterForm=function(){const c=previousCollect();c.homeLayout=$('#charHomeType').value;c.homeType=c.homeLayout;c.bedCount=Number($('#charBedCount').value);c.sleepArrangement=$('#charSleepArrangement').value;c.dogBreed=$('#charDogBreed')?.value||'mixed';c.catBreed=$('#charCatBreed')?.value||'korean';c.petColor=$('#charPetColor')?.value||'brown';syncCohabitHomes(c.id);return c};
  const layouts={
   studio:{label:'원룸',rooms:[['living','생활 공간',3,4,64,92],['kitchen','주방',69,4,28,42],['bath','욕실',69,48,28,48]]},
   apartmentA:{label:'아파트 A형',rooms:[['living','거실',3,4,55,50],['kitchen','주방',60,4,37,29],['entry','현관',60,35,18,19],['bath','욕실',80,35,17,19],['bedroom1','침실 1',3,56,30,40],['bedroom2','침실 2',35,56,28,40],['study','서재·취미방',65,56,32,40]]},
@@ -672,7 +674,7 @@ if(firebaseReady){
    });
    const petOwner=characters.find(c=>c.pet&&c.pet!=='none');
    if(petOwner){
-    const pet=document.createElement('div'),isDog=petOwner.pet==='dog',name=isDog?({maltese:'말티즈',poodle:'푸들',retriever:'리트리버',shiba:'시바견',corgi:'웰시코기',jindo:'진돗개',mixed:'믹스견'}[petOwner.petBreed]||'강아지'):'고양이';
+    const pet=document.createElement('div'),isDog=petOwner.pet==='dog',name=isDog?({maltese:'말티즈',poodle:'푸들',retriever:'리트리버',shiba:'시바견',corgi:'웰시코기',jindo:'진돗개',mixed:'믹스견'}[petOwner.dogBreed]||'강아지'):({korean:'코리안 쇼트헤어',persian:'페르시안',ragdoll:'랙돌',siamese:'샴',british:'브리티시 쇼트헤어',mainecoon:'메인쿤',scottish:'스코티시 폴드'}[petOwner.catBreed]||'고양이');
     pet.className='pet-marker';pet.style.cssText=`left:62%;top:45%;--pet-color:${petColors[petOwner.petColor]||petColors.brown}`;pet.innerHTML=`${isDog?'🐕':'🐈'}<small>${name}도 집에서 쉬는 중</small>`;floor.appendChild(pet);
    }
    world.appendChild(building);
@@ -763,18 +765,7 @@ if(firebaseReady){
   return relation?`cohabit-${[relation.a,relation.b].sort().join('-')}`:`solo-${character.id}`;
  }
  function renderHomeWorld(){
-  const now=new Date(),minute=now.getHours()*60+now.getMinutes(),homeCharacters=state.characters.filter(character=>characterHomeState(character,minute).home),world=$('#homeWorld');
-  if(!world)return;$('#homeClock').textContent=now.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});
-  if(!homeCharacters.length){world.innerHTML='<div class="card empty-home">아직 집에 들어온 캐릭터가 없어요.</div>';return}
-  const groups=new globalThis.Map();
-  homeCharacters.forEach(character=>{const key=homeGroupKey(character);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(character)});
-  world.innerHTML='';
-  groups.forEach(characters=>{
-   const first=characters[0],type=first.homeType||'apartment',building=document.createElement('article');building.className=`home-building ${type==='house'?'house':''}`;
-   building.innerHTML=`<div class="home-building-head"><div><h3>${type==='house'?'🏡 마을 주택':'🏢 아파트'} · ${esc(first.home||'생활권')}</h3><div class="meta">${characters.length>1?characters.map(c=>esc(c.name)).join(' · ')+' 동거 중':esc(first.name)+'의 집'}</div></div><span class="mood">${characters.length}명 귀가</span></div><div class="floorplan"><div class="room living" data-room="living"><span>거실</span></div><div class="room kitchen" data-room="kitchen"><span>부엌</span></div><div class="room bedroom" data-room="bedroom"><span>침실</span></div><div class="room study" data-room="study"><span>서재·취미방</span></div><div class="room entry" data-room="entry"><span>현관</span></div></div>`;
-   characters.forEach(character=>{const event=currentEvent(character,minute),stateInfo=homeRoomAndAction(character,event,minute,characters),room=building.querySelector(`[data-room="${stateInfo.room}"]`),theme=ensureCharTheme(character),person=document.createElement('div');person.className='home-person';person.style.setProperty('--person-color',theme.accent);person.innerHTML=`${character.photo?`<img src="${character.photo}" alt="">`:`<div class="home-avatar">${esc(character.name.slice(0,1))}</div>`}<div><b>${esc(character.name)}</b><small>${esc(stateInfo.action)}</small></div>`;room?.appendChild(person)});
-   world.appendChild(building);
-  });
+  return window.renderBlueprintHomes?.();
  }
  $('#openHomeView').onclick=()=>document.querySelector('.tab[data-view="home"]')?.click();
  document.querySelector('.tab[data-view="home"]')?.addEventListener('click',renderHomeWorld);
