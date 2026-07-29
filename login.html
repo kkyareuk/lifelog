@@ -28,7 +28,7 @@
 </main>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 
 const status=document.querySelector('#status');
@@ -58,6 +58,7 @@ if(!ready){
   try{
     const app=initializeApp(config);
     const auth=getAuth(app);
+    await setPersistence(auth,browserLocalPersistence);
     const database=getFirestore(app);
     const provider=new GoogleAuthProvider();
     auth.languageCode='ko';
