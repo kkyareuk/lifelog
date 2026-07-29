@@ -1,4 +1,4 @@
-const CACHE = 'lifelog-parallel-city-v1';
+const CACHE = 'lifelog-parallel-city-v2';
 const APP_SHELL = [
   './',
   './index.html',
