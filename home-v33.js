@@ -40,6 +40,21 @@
   if(f.includes('hobby'))a.push('취미에 푹 빠져 있는 중');
   if(f.includes('bath'))a.push('씻으며 하루를 정리하는 중');
   if(f.includes('bed'))a.push('침대에서 휴대폰을 보는 중','이불 속에서 뒹구는 중','조용히 쉬는 중');
+  if(f.includes('goods'))a.push('굿즈장을 정리하며 최애를 감상하는 중');
+  if(f.includes('bookshelf'))a.push('책장에서 읽을 책을 골라 독서하는 중');
+  if(f.includes('console'))a.push('게임에 집중하는 중');
+  if(f.includes('audio'))a.push('좋아하는 음악을 크게 듣는 중','악기를 연습하는 중');
+  if(f.includes('projector'))a.push('불을 끄고 영화를 보는 중');
+  if(f.includes('perfumeShelf'))a.push('향수를 시향하고 노트를 기록하는 중');
+  if(f.includes('easel'))a.push('그림을 그리는 중');
+  if(f.includes('camera'))a.push('사진 장비를 손질하는 중');
+  if(f.includes('wardrobe'))a.push('옷을 골라 코디해 보는 중');
+  if(f.includes('fitness'))a.push('홈 트레이닝을 하는 중');
+  if(f.includes('oven'))a.push(partner?`${partner.name}와 먹을 간식을 굽는 중`:'베이킹을 하는 중');
+  if(f.includes('displayCase'))a.push('피규어 진열장을 정리하는 중');
+  if(f.includes('costume'))a.push('코스튬을 손질하고 착용해 보는 중');
+  if(f.includes('workbench'))a.push('작업대에서 무언가 만드는 중');
+  if(f.includes('coffee'))a.push(partner?`${partner.name}의 커피도 함께 내리는 중`:'커피를 내려 마시는 중');
   return a[hash(`${c.id}-${new Date().getHours()}-${room.id}`)%Math.max(1,a.length)]||`${room.name}에서 쉬는 중`;
  }
  function person(c,text){return`<div class="home-person" style="--person:${esc(c.theme||'#6f7cff')}">${c.photo?`<img src="${c.photo}" alt="">`:`<span>${esc((c.name||'새')[0])}</span>`}<div><b>${esc(c.name)}</b><small>${esc(text)}</small></div></div>`}
@@ -49,7 +64,7 @@
  }
  function groups(){const seen=new Set(),out=[];state.characters.forEach(c=>{if(seen.has(c.id))return;const g=household(c);g.forEach(x=>seen.add(x.id));out.push(g)});return out}
  function render(){
-  const root=$('#homeBlueprints');if(!root)return;
+  const root=$('#homeBlueprints')||$('#homeWorld');if(!root)return;
   root.innerHTML=groups().map(people=>{
    const owner=people[0],list=rooms(owner),inside=people.filter(isHome);if(!inside.length)return'';
    const placed=new Map(list.map(r=>[r.id,[]]));inside.forEach(c=>{const r=assignedRoom(c,people,list);placed.get(r.id)?.push(c)});
