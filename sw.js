@@ -1,5 +1,5 @@
-const CACHE='lifelog-v40-world-20260730';
-const ASSETS=['./','./index.html','./house-v38.js','./home-v40.js','./world-v40.js','./login.html','./terms.html','./privacy.html','./social-preview.png','./manifest.webmanifest','./icons/icon-32.png','./icons/icon-192.png','./icons/icon-512.png','./icons/room-living.svg','./icons/room-kitchen.svg','./icons/room-bedroom.svg','./icons/room-bath.svg','./icons/room-study.svg'];
+const CACHE='lifelog-v41-sync-world-20260730';
+const ASSETS=['./','./index.html','./house-v41.js','./home-v41.js','./world-v41.js','./login.html','./terms.html','./privacy.html','./social-preview.png','./manifest.webmanifest','./icons/icon-32.png','./icons/icon-192.png','./icons/icon-512.png','./icons/room-living.svg','./icons/room-kitchen.svg','./icons/room-bedroom.svg','./icons/room-bath.svg','./icons/room-study.svg'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{
