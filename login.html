@@ -4,10 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>로그인 · 평행도시</title>
-<script src="./config.js?v=20260729-v23"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
+<script src="./config.js?v=20260729-v24"></script>
 <style>
 :root{--a:#6f7cff;--b:#b36cff;--ink:#202334;--muted:#73798d;--line:#e1e5ef}
-*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:radial-gradient(circle at 8% 4%,#dce2ff,transparent 34%),radial-gradient(circle at 96% 5%,#efdfff,transparent 32%),#f4f6fb}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Do Hyeon","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:radial-gradient(circle at 8% 4%,#dce2ff,transparent 34%),radial-gradient(circle at 96% 5%,#efdfff,transparent 32%),#f4f6fb}
 .card{width:min(460px,calc(100% - 28px));background:#fff;border:1px solid var(--line);border-radius:30px;padding:30px;box-shadow:0 24px 70px #31385620}.logo{width:72px;height:72px;border-radius:23px;margin:0 auto 18px;display:grid;place-items:center;color:#fff;font-weight:900;font-size:20px;background:linear-gradient(135deg,var(--a),var(--b));box-shadow:0 13px 35px #6f7cff4a}.center{text-align:center}h1{margin:0 0 8px;font-size:29px}p{color:var(--muted);font-size:13px;line-height:1.7;margin:0}.google{margin-top:22px;width:100%;border:1px solid #d9deea;background:#fff;border-radius:15px;padding:14px;display:flex;justify-content:center;align-items:center;gap:11px;font-weight:900;font-size:15px;cursor:pointer}.google:hover{background:#f7f8fc}.google:disabled{cursor:not-allowed;opacity:.55}.g{font:900 22px Arial;color:#4285f4}.status{margin-top:14px;min-height:22px;color:#db5d70;font-size:12px;line-height:1.55;text-align:center}.status.ok{color:#23845f}.user{display:none;margin-top:20px;padding:16px;border-radius:18px;background:#f5f6fb;border:1px solid var(--line);align-items:center;gap:12px}.user img{width:52px;height:52px;border-radius:50%;object-fit:cover}.user b,.user small{display:block}.user small{color:var(--muted);margin-top:4px}.actions{display:flex;gap:8px;margin-top:16px}.button{flex:1;text-decoration:none;text-align:center;border:0;border-radius:13px;padding:12px;background:linear-gradient(135deg,var(--a),var(--b));color:#fff;font-weight:900;cursor:pointer}.secondary{background:#f5f6fb;color:var(--ink);border:1px solid var(--line)}.help{margin-top:20px;padding:14px;border-radius:16px;background:#f6f4ff;border:1px solid #ded8ff;color:var(--muted);font-size:11px;line-height:1.65}
 </style>
 </head>
@@ -37,6 +40,7 @@ function showError(error){
   status.classList.remove('ok');
   const code=error?.code||'';
   if(code==='auth/unauthorized-domain')status.textContent='Firebase 콘솔 → Authentication → 설정 → 승인된 도메인에 kkyareuk.github.io를 추가해 주세요.';
+  else if(code==='auth/configuration-not-found')status.textContent='Firebase 콘솔에서 Authentication을 시작한 뒤 로그인 방법 → Google을 사용 설정하고 저장해 주세요.';
   else if(code==='auth/operation-not-allowed')status.textContent='Firebase 콘솔 → Authentication → 로그인 방법에서 Google 제공업체를 사용 설정해 주세요.';
   else if(code==='auth/popup-blocked')status.textContent='브라우저가 로그인 팝업을 막았어요. 팝업을 허용한 뒤 다시 눌러 주세요.';
   else if(code==='auth/popup-closed-by-user')status.textContent='로그인 창이 닫혔어요. 다시 시도해 주세요.';
@@ -58,8 +62,7 @@ if(!ready){
       status.classList.remove('ok');
       status.textContent='Google 로그인 창을 여는 중…';
       try{
-        if(matchMedia('(max-width: 700px)').matches)await signInWithRedirect(auth,provider);
-        else await signInWithPopup(auth,provider);
+        await signInWithPopup(auth,provider);
       }catch(error){showError(error)}
     };
     logout.onclick=()=>signOut(auth);
