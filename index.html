@@ -176,7 +176,7 @@ function currentEvent(c,nm){const past=(c.today||[]).filter(x=>mins(x.time)<=nm)
 function renderObserve(){const c=active();$('#profileName').textContent=c.name;$('#profileMeta').textContent=`${c.job} · ${incomeName(c.income)} · ${c.transport}`;$('#profileMood').textContent=c.mood;$('#portrait').innerHTML=c.photo?`<img src="${c.photo}"><span class="badge">${esc(c.home)} 생활권</span>`:`<div class="portrait-empty"><b>${esc(c.name)}</b><br>프로필 사진을 등록해 주세요</div><span class="badge">${esc(c.home)} 생활권</span>`;let list=c.today||[],now=new Date(),nm=now.getHours()*60+now.getMinutes(),visible=list.filter(x=>mins(x.time)<=nm);if(!list.length){$('#timeline').innerHTML='<div class="empty">오늘 일정을 생성해 주세요.</div>';return}if(!visible.length){$('#timeline').innerHTML='<div class="empty">아직 오늘의 생활 로그가 시작되지 않았습니다.</div>';$('#activityTitle').textContent='아직 하루를 시작하지 않음';$('#activityDetail').textContent='현재 시각 이후의 일정은 로그에 미리 표시되지 않습니다.';updateMarkers();return}let idx=visible.length-1;$('#timeline').innerHTML=visible.map((x,i)=>`<div class="event ${i===idx?'now':''} ${x.kind||''}"><time>${x.time}</time><div class="rail"></div><div><strong>${esc(x.title)}</strong><em>${esc(x.detail)}</em></div></div>`).join('');let a=visible[idx];$('#activityTitle').textContent=a.title;$('#activityDetail').textContent=a.detail;$('#mapState').textContent=a.title;$('#dayProgress').style.width=(Math.min(100,nm/1440*100))+'%';updateMarkers()}
 function incomeName(x){return({low:'빠듯함',mid:'보통 소득',upper:'여유 있음',rich:'고소득'})[x]}
 let googleObservationMap=null,markers=[],googleMarkerOverlays=[];
-const DEFAULT_CENTER={lat:37.2516,lng:127.0711};
+const DEFAULT_CENTER={lat:37.5665,lng:126.9780};
 const map={
  setView(pos,zoom=14){ensureGoogleObservationMap().then(g=>{g.setCenter({lat:+pos[0],lng:+pos[1]});g.setZoom(zoom)})},
  panTo(pos){ensureGoogleObservationMap().then(g=>g.panTo({lat:+pos[0],lng:+pos[1]}))},
@@ -680,9 +680,8 @@ if(firebaseReady){
    world.appendChild(building);
   });
  };
- window.renderBlueprintHomes=renderHomeWorld;
  const originalSetSync=window.setSyncStatus;
- document.addEventListener('DOMContentLoaded',()=>{installHomeControls();fillForm();renderAll();renderHomeWorld()});
+ document.addEventListener('DOMContentLoaded',()=>{installHomeControls();fillForm();renderAll()});
 })();
 </script>
 <script>
@@ -765,7 +764,7 @@ if(firebaseReady){
   return relation?`cohabit-${[relation.a,relation.b].sort().join('-')}`:`solo-${character.id}`;
  }
  function renderHomeWorld(){
-  return window.renderBlueprintHomes?.();
+  return window.ParallelCityHome?.render();
  }
  $('#openHomeView').onclick=()=>document.querySelector('.tab[data-view="home"]')?.click();
  document.querySelector('.tab[data-view="home"]')?.addEventListener('click',renderHomeWorld);
@@ -997,8 +996,8 @@ if(firebaseReady){
  setInterval(ensureEveryCharacterHasToday,60000);
 })();
 </script>
+<script src="./home-v32.js?v=20260730"></script>
 <script>
-if(window.renderBlueprintHomes)renderHomeWorld=window.renderBlueprintHomes;
 const v31OriginalCurrentEvent=currentEvent;
 currentEvent=function(character,minute){
  const event=v31OriginalCurrentEvent(character,minute);
@@ -1023,7 +1022,6 @@ loadGooglePlaces=async function(){
  if(!getGoogleKey())await reloadPublicConfig();
  return v31OriginalGoogleLoader();
 };
-document.querySelector('.tab[data-view="home"]')?.addEventListener('click',()=>setTimeout(()=>window.renderBlueprintHomes?.(),0));
 document.querySelector('#characterList')?.addEventListener('click',event=>{
  const orderButton=event.target.closest('.char-order button');if(orderButton)return;
  const row=event.target.closest('.char-item');if(!row)return;

@@ -1,5 +1,5 @@
-const CACHE='lifelog-v31-midnight-map-20260730';
-const ASSETS=['./','./index.html','./login.html','./terms.html','./privacy.html','./payment.html','./payment-success.html','./payment-fail.html','./social-preview.png','./manifest.webmanifest','./icons/icon-32.png','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='lifelog-v32-staging-diagnostics-20260730';
+const ASSETS=['./','./index.html','./home-v32.js','./diagnostics.html','./login.html','./terms.html','./privacy.html','./payment.html','./payment-success.html','./payment-fail.html','./social-preview.png','./manifest.webmanifest','./icons/icon-32.png','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{
