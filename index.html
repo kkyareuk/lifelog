@@ -46,6 +46,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 /* v3: compact, less intrusive map */
 .map-card{height:520px}
 @media(max-width:800px){.map-card{height:360px}.place-photo{height:105px}}
+
+.google-photo-attribution{font-size:9px;color:var(--muted);line-height:1.45;margin-top:5px}.google-photo-attribution a{color:inherit}.place-rating{display:flex;gap:8px;align-items:center;font-size:10px;color:var(--muted);margin-top:6px}.api-ok{color:var(--ok)!important}.api-bad{color:var(--danger)!important}.place-photo.real-photo{background:var(--panel2)}
 </style>
 </head>
 <body>
@@ -71,8 +73,8 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 </div></div></section>
 <section class="view" id="view-relations"><div class="card panel"><div class="section"><h3>관계 설정</h3><div class="fields"><div><label>캐릭터 A</label><select id="relA"></select></div><div><label>캐릭터 B</label><select id="relB"></select></div><div><label>관계</label><select id="relType"><option>부부</option><option>연인</option><option>가족</option><option>절친</option><option>친구</option><option>직장 동료</option><option>라이벌</option><option>혐관</option></select></div><div><label>친밀도</label><input type="range" id="relClose" min="0" max="100" value="75"></div><div><label>갈등도</label><input type="range" id="relConflict" min="0" max="100" value="20"></div><div><label>함께 사는가</label><select id="relCohabit"><option value="yes">함께 거주</option><option value="no">따로 거주</option></select></div><div><label>만날 수 있는 최대 생활반경</label><select id="relDistance"><option value="3">3km 이내</option><option value="8" selected>8km 이내</option><option value="15">15km 이내</option><option value="30">30km 이내</option><option value="999">거리 제한 없음</option></select></div><div><label>마중 빈도</label><select id="relPickupChance"><option value="35">가끔</option><option value="70" selected>자주</option><option value="100">가능하면 항상</option></select></div><div class="full"><label>실제로 적용할 관계 행동</label><div class="check-grid"><label class="check-option"><input type="checkbox" id="relPickupOvertime" checked> 야근하면 데리러 가기</label><label class="check-option"><input type="checkbox" id="relPickupRain" checked> 비 오면 데리러 가기</label><label class="check-option"><input type="checkbox" id="relMeetAfterWork" checked> 퇴근 후 함께 귀가하기</label><label class="check-option"><input type="checkbox" id="relSharedMeal" checked> 함께 식사하기</label><label class="check-option"><input type="checkbox" id="relHospital"> 아프면 병원 동행하기</label><label class="check-option"><input type="checkbox" id="relCheckHome"> 늦은 귀가 확인하기</label></div></div><div class="full"><label>관계 메모 (선택)</label><textarea id="relMemo" placeholder="설정에 참고할 짧은 메모"></textarea></div></div><div class="actions"><button class="btn" id="addRelation">관계 저장</button></div></div><div class="section"><h3>관계가 실제 생활에 미치는 영향</h3><div class="notice">선택한 행동만 실제 일정에 반영됩니다. 비가 오거나 야근이 생기면 설정에 따라 상대가 마중을 가며, 두 캐릭터의 생활반경이 너무 멀면 만남이 취소됩니다. 함께 있는 동안에는 지도 마커도 같은 위치에 표시됩니다.</div><div class="relation-grid" id="relationList" style="margin-top:12px"></div></div></div></section>
 <section class="view" id="view-routine"><div class="card panel"><div class="section"><h3>요일별 고정 루틴</h3><div class="routine-days" id="routineDays"></div><div class="routine-list" id="routineList"></div><div class="actions"><button class="btn secondary" id="addRoutine">＋ 일정 추가</button><button class="btn" id="saveRoutine">저장하고 하루 생성</button></div></div><div class="section"><h3>자율 행동 확률</h3><div class="fields"><div><label>점심 외식</label><input type="range" id="lunchChance" min="0" max="100"></div><div><label>퇴근 후 외출</label><input type="range" id="afterChance" min="0" max="100"></div><div><label>관계 행동</label><input type="range" id="relationChance" min="0" max="100"></div><div><label>우발 사건</label><input type="range" id="eventChance" min="0" max="100"></div></div></div></div></section>
-<section class="view" id="view-places"><div class="place-layout"><div class="card panel"><div class="title-row"><h3>실제 지도 기반 장소 탐색</h3><span>API 키 불필요</span></div><div class="searchbar"><input id="placeArea" placeholder="지역명: 망포역, 홍대입구역"><select id="placeCategory"><option value="restaurant">음식점</option><option value="cafe">카페</option><option value="hospital">병원</option><option value="pharmacy">약국</option><option value="books">서점·도서관</option><option value="anime">애니·굿즈</option><option value="perfume">향수·공방</option><option value="shopping">쇼핑</option><option value="park">공원</option></select><button class="btn" id="searchPlaces">주변 찾기</button></div><div class="notice" style="margin-top:10px">OpenStreetMap 공개 데이터를 사용합니다. 서버가 느리거나 검색이 제한되면 선택한 지역을 중심으로 내장 후보가 표시되며, 앱의 나머지 기능은 그대로 작동합니다.</div><div class="place-results" id="placeResults"></div></div><div class="card panel"><h3>캐릭터의 장소 후보</h3><div id="savedPlaces"></div></div></div></section>
-<section class="view" id="view-theme"><div class="card panel"><div class="section"><h3>화면 테마</h3><div class="theme-row"><div><label>밝기</label><select id="themeMode"><option value="light">라이트 모드</option><option value="dark">다크 모드</option></select></div><div><label>직접 지정한 테마색</label><input type="color" id="customColor" value="#6f7cff"></div></div><div class="subhead">빠른 테마색</div><div class="swatches" id="swatches"></div><div class="actions"><button class="btn" id="saveTheme">테마 적용</button></div></div><div class="section"><h3>데이터 백업</h3><div class="notice">업데이트 파일로 교체해도 같은 주소와 브라우저를 사용하면 기존 설정은 유지됩니다. 브라우저 데이터 삭제나 주소 변경에 대비해 백업 파일을 보관할 수 있습니다.</div><div class="backup-box" style="margin-top:12px"><button class="btn secondary" id="exportData">설정 내보내기</button><label class="btn secondary" style="cursor:pointer">설정 불러오기<input type="file" id="importData" accept="application/json" hidden></label></div></div></div></section>
+<section class="view" id="view-places"><div class="place-layout"><div class="card panel"><div class="title-row"><h3>Google Places 장소 탐색</h3><span id="googleApiStatus">연결 확인 중</span></div><div class="searchbar"><input id="placeArea" placeholder="지역명: 망포역, 홍대입구역"><select id="placeCategory"><option value="restaurant">음식점</option><option value="cafe">카페</option><option value="hospital">병원</option><option value="pharmacy">약국</option><option value="books">서점·도서관</option><option value="anime">애니·굿즈</option><option value="perfume">향수·공방</option><option value="shopping">쇼핑</option><option value="park">공원</option></select><button class="btn" id="searchPlaces">실제 장소 찾기</button></div><div class="notice" style="margin-top:10px">Google Places에서 실제 상호, 주소, 평점, 가격대와 매장 사진을 불러옵니다. 검색 결과의 사진은 Google Places 제공 사진이며 사진 제공자 표기를 함께 표시합니다.</div><div class="place-results" id="placeResults"></div></div><div class="card panel"><h3>캐릭터의 장소 후보</h3><div id="savedPlaces"></div></div></div></section>
+<section class="view" id="view-theme"><div class="card panel"><div class="section"><h3>화면 테마</h3><div class="theme-row"><div><label>밝기</label><select id="themeMode"><option value="light">라이트 모드</option><option value="dark">다크 모드</option></select></div><div><label>직접 지정한 테마색</label><input type="color" id="customColor" value="#6f7cff"></div></div><div class="subhead">빠른 테마색</div><div class="swatches" id="swatches"></div><div class="actions"><button class="btn" id="saveTheme">테마 적용</button></div></div><div class="section"><h3>Google Maps · Places API</h3><div class="notice">Google Cloud에서 <b>Maps JavaScript API</b>와 <b>Places API (New)</b>를 활성화한 키를 입력하세요. 키는 이 브라우저에만 저장되며 설정 백업 파일에는 포함되지 않습니다. GitHub Pages 주소를 HTTP 리퍼러 허용 목록에 등록해 두는 것이 안전합니다.</div><div class="fields" style="margin-top:12px"><div class="full"><label>Google Maps API 키</label><input id="googleApiKey" type="password" autocomplete="off" placeholder="AIza…"></div></div><div class="actions"><button class="btn" id="saveGoogleApi">API 연결</button><button class="btn secondary" id="removeGoogleApi">키 삭제</button><span id="googleApiMessage" class="meta"></span></div></div><div class="section"><h3>데이터 백업</h3><div class="notice">업데이트 파일로 교체해도 같은 주소와 브라우저를 사용하면 기존 설정은 유지됩니다. 브라우저 데이터 삭제나 주소 변경에 대비해 백업 파일을 보관할 수 있습니다.</div><div class="backup-box" style="margin-top:12px"><button class="btn secondary" id="exportData">설정 내보내기</button><label class="btn secondary" style="cursor:pointer">설정 불러오기<input type="file" id="importData" accept="application/json" hidden></label></div></div></div></section>
 </main></div></div><div class="toast" id="toast"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
@@ -146,13 +148,93 @@ function updateMarkers(){markers.forEach(m=>map.removeLayer(m));markers=[];const
 function scorePlace(name,c,cat){let s=45,why=[];if(c.income==='low'&&['perfume','shopping'].includes(cat)){s-=8;why.push('예산 고려')}if(c.income==='rich'&&['perfume','shopping'].includes(cat)){s+=14;why.push('소득과 잘 맞음')}if(c.interests.includes('향수')&&cat==='perfume'){s+=36;why.push('향수 관심사')}if((c.interests.includes('애니메이션')||c.hobbies.includes('덕질'))&&cat==='anime'){s+=38;why.push('덕질 관심사')}if(c.hobbies.includes('독서')&&cat==='books'){s+=30;why.push('독서 취미')}if(c.hobbies.includes('카페 탐방')&&cat==='cafe'){s+=25;why.push('카페 취미')}return{score:Math.max(1,Math.min(99,s)),why:why.join(' · ')||'생활권과 취향 기준'}}
 async function geocodeArea(area){const u='https://nominatim.openstreetmap.org/search?format=json&limit=1&accept-language=ko&q='+encodeURIComponent(area+', 대한민국');let r=await fetch(u,{headers:{'Accept':'application/json'}});if(!r.ok)throw Error();let j=await r.json();if(!j[0])throw Error();return{lat:+j[0].lat,lng:+j[0].lon}}
 function fallbackPlaces(area,cat){return(defaultPlaces[cat]||[]).map((name,i)=>({name,address:`${area} 생활권 · 공개 장소 후보`,lat:map.getCenter().lat+(i-3)*.0018,lng:map.getCenter().lng+Math.sin(i)*.0022}))}
-$('#searchPlaces').onclick=async()=>{const area=$('#placeArea').value.trim()||active().home,cat=$('#placeCategory').value;$('#placeResults').innerHTML='<div class="empty">지역을 찾는 중…</div>';let center;try{center=await geocodeArea(area);map.setView([center.lat,center.lng],15)}catch(e){center={lat:map.getCenter().lat,lng:map.getCenter().lng}}renderPlaces(fallbackPlaces(area,cat),cat)};
+$('#searchPlaces').onclick=()=>searchGooglePlaces();
 function renderPlaces(list,cat){const c=active(),box=$('#placeResults');box.innerHTML='';list.forEach(p=>{let sc=scorePlace(p.name,c,cat),el=document.createElement('div');el.className='place';el.innerHTML=`<strong>${esc(p.name)}</strong><span>${esc(p.address)}</span><div class="place-score"><b>적합도 ${sc.score}</b><span>${esc(sc.why)}</span></div><button class="btn secondary" style="width:100%;margin-top:8px">후보 저장</button>`;el.onclick=e=>{if(e.target.tagName!=='BUTTON')map.setView([p.lat,p.lng],17)};el.querySelector('button').onclick=e=>{e.stopPropagation();c.savedPlaces.push({...p,cat,score:sc.score,why:sc.why});save();renderSaved();toast('장소 후보를 저장했습니다.')};box.appendChild(el)})}
 function renderSaved(){const c=active(),box=$('#savedPlaces');box.innerHTML=c.savedPlaces.length?'':'<div class="empty">저장된 장소가 없습니다.</div>';c.savedPlaces.forEach((p,i)=>{let el=document.createElement('div');el.className='place';el.innerHTML=`<strong>${esc(p.name)}</strong><span>${esc(p.address)}<br>${esc(p.why)}</span><div class="place-score"><b>${p.score}</b><button class="icon-btn">삭제</button></div>`;el.querySelector('button').onclick=()=>{c.savedPlaces.splice(i,1);save();renderSaved()};box.appendChild(el)})}
 const sw=$('#swatches');presetColors.forEach(c=>{let b=document.createElement('button');b.className='swatch';b.style.background=c;b.onclick=()=>{$('#customColor').value=c;$$('.swatch').forEach(x=>x.classList.remove('active'));b.classList.add('active')};sw.appendChild(b)});$('#saveTheme').onclick=()=>{state.theme.mode=$('#themeMode').value;state.theme.color=$('#customColor').value;save();applyTheme();setTimeout(()=>map.invalidateSize(),100);toast('테마를 적용했습니다.')};
 $('#exportData').onclick=()=>{collectCharacterForm();save();const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`parallel-city-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);toast('백업 파일을 저장했습니다.')};
 $('#importData').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const data=JSON.parse(r.result);if(!Array.isArray(data.characters))throw Error();state=data;state.theme=state.theme||{mode:'light',color:'#6f7cff'};state.weather=state.weather||{rain:false,label:'날씨 확인 전',checkedAt:0};state.relations=(state.relations||[]).map(x=>({...x,maxDistance:x.maxDistance??8,pickupChance:x.pickupChance??70,behaviors:{pickupOvertime:true,pickupRain:true,meetAfterWork:true,sharedMeal:true,hospital:false,checkHome:false,...(x.behaviors||{})}}));save();applyTheme();renderAll();toast('백업을 불러왔습니다.')}catch(err){toast('올바른 백업 파일이 아닙니다.')}};r.readAsText(f);e.target.value=''};
 function renderAll(){renderCharacters();renderRelations();renderRoutine();renderSaved();renderObserve();updateMarkers()}
+
+
+/* ===== Google Places API integration ===== */
+const GOOGLE_KEY_STORAGE='lifelog_google_maps_api_key';
+let googlePlacesReady=null;
+function getGoogleKey(){return localStorage.getItem(GOOGLE_KEY_STORAGE)||''}
+function updateGoogleStatus(text,ok=false){const el=$('#googleApiStatus');if(el){el.textContent=text;el.className=ok?'api-ok':'api-bad'}const msg=$('#googleApiMessage');if(msg){msg.textContent=text;msg.className='meta '+(ok?'api-ok':'api-bad')}}
+function loadGooglePlaces(){
+ const key=getGoogleKey();
+ if(!key){updateGoogleStatus('API 키 미연결');return Promise.reject(new Error('Google API 키가 없습니다.'))}
+ if(window.google?.maps?.importLibrary){updateGoogleStatus('Google Places 연결됨',true);return Promise.resolve(window.google)}
+ if(googlePlacesReady)return googlePlacesReady;
+ googlePlacesReady=new Promise((resolve,reject)=>{
+  const cb='__lifelogGoogleReady'+Date.now();
+  window[cb]=()=>{delete window[cb];updateGoogleStatus('Google Places 연결됨',true);resolve(window.google)};
+  const sc=document.createElement('script');
+  sc.src=`https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&v=weekly&loading=async&callback=${cb}`;
+  sc.async=true;sc.defer=true;
+  sc.onerror=()=>{googlePlacesReady=null;updateGoogleStatus('API 연결 실패');reject(new Error('Google Maps 스크립트를 불러오지 못했습니다.'))};
+  document.head.appendChild(sc);
+ });
+ return googlePlacesReady;
+}
+function categoryQuery(area,cat){
+ const labels={restaurant:'음식점',cafe:'카페',hospital:'병원',pharmacy:'약국',books:'서점 도서관',anime:'애니메이트 애니 굿즈샵 피규어샵',perfume:'향수 매장 조향 공방',shopping:'쇼핑몰 백화점',park:'공원'};
+ return `${area} ${labels[cat]||cat}`;
+}
+function normalizeGooglePrice(level){
+ if(level==null)return '';
+ const n=typeof level==='number'?level:Number(String(level).replace(/\D/g,''));
+ return Number.isFinite(n)&&n>0?'₩'.repeat(Math.min(4,n)):String(level).replace('PRICE_LEVEL_','').replaceAll('_',' ');
+}
+function googleAttribution(photo){
+ const attrs=photo?.authorAttributions||[];
+ if(!attrs.length)return 'Google Places 사진';
+ return attrs.map(a=>a.uri?`<a href="${a.uri}" target="_blank" rel="noopener">${esc(a.displayName||'사진 제공자')}</a>`:esc(a.displayName||'사진 제공자')).join(' · ');
+}
+async function searchGooglePlaces(){
+ const area=$('#placeArea').value.trim()||active().home,cat=$('#placeCategory').value;
+ $('#placeResults').innerHTML='<div class="empty">Google Places에서 실제 장소와 사진을 찾는 중…</div>';
+ try{
+  await loadGooglePlaces();
+  const {Place}=await google.maps.importLibrary('places');
+  const request={textQuery:categoryQuery(area,cat),fields:['displayName','formattedAddress','location','photos','rating','userRatingCount','priceLevel','primaryTypeDisplayName','googleMapsURI'],language:'ko-KR',region:'kr',maxResultCount:15};
+  const response=await Place.searchByText(request);
+  const places=(response.places||[]).map((p,i)=>{
+   const photo=p.photos?.[0];
+   let photoUrl='';
+   try{photoUrl=photo?.getURI({maxWidth:900,maxHeight:520})||''}catch(e){}
+   return {name:p.displayName||'이름 없는 장소',address:p.formattedAddress||`${area} 생활권`,lat:p.location?.lat(),lng:p.location?.lng(),photo:photoUrl||PLACE_PHOTOS[cat],realPhoto:!!photoUrl,attribution:googleAttribution(photo),rating:p.rating||0,userRatingCount:p.userRatingCount||0,price:normalizeGooglePrice(p.priceLevel),type:p.primaryTypeDisplayName||'',googleMapsURI:p.googleMapsURI||''};
+  }).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng));
+  if(!places.length)throw new Error('검색 결과가 없습니다.');
+  map.setView([places[0].lat,places[0].lng],14,{animate:true});
+  renderGooglePlaces(places,cat);
+ }catch(err){
+  console.error(err);
+  updateGoogleStatus('API 확인 필요');
+  $('#placeResults').innerHTML=`<div class="notice api-bad"><b>Google Places 검색에 실패했습니다.</b><br>${esc(err.message||String(err))}<br><br>테마 탭에서 API 키를 확인하고 Maps JavaScript API와 Places API (New)가 활성화되어 있는지 확인하세요.</div>`;
+ }
+}
+function renderGooglePlaces(list,cat){
+ const c=active(),box=$('#placeResults');box.innerHTML='';
+ list.forEach(p=>{
+  const sc=scorePlace(p.name,c,cat),el=document.createElement('div');el.className='place';
+  const meta=[p.type,p.rating?`★ ${p.rating.toFixed(1)} (${p.userRatingCount.toLocaleString()}개)`:null,p.price||null].filter(Boolean).join(' · ');
+  el.innerHTML=`<div class="place-media"><img class="place-photo ${p.realPhoto?'real-photo':''}" src="${p.photo}" alt="${esc(p.name)}"><span class="place-photo-label">${p.realPhoto?'실제 매장 사진':'업종 참고 이미지'}</span></div><div class="place-body"><div class="place-kicker">Google Places · ${esc(c.home||'생활권')} 추천</div><strong>${esc(p.name)}</strong><span>${esc(p.address)}</span>${meta?`<div class="place-rating">${esc(meta)}</div>`:''}<div class="place-score"><b>캐릭터 적합도 ${sc.score}</b><span>${esc(sc.why)}</span></div><div class="google-photo-attribution">${p.attribution}</div><div class="actions"><button class="btn secondary save-place">후보 저장</button>${p.googleMapsURI?`<a class="btn secondary" href="${p.googleMapsURI}" target="_blank" rel="noopener" style="text-decoration:none">Google 지도</a>`:''}</div></div>`;
+  el.querySelector('img').onerror=e=>{e.currentTarget.src=PLACE_PHOTOS[cat];e.currentTarget.classList.remove('real-photo')};
+  el.onclick=e=>{if(!e.target.closest('button,a'))map.setView([p.lat,p.lng],16,{animate:true})};
+  el.querySelector('.save-place').onclick=e=>{e.stopPropagation();c.savedPlaces.push({...p,cat,score:sc.score,why:sc.why});save();renderSaved();toast('실제 장소 후보를 저장했습니다.')};
+  box.appendChild(el);
+ });
+}
+function initGoogleApiControls(){
+ const input=$('#googleApiKey');if(!input)return;
+ input.value=getGoogleKey();
+ $('#saveGoogleApi').onclick=async()=>{const key=input.value.trim();if(!key){toast('API 키를 입력해 주세요.');return}localStorage.setItem(GOOGLE_KEY_STORAGE,key);googlePlacesReady=null;updateGoogleStatus('연결 중…');try{await loadGooglePlaces();toast('Google Places API가 연결되었습니다.')}catch(e){toast('연결에 실패했습니다. API 설정을 확인해 주세요.')}};
+ $('#removeGoogleApi').onclick=()=>{localStorage.removeItem(GOOGLE_KEY_STORAGE);input.value='';googlePlacesReady=null;updateGoogleStatus('API 키 미연결');toast('저장된 API 키를 삭제했습니다.')};
+ if(getGoogleKey())loadGooglePlaces().catch(()=>{});else updateGoogleStatus('API 키 미연결');
+}
+setTimeout(initGoogleApiControls,0);
 
 /* ===== v3 behavior overrides ===== */
 const PLACE_PHOTOS={
@@ -198,7 +280,7 @@ markerIcon=function(c){const t=ensureCharTheme(c);let html=c.photo?`<div class="
 map.scrollWheelZoom.disable();map.doubleClickZoom.disable();map.touchZoom.enable();map.options.zoomSnap=1;map.eachLayer(layer=>{if(layer instanceof L.TileLayer)map.removeLayer(layer)});L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Tiles © Esri',crossOrigin:true}).addTo(map);
 updateMarkers=function(){markers.forEach(m=>map.removeLayer(m));markers=[];const nm=new Date().getHours()*60+new Date().getMinutes();const occupied=new Map();state.characters.forEach((c,i)=>{const e=currentEvent(c,nm);let pos=e?.loc?[e.loc.lat,e.loc.lng]:pseudoCoord(c,i);if(e?.sharedId&&occupied.has(e.sharedId))pos=occupied.get(e.sharedId);else if(e?.sharedId)occupied.set(e.sharedId,pos);const m=L.marker(pos,{icon:markerIcon(c),zIndexOffset:c.id===active().id?500:0}).addTo(map).bindPopup(`<b>${esc(c.name)}</b><br>${esc(e?.title||'생활 중')}${e?.togetherWith?'<br>함께 있는 중':''}`);m.on('click',()=>{state.activeId=c.id;save();applyActiveCharacterTheme();renderAll();map.setView(pos,14)});markers.push(m)});const c=active(),e=currentEvent(c,nm),pos=e?.loc?[e.loc.lat,e.loc.lng]:pseudoCoord(c,state.characters.indexOf(c));map.panTo(pos,{animate:true})}
 fallbackPlaces=function(area,cat){let names=areaCatalog(area,cat);if(!names.length)names=(defaultPlaces[cat]||[]);return names.map((name,i)=>({name,address:`${area} 생활권 · ${cat==='restaurant'?'식당':cat==='cafe'?'카페':'공개 장소'}`,lat:map.getCenter().lat+(i-(names.length-1)/2)*.0014,lng:map.getCenter().lng+Math.sin(i*1.7)*.0018,photo:PLACE_PHOTOS[cat]}))}
-renderPlaces=function(list,cat){const c=active(),box=$('#placeResults');box.innerHTML='';list.forEach(p=>{let sc=scorePlace(p.name,c,cat),el=document.createElement('div');el.className='place';el.innerHTML=`<div class="place-media"><img class="place-photo" src="${p.photo||PLACE_PHOTOS[cat]}" alt=""><span class="place-photo-label">매장 분위기 참고 이미지</span></div><div class="place-body"><div class="place-kicker">${esc(c.home||'생활권')} 추천</div><strong>${esc(p.name)}</strong><span>${esc(p.address)}</span><div class="place-score"><b>적합도 ${sc.score}</b><span>${esc(sc.why)}</span></div><button class="btn secondary" style="width:100%;margin-top:8px">후보 저장</button></div>`;el.onclick=e=>{if(e.target.tagName!=='BUTTON')map.setView([p.lat,p.lng],15)};el.querySelector('button').onclick=e=>{e.stopPropagation();c.savedPlaces.push({...p,cat,score:sc.score,why:sc.why});save();renderSaved();toast('구체적인 장소 후보를 저장했습니다.')};box.appendChild(el)})}
+renderPlaces=function(list,cat){const c=active(),box=$('#placeResults');box.innerHTML='';list.forEach(p=>{let sc=scorePlace(p.name,c,cat),el=document.createElement('div');el.className='place';el.innerHTML=`<div class="place-media"><img class="place-photo" src="${p.photo||PLACE_PHOTOS[cat]}" alt=""><span class="place-photo-label">업종 참고 이미지</span></div><div class="place-body"><div class="place-kicker">${esc(c.home||'생활권')} 추천</div><strong>${esc(p.name)}</strong><span>${esc(p.address)}</span><div class="place-score"><b>적합도 ${sc.score}</b><span>${esc(sc.why)}</span></div><button class="btn secondary" style="width:100%;margin-top:8px">후보 저장</button></div>`;el.onclick=e=>{if(e.target.tagName!=='BUTTON')map.setView([p.lat,p.lng],15)};el.querySelector('button').onclick=e=>{e.stopPropagation();c.savedPlaces.push({...p,cat,score:sc.score,why:sc.why});save();renderSaved();toast('구체적인 장소 후보를 저장했습니다.')};box.appendChild(el)})}
 const oldRenderObserve=renderObserve;renderObserve=function(){applyActiveCharacterTheme();oldRenderObserve();const c=active(),t=ensureCharTheme(c);$('#profileMood').style.color=t.accent;$('#profileMood').style.borderColor=t.accent;$('#portrait').style.background=`linear-gradient(135deg,${t.accent}33,${t.secondary}2a)`}
 const oldRenderAll=renderAll;renderAll=function(){applyActiveCharacterTheme();oldRenderAll()}
 
