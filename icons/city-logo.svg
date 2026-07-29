@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 112" role="img" aria-label="평행도시">
+  <g fill="#20232a">
+    <path d="M8 94h112v8H8z"/>
+    <path d="M16 53 40 40v54H16zm32-29 25 15v55H48zm33 21 27 13v36H81z"/>
+  </g>
+  <g fill="#fff">
+    <path d="M24 58h7v8h-7zm0 15h7v8h-7zm12-22h6v9h-6zm20-14h7v10h-7zm0 18h7v10h-7zm0 18h7v10h-7zm13-26h7v10h-7zm0 18h7v10h-7zm20-7h7v8h-7zm0 15h7v8h-7zm11-10h5v8h-5z"/>
+  </g>
+  <path d="M5 103c22-8 42-8 59 0s37 8 59 0" fill="none" stroke="#20232a" stroke-width="5" stroke-linecap="round"/>
+</svg>
