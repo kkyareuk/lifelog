@@ -50,6 +50,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1
 .google-photo-attribution{font-size:9px;color:var(--muted);line-height:1.45;margin-top:5px}.google-photo-attribution a{color:inherit}.place-rating{display:flex;gap:8px;align-items:center;font-size:10px;color:var(--muted);margin-top:6px}.api-ok{color:var(--ok)!important}.api-bad{color:var(--danger)!important}.place-photo.real-photo{background:var(--panel2)}
 .logo h1,.profile h2,.observe-character-card strong,.sidebar h3,.panel h3,.activity h3,.tab,.btn,.api-guide summary{font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-weight:900;letter-spacing:-.035em}.logo h1{font-size:25px;letter-spacing:-.06em}.logo p{font-weight:800;letter-spacing:-.02em}.tab,.btn{font-weight:800}.sigil{font-family:"Arial Black","Malgun Gothic",sans-serif}
 .observe-character-picker{display:flex;gap:10px;overflow-x:auto;padding:3px 3px 14px;scrollbar-width:thin;min-height:78px}.observe-character-card{min-width:220px;display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(145deg,var(--panel),color-mix(in srgb,var(--card-accent) 7%,var(--panel)));color:var(--ink);box-shadow:0 8px 22px color-mix(in srgb,var(--ink) 7%,transparent);text-align:left;transition:.18s;position:relative}.observe-character-card:hover{transform:translateY(-2px) rotate(-.3deg)}.observe-character-card.active{border-color:var(--card-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--card-accent) 16%,transparent),0 10px 25px color-mix(in srgb,var(--card-accent) 18%,transparent)}.observe-character-card .avatar{width:52px;height:52px;--char-ring:var(--card-ring)}.observe-character-card strong{display:block;font-size:16px}.observe-character-card small{display:block;color:var(--muted);font-size:9px;margin-top:3px}.observe-order{display:flex;gap:4px}.observe-order button{width:30px;height:30px;padding:0;border-radius:9px}.drag-grip{color:var(--muted);font-size:18px;cursor:grab;padding:8px 2px}.dragging{opacity:.42}.drag-over{outline:2px dashed var(--card-accent,var(--accent));outline-offset:2px}.char-item{cursor:pointer}.char-order{display:flex!important;flex-direction:row!important;gap:4px!important}.char-order:before{display:none}.char-order button{min-width:30px!important;padding:6px!important}.api-guide{margin-top:10px;border:1px solid var(--line);border-radius:17px;background:var(--panel2);padding:13px}.api-guide summary{cursor:pointer;font-size:16px;color:var(--accent)}.api-guide ol{padding-left:20px;color:var(--muted);font-size:11px;line-height:1.75}.api-guide a{color:var(--accent)}.referrer-box{display:flex;gap:8px;align-items:center;padding:9px;border-radius:11px;background:var(--panel);border:1px solid var(--line)}.referrer-box code{flex:1;overflow-wrap:anywhere;font-size:10px}.google-avatar-marker{width:54px;height:54px;border-radius:50%;border:4px solid var(--marker-color,#6f7cff);background:white;box-shadow:0 6px 18px #0006;overflow:hidden;display:grid;place-items:center;font:900 18px "Malgun Gothic",sans-serif;color:white;transform:translate(-50%,-50%)}.google-avatar-marker img{width:100%;height:100%;object-fit:cover;display:block}.map-loading{height:100%;display:grid;place-items:center;text-align:center;color:var(--muted);font-weight:800;padding:30px;background:linear-gradient(135deg,#eef3f2,#dfe9e7)}.map-loading code{display:block;margin-top:8px;font-size:10px;color:var(--danger);max-width:600px;overflow-wrap:anywhere}@media(max-width:700px){.observe-character-card{min-width:195px;grid-template-columns:44px 1fr auto}.observe-character-card .avatar{width:44px;height:44px}.char-item{grid-template-columns:47px 1fr!important}.char-order,.char-item .open{grid-row:2;grid-column:auto}.char-order{grid-column:1/3;justify-content:flex-end}}
+.character-theme-preview{background:linear-gradient(135deg,color-mix(in srgb,var(--char-accent) 15%,var(--panel2)),color-mix(in srgb,var(--char-secondary) 17%,var(--panel2)))!important;border-color:color-mix(in srgb,var(--char-accent) 30%,var(--line))!important}.character-theme-preview .mini-orb{background:linear-gradient(135deg,var(--char-accent),var(--char-secondary))!important}input[type="color"]{display:block;width:100%!important;height:48px!important;min-height:48px;padding:4px!important;border-radius:13px;cursor:pointer}.google-avatar-marker{position:absolute!important;width:62px!important;height:62px!important;min-width:62px!important;padding:0!important;border-width:5px!important;z-index:2147483000!important;pointer-events:auto!important;cursor:pointer!important;transform:translate(-50%,-50%)!important}.google-avatar-marker img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:50%!important}
 </style>
 </head>
 <body>
@@ -444,6 +445,86 @@ tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
  window.addEventListener('load',()=>{recoverFirstLoad();setTimeout(recoverFirstLoad,800)});
  window.addEventListener('pageshow',()=>setTimeout(recoverFirstLoad,120));
  window.__parallelCityRecover=recoverFirstLoad;
+})();
+</script>
+<script>
+/* ===== v16: immediate character theme + projection based avatar markers ===== */
+(function(){
+ let markerGeneration=0;
+ function themeColorsFromControls(){
+  const character=active(),theme=ensureCharTheme(character);
+  const accent=document.querySelector('#charAccent')?.value||theme.accent;
+  const secondary=document.querySelector('#charSecondary')?.value||theme.secondary||accent;
+  const ring=document.querySelector('#charRing')?.value||theme.ring||'#ffffff';
+  return{character,theme,accent,secondary,ring};
+ }
+ function applyThemeImmediately(saveValue=true){
+  const {character,theme,accent,secondary,ring}=themeColorsFromControls();
+  theme.accent=accent;theme.secondary=secondary;theme.ring=ring;theme.useSecondary=true;
+  character.theme=theme;
+  const dark=state.theme.mode==='dark',shownAccent=dark?shadeCharacterColor(accent,.68):accent,shownSecondary=dark?shadeCharacterColor(secondary,.58):secondary;
+  const root=document.documentElement;
+  root.style.setProperty('--accent',shownAccent);root.style.setProperty('--accent2',shownSecondary);
+  root.style.setProperty('--char-accent',shownAccent);root.style.setProperty('--char-secondary',shownSecondary);root.style.setProperty('--char-ring',ring);
+  const preview=document.querySelector('#charThemePreview');
+  if(preview){preview.style.setProperty('--char-accent',shownAccent);preview.style.setProperty('--char-secondary',shownSecondary)}
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',shownAccent);
+  if(saveValue)save();
+ }
+ function bindImmediateTheme(){
+  const secondaryToggle=document.querySelector('#charUseSecondary'),secondaryWrap=document.querySelector('#charSecondaryWrap');
+  if(secondaryToggle){secondaryToggle.checked=true;secondaryToggle.closest('label')?.setAttribute('hidden','');}
+  if(secondaryWrap)secondaryWrap.style.display='block';
+  ['charAccent','charSecondary','charRing'].forEach(id=>{
+   const input=document.getElementById(id);if(!input||input.dataset.instantTheme)return;
+   input.dataset.instantTheme='1';
+   input.addEventListener('input',()=>{applyThemeImmediately();updateMarkers();renderObservationBar?.()});
+   input.addEventListener('change',()=>{applyThemeImmediately();renderAll()});
+  });
+  applyThemeImmediately(false);
+ }
+ let CharacterProjectionOverlay=null;
+ function projectionOverlayClass(){
+  if(CharacterProjectionOverlay)return CharacterProjectionOverlay;
+  CharacterProjectionOverlay=class extends google.maps.OverlayView{
+  constructor(position,character,index,generation){super();this.position=new google.maps.LatLng(position.lat,position.lng);this.character=character;this.index=index;this.generation=generation}
+  onAdd(){
+   const c=this.character,t=ensureCharTheme(c),secondary=t.secondary||t.accent;
+   this.el=document.createElement('button');this.el.type='button';this.el.className='google-avatar-marker';
+   this.el.title=`${c.name} 위치`;this.el.setAttribute('aria-label',`${c.name} 위치`);
+   this.el.style.setProperty('--marker-color',t.ring||'#ffffff');
+   this.el.style.background=`linear-gradient(135deg,${t.accent},${secondary})`;
+   if(c.photo){const image=document.createElement('img');image.src=c.photo;image.alt='';this.el.appendChild(image)}
+   else this.el.textContent=String(c.name||'?').slice(0,1);
+   this.el.onclick=()=>focusCharacter(c,this.index);
+   this.getPanes().floatPane.appendChild(this.el);
+  }
+  draw(){
+   if(!this.el||this.generation!==markerGeneration)return;
+   const point=this.getProjection()?.fromLatLngToDivPixel(this.position);if(!point)return;
+   this.el.style.left=`${point.x}px`;this.el.style.top=`${point.y}px`;
+  }
+  onRemove(){this.el?.remove();this.el=null}
+  };return CharacterProjectionOverlay;
+ }
+ updateMarkers=async function(){
+  if(!googleObservationMap||!window.google?.maps?.OverlayView)return;
+  const generation=++markerGeneration;
+  googleMarkerOverlays.forEach(marker=>{try{marker.setMap?.(null)}catch(e){}});googleMarkerOverlays=[];
+  const now=new Date(),minute=now.getHours()*60+now.getMinutes(),shared=new globalThis.Map();
+  state.characters.forEach((character,index)=>{
+   const event=currentEvent(character,minute);let raw=event?.loc?[event.loc.lat,event.loc.lng]:pseudoCoord(character,index);
+   if(event?.sharedId&&shared.has(event.sharedId))raw=shared.get(event.sharedId);else if(event?.sharedId)shared.set(event.sharedId,raw);
+   const lat=Number(raw?.[0]),lng=Number(raw?.[1]);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+   const Overlay=projectionOverlayClass(),overlay=new Overlay({lat,lng},character,index,generation);overlay.setMap(googleObservationMap);googleMarkerOverlays.push(overlay);
+  });
+  const selected=active(),event=currentEvent(selected,minute),raw=event?.loc?[event.loc.lat,event.loc.lng]:pseudoCoord(selected,state.characters.indexOf(selected));
+  if(Number.isFinite(Number(raw?.[0]))&&Number.isFinite(Number(raw?.[1])))googleObservationMap.panTo({lat:Number(raw[0]),lng:Number(raw[1])});
+ };
+ const oldFill=fillForm;
+ fillForm=function(){oldFill();const t=ensureCharTheme(active());t.useSecondary=true;const toggle=document.querySelector('#charUseSecondary');if(toggle)toggle.checked=true;const wrap=document.querySelector('#charSecondaryWrap');if(wrap)wrap.style.display='block';bindImmediateTheme()};
+ window.addEventListener('load',()=>{bindImmediateTheme();setTimeout(()=>{bindImmediateTheme();updateMarkers()},1000)});
+ window.addEventListener('pageshow',()=>setTimeout(()=>{bindImmediateTheme();updateMarkers()},250));
 })();
 </script>
 <script>
