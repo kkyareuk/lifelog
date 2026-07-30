@@ -5,6 +5,7 @@
   const copy=v=>JSON.parse(JSON.stringify(v));
   const byId=id=>state.characters.find(c=>c.id===id);
   const selected=()=>byId(state.activeId)||state.characters[0];
+  let chosenId=state.activeId;
 
   function isolate(c){
     if(!c)return;
@@ -42,6 +43,7 @@
   }
   function chooseForEditing(c){
     if(!c)return;
+    chosenId=c.id;
     state.activeId=c.id;
     setTheme(c);
     save?.();
@@ -51,16 +53,27 @@
   }
   function chooseForObservation(c,index){
     if(!c)return;
+    chosenId=c.id;
     state.activeId=c.id;
     setTheme(c);
     save?.();
-    if(typeof focusCharacter==='function')focusCharacter(c,index);
+    const minute=new Date().getHours()*60+new Date().getMinutes();
+    const event=typeof currentEvent==='function'?currentEvent(c,minute):null;
+    const home=!event||event.home||event.kind==='home'||/집|귀가|취침|기상|하루 정리/.test(`${event.title||''} ${event.detail||''}`);
+    if(home)document.querySelector('.tab[data-view="home"]')?.click();
     else{
+      const building=window.ParallelCityVillage?.currentBuilding?.(c);
+      if(building&&state.worlds){
+        state.worlds.activeWorldId=building.worldId;
+        state.worlds.activeDistrictId=building.districtId;
+        state.worlds.activeNeighborhoodId=building.neighborhoodId;
+      }
       document.querySelector('.tab[data-view="observe"]')?.click();
       renderAll?.();
-      window.ParallelCityRoadsV47?.focusCharacter?.(c);
+      window.ParallelCityVillage?.render?.();
     }
     setTheme(c);
+    repairRows();
   }
 
   document.addEventListener('pointerdown',event=>{
@@ -115,15 +128,18 @@
   },true);
 
   function repairRows(){
+    if(chosenId&&byId(chosenId)&&state.activeId!==chosenId)state.activeId=chosenId;
+    const current=selected();
     $$('#characterList .char-item').forEach((row,i)=>{
       const c=state.characters[i];
-      if(c)row.dataset.characterId=c.id;
+      if(c){row.dataset.characterId=c.id;row.classList.toggle('active',c.id===current?.id)}
     });
     $$('#observeCharacterPicker .observe-character-card').forEach((row,i)=>{
       const c=state.characters[i];
-      if(c)row.dataset.characterId=c.id;
+      if(c){row.dataset.characterId=c.id;row.classList.toggle('active',c.id===current?.id)}
     });
-    setTheme(selected());
+    if($('#quickChar'))$('#quickChar').value=current?.id||'';
+    setTheme(current);
   }
   let timer;
   new MutationObserver(()=>{
@@ -132,4 +148,5 @@
   }).observe(document.documentElement,{subtree:true,childList:true});
   addEventListener('DOMContentLoaded',repairRows,{once:true});
   addEventListener('pageshow',repairRows);
+  setInterval(repairRows,1000);
 })();
