@@ -9,14 +9,16 @@
 
  /* 각 세부지역은 같은 비율의 숨은 도로망을 가집니다. 배경 그림 위 도로와 맞출 때 노드만 바꾸면 됩니다. */
  const ROAD_NODES=[
-  [7,18],[23,18],[40,18],[58,18],[76,18],[93,18],
-  [7,40],[23,40],[40,40],[58,40],[76,40],[93,40],
-  [7,62],[23,62],[40,62],[58,62],[76,62],[93,62],
-  [7,84],[23,84],[40,84],[58,84],[76,84],[93,84]
+  [3,89],[17,79],[31,73],[43,91],[58,84],[75,78],[94,86],
+  [6,54],[18,46],[31,41],[43,53],[56,53],[70,48],[89,61],
+  [11,34],[27,36],[38,27],[52,28],[66,30],[80,20],[96,7],[56,13]
  ];
- const ROAD_EDGES=[];
- for(let r=0;r<4;r++)for(let c=0;c<5;c++)ROAD_EDGES.push([r*6+c,r*6+c+1]);
- for(let c=0;c<6;c++)for(let r=0;r<3;r++)if(c===0||c===2||c===3||c===5)ROAD_EDGES.push([r*6+c,(r+1)*6+c]);
+ const ROAD_EDGES=[
+  [0,1],[1,2],[2,3],[3,4],[4,5],[5,6],
+  [0,7],[7,8],[8,9],[9,10],[10,11],[11,12],[12,13],[13,6],
+  [7,14],[14,15],[15,16],[16,17],[17,18],[18,19],[19,20],
+  [10,16],[11,17],[12,18],[17,21],[21,19],[4,10],[5,13]
+ ];
  function distance(a,b){return Math.hypot(a[0]-b[0],a[1]-b[1])}
  function nearestNode(x,y){let best=0,d=Infinity;ROAD_NODES.forEach((p,i)=>{const n=distance(p,[x,y]);if(n<d){d=n;best=i}});return best}
  function graph(){
@@ -48,7 +50,7 @@
   const priorBuilding=buildingForEvent(prior),endNode=nearestNode(nextBuilding.x,nextBuilding.y),startNode=priorBuilding&&priorBuilding.neighborhoodId===nextBuilding.neighborhoodId?nearestNode(priorBuilding.x,priorBuilding.y):nearestNode(4,84);
   const route=shortest(startNode,endNode),duration=travelMinutes(c,route.distance),arrival=min(next.time),departure=arrival-duration;
   if(minute<departure||minute>=arrival)return null;
-  const progress=Math.max(0,Math.min(1,(minute-departure)/duration)),point=pointOn(route.path,progress);
+  const rawProgress=Math.max(0,Math.min(1,(minute-departure)/duration)),progress=Math.floor(rawProgress*8)/8,point=pointOn(route.path,progress);
   return{...point,x:point[0],y:point[1],progress,route,duration,destination:nextBuilding,from:priorBuilding,mode:/자가용|자동차/.test(c.transport||'')?'🚗':/대중교통|버스|지하철/.test(c.transport||'')?'🚌':'🚶'};
  }
  function roadSvg(){
@@ -191,12 +193,13 @@
  function install(){
   removeObservationModeSwitch();installSeparateUploads();applyIconSources();bindSettingMode();bindTopFocus();bindMagnet();decorateWorld();
  }
- const observer=new MutationObserver(()=>requestAnimationFrame(install));
+ let observerTimer=0;
+ const observer=new MutationObserver(()=>{clearTimeout(observerTimer);observerTimer=setTimeout(install,350)});
  addEventListener('DOMContentLoaded',()=>{
   isolateCharacterArrays();migrateWorld();snapBuildings();syncSharedMeals();save?.();
   observer.observe(document.body,{subtree:true,childList:true});install();setTimeout(()=>{window.ParallelCityVillage?.render?.();install()},500);
  },{once:true});
  addEventListener('pageshow',()=>setTimeout(()=>{syncSharedMeals();install();fixHomeContradiction()},150));
- setInterval(()=>{syncSharedMeals();decorateWorld();fixHomeContradiction()},1000);
+ setInterval(()=>{syncSharedMeals();decorateWorld();fixHomeContradiction()},300000);
  window.ParallelCityRoadsV47={nodes:ROAD_NODES,edges:ROAD_EDGES,nearestNode,shortest,movementAt,focusCharacter};
 })();
