@@ -25,8 +25,8 @@
   const g=ROAD_NODES.map(()=>[]);
   ROAD_EDGES.forEach(([a,b])=>{const d=distance(ROAD_NODES[a],ROAD_NODES[b]);g[a].push([b,d]);g[b].push([a,d])});return g;
  }
- const G=graph();
  function shortest(start,end){
+  const G=graph();
   const d=ROAD_NODES.map(()=>Infinity),prev=[],open=new Set(ROAD_NODES.map((_,i)=>i));d[start]=0;
   while(open.size){let u=[...open].sort((a,b)=>d[a]-d[b])[0];open.delete(u);if(u===end)break;for(const [v,w] of G[u])if(open.has(v)&&d[u]+w<d[v]){d[v]=d[u]+w;prev[v]=u}}
   const path=[];let at=end;while(at!==undefined){path.unshift(at);if(at===start)break;at=prev[at]}return{path,distance:d[end]};
@@ -54,7 +54,7 @@
   return{...point,x:point[0],y:point[1],progress,route,duration,destination:nextBuilding,from:priorBuilding,mode:/자가용|자동차/.test(c.transport||'')?'🚗':/대중교통|버스|지하철/.test(c.transport||'')?'🚌':'🚶'};
  }
  function roadSvg(){
-  return`<svg class="parallel-road-network" viewBox="0 0 100 100" preserveAspectRatio="none">${ROAD_EDGES.map(([a,b])=>`<line x1="${ROAD_NODES[a][0]}" y1="${ROAD_NODES[a][1]}" x2="${ROAD_NODES[b][0]}" y2="${ROAD_NODES[b][1]}"/>`).join('')}</svg>`;
+  return`<svg class="parallel-road-network" viewBox="0 0 100 100" preserveAspectRatio="none">${ROAD_EDGES.map(([a,b])=>`<line x1="${ROAD_NODES[a]?.[0]??0}" y1="${ROAD_NODES[a]?.[1]??0}" x2="${ROAD_NODES[b]?.[0]??0}" y2="${ROAD_NODES[b]?.[1]??0}"/>`).join('')}</svg>`;
  }
  function avatarSource(c){return c.iconPhoto||c.photo||''}
  function avatarMarkup(c){

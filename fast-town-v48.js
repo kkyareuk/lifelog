@@ -63,7 +63,7 @@
    if(!b)return;b.userCreated=true;const p=nearestLot(b);b.x=p[0];b.y=p[1];save?.();
   },40),true);
  }
- function install(){forceVirtual();hardTheme();decorate();snapEditor();markNewBuilding()}
+ function install(){forceVirtual();hardTheme();decorate()}
  document.addEventListener('click',e=>{
   if(e.target.closest('.char-item,.observe-character-card,#quickChar,.world-character,[data-character]'))setTimeout(()=>{hardTheme();decorate()},20);
  },true);

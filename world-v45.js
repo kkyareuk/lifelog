@@ -118,7 +118,8 @@
   e.villageBuildingId=b.id;e.worldId=b.worldId;e.districtId=b.districtId;e.neighborhoodId=b.neighborhoodId;
   e.place={name:b.name,address:`${b.worldName} · ${b.districtName} · ${b.neighborhoodName}`,villageBuildingId:b.id,virtual:true};
   if(/점심|저녁|식사/.test(e.title||''))e.title=`${b.name}에서 ${/점심/.test(e.title)?'점심':'식사'}`;
-  e.detail=`${b.neighborhoodName}의 ${b.name} · ${e.detail||b.description}`;delete e.loc;return e;
+  e._baseDetail=e._baseDetail||e.detail||b.description;
+  e.detail=`${b.neighborhoodName} · ${b.name} · ${e._baseDetail}`;delete e.loc;return e;
  }
  function currentBuilding(c){
   const now=new Date(),e=typeof currentEvent==='function'?currentEvent(c,now.getHours()*60+now.getMinutes()):null;

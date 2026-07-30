@@ -18,7 +18,7 @@
  }
  const rooms=c=>Array.isArray(c.rooms)&&c.rooms.length?c.rooms:defaultRooms(c);
  const eventOf=c=>typeof currentEvent==='function'?currentEvent(c,new Date().getHours()*60+new Date().getMinutes()):null;
- function isHome(c){const e=eventOf(c);return sleepState(c).sleeping||Boolean(e&&(e.home||e.kind==='home'||e.room||/집|귀가|취침|기상|하루 정리/.test(`${e.title||''} ${e.detail||''}`)))}
+ function isHome(c){const e=eventOf(c);if(sleepState(c).sleeping)return true;if(!e)return false;return Boolean(e.home||e.kind==='home'||/집에서|귀가|취침|기상|하루 정리/.test(e.title||''))}
  function assignedRoom(c,people,list){
   const beds=list.filter(r=>r.type==='bedroom'&&(r.furniture||[]).includes('bed'));
   if(sleepState(c).sleeping){if(c.sleepArrangement==='separateRooms')return beds[people.findIndex(x=>x.id===c.id)%Math.max(1,beds.length)]||list[0];return beds[0]||list[0]}

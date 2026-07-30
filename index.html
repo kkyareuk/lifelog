@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="./daytime-avatar-v46.css?v=20260730-v46">
 <link rel="stylesheet" href="./road-life-v47.css?v=20260730-v47">
 <link rel="stylesheet" href="./fast-town-v48.css?v=20260730-v48">
+<link rel="stylesheet" href="./state-roads-v49.css?v=20260730-v49">
 <meta property="og:title" content="평행도시 · 캐릭터 생활 관찰">
 <meta property="og:description" content="창작 캐릭터들이 가상의 마을과 집에서 살아가는 모습을 관찰해 보세요.">
 <meta property="og:type" content="website">
@@ -470,7 +471,7 @@ function renderObserveCharacterPicker(){
 const renderCharactersBase=renderCharacters;renderCharacters=function(){renderCharactersBase();renderObserveCharacterPicker();$$('#characterList .char-item').forEach((el,i)=>bindCharacterDrag(el,state.characters[i]))};
 let lastMinute=-1;function tick(){let d=new Date();$('#clock').textContent=d.toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});$('#date').textContent=d.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'});if(d.getMinutes()!==lastMinute){lastMinute=d.getMinutes();renderObserve();renderObserveCharacterPicker();updateMarkers()}}
 function bootApp(){renderObserveCharacterPicker();renderAll();renderObserveCharacterPicker();const todayKey=new Date().toISOString().slice(0,10);if(!active().today.length||active().todayDate!==todayKey)generateDay();setTimeout(()=>{map.invalidateSize();renderObserveCharacterPicker()},350)}
-tick();setInterval(tick,1000);bootApp();requestAnimationFrame(()=>renderAll());
+tick();setInterval(tick,60000);bootApp();requestAnimationFrame(()=>renderAll());
 </script>
 <script type="module">
 import{initializeApp,getApps}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
@@ -1064,7 +1065,7 @@ if(firebaseReady){
  window.addEventListener('load',()=>{bindImmediateTheme();setTimeout(()=>{bindImmediateTheme();updateMarkers()},1000)});
  window.addEventListener('pageshow',()=>setTimeout(()=>{bindImmediateTheme();updateMarkers()},250));
  window.addEventListener('load',()=>setTimeout(ensureEveryCharacterHasToday,350));
- setInterval(ensureEveryCharacterHasToday,60000);
+ setInterval(ensureEveryCharacterHasToday,300000);
 })();
 </script>
 <script src="./house-v45.js?v=20260730-v45"></script>
@@ -1100,4 +1101,5 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 <script src="./daytime-avatar-v46.js?v=20260730-v46"></script>
 <script src="./road-life-v47.js?v=20260730-v47"></script>
 <script src="./fast-town-v48.js?v=20260730-v48"></script>
+<script src="./state-roads-v49.js?v=20260730-v49"></script>
 </body></html>
