@@ -1,0 +1,35 @@
+#activityPlacePhoto{display:none!important}
+
+/* 관찰 화면의 시간/위치 선택/관찰 상태가 서로 겹치지 않도록 줄을 분리합니다. */
+#observationMapCard .map-hud{
+  top:14px!important;
+  left:14px!important;
+  right:14px!important;
+  align-items:flex-start!important;
+}
+#observationMapCard .world-nav{
+  top:96px!important;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  max-width:calc(100% - 28px)!important;
+}
+#observationMapCard .map-hud .hud{
+  max-width:220px;
+  overflow-wrap:anywhere;
+}
+
+/* 각 캐릭터의 목록 테두리는 그 캐릭터 색, 전체 UI는 선택 캐릭터 색을 사용합니다. */
+#characterList .char-item,
+#observeCharacterPicker .observe-character-card{
+  border-color:color-mix(in srgb,var(--char-ring,var(--card-ring,var(--line))) 60%,var(--line));
+}
+#characterList .char-item.active,
+#observeCharacterPicker .observe-character-card.active{
+  border-color:var(--accent)!important;
+}
+
+@media(max-width:700px){
+  #observationMapCard .map-hud{position:relative!important;inset:auto!important;padding:10px!important}
+  #observationMapCard .world-nav{top:12px!important;max-width:calc(100% - 20px)!important}
+}
