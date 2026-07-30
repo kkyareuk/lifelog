@@ -1,204 +1,105 @@
-const STORAGE='parallelCityCleanV1';
-const TABS=[['observe','관찰'],['home','집'],['characters','캐릭터'],['relations','관계'],['routines','주간 루틴'],['village','마을'],['settings','설정']];
-const JOBS=['직장·학교 없음','회사원','출판 편집자','교사','대학생','의료인','연구원','요리사','미용사','예술가','자영업·직접 입력'];
-const TASTES=['아재 입맛','어린이 입맛','맵부심','한식파','면 요리 선호','디저트광','커피 못 마심','건강식 선호'];
-const INTERESTS=['향수','애니메이션','만화','게임','패션','미술','음악','영화','문구','인테리어','역사','기계'];
-const HOBBIES=['취미 없음','집에서 뒹굴기','외출 안 함','인터넷 서핑','커뮤니티 눈팅','영상 정주행','낮잠','덕질','독서','카페 탐방','쇼핑','운동','사진','전시 관람','공방 체험','산책','요리','청소','악기','식물 키우기'];
-const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
-const clone=v=>JSON.parse(JSON.stringify(v));
-const defaults=()=>({
-  version:1,activeId:null,activeTownId:'town-cozy',theme:'light',updatedAt:Date.now(),characters:[],relations:[],
-  towns:[
-    {id:'town-cozy',name:'평행마을',background:'./world-assets/cozy-town.png',roads:[[18,28],[34,44],[51,50],[68,38],[83,55],[62,77],[39,72],[18,28]],buildings:[
-      {id:'b-cafe',name:'달무리 카페',type:'카페',x:22,y:34,color:'#e7b995',icon:'☕'},
-      {id:'b-food',name:'골목 식당',type:'음식점',x:44,y:62,color:'#95d18a',icon:'🍜'},
-      {id:'b-hospital',name:'새봄 의원',type:'병원',x:67,y:35,color:'#83cad0',icon:'🏥'},
-      {id:'b-shop',name:'종이달 상점',type:'상점',x:78,y:64,color:'#c0a8df',icon:'🛍️'},
-      {id:'b-office',name:'마리나 오피스',type:'회사',x:49,y:28,color:'#91a8e8',icon:'🏢'}]},
-    {id:'town-city',name:'번화가',background:'./world-assets/downtown-town.png',roads:[[12,20],[31,31],[49,26],[69,39],[86,29],[76,64],[53,73],[29,64],[12,20]],buildings:[
-      {id:'c-mall',name:'평행 백화점',type:'쇼핑몰',x:26,y:33,color:'#e7b36f',icon:'🏬'},
-      {id:'c-cinema',name:'유성 영화관',type:'영화관',x:49,y:29,color:'#9b8bd8',icon:'🎬'},
-      {id:'c-office',name:'센트럴 오피스',type:'회사',x:72,y:39,color:'#8fa9dc',icon:'🏢'},
-      {id:'c-restaurant',name:'야경 다이닝',type:'음식점',x:68,y:68,color:'#ef9b8d',icon:'🍽️'},
-      {id:'c-park',name:'하늘 공원',type:'공원',x:34,y:68,color:'#87cc9b',icon:'🌳'}]}
-  ],homes:[]
-});
-let state=load(),activeTab='observe',draft=null,cloudUser=null,cloudDb=null,saveTimer=0;
-
-function load(){
-  try{
-    const clean=JSON.parse(localStorage.getItem(STORAGE)||'null');
-    if(clean)return normalize(clean);
-  }catch{}
-  return defaults();
-}
-function migrateCharacter(c){
-  return {id:c.id||uid(),name:c.name||'새 캐릭터',job:c.job||'직장·학교 없음',mood:c.mood||'평온함',photo:c.photo||c.image||'',icon:c.icon||c.iconImage||'',color:c.color||c.primaryColor||'#4f8c7b',wake:c.wake||c.wakeTime||'07:30',bed:c.bed||c.bedTime||'23:30',workId:c.workId||'',townId:c.townId||'town-cozy',tastes:[...(c.tastes||[])],interests:[...(c.interests||[])],hobbies:[...(c.hobbies||[])],homeId:c.homeId||''};
-}
-function normalize(s){
-  s={...defaults(),...s};
-  s.characters=(s.characters||[]).map(migrateCharacter);
-  s.activeId=s.characters.some(c=>c.id===s.activeId)?s.activeId:(s.characters[0]?.id||null);
-  s.towns=(s.towns?.length?s.towns:defaults().towns).map(t=>({...t,roads:(t.roads||[]).map(p=>[+p[0],+p[1]]),buildings:(t.buildings||[]).map(b=>({...b}))}));
-  return s;
-}
-function save(message='저장했어요'){
-  state.updatedAt=Date.now();localStorage.setItem(STORAGE,JSON.stringify(state));renderHeader();toast(message);
-  clearTimeout(saveTimer);saveTimer=setTimeout(pushCloud,900);
-}
-const active=()=>state.characters.find(c=>c.id===state.activeId)||null;
-const currentTown=()=>state.towns.find(t=>t.id===state.activeTownId)||state.towns[0];
-const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-function avatar(c,cls='avatar'){const src=c?.icon||c?.photo;return src?`<img class="${cls}" src="${src}" alt="">`:`<span class="${cls} fallback">${esc((c?.name||'새')[0])}</span>`}
-function toast(s){const el=$('#toast');el.textContent=s;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1600)}
-const $=(q,r=document)=>r.querySelector(q), $$=(q,r=document)=>[...r.querySelectorAll(q)];
-function init(){
-  $('#tabs').innerHTML=TABS.map(([id,label])=>`<button data-tab="${id}">${label}</button>`).join('');
-  $$('[data-tab]').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
-  populateStatic();bind();renderAll();initFirebase();setInterval(()=>{renderClock();if(activeTab==='observe'){renderObserve()}},60000);
-}
-function showTab(id){
-  activeTab=id;$$('.view').forEach(v=>v.classList.add('hidden'));$(`#view-${id}`).classList.remove('hidden');
-  $$('#tabs button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));
-  if(id==='characters')renderCharacterEditor();if(id==='observe')renderObserve();if(id==='home')renderHomes();if(id==='village')renderVillage();
-}
-function populateStatic(){
-  $('#charJob').innerHTML=JOBS.map(x=>`<option>${x}</option>`).join('');
-  const chips=(id,arr)=>$(id).innerHTML=arr.map(v=>`<button type="button" class="chip" data-value="${v}">${v}</button>`).join('');
-  chips('#tasteChips',TASTES);chips('#interestChips',INTERESTS);chips('#hobbyChips',HOBBIES);
-}
-function bind(){
-  $('#quickChar').onchange=e=>{selectCharacter(e.target.value,false);renderObserve()};
-  $('#observeTown').onchange=e=>{state.activeTownId=e.target.value;save('마을을 바꿨어요');renderObserve()};
-  $('#newCharacter').onclick=()=>{const c=migrateCharacter({id:uid(),name:'새 캐릭터',color:'#4f8c7b'});state.characters.push(c);state.activeId=c.id;draft=clone(c);save();renderCharacterEditor()};
-  $('#characterForm').onsubmit=e=>{e.preventDefault();commitCharacter()};
-  $('#deleteCharacter').onclick=deleteCharacter;
-  $('#charJob').onchange=()=>$('#customJobWrap').classList.toggle('hidden',$('#charJob').value!=='자영업·직접 입력');
-  $$('.chip').forEach(b=>b.onclick=()=>b.classList.toggle('on'));
-  $('#themeMode').onchange=e=>{state.theme=e.target.value;save();applyTheme()};
-  $('#exportData').onclick=exportData;$('#importData').onchange=importData;
-  $('#newTown').onclick=newTown;$('#editTown').onchange=renderVillage;$('#saveTown').onclick=saveTown;$('#addBuilding').onclick=addBuilding;
-  $('#loginBtn').onclick=()=>location.href='./login.html';
-}
-function renderAll(){applyTheme();renderHeader();showTab(activeTab);renderRelations();renderRoutines()}
-function applyTheme(){document.documentElement.classList.toggle('dark',state.theme==='dark');const c=active();document.documentElement.style.setProperty('--accent',c?.color||'#4f8c7b')}
-function renderHeader(){
-  $('#quickChar').innerHTML=state.characters.length?state.characters.map(c=>`<option value="${c.id}" ${c.id===state.activeId?'selected':''}>${esc(c.name)}</option>`).join(''):'<option>캐릭터 없음</option>';
-  $('#themeMode').value=state.theme;applyTheme();
-}
-function selectCharacter(id,focusLocation){
-  if(!state.characters.some(c=>c.id===id))return;
-  state.activeId=id;draft=clone(active());localStorage.setItem(STORAGE,JSON.stringify(state));renderHeader();
-  if(focusLocation){const ev=getCurrentEvent(active());if(ev.townId)state.activeTownId=ev.townId;showTab(ev.kind==='home'?'home':'observe')}
-  else if(activeTab==='characters')renderCharacterEditor();
-}
-function renderCharacterEditor(){
-  const list=$('#characterList');
-  list.innerHTML=state.characters.length?state.characters.map(c=>`<button class="character-row ${c.id===state.activeId?'active':''}" data-id="${c.id}" style="--character:${c.color}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(c.job)}</small></span></button>`).join(''):'<p class="muted">아직 캐릭터가 없어요.</p>';
-  $$('.character-row',list).forEach(b=>b.onclick=()=>selectCharacter(b.dataset.id,false));
-  const c=active();$('#characterForm').classList.toggle('hidden',!c);if(!c)return;draft=clone(c);
-  $('#charName').value=c.name;const known=JOBS.includes(c.job)?c.job:'자영업·직접 입력';$('#charJob').value=known;$('#charCustomJob').value=known==='자영업·직접 입력'?c.job:'';$('#customJobWrap').classList.toggle('hidden',known!=='자영업·직접 입력');
-  $('#charMood').value=c.mood;$('#charColor').value=c.color;$('#charWake').value=c.wake;$('#charBed').value=c.bed;
-  fillWorkOptions(c.workId);
-  setChipState('#tasteChips',c.tastes);setChipState('#interestChips',c.interests);setChipState('#hobbyChips',c.hobbies);
-}
-function setChipState(id,arr){$$('.chip',$(id)).forEach(b=>b.classList.toggle('on',(arr||[]).includes(b.dataset.value)))}
-function selectedChips(id){return $$('.chip.on',$(id)).map(b=>b.dataset.value)}
-function fillWorkOptions(value){
-  const opts=state.towns.flatMap(t=>t.buildings.filter(b=>['회사','학교','병원','상점','카페','음식점'].includes(b.type)).map(b=>({id:b.id,label:`${b.name} · ${t.name}`})));
-  $('#charWork').innerHTML='<option value="">없음</option>'+opts.map(o=>`<option value="${o.id}">${esc(o.label)}</option>`).join('');$('#charWork').value=value||'';
-}
-async function fileData(input){const f=input.files?.[0];if(!f)return'';if(f.size>3_500_000){toast('사진은 3.5MB 이하로 골라 주세요');return''}return await new Promise((ok,no)=>{const r=new FileReader;r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(f)})}
-async function commitCharacter(){
-  const c=active();if(!c)return;const oldId=c.id;
-  const photo=await fileData($('#charPhoto')),icon=await fileData($('#charIcon'));
-  Object.assign(c,{name:$('#charName').value.trim()||'새 캐릭터',job:$('#charJob').value==='자영업·직접 입력'?($('#charCustomJob').value.trim()||'자영업'):$('#charJob').value,mood:$('#charMood').value,color:$('#charColor').value,wake:$('#charWake').value||'07:30',bed:$('#charBed').value||'23:30',workId:$('#charWork').value,tastes:[...selectedChips('#tasteChips')],interests:[...selectedChips('#interestChips')],hobbies:[...selectedChips('#hobbyChips')]});
-  if(photo)c.photo=photo;if(icon)c.icon=icon;c.id=oldId;save('캐릭터를 저장했어요');renderAll();showTab('characters');
-}
-function deleteCharacter(){const c=active();if(!c||!confirm(`${c.name}을(를) 삭제할까요?`))return;state.characters=state.characters.filter(x=>x.id!==c.id);state.activeId=state.characters[0]?.id||null;save();renderCharacterEditor()}
-function timeNum(s){const[a,b]=String(s||'00:00').split(':').map(Number);return a*60+b}
-function getCurrentEvent(c,now=new Date()){
-  const minute=now.getHours()*60+now.getMinutes(),wake=timeNum(c.wake),bed=timeNum(c.bed);
-  if(minute<wake||minute>=bed)return{kind:'home',title:'집에서 자는 중',detail:'다음 일정 전까지 푹 쉬고 있어요.',time:c.bed};
-  const work=findBuilding(c.workId);
-  if(work&&minute>=540&&minute<720)return{kind:'place',title:`${work.b.name}에서 일하는 중`,detail:'맡은 일을 차근차근 처리하고 있어요.',townId:work.t.id,buildingId:work.b.id,time:'09:00'};
-  if(work&&minute>=720&&minute<780){const meal=nearestByType(work.t,'음식점',work.b)||work.b;return{kind:'place',title:`${meal.name}에서 점심`,detail:'근무지 가까운 곳에서 식사하고 있어요.',townId:work.t.id,buildingId:meal.id,time:'12:00'}}
-  if(work&&minute>=780&&minute<1080)return{kind:'place',title:`${work.b.name}에서 일하는 중`,detail:'오후 업무를 마무리하고 있어요.',townId:work.t.id,buildingId:work.b.id,time:'13:00'};
-  if(minute>=1080&&minute<1260){const t=work?.t||state.towns[0],b=pickLeisure(c,t);if(b)return{kind:'place',title:`${b.name} 방문`,detail:`${c.hobbies[0]||c.interests[0]||'가벼운 외출'}을 즐기는 중이에요.`,townId:t.id,buildingId:b.id,time:'18:00'}}
-  return{kind:'home',title:'집에서 생활 중',detail:homeAction(c),time:'21:00'};
-}
-function findBuilding(id){for(const t of state.towns){const b=t.buildings.find(x=>x.id===id);if(b)return{t,b}}return null}
-function nearestByType(t,type,from){return t.buildings.filter(b=>b.type===type).sort((a,b)=>dist(a,from)-dist(b,from))[0]}
-const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-function pickLeisure(c,t){const wanted=c.interests.includes('미술')?'미술관':c.hobbies.includes('카페 탐방')?'카페':c.hobbies.includes('쇼핑')?'쇼핑몰':c.hobbies.includes('산책')?'공원':'';return t.buildings.find(b=>b.type===wanted)||t.buildings.find(b=>!['회사','병원'].includes(b.type))}
-function homeAction(c){if(c.hobbies.includes('청소'))return'집 안을 정리하고 청소하는 중';if(c.hobbies.includes('요리'))return'주방에서 새로운 요리를 만드는 중';if(c.hobbies.includes('독서'))return'소파에 앉아 책을 읽는 중';return'편한 옷으로 갈아입고 쉬는 중'}
-function eventsUntilNow(c){const now=new Date(),cur=getCurrentEvent(c,now),events=[{time:c.wake,title:'기상',detail:'집에서 하루를 시작했어요.'}];if(timeNum(c.wake)<=now.getHours()*60+now.getMinutes()&&cur.title!=='기상')events.push(cur);return events}
-function renderObserve(){
-  renderClock();const c=active();$('#observerCharacters').innerHTML=state.characters.map(ch=>{const ev=getCurrentEvent(ch);return`<button class="observer-char ${ch.id===state.activeId?'active':''}" data-id="${ch.id}" style="--character:${ch.color}">${avatar(ch)}<span><b>${esc(ch.name)}</b><small>${esc(ev.title)}</small></span></button>`}).join('');
-  $$('.observer-char').forEach(b=>b.onclick=()=>selectCharacter(b.dataset.id,true));
-  $('#observeTown').innerHTML=state.towns.map(t=>`<option value="${t.id}" ${t.id===state.activeTownId?'selected':''}>${esc(t.name)}</option>`).join('');
-  renderTownCanvas();renderProfile(c);renderLifeLog(c);$('#watchingText').textContent=c?`${c.name} · ${getCurrentEvent(c).title}`:'캐릭터를 만들어 주세요';
-}
-function renderClock(){const d=new Date();if($('#clock'))$('#clock').textContent=d.toLocaleString('ko-KR',{month:'long',day:'numeric',weekday:'short',hour:'2-digit',minute:'2-digit'})}
-function renderTownCanvas(){
-  const t=currentTown(),canvas=$('#townCanvas');canvas.style.backgroundImage=`url("${t.background}")`;
-  canvas.innerHTML=t.buildings.map(b=>`<div class="building" style="left:${b.x}%;top:${b.y}%;--building:${b.color}"><span>${b.icon}</span>${esc(b.name)}<small>${esc(b.type)}</small></div>`).join('');
-  const groups={};state.characters.forEach(c=>{const ev=getCurrentEvent(c);if(ev.kind==='place'&&ev.townId===t.id)(groups[ev.buildingId]??=[]).push(c)});
-  Object.entries(groups).forEach(([bid,chars])=>{const b=t.buildings.find(x=>x.id===bid);chars.forEach((c,i)=>canvas.insertAdjacentHTML('beforeend',`<button class="world-marker ${i?'offset-'+Math.min(i,2):''}" data-id="${c.id}" style="left:${b.x}%;top:${b.y}%;--character:${c.color}">${avatar(c)}<label>${esc(c.name)}</label></button>`))});
-  $$('.world-marker',canvas).forEach(m=>m.onclick=()=>selectCharacter(m.dataset.id,true));
-}
-function renderProfile(c){
-  if(!c){$('#profileCard').innerHTML='<p>캐릭터를 먼저 만들어 주세요.</p>';return}
-  const ev=getCurrentEvent(c),hero=c.photo?`style="background-image:url('${c.photo}')"`:'';
-  $('#profileCard').innerHTML=`<div class="hero" ${hero}>${c.photo?'':`<span class="fallback">${esc(c.name)}</span>`}</div><h2>${esc(c.name)}</h2><p class="muted">${esc(c.job)} · ${esc(c.mood)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(ev.title)}</h3><p>${esc(ev.detail)}</p></div>`;
-}
-function renderLifeLog(c){$('#lifeLog').innerHTML=`<h2>오늘의 생활 로그</h2>${c?eventsUntilNow(c).map(e=>`<div class="log-item"><time>${e.time}</time><div><b>${esc(e.title)}</b><small>${esc(e.detail)}</small></div></div>`).join(''):'<p>기록이 없어요.</p>'}`}
-function renderHomes(){
-  const atHome=state.characters.filter(c=>getCurrentEvent(c).kind==='home');
-  $('#homes').innerHTML=`<article class="panel house-card"><h2>🏠 평행 하우스 <small>${atHome.length}명 귀가</small></h2><div class="rooms"><div class="room living"><b>거실</b>${atHome.map(homePerson).join('')}</div><div class="room"><b>주방</b></div><div class="room"><b>욕실</b></div><div class="room"><b>침실</b></div></div></article>`;
-}
-function homePerson(c){return`<div class="home-person" style="--character:${c.color}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(getCurrentEvent(c).detail)}</small></span></div>`}
-function renderRelations(){$('#relations').innerHTML=state.characters.map(c=>`<div class="setting-row"><b>${esc(c.name)}</b><span class="muted">개별 설정 유지</span></div>`).join('')}
-function renderRoutines(){$('#routines').innerHTML=state.characters.map(c=>`<div class="setting-row"><b>${esc(c.name)}</b><span>${c.wake} 기상 · ${c.bed} 취침</span></div>`).join('')}
-function renderVillage(){
-  $('#editTown').innerHTML=state.towns.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('');$('#editTown').value=$('#editTown').value&&state.towns.some(t=>t.id===$('#editTown').value)?$('#editTown').value:state.activeTownId;
-  const t=state.towns.find(x=>x.id===$('#editTown').value)||state.towns[0];$('#townName').value=t.name;renderTownEditor(t);renderBuildingEditor(t);
-}
-function renderTownEditor(t){
-  const el=$('#townEditor');el.style.backgroundImage=`url("${t.background}")`;
-  const lines=t.roads.slice(1).map((p,i)=>`<line x1="${t.roads[i][0]}%" y1="${t.roads[i][1]}%" x2="${p[0]}%" y2="${p[1]}%"/>`).join('');
-  el.innerHTML=`<svg class="road-svg">${lines}</svg>`+t.roads.map((p,i)=>`<button class="road-node" data-i="${i}" style="left:${p[0]}%;top:${p[1]}%" title="도로 점"></button>`).join('')+t.buildings.map(b=>`<div class="building" data-id="${b.id}" style="left:${b.x}%;top:${b.y}%;--building:${b.color}"><span>${b.icon}</span>${esc(b.name)}<small>${esc(b.type)}</small></div>`).join('');
-  $$('.road-node',el).forEach(n=>dragElement(n,(x,y)=>{t.roads[+n.dataset.i]=[x,y];renderTownEditor(t)}));
-  $$('.building',el).forEach(b=>dragElement(b,(x,y)=>{const item=t.buildings.find(v=>v.id===b.dataset.id),near=[...t.roads].sort((a,z)=>Math.hypot(a[0]-x,a[1]-y)-Math.hypot(z[0]-x,z[1]-y))[0];if(near&&Math.hypot(near[0]-x,near[1]-y)<8){x=near[0];y=near[1]}item.x=x;item.y=y;renderTownEditor(t)}));
-  el.ondblclick=e=>{const r=el.getBoundingClientRect();t.roads.push([((e.clientX-r.left)/r.width)*100,((e.clientY-r.top)/r.height)*100]);renderTownEditor(t)};
-}
-function dragElement(el,done){el.onpointerdown=e=>{e.preventDefault();el.setPointerCapture(e.pointerId);el.onpointerup=up=>{const r=el.parentElement.getBoundingClientRect();done(Math.max(2,Math.min(98,(up.clientX-r.left)/r.width*100)),Math.max(2,Math.min(98,(up.clientY-r.top)/r.height*100)));el.onpointerup=null}}}
-function renderBuildingEditor(t){$('#buildingEditor').innerHTML=t.buildings.map(b=>`<div class="setting-row"><span>${b.icon} ${esc(b.name)}</span><button class="danger" data-delete="${b.id}">삭제</button></div>`).join('');$$('[data-delete]').forEach(b=>b.onclick=()=>{t.buildings=t.buildings.filter(x=>x.id!==b.dataset.delete);renderVillage()})}
-async function saveTown(){const t=state.towns.find(x=>x.id===$('#editTown').value);t.name=$('#townName').value.trim()||'이름 없는 마을';const bg=await fileData($('#townBackground'));if(bg)t.background=bg;state.activeTownId=t.id;save('마을을 저장했어요');renderVillage()}
-function addBuilding(){const t=state.towns.find(x=>x.id===$('#editTown').value),name=prompt('건물 이름을 입력해 주세요','새 건물');if(!name)return;t.buildings.push({id:uid(),name,type:'상점',x:50,y:50,color:'#91a8e8',icon:'🏢'});renderVillage()}
-function newTown(){const t={id:uid(),name:'새 번화가',background:'./world-assets/downtown-town.png',roads:[[15,25],[35,42],[55,35],[78,55],[55,75],[28,68]],buildings:[]};state.towns.push(t);state.activeTownId=t.id;save();renderVillage()}
-function exportData(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));a.download='parallel-city-backup.json';a.click()}
-async function importData(e){try{state=normalize(JSON.parse(await e.target.files[0].text()));save('백업을 불러왔어요');renderAll()}catch{toast('백업 파일을 읽지 못했어요')}}
-
-async function initFirebase(){
-  const cfg=window.PARALLEL_CITY_CONFIG?.firebase;if(!cfg?.apiKey)return;
-  try{
-    const [{initializeApp},{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence},{getFirestore,doc,getDoc,setDoc,serverTimestamp}]=await Promise.all([
-      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),
-      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js'),
-      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js')
-    ]);
-    const app=initializeApp(cfg);const auth=getAuth(app);cloudDb=getFirestore(app);await setPersistence(auth,browserLocalPersistence);
-    onAuthStateChanged(auth,async user=>{cloudUser=user;$('#loginBtn').textContent=user?`${user.displayName||'Google'} 로그아웃`:'Google 로그인';if(!user)return;
-      $('#syncStatus').textContent='동기화 중';const snap=await getDoc(doc(cloudDb,'users',user.uid));const remote=snap.exists()?JSON.parse(snap.data().payload||'null'):null;
-      const remoteTime=Number(remote?.updatedAt||remote?.cloudUpdatedAt||0);
-      if(remote&&((!state.characters.length&&remote.characters?.length)||remoteTime>Number(state.updatedAt))){state=normalize(remote);state.updatedAt=remoteTime||Date.now();localStorage.setItem(STORAGE,JSON.stringify(state));renderAll();toast('Google 저장 데이터를 불러왔어요')}else await pushCloud();
-      $('#syncStatus').textContent='동기화됨';
-    });
-    $('#loginBtn').onclick=async()=>{if(cloudUser){const {signOut}=await import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js');await signOut(auth)}else location.href='./login.html'};
-    window.__cloud={doc,setDoc,serverTimestamp};
-  }catch(e){console.warn(e);$('#syncStatus').textContent='기기 저장'}
-}
-async function pushCloud(){if(!cloudUser||!cloudDb||!window.__cloud)return;try{const{doc,setDoc,serverTimestamp}=window.__cloud;$('#syncStatus').textContent='동기화 중';await setDoc(doc(cloudDb,'users',cloudUser.uid),{payload:JSON.stringify(state),clientUpdatedAt:state.updatedAt,updatedAt:serverTimestamp()},{merge:true});$('#syncStatus').textContent='동기화됨'}catch{$('#syncStatus').textContent='기기 저장'}}
-init();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+(() => {
+  "use strict";
+  const KEY="parallel-city-clean-v1";
+  const $=s=>document.querySelector(s);
+  const clone=o=>JSON.parse(JSON.stringify(o));
+  const id=()=>crypto.randomUUID?.()||Date.now()+"-"+Math.random();
+  const TODAY=()=>new Date().toISOString().slice(0,10);
+  const TASTES=["아재 입맛","어린이 입맛","맵부심","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
+  const INTERESTS=["향수","애니메이션","만화","게임","패션","미술","음악","영화","문구","인테리어","역사","기계"];
+  const HOBBIES=["취미 없음","집에서 뒹굴기","외출 안 함","인터넷 서핑","커뮤니티 눈팅","영상 정주행","낮잠","덕질","독서","카페 탐방","쇼핑","운동","사진","전시 관람","공방 체험","산책","요리","청소","악기","보드게임","코딩","여행 계획","반려동물 돌보기"];
+  const defaultState=()=>({schema:1,activeTab:"observe",activeId:null,characters:{},order:[],relationships:{},worlds:{w1:{id:"w1",name:"평행마을",district:"중심 구역",area:"중심 거리",bg:"world-assets/cozy-town.png",places:[
+    {id:"p1",name:"달무리 카페",type:"카페",emoji:"☕",x:13,y:30,color:"#76c7bd"},
+    {id:"p2",name:"달무리 식당",type:"음식점",emoji:"🍽️",x:55,y:19,color:"#85c779"},
+    {id:"p3",name:"평행 오피스",type:"회사",emoji:"🏢",x:72,y:34,color:"#8b9cf0"},
+    {id:"p4",name:"새봄 의원",type:"병원",emoji:"🩺",x:20,y:60,color:"#6fb8eb"},
+    {id:"p5",name:"별꼬리 공원",type:"공원",emoji:"🌳",x:62,y:73,color:"#68c889"}]}},worldOrder:["w1"],homes:{},routines:{},settings:{dark:false,pace:30},lastSaved:null});
+  let state=load(), pendingFile=null;
+  function load(){try{const x=JSON.parse(localStorage.getItem(KEY));return x?.schema===1?x:defaultState()}catch{return defaultState()}}
+  let saveTimer; function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{state.lastSaved=Date.now();localStorage.setItem(KEY,JSON.stringify(state));renderSave()},180)}
+  function renderSave(){const el=$("#save-state");if(el)el.textContent="● 기기에 저장됨"}
+  function active(){return state.characters[state.activeId]||null}
+  function theme(){const c=active();document.documentElement.style.setProperty("--p",c?.theme?.primary||"#176b60");document.documentElement.style.setProperty("--s",c?.theme?.gradient&&c?.theme?.secondary?c.theme.secondary:c?.theme?.primary||"#6fd0ae")}
+  function esc(x=""){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+  function initials(n="새"){return esc(n.trim().slice(0,1)||"새")}
+  function avatar(c,cls=""){return c?.icon||c?.photo?`<img class="avatar ${cls}" src="${c.icon||c.photo}" alt="">`:`<span class="avatar ${cls}">${initials(c?.name)}</span>`}
+  function toast(t){document.body.insertAdjacentHTML("beforeend",`<div class="toast">${esc(t)}</div>`);setTimeout(()=>document.querySelector(".toast")?.remove(),1800)}
+  function newCharacter(){const cid=id(), c={id:cid,name:"새 캐릭터",job:"무직",customJob:"",mood:"평온함",photo:"",icon:"",theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],wake:"07:30",sleep:"00:30",outing:3,homeId:"",workPlaceId:"",pet:{type:"없음",name:"",breed:"",color:"",photo:""},special:[]};state.characters[cid]=c;state.order.push(cid);state.routines[cid]=[];state.activeId=cid;state.activeTab="character";save();render()}
+  function deleteCharacter(cid){if(!confirm("이 캐릭터를 삭제할까요?"))return;delete state.characters[cid];delete state.routines[cid];state.order=state.order.filter(x=>x!==cid);state.activeId=state.order[0]||null;save();render()}
+  function characterEvent(c,now=new Date()){
+    const mins=now.getHours()*60+now.getMinutes(), wake=hm(c.wake||"07:30"), sleep=hm(c.sleep||"00:30");
+    const routine=(state.routines[c.id]||[]).filter(r=>r.day===now.getDay()).sort((a,b)=>hm(a.start)-hm(b.start)).find(r=>mins>=hm(r.start)&&mins<hm(r.end));
+    if(routine)return {title:routine.activity,placeId:routine.placeId||null,home:false,time:routine.start,desc:`고정 루틴 · ${routine.start}–${routine.end}`};
+    if(mins<wake||(sleep>wake?mins>=sleep:false))return {title:"집에서 자는 중",home:true,time:c.sleep,desc:"다음 일정 전까지 푹 쉬고 있어요."};
+    const slots=[{at:wake,title:"기상",home:true},{at:720,title:"점심",type:"음식점"},{at:1080,title:"가벼운 외출",type:pickType(c)},{at:sleep-50,title:"귀가 후 휴식",home:true}];
+    let s=slots[0];for(const x of slots)if(mins>=x.at)s=x;
+    if(s.home)return {title:s.title,home:true,time:toHM(s.at),desc:homeAction(c,s.title)};
+    const p=places().find(x=>x.type===s.type)||places()[hash(c.id+TODAY()+s.at)%Math.max(1,places().length)];
+    return {title:p?`${p.name} 방문`:"동네 산책",placeId:p?.id,home:false,time:toHM(s.at),desc:p?`${p.name}에서 ${activityFor(p,c)}.`:"동네를 천천히 둘러보는 중이에요."};
+  }
+  function hm(s){const [h,m]=String(s).split(":").map(Number);return h*60+(m||0)}
+  function toHM(m){m=(m+1440)%1440;return `${String(Math.floor(m/60)).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`}
+  function hash(s){let h=0;for(const x of s)h=(h*31+x.charCodeAt())>>>0;return h}
+  function pickType(c){if(c.interests.includes("향수"))return "공방";if(c.hobbies.includes("카페 탐방"))return "카페";if(c.hobbies.includes("운동"))return "운동 시설";return ["카페","공원","서점","쇼핑몰"][hash(c.id+TODAY())%4]}
+  function activityFor(p,c){if(p.type==="음식점")return "좋아하는 메뉴를 골라 식사하는 중";if(p.type==="카페")return "음료를 마시며 시간을 보내는 중";if(p.type==="회사")return "맡은 일을 처리하는 중";if(p.type==="병원")return "진료를 기다리는 중";return `${c.hobbies[0]||"가벼운 외출"}을 즐기는 중`}
+  function homeAction(c,title){if(title.includes("자"))return "침실에서 이불을 덮고 자는 중";const a=c.hobbies.includes("청소")?"거실을 정리하고 바닥을 닦는 중":c.hobbies.includes("요리")?"주방에서 간단한 요리를 만드는 중":"소파에서 편하게 쉬는 중";return a}
+  function places(){return Object.values(state.worlds)[0]?.places||[]}
+  function currentPlace(c){const e=characterEvent(c);return e.home?null:places().find(p=>p.id===e.placeId)}
+  function render(){
+    theme();const tabs=[["observe","관찰"],["home","집"],["character","캐릭터"],["relationship","관계"],["routine","주간 루틴"],["town","마을"],["settings","설정"]];
+    $("#app").innerHTML=`<div class="shell"><header class="top"><div class="brand"><div class="logo">🏙</div><div><h1>평행도시</h1><small>캐릭터 생활 관찰 게임</small></div></div><nav>${tabs.map(([k,n])=>`<button class="nav ${state.activeTab===k?"active":""}" data-tab="${k}">${n}</button>`).join("")}</nav><div class="save-state" id="save-state">● 기기에 저장됨</div></header><main class="main">${view()}</main></div>`;bind();theme()
+  }
+  function view(){if(!state.order.length&&state.activeTab!=="settings")return `<div class="panel empty"><h2>아직 캐릭터가 없어요</h2><p>첫 캐릭터를 만들면 평행도시의 시간이 흐르기 시작해요.</p><button class="btn primary" data-new>+ 캐릭터 만들기</button></div>`;return ({observe,home,character,relationship,routine,town,settings}[state.activeTab]||observe)()}
+  function roster(){return `<div class="roster">${state.order.map(cid=>{const c=state.characters[cid],e=characterEvent(c);return `<button class="char-chip ${cid===state.activeId?"active":""}" data-select="${cid}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><br><small class="sub">${esc(e.title)}</small></span></button>`}).join("")}</div>`}
+  function observe(){const c=active(),e=characterEvent(c),p=currentPlace(c),w=Object.values(state.worlds)[0];return `${roster()}<div class="observe-grid"><section class="world panel"><img class="world-bg" src="${w.bg}" alt=""><div class="world-tools"><div class="glass"><small>현재 시각</small><br><b>${new Date().toLocaleString("ko-KR",{hour:"2-digit",minute:"2-digit",month:"long",day:"numeric",weekday:"short"})}</b></div><div class="glass"><small>관찰 중</small><br><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="places">${w.places.map(placeHTML).join("")}</div><div class="people">${state.order.map(cid=>personHTML(state.characters[cid])).join("")}</div></section><aside><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:`<span class="fallback">${initials(c.name)}</span>`}</div><span class="mood">${esc(c.mood)}</span><h2>${esc(c.name)}</h2><div class="sub">${esc(c.job)}</div><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p class="sub">${esc(e.desc)}</p>${p?`<b>📍 ${esc(p.name)} · ${esc(w.name)}</b>`:"<b>🏠 집 안</b>"}</div></div><div class="log panel">${logHTML(c)}</div></aside></div>`}
+  function placeHTML(p){return `<div class="place" style="left:${p.x}%;top:${p.y}%;--place:${p.color}" data-place="${p.id}"><div class="emoji">${p.emoji}</div><b>${esc(p.name)}</b><div>${esc(p.type)}</div></div>`}
+  function personHTML(c){const e=characterEvent(c);if(e.home)return"";const p=places().find(x=>x.id===e.placeId);if(!p)return"";return `<div class="person" style="left:${p.x}%;top:${p.y}%;--own:${c.theme.primary}" data-focus="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><br><small>${esc(e.title)}</small></span></div>`}
+  function logHTML(c){const now=new Date(),e=characterEvent(c);return `<h2>오늘의 생활 로그</h2><div class="log-item"><span>${c.wake}</span><div><b>기상</b><br><small>집에서 하루를 시작함</small></div></div><div class="log-item"><span>${e.time}</span><div><b>${esc(e.title)}</b><br><small>${esc(e.desc)}</small></div></div>`}
+  function home(){const groups=[];state.order.forEach(cid=>{const c=state.characters[cid],hid=c.homeId||c.id;let g=groups.find(x=>x.id===hid);if(!g){g={id:hid,owner:c,chars:[]};groups.push(g)}g.chars.push(c)});return `<div class="side-title"><h1>우리 집 생활</h1></div><div class="home-grid">${groups.map(g=>homeCard(g)).join("")}</div>`}
+  function homeCard(g){const atHome=g.chars.filter(c=>characterEvent(c).home);return `<section class="home panel"><h2>🏠 ${esc(g.owner.name)}의 집 <span style="float:right">${atHome.length}명 귀가</span></h2><div class="sub">${g.chars.map(c=>c.name).join(" · ")} 거주 중</div><p>청결도 · 반짝반짝 깨끗함</p><div class="clean"><i style="width:86%"></i></div><div class="rooms"><div class="room"><b class="room-name">거실</b>${atHome.filter((_,i)=>i%3===0).map(occ).join("")}</div><div class="room"><b class="room-name">주방</b>${atHome.filter((_,i)=>i%3===1).map(occ).join("")}</div><div class="room"><b class="room-name">침실</b>${atHome.filter((_,i)=>i%3===2).map(occ).join("")}</div><div class="room"><b class="room-name">욕실</b></div></div></section>`}
+  function occ(c){return `<div class="occupant">${avatar(c)}<span><b>${esc(c.name)}</b><br><small>${esc(characterEvent(c).desc)}</small></span></div>`}
+  function character(){const c=active();return `<div class="two"><aside class="side panel"><div class="side-title"><h2>캐릭터 목록</h2><button class="btn primary" data-new>+ 생성</button></div>${state.order.map(cid=>{const x=state.characters[cid];return `<button class="list-card ${cid===c.id?"active":""}" data-edit="${cid}">${avatar(x)}<span><b>${esc(x.name)}</b><br><small>${esc(x.job)}</small></span></button>`}).join("")}</aside><section class="form panel"><h2>프로필</h2><div class="fields"><div class="field"><label>캐릭터 이름</label><input data-c="name" value="${esc(c.name)}"></div><div class="field"><label>직업</label><input data-c="job" value="${esc(c.job)}"></div><div class="field"><label>프로필 사진</label><button class="btn" data-photo="photo">사진 선택</button></div><div class="field"><label>지도용 캐릭터 아이콘 (선택)</label><button class="btn" data-photo="icon">아이콘 선택</button></div><div class="field"><label>기상 시각</label><input type="time" data-c="wake" value="${c.wake}"></div><div class="field"><label>취침 시각</label><input type="time" data-c="sleep" value="${c.sleep}"></div><div class="field"><label>대표 테마색</label><input type="color" data-theme="primary" value="${c.theme.primary}"></div><div class="field"><label>그라데이션 보조색</label><input type="color" data-theme="secondary" value="${c.theme.secondary}"></div><div class="wide"><label><input type="checkbox" data-theme-check ${c.theme.gradient?"checked":""}> 보조색으로 그라데이션 사용</label></div></div>${chips("입맛",TASTES,c.tastes,"tastes")}${chips("관심사",INTERESTS,c.interests,"interests")}${chips("취미",HOBBIES,c.hobbies,"hobbies")}<div class="actions"><button class="btn primary" data-save-char>캐릭터 저장</button><button class="btn danger" data-delete-char="${c.id}">삭제</button></div></section></div>`}
+  function chips(title,all,on,key){return `<div class="section"><h3>${title}</h3><div class="chips">${all.map(x=>`<button class="chip ${on.includes(x)?"on":""}" data-chip="${key}" data-value="${esc(x)}">${esc(x)}</button>`).join("")}</div></div>`}
+  function relationship(){const rs=Object.values(state.relationships);return `<div class="side-title"><h1>관계</h1><button class="btn primary" data-add-rel>+ 관계 추가</button></div><div class="relationship-grid">${rs.length?rs.map(r=>{const a=state.characters[r.a],b=state.characters[r.b];if(!a||!b)return"";return `<section class="relation panel" style="--a:${a.theme.primary};--b:${b.theme.primary}"><h2>${esc(a.name)} × ${esc(b.name)}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p>친밀도 ${r.like} · 갈등도 ${r.conflict}</p><button class="btn" data-edit-rel="${r.id}">편집</button> <button class="btn danger" data-del-rel="${r.id}">삭제</button></section>`}).join(""):`<div class="panel empty">관계를 추가하면 함께 외출하거나 같은 집에서 생활해요.</div>`}</div>`}
+  function routine(){const c=active(),days=["일","월","화","수","목","금","토"];return `${roster()}<div class="panel form"><div class="side-title"><h2>${esc(c.name)}의 주간 시간표</h2><button class="btn primary" data-add-routine>+ 일정 추가</button></div><div class="routine-scroll"><div class="week">${days.map((d,i)=>`<div class="day"><b>${d}요일</b>${(state.routines[c.id]||[]).filter(r=>r.day===i).map(r=>`<div class="event">${r.start}–${r.end}<br><b>${esc(r.activity)}</b><button class="btn" style="padding:3px 7px" data-del-routine="${r.id}">×</button></div>`).join("")}</div>`).join("")}</div></div></div>`}
+  function town(){const w=Object.values(state.worlds)[0];return `<div class="town-edit"><section class="edit-canvas panel"><img class="world-bg" src="${w.bg}" alt=""><div class="places">${w.places.map(placeHTML).join("")}</div></section><aside class="form panel"><h2>마을 편집</h2><div class="field"><label>마을 이름</label><input data-world="name" value="${esc(w.name)}"></div><div class="field"><label>배경 그림</label><select data-world="bg"><option value="world-assets/cozy-town.png" ${w.bg.includes("cozy")?"selected":""}>포근한 마을</option><option value="world-assets/downtown.png" ${w.bg.includes("downtown")?"selected":""}>번화가</option></select></div><p class="sub">건물을 끌어 원하는 위치에 놓을 수 있어요.</p><button class="btn primary" data-add-place>+ 건물 추가</button><div>${w.places.map(p=>`<div class="list-card"><span>${p.emoji}</span><span><b>${esc(p.name)}</b><br><small>${esc(p.type)}</small></span><button class="btn danger" data-del-place="${p.id}">삭제</button></div>`).join("")}</div></aside></div>`}
+  function settings(){return `<section class="settings panel"><h1>설정과 백업</h1><p>Google 로그인이나 외부 지도 없이 이 기기에 자동 저장됩니다. 다른 기기로 옮길 때는 백업 파일을 사용해 주세요.</p><div class="actions"><button class="btn primary" data-export>데이터 내보내기</button><button class="btn" data-import>데이터 불러오기</button><button class="btn danger" data-reset>모든 데이터 초기화</button></div><div class="section"><h2>이 버전의 원칙</h2><ul><li>캐릭터별 취향·관심사·색상은 서로 완전히 분리</li><li>관찰·집·로그는 동일한 현재 일정만 표시</li><li>캐릭터 자동 전환 없음</li><li>Google Maps·Places·Firebase 호출 없음</li></ul></div></section>`}
+  function bind(){
+    document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{state.activeTab=b.dataset.tab;save();render()});
+    document.querySelectorAll("[data-new]").forEach(b=>b.onclick=newCharacter);
+    document.querySelectorAll("[data-select]").forEach(b=>b.onclick=()=>{state.activeId=b.dataset.select;save();render()});
+    document.querySelectorAll("[data-focus]").forEach(b=>b.onclick=()=>{state.activeId=b.dataset.focus;save();render()});
+    document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>{state.activeId=b.dataset.edit;save();render()});
+    document.querySelectorAll("[data-c]").forEach(i=>i.oninput=()=>{active()[i.dataset.c]=i.value});
+    document.querySelectorAll("[data-theme]").forEach(i=>i.oninput=()=>{active().theme[i.dataset.theme]=i.value;theme()});
+    document.querySelector("[data-theme-check]")?.addEventListener("change",e=>{active().theme.gradient=e.target.checked;theme()});
+    document.querySelectorAll("[data-chip]").forEach(b=>b.onclick=()=>{const c=active(),k=b.dataset.chip,v=b.dataset.value;c[k]=c[k].includes(v)?c[k].filter(x=>x!==v):[...c[k],v];save();render()});
+    document.querySelector("[data-save-char]")?.addEventListener("click",()=>{save();render();toast("캐릭터가 바로 저장됐어요")});
+    document.querySelector("[data-delete-char]")?.addEventListener("click",e=>deleteCharacter(e.currentTarget.dataset.deleteChar));
+    document.querySelectorAll("[data-photo]").forEach(b=>b.onclick=()=>{pendingFile=b.dataset.photo;$("#file-picker").click()});
+    $("#file-picker").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{active()[pendingFile]=r.result;save();render();toast("사진을 저장했어요")};r.readAsDataURL(f);e.target.value=""};
+    document.querySelector("[data-add-rel]")?.addEventListener("click",addRelation);
+    document.querySelectorAll("[data-del-rel]").forEach(b=>b.onclick=()=>{delete state.relationships[b.dataset.delRel];save();render()});
+    document.querySelectorAll("[data-edit-rel]").forEach(b=>b.onclick=()=>editRelation(b.dataset.editRel));
+    document.querySelector("[data-add-routine]")?.addEventListener("click",addRoutine);
+    document.querySelectorAll("[data-del-routine]").forEach(b=>b.onclick=()=>{const c=active();state.routines[c.id]=state.routines[c.id].filter(r=>r.id!==b.dataset.delRoutine);save();render()});
+    document.querySelector("[data-add-place]")?.addEventListener("click",addPlace);
+    document.querySelectorAll("[data-del-place]").forEach(b=>b.onclick=()=>{const w=Object.values(state.worlds)[0];w.places=w.places.filter(p=>p.id!==b.dataset.delPlace);save();render()});
+    document.querySelectorAll("[data-world]").forEach(i=>i.onchange=()=>{Object.values(state.worlds)[0][i.dataset.world]=i.value;save();render()});
+    dragPlaces();
+    document.querySelector("[data-export]")?.addEventListener("click",exportData);
+    document.querySelector("[data-import]")?.addEventListener("click",()=>$("#import-picker").click());
+    $("#import-picker").onchange=importData;
+    document.querySelector("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 데이터를 지울까요?")){state=defaultState();localStorage.removeItem(KEY);render()}});
+  }
+  function addRelation(){if(state.order.length<2)return toast("캐릭터가 두 명 이상 필요해요");const a=prompt("첫 번째 캐릭터 이름"),b=prompt("두 번째 캐릭터 이름"),ca=state.order.map(x=>state.characters[x]).find(x=>x.name===a),cb=state.order.map(x=>state.characters[x]).find(x=>x.name===b);if(!ca||!cb||ca===cb)return toast("이름을 정확히 입력해 주세요");const rid=id();state.relationships[rid]={id:rid,a:ca.id,b:cb.id,type:prompt("관계 유형 (연인, 부부, 친구, 짝사랑 등)","친구")||"친구",cohabit:confirm("함께 거주하나요?"),like:75,conflict:20};if(state.relationships[rid].cohabit)cb.homeId=ca.homeId||ca.id;save();render()}
+  function editRelation(rid){const r=state.relationships[rid];r.type=prompt("관계 유형",r.type)||r.type;r.like=Number(prompt("친밀도",r.like))||r.like;r.conflict=Number(prompt("갈등도",r.conflict))||r.conflict;save();render()}
+  function addRoutine(){const c=active(),day=Number(prompt("요일 숫자 (일=0, 월=1 ... 토=6)","1")),start=prompt("시작 시각","09:00"),end=prompt("종료 시각","18:00"),activity=prompt("무엇을 하나요?","직장에서 일하는 중");if(day<0||day>6||!start||!end||!activity)return;const overlap=(state.routines[c.id]||[]).some(r=>r.day===day&&hm(start)<hm(r.end)&&hm(end)>hm(r.start));if(overlap)return toast("이미 겹치는 일정이 있어요");state.routines[c.id].push({id:id(),day,start,end,activity,placeId:null});save();render()}
+  function addPlace(){const w=Object.values(state.worlds)[0],name=prompt("건물 이름","새 건물");if(!name)return;const type=prompt("종류","카페")||"기타";w.places.push({id:id(),name,type,emoji:"🏬",x:50,y:50,color:"#8ecbc0"});save();render()}
+  function dragPlaces(){if(state.activeTab!=="town")return;document.querySelectorAll(".edit-canvas .place").forEach(el=>{el.onpointerdown=e=>{el.setPointerCapture(e.pointerId);el.onpointermove=ev=>{const r=el.parentElement.parentElement.getBoundingClientRect(),p=Object.values(state.worlds)[0].places.find(x=>x.id===el.dataset.place);p.x=Math.max(5,Math.min(95,(ev.clientX-r.left)/r.width*100));p.y=Math.max(7,Math.min(93,(ev.clientY-r.top)/r.height*100));el.style.left=p.x+"%";el.style.top=p.y+"%"};el.onpointerup=()=>{el.onpointermove=null;save()}}})}
+  function exportData(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:"application/json"}));a.download=`평행도시-백업-${TODAY()}.json`;a.click();URL.revokeObjectURL(a.href)}
+  function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const x=JSON.parse(r.result);if(x.schema!==1)throw 0;state=x;localStorage.setItem(KEY,JSON.stringify(state));render();toast("백업을 불러왔어요")}catch{toast("이 백업 파일은 읽을 수 없어요")}};r.readAsText(f)}
+  window.addEventListener("storage",e=>{if(e.key===KEY&&e.newValue){state=JSON.parse(e.newValue);render()}});
+  setInterval(()=>{if(state.activeTab==="observe"||state.activeTab==="home")render()},60000);
+  render();
+})();
