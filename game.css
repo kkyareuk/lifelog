@@ -1,13 +1,10 @@
-.sprite{width:76px;height:76px;object-fit:contain;background:transparent;filter:drop-shadow(0 7px 5px #17203355);flex:none}
-.person .sprite{width:96px;height:96px}
-.world-viewport{overflow:auto;touch-action:pan-x pan-y;border-radius:28px}
-.world-viewport .world{width:1200px;height:760px;min-height:760px;transform-origin:top left}
-.zoom{position:sticky;left:12px;bottom:12px;z-index:12;display:flex;gap:6px;width:max-content}
-.zoom button{width:46px;height:46px;border:0;border-radius:14px;background:#fff;box-shadow:0 5px 18px #17203333}
-.account-btn{white-space:nowrap}
-@media(max-width:900px){
-  body{overflow-x:hidden}.shell{width:100vw}.top{padding:10px}.brand{min-width:0}.brand h1{font-size:24px}.logo{width:52px;height:52px;border-radius:16px}
-  nav{order:3;width:100%;padding-bottom:4px}.nav{padding:12px 15px}.main{padding:8px}.world-viewport{height:calc(100vh - 245px);min-height:540px}
-  .observe-grid{display:block}.observe-grid>aside{padding-top:10px}.world-viewport .world{width:1200px;height:760px;min-height:760px}
-  .roster{padding-bottom:9px}.char-chip{min-width:220px}.save-state{display:block!important;min-width:auto;font-size:12px}.detail .hero{height:68vh}
+@media(max-width:600px){
+  body{overflow-x:hidden}
+  header{position:sticky;top:0}
+  .account{max-width:150px;overflow:hidden;text-overflow:ellipsis}
+  .observe>section{min-width:0}
+  .world-hud{position:sticky;left:0;top:0}
+  .world-hud>div{min-width:0;max-width:48%;font-size:14px}
+  .viewport{border-radius:20px}
+  .detail .hero{height:55vh}
 }
