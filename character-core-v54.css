@@ -1,0 +1,12 @@
+.world-roads,.parallel-road-network,.custom-road-editor,.road-editor-tools{display:none!important}
+#observationModeSetting,.location-privacy-help{display:none!important}
+#map .world-building{touch-action:auto!important;cursor:pointer!important}
+#view-characters .section:first-child .fields{align-items:start}
+#view-characters input[type=file]{min-height:48px}
+.relation-card{position:relative;overflow:hidden}
+.relation-card:before{content:"";position:absolute;inset:0 0 auto;height:7px;background:var(--relation-gradient)}
+.relation-card .meter i{background:var(--relation-gradient)!important}
+.relation-actions{display:flex;gap:7px;margin-top:10px}
+.world-character-stack{position:absolute;left:var(--x);top:var(--y);display:flex;gap:5px;transform:translate(-50%,-50%);z-index:40}
+.world-character-stack .world-character{position:relative!important;left:auto!important;top:auto!important;transform:none!important}
+.character-theme-preview{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,var(--panel)),color-mix(in srgb,var(--accent2) 18%,var(--panel)))!important}

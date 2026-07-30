@@ -127,7 +127,7 @@
   return locate(e.villageBuildingId||e.place?.villageBuildingId)||choose(c,eventType(e,c),e.time,0);
  }
  const avatar=c=>c.photo?`<img src="${c.photo}" alt="">`:`<span>${esc((c.name||'새')[0])}</span>`;
- const BUILTIN_ART={town:'./world-assets/developer-town.svg',city:'./world-assets/developer-city.svg',park:'./world-assets/developer-park.svg'};
+ const BUILTIN_ART={town:'./world-assets/cozy-five-lot-town-v48.png',city:'./world-assets/downtown-six-lot-v50.png',park:'./world-assets/cozy-five-lot-town-v48.png'};
  function bgStyle(region){const image=region.background||BUILTIN_ART[region.builtinArt]||'';return image?`background-image:url('${image}')`:''}
  const buildingIcon=b=>b.icon?`<img src="${b.icon}" alt="">`:`<i>${TYPES[b.type]?.[1]||'🏠'}</i>`;
  function renderMap(){
