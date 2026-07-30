@@ -84,11 +84,12 @@
   const svg=$('.custom-road-editor',map);
   svg.addEventListener('pointerdown',e=>{const circle=e.target.closest('circle');if(!circle)return;e.preventDefault();circle.setPointerCapture(e.pointerId)});
   svg.addEventListener('pointermove',e=>{const circle=e.target.closest('circle');if(!circle||!circle.hasPointerCapture(e.pointerId))return;const r=svg.getBoundingClientRect(),i=+circle.dataset.node,x=Math.max(1,Math.min(99,(e.clientX-r.left)/r.width*100)),y=Math.max(1,Math.min(99,(e.clientY-r.top)/r.height*100));n.customRoadNodes[i]=[x,y];circle.setAttribute('cx',x);circle.setAttribute('cy',y)});
-  svg.addEventListener('pointerup',e=>{if(e.target.closest('circle')){save?.();loadRoad();renderRoadEditor();return}if(map.dataset.addRoad!=='1')return;const r=svg.getBoundingClientRect(),p=[(e.clientX-r.left)/r.width*100,(e.clientY-r.top)/r.height*100],last=n.customRoadNodes.length-1;n.customRoadNodes.push(p);n.customRoadEdges.push([last,last+1]);save?.();loadRoad();renderRoadEditor()});
+  svg.addEventListener('pointerup',e=>{const circle=e.target.closest('circle');if(circle){map.dataset.branchFrom=circle.dataset.node;save?.();loadRoad();renderRoadEditor();toast?.('이 모서리에서 새 길을 시작해요. 길을 끝낼 곳을 눌러 주세요.');return}if(map.dataset.addRoad!=='1'&&!map.dataset.branchFrom)return;const r=svg.getBoundingClientRect(),p=[(e.clientX-r.left)/r.width*100,(e.clientY-r.top)/r.height*100],last=map.dataset.branchFrom===''||map.dataset.branchFrom==null?n.customRoadNodes.length-1:Number(map.dataset.branchFrom),next=n.customRoadNodes.length;n.customRoadNodes.push(p);n.customRoadEdges.push([last,next]);delete map.dataset.branchFrom;save?.();loadRoad();renderRoadEditor()});
   $$('#worldEditMap .world-building').forEach(el=>{if(el.dataset.snap49)return;el.dataset.snap49='1';el.addEventListener('pointerup',()=>setTimeout(()=>{const b=window.ParallelCityVillage?.locate?.(el.dataset.id);if(!b)return;let best=0,d=Infinity;n.customRoadNodes.forEach((p,i)=>{const q=Math.hypot(b.x-p[0],b.y-p[1]);if(q<d){d=q;best=i}});b.roadNode=best;b.x=n.customRoadNodes[best][0];b.y=n.customRoadNodes[best][1]-3;save?.();window.ParallelCityVillage?.renderEditor?.()},70),true)});
  }
  function install(){loadRoad();bindCharacterSelection();bindPrivateChips();renderRoadEditor();authoritative()}
  addEventListener('DOMContentLoaded',()=>{isolate();cleanLogs();save?.();install();setTimeout(install,600)},{once:true});
  let timer=0;new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(install,220)}).observe(document.documentElement,{subtree:true,childList:true});
  setInterval(authoritative,60000);
+ window.ParallelCityRoadEditorV49={render:renderRoadEditor,install};
 })();
