@@ -1,4 +1,4 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents} from "./state.js";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter} from "./state.js";
 import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js";
 import {renderApp, setAccountLabel} from "./views.js";
 
@@ -25,6 +25,11 @@ function bind(){
   $$("[data-tab]").forEach(el=>el.onclick=()=>{state.activeTab=el.dataset.tab;save();render()});
   $$("[data-new]").forEach(el=>el.onclick=()=>{createCharacter();render()});
   $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);render()});
+  $$("[data-sort]").forEach(el=>el.onclick=event=>{
+    event.stopPropagation();
+    moveCharacter(el.dataset.sort,Number(el.dataset.direction||0));
+    render();
+  });
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});

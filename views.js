@@ -5,6 +5,10 @@ const JOBS=["무직","학생","회사원","의사","간호사","교사","교수"
 const TASTES=["아재 입맛","어린이 입맛","맵부심","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
 const INTERESTS=["향수","애니메이션","만화","게임","패션","미술","음악","영화","문구","인테리어","역사","기계"];
 const HOBBIES=["취미 없음","집에서 뒹굴기","외출 안 함","인터넷 서핑","커뮤니티 눈팅","영상 정주행","낮잠","덕질","독서","카페 탐방","쇼핑","운동","사진","전시 관람","공방 체험","산책","요리","청소"];
+const INCOMES=["빠듯함","보통","여유 있음","부유함","대부호"];
+const MUSIC=["발라드","인디","재즈","클래식","록","힙합","R&B","K-POP","J-POP","OST","전자음악","트로트"];
+const FOODS=["한식","일식","중식","양식","분식","고기","해산물","면 요리","디저트","매운 음식","채식"];
+const DRINKS=["아메리카노","카페라테","바닐라 라테","아인슈페너","밀크티","말차 라테","차","탄산음료","주스","핫초코"];
 const roomClasses={living:"living",kitchen:"kitchen",entry:"entry",bath:"bath",bedroom:"bedroom",study:"study"};
 const FURNITURE={
   living:["소파","TV","책장","오디오","안마의자","게임기","캣타워"],
@@ -35,7 +39,7 @@ function personCard(c){
   const e=eventFor(c);if(e.home)return"";
   const p=state.world.places.find(x=>x.id===e.placeId);if(!p)return"";
   const group=charactersAtPlace(p.id),i=group.findIndex(x=>x.id===c.id);
-  const offsets=[[-64,-45],[64,-45],[-64,48],[64,48],[0,-92],[0,94]],off=offsets[i%offsets.length];
+  const offsets=[[-38,-28],[38,-28],[-38,30],[38,30],[0,-54],[0,56]],off=offsets[i%offsets.length];
   return `<button class="person" data-person="${c.id}" style="left:calc(${p.x}% + ${off[0]}px);top:calc(${p.y}% + ${off[1]}px)">${avatar(c)}<span>${esc(c.name)}</span></button>`;
 }
 function observe(){
@@ -49,7 +53,15 @@ function roomStyle(h,key){
 function home(){
   const groups=homeGroups(),ids=Object.keys(groups),selected=groups[state.activeHomeId]?state.activeHomeId:(active()?.homeId||ids[0]);
   state.activeHomeId=selected;
-  return `<div class="title"><h1>우리 집 생활</h1><button data-home-edit>${state.homeEditMode?"편집 완료":"집 편집"}</button></div><div class="home-tabs">${ids.map(id=>`<button data-home-select="${id}" class="${id===selected?"on":""}">🏠 ${esc(state.homes[id]?.name||groups[id][0].name+"의 집")}</button>`).join("")}</div><div class="home-grid">${selected?homeCard(selected,groups[selected]):""}</div>`;
+  const houseGradient=chars=>{
+    const colors=[...new Set(chars.map(c=>c.theme?.primary||"#176b60"))];
+    if(colors.length===1){
+      const c=chars[0],second=c.theme?.gradient?(c.theme.secondary||colors[0]):colors[0];
+      return `linear-gradient(135deg,${colors[0]},${second})`;
+    }
+    return `linear-gradient(135deg,${colors.join(",")})`;
+  };
+  return `<div class="title"><h1>우리 집 생활</h1><button data-home-edit>${state.homeEditMode?"편집 완료":"집 편집"}</button></div><div class="home-tabs">${ids.map(id=>`<button data-home-select="${id}" class="${id===selected?"on":""}" style="--home-grad:${houseGradient(groups[id])}">🏠 ${esc(state.homes[id]?.name||groups[id][0].name+"의 집")}</button>`).join("")}</div><div class="home-grid">${selected?homeCard(selected,groups[selected]):""}</div>`;
 }
 function homeCard(id,chars){
   const h=state.homes[id]||{id,name:`${chars[0].name}의 집`,rooms:{}};
@@ -77,7 +89,8 @@ function homeCard(id,chars){
 function chips(title,all,selected,key){return `<section class="chips"><h3>${title}</h3>${all.map(x=>`<button data-chip="${key}" data-value="${x}" class="${selected.includes(x)?"on":""}">${x}</button>`).join("")}</section>`}
 function character(){
   const c=active();
-  return `<div class="editor"><aside class="panel"><div class="title"><h2>캐릭터 목록</h2><button data-new>+ 생성</button></div>${state.order.map(id=>{const x=state.characters[id];return `<button class="char-row ${id===c.id?"on":""}" data-edit="${id}" style="--own:${x.theme.primary}">${avatar(x)}<span><b>${esc(x.name)}</b><small>${esc(x.job)}</small></span></button>`}).join("")}</aside><section class="panel form"><h2>프로필</h2><div class="fields"><label>캐릭터 이름<input data-field="name" value="${esc(c.name)}"></label><label>직업<select data-field="job">${JOBS.map(x=>`<option ${x===c.job?"selected":""}>${x}</option>`).join("")}</select></label><label>프로필 사진<div class="image-actions"><button data-image="photo">사진 선택</button><button data-image-url="photo" data-id="${c.id}">링크 입력</button></div></label><label>지도용 캐릭터 아이콘 (선택)<div class="image-actions"><button data-image="icon">투명 아이콘 선택</button><button data-image-url="icon" data-id="${c.id}">링크 입력</button></div><small>첨부하지 않으면 프로필 사진이 원형 아이콘으로 보여요.</small></label><label>기상 시각<input type="time" data-field="wake" value="${c.wake}"></label><label>취침 시각<input type="time" data-field="sleep" value="${c.sleep}"></label><label>대표 테마색<input type="color" data-color="primary" value="${c.theme.primary}"></label><label>그라데이션 보조색<input type="color" data-color="secondary" value="${c.theme.secondary}"></label></div><label class="check"><input type="checkbox" data-gradient ${c.theme.gradient?"checked":""}> 보조색으로 그라데이션 사용</label>${chips("입맛",TASTES,c.tastes||[],"tastes")}${chips("관심사",INTERESTS,c.interests||[],"interests")}${chips("취미",HOBBIES,c.hobbies||[],"hobbies")}<button class="primary" data-save>캐릭터 저장</button></section></div>`;
+  const list=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="char-sort-row"><button class="char-row ${id===c.id?"on":""}" data-edit="${id}" style="--own:${x.theme.primary}">${avatar(x)}<span><b>${esc(x.name)}</b><small>${esc(x.job)}</small></span></button><span class="sort-controls"><button data-sort="${id}" data-direction="-1" ${index===0?"disabled":""} aria-label="위로">▲</button><button data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""} aria-label="아래로">▼</button></span></div>`}).join("");
+  return `<div class="editor"><aside class="panel"><div class="title"><h2>캐릭터 목록</h2><button data-new>+ 생성</button></div>${list}</aside><section class="panel form"><h2>프로필</h2><div class="fields"><label>캐릭터 이름<input data-field="name" value="${esc(c.name)}"></label><label>직업<select data-field="job">${JOBS.map(x=>`<option ${x===c.job?"selected":""}>${x}</option>`).join("")}</select></label><label>소득 수준<select data-field="income">${INCOMES.map(x=>`<option ${x===c.income?"selected":""}>${x}</option>`).join("")}</select></label><label>프로필 사진<div class="image-actions"><button data-image="photo">사진 선택</button><button data-image-url="photo" data-id="${c.id}">링크 입력</button></div></label><label>지도용 캐릭터 아이콘 (선택)<div class="image-actions"><button data-image="icon">투명 아이콘 선택</button><button data-image-url="icon" data-id="${c.id}">링크 입력</button></div><small>첨부하지 않으면 프로필 사진이 원형 아이콘으로 보여요.</small></label><label>기상 시각<input type="time" data-field="wake" value="${c.wake}"></label><label>취침 시각<input type="time" data-field="sleep" value="${c.sleep}"></label><label>대표 테마색<input type="color" data-color="primary" value="${c.theme.primary}"></label><label>그라데이션 보조색<input type="color" data-color="secondary" value="${c.theme.secondary}"></label></div><label class="check"><input type="checkbox" data-gradient ${c.theme.gradient?"checked":""}> 보조색으로 그라데이션 사용</label>${chips("입맛 성향",TASTES,c.tastes||[],"tastes")}${chips("좋아하는 음식 유형",FOODS,c.foodTypes||[],"foodTypes")}${chips("좋아하는 음료",DRINKS,c.drinks||[],"drinks")}${chips("좋아하는 음악 장르",MUSIC,c.musicGenres||[],"musicGenres")}${chips("관심사",INTERESTS,c.interests||[],"interests")}${chips("취미",HOBBIES,c.hobbies||[],"hobbies")}<button class="primary" data-save>캐릭터 저장</button></section></div>`;
 }
 function relationship(){
   const cards=Object.values(state.relationships).map(r=>{const a=state.characters[r.a],b=state.characters[r.b];return a&&b?`<article class="relation" style="--a:${a.theme.primary};--b:${b.theme.primary}"><h2>${esc(a.name)} × ${esc(b.name)}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p>친밀도 ${r.intimacy??75} · 갈등도 ${r.conflict??20}</p><button data-edit-rel="${r.id}">편집</button></article>`:""}).join("");

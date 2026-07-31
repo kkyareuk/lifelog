@@ -5,6 +5,33 @@ const keyOf=d=>d.toLocaleDateString("sv-SE");
 const time=m=>`${String(Math.floor(m/60)%24).padStart(2,"0")}:${String(m%60).padStart(2,"0")}`;
 const asleep=(m,s,w)=>s>w?m>=s||m<w:m>=s&&m<w;
 const place=(type,fallback)=>state.world.places.find(p=>p.type===type)||state.world.places.find(p=>p.type===fallback)||state.world.places[0];
+const pick=(items,seed,fallback)=>items?.length?items[seed%items.length]:fallback;
+const dishes={"한식":["김치찌개","비빔밥","불고기 정식"],"면 요리":["우동","탄탄멘","냉모밀"],"양식":["파스타","리조또","라자냐"],"중식":["딤섬","마파두부","볶음밥"],"일식":["초밥","돈카츠","오므라이스"],"디저트":["프렌치토스트","케이크","파르페"]};
+const defaultDrinks=["아인슈페너","카페라테","레몬 에이드","밀크티","핸드드립 커피"];
+function relationshipEvent(c,date){
+  const priority={"부부":5,"연인":4,"짝사랑":3,"썸":2,"친구":1};
+  const options=state.relationships
+    .filter(r=>(r.a===c.id||r.b===c.id)&&priority[r.type]&&state.characters[r.a===c.id?r.b:r.a])
+    .sort((a,b)=>(priority[b.type]-priority[a.type])||a.id.localeCompare(b.id));
+  const r=options[0]; if(!r)return null;
+  const other=state.characters[r.a===c.id?r.b:r.a],pair=[c.id,other.id].sort().join(":");
+  const seed=hash(`${pair}:${keyOf(date)}:date`);
+  const chance=r.type==="부부"||r.type==="연인"?68:r.type==="짝사랑"?28:18;
+  if(seed%100>=chance)return null;
+  const cafe=seed%3===0,p=place(cafe?"카페":"음식점",cafe?"음식점":"카페");
+  const at=19*60+seed%35;
+  if(cafe){
+    const drink=pick(c.drinks,seed,defaultDrinks[seed%defaultDrinks.length]);
+    return outEntry(at,p,`${other.name}와 ${drink}을 마시는 중`,`${r.type==="짝사랑"?"조금 설레는 마음으로":"함께 시간을 보내며"} ${p?.name||"카페"}에서 ${drink}을 마시고 있어요.`);
+  }
+  const foodType=pick(c.foodTypes,seed,"한식"),dish=pick(dishes[foodType],seed,"저녁 메뉴");
+  return outEntry(at,p,`${other.name}와 함께 ${dish}을 먹는 중`,`${p?.name||"식당"}에서 ${other.name}와 데이트하며 ${dish}을 먹고 있어요.`);
+}
+function cafeEntry(c,m,p,seed){
+  const favorites=c.drinks?.length?c.drinks:defaultDrinks,triesNew=seed%5===0;
+  const drink=triesNew?pick(defaultDrinks.filter(x=>!favorites.includes(x)),seed,"아인슈페너"):pick(favorites,seed,"아인슈페너");
+  return outEntry(m,p,`${drink}을 마시는 중`,triesNew?`오늘따라 도전하고 싶어서 ${drink}을 마셔 보았어요.`:`평소 좋아하는 ${drink}을 천천히 마시고 있어요.`);
+}
 
 function homeEntry(m,room,title,desc){return {minutes:m,time:time(m),home:true,room,title,desc}}
 function outEntry(m,p,title,desc){return {minutes:m,time:time(m),home:false,placeId:p?.id||null,title,desc}}
@@ -32,8 +59,9 @@ function furnitureEntry(c,m,room,fallbackTitle,fallbackDesc){
 }
 function signature(c){
   return JSON.stringify({
-    c:{job:c.job,wake:c.wake,sleep:c.sleep,tastes:c.tastes,interests:c.interests,hobbies:c.hobbies,homeId:c.homeId},
+    c:{job:c.job,wake:c.wake,sleep:c.sleep,tastes:c.tastes,interests:c.interests,hobbies:c.hobbies,homeId:c.homeId,income:c.income,musicGenres:c.musicGenres,foodTypes:c.foodTypes,drinks:c.drinks},
     places:state.world.places.map(({id,name,type})=>({id,name,type})),
+    relationships:state.relationships.filter(r=>r.a===c.id||r.b===c.id),
     routines:state.routines[c.id]||[],
     homeRooms:state.homes[c.homeId||c.id]?.rooms||{}
   });
@@ -55,16 +83,19 @@ function build(c,date){
     entries.push(outEntry(9*60,school,"수업을 듣는 중",`${school?.name||"학교"}에서 오늘 수업을 듣고 있어요.`));
   }
   const seed=hash(c.id+keyOf(date));
+  const dateEvent=relationshipEvent(c,date);
   const goOut=!c.hobbies?.includes("외출 안 함")&&(seed%100<(c.hobbies?.includes("집에서 뒹굴기")?35:78));
-  if(goOut){
+  if(dateEvent){
+    entries.push(dateEvent);
+  }else if(goOut){
     const preferred=c.hobbies?.includes("카페 탐방")?"카페":c.hobbies?.includes("운동")?"공원":c.hobbies?.includes("쇼핑")?"상점":"공원";
     const p=place(preferred,"카페");
     const at=employed?18*60+30:14*60+(seed%90);
-    entries.push(outEntry(at,p,`${p?.name||"마을"} 방문`,`${p?.name||"마을"}에서 ${c.hobbies?.[0]||"자유 시간"}을 보내고 있어요.`));
+    entries.push(preferred==="카페"?cafeEntry(c,at,p,seed):outEntry(at,p,`${p?.name||"마을"} 방문`,`${p?.name||"마을"}에서 ${c.hobbies?.[0]||"자유 시간"}을 보내고 있어요.`));
   }else{
     entries.push(furnitureEntry(c,employed?18*60+40:14*60,"study","취미를 즐기는 중",`${c.hobbies?.[0]||"느긋한 휴식"}에 집중하고 있어요.`));
   }
-  entries.push(furnitureEntry(c,20*60+20,"kitchen","저녁을 준비하는 중","주방에서 저녁 식사와 간식을 챙기고 있어요."));
+  if(!dateEvent)entries.push(furnitureEntry(c,20*60+20,"kitchen","저녁을 준비하는 중","주방에서 저녁 식사와 간식을 챙기고 있어요."));
   entries.push(furnitureEntry(c,21*60+20,"living","오늘의 생활을 정리하는 중","거실에서 오늘 있었던 일을 천천히 정리하고 있어요."));
   entries.push(homeEntry(sleep,"bedroom","잠자리에 듦","설정한 취침 시각에 맞춰 잠들었어요."));
   for(const r of state.routines[c.id]||[]){
