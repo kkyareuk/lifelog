@@ -1,5 +1,5 @@
-import {state,active} from "./state.js?v=20260731e";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260731e";
+import {state,active} from "./state.js?v=20260731f";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260731f";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","자영업·직접 입력"];
 const TASTES=["아재 입맛","어린이 입맛","맵부심","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
@@ -10,6 +10,7 @@ const MUSIC=["발라드","인디","재즈","클래식","록","힙합","R&B","K-P
 const FOODS=["한식","일식","중식","양식","분식","고기","해산물","면 요리","디저트","매운 음식","채식"];
 const DRINKS=["아메리카노","카페라테","바닐라 라테","아인슈페너","밀크티","말차 라테","차","탄산음료","주스","핫초코"];
 const CATALOG_LABELS={food:"음식",drink:"음료",fashion:"옷·패션",music:"음악",idol:"아이돌·밴드",book:"책·작품",movie:"영화·영상",game:"게임",perfume:"향수",hobby:"취미 물품"};
+const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식"],drink:["커피","차","라테","탄산음료","주스","술","기타 음료"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리"],music:["노래","앨범","플레이리스트","악기"],idol:["솔로 가수","아이돌","밴드","가상 아티스트"],book:["소설","만화","잡지","에세이","전문서적"],movie:["영화","드라마","애니메이션","영상"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임"],perfume:["향수","디퓨저","캔들","바디 제품"],hobby:["미술 도구","악기","수집품","운동 용품","전자기기","공예 도구","반려동물 용품"]};
 const catalogItems=()=>Object.entries(state.catalog||{}).flatMap(([kind,items])=>(items||[]).map(item=>({...item,kind})));
 const roomClasses={living:"living",kitchen:"kitchen",entry:"entry",bath:"bath",bedroom:"bedroom",study:"study"};
 const FURNITURE={
@@ -20,7 +21,7 @@ const FURNITURE={
   bedroom:["침대","옷장","화장대","협탁","빔프로젝터"],
   study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"]
 };
-let accountText="Google 로그인";
+let accountText="Google 로그인 안 됨";
 
 function avatar(c,cls=""){
   if(c.icon)return `<img class="sprite ${cls}" src="${c.icon}" alt="">`;
@@ -29,14 +30,16 @@ function avatar(c,cls=""){
 }
 function header(){
   const tabs=[["observe","관찰"],["home","집"],["character","캐릭터"],["catalog","취향 사전"],["relationship","관계"],["routine","주간 루틴"],["town","마을"],["settings","설정"]];
-  return `<header><div class="brand"><span class="logo">▥</span><div><h1>평행도시</h1><small>캐릭터 생활 관찰 게임</small></div></div><nav>${tabs.map(([k,n])=>`<button data-tab="${k}" class="${state.activeTab===k?"on":""}">${n}</button>`).join("")}</nav><span id="save-state">기기에 저장됨</span><button class="account" id="account">${esc(accountText)}</button></header>`;
+  return `<header><div class="brand"><span class="logo">▥</span><div><h1>평행도시</h1><small>캐릭터 생활 관찰 게임</small></div></div><nav>${tabs.map(([k,n])=>`<button data-tab="${k}" class="${state.activeTab===k?"on":""}">${n}</button>`).join("")}</nav><span id="save-state">기기에 저장됨</span><button class="account" id="sync-open">동기화 / 불러오기</button></header>`;
 }
 function roster(){
   return `<div class="roster">${state.order.map(id=>{const c=state.characters[id],e=eventFor(c);return `<button class="roster-card ${id===state.activeId?"on":""}" data-roster="${id}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}</div>`;
 }
 function placeCard(p){
-  return `<button class="place ${p.image?"has-art":""}" style="left:${p.x}%;top:${p.y}%;--place:${p.color}" data-place="${p.id}">${p.image?`<img class="building-art" src="${esc(p.image)}" alt="">`:`<i>${p.emoji}</i>`}<span class="place-label"><b>${esc(p.name)}</b><small>${esc(p.type)}</small></span></button>`;
+  return `<button class="place ${p.image?"has-art":""}" style="left:${p.x}%;top:${p.y}%;--place:${p.color}" data-place="${p.id}">${p.image?`<img class="building-art" src="${esc(p.image)}" alt=""><span class="building-name">${esc(p.name)}</span>`:`<i>${p.emoji}</i><span class="place-label"><b>${esc(p.name)}</b><small>${esc(p.type)}</small></span>`}</button>`;
 }
+function catalogItem(id){return catalogItems().find(item=>item.id===id)}
+function logTitle(entry){const item=catalogItem(entry.itemId);return `${item?.image?`<img class="catalog-sticker" src="${esc(item.image)}" alt="">`:""}<b>${esc(entry.title)}</b>`}
 function personCard(c){
   const e=eventFor(c);if(e.home)return"";
   const p=state.world.places.find(x=>x.id===e.placeId);if(!p)return"";
@@ -46,7 +49,7 @@ function personCard(c){
 }
 function observe(){
   const c=active(),e=eventFor(c),place=state.world.places.find(p=>p.id===e.placeId),logs=visibleTimeline(c);
-  return `${roster()}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.order.map(id=>personCard(state.characters[id])).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${place?`📍 ${esc(place.name)} · ${esc(state.world.name)}`:"🏠 집 안"}</b>${place?.image?`<img class="place-photo" src="${esc(place.image)}" alt="${esc(place.name)}">`:""}</div></div><section class="panel life-log"><div class="title"><h2>오늘의 생활 로그</h2><small>현재 시각까지 자동 기록</small></div><ol>${logs.map(x=>`<li class="${x===logs.at(-1)?"now":""}"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`).join("")}</ol></section></aside></div>`;
+  return `${roster()}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.order.map(id=>personCard(state.characters[id])).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${place?`📍 ${esc(place.name)} · ${esc(state.world.name)}`:"🏠 집 안"}</b>${place?.image?`<img class="place-photo" src="${esc(place.image)}" alt="${esc(place.name)}">`:""}</div></div><section class="panel life-log"><div class="title"><h2>오늘의 생활 로그</h2><small>현재 시각까지 자동 기록</small></div><ol>${logs.map(x=>`<li class="${x===logs.at(-1)?"now":""}"><time>${esc(x.time)}</time><span>${logTitle(x)}<small>${esc(x.desc)}</small></span></li>`).join("")}</ol></section></aside></div>`;
 }
 function roomStyle(h,key){
   const image=h.rooms?.[key]?.image;
@@ -74,7 +77,7 @@ function homeCard(id,chars){
     const furniture=FURNITURE[key]||[];
     return `<div class="room ${roomClasses[key]}" ${roomStyle(h,key)}>
       ${edit?`<input class="room-name" data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}">`:`<b>${esc(room.name||key)}</b>`}
-      <div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div>
+      ${edit?`<div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div>`:""}
       ${edit?`<div class="furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div>`:""}
       <div class="room-people">${roomPeople.map(c=>{const e=eventFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}</div>
     </div>`;
@@ -99,7 +102,7 @@ function character(){
   return `<div class="editor"><aside class="panel"><div class="title"><h2>캐릭터 목록</h2><button data-new>+ 생성</button></div>${list}</aside><section class="panel form"><div class="character-menu"><button data-character-pane="profile" class="${state.characterPane==="profile"?"on":""}">프로필</button><button data-character-pane="taste" class="${state.characterPane==="taste"?"on":""}">취향 선택</button></div>${state.characterPane==="taste"?taste:profile}<button class="primary" data-save>캐릭터 저장</button></section></div>`;
 }
 function catalog(){
-  const sections=Object.entries(CATALOG_LABELS).map(([kind,label])=>`<section class="catalog-kind catalog-section"><div class="title"><h2>${label}</h2><button data-add-catalog="${kind}">+ 추가</button></div><div class="catalog-grid catalog-cards">${(state.catalog?.[kind]||[]).map(item=>`<article class="catalog-card">${item.image?`<img src="${esc(item.image)}" alt="">`:""}<label>이름<input data-catalog-field="name" data-kind="${kind}" data-item="${item.id}" value="${esc(item.name)}"></label><label>분류<input data-catalog-field="category" data-kind="${kind}" data-item="${item.id}" value="${esc(item.category||"")}"></label><label>이미지 링크<input data-catalog-field="image" data-kind="${kind}" data-item="${item.id}" value="${esc(item.image||"")}" placeholder="https://..."></label>${kind==="food"?`<label>맵기 ${item.spicy??0}<input type="range" min="0" max="5" data-catalog-field="spicy" data-kind="${kind}" data-item="${item.id}" value="${item.spicy??0}"></label><label>달기 ${item.sweet??0}<input type="range" min="0" max="5" data-catalog-field="sweet" data-kind="${kind}" data-item="${item.id}" value="${item.sweet??0}"></label>`:""}${["music","idol","book","movie","game"].includes(kind)?`<label>아티스트·제작자<input data-catalog-field="creator" data-kind="${kind}" data-item="${item.id}" value="${esc(item.creator||"")}"></label>`:""}<button class="danger" data-delete-catalog="${item.id}" data-kind="${kind}">삭제</button></article>`).join("")||"<p>아직 등록된 항목이 없어요.</p>"}</div></section>`).join("");
+  const sections=Object.entries(CATALOG_LABELS).map(([kind,label])=>`<section class="catalog-kind catalog-section"><div class="title"><h2>${label}</h2><button data-add-catalog="${kind}">+ 추가</button></div><div class="catalog-grid catalog-cards">${(state.catalog?.[kind]||[]).map(item=>{const options=CATALOG_CATEGORIES[kind]||[],custom=item.category&&!options.includes(item.category)?[item.category]:[];return `<article class="catalog-card">${item.image?`<img src="${esc(item.image)}" alt="">`:""}<label>이름<input data-catalog-field="name" data-kind="${kind}" data-item="${item.id}" value="${esc(item.name)}"></label><label>분류<select data-catalog-field="category" data-kind="${kind}" data-item="${item.id}"><option value="">분류 선택</option>${[...custom,...options].map(x=>`<option ${x===item.category?"selected":""}>${esc(x)}</option>`).join("")}</select></label><label>이미지 링크<input data-catalog-field="image" data-kind="${kind}" data-item="${item.id}" value="${esc(item.image||"")}" placeholder="https://..."></label>${kind==="food"?`<label>맵기 ${item.spicy??0}<input type="range" min="0" max="5" data-catalog-field="spicy" data-kind="${kind}" data-item="${item.id}" value="${item.spicy??0}"></label><label>달기 ${item.sweet??0}<input type="range" min="0" max="5" data-catalog-field="sweet" data-kind="${kind}" data-item="${item.id}" value="${item.sweet??0}"></label>`:""}${["music","idol","book","movie","game"].includes(kind)?`<label>아티스트·제작자<input data-catalog-field="creator" data-kind="${kind}" data-item="${item.id}" value="${esc(item.creator||"")}"></label>`:""}<button class="danger" data-delete-catalog="${item.id}" data-kind="${kind}">삭제</button></article>`}).join("")||"<p>아직 등록된 항목이 없어요.</p>"}</div></section>`).join("");
   return `<section class="panel form catalog-shell"><div class="title"><div><h1>세계관 취향 사전</h1><p>음식, 옷, 음악, 작품, 게임, 향수와 취미 물품을 직접 만들면 캐릭터가 취향에 맞춰 고르고 생활 로그에서 구체적으로 사용해요.</p></div></div>${sections}</section>`;
 }
 function relationship(){
@@ -108,7 +111,7 @@ function relationship(){
 }
 function routine(){return `<section class="panel form"><h1>주간 루틴</h1><p>요일별 고정 일정 편집기는 다음 업데이트에서 이어집니다.</p></section>`}
 function town(){const items=catalogItems();return `<div class="town-tabs">${state.towns.map(t=>`<button data-town-select="${t.id}" class="${t.id===state.activeTownId?"on":""}">🏙️ ${esc(t.name)}</button>`).join("")}<button data-add-town>+ 마을 추가</button>${state.towns.length>1?`<button class="danger" data-delete-town="${state.activeTownId}">현재 마을 삭제</button>`:""}</div><div class="town-edit"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}</div><aside class="panel form"><h2>마을 편집</h2><label>마을 이름<input data-world-name value="${esc(state.world.name)}"></label><label>기본 배경<select data-world-bg><option value="world-assets/cozy-town.png" ${state.world.bg.includes("cozy")?"selected":""}>개발자 그림 · 마을</option><option value="world-assets/downtown.png" ${state.world.bg.includes("downtown")?"selected":""}>개발자 그림 · 도시</option></select></label><p>건물 위치는 마을 탭에서만 옮길 수 있어요.</p><button data-add-place>+ 건물 추가</button><div class="place-editor">${state.world.places.map(p=>`<details><summary><b>${esc(p.emoji)} ${esc(p.name)}</b></summary><span><button data-place-image="${p.id}">투명 건물 그림</button><button data-image-url="place" data-id="${p.id}">링크</button>${p.image?`<button data-clear-place-image="${p.id}">지우기</button>`:""}</span><h4>이곳에서 파는 것·이용할 수 있는 것</h4><div class="stock-list stock-picker">${items.map(item=>`<button data-place-stock="${p.id}" data-item-id="${item.id}" class="${(p.stock||[]).includes(item.id)?"on":""}">${CATALOG_LABELS[item.kind]} · ${esc(item.name)}</button>`).join("")}</div></details>`).join("")}</div></aside></div>`}
-function settings(){return `<section class="panel form"><h1>설정</h1><p>Google 계정으로 로그인하면 캐릭터 설정은 Firestore에, 여러 사진은 Firebase Storage에 나누어 저장됩니다.</p><button data-reset>모든 데이터 초기화</button></section>`}
+function settings(){return `<section class="panel form"><h1>설정</h1><section class="sync-panel"><h2>Google 계정 · 수동 동기화</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button data-auth>Google 로그인 / 로그아웃</button><button class="primary" data-cloud-upload>이 기기 데이터를 계정에 저장</button><button data-cloud-download>계정 데이터 불러오기</button></div><small>자동으로 올리거나 내려받지 않아요. 원하는 순간에 위 버튼을 눌렀을 때만 동기화합니다.</small></section><button data-reset>모든 데이터 초기화</button></section>`}
 function view(){
   if(!state.order.length)return `<section class="panel empty"><h1>첫 캐릭터를 만들어 주세요</h1><p>로그인 전에는 예시 캐릭터나 실제 지역이 표시되지 않아요.</p><button class="primary" data-new>+ 캐릭터 만들기</button></section>`;
   return ({observe,home,character,catalog,relationship,routine,town,settings}[state.activeTab]||observe)();
@@ -117,4 +120,4 @@ export function renderApp(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];
   document.querySelector("#app").innerHTML=`${header()}<main>${view()}</main>`;
 }
-export function setAccountLabel(text){accountText=text;const el=document.querySelector("#account");if(el)el.textContent=text}
+export function setAccountLabel(text){accountText=text;const el=document.querySelector("#account-status");if(el)el.textContent=text}

@@ -129,3 +129,16 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   .catalog-cards{grid-template-columns:1fr}.catalog-card{grid-template-columns:58px 1fr auto}
   .catalog-card img,.catalog-thumb{width:58px;height:58px}
 }
+
+/* 수동 계정 저장과 취향 사전 스티커 */
+.sync-panel{margin:0 0 22px;padding:22px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--p) 9%,#fff),color-mix(in srgb,var(--s) 10%,#fff))}
+.sync-panel h2{margin:0 0 8px}.sync-panel p{font-weight:700}.sync-actions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}
+.catalog-sticker{display:inline-block;width:34px;height:34px;margin-right:7px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 3px 3px #0002)}
+.building-art{object-fit:contain;background:transparent;filter:drop-shadow(0 8px 6px #2235)}
+.place.has-art{background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible}
+.place.has-art .building-name{position:absolute;left:50%;bottom:-12px;transform:translateX(-50%);max-width:130px;padding:0;color:#182033;background:transparent;border:0;box-shadow:none;text-shadow:0 2px 2px #fff,0 -1px 2px #fff;white-space:nowrap;font-weight:800}
+@media(max-width:600px){
+  .sync-actions{display:grid}.sync-actions button{width:100%}
+  .room-tools{opacity:1}
+  .catalog-sticker{width:28px;height:28px}
+}

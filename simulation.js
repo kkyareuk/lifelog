@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260731e";
+import {state,save} from "./state.js?v=20260731f";
 const mins=s=>{const [h,m]=String(s||"0:0").split(":").map(Number);return h*60+(m||0)};
 const hash=s=>{let h=0;for(const x of s)h=(h*31+x.charCodeAt())>>>0;return h};
 const keyOf=d=>d.toLocaleDateString("sv-SE");
@@ -8,7 +8,7 @@ const place=(type,fallback)=>state.world.places.find(p=>p.type===type)||state.wo
 const pick=(items,seed,fallback)=>items?.length?items[seed%items.length]:fallback;
 const dishes={"한식":["김치찌개","비빔밥","불고기 정식"],"면 요리":["우동","탄탄멘","냉모밀"],"양식":["파스타","리조또","라자냐"],"중식":["딤섬","마파두부","볶음밥"],"일식":["초밥","돈카츠","오므라이스"],"디저트":["프렌치토스트","케이크","파르페"]};
 const defaultDrinks=["아인슈페너","카페라테","레몬 에이드","밀크티","핸드드립 커피"];
-const catalogItem=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
+const catalogItem=id=>Object.entries(state.catalog||{}).flatMap(([kind,items])=>(items||[]).map(x=>({...x,kind:x.kind||kind}))).find(x=>x.id===id);
 function stocked(p,kind){const chosen=(p?.stock||[]).map(catalogItem).filter(x=>x?.kind===kind);return chosen.length?chosen:(state.catalog?.[kind]||[])}
 function chooseCatalog(c,p,kind,seed){
   const favorite=new Set(c.favorites?.[kind]||[]);
@@ -42,8 +42,8 @@ function cafeEntry(c,m,p,seed){
   return outEntry(m,p,`${drink}을 마시는 중`,triesNew?`오늘따라 도전하고 싶어서 ${drink}을 마셔 보았어요.`:`평소 좋아하는 ${drink}을 천천히 마시고 있어요.`);
 }
 
-function homeEntry(m,room,title,desc){return {minutes:m,time:time(m),home:true,room,title,desc}}
-function outEntry(m,p,title,desc){return {minutes:m,time:time(m),home:false,placeId:p?.id||null,title,desc}}
+function homeEntry(m,room,title,desc,extra={}){return {minutes:m,time:time(m),home:true,room,title,desc,...extra}}
+function outEntry(m,p,title,desc,extra={}){return {minutes:m,time:time(m),home:false,placeId:p?.id||null,title,desc,...extra}}
 const interactions={
   "소파":["소파에서 느긋하게 쉬는 중","소파에 기대 잠깐 숨을 돌리고 있어요."],"TV":["TV를 보는 중","좋아하는 프로그램을 골라 보고 있어요."],
   "책장":["책을 읽는 중","책장에서 책을 골라 읽고 있어요."],"오디오":["음악을 감상하는 중","오디오로 좋아하는 곡을 듣고 있어요."],
@@ -123,6 +123,12 @@ function build(c,date){
   for(const r of state.routines[c.id]||[]){
     if(r.day===date.getDay())entries.push(r.placeId?outEntry(mins(r.start),state.world.places.find(p=>p.id===r.placeId),r.title,`고정 일정 · ${r.start}–${r.end}`):homeEntry(mins(r.start),r.room||"living",r.title,`고정 일정 · ${r.start}–${r.end}`));
   }
+  const allCatalog=Object.values(state.catalog||{}).flat();
+  entries.forEach(entry=>{
+    if(entry.itemId)return;
+    const item=allCatalog.find(x=>x?.name&&(entry.title?.includes(x.name)||entry.desc?.includes(x.name)));
+    if(item)entry.itemId=item.id;
+  });
   return entries.filter(e=>Number.isFinite(e.minutes)).sort((a,b)=>a.minutes-b.minutes);
 }
 export function timelineFor(c,date=new Date()){

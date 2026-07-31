@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260731e";
-import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js?v=20260731e";
-import {renderApp, setAccountLabel} from "./views.js?v=20260731e";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260731f";
+import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js?v=20260731f";
+import {renderApp, setAccountLabel} from "./views.js?v=20260731f";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -63,7 +63,18 @@ function bind(){
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
-  $("#account")?.addEventListener("click",()=>window.ParallelCityAuth?.toggle());
+  $("#sync-open")?.addEventListener("click",()=>{
+    state.activeTab="settings";save();render();
+    requestAnimationFrame(()=>document.querySelector(".sync-panel")?.scrollIntoView({behavior:"smooth",block:"center"}));
+  });
+  $("[data-auth]")?.addEventListener("click",async()=>{
+    const auth=window.ParallelCityAuth;if(!auth)return alert("계정 기능을 불러오는 중이에요.");
+    const info=auth.getInfo?.();
+    if(info?.user){if(confirm("Google 계정에서 로그아웃할까요?"))await auth.logout();}
+    else await auth.login();
+  });
+  $("[data-cloud-upload]")?.addEventListener("click",async()=>window.ParallelCityAuth?.upload());
+  $("[data-cloud-download]")?.addEventListener("click",async()=>window.ParallelCityAuth?.download());
   $("[data-world-bg]")?.addEventListener("change",e=>{setWorldBackground(e.target.value);render()});
   $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
@@ -232,7 +243,7 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260731d").catch(error=>{
+import("./auth.js?v=20260731f").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
