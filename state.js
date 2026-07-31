@@ -1,4 +1,4 @@
-const KEY="parallel-city-game-v3";
+const KEY="parallel-city-game-v4";
 const oldKey="parallel-city-game-v2";
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
@@ -10,26 +10,33 @@ const rooms=()=>({
   bedroom:{name:"침실",image:""},
   study:{name:"서재·취미방",image:""}
 });
-const fresh=()=>({schema:3,activeTab:"character",activeId:null,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
-  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",x:15,y:34,color:"#74c7bd"},
-  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",x:55,y:22,color:"#86ca7b"},
-  {id:"office",name:"평행 오피스",type:"회사",emoji:"🏢",x:79,y:37,color:"#8c9df0"},
-  {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",x:21,y:68,color:"#6db7e8"},
-  {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",x:64,y:76,color:"#66c68a"}
+const fresh=()=>({schema:4,activeTab:"character",activeId:null,activeHomeId:null,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
+  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",x:15,y:34,color:"#74c7bd"},
+  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",x:55,y:22,color:"#86ca7b"},
+  {id:"office",name:"평행 오피스",type:"회사",emoji:"🏢",image:"",x:79,y:37,color:"#8c9df0"},
+  {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",x:21,y:68,color:"#6db7e8"},
+  {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",x:64,y:76,color:"#66c68a"}
 ]}});
 
 function migrate(x){
   if(!x)return fresh();
-  if(x.schema===3)return x;
+  if(x.schema===4)return x;
+  if(x.schema===3){
+    x.schema=4;x.dailyPlans=x.dailyPlans||{};x.activeHomeId=x.activeHomeId||null;
+    (x.world?.places||[]).forEach(p=>p.image=p.image||"");
+    return x;
+  }
   if(x.schema===2){
     x.schema=3;
     Object.values(x.homes||{}).forEach(h=>{h.rooms=h.rooms||rooms()});
+    x.schema=4;x.dailyPlans={};x.activeHomeId=null;
+    (x.world?.places||[]).forEach(p=>p.image=p.image||"");
     return x;
   }
   return fresh();
 }
 function load(){
-  try{return migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem(oldKey)||"null"))}
+  try{return migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem("parallel-city-game-v3")||localStorage.getItem(oldKey)||"null"))}
   catch{return fresh()}
 }
 
@@ -71,6 +78,8 @@ export function setHomeImage(homeId,room,data){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();h.rooms[room].image=data;save(true);
 }
+export function setPlaceImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.image=data;save(true)}}
+export function setActiveHome(id){if(state.homes[id]){state.activeHomeId=id;save()}}
 export function addRelationship(data){const id=uid();state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true)}
 export function updateRelationship(id,data){
   const relation=state.relationships[id];if(!relation)return;
@@ -100,9 +109,14 @@ function applyCohabit(r){
 export function setWorldBackground(bg){state.world.bg=bg;save(true)}
 export function addPlace(){
   const name=prompt("건물 이름","새 건물");if(!name)return;
-  state.world.places.push({id:uid(),name,type:prompt("종류","상점")||"상점",emoji:"🏬",x:50,y:50,color:"#8ecbc0"});save(true);
+  state.world.places.push({id:uid(),name,type:prompt("종류","상점")||"상점",emoji:"🏬",image:"",x:50,y:50,color:"#8ecbc0"});save(true);
 }
 export function movePlace(id,x,y,persist=true){const p=state.world.places.find(p=>p.id===id);if(p){p.x=x;p.y=y;if(persist)save()}}
 export function replaceState(next){state=migrate(clone(next));localStorage.setItem(KEY,JSON.stringify(state))}
-export function resetAll(){state=fresh();localStorage.removeItem(KEY);localStorage.removeItem(oldKey)}
+export function resetAll(){
+  state=fresh();
+  localStorage.removeItem(KEY);
+  localStorage.removeItem("parallel-city-game-v3");
+  localStorage.removeItem(oldKey);
+}
 export const cloneState=()=>clone(state);

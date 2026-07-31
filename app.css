@@ -10,3 +10,41 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .relationship-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px}.relation{padding:22px;border-radius:18px;background:linear-gradient(110deg,color-mix(in srgb,var(--a) 18%,#fff),color-mix(in srgb,var(--b) 18%,#fff));margin:12px 0}.empty-mini{text-align:center;padding:65px 20px;color:var(--muted)}.relation-dialog{border:0;border-radius:24px;padding:0;box-shadow:0 30px 90px #17203355}.relation-dialog::backdrop{background:#17203377}.relation-dialog form{width:min(460px,90vw);padding:26px;display:grid;gap:15px}.relation-dialog label{display:grid;gap:7px}.relation-dialog .cohabit{display:flex;align-items:center}.relation-dialog .cohabit input{width:auto;min-height:auto}.relation-dialog .hint{color:var(--muted);font-size:14px}.relation-dialog form>div{display:flex;justify-content:flex-end;gap:8px}.town-edit{display:grid;grid-template-columns:1fr 360px;gap:18px}.town-edit>.world{border-radius:27px;overflow:hidden}.town-edit .place{cursor:grab}.home-grid+.title{margin-top:15px}
 @media(max-width:900px){header{height:auto;flex-wrap:wrap;padding:9px}.brand{min-width:190px}.brand h1{font-size:25px}.logo{width:50px;height:50px}.brand small{display:none}nav{order:3;width:100%}header nav button{padding:10px 14px}#save-state{margin-left:auto;font-size:12px}main{padding:8px}.observe,.editor,.town-edit{grid-template-columns:1fr}.roster-card{min-width:220px}.viewport{height:calc(100dvh - 260px);min-height:480px}.detail{margin-top:8px}.home-grid{display:block}.home{margin-bottom:12px}.rooms{min-width:720px}.home{overflow:auto}.fields{grid-template-columns:1fr}.town-edit>.world{min-width:1200px}.town-edit{overflow:auto}}
 @media(max-width:600px){body{overflow-x:hidden}header{position:sticky;top:0}.account{max-width:150px;overflow:hidden;text-overflow:ellipsis}.observe>section{min-width:0}.world-hud{position:sticky;left:0;top:0}.world-hud>div{min-width:0;max-width:48%;font-size:14px}.viewport{border-radius:20px}.detail .hero{height:55vh}.room-tools{opacity:1}}
+
+/* 화면·집·로그 안정화 */
+.observe{align-items:start}
+.viewport{width:100%;height:auto;min-height:0;aspect-ratio:1672/941;overflow:hidden;touch-action:auto}
+.viewport .world{width:100%;height:100%;transform:none!important}
+.world-bg{object-fit:contain}
+.place{width:clamp(72px,9vw,136px);min-height:clamp(66px,7vw,105px);padding:8px;border-width:3px}
+.place.has-photo{background:linear-gradient(#ffffffb8,#ffffffb8),var(--photo) center/cover}
+.person span{font-size:clamp(12px,1.2vw,18px)}
+.person .sprite{width:clamp(54px,6vw,92px);height:clamp(54px,6vw,92px)}
+.detail-column{display:grid;gap:16px}
+.hero{height:270px}
+.place-photo{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:15px;margin-top:14px}
+.life-log{padding:20px}.life-log ol{list-style:none;padding:0;margin:15px 0 0}.life-log li{display:grid;grid-template-columns:54px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line)}.life-log li span{display:grid}.life-log small,.life-log time{color:var(--muted)}.life-log .now b{color:var(--p)}
+.home-tabs{display:flex;gap:8px;overflow:auto;margin:12px 0 18px}.home-tabs .on{color:#fff;background:var(--grad)}
+.home-grid{display:block;max-width:1200px;margin:auto}.rooms{grid-template-rows:1.1fr .72fr 1.45fr;min-height:0;aspect-ratio:16/9}
+.room-people{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:7px;align-items:flex-end}
+.home-person{position:static}.home-person span{max-width:180px}.home-person .avatar{width:52px;height:52px}.home-person .sprite{width:66px;height:66px}
+.town-edit{grid-template-columns:minmax(0,1fr) 360px}.town-edit>.world{width:100%;height:auto;aspect-ratio:1672/941}
+.place-editor{display:grid;gap:7px;margin-top:16px}.place-editor>div{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px;background:#f5f7fb;border-radius:12px}.place-editor button,.image-actions button{padding:8px 10px}.image-actions{display:flex;gap:7px}
+@media(max-width:900px){
+  .viewport{height:auto;min-height:0}
+  .town-edit>.world{min-width:0}
+  .town-edit{overflow:visible}
+  .rooms{min-width:0}
+  .home{overflow:hidden}
+}
+@media(max-width:600px){
+  .world-hud{position:relative}
+  .detail .hero{height:220px}
+  .rooms{gap:4px;padding:5px}
+  .room{padding:7px;border-width:3px}
+  .home-person span{display:none}
+  .home-person .avatar{width:42px;height:42px}
+  .home-person .sprite{width:48px;height:48px}
+  .place b{font-size:12px}.place small{font-size:10px}
+  .place{border-width:2px;box-shadow:0 5px 0 color-mix(in srgb,var(--place) 58%,#333)}
+}

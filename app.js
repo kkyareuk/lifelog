@@ -1,4 +1,4 @@
-import {state, active, save, replaceState, createCharacter, setActive, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState} from "./state.js";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState} from "./state.js";
 import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js";
 import {renderApp, setAccountLabel} from "./views.js";
 
@@ -27,6 +27,7 @@ function bind(){
   $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);render()});
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
+  $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
   $$("[data-field]").forEach(el=>el.oninput=()=>updateCharacter(active().id,{[el.dataset.field]:el.value},false));
   $$("[data-color]").forEach(el=>el.oninput=()=>{updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);applyTheme()});
   $("[data-gradient]")?.addEventListener("change",e=>{updateCharacter(active().id,{theme:{...active().theme,gradient:e.target.checked}},false);applyTheme()});
@@ -34,7 +35,10 @@ function bind(){
   $("[data-save]")?.addEventListener("click",()=>{save(true);render()});
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
+  $$("[data-place-image]").forEach(el=>el.onclick=()=>pickImage("place",el.dataset.placeImage));
+  $$("[data-image-url]").forEach(el=>el.onclick=()=>useImageUrl(el.dataset.imageUrl,el.dataset.id,el.dataset.room||""));
   $$("[data-clear-room-bg]").forEach(el=>el.onclick=()=>{setHomeImage(el.dataset.homeId,el.dataset.room,"");render()});
+  $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
   $("#account")?.addEventListener("click",()=>window.ParallelCityAuth?.toggle());
   $("[data-world-bg]")?.addEventListener("change",e=>{setWorldBackground(e.target.value);render()});
   $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
@@ -43,7 +47,19 @@ function bind(){
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
   if(state.activeTab==="town")bindPlaceDrag();
-  setupViewport();
+}
+
+function useImageUrl(type,id,room){
+  const value=prompt("이미지 주소를 붙여 넣어 주세요 (https://...)","");
+  if(!value)return;
+  try{
+    const url=new URL(value,location.href);
+    if(!["http:","https:","data:"].includes(url.protocol))throw new Error();
+    if(type==="room")setHomeImage(id,room,value);
+    else if(type==="place")setPlaceImage(id,value);
+    else setCharacterImage(id,type,value);
+    render();
+  }catch{alert("올바른 이미지 주소를 입력해 주세요.");}
 }
 
 function pickImage(type,id,room=""){
@@ -56,10 +72,11 @@ $("#image-picker").onchange=async e=>{
   e.target.value="";
   if(!file||!task)return;
   try{
-    const max=task.type==="room"?1400:task.type==="icon"?700:900;
+    const max=["room","place"].includes(task.type)?1400:task.type==="icon"?700:900;
     const mime=task.type==="icon"?"image/png":"image/webp";
     const data=await resizeImage(file,max,mime);
     if(task.type==="room")setHomeImage(task.id,task.room,data);
+    else if(task.type==="place")setPlaceImage(task.id,data);
     else setCharacterImage(task.id,task.type,data);
     render();
   }catch(err){
@@ -94,6 +111,7 @@ function focusCharacter(id){
   const e=eventFor(state.characters[id]);
   if(e.home){
     state.activeTab="home";
+    state.activeHomeId=state.characters[id].homeId||id;
     save();
     render();
     requestAnimationFrame(()=>focusHomeCharacter(id));
@@ -108,6 +126,7 @@ function focusCharacter(id){
 
 function focusHomeCharacter(id){
   setActive(id);
+  state.activeHomeId=state.characters[id]?.homeId||id;
   if(state.activeTab!=="home")state.activeTab="home";
   save();
   render();
@@ -172,31 +191,6 @@ function bindPlaceDrag(){
     };
     el.onpointerup=()=>{el.onpointermove=null;save()};
   });
-}
-
-function setupViewport(){
-  const vp=$(".viewport"), world=vp?.querySelector(".world");
-  if(!vp||!world)return;
-  const fit=Math.min(1,vp.clientWidth/1200,vp.clientHeight/676);
-  let scale=Number(vp.dataset.scale)||fit, pinch=0, points=new Map();
-  const apply=v=>{scale=Math.max(.55,Math.min(2.4,v));world.style.transform=`scale(${scale})`;world.style.transformOrigin="0 0"};
-  apply(scale);
-  $$("[data-zoom]").forEach(b=>b.onclick=()=>{
-    apply(b.dataset.zoom==="0"?fit:scale+(b.dataset.zoom==="+" ? .18 : -.18));
-    if(b.dataset.zoom==="0")vp.scrollTo({left:0,top:0,behavior:"smooth"});
-  });
-  vp.onpointerdown=e=>{points.set(e.pointerId,{x:e.clientX,y:e.clientY});vp.setPointerCapture(e.pointerId)};
-  vp.onpointermove=e=>{
-    const prev=points.get(e.pointerId);if(!prev)return;
-    points.set(e.pointerId,{x:e.clientX,y:e.clientY});
-    if(points.size===1){vp.scrollLeft-=e.clientX-prev.x;vp.scrollTop-=e.clientY-prev.y}
-    else{
-      const a=[...points.values()], distance=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
-      if(pinch)apply(scale*distance/pinch);
-      pinch=distance;
-    }
-  };
-  vp.onpointerup=vp.onpointercancel=e=>{points.delete(e.pointerId);pinch=0};
 }
 
 window.ParallelCity={
