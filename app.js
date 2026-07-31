@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter} from "./state.js";
-import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js";
-import {renderApp, setAccountLabel} from "./views.js";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock} from "./state.js?v=20260731d";
+import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js?v=20260731d";
+import {renderApp, setAccountLabel} from "./views.js?v=20260731d";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -48,6 +48,11 @@ function bind(){
   $$("[data-color]").forEach(el=>el.oninput=()=>{updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);applyTheme()});
   $("[data-gradient]")?.addEventListener("change",e=>{updateCharacter(active().id,{theme:{...active().theme,gradient:e.target.checked}},false);applyTheme()});
   $$("[data-chip]").forEach(el=>el.onclick=()=>{toggleChip(active().id,el.dataset.chip,el.dataset.value);render()});
+  $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{toggleFavorite(active().id,el.dataset.favoriteKind,el.dataset.favoriteId);render()});
+  $$("[data-add-catalog]").forEach(el=>el.onclick=()=>{addCatalogItem(el.dataset.addCatalog,{name:"새 항목",category:"기타"});render()});
+  $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});render()});
+  $$("[data-delete-catalog]").forEach(el=>el.onclick=()=>{if(confirm("이 항목을 삭제할까요?")){deleteCatalogItem(el.dataset.kind,el.dataset.deleteCatalog);render()}});
+  $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
   $("[data-save]")?.addEventListener("click",()=>{save(true);render()});
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
@@ -219,3 +224,7 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
+import("./auth.js?v=20260731d").catch(error=>{
+  console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
+  setAccountLabel("Google 로그인");
+});

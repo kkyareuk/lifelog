@@ -93,3 +93,29 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   .char-sort-row{gap:4px}
   .sort-controls button{width:34px}
 }
+
+/* 세계관 취향 사전 */
+.catalog-shell{display:grid;gap:20px}
+.catalog-intro{padding:24px;background:linear-gradient(135deg,color-mix(in srgb,var(--p) 13%,#fff),color-mix(in srgb,var(--s) 15%,#fff))}
+.catalog-intro h2{margin:0 0 7px;font-size:31px}.catalog-intro p{margin:0;color:var(--muted)}
+.catalog-section{padding:22px}.catalog-section>.title h3{margin:0;font-size:26px}
+.catalog-add{display:grid;grid-template-columns:1.2fr 1fr 1.5fr auto;gap:8px;margin:16px 0}
+.catalog-add.food{grid-template-columns:1.1fr .9fr 1.3fr .7fr .7fr auto}
+.catalog-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.catalog-card{display:grid;grid-template-columns:74px 1fr auto;gap:11px;align-items:start;padding:13px;border:1px solid var(--line);border-radius:18px;background:#f7f9fc}
+.catalog-card img,.catalog-thumb{width:74px;height:74px;object-fit:cover;border-radius:15px;background:linear-gradient(135deg,color-mix(in srgb,var(--p) 20%,#fff),color-mix(in srgb,var(--s) 25%,#fff))}
+.catalog-card .catalog-fields{display:grid;gap:7px}.catalog-card input,.catalog-card select{min-height:39px;padding:8px 10px;border-radius:10px}
+.catalog-card .delete{padding:7px 9px;color:#c33}.catalog-card small{color:var(--muted)}
+.favorite-groups{display:grid;gap:12px}.favorite-group{padding:13px;border:1px solid var(--line);border-radius:16px;background:#f8fafc}
+.favorite-group strong{display:block;margin-bottom:7px}.favorite-group button{padding:8px 11px;margin:3px}
+.favorite-group button.on,.stock-picker button.on{color:#fff;background:var(--grad);border-color:transparent}
+.place-stock{margin:9px 0 15px;padding:12px;background:#f4f7fb;border-radius:15px}
+.place-stock>strong{display:block;margin-bottom:8px}.stock-picker{display:flex;flex-wrap:wrap;gap:6px}.stock-picker button{padding:7px 10px}
+.place-editor details{border:1px solid var(--line);border-radius:15px;background:#f7f9fc;padding:10px}.place-editor summary{cursor:pointer;font-size:18px}
+
+@media(max-width:1100px){.catalog-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+  .catalog-add,.catalog-add.food{grid-template-columns:1fr 1fr}.catalog-add button{grid-column:1/-1}
+  .catalog-cards{grid-template-columns:1fr}.catalog-card{grid-template-columns:58px 1fr auto}
+  .catalog-card img,.catalog-thumb{width:58px;height:58px}
+}

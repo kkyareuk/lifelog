@@ -1,4 +1,4 @@
-import {state,save} from "./state.js";
+import {state,save} from "./state.js?v=20260731d";
 const mins=s=>{const [h,m]=String(s||"0:0").split(":").map(Number);return h*60+(m||0)};
 const hash=s=>{let h=0;for(const x of s)h=(h*31+x.charCodeAt())>>>0;return h};
 const keyOf=d=>d.toLocaleDateString("sv-SE");
@@ -8,9 +8,18 @@ const place=(type,fallback)=>state.world.places.find(p=>p.type===type)||state.wo
 const pick=(items,seed,fallback)=>items?.length?items[seed%items.length]:fallback;
 const dishes={"한식":["김치찌개","비빔밥","불고기 정식"],"면 요리":["우동","탄탄멘","냉모밀"],"양식":["파스타","리조또","라자냐"],"중식":["딤섬","마파두부","볶음밥"],"일식":["초밥","돈카츠","오므라이스"],"디저트":["프렌치토스트","케이크","파르페"]};
 const defaultDrinks=["아인슈페너","카페라테","레몬 에이드","밀크티","핸드드립 커피"];
+const catalogItem=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
+function stocked(p,kind){const chosen=(p?.stock||[]).map(catalogItem).filter(x=>x?.kind===kind);return chosen.length?chosen:(state.catalog?.[kind]||[])}
+function chooseCatalog(c,p,kind,seed){
+  const favorite=new Set(c.favorites?.[kind]||[]);
+  return [...stocked(p,kind)].sort((a,b)=>{
+    const score=x=>(favorite.has(x.id)?100:0)+(c.foodTypes?.includes(x.category)?25:0)+(c.musicGenres?.includes(x.category)?25:0)+(c.tastes?.includes("맵부심")?(x.spicy||0)*4:0)+(c.tastes?.includes("디저트광")?(x.sweet||0)*4:0)+(hash(`${c.id}:${x.id}:${seed}`)%11);
+    return score(b)-score(a);
+  })[0]||null;
+}
 function relationshipEvent(c,date){
   const priority={"부부":5,"연인":4,"짝사랑":3,"썸":2,"친구":1};
-  const options=state.relationships
+  const options=Object.values(state.relationships||{})
     .filter(r=>(r.a===c.id||r.b===c.id)&&priority[r.type]&&state.characters[r.a===c.id?r.b:r.a])
     .sort((a,b)=>(priority[b.type]-priority[a.type])||a.id.localeCompare(b.id));
   const r=options[0]; if(!r)return null;
@@ -21,15 +30,15 @@ function relationshipEvent(c,date){
   const cafe=seed%3===0,p=place(cafe?"카페":"음식점",cafe?"음식점":"카페");
   const at=19*60+seed%35;
   if(cafe){
-    const drink=pick(c.drinks,seed,defaultDrinks[seed%defaultDrinks.length]);
+    const drink=chooseCatalog(c,p,"drink",seed)?.name||pick(c.drinks,seed,defaultDrinks[seed%defaultDrinks.length]);
     return outEntry(at,p,`${other.name}와 ${drink}을 마시는 중`,`${r.type==="짝사랑"?"조금 설레는 마음으로":"함께 시간을 보내며"} ${p?.name||"카페"}에서 ${drink}을 마시고 있어요.`);
   }
-  const foodType=pick(c.foodTypes,seed,"한식"),dish=pick(dishes[foodType],seed,"저녁 메뉴");
+  const foodType=pick(c.foodTypes,seed,"한식"),dish=chooseCatalog(c,p,"food",seed)?.name||pick(dishes[foodType],seed,"저녁 메뉴");
   return outEntry(at,p,`${other.name}와 함께 ${dish}을 먹는 중`,`${p?.name||"식당"}에서 ${other.name}와 데이트하며 ${dish}을 먹고 있어요.`);
 }
 function cafeEntry(c,m,p,seed){
   const favorites=c.drinks?.length?c.drinks:defaultDrinks,triesNew=seed%5===0;
-  const drink=triesNew?pick(defaultDrinks.filter(x=>!favorites.includes(x)),seed,"아인슈페너"):pick(favorites,seed,"아인슈페너");
+  const drink=chooseCatalog(c,p,"drink",seed)?.name||(triesNew?pick(defaultDrinks.filter(x=>!favorites.includes(x)),seed,"아인슈페너"):pick(favorites,seed,"아인슈페너"));
   return outEntry(m,p,`${drink}을 마시는 중`,triesNew?`오늘따라 도전하고 싶어서 ${drink}을 마셔 보았어요.`:`평소 좋아하는 ${drink}을 천천히 마시고 있어요.`);
 }
 
@@ -59,15 +68,16 @@ function furnitureEntry(c,m,room,fallbackTitle,fallbackDesc){
 }
 function signature(c){
   return JSON.stringify({
-    c:{job:c.job,wake:c.wake,sleep:c.sleep,tastes:c.tastes,interests:c.interests,hobbies:c.hobbies,homeId:c.homeId,income:c.income,musicGenres:c.musicGenres,foodTypes:c.foodTypes,drinks:c.drinks},
-    places:state.world.places.map(({id,name,type})=>({id,name,type})),
-    relationships:state.relationships.filter(r=>r.a===c.id||r.b===c.id),
+    c:{job:c.job,wake:c.wake,sleep:c.sleep,tastes:c.tastes,interests:c.interests,hobbies:c.hobbies,homeId:c.homeId,income:c.income,musicGenres:c.musicGenres,foodTypes:c.foodTypes,drinks:c.drinks,favorites:c.favorites},
+    catalog:state.catalog,
+    places:state.world.places.map(({id,name,type,stock})=>({id,name,type,stock})),
+    relationships:Object.values(state.relationships||{}).filter(r=>r.a===c.id||r.b===c.id),
     routines:state.routines[c.id]||[],
     homeRooms:state.homes[c.homeId||c.id]?.rooms||{}
   });
 }
 function build(c,date){
-  const wake=mins(c.wake),sleep=mins(c.sleep),entries=[];
+  const wake=mins(c.wake),sleep=mins(c.sleep),entries=[],seed=hash(c.id+keyOf(date));
   entries.push(homeEntry(wake,"bedroom","기상","잠에서 깨어 오늘 하루를 시작했어요."));
   entries.push(homeEntry((wake+25)%1440,"bath","씻고 준비하는 중","세면을 마치고 오늘 입을 옷을 골라요."));
   entries.push(homeEntry((wake+55)%1440,"kitchen","아침을 챙기는 중","주방에서 간단한 아침을 준비하고 있어요."));
@@ -76,13 +86,13 @@ function build(c,date){
     const work=place(["의사","간호사"].includes(c.job)?"병원":"회사","회사");
     entries.push(outEntry(9*60,work,`${c.job}로 일하는 중`,`${work?.name||"직장"}에서 오늘의 업무를 시작했어요.`));
     const food=place("음식점","카페");
-    entries.push(outEntry(12*60+10,food,`${food?.name||"식당"}에서 점심`,`${food?.name||"식당"}에서 점심을 먹고 있어요.`));
+    const meal=chooseCatalog(c,food,"food",seed+12)?.name||pick(dishes[pick(c.foodTypes,seed,"한식")],seed,"점심 메뉴");
+    entries.push(outEntry(12*60+10,food,`${food?.name||"식당"}에서 ${meal}을 먹는 중`,`${food?.name||"식당"}에서 취향에 맞는 ${meal}을 골라 점심을 먹고 있어요.`));
     entries.push(outEntry(13*60,work,"직장으로 돌아감","점심을 마치고 업무를 이어 가고 있어요."));
   }else if(c.job==="학생"){
     const school=place("학교","회사");
     entries.push(outEntry(9*60,school,"수업을 듣는 중",`${school?.name||"학교"}에서 오늘 수업을 듣고 있어요.`));
   }
-  const seed=hash(c.id+keyOf(date));
   const dateEvent=relationshipEvent(c,date);
   const goOut=!c.hobbies?.includes("외출 안 함")&&(seed%100<(c.hobbies?.includes("집에서 뒹굴기")?35:78));
   if(dateEvent){
@@ -91,7 +101,19 @@ function build(c,date){
     const preferred=c.hobbies?.includes("카페 탐방")?"카페":c.hobbies?.includes("운동")?"공원":c.hobbies?.includes("쇼핑")?"상점":"공원";
     const p=place(preferred,"카페");
     const at=employed?18*60+30:14*60+(seed%90);
-    entries.push(preferred==="카페"?cafeEntry(c,at,p,seed):outEntry(at,p,`${p?.name||"마을"} 방문`,`${p?.name||"마을"}에서 ${c.hobbies?.[0]||"자유 시간"}을 보내고 있어요.`));
+    if(preferred==="카페")entries.push(cafeEntry(c,at,p,seed));
+    else{
+      const kind=c.hobbies?.includes("쇼핑")?"fashion"
+        :c.interests?.includes("음악")?"music"
+        :c.interests?.includes("애니메이션")?"idol"
+        :c.hobbies?.includes("독서")?"book"
+        :c.interests?.includes("영화")?"movie"
+        :c.interests?.includes("게임")?"game"
+        :c.interests?.includes("향수")?"perfume"
+        :c.hobbies?.some(x=>["덕질","공방 체험"].includes(x))?"hobby":null;
+      const item=kind?chooseCatalog(c,p,kind,seed):null,verbs={fashion:"입어 보는 중",music:"듣는 중",idol:"새 무대를 보는 중",book:"읽는 중",movie:"감상하는 중",game:"플레이하는 중",perfume:"시향하는 중",hobby:"살펴보는 중"};
+      entries.push(item?outEntry(at,p,`${item.name}을 ${verbs[kind]}`,`${p?.name||"상점"}에서 취향에 맞는 ${item.name}을 골랐어요.`):outEntry(at,p,`${p?.name||"마을"} 방문`,`${p?.name||"마을"}에서 ${c.hobbies?.[0]||"자유 시간"}을 보내고 있어요.`));
+    }
   }else{
     entries.push(furnitureEntry(c,employed?18*60+40:14*60,"study","취미를 즐기는 중",`${c.hobbies?.[0]||"느긋한 휴식"}에 집중하고 있어요.`));
   }

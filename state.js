@@ -10,9 +10,48 @@ const rooms=()=>({
   bedroom:{name:"침실",image:"",furniture:["침대","옷장"]},
   study:{name:"서재·취미방",image:"",furniture:["책상","컴퓨터"]}
 });
-const fresh=()=>({schema:5,activeTab:"character",activeId:null,activeHomeId:null,homeEditMode:false,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
-  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",x:15,y:34,color:"#74c7bd"},
-  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",x:55,y:22,color:"#86ca7b"},
+const defaultCatalog=()=>({
+  food:[
+    {id:"food-omurice",kind:"food",name:"오므라이스",category:"일본 음식",image:"",spicy:0,sweet:2},
+    {id:"food-malatang",kind:"food",name:"마라탕",category:"중국 음식",image:"",spicy:5,sweet:0},
+    {id:"food-tiramisu",kind:"food",name:"티라미수",category:"디저트",image:"",spicy:0,sweet:5}
+  ],
+  drink:[
+    {id:"drink-ein",kind:"drink",name:"아인슈페너",category:"커피",image:"",sweet:3},
+    {id:"drink-matcha",kind:"drink",name:"말차 라테",category:"라테",image:"",sweet:4}
+  ],
+  fashion:[
+    {id:"fashion-cardigan",kind:"fashion",name:"빈티지 가디건",category:"상의",image:"",style:"빈티지"},
+    {id:"fashion-coat",kind:"fashion",name:"롱 코트",category:"아우터",image:"",style:"클래식"}
+  ],
+  music:[
+    {id:"music-night",kind:"music",name:"한밤의 산책",category:"재즈",image:"",creator:"달빛 트리오"},
+    {id:"music-blue",kind:"music",name:"Blue Window",category:"인디",image:"",creator:"유리새"}
+  ],
+  idol:[
+    {id:"idol-lumen",kind:"idol",name:"LUMEN",category:"아이돌",image:"",creator:"보이그룹"},
+    {id:"idol-meteor",kind:"idol",name:"METEOR CLUB",category:"밴드",image:"",creator:"록 밴드"}
+  ],
+  book:[
+    {id:"book-midnight",kind:"book",name:"새벽의 도서관",category:"추리 소설",image:"",creator:"한여름"}
+  ],
+  movie:[
+    {id:"movie-starlight",kind:"movie",name:"별빛 극장",category:"판타지 영화",image:"",creator:"평행 스튜디오"}
+  ],
+  game:[
+    {id:"game-pocket",kind:"game",name:"포켓 아케이드",category:"RPG",image:"",creator:"민트 게임즈"}
+  ],
+  perfume:[
+    {id:"perfume-garden",kind:"perfume",name:"비 온 뒤 정원",category:"우디 플로럴",image:""}
+  ],
+  hobby:[
+    {id:"hobby-perfume",kind:"hobby",name:"달빛 향수 키트",category:"조향",image:""},
+    {id:"hobby-figure",kind:"hobby",name:"한정판 피규어",category:"수집",image:""}
+  ]
+});
+const fresh=()=>({schema:6,activeTab:"character",activeId:null,activeHomeId:null,homeEditMode:false,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
+  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",stock:["drink-ein","drink-matcha","food-tiramisu"],x:15,y:34,color:"#74c7bd"},
+  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",stock:["food-omurice","food-malatang"],x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"평행 오피스",type:"회사",emoji:"🏢",image:"",x:79,y:37,color:"#8c9df0"},
   {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",x:21,y:68,color:"#6db7e8"},
   {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",x:64,y:76,color:"#66c68a"}
@@ -20,6 +59,7 @@ const fresh=()=>({schema:5,activeTab:"character",activeId:null,activeHomeId:null
 
 function migrate(x){
   if(!x)return fresh();
+  if(x.schema===6)return normalizeHomes(x);
   if(x.schema===5)return normalizeHomes(x);
   if(x.schema===4){
     x.schema=5;x.homeEditMode=false;
@@ -40,6 +80,32 @@ function migrate(x){
   return fresh();
 }
 function normalizeHomes(x){
+  x.schema=6;
+  x.characters=x.characters&&typeof x.characters==="object"?x.characters:{};
+  const characterIds=Object.keys(x.characters);
+  x.order=Array.isArray(x.order)?x.order.filter((id,index,list)=>x.characters[id]&&list.indexOf(id)===index):[];
+  characterIds.forEach(id=>{if(!x.order.includes(id))x.order.push(id)});
+  x.activeId=x.characters[x.activeId]?x.activeId:(x.order[0]||null);
+  x.homes=x.homes&&typeof x.homes==="object"?x.homes:{};
+  x.routines=x.routines&&typeof x.routines==="object"?x.routines:{};
+  x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
+  const relationList=Array.isArray(x.relationships)?x.relationships:Object.values(x.relationships||{});
+  x.relationships={};
+  relationList.filter(Boolean).forEach(relation=>{
+    const id=relation.id||uid();
+    if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b)x.relationships[id]={...relation,id};
+  });
+  const defaultWorld=fresh().world;
+  x.world=x.world&&typeof x.world==="object"?x.world:defaultWorld;
+  x.world.name=x.world.name||defaultWorld.name;
+  x.world.bg=x.world.bg||defaultWorld.bg;
+  x.world.places=Array.isArray(x.world.places)?x.world.places:clone(defaultWorld.places);
+  const defaultsCatalog=defaultCatalog();
+  x.catalog=x.catalog||defaultsCatalog;
+  Object.keys(defaultsCatalog).forEach(kind=>{
+    x.catalog[kind]=Array.isArray(x.catalog[kind])?x.catalog[kind].map(item=>({...item,kind:item.kind||kind})):defaultsCatalog[kind];
+  });
+  (x.world?.places||[]).forEach(p=>p.stock=Array.isArray(p.stock)?[...p.stock]:[]);
   const defaults=rooms();
   Object.values(x.homes||{}).forEach(h=>{
     h.rooms=h.rooms||{};
@@ -56,6 +122,8 @@ function normalizeHomes(x){
     c.musicGenres=Array.isArray(c.musicGenres)?[...c.musicGenres]:[];
     c.foodTypes=Array.isArray(c.foodTypes)?[...c.foodTypes]:[];
     c.drinks=Array.isArray(c.drinks)?[...c.drinks]:[];
+    c.favorites=c.favorites&&typeof c.favorites==="object"?c.favorites:{};
+    Object.keys(defaultsCatalog).forEach(kind=>c.favorites[kind]=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[]);
     c.income=c.income||"보통";
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
   });
@@ -85,7 +153,7 @@ export function save(immediate=false){
 }
 export function createCharacter(){
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",job:"무직",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],drinks:[],homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",job:"무직",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],drinks:[],favorites:{food:[],drink:[],fashion:[],music:[],idol:[],book:[],movie:[],game:[],perfume:[],hobby:[]},homeId:id};
   state.order.push(id);
   state.homes[id]={id,name:"새 캐릭터의 집",rooms:rooms(),cleanliness:100};
   state.routines[id]=[];
@@ -141,6 +209,31 @@ export function setHomeResidents(homeId,ids){
   state.activeHomeId=homeId;save(true);
 }
 export function setPlaceImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.image=data;save(true)}}
+export function addCatalogItem(kind,data){
+  if(!state.catalog[kind])state.catalog[kind]=[];
+  const item={id:uid(),kind,name:"새 항목",category:"기타",image:"",spicy:0,sweet:0,creator:"",style:"",...data};
+  state.catalog[kind].push(item);save(true);return item.id;
+}
+export function updateCatalogItem(kind,id,patch){
+  const item=state.catalog[kind]?.find(x=>x.id===id);if(!item)return;
+  Object.assign(item,patch);save(true);
+}
+export function deleteCatalogItem(kind,id){
+  state.catalog[kind]=(state.catalog[kind]||[]).filter(x=>x.id!==id);
+  Object.values(state.characters).forEach(c=>{if(c.favorites?.[kind])c.favorites[kind]=c.favorites[kind].filter(x=>x!==id)});
+  state.world.places.forEach(p=>p.stock=(p.stock||[]).filter(x=>x!==id));
+  save(true);
+}
+export function toggleFavorite(characterId,kind,itemId){
+  const c=state.characters[characterId];if(!c)return;
+  c.favorites=c.favorites||{};const list=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[];
+  c.favorites[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
+}
+export function togglePlaceStock(placeId,itemId){
+  const p=state.world.places.find(x=>x.id===placeId);if(!p)return;
+  const list=Array.isArray(p.stock)?[...p.stock]:[];
+  p.stock=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
+}
 export function setActiveHome(id){if(state.homes[id]){state.activeHomeId=id;save()}}
 export function addRelationship(data){const id=uid();state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true)}
 export function updateRelationship(id,data){
@@ -171,7 +264,7 @@ function applyCohabit(r){
 export function setWorldBackground(bg){state.world.bg=bg;save(true)}
 export function addPlace(){
   const name=prompt("건물 이름","새 건물");if(!name)return;
-  state.world.places.push({id:uid(),name,type:prompt("종류","상점")||"상점",emoji:"🏬",image:"",x:50,y:50,color:"#8ecbc0"});save(true);
+  state.world.places.push({id:uid(),name,type:prompt("종류","상점")||"상점",emoji:"🏬",image:"",stock:[],x:50,y:50,color:"#8ecbc0"});save(true);
 }
 export function movePlace(id,x,y,persist=true){const p=state.world.places.find(p=>p.id===id);if(p){p.x=x;p.y=y;if(persist)save()}}
 export function replaceState(next){state=migrate(clone(next));localStorage.setItem(KEY,JSON.stringify(state))}
