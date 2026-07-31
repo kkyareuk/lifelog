@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260731f";
-import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js?v=20260731f";
-import {renderApp, setAccountLabel} from "./views.js?v=20260731f";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801a";
+import {eventFor, visibleTimeline} from "./simulation.js?v=20260801a";
+import {renderApp, setAccountLabel} from "./views.js?v=20260801a";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -21,6 +21,13 @@ function applyTheme(){
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content",primary);
 }
 
+async function explicitSave(label="저장 완료"){
+  save(true);
+  const auth=window.ParallelCityAuth;
+  if(auth?.getInfo?.().user) await auth.upload({silent:true,reason:label});
+  render();
+}
+
 function bind(){
   $$("[data-tab]").forEach(el=>el.onclick=()=>{state.activeTab=el.dataset.tab;save();render()});
   $$("[data-new]").forEach(el=>el.onclick=()=>{createCharacter();render()});
@@ -33,7 +40,7 @@ function bind(){
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
-  $("[data-home-edit]")?.addEventListener("click",()=>{setHomeEditMode(!state.homeEditMode);render()});
+  $("[data-home-edit]")?.addEventListener("click",async()=>{const was=state.homeEditMode;setHomeEditMode(!was);was?await explicitSave("집 편집 저장"):render()});
   $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
   $$("[data-furniture]").forEach(el=>el.onclick=()=>{toggleFurniture(el.dataset.homeId,el.dataset.room,el.dataset.furniture);render()});
@@ -53,7 +60,9 @@ function bind(){
   $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});render()});
   $$("[data-delete-catalog]").forEach(el=>el.onclick=()=>{if(confirm("이 항목을 삭제할까요?")){deleteCatalogItem(el.dataset.kind,el.dataset.deleteCatalog);render()}});
   $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
-  $("[data-save]")?.addEventListener("click",()=>{save(true);render()});
+  $("[data-save]")?.addEventListener("click",()=>explicitSave("캐릭터 저장"));
+  $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
+  $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
@@ -63,10 +72,8 @@ function bind(){
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
-  $("#sync-open")?.addEventListener("click",()=>{
-    state.activeTab="settings";save();render();
-    requestAnimationFrame(()=>document.querySelector(".sync-panel")?.scrollIntoView({behavior:"smooth",block:"center"}));
-  });
+  $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
+  $("[data-sync-download]")?.addEventListener("click",()=>{if(confirm("계정에 저장된 데이터로 현재 기기 데이터를 불러올까요?"))window.ParallelCityAuth?.download()});
   $("[data-auth]")?.addEventListener("click",async()=>{
     const auth=window.ParallelCityAuth;if(!auth)return alert("계정 기능을 불러오는 중이에요.");
     const info=auth.getInfo?.();
@@ -75,6 +82,25 @@ function bind(){
   });
   $("[data-cloud-upload]")?.addEventListener("click",async()=>window.ParallelCityAuth?.upload());
   $("[data-cloud-download]")?.addEventListener("click",async()=>window.ParallelCityAuth?.download());
+  $$("[data-place-field]").forEach(el=>{
+    const apply=()=>{
+      const field=el.dataset.placeField;
+      const numeric=["servicePrice","imageScale","spicy","sweet"].includes(field);
+      updatePlace(el.dataset.placeId,{[field]:numeric?Number(el.value):el.value},false);
+      if(field==="imageScale"){
+        const card=document.querySelector(`.place[data-place="${CSS.escape(el.dataset.placeId)}"]`);
+        card?.style.setProperty("--place-scale",el.value);
+      }
+    };
+    el.oninput=apply;el.onchange=apply;
+  });
+  $$("[data-place-audience]").forEach(el=>el.onclick=()=>{
+    const p=state.world.places.find(x=>x.id===el.dataset.placeAudience);
+    const value=el.dataset.value, current=p?.audiences||[];
+    updatePlace(p.id,{audiences:current.includes(value)?current.filter(x=>x!==value):[...current,value]},false);
+    render();
+  });
+  $$("[data-log-detail]").forEach(el=>el.onclick=()=>openLogDetail(Number(el.dataset.logDetail)));
   $("[data-world-bg]")?.addEventListener("change",e=>{setWorldBackground(e.target.value);render()});
   $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
@@ -85,6 +111,18 @@ function bind(){
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
   if(state.activeTab==="town")bindPlaceDrag();
+}
+
+function openLogDetail(index){
+  const c=active(), entry=visibleTimeline(c)[index];
+  if(!entry)return;
+  const place=state.world.places.find(p=>p.id===entry.placeId);
+  const item=Object.values(state.catalog||{}).flat().find(x=>x.id===entry.itemId);
+  const image=item?.image||place?.image||state.world.bg;
+  const modal=$("#log-modal");
+  modal.hidden=false;
+  modal.innerHTML=`<div class="log-dialog"><button data-close-log aria-label="닫기">×</button><time>${entry.time}</time><h2>${entry.title}</h2><p>${entry.desc||""}</p>${image?`<img src="${image}" alt="">`:""}<small>${place?`📍 ${place.name}`:"🏠 집"}</small></div>`;
+  modal.onclick=e=>{if(e.target===modal||e.target.closest("[data-close-log]"))modal.hidden=true};
 }
 
 function useImageUrl(type,id,room){
@@ -243,7 +281,7 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260731f").catch(error=>{
+import("./auth.js?v=20260801a").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });

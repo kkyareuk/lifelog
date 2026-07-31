@@ -49,16 +49,17 @@ const defaultCatalog=()=>({
     {id:"hobby-figure",kind:"hobby",name:"한정판 피규어",category:"수집",image:""}
   ]
 });
-const fresh=()=>({schema:7,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
-  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",stock:["drink-ein","drink-matcha","food-tiramisu"],x:15,y:34,color:"#74c7bd"},
-  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",stock:["food-omurice","food-malatang"],x:55,y:22,color:"#86ca7b"},
-  {id:"office",name:"평행 오피스",type:"회사",emoji:"🏢",image:"",x:79,y:37,color:"#8c9df0"},
-  {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",x:21,y:68,color:"#6db7e8"},
-  {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",x:64,y:76,color:"#66c68a"}
+const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
+  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
+  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
+  {id:"office",name:"평행 오피스",type:"회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
+  {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:21,y:68,color:"#6db7e8"},
+  {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",imageScale:1,stock:[],priceRange:"무료",servicePrice:"무료",audiences:[],spicy:0,sweet:0,x:64,y:76,color:"#66c68a"}
 ]}});
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===8)return normalizeHomes(x);
   if(x.schema===7)return normalizeHomes(x);
   if(x.schema===6)return normalizeHomes(x);
   if(x.schema===5)return normalizeHomes(x);
@@ -81,7 +82,7 @@ function migrate(x){
   return normalizeHomes(fresh());
 }
 function normalizeHomes(x){
-  x.schema=7;
+  x.schema=8;
   x.characterPane=x.characterPane==="taste"?"taste":"profile";
   x.characters=x.characters&&typeof x.characters==="object"?x.characters:{};
   const characterIds=Object.keys(x.characters);
@@ -111,7 +112,15 @@ function normalizeHomes(x){
   Object.keys(defaultsCatalog).forEach(kind=>{
     x.catalog[kind]=Array.isArray(x.catalog[kind])?x.catalog[kind].map(item=>({...item,kind:item.kind||kind})):defaultsCatalog[kind];
   });
-  (x.world?.places||[]).forEach(p=>p.stock=Array.isArray(p.stock)?[...p.stock]:[]);
+  (x.world?.places||[]).forEach(p=>{
+    p.stock=Array.isArray(p.stock)?[...p.stock]:[];
+    p.audiences=Array.isArray(p.audiences)?[...p.audiences]:[];
+    p.priceRange=p.priceRange||"보통";
+    p.servicePrice=p.servicePrice||p.priceRange;
+    p.imageScale=Number.isFinite(+p.imageScale)?Math.max(.45,Math.min(2,+p.imageScale)):1;
+    p.spicy=Number.isFinite(+p.spicy)?Math.max(0,Math.min(5,+p.spicy)):0;
+    p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
+  });
   const defaults=rooms();
   Object.values(x.homes||{}).forEach(h=>{
     h.image=h.image||"";
@@ -132,6 +141,10 @@ function normalizeHomes(x){
     c.favorites=c.favorites&&typeof c.favorites==="object"?c.favorites:{};
     Object.keys(defaultsCatalog).forEach(kind=>c.favorites[kind]=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[]);
     c.income=c.income||"보통";
+    c.jobTitle=c.jobTitle||c.job||"무직";
+    c.workplaceId=c.workplaceId||"";
+    c.spiceTolerance=Number.isFinite(+c.spiceTolerance)?Math.max(0,Math.min(5,+c.spiceTolerance)):2;
+    c.sweetPreference=Number.isFinite(+c.sweetPreference)?Math.max(0,Math.min(5,+c.sweetPreference)):2;
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
   });
   return x;
@@ -161,7 +174,7 @@ export function save(immediate=false){
 }
 export function createCharacter(){
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",job:"무직",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],drinks:[],favorites:{food:[],drink:[],fashion:[],music:[],idol:[],book:[],movie:[],game:[],perfume:[],hobby:[]},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"무직",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],drinks:[],favorites:{food:[],drink:[],fashion:[],music:[],idol:[],book:[],movie:[],game:[],perfume:[],hobby:[]},homeId:id};
   state.order.push(id);
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),cleanliness:100};
   state.routines[id]=[];
@@ -222,6 +235,16 @@ export function setHomeResidents(homeId,ids){
   state.activeHomeId=homeId;save(true);
 }
 export function setPlaceImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.image=data;save(true)}}
+export function updatePlace(placeId,patch,persist=true){
+  const p=state.world.places.find(x=>x.id===placeId);if(!p)return;
+  Object.assign(p,patch||{});
+  p.imageScale=Math.max(.45,Math.min(2,Number(p.imageScale)||1));
+  p.spicy=Math.max(0,Math.min(5,Number(p.spicy)||0));
+  p.sweet=Math.max(0,Math.min(5,Number(p.sweet)||0));
+  p.stock=Array.isArray(p.stock)?[...p.stock]:[];
+  p.audiences=Array.isArray(p.audiences)?[...p.audiences]:[];
+  if(persist)save(true);
+}
 export function addCatalogItem(kind,data){
   if(!state.catalog[kind])state.catalog[kind]=[];
   const item={id:uid(),kind,name:"새 항목",category:"기타",image:"",spicy:0,sweet:0,creator:"",style:"",...data};
@@ -298,7 +321,7 @@ export function deleteTown(id){
 }
 export function addPlace(){
   const name=prompt("건물 이름","새 건물");if(!name)return;
-  state.world.places.push({id:uid(),name,type:prompt("종류","상점")||"상점",emoji:"🏬",image:"",stock:[],x:50,y:50,color:"#8ecbc0"});save(true);
+  state.world.places.push({id:uid(),name,type:prompt("종류","상점")||"상점",emoji:"🏬",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:50,y:50,color:"#8ecbc0"});save(true);
 }
 export function movePlace(id,x,y,persist=true){const p=state.world.places.find(p=>p.id===id);if(p){p.x=x;p.y=y;if(persist)save()}}
 export function replaceState(next){state=migrate(clone(next));localStorage.setItem(KEY,JSON.stringify(state))}

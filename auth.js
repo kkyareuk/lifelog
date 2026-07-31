@@ -9,6 +9,7 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
+const uploadedCache=new Map();
 
 function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
@@ -21,11 +22,14 @@ function shortError(error){
 const cloudDoc=()=>doc(db,"users",user.uid);
 
 async function uploadDataUrl(dataUrl,path){
+  if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
   const blob=await (await fetch(dataUrl)).blob();
   if(blob.size>9*1024*1024)throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
   const target=ref(storage,`users/${user.uid}/media/${path}.webp`);
   await uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000"});
-  return getDownloadURL(target);
+  const url=await getDownloadURL(target);
+  uploadedCache.set(dataUrl,url);
+  return url;
 }
 
 async function prepareState(local){
@@ -56,16 +60,21 @@ async function login(){
   }
 }
 
-async function upload(){
-  if(!user){alert("설정에서 Google 계정에 먼저 로그인해 주세요.");return}
-  if(busy)return;busy=true;
+async function upload({silent=false,reason=""}={}){
+  if(!user){if(!silent)alert("설정에서 Google 계정에 먼저 로그인해 주세요.");return false}
+  if(busy)return false;busy=true;
   try{
     status(`${user.displayName||"계정"} · 올리는 중`);
     const gameState=await prepareState(window.ParallelCity.getState());
     await setDoc(cloudDoc(),{gameState,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
-    status(`${user.displayName||"계정"} · 수동 저장 완료`);
-    alert("현재 기기의 데이터를 계정에 저장했어요.");
-  }catch(error){console.error(error);status(`저장 실패 · ${shortError(error)}`);alert(`동기화 실패: ${shortError(error)}`)}finally{busy=false}
+    status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
+    if(!silent)alert("현재 기기의 데이터를 계정에 저장했어요.");
+    return true;
+  }catch(error){
+    console.error(error);status(`저장 실패 · ${shortError(error)}`);
+    if(!silent)alert(`동기화 실패: ${shortError(error)}`);
+    return false;
+  }finally{busy=false}
 }
 
 async function download(){
