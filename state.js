@@ -3,14 +3,14 @@ const oldKey="parallel-city-game-v2";
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const rooms=()=>({
-  living:{name:"거실",image:""},
-  kitchen:{name:"주방",image:""},
-  entry:{name:"현관",image:""},
-  bath:{name:"욕실",image:""},
-  bedroom:{name:"침실",image:""},
-  study:{name:"서재·취미방",image:""}
+  living:{name:"거실",image:"",furniture:["소파","TV","책장"]},
+  kitchen:{name:"주방",image:"",furniture:["냉장고","조리대","식탁"]},
+  entry:{name:"현관",image:"",furniture:["신발장","전신거울"]},
+  bath:{name:"욕실",image:"",furniture:["샤워부스","세면대"]},
+  bedroom:{name:"침실",image:"",furniture:["침대","옷장"]},
+  study:{name:"서재·취미방",image:"",furniture:["책상","컴퓨터"]}
 });
-const fresh=()=>({schema:4,activeTab:"character",activeId:null,activeHomeId:null,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:5,activeTab:"character",activeId:null,activeHomeId:null,homeEditMode:false,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"평행 오피스",type:"회사",emoji:"🏢",image:"",x:79,y:37,color:"#8c9df0"},
@@ -20,20 +20,42 @@ const fresh=()=>({schema:4,activeTab:"character",activeId:null,activeHomeId:null
 
 function migrate(x){
   if(!x)return fresh();
-  if(x.schema===4)return x;
+  if(x.schema===5)return normalizeHomes(x);
+  if(x.schema===4){
+    x.schema=5;x.homeEditMode=false;
+    return normalizeHomes(x);
+  }
   if(x.schema===3){
     x.schema=4;x.dailyPlans=x.dailyPlans||{};x.activeHomeId=x.activeHomeId||null;
     (x.world?.places||[]).forEach(p=>p.image=p.image||"");
-    return x;
+    x.schema=5;x.homeEditMode=false;return normalizeHomes(x);
   }
   if(x.schema===2){
     x.schema=3;
     Object.values(x.homes||{}).forEach(h=>{h.rooms=h.rooms||rooms()});
     x.schema=4;x.dailyPlans={};x.activeHomeId=null;
     (x.world?.places||[]).forEach(p=>p.image=p.image||"");
-    return x;
+    x.schema=5;x.homeEditMode=false;return normalizeHomes(x);
   }
   return fresh();
+}
+function normalizeHomes(x){
+  const defaults=rooms();
+  Object.values(x.homes||{}).forEach(h=>{
+    h.rooms=h.rooms||{};
+    Object.entries(defaults).forEach(([key,value])=>{
+      h.rooms[key]={...value,...(h.rooms[key]||{})};
+      h.rooms[key].furniture=Array.isArray(h.rooms[key].furniture)?[...h.rooms[key].furniture]:[...value.furniture];
+    });
+    h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
+  });
+  Object.values(x.characters||{}).forEach(c=>{
+    c.tastes=Array.isArray(c.tastes)?[...c.tastes]:[];
+    c.interests=Array.isArray(c.interests)?[...c.interests]:[];
+    c.hobbies=Array.isArray(c.hobbies)?[...c.hobbies]:[];
+    c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
+  });
+  return x;
 }
 function load(){
   try{return migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem("parallel-city-game-v3")||localStorage.getItem(oldKey)||"null"))}
@@ -61,7 +83,7 @@ export function createCharacter(){
   const id=uid();
   state.characters[id]={id,name:"새 캐릭터",job:"무직",photo:"",icon:"",wake:"07:30",sleep:"00:30",theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],homeId:id};
   state.order.push(id);
-  state.homes[id]={id,name:"새 캐릭터의 집",rooms:rooms()};
+  state.homes[id]={id,name:"새 캐릭터의 집",rooms:rooms(),cleanliness:100};
   state.routines[id]=[];
   state.activeId=id;state.activeTab="character";save(true);
 }
@@ -78,6 +100,36 @@ export function setHomeImage(homeId,room,data){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();h.rooms[room].image=data;save(true);
 }
+export function setHomeEditMode(value){state.homeEditMode=Boolean(value);save()}
+export function updateHome(homeId,patch){
+  const h=state.homes[homeId];if(!h)return;
+  Object.assign(h,patch);save(true);
+}
+export function updateRoom(homeId,roomKey,patch){
+  const h=state.homes[homeId];if(!h)return;
+  h.rooms=h.rooms||rooms();
+  h.rooms[roomKey]={...h.rooms[roomKey],...patch};save(true);
+}
+export function toggleFurniture(homeId,roomKey,item){
+  const h=state.homes[homeId];if(!h)return;
+  h.rooms=h.rooms||rooms();
+  const room=h.rooms[roomKey],current=Array.isArray(room.furniture)?[...room.furniture]:[];
+  room.furniture=current.includes(item)?current.filter(x=>x!==item):[...current,item];
+  save(true);
+}
+export function setHomeResidents(homeId,ids){
+  const chosen=new Set(ids.filter(id=>state.characters[id]));
+  if(!state.homes[homeId])return;
+  chosen.forEach(id=>state.characters[id].homeId=homeId);
+  state.order.forEach(id=>{
+    const c=state.characters[id];
+    if(c.homeId===homeId&&!chosen.has(id)){
+      c.homeId=c.id;
+      if(!state.homes[c.id])state.homes[c.id]={id:c.id,name:`${c.name}의 집`,rooms:rooms(),cleanliness:100};
+    }
+  });
+  state.activeHomeId=homeId;save(true);
+}
 export function setPlaceImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.image=data;save(true)}}
 export function setActiveHome(id){if(state.homes[id]){state.activeHomeId=id;save()}}
 export function addRelationship(data){const id=uid();state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true)}
@@ -93,7 +145,7 @@ export function updateRelationship(id,data){
     );
     if(b&&!linked){
       b.homeId=b.id;
-      if(!state.homes[b.id])state.homes[b.id]={id:b.id,name:`${b.name}의 집`,rooms:rooms()};
+      if(!state.homes[b.id])state.homes[b.id]={id:b.id,name:`${b.name}의 집`,rooms:rooms(),cleanliness:100};
     }
   }
   save(true);
@@ -103,7 +155,7 @@ function applyCohabit(r){
   const a=state.characters[r.a],b=state.characters[r.b];if(!a||!b)return;
   const target=a.homeId||a.id,old=b.homeId||b.id;
   b.homeId=target;
-  if(!state.homes[target])state.homes[target]={id:target,name:`${a.name}의 집`,rooms:rooms()};
+  if(!state.homes[target])state.homes[target]={id:target,name:`${a.name}의 집`,rooms:rooms(),cleanliness:100};
   if(old!==target&&!state.order.some(id=>state.characters[id]?.homeId===old))delete state.homes[old];
 }
 export function setWorldBackground(bg){state.world.bg=bg;save(true)}

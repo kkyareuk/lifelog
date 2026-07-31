@@ -8,11 +8,34 @@ const place=(type,fallback)=>state.world.places.find(p=>p.type===type)||state.wo
 
 function homeEntry(m,room,title,desc){return {minutes:m,time:time(m),home:true,room,title,desc}}
 function outEntry(m,p,title,desc){return {minutes:m,time:time(m),home:false,placeId:p?.id||null,title,desc}}
+const interactions={
+  "소파":["소파에서 느긋하게 쉬는 중","소파에 기대 잠깐 숨을 돌리고 있어요."],"TV":["TV를 보는 중","좋아하는 프로그램을 골라 보고 있어요."],
+  "책장":["책을 읽는 중","책장에서 책을 골라 읽고 있어요."],"오디오":["음악을 감상하는 중","오디오로 좋아하는 곡을 듣고 있어요."],
+  "게임기":["게임을 하는 중","게임기를 켜고 한 판 즐기고 있어요."],"안마의자":["안마의자에서 피로를 푸는 중","안마의자에 앉아 뭉친 몸을 풀고 있어요."],
+  "냉장고":["냉장고를 살펴보는 중","먹을 것을 고르며 냉장고 안을 살펴보고 있어요."],"조리대":["요리하는 중","조리대에서 먹을 것을 준비하고 있어요."],
+  "오븐":["오븐 요리를 굽는 중","오븐 안을 확인하며 완성되기를 기다려요."],"커피머신":["커피를 내리는 중","커피머신으로 취향에 맞는 커피를 내리고 있어요."],
+  "식탁":["식탁에서 식사하는 중","식탁에 앉아 천천히 식사하고 있어요."],"신발장":["외출 준비를 하는 중","신발장에서 오늘 신을 신발을 고르고 있어요."],
+  "전신거울":["전신거울을 확인하는 중","옷매무새를 마지막으로 살펴보고 있어요."],"샤워부스":["샤워하는 중","샤워를 하며 기분을 산뜻하게 바꾸고 있어요."],
+  "욕조":["욕조에서 쉬는 중","따뜻한 물에 몸을 담그고 쉬고 있어요."],"세면대":["세면대에서 씻는 중","세수를 하고 간단히 단장하고 있어요."],
+  "세탁기":["빨래하는 중","세탁기를 돌리고 끝나기를 기다리고 있어요."],"침대":["침대에서 쉬는 중","침대에 누워 조용히 쉬고 있어요."],
+  "화장대":["화장대에서 단장하는 중","화장대 앞에서 차분히 준비하고 있어요."],"옷장":["옷장을 정리하는 중","옷장에서 입을 옷을 고르거나 정리하고 있어요."],
+  "책상":["책상에서 집중하는 중","책상에 앉아 할 일을 차분히 처리하고 있어요."],"컴퓨터":["컴퓨터를 사용하는 중","컴퓨터로 관심 있는 것을 찾아보고 있어요."],
+  "피아노":["피아노를 연주하는 중","기분에 맞는 곡을 골라 피아노를 연주하고 있어요."],"기타":["기타를 연주하는 중","익숙한 곡을 기타로 천천히 연주하고 있어요."],
+  "이젤":["그림을 그리는 중","이젤 앞에 앉아 그림에 집중하고 있어요."],"재봉틀":["재봉틀을 사용하는 중","천과 실을 골라 작은 작업을 하고 있어요."],
+  "운동기구":["집에서 운동하는 중","운동기구로 가볍게 몸을 움직이고 있어요."],"향수장":["향수를 정리하는 중","향을 확인하며 향수장을 정리하고 있어요."],
+  "피규어장":["피규어를 정리하는 중","소장품의 자리를 조금씩 다듬고 있어요."]
+};
+function furnitureEntry(c,m,room,fallbackTitle,fallbackDesc){
+  const items=state.homes[c.homeId||c.id]?.rooms?.[room]?.furniture||[];
+  const item=items[hash(`${c.id}:${m}:${room}`)%Math.max(1,items.length)],copy=interactions[item];
+  return homeEntry(m,room,copy?.[0]||fallbackTitle,copy?.[1]||fallbackDesc);
+}
 function signature(c){
   return JSON.stringify({
     c:{job:c.job,wake:c.wake,sleep:c.sleep,tastes:c.tastes,interests:c.interests,hobbies:c.hobbies,homeId:c.homeId},
     places:state.world.places.map(({id,name,type})=>({id,name,type})),
-    routines:state.routines[c.id]||[]
+    routines:state.routines[c.id]||[],
+    homeRooms:state.homes[c.homeId||c.id]?.rooms||{}
   });
 }
 function build(c,date){
@@ -39,10 +62,10 @@ function build(c,date){
     const at=employed?18*60+30:14*60+(seed%90);
     entries.push(outEntry(at,p,`${p?.name||"마을"} 방문`,`${p?.name||"마을"}에서 ${c.hobbies?.[0]||"자유 시간"}을 보내고 있어요.`));
   }else{
-    entries.push(homeEntry(employed?18*60+40:14*60,"study","취미를 즐기는 중",`${c.hobbies?.[0]||"느긋한 휴식"}에 집중하고 있어요.`));
+    entries.push(furnitureEntry(c,employed?18*60+40:14*60,"study","취미를 즐기는 중",`${c.hobbies?.[0]||"느긋한 휴식"}에 집중하고 있어요.`));
   }
-  entries.push(homeEntry(20*60+20,"kitchen","저녁을 준비하는 중","주방에서 저녁 식사와 간식을 챙기고 있어요."));
-  entries.push(homeEntry(21*60+20,"living","오늘의 생활을 정리하는 중","거실에서 오늘 있었던 일을 천천히 정리하고 있어요."));
+  entries.push(furnitureEntry(c,20*60+20,"kitchen","저녁을 준비하는 중","주방에서 저녁 식사와 간식을 챙기고 있어요."));
+  entries.push(furnitureEntry(c,21*60+20,"living","오늘의 생활을 정리하는 중","거실에서 오늘 있었던 일을 천천히 정리하고 있어요."));
   entries.push(homeEntry(sleep,"bedroom","잠자리에 듦","설정한 취침 시각에 맞춰 잠들었어요."));
   for(const r of state.routines[c.id]||[]){
     if(r.day===date.getDay())entries.push(r.placeId?outEntry(mins(r.start),state.world.places.find(p=>p.id===r.placeId),r.title,`고정 일정 · ${r.start}–${r.end}`):homeEntry(mins(r.start),r.room||"living",r.title,`고정 일정 · ${r.start}–${r.end}`));

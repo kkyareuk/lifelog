@@ -48,3 +48,30 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   .place b{font-size:12px}.place small{font-size:10px}
   .place{border-width:2px;box-shadow:0 5px 0 color-mix(in srgb,var(--place) 58%,#333)}
 }
+
+/* 집 편집과 상태 */
+.home-name{font-size:27px;font-weight:700;background:#fff;min-height:46px}
+.room-name{position:relative;z-index:6;width:min(170px,62%);min-height:34px;padding:5px 8px;background:#ffffffdd;border-radius:9px}
+.resident-editor{margin:14px 0;padding:14px;background:#f4f7fb;border-radius:17px}
+.resident-editor h3{margin:0 0 9px}.resident-editor>div{display:flex;flex-wrap:wrap;gap:8px}
+.resident-editor button{display:flex;align-items:center;gap:7px;padding:7px 10px}
+.resident-editor button.on{color:var(--p);border-color:var(--p);background:color-mix(in srgb,var(--p) 10%,#fff)}
+.resident-editor .avatar,.resident-editor .sprite{width:34px;height:34px}
+.furniture{position:absolute;z-index:5;left:7px;right:7px;top:50px;display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start}
+.furniture button{padding:4px 7px;border-radius:9px;font-size:12px;background:#ffffffe8}
+.furniture button.on{color:#fff;background:var(--grad);border-color:transparent}
+.home-statuses{margin-top:18px}.home-statuses>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.home-status{display:flex;align-items:center;gap:12px;text-align:left;background:color-mix(in srgb,var(--own) 7%,#fff);border-color:color-mix(in srgb,var(--own) 35%,var(--line))}
+.home-status span{display:grid;min-width:0}.home-status b{font-size:20px}.home-status small{color:var(--own)}
+.home-status em{font-style:normal;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.home-status .avatar,.home-status .sprite{width:52px;height:52px}
+
+@media(max-width:600px){
+  .home{padding:13px}
+  .rooms{width:100%;min-width:0;min-height:clamp(620px,160vw,760px);aspect-ratio:auto;grid-template-rows:1.1fr .72fr 1.45fr}
+  .room-people{gap:3px;left:5px;right:5px;bottom:5px}
+  .home-person span{display:grid;font-size:12px;padding:5px 7px}
+  .home-person span small{max-width:110px}
+  .home-statuses>div{grid-template-columns:1fr}
+  .furniture{top:42px}.furniture button{font-size:10px;padding:3px 5px}
+}

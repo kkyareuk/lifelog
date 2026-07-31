@@ -1,4 +1,4 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState} from "./state.js";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents} from "./state.js";
 import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js";
 import {renderApp, setAccountLabel} from "./views.js";
 
@@ -28,6 +28,17 @@ function bind(){
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
+  $("[data-home-edit]")?.addEventListener("click",()=>{setHomeEditMode(!state.homeEditMode);render()});
+  $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
+  $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
+  $$("[data-furniture]").forEach(el=>el.onclick=()=>{toggleFurniture(el.dataset.homeId,el.dataset.room,el.dataset.furniture);render()});
+  $$("[data-home-resident]").forEach(el=>el.onclick=()=>{
+    const homeId=el.dataset.homeId,id=el.dataset.homeResident;
+    const residents=state.order.filter(cid=>state.characters[cid].homeId===homeId);
+    const next=residents.includes(id)?residents.filter(cid=>cid!==id):[...residents,id];
+    if(!next.length){alert("집에는 최소 한 명이 거주해야 해요.");return}
+    setHomeResidents(homeId,next);render();
+  });
   $$("[data-field]").forEach(el=>el.oninput=()=>updateCharacter(active().id,{[el.dataset.field]:el.value},false));
   $$("[data-color]").forEach(el=>el.oninput=()=>{updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);applyTheme()});
   $("[data-gradient]")?.addEventListener("change",e=>{updateCharacter(active().id,{theme:{...active().theme,gradient:e.target.checked}},false);applyTheme()});

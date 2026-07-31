@@ -6,6 +6,14 @@ const TASTES=["아재 입맛","어린이 입맛","맵부심","한식파","면 �
 const INTERESTS=["향수","애니메이션","만화","게임","패션","미술","음악","영화","문구","인테리어","역사","기계"];
 const HOBBIES=["취미 없음","집에서 뒹굴기","외출 안 함","인터넷 서핑","커뮤니티 눈팅","영상 정주행","낮잠","덕질","독서","카페 탐방","쇼핑","운동","사진","전시 관람","공방 체험","산책","요리","청소"];
 const roomClasses={living:"living",kitchen:"kitchen",entry:"entry",bath:"bath",bedroom:"bedroom",study:"study"};
+const FURNITURE={
+  living:["소파","TV","책장","오디오","안마의자","게임기","캣타워"],
+  kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기"],
+  entry:["신발장","전신거울","우산꽂이","반려동물 산책용품"],
+  bath:["샤워부스","욕조","세면대","세탁기","건조기"],
+  bedroom:["침대","옷장","화장대","협탁","빔프로젝터"],
+  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"]
+};
 let accountText="Google 로그인";
 
 function avatar(c,cls=""){
@@ -41,12 +49,30 @@ function roomStyle(h,key){
 function home(){
   const groups=homeGroups(),ids=Object.keys(groups),selected=groups[state.activeHomeId]?state.activeHomeId:(active()?.homeId||ids[0]);
   state.activeHomeId=selected;
-  return `<div class="title"><h1>우리 집 생활</h1></div><div class="home-tabs">${ids.map(id=>`<button data-home-select="${id}" class="${id===selected?"on":""}">🏠 ${esc(state.homes[id]?.name||groups[id][0].name+"의 집")}</button>`).join("")}</div><div class="home-grid">${selected?homeCard(selected,groups[selected]):""}</div>`;
+  return `<div class="title"><h1>우리 집 생활</h1><button data-home-edit>${state.homeEditMode?"편집 완료":"집 편집"}</button></div><div class="home-tabs">${ids.map(id=>`<button data-home-select="${id}" class="${id===selected?"on":""}">🏠 ${esc(state.homes[id]?.name||groups[id][0].name+"의 집")}</button>`).join("")}</div><div class="home-grid">${selected?homeCard(selected,groups[selected]):""}</div>`;
 }
 function homeCard(id,chars){
   const h=state.homes[id]||{id,name:`${chars[0].name}의 집`,rooms:{}};
   const inside=chars.filter(c=>eventFor(c).home);
-  return `<article class="home panel" data-home-card="${id}"><div class="title"><div><h2>🏠 ${esc(h.name)}</h2><small>${chars.map(c=>c.name).join(" · ")} 거주 중</small></div><b>${inside.length}명 귀가</b></div><div class="clean">청결도 · 반짝반짝 깨끗함 <i></i></div><div class="rooms">${Object.keys(roomClasses).map(key=>{const roomPeople=inside.filter(c=>eventFor(c).room===key);return `<div class="room ${roomClasses[key]}" ${roomStyle(h,key)}><b>${esc(h.rooms?.[key]?.name||key)}</b><div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${h.rooms?.[key]?.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div><div class="room-people">${roomPeople.map(c=>{const e=eventFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}</div></div>`}).join("")}</div></article>`;
+  const edit=state.homeEditMode;
+  const roomHtml=Object.keys(roomClasses).map(key=>{
+    const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>eventFor(c).room===key);
+    const furniture=FURNITURE[key]||[];
+    return `<div class="room ${roomClasses[key]}" ${roomStyle(h,key)}>
+      ${edit?`<input class="room-name" data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}">`:`<b>${esc(room.name||key)}</b>`}
+      <div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div>
+      ${edit?`<div class="furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div>`:""}
+      <div class="room-people">${roomPeople.map(c=>{const e=eventFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}</div>
+    </div>`;
+  }).join("");
+  const residentEditor=edit?`<section class="resident-editor"><h3>함께 사는 캐릭터</h3><div>${state.order.map(cid=>{const c=state.characters[cid],on=c.homeId===id;return `<button data-home-resident="${cid}" data-home-id="${id}" class="${on?"on":""}">${avatar(c)} ${esc(c.name)}</button>`}).join("")}</div><small>여러 명을 선택할 수 있어요. 취향과 관심사는 합쳐지지 않습니다.</small></section>`:"";
+  const status=chars.map(c=>{const e=eventFor(c);return `<button class="home-status" data-home-person="${c.id}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small><em>${esc(e.desc||"")}</em></span></button>`}).join("");
+  return `<article class="home panel" data-home-card="${id}">
+    <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.map(c=>c.name).join(" · ")} 거주 중</small></div><b>${inside.length}명 귀가</b></div>
+    ${residentEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
+    <div class="rooms">${roomHtml}</div>
+    <section class="home-statuses"><h2>집 사람들 상태</h2><div>${status}</div></section>
+  </article>`;
 }
 function chips(title,all,selected,key){return `<section class="chips"><h3>${title}</h3>${all.map(x=>`<button data-chip="${key}" data-value="${x}" class="${selected.includes(x)?"on":""}">${x}</button>`).join("")}</section>`}
 function character(){
