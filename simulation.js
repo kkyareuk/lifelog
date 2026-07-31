@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260731d";
+import {state,save} from "./state.js?v=20260731e";
 const mins=s=>{const [h,m]=String(s||"0:0").split(":").map(Number);return h*60+(m||0)};
 const hash=s=>{let h=0;for(const x of s)h=(h*31+x.charCodeAt())>>>0;return h};
 const keyOf=d=>d.toLocaleDateString("sv-SE");

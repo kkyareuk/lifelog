@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock} from "./state.js?v=20260731d";
-import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js?v=20260731d";
-import {renderApp, setAccountLabel} from "./views.js?v=20260731d";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260731e";
+import {eventFor, charactersAtPlace, homeGroups} from "./simulation.js?v=20260731e";
+import {renderApp, setAccountLabel} from "./views.js?v=20260731e";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -24,7 +24,7 @@ function applyTheme(){
 function bind(){
   $$("[data-tab]").forEach(el=>el.onclick=()=>{state.activeTab=el.dataset.tab;save();render()});
   $$("[data-new]").forEach(el=>el.onclick=()=>{createCharacter();render()});
-  $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);render()});
+  $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);setCharacterPane("profile");render()});
   $$("[data-sort]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
     moveCharacter(el.dataset.sort,Number(el.dataset.direction||0));
@@ -56,13 +56,19 @@ function bind(){
   $("[data-save]")?.addEventListener("click",()=>{save(true);render()});
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
+  $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
   $$("[data-place-image]").forEach(el=>el.onclick=()=>pickImage("place",el.dataset.placeImage));
   $$("[data-image-url]").forEach(el=>el.onclick=()=>useImageUrl(el.dataset.imageUrl,el.dataset.id,el.dataset.room||""));
   $$("[data-clear-room-bg]").forEach(el=>el.onclick=()=>{setHomeImage(el.dataset.homeId,el.dataset.room,"");render()});
+  $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
+  $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
   $("#account")?.addEventListener("click",()=>window.ParallelCityAuth?.toggle());
   $("[data-world-bg]")?.addEventListener("change",e=>{setWorldBackground(e.target.value);render()});
   $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
+  $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
+  $("[data-add-town]")?.addEventListener("click",()=>{addTown();render()});
+  $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
   $("[data-add-place]")?.addEventListener("click",()=>{addPlace();render()});
   $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
@@ -77,6 +83,7 @@ function useImageUrl(type,id,room){
     const url=new URL(value,location.href);
     if(!["http:","https:","data:"].includes(url.protocol))throw new Error();
     if(type==="room")setHomeImage(id,room,value);
+    else if(type==="home")setHomeBackground(id,value);
     else if(type==="place")setPlaceImage(id,value);
     else setCharacterImage(id,type,value);
     render();
@@ -93,10 +100,11 @@ $("#image-picker").onchange=async e=>{
   e.target.value="";
   if(!file||!task)return;
   try{
-    const max=["room","place"].includes(task.type)?1400:task.type==="icon"?700:900;
+    const max=["room","home","place"].includes(task.type)?1400:task.type==="icon"?700:900;
     const mime=task.type==="icon"?"image/png":"image/webp";
     const data=await resizeImage(file,max,mime);
     if(task.type==="room")setHomeImage(task.id,task.room,data);
+    else if(task.type==="home")setHomeBackground(task.id,data);
     else if(task.type==="place")setPlaceImage(task.id,data);
     else setCharacterImage(task.id,task.type,data);
     render();
