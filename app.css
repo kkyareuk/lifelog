@@ -224,3 +224,38 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .crop-guide{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border-radius:999px;background:#101827bd;color:#fff;font-size:12px;pointer-events:none;white-space:nowrap}
 .home-life-log{margin-top:22px;box-shadow:none}
 .owned-items{padding:12px;border-radius:16px;background:#f5f8ff}
+
+/* 자연스러운 한국어 줄바꿈과 통합 생활 로그 */
+body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-word}
+.life-log li{cursor:default}
+.life-log li:hover{background:transparent}
+.life-log li.important{margin:5px 0;padding:11px 10px;border-left:5px solid var(--log-theme);border-radius:10px;background:color-mix(in srgb,var(--log-theme) 9%,#fff)}
+.life-log li.important b,.life-log li.important time{color:var(--log-theme)}
+.shared-life-log{margin-top:18px;box-shadow:none}
+.setting-card{display:grid;gap:10px;margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:18px;background:#f7f9fc}
+.setting-card h2{margin:0}.setting-card label{display:grid;gap:7px}.setting-card small{color:var(--muted)}
+
+/* 방 안 반려동물 */
+.room-pets{position:absolute;right:8px;bottom:8px;z-index:4;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}
+.room-pet{display:flex;flex-direction:column;align-items:center;max-width:72px;padding:4px 6px;border-radius:12px;background:#ffffffe6;box-shadow:0 4px 10px #17203322}
+.room-pet img,.room-pet>span{width:38px;height:38px;display:grid;place-items:center;object-fit:cover;border-radius:50%;font-size:25px}
+.room-pet b{max-width:62px;font-size:11px;text-align:center}
+
+@media(max-width:600px){
+  /* 캐릭터 목록을 짧고 촘촘하게 */
+  .editor>aside{padding:12px}
+  .editor>aside>.title h2{font-size:23px}
+  .editor>aside>.title button{padding:8px 11px}
+  .char-sort-row{margin:4px 0}
+  .char-sort-row .char-row{min-height:72px;padding:7px 9px;gap:7px}
+  .char-row .avatar,.char-row .sprite{width:48px;height:48px}
+  .char-row b{font-size:17px}.char-row small{font-size:13px}
+  .sort-controls{gap:2px}.sort-controls button{width:28px;height:34px;font-size:10px}
+  /* 방 안 인물은 아이콘 아래에 상태 전문 표시 */
+  .home-person{flex-direction:column;align-items:center;max-width:145px}
+  .home-person span{display:grid!important;max-width:140px!important;padding:5px 7px!important;text-align:center;white-space:normal!important}
+  .home-person span small{max-width:135px!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important}
+  .room-people{align-items:flex-start}
+  .room-pets{right:4px;bottom:4px}.room-pet{max-width:56px;padding:3px}.room-pet img,.room-pet>span{width:31px;height:31px;font-size:21px}.room-pet b{font-size:9px}
+  .life-log .title{align-items:flex-start}.life-log .title small{max-width:48%;text-align:right}
+}

@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801h";
-import {eventFor, visibleTimeline} from "./simulation.js?v=20260801h";
-import {renderApp, setAccountLabel} from "./views.js?v=20260801h";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801j";
+import {eventFor} from "./simulation.js?v=20260801j";
+import {renderApp, setAccountLabel} from "./views.js?v=20260801j";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -125,6 +125,7 @@ function bind(){
   $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
   $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
+  $$("[data-setting]").forEach(el=>el.onchange=()=>{state[el.dataset.setting]=el.value;save(true);render()});
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
   $("[data-auth]")?.addEventListener("click",async()=>{
@@ -159,7 +160,6 @@ function bind(){
     updatePlace(p.id,{audiences:current.includes(value)?current.filter(x=>x!==value):[...current,value]},false);
     render();
   });
-  $$("[data-log-detail]").forEach(el=>el.onclick=()=>openLogDetail(Number(el.dataset.logDetail)));
   $("[data-world-bg]")?.addEventListener("change",e=>{setWorldBackground(e.target.value);render()});
   $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
@@ -173,20 +173,6 @@ function bind(){
   });
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
   if(state.activeTab==="town")bindPlaceDrag();
-}
-
-function openLogDetail(index){
-  const c=active(), entry=visibleTimeline(c)[index];
-  if(!entry)return;
-  const town=state.towns.find(t=>t.id===entry.townId)||state.towns.find(t=>t.places?.some(p=>p.id===entry.placeId));
-  const place=(town?.places||state.world.places).find(p=>p.id===entry.placeId);
-  const homeImage=entry.home?state.homes[c.homeId]?.rooms?.[entry.room]?.image:"";
-  const item=Object.values(state.catalog||{}).flat().find(x=>x.id===entry.itemId);
-  const image=item?.image||homeImage||place?.interiorImage||place?.image||state.world.bg;
-  const modal=$("#log-modal");
-  modal.hidden=false;
-  modal.innerHTML=`<div class="log-dialog"><button data-close-log aria-label="닫기">×</button><time>${entry.time}</time><h2>${entry.title}</h2><p>${entry.desc||""}</p>${image?`<img src="${image}" alt="">`:""}<small>${entry.home?"🏠 집":entry.transit?"🚌 이동 중":place?`📍 ${place.name} · ${town?.name||""}`:"📍 외출 중"}</small></div>`;
-  modal.onclick=e=>{if(e.target===modal||e.target.closest("[data-close-log]"))modal.hidden=true};
 }
 
 function useImageUrl(type,id,room){
@@ -362,7 +348,16 @@ function bindPlaceDrag(){
 
 window.ParallelCity={
   getState:cloneState,
-  replaceState:x=>{replaceState(x);render()},
+  replaceState:x=>{
+    const view={activeTab:state.activeTab,characterPane:state.characterPane,activeId:state.activeId,activeHomeId:state.activeHomeId,activeTownId:state.activeTownId};
+    replaceState(x);
+    state.activeTab=view.activeTab;
+    state.characterPane=view.characterPane;
+    if(state.characters[view.activeId])state.activeId=view.activeId;
+    if(state.homes[view.activeHomeId])state.activeHomeId=view.activeHomeId;
+    if(state.towns.some(t=>t.id===view.activeTownId)){state.activeTownId=view.activeTownId;state.world=JSON.parse(JSON.stringify(state.towns.find(t=>t.id===view.activeTownId)))}
+    save(true);render();
+  },
   setAccountStatus:t=>setAccountLabel(t),
   toast:showToast,
   mediaChanged:()=>render()
@@ -371,10 +366,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260801h").catch(error=>{
+import("./auth.js?v=20260801j").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260801h").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260801j").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
