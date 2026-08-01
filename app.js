@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801f";
-import {eventFor, visibleTimeline} from "./simulation.js?v=20260801f";
-import {renderApp, setAccountLabel} from "./views.js?v=20260801f";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801h";
+import {eventFor, visibleTimeline} from "./simulation.js?v=20260801h";
+import {renderApp, setAccountLabel} from "./views.js?v=20260801h";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -69,7 +69,7 @@ function bind(){
   $("[data-add-room]")?.addEventListener("click",()=>{addRoom(state.activeHomeId);render()});
   $("[data-add-pet]")?.addEventListener("click",()=>{addPet(state.activeHomeId);render()});
   $$("[data-pet-field]").forEach(el=>{
-    const apply=()=>{const value=el.dataset.petField==="neutered"?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(el.dataset.petField==="species")render()};
+    const apply=()=>{const value=el.dataset.petField==="neutered"?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))render()};
     el.oninput=apply;el.onchange=apply;
   });
   $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 반려동물을 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
@@ -99,8 +99,13 @@ function bind(){
   $("[data-gradient]")?.addEventListener("change",e=>{updateCharacter(active().id,{theme:{...active().theme,gradient:e.target.checked}},false);applyTheme()});
   $$("[data-chip]").forEach(el=>el.onclick=()=>{toggleChip(active().id,el.dataset.chip,el.dataset.value);render()});
   $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{toggleFavorite(active().id,el.dataset.favoriteKind,el.dataset.favoriteId);render()});
+  $$("[data-owned-kind]").forEach(el=>el.onclick=()=>{toggleOwned(active().id,el.dataset.ownedKind,el.dataset.ownedId);render()});
   $$("[data-add-catalog]").forEach(el=>el.onclick=()=>{addCatalogItem(el.dataset.addCatalog,{name:"새 항목",category:"기타"});render()});
   $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});render()});
+  $$("[data-catalog-keyword]").forEach(el=>el.onclick=()=>{
+    const item=state.catalog?.[el.dataset.kind]?.find(x=>x.id===el.dataset.catalogKeyword),list=item?.keywords||[],value=el.dataset.value;
+    updateCatalogItem(el.dataset.kind,el.dataset.catalogKeyword,{keywords:list.includes(value)?list.filter(x=>x!==value):[...list,value]});render();
+  });
   $$("[data-delete-catalog]").forEach(el=>el.onclick=()=>{if(confirm("이 항목을 삭제할까요?")){deleteCatalogItem(el.dataset.kind,el.dataset.deleteCatalog);render()}});
   $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
   $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
@@ -173,13 +178,14 @@ function bind(){
 function openLogDetail(index){
   const c=active(), entry=visibleTimeline(c)[index];
   if(!entry)return;
-  const place=state.world.places.find(p=>p.id===entry.placeId);
+  const town=state.towns.find(t=>t.id===entry.townId)||state.towns.find(t=>t.places?.some(p=>p.id===entry.placeId));
+  const place=(town?.places||state.world.places).find(p=>p.id===entry.placeId);
   const homeImage=entry.home?state.homes[c.homeId]?.rooms?.[entry.room]?.image:"";
   const item=Object.values(state.catalog||{}).flat().find(x=>x.id===entry.itemId);
-  const image=homeImage||place?.interiorImage||place?.image||item?.image||state.world.bg;
+  const image=item?.image||homeImage||place?.interiorImage||place?.image||state.world.bg;
   const modal=$("#log-modal");
   modal.hidden=false;
-  modal.innerHTML=`<div class="log-dialog"><button data-close-log aria-label="닫기">×</button><time>${entry.time}</time><h2>${entry.title}</h2><p>${entry.desc||""}</p>${image?`<img src="${image}" alt="">`:""}<small>${place?`📍 ${place.name}`:"🏠 집"}</small></div>`;
+  modal.innerHTML=`<div class="log-dialog"><button data-close-log aria-label="닫기">×</button><time>${entry.time}</time><h2>${entry.title}</h2><p>${entry.desc||""}</p>${image?`<img src="${image}" alt="">`:""}<small>${entry.home?"🏠 집":entry.transit?"🚌 이동 중":place?`📍 ${place.name} · ${town?.name||""}`:"📍 외출 중"}</small></div>`;
   modal.onclick=e=>{if(e.target===modal||e.target.closest("[data-close-log]"))modal.hidden=true};
 }
 
@@ -193,6 +199,8 @@ function useImageUrl(type,id,room){
     else if(type==="home")setHomeBackground(id,value);
     else if(type==="place")setPlaceImage(id,value);
     else if(type==="placeInterior")setPlaceInteriorImage(id,value);
+    else if(type==="petPhoto")setPetImage(id,room,"photo",value);
+    else if(type==="petIcon")setPetImage(id,room,"icon",value);
     else setCharacterImage(id,type,value);
     render();
   }catch{alert("올바른 이미지 주소를 입력해 주세요.");}
@@ -234,24 +242,29 @@ function cropImage(file,type){
     img.onload=()=>{
       const dialog=document.createElement("dialog");
       dialog.className="crop-dialog";
-      dialog.innerHTML=`<form method="dialog"><div class="title"><h2>사진 자르기</h2><button value="cancel" aria-label="닫기">×</button></div><div class="crop-stage" style="aspect-ratio:${ratio}"><canvas></canvas></div><label>확대<input name="zoom" type="range" min="1" max="3" step=".01" value="1"></label><label>가로 위치<input name="x" type="range" min="-100" max="100" value="0"></label><label>세로 위치<input name="y" type="range" min="-100" max="100" value="0"></label><small>사진을 확대하고 위치를 움직여 화면에 보일 부분을 맞춰 주세요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">이대로 자르기</button></div></form>`;
+      dialog.innerHTML=`<form method="dialog"><div class="title"><h2>사진 자르기</h2><button value="cancel" aria-label="닫기">×</button></div><div class="crop-stage" style="aspect-ratio:${ratio}"><canvas></canvas><div class="crop-guide">사진을 직접 드래그해서 위치를 맞추세요</div></div><label>확대<input name="zoom" type="range" min="1" max="3" step=".01" value="1"></label><small>사진 위를 손가락이나 마우스로 끌어 원하는 부분을 화면 가운데에 놓을 수 있어요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">이대로 자르기</button></div></form>`;
       document.body.append(dialog);
       const canvas=dialog.querySelector("canvas"),ctx=canvas.getContext("2d");
       canvas.width=output;canvas.height=Math.round(output/ratio);
+      let offsetX=0,offsetY=0,startX=0,startY=0,startOffsetX=0,startOffsetY=0;
       const draw=()=>{
         const zoom=Number(dialog.querySelector('[name="zoom"]').value);
-        const x=Number(dialog.querySelector('[name="x"]').value)/100;
-        const y=Number(dialog.querySelector('[name="y"]').value)/100;
         const cover=Math.max(canvas.width/img.width,canvas.height/img.height)*zoom;
         const w=img.width*cover,h=img.height*cover;
         const maxX=Math.max(0,(w-canvas.width)/2),maxY=Math.max(0,(h-canvas.height)/2);
+        offsetX=Math.max(-maxX,Math.min(maxX,offsetX));offsetY=Math.max(-maxY,Math.min(maxY,offsetY));
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(img,(canvas.width-w)/2-x*maxX,(canvas.height-h)/2-y*maxY,w,h);
+        ctx.drawImage(img,(canvas.width-w)/2+offsetX,(canvas.height-h)/2+offsetY,w,h);
       };
-      dialog.querySelectorAll('input[type="range"]').forEach(input=>input.oninput=draw);
+      dialog.querySelector('[name="zoom"]').oninput=draw;
+      const stage=dialog.querySelector(".crop-stage");
+      stage.onpointerdown=e=>{stage.setPointerCapture(e.pointerId);startX=e.clientX;startY=e.clientY;startOffsetX=offsetX;startOffsetY=offsetY;stage.classList.add("dragging")};
+      stage.onpointermove=e=>{if(!stage.hasPointerCapture(e.pointerId))return;const scale=canvas.width/stage.clientWidth;offsetX=startOffsetX+(e.clientX-startX)*scale;offsetY=startOffsetY+(e.clientY-startY)*scale;draw()};
+      stage.onpointerup=e=>{stage.releasePointerCapture(e.pointerId);stage.classList.remove("dragging")};
       dialog.onclose=()=>{
         const applied=dialog.returnValue==="apply";
-        const data=applied?canvas.toDataURL(type==="icon"?"image/png":"image/webp",type==="icon"?undefined:.78):null;
+        const transparent=["icon","petIcon"].includes(type);
+        const data=applied?canvas.toDataURL(transparent?"image/png":"image/webp",transparent?undefined:.78):null;
         URL.revokeObjectURL(url);dialog.remove();resolve(data);
       };
       draw();dialog.showModal();
@@ -358,10 +371,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260801f").catch(error=>{
+import("./auth.js?v=20260801h").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260801f").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260801h").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

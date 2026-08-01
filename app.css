@@ -215,3 +215,12 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   .place.has-art .building-name{bottom:-8px;max-width:70px;font-size:8px}
   .crop-dialog form{padding:14px}.crop-dialog label{grid-template-columns:68px 1fr}
 }
+
+/* 인물 이름은 지도 아이콘 아래, 사진 자르기는 직접 드래그 */
+.person{flex-direction:column!important;align-items:center!important}
+.person span{margin-top:-7px;padding:6px 10px!important}
+.crop-stage{position:relative;cursor:grab;touch-action:none;user-select:none}
+.crop-stage.dragging{cursor:grabbing}
+.crop-guide{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border-radius:999px;background:#101827bd;color:#fff;font-size:12px;pointer-events:none;white-space:nowrap}
+.home-life-log{margin-top:22px;box-shadow:none}
+.owned-items{padding:12px;border-radius:16px;background:#f5f8ff}

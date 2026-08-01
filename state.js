@@ -47,7 +47,9 @@ const defaultCatalog=()=>({
   hobby:[
     {id:"hobby-perfume",kind:"hobby",name:"달빛 향수 키트",category:"조향",image:""},
     {id:"hobby-figure",kind:"hobby",name:"한정판 피규어",category:"수집",image:""}
-  ]
+  ],
+  electronics:[],
+  weapon:[]
 });
 const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
@@ -136,7 +138,7 @@ function normalizeHomes(x){
     h.pets=Array.isArray(h.pets)?h.pets.map(p=>({
       id:p.id||uid(),name:p.name||"새 반려동물",species:p.species||"기타",
       breed:p.breed||"",sex:p.sex||"모름",neutered:Boolean(p.neutered),
-      photo:p.photo||"",icon:p.icon||""
+      photo:p.photo||"",icon:p.icon||"",room:p.room||"living"
     })):[];
     h.rooms=h.rooms||{};
     Object.entries(defaults).forEach(([key,value])=>{
@@ -157,6 +159,8 @@ function normalizeHomes(x){
     c.drinks=Array.isArray(c.drinks)?[...c.drinks]:[];
     c.favorites=c.favorites&&typeof c.favorites==="object"?c.favorites:{};
     Object.keys(defaultsCatalog).forEach(kind=>c.favorites[kind]=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[]);
+    c.inventory=c.inventory&&typeof c.inventory==="object"?c.inventory:{};
+    Object.keys(defaultsCatalog).forEach(kind=>c.inventory[kind]=Array.isArray(c.inventory[kind])?[...c.inventory[kind]]:[]);
     c.income=c.income||"보통";
     c.jobTitle=typeof c.jobTitle==="string"?c.jobTitle:"";
     c.workplaceId=c.workplaceId||"";
@@ -195,7 +199,7 @@ export function save(immediate=false){
 }
 export function createCharacter(){
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{food:[],drink:[],fashion:[],music:[],idol:[],book:[],movie:[],game:[],perfume:[],hobby:[]},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};
   state.routines[id]=[];
@@ -260,7 +264,7 @@ export function addRoom(homeId){
 export function addPet(homeId){
   const h=state.homes[homeId];if(!h)return;
   h.pets=Array.isArray(h.pets)?h.pets:[];
-  const pet={id:uid(),name:"새 반려동물",species:"강아지",breed:"",sex:"모름",neutered:false,photo:"",icon:""};
+  const pet={id:uid(),name:"새 반려동물",species:"강아지",breed:"",sex:"모름",neutered:false,photo:"",icon:"",room:"living"};
   h.pets.push(pet);save(true);return pet.id;
 }
 export function updatePet(homeId,petId,patch){
@@ -316,7 +320,7 @@ export function deletePlace(placeId){
 }
 export function addCatalogItem(kind,data){
   if(!state.catalog[kind])state.catalog[kind]=[];
-  const item={id:uid(),kind,name:"새 항목",category:"기타",image:"",spicy:0,sweet:0,creator:"",style:"",...data};
+  const item={id:uid(),kind,name:"새 항목",category:"기타",subtype:"",keywords:[],image:"",spicy:0,sweet:0,creator:"",style:"",...data};
   state.catalog[kind].push(item);save(true);return item.id;
 }
 export function updateCatalogItem(kind,id,patch){
@@ -326,6 +330,7 @@ export function updateCatalogItem(kind,id,patch){
 export function deleteCatalogItem(kind,id){
   state.catalog[kind]=(state.catalog[kind]||[]).filter(x=>x.id!==id);
   Object.values(state.characters).forEach(c=>{if(c.favorites?.[kind])c.favorites[kind]=c.favorites[kind].filter(x=>x!==id)});
+  Object.values(state.characters).forEach(c=>{if(c.inventory?.[kind])c.inventory[kind]=c.inventory[kind].filter(x=>x!==id)});
   state.world.places.forEach(p=>p.stock=(p.stock||[]).filter(x=>x!==id));
   save(true);
 }
@@ -357,6 +362,11 @@ export function updateRelationship(id,data){
     }
   }
   save(true);
+}
+export function toggleOwned(characterId,kind,itemId){
+  const c=state.characters[characterId];if(!c)return;
+  c.inventory=c.inventory||{};const list=Array.isArray(c.inventory[kind])?[...c.inventory[kind]]:[];
+  c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
 }
 export function deleteRelationship(id){
   if(!state.relationships[id])return;
