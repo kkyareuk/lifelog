@@ -52,7 +52,7 @@ const defaultCatalog=()=>({
 const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
-  {id:"office",name:"평행 오피스",type:"회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
+  {id:"office",name:"평행 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
   {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:21,y:68,color:"#6db7e8"},
   {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",imageScale:1,stock:[],priceRange:"무료",servicePrice:"무료",audiences:[],spicy:0,sweet:0,x:64,y:76,color:"#66c68a"}
 ]}});
@@ -84,11 +84,17 @@ function migrate(x){
 function normalizeHomes(x){
   x.schema=8;
   x.characterPane=["profile","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
+  if(Array.isArray(x.characters)){
+    const list=x.characters.filter(Boolean);
+    x.characters=Object.fromEntries(list.map(c=>[c.id||uid(),c]));
+    x.order=list.map(c=>c.id).filter(Boolean);
+  }
   x.characters=x.characters&&typeof x.characters==="object"?x.characters:{};
   const characterIds=Object.keys(x.characters);
   x.order=Array.isArray(x.order)?x.order.filter((id,index,list)=>x.characters[id]&&list.indexOf(id)===index):[];
   characterIds.forEach(id=>{if(!x.order.includes(id))x.order.push(id)});
   x.activeId=x.characters[x.activeId]?x.activeId:(x.order[0]||null);
+  if(Array.isArray(x.homes))x.homes=Object.fromEntries(x.homes.filter(Boolean).map(h=>[h.id||uid(),h]));
   x.homes=x.homes&&typeof x.homes==="object"?x.homes:{};
   x.routines=x.routines&&typeof x.routines==="object"?x.routines:{};
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
@@ -113,6 +119,8 @@ function normalizeHomes(x){
     x.catalog[kind]=Array.isArray(x.catalog[kind])?x.catalog[kind].map(item=>({...item,kind:item.kind||kind})):defaultsCatalog[kind];
   });
   (x.world?.places||[]).forEach(p=>{
+    if(p.type==="회사")p.type="사무실";
+    p.subtype=p.subtype||"";
     p.stock=Array.isArray(p.stock)?[...p.stock]:[];
     p.audiences=Array.isArray(p.audiences)?[...p.audiences]:[];
     p.priceRange=p.priceRange||"보통";
@@ -149,6 +157,8 @@ function normalizeHomes(x){
     c.spiceTolerance=Number.isFinite(+c.spiceTolerance)?Math.max(0,Math.min(5,+c.spiceTolerance)):2;
     c.sweetPreference=Number.isFinite(+c.sweetPreference)?Math.max(0,Math.min(5,+c.sweetPreference)):2;
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
+    c.homeId=c.homeId||c.id;
+    if(!x.homes[c.homeId])x.homes[c.homeId]={id:c.homeId,name:`${c.name||"캐릭터"}의 집`,image:"",rooms:rooms(),cleanliness:100};
   });
   return x;
 }
@@ -324,7 +334,7 @@ export function deleteTown(id){
 }
 export function addPlace(){
   const name=prompt("건물 이름","새 건물");if(!name)return;
-  state.world.places.push({id:uid(),name,type:prompt("종류","상점")||"상점",emoji:"🏬",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:50,y:50,color:"#8ecbc0"});save(true);
+  state.world.places.push({id:uid(),name,type:"기타",subtype:"",emoji:"🏬",image:"",imageScale:1,stock:[],priceRange:"보통",audiences:[],spicy:0,sweet:0,x:50,y:50,color:"#8ecbc0"});save(true);
 }
 export function movePlace(id,x,y,persist=true){const p=state.world.places.find(p=>p.id===id);if(p){p.x=x;p.y=y;if(persist)save()}}
 export function replaceState(next){state=migrate(clone(next));localStorage.setItem(KEY,JSON.stringify(state))}

@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260801c";
+import {state,save} from "./state.js?v=20260801d";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -40,7 +40,8 @@ function homeEntry(c,time,title="집에서 쉬는 중",desc="다음 일정까지
 
 function workEvent(c,time,date){
   if(!c.workplaceId||c.job==="무직")return null;
-  const p=state.world.places.find(x=>x.id===c.workplaceId)||placeFor(["회사","학교"],`${c.id}:work`);
+  if(c.workplaceId==="home")return homeEntry(c,time,"자택근무 중",`${c.jobTitle||c.job} 업무를 집에서 처리하고 있어요.`);
+  const p=state.world.places.find(x=>x.id===c.workplaceId)||placeFor(["사무실","회사","학교"],`${c.id}:work`);
   const scripts={
     "해적":["항해 준비 중","선원들과 항로와 보급품을 점검하고 있어요."],
     "군인":["훈련 중","부대 일정에 맞춰 훈련과 장비 점검을 하고 있어요."],

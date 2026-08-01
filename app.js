@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801c";
-import {eventFor, visibleTimeline} from "./simulation.js?v=20260801c";
-import {renderApp, setAccountLabel} from "./views.js?v=20260801c";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801d";
+import {eventFor, visibleTimeline} from "./simulation.js?v=20260801d";
+import {renderApp, setAccountLabel} from "./views.js?v=20260801d";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -36,9 +36,9 @@ function applyTheme(){
 
 async function explicitSave(label="저장 완료"){
   save(true);
+  showToast("저장되었습니다");
   const auth=window.ParallelCityAuth;
   if(auth?.getInfo?.().user) await auth.upload({silent:true,reason:label});
-  else showToast("저장되었습니다");
   render();
 }
 
@@ -54,6 +54,7 @@ function bind(){
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
+  $$("[data-observe-town]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.observeTown);render()});
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
   $("[data-home-edit]")?.addEventListener("click",async()=>{const was=state.homeEditMode;setHomeEditMode(!was);was?await explicitSave("집 편집 저장"):render()});
   $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
@@ -71,7 +72,7 @@ function bind(){
     updateCharacter(active().id,{[el.dataset.field]:numeric?Number(el.value):el.value},false);
     if(el.dataset.levels){
       const labels=el.dataset.levels==="spice"
-        ?["안 매움","살짝 매콤","순한맛","신라면 맵기","매운맛","아주 매운맛"]
+        ?["안 매움","살짝 매콤","순한맛","보통 라면 맵기","매운맛","아주 매운맛"]
         :["안 달음","은은한 단맛","적당히 달콤","달콤함","아주 달콤함","극강의 단맛"];
       el.closest("label")?.querySelector("[data-range-label]")?.replaceChildren(document.createTextNode(labels[Number(el.value)]));
     }
@@ -109,8 +110,14 @@ function bind(){
   $$("[data-place-field]").forEach(el=>{
     const apply=()=>{
       const field=el.dataset.placeField;
-      const numeric=["servicePrice","imageScale","spicy","sweet"].includes(field);
+      const numeric=["imageScale","spicy","sweet"].includes(field);
       updatePlace(el.dataset.placeId,{[field]:numeric?Number(el.value):el.value},false);
+      if(field==="type"){
+        updatePlace(el.dataset.placeId,{subtype:""},false);
+        save();
+        render();
+        return;
+      }
       if(field==="imageScale"){
         const card=document.querySelector(`.place[data-place="${CSS.escape(el.dataset.placeId)}"]`);
         card?.style.setProperty("--place-scale",el.value);
@@ -320,7 +327,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260801c").catch(error=>{
+import("./auth.js?v=20260801d").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js?v=20260801d").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+}

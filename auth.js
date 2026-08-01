@@ -9,7 +9,9 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
+let autoLoadStarted=false;
 const uploadedCache=new Map();
+const toast=text=>window.ParallelCity?.toast?.(text);
 
 function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
@@ -61,35 +63,35 @@ async function login(){
 }
 
 async function upload({silent=false,reason=""}={}){
-  if(!user){if(!silent)alert("설정에서 Google 계정에 먼저 로그인해 주세요.");return false}
+  if(!user){if(!silent)toast("Google 로그인이 필요합니다");return false}
   if(busy)return false;busy=true;
   try{
     status(`${user.displayName||"계정"} · 올리는 중`);
     const gameState=await prepareState(window.ParallelCity.getState());
     await setDoc(cloudDoc(),{gameState,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
-    if(!silent)alert("현재 기기의 데이터를 계정에 저장했어요.");
+    toast("동기화되었습니다");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
-    if(!silent)alert(`동기화 실패: ${shortError(error)}`);
+    if(!silent)toast(`동기화 실패 · ${shortError(error)}`);
     return false;
   }finally{busy=false}
 }
 
-async function download(){
-  if(!user){alert("설정에서 Google 계정에 먼저 로그인해 주세요.");return}
+async function download({automatic=false}={}){
+  if(!user){if(!automatic)toast("Google 로그인이 필요합니다");return}
   if(busy)return;busy=true;
   try{
     status(`${user.displayName||"계정"} · 불러오는 중`);
     const snapshot=await getDoc(cloudDoc());
     const remote=snapshot.exists()?snapshot.data().gameState:null;
-    if(!remote){status(`${user.displayName||"계정"} · 저장 데이터 없음`);alert("이 계정에 저장된 데이터가 아직 없어요.");return}
-    if(!confirm("이 기기의 현재 데이터를 계정에 저장된 데이터로 바꿀까요?"))return;
+    if(!remote){status(`${user.displayName||"계정"} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
     window.ParallelCity.replaceState(clone(remote));
     window.dispatchEvent(new Event("parallel-city-cloud-loaded"));
     status(`${user.displayName||"계정"} · 불러오기 완료`);
-  }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);alert(`불러오기 실패: ${shortError(error)}`)}finally{busy=false}
+    toast(automatic?"자동으로 불러왔습니다":"불러왔습니다");
+  }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`)}finally{busy=false}
 }
 
 if(ready){
@@ -97,7 +99,11 @@ if(ready){
     const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);storage=getStorage(app);
     await setPersistence(auth,browserLocalPersistence);
     try{await getRedirectResult(auth)}catch(error){console.warn(error)}
-    onAuthStateChanged(auth,next=>{user=next;status(user?`${user.displayName||"Google 계정"} · 수동 동기화 준비됨`:"Google 로그인 안 됨")});
+    onAuthStateChanged(auth,next=>{
+      user=next;
+      status(user?`${user.displayName||"Google 계정"} · 저장 시 동기화`:"Google 로그인 안 됨");
+      if(user&&!autoLoadStarted){autoLoadStarted=true;download({automatic:true})}
+    });
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}
 }else status("Firebase 설정 필요");
 

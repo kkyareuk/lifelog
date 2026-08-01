@@ -16,8 +16,8 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .viewport{width:100%;height:auto;min-height:0;aspect-ratio:1672/941;overflow:hidden;touch-action:auto}
 .viewport .world{width:100%;height:100%;transform:none!important}
 .world-bg{object-fit:contain}
-.place{width:clamp(72px,9vw,136px);min-height:clamp(66px,7vw,105px);padding:8px;border-width:3px}
-.place.has-art{width:150px;height:132px;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;overflow:visible}
+.place{width:11.33%;height:15.5%;min-height:0;padding:clamp(3px,.7vw,8px);border-width:3px}
+.place.has-art{width:12.5%;height:19.5%;min-height:0;padding:0;border:0;background:transparent;box-shadow:none;overflow:visible}
 .building-art{width:100%;height:100%;object-fit:contain;pointer-events:none;filter:drop-shadow(0 10px 7px #17203355)}
 .place-label{display:grid;place-items:center;min-width:104px;padding:8px 11px;border:3px solid #fff;border-radius:15px;background:color-mix(in srgb,var(--place) 88%,#fff);box-shadow:0 7px 0 color-mix(in srgb,var(--place) 58%,#333);text-align:center}
 .place.has-art .place-label{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);z-index:2}
@@ -153,12 +153,42 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .log-dialog .title{margin-bottom:12px}.log-dialog img{display:block;width:100%;max-height:390px;object-fit:cover;border-radius:18px;margin-top:15px}.log-dialog p{line-height:1.7}
 .life-log li{cursor:pointer}.life-log li:hover{background:color-mix(in srgb,var(--p) 7%,#fff)}
 .town-tabs{display:flex;gap:8px;overflow:auto;padding-bottom:10px}
+.observe-town-switcher{display:flex;align-items:center;gap:8px;overflow:auto;margin:0 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:18px;background:#fff}
+.observe-town-switcher>b{white-space:nowrap}.observe-town-switcher button{padding:8px 12px;white-space:nowrap}
+.observe-town-switcher button.on{color:#fff;background:var(--grad);border-color:transparent}
 
 @media(max-width:700px){
   .quick-sync{order:2;margin-left:auto}.quick-sync button{padding:8px 10px;font-size:12px}
   .roster{gap:8px;padding-bottom:10px}.roster-card{min-width:158px;gap:7px;padding:8px}.roster-card b{font-size:15px}.roster-card small{font-size:11px}
   .roster-card .avatar{width:38px;height:38px}.roster-card .sprite{width:44px;height:44px}
   .place-config{grid-template-columns:1fr}.place-editor details{padding:8px}
-  .place{width:112px;min-height:84px}.place.has-art{width:120px;height:106px}
   .log-dialog{padding:18px}.log-dialog img{max-height:48dvh}
+}
+
+/* 조용한 상태 알림 */
+#mini-toast{position:fixed;left:50%;bottom:22px;z-index:4000;max-width:calc(100vw - 32px);padding:8px 13px;border-radius:999px;background:#172033e8;color:#fff;font-size:13px;box-shadow:0 8px 24px #17203333;opacity:0;transform:translate(-50%,10px);pointer-events:none;transition:.18s}
+#mini-toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* 전원 취침 안내 */
+.sleep-gate{margin:0 0 14px;padding:22px;border:1px solid color-mix(in srgb,var(--p) 24%,var(--line));border-radius:24px;background:linear-gradient(135deg,#eff3ff,#f7efff);text-align:center}
+.sleep-gate>div{font-size:38px}.sleep-gate h2{margin:6px 0}.sleep-gate p{margin:4px 0 14px;color:var(--muted)}
+
+/* 모든 사진 업로드 공통 자르기 */
+.crop-dialog{width:min(760px,calc(100vw - 24px));max-height:94dvh;padding:0;border:0;border-radius:25px;box-shadow:0 30px 90px #10182766}
+.crop-dialog::backdrop{background:#10182799;backdrop-filter:blur(4px)}
+.crop-dialog form{padding:20px;display:grid;gap:12px}
+.crop-dialog h2{margin:0}.crop-dialog .title button{padding:5px 11px;font-size:22px}
+.crop-stage{width:100%;overflow:hidden;border-radius:18px;background:#192033}
+.crop-stage canvas{display:block;width:100%;height:100%;object-fit:contain}
+.crop-dialog label{display:grid;grid-template-columns:80px 1fr;align-items:center;gap:10px}
+.crop-dialog input{min-height:34px;padding:0}.crop-dialog small{color:var(--muted)}
+.crop-actions{display:flex;justify-content:flex-end;gap:8px}
+
+@media(max-width:600px){
+  .place{width:11.33%;height:15.5%;min-height:0;padding:2px;border-width:1px;box-shadow:0 2px 0 color-mix(in srgb,var(--place) 58%,#333)}
+  .place.has-art{width:12.5%;height:19.5%}
+  .place i{font-size:clamp(10px,4vw,27px)}
+  .place-label{min-width:0;width:100%;padding:2px;border-width:1px}
+  .place.has-art .building-name{bottom:-8px;max-width:70px;font-size:8px}
+  .crop-dialog form{padding:14px}.crop-dialog label{grid-template-columns:68px 1fr}
 }
