@@ -69,6 +69,10 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .home-status span{display:grid;min-width:0}.home-status b{font-size:20px}.home-status small{color:var(--own)}
 .home-status em{font-style:normal;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .home-status .avatar,.home-status .sprite{width:52px;height:52px}
+.sleep-room-editor{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:17px;background:#f8fafc}.sleep-room-editor h3{margin:0}.sleep-room-editor>label{display:grid;grid-template-columns:minmax(90px,.5fr) 1fr;align-items:center;gap:10px;margin-top:8px}.sleep-room-editor select{min-height:42px}
+.custom-room{grid-column:span 1;grid-row:auto;min-height:130px}
+.rooms.has-extra{aspect-ratio:auto;min-height:620px;overflow:visible;grid-auto-rows:minmax(130px,auto)}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 
 @media(max-width:600px){
   .home{padding:13px}
@@ -164,6 +168,15 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   .place-config{grid-template-columns:1fr}.place-editor details{padding:8px}
   .log-dialog{padding:18px}.log-dialog img{max-height:48dvh}
 }
+
+/* 아이콘형 세계관 취향 도감 */
+.catalog-dex-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:14px}
+.catalog-dex-card{border:1px solid var(--line);border-radius:18px;background:#f8fafc;overflow:hidden}
+.catalog-dex-card summary{min-height:148px;padding:12px;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;cursor:pointer;list-style:none}
+.catalog-dex-card summary::-webkit-details-marker{display:none}.catalog-dex-card summary>span{font-size:48px}.catalog-dex-card summary>img{width:74px;height:74px;border-radius:15px;object-fit:cover}.catalog-dex-card summary>b{font-size:18px}.catalog-dex-card summary>small{color:var(--muted)}
+.catalog-dex-card[open]{grid-column:span 2;background:#fff;box-shadow:0 12px 30px #17203312}.catalog-detail{padding:14px;border-top:1px solid var(--line);display:grid;gap:10px}.catalog-detail label{display:grid;gap:5px}
+@media(max-width:900px){.catalog-dex-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:600px){.catalog-dex-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-dex-card[open]{grid-column:1/-1}.catalog-dex-card summary{min-height:126px}.form-actions{display:grid}.form-actions button{width:100%}}
 
 /* 조용한 상태 알림 */
 #mini-toast{position:fixed;left:50%;bottom:22px;z-index:4000;max-width:calc(100vw - 32px);padding:8px 13px;border-radius:999px;background:#172033e8;color:#fff;font-size:13px;box-shadow:0 8px 24px #17203333;opacity:0;transform:translate(-50%,10px);pointer-events:none;transition:.18s}

@@ -1,15 +1,21 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801d";
-import {eventFor, visibleTimeline} from "./simulation.js?v=20260801d";
-import {renderApp, setAccountLabel} from "./views.js?v=20260801d";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801e";
+import {eventFor, visibleTimeline} from "./simulation.js?v=20260801e";
+import {renderApp, setAccountLabel} from "./views.js?v=20260801e";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 
 function render(){
-  renderApp(state);
-  bind();
-  applyTheme();
+  try{
+    renderApp(state);
+    bind();
+    applyTheme();
+  }catch(error){
+    console.error("화면 복구 필요",error);
+    document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
+    document.querySelector("#safe-reload")?.addEventListener("click",()=>location.reload());
+  }
 }
 
 function showToast(message){
@@ -51,14 +57,19 @@ function bind(){
     moveCharacter(el.dataset.sort,Number(el.dataset.direction||0));
     render();
   });
+  $$("[data-delete-character]").forEach(el=>el.onclick=()=>{
+    if(confirm("이 캐릭터와 연결된 관계를 삭제할까요?")){deleteCharacter(el.dataset.deleteCharacter);render()}
+  });
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
   $$("[data-observe-town]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.observeTown);render()});
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
   $("[data-home-edit]")?.addEventListener("click",async()=>{const was=state.homeEditMode;setHomeEditMode(!was);was?await explicitSave("집 편집 저장"):render()});
+  $("[data-add-room]")?.addEventListener("click",()=>{addRoom(state.activeHomeId);render()});
   $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
+  $$("[data-sleep-room]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.sleepRoom,{sleepRoomId:el.value});render()});
   $$("[data-furniture]").forEach(el=>el.onclick=()=>{toggleFurniture(el.dataset.homeId,el.dataset.room,el.dataset.furniture);render()});
   $$("[data-home-resident]").forEach(el=>el.onclick=()=>{
     const homeId=el.dataset.homeId,id=el.dataset.homeResident;
@@ -85,6 +96,9 @@ function bind(){
   $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});render()});
   $$("[data-delete-catalog]").forEach(el=>el.onclick=()=>{if(confirm("이 항목을 삭제할까요?")){deleteCatalogItem(el.dataset.kind,el.dataset.deleteCatalog);render()}});
   $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
+  $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
+    if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
+  });
   $("[data-save]")?.addEventListener("click",()=>explicitSave("캐릭터 저장"));
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
@@ -140,6 +154,9 @@ function bind(){
   $("[data-add-place]")?.addEventListener("click",()=>{addPlace();render()});
   $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
+  $$("[data-delete-rel]").forEach(el=>el.onclick=()=>{
+    if(confirm("이 관계를 삭제할까요?")){deleteRelationship(el.dataset.deleteRel);render()}
+  });
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
   if(state.activeTab==="town")bindPlaceDrag();
 }
@@ -327,10 +344,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260801d").catch(error=>{
+import("./auth.js?v=20260801e").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260801d").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260801e").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

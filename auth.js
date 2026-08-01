@@ -87,6 +87,13 @@ async function download({automatic=false}={}){
     const snapshot=await getDoc(cloudDoc());
     const remote=snapshot.exists()?snapshot.data().gameState:null;
     if(!remote){status(`${user.displayName||"계정"} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
+    const countCharacters=value=>Array.isArray(value?.characters)?value.characters.length:Object.keys(value?.characters||{}).length;
+    const remoteCount=countCharacters(remote),localCount=countCharacters(window.ParallelCity.getState());
+    if(automatic&&remoteCount===0&&localCount>0){
+      status(`${user.displayName||"계정"} · 기기 데이터 유지`);
+      toast("기기의 캐릭터 데이터를 유지했습니다");
+      return;
+    }
     window.ParallelCity.replaceState(clone(remote));
     window.dispatchEvent(new Event("parallel-city-cloud-loaded"));
     status(`${user.displayName||"계정"} · 불러오기 완료`);

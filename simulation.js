@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260801d";
+import {state,save} from "./state.js?v=20260801e";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -36,7 +36,7 @@ function catalogChoice(c,place,kind,seed){
 }
 
 function entry(time,title,desc,extra={}){return {time:clock(time),minute:time,title,desc,...extra}}
-function homeEntry(c,time,title="집에서 쉬는 중",desc="다음 일정까지 집에서 자기만의 시간을 보내고 있어요."){return entry(time,title,desc,{home:true,room:"거실"})}
+function homeEntry(c,time,title="집에서 쉬는 중",desc="다음 일정까지 집에서 자기만의 시간을 보내고 있어요."){return entry(time,title,desc,{home:true,room:"living"})}
 
 function workEvent(c,time,date){
   if(!c.workplaceId||c.job==="무직")return null;
@@ -70,7 +70,7 @@ function socialEvent(c,time,date){
 function build(c,date=new Date()){
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
   const sleepMinute=sleep<=wake?sleep+1440:sleep;
-  const list=[entry(wake,"기상","집에서 하루를 시작했어요.",{home:true,room:"침실",mood:"평온",stress:5})];
+  const list=[entry(wake,"기상","집에서 하루를 시작했어요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"평온",stress:5})];
   const work=workEvent(c,Math.max(wake+90,540),date);
   if(work)list.push(work);
   const lunchPlace=placeFor(["음식점","카페"],`${c.id}:${dayKey(date)}:lunch`);
@@ -84,7 +84,7 @@ function build(c,date=new Date()){
     const other=related(c)[0].other;
     list.push(homeEntry(c,1260,`${other.name}와 말다툼하는 중`,"쌓인 피로와 스트레스 때문에 사소한 말이 다툼으로 번졌어요. 관계 유형 자체는 바뀌지 않아요."));
   }else list.push(homeEntry(c,1260,"집에서 취미를 즐기는 중","좋아하는 음악이나 물건과 함께 하루를 정리하고 있어요."));
-  list.push(entry(sleepMinute,"자는 중",`설정한 취침 시각에서 ${Math.abs(jitter(c,"sleep",date))}분 정도 차이로 잠들었어요.`,{home:true,room:"침실",mood:"수면",stress:0}));
+  list.push(entry(sleepMinute,"자는 중",`설정한 취침 시각에서 ${Math.abs(jitter(c,"sleep",date))}분 정도 차이로 잠들었어요.`,{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0}));
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
@@ -105,9 +105,9 @@ export function timeline(c,date=new Date()){
 export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x.minute<=nowMin(date))}
 export function eventFor(c,date=new Date()){
   const n=nowMin(date);
-  if(sleepingNow(c,date))return entry(n,"자는 중","설정한 수면 시간에 맞춰 집에서 자고 있어요.",{home:true,room:"침실",mood:"수면",stress:0});
+  if(sleepingNow(c,date))return entry(n,"자는 중","설정한 수면 시간에 맞춰 집에서 자고 있어요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
-  return past.at(-1)||entry(n,"집에서 아침 준비 중","오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"욕실",mood:"평온",stress:5});
+  return past.at(-1)||entry(n,"집에서 아침 준비 중","오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
 export function charactersAtPlace(id){return state.order.map(x=>state.characters[x]).filter(c=>eventFor(c).placeId===id)}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id],e=eventFor(c);if(e.home)(out[c.homeId||id]??=[]).push(c)});return out}
