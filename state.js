@@ -83,7 +83,7 @@ function migrate(x){
 }
 function normalizeHomes(x){
   x.schema=8;
-  x.characterPane=x.characterPane==="taste"?"taste":"profile";
+  x.characterPane=["profile","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
   x.characters=x.characters&&typeof x.characters==="object"?x.characters:{};
   const characterIds=Object.keys(x.characters);
   x.order=Array.isArray(x.order)?x.order.filter((id,index,list)=>x.characters[id]&&list.indexOf(id)===index):[];
@@ -137,11 +137,14 @@ function normalizeHomes(x){
     c.hobbies=Array.isArray(c.hobbies)?[...c.hobbies]:[];
     c.musicGenres=Array.isArray(c.musicGenres)?[...c.musicGenres]:[];
     c.foodTypes=Array.isArray(c.foodTypes)?[...c.foodTypes]:[];
+    c.foodPreferences=Array.isArray(c.foodPreferences)
+      ? [...c.foodPreferences]
+      : [...new Set([...c.tastes,...c.foodTypes])];
     c.drinks=Array.isArray(c.drinks)?[...c.drinks]:[];
     c.favorites=c.favorites&&typeof c.favorites==="object"?c.favorites:{};
     Object.keys(defaultsCatalog).forEach(kind=>c.favorites[kind]=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[]);
     c.income=c.income||"보통";
-    c.jobTitle=c.jobTitle||c.job||"무직";
+    c.jobTitle=typeof c.jobTitle==="string"?c.jobTitle:"";
     c.workplaceId=c.workplaceId||"";
     c.spiceTolerance=Number.isFinite(+c.spiceTolerance)?Math.max(0,Math.min(5,+c.spiceTolerance)):2;
     c.sweetPreference=Number.isFinite(+c.sweetPreference)?Math.max(0,Math.min(5,+c.sweetPreference)):2;
@@ -174,14 +177,14 @@ export function save(immediate=false){
 }
 export function createCharacter(){
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"무직",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],drinks:[],favorites:{food:[],drink:[],fashion:[],music:[],idol:[],book:[],movie:[],game:[],perfume:[],hobby:[]},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{food:[],drink:[],fashion:[],music:[],idol:[],book:[],movie:[],game:[],perfume:[],hobby:[]},homeId:id};
   state.order.push(id);
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),cleanliness:100};
   state.routines[id]=[];
   state.activeId=id;state.activeTab="character";save(true);
 }
 export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
-export function setCharacterPane(value){state.characterPane=value==="taste"?"taste":"profile";save()}
+export function setCharacterPane(value){state.characterPane=["profile","taste","worldTaste"].includes(value)?value:"profile";save()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;

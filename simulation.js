@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260801a";
+import {state,save} from "./state.js?v=20260801c";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -27,7 +27,7 @@ function catalogChoice(c,place,kind,seed){
     let s=hash(`${seed}:${x.id}`)%12;
     if((c.favorites?.[kind]||[]).includes(x.id))s+=25;
     if(kind==="foods"){
-      if((c.foodTypes||[]).includes(x.category))s+=15;
+      if((c.foodPreferences||c.foodTypes||[]).includes(x.category))s+=15;
       s-=Math.max(0,(x.spicy||0)-(c.spiceTolerance??2))*9;
       s-=Math.abs((x.sweet||0)-(c.sweetPreference??2))*2;
     }
@@ -87,7 +87,7 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,foodTypes:c.foodTypes,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.world.places.map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,foodPreferences:c.foodPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.world.places.map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);

@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801a";
-import {eventFor, visibleTimeline} from "./simulation.js?v=20260801a";
-import {renderApp, setAccountLabel} from "./views.js?v=20260801a";
+import {state, active, save, replaceState, createCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801c";
+import {eventFor, visibleTimeline} from "./simulation.js?v=20260801c";
+import {renderApp, setAccountLabel} from "./views.js?v=20260801c";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -10,6 +10,19 @@ function render(){
   renderApp(state);
   bind();
   applyTheme();
+}
+
+function showToast(message){
+  let toast=document.querySelector("#mini-toast");
+  if(!toast){
+    toast=document.createElement("div");
+    toast.id="mini-toast";
+    document.body.append(toast);
+  }
+  toast.textContent=message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer=setTimeout(()=>toast.classList.remove("show"),1800);
 }
 
 function applyTheme(){
@@ -25,6 +38,7 @@ async function explicitSave(label="저장 완료"){
   save(true);
   const auth=window.ParallelCityAuth;
   if(auth?.getInfo?.().user) await auth.upload({silent:true,reason:label});
+  else showToast("저장되었습니다");
   render();
 }
 
@@ -39,6 +53,7 @@ function bind(){
   });
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
+  $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
   $("[data-home-edit]")?.addEventListener("click",async()=>{const was=state.homeEditMode;setHomeEditMode(!was);was?await explicitSave("집 편집 저장"):render()});
   $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
@@ -51,7 +66,16 @@ function bind(){
     if(!next.length){alert("집에는 최소 한 명이 거주해야 해요.");return}
     setHomeResidents(homeId,next);render();
   });
-  $$("[data-field]").forEach(el=>el.oninput=()=>updateCharacter(active().id,{[el.dataset.field]:el.value},false));
+  $$("[data-field]").forEach(el=>el.oninput=()=>{
+    const numeric=["spiceTolerance","sweetPreference"].includes(el.dataset.field);
+    updateCharacter(active().id,{[el.dataset.field]:numeric?Number(el.value):el.value},false);
+    if(el.dataset.levels){
+      const labels=el.dataset.levels==="spice"
+        ?["안 매움","살짝 매콤","순한맛","신라면 맵기","매운맛","아주 매운맛"]
+        :["안 달음","은은한 단맛","적당히 달콤","달콤함","아주 달콤함","극강의 단맛"];
+      el.closest("label")?.querySelector("[data-range-label]")?.replaceChildren(document.createTextNode(labels[Number(el.value)]));
+    }
+  });
   $$("[data-color]").forEach(el=>el.oninput=()=>{updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);applyTheme()});
   $("[data-gradient]")?.addEventListener("change",e=>{updateCharacter(active().id,{theme:{...active().theme,gradient:e.target.checked}},false);applyTheme()});
   $$("[data-chip]").forEach(el=>el.onclick=()=>{toggleChip(active().id,el.dataset.chip,el.dataset.value);render()});
@@ -73,7 +97,7 @@ function bind(){
   $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
-  $("[data-sync-download]")?.addEventListener("click",()=>{if(confirm("계정에 저장된 데이터로 현재 기기 데이터를 불러올까요?"))window.ParallelCityAuth?.download()});
+  $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
   $("[data-auth]")?.addEventListener("click",async()=>{
     const auth=window.ParallelCityAuth;if(!auth)return alert("계정 기능을 불러오는 중이에요.");
     const info=auth.getInfo?.();
@@ -149,9 +173,8 @@ $("#image-picker").onchange=async e=>{
   e.target.value="";
   if(!file||!task)return;
   try{
-    const max=["room","home","place"].includes(task.type)?1400:task.type==="icon"?700:900;
-    const mime=task.type==="icon"?"image/png":"image/webp";
-    const data=await resizeImage(file,max,mime);
+    const data=await cropImage(file,task.type);
+    if(!data)return;
     if(task.type==="room")setHomeImage(task.id,task.room,data);
     else if(task.type==="home")setHomeBackground(task.id,data);
     else if(task.type==="place")setPlaceImage(task.id,data);
@@ -163,24 +186,39 @@ $("#image-picker").onchange=async e=>{
   }
 };
 
-function resizeImage(file,max,mime){
+function cropImage(file,type){
+  const square=["icon","photo"].includes(type);
+  const output=square?700:1400;
+  const ratio=square?1:16/9;
   return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onerror=reject;
-    reader.onload=()=>{
-      const img=new Image();
-      img.onerror=reject;
-      img.onload=()=>{
-        const ratio=Math.min(1,max/Math.max(img.width,img.height));
-        const canvas=document.createElement("canvas");
-        canvas.width=Math.max(1,Math.round(img.width*ratio));
-        canvas.height=Math.max(1,Math.round(img.height*ratio));
-        canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
-        resolve(canvas.toDataURL(mime,mime==="image/png"?undefined:.72));
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("image-load-failed"))};
+    img.onload=()=>{
+      const dialog=document.createElement("dialog");
+      dialog.className="crop-dialog";
+      dialog.innerHTML=`<form method="dialog"><div class="title"><h2>사진 자르기</h2><button value="cancel" aria-label="닫기">×</button></div><div class="crop-stage" style="aspect-ratio:${ratio}"><canvas></canvas></div><label>확대<input name="zoom" type="range" min="1" max="3" step=".01" value="1"></label><label>가로 위치<input name="x" type="range" min="-100" max="100" value="0"></label><label>세로 위치<input name="y" type="range" min="-100" max="100" value="0"></label><small>사진을 확대하고 위치를 움직여 화면에 보일 부분을 맞춰 주세요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">이대로 자르기</button></div></form>`;
+      document.body.append(dialog);
+      const canvas=dialog.querySelector("canvas"),ctx=canvas.getContext("2d");
+      canvas.width=output;canvas.height=Math.round(output/ratio);
+      const draw=()=>{
+        const zoom=Number(dialog.querySelector('[name="zoom"]').value);
+        const x=Number(dialog.querySelector('[name="x"]').value)/100;
+        const y=Number(dialog.querySelector('[name="y"]').value)/100;
+        const cover=Math.max(canvas.width/img.width,canvas.height/img.height)*zoom;
+        const w=img.width*cover,h=img.height*cover;
+        const maxX=Math.max(0,(w-canvas.width)/2),maxY=Math.max(0,(h-canvas.height)/2);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img,(canvas.width-w)/2-x*maxX,(canvas.height-h)/2-y*maxY,w,h);
       };
-      img.src=reader.result;
+      dialog.querySelectorAll('input[type="range"]').forEach(input=>input.oninput=draw);
+      dialog.onclose=()=>{
+        const applied=dialog.returnValue==="apply";
+        const data=applied?canvas.toDataURL(type==="icon"?"image/png":"image/webp",type==="icon"?undefined:.78):null;
+        URL.revokeObjectURL(url);dialog.remove();resolve(data);
+      };
+      draw();dialog.showModal();
     };
-    reader.readAsDataURL(file);
+    img.src=url;
   });
 }
 
@@ -275,13 +313,14 @@ window.ParallelCity={
   getState:cloneState,
   replaceState:x=>{replaceState(x);render()},
   setAccountStatus:t=>setAccountLabel(t),
+  toast:showToast,
   mediaChanged:()=>render()
 };
 
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260801a").catch(error=>{
+import("./auth.js?v=20260801c").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
