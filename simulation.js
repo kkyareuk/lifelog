@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260801e";
+﻿import {state,save} from "./state.js?v=20260801f";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -110,4 +110,4 @@ export function eventFor(c,date=new Date()){
   return past.at(-1)||entry(n,"집에서 아침 준비 중","오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
 export function charactersAtPlace(id){return state.order.map(x=>state.characters[x]).filter(c=>eventFor(c).placeId===id)}
-export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id],e=eventFor(c);if(e.home)(out[c.homeId||id]??=[]).push(c)});return out}
+export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}

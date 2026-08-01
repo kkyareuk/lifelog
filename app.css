@@ -173,10 +173,20 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .catalog-dex-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-top:14px}
 .catalog-dex-card{border:1px solid var(--line);border-radius:18px;background:#f8fafc;overflow:hidden}
 .catalog-dex-card summary{min-height:148px;padding:12px;display:grid;place-items:center;align-content:center;gap:6px;text-align:center;cursor:pointer;list-style:none}
-.catalog-dex-card summary::-webkit-details-marker{display:none}.catalog-dex-card summary>span{font-size:48px}.catalog-dex-card summary>img{width:74px;height:74px;border-radius:15px;object-fit:cover}.catalog-dex-card summary>b{font-size:18px}.catalog-dex-card summary>small{color:var(--muted)}
+.catalog-dex-card summary::-webkit-details-marker{display:none}.catalog-app-icon{width:78px;height:78px;border-radius:22px!important;display:grid;place-items:center;object-fit:cover;font-size:40px;background:linear-gradient(145deg,#fff,#e5edf5);border:1px solid #fff;box-shadow:0 8px 18px #15223824,inset 0 1px 0 #fff}.catalog-dex-card summary>b{font-size:18px}.catalog-dex-card summary>small{color:var(--muted)}
 .catalog-dex-card[open]{grid-column:span 2;background:#fff;box-shadow:0 12px 30px #17203312}.catalog-detail{padding:14px;border-top:1px solid var(--line);display:grid;gap:10px}.catalog-detail label{display:grid;gap:5px}
 @media(max-width:900px){.catalog-dex-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:600px){.catalog-dex-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.catalog-dex-card[open]{grid-column:1/-1}.catalog-dex-card summary{min-height:126px}.form-actions{display:grid}.form-actions button{width:100%}}
+
+/* 모바일 마을 편집 지도는 편집 폼 위에 크게 표시 */
+@media(max-width:900px){
+  .town-edit{display:grid!important;grid-template-columns:minmax(0,1fr)!important;overflow:visible!important}
+  .town-edit>.world{display:block!important;width:100%!important;min-width:0!important;height:auto!important;min-height:210px;aspect-ratio:1672/941;margin:0 0 14px;border-radius:20px}
+  .town-edit>.form{width:100%;min-width:0}
+}
+.place-photo-tools{display:grid;gap:8px;margin:12px 0}.place-photo-tools>span,.pet-actions{display:flex;gap:7px;flex-wrap:wrap}
+.pets{margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}.pet-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.pet-card{display:grid;grid-template-columns:70px 1fr;gap:12px;padding:14px;border:1px solid var(--line);border-radius:20px;background:#f8fafc}.pet-avatar{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#fff,#dce8e4);font-size:38px;box-shadow:0 6px 14px #17203318}.pet-avatar img{width:100%;height:100%;object-fit:cover}.pet-info{display:grid;align-content:start;gap:3px}.pet-info>b{font-size:19px}.pet-info small{color:var(--muted)}.pet-info p{margin:5px 0 0}.pet-edit{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.pet-edit label{display:grid;gap:4px}.pet-actions{grid-column:1/-1}
+@media(max-width:600px){.pet-grid{grid-template-columns:1fr}.pet-edit{grid-template-columns:1fr}}
 
 /* 조용한 상태 알림 */
 #mini-toast{position:fixed;left:50%;bottom:22px;z-index:4000;max-width:calc(100vw - 32px);padding:8px 13px;border-radius:999px;background:#172033e8;color:#fff;font-size:13px;box-shadow:0 8px 24px #17203333;opacity:0;transform:translate(-50%,10px);pointer-events:none;transition:.18s}

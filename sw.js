@@ -1,4 +1,4 @@
-const CACHE="parallel-city-v20260801e";
+﻿const CACHE="parallel-city-v20260801f";
 const CORE=[
   "./",
   "./index.html",

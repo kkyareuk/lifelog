@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801e";
-import {eventFor, visibleTimeline} from "./simulation.js?v=20260801e";
-import {renderApp, setAccountLabel} from "./views.js?v=20260801e";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260801f";
+import {eventFor, visibleTimeline} from "./simulation.js?v=20260801f";
+import {renderApp, setAccountLabel} from "./views.js?v=20260801f";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -67,6 +67,13 @@ function bind(){
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
   $("[data-home-edit]")?.addEventListener("click",async()=>{const was=state.homeEditMode;setHomeEditMode(!was);was?await explicitSave("집 편집 저장"):render()});
   $("[data-add-room]")?.addEventListener("click",()=>{addRoom(state.activeHomeId);render()});
+  $("[data-add-pet]")?.addEventListener("click",()=>{addPet(state.activeHomeId);render()});
+  $$("[data-pet-field]").forEach(el=>{
+    const apply=()=>{const value=el.dataset.petField==="neutered"?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(el.dataset.petField==="species")render()};
+    el.oninput=apply;el.onchange=apply;
+  });
+  $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 반려동물을 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
+  $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
   $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
   $$("[data-sleep-room]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.sleepRoom,{sleepRoomId:el.value});render()});
@@ -106,10 +113,12 @@ function bind(){
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
   $$("[data-place-image]").forEach(el=>el.onclick=()=>pickImage("place",el.dataset.placeImage));
+  $$("[data-place-interior-image]").forEach(el=>el.onclick=()=>pickImage("placeInterior",el.dataset.placeInteriorImage));
   $$("[data-image-url]").forEach(el=>el.onclick=()=>useImageUrl(el.dataset.imageUrl,el.dataset.id,el.dataset.room||""));
   $$("[data-clear-room-bg]").forEach(el=>el.onclick=()=>{setHomeImage(el.dataset.homeId,el.dataset.room,"");render()});
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
+  $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
@@ -165,8 +174,9 @@ function openLogDetail(index){
   const c=active(), entry=visibleTimeline(c)[index];
   if(!entry)return;
   const place=state.world.places.find(p=>p.id===entry.placeId);
+  const homeImage=entry.home?state.homes[c.homeId]?.rooms?.[entry.room]?.image:"";
   const item=Object.values(state.catalog||{}).flat().find(x=>x.id===entry.itemId);
-  const image=item?.image||place?.image||state.world.bg;
+  const image=homeImage||place?.interiorImage||place?.image||item?.image||state.world.bg;
   const modal=$("#log-modal");
   modal.hidden=false;
   modal.innerHTML=`<div class="log-dialog"><button data-close-log aria-label="닫기">×</button><time>${entry.time}</time><h2>${entry.title}</h2><p>${entry.desc||""}</p>${image?`<img src="${image}" alt="">`:""}<small>${place?`📍 ${place.name}`:"🏠 집"}</small></div>`;
@@ -182,6 +192,7 @@ function useImageUrl(type,id,room){
     if(type==="room")setHomeImage(id,room,value);
     else if(type==="home")setHomeBackground(id,value);
     else if(type==="place")setPlaceImage(id,value);
+    else if(type==="placeInterior")setPlaceInteriorImage(id,value);
     else setCharacterImage(id,type,value);
     render();
   }catch{alert("올바른 이미지 주소를 입력해 주세요.");}
@@ -202,6 +213,9 @@ $("#image-picker").onchange=async e=>{
     if(task.type==="room")setHomeImage(task.id,task.room,data);
     else if(task.type==="home")setHomeBackground(task.id,data);
     else if(task.type==="place")setPlaceImage(task.id,data);
+    else if(task.type==="placeInterior")setPlaceInteriorImage(task.id,data);
+    else if(task.type==="petPhoto")setPetImage(task.id,task.room,"photo",data);
+    else if(task.type==="petIcon")setPetImage(task.id,task.room,"icon",data);
     else setCharacterImage(task.id,task.type,data);
     render();
   }catch(err){
@@ -211,7 +225,7 @@ $("#image-picker").onchange=async e=>{
 };
 
 function cropImage(file,type){
-  const square=["icon","photo"].includes(type);
+  const square=["icon","photo","petIcon","petPhoto"].includes(type);
   const output=square?700:1400;
   const ratio=square?1:16/9;
   return new Promise((resolve,reject)=>{
@@ -344,10 +358,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260801e").catch(error=>{
+import("./auth.js?v=20260801f").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260801e").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260801f").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
