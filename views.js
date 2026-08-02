@@ -1,5 +1,6 @@
 ﻿import {state,active} from "./state.js?v=20260802t";
 import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260802t";
+// Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
 const TASTES=["아재 입맛","어린이 입맛","맵부심","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
@@ -19,7 +20,7 @@ const PERSONALITY_LEVELS={
   perceivingJudging:["완전 즉흥적","흐름에 맡김","유연한 편","균형형","미리 정리함","계획적","철저한 계획형"]
 };
 const personalityRange=(c,field,title,left,right)=>`<label class="personality-range"><span class="personality-title">${title}<b data-range-label="${field}">${PERSONALITY_LEVELS[field][c[field]??3]}</b></span><span class="range-poles"><small>${left}</small><small>${right}</small></span><input type="range" min="0" max="6" data-field="${field}" data-levels="${field}" value="${c[field]??3}"></label>`;
-const townAssignment=c=>`<section class="setting-card character-town"><h2>생활하는 마을</h2><select data-field="townId">${state.towns.map(t=>`<option value="${t.id}" ${t.id===c.townId?"selected":""}>${esc(t.name)}</option>`).join("")}</select><small>이 캐릭터의 외출·직장·생활 로그는 선택한 마을 안에서만 만들어져요.</small></section>`;
+const townAssignment=c=>`<section class="setting-card character-town"><h2>집이 있는 마을</h2><select data-field="townId">${state.towns.map(t=>`<option value="${t.id}" ${t.id===c.townId?"selected":""}>${esc(t.name)}</option>`).join("")}</select><label class="check"><input type="checkbox" data-character-check="${c.id}" data-field="driverLicense" ${c.driverLicense?"checked":""}> 운전면허 있음</label><small>쉬는 날에는 동네에서 시간을 보내기도 하고, 일정에 따라 다른 마을로 이동하기도 해요.</small></section>`;
 const PLACE_TYPES={
   "카페":["","로스터리 카페","디저트 카페","테마 카페","찻집"],
   "음식점":["","한식당","중식당","일식당","이탈리아 식당","분식집","패스트푸드점","디저트 가게"],
@@ -61,14 +62,16 @@ const FURNITURE={
   study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"]
 };
 let accountText="Google 로그인 안 됨";
-let accountEntitlements={removeAds:false,backgroundPacks:[],iconPacks:[]};
+let accountEntitlements={backgroundPacks:[],iconPacks:[]};
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const backgroundOptions=()=>[
   ["world-assets/cozy-town.png","개발자 그림 · 마을",true],
   ["world-assets/downtown.png","개발자 그림 · 도시",true],
   ["world-assets/department-store-premium.png","백화점 아트리움 · 구매 배경",hasBackground("department-store")]
 ].map(([value,label,owned])=>`<option value="${value}" ${state.world.bg===value?"selected":""} ${owned?"":"disabled"}>${owned?label:`🔒 ${label}`}</option>`).join("");
-const adSlot=()=>accountEntitlements.removeAds?"":`<aside class="ad-slot" data-ad-slot>${window.PARALLEL_CITY_ADS?.client?"광고 불러오는 중":"광고 영역 · 광고 제거 구매 시 숨겨집니다"}</aside>`;
+const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
+const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${id}" ${p.iconPreset===id?"selected":""}>${label}</option>`).join("");
+const visibleTownId=c=>eventFor(c)?.townId||c.townId;
 
 function avatar(c,cls=""){
   if(c.icon)return `<img class="sprite ${cls}" src="${c.icon}" alt="">`;
@@ -77,15 +80,15 @@ function avatar(c,cls=""){
 }
 function header(){
   const tabs=[["observe","관찰"],["home","집"],["character","캐릭터"],["catalog","취향 사전"],["relationship","관계"],["routine","주간 루틴"],["town","마을"],["settings","설정"]];
-  return `<header><div class="brand"><span class="logo">▥</span><div><h1>평행도시</h1><small>캐릭터 생활 관찰 게임</small></div></div><nav>${tabs.map(([k,n])=>`<button data-tab="${k}" class="${state.activeTab===k?"on":""}">${n}</button>`).join("")}</nav><span id="save-state">기기에 저장됨</span><div class="quick-sync"><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div></header>`;
+  return `<header><div class="brand"><span class="logo">▥</span><div><h1>평행도시</h1><small>캐릭터 생활 관찰 게임</small></div></div><nav>${tabs.map(([k,n])=>`<button data-tab="${k}" class="${state.activeTab===k?"on":""}">${n}</button>`).join("")}</nav><span id="save-state">기기에 저장됨</span></header>`;
 }
 function roster(){
-  return `<div class="roster">${state.order.filter(id=>state.characters[id]?.townId===state.activeTownId).map(id=>{const c=state.characters[id],e=eventFor(c);return `<button class="roster-card ${id===state.activeId?"on":""}" data-roster="${id}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}</div>`;
+  return `<div class="roster">${state.order.filter(id=>visibleTownId(state.characters[id])===state.activeTownId).map(id=>{const c=state.characters[id],e=eventFor(c);return `<button class="roster-card ${id===state.activeId?"on":""}" data-roster="${id}" title="${esc(c.name)} · ${esc(e.title)}" style="--own:${c.theme.primary}">${avatar(c)}<span class="roster-info"><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}</div>`;
 }
 function placeCard(p){
   const mode=state.buildingLabelMode||"full";
-  const label=mode==="none"?"":p.image?`<span class="building-name">${esc(p.name)}</span>`:`<span class="place-label"><b>${esc(p.name)}</b>${mode==="full"?`<small>${esc(p.subtype?`${p.type} · ${p.subtype}`:p.type)}</small>`:""}</span>`;
-  return `<button class="place ${p.image?"has-art":""}" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}">${p.image?`<img class="building-art" src="${esc(p.image)}" alt="${esc(p.name)}">`:`<i>${p.emoji}</i>`}${label}</button>`;
+  const label=mode==="none"?"":`<span class="place-label"><b>${esc(p.name)}</b>${mode==="full"?`<small>${esc(p.subtype?`${p.type} · ${p.subtype}`:p.type)}</small>`:""}</span>`;
+  return `<button class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}"><i class="building-preset preset-${esc(p.iconPreset||"shop")}"></i>${label}</button>`;
 }
 function catalogItem(id){return catalogItems().find(item=>item.id===id)}
 function townForEntry(entry){return state.towns.find(t=>t.id===entry.townId)||state.towns.find(t=>t.places?.some(p=>p.id===entry.placeId))||state.world}
@@ -117,7 +120,7 @@ function personCard(c){
   return `<button class="person" data-person="${c.id}" style="left:calc(${p.x}% + ${off[0]/12}%);top:calc(${p.y}% + ${off[1]/6.76}%)">${avatar(c)}<span>${esc(c.name)}</span></button>`;
 }
 function observe(){
-  const localIds=state.order.filter(id=>state.characters[id]?.townId===state.activeTownId);
+  const localIds=state.order.filter(id=>visibleTownId(state.characters[id])===state.activeTownId);
   const localId=localIds.includes(state.activeId)?state.activeId:localIds[0];
   const townSwitcher=state.towns.length>1?`<div class="observe-town-switcher"><b>관찰할 마을</b>${state.towns.map(t=>`<button data-observe-town="${t.id}" class="${t.id===state.activeTownId?"on":""}">🏙️ ${esc(t.name)}</button>`).join("")}</div>`:"";
   if(!localId)return `${roster()}${townSwitcher}<div class="observe"><section><div class="viewport"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}</div></div></section><aside class="panel empty"><h2>이 마을에 사는 캐릭터가 없어요</h2><p>캐릭터 프로필에서 생활하는 마을을 지정할 수 있어요.</p></aside></div>`;
@@ -212,6 +215,7 @@ function homeCard(id,chars){
     <div class="pet-info"><b>${esc(p.name)}</b><small>${esc(p.species)}${p.breed?` · ${esc(p.breed)}`:""}</small><strong>${esc(petScenes[p.id].title)}</strong><p>${esc(petScenes[p.id].desc)}</p></div>
     ${edit?`<div class="pet-edit"><label>이름<input data-pet-field="name" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.name)}"></label><label>종류<select data-pet-field="species" data-home-id="${id}" data-pet-id="${p.id}">${petKinds.map(x=>`<option ${x===p.species?"selected":""}>${x}</option>`).join("")}</select></label><label>품종<input data-pet-field="breed" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.breed)}" placeholder="유저가 직접 입력"></label><label>주로 있는 방<select data-pet-field="room" data-home-id="${id}" data-pet-id="${p.id}">${roomKeys.map(key=>`<option value="${key}" ${key===(p.room||"living")?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label><label>성별<select data-pet-field="sex" data-home-id="${id}" data-pet-id="${p.id}">${["모름","수컷","암컷"].map(x=>`<option ${x===p.sex?"selected":""}>${x}</option>`).join("")}</select></label><label class="check"><input type="checkbox" data-pet-field="neutered" data-home-id="${id}" data-pet-id="${p.id}" ${p.neutered?"checked":""}> 중성화 완료</label><div class="pet-actions"><button data-pet-image="photo" data-home-id="${id}" data-pet-id="${p.id}">원형 사진</button><button data-image-url="petPhoto" data-id="${id}" data-room="${p.id}">사진 링크</button><button data-pet-image="icon" data-home-id="${id}" data-pet-id="${p.id}">투명 아이콘</button><button data-image-url="petIcon" data-id="${id}" data-room="${p.id}">아이콘 링크</button><button class="danger" data-delete-pet="${p.id}" data-home-id="${id}">삭제</button></div></div>`:""}
   </article>`).join("");
+  const cars=(h.cars||[]).map(car=>`<article class="car-card"><span class="car-icon">🚙</span><div><b>${esc(car.name)}</b><small>${esc(car.type)}${car.color?` · ${esc(car.color)}`:""} · ${car.seats||5}인승</small></div>${edit?`<div class="car-edit"><label>차량 이름<input data-car-field="name" data-home-id="${id}" data-car-id="${car.id}" value="${esc(car.name)}"></label><label>종류<select data-car-field="type" data-home-id="${id}" data-car-id="${car.id}">${["경차","승용차","SUV","승합차","스포츠카","전기차","오토바이","기타"].map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>색상<input data-car-field="color" data-home-id="${id}" data-car-id="${car.id}" value="${esc(car.color||"")}"></label><label>좌석 수<input type="number" min="1" max="12" data-car-field="seats" data-home-id="${id}" data-car-id="${car.id}" value="${car.seats||5}"></label><button class="danger" data-delete-car="${car.id}" data-home-id="${id}">삭제</button></div>`:""}</article>`).join("");
   const residentScenes=chars.map(c=>{
     const e=eventFor(c),place=placeForEntry(e),image=sceneImage(c,e);
     const location=e.home?`🏠 ${h.rooms?.[e.room]?.name||"집 안"}`:e.transit?"🚌 이동 중":place?`📍 ${place.name} · ${townForEntry(e).name}`:"📍 외출 중";
@@ -226,6 +230,7 @@ function homeCard(id,chars){
     ${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
     <div class="rooms ${roomKeys.length>6?"has-extra":""}">${roomHtml}</div>
     <section class="pets"><div class="title"><h2>반려동물</h2>${edit?`<button data-add-pet>+ 반려동물 추가</button>`:""}</div><div class="pet-grid">${petCards||"<p>아직 함께 사는 반려동물이 없어요.</p>"}</div></section>
+    <section class="cars"><div class="title"><h2>자동차</h2>${edit?`<button data-add-car>+ 자동차 추가</button>`:""}</div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
     <section class="resident-scenes"><div class="title"><h2>동거인 현재 장면</h2><small>같은 화면에서 나란히 확인해요</small></div><div>${residentScenes}</div></section>
     ${homeDailyLog(chars,h)}
     <section class="home-statuses"><h2>집 사람들 상태</h2><div>${status}</div></section>
@@ -262,14 +267,14 @@ function relationship(){
 }
 function routine(){return `<section class="panel form"><h1>주간 루틴</h1><p>요일별 고정 일정 편집기는 다음 업데이트에서 이어집니다.</p></section>`}
 function town(){const items=catalogItems(),audiences=["아재 입맛","어린이 입맛","가족","연인·데이트","학생","고소득","오타쿠"];return `<div class="town-tabs">${state.towns.map(t=>`<button data-town-select="${t.id}" class="${t.id===state.activeTownId?"on":""}">🏙️ ${esc(t.name)}</button>`).join("")}<button data-add-town>+ 마을 추가</button>${state.towns.length>1?`<button class="danger" data-delete-town="${state.activeTownId}">현재 마을 삭제</button>`:""}</div><div class="town-edit"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}</div><aside class="panel form"><div class="title"><h2>마을 편집</h2><button class="primary" data-town-save>마을 저장</button></div><label>마을 이름<input data-world-name value="${esc(state.world.name)}"></label><label>기본 배경<select data-world-bg><option value="world-assets/cozy-town.png" ${state.world.bg.includes("cozy")?"selected":""}>개발자 그림 · 마을</option><option value="world-assets/downtown.png" ${state.world.bg.includes("downtown")?"selected":""}>개발자 그림 · 도시</option><option value=world-assets/department-store-premium.png>구매 배경 · 백화점 아트리움</option></select></label><p>건물은 PC와 모바일 모두 이 화면에서 끌어 옮길 수 있어요.</p><button data-add-place>+ 건물 추가</button><div class="place-editor">${state.world.places.map(p=>`<details><summary><b>${esc(p.emoji)} ${esc(p.name)}</b></summary><div class="place-config"><label>건물 이름<input data-place-field="name" data-place-id="${p.id}" value="${esc(p.name)}"></label><label>건물 유형<select data-place-field="type" data-place-id="${p.id}">${placeTypeOptions(p)}</select></label><label>세부 유형<select data-place-field="subtype" data-place-id="${p.id}">${placeSubtypeOptions(p)}</select></label><label>가격대<select data-place-field="priceRange" data-place-id="${p.id}">${["저렴","보통","고급","명품"].map(x=>`<option ${p.priceRange===x?"selected":""}>${x}</option>`).join("")}</select></label><label>마을 속 건물 크기<input type="range" min=".45" max="1.5" step=".05" data-place-field="imageScale" data-place-id="${p.id}" value="${p.imageScale||1}"></label><label>매운맛 정도<select data-place-field="spicy" data-place-id="${p.id}">${levelOptions(SPICE_LEVELS,p.spicy||0)}</select></label><label>단맛 정도<select data-place-field="sweet" data-place-id="${p.id}">${levelOptions(SWEET_LEVELS,p.sweet||0)}</select></label></div><div class="place-photo-tools"><b>마을 지도용 건물 그림</b><span><button data-place-image="${p.id}">투명 그림 업로드</button><button data-image-url="place" data-id="${p.id}">링크</button>${p.image?`<button data-clear-place-image="${p.id}">지우기</button>`:""}</span><b>생활 로그·현재 장면용 내부 사진</b><span><button data-place-interior-image="${p.id}">내부 사진 업로드</button><button data-image-url="placeInterior" data-id="${p.id}">링크</button>${p.interiorImage?`<button data-clear-place-interior-image="${p.id}">지우기</button>`:""}</span></div><button class="danger" data-delete-place="${p.id}">건물 삭제</button><h4>주요 이용층</h4><div class="stock-picker">${audiences.map(x=>`<button data-place-audience="${p.id}" data-value="${x}" class="${(p.audiences||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div><h4>이곳에서 파는 것·이용할 수 있는 것</h4><div class="stock-list stock-picker">${items.map(item=>`<button data-place-stock="${p.id}" data-item-id="${item.id}" class="${(p.stock||[]).includes(item.id)?"on":""}">${CATALOG_LABELS[item.kind]} · ${esc(item.name)}</button>`).join("")}</div></details>`).join("")}</div></aside></div>`}
-function settings(){return `<section class="panel form"><h1>설정</h1><section class="setting-card"><h2>마을 지도 건물 글자</h2><label>건물 표기 방식<select data-setting="buildingLabelMode"><option value="full" ${state.buildingLabelMode==="full"?"selected":""}>이름과 건물 유형 표시</option><option value="name" ${state.buildingLabelMode==="name"?"selected":""}>이름만 표시</option><option value="none" ${state.buildingLabelMode==="none"?"selected":""}>아무 글자도 표시하지 않기</option></select></label><small>‘아무 글자도 표시하지 않기’를 선택하면 업로드한 지도용 건물 그림만 보이게 할 수 있어요.</small></section><section class="sync-panel"><h2>Google 계정</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button></div><small>로그인은 여기에서만 관리해요. 화면 위의 ‘동기화’는 현재 기기 데이터를 계정에 올리고, ‘불러오기’는 계정 데이터를 이 기기로 가져옵니다.</small></section><button data-reset>모든 데이터 초기화</button></section>`}
+function settings(){return `<section class="panel form"><h1>설정</h1><section class="setting-card"><h2>마을 지도 건물 글자</h2><label>건물 표기 방식<select data-setting="buildingLabelMode"><option value="full" ${state.buildingLabelMode==="full"?"selected":""}>이름과 건물 유형 표시</option><option value="name" ${state.buildingLabelMode==="name"?"selected":""}>이름만 표시</option><option value="none" ${state.buildingLabelMode==="none"?"selected":""}>아무 글자도 표시하지 않기</option></select></label><small>‘아무 글자도 표시하지 않기’를 선택하면 지도에 선택한 건물 아이콘만 보여요.</small></section><section class="sync-panel"><h2>Google 계정과 데이터</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div><small>동기화와 불러오기는 필요할 때만 설정에서 사용해요.</small></section><button data-reset>모든 데이터 초기화</button></section>`}
 function view(){
   if(!state.order.length)return `<section class="panel empty"><h1>첫 캐릭터를 만들어 주세요</h1><p>로그인 전에는 예시 캐릭터나 실제 지역이 표시되지 않아요.</p><button class="primary" data-new>+ 캐릭터 만들기</button></section>`;
   return ({observe,home,character,catalog,relationship,routine,town,settings}[state.activeTab]||observe)();
 }
 export function renderApp(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];
-  document.querySelector("#app").innerHTML=`${header()}${adSlot()}<main>${view()}</main>`;
+  document.querySelector("#app").innerHTML=`${header()}<main>${view()}</main>`;
 }
 export function setAccountLabel(text){accountText=text;const el=document.querySelector("#account-status");if(el)el.textContent=text}
-export function setAccountEntitlements(value){accountEntitlements={removeAds:value?.removeAds===true,backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks:[],iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks:[]}}
+export function setAccountEntitlements(value){accountEntitlements={backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks:[],iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks:[]}}

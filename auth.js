@@ -9,7 +9,7 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
-let entitlements={removeAds:false,backgroundPacks:[],iconPacks:[]};
+let entitlements={backgroundPacks:[],iconPacks:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const toast=text=>window.ParallelCity?.toast?.(text);
@@ -24,7 +24,6 @@ function shortError(error){
 }
 const cloudDoc=()=>doc(db,"users",user.uid);
 const normalizeEntitlements=value=>({
-  removeAds:value?.removeAds===true,
   backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks.filter(x=>typeof x==="string"):[],
   iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
   grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
@@ -35,7 +34,6 @@ const publishEntitlements=value=>{
   window.ParallelCity?.setEntitlements?.(entitlements);
 };
 const accessLabel=()=>[
-  entitlements.removeAds?"광고 제거":"",
   entitlements.backgroundPacks.length?`배경 팩 ${entitlements.backgroundPacks.length}개`:"",
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:""
 ].filter(Boolean).join(" · ")||"일반 이용자";

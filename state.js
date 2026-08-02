@@ -116,6 +116,11 @@ function normalizeHomes(x){
   x.world.places=Array.isArray(x.world.places)?x.world.places:clone(defaultWorld.places);
   x.towns=Array.isArray(x.towns)&&x.towns.length?x.towns:[{id:uid(),...clone(x.world)}];
   x.towns=x.towns.map(t=>({id:t.id||uid(),name:t.name||"이름 없는 마을",bg:t.bg||defaultWorld.bg,places:Array.isArray(t.places)?t.places:[]}));
+  x.towns.forEach(t=>t.places.forEach(p=>{p.iconPreset=p.iconPreset||({
+    "카페":"cafe","음식점":"restaurant","식당":"restaurant","사무실":"office","병원":"hospital",
+    "공원":"park","학교":"school","옷가게":"clothing","공연장":"theater","숙박":"hotel",
+    "백화점":"department","도서관":"library"
+  }[p.type]||"shop")}));
   x.activeTownId=x.towns.some(t=>t.id===x.activeTownId)?x.activeTownId:x.towns[0].id;
   x.world=clone(x.towns.find(t=>t.id===x.activeTownId));
   const defaultsCatalog=defaultCatalog();
@@ -138,6 +143,10 @@ function normalizeHomes(x){
   const defaults=rooms();
   Object.values(x.homes||{}).forEach(h=>{
     h.image=h.image||"";
+    h.cars=Array.isArray(h.cars)?h.cars.map(car=>({
+      id:car.id||uid(),name:car.name||"우리 집 자동차",type:car.type||"승용차",
+      color:car.color||"",seats:Number.isFinite(+car.seats)?Math.max(1,Math.min(12,+car.seats)):5
+    })):[];
     h.pets=Array.isArray(h.pets)?h.pets.map(p=>({
       id:p.id||uid(),name:p.name||"새 반려동물",species:p.species||"기타",
       breed:p.breed||"",sex:p.sex||"모름",neutered:Boolean(p.neutered),
@@ -152,6 +161,7 @@ function normalizeHomes(x){
   });
   Object.values(x.characters||{}).forEach(c=>{
     c.townId=x.towns.some(t=>t.id===c.townId)?c.townId:x.towns[0].id;
+    c.driverLicense=Boolean(c.driverLicense);
     c.tastes=Array.isArray(c.tastes)?[...c.tastes]:[];
     c.interests=Array.isArray(c.interests)?[...c.interests]:[];
     c.hobbies=Array.isArray(c.hobbies)?[...c.hobbies]:[];
@@ -287,6 +297,20 @@ export function deletePet(homeId,petId){
 export function setPetImage(homeId,petId,type,data){
   const pet=state.homes[homeId]?.pets?.find(p=>p.id===petId);if(!pet)return;
   pet[type]=data;save(true);
+}
+export function addCar(homeId){
+  const h=state.homes[homeId];if(!h)return;
+  h.cars=Array.isArray(h.cars)?h.cars:[];
+  const car={id:uid(),name:"우리 집 자동차",type:"승용차",color:"",seats:5};
+  h.cars.push(car);save(true);return car.id;
+}
+export function updateCar(homeId,carId,patch){
+  const car=state.homes[homeId]?.cars?.find(item=>item.id===carId);if(!car)return;
+  Object.assign(car,patch);save(true);
+}
+export function deleteCar(homeId,carId){
+  const h=state.homes[homeId];if(!h)return;
+  h.cars=(h.cars||[]).filter(car=>car.id!==carId);save(true);
 }
 export function toggleFurniture(homeId,roomKey,item){
   const h=state.homes[homeId];if(!h)return;

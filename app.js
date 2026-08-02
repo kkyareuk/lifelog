@@ -1,4 +1,5 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
+import {addCar,updateCar,deleteCar} from "./state.js?v=20260802t";
 import {eventFor} from "./simulation.js?v=20260802t";
 import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802t";
 
@@ -11,26 +12,11 @@ function render(){
     renderApp(state);
     bind();
     applyTheme();
-    loadAd();
   }catch(error){
     console.error("화면 복구 필요",error);
     document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
     document.querySelector("#safe-reload")?.addEventListener("click",()=>location.reload());
   }
-}
-
-function loadAd(){
-  const host=document.querySelector("[data-ad-slot]");
-  const cfg=window.PARALLEL_CITY_ADS;
-  if(!host||!cfg?.client||!cfg?.slot)return;
-  host.innerHTML=`<ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="${String(cfg.client).replace(/"/g,"")}" data-ad-slot="${String(cfg.slot).replace(/"/g,"")}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
-  if(!document.querySelector('script[data-parallel-ads]')){
-    const script=document.createElement("script");
-    script.async=true;script.dataset.parallelAds="";script.crossOrigin="anonymous";
-    script.src=`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(cfg.client)}`;
-    document.head.append(script);
-  }
-  try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch{}
 }
 
 function showToast(message){
@@ -83,6 +69,10 @@ function bind(){
   $("[data-home-edit]")?.addEventListener("click",async()=>{const was=state.homeEditMode;setHomeEditMode(!was);was?await explicitSave("집 편집 저장"):render()});
   $("[data-add-room]")?.addEventListener("click",()=>{addRoom(state.activeHomeId);render()});
   $("[data-add-pet]")?.addEventListener("click",()=>{addPet(state.activeHomeId);render()});
+  $("[data-add-car]")?.addEventListener("click",()=>{addCar(state.activeHomeId);render()});
+  $$("[data-car-field]").forEach(el=>el.oninput=()=>updateCar(el.dataset.homeId,el.dataset.carId,{[el.dataset.carField]:el.type==="number"?Number(el.value):el.value}));
+  $$("[data-delete-car]").forEach(el=>el.onclick=()=>{deleteCar(el.dataset.homeId,el.dataset.deleteCar);render()});
+  $$("[data-character-check]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.characterCheck,{[el.dataset.field]:el.checked});render()});
   $$("[data-pet-field]").forEach(el=>{
     const apply=()=>{const value=el.dataset.petField==="neutered"?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))render()};
     el.oninput=apply;el.onchange=apply;
@@ -138,12 +128,10 @@ function bind(){
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
-  $$("[data-place-image]").forEach(el=>el.onclick=()=>pickImage("place",el.dataset.placeImage));
   $$("[data-place-interior-image]").forEach(el=>el.onclick=()=>pickImage("placeInterior",el.dataset.placeInteriorImage));
   $$("[data-image-url]").forEach(el=>el.onclick=()=>useImageUrl(el.dataset.imageUrl,el.dataset.id,el.dataset.room||""));
   $$("[data-clear-room-bg]").forEach(el=>el.onclick=()=>{setHomeImage(el.dataset.homeId,el.dataset.room,"");render()});
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
-  $$("[data-clear-place-image]").forEach(el=>el.onclick=()=>{setPlaceImage(el.dataset.clearPlaceImage,"");render()});
   $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
   $$("[data-setting]").forEach(el=>el.onchange=()=>{state[el.dataset.setting]=el.value;save(true);render()});
@@ -157,6 +145,13 @@ function bind(){
   });
   $("[data-cloud-upload]")?.addEventListener("click",async()=>window.ParallelCityAuth?.upload());
   $("[data-cloud-download]")?.addEventListener("click",async()=>window.ParallelCityAuth?.download());
+  $$("[data-place-image]").forEach(button=>{
+    const id=button.dataset.placeImage,place=state.world.places.find(item=>item.id===id),tools=button.closest(".place-photo-tools");
+    const label=button.parentElement?.previousElementSibling;
+    if(label)label.textContent="마을 지도용 건물 아이콘";
+    if(button.parentElement)button.parentElement.innerHTML=`<select data-place-field="iconPreset" data-place-id="${id}">${[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]].map(([value,name])=>`<option value="${value}" ${place?.iconPreset===value?"selected":""}>${name}</option>`).join("")}</select>`;
+    tools?.querySelector('[data-image-url="place"]')?.remove();
+  });
   $$("[data-place-field]").forEach(el=>{
     const apply=()=>{
       const field=el.dataset.placeField;

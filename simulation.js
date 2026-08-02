@@ -13,7 +13,18 @@ const sleepingNow=(c,d)=>{
   return sleep<=wake ? n>=sleep&&n<wake : n>=sleep||n<wake;
 };
 const townFor=c=>state.towns.find(t=>t.id===c.townId)||state.towns[0]||state.world;
-const placeFor=(types,seed,c)=>{const places=townFor(c)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
+const workplaceTown=c=>state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
+const activityTown=(c,date=new Date())=>{
+  const workTown=workplaceTown(c);
+  if(workTown&&c.job!=="무직")return workTown;
+  const home=townFor(c),others=state.towns.filter(t=>t.id!==home.id);
+  if(!others.length)return home;
+  const weekend=[0,6].includes(date.getDay()),restDay=weekend&&hash(`${c.id}:${dayKey(date)}:rest`)%4!==0;
+  if(restDay||hash(`${c.id}:${dayKey(date)}:town-trip`)%3!==0)return home;
+  const romantic=preferredRelation(c),pair=romantic&&["부부","연인"].includes(romantic.r.type)?[c.id,romantic.other.id].sort().join(":"):c.id;
+  return others[hash(`${pair}:${dayKey(date)}:destination`)%others.length];
+};
+const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
@@ -52,7 +63,7 @@ function catalogChoice(c,place,kind,seed){
 
 function entry(time,title,desc,extra={}){return {time:clock(time),minute:time,title,desc,...extra}}
 function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에 앉아 조용히 쉬고 있어요.",room="living"){return entry(time,title,desc,{home:true,room})}
-const away=(c,extra={})=>({townId:c.townId||state.towns[0]?.id,...extra});
+const away=(c,extra={},date=new Date())=>({townId:activityTown(c,date)?.id||c.townId||state.towns[0]?.id,...extra});
 
 function morningScripts(c,date){
   const likes=[...(c.hobbies||[]),...(c.interests||[])],seed=`${c.id}:${dayKey(date)}:morning`;
@@ -200,6 +211,19 @@ function build(c,date=new Date()){
   list.push(homeEntry(c,wake+20,"욕실에서 씻는 중","세면대 앞에서 세수하고 이를 닦으며 잠을 깨고 있어요.","bath"));
   list.push(homeEntry(c,wake+45,"주방에서 아침 준비 중","냉장고를 열어 먹을 것을 고르고 식탁에 아침을 차리고 있어요.","kitchen"));
   const work=workEvent(c,Math.max(wake+90,540),date);
+  const destination=activityTown(c,date),homeTown=townFor(c);
+  const homeCars=state.homes[c.homeId]?.cars||[];
+  const relation=preferredRelation(c),romantic=relation&&["부부","연인"].includes(relation.r.type)?relation.other:null;
+  const partnerCars=romantic?state.homes[romantic.homeId]?.cars||[]:[];
+  const partnerCanDrive=romantic?.driverLicense&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
+  const selfCanDrive=c.driverLicense&&homeCars.length;
+  if(destination.id!==homeTown.id){
+    const travelMinute=Math.max(wake+75,(work?.minute||720)-45);
+    const mode=partnerCanDrive?"partner":selfCanDrive?"car":"transit";
+    const title=mode==="partner"?`${romantic.name}의 차를 타고 ${destination.name}으로 이동 중`:mode==="car"?`차를 운전해 ${destination.name}으로 이동 중`:`대중교통으로 ${destination.name} 이동 중`;
+    const desc=mode==="partner"?`${romantic.name}가 운전하는 차에 함께 타고 목적지로 향하고 있어요.`:mode==="car"?"집의 자동차를 직접 운전해 다른 마을로 이동하고 있어요. 음주한 날에는 운전하지 않아요.":"버스나 지하철 노선을 확인하고 다른 마을로 이동하고 있어요.";
+    list.push(entry(travelMinute,title,desc,{townId:destination.id,transit:true,withId:mode==="partner"?romantic.id:undefined,mood:"이동"}));
+  }
   const morning=morningScripts(c,date),commuteMinute=work&&c.workplaceId!=="home"?work.minute-35:Infinity;
   [wake+90,wake+240].forEach((minute,index)=>{
     if(minute<720&&minute<commuteMinute-10){
@@ -209,7 +233,7 @@ function build(c,date=new Date()){
   });
   if(work){
     if(c.workplaceId!=="home"){
-      const driving=(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
+      const driving=selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
       list.push(entry(work.minute-35,driving?"출근길에 운전 중":"대중교통으로 출근 중",driving?"차를 운전해 직장으로 이동하고 있어요.":"정류장에서 버스나 지하철을 타고 직장으로 이동하고 있어요.",away(c,{transit:true,mood:"이동"})));
     }
     list.push(work);
@@ -220,6 +244,10 @@ function build(c,date=new Date()){
     list.push(entry(750,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
   const social=socialEvent(c,1120,date); if(social)list.push(social);
+  if(destination.id!==homeTown.id){
+    const returnMinute=Math.min(sleepMinute-75,1200);
+    list.push(entry(returnMinute,`${homeTown.name}으로 돌아가는 중`,"오늘의 바깥 일정을 마치고 대중교통이나 안전하게 운전할 수 있는 동행의 차로 집이 있는 마을로 돌아가고 있어요.",{townId:homeTown.id,transit:true,mood:"이동"}));
+  }
   let stress=Math.max(...list.map(x=>x.stress||0));
   const housemate=state.order.map(id=>state.characters[id]).find(other=>other&&other.id!==c.id&&other.homeId===c.homeId);
   const homeRelation=related(c).filter(x=>x.other.homeId===c.homeId).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];

@@ -1,4 +1,5 @@
 ﻿const CACHE="parallel-city-v20260802t";
+const CACHE_VERSION="parallel-city-v20260802u";
 const CORE=[
   "./",
   "./index.html",
@@ -11,12 +12,13 @@ const CORE=[
   "./manifest.webmanifest",
   "./world-assets/cozy-town.png",
   "./world-assets/downtown.png",
-  "./world-assets/department-store-premium.png"
+  "./world-assets/department-store-premium.png",
+  "./world-assets/building-icon-pack.png"
 ];
 
 self.addEventListener("install",event=>{
   event.waitUntil(
-    caches.open(CACHE)
+    caches.open(CACHE_VERSION)
       .then(cache=>Promise.allSettled(CORE.map(asset=>cache.add(asset))))
       .then(()=>self.skipWaiting())
   );
@@ -25,7 +27,7 @@ self.addEventListener("install",event=>{
 self.addEventListener("activate",event=>{
   event.waitUntil(
     caches.keys()
-      .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
+      .then(keys=>Promise.all(keys.filter(key=>key!==CACHE_VERSION).map(key=>caches.delete(key))))
       .then(()=>self.clients.claim())
   );
 });
@@ -43,7 +45,7 @@ self.addEventListener("fetch",event=>{
       .then(response=>{
         if(response.ok){
           const copy=response.clone();
-          caches.open(CACHE).then(cache=>cache.put(event.request,copy));
+          caches.open(CACHE_VERSION).then(cache=>cache.put(event.request,copy));
         }
         return response;
       })
