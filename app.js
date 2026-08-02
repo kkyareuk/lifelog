@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
-import {eventFor} from "./simulation.js?v=20260802ae";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ae";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802af";
+import {eventFor} from "./simulation.js?v=20260802af";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802af";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -210,7 +210,7 @@ function bind(){
     const id=button.dataset.placeImage,place=state.world.places.find(item=>item.id===id),tools=button.closest(".place-photo-tools");
     const label=button.parentElement?.previousElementSibling;
     if(label)label.textContent="마을 지도용 건물 아이콘";
-    if(button.parentElement)button.parentElement.innerHTML=`<select data-place-field="iconPreset" data-place-id="${id}">${[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]].map(([value,name])=>`<option value="${value}" ${place?.iconPreset===value?"selected":""}>${name}</option>`).join("")}</select>`;
+    if(button.parentElement)button.parentElement.innerHTML=`<small>현재 모든 건물에 공통 건물 아이콘이 적용됩니다.</small>`;
     tools?.querySelector('[data-image-url="place"]')?.remove();
   });
   $$("[data-place-field]").forEach(el=>{
@@ -468,6 +468,7 @@ function focusCharacter(id){
     requestAnimationFrame(()=>focusHomeCharacter(id));
     return;
   }
+  if(e.townId&&e.townId!==state.activeTownId)switchTown(e.townId);
   render();
   requestAnimationFrame(()=>{
     const marker=document.querySelector(`[data-person="${CSS.escape(id)}"]`);
@@ -612,10 +613,10 @@ if(localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("parallel-city-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260802ae").catch(error=>{
+import("./auth.js?v=20260802af").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802ae").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802af").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

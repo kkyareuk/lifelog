@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260802t";
+﻿import {state,save} from "./state.js?v=20260802af";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -38,6 +38,10 @@ function personalityFlavor(c,desc,seed=""){
   if(c.interference==="강하게 간섭함")variants.push("함께 있는 사람이 제대로 하고 있는지 확인하고 자기 생각을 분명하게 말했어요.");
   if(c.interference==="철저히 선을 지킴")variants.push("상대의 선택에는 끼어들지 않고 필요한 거리를 지키고 있어요.");
   if(c.energyRhythm==="가만히 못 있음")variants.push("한 가지를 끝내자마자 다음에 할 일을 찾아 바로 몸을 움직였어요.");
+  if(c.activityTempo==="생각나면 바로 움직임")variants.push("해야 할 일이 떠오르자 머뭇거리지 않고 곧바로 손을 뻗었어요.");
+  if(c.activityTempo==="부산스럽게 여러 일을 오감")variants.push("하던 일을 붙잡고 있으면서도 눈에 들어온 다른 일까지 손대느라 집 안을 몇 번이나 오가고 있어요.");
+  if(c.activityTempo==="허둥대며 주의가 자주 옮겨감")variants.push("무언가를 가지러 움직였다가 옆에 놓인 다른 것이 눈에 들어와 그것부터 만지고, 다시 원래 할 일을 떠올렸어요.");
+  if(c.activityTempo==="한 가지씩 차분히")variants.push("지금 하던 일을 끝까지 마무리한 뒤 다음 일로 넘어가고 있어요.");
   if(c.energyRhythm==="집에서 충전")variants.push("사람이 적은 편안한 자리를 골라 조용히 기운을 되찾고 있어요.");
   if(c.socialStyle==="무리의 중심")variants.push("자연스럽게 먼저 말을 꺼내 주변의 흐름을 이끌고 있어요.");
   if(c.socialStyle==="혼자가 편함")variants.push("혼자 집중할 수 있는 자리를 골라 방해받지 않는 시간을 보내고 있어요.");
@@ -435,14 +439,14 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260802ac",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({engine:"20260802af",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig||old.engineVersion!=="20260802ad"){
-    c.days[key]={signature:sig,engineVersion:"20260802ad",entries:build(c,date)};
+  if(!old||old.signature!==sig||old.engineVersion!=="20260802af"){
+    c.days[key]={signature:sig,engineVersion:"20260802af",entries:build(c,date)};
     save();
   }
   return c.days[key].entries;

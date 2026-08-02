@@ -175,6 +175,7 @@ function normalizeHomes(x){
     c.conflictStyle=c.conflictStyle||"대화로 해결";
     c.affectionStyle=c.affectionStyle||"행동으로 표현";
     c.energyRhythm=c.energyRhythm||"상황에 따라";
+    c.activityTempo=c.activityTempo||"상황에 따라";
     c.catalogPreferences=Array.isArray(c.catalogPreferences)?[...c.catalogPreferences]:[];
     c.favoriteScentNotes=Array.isArray(c.favoriteScentNotes)?[...c.favoriteScentNotes]:[];
     c.favoriteVideoGenres=Array.isArray(c.favoriteVideoGenres)?[...c.favoriteVideoGenres]:[];
