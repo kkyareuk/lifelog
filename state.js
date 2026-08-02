@@ -169,6 +169,10 @@ function normalizeHomes(x){
     c.workplaceId=c.workplaceId||"";
     c.spiceTolerance=Number.isFinite(+c.spiceTolerance)?Math.max(0,Math.min(5,+c.spiceTolerance)):2;
     c.sweetPreference=Number.isFinite(+c.sweetPreference)?Math.max(0,Math.min(5,+c.sweetPreference)):2;
+    c.socialEnergy=Number.isFinite(+c.socialEnergy)?Math.max(0,Math.min(6,+c.socialEnergy)):3;
+    c.sensingIntuition=Number.isFinite(+c.sensingIntuition)?Math.max(0,Math.min(6,+c.sensingIntuition)):3;
+    c.thinkingFeeling=Number.isFinite(+c.thinkingFeeling)?Math.max(0,Math.min(6,+c.thinkingFeeling)):3;
+    c.perceivingJudging=Number.isFinite(+c.perceivingJudging)?Math.max(0,Math.min(6,+c.perceivingJudging)):3;
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
     c.homeId=c.homeId||c.id;
     if(!x.homes[c.homeId])x.homes[c.homeId]={id:c.homeId,name:`${c.name||"캐릭터"}의 집`,image:"",rooms:rooms(),pets:[],cleanliness:100};
@@ -202,7 +206,7 @@ export function save(immediate=false){
 }
 export function createCharacter(){
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};
   state.routines[id]=[];

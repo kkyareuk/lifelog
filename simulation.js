@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260802m";
+﻿import {state,save} from "./state.js?v=20260802n";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -17,6 +17,19 @@ const placeFor=(types,seed)=>{const list=state.world.places.filter(p=>types.incl
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
+
+function personalityFlavor(c,desc,seed=""){
+  const variants=[];
+  if((c.socialEnergy??3)<=1)variants.push("사람이 드문 조용한 자리를 골라 자기 속도대로 움직이고 있어요.");
+  if((c.socialEnergy??3)>=5)variants.push("마주친 사람에게 먼저 반갑게 인사를 건네며 분위기를 자연스럽게 이끌고 있어요.");
+  if((c.sensingIntuition??3)<=1)variants.push("눈앞에 보이는 것부터 하나씩 확인하며 실수 없이 마무리하고 있어요.");
+  if((c.sensingIntuition??3)>=5)variants.push("중간에 떠오른 새로운 생각을 잊지 않으려고 짧게 메모해 두었어요.");
+  if((c.thinkingFeeling??3)<=1)variants.push("가장 효율적인 순서를 머릿속으로 계산해 불필요한 동작을 줄이고 있어요.");
+  if((c.thinkingFeeling??3)>=5)variants.push("함께 있는 이의 표정과 기분도 살피며 편안한 속도를 맞추고 있어요.");
+  if((c.perceivingJudging??3)<=1)variants.push("정해 둔 순서 없이 지금 마음이 가는 것부터 가볍게 시작했어요.");
+  if((c.perceivingJudging??3)>=5)variants.push("미리 생각해 둔 순서를 따라 하나씩 확인하며 진행하고 있어요.");
+  return variants.length?`${desc} ${variants[hash(`${c.id}:${seed}`)%variants.length]}`:desc;
+}
 
 function catalogChoice(c,place,kind,seed){
   const stock=(place?.stock||[]).map(itemById).filter(Boolean);
@@ -52,7 +65,7 @@ function morningScripts(c,date){
   );
   if(likes.some(x=>/게임|인터넷|커뮤니티|영상|덕질/.test(x)))choices.push(
     ["거실에서 새 소식을 확인하는 중","소파에 앉아 밤사이 올라온 소식과 좋아하는 콘텐츠를 훑어보고 있어요.","living"],
-    ["서재에서 짧게 게임하는 중","아침 일정이 시작되기 전까지만 하려고 타이머를 맞춰 두고 게임을 켰어요.","study"]
+    ["서재에서 짧게 게임하는 중",(c.perceivingJudging??3)>=5?"아침 일정이 시작되기 전까지만 하려고 타이머를 맞춰 두고 게임을 켰어요.":"눈에 들어온 게임을 켜고 한 판만 하려다 잠시 집중하고 있어요.","study"]
   );
   if(likes.some(x=>/요리|카페|음식/.test(x)))choices.push(
     ["주방에서 도시락을 준비하는 중","먹기 좋은 크기로 재료를 손질하고 작은 용기에 반찬을 차곡차곡 담고 있어요.","kitchen"],
@@ -67,8 +80,9 @@ function morningScripts(c,date){
     ["거실에서 오늘 일정을 살펴보는 중","소파에 앉아 해야 할 일의 순서를 머릿속으로 정리하고 있어요.","living"],
     ["서재에서 개인 시간을 보내는 중","책상 앞에 앉아 관심 있던 글과 자료를 천천히 살펴보고 있어요.","study"]
   );
-  const first=choices[hash(seed)%choices.length],second=choices[(hash(seed+":next")+1)%choices.length];
-  return [first,second];
+  const firstIndex=hash(seed)%choices.length;
+  const secondIndex=choices.length>1?(firstIndex+1+(hash(seed+":next")%(choices.length-1)))%choices.length:firstIndex;
+  return [choices[firstIndex],choices[secondIndex]].map((script,index)=>[script[0],personalityFlavor(c,script[1],`morning:${index}`),script[2]]);
 }
 
 function sharedHomeEntry(c,other,time,date){
@@ -92,7 +106,7 @@ function sharedHomeEntry(c,other,time,date){
     ]
   ];
   const script=scripts[kind][role];
-  return homeEntry(c,time,script[0],script[1],script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],`shared:${kind}:${role}`),script[2]);
 }
 
 function workEvent(c,time,date){
@@ -168,13 +182,13 @@ function build(c,date=new Date()){
       ["침실에서 음악 듣는 중","침대에 기대어 이어폰으로 좋아하는 음악을 듣고 있어요.","bedroom"]
     ];
     const script=homeScripts[hash(`${c.id}:${dayKey(date)}:home-evening`)%homeScripts.length];
-    list.push(homeEntry(c,eveningMinute,script[0],script[1],script[2]));
+    list.push(homeEntry(c,eveningMinute,script[0],personalityFlavor(c,script[1],"evening"),script[2]));
   }
   list.push(entry(sleepMinute,"자는 중",`설정한 취침 시각에서 ${Math.abs(jitter(c,"sleep",date))}분 정도 차이로 잠들었어요.`,{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0}));
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({townId:state.activeTownId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.world.places.map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({townId:state.activeTownId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,socialEnergy:c.socialEnergy,sensingIntuition:c.sensingIntuition,thinkingFeeling:c.thinkingFeeling,perceivingJudging:c.perceivingJudging,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.world.places.map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
@@ -187,11 +201,36 @@ export function timeline(c,date=new Date()){
   return c.days[key].entries;
 }
 export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x.minute<=nowMin(date))}
+function liveGapEvent(c,last,n,date){
+  const minute=n-(n%15);
+  if(last?.placeId){
+    const place=state.world.places.find(p=>p.id===last.placeId);
+    const continuations={
+      카페:["카페에서 여유를 보내는 중","자리와 음료를 정리하며 다음에 할 일을 천천히 생각하고 있어요."],
+      음식점:["식사를 마무리하는 중","남은 음식을 천천히 먹고 식탁을 정돈하며 잠시 쉬고 있어요."],
+      사무실:["업무를 이어가는 중","처리한 내용을 확인하고 다음 업무에 필요한 자료를 차분히 정리하고 있어요."],
+      학교:["수업과 과제를 이어가는 중","배운 내용을 노트에 정리하고 다음 일정에 필요한 준비물을 확인하고 있어요."],
+      공원:["공원에서 걷는 중","사람이 덜 붐비는 길을 따라 천천히 걸으며 주변 풍경을 살펴보고 있어요."]
+    };
+    const text=continuations[place?.type]||[`${place?.name||"외출 장소"}에서 시간을 보내는 중`,"지금 하고 있는 일을 마무리하며 다음 일정을 준비하고 있어요."];
+    return entry(minute,text[0],personalityFlavor(c,text[1],"live-away"),{townId:last.townId||state.activeTownId,placeId:last.placeId,mood:last.mood||"보통"});
+  }
+  const scripts=[
+    ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
+    ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],
+    ["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"],
+    ["집 안을 정돈하는 중","눈에 띄는 물건 몇 개를 제자리로 옮기고 주변을 가볍게 정리하고 있어요.","living"]
+  ];
+  const script=scripts[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%scripts.length];
+  return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home"),script[2]);
+}
 export function eventFor(c,date=new Date()){
   const n=nowMin(date);
   if(sleepingNow(c,date))return entry(n,"자는 중","설정한 수면 시간에 맞춰 집에서 자고 있어요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
-  return past.at(-1)||entry(n,"집에서 아침 준비 중","오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
+  const last=past.at(-1);
+  if(last&&n-last.minute>75)return liveGapEvent(c,last,n,date);
+  return last||entry(n,"집에서 아침 준비 중","오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
 export function charactersAtPlace(id){return state.order.map(x=>state.characters[x]).filter(c=>eventFor(c).placeId===id)}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}

@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802m";
-import {eventFor} from "./simulation.js?v=20260802m";
-import {renderApp, setAccountLabel} from "./views.js?v=20260802m";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802n";
+import {eventFor} from "./simulation.js?v=20260802n";
+import {renderApp, setAccountLabel} from "./views.js?v=20260802n";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -86,12 +86,18 @@ function bind(){
     setHomeResidents(homeId,next);render();
   });
   $$("[data-field]").forEach(el=>el.oninput=()=>{
-    const numeric=["spiceTolerance","sweetPreference"].includes(el.dataset.field);
+    const numeric=["spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging"].includes(el.dataset.field);
     updateCharacter(active().id,{[el.dataset.field]:numeric?Number(el.value):el.value},false);
     if(el.dataset.levels){
-      const labels=el.dataset.levels==="spice"
-        ?["안 매움","살짝 매콤","순한맛","보통 라면 맵기","매운맛","아주 매운맛"]
-        :["안 달음","은은한 단맛","적당히 달콤","달콤함","아주 달콤함","극강의 단맛"];
+      const labelSets={
+        spice:["안 매움","살짝 매콤","순한맛","보통 라면 맵기","매운맛","아주 매운맛"],
+        sweet:["안 달음","은은한 단맛","적당히 달콤","달콤함","아주 달콤함","극강의 단맛"],
+        socialEnergy:["사람이 버거움","혼자가 편함","수줍음","상황에 따라 다름","먼저 어울림","인싸","무리의 중심"],
+        sensingIntuition:["눈앞의 현실 중시","매우 현실적","구체적인 편","균형형","가능성을 봄","직관적","상상의 세계"],
+        thinkingFeeling:["논리 최우선","이성적","차분한 판단","균형형","마음을 살핌","공감형","감정에 깊이 공명"],
+        perceivingJudging:["완전 즉흥적","흐름에 맡김","유연한 편","균형형","미리 정리함","계획적","철저한 계획형"]
+      };
+      const labels=labelSets[el.dataset.levels]||labelSets.sweet;
       el.closest("label")?.querySelector("[data-range-label]")?.replaceChildren(document.createTextNode(labels[Number(el.value)]));
     }
   });
@@ -387,10 +393,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802m").catch(error=>{
+import("./auth.js?v=20260802n").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802m").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802n").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
