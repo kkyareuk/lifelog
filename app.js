@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803an";
-import {eventFor} from "./simulation.js?v=20260803an";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803an";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ao";
+import {eventFor} from "./simulation.js?v=20260803ao";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ao";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -676,7 +676,7 @@ const RELATION_STAGES={
   가족:["연락을 끊다시피 함","서먹한 가족","필요할 때 연락함","무난한 가족","서로 챙기는 가족","각별한 가족"],
   default:["매우 불편함","서먹함","조금 가까움","편안함","가까움","매우 가까움"]
 };
-const RELATION_INTERACTIONS=["병원 같이 가기","데려다주기","간섭하기","잔소리하기","격려하기","고민 들어주기","선물하기","밥 챙겨주기","함께 요리하기","같이 장보기","산책하기","데이트하기","스킨십하기","포옹하기","손잡기","말다툼하기","화해하기","연락 자주 하기","서로의 일정 챙기기","아플 때 돌보기"];
+const RELATION_INTERACTIONS=["아침 안부 묻기","잘 자라고 인사하기","병원 같이 가기","데려다주기","마중 나가기","간섭하기","잔소리하기","격려하기","고민 들어주기","비밀 공유하기","조언하기","편들어주기","선물하기","밥 챙겨주기","간식 나눠 먹기","함께 요리하기","같이 장보기","집안일 나누기","산책하기","운동하기","여행하기","데이트하기","기념일 챙기기","스킨십하기","포옹하기","손잡기","머리 쓰다듬기","장난치기","놀리기","말다툼하기","화해하기","사과하기","연락 자주 하기","서로의 일정 챙기기","아플 때 돌보기","밤새 간호하기","공부 도와주기","업무 도와주기","취미 함께하기","게임 대결하기","결투하기","훈련하기","내기하기","경쟁하기","험담 나누기","무시하기","감시하기","구해주기","위험에서 보호하기","함께 사건 조사하기","작전 짜기","술자리 함께하기","가족 행사 참석하기","반려동물 함께 돌보기"];
 const stagesFor=type=>RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","젊은 날의 친구들","친구 모임","산악회"].includes(type)?RELATION_STAGES.친구:RELATION_STAGES.default);
 function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
@@ -770,12 +770,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803an").catch(error=>{
+import("./auth.js?v=20260803ao").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803an").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803ao").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

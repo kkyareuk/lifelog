@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260803an";
+const CACHE_VERSION="drawer-village-v20260803ao";
 const CORE=[
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const CORE=[
   "./world-assets/department-store-premium.png",
   "./world-assets/drawer-building.png",
   "./world-assets/drawer-home.png",
+  "./icons/drawer-village-logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
