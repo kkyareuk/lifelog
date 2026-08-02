@@ -139,6 +139,11 @@ function normalizeHomes(x){
   Object.keys(defaultsCatalog).forEach(kind=>{
     x.catalog[kind]=Array.isArray(x.catalog[kind])?x.catalog[kind].map(item=>({...item,kind:item.kind||kind})):defaultsCatalog[kind];
   });
+  x.catalog.fashion.forEach(item=>{
+    item.materials=Array.isArray(item.materials)?item.materials:(item.material?[item.material]:[]);
+    item.colors=Array.isArray(item.colors)?item.colors:(item.color?[item.color]:[]);
+    item.flairs=Array.isArray(item.flairs)?item.flairs:(item.flair?[item.flair]:[]);
+  });
   (x.world?.places||[]).forEach(p=>{
     if(p.type==="회사")p.type="사무실";
     p.subtype=p.subtype||"";

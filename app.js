@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ah";
-import {eventFor} from "./simulation.js?v=20260803ah";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ah";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ak";
+import {eventFor} from "./simulation.js?v=20260803ak";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ak";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -45,6 +45,23 @@ const BUILDING_SHAPES=[
   {id:"drawer-building",name:"쌍둥이 서랍 건물",src:"world-assets/drawer-building.png"},
   {id:"drawer-home",name:"빨간 지붕 건물",src:"world-assets/drawer-home.png"}
 ];
+const FASHION_MATERIALS=["면","데님","니트","울","가죽","스웨이드","실크","린넨","폴리에스터","나일론","벨벳","레이스"];
+const FASHION_COLORS=["검정","흰색","아이보리","회색","갈색","베이지","빨강","주황","노랑","초록","파랑","남색","보라","분홍","은색","금색","여러 색"];
+const FASHION_FLAIRS=["무지","미니멀","단정함","편안함","캐주얼","스포티","빈티지","스트리트","러블리","우아함","화려함","개성적","정장","유니폼","파티용"];
+const stablePick=(list,seed)=>list.length?list[[...seed].reduce((sum,char)=>sum+char.charCodeAt(0),0)%list.length]:null;
+function currentOutfit(character){
+  const event=eventFor(character),owned=new Set(character.inventory?.fashion||[]),items=(state.catalog?.fashion||[]).filter(item=>owned.has(item.id));
+  const work=/출근|업무|근무|회사|직장/.test(`${event.title} ${event.desc}`),uniforms=items.filter(item=>(item.flairs||[]).includes("유니폼")||(item.flairs||[]).includes("정장")||/유니폼|정장/.test(`${item.name} ${item.flair||""}`));
+  const pool=work&&uniforms.length?[...uniforms,...items.filter(item=>["신발","가방","액세서리"].includes(item.category))]:items;
+  const categories=["상의","하의","아우터","원피스","신발","가방","액세서리"],seed=`${character.id}:${new Date().toDateString()}:${event.title}`;
+  const chosen=categories.map(category=>stablePick(pool.filter(item=>item.category===category),`${seed}:${category}`)).filter(Boolean);
+  return {event,work,items:[...new Map(chosen.map(item=>[item.id,item])).values()]};
+}
+function openOutfitDialog(characterId){
+  const character=state.characters[characterId];if(!character)return;const outfit=currentOutfit(character),dialog=document.createElement("dialog");dialog.className="outfit-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${character.name}의 오늘 패션</h2><small>${outfit.work?"직장 일정에 맞춰 유니폼·정장 계열을 우선 골랐어요.":"현재 일정에 맞춰 옷장에서 자동으로 골랐어요."}</small></div><button value="close">×</button></div><div class="outfit-grid">${outfit.items.map(item=>`<article>${item.image?`<img src="${item.image}" alt="">`:`<span>👕</span>`}<b>${item.name}</b><small>${[item.category,...(item.colors||[]),...(item.materials||[]),...(item.flairs||[])].filter(Boolean).join(" · ")}</small></article>`).join("")||"<div class='empty-mini'><b>입을 옷이 아직 없어요.</b><p>캐릭터 옷장에서 옷을 소지품으로 선택해 주세요.</p></div>"}</div></form>`;
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+}
 function openBuildingShapeDialog(placeId){
   const place=state.world.places.find(item=>item.id===placeId);if(!place)return;
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
@@ -60,7 +77,8 @@ function enhanceDynamicForms(){
   document.querySelectorAll('.catalog-dex-card [data-kind="fashion"][data-catalog-field="image"]').forEach(input=>{
     const detail=input.closest(".catalog-detail");if(!detail||detail.querySelector('[data-catalog-field="material"]'))return;
     const item=state.catalog.fashion.find(value=>value.id===input.dataset.item),box=document.createElement("div");box.className="fashion-extra-fields";
-    box.innerHTML=`<label>재질<input data-catalog-field="material" data-kind="fashion" data-item="${item.id}" value="${item.material||""}" placeholder="면, 데님, 가죽, 니트…"></label><label>색<input data-catalog-field="color" data-kind="fashion" data-item="${item.id}" value="${item.color||""}" placeholder="검정, 아이보리…"></label><label>분위기·화려함 키워드<input data-catalog-field="flair" data-kind="fashion" data-item="${item.id}" value="${item.flair||""}" placeholder="미니멀, 화려함, 단정함…"></label>`;
+    const group=(title,field,values)=>`<section class="chips"><b>${title}</b><div>${values.map(value=>`<button type="button" data-fashion-attr="${field}" data-item="${item.id}" data-value="${value}" class="${(item[field]||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div></section>`;
+    box.innerHTML=group("재질","materials",FASHION_MATERIALS)+group("색","colors",FASHION_COLORS)+group("분위기·화려함","flairs",FASHION_FLAIRS);
     input.closest("label").insertAdjacentElement("beforebegin",box);
   });
   document.querySelectorAll(".place-editor details").forEach(details=>{
@@ -73,6 +91,9 @@ function enhanceDynamicForms(){
     const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||JSON.parse(localStorage.getItem("drawer-village-storage-usage")||'{"count":0,"bytes":0,"maxCount":120,"maxBytes":62914560}');
     const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||62914560)*100)),used=((usage.bytes||0)/1048576).toFixed(1),left=Math.max(0,((usage.maxBytes||62914560)-(usage.bytes||0))/1048576).toFixed(1);
     const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>사진 저장 공간</h3><div><i style="width:${percent}%"></i></div><b>${used}MB 사용 · ${left}MB 남음</b><small>고유 사진 ${usage.count||0}/${usage.maxCount||120}장 · 이미지 링크는 이 용량을 사용하지 않아요.</small>`;sync.append(meter);
+  }
+  if(state.activeTab==="observe"&&!document.querySelector("[data-show-outfit]")&&document.querySelector(".detail")){
+    const button=document.createElement("button");button.type="button";button.className="show-outfit-button";button.dataset.showOutfit=state.activeId;button.textContent="오늘의 캐릭터 패션";document.querySelector(".detail h2")?.insertAdjacentElement("afterend",button);
   }
 }
 const addRoutine=characterId=>{
@@ -242,6 +263,11 @@ function bind(){
   });
   $$('[data-edit-audiences]').forEach(button=>button.onclick=()=>openAudienceDialog(button.dataset.editAudiences));
   $$('[data-building-shape-open]').forEach(button=>button.onclick=()=>openBuildingShapeDialog(button.dataset.buildingShapeOpen));
+  $$('[data-fashion-attr]').forEach(button=>button.onclick=()=>{
+    const item=state.catalog.fashion.find(value=>value.id===button.dataset.item);if(!item)return;const field=button.dataset.fashionAttr,value=button.dataset.value,list=Array.isArray(item[field])?[...item[field]]:[];
+    updateCatalogItem("fashion",item.id,{[field]:list.includes(value)?list.filter(entry=>entry!==value):[...list,value]});render();
+  });
+  $$('[data-show-outfit]').forEach(button=>button.onclick=()=>openOutfitDialog(button.dataset.showOutfit));
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
@@ -674,10 +700,10 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803ah").catch(error=>{
+import("./auth.js?v=20260803ak").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803aj").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803ak").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
