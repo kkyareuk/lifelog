@@ -1,5 +1,5 @@
-﻿import {state,active} from "./state.js?v=20260801j";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260801j";
+﻿import {state,active} from "./state.js?v=20260802k";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260802k";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
 const TASTES=["아재 입맛","어린이 입맛","맵부심","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
@@ -124,46 +124,80 @@ function homeCard(id,chars){
   const edit=state.homeEditMode;
   const roomKeys=Object.keys(h.rooms||{});
   const pets=h.pets||[];
+  const petEmoji={강아지:"🐶",고양이:"🐱",새:"🐦",거북이:"🐢",호랑이:"🐯",인공지능:"🤖",기타:"🐾"};
+  const petScene=pet=>{
+    const now=new Date(),hour=now.getHours(),slot=Math.floor((hour*60+now.getMinutes())/90);
+    const preferred={
+      강아지:["living","entry","study","bedroom"],고양이:["living","study","bedroom","kitchen"],
+      새:["living","study","bedroom"],거북이:["living","study","bedroom"],
+      호랑이:["living","study","entry"],인공지능:roomKeys,기타:roomKeys
+    };
+    const candidates=(preferred[pet.species]||roomKeys).filter(key=>h.rooms?.[key]);
+    const seed=[...(pet.id+now.toDateString())].reduce((sum,ch)=>sum+ch.charCodeAt(0),0);
+    const roomKey=candidates.length?candidates[(seed+slot)%candidates.length]:(pet.room||roomKeys[0]);
+    const room=h.rooms?.[roomKey]?.name||"집 안";
+    const activeHours={강아지:hour>=6&&hour<22,고양이:hour>=18||hour<8,새:hour>=6&&hour<18,거북이:hour>=8&&hour<18,호랑이:hour>=17||hour<9,인공지능:true,기타:hour>=8&&hour<20};
+    if(!activeHours[pet.species])return {roomKey,title:`${room}에서 자는 중`,desc:"자기 자리에 몸을 웅크리고 편안하게 잠들어 있어요."};
+    const sameRoom=inside.filter(c=>eventFor(c).room===roomKey);
+    const resident=sameRoom.length?sameRoom[(seed+slot)%sameRoom.length]:null;
+    const solo={
+      강아지:"장난감을 물고 방 안을 오가며 신나게 놀고 있어요.",
+      고양이:"캣타워를 오르내리고 바닥의 장난감을 쫓아다니고 있어요.",
+      새:"횃대와 장난감 사이를 오가며 가볍게 지저귀고 있어요.",
+      거북이:"따뜻한 자리를 찾아 천천히 주변을 탐색하고 있어요.",
+      호랑이:"넓은 자리를 천천히 돌며 튼튼한 장난감과 씨름하고 있어요.",
+      인공지능:"방 안의 온도와 상태를 확인하며 조용히 순찰하고 있어요.",
+      기타:"좋아하는 장난감을 가지고 자기 방식대로 놀고 있어요."
+    };
+    const together={
+      강아지:`${resident?.name}가 던져 주는 장난감을 쫓아가 다시 물어오고 있어요.`,
+      고양이:`${resident?.name}가 흔들어 주는 장난감을 쫓으며 캣타워 주변에서 놀고 있어요.`,
+      새:`${resident?.name}의 곁에서 장난감을 건드리며 재잘거리고 있어요.`,
+      거북이:`${resident?.name}가 지켜보는 옆에서 천천히 방 안을 탐색하고 있어요.`,
+      호랑이:`${resident?.name}와 안전거리를 두고 커다란 장난감으로 놀고 있어요.`,
+      인공지능:`${resident?.name}에게 필요한 것이 없는지 확인하며 곁을 지키고 있어요.`,
+      기타:`${resident?.name}와 같은 방에서 장난감을 가지고 놀고 있어요.`
+    };
+    return {roomKey,title:`${room}에서 노는 중`,desc:resident?together[pet.species]||together.기타:solo[pet.species]||solo.기타};
+  };
+  const petScenes=Object.fromEntries(pets.map(p=>[p.id,petScene(p)]));
   const roomHtml=roomKeys.map(key=>{
     const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>eventFor(c).room===key);
-    const roomPets=pets.filter(p=>(p.room||"living")===key);
+    const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
     const furniture=FURNITURE[key]||[];
     return `<div class="room ${roomClasses[key]||"custom-room"}" ${roomStyle(h,key)}>
       ${edit?`<input class="room-name" data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}">`:`<b>${esc(room.name||key)}</b>`}
       ${edit?`<div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div>`:""}
       ${edit?`<div class="furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div>`:""}
       <div class="room-people">${roomPeople.map(c=>{const e=eventFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}</div>
-      <div class="room-pets">${roomPets.map(p=>`<div class="room-pet">${p.icon||p.photo?`<img src="${esc(p.icon||p.photo)}" alt="">`:`<span>${({강아지:"🐶",고양이:"🐱",새:"🐦",거북이:"🐢",호랑이:"🐯",인공지능:"🤖",기타:"🐾"})[p.species]||"🐾"}</span>`}<b>${esc(p.name)}</b></div>`).join("")}</div>
+      <div class="room-pets">${roomPets.map(p=>`<div class="room-pet" title="${esc(petScenes[p.id].title)} · ${esc(petScenes[p.id].desc)}">${p.icon||p.photo?`<img src="${esc(p.icon||p.photo)}" alt="">`:`<span>${petEmoji[p.species]||"🐾"}</span>`}<b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title)}</small></div>`).join("")}</div>
     </div>`;
   }).join("");
   const residentEditor=edit?`<section class="resident-editor"><h3>함께 사는 캐릭터</h3><div>${state.order.map(cid=>{const c=state.characters[cid],on=c.homeId===id;return `<button data-home-resident="${cid}" data-home-id="${id}" class="${on?"on":""}">${avatar(c)} ${esc(c.name)}</button>`}).join("")}</div><small>여러 명을 선택할 수 있어요. 취향과 관심사는 합쳐지지 않습니다.</small></section>`:"";
   const sleepEditor=edit?`<section class="sleep-room-editor"><div class="title"><h3>자는 방 배정</h3><button data-add-room>+ 방 추가</button></div>${chars.map(c=>`<label>${esc(c.name)}<select data-sleep-room="${c.id}">${roomKeys.map(key=>`<option value="${key}" ${(c.sleepRoomId||"bedroom")===key?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label>`).join("")}</section>`:"";
   const status=chars.map(c=>{const e=eventFor(c);return `<button class="home-status" data-home-person="${c.id}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small><em>${esc(e.desc||"")}</em></span></button>`}).join("");
   const petKinds=["강아지","고양이","새","거북이","호랑이","인공지능","기타"];
-  const petEmoji={강아지:"🐶",고양이:"🐱",새:"🐦",거북이:"🐢",호랑이:"🐯",인공지능:"🤖",기타:"🐾"};
-  const petStatus=pet=>{
-    const hour=new Date().getHours(),activeHours={
-      강아지:hour>=6&&hour<22,고양이:hour>=18||hour<8,새:hour>=6&&hour<18,
-      거북이:hour>=8&&hour<18,호랑이:hour>=17||hour<9,인공지능:true,기타:hour>=8&&hour<20
-    };
-    const room=h.rooms?.[pet.room]?.name||"거실";
-    if(!activeHours[pet.species])return `${room}의 자기 자리에서 웅크리고 잠들어 있어요.`;
-    const activities={강아지:"장난감을 물고 뛰어다니며 놀고 있어요.",고양이:"캣타워를 오르내리며 장난감을 쫓고 있어요.",새:"횃대와 장난감 사이를 오가며 지저귀고 있어요.",거북이:"따뜻한 자리에서 천천히 주변을 탐색하고 있어요.",호랑이:"넓은 공간을 돌며 장난감과 씨름하고 있어요.",인공지능:"집 안의 상태를 확인하며 동거인을 돕고 있어요.",기타:"좋아하는 장난감을 가지고 놀고 있어요."};
-    if(inside.length)return `${room}에서 ${inside[(hour+pet.name.length)%inside.length].name}와 함께 ${activities[pet.species]||activities.기타}`;
-    return `${room}에서 ${activities[pet.species]||activities.기타}`;
-  };
   const petCards=pets.map(p=>`<article class="pet-card">
     <div class="pet-avatar">${p.icon||p.photo?`<img src="${esc(p.icon||p.photo)}" alt="">`:`<span>${petEmoji[p.species]||"🐾"}</span>`}</div>
-    <div class="pet-info"><b>${esc(p.name)}</b><small>${esc(p.species)}${p.breed?` · ${esc(p.breed)}`:""}</small><p>${esc(petStatus(p))}</p></div>
+    <div class="pet-info"><b>${esc(p.name)}</b><small>${esc(p.species)}${p.breed?` · ${esc(p.breed)}`:""}</small><strong>${esc(petScenes[p.id].title)}</strong><p>${esc(petScenes[p.id].desc)}</p></div>
     ${edit?`<div class="pet-edit"><label>이름<input data-pet-field="name" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.name)}"></label><label>종류<select data-pet-field="species" data-home-id="${id}" data-pet-id="${p.id}">${petKinds.map(x=>`<option ${x===p.species?"selected":""}>${x}</option>`).join("")}</select></label><label>품종<input data-pet-field="breed" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.breed)}" placeholder="유저가 직접 입력"></label><label>주로 있는 방<select data-pet-field="room" data-home-id="${id}" data-pet-id="${p.id}">${roomKeys.map(key=>`<option value="${key}" ${key===(p.room||"living")?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label><label>성별<select data-pet-field="sex" data-home-id="${id}" data-pet-id="${p.id}">${["모름","수컷","암컷"].map(x=>`<option ${x===p.sex?"selected":""}>${x}</option>`).join("")}</select></label><label class="check"><input type="checkbox" data-pet-field="neutered" data-home-id="${id}" data-pet-id="${p.id}" ${p.neutered?"checked":""}> 중성화 완료</label><div class="pet-actions"><button data-pet-image="photo" data-home-id="${id}" data-pet-id="${p.id}">원형 사진</button><button data-image-url="petPhoto" data-id="${id}" data-room="${p.id}">사진 링크</button><button data-pet-image="icon" data-home-id="${id}" data-pet-id="${p.id}">투명 아이콘</button><button data-image-url="petIcon" data-id="${id}" data-room="${p.id}">아이콘 링크</button><button class="danger" data-delete-pet="${p.id}" data-home-id="${id}">삭제</button></div></div>`:""}
   </article>`).join("");
   const logCharacter=chars.find(c=>c.id===state.activeId)||chars[0];
+  const residentScenes=chars.map(c=>{
+    const e=eventFor(c),place=placeForEntry(e),image=sceneImage(c,e);
+    const location=e.home?`🏠 ${h.rooms?.[e.room]?.name||"집 안"}`:e.transit?"🚌 이동 중":place?`📍 ${place.name} · ${townForEntry(e).name}`:"📍 외출 중";
+    return `<article class="resident-scene-card" style="--resident-theme:${esc(c.theme?.primary||"#176b60")}">
+      <div class="resident-profile">${c.photo?`<img src="${esc(c.photo)}" alt="">`:avatar(c)}<span><h3>${esc(c.name)}</h3><small>${esc(c.jobTitle||c.job)}</small></span></div>
+      <div class="resident-current"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${image?`<img src="${esc(image)}" alt="">`:""}</div>
+    </article>`;
+  }).join("");
   return `<article class="home panel" data-home-card="${id}">
     <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.map(c=>c.name).join(" · ")} 거주 중</small></div><b>${inside.length}명 귀가</b></div>
     ${edit?`<div class="home-photo-editor"><b>집 선택 버튼 배경 사진</b><span><button data-home-bg="${id}">사진</button><button data-image-url="home" data-id="${id}">링크</button>${h.image?`<button data-clear-home-bg="${id}">지우기</button>`:""}</span></div>`:""}
     ${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
     <div class="rooms ${roomKeys.length>6?"has-extra":""}">${roomHtml}</div>
     <section class="pets"><div class="title"><h2>반려동물</h2>${edit?`<button data-add-pet>+ 반려동물 추가</button>`:""}</div><div class="pet-grid">${petCards||"<p>아직 함께 사는 반려동물이 없어요.</p>"}</div></section>
+    <section class="resident-scenes"><div class="title"><h2>동거인 현재 장면</h2><small>같은 화면에서 나란히 확인해요</small></div><div>${residentScenes}</div></section>
     ${dailyLog(logCharacter)}
     <section class="home-statuses"><h2>집 사람들 상태</h2><div>${status}</div></section>
   </article>`;
