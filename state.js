@@ -86,6 +86,7 @@ function migrate(x){
 function normalizeHomes(x){
   x.schema=8;
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
+  x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
   x.characterPane=["profile","personality","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
@@ -171,6 +172,7 @@ function normalizeHomes(x){
     c.catalogPreferences=Array.isArray(c.catalogPreferences)?[...c.catalogPreferences]:[];
     c.favoriteScentNotes=Array.isArray(c.favoriteScentNotes)?[...c.favoriteScentNotes]:[];
     c.favoriteVideoGenres=Array.isArray(c.favoriteVideoGenres)?[...c.favoriteVideoGenres]:[];
+    c.favoriteStoryGenres=Array.isArray(c.favoriteStoryGenres)?[...c.favoriteStoryGenres]:[];
     c.favoriteGameGenres=Array.isArray(c.favoriteGameGenres)?[...c.favoriteGameGenres]:[];
     c.favoriteBookGenres=Array.isArray(c.favoriteBookGenres)?[...c.favoriteBookGenres]:[];
     c.favoriteFashionStyles=Array.isArray(c.favoriteFashionStyles)?[...c.favoriteFashionStyles]:[];

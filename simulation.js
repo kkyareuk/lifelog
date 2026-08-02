@@ -185,14 +185,16 @@ function socialEvent(c,time,date){
   const pair=pick?[c.id,pick.other.id].sort().join(":"):c.id;
   const p=placeFor(["카페","음식점","공원","영화관"],`${pair}:${dayKey(date)}:social-place`,c);
   if(!p)return null;
-  const food=catalogChoice(c,p,"food",`${c.id}:${dayKey(date)}:food`);
+  const servesMeals=p.type==="음식점",servesDrinks=p.type==="카페";
+  const food=servesMeals?catalogChoice(c,p,"food",`${c.id}:${dayKey(date)}:food`):null;
+  const drink=servesDrinks?catalogChoice(c,p,"drink",`${c.id}:${dayKey(date)}:drink`):null;
   if(pick){
     const romantic=["연인","부부","폴리 관계","짝사랑"].includes(pick.r.type);
-    const action=food?`${pick.other.name}와 함께 ${food.name} 먹는 중`:`${pick.other.name}와 ${romantic?"데이트":"나들이"} 중`;
-    const detail=romantic?`${pick.other.name}와 나란히 걸으며 서로의 하루를 묻고, ${p.name}에서 둘만의 시간을 보내고 있어요.`:`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
-    return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
+    const action=food?`${pick.other.name}와 함께 ${food.name} 먹는 중`:drink?`${pick.other.name}와 ${drink.name} 마시는 중`:`${pick.other.name}와 ${romantic?"데이트":"나들이"} 중`;
+    const detail=p.type==="공연장"?`${pick.other.name}와 공연을 관람하며 인상적인 장면에 대한 감상을 나누고 있어요.`:romantic?`${pick.other.name}와 나란히 시간을 보내며 서로의 하루를 묻고 있어요.`:`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
+    return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id||drink?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
   }
-  return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 천천히 즐기고 있어요.`:"가벼운 외출을 즐기고 있어요.",away(c,{placeId:p.id,itemId:food?.id,mood:"평온"}));
+  return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 식사하고 있어요.`:drink?`${drink.name}을 마시며 잠깐 쉬고 있어요.`:p.type==="공연장"?"공연을 관람하며 무대에 집중하고 있어요.":"가벼운 외출을 즐기고 있어요.",away(c,{placeId:p.id,itemId:food?.id||drink?.id,mood:"평온"}));
 }
 
 function relationshipHomeEntry(c,pick,time,date){
@@ -259,8 +261,8 @@ function build(c,date=new Date()){
     }
     list.push(work);
   }
-  const lunchPlace=placeFor(["음식점","카페"],`${c.id}:${dayKey(date)}:lunch`,c);
-  if(lunchPlace){
+  const lunchPlace=placeFor(["음식점"],`${c.id}:${dayKey(date)}:lunch`,c);
+  if(lunchPlace?.type==="음식점"){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
     list.push(entry(750,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
@@ -292,7 +294,7 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteBookGenres:c.favoriteBookGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);

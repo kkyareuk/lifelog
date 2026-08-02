@@ -254,6 +254,24 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .personality-choice{padding:15px;border:1px solid var(--line);border-radius:18px;background:#f8fafc}.personality-choice>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.personality-choice>small{display:block;color:var(--muted);line-height:1.55}.personality-choice button.on{background:var(--grad);color:#fff;border-color:transparent}
 .resident-setting{display:grid;grid-template-columns:auto minmax(180px,1fr);align-items:center;gap:8px;padding:7px;border:1px solid var(--line);border-radius:14px;background:#fff}.resident-setting label{display:grid;gap:3px;font-size:12px;color:var(--muted)}.resident-setting select{padding:8px}
 .group-members{display:flex;flex-wrap:wrap;gap:8px;border:1px solid var(--line);border-radius:15px;padding:12px}.group-members[hidden]{display:none}.group-members label{display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}.group-members input{width:auto}
+
+/* 관찰 지도는 페이지 스크롤을 막지 않고 화면 너비에 맞춰 표시 */
+.viewport{width:100%;height:auto;min-height:0;aspect-ratio:1672/941;overflow:visible;touch-action:pan-y;overscroll-behavior:auto}
+.viewport .world{width:100%;height:100%;min-width:0;min-height:0}
+.person{touch-action:pan-y}.person.icon-only{display:grid;place-items:center}.person.icon-only .avatar,.person.icon-only .sprite{margin:0}
+@media(max-width:900px){
+  header{display:flex;align-items:center}
+  header nav{order:3;flex:0 0 100%;width:100%;max-width:100%;overflow-x:auto}
+  header #save-state{order:2;margin-left:auto}
+}
+@media(max-width:600px){
+  .roster-card{min-width:270px!important;width:auto!important;padding:9px 11px!important;display:flex!important;justify-content:flex-start!important;gap:9px!important}
+  .roster-card>.roster-info{display:grid!important;min-width:0}
+  .roster-card>.roster-info b{font-size:17px}.roster-card>.roster-info small{display:block;max-width:190px;overflow:visible;white-space:normal}
+  .roster-card .avatar{width:46px!important;height:46px!important}.roster-card .sprite{width:52px!important;height:52px!important}
+  .person .avatar{width:42px;height:42px}.person .sprite{width:52px;height:52px}
+  .person.show-name{flex-direction:column}.person.show-name span{padding:3px 6px;font-size:11px}
+}
 @media(max-width:600px){.roster-card{min-width:62px!important;width:62px!important;padding:6px!important;display:grid!important;place-items:center!important}.roster-card>.roster-info{display:none!important}.roster-card .avatar{width:48px!important;height:48px!important}.roster-card .sprite{width:52px!important;height:52px!important}.building-preset{width:72px!important;height:72px!important}.car-edit{grid-template-columns:1fr!important}}
 .locked-option{color:var(--muted)}
 
