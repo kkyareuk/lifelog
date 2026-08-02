@@ -1,5 +1,5 @@
-﻿import {state,active} from "./state.js?v=20260802k";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260802k";
+﻿import {state,active} from "./state.js?v=20260802m";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260802m";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
 const TASTES=["아재 입맛","어린이 입맛","맵부심","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
@@ -84,6 +84,14 @@ function dailyLog(c){
   const logs=visibleTimeline(c),current=eventFor(c);
   const entries=!logs.some(x=>x.title===current.title&&x.minute===current.minute)?[...logs,current]:logs;
   return `<section class="panel life-log shared-life-log"><div class="title"><h2>오늘의 생활 로그</h2><small>${esc(c.name)} · 관찰과 집에서 같은 기록을 보여줘요</small></div><ol>${entries.map(x=>`<li class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`).join("")}</ol></section>`;
+}
+function homeDailyLog(chars,h){
+  const entries=chars.flatMap(c=>{
+    const visible=visibleTimeline(c).filter(x=>x.home),current=eventFor(c);
+    const own=current.home&&!visible.some(x=>x.title===current.title&&x.room===current.room)?[...visible,current]:visible;
+    return own.map(x=>({...x,character:c}));
+  }).sort((a,b)=>a.minute-b.minute).slice(-24);
+  return `<section class="panel life-log home-family-log"><div class="title"><h2>집 생활 로그</h2><small>구성원 모두의 집 안 생활</small></div><ol>${entries.map(x=>`<li class="${importantEntry(x)?"important":""}" style="--log-theme:${esc(x.character.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span class="log-person">${avatar(x.character,"log-face")}<span><b>${esc(x.character.name)} · ${esc(x.title)}</b><small>${esc(h.rooms?.[x.room]?.name||"집 안")} · ${esc(x.desc)}</small></span></span></li>`).join("")||"<li>아직 집 안 기록이 없어요.</li>"}</ol></section>`;
 }
 function personCard(c){
   const e=eventFor(c);if(e.home||e.transit||(e.townId&&e.townId!==state.activeTownId))return"";
@@ -182,7 +190,6 @@ function homeCard(id,chars){
     <div class="pet-info"><b>${esc(p.name)}</b><small>${esc(p.species)}${p.breed?` · ${esc(p.breed)}`:""}</small><strong>${esc(petScenes[p.id].title)}</strong><p>${esc(petScenes[p.id].desc)}</p></div>
     ${edit?`<div class="pet-edit"><label>이름<input data-pet-field="name" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.name)}"></label><label>종류<select data-pet-field="species" data-home-id="${id}" data-pet-id="${p.id}">${petKinds.map(x=>`<option ${x===p.species?"selected":""}>${x}</option>`).join("")}</select></label><label>품종<input data-pet-field="breed" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.breed)}" placeholder="유저가 직접 입력"></label><label>주로 있는 방<select data-pet-field="room" data-home-id="${id}" data-pet-id="${p.id}">${roomKeys.map(key=>`<option value="${key}" ${key===(p.room||"living")?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label><label>성별<select data-pet-field="sex" data-home-id="${id}" data-pet-id="${p.id}">${["모름","수컷","암컷"].map(x=>`<option ${x===p.sex?"selected":""}>${x}</option>`).join("")}</select></label><label class="check"><input type="checkbox" data-pet-field="neutered" data-home-id="${id}" data-pet-id="${p.id}" ${p.neutered?"checked":""}> 중성화 완료</label><div class="pet-actions"><button data-pet-image="photo" data-home-id="${id}" data-pet-id="${p.id}">원형 사진</button><button data-image-url="petPhoto" data-id="${id}" data-room="${p.id}">사진 링크</button><button data-pet-image="icon" data-home-id="${id}" data-pet-id="${p.id}">투명 아이콘</button><button data-image-url="petIcon" data-id="${id}" data-room="${p.id}">아이콘 링크</button><button class="danger" data-delete-pet="${p.id}" data-home-id="${id}">삭제</button></div></div>`:""}
   </article>`).join("");
-  const logCharacter=chars.find(c=>c.id===state.activeId)||chars[0];
   const residentScenes=chars.map(c=>{
     const e=eventFor(c),place=placeForEntry(e),image=sceneImage(c,e);
     const location=e.home?`🏠 ${h.rooms?.[e.room]?.name||"집 안"}`:e.transit?"🚌 이동 중":place?`📍 ${place.name} · ${townForEntry(e).name}`:"📍 외출 중";
@@ -198,7 +205,7 @@ function homeCard(id,chars){
     <div class="rooms ${roomKeys.length>6?"has-extra":""}">${roomHtml}</div>
     <section class="pets"><div class="title"><h2>반려동물</h2>${edit?`<button data-add-pet>+ 반려동물 추가</button>`:""}</div><div class="pet-grid">${petCards||"<p>아직 함께 사는 반려동물이 없어요.</p>"}</div></section>
     <section class="resident-scenes"><div class="title"><h2>동거인 현재 장면</h2><small>같은 화면에서 나란히 확인해요</small></div><div>${residentScenes}</div></section>
-    ${dailyLog(logCharacter)}
+    ${homeDailyLog(chars,h)}
     <section class="home-statuses"><h2>집 사람들 상태</h2><div>${status}</div></section>
   </article>`;
 }

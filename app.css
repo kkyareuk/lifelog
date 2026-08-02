@@ -198,6 +198,7 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 
 /* 모든 사진 업로드 공통 자르기 */
 .crop-dialog{width:min(760px,calc(100vw - 24px));max-height:94dvh;padding:0;border:0;border-radius:25px;box-shadow:0 30px 90px #10182766}
+.image-url-dialog{width:min(560px,calc(100vw - 24px));padding:0;border:0;border-radius:23px;box-shadow:0 30px 90px #10182766}.image-url-dialog::backdrop{background:#10182799;backdrop-filter:blur(4px)}.image-url-dialog form{padding:20px;display:grid;gap:14px}.image-url-dialog label{display:grid;gap:7px}.image-url-dialog h2{margin:0}
 .crop-dialog::backdrop{background:#10182799;backdrop-filter:blur(4px)}
 .crop-dialog form{padding:20px;display:grid;gap:12px}
 .crop-dialog h2{margin:0}.crop-dialog .title button{padding:5px 11px;font-size:22px}
@@ -232,6 +233,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .life-log li.important{margin:5px 0;padding:11px 10px;border-left:5px solid var(--log-theme);border-radius:10px;background:color-mix(in srgb,var(--log-theme) 9%,#fff)}
 .life-log li.important b,.life-log li.important time{color:var(--log-theme)}
 .shared-life-log{margin-top:18px;box-shadow:none}
+.home-family-log{margin-top:18px;box-shadow:none}.log-person{display:grid!important;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:9px}.log-person>.avatar,.log-person>.sprite{width:42px;height:42px}.log-person>span{display:grid}
 .setting-card{display:grid;gap:10px;margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:18px;background:#f7f9fc}
 .setting-card h2{margin:0}.setting-card label{display:grid;gap:7px}.setting-card small{color:var(--muted)}
 

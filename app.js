@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802k";
-import {eventFor} from "./simulation.js?v=20260802k";
-import {renderApp, setAccountLabel} from "./views.js?v=20260802k";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802m";
+import {eventFor} from "./simulation.js?v=20260802m";
+import {renderApp, setAccountLabel} from "./views.js?v=20260802m";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -175,21 +175,48 @@ function bind(){
   if(state.activeTab==="town")bindPlaceDrag();
 }
 
-function useImageUrl(type,id,room){
-  const value=prompt("이미지 주소를 붙여 넣어 주세요 (https://...)","");
+function applyImage(type,id,room,data){
+  if(type==="room")setHomeImage(id,room,data);
+  else if(type==="home")setHomeBackground(id,data);
+  else if(type==="place")setPlaceImage(id,data);
+  else if(type==="placeInterior")setPlaceInteriorImage(id,data);
+  else if(type==="petPhoto")setPetImage(id,room,"photo",data);
+  else if(type==="petIcon")setPetImage(id,room,"icon",data);
+  else setCharacterImage(id,type,data);
+}
+
+async function useImageUrl(type,id,room){
+  const value=await askImageUrl();
   if(!value)return;
   try{
     const url=new URL(value,location.href);
     if(!["http:","https:","data:"].includes(url.protocol))throw new Error();
-    if(type==="room")setHomeImage(id,room,value);
-    else if(type==="home")setHomeBackground(id,value);
-    else if(type==="place")setPlaceImage(id,value);
-    else if(type==="placeInterior")setPlaceInteriorImage(id,value);
-    else if(type==="petPhoto")setPetImage(id,room,"photo",value);
-    else if(type==="petIcon")setPetImage(id,room,"icon",value);
-    else setCharacterImage(id,type,value);
+    const response=await fetch(url.href,{mode:"cors"});
+    if(!response.ok)throw new Error("image-download-failed");
+    const blob=await response.blob();
+    if(!blob.type.startsWith("image/"))throw new Error("not-an-image");
+    const cropped=await cropImage(new File([blob],"linked-image",{type:blob.type}),type);
+    if(!cropped)return;
+    applyImage(type,id,room,cropped);
     render();
-  }catch{alert("올바른 이미지 주소를 입력해 주세요.");}
+  }catch(error){
+    console.error(error);
+    alert("이 이미지 링크는 사이트에서 직접 불러올 수 없어요. 이미지 원본 주소를 사용하거나 파일로 저장한 뒤 업로드해 주세요.");
+  }
+}
+
+function askImageUrl(){
+  return new Promise(resolve=>{
+    const dialog=document.createElement("dialog");
+    dialog.className="image-url-dialog";
+    dialog.innerHTML=`<form method="dialog"><div class="title"><h2>사진 링크 추가</h2><button value="cancel" aria-label="닫기">×</button></div><label>이미지 원본 주소<input name="url" type="url" placeholder="https://..." required></label><small>링크 사진도 다음 화면에서 직접 드래그해 자를 수 있어요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">사진 불러오기</button></div></form>`;
+    document.body.append(dialog);
+    dialog.onclose=()=>{
+      const value=dialog.returnValue==="apply"?dialog.querySelector('[name="url"]').value.trim():"";
+      dialog.remove();resolve(value);
+    };
+    dialog.showModal();
+  });
 }
 
 function pickImage(type,id,room=""){
@@ -204,13 +231,7 @@ $("#image-picker").onchange=async e=>{
   try{
     const data=await cropImage(file,task.type);
     if(!data)return;
-    if(task.type==="room")setHomeImage(task.id,task.room,data);
-    else if(task.type==="home")setHomeBackground(task.id,data);
-    else if(task.type==="place")setPlaceImage(task.id,data);
-    else if(task.type==="placeInterior")setPlaceInteriorImage(task.id,data);
-    else if(task.type==="petPhoto")setPetImage(task.id,task.room,"photo",data);
-    else if(task.type==="petIcon")setPetImage(task.id,task.room,"icon",data);
-    else setCharacterImage(task.id,task.type,data);
+    applyImage(task.type,task.id,task.room,data);
     render();
   }catch(err){
     console.error(err);
@@ -366,10 +387,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802k").catch(error=>{
+import("./auth.js?v=20260802m").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802k").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802m").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
