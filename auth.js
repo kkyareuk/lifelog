@@ -9,6 +9,7 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
+let entitlements={premium:false,iconPacks:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const toast=text=>window.ParallelCity?.toast?.(text);
@@ -22,6 +23,19 @@ function shortError(error){
   return code;
 }
 const cloudDoc=()=>doc(db,"users",user.uid);
+const normalizeEntitlements=value=>({
+  premium:value?.premium===true,
+  iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
+  grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
+  note:typeof value?.note==="string"?value.note:""
+});
+const publishEntitlements=value=>{
+  entitlements=normalizeEntitlements(value);
+  window.ParallelCity?.setEntitlements?.(entitlements);
+};
+const accessLabel=()=>entitlements.premium
+  ?`프리미엄${entitlements.iconPacks.length?` · 아이콘 팩 ${entitlements.iconPacks.length}개`:""}`
+  :entitlements.iconPacks.length?`일반 · 아이콘 팩 ${entitlements.iconPacks.length}개`:"일반 이용자";
 
 async function uploadDataUrl(dataUrl,path){
   if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
@@ -85,7 +99,9 @@ async function download({automatic=false}={}){
   try{
     status(`${user.displayName||"계정"} · 불러오는 중`);
     const snapshot=await getDoc(cloudDoc());
-    const remote=snapshot.exists()?snapshot.data().gameState:null;
+    const documentData=snapshot.exists()?snapshot.data():null;
+    publishEntitlements(documentData?.entitlements);
+    const remote=documentData?.gameState||null;
     if(!remote){status(`${user.displayName||"계정"} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
     const countCharacters=value=>Array.isArray(value?.characters)?value.characters.length:Object.keys(value?.characters||{}).length;
     const remoteCount=countCharacters(remote),localCount=countCharacters(window.ParallelCity.getState());
@@ -96,7 +112,7 @@ async function download({automatic=false}={}){
     }
     window.ParallelCity.replaceState(clone(remote));
     window.dispatchEvent(new Event("parallel-city-cloud-loaded"));
-    status(`${user.displayName||"계정"} · 불러오기 완료`);
+    status(`${user.displayName||"계정"} · ${accessLabel()} · 불러오기 완료`);
     toast(automatic?"자동으로 불러왔습니다":"불러왔습니다");
   }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`)}finally{busy=false}
 }
@@ -108,10 +124,11 @@ if(ready){
     try{await getRedirectResult(auth)}catch(error){console.warn(error)}
     onAuthStateChanged(auth,next=>{
       user=next;
+      if(!user)publishEntitlements(null);
       status(user?`${user.displayName||"Google 계정"} · 저장 시 동기화`:"Google 로그인 안 됨");
       if(user&&!autoLoadStarted){autoLoadStarted=true;download({automatic:true})}
     });
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}
 }else status("Firebase 설정 필요");
 
-window.ParallelCityAuth={login,upload,download,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy})};
+window.ParallelCityAuth={login,upload,download,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements})};

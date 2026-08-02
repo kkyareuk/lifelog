@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802q";
-import {eventFor} from "./simulation.js?v=20260802q";
-import {renderApp, setAccountLabel} from "./views.js?v=20260802q";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802s";
+import {eventFor} from "./simulation.js?v=20260802s";
+import {renderApp, setAccountLabel} from "./views.js?v=20260802s";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -207,7 +207,14 @@ async function useImageUrl(type,id,room){
     render();
   }catch(error){
     console.error(error);
-    alert("이 이미지 링크는 사이트에서 직접 불러올 수 없어요. 이미지 원본 주소를 사용하거나 파일로 저장한 뒤 업로드해 주세요.");
+    const url=new URL(value,location.href);
+    if(["http:","https:"].includes(url.protocol)){
+      applyImage(type,id,room,url.href);
+      render();
+      showToast("원본 링크로 추가했습니다 · 이 주소는 자르기를 지원하지 않아요");
+      return;
+    }
+    showToast("이미지 주소를 확인해 주세요");
   }
 }
 
@@ -393,10 +400,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802q").catch(error=>{
+import("./auth.js?v=20260802s").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802q").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802s").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
