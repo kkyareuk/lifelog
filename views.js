@@ -1,5 +1,5 @@
-import {state,active} from "./state.js?v=20260803am";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803am";
+import {state,active} from "./state.js?v=20260803an";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803an";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -337,12 +337,12 @@ function relationship(){
     if(r.groupId){
       if(shownGroups.has(r.groupId))return"";shownGroups.add(r.groupId);
       const group=all.filter(x=>x.groupId===r.groupId),members=[...new Set(group.flatMap(x=>[x.a,x.b]))].map(id=>state.characters[id]).filter(Boolean);
-      return `<article class="relation group-relation"><div class="relation-avatars">${members.map(member=>avatar(member)).join("")}</div><h2>${members.map(member=>esc(member.name)).join(" · ")}</h2><p>${esc(r.type)} · ${members.length}명 그룹 관계</p><p>친밀도 ${r.intimacy??75} · 갈등도 ${r.conflict??20}</p><button class="danger" data-delete-group="${r.groupId}">그룹 관계 삭제</button></article>`;
+      return `<article class="relation group-relation"><div class="relation-avatars">${members.map(member=>avatar(member)).join("")}</div><h2>${members.map(member=>esc(member.name)).join(" · ")}</h2><p>${esc(r.type)} · ${members.length}명이 함께 맺은 관계</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${r.interactions?.length?`<div class="relation-tags">${r.interactions.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}<button class="danger" data-delete-group="${r.groupId}">그룹 관계 삭제</button></article>`;
     }
     const a=state.characters[r.a],b=state.characters[r.b];
-    return a&&b?`<article class="relation" style="--a:${a.theme.primary};--b:${b.theme.primary}"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${esc(a.name)} × ${esc(b.name)}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p>친밀도 ${r.intimacy??75} · 갈등도 ${r.conflict??20}</p><button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
+    return a&&b?`<article class="relation" style="--a:${a.theme.primary};--b:${b.theme.primary}"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${esc(a.name)} × ${esc(b.name)}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${r.interactions?.length?`<div class="relation-tags">${r.interactions.map(x=>`<span>${esc(x)}</span>`).join("")}</div>`:""}<button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
   }).join("");
-  return `<section class="panel form"><div class="title"><h1>관계</h1><button data-add-rel>+ 관계 추가</button></div><p>두 사람 관계뿐 아니라 폴리 관계·대학 동기·친구 무리처럼 세 명 이상도 한 번에 묶을 수 있어요.</p>${cards||'<div class="empty-mini"><b>아직 설정한 관계가 없어요.</b><p>관계를 추가하면 생활과 상호작용에 반영돼요.</p></div>'}</section>`;
+  return `<section class="panel form"><div class="title"><h1>관계</h1><button data-add-rel>+ 관계 추가</button></div><p>두 사람은 물론 여러 사람을 연인, 친구 모임, 산악회처럼 한 관계로 묶을 수 있어요. 선택한 관계 단계와 행동은 생활 장면에 반영돼요.</p>${cards||'<div class="empty-mini"><b>아직 설정한 관계가 없어요.</b><p>관계를 추가하면 생활과 상호작용에 반영돼요.</p></div>'}</section>`;
 }
 function routine(){
   const c=active(),days=["일","월","화","수","목","금","토"],items=(state.routines[c.id]||[]).slice().sort((a,b)=>a.day-b.day||a.start.localeCompare(b.start));

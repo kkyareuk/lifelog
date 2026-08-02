@@ -118,6 +118,12 @@ function normalizeHomes(x){
   x.relationships={};
   relationList.filter(Boolean).forEach(relation=>{
     const id=relation.id||uid();
+    const typeMap={"폴리 관계":"연인","절친":"친구","대학 동기":"젊은 날의 친구들"};
+    relation.type=typeMap[relation.type]||relation.type||"친구";
+    relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
+    relation.stage=relation.stage||({
+      연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구",혐관:"신경전 중",짝사랑:"멀리서 바라봄"
+    }[relation.type]||"편안함");
     if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b)x.relationships[id]={...relation,id};
   });
   const defaultWorld=fresh().world;
