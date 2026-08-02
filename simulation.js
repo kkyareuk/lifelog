@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260803ap";
+import {state,save} from "./state.js?v=20260803aq";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -56,7 +56,6 @@ function personalityFlavor(c,desc,seed=""){
   if(c.interference==="강하게 간섭함")variants.push("함께 있는 사람이 제대로 하고 있는지 확인하고 자기 생각을 분명하게 말했어요.");
   if(c.interference==="컨트롤프릭")variants.push("상대의 순서와 시간까지 자기 계획에 맞추려 들며 빠진 부분을 하나하나 지적했어요.","일을 맡겨 두고도 마음이 놓이지 않아 진행 방식과 결과를 계속 확인하고 있어요.");
   if(c.interference==="방관자")variants.push("주변에서 무슨 일이 벌어지는지 알면서도 직접 부탁받기 전에는 끼어들지 않았어요.","상대가 스스로 해결할 일이라 여기고 별다른 참견 없이 자기 하던 일을 이어갔어요.");
-  if(c.interference==="철저히 선을 지킴")variants.push("상대의 선택에는 끼어들지 않고 필요한 거리를 지키고 있어요.");
   if(c.energyRhythm==="가만히 못 있음")variants.push("한 가지를 끝내자마자 다음에 할 일을 찾아 바로 몸을 움직였어요.");
   if(c.activityTempo==="생각나면 바로 움직임")variants.push("해야 할 일이 떠오르자 머뭇거리지 않고 곧바로 손을 뻗었어요.");
   if(c.activityTempo==="부산스럽게 여러 일을 오감")variants.push("하던 일을 붙잡고 있으면서도 눈에 들어온 다른 일까지 손대느라 집 안을 몇 번이나 오가고 있어요.");
@@ -384,7 +383,7 @@ function relationSpecificEntry(c,other,r,time,date,role){
 
 function relationshipHomeEntry(c,pick,time,date){
   const {r,other}=pick,pair=[c.id,other.id].sort(),role=r.type==="짝사랑"&&r.directional?(c.id===r.admirerId?0:1):pair.indexOf(c.id);
-  const interferenceBoost={방관자:-22,"철저히 선을 지킴":-12,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,컨트롤프릭:34}[c.interference]||0;
+  const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,컨트롤프릭:34}[c.interference]||0;
   const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
   if(conflict>=65)scripts=[
@@ -441,6 +440,50 @@ function relationshipMorningEntry(c,pick,time,date){
   const stageTone=/이별|이혼|냉랭|서먹/.test(stage)?" 아직 풀리지 않은 감정 때문에 말끝은 조심스럽고 짧아요.":/운명의|없어서는|깊이|최고/.test(stage)?" 오래 설명하지 않아도 서로 필요한 것을 자연스럽게 알아차리고 있어요.":"";
   return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+stageTone,`morning-relation:${r.type}`),script[2]);
 }
+
+const HOME_ACTIVITY_POOL=[
+  ["거실에서 쿠션과 담요를 정리하는 중","소파 틈에 들어간 물건을 꺼내고 쿠션 모양을 잡은 뒤 담요를 반듯하게 접고 있어요.","living"],
+  ["거실 바닥을 가볍게 청소하는 중","눈에 띄는 먼지와 머리카락을 모아 치우고 자주 걷는 자리를 중심으로 닦고 있어요.","living"],
+  ["거실에서 창밖을 구경하는 중","창가에 기대어 오가는 사람과 달라진 날씨를 한동안 느긋하게 바라보고 있어요.","living"],
+  ["거실에서 앨범을 넘겨보는 중","오래된 사진을 날짜별로 넘겨 보며 기억나는 장면에서 손을 멈추고 있어요.","living"],
+  ["거실에서 보드게임을 정리하는 중","흩어진 말과 카드를 종류별로 세고 다음에 바로 꺼낼 수 있게 상자에 담고 있어요.","living"],
+  ["거실에서 라디오를 듣는 중","익숙한 목소리와 음악을 배경처럼 틀어 두고 편안하게 시간을 보내고 있어요.","living"],
+  ["주방에서 냉장고를 정리하는 중","유통기한과 남은 양을 확인해 먼저 먹을 재료를 앞쪽으로 옮기고 있어요.","kitchen"],
+  ["주방에서 반찬을 소분하는 중","한 번에 먹기 좋은 양으로 나눠 작은 용기에 담고 이름과 날짜를 표시하고 있어요.","kitchen"],
+  ["주방에서 빵을 굽는 중","반죽의 상태와 오븐 안의 색을 번갈아 확인하며 고소한 냄새가 퍼지기를 기다리고 있어요.","kitchen"],
+  ["주방에서 새로운 음료를 만드는 중","얼음과 재료의 비율을 조금씩 바꾸어 맛을 보고 마음에 드는 조합을 기록하고 있어요.","kitchen"],
+  ["주방에서 설거지를 마무리하는 중","그릇의 물기를 털어 제자리에 놓고 싱크대 주변까지 깨끗하게 닦고 있어요.","kitchen"],
+  ["주방에서 향신료를 정리하는 중","향과 쓰임이 비슷한 것끼리 모으고 비어 가는 병은 장보기 목록에 적고 있어요.","kitchen"],
+  ["서재에서 책장을 정리하는 중","읽은 책과 아직 읽지 않은 책을 나누고 자주 찾는 자료를 손에 닿는 칸으로 옮기고 있어요.","study"],
+  ["서재에서 오래된 메모를 분류하는 중","쓸모가 남은 기록과 버려도 될 종이를 나누고 필요한 내용은 새 노트에 옮기고 있어요.","study"],
+  ["서재에서 온라인 강의를 듣는 중","중요한 부분에서 영상을 잠시 멈추고 자기 말로 내용을 다시 적어 보고 있어요.","study"],
+  ["서재에서 퍼즐을 맞추는 중","비슷한 색과 모양을 먼저 나눈 뒤 맞을 것 같은 조각을 하나씩 대 보고 있어요.","study"],
+  ["서재에서 수집품을 손질하는 중","표면의 먼지를 조심스럽게 닦고 순서가 흐트러지지 않게 다시 진열하고 있어요.","study"],
+  ["서재에서 편지를 쓰는 중","전하고 싶은 말을 몇 번 고쳐 적고 봉투와 보낼 주소를 확인하고 있어요.","study"],
+  ["서재에서 파일을 백업하는 중","사진과 문서를 폴더별로 나누고 중복된 파일을 확인한 뒤 안전한 곳에 복사하고 있어요.","study"],
+  ["서재에서 작은 것을 수리하는 중","느슨해진 나사와 연결 부위를 살펴보고 도구를 바꿔 가며 조심스럽게 고치고 있어요.","study"],
+  ["침실에서 침구를 바꾸는 중","사용한 이불과 베개 커버를 벗기고 깨끗한 침구의 모서리를 맞춰 씌우고 있어요.","bedroom"],
+  ["침실에서 옷장을 정리하는 중","계절에 맞지 않는 옷을 안쪽으로 옮기고 자주 입는 옷을 종류별로 다시 걸고 있어요.","bedroom"],
+  ["침실에서 액세서리를 고르는 중","옷차림과 어울리는 색과 크기를 비교하며 과하지 않은 조합을 찾고 있어요.","bedroom"],
+  ["침실에서 낮잠 준비를 하는 중","커튼을 조금 닫고 알람을 맞춘 뒤 짧게 눈을 붙일 수 있도록 자리를 정돈하고 있어요.","bedroom"],
+  ["침실에서 향을 고르는 중","오늘 기분에 맞는 향을 몇 가지 맡아 보고 가장 편안한 것을 손목에 가볍게 뿌리고 있어요.","bedroom"],
+  ["욕실에서 수건을 정리하는 중","마른 수건을 크기별로 접어 쌓고 젖은 수건은 세탁 바구니에 따로 모으고 있어요.","bath"],
+  ["욕실에서 세면대를 닦는 중","거울에 튄 물자국과 세면대 가장자리를 닦고 사용한 물건을 원래 자리에 놓고 있어요.","bath"],
+  ["욕실에서 반신욕을 하는 중","따뜻한 물에 몸을 담그고 조명을 낮춘 채 천천히 긴장을 풀고 있어요.","bath"],
+  ["욕실에서 화장품을 정리하는 중","자주 쓰는 제품과 오래된 제품을 나누고 사용 순서대로 보기 좋게 세워 두고 있어요.","bath"],
+  ["현관에서 신발을 손질하는 중","바닥의 먼지를 털고 얼룩 난 부분을 닦은 뒤 짝을 맞춰 가지런히 놓고 있어요.","entry"],
+  ["현관에서 택배를 정리하는 중","상자를 열어 물건 상태를 확인하고 포장재를 종류별로 나눠 버릴 준비를 하고 있어요.","entry"],
+  ["현관에서 우편물을 확인하는 중","광고지와 중요한 문서를 나누고 답이 필요한 우편은 눈에 잘 띄는 곳에 두고 있어요.","entry"],
+  ["베란다에서 식물을 돌보는 중","흙의 마른 정도와 새잎 상태를 살피고 필요한 화분에만 천천히 물을 주고 있어요.","living"],
+  ["집 안의 조명을 점검하는 중","깜빡이는 전구와 너무 밝은 곳을 확인하고 방마다 편안한 밝기로 조절하고 있어요.","living"],
+  ["집 안에서 잃어버린 물건을 찾는 중","마지막으로 사용한 장소부터 되짚어 보며 서랍과 가방 안을 차례대로 확인하고 있어요.","living"],
+  ["집 안의 비상용품을 확인하는 중","약과 건전지의 사용기한을 살피고 부족한 물품을 목록에 추가하고 있어요.","entry"],
+  ["집에서 음악에 맞춰 춤추는 중","좋아하는 곡의 볼륨을 조금 높이고 아무도 신경 쓰지 않은 채 박자에 맞춰 몸을 움직이고 있어요.","living"],
+  ["집에서 홈트레이닝 중","매트 위에서 자세가 흐트러지지 않게 거울을 보며 정해 둔 동작을 반복하고 있어요.","living"],
+  ["집에서 악기를 연습하는 중","어려운 구간을 느린 속도로 나누어 반복하고 소리가 안정되면 조금씩 속도를 올리고 있어요.","study"],
+  ["집에서 손뜨개를 하는 중","실의 장력을 맞추고 도안을 확인하며 같은 무늬를 한 코씩 이어 가고 있어요.","living"],
+  ["집에서 그림을 그리는 중","빛과 색을 비교하며 큰 형태부터 잡고 마음에 걸리는 세부를 여러 번 고쳐 그리고 있어요.","study"]
+];
 
 function build(c,date=new Date()){
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
@@ -509,7 +552,7 @@ function build(c,date=new Date()){
   }else if(housemate){
     list.push(roommateHomeEntry(c,housemate,eveningMinute,date));
   }else{
-    const homeScripts=[
+    const homeScripts=[...HOME_ACTIVITY_POOL,
       ["거실 소파에서 영상 보는 중","TV 앞 소파에 기대어 좋아하는 영상을 이어 보고 있어요.","living"],
       ["서재에서 취미를 즐기는 중","책상 위에 좋아하는 물건을 펼쳐 놓고 취미에 집중하고 있어요.","study"],
       ["주방에서 간식 만드는 중","주방 조리대에서 간단한 간식과 마실 것을 준비하고 있어요.","kitchen"],
@@ -545,14 +588,14 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260803ap",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({engine:"20260803aq",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig||old.engineVersion!=="20260803ap"){
-    c.days[key]={signature:sig,engineVersion:"20260803ap",entries:build(c,date)};
+  if(!old||old.signature!==sig||old.engineVersion!=="20260803aq"){
+    c.days[key]={signature:sig,engineVersion:"20260803aq",entries:build(c,date)};
     save();
   }
   return c.days[key].entries;
@@ -580,7 +623,7 @@ function liveGapEvent(c,last,n,date){
     const text=continuations[place?.type]||[`${place?.name||"외출 장소"}에서 시간을 보내는 중`,"지금 하고 있는 일을 마무리하며 다음 일정을 준비하고 있어요."];
     return entry(minute,text[0],personalityFlavor(c,text[1],"live-away"),{townId:last.townId||c.townId,placeId:last.placeId,mood:last.mood||"보통"});
   }
-  const scripts=[
+  const scripts=[...HOME_ACTIVITY_POOL,
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
     ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],
     ["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"],

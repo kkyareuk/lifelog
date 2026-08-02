@@ -193,7 +193,7 @@ function normalizeHomes(x){
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
     c.neatness=c.neatness||"보통";
-    c.interference=c.interference||"적당히 관여";
+    c.interference=c.interference==="철저히 선을 지킴"?"요청할 때만 도움":c.interference||"적당히 관여";
     c.conflictStyle=c.conflictStyle||"대화로 해결";
     c.affectionStyle=c.affectionStyle||"행동으로 표현";
     c.energyRhythm=c.energyRhythm||"상황에 따라";
