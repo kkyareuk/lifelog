@@ -151,6 +151,7 @@ function normalizeHomes(x){
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
   });
   Object.values(x.characters||{}).forEach(c=>{
+    c.townId=x.towns.some(t=>t.id===c.townId)?c.townId:x.towns[0].id;
     c.tastes=Array.isArray(c.tastes)?[...c.tastes]:[];
     c.interests=Array.isArray(c.interests)?[...c.interests]:[];
     c.hobbies=Array.isArray(c.hobbies)?[...c.hobbies]:[];
@@ -208,6 +209,7 @@ export function createCharacter(){
   const id=uid();
   state.characters[id]={id,name:"새 캐릭터",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"보통",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
+  state.characters[id].townId=state.activeTownId;
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};
   state.routines[id]=[];
   state.activeId=id;state.activeTab="character";save(true);
@@ -385,6 +387,7 @@ function applyCohabit(r){
   const a=state.characters[r.a],b=state.characters[r.b];if(!a||!b)return;
   const target=a.homeId||a.id,old=b.homeId||b.id;
   b.homeId=target;
+  b.townId=a.townId;
   if(!state.homes[target])state.homes[target]={id:target,name:`${a.name}의 집`,image:"",rooms:rooms(),cleanliness:100};
   if(old!==target&&!state.order.some(id=>state.characters[id]?.homeId===old))delete state.homes[old];
 }
@@ -402,11 +405,15 @@ export function addTown(){
 }
 export function switchTown(id){
   syncTown();const town=state.towns.find(t=>t.id===id);if(!town)return;
-  state.activeTownId=id;state.world=clone(town);save(true);
+  state.activeTownId=id;state.world=clone(town);
+  const localCharacter=state.order.find(cid=>state.characters[cid]?.townId===id);
+  if(localCharacter)state.activeId=localCharacter;
+  save(true);
 }
 export function deleteTown(id){
   if(state.towns.length<=1)return;
   state.towns=state.towns.filter(t=>t.id!==id);
+  Object.values(state.characters).forEach(c=>{if(c.townId===id)c.townId=state.towns[0].id});
   if(state.activeTownId===id){state.activeTownId=state.towns[0].id;state.world=clone(state.towns[0])}
   save(true);
 }

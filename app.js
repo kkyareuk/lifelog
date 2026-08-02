@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802s";
-import {eventFor} from "./simulation.js?v=20260802s";
-import {renderApp, setAccountLabel} from "./views.js?v=20260802s";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
+import {eventFor} from "./simulation.js?v=20260802t";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802t";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -11,11 +11,26 @@ function render(){
     renderApp(state);
     bind();
     applyTheme();
+    loadAd();
   }catch(error){
     console.error("화면 복구 필요",error);
     document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
     document.querySelector("#safe-reload")?.addEventListener("click",()=>location.reload());
   }
+}
+
+function loadAd(){
+  const host=document.querySelector("[data-ad-slot]");
+  const cfg=window.PARALLEL_CITY_ADS;
+  if(!host||!cfg?.client||!cfg?.slot)return;
+  host.innerHTML=`<ins class="adsbygoogle" style="display:block;width:100%" data-ad-client="${String(cfg.client).replace(/"/g,"")}" data-ad-slot="${String(cfg.slot).replace(/"/g,"")}" data-ad-format="auto" data-full-width-responsive="true"></ins>`;
+  if(!document.querySelector('script[data-parallel-ads]')){
+    const script=document.createElement("script");
+    script.async=true;script.dataset.parallelAds="";script.crossOrigin="anonymous";
+    script.src=`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(cfg.client)}`;
+    document.head.append(script);
+  }
+  try{(window.adsbygoogle=window.adsbygoogle||[]).push({})}catch{}
 }
 
 function showToast(message){
@@ -166,7 +181,16 @@ function bind(){
     updatePlace(p.id,{audiences:current.includes(value)?current.filter(x=>x!==value):[...current,value]},false);
     render();
   });
-  $("[data-world-bg]")?.addEventListener("change",e=>{setWorldBackground(e.target.value);render()});
+  const worldBgSelect=$("[data-world-bg]");
+  if(worldBgSelect)worldBgSelect.value=state.world.bg;
+  worldBgSelect?.addEventListener("change",e=>{
+    if(e.target.value.includes("department-store-premium")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.backgroundPacks?.includes("department-store")){
+      e.target.value=state.world.bg;
+      showToast("구매한 계정에서 사용할 수 있는 백화점 배경입니다");
+      return;
+    }
+    setWorldBackground(e.target.value);render();
+  });
   $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
   $("[data-add-town]")?.addEventListener("click",()=>{addTown();render()});
@@ -393,6 +417,7 @@ window.ParallelCity={
     save(true);render();
   },
   setAccountStatus:t=>setAccountLabel(t),
+  setEntitlements:value=>{setAccountEntitlements(value);render()},
   toast:showToast,
   mediaChanged:()=>render()
 };
@@ -400,10 +425,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802s").catch(error=>{
+import("./auth.js?v=20260802t").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802s").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802t").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

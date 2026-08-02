@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260802s";
+﻿import {state,save} from "./state.js?v=20260802t";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -12,8 +12,8 @@ const sleepingNow=(c,d)=>{
   const n=nowMin(d), wake=wakeAt(c,d), sleep=sleepAt(c,d);
   return sleep<=wake ? n>=sleep&&n<wake : n>=sleep||n<wake;
 };
-const placeBy=(test)=>state.world.places.find(test);
-const placeFor=(types,seed)=>{const list=state.world.places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:state.world.places[hash(seed)%Math.max(1,state.world.places.length)]};
+const townFor=c=>state.towns.find(t=>t.id===c.townId)||state.towns[0]||state.world;
+const placeFor=(types,seed,c)=>{const places=townFor(c)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
@@ -52,7 +52,7 @@ function catalogChoice(c,place,kind,seed){
 
 function entry(time,title,desc,extra={}){return {time:clock(time),minute:time,title,desc,...extra}}
 function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에 앉아 조용히 쉬고 있어요.",room="living"){return entry(time,title,desc,{home:true,room})}
-const away=(extra={})=>({townId:state.activeTownId,...extra});
+const away=(c,extra={})=>({townId:c.townId||state.towns[0]?.id,...extra});
 
 function morningScripts(c,date){
   const likes=[...(c.hobbies||[]),...(c.interests||[])],seed=`${c.id}:${dayKey(date)}:morning`;
@@ -144,7 +144,7 @@ function roommateHomeEntry(c,other,time,date){
 function workEvent(c,time,date){
   if(!c.workplaceId||c.job==="무직")return null;
   if(c.workplaceId==="home")return homeEntry(c,time,"자택근무 중",`${c.jobTitle||c.job} 업무를 집에서 처리하고 있어요.`);
-  const p=state.world.places.find(x=>x.id===c.workplaceId)||placeFor(["사무실","회사","학교"],`${c.id}:work`);
+  const p=(townFor(c)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(["사무실","회사","학교"],`${c.id}:work`,c);
   const scripts={
     "해적":["항해 준비 중","선원들과 항로와 보급품을 점검하고 있어요."],
     "군인":["훈련 중","부대 일정에 맞춰 훈련과 장비 점검을 하고 있어요."],
@@ -154,22 +154,22 @@ function workEvent(c,time,date){
     "학생":["수업 중","오늘 시간표에 맞춰 수업을 듣고 있어요."]
   };
   const text=scripts[c.job]||["직장에서 일하는 중",`${c.jobTitle||c.job}의 평범한 업무를 처리하고 있어요.`];
-  return entry(time,text[0],text[1],away({placeId:p?.id,mood:"집중",stress:Math.min(100,25+(hash(`${c.id}:${dayKey(date)}:work`)%35))}));
+  return entry(time,text[0],text[1],away(c,{placeId:p?.id,mood:"집중",stress:Math.min(100,25+(hash(`${c.id}:${dayKey(date)}:work`)%35))}));
 }
 
 function socialEvent(c,time,date){
   const pick=preferredRelation(c);
   const pair=pick?[c.id,pick.other.id].sort().join(":"):c.id;
-  const p=placeFor(["카페","음식점","공원","영화관"],`${pair}:${dayKey(date)}:social-place`);
+  const p=placeFor(["카페","음식점","공원","영화관"],`${pair}:${dayKey(date)}:social-place`,c);
   if(!p)return null;
   const food=catalogChoice(c,p,"food",`${c.id}:${dayKey(date)}:food`);
   if(pick){
     const romantic=["연인","부부","짝사랑"].includes(pick.r.type);
     const action=food?`${pick.other.name}와 함께 ${food.name} 먹는 중`:`${pick.other.name}와 ${romantic?"데이트":"나들이"} 중`;
     const detail=romantic?`${pick.other.name}와 나란히 걸으며 서로의 하루를 묻고, ${p.name}에서 둘만의 시간을 보내고 있어요.`:`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
-    return entry(time,action,detail,away({placeId:p.id,itemId:food?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
+    return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
   }
-  return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 천천히 즐기고 있어요.`:"가벼운 외출을 즐기고 있어요.",away({placeId:p.id,itemId:food?.id,mood:"평온"}));
+  return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 천천히 즐기고 있어요.`:"가벼운 외출을 즐기고 있어요.",away(c,{placeId:p.id,itemId:food?.id,mood:"평온"}));
 }
 
 function relationshipHomeEntry(c,pick,time,date){
@@ -210,14 +210,14 @@ function build(c,date=new Date()){
   if(work){
     if(c.workplaceId!=="home"){
       const driving=(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
-      list.push(entry(work.minute-35,driving?"출근길에 운전 중":"대중교통으로 출근 중",driving?"차를 운전해 직장으로 이동하고 있어요.":"정류장에서 버스나 지하철을 타고 직장으로 이동하고 있어요.",away({transit:true,mood:"이동"})));
+      list.push(entry(work.minute-35,driving?"출근길에 운전 중":"대중교통으로 출근 중",driving?"차를 운전해 직장으로 이동하고 있어요.":"정류장에서 버스나 지하철을 타고 직장으로 이동하고 있어요.",away(c,{transit:true,mood:"이동"})));
     }
     list.push(work);
   }
-  const lunchPlace=placeFor(["음식점","카페"],`${c.id}:${dayKey(date)}:lunch`);
+  const lunchPlace=placeFor(["음식점","카페"],`${c.id}:${dayKey(date)}:lunch`,c);
   if(lunchPlace){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
-    list.push(entry(750,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away({placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
+    list.push(entry(750,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
   const social=socialEvent(c,1120,date); if(social)list.push(social);
   let stress=Math.max(...list.map(x=>x.stress||0));
@@ -243,7 +243,7 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({townId:state.activeTownId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,socialEnergy:c.socialEnergy,sensingIntuition:c.sensingIntuition,thinkingFeeling:c.thinkingFeeling,perceivingJudging:c.perceivingJudging,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.world.places.map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,socialEnergy:c.socialEnergy,sensingIntuition:c.sensingIntuition,thinkingFeeling:c.thinkingFeeling,perceivingJudging:c.perceivingJudging,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:(townFor(c)?.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
@@ -259,7 +259,7 @@ export function visibleTimeline(c,date=new Date()){return timeline(c,date).filte
 function liveGapEvent(c,last,n,date){
   const minute=n-(n%15);
   if(last?.placeId){
-    const place=state.world.places.find(p=>p.id===last.placeId);
+    const place=(townFor(c)?.places||[]).find(p=>p.id===last.placeId);
     const continuations={
       카페:["카페에서 여유를 보내는 중","자리와 음료를 정리하며 다음에 할 일을 천천히 생각하고 있어요."],
       음식점:["식사를 마무리하는 중","남은 음식을 천천히 먹고 식탁을 정돈하며 잠시 쉬고 있어요."],
@@ -268,7 +268,7 @@ function liveGapEvent(c,last,n,date){
       공원:["공원에서 걷는 중","사람이 덜 붐비는 길을 따라 천천히 걸으며 주변 풍경을 살펴보고 있어요."]
     };
     const text=continuations[place?.type]||[`${place?.name||"외출 장소"}에서 시간을 보내는 중`,"지금 하고 있는 일을 마무리하며 다음 일정을 준비하고 있어요."];
-    return entry(minute,text[0],personalityFlavor(c,text[1],"live-away"),{townId:last.townId||state.activeTownId,placeId:last.placeId,mood:last.mood||"보통"});
+    return entry(minute,text[0],personalityFlavor(c,text[1],"live-away"),{townId:last.townId||c.townId,placeId:last.placeId,mood:last.mood||"보통"});
   }
   const scripts=[
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
@@ -287,5 +287,5 @@ export function eventFor(c,date=new Date()){
   if(last&&n-last.minute>75)return liveGapEvent(c,last,n,date);
   return last||entry(n,"집에서 아침 준비 중","오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
-export function charactersAtPlace(id){return state.order.map(x=>state.characters[x]).filter(c=>eventFor(c).placeId===id)}
+export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}

@@ -1,4 +1,4 @@
-﻿const CACHE="parallel-city-v20260802s";
+﻿const CACHE="parallel-city-v20260802t";
 const CORE=[
   "./",
   "./index.html",
@@ -10,7 +10,8 @@ const CORE=[
   "./auth.js",
   "./manifest.webmanifest",
   "./world-assets/cozy-town.png",
-  "./world-assets/downtown.png"
+  "./world-assets/downtown.png",
+  "./world-assets/department-store-premium.png"
 ];
 
 self.addEventListener("install",event=>{

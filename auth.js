@@ -9,7 +9,7 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
-let entitlements={premium:false,iconPacks:[]};
+let entitlements={removeAds:false,backgroundPacks:[],iconPacks:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const toast=text=>window.ParallelCity?.toast?.(text);
@@ -24,7 +24,8 @@ function shortError(error){
 }
 const cloudDoc=()=>doc(db,"users",user.uid);
 const normalizeEntitlements=value=>({
-  premium:value?.premium===true,
+  removeAds:value?.removeAds===true,
+  backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks.filter(x=>typeof x==="string"):[],
   iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
   grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
   note:typeof value?.note==="string"?value.note:""
@@ -33,9 +34,11 @@ const publishEntitlements=value=>{
   entitlements=normalizeEntitlements(value);
   window.ParallelCity?.setEntitlements?.(entitlements);
 };
-const accessLabel=()=>entitlements.premium
-  ?`프리미엄${entitlements.iconPacks.length?` · 아이콘 팩 ${entitlements.iconPacks.length}개`:""}`
-  :entitlements.iconPacks.length?`일반 · 아이콘 팩 ${entitlements.iconPacks.length}개`:"일반 이용자";
+const accessLabel=()=>[
+  entitlements.removeAds?"광고 제거":"",
+  entitlements.backgroundPacks.length?`배경 팩 ${entitlements.backgroundPacks.length}개`:"",
+  entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:""
+].filter(Boolean).join(" · ")||"일반 이용자";
 
 async function uploadDataUrl(dataUrl,path){
   if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
