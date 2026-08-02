@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260803ao";
+import {state,save} from "./state.js?v=20260803ap";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -51,8 +51,11 @@ const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0
 function personalityFlavor(c,desc,seed=""){
   const variants=[];
   if(c.neatness==="흐트러짐을 못 참음")variants.push("눈에 걸리는 물건을 그냥 지나치지 못하고 반듯하게 다시 놓았어요.");
+  if(c.neatness==="결벽에 가까움")variants.push("손이 닿은 자리와 물건의 상태를 다시 확인하고 작은 얼룩도 남지 않도록 닦아 냈어요.","정리한 곳을 한 번 더 돌아보며 먼지와 오염이 남지 않았는지 꼼꼼히 검사했어요.");
   if(c.neatness==="어질러도 편함")variants.push("손이 닿기 편한 곳에 물건을 둔 채 자기 방식대로 편하게 움직이고 있어요.");
   if(c.interference==="강하게 간섭함")variants.push("함께 있는 사람이 제대로 하고 있는지 확인하고 자기 생각을 분명하게 말했어요.");
+  if(c.interference==="컨트롤프릭")variants.push("상대의 순서와 시간까지 자기 계획에 맞추려 들며 빠진 부분을 하나하나 지적했어요.","일을 맡겨 두고도 마음이 놓이지 않아 진행 방식과 결과를 계속 확인하고 있어요.");
+  if(c.interference==="방관자")variants.push("주변에서 무슨 일이 벌어지는지 알면서도 직접 부탁받기 전에는 끼어들지 않았어요.","상대가 스스로 해결할 일이라 여기고 별다른 참견 없이 자기 하던 일을 이어갔어요.");
   if(c.interference==="철저히 선을 지킴")variants.push("상대의 선택에는 끼어들지 않고 필요한 거리를 지키고 있어요.");
   if(c.energyRhythm==="가만히 못 있음")variants.push("한 가지를 끝내자마자 다음에 할 일을 찾아 바로 몸을 움직였어요.");
   if(c.activityTempo==="생각나면 바로 움직임")variants.push("해야 할 일이 떠오르자 머뭇거리지 않고 곧바로 손을 뻗었어요.");
@@ -64,16 +67,26 @@ function personalityFlavor(c,desc,seed=""){
   if(c.socialStyle==="혼자가 편함")variants.push("혼자 집중할 수 있는 자리를 골라 방해받지 않는 시간을 보내고 있어요.");
   if(c.planningStyle==="계획적")variants.push("미리 정해 둔 순서와 시간을 확인하며 차근차근 진행하고 있어요.");
   if(c.planningStyle==="즉흥적")variants.push("그 순간 가장 마음이 가는 일을 골라 가볍게 시작했어요.");
+  if(c.planningStyle==="강박적으로 계획함")variants.push("예정 시각과 실제 진행 시간을 몇 번이나 비교하고 어긋난 부분을 즉시 다시 배치했어요.","예상 밖의 변수가 생기자 계획표를 처음부터 검토해 빈틈이 없도록 순서를 다시 짰어요.","끝낸 항목에 표시한 뒤 다음 단계의 시작 시각까지 확인해야 비로소 움직였어요.");
+  if(c.planningStyle==="무계획")variants.push("앞일을 미리 정하지 않고 지금 눈앞에서 가장 손쉬운 것부터 건드리고 있어요.","무엇을 할지 정하지 않은 채 돌아다니다가 흥미가 생긴 일에 자연스럽게 빠져들었어요.","정해 둔 종료 시각 없이 기분과 상황이 바뀌는 대로 다음 행동을 골랐어요.");
   if(c.decisionStyle==="공감 우선")variants.push("상대가 어떻게 느낄지 먼저 살핀 뒤 부드럽게 말을 골랐어요.");
   if(c.decisionStyle==="논리 우선")variants.push("가장 합리적인 방법이 무엇인지 따져 보고 군더더기 없이 움직였어요.");
   if((c.socialEnergy??3)<=1)variants.push("사람이 드문 조용한 자리를 골라 자기 속도대로 움직이고 있어요.");
   if((c.socialEnergy??3)>=5)variants.push("마주친 사람에게 먼저 반갑게 인사를 건네며 분위기를 자연스럽게 이끌고 있어요.");
+  if(c.socialStyle==="혼자가 편함")variants.push("필요한 말만 짧게 나눈 뒤 다시 혼자 집중할 수 있는 자리로 돌아갔어요.","누군가 곁에 있어도 각자 할 일을 하는 조용한 방식을 더 편안해했어요.");
+  if(c.socialStyle==="낯을 가림")variants.push("먼저 말을 꺼내지는 못하고 상대가 건넨 질문에 조금씩 긴 대답을 보탰어요.","익숙하지 않은 사람 앞에서는 표정을 살피며 안전한 이야기부터 조심스럽게 골랐어요.");
+  if(c.socialStyle==="먼저 다가감"||c.socialStyle==="무리의 중심")variants.push("어색한 침묵이 생기기 전에 먼저 화제를 꺼내 모두가 끼어들 자리를 만들었어요.","사람마다 반응을 살피며 대화가 한쪽으로 치우치지 않게 자연스럽게 연결했어요.");
   if((c.sensingIntuition??3)<=1)variants.push("눈앞에 보이는 것부터 하나씩 확인하며 실수 없이 마무리하고 있어요.");
   if((c.sensingIntuition??3)>=5)variants.push("중간에 떠오른 새로운 생각을 잊지 않으려고 짧게 메모해 두었어요.");
+  if(c.perceptionStyle==="현실과 경험 중시"||c.perceptionStyle==="구체적인 편")variants.push("전에 직접 해 봤을 때 잘됐던 방법을 떠올려 같은 순서로 손을 움직였어요.","막연한 추측보다 지금 확인할 수 있는 상태와 수치를 먼저 살폈어요.");
+  if(c.perceptionStyle==="가능성 중시"||c.perceptionStyle==="직관과 상상 중시")variants.push("하던 일에서 예상하지 못한 연결을 떠올리고 다른 방식도 시험해 보고 싶어졌어요.","눈앞의 결과보다 앞으로 어떻게 달라질 수 있을지 상상하며 선택지를 넓혔어요.");
   if((c.thinkingFeeling??3)<=1)variants.push("가장 효율적인 순서를 머릿속으로 계산해 불필요한 동작을 줄이고 있어요.");
   if((c.thinkingFeeling??3)>=5)variants.push("지금 느끼는 감정을 무시하지 않고 스스로 편안한 속도를 찾고 있어요.");
+  if(c.decisionStyle==="논리 우선"||c.decisionStyle==="이성적인 편")variants.push("누가 말했는지보다 근거가 맞는지부터 따져 가장 모순이 적은 쪽을 골랐어요.","감정적인 반응은 잠시 미뤄 두고 해결에 필요한 조건을 항목별로 나눴어요.");
+  if(c.decisionStyle==="마음을 살핌"||c.decisionStyle==="공감 우선")variants.push("정답을 서둘러 말하기보다 상대가 왜 그렇게 느꼈는지 먼저 물었어요.","결과가 조금 비효율적이어도 누구도 소외되지 않는 쪽으로 말을 골랐어요.");
   if((c.perceivingJudging??3)<=1)variants.push("정해 둔 순서 없이 지금 마음이 가는 것부터 가볍게 시작했어요.");
   if((c.perceivingJudging??3)>=5)variants.push("미리 생각해 둔 순서를 따라 하나씩 확인하며 진행하고 있어요.");
+  if(c.planningStyle==="유연한 편"||c.planningStyle==="상황에 따라")variants.push("큰 순서만 정해 두고 세부 방법은 그때그때 상황에 맞춰 바꿨어요.","계획을 고집하지 않으면서도 꼭 끝내야 할 핵심은 놓치지 않았어요.");
   return variants.length?`${desc} ${variants[hash(`${c.id}:${seed}`)%variants.length]}`:desc;
 }
 
@@ -291,6 +304,7 @@ function socialEvent(c,time,date){
       라이벌:`${pick.other.name}와 최근 결과를 은근히 비교하면서도 상대가 잘한 부분은 놓치지 않고 살피고 있어요.`,
       혐관:`${pick.other.name}와 사소한 선택에서도 신경전을 벌이지만 먼저 자리를 뜨지는 않고 있어요.`
     };
+    if(crush&&pick.r.targetId===c.id)relationDetails.짝사랑=`${pick.other.name}의 시선이 평소보다 오래 머무는 것을 어렴풋이 느끼면서도 아직 그 마음을 확신하지 못하고 있어요.`;
     const detail=p.type==="공연장"?`${pick.other.name}와 공연을 관람하며 인상적인 장면에 대한 감상을 나누고 있어요.`:romantic?`${pick.other.name}와 나란히 시간을 보내며 서로의 하루를 묻고 있어요.`:relationDetails[pick.r.type]||`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
     return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id||drink?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
   }
@@ -298,6 +312,7 @@ function socialEvent(c,time,date){
 }
 
 function relationSpecificEntry(c,other,r,time,date,role){
+  if(r.type==="짝사랑"&&r.directional)role=c.id===r.admirerId?0:1;
   const n=other.name,pools={
     부부:[
       [[`${n}와 집안일을 나누는 중`,"먼저 끝낸 일을 확인하고 상대 몫으로 남겨 둔 것을 말없이 정돈해 주고 있어요.","living"],[`${n}와 집안일을 나누는 중`,"상대가 정리한 곳을 보고 고맙다고 말한 뒤 남은 설거지와 빨래를 맡아 마무리하고 있어요.","kitchen"]],
@@ -368,8 +383,8 @@ function relationSpecificEntry(c,other,r,time,date,role){
 }
 
 function relationshipHomeEntry(c,pick,time,date){
-  const {r,other}=pick,pair=[c.id,other.id].sort(),role=pair.indexOf(c.id);
-  const interferenceBoost={"철저히 선을 지킴":-12,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20}[c.interference]||0;
+  const {r,other}=pick,pair=[c.id,other.id].sort(),role=r.type==="짝사랑"&&r.directional?(c.id===r.admirerId?0:1):pair.indexOf(c.id);
+  const interferenceBoost={방관자:-22,"철저히 선을 지킴":-12,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,컨트롤프릭:34}[c.interference]||0;
   const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
   if(conflict>=65)scripts=[
@@ -381,7 +396,7 @@ function relationshipHomeEntry(c,pick,time,date){
     [`${other.name}의 잔소리를 듣는 중`,"처음에는 못 들은 척하다가 상대가 챙겨 둔 것을 보고 작게 알겠다고 답하며 몸을 일으켰어요.","living"]
   ];
   else if(intimacy>=40)return relationSpecificEntry(c,other,r,time,date,role);
-  else if(c.interference==="강하게 간섭함")scripts=[
+  else if(c.interference==="강하게 간섭함"||c.interference==="컨트롤프릭")scripts=[
     [`${other.name}의 귀가 시간을 따지는 중`,"늦어진 이유를 분명히 말해 달라고 요구하고 다음부터는 미리 연락하라며 단호하게 이야기하고 있어요.","living"],
     [`${other.name}에게 행동을 바로잡으라고 말하는 중`,"미뤄 둔 일을 직접 가리키며 지금 끝내야 한다고 강하게 재촉하고 있어요.","living"]
   ];
@@ -509,8 +524,11 @@ function build(c,date=new Date()){
       ["주방을 마감하는 중","남은 음식을 보관하고 조리대의 물기를 닦아 아침에 바로 쓸 수 있게 정리하고 있어요.","kitchen"]
     ];
     if(c.planningStyle==="즉흥적")homeScripts.push(["거실에서 갑자기 취미를 시작한 중","쉬려다가 눈에 들어온 재료를 꺼내 예상보다 오래 손을 움직이고 있어요.","living"]);
+    if(c.planningStyle==="강박적으로 계획함")homeScripts.push(["서재에서 내일 계획을 다시 짜는 중","분 단위 일정과 이동 시간을 다시 계산하고 예상 밖의 상황에 쓸 대체 계획까지 따로 적고 있어요.","study"],["침실에서 준비물을 재확인하는 중","이미 챙긴 물건을 목록과 다시 대조하고 놓친 것이 없다는 확신이 들 때까지 순서를 반복하고 있어요.","bedroom"]);
+    if(c.planningStyle==="무계획")homeScripts.push(["거실에서 마음 가는 대로 시간을 보내는 중","무엇을 할지 정하지 않은 채 이것저것 건드리다가 가장 재미있는 일에 그대로 머물고 있어요.","living"],["주방에서 즉흥적으로 야식을 만드는 중","정해 둔 메뉴 없이 냉장고에서 눈에 띄는 재료를 꺼내 그 자리에서 조합하고 있어요.","kitchen"]);
     if(c.activityTempo==="부산스럽게 여러 일을 오감"||c.activityTempo==="허둥대며 주의가 자주 옮겨감")homeScripts.push(["집 안을 오가며 자잘한 일을 하는 중","컵을 치우러 갔다가 빨래가 눈에 들어오고, 다시 충전기를 찾느라 여러 방을 바쁘게 오가고 있어요.","living"]);
     if(c.neatness==="흐트러짐을 못 참음")homeScripts.push(["집 안을 마지막으로 점검하는 중","삐뚤어진 물건과 남은 먼지를 찾아 제자리에 놓아야 마음이 놓이는 듯 꼼꼼히 살피고 있어요.","living"]);
+    if(c.neatness==="결벽에 가까움")homeScripts.push(["욕실과 손잡이를 소독하는 중","자주 손이 닿는 곳을 순서대로 닦고 마른 자국이 남지 않았는지 빛에 비춰 다시 확인하고 있어요.","bath"]);
     if(c.fashionSense==="옷을 매우 잘 입음"||c.fashionSense==="감각적으로 잘 입음")homeScripts.push(["침실에서 내일 코디를 맞추는 중","옷의 색과 소재를 번갈아 대 보며 신발과 소품까지 자연스럽게 이어지는 조합을 만들고 있어요.","bedroom"]);
     const script=homeScripts[hash(`${c.id}:${dayKey(date)}:home-evening`)%homeScripts.length];
     list.push(homeEntry(c,eveningMinute,script[0],personalityFlavor(c,script[1],"evening"),script[2]));
@@ -527,14 +545,14 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260803ao",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({engine:"20260803ap",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig||old.engineVersion!=="20260803ao"){
-    c.days[key]={signature:sig,engineVersion:"20260803ao",entries:build(c,date)};
+  if(!old||old.signature!==sig||old.engineVersion!=="20260803ap"){
+    c.days[key]={signature:sig,engineVersion:"20260803ap",entries:build(c,date)};
     save();
   }
   return c.days[key].entries;
