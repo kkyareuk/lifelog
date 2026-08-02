@@ -1,6 +1,6 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
-import {eventFor} from "./simulation.js?v=20260802aa";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802aa";
+import {eventFor} from "./simulation.js?v=20260802ab";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ab";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -296,6 +296,14 @@ async function useImageUrl(type,id,room){
 async function resolveSharedImageUrl(value){
   const url=new URL(value,location.href);
   if(!/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/i.test(url.hostname))return url.href;
+  try{
+    const response=await fetch(`https://api.microlink.io?url=${encodeURIComponent(url.href)}`,{mode:"cors"});
+    if(response.ok){
+      const payload=await response.json();
+      const image=payload?.data?.image?.url||payload?.data?.logo?.url;
+      if(image)return image;
+    }
+  }catch{}
   const endpoints=[
     `https://www.pinterest.com/oembed.json?url=${encodeURIComponent(url.href)}`,
     `https://www.pinterest.com/oembed/?url=${encodeURIComponent(url.href)}`,
@@ -537,10 +545,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802aa").catch(error=>{
+import("./auth.js?v=20260802ab").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802aa").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802ab").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

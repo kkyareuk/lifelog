@@ -28,6 +28,7 @@ function shortError(error){
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
   if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
+  if(code.includes("timeout"))return "사진 업로드 응답 없음 · Storage 요금제와 규칙을 확인해 주세요";
   if(code.includes("network"))return "인터넷 연결 확인";
   return code;
 }
@@ -51,9 +52,18 @@ async function uploadDataUrl(dataUrl,path){
   if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
   const blob=await (await fetch(dataUrl)).blob();
   if(blob.size>9*1024*1024)throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
-  const target=ref(storage,`users/${user.uid}/media/${path}.webp`);
-  await uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000"});
-  const url=await getDownloadURL(target);
+  let hash=2166136261;
+  for(let i=0;i<dataUrl.length;i+=Math.max(1,Math.floor(dataUrl.length/5000)))hash=Math.imul(hash^dataUrl.charCodeAt(i),16777619);
+  const ext=blob.type==="image/png"?"png":"webp";
+  const target=ref(storage,`users/${user.uid}/media/${path}-${(hash>>>0).toString(36)}.${ext}`);
+  try{
+    const existing=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
+    uploadedCache.set(dataUrl,existing);return existing;
+  }catch(error){
+    if(String(error?.code||"").includes("timeout"))throw error;
+  }
+  await Promise.race([uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000"}),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),25000))]);
+  const url=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
   uploadedCache.set(dataUrl,url);
   return url;
 }
