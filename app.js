@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803aq";
-import {eventFor} from "./simulation.js?v=20260803aq";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803aq";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ar";
+import {eventFor} from "./simulation.js?v=20260803ar";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ar";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -234,7 +234,7 @@ function bind(){
     const apply=()=>{const value=el.dataset.petField==="neutered"?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))render()};
     el.oninput=apply;el.onchange=apply;
   });
-  $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 반려동물을 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
+  $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 함께 사는 존재를 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
   $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
   $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
@@ -666,7 +666,7 @@ function openRoutineDialog(id){
   dialog.showModal();
 }
 
-const RELATION_TYPES=["친구","연인","부부","가족","소꿉친구","학창 시절 친구들","젊은 날의 친구들","친구 모임","산악회","동아리 동료","직장 동료","짝사랑","라이벌","혐관","기타"];
+const RELATION_TYPES=["친구","연인","부부","부모·자녀","가족","소꿉친구","학창 시절 친구들","젊은 날의 친구들","친구 모임","산악회","동아리 동료","직장 동료","짝사랑","라이벌","혐관","기타"];
 const RELATION_STAGES={
   연인:["이별 통보 직전","마음이 멀어지는 중","위태로운 사이","서로 알아가는 중","편안한 연인","서로를 깊이 사랑함","운명의 상대"],
   부부:["이혼 서류가 오가는 중","별거를 고민하는 중","권태기","생활 동반자","애정이 깊은 부부","서로 없이는 못 사는 사이","운명의 상대"],
@@ -674,10 +674,11 @@ const RELATION_STAGES={
   혐관:["원수지간","마주치면 싸움","서로 못마땅함","신경전 중","경쟁하며 의식함","티격태격함"],
   짝사랑:["포기하려는 중","마음을 숨기는 중","멀리서 바라봄","조심스럽게 다가가는 중","감정이 깊어짐","고백을 결심함"],
   가족:["연락을 끊다시피 함","서먹한 가족","필요할 때 연락함","무난한 가족","서로 챙기는 가족","각별한 가족"],
+  "부모·자녀":["연락이 끊긴 사이","서먹한 부모와 자녀","필요할 때만 연락함","무난한 부모와 자녀","서로 의지하는 가족","무척 각별한 부모와 자녀"],
   default:["매우 불편함","서먹함","조금 가까움","편안함","가까움","매우 가까움"]
 };
 const RELATION_INTERACTION_GROUPS={
-  "일상·돌봄":["아침 안부 묻기","잘 자라고 인사하기","병원 같이 가기","데려다주기","마중 나가기","격려하기","고민 들어주기","조언하기","편들어주기","밥 챙겨주기","간식 나눠 먹기","함께 요리하기","같이 장보기","집안일 나누기","서로의 일정 챙기기","아플 때 돌보기","밤새 간호하기","공부 도와주기","업무 도와주기","반려동물 함께 돌보기"],
+  "일상·돌봄":["아침 안부 묻기","잘 자라고 인사하기","병원 같이 가기","데려다주기","마중 나가기","격려하기","고민 들어주기","조언하기","편들어주기","밥 챙겨주기","간식 나눠 먹기","함께 요리하기","같이 장보기","집안일 나누기","서로의 일정 챙기기","아플 때 돌보기","밤새 간호하기","공부 도와주기","업무 도와주기","함께 사는 존재 돌보기"],
   "로맨스·애정":["데이트하기","여행하기","기념일 챙기기","스킨십하기","포옹하기","손잡기","머리 쓰다듬기","선물하기","연락 자주 하기"],
   "우정·놀이":["비밀 공유하기","산책하기","운동하기","취미 함께하기","장난치기","놀리기","게임 대결하기","술자리 함께하기","가족 행사 참석하기"],
   "경쟁·모험":["결투하기","훈련하기","내기하기","경쟁하기","구해주기","위험에서 보호하기","함께 사건 조사하기","작전 짜기"],
@@ -692,6 +693,7 @@ function openRelationDialog(id=""){
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${old?"관계 편집":"관계 추가"}</h2><small>숫자 대신 관계의 현재 단계를 골라 주세요.</small></div><button value="cancel">×</button></div>
     <fieldset class="relation-member-picker"><legend>관계에 포함할 캐릭터 · 두 명 이상</legend><div>${characterChecks("member",oldMembers.length?oldMembers:[state.activeId,state.order.find(cid=>cid!==state.activeId)].filter(Boolean))}</div><small>여기서 바로 캐릭터를 더하거나 뺄 수 있어요. 여러 명의 연인·부부 관계도 가능해요.</small></fieldset>
     <fieldset class="crush-direction" hidden><legend>짝사랑의 방향</legend><div class="crush-columns"><section><b>마음을 가진 사람 · 여러 명 가능</b><div>${characterChecks("admirer",old?.admirerId?[old.admirerId]:[])}</div></section><span>→</span><section><b>짝사랑 대상 · 여러 명 가능</b><div>${characterChecks("target",old?.targetId?[old.targetId]:[])}</div></section></div></fieldset>
+    <fieldset class="parent-direction" hidden><legend>부모와 자녀 지정</legend><div class="parent-columns"><section><b>엄마 역할 · 여러 명 가능</b><div>${characterChecks("mother",old?.parentRole==="엄마"?[old.parentId||old.a]:[])}</div></section><section><b>아빠 역할 · 여러 명 가능</b><div>${characterChecks("father",old?.parentRole==="아빠"?[old.parentId||old.a]:[])}</div></section><span>→</span><section><b>자녀 · 여러 명 가능</b><div>${characterChecks("child",old?.childId?[old.childId]:[])}</div></section></div><small>엄마 두 명, 아빠 두 명, 엄마와 아빠 등 원하는 가족 구성이 모두 가능해요.</small></fieldset>
     <label>관계 종류<select name="type">${RELATION_TYPES.map(type=>`<option>${type}</option>`).join("")}</select></label>
     <label>현재 관계 단계<select name="stage"></select></label>
     <label class="cohabit"><input type="checkbox" name="cohabit"> 함께 살기</label>
@@ -703,7 +705,7 @@ function openRelationDialog(id=""){
   const refreshStages=()=>{const values=stagesFor(f.type.value),selected=old?.stage&&values.includes(old.stage)?old.stage:values[Math.floor(values.length/2)];f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("")};
   const syncButtons=()=>f.querySelectorAll("[data-relation-interaction]").forEach(button=>button.classList.toggle("on",selectedInteractions.has(button.dataset.relationInteraction)));
   const setValues=(values,on)=>{values.forEach(value=>on?selectedInteractions.add(value):selectedInteractions.delete(value));syncButtons()};
-  const updateType=()=>{refreshStages();f.querySelector(".crush-direction").hidden=f.type.value!=="짝사랑";f.querySelector(".relation-member-picker").hidden=f.type.value==="짝사랑"};
+  const updateType=()=>{refreshStages();const crush=f.type.value==="짝사랑",parent=f.type.value==="부모·자녀";f.querySelector(".crush-direction").hidden=!crush;f.querySelector(".parent-direction").hidden=!parent;f.querySelector(".relation-member-picker").hidden=crush||parent};
   f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"?"친구":old?.type==="대학 동기"?"젊은 날의 친구들":old?.type||"친구";updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);
   f.querySelectorAll("[data-relation-interaction]").forEach(button=>button.onclick=()=>{const value=button.dataset.relationInteraction;selectedInteractions.has(value)?selectedInteractions.delete(value):selectedInteractions.add(value);syncButtons()});
   f.querySelector("[data-interaction-all]").onclick=()=>setValues(Object.values(RELATION_INTERACTION_GROUPS).flat(),true);
@@ -715,8 +717,11 @@ function openRelationDialog(id=""){
       const members=[...f.querySelectorAll('[name="member"]:checked')].map(input=>input.value);
       const admirers=[...f.querySelectorAll('[name="admirer"]:checked')].map(input=>input.value),targets=[...f.querySelectorAll('[name="target"]:checked')].map(input=>input.value);
       const directionalPairs=f.type.value==="짝사랑"?admirers.flatMap(a=>targets.filter(b=>b!==a).map(b=>[a,b])):[];
+      const mothers=[...f.querySelectorAll('[name="mother"]:checked')].map(input=>input.value),fathers=[...f.querySelectorAll('[name="father"]:checked')].map(input=>input.value),children=[...f.querySelectorAll('[name="child"]:checked')].map(input=>input.value);
+      const parentPairs=f.type.value==="부모·자녀"?[...mothers.map(id=>[id,"엄마"]),...fathers.map(id=>[id,"아빠"])].flatMap(([parent,role])=>children.filter(child=>child!==parent).map(child=>[parent,child,role])):[];
       if(f.type.value==="짝사랑"&&!directionalPairs.length)alert("마음을 가진 사람과 짝사랑 대상을 한 명 이상씩 골라 주세요.");
-      else if(f.type.value!=="짝사랑"&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
+      else if(f.type.value==="부모·자녀"&&!parentPairs.length)alert("엄마 또는 아빠와 자녀를 한 명 이상씩 골라 주세요.");
+      else if(!["짝사랑","부모·자녀"].includes(f.type.value)&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
       else{
         const levels=stagesFor(f.type.value),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1);
         const hostile=f.type.value==="혐관",base={type:f.type.value,stage:f.stage.value,interactions:[...selectedInteractions],cohabit:f.cohabit.checked,intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75)};
@@ -725,6 +730,9 @@ function openRelationDialog(id=""){
         if(f.type.value==="짝사랑"){
           const groupId=directionalPairs.length>1?`crush-${Date.now()}`:"";
           directionalPairs.forEach(([a,b])=>addRelationship({...base,a,b,admirerId:a,targetId:b,directional:true,groupId,groupMembers:[...new Set([...admirers,...targets])]}));
+        }else if(f.type.value==="부모·자녀"){
+          const groupId=parentPairs.length>1?`family-${Date.now()}`:"";
+          parentPairs.forEach(([parent,child,parentRole])=>addRelationship({...base,a:parent,b:child,parentId:parent,childId:child,parentRole,directional:true,groupId,groupMembers:[...new Set([...mothers,...fathers,...children])]}));
         }else if(members.length===2)addRelationship({...base,a:members[0],b:members[1]});
         else{
           const groupId=`group-${members.slice().sort().join("-")}-${Date.now()}`;
@@ -792,12 +800,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803aq").catch(error=>{
+import("./auth.js?v=20260803ar").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803aq").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803ar").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

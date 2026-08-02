@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260803aq";
+import {state,save} from "./state.js?v=20260803ar";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -45,11 +45,20 @@ const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
-const relationPriority={부부:9,연인:8,짝사랑:6,소꿉친구:6,친구:5,"학창 시절 친구들":5,"젊은 날의 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
+const relationPriority={"부모·자녀":10,부부:9,연인:8,짝사랑:6,소꿉친구:6,친구:5,"학창 시절 친구들":5,"젊은 날의 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
 function personalityFlavor(c,desc,seed=""){
   const variants=[];
+  const age=c.ageGroup||"성인";
+  if(age==="영아")variants.push("아직 말 대신 울음과 표정, 손짓으로 필요한 것을 알리고 있어요.","익숙한 목소리가 들리면 눈을 크게 뜨고 팔다리를 작게 움직여 반응하고 있어요.","금세 피곤해져 하던 행동을 멈추고 편안한 품과 자리를 찾고 있어요.");
+  if(age==="유아")variants.push("궁금한 것을 발견할 때마다 짧은 질문을 이어 가며 직접 만져 보려고 해요.","혼자 해 보겠다고 고집하다 어려운 부분에서 익숙한 어른을 찾고 있어요.","금방 다른 것에 관심이 옮겨 가 작은 발로 집 안을 바쁘게 오가고 있어요.");
+  if(age==="어린이")variants.push("자기만의 규칙과 이야기를 붙여 평범한 일도 놀이처럼 만들고 있어요.","잘 해낸 부분을 누군가 알아봐 주길 바라며 결과를 들고 주변을 살피고 있어요.","어른이 정한 방법보다 자기가 떠올린 재미있는 방식을 먼저 시험하고 있어요.");
+  if(age==="청소년")variants.push("혼자 결정하고 싶은 마음과 누군가 알아주길 바라는 마음 사이에서 말을 고르고 있어요.","취향이 분명해 마음에 들지 않는 방식에는 짧고 솔직한 반응을 보이고 있어요.","또래와 나눈 이야기와 자기만의 관심사를 중요하게 여기며 시간을 쓰고 있어요.");
+  if(age==="청년")variants.push("앞으로의 생활과 지금 하고 싶은 일 사이에서 현실적인 선택을 고민하고 있어요.","새로운 경험을 가볍게 시도하면서도 자기 취향에 맞는지 빠르게 판단하고 있어요.");
+  if(age==="중년")variants.push("쌓인 경험으로 필요한 순서를 빠르게 짚으면서도 체력을 아껴 움직이고 있어요.","자기 일뿐 아니라 주변 사람이 놓친 부분까지 자연스럽게 함께 살피고 있어요.");
+  if(age==="장년")variants.push("익숙한 방식의 안정감을 지키면서 필요한 변화만 신중하게 받아들이고 있어요.","서두르기보다 몸의 상태와 하루의 균형을 살피며 자기 속도로 움직이고 있어요.");
+  if(age==="노년")variants.push("오랜 습관이 밴 손길로 익숙한 일을 천천히 정확하게 이어 가고 있어요.","중간중간 몸을 쉬게 하면서도 잊지 않은 경험을 살려 필요한 일을 마무리하고 있어요.","사소한 물건과 장면에서 오래전 기억을 떠올리며 잠시 미소 짓고 있어요.");
   if(c.neatness==="흐트러짐을 못 참음")variants.push("눈에 걸리는 물건을 그냥 지나치지 못하고 반듯하게 다시 놓았어요.");
   if(c.neatness==="결벽에 가까움")variants.push("손이 닿은 자리와 물건의 상태를 다시 확인하고 작은 얼룩도 남지 않도록 닦아 냈어요.","정리한 곳을 한 번 더 돌아보며 먼지와 오염이 남지 않았는지 꼼꼼히 검사했어요.");
   if(c.neatness==="어질러도 편함")variants.push("손이 닿기 편한 곳에 물건을 둔 채 자기 방식대로 편하게 움직이고 있어요.");
@@ -312,6 +321,7 @@ function socialEvent(c,time,date){
 
 function relationSpecificEntry(c,other,r,time,date,role){
   if(r.type==="짝사랑"&&r.directional)role=c.id===r.admirerId?0:1;
+  if(r.type==="부모·자녀"&&r.directional)role=c.id===r.parentId?0:1;
   const n=other.name,pools={
     부부:[
       [[`${n}와 집안일을 나누는 중`,"먼저 끝낸 일을 확인하고 상대 몫으로 남겨 둔 것을 말없이 정돈해 주고 있어요.","living"],[`${n}와 집안일을 나누는 중`,"상대가 정리한 곳을 보고 고맙다고 말한 뒤 남은 설거지와 빨래를 맡아 마무리하고 있어요.","kitchen"]],
@@ -339,6 +349,16 @@ function relationSpecificEntry(c,other,r,time,date,role){
       [[`${n}와 옛날 이야기를 하는 중`,"같이 들었던 수업과 황당했던 과제를 떠올리며 당시에는 말하지 못한 뒷이야기를 꺼내고 있어요.","living"],[`${n}와 옛날 이야기를 하는 중`,"잊고 있던 장면을 상대의 말로 떠올리고 기억이 다른 부분을 웃으며 바로잡고 있어요.","living"]],
       [[`${n}와 자료를 나누는 중`,"상대가 찾던 자료를 폴더별로 정리해 보내고 도움이 될 만한 메모를 덧붙이고 있어요.","study"],[`${n}가 보낸 자료를 확인하는 중`,"필요한 부분에 표시를 남기고 자기 자료도 정리해 답례로 보내고 있어요.","study"]]
     ],
+    "부모·자녀":[
+      [[`${n}의 아침 상태를 살피는 중`,"잘 잤는지 묻고 얼굴빛과 체온을 살핀 뒤 오늘 필요한 준비물을 함께 확인하고 있어요.","bedroom"],[`${n}에게 아침 인사를 하는 중`,"잠이 덜 깬 목소리로 밤새 있었던 일을 이야기하고 오늘 무엇을 할지 묻고 있어요.","bedroom"]],
+      [[`${n}의 식사를 챙기는 중`,"나이와 입맛에 맞는 양을 덜어 주고 천천히 먹도록 물과 수저를 가까이에 놓고 있어요.","kitchen"],[`${n}와 함께 식사하는 중`,"챙겨 준 음식을 먹으며 오늘 있었던 일과 궁금한 것을 하나씩 이야기하고 있어요.","kitchen"]],
+      [[`${n}의 준비물을 확인하는 중`,"빠뜨린 것이 없는지 목록을 읽어 주고 혼자 챙길 수 있는 것은 기다려 주며 지켜보고 있어요.","entry"],[`${n} 앞에서 가방을 챙기는 중`,"혼자 할 수 있다고 말하며 물건을 넣다가 헷갈리는 부분만 조심스럽게 물어보고 있어요.","entry"]],
+      [[`${n}에게 생활 습관을 가르치는 중`,"무조건 대신 해 주지 않고 왜 필요한 일인지 설명한 뒤 옆에서 한 단계씩 함께 해 보고 있어요.","living"],[`${n}에게 혼자 해낸 것을 보여 주는 중`,"서툴지만 끝까지 해낸 결과를 들고 와 잘했는지 기대하는 표정으로 바라보고 있어요.","living"]],
+      [[`${n}와 숙제와 공부를 하는 중`,"정답을 바로 알려 주지 않고 막힌 부분을 질문으로 나누어 스스로 답을 찾도록 돕고 있어요.","study"],[`${n}에게 모르는 것을 물어보는 중`,"어디서부터 헷갈렸는지 설명하고 힌트를 들은 뒤 자기 방식으로 다시 풀어 보고 있어요.","study"]],
+      [[`${n}를 달래는 중`,"속상한 이유를 재촉하지 않고 곁에 앉아 진정할 때까지 등을 천천히 쓸어 주고 있어요.","living"],[`${n}에게 속상한 마음을 털어놓는 중`,"처음에는 괜찮다고 했다가 안전하다고 느끼자 참았던 말을 조금씩 꺼내고 있어요.","living"]],
+      [[`${n}와 외출 준비를 하는 중`,"날씨에 맞는 옷을 골라 주고 길에서 지켜야 할 약속을 다시 확인한 뒤 손을 내밀고 있어요.","entry"],[`${n}와 나갈 준비를 하는 중`,"자기가 고른 옷과 가져갈 물건을 보여 주고 빠뜨린 것이 없는지 마지막으로 확인받고 있어요.","entry"]],
+      [[`${n}의 늦은 귀가를 기다린 중`,"연락이 늦어 걱정했던 마음을 감추지 못하면서도 먼저 무사히 돌아온 것을 확인하고 있어요.","entry"],[`${n}에게 늦은 이유를 설명하는 중`,"걱정하게 만든 것을 알아 먼저 미안하다고 말하고 어디에서 무엇을 했는지 차근차근 이야기하고 있어요.","entry"]]
+    ],
     가족:[
       [[`${n}의 식사를 챙기는 중`,"끼니를 거르지 않았는지 확인하고 부담 없이 먹을 수 있는 양을 따로 덜어 두고 있어요.","kitchen"],[`${n}가 챙긴 식사를 받는 중`,"잔소리처럼 들리면서도 걱정인 걸 알아 작게 대답하고 자리에 앉아 한입 먹고 있어요.","kitchen"]],
       [[`${n}와 생활 습관을 두고 실랑이 중`,"또 미뤄 둔 일을 가리키며 이번에는 꼭 끝내라고 말하지만 손은 이미 정리를 돕고 있어요.","living"],[`${n}의 잔소리에 대답하는 중`,"알겠다고 몇 번 답하다가 결국 함께 빨리 끝내는 편이 낫겠다며 몸을 일으키고 있어요.","living"]]
@@ -364,7 +384,7 @@ function relationSpecificEntry(c,other,r,time,date,role){
     "내기하기":[[`${n}와 작은 내기를 하는 중`,"진 사람이 할 일을 정하고 서로 조건을 바꾸지 않기로 확인한 뒤 승부를 시작하고 있어요.","living"],[`${n}의 내기를 받아들이는 중`,"자신 있다는 표정으로 조건을 한 번 더 확인하고 먼저 시작하라고 손짓하고 있어요.","living"]],
     "함께 사건 조사하기":[[`${n}와 단서를 맞춰 보는 중`,"각자 발견한 사실을 시간 순서로 늘어놓고 서로 모순되는 지점을 표시하고 있어요.","study"],[`${n}와 사건을 조사하는 중`,"상대가 놓친 작은 흔적을 찾아 보여 주고 다음에 확인할 장소를 함께 정하고 있어요.","study"]],
     "작전 짜기":[[`${n}와 작전을 세우는 중`,"가능한 변수와 실패했을 때의 퇴로까지 짚어 보며 역할을 구체적으로 나누고 있어요.","study"],[`${n}의 작전을 검토하는 중`,"위험한 부분을 바로 지적하고 자기 장점을 살릴 수 있는 대안을 덧붙이고 있어요.","study"]],
-    "반려동물 함께 돌보기":[[`${n}와 반려동물을 돌보는 중`,"먹이와 물을 확인하는 동안 상대에게 빗질과 장난감 정리를 부탁하고 있어요.","living"],[`${n}와 반려동물을 돌보는 중`,"상대가 상태를 살피는 동안 털을 빗겨 주고 놀던 장난감을 제자리에 모으고 있어요.","living"]],
+    "함께 사는 존재 돌보기":[[`${n}와 집의 작은 식구를 돌보는 중`,"먹이와 물, 햇빛과 주변 환경을 확인하며 서로 할 일을 자연스럽게 나누고 있어요.","living"],[`${n}와 집의 작은 식구를 돌보는 중`,"상대가 상태를 살피는 동안 필요한 물건을 정리하고 편안한 자리를 마련하고 있어요.","living"]],
     "기념일 챙기기":[[`${n}와 기념일을 준비하는 중`,"상대가 부담스러워하지 않으면서도 기억에 남을 작은 선물과 시간을 고르고 있어요.","study"],[`${n}가 준비한 기념일을 알아차린 중`,"아무렇지 않은 척하던 상대의 준비를 눈치채고 기쁜 표정을 숨기지 못하고 있어요.","living"]],
     "비밀 공유하기":[[`${n}에게 비밀을 털어놓는 중`,"다른 사람에게는 말하지 말아 달라고 당부한 뒤 오래 마음에 담아 둔 이야기를 조심스럽게 꺼내고 있어요.","living"],[`${n}의 비밀을 듣는 중`,"놀란 기색을 누르고 끝까지 들은 뒤 허락 없이 누구에게도 말하지 않겠다고 약속하고 있어요.","living"]],
     "마중 나가기":[[`${n}를 마중 나갈 준비 중`,"도착 시간을 다시 확인하고 너무 늦지 않게 만나기 위해 겉옷을 챙겨 현관으로 향하고 있어요.","entry"],[`${n}의 마중 연락을 확인한 중`,"혼자 돌아오지 않아도 된다는 말에 안심하고 정확한 도착 장소를 답장하고 있어요.","entry"]],
@@ -588,14 +608,14 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260803aq",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({engine:"20260803ar",townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig||old.engineVersion!=="20260803aq"){
-    c.days[key]={signature:sig,engineVersion:"20260803aq",entries:build(c,date)};
+  if(!old||old.signature!==sig||old.engineVersion!=="20260803ar"){
+    c.days[key]={signature:sig,engineVersion:"20260803ar",entries:build(c,date)};
     save();
   }
   return c.days[key].entries;
