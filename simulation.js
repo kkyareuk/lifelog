@@ -79,6 +79,7 @@ const away=(c,extra={},date=new Date())=>({townId:activityTown(c,date)?.id||c.to
 
 function morningScripts(c,date){
   const likes=[...(c.hobbies||[]),...(c.interests||[])],seed=`${c.id}:${dayKey(date)}:morning`;
+  const storyGenres=c.favoriteStoryGenres||[];
   const choices=[];
   if(likes.some(x=>/운동|산책|사진/.test(x)))choices.push(
     ["아침 조깅을 마치고 돌아오는 중","동네를 가볍게 달린 뒤 숨을 고르며 집으로 돌아와 물을 마시고 있어요.","entry"],
@@ -136,6 +137,13 @@ function morningScripts(c,date){
     ["경기와 플레이를 분석하는 중","인상적인 장면을 다시 보며 전략과 선택의 이유를 혼자 정리하고 있어요.","living"],
     ["퍼즐과 전략을 연구하는 중","여러 가능성을 시험하고 더 나은 해결 순서를 찾는 데 집중하고 있어요.","study"]
   );
+  if(storyGenres.length){
+    const genre=storyGenres[hash(seed+":genre")%storyGenres.length];
+    choices.push(
+      [`${genre} 작품을 골라 보는 중`,`좋아하는 ${genre} 장르의 책과 영상 후보를 비교하며 오늘 이어 볼 작품을 고르고 있어요.`,"study"],
+      [`${genre} 이야기를 감상하는 중`,`취향에 맞는 ${genre} 작품을 펼쳐 인상적인 장면과 대사를 천천히 따라가고 있어요.`,"living"]
+    );
+  }
   if(!choices.length)choices.push(
     ["집 근처를 산책하고 돌아오는 중","조용한 아침 공기를 쐬며 한 바퀴 걷고 현관에서 신발을 정리하고 있어요.","entry"],
     ["거실에서 오늘 일정을 살펴보는 중","소파에 앉아 해야 할 일의 순서를 머릿속으로 정리하고 있어요.","living"],

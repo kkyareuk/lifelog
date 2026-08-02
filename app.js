@@ -1,6 +1,6 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
-import {eventFor} from "./simulation.js?v=20260802t";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802t";
+import {eventFor} from "./simulation.js?v=20260802aa";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802aa";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -257,8 +257,9 @@ function applyImage(type,id,room,data){
 async function useImageUrl(type,id,room){
   const value=await askImageUrl();
   if(!value)return;
+  let resolved=value;
   try{
-    const resolved=await resolveSharedImageUrl(value);
+    resolved=await resolveSharedImageUrl(value);
     const url=new URL(resolved,location.href);
     if(!["http:","https:","data:"].includes(url.protocol))throw new Error();
     const response=await fetch(url.href,{mode:"cors"});
@@ -273,7 +274,13 @@ async function useImageUrl(type,id,room){
     console.error(error);
     const url=new URL(value,location.href);
     if(/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/i.test(url.hostname)){
-      showToast("Pinterest에서 이 핀의 사진을 공개하지 않았어요");
+      if(resolved!==value){
+        applyImage(type,id,room,resolved);
+        render();
+        showToast("Pinterest 핀 사진을 추가했습니다");
+        return;
+      }
+      showToast("이 Pinterest 핀의 원본 사진을 찾지 못했어요");
       return;
     }
     if(["http:","https:"].includes(url.protocol)){
@@ -291,15 +298,16 @@ async function resolveSharedImageUrl(value){
   if(!/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/i.test(url.hostname))return url.href;
   const endpoints=[
     `https://www.pinterest.com/oembed.json?url=${encodeURIComponent(url.href)}`,
-    `https://www.pinterest.com/oembed/?url=${encodeURIComponent(url.href)}`
+    `https://www.pinterest.com/oembed/?url=${encodeURIComponent(url.href)}`,
+    `https://noembed.com/embed?url=${encodeURIComponent(url.href)}`
   ];
   for(const endpoint of endpoints){
     try{
       const response=await fetch(endpoint,{mode:"cors"});
       if(!response.ok)continue;
       const data=await response.json();
-      const image=data.thumbnail_url||data.image_url;
-      if(image)return image.replace(/\/(236x|474x|564x)\//,"/originals/");
+      const image=data.thumbnail_url||data.image_url||data.media_url;
+      if(image)return new URL(image,url.href).href.replace(/\/(236x|474x|564x|736x)\//,"/originals/");
     }catch{}
   }
   throw new Error("pinterest-pin-unavailable");
@@ -490,14 +498,16 @@ function bindPlaceDrag(){
   $$(".town-edit .place").forEach(el=>el.onpointerdown=e=>{
     e.preventDefault();
     const startRect=el.getBoundingClientRect();
-    const grabX=e.clientX-(startRect.left+startRect.width/2),grabY=e.clientY-(startRect.top+startRect.height/2);
+    const grabX=(e.clientX-(startRect.left+startRect.width/2))/startRect.width;
+    const grabY=(e.clientY-(startRect.top+startRect.height/2))/startRect.height;
     el.setPointerCapture(e.pointerId);
     el.classList.add("dragging");
     el.onpointermove=ev=>{
       const box=el.parentElement.getBoundingClientRect();
+      const currentRect=el.getBoundingClientRect();
       movePlace(el.dataset.place,
-        Math.max(4,Math.min(96,(ev.clientX-grabX-box.left)/box.width*100)),
-        Math.max(5,Math.min(95,(ev.clientY-grabY-box.top)/box.height*100)),false);
+        Math.max(4,Math.min(96,(ev.clientX-grabX*currentRect.width-box.left)/box.width*100)),
+        Math.max(5,Math.min(95,(ev.clientY-grabY*currentRect.height-box.top)/box.height*100)),false);
       const p=state.world.places.find(x=>x.id===el.dataset.place);
       el.style.left=p.x+"%";el.style.top=p.y+"%";
     };
@@ -527,10 +537,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802z").catch(error=>{
+import("./auth.js?v=20260802aa").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802z").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802aa").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

@@ -13,6 +13,15 @@ let entitlements={backgroundPacks:[],iconPacks:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const toast=text=>window.ParallelCity?.toast?.(text);
+const countStoredPhotos=value=>{
+  let count=0;
+  const walk=node=>{
+    if(typeof node==="string"&&/firebasestorage\.googleapis\.com|firebasestorage\.app|storage\.googleapis\.com/.test(node)){count++;return}
+    if(!node||typeof node!=="object")return;
+    Object.values(node).forEach(walk);
+  };
+  walk(value);return count;
+};
 
 function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
@@ -86,7 +95,8 @@ async function upload({silent=false,reason=""}={}){
     await setDoc(cloudDoc(),{gameState,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
     window.ParallelCity.replaceState(clone(gameState));
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
-    toast("동기화되었습니다");
+    const storedPhotos=countStoredPhotos(gameState);
+    toast(storedPhotos?`동기화되었습니다 · Storage 사진 ${storedPhotos}장`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
