@@ -1,5 +1,6 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
 import {addCar,updateCar,deleteCar} from "./state.js?v=20260802t";
+import {addRoutine,updateRoutine,deleteRoutine} from "./state.js?v=20260802t";
 import {eventFor} from "./simulation.js?v=20260802t";
 import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802t";
 
@@ -12,6 +13,7 @@ function render(){
     renderApp(state);
     bind();
     applyTheme();
+    requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
   }catch(error){
     console.error("화면 복구 필요",error);
     document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
@@ -225,6 +227,10 @@ function bind(){
     Object.values(state.relationships).filter(r=>r.groupId===el.dataset.deleteGroup).forEach(r=>deleteRelationship(r.id));
     render();
   });
+  $$("[data-routine-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.routineCharacter);render()});
+  $("[data-add-routine]")?.addEventListener("click",()=>{const id=addRoutine(active().id);render();requestAnimationFrame(()=>openRoutineDialog(id))});
+  $$("[data-edit-routine]").forEach(el=>el.onclick=()=>openRoutineDialog(el.dataset.editRoutine));
+  $$("[data-delete-routine]").forEach(el=>el.onclick=()=>{deleteRoutine(active().id,el.dataset.deleteRoutine);render()});
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
   if(state.activeTab==="town")bindPlaceDrag();
 }
@@ -372,6 +378,28 @@ function focusHomeCharacter(id){
   });
 }
 
+function openRoutineDialog(id){
+  const c=active(),item=state.routines[c.id]?.find(r=>r.id===id);if(!item)return;
+  const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
+  const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog";
+  dialog.innerHTML=`<form method="dialog"><h2>주간 일정 편집</h2>
+    <label>요일<select name="day">${["일","월","화","수","목","금","토"].map((day,index)=>`<option value="${index}" ${item.day===index?"selected":""}>${day}요일</option>`).join("")}</select></label>
+    <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
+    <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
+    <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
+    <label>일정 이름<input name="title" value="${item.title.replace(/"/g,"&quot;")}"></label>
+    <label>장소<select name="placeId"><option value="">집 또는 자동 선택</option>${places.map(p=>`<option value="${p.id}" ${item.placeId===p.id?"selected":""}>${p.townName} · ${p.name}</option>`).join("")}</select></label>
+    <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("")}</fieldset>
+    <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
+    <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  document.body.append(dialog);
+  dialog.onclose=()=>{
+    if(dialog.returnValue==="save")updateRoutine(c.id,id,{day:Number(dialog.querySelector("[name=day]").value),start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    dialog.remove();render();
+  };
+  dialog.showModal();
+}
+
 function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
   const old=id?state.relationships[id]:null;
@@ -428,16 +456,21 @@ function openRelationDialog(id=""){
 
 function bindPlaceDrag(){
   $$(".town-edit .place").forEach(el=>el.onpointerdown=e=>{
+    e.preventDefault();
+    const startRect=el.getBoundingClientRect();
+    const grabX=e.clientX-(startRect.left+startRect.width/2),grabY=e.clientY-(startRect.top+startRect.height/2);
     el.setPointerCapture(e.pointerId);
+    el.classList.add("dragging");
     el.onpointermove=ev=>{
       const box=el.parentElement.getBoundingClientRect();
       movePlace(el.dataset.place,
-        Math.max(4,Math.min(96,(ev.clientX-box.left)/box.width*100)),
-        Math.max(5,Math.min(95,(ev.clientY-box.top)/box.height*100)),false);
+        Math.max(4,Math.min(96,(ev.clientX-grabX-box.left)/box.width*100)),
+        Math.max(5,Math.min(95,(ev.clientY-grabY-box.top)/box.height*100)),false);
       const p=state.world.places.find(x=>x.id===el.dataset.place);
       el.style.left=p.x+"%";el.style.top=p.y+"%";
     };
-    el.onpointerup=()=>{el.onpointermove=null;save()};
+    const finish=()=>{el.onpointermove=null;el.classList.remove("dragging");save()};
+    el.onpointerup=finish;el.onpointercancel=finish;
   });
 }
 

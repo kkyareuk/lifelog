@@ -162,6 +162,12 @@ function normalizeHomes(x){
   });
   Object.values(x.characters||{}).forEach(c=>{
     c.townId=x.towns.some(t=>t.id===c.townId)?c.townId:x.towns[0].id;
+    x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].map(r=>({
+      id:r.id||uid(),day:Number.isFinite(+r.day)?Math.max(0,Math.min(6,+r.day)):1,
+      start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
+      title:r.title||"새 일정",placeId:r.placeId||"",withIds:Array.isArray(r.withIds)?r.withIds:[],
+      notes:r.notes||""
+    })):[];
     c.driverLicense=Boolean(c.driverLicense);
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
     c.neatness=c.neatness||"보통";
@@ -260,7 +266,27 @@ export function deleteCharacter(id){
   state.activeId=state.order[0]||null;
   save(true);
 }
-export function updateCharacter(id,patch,persist=true){Object.assign(state.characters[id],patch);if(persist)save()}
+export function updateCharacter(id,patch,persist=true){
+  const c=state.characters[id];if(!c)return;
+  Object.assign(c,patch);
+  if(patch.townId){
+    state.order.forEach(otherId=>{const other=state.characters[otherId];if(other&&other.id!==id&&other.homeId===c.homeId)other.townId=patch.townId});
+  }
+  if(persist)save();
+}
+export function addRoutine(characterId){
+  if(!state.characters[characterId])return;
+  state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
+  const routine={id:uid(),day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
+  state.routines[characterId].push(routine);save(true);return routine.id;
+}
+export function updateRoutine(characterId,routineId,patch){
+  const routine=state.routines[characterId]?.find(item=>item.id===routineId);if(!routine)return;
+  Object.assign(routine,patch);save(true);
+}
+export function deleteRoutine(characterId,routineId){
+  state.routines[characterId]=(state.routines[characterId]||[]).filter(item=>item.id!==routineId);save(true);
+}
 export function toggleChip(id,key,value){
   const c=state.characters[id];
   const own=Array.isArray(c[key])?[...c[key]]:[];
