@@ -1,10 +1,26 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
-import {eventFor} from "./simulation.js?v=20260802ad";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ad";
+import {eventFor} from "./simulation.js?v=20260802ae";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ae";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
+const BASE_AUDIENCES=["혼자 조용히 있고 싶은 사람","연인·데이트","부부","가족","친구 모임","직장인","학생","대학생","어린이","청소년","중장년","고소득층","가성비 중시","디저트 러버","커피 애호가","차 애호가","매운 음식 마니아","채식 선호","한식파","일식파","면 요리 마니아","신상 맛집파","SF 덕후","로맨스 덕후","판타지 덕후","미스터리 덕후","공포 덕후","액션 덕후","코미디 덕후","애니메이션 팬","영화 팬","드라마 팬","관찰 예능 팬","게임 방송 팬","음악 팬","아이돌 팬","인디 음악 팬","클래식 애호가","게임 마니아","보드게임 팬","e스포츠 팬","패션 관심층","빈티지 애호가","향수 애호가","사진 애호가","미술 애호가","독서가","여행 애호가","반려동물 동반","운동 애호가","야외 활동파","집순이·집돌이","오타쿠","얼리어답터"];
+function audienceOptions(){
+  const values=new Set(BASE_AUDIENCES),fields=["interests","hobbies","foodPreferences","drinks","favoriteStoryGenres","musicGenres","favoriteFashionStyles","favoriteVideoGenres","favoriteGameGenres","favoriteScentNotes"];
+  Object.values(state.characters).forEach(c=>fields.forEach(field=>(c[field]||[]).forEach(value=>values.add(value))));
+  return [...values].sort((a,b)=>a.localeCompare(b,"ko"));
+}
+function openAudienceDialog(placeId){
+  const place=state.world.places.find(p=>p.id===placeId);if(!place)return;
+  const selected=new Set(place.audiences||[]),dialog=document.createElement("dialog");dialog.className="audience-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${place.name} 주요 이용층</h2><small>캐릭터 취향을 포함해 여러 개 선택할 수 있어요.</small></div><button value="cancel" aria-label="닫기">×</button></div><input type="search" name="search" placeholder="예: 디저트, SF, 관찰 예능"><div class="audience-dialog-list">${audienceOptions().map(value=>`<button type="button" data-audience-value="${value.replace(/"/g,"&quot;")}" class="${selected.has(value)?"on":""}">${value}</button>`).join("")}</div><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">선택 적용</button></div></form>`;
+  const filter=()=>{const q=dialog.querySelector('[name="search"]').value.trim().toLowerCase();dialog.querySelectorAll("[data-audience-value]").forEach(button=>button.hidden=q&&!button.textContent.toLowerCase().includes(q))};
+  dialog.querySelector('[name="search"]').oninput=filter;
+  dialog.querySelectorAll("[data-audience-value]").forEach(button=>button.onclick=()=>{const value=button.dataset.audienceValue;selected.has(value)?selected.delete(value):selected.add(value);button.classList.toggle("on",selected.has(value))});
+  dialog.onclose=()=>{if(dialog.returnValue==="apply"){updatePlace(placeId,{audiences:[...selected]},true);render();showToast("주요 이용층을 적용했습니다")}dialog.remove()};
+  document.body.append(dialog);dialog.showModal();
+}
 const addRoutine=characterId=>{
   state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
   const item={id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
@@ -159,6 +175,17 @@ function bind(){
     input.insertAdjacentElement("afterend",button);
   });
   $$("[data-catalog-image]").forEach(el=>el.onclick=()=>pickImage("catalogImage",el.dataset.catalogImage,el.dataset.kind));
+  $$(".place-editor details").forEach(details=>{
+    const audienceTitle=[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
+    const oldPicker=audienceTitle?.nextElementSibling,placeId=oldPicker?.querySelector("[data-place-audience]")?.dataset.placeAudience;
+    if(audienceTitle&&oldPicker&&placeId){
+      const place=state.world.places.find(item=>item.id===placeId),button=document.createElement("button");
+      button.type="button";button.className="audience-open-button";button.dataset.editAudiences=placeId;
+      button.innerHTML=`<b>주요 이용층 선택</b><small>${place?.audiences?.length?`${place.audiences.length}개 선택됨 · ${place.audiences.slice(0,3).join(", ")}${place.audiences.length>3?"…":""}`:"아직 선택하지 않음"}</small>`;
+      oldPicker.replaceWith(button);
+    }
+  });
+  $$('[data-edit-audiences]').forEach(button=>button.onclick=()=>openAudienceDialog(button.dataset.editAudiences));
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
@@ -225,6 +252,14 @@ function bind(){
   $("[data-add-town]")?.addEventListener("click",()=>{addTown();render()});
   $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
   $("[data-add-place]")?.addEventListener("click",()=>{addPlace();render()});
+  const addPlaceButton=$("[data-add-place]");
+  if(addPlaceButton&&state.world.places.length){
+    const actions=document.createElement("div");actions.className="place-main-actions";
+    actions.innerHTML=`<select aria-label="삭제할 건물">${state.world.places.map(place=>`<option value="${place.id}">${place.name}</option>`).join("")}</select><button type="button" class="danger">선택 건물 삭제</button>`;
+    actions.querySelector("button").onclick=()=>{const id=actions.querySelector("select").value,place=state.world.places.find(item=>item.id===id);if(place&&confirm(`${place.name} 건물을 삭제할까요?`)){deletePlace(id);render()}};
+    addPlaceButton.insertAdjacentElement("afterend",actions);
+  }
+  $$(".place-editor [data-delete-place]").forEach(button=>button.remove());
   $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
   $$("[data-delete-rel]").forEach(el=>el.onclick=()=>{
@@ -577,10 +612,10 @@ if(localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("parallel-city-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260802ad").catch(error=>{
+import("./auth.js?v=20260802ae").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802ad").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802ae").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
