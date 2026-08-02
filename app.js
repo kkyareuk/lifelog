@@ -41,6 +41,40 @@ function openAudienceDialog(placeId){
   dialog.onclose=()=>{if(dialog.returnValue==="apply"){updatePlace(placeId,{audiences:[...selected]},true);render();showToast("주요 이용층을 적용했습니다")}dialog.remove()};
   document.body.append(dialog);dialog.showModal();
 }
+const BUILDING_SHAPES=[
+  {id:"drawer-building",name:"쌍둥이 서랍 건물",src:"world-assets/drawer-building.png"},
+  {id:"drawer-home",name:"빨간 지붕 건물",src:"world-assets/drawer-home.png"}
+];
+function openBuildingShapeDialog(placeId){
+  const place=state.world.places.find(item=>item.id===placeId);if(!place)return;
+  const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small>건물 용도와 상관없이 원하는 모양을 고를 수 있어요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${BUILDING_SHAPES.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""}"><img src="${shape.src}" alt=""><b>${shape.name}</b></button>`).join("")}</div></form>`;
+  dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{updatePlace(placeId,{iconPreset:button.dataset.buildingShape},true);dialog.close();render();showToast("건물 모양을 바꿨습니다")});
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+}
+function enhanceDynamicForms(){
+  const profile=document.querySelector(".profile-license");
+  if(profile&&!profile.querySelector('[data-field="sleepHabit"]')){
+    const label=document.createElement("label");label.className="sleep-habit-field";label.innerHTML=`수면 습관<select data-field="sleepHabit">${["이불을 단정히 덮고 잠","이불을 걷어차며 잠","옆으로 웅크려 잠","팔다리를 뻗고 잠","베개를 끌어안고 잠","잠꼬대를 자주 함","뒤척임이 많음","아주 얌전히 잠","새벽에 자주 깸","코를 골며 깊이 잠"].map(value=>`<option ${active().sleepHabit===value?"selected":""}>${value}</option>`).join("")}</select><small>자는 중 장면과 생활 로그에 반영돼요.</small>`;profile.append(label);
+  }
+  document.querySelectorAll('.catalog-dex-card [data-kind="fashion"][data-catalog-field="image"]').forEach(input=>{
+    const detail=input.closest(".catalog-detail");if(!detail||detail.querySelector('[data-catalog-field="material"]'))return;
+    const item=state.catalog.fashion.find(value=>value.id===input.dataset.item),box=document.createElement("div");box.className="fashion-extra-fields";
+    box.innerHTML=`<label>재질<input data-catalog-field="material" data-kind="fashion" data-item="${item.id}" value="${item.material||""}" placeholder="면, 데님, 가죽, 니트…"></label><label>색<input data-catalog-field="color" data-kind="fashion" data-item="${item.id}" value="${item.color||""}" placeholder="검정, 아이보리…"></label><label>분위기·화려함 키워드<input data-catalog-field="flair" data-kind="fashion" data-item="${item.id}" value="${item.flair||""}" placeholder="미니멀, 화려함, 단정함…"></label>`;
+    input.closest("label").insertAdjacentElement("beforebegin",box);
+  });
+  document.querySelectorAll(".place-editor details").forEach(details=>{
+    const placeId=details.querySelector("[data-place-id]")?.dataset.placeId;if(!placeId||details.querySelector("[data-building-shape-open]"))return;
+    const button=document.createElement("button");button.type="button";button.dataset.buildingShapeOpen=placeId;button.className="building-shape-open";button.textContent="건물 모양 선택";
+    details.querySelector(".place-config")?.insertAdjacentElement("afterend",button);
+  });
+  const sync=document.querySelector(".sync-panel");
+  if(sync&&!sync.querySelector(".storage-meter")){
+    const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||JSON.parse(localStorage.getItem("drawer-village-storage-usage")||'{"count":0,"bytes":0,"maxCount":120,"maxBytes":62914560}');
+    const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||62914560)*100)),used=((usage.bytes||0)/1048576).toFixed(1),left=Math.max(0,((usage.maxBytes||62914560)-(usage.bytes||0))/1048576).toFixed(1);
+    const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>사진 저장 공간</h3><div><i style="width:${percent}%"></i></div><b>${used}MB 사용 · ${left}MB 남음</b><small>고유 사진 ${usage.count||0}/${usage.maxCount||120}장 · 이미지 링크는 이 용량을 사용하지 않아요.</small>`;sync.append(meter);
+  }
+}
 const addRoutine=characterId=>{
   state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
   const item={id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
@@ -96,6 +130,7 @@ async function explicitSave(label="저장 완료"){
 }
 
 function bind(){
+  enhanceDynamicForms();
   $$("[data-tab]").forEach(el=>el.onclick=()=>{state.activeTab=el.dataset.tab;save();render()});
   $$("[data-new]").forEach(el=>el.onclick=()=>{createCharacter();render()});
   $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);setCharacterPane("profile");render()});
@@ -206,6 +241,7 @@ function bind(){
     }
   });
   $$('[data-edit-audiences]').forEach(button=>button.onclick=()=>openAudienceDialog(button.dataset.editAudiences));
+  $$('[data-building-shape-open]').forEach(button=>button.onclick=()=>openBuildingShapeDialog(button.dataset.buildingShapeOpen));
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
@@ -625,6 +661,7 @@ window.ParallelCity={
 };
 
 window.addEventListener("drawer-village-cloud-loaded",render);
+window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
 window.addEventListener("parallel-city-cloud-loaded",render);
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
@@ -633,7 +670,7 @@ render();
 if(!window.matchMedia("(display-mode: standalone)").matches)showInstallButton();
 if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   const notice=document.createElement("dialog");notice.className="backup-notice";
-  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>Google 계정에는 고유 사진을 <b>최대 120장·총 60MB</b>까지 저장해요. 같은 사진은 여러 곳에 사용해도 한 번만 올라갑니다. 오래 보관할 중요한 데이터는 설정의 <b>백업 파일 내보내기</b>로도 보관해 주세요.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
+  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>사진 업로드도 정상적으로 동기화되지만 Google 저장 공간을 사용해요. 가능하면 <b>이미지 주소 링크</b>로 첨부하면 계정 용량을 거의 차지하지 않습니다. 직접 올린 사진은 고유 사진 기준 <b>최대 120장·총 60MB</b>까지 저장하고, 같은 사진은 한 번만 올려요. 사용량은 설정에서 확인할 수 있어요.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
@@ -642,5 +679,5 @@ import("./auth.js?v=20260803ah").catch(error=>{
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803ai").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803aj").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

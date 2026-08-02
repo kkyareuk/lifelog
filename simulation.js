@@ -12,6 +12,23 @@ const sleepingNow=(c,d)=>{
   const n=nowMin(d), wake=wakeAt(c,d), sleep=sleepAt(c,d);
   return sleep<=wake ? n>=sleep&&n<wake : n>=sleep||n<wake;
 };
+const sleepScene=(c,d=new Date())=>{
+  const habit=c.sleepHabit||"이불을 단정히 덮고 잠";
+  const scenes={
+    "이불을 단정히 덮고 잠":["이불 끝을 가지런히 맞춘 채 편안하게 숨을 고르며 깊이 잠들어 있어요.","베개와 이불을 흐트러뜨리지 않은 채 고요하게 자고 있어요."],
+    "이불을 걷어차며 잠":["자다가 더웠는지 이불을 발끝으로 밀어내고 깊이 잠들어 있어요.","이불이 침대 한쪽으로 밀려난 것도 모른 채 편안하게 자고 있어요."],
+    "옆으로 웅크려 잠":["몸을 옆으로 작게 웅크리고 이불 속에서 따뜻하게 잠들어 있어요."],
+    "팔다리를 뻗고 잠":["침대를 넓게 차지하고 팔다리를 쭉 뻗은 채 느긋하게 자고 있어요."],
+    "베개를 끌어안고 잠":["베개를 품에 꼭 끌어안고 얼굴을 살짝 묻은 채 잠들어 있어요."],
+    "잠꼬대를 자주 함":["알아듣기 어려운 말을 작게 중얼거리다가 다시 조용히 잠들었어요.","꿈속 누군가에게 대답하듯 짧게 잠꼬대를 하고 있어요."],
+    "뒤척임이 많음":["몇 번이나 자세를 바꾸며 뒤척이다가 다시 잠에 빠져들고 있어요."],
+    "아주 얌전히 잠":["처음 누운 모습 그대로 거의 움직이지 않고 아주 얌전히 자고 있어요."],
+    "새벽에 자주 깸":["잠깐 눈을 떴다가 시간을 확인하지 않고 다시 이불 속으로 파고들었어요."],
+    "코를 골며 깊이 잠":["규칙적인 숨소리와 옅은 코골이 소리를 내며 깊이 잠들어 있어요."]
+  };
+  const options=scenes[habit]||scenes["이불을 단정히 덮고 잠"];
+  return options[hash(`${c.id}:${dayKey(d)}:${Math.floor(nowMin(d)/60)}:sleep`)%options.length];
+};
 const townFor=c=>state.towns.find(t=>t.id===c.townId)||state.towns[0]||state.world;
 const workplaceTown=c=>state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
 const activityTown=(c,date=new Date())=>{
@@ -435,7 +452,7 @@ function build(c,date=new Date()){
     if(place)list.push(entry(minute,item.title,desc,{townId:place.townId,placeId:place.id,withId:companions[0]?.id,mood:item.type==="데이트"?"즐거움":"일정"}));
     else list.push(homeEntry(c,minute,item.title,desc,item.type==="휴식"?"living":"study"));
   });
-  list.push(entry(sleepMinute,"자는 중",`설정한 취침 시각에서 ${Math.abs(jitter(c,"sleep",date))}분 정도 차이로 잠들었어요.`,{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0}));
+  list.push(entry(sleepMinute,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0}));
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
@@ -485,7 +502,7 @@ function liveGapEvent(c,last,n,date){
 }
 export function eventFor(c,date=new Date()){
   const n=nowMin(date);
-  if(sleepingNow(c,date))return entry(n,"자는 중","설정한 수면 시간에 맞춰 집에서 자고 있어요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
+  if(sleepingNow(c,date))return entry(n,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
   const last=past.at(-1);
   if(last&&n-last.minute>75)return liveGapEvent(c,last,n,date);

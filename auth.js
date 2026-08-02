@@ -15,6 +15,7 @@ const uploadedCache=new Map();
 const MAX_PHOTOS=120;
 const MAX_TOTAL_BYTES=60*1024*1024;
 const MAX_IMAGE_BYTES=1536*1024;
+let storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:MAX_TOTAL_BYTES};
 const toast=text=>window.ParallelCity?.toast?.(text);
 const countStoredPhotos=value=>{
   const urls=new Set();
@@ -29,6 +30,12 @@ const normalizeManifest=(value,gameState)=>({
   items:Array.isArray(value?.items)?value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").slice(0,MAX_PHOTOS):[],
   legacyCount:Math.max(Number(value?.legacyCount)||0,Math.max(0,countStoredPhotos(gameState)-(Array.isArray(value?.items)?value.items.length:0)))
 });
+const publishStorageUsage=(manifest,gameState)=>{
+  const normalized=normalizeManifest(manifest,gameState);
+  storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:MAX_PHOTOS,maxBytes:MAX_TOTAL_BYTES};
+  localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
+  window.dispatchEvent(new Event("drawer-village-storage-usage"));
+};
 const digestBlob=async blob=>{
   const bytes=await crypto.subtle.digest("SHA-256",await blob.arrayBuffer());
   return [...new Uint8Array(bytes)].map(value=>value.toString(16).padStart(2,"0")).join("");
@@ -125,6 +132,7 @@ async function upload({silent=false,reason=""}={}){
     const {gameState,mediaManifest}=prepared;
     await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
     window.ParallelCity.replaceState(clone(gameState));
+    publishStorageUsage(mediaManifest,gameState);
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
     const storedPhotos=countStoredPhotos(gameState);
     toast(storedPhotos?`동기화되었습니다 · 고유 사진 ${mediaManifest.items.length+mediaManifest.legacyCount}/${MAX_PHOTOS}장`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
@@ -143,6 +151,7 @@ async function download({automatic=false}={}){
     status(`${user.displayName||"계정"} · 불러오는 중`);
     const snapshot=await getDoc(cloudDoc());
     const documentData=snapshot.exists()?snapshot.data():null;
+    publishStorageUsage(documentData?.mediaManifest,documentData?.gameState);
     publishEntitlements(documentData?.entitlements);
     const remote=documentData?.gameState||null;
     if(!remote){status(`${user.displayName||"계정"} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
@@ -174,4 +183,5 @@ if(ready){
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}
 }else status("Firebase 설정 필요");
 
-window.ParallelCityAuth={login,upload,download,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements})};
+try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}")}}catch{}
+window.ParallelCityAuth={login,upload,download,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements,storageUsage})};

@@ -99,7 +99,7 @@ function normalizeHomes(x){
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
-  x.characterPane=["profile","personality","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
+  x.characterPane=["profile","personality","taste","worldTaste","wardrobe"].includes(x.characterPane)?x.characterPane:"profile";
   if(Array.isArray(x.characters)){
     const list=x.characters.filter(Boolean);
     x.characters=Object.fromEntries(list.map(c=>[c.id||uid(),c]));
@@ -179,6 +179,7 @@ function normalizeHomes(x){
       notes:r.notes||""
     })):[];
     c.driverLicense=Boolean(c.driverLicense);
+    c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
     c.neatness=c.neatness||"보통";
     c.interference=c.interference||"적당히 관여";
@@ -256,7 +257,7 @@ export function createCharacter(){
   state.activeId=id;state.activeTab="character";save(true);
 }
 export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
-export function setCharacterPane(value){state.characterPane=["profile","personality","taste","worldTaste"].includes(value)?value:"profile";save()}
+export function setCharacterPane(value){state.characterPane=["profile","personality","taste","worldTaste","wardrobe"].includes(value)?value:"profile";save()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;
