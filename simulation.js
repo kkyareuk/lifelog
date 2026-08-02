@@ -80,6 +80,7 @@ const away=(c,extra={},date=new Date())=>({townId:activityTown(c,date)?.id||c.to
 function morningScripts(c,date){
   const likes=[...(c.hobbies||[]),...(c.interests||[])],seed=`${c.id}:${dayKey(date)}:morning`;
   const storyGenres=c.favoriteStoryGenres||[];
+  const videoTypes=c.favoriteVideoGenres||[];
   const choices=[];
   if(likes.some(x=>/운동|산책|사진/.test(x)))choices.push(
     ["아침 조깅을 마치고 돌아오는 중","동네를 가볍게 달린 뒤 숨을 고르며 집으로 돌아와 물을 마시고 있어요.","entry"],
@@ -144,6 +145,29 @@ function morningScripts(c,date){
       [`${genre} 이야기를 감상하는 중`,`취향에 맞는 ${genre} 작품을 펼쳐 인상적인 장면과 대사를 천천히 따라가고 있어요.`,"living"]
     );
   }
+  if(videoTypes.length){
+    const type=videoTypes[hash(seed+":video-type")%videoTypes.length];
+    choices.push(
+      [`${type} 새 영상을 찾아보는 중`,`구독 목록과 추천 목록에서 좋아하는 ${type} 영상을 골라 재생 목록에 담고 있어요.`,"living"],
+      [`${type} 영상을 이어 보는 중`,`관심 있던 ${type} 영상의 다음 편을 켜고 인상적인 부분을 놓치지 않으려고 집중하고 있어요.`,"living"]
+    );
+  }
+  if(likes.some(x=>/뜨개|재봉|자수|가죽|프라모델|피규어|우표|레코드/.test(x)))choices.push(
+    ["수집품과 재료를 정리하는 중","작은 부품과 재료를 종류별로 나누고 다음 작업에 쓸 것을 손이 닿기 좋은 곳에 놓고 있어요.","study"],
+    ["손으로 만드는 작업에 집중하는 중","도안과 완성된 부분을 번갈아 확인하며 한 땀씩 세부를 다듬고 있어요.","study"]
+  );
+  if(likes.some(x=>/악기|노래|춤|음악 감상/.test(x)))choices.push(
+    ["좋아하는 곡을 연습하는 중","박자와 어려운 구간을 반복해 들으며 자기 속도에 맞춰 차근차근 연습하고 있어요.","study"],
+    ["재생 목록을 정리하는 중","지금 기분과 잘 맞는 곡을 골라 순서를 바꾸고 새로 발견한 곡을 추가하고 있어요.","living"]
+  );
+  if(likes.some(x=>/여행 계획|지도 보기|역사 탐방|천체 관측/.test(x)))choices.push(
+    ["다음 외출 경로를 짜는 중","지도에 가 보고 싶은 장소를 표시하고 이동 시간과 쉬어 갈 곳을 함께 확인하고 있어요.","study"],
+    ["관찰 기록을 정리하는 중","직접 본 풍경과 사물의 특징을 사진과 메모로 남기며 다음에 확인할 것을 적고 있어요.","study"]
+  );
+  if(likes.some(x=>/자동차 관리|드라이브|자전거/.test(x)))choices.push(
+    ["이동 장비를 점검하는 중","타이어와 필요한 장비 상태를 확인하고 다음 외출 전에 손볼 부분을 메모하고 있어요.","entry"],
+    ["드라이브 경로를 살펴보는 중","교통이 덜 복잡하고 풍경이 좋은 길을 찾아 중간에 들를 장소를 고르고 있어요.","study"]
+  );
   if(!choices.length)choices.push(
     ["집 근처를 산책하고 돌아오는 중","조용한 아침 공기를 쐬며 한 바퀴 걷고 현관에서 신발을 정리하고 있어요.","entry"],
     ["거실에서 오늘 일정을 살펴보는 중","소파에 앉아 해야 할 일의 순서를 머릿속으로 정리하고 있어요.","living"],
@@ -301,7 +325,7 @@ function build(c,date=new Date()){
   if(work){
     if(c.workplaceId!=="home"){
       const driving=selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
-      list.push(entry(work.minute-35,driving?"출근길에 운전 중":"대중교통으로 출근 중",driving?"차를 운전해 직장으로 이동하고 있어요.":"정류장에서 버스나 지하철을 타고 직장으로 이동하고 있어요.",away(c,{transit:true,mood:"이동"})));
+      list.push(entry(work.minute-35,driving?"차로 출근하는 중":"대중교통으로 출근하는 중",driving?"차를 운전해 직장에 도착할 준비를 하고 있어요.":"버스나 지하철을 이용해 직장에 도착할 준비를 하고 있어요.",away(c,{placeId:work.placeId,mood:"출근"})));
     }
     list.push(work);
   }
@@ -311,6 +335,16 @@ function build(c,date=new Date()){
     list.push(entry(750,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
   const social=socialEvent(c,1120,date); if(social)list.push(social);
+  if(social?.withId){
+    const romanticRelation=relationList().find(r=>((r.a===c.id&&r.b===social.withId)||(r.b===c.id&&r.a===social.withId))&&["연인","부부","폴리 관계"].includes(r.type));
+    if(romanticRelation){
+      const partner=state.characters[social.withId],dateGroup=`date-${[c.id,social.withId].sort().join("-")}-${dayKey(date)}`;
+      social.title=`데이트 · ${social.title.replace(`${partner?.name}와 `,"")}`;
+      social.dateGroup=dateGroup;social.mood="데이트";
+      list.push(entry(social.minute-25,"데이트 · 만나서 일정 시작",`${partner?.name}와 약속 장소에서 만나 오늘 함께할 일을 이야기하고 있어요.`,{townId:social.townId,placeId:social.placeId,withId:social.withId,mood:"데이트",dateGroup}));
+      list.push(entry(social.minute+65,"데이트 · 함께 둘러보는 중",`${partner?.name}와 나란히 주변을 걷고 마음에 드는 곳에 잠시 멈춰 이야기를 나누고 있어요.`,{townId:social.townId,placeId:social.placeId,withId:social.withId,mood:"데이트",dateGroup}));
+    }
+  }
   if(destination.id!==homeTown.id){
     const returnMinute=Math.min(sleepMinute-75,1200);
     list.push(entry(returnMinute,`${homeTown.name}으로 돌아가는 중`,"오늘의 바깥 일정을 마치고 대중교통이나 안전하게 운전할 수 있는 동행의 차로 집이 있는 마을로 돌아가고 있어요.",{townId:homeTown.id,transit:true,mood:"이동"}));
@@ -347,7 +381,7 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({engine:"20260802ac",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
@@ -369,8 +403,8 @@ function liveGapEvent(c,last,n,date){
     if(shortStay){
       const nextPlaces=(currentTown?.places||[]).filter(p=>p.id!==place.id&&["공원","도서관","공연장","쇼핑몰"].includes(p.type));
       const next=nextPlaces[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:move-on`)%Math.max(1,nextPlaces.length)];
-      if(next)return entry(minute,`${place.name}에서 나와 ${next.name}으로 이동 중`,`한곳에 오래 머물지 않고 하던 일을 마친 뒤 ${next.name}으로 자리를 옮기고 있어요.`,{townId:currentTown.id,placeId:next.id,transit:true,mood:"이동"});
-      return entry(minute,"집으로 돌아가는 중",`${place.name}에서의 일정을 마치고 집이 있는 마을로 돌아가고 있어요.`,{townId:c.townId,transit:true,mood:"이동"});
+      if(next)return entry(minute,`${next.name}에 막 도착한 참`,`한곳에 오래 머물지 않고 하던 일을 마친 뒤 ${next.name}에 도착해 주변을 둘러보고 있어요.`,{townId:currentTown.id,placeId:next.id,mood:"외출"});
+      return entry(minute,"집에 돌아온 참",`${place.name}에서의 일정을 마치고 집으로 돌아와 신발과 겉옷을 정리하고 있어요.`,{townId:c.townId,home:true,room:"entry",mood:"귀가"});
     }
     const continuations={
       카페:["카페에서 여유를 보내는 중","자리와 음료를 정리하며 다음에 할 일을 천천히 생각하고 있어요."],
