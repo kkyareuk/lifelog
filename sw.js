@@ -1,5 +1,5 @@
 ﻿const CACHE="parallel-city-v20260802t";
-const CACHE_VERSION="parallel-city-v20260802ac";
+const CACHE_VERSION="parallel-city-v20260802ad";
 const CORE=[
   "./",
   "./index.html",

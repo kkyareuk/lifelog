@@ -1,6 +1,6 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
-import {eventFor} from "./simulation.js?v=20260802ac";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ac";
+import {eventFor} from "./simulation.js?v=20260802ad";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ad";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -296,10 +296,10 @@ async function useImageUrl(type,id,room){
       if(resolved!==value){
         applyImage(type,id,room,resolved);
         render();
-        showToast("Pinterest 핀 사진을 추가했습니다");
+        showToast("이미지 주소로 사진을 추가했습니다");
         return;
       }
-      showToast("이 Pinterest 핀의 원본 사진을 찾지 못했어요");
+      showToast("직접 표시할 수 있는 이미지 주소를 입력해 주세요");
       return;
     }
     if(["http:","https:"].includes(url.protocol)){
@@ -351,7 +351,7 @@ function askImageUrl(){
   return new Promise(resolve=>{
     const dialog=document.createElement("dialog");
     dialog.className="image-url-dialog";
-    dialog.innerHTML=`<form method="dialog"><div class="title"><h2>사진 또는 Pinterest 핀 추가</h2><button value="cancel" aria-label="닫기">×</button></div><label>이미지 주소·Pinterest 핀 주소<input name="url" type="url" placeholder="https://... 또는 https://pin.it/..." required></label><small>핀 링크도 이미지로 불러온 뒤 직접 드래그해 자르고 WebP로 압축해요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">사진 불러오기</button></div></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><h2>이미지 주소로 사진 추가</h2><button value="cancel" aria-label="닫기">×</button></div><label>이미지 파일 주소<input name="url" type="url" placeholder="https://.../photo.jpg" required></label><small>웹페이지 주소가 아니라 주소 끝이 jpg, png, webp 등으로 끝나는 실제 이미지 주소를 넣어 주세요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">사진 불러오기</button></div></form>`;
     document.body.append(dialog);
     dialog.onclose=()=>{
       const value=dialog.returnValue==="apply"?dialog.querySelector('[name="url"]').value.trim():"";
@@ -571,10 +571,16 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802ac").catch(error=>{
+if(localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
+  const notice=document.createElement("dialog");notice.className="backup-notice";
+  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>Google 사진 동기화가 불안정할 수 있어요. 가능하면 <b>실제 이미지 주소</b>로 사진을 첨부하거나, 설정의 <b>백업 파일 내보내기</b>로 데이터를 따로 보관해 주세요.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
+  notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("parallel-city-hide-photo-backup-notice","1");notice.remove()};
+  document.body.append(notice);notice.showModal();
+}
+import("./auth.js?v=20260802ad").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802ac").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802ad").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

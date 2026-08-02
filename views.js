@@ -1,5 +1,5 @@
 ﻿import {state,active} from "./state.js?v=20260802t";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260802ac";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260802ad";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -88,7 +88,8 @@ function roster(){
 }
 function placeCard(p){
   const mode=state.buildingLabelMode||"full";
-  const label=mode==="none"?"":`<span class="map-place-label" style="left:${p.x}%;top:${p.y}%"><b>${esc(p.name)}</b>${mode==="full"?`<small>${esc(p.subtype?`${p.type} · ${p.subtype}`:p.type)}</small>`:""}</span>`;
+  const labelX=Math.max(8,Math.min(92,p.x)),labelY=Math.max(13,Math.min(92,p.y));
+  const label=mode==="none"?"":`<span class="map-place-label" style="left:${labelX}%;top:${labelY}%"><b>${esc(p.name)}</b>${mode==="full"?`<small>${esc(p.subtype?`${p.type} · ${p.subtype}`:p.type)}</small>`:""}</span>`;
   return `<button class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}"><i class="building-preset preset-${esc(p.iconPreset||"shop")}"></i></button>${label}`;
 }
 function catalogItem(id){return catalogItems().find(item=>item.id===id)}
@@ -100,10 +101,22 @@ function sceneImage(c,entry){
   return place?.interiorImage||catalogItem(entry.itemId)?.image||place?.image||"";
 }
 function importantEntry(entry){return /출근|수업|직장|데이트|병원|다툼|자는 중|기상|공무|훈련/.test(entry.title)}
+function dailyLogItems(entries,c){
+  const seen=new Set();
+  return entries.map(x=>{
+    if(x.dateGroup){
+      if(seen.has(x.dateGroup))return"";seen.add(x.dateGroup);
+      const steps=entries.filter(step=>step.dateGroup===x.dateGroup);
+      const partner=state.characters[x.withId],title=partner?`${partner.name}와 데이트`:`데이트 일정`;
+      return `<li class="date-schedule" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><div class="date-schedule-title"><b>${esc(title)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^데이트 · /,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
+    }
+    return `<li class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
+  }).join("");
+}
 function dailyLog(c){
   const logs=visibleTimeline(c),current=eventFor(c);
   const entries=!logs.some(x=>x.title===current.title&&x.minute===current.minute)?[...logs,current]:logs;
-  return `<section class="panel life-log shared-life-log"><div class="title"><h2>오늘의 생활 로그</h2><small>${esc(c.name)} · 관찰과 집에서 같은 기록을 보여줘요</small></div><ol>${entries.map(x=>`<li class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""} ${x.dateGroup?"date-step":""}" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`).join("")}</ol></section>`;
+  return `<section class="panel life-log shared-life-log"><div class="title"><h2>오늘의 생활 로그</h2><small>${esc(c.name)} · 관찰과 집에서 같은 기록을 보여줘요</small></div><ol>${dailyLogItems(entries,c)}</ol></section>`;
 }
 function homeDailyLog(chars,h){
   const entries=chars.flatMap(c=>{
@@ -116,7 +129,8 @@ function homeDailyLog(chars,h){
 function peopleAtPlaceCard(p){
   const group=charactersAtPlace(p.id,state.activeTownId);if(!group.length)return"";
   const names=group.map(c=>c.name).join(", "),shown=group.slice(0,3);
-  return `<button class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" data-person="${group[0].id}" title="${esc(names)}" style="left:${p.x}%;top:calc(${p.y}% + 8%)"><span class="place-people-faces">${shown.map(c=>avatar(c)).join("")}${group.length>3?`<b>+${group.length-3}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</button>`;
+  const x=Math.max(9,Math.min(91,p.x)),y=Math.max(15,Math.min(88,p.y+9));
+  return `<button class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" data-person="${group[0].id}" title="${esc(names)}" style="left:${x}%;top:${y}%"><span class="place-people-faces">${shown.map(c=>avatar(c)).join("")}${group.length>3?`<b>+${group.length-3}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</button>`;
 }
 function observe(){
   const localIds=state.order.filter(id=>visibleTownId(state.characters[id])===state.activeTownId);

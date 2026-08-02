@@ -257,12 +257,69 @@ function socialEvent(c,time,date){
   const food=servesMeals?catalogChoice(c,p,"food",`${c.id}:${dayKey(date)}:food`):null;
   const drink=servesDrinks?catalogChoice(c,p,"drink",`${c.id}:${dayKey(date)}:drink`):null;
   if(pick){
-    const romantic=["연인","부부","폴리 관계","짝사랑"].includes(pick.r.type);
+    const romantic=["연인","부부","폴리 관계"].includes(pick.r.type),crush=pick.r.type==="짝사랑";
     const action=food?`${pick.other.name}와 함께 ${food.name} 먹는 중`:drink?`${pick.other.name}와 ${drink.name} 마시는 중`:`${pick.other.name}와 ${romantic?"데이트":"나들이"} 중`;
-    const detail=p.type==="공연장"?`${pick.other.name}와 공연을 관람하며 인상적인 장면에 대한 감상을 나누고 있어요.`:romantic?`${pick.other.name}와 나란히 시간을 보내며 서로의 하루를 묻고 있어요.`:`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
+    const relationDetails={
+      짝사랑:`${pick.other.name}의 반응을 의식하면서도 평범한 외출인 척 자연스럽게 대화를 이어가고 있어요.`,
+      절친:`${pick.other.name}와 둘만 아는 농담을 주고받고 거리낌 없이 서로의 근황을 캐묻고 있어요.`,
+      "직장 동료":`${pick.other.name}와 업무 밖의 이야기를 나누다가도 자연스럽게 오늘 있었던 일을 함께 정리하고 있어요.`,
+      "대학 동기":`${pick.other.name}와 학교 시절 기억과 요즘 달라진 생활을 비교하며 이야기를 이어가고 있어요.`,
+      라이벌:`${pick.other.name}와 최근 결과를 은근히 비교하면서도 상대가 잘한 부분은 놓치지 않고 살피고 있어요.`,
+      혐관:`${pick.other.name}와 사소한 선택에서도 신경전을 벌이지만 먼저 자리를 뜨지는 않고 있어요.`
+    };
+    const detail=p.type==="공연장"?`${pick.other.name}와 공연을 관람하며 인상적인 장면에 대한 감상을 나누고 있어요.`:romantic?`${pick.other.name}와 나란히 시간을 보내며 서로의 하루를 묻고 있어요.`:relationDetails[pick.r.type]||`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
     return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id||drink?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
   }
   return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 식사하고 있어요.`:drink?`${drink.name}을 마시며 잠깐 쉬고 있어요.`:p.type==="공연장"?"공연을 관람하며 무대에 집중하고 있어요.":"가벼운 외출을 즐기고 있어요.",away(c,{placeId:p.id,itemId:food?.id||drink?.id,mood:"평온"}));
+}
+
+function relationSpecificEntry(c,other,r,time,date,role){
+  const n=other.name,pools={
+    부부:[
+      [[`${n}와 집안일을 나누는 중`,"먼저 끝낸 일을 확인하고 상대 몫으로 남겨 둔 것을 말없이 정돈해 주고 있어요.","living"],[`${n}와 집안일을 나누는 중`,"상대가 정리한 곳을 보고 고맙다고 말한 뒤 남은 설거지와 빨래를 맡아 마무리하고 있어요.","kitchen"]],
+      [[`${n}와 생활비를 정리하는 중`,"이번 달 지출 내역을 펼쳐 놓고 꼭 필요한 비용과 다음 달에 미룰 것을 차분히 의논하고 있어요.","study"],[`${n}와 생활비를 정리하는 중`,"상대가 읽어 주는 내역을 들으며 빠진 항목을 확인하고 다음 달 예산을 메모하고 있어요.","study"]],
+      [[`${n}와 늦은 간식을 나누는 중`,"상대가 좋아하는 간식을 조금 더 챙겨 식탁에 놓고 오늘 있었던 사소한 일을 이야기하고 있어요.","kitchen"],[`${n}와 늦은 간식을 나누는 중`,"건네받은 접시를 가운데 놓고 상대의 하루를 들으며 한입씩 천천히 나눠 먹고 있어요.","kitchen"]]
+    ],
+    연인:[
+      [[`${n}와 다음 데이트를 고르는 중`,"저장해 둔 장소들을 보여 주며 상대가 더 좋아할 만한 곳을 먼저 물어보고 있어요.","living"],[`${n}와 다음 데이트를 고르는 중`,"상대가 보여 주는 후보를 하나씩 살펴보고 같이 하고 싶은 일을 솔직하게 덧붙이고 있어요.","living"]],
+      [[`${n}의 사진을 골라 주는 중`,"함께 찍은 사진을 넘겨 보며 상대가 가장 자연스럽게 웃은 장면에 표시하고 있어요.","living"],[`${n}와 함께 찍은 사진을 보는 중`,"상대가 고른 사진을 확대해 보고 그때 나눴던 이야기를 떠올리며 웃고 있어요.","living"]],
+      [[`${n}에게 애정을 표현하는 중`,"말로 길게 설명하는 대신 상대가 좋아하는 것을 곁에 조용히 놓아 두고 반응을 살피고 있어요.","living"],[`${n}의 애정 표현을 알아차린 중`,"자기 취향을 기억해 준 것을 알아보고 가까이 앉아 작게 고맙다고 말하고 있어요.","living"]]
+    ],
+    "폴리 관계":[
+      [[`${n}와 관계 일정을 조율하는 중`,"모두가 소외되지 않도록 각자의 가능한 시간과 원하는 만남 방식을 차분히 확인하고 있어요.","study"],[`${n}와 관계 일정을 조율하는 중`,"자기 일정과 감정을 솔직하게 말하고 다른 사람의 약속도 존중하며 시간을 맞추고 있어요.","study"]],
+      [[`${n}와 서로의 마음을 확인하는 중`,"최근 서운하거나 불안했던 순간이 있었는지 먼저 묻고 변명하지 않고 답을 듣고 있어요.","living"],[`${n}에게 현재 마음을 설명하는 중`,"누구와 비교하지 않고 지금 느끼는 감정과 필요한 배려를 구체적으로 말하고 있어요.","living"]]
+    ],
+    짝사랑:[
+      [[`${n}를 은근히 챙기는 중`,"티가 너무 나지 않게 필요한 물건을 가까이에 놓아 주고 아무렇지 않은 척 다른 곳을 보고 있어요.","living"],[`${n}의 호의를 눈치채는 중`,"우연이라고 하기엔 세심한 배려를 발견하고 잠시 상대의 표정을 살피고 있어요.","living"]],
+      [[`${n}에게 보낼 말을 고민하는 중`,"메시지를 썼다가 너무 다정해 보일까 지우고 자연스러운 문장으로 다시 고치고 있어요.","study"],[`${n}의 메시지를 확인하는 중`,"평범한 내용인데도 몇 번 다시 읽은 뒤 너무 늦지 않게 답장을 보내고 있어요.","living"]]
+    ],
+    절친:[
+      [[`${n}와 장난을 주고받는 중`,"상대만 알아들을 오래된 농담을 꺼내고 웃음을 참는 표정을 보며 한마디를 더 얹고 있어요.","living"],[`${n}의 장난에 받아치는 중`,"질 수 없다는 듯 예전 실수를 꺼내 맞받아치고 결국 둘 다 웃음을 터뜨리고 있어요.","living"]],
+      [[`${n}에게 속마음을 털어놓는 중`,"다른 사람에게는 말하지 못한 걱정을 꺼내며 해결책보다 자기 편이 되어 달라고 말하고 있어요.","living"],[`${n}의 속마음을 듣는 중`,"중간에 판단하지 않고 끝까지 들은 뒤 상대가 잘못한 게 아니라며 단단하게 편들어 주고 있어요.","living"]]
+    ],
+    "직장 동료":[
+      [[`${n}와 업무를 인계하는 중`,"진행 상황과 주의할 부분을 짧고 정확하게 정리해 상대가 바로 이어서 할 수 있게 설명하고 있어요.","study"],[`${n}에게 업무를 인계받는 중`,"중요한 부분을 메모하고 애매한 조건을 다시 물어 실수가 없도록 확인하고 있어요.","study"]],
+      [[`${n}와 퇴근 후 하소연하는 중`,"오늘 있었던 답답한 일을 조심스럽게 꺼내며 상대가 공감하는 대목에서 목소리를 낮추고 있어요.","kitchen"],[`${n}의 직장 이야기를 듣는 중`,"고개를 끄덕이며 상황을 정리해 주고 내일 덜 힘들 방법을 현실적으로 제안하고 있어요.","kitchen"]]
+    ],
+    "대학 동기":[
+      [[`${n}와 옛날 이야기를 하는 중`,"같이 들었던 수업과 황당했던 과제를 떠올리며 당시에는 말하지 못한 뒷이야기를 꺼내고 있어요.","living"],[`${n}와 옛날 이야기를 하는 중`,"잊고 있던 장면을 상대의 말로 떠올리고 기억이 다른 부분을 웃으며 바로잡고 있어요.","living"]],
+      [[`${n}와 자료를 나누는 중`,"상대가 찾던 자료를 폴더별로 정리해 보내고 도움이 될 만한 메모를 덧붙이고 있어요.","study"],[`${n}가 보낸 자료를 확인하는 중`,"필요한 부분에 표시를 남기고 자기 자료도 정리해 답례로 보내고 있어요.","study"]]
+    ],
+    가족:[
+      [[`${n}의 식사를 챙기는 중`,"끼니를 거르지 않았는지 확인하고 부담 없이 먹을 수 있는 양을 따로 덜어 두고 있어요.","kitchen"],[`${n}가 챙긴 식사를 받는 중`,"잔소리처럼 들리면서도 걱정인 걸 알아 작게 대답하고 자리에 앉아 한입 먹고 있어요.","kitchen"]],
+      [[`${n}와 생활 습관을 두고 실랑이 중`,"또 미뤄 둔 일을 가리키며 이번에는 꼭 끝내라고 말하지만 손은 이미 정리를 돕고 있어요.","living"],[`${n}의 잔소리에 대답하는 중`,"알겠다고 몇 번 답하다가 결국 함께 빨리 끝내는 편이 낫겠다며 몸을 일으키고 있어요.","living"]]
+    ],
+    라이벌:[
+      [[`${n}와 결과를 비교하는 중`,"상대가 잘한 부분은 인정하면서도 다음에는 자기가 앞설 거라며 세부 기록을 다시 확인하고 있어요.","study"],[`${n}의 도전을 받아치는 중`,"여유로운 척 웃으며 자기 방식의 장점을 설명하고 다음 승부 조건을 먼저 제안하고 있어요.","study"]]
+    ],
+    혐관:[
+      [[`${n}와 날 선 대화를 나누는 중`,"상대의 말에서 모순을 짚어 내며 물러서지 않지만 넘지 말아야 할 선은 간신히 지키고 있어요.","living"],[`${n}의 지적에 반박하는 중`,"바로 표정을 굳히고 근거부터 다시 대라며 차갑게 맞받아치고 있어요.","living"]]
+    ]
+  };
+  const pool=pools[r.type]||[[[`${n}와 근황을 나누는 중`,"최근 관심 있는 일과 달라진 생활을 이야기하며 상대의 반응을 살피고 있어요.","living"],[`${n}의 근황을 듣는 중`,"궁금한 부분을 자연스럽게 되묻고 자기 이야기도 하나씩 꺼내고 있어요.","living"]]];
+  const scenario=pool[hash(`${[c.id,other.id].sort().join(":")}:${r.type}:${dayKey(date)}:relation-scene`)%pool.length],script=scenario[role];
+  const tone=c.socialStyle==="낯을 가림"?" 말은 짧지만 자리를 피하지 않고 곁에 머물러 있어요.":c.decisionStyle==="공감 우선"?" 상대의 표정과 말투가 달라질 때마다 속도를 맞추고 있어요.":c.interference==="강하게 간섭함"?" 자기 방식이 더 낫다고 확신해 상대의 선택에도 적극적으로 관여하고 있어요.":"";
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+tone,`specific:${r.type}:${role}`),script[2]);
 }
 
 function relationshipHomeEntry(c,pick,time,date){
@@ -278,10 +335,7 @@ function relationshipHomeEntry(c,pick,time,date){
     [`${other.name}에게 잔소리하는 중`,"미뤄 둔 일을 가리키며 걱정돼서 하는 말이라고 덧붙이고, 결국 옆에 앉아 함께 정리해 주고 있어요.","living"],
     [`${other.name}의 잔소리를 듣는 중`,"처음에는 못 들은 척하다가 상대가 챙겨 둔 것을 보고 작게 알겠다고 답하며 몸을 일으켰어요.","living"]
   ];
-  else if(intimacy>=80)scripts=[
-    [`${other.name}를 격려하는 중`,"지친 기색을 알아보고 따뜻한 음료를 건넨 뒤 오늘 잘해 낸 일을 하나씩 짚어 주며 다독이고 있어요.","kitchen"],
-    [`${other.name}에게 위로받는 중`,"말없이 곁을 내어 준 상대에게 오늘 힘들었던 일을 털어놓고, 건네받은 잔을 두 손으로 감싸고 있어요.","kitchen"]
-  ];
+  else if(intimacy>=40)return relationSpecificEntry(c,other,r,time,date,role);
   else if(c.interference==="강하게 간섭함")scripts=[
     [`${other.name}의 귀가 시간을 따지는 중`,"늦어진 이유를 분명히 말해 달라고 요구하고 다음부터는 미리 연락하라며 단호하게 이야기하고 있어요.","living"],
     [`${other.name}에게 행동을 바로잡으라고 말하는 중`,"미뤄 둔 일을 직접 가리키며 지금 끝내야 한다고 강하게 재촉하고 있어요.","living"]
@@ -387,8 +441,8 @@ export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig){
-    c.days[key]={signature:sig,entries:build(c,date)};
+  if(!old||old.signature!==sig||old.engineVersion!=="20260802ad"){
+    c.days[key]={signature:sig,engineVersion:"20260802ad",entries:build(c,date)};
     save();
   }
   return c.days[key].entries;
