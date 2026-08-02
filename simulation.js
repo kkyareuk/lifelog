@@ -21,14 +21,14 @@ const activityTown=(c,date=new Date())=>{
   if(!others.length)return home;
   const weekend=[0,6].includes(date.getDay()),restDay=weekend&&hash(`${c.id}:${dayKey(date)}:rest`)%4!==0;
   if(restDay||hash(`${c.id}:${dayKey(date)}:town-trip`)%3!==0)return home;
-  const romantic=preferredRelation(c),pair=romantic&&["부부","연인"].includes(romantic.r.type)?[c.id,romantic.other.id].sort().join(":"):c.id;
+  const romantic=preferredRelation(c),pair=romantic&&["부부","연인","폴리 관계"].includes(romantic.r.type)?[c.id,romantic.other.id].sort().join(":"):c.id;
   return others[hash(`${pair}:${dayKey(date)}:destination`)%others.length];
 };
 const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
-const relationPriority={부부:9,연인:8,짝사랑:6,절친:5,가족:4,친구:3,라이벌:2,혐관:1};
+const relationPriority={부부:9,연인:8,"폴리 관계":8,짝사랑:6,절친:5,가족:4,"친구 무리":4,"대학 동기":4,"동아리 동료":3,"직장 동료":3,친구:3,라이벌:2,혐관:1};
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
 function personalityFlavor(c,desc,seed=""){
@@ -187,7 +187,7 @@ function socialEvent(c,time,date){
   if(!p)return null;
   const food=catalogChoice(c,p,"food",`${c.id}:${dayKey(date)}:food`);
   if(pick){
-    const romantic=["연인","부부","짝사랑"].includes(pick.r.type);
+    const romantic=["연인","부부","폴리 관계","짝사랑"].includes(pick.r.type);
     const action=food?`${pick.other.name}와 함께 ${food.name} 먹는 중`:`${pick.other.name}와 ${romantic?"데이트":"나들이"} 중`;
     const detail=romantic?`${pick.other.name}와 나란히 걸으며 서로의 하루를 묻고, ${p.name}에서 둘만의 시간을 보내고 있어요.`:`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
     return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
@@ -234,7 +234,7 @@ function build(c,date=new Date()){
   const work=workEvent(c,Math.max(wake+90,540),date);
   const destination=activityTown(c,date),homeTown=townFor(c);
   const homeCars=state.homes[c.homeId]?.cars||[];
-  const relation=preferredRelation(c),romantic=relation&&["부부","연인"].includes(relation.r.type)?relation.other:null;
+  const relation=preferredRelation(c),romantic=relation&&["부부","연인","폴리 관계"].includes(relation.r.type)?relation.other:null;
   const partnerCars=romantic?state.homes[romantic.homeId]?.cars||[]:[];
   const partnerCanDrive=romantic?.driverLicense&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
   const selfCanDrive=c.driverLicense&&homeCars.length;
@@ -292,7 +292,7 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,catalogPreferences:c.catalogPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteBookGenres:c.favoriteBookGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
@@ -308,7 +308,15 @@ export function visibleTimeline(c,date=new Date()){return timeline(c,date).filte
 function liveGapEvent(c,last,n,date){
   const minute=n-(n%15);
   if(last?.placeId){
-    const place=(townFor(c)?.places||[]).find(p=>p.id===last.placeId);
+    const currentTown=state.towns.find(t=>t.id===(last.townId||c.townId))||townFor(c);
+    const place=(currentTown?.places||[]).find(p=>p.id===last.placeId);
+    const shortStay=["카페","음식점","옷가게","쇼핑몰"].includes(place?.type);
+    if(shortStay){
+      const nextPlaces=(currentTown?.places||[]).filter(p=>p.id!==place.id&&["공원","도서관","공연장","쇼핑몰"].includes(p.type));
+      const next=nextPlaces[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:move-on`)%Math.max(1,nextPlaces.length)];
+      if(next)return entry(minute,`${place.name}에서 나와 ${next.name}으로 이동 중`,`한곳에 오래 머물지 않고 하던 일을 마친 뒤 ${next.name}으로 자리를 옮기고 있어요.`,{townId:currentTown.id,placeId:next.id,transit:true,mood:"이동"});
+      return entry(minute,"집으로 돌아가는 중",`${place.name}에서의 일정을 마치고 집이 있는 마을로 돌아가고 있어요.`,{townId:c.townId,transit:true,mood:"이동"});
+    }
     const continuations={
       카페:["카페에서 여유를 보내는 중","자리와 음료를 정리하며 다음에 할 일을 천천히 생각하고 있어요."],
       음식점:["식사를 마무리하는 중","남은 음식을 천천히 먹고 식탁을 정돈하며 잠시 쉬고 있어요."],

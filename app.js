@@ -117,6 +117,15 @@ function bind(){
   $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{
     const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;
     updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});
+    if(el.dataset.catalogField==="category"){
+      const y=window.scrollY,kind=el.dataset.kind,item=el.dataset.item;
+      render();
+      requestAnimationFrame(()=>{
+        document.querySelector(`[data-catalog-field="category"][data-kind="${CSS.escape(kind)}"][data-item="${CSS.escape(item)}"]`)?.closest("details")?.setAttribute("open","");
+        window.scrollTo({top:y});
+      });
+      return;
+    }
     const detail=el.closest("details");if(detail)detail.open=true;
     showToast("항목에 반영되었습니다");
   });
@@ -132,6 +141,14 @@ function bind(){
   $("[data-save]")?.addEventListener("click",()=>explicitSave("캐릭터 저장"));
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
+  $$('[data-catalog-field="image"]').forEach(input=>{
+    if(input.parentElement?.querySelector("[data-catalog-image]"))return;
+    const button=document.createElement("button");
+    button.type="button";button.textContent="사진 첨부·자동 압축";
+    button.dataset.catalogImage=input.dataset.item;button.dataset.kind=input.dataset.kind;
+    input.insertAdjacentElement("afterend",button);
+  });
+  $$("[data-catalog-image]").forEach(el=>el.onclick=()=>pickImage("catalogImage",el.dataset.catalogImage,el.dataset.kind));
   $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
@@ -203,6 +220,11 @@ function bind(){
   $$("[data-delete-rel]").forEach(el=>el.onclick=()=>{
     if(confirm("이 관계를 삭제할까요?")){deleteRelationship(el.dataset.deleteRel);render()}
   });
+  $$("[data-delete-group]").forEach(el=>el.onclick=()=>{
+    if(!confirm("이 그룹 관계 전체를 삭제할까요?"))return;
+    Object.values(state.relationships).filter(r=>r.groupId===el.dataset.deleteGroup).forEach(r=>deleteRelationship(r.id));
+    render();
+  });
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
   if(state.activeTab==="town")bindPlaceDrag();
 }
@@ -214,6 +236,7 @@ function applyImage(type,id,room,data){
   else if(type==="placeInterior")setPlaceInteriorImage(id,data);
   else if(type==="petPhoto")setPetImage(id,room,"photo",data);
   else if(type==="petIcon")setPetImage(id,room,"icon",data);
+  else if(type==="catalogImage")updateCatalogItem(room,id,{image:data});
   else setCharacterImage(id,type,data);
 }
 
@@ -279,7 +302,7 @@ $("#image-picker").onchange=async e=>{
 };
 
 function cropImage(file,type){
-  const square=["icon","photo","petIcon","petPhoto"].includes(type);
+  const square=["icon","photo","petIcon","petPhoto","catalogImage"].includes(type);
   const output=square?512:960;
   const ratio=square?1:16/9;
   return new Promise((resolve,reject)=>{
@@ -356,9 +379,10 @@ function openRelationDialog(id=""){
   dialog.className="relation-dialog";
   const options=state.order.map(cid=>`<option value="${cid}">${state.characters[cid].name}</option>`).join("");
   dialog.innerHTML=`<form method="dialog"><h2>${old?"관계 편집":"관계 추가"}</h2>
+    ${old?"":`<label class="group-toggle"><input type="checkbox" name="groupMode"> 세 명 이상을 한 관계로 묶기</label><fieldset class="group-members" hidden><legend>구성원 선택</legend>${state.order.map(cid=>`<label><input type="checkbox" name="member" value="${cid}"> ${state.characters[cid].name}</label>`).join("")}</fieldset>`}
     <label>첫 번째 캐릭터<select name="a">${options}</select></label>
     <label>두 번째 캐릭터<select name="b">${options}</select></label>
-    <label>관계<select name="type">${["친구","절친","연인","부부","가족","짝사랑","라이벌","혐관"].map(x=>`<option>${x}</option>`).join("")}</select></label>
+    <label>관계<select name="type">${["친구","절친","연인","폴리 관계","부부","가족","대학 동기","친구 무리","동아리 동료","직장 동료","짝사랑","라이벌","혐관"].map(x=>`<option>${x}</option>`).join("")}</select></label>
     <label>친밀도 <output name="intimacyOut">75</output><input type="range" name="intimacy" min="0" max="100" value="75"></label>
     <label>갈등도 <output name="conflictOut">20</output><input type="range" name="conflict" min="0" max="100" value="20"></label>
     <label class="cohabit"><input type="checkbox" name="cohabit"> 함께 살기</label>
@@ -367,6 +391,10 @@ function openRelationDialog(id=""){
   </form>`;
   document.body.append(dialog);
   const f=dialog.querySelector("form");
+  if(f.groupMode)f.groupMode.onchange=()=>{
+    f.querySelector(".group-members").hidden=!f.groupMode.checked;
+    f.a.closest("label").hidden=f.groupMode.checked;f.b.closest("label").hidden=f.groupMode.checked;
+  };
   f.a.value=old?.a||state.activeId;
   f.b.value=old?.b||state.order.find(x=>x!==f.a.value);
   f.type.value=old?.type||"친구";
@@ -379,10 +407,17 @@ function openRelationDialog(id=""){
   f.cohabit.checked=Boolean(old?.cohabit);
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
-      if(f.a.value===f.b.value)alert("서로 다른 캐릭터를 골라 주세요.");
+      const members=f.groupMode?.checked?[...f.querySelectorAll('[name="member"]:checked')].map(input=>input.value):[];
+      if(f.groupMode?.checked&&members.length<3)alert("그룹 관계는 세 명 이상 선택해 주세요.");
+      else if(!f.groupMode?.checked&&f.a.value===f.b.value)alert("서로 다른 캐릭터를 골라 주세요.");
       else{
-        const data={a:f.a.value,b:f.b.value,type:f.type.value,cohabit:f.cohabit.checked,intimacy:Number(f.intimacy.value),conflict:Number(f.conflict.value)};
-        old?updateRelationship(id,data):addRelationship(data);
+        const base={type:f.type.value,cohabit:f.cohabit.checked,intimacy:Number(f.intimacy.value),conflict:Number(f.conflict.value)};
+        if(f.groupMode?.checked){
+          for(let i=0;i<members.length;i++)for(let j=i+1;j<members.length;j++)addRelationship({...base,a:members[i],b:members[j],groupId:`group-${members.slice().sort().join("-")}`,groupMembers:members});
+        }else{
+          const data={...base,a:f.a.value,b:f.b.value};
+          old?updateRelationship(id,data):addRelationship(data);
+        }
         render();
       }
     }

@@ -169,6 +169,11 @@ function normalizeHomes(x){
     c.affectionStyle=c.affectionStyle||"행동으로 표현";
     c.energyRhythm=c.energyRhythm||"상황에 따라";
     c.catalogPreferences=Array.isArray(c.catalogPreferences)?[...c.catalogPreferences]:[];
+    c.favoriteScentNotes=Array.isArray(c.favoriteScentNotes)?[...c.favoriteScentNotes]:[];
+    c.favoriteVideoGenres=Array.isArray(c.favoriteVideoGenres)?[...c.favoriteVideoGenres]:[];
+    c.favoriteGameGenres=Array.isArray(c.favoriteGameGenres)?[...c.favoriteGameGenres]:[];
+    c.favoriteBookGenres=Array.isArray(c.favoriteBookGenres)?[...c.favoriteBookGenres]:[];
+    c.favoriteFashionStyles=Array.isArray(c.favoriteFashionStyles)?[...c.favoriteFashionStyles]:[];
     c.tastes=Array.isArray(c.tastes)?[...c.tastes]:[];
     c.interests=Array.isArray(c.interests)?[...c.interests]:[];
     c.hobbies=Array.isArray(c.hobbies)?[...c.hobbies]:[];
