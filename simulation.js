@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260802n";
+﻿import {state,save} from "./state.js?v=20260802q";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -17,6 +17,8 @@ const placeFor=(types,seed)=>{const list=state.world.places.filter(p=>types.incl
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
+const relationPriority={부부:9,연인:8,짝사랑:6,절친:5,가족:4,친구:3,라이벌:2,혐관:1};
+const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
 function personalityFlavor(c,desc,seed=""){
   const variants=[];
@@ -126,16 +128,39 @@ function workEvent(c,time,date){
 }
 
 function socialEvent(c,time,date){
-  const rels=related(c).filter(x=>["부부","연인","짝사랑","친구"].includes(x.r.type));
-  const pick=rels[hash(`${c.id}:${dayKey(date)}:social`)%Math.max(1,rels.length)];
-  const p=placeFor(["카페","음식점","공원","영화관"],`${c.id}:${dayKey(date)}:social-place`);
+  const pick=preferredRelation(c);
+  const pair=pick?[c.id,pick.other.id].sort().join(":"):c.id;
+  const p=placeFor(["카페","음식점","공원","영화관"],`${pair}:${dayKey(date)}:social-place`);
   if(!p)return null;
   const food=catalogChoice(c,p,"food",`${c.id}:${dayKey(date)}:food`);
   if(pick){
-    const action=food?`${pick.other.name}와 함께 ${food.name} 먹는 중`:`${pick.other.name}와 데이트 중`;
-    return entry(time,action,`${pick.r.type}인 ${pick.other.name}와 ${p.name}에서 시간을 보내고 있어요.`,away({placeId:p.id,itemId:food?.id,withId:pick.other.id,mood:"즐거움",stress:Math.max(0,10)}));
+    const romantic=["연인","부부","짝사랑"].includes(pick.r.type);
+    const action=food?`${pick.other.name}와 함께 ${food.name} 먹는 중`:`${pick.other.name}와 ${romantic?"데이트":"나들이"} 중`;
+    const detail=romantic?`${pick.other.name}와 나란히 걸으며 서로의 하루를 묻고, ${p.name}에서 둘만의 시간을 보내고 있어요.`:`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
+    return entry(time,action,detail,away({placeId:p.id,itemId:food?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
   }
   return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 천천히 즐기고 있어요.`:"가벼운 외출을 즐기고 있어요.",away({placeId:p.id,itemId:food?.id,mood:"평온"}));
+}
+
+function relationshipHomeEntry(c,pick,time,date){
+  const {r,other}=pick,pair=[c.id,other.id].sort(),role=pair.indexOf(c.id);
+  const conflict=+(r.conflict||0),intimacy=+(r.intimacy||0);
+  let scripts;
+  if(conflict>=65)scripts=[
+    [`${other.name}와 말다툼하는 중`,"쌓아 둔 서운함을 꺼내다 목소리가 높아졌지만 피하지 않고 자기 마음을 끝까지 설명하고 있어요.","living"],
+    [`${other.name}와 말다툼하는 중`,"바로 반박했다가 잠시 숨을 고르고, 무엇이 속상했는지 상대에게 차근차근 되묻고 있어요.","living"]
+  ];
+  else if(conflict>=35)scripts=[
+    [`${other.name}에게 잔소리하는 중`,"미뤄 둔 일을 가리키며 걱정돼서 하는 말이라고 덧붙이고, 결국 옆에 앉아 함께 정리해 주고 있어요.","living"],
+    [`${other.name}의 잔소리를 듣는 중`,"처음에는 못 들은 척하다가 상대가 챙겨 둔 것을 보고 작게 알겠다고 답하며 몸을 일으켰어요.","living"]
+  ];
+  else if(intimacy>=80)scripts=[
+    [`${other.name}를 격려하는 중`,"지친 기색을 알아보고 따뜻한 음료를 건넨 뒤 오늘 잘해 낸 일을 하나씩 짚어 주며 다독이고 있어요.","kitchen"],
+    [`${other.name}에게 위로받는 중`,"말없이 곁을 내어 준 상대에게 오늘 힘들었던 일을 털어놓고, 건네받은 잔을 두 손으로 감싸고 있어요.","kitchen"]
+  ];
+  else return sharedHomeEntry(c,other,time,date);
+  const script=scripts[role];
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],`relation:${r.id}:${role}`),script[2]);
 }
 
 function build(c,date=new Date()){
@@ -167,11 +192,11 @@ function build(c,date=new Date()){
   const social=socialEvent(c,1120,date); if(social)list.push(social);
   let stress=Math.max(...list.map(x=>x.stress||0));
   const housemate=state.order.map(id=>state.characters[id]).find(other=>other&&other.id!==c.id&&other.homeId===c.homeId);
+  const homeRelation=related(c).filter(x=>x.other.homeId===c.homeId).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
   const otherSleep=housemate?(()=>{const value=sleepAt(housemate,date);return value<=wakeAt(housemate,date)?value+1440:value})():Infinity;
   const eveningMinute=Math.max(1020,Math.min(1260,sleepMinute-45,otherSleep-45));
-  if(stress>=45&&related(c).length){
-    const other=related(c)[0].other;
-    list.push(homeEntry(c,eveningMinute,`${other.name}와 말다툼하는 중`,"쌓인 피로와 스트레스 때문에 사소한 말이 다툼으로 번졌어요. 관계 유형 자체는 바뀌지 않아요."));
+  if(homeRelation){
+    list.push(relationshipHomeEntry(c,homeRelation,eveningMinute,date));
   }else if(housemate){
     list.push(sharedHomeEntry(c,housemate,eveningMinute,date));
   }else{
