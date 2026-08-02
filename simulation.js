@@ -33,6 +33,18 @@ const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0
 
 function personalityFlavor(c,desc,seed=""){
   const variants=[];
+  if(c.neatness==="흐트러짐을 못 참음")variants.push("눈에 걸리는 물건을 그냥 지나치지 못하고 반듯하게 다시 놓았어요.");
+  if(c.neatness==="어질러도 편함")variants.push("손이 닿기 편한 곳에 물건을 둔 채 자기 방식대로 편하게 움직이고 있어요.");
+  if(c.interference==="강하게 간섭함")variants.push("함께 있는 사람이 제대로 하고 있는지 확인하고 자기 생각을 분명하게 말했어요.");
+  if(c.interference==="철저히 선을 지킴")variants.push("상대의 선택에는 끼어들지 않고 필요한 거리를 지키고 있어요.");
+  if(c.energyRhythm==="가만히 못 있음")variants.push("한 가지를 끝내자마자 다음에 할 일을 찾아 바로 몸을 움직였어요.");
+  if(c.energyRhythm==="집에서 충전")variants.push("사람이 적은 편안한 자리를 골라 조용히 기운을 되찾고 있어요.");
+  if(c.socialStyle==="무리의 중심")variants.push("자연스럽게 먼저 말을 꺼내 주변의 흐름을 이끌고 있어요.");
+  if(c.socialStyle==="혼자가 편함")variants.push("혼자 집중할 수 있는 자리를 골라 방해받지 않는 시간을 보내고 있어요.");
+  if(c.planningStyle==="계획적")variants.push("미리 정해 둔 순서와 시간을 확인하며 차근차근 진행하고 있어요.");
+  if(c.planningStyle==="즉흥적")variants.push("그 순간 가장 마음이 가는 일을 골라 가볍게 시작했어요.");
+  if(c.decisionStyle==="공감 우선")variants.push("상대가 어떻게 느낄지 먼저 살핀 뒤 부드럽게 말을 골랐어요.");
+  if(c.decisionStyle==="논리 우선")variants.push("가장 합리적인 방법이 무엇인지 따져 보고 군더더기 없이 움직였어요.");
   if((c.socialEnergy??3)<=1)variants.push("사람이 드문 조용한 자리를 골라 자기 속도대로 움직이고 있어요.");
   if((c.socialEnergy??3)>=5)variants.push("마주친 사람에게 먼저 반갑게 인사를 건네며 분위기를 자연스럽게 이끌고 있어요.");
   if((c.sensingIntuition??3)<=1)variants.push("눈앞에 보이는 것부터 하나씩 확인하며 실수 없이 마무리하고 있어요.");
@@ -185,7 +197,8 @@ function socialEvent(c,time,date){
 
 function relationshipHomeEntry(c,pick,time,date){
   const {r,other}=pick,pair=[c.id,other.id].sort(),role=pair.indexOf(c.id);
-  const conflict=+(r.conflict||0),intimacy=+(r.intimacy||0);
+  const interferenceBoost={"철저히 선을 지킴":-12,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20}[c.interference]||0;
+  const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
   if(conflict>=65)scripts=[
     [`${other.name}와 말다툼하는 중`,"쌓아 둔 서운함을 꺼내다 목소리가 높아졌지만 피하지 않고 자기 마음을 끝까지 설명하고 있어요.","living"],
@@ -198,6 +211,14 @@ function relationshipHomeEntry(c,pick,time,date){
   else if(intimacy>=80)scripts=[
     [`${other.name}를 격려하는 중`,"지친 기색을 알아보고 따뜻한 음료를 건넨 뒤 오늘 잘해 낸 일을 하나씩 짚어 주며 다독이고 있어요.","kitchen"],
     [`${other.name}에게 위로받는 중`,"말없이 곁을 내어 준 상대에게 오늘 힘들었던 일을 털어놓고, 건네받은 잔을 두 손으로 감싸고 있어요.","kitchen"]
+  ];
+  else if(c.interference==="강하게 간섭함")scripts=[
+    [`${other.name}의 귀가 시간을 따지는 중`,"늦어진 이유를 분명히 말해 달라고 요구하고 다음부터는 미리 연락하라며 단호하게 이야기하고 있어요.","living"],
+    [`${other.name}에게 행동을 바로잡으라고 말하는 중`,"미뤄 둔 일을 직접 가리키며 지금 끝내야 한다고 강하게 재촉하고 있어요.","living"]
+  ];
+  else if(c.interference==="챙기고 확인함")scripts=[
+    [`${other.name}를 데려다줄 준비 중`,"늦은 시간 혼자 움직이지 않도록 목적지와 돌아올 시간을 확인하고 외투와 차 키를 챙기고 있어요.","entry"],
+    [`${other.name}의 준비물을 확인하는 중`,"빠뜨린 것이 없는지 옆에서 하나씩 확인하고 필요한 물건을 가방에 넣어 주고 있어요.","entry"]
   ];
   else return sharedHomeEntry(c,other,time,date);
   const script=scripts[role];
@@ -271,7 +292,7 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,socialEnergy:c.socialEnergy,sensingIntuition:c.sensingIntuition,thinkingFeeling:c.thinkingFeeling,perceivingJudging:c.perceivingJudging,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:(townFor(c)?.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,catalogPreferences:c.catalogPreferences,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);

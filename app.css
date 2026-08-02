@@ -93,7 +93,7 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .home-tabs button{color:#fff;opacity:.72;border-color:#ffffff88}
 .home-tabs .on{opacity:1;box-shadow:0 7px 20px #24314322}
 .home-photo-editor,.character-menu,.town-tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:12px 0}
-.character-menu{padding:6px;border:1px solid var(--line);border-radius:18px;background:#f4f7fb;position:sticky;top:8px;z-index:5}
+.character-menu{padding:6px;border:1px solid var(--line);border-radius:18px;background:#f4f7fb;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin}.character-menu button{white-space:nowrap;flex:0 0 auto}
 .character-menu button.on,.town-tabs button.on{color:#fff;background:var(--grad);border-color:transparent}
 .town-tabs{padding:10px;background:#fff;border:1px solid var(--line);border-radius:18px}
 .town-tabs .town-choice{display:flex;align-items:center;gap:3px}
@@ -247,6 +247,10 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .preset-hotel{background-position:0 100%!important}.preset-department{background-position:33.333% 100%!important}.preset-library{background-position:66.667% 100%!important}.preset-shop{background-position:100% 100%!important}
 .cars{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.car-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}.car-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#f7f9fc}.car-card>div{display:grid;gap:4px;flex:1}.car-card small{color:var(--muted)}.car-icon{font-size:38px}.car-edit{grid-template-columns:repeat(2,minmax(0,1fr))!important}.car-edit .danger{align-self:end}
 .fields>label:has([data-image="photo"]){order:-20;grid-column:1/-1;padding:16px;border:2px solid color-mix(in srgb,var(--p) 28%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--p) 5%,white)}
+.profile-license .fields>label:has(>input[data-field="socialEnergy"]),.profile-license .fields>label:has(>input[data-field="sensingIntuition"]),.profile-license .fields>label:has(>input[data-field="thinkingFeeling"]),.profile-license .fields>label:has(>input[data-field="perceivingJudging"]){display:none}
+.profile-license>.check{display:flex;margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fafc}
+.personality-choice{padding:15px;border:1px solid var(--line);border-radius:18px;background:#f8fafc}.personality-choice>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.personality-choice>small{display:block;color:var(--muted);line-height:1.55}.personality-choice button.on{background:var(--grad);color:#fff;border-color:transparent}
+.resident-setting{display:grid;grid-template-columns:auto minmax(180px,1fr);align-items:center;gap:8px;padding:7px;border:1px solid var(--line);border-radius:14px;background:#fff}.resident-setting label{display:grid;gap:3px;font-size:12px;color:var(--muted)}.resident-setting select{padding:8px}
 @media(max-width:600px){.roster-card{min-width:62px!important;width:62px!important;padding:6px!important;display:grid!important;place-items:center!important}.roster-card>.roster-info{display:none!important}.roster-card .avatar{width:48px!important;height:48px!important}.roster-card .sprite{width:52px!important;height:52px!important}.building-preset{width:72px!important;height:72px!important}.car-edit{grid-template-columns:1fr!important}}
 .locked-option{color:var(--muted)}
 

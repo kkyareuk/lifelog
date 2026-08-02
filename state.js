@@ -88,7 +88,7 @@ function normalizeHomes(x){
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
-  x.characterPane=["profile","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
+  x.characterPane=["profile","personality","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
   if(Array.isArray(x.characters)){
     const list=x.characters.filter(Boolean);
     x.characters=Object.fromEntries(list.map(c=>[c.id||uid(),c]));
@@ -162,6 +162,13 @@ function normalizeHomes(x){
   Object.values(x.characters||{}).forEach(c=>{
     c.townId=x.towns.some(t=>t.id===c.townId)?c.townId:x.towns[0].id;
     c.driverLicense=Boolean(c.driverLicense);
+    c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
+    c.neatness=c.neatness||"보통";
+    c.interference=c.interference||"적당히 관여";
+    c.conflictStyle=c.conflictStyle||"대화로 해결";
+    c.affectionStyle=c.affectionStyle||"행동으로 표현";
+    c.energyRhythm=c.energyRhythm||"상황에 따라";
+    c.catalogPreferences=Array.isArray(c.catalogPreferences)?[...c.catalogPreferences]:[];
     c.tastes=Array.isArray(c.tastes)?[...c.tastes]:[];
     c.interests=Array.isArray(c.interests)?[...c.interests]:[];
     c.hobbies=Array.isArray(c.hobbies)?[...c.hobbies]:[];
@@ -225,7 +232,7 @@ export function createCharacter(){
   state.activeId=id;state.activeTab="character";save(true);
 }
 export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
-export function setCharacterPane(value){state.characterPane=["profile","taste","worldTaste"].includes(value)?value:"profile";save()}
+export function setCharacterPane(value){state.characterPane=["profile","personality","taste","worldTaste"].includes(value)?value:"profile";save()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;

@@ -90,6 +90,8 @@ function bind(){
     if(!next.length){alert("집에는 최소 한 명이 거주해야 해요.");return}
     setHomeResidents(homeId,next);render();
   });
+  $$("[data-home-town]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.homeTown,{townId:el.value});render()});
+  $$("[data-personality-field]").forEach(el=>el.onclick=()=>{updateCharacter(active().id,{[el.dataset.personalityField]:el.dataset.value});render()});
   $$("[data-field]").forEach(el=>el.oninput=()=>{
     const numeric=["spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging"].includes(el.dataset.field);
     updateCharacter(active().id,{[el.dataset.field]:numeric?Number(el.value):el.value},false);
@@ -112,7 +114,12 @@ function bind(){
   $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{toggleFavorite(active().id,el.dataset.favoriteKind,el.dataset.favoriteId);render()});
   $$("[data-owned-kind]").forEach(el=>el.onclick=()=>{toggleOwned(active().id,el.dataset.ownedKind,el.dataset.ownedId);render()});
   $$("[data-add-catalog]").forEach(el=>el.onclick=()=>{addCatalogItem(el.dataset.addCatalog,{name:"새 항목",category:"기타"});render()});
-  $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});render()});
+  $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{
+    const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;
+    updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});
+    const detail=el.closest("details");if(detail)detail.open=true;
+    showToast("항목에 반영되었습니다");
+  });
   $$("[data-catalog-keyword]").forEach(el=>el.onclick=()=>{
     const item=state.catalog?.[el.dataset.kind]?.find(x=>x.id===el.dataset.catalogKeyword),list=item?.keywords||[],value=el.dataset.value;
     updateCatalogItem(el.dataset.kind,el.dataset.catalogKeyword,{keywords:list.includes(value)?list.filter(x=>x!==value):[...list,value]});render();
@@ -273,7 +280,7 @@ $("#image-picker").onchange=async e=>{
 
 function cropImage(file,type){
   const square=["icon","photo","petIcon","petPhoto"].includes(type);
-  const output=square?700:1400;
+  const output=square?512:960;
   const ratio=square?1:16/9;
   return new Promise((resolve,reject)=>{
     const url=URL.createObjectURL(file),img=new Image();
@@ -303,7 +310,7 @@ function cropImage(file,type){
       dialog.onclose=()=>{
         const applied=dialog.returnValue==="apply";
         const transparent=["icon","petIcon"].includes(type);
-        const data=applied?canvas.toDataURL(transparent?"image/png":"image/webp",transparent?undefined:.78):null;
+        const data=applied?canvas.toDataURL(transparent?"image/png":"image/webp",transparent?undefined:.72):null;
         URL.revokeObjectURL(url);dialog.remove();resolve(data);
       };
       draw();dialog.showModal();
