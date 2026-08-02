@@ -1,5 +1,5 @@
-﻿import {state,active} from "./state.js?v=20260802ag";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260802ag";
+﻿import {state,active} from "./state.js?v=20260803ah";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803ah";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -90,7 +90,8 @@ function placeCard(p){
   const mode=state.buildingLabelMode||"full";
   const labelX=Math.max(8,Math.min(92,p.x)),labelY=Math.max(13,Math.min(92,p.y));
   const label=mode==="none"?"":`<span class="map-place-label" style="left:${labelX}%;top:${labelY}%"><b>${esc(p.name)}</b>${mode==="full"?`<small>${esc(p.subtype?`${p.type} · ${p.subtype}`:p.type)}</small>`:""}</span>`;
-  return `<button class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}"><i class="building-preset preset-${esc(p.iconPreset||"shop")}"></i></button>${label}`;
+  const homeIcon=["주택","집","숙박","아파트"].includes(p.type)||p.iconPreset==="home";
+  return `<button class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}"><i class="building-preset ${homeIcon?"preset-home":"preset-building"}"></i></button>${label}`;
 }
 function catalogItem(id){return catalogItems().find(item=>item.id===id)}
 function townForEntry(entry){return state.towns.find(t=>t.id===entry.townId)||state.towns.find(t=>t.places?.some(p=>p.id===entry.placeId))||state.world}

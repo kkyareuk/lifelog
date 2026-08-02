@@ -1,5 +1,4 @@
-﻿const CACHE="drawer-village-v20260802ag";
-const CACHE_VERSION="drawer-village-v20260802ag";
+const CACHE_VERSION="drawer-village-v20260803ai";
 const CORE=[
   "./",
   "./index.html",
@@ -13,23 +12,18 @@ const CORE=[
   "./world-assets/cozy-town.png",
   "./world-assets/downtown.png",
   "./world-assets/department-store-premium.png",
-  "./world-assets/building-icon-pack.png"
+  "./world-assets/drawer-building.png",
+  "./world-assets/drawer-home.png",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png"
 ];
 
 self.addEventListener("install",event=>{
-  event.waitUntil(
-    caches.open(CACHE_VERSION)
-      .then(cache=>Promise.allSettled(CORE.map(asset=>cache.add(asset))))
-      .then(()=>self.skipWaiting())
-  );
+  event.waitUntil(caches.open(CACHE_VERSION).then(cache=>Promise.allSettled(CORE.map(asset=>cache.add(asset)))).then(()=>self.skipWaiting()));
 });
 
 self.addEventListener("activate",event=>{
-  event.waitUntil(
-    caches.keys()
-      .then(keys=>Promise.all(keys.filter(key=>key!==CACHE_VERSION).map(key=>caches.delete(key))))
-      .then(()=>self.clients.claim())
-  );
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_VERSION).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
 });
 
 self.addEventListener("fetch",event=>{
@@ -40,15 +34,8 @@ self.addEventListener("fetch",event=>{
     event.respondWith(fetch(event.request,{cache:"no-store"}));
     return;
   }
-  event.respondWith(
-    fetch(event.request)
-      .then(response=>{
-        if(response.ok){
-          const copy=response.clone();
-          caches.open(CACHE_VERSION).then(cache=>cache.put(event.request,copy));
-        }
-        return response;
-      })
-      .catch(()=>caches.match(event.request).then(cached=>cached||caches.match("./index.html")))
-  );
+  event.respondWith(fetch(event.request).then(response=>{
+    if(response.ok){const copy=response.clone();caches.open(CACHE_VERSION).then(cache=>cache.put(event.request,copy));}
+    return response;
+  }).catch(()=>caches.match(event.request).then(cached=>cached||caches.match("./index.html"))));
 });

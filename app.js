@@ -1,8 +1,28 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802ag";
-import {eventFor} from "./simulation.js?v=20260802ag";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ag";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ah";
+import {eventFor} from "./simulation.js?v=20260803ah";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ah";
 
 let pendingImage=null;
+let deferredInstallPrompt=null;
+
+function showInstallButton(){
+  if(document.querySelector("#install-drawer-village"))return;
+  const button=document.createElement("button");
+  button.id="install-drawer-village";
+  button.className="install-app-button";
+  button.textContent="앱 설치";
+  button.onclick=async()=>{
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt=null;
+      button.remove();
+      return;
+    }
+    alert(/iphone|ipad|ipod/i.test(navigator.userAgent)?"Safari의 공유 버튼을 누른 뒤 ‘홈 화면에 추가’를 선택해 주세요.":"브라우저 메뉴에서 ‘앱 설치’ 또는 ‘홈 화면에 추가’를 선택해 주세요.");
+  };
+  document.body.append(button);
+}
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const BASE_AUDIENCES=["혼자 조용히 있고 싶은 사람","연인·데이트","부부","가족","친구 모임","직장인","학생","대학생","어린이","청소년","중장년","고소득층","가성비 중시","디저트 러버","커피 애호가","차 애호가","매운 음식 마니아","채식 선호","한식파","일식파","면 요리 마니아","신상 맛집파","SF 덕후","로맨스 덕후","판타지 덕후","미스터리 덕후","공포 덕후","액션 덕후","코미디 덕후","애니메이션 팬","영화 팬","드라마 팬","관찰 예능 팬","게임 방송 팬","음악 팬","아이돌 팬","인디 음악 팬","클래식 애호가","게임 마니아","보드게임 팬","e스포츠 팬","패션 관심층","빈티지 애호가","향수 애호가","사진 애호가","미술 애호가","독서가","여행 애호가","반려동물 동반","운동 애호가","야외 활동파","집순이·집돌이","오타쿠","얼리어답터"];
@@ -606,18 +626,21 @@ window.ParallelCity={
 
 window.addEventListener("drawer-village-cloud-loaded",render);
 window.addEventListener("parallel-city-cloud-loaded",render);
+window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
+window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
+if(!window.matchMedia("(display-mode: standalone)").matches)showInstallButton();
 if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   const notice=document.createElement("dialog");notice.className="backup-notice";
   notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>Google 계정에는 고유 사진을 <b>최대 120장·총 60MB</b>까지 저장해요. 같은 사진은 여러 곳에 사용해도 한 번만 올라갑니다. 오래 보관할 중요한 데이터는 설정의 <b>백업 파일 내보내기</b>로도 보관해 주세요.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260802ag").catch(error=>{
+import("./auth.js?v=20260803ah").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802ag").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803ai").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

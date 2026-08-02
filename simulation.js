@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260802ag";
+﻿import {state,save} from "./state.js?v=20260803ah";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -439,14 +439,14 @@ function build(c,date=new Date()){
   return list.sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260802ag",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({engine:"20260803ah",townId:c.townId,homeId:c.homeId,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig||old.engineVersion!=="20260802ag"){
-    c.days[key]={signature:sig,engineVersion:"20260802ag",entries:build(c,date)};
+  if(!old||old.signature!==sig||old.engineVersion!=="20260803ah"){
+    c.days[key]={signature:sig,engineVersion:"20260803ah",entries:build(c,date)};
     save();
   }
   return c.days[key].entries;
@@ -489,7 +489,9 @@ export function eventFor(c,date=new Date()){
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
   const last=past.at(-1);
   if(last&&n-last.minute>75)return liveGapEvent(c,last,n,date);
-  return last||entry(n,"집에서 아침 준비 중","오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
+  if(last)return last;
+  if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
+  return entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}
