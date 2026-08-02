@@ -12,15 +12,26 @@ let auth,db,storage,user,busy=false;
 let entitlements={backgroundPacks:[],iconPacks:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
+const MAX_PHOTOS=120;
+const MAX_TOTAL_BYTES=60*1024*1024;
+const MAX_IMAGE_BYTES=1536*1024;
 const toast=text=>window.ParallelCity?.toast?.(text);
 const countStoredPhotos=value=>{
-  let count=0;
+  const urls=new Set();
   const walk=node=>{
-    if(typeof node==="string"&&/firebasestorage\.googleapis\.com|firebasestorage\.app|storage\.googleapis\.com/.test(node)){count++;return}
+    if(typeof node==="string"&&/firebasestorage\.googleapis\.com|firebasestorage\.app|storage\.googleapis\.com/.test(node)){urls.add(node);return}
     if(!node||typeof node!=="object")return;
     Object.values(node).forEach(walk);
   };
-  walk(value);return count;
+  walk(value);return urls.size;
+};
+const normalizeManifest=(value,gameState)=>({
+  items:Array.isArray(value?.items)?value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").slice(0,MAX_PHOTOS):[],
+  legacyCount:Math.max(Number(value?.legacyCount)||0,Math.max(0,countStoredPhotos(gameState)-(Array.isArray(value?.items)?value.items.length:0)))
+});
+const digestBlob=async blob=>{
+  const bytes=await crypto.subtle.digest("SHA-256",await blob.arrayBuffer());
+  return [...new Uint8Array(bytes)].map(value=>value.toString(16).padStart(2,"0")).join("");
 };
 
 function shortError(error){
@@ -28,6 +39,9 @@ function shortError(error){
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
   if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
+  if(code.includes("photo-limit"))return `사진은 계정당 최대 ${MAX_PHOTOS}장까지 저장할 수 있어요`;
+  if(code.includes("total-size-limit"))return "사진 저장 용량은 계정당 최대 60MB예요";
+  if(code.includes("image-too-large"))return "압축된 사진 한 장은 1.5MB 이하여야 해요";
   if(code.includes("timeout"))return "사진 업로드 응답 없음 · Storage 요금제와 규칙을 확인해 주세요";
   if(code.includes("network"))return "인터넷 연결 확인";
   return code;
@@ -48,27 +62,32 @@ const accessLabel=()=>[
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:""
 ].filter(Boolean).join(" · ")||"일반 이용자";
 
-async function uploadDataUrl(dataUrl,path){
+async function uploadDataUrl(dataUrl,manifest){
   if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
   const blob=await (await fetch(dataUrl)).blob();
-  if(blob.size>9*1024*1024)throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
-  let hash=2166136261;
-  for(let i=0;i<dataUrl.length;i+=Math.max(1,Math.floor(dataUrl.length/5000)))hash=Math.imul(hash^dataUrl.charCodeAt(i),16777619);
+  if(blob.size>MAX_IMAGE_BYTES)throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
+  const hash=await digestBlob(blob),known=manifest.items.find(item=>item.hash===hash);
+  if(known){uploadedCache.set(dataUrl,known.url);return known.url}
+  if(manifest.items.length+manifest.legacyCount>=MAX_PHOTOS)throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
+  const usedBytes=manifest.items.reduce((sum,item)=>sum+(Number(item.size)||0),0);
+  if(usedBytes+blob.size>MAX_TOTAL_BYTES)throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
   const ext=blob.type==="image/png"?"png":"webp";
-  const target=ref(storage,`users/${user.uid}/media/${path}-${(hash>>>0).toString(36)}.${ext}`);
+  const target=ref(storage,`users/${user.uid}/media/${hash}.${ext}`);
   try{
     const existing=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
+    manifest.items.push({hash,size:blob.size,url:existing});
     uploadedCache.set(dataUrl,existing);return existing;
   }catch(error){
     if(String(error?.code||"").includes("timeout"))throw error;
   }
   await Promise.race([uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000"}),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),25000))]);
   const url=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
+  manifest.items.push({hash,size:blob.size,url});
   uploadedCache.set(dataUrl,url);
   return url;
 }
 
-async function prepareState(local){
+async function prepareState(local,manifest){
   const next=clone(local),jobs=[];
   const walk=(node,path=[])=>{
     if(!node||typeof node!=="object")return;
@@ -81,9 +100,9 @@ async function prepareState(local){
   walk(next,["game"]);
   for(let i=0;i<jobs.length;i++){
     status(`${user.displayName||"계정"} · 사진 ${i+1}/${jobs.length} 올리는 중`);
-    jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,jobs[i].path);
+    jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest);
   }
-  return next;
+  return {gameState:next,mediaManifest:manifest};
 }
 
 async function login(){
@@ -101,12 +120,14 @@ async function upload({silent=false,reason=""}={}){
   if(busy)return false;busy=true;
   try{
     status(`${user.displayName||"계정"} · 올리는 중`);
-    const gameState=await prepareState(window.ParallelCity.getState());
-    await setDoc(cloudDoc(),{gameState,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
+    const previousSnapshot=await getDoc(cloudDoc()),previous=previousSnapshot.exists()?previousSnapshot.data():null;
+    const prepared=await prepareState(window.ParallelCity.getState(),normalizeManifest(previous?.mediaManifest,previous?.gameState));
+    const {gameState,mediaManifest}=prepared;
+    await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
     window.ParallelCity.replaceState(clone(gameState));
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
     const storedPhotos=countStoredPhotos(gameState);
-    toast(storedPhotos?`동기화되었습니다 · Storage 사진 ${storedPhotos}장`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
+    toast(storedPhotos?`동기화되었습니다 · 고유 사진 ${mediaManifest.items.length+mediaManifest.legacyCount}/${MAX_PHOTOS}장`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
@@ -133,7 +154,7 @@ async function download({automatic=false}={}){
       return;
     }
     window.ParallelCity.replaceState(clone(remote));
-    window.dispatchEvent(new Event("parallel-city-cloud-loaded"));
+    window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
     status(`${user.displayName||"계정"} · ${accessLabel()} · 불러오기 완료`);
     toast(automatic?"자동으로 불러왔습니다":"불러왔습니다");
   }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`)}finally{busy=false}

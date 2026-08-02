@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802af";
-import {eventFor} from "./simulation.js?v=20260802af";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802af";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802ag";
+import {eventFor} from "./simulation.js?v=20260802ag";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802ag";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
@@ -275,9 +275,9 @@ function bind(){
   $$("[data-edit-routine]").forEach(el=>el.onclick=()=>openRoutineDialog(el.dataset.editRoutine));
   $$("[data-delete-routine]").forEach(el=>el.onclick=()=>{deleteRoutine(active().id,el.dataset.deleteRoutine);render()});
   $("[data-export-file]")?.addEventListener("click",()=>{
-    const blob=new Blob([JSON.stringify({format:"parallel-city-backup",version:1,exportedAt:new Date().toISOString(),gameState:cloneState()})],{type:"application/json"});
+    const blob=new Blob([JSON.stringify({format:"drawer-village-backup",version:1,exportedAt:new Date().toISOString(),gameState:cloneState()})],{type:"application/json"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
-    link.href=url;link.download=`평행도시-백업-${new Date().toISOString().slice(0,10)}.json`;
+    link.href=url;link.download=`서랍마을-백업-${new Date().toISOString().slice(0,10)}.json`;
     document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
     showToast("백업 파일을 내보냈습니다");
   });
@@ -286,10 +286,10 @@ function bind(){
     input.onchange=async()=>{
       const file=input.files?.[0];if(!file)return;
       try{
-        const parsed=JSON.parse(await file.text()),next=parsed?.format==="parallel-city-backup"?parsed.gameState:parsed;
+        const parsed=JSON.parse(await file.text()),next=["drawer-village-backup","parallel-city-backup"].includes(parsed?.format)?parsed.gameState:parsed;
         if(!next||typeof next!=="object"||!next.characters)throw new Error("invalid-backup");
         window.ParallelCity.replaceState(next);showToast("백업 파일을 불러왔습니다");
-      }catch(error){console.error(error);showToast("평행도시 백업 파일을 확인해 주세요")}
+      }catch(error){console.error(error);showToast("서랍마을 백업 파일을 확인해 주세요")}
     };
     input.click();
   });
@@ -448,7 +448,7 @@ function cropImage(file,type){
       dialog.onclose=()=>{
         const applied=dialog.returnValue==="apply";
         const transparent=["icon","petIcon"].includes(type);
-        const data=applied?canvas.toDataURL(transparent?"image/png":"image/webp",transparent?undefined:.66):null;
+        const data=applied?canvas.toDataURL("image/webp",transparent ? .78 : .66):null;
         URL.revokeObjectURL(url);dialog.remove();resolve(data);
       };
       draw();dialog.showModal();
@@ -604,19 +604,20 @@ window.ParallelCity={
   mediaChanged:()=>render()
 };
 
+window.addEventListener("drawer-village-cloud-loaded",render);
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-if(localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
+if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   const notice=document.createElement("dialog");notice.className="backup-notice";
-  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>Google 사진 동기화가 불안정할 수 있어요. 가능하면 <b>실제 이미지 주소</b>로 사진을 첨부하거나, 설정의 <b>백업 파일 내보내기</b>로 데이터를 따로 보관해 주세요.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
-  notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("parallel-city-hide-photo-backup-notice","1");notice.remove()};
+  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>Google 계정에는 고유 사진을 <b>최대 120장·총 60MB</b>까지 저장해요. 같은 사진은 여러 곳에 사용해도 한 번만 올라갑니다. 오래 보관할 중요한 데이터는 설정의 <b>백업 파일 내보내기</b>로도 보관해 주세요.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
+  notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260802af").catch(error=>{
+import("./auth.js?v=20260802ag").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802af").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802ag").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }

@@ -1,5 +1,15 @@
-const KEY="parallel-city-game-v4";
+const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
+const renameBrand=value=>{
+  const walk=node=>{
+    if(!node||typeof node!=="object")return;
+    Object.keys(node).forEach(key=>{
+      if(typeof node[key]==="string"&&!/^(data:|https?:)/.test(node[key]))node[key]=node[key].replaceAll("평행도시","서랍마을").replaceAll("평행마을","서랍마을").replaceAll("평행","서랍");
+      else walk(node[key]);
+    });
+  };
+  walk(value);return value;
+};
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const rooms=()=>({
@@ -36,7 +46,7 @@ const defaultCatalog=()=>({
     {id:"book-midnight",kind:"book",name:"새벽의 도서관",category:"추리 소설",image:"",creator:"한여름"}
   ],
   movie:[
-    {id:"movie-starlight",kind:"movie",name:"별빛 극장",category:"판타지 영화",image:"",creator:"평행 스튜디오"}
+    {id:"movie-starlight",kind:"movie",name:"별빛 극장",category:"판타지 영화",image:"",creator:"서랍 스튜디오"}
   ],
   game:[
     {id:"game-pocket",kind:"game",name:"포켓 아케이드",category:"RPG",image:"",creator:"민트 게임즈"}
@@ -51,10 +61,10 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"평행마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
-  {id:"office",name:"평행 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
+  {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
   {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:21,y:68,color:"#6db7e8"},
   {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",imageScale:1,stock:[],priceRange:"무료",servicePrice:"무료",audiences:[],spicy:0,sweet:0,x:64,y:76,color:"#66c68a"}
 ]}});
@@ -211,10 +221,10 @@ function normalizeHomes(x){
     const homeRooms=x.homes[c.homeId].rooms||rooms();
     c.sleepRoomId=homeRooms[c.sleepRoomId]?c.sleepRoomId:(homeRooms.bedroom?"bedroom":Object.keys(homeRooms)[0]);
   });
-  return x;
+  return renameBrand(x);
 }
 function load(){
-  try{return migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem("parallel-city-game-v3")||localStorage.getItem(oldKey)||"null"))}
+  try{return migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem("parallel-city-game-v4")||localStorage.getItem("parallel-city-game-v3")||localStorage.getItem(oldKey)||"null"))}
   catch{return fresh()}
 }
 
@@ -491,6 +501,7 @@ export function replaceState(next){state=migrate(clone(next));localStorage.setIt
 export function resetAll(){
   state=fresh();
   localStorage.removeItem(KEY);
+  localStorage.removeItem("parallel-city-game-v4");
   localStorage.removeItem("parallel-city-game-v3");
   localStorage.removeItem(oldKey);
 }
