@@ -18,7 +18,7 @@ function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
-  if(code.includes("quota"))return "저장 용량 초과";
+  if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
   if(code.includes("network"))return "인터넷 연결 확인";
   return code;
 }
@@ -84,6 +84,7 @@ async function upload({silent=false,reason=""}={}){
     status(`${user.displayName||"계정"} · 올리는 중`);
     const gameState=await prepareState(window.ParallelCity.getState());
     await setDoc(cloudDoc(),{gameState,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
+    window.ParallelCity.replaceState(clone(gameState));
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
     toast("동기화되었습니다");
     return true;

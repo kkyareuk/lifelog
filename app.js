@@ -1,12 +1,20 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260802t";
-import {addCar,updateCar,deleteCar} from "./state.js?v=20260802t";
-import {addRoutine,updateRoutine,deleteRoutine} from "./state.js?v=20260802t";
 import {eventFor} from "./simulation.js?v=20260802t";
 import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260802t";
 
 let pendingImage=null;
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
+const addRoutine=characterId=>{
+  state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
+  const item={id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
+  state.routines[characterId].push(item);save(true);return item.id;
+};
+const updateRoutine=(characterId,id,patch)=>{const item=state.routines[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);save(true)}};
+const deleteRoutine=(characterId,id)=>{state.routines[characterId]=(state.routines[characterId]||[]).filter(r=>r.id!==id);save(true)};
+const addCar=homeId=>{const home=state.homes[homeId];if(!home)return;home.cars=Array.isArray(home.cars)?home.cars:[];home.cars.push({id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,name:"우리 집 자동차",type:"승용차",color:"",seats:5});save(true)};
+const updateCar=(homeId,id,patch)=>{const car=state.homes[homeId]?.cars?.find(item=>item.id===id);if(car){Object.assign(car,patch);save(true)}};
+const deleteCar=(homeId,id)=>{const home=state.homes[homeId];if(home){home.cars=(home.cars||[]).filter(item=>item.id!==id);save(true)}};
 
 function render(){
   try{
@@ -250,7 +258,8 @@ async function useImageUrl(type,id,room){
   const value=await askImageUrl();
   if(!value)return;
   try{
-    const url=new URL(value,location.href);
+    const resolved=await resolveSharedImageUrl(value);
+    const url=new URL(resolved,location.href);
     if(!["http:","https:","data:"].includes(url.protocol))throw new Error();
     const response=await fetch(url.href,{mode:"cors"});
     if(!response.ok)throw new Error("image-download-failed");
@@ -263,6 +272,10 @@ async function useImageUrl(type,id,room){
   }catch(error){
     console.error(error);
     const url=new URL(value,location.href);
+    if(/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/i.test(url.hostname)){
+      showToast("Pinterest에서 이 핀의 사진을 공개하지 않았어요");
+      return;
+    }
     if(["http:","https:"].includes(url.protocol)){
       applyImage(type,id,room,url.href);
       render();
@@ -273,11 +286,30 @@ async function useImageUrl(type,id,room){
   }
 }
 
+async function resolveSharedImageUrl(value){
+  const url=new URL(value,location.href);
+  if(!/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/i.test(url.hostname))return url.href;
+  const endpoints=[
+    `https://www.pinterest.com/oembed.json?url=${encodeURIComponent(url.href)}`,
+    `https://www.pinterest.com/oembed/?url=${encodeURIComponent(url.href)}`
+  ];
+  for(const endpoint of endpoints){
+    try{
+      const response=await fetch(endpoint,{mode:"cors"});
+      if(!response.ok)continue;
+      const data=await response.json();
+      const image=data.thumbnail_url||data.image_url;
+      if(image)return image.replace(/\/(236x|474x|564x)\//,"/originals/");
+    }catch{}
+  }
+  throw new Error("pinterest-pin-unavailable");
+}
+
 function askImageUrl(){
   return new Promise(resolve=>{
     const dialog=document.createElement("dialog");
     dialog.className="image-url-dialog";
-    dialog.innerHTML=`<form method="dialog"><div class="title"><h2>사진 링크 추가</h2><button value="cancel" aria-label="닫기">×</button></div><label>이미지 원본 주소<input name="url" type="url" placeholder="https://..." required></label><small>링크 사진도 다음 화면에서 직접 드래그해 자를 수 있어요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">사진 불러오기</button></div></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><h2>사진 또는 Pinterest 핀 추가</h2><button value="cancel" aria-label="닫기">×</button></div><label>이미지 주소·Pinterest 핀 주소<input name="url" type="url" placeholder="https://... 또는 https://pin.it/..." required></label><small>핀 링크도 이미지로 불러온 뒤 직접 드래그해 자르고 WebP로 압축해요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">사진 불러오기</button></div></form>`;
     document.body.append(dialog);
     dialog.onclose=()=>{
       const value=dialog.returnValue==="apply"?dialog.querySelector('[name="url"]').value.trim():"";
@@ -309,7 +341,7 @@ $("#image-picker").onchange=async e=>{
 
 function cropImage(file,type){
   const square=["icon","photo","petIcon","petPhoto","catalogImage"].includes(type);
-  const output=square?512:960;
+  const output=square?420:800;
   const ratio=square?1:16/9;
   return new Promise((resolve,reject)=>{
     const url=URL.createObjectURL(file),img=new Image();
@@ -339,7 +371,7 @@ function cropImage(file,type){
       dialog.onclose=()=>{
         const applied=dialog.returnValue==="apply";
         const transparent=["icon","petIcon"].includes(type);
-        const data=applied?canvas.toDataURL(transparent?"image/png":"image/webp",transparent?undefined:.72):null;
+        const data=applied?canvas.toDataURL(transparent?"image/png":"image/webp",transparent?undefined:.66):null;
         URL.revokeObjectURL(url);dialog.remove();resolve(data);
       };
       draw();dialog.showModal();
@@ -495,10 +527,10 @@ window.ParallelCity={
 window.addEventListener("parallel-city-cloud-loaded",render);
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-import("./auth.js?v=20260802t").catch(error=>{
+import("./auth.js?v=20260802z").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260802t").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260802z").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
