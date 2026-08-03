@@ -41,7 +41,7 @@ if(!params.has("cart")&&products[params.get("product")])rawCart={[params.get("pr
 const items=Object.entries(rawCart).filter(([id,quantity])=>products[id]&&Number.isInteger(Number(quantity))&&Number(quantity)>0&&Number(quantity)<=99).map(([packageId,quantity])=>({packageId,quantity:Number(quantity)}));
 const total=items.reduce((sum,item)=>sum+products[item.packageId].amount*item.quantity,0);
 const count=items.reduce((sum,item)=>sum+item.quantity,0);
-document.querySelector("#orderLines").innerHTML=items.length?items.map(item=>`<article class="order-line"><div><b>${products[item.packageId].name}</b><small>${products[item.packageId].amount.toLocaleString("ko-KR")}원 × ${item.quantity}</small></div><b>${(products[item.packageId].amount*item.quantity).toLocaleString("ko-KR")}원</b></article>`).join(""):"<p>장바구니가 비어 있어요.</p>";
+document.querySelector("#orderLines").innerHTML=items.length?items.map(item=>{const product=products[item.packageId],totalName=item.packageId==="character_slots_5"?`캐릭터 ${item.quantity*5}명 추가`:item.packageId==="town_slot_1"?`마을 ${item.quantity}개 추가`:product.name;return `<article class="order-line"><div><b>${totalName}</b><small>${product.name} · ${product.amount.toLocaleString("ko-KR")}원 × ${item.quantity}</small></div><b>${(product.amount*item.quantity).toLocaleString("ko-KR")}원</b></article>`}).join(""):"<p>장바구니가 비어 있어요.</p>";
 document.querySelector("#itemCount").textContent=`${count}개`;
 document.querySelector("#price").textContent=`${total.toLocaleString("ko-KR")}원`;
 const button=document.querySelector("#payButton"),status=document.querySelector("#status");

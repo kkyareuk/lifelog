@@ -416,6 +416,20 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relation{border:1px solid var(--line);background:#fffaf3!important;color:var(--ink)!important}
 .relation h2,.relation p,.relation small,.relation summary,.relation-stage,.relation-tags span{color:var(--ink)!important}
 .relation-tags span{background:#f2ebe2}
+.mobile-room-editors{display:none}
+@media(max-width:600px){
+  .home[data-home-card] .room-tools,.home[data-home-card] .room>.furniture{display:none!important}
+  .home[data-home-card] .room-name{max-width:calc(100% - 12px);width:auto;pointer-events:none}
+  .mobile-room-editors{display:grid;gap:8px;margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:18px;background:#f6f4f1}
+  .mobile-room-editors h3,.mobile-room-editors p{margin:0}.mobile-room-editors p{font-size:12px;color:var(--muted)}
+  .mobile-room-editors details{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}
+  .mobile-room-editors summary{padding:13px 14px;cursor:pointer;font-weight:800}
+  .mobile-room-editor-body{display:grid;gap:10px;padding:0 12px 13px}
+  .mobile-room-editor-body label{display:grid;gap:5px}.mobile-room-editor-body input{width:100%;min-width:0}
+  .mobile-room-image-actions,.mobile-room-furniture{display:flex;flex-wrap:wrap;gap:7px}
+  .mobile-room-image-actions button,.mobile-room-furniture button{flex:1 1 auto;min-width:88px;padding:9px}
+  .mobile-room-furniture button.on{color:#fff;background:var(--grad);border-color:transparent}
+}
 
 /* 사이트 하단 사업자·정책 정보 */
 .site-footer{width:min(1500px,calc(100% - 72px));margin:52px auto 28px;padding:28px 0 20px;box-sizing:border-box;border-top:1px solid #e1ddd7;color:#8793a3;font-size:12px;line-height:1.75}
