@@ -116,6 +116,7 @@ function normalizeHomes(x){
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
   const relationList=Array.isArray(x.relationships)?x.relationships:Object.values(x.relationships||{});
   x.relationships={};
+  const relationKeys=new Set();
   relationList.filter(Boolean).forEach(relation=>{
     const id=relation.id||uid();
     const typeMap={"폴리 관계":"연인","절친":"친구","대학 동기":"젊은 날의 친구들"};
@@ -124,7 +125,12 @@ function normalizeHomes(x){
     relation.stage=relation.stage||({
       연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구",혐관:"신경전 중",짝사랑:"멀리서 바라봄"
     }[relation.type]||"편안함");
-    if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b)x.relationships[id]={...relation,id};
+    if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b){
+      const directional=relation.type==="짝사랑"||relation.type==="부모·자녀"||relation.directional;
+      const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
+      const key=`${relation.type}|${pair}|${relation.parentRole||""}`;
+      if(!relationKeys.has(key)){relationKeys.add(key);x.relationships[id]={...relation,id}}
+    }
   });
   const defaultWorld=fresh().world;
   x.world=x.world&&typeof x.world==="object"?x.world:defaultWorld;
