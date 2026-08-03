@@ -18,7 +18,7 @@ const PAGE_GUIDES={
 };
 
 function showInstallButton(){
-  const installed=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+  const installed=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true||window.Capacitor?.isNativePlatform?.()===true;
   if(installed){document.querySelector("#install-drawer-village")?.remove();return}
   if(document.querySelector("#install-drawer-village"))return;
   const button=document.createElement("button");
@@ -883,7 +883,7 @@ import("./auth.js?v=20260803bd").catch(error=>{
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803bd").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803be").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
