@@ -418,16 +418,17 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relation-tags span{background:#f2ebe2}
 
 /* 사이트 하단 사업자·정책 정보 */
-.site-footer{width:min(1500px,calc(100% - 36px));margin:38px auto 22px;padding:16px 18px;box-sizing:border-box;border-top:1px solid #d9cfc3;color:#776d66;font-size:12px;line-height:1.7}
-.site-footer a{color:inherit;text-decoration:none}.site-footer a:hover{text-decoration:underline;color:#4f3525}
-.site-footer-primary{display:flex;align-items:center;justify-content:space-between;gap:18px}
-.site-footer-primary nav{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px 15px}
-.site-business-details{margin-top:8px}.site-business-details summary{width:max-content;cursor:pointer;color:#70665f}
-.site-business-details>div{display:flex;flex-wrap:wrap;gap:2px 16px;margin-top:8px}
-.site-business-details>div span:not(:last-child)::after{content:"";display:inline-block;width:1px;height:10px;margin-left:16px;background:#d9cfc3}
-.site-business-details p{margin:5px 0 0;color:#9a7162}
+.site-footer{width:min(1500px,calc(100% - 72px));margin:52px auto 28px;padding:28px 0 20px;box-sizing:border-box;border-top:1px solid #e1ddd7;color:#8793a3;font-size:12px;line-height:1.75}
+.site-footer a{color:inherit;text-decoration:none}.site-footer a:hover{text-decoration:underline;color:#4f5e70}
+.site-business-info strong{display:block;margin-bottom:14px;color:#536174;font-size:13px}
+.site-business-info p{margin:0}
+.site-business-info i{display:inline-block;width:1px;height:10px;margin:0 8px;background:#cdd3db;vertical-align:-1px}
+.site-business-info p>a:last-child{margin-left:7px;text-decoration:underline;text-underline-offset:2px}
+.site-policy-links{display:flex;flex-wrap:wrap;gap:10px 34px;margin-top:27px;color:#536174}
+.site-policy-links a:first-child{font-weight:800;color:#344154}
 @media(max-width:700px){
-  .site-footer{width:calc(100% - 24px);margin-top:26px;padding:14px 4px 20px;font-size:11px}
-  .site-footer-primary{display:grid}.site-footer-primary nav{justify-content:flex-start}
-  .site-business-details>div{display:grid;gap:2px}.site-business-details>div span::after{display:none!important}
+  .site-footer{width:calc(100% - 32px);margin-top:34px;padding:22px 0 28px;font-size:10px}
+  .site-business-info strong{margin-bottom:10px;font-size:12px}
+  .site-business-info p{line-height:1.85}
+  .site-policy-links{gap:8px 18px;margin-top:20px}
 }
