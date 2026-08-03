@@ -14,7 +14,7 @@ let autoLoadStarted=false;
 const uploadedCache=new Map();
 const MAX_PHOTOS=120;
 const UNLIMITED_PHOTOS=Number.MAX_SAFE_INTEGER;
-const FREE_TOTAL_BYTES=15*1024*1024;
+const FREE_TOTAL_BYTES=20*1024*1024;
 const PREMIUM_TOTAL_BYTES=60*1024*1024;
 const MAX_IMAGE_BYTES=1536*1024;
 const isPremium=()=>Boolean(entitlements.premium||entitlements.plan==="premium");
@@ -52,7 +52,7 @@ function shortError(error){
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
   if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
   if(code.includes("photo-limit"))return `사진은 계정당 최대 ${MAX_PHOTOS}장까지 저장할 수 있어요`;
-  if(code.includes("total-size-limit"))return `사진 저장 용량은 ${isPremium()?"프리미엄 회원 60MB":"일반회원 15MB"}까지예요`;
+  if(code.includes("total-size-limit"))return "일반회원 사진 저장 용량은 총 20MB까지예요";
   if(code.includes("image-too-large"))return "압축된 사진 한 장은 1.5MB 이하여야 해요";
   if(code.includes("timeout"))return "사진 업로드 응답 없음 · Storage 요금제와 규칙을 확인해 주세요";
   if(code.includes("network"))return "인터넷 연결 확인";
