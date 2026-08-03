@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260803ay";
+﻿import {state,save} from "./state.js?v=20260803ba";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -696,7 +696,7 @@ function liveGapEvent(c,last,n,date){
   const script=scripts[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%scripts.length];
   return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home"),script[2]);
 }
-export function eventFor(c,date=new Date()){
+function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
   if(sleepingNow(c,date))return entry(n,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
@@ -707,5 +707,38 @@ export function eventFor(c,date=new Date()){
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
   return entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
-export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}
+function sharedPlaceScene(c,current,date){
+  if(!current?.placeId||current.transit||current.home)return current;
+  const together=state.order.map(id=>state.characters[id]).filter(other=>{
+    if(!other||other.id===c.id)return false;
+    const otherEvent=baseEventFor(other,date);
+    return otherEvent.placeId===current.placeId&&(otherEvent.townId||other.townId)===(current.townId||c.townId)&&!otherEvent.transit;
+  });
+  if(!together.length)return current;
+  const names=together.map(other=>other.name),relations=relationList().filter(r=>
+    (r.a===c.id&&together.some(other=>other.id===r.b))||(r.b===c.id&&together.some(other=>other.id===r.a))
+  );
+  const social=Number(c.socialEnergy??3),socialStyle=String(c.socialStyle||"");
+  let suffix,detail;
+  if(relations.some(r=>["혐관","라이벌"].includes(r.type))){
+    suffix="미묘한 신경전이 흐르는 중";
+    detail=`${names.join(", ")}와 같은 자리에 있지만 먼저 말을 섞지는 않고 있어요. 시선이 마주칠 때마다 성격과 관계에 맞춰 짧게 반응하며 팽팽한 분위기를 유지하고 있어요.`;
+  }else if(relations.some(r=>["부부","연인","친구","소꿉친구","가족","부모·자녀"].includes(r.type))){
+    suffix=together.length>=2?"다 같이 이야기를 나누는 중":"함께 대화하는 중";
+    detail=`${names.join(", ")}와 자연스럽게 한자리에 머물며 각자의 근황과 지금 보고 있는 것에 대해 이야기를 주고받고 있어요. 가까운 관계인 사람에게는 더 편하게 말을 건네고 있어요.`;
+  }else if(social<=2||/혼자|수줍|낯|조용/.test(socialStyle)){
+    suffix="각자 시간을 보내는 중";
+    detail=`${names.join(", ")}도 같은 공간에 있지만 아직 가까운 사이는 아니라 굳이 대화에 끼어들지 않고 있어요. 서로의 존재만 가볍게 의식한 채 각자 하던 일에 집중하고 있어요.`;
+  }else if(social>=5||/인싸|사교|먼저/.test(socialStyle)){
+    suffix="가볍게 말을 건네는 중";
+    detail=`${names.join(", ")}와 특별한 관계는 없지만 같은 자리에 있는 것을 계기로 먼저 가벼운 이야기를 꺼냈어요. 상대의 반응을 살피며 부담스럽지 않게 대화를 이어가고 있어요.`;
+  }else{
+    suffix="짧게 인사를 나눈 중";
+    detail=`${names.join(", ")}와 특별히 가까운 사이는 아니라 눈이 마주쳤을 때 짧게 인사했어요. 이후에는 불편하지 않을 만큼 거리를 두고 각자 시간을 보내고 있어요.`;
+  }
+  return {...current,title:`${current.title} · ${suffix}`,desc:`${current.desc} ${detail}`,withIds:together.map(other=>other.id),groupInteraction:true};
+}
+export function eventFor(c,date=new Date()){return sharedPlaceScene(c,baseEventFor(c,date),date)}
+export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=baseEventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}
+

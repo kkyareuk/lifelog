@@ -13,10 +13,12 @@ let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],plan:"free",premiu
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const MAX_PHOTOS=120;
+const UNLIMITED_PHOTOS=Number.MAX_SAFE_INTEGER;
 const FREE_TOTAL_BYTES=15*1024*1024;
 const PREMIUM_TOTAL_BYTES=60*1024*1024;
 const MAX_IMAGE_BYTES=1536*1024;
 const isPremium=()=>Boolean(entitlements.premium||entitlements.plan==="premium");
+const maxPhotos=()=>isPremium()?UNLIMITED_PHOTOS:MAX_PHOTOS;
 const maxTotalBytes=()=>isPremium()?PREMIUM_TOTAL_BYTES:FREE_TOTAL_BYTES;
 let storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
 const toast=text=>window.ParallelCity?.toast?.(text);
@@ -30,12 +32,12 @@ const countStoredPhotos=value=>{
   walk(value);return urls.size;
 };
 const normalizeManifest=(value,gameState)=>({
-  items:Array.isArray(value?.items)?value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").slice(0,MAX_PHOTOS):[],
+  items:Array.isArray(value?.items)?value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").slice(0,maxPhotos()):[],
   legacyCount:Math.max(Number(value?.legacyCount)||0,Math.max(0,countStoredPhotos(gameState)-(Array.isArray(value?.items)?value.items.length:0)))
 });
 const publishStorageUsage=(manifest,gameState)=>{
   const normalized=normalizeManifest(manifest,gameState);
-  storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:MAX_PHOTOS,maxBytes:maxTotalBytes()};
+  storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:maxPhotos(),maxBytes:isPremium()?Number.MAX_SAFE_INTEGER:maxTotalBytes(),unlimited:isPremium()};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.dispatchEvent(new Event("drawer-village-storage-usage"));
 };
@@ -63,16 +65,21 @@ const normalizeEntitlements=value=>({
   dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks.filter(x=>typeof x==="string"):[],
   plan:value?.plan==="premium"||value?.tier==="premium"||value?.premium===true?"premium":"free",
   premium:Boolean(value?.premium||value?.plan==="premium"||value?.tier==="premium"),
+  premiumUntil:Number(value?.premiumUntil?.seconds)*1000||Number(value?.premiumUntil)||0,
+  cancelAtPeriodEnd:Boolean(value?.cancelAtPeriodEnd),
   grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
   note:typeof value?.note==="string"?value.note:""
 });
 const publishEntitlements=value=>{
   entitlements=normalizeEntitlements(value);
-  storageUsage={...storageUsage,maxBytes:maxTotalBytes()};
+  if(entitlements.premiumUntil&&entitlements.premiumUntil<=Date.now())entitlements={...entitlements,plan:"free",premium:false};
+  storageUsage={...storageUsage,maxCount:maxPhotos(),maxBytes:isPremium()?Number.MAX_SAFE_INTEGER:maxTotalBytes(),unlimited:isPremium()};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.ParallelCity?.setEntitlements?.(entitlements);
+  if(entitlements.cancelAtPeriodEnd&&entitlements.premiumUntil>Date.now())window.dispatchEvent(new CustomEvent("drawer-village-premium-ending",{detail:entitlements}));
 };
 const accessLabel=()=>[
+  isPremium()?"프리미엄 이용자":"",
   entitlements.backgroundPacks.length?`배경 팩 ${entitlements.backgroundPacks.length}개`:"",
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:"",
   entitlements.dlcPacks.length?`DLC ${entitlements.dlcPacks.length}개`:""
@@ -84,9 +91,9 @@ async function uploadDataUrl(dataUrl,manifest){
   if(blob.size>MAX_IMAGE_BYTES)throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
   const hash=await digestBlob(blob),known=manifest.items.find(item=>item.hash===hash);
   if(known){uploadedCache.set(dataUrl,known.url);return known.url}
-  if(manifest.items.length+manifest.legacyCount>=MAX_PHOTOS)throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
+  if(manifest.items.length+manifest.legacyCount>=maxPhotos())throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
   const usedBytes=manifest.items.reduce((sum,item)=>sum+(Number(item.size)||0),0);
-  if(usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
+  if(!isPremium()&&usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
   const ext=blob.type==="image/png"?"png":"webp";
   const target=ref(storage,`users/${user.uid}/media/${hash}.${ext}`);
   try{
@@ -144,7 +151,7 @@ async function upload({silent=false,reason=""}={}){
     publishStorageUsage(mediaManifest,gameState);
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
     const storedPhotos=countStoredPhotos(gameState);
-    toast(storedPhotos?`동기화되었습니다 · 고유 사진 ${mediaManifest.items.length+mediaManifest.legacyCount}/${MAX_PHOTOS}장`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
+    toast(storedPhotos?`동기화되었습니다 · 고유 사진 ${mediaManifest.items.length+mediaManifest.legacyCount}/${isPremium()?"무제한":`${MAX_PHOTOS}장`}`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
@@ -192,5 +199,5 @@ if(ready){
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}
 }else status("Firebase 설정 필요");
 
-try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}")}}catch{}
+try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
 window.ParallelCityAuth={login,upload,download,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements,storageUsage})};

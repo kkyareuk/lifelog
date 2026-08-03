@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803az";
-import {eventFor} from "./simulation.js?v=20260803az";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803az";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ba";
+import {eventFor} from "./simulation.js?v=20260803ba";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ba";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -40,7 +40,7 @@ function showInstallButton(){
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const isPremiumMember=()=>{const value=window.ParallelCityAuth?.getInfo?.().entitlements||{};return Boolean(value.premium||value.plan==="premium")};
-const characterLimit=()=>isPremiumMember()?7:5;
+const characterLimit=()=>isPremiumMember()?Number.MAX_SAFE_INTEGER:5;
 const BASE_AUDIENCES=["혼자 조용히 있고 싶은 사람","연인·데이트","부부","가족","친구 모임","직장인","학생","대학생","어린이","청소년","중장년","고소득층","가성비 중시","디저트 러버","커피 애호가","차 애호가","매운 음식 마니아","채식 선호","한식파","일식파","면 요리 마니아","신상 맛집파","SF 덕후","로맨스 덕후","판타지 덕후","미스터리 덕후","공포 덕후","액션 덕후","코미디 덕후","애니메이션 팬","영화 팬","드라마 팬","관찰 예능 팬","게임 방송 팬","음악 팬","아이돌 팬","인디 음악 팬","클래식 애호가","게임 마니아","보드게임 팬","e스포츠 팬","패션 관심층","빈티지 애호가","향수 애호가","사진 애호가","미술 애호가","독서가","여행 애호가","반려동물 동반","운동 애호가","야외 활동파","집순이·집돌이","오타쿠","얼리어답터"];
 function audienceOptions(){
   const values=new Set(BASE_AUDIENCES),fields=["interests","hobbies","foodPreferences","drinks","favoriteStoryGenres","musicGenres","favoriteFashionStyles","favoriteVideoGenres","favoriteGameGenres","favoriteScentNotes"];
@@ -161,8 +161,8 @@ function enhanceDynamicForms(){
   const sync=document.querySelector(".sync-panel");
   if(sync&&!sync.querySelector(".storage-meter")){
     const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||JSON.parse(localStorage.getItem("drawer-village-storage-usage")||'{"count":0,"bytes":0,"maxCount":120,"maxBytes":15728640}');
-    const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||15728640)*100)),used=((usage.bytes||0)/1048576).toFixed(1),left=Math.max(0,((usage.maxBytes||15728640)-(usage.bytes||0))/1048576).toFixed(1);
-    const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>사진 저장 공간</h3><div><i style="width:${percent}%"></i></div><b>${used}MB 사용 · ${left}MB 남음</b><small>고유 사진 ${usage.count||0}/${usage.maxCount||120}장 · 이미지 링크는 이 용량을 사용하지 않아요.</small>`;sync.append(meter);
+    const unlimited=Boolean(usage.unlimited||isPremiumMember()),percent=unlimited?100:Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||15728640)*100)),used=((usage.bytes||0)/1048576).toFixed(1),left=unlimited?"무제한":`${Math.max(0,((usage.maxBytes||15728640)-(usage.bytes||0))/1048576).toFixed(1)}MB 남음`;
+    const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>사진 저장 공간</h3><div><i style="width:${percent}%"></i></div><b>${used}MB 사용 · ${left}</b><small>${unlimited?"프리미엄 이용 중 · 사진과 캐릭터 슬롯 무제한":"일반회원 · 총 15MB · 캐릭터 5명"} · 이미지 링크는 이 용량을 사용하지 않아요.</small>`;sync.append(meter);
   }
   if(state.activeTab==="observe"&&!document.querySelector("[data-show-outfit]")&&document.querySelector(".detail")){
     const button=document.createElement("button");button.type="button";button.className="show-outfit-button";button.dataset.showOutfit=state.activeId;button.textContent="오늘의 캐릭터 패션";document.querySelector(".detail h2")?.insertAdjacentElement("afterend",button);
@@ -854,6 +854,13 @@ window.ParallelCity={
 
 window.addEventListener("drawer-village-cloud-loaded",render);
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
+window.addEventListener("drawer-village-premium-ending",event=>{
+  const until=Number(event.detail?.premiumUntil)||0,key=`drawer-village-premium-ending-${until}`;
+  if(!until||sessionStorage.getItem(key))return;
+  sessionStorage.setItem(key,"1");
+  const date=new Date(until).toLocaleDateString("ko-KR",{year:"numeric",month:"long",day:"numeric"});
+  alert(`프리미엄 이용이 ${date}에 종료될 예정이에요.\n\n종료일까지는 사진과 캐릭터를 무제한으로 사용할 수 있습니다. 종료 후에는 일반회원 한도(캐릭터 5명·사진 15MB)가 적용되며, 초과 슬롯과 사진은 삭제 대상이 됩니다. 필요한 데이터는 종료 전에 백업 파일로 내보내 주세요.`);
+});
 window.addEventListener("parallel-city-cloud-loaded",render);
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
@@ -866,14 +873,15 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803az").catch(error=>{
+import("./auth.js?v=20260803ba").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803az").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803ba").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
 window.addEventListener("orientationchange",lockPortrait);
+
 
