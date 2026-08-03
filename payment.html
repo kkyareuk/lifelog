@@ -3,54 +3,59 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#7a5036">
+  <meta name="theme-color" content="#754b31">
   <title>결제 · 서랍마을</title>
   <script src="./config.js"></script>
   <script src="https://js.tosspayments.com/v2/standard"></script>
   <style>
-    :root{--wood:#71462d;--wood2:#b87943;--cream:#fffaf0;--ink:#2d2119;--muted:#79695c;--line:#dfcdbb}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:radial-gradient(circle at 50% -10%,#fffaf1 0 26%,transparent 54%),#e9ded1}
-    button,a{font:inherit}.wrap{width:min(980px,calc(100% - 28px));margin:18px auto 36px}.top{display:flex;justify-content:space-between;align-items:center;padding:8px 4px 16px}.top a{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:800;text-decoration:none}.top b{font-size:13px;color:var(--muted)}
-    .shop-mark{display:flex;align-items:center;gap:10px}.shop-mark img{width:38px;height:38px;object-fit:contain}.hero,.card{background:#fff;border:1px solid var(--line);border-radius:30px;box-shadow:0 16px 45px #5b3b2412}.hero{position:relative;overflow:hidden;display:grid;grid-template-columns:280px minmax(0,1fr);gap:24px;align-items:center;min-height:300px;padding:34px;background:linear-gradient(135deg,#f7e7c9,#fffaf0 56%,#edd3ae)}.hero:after{content:"";position:absolute;right:-70px;bottom:-115px;width:290px;height:290px;border:34px solid #8b583214;border-radius:50%}.art{position:relative;z-index:1;height:230px;display:grid;place-items:center;border-radius:25px;background:linear-gradient(145deg,#6c422a,#96633f);box-shadow:inset 0 0 0 2px #f4dbb122}.art img{width:92%;height:92%;object-fit:contain;filter:drop-shadow(0 16px 12px #2d170b55)}.hero-copy{position:relative;z-index:1}.eyebrow{display:inline-flex;padding:7px 11px;border:1px solid #b88b5e;border-radius:999px;color:#744a2e;font-size:12px;font-weight:900}.hero h1{margin:13px 0 10px;font-size:46px;letter-spacing:-2px}.hero p{max-width:520px;margin:0;color:var(--muted);line-height:1.75}.hero-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}.hero-tags span{padding:7px 10px;border-radius:10px;background:#fff9;border:1px solid #d9c1a8;font-size:12px;font-weight:800}
-    .checkout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:18px;margin-top:18px}.card{padding:26px}.card h2{margin:0 0 18px}.features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;padding:0;list-style:none}.features li{min-height:84px;padding:16px;border-radius:17px;background:#faf4eb;border:1px solid #eadbca;font-weight:800;line-height:1.45}.features li:before{display:block;margin-bottom:8px;color:var(--wood2);content:"✦"}.method-title{margin-top:25px!important}.method{display:flex;flex-wrap:wrap;gap:8px}.method span{padding:9px 12px;border:1px solid var(--line);border-radius:999px;background:#fffaf4;font-size:13px}
-    .order-card{position:sticky;top:18px;background:linear-gradient(#fff,#fffbf5)}.summary{display:flex;justify-content:space-between;gap:15px;padding:14px 0;border-bottom:1px dashed var(--line)}.summary.total{margin-top:8px;border:0;font-size:24px}.pay{width:100%;padding:17px;border:0;border-radius:17px;background:linear-gradient(135deg,var(--wood),var(--wood2));color:#fff;font-weight:900;cursor:pointer;box-shadow:0 12px 25px #71462d2b}.pay:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}.status{min-height:24px;margin-top:13px;color:#a14d41;font-size:12px;line-height:1.55}.legal{margin-top:14px;color:var(--muted);font-size:11px;line-height:1.65}
-    @media(max-width:720px){.top b{display:none}.hero,.checkout{grid-template-columns:1fr}.hero{min-height:0;padding:20px}.art{height:190px}.hero h1{font-size:38px}.features{grid-template-columns:1fr}.order-card{position:static}.wrap{margin:8px auto 24px}.card{padding:20px}}
+    :root{--wood:#68432e;--wood2:#b77d4c;--cream:#f7f1e9;--ink:#291f19;--muted:#76685f;--line:#e2d5ca}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:var(--cream)}
+    button,a{font:inherit}.wrap{width:min(980px,calc(100% - 28px));margin:18px auto 36px}.top{display:flex;justify-content:space-between;align-items:center;padding:8px 4px 16px}.top a{color:var(--ink);font-weight:800;text-decoration:none}.top span{display:flex;align-items:center;gap:8px;font-weight:800}.top img{width:42px;height:42px;object-fit:contain}
+    .hero,.card{background:#fff;border:1px solid var(--line);border-radius:28px}.hero{padding:34px;background:linear-gradient(135deg,#34251e,#71472f 58%,#b77d4c);color:#fff}.eyebrow{font-size:12px;letter-spacing:.14em}.hero h1{margin:10px 0 8px;font-size:42px}.hero p{margin:0;line-height:1.7;color:#fffde4}.checkout{display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:18px;margin-top:18px}.card{padding:26px}.card h2{margin:0 0 18px}.features{display:grid;gap:10px;margin:0;padding:0;list-style:none}.features li{padding:15px;border-radius:16px;background:#f8f3ed;font-weight:800}.summary{display:flex;justify-content:space-between;gap:15px;padding:14px 0;border-bottom:1px dashed var(--line)}.summary.total{border:0;font-size:24px}.pay{width:100%;padding:17px;border:0;border-radius:17px;background:linear-gradient(135deg,var(--wood),var(--wood2));color:#fff;font-weight:900;cursor:pointer}.pay:disabled{opacity:.55}.status,.legal{font-size:12px;line-height:1.65}.status{min-height:22px;margin-top:12px;color:#a14d41}.legal{color:var(--muted)}.discount{padding:14px;border-radius:15px;background:#fff7df;color:#664528;font-weight:800}
+    @media(max-width:720px){.checkout{grid-template-columns:1fr}.hero{padding:24px}.hero h1{font-size:32px}.card{padding:20px}}
   </style>
 </head>
 <body>
 <main class="wrap">
-  <div class="top"><a href="./index.html">← 돌아가기</a><span class="shop-mark"><img src="./icons/drawer-village-logo.png" alt=""><b>서랍마을 DLC 상점</b></span></div>
+  <div class="top"><a href="./index.html">← 서랍마을로 돌아가기</a><span><img src="./icons/drawer-village-logo.png" alt="">안전한 토스페이먼츠 결제</span></div>
   <section class="hero">
-    <div class="art" id="productArt"><img src="./world-assets/medieval-castle.svg" alt="중세 성채"></div>
-        <div class="hero-copy"><span class="eyebrow">서랍마을 첫 번째 DLC</span><h1 id="productName">중세의 하루</h1><p id="productDescription">촛불을 켜고, 장부를 쓰고, 시장을 오가는 하루. 원하는 마을 하나를 중세의 시간으로 바꿔보세요.</p><div class="hero-tags"><span>중세 생활</span><span>마을별 적용</span><span>건물 3종 포함</span></div></div>
+    <span class="eyebrow" id="eyebrow">DRAWER VILLAGE PREMIUM</span>
+    <h1 id="productName">서랍마을 프리미엄</h1>
+    <p id="productDescription">캐릭터와 사진을 제한 없이 만들고, 추가 콘텐츠를 반값으로 만나는 월 이용권이에요.</p>
   </section>
   <section class="checkout">
     <div class="card">
-      <h2>포함된 콘텐츠</h2>
-      <ul class="features" id="features"><li>마을별로 현대와 중세를 따로 설정</li><li>촛불·장부·손편지 등 중세 생활 추가</li><li>현대적인 말과 이동수단 자동 제외</li><li>성채·여관·시장 건물 모양 3종</li></ul>
-      <h2 class="method-title">결제수단</h2>
-      <div class="method"><span>신용·체크카드</span><span>토스페이</span><span>간편결제</span></div>
-      <p class="legal">결제수단은 토스페이먼츠 결제창에서 선택합니다. 결제 인증이 끝난 뒤 서버에서 주문번호와 금액을 다시 검증하고 승인해야 구매가 완료됩니다.</p>
+      <h2>포함된 혜택</h2>
+      <ul class="features" id="features"><li>캐릭터 생성 무제한</li><li>사진 저장 용량 무제한</li><li>모든 DLC 50% 할인</li></ul>
+      <p class="discount" id="discount">해지해도 결제한 기간이 끝날 때까지 혜택이 유지돼요.</p>
+      <p class="legal">프리미엄 종료 후에는 일반회원 한도가 적용됩니다. 초과 데이터는 바로 삭제하지 않고 30일 동안 잠금·백업 기간을 제공한 뒤 정리합니다.</p>
     </div>
-    <div class="card order-card">
+    <div class="card">
       <h2>주문 확인</h2>
-      <div class="summary"><span>상품</span><b id="summaryName">중세의 하루</b></div>
-          <div class="summary total"><span>결제금액</span><b id="price">1,850원</b></div>
+      <div class="summary"><span>상품</span><b id="summaryName">서랍마을 프리미엄</b></div>
+      <div class="summary total"><span>결제금액</span><b id="price">월 1,900원</b></div>
       <button class="pay" id="payButton" disabled>결제 준비 중</button>
-      <div class="status" id="status">토스페이먼츠 상점 심사와 결제 승인 서버 연결이 끝나면 실제 결제가 열립니다.</div>
-      <p class="legal">시크릿 키는 이 페이지나 GitHub에 넣지 않습니다. 시크릿 키는 결제 승인 서버의 환경변수에만 보관해야 합니다.</p>
+      <div class="status" id="status">토스페이먼츠 상점 심사와 정기결제 승인 서버 연결이 끝나면 실제 결제가 열립니다.</div>
+      <p class="legal">비밀 키는 이 페이지나 GitHub에 저장하지 않습니다. 결제 승인 서버의 환경 변수에만 보관합니다.</p>
     </div>
   </section>
 </main>
 <script>
 const config=window.PARALLEL_CITY_CONFIG||{};
 const products={
-      medieval:{packageId:"dlc_medieval_scripts",name:"중세의 하루",orderName:"서랍마을 DLC · 중세의 하루",amount:1850}
+  premium:{packageId:"premium_monthly",name:"서랍마을 프리미엄",orderName:"서랍마을 프리미엄 월 이용권",amount:1900,recurring:true},
+  medieval:{packageId:"dlc_medieval_scripts",name:"중세의 하루",orderName:"서랍마을 DLC · 중세의 하루",amount:1850,recurring:false}
 };
-const product=products[new URLSearchParams(location.search).get("product")]||products.medieval;
+const product=products[new URLSearchParams(location.search).get("product")]||products.premium;
 document.querySelector("#productName").textContent=product.name;
 document.querySelector("#summaryName").textContent=product.name;
-document.querySelector("#price").textContent=product.amount.toLocaleString("ko-KR")+"원";
+document.querySelector("#price").textContent=(product.recurring?"월 ":"")+product.amount.toLocaleString("ko-KR")+"원";
+if(!product.recurring){
+  document.querySelector("#eyebrow").textContent="DRAWER VILLAGE CONTENT";
+  document.querySelector("#productDescription").textContent="새로운 생활 장면과 건물 모양을 계정에 추가하는 콘텐츠예요.";
+  document.querySelector("#features").innerHTML="<li>마을별 시대 설정</li><li>시대에 맞춘 생활 스크립트</li><li>전용 건물 모양</li>";
+  document.querySelector("#discount").textContent="프리미엄 이용자는 결제 서버에서 50% 할인이 자동 적용됩니다.";
+}
 const button=document.querySelector("#payButton"),status=document.querySelector("#status");
 if(config.paymentsEnabled){
   button.disabled=false;
@@ -61,31 +66,17 @@ button.addEventListener("click",async()=>{
   const clientKey=String(config.tossPaymentsClientKey||"").trim();
   const backend=String(config.paymentBackendUrl||"").replace(/\/$/,"");
   if(!config.paymentsEnabled)return;
-  if(!clientKey){status.textContent="토스페이먼츠 클라이언트 키가 설정되지 않았습니다.";return}
-  if(!backend){status.textContent="결제 승인 서버가 연결되지 않았습니다. 서버 없이 실제 결제를 열 수 없습니다.";return}
-  button.disabled=true;status.textContent="안전한 주문을 만들고 있어요…";
+  if(!clientKey||!backend){status.textContent="결제 승인 서버 설정이 아직 끝나지 않았어요.";return}
+  button.disabled=true;status.textContent="안전한 주문을 만들고 있어요.";
   try{
     const response=await fetch(backend+"/payments/orders",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({packageId:product.packageId})});
     if(response.status===401)throw new Error("먼저 Google 계정으로 로그인해 주세요.");
     const order=await response.json();
-    if(!response.ok)throw new Error(order.message||"주문을 만들지 못했습니다.");
-    if(Number(order.amount)!==product.amount)throw new Error("서버의 상품 금액이 화면과 달라 결제를 중단했습니다.");
+    if(!response.ok)throw new Error(order.message||"주문을 만들지 못했어요.");
     const tossPayments=TossPayments(clientKey);
     const payment=tossPayments.payment({customerKey:order.customerKey});
-    await payment.requestPayment({
-      method:"CARD",
-      amount:{currency:"KRW",value:order.amount},
-      orderId:order.orderId,
-      orderName:order.orderName,
-      customerEmail:order.customerEmail,
-      customerName:order.customerName,
-      successUrl:new URL("./payment-success.html",location.href).href,
-      failUrl:new URL("./payment-fail.html",location.href).href
-    });
-  }catch(error){
-    status.textContent=error.message||String(error);
-    button.disabled=false;
-  }
+    await payment.requestPayment({method:"CARD",amount:{currency:"KRW",value:order.amount},orderId:order.orderId,orderName:order.orderName,customerEmail:order.customerEmail,customerName:order.customerName,successUrl:new URL("./payment-success.html",location.href).href,failUrl:new URL("./payment-fail.html",location.href).href});
+  }catch(error){status.textContent=error.message||String(error);button.disabled=false}
 });
 </script>
 </body>

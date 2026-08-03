@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ba";
-import {eventFor} from "./simulation.js?v=20260803ba";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ba";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803bb";
+import {eventFor} from "./simulation.js?v=20260803bb";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803bb";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -590,11 +590,16 @@ function askImageUrl(){
   return new Promise(resolve=>{
     const dialog=document.createElement("dialog");
     dialog.className="image-url-dialog";
-    dialog.innerHTML=`<form method="dialog"><div class="title"><h2>이미지 주소로 사진 추가</h2><button value="cancel" aria-label="닫기">×</button></div><label>이미지 파일 주소<input name="url" type="url" placeholder="https://.../photo.jpg" required></label><small>웹페이지 주소가 아니라 주소 끝이 jpg, png, webp 등으로 끝나는 실제 이미지 주소를 넣어 주세요.</small><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="apply">사진 불러오기</button></div></form>`;
+    dialog.innerHTML=`<form><div class="title"><h2>이미지 주소로 사진 추가</h2><button type="button" data-image-url-cancel aria-label="닫기">×</button></div><label>이미지 파일 주소<input name="url" type="url" placeholder="https://.../photo.jpg" required></label><small>웹페이지 주소가 아니라 주소 끝이 jpg, png, webp 등으로 끝나는 실제 이미지 주소를 넣어 주세요.</small><div class="crop-actions"><button type="button" data-image-url-cancel>취소</button><button class="primary" type="submit">사진 불러오기</button></div></form>`;
     document.body.append(dialog);
     dialog.onclose=()=>{
       const value=dialog.returnValue==="apply"?dialog.querySelector('[name="url"]').value.trim():"";
       dialog.remove();resolve(value);
+    };
+    dialog.querySelectorAll("[data-image-url-cancel]").forEach(button=>button.onclick=()=>dialog.close("cancel"));
+    dialog.querySelector("form").onsubmit=event=>{
+      event.preventDefault();
+      dialog.close("apply");
     };
     dialog.showModal();
   });
@@ -873,15 +878,16 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803ba").catch(error=>{
+import("./auth.js?v=20260803bb").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803ba").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803bb").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
 window.addEventListener("orientationchange",lockPortrait);
+
 
 

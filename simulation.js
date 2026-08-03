@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260803ba";
+﻿import {state,save} from "./state.js?v=20260803bb";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -707,6 +707,49 @@ function baseEventFor(c,date=new Date()){
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
   return entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
+const RELATION_CLOSENESS={부부:100,연인:95,"부모·자녀":92,가족:88,소꿉친구:84,친구:78,짝사랑:66,직장동료:54,라이벌:42,혐관:35};
+function interactionPair(group){
+  const ids=new Set(group.map(person=>person.id));
+  const related=relationList().filter(r=>ids.has(r.a)&&ids.has(r.b)).sort((a,b)=>(RELATION_CLOSENESS[b.type]||50)-(RELATION_CLOSENESS[a.type]||50));
+  if(related[0]){
+    const relation=related[0];
+    return {first:group.find(person=>person.id===relation.a),second:group.find(person=>person.id===relation.b),relation};
+  }
+  const ordered=[...group].sort((a,b)=>Number(b.socialEnergy??3)-Number(a.socialEnergy??3)||String(a.id).localeCompare(String(b.id)));
+  return {first:ordered[0],second:ordered[1],relation:null};
+}
+function concreteInteraction(place,first,second,relation){
+  const name=second.name,type=place?.type||"";
+  if(["혐관","라이벌"].includes(relation?.type))return {
+    first:`${name}와 눈이 마주치자 먼저 시선을 거두고, 일부러 조금 떨어진 자리를 골라 하던 일에 집중하고 있어요.`,
+    second:`${first.name}이 거리를 두는 것을 알아챘지만 따라가 말을 붙이지 않고, 자신의 자리에서 하던 일을 이어가고 있어요.`,
+    title:"서로 거리를 두는 중"
+  };
+  if(type==="공원")return {
+    first:`${name}이 걷는 속도에 맞춰 보폭을 늦추고, 길가에서 눈에 띈 풍경을 손으로 가리켜 함께 바라보고 있어요.`,
+    second:`${first.name}이 가리킨 쪽으로 시선을 옮긴 뒤 곁에 나란히 걸으며, 눈에 띈 것을 하나 더 찾아 보여주고 있어요.`,
+    title:"나란히 공원을 걷는 중"
+  };
+  if(type==="카페")return {
+    first:`${name}이 편히 앉을 수 있도록 테이블 위 물건을 한쪽으로 옮기고, 메뉴에서 눈에 띈 음료를 손가락으로 짚어 보여주고 있어요.`,
+    second:`${first.name}이 보여준 메뉴를 들여다본 뒤 고개를 끄덕이고, 주문한 음료를 서로 비교해 보고 있어요.`,
+    title:"한 테이블에서 시간을 보내는 중"
+  };
+  if(type==="음식점")return {
+    first:`${name} 쪽으로 반찬 접시를 밀어 주고, 방금 먹어 본 음식 중 괜찮았던 것을 골라 권하고 있어요.`,
+    second:`${first.name}이 건넨 접시에서 한입 덜어 맛본 뒤, 자기 앞의 음식도 조금 나누어 주고 있어요.`,
+    title:"음식을 나누어 먹는 중"
+  };
+  return {
+    first:`${name}이 불편하지 않도록 옆자리를 조금 비켜 주고, 지금 보고 있던 것을 손짓으로 가리켜 함께 확인하고 있어요.`,
+    second:`${first.name}이 보여준 것을 잠시 함께 살펴본 뒤, 짧게 반응하고 자기 눈에 들어온 것도 하나 골라 보여주고 있어요.`,
+    title:"같은 자리에 머무는 중"
+  };
+}
+function interactionPlace(placeId,townId){
+  const town=state.towns.find(item=>item.id===townId)||state.towns.find(item=>item.places?.some(place=>place.id===placeId))||state.world;
+  return town?.places?.find(place=>place.id===placeId);
+}
 function sharedPlaceScene(c,current,date){
   if(!current?.placeId||current.transit||current.home)return current;
   const together=state.order.map(id=>state.characters[id]).filter(other=>{
@@ -715,30 +758,26 @@ function sharedPlaceScene(c,current,date){
     return otherEvent.placeId===current.placeId&&(otherEvent.townId||other.townId)===(current.townId||c.townId)&&!otherEvent.transit;
   });
   if(!together.length)return current;
-  const names=together.map(other=>other.name),relations=relationList().filter(r=>
-    (r.a===c.id&&together.some(other=>other.id===r.b))||(r.b===c.id&&together.some(other=>other.id===r.a))
-  );
-  const social=Number(c.socialEnergy??3),socialStyle=String(c.socialStyle||"");
-  let suffix,detail;
-  if(relations.some(r=>["혐관","라이벌"].includes(r.type))){
-    suffix="미묘한 신경전이 흐르는 중";
-    detail=`${names.join(", ")}와 같은 자리에 있지만 먼저 말을 섞지는 않고 있어요. 시선이 마주칠 때마다 성격과 관계에 맞춰 짧게 반응하며 팽팽한 분위기를 유지하고 있어요.`;
-  }else if(relations.some(r=>["부부","연인","친구","소꿉친구","가족","부모·자녀"].includes(r.type))){
-    suffix=together.length>=2?"다 같이 이야기를 나누는 중":"함께 대화하는 중";
-    detail=`${names.join(", ")}와 자연스럽게 한자리에 머물며 각자의 근황과 지금 보고 있는 것에 대해 이야기를 주고받고 있어요. 가까운 관계인 사람에게는 더 편하게 말을 건네고 있어요.`;
-  }else if(social<=2||/혼자|수줍|낯|조용/.test(socialStyle)){
-    suffix="각자 시간을 보내는 중";
-    detail=`${names.join(", ")}도 같은 공간에 있지만 아직 가까운 사이는 아니라 굳이 대화에 끼어들지 않고 있어요. 서로의 존재만 가볍게 의식한 채 각자 하던 일에 집중하고 있어요.`;
-  }else if(social>=5||/인싸|사교|먼저/.test(socialStyle)){
-    suffix="가볍게 말을 건네는 중";
-    detail=`${names.join(", ")}와 특별한 관계는 없지만 같은 자리에 있는 것을 계기로 먼저 가벼운 이야기를 꺼냈어요. 상대의 반응을 살피며 부담스럽지 않게 대화를 이어가고 있어요.`;
+  const group=[c,...together],pair=interactionPair(group),place=interactionPlace(current.placeId,current.townId||c.townId);
+  const scene=concreteInteraction(place,pair.first,pair.second,pair.relation);
+  let detail,title;
+  if(c.id===pair.first?.id){
+    title=scene.title;
+    detail=scene.first;
+  }else if(c.id===pair.second?.id){
+    title=scene.title;
+    detail=scene.second;
   }else{
-    suffix="짧게 인사를 나눈 중";
-    detail=`${names.join(", ")}와 특별히 가까운 사이는 아니라 눈이 마주쳤을 때 짧게 인사했어요. 이후에는 불편하지 않을 만큼 거리를 두고 각자 시간을 보내고 있어요.`;
+    const social=Number(c.socialEnergy??3),quiet=social<=2||/혼자|수줍|낯|조용/.test(String(c.socialStyle||""));
+    title=quiet?"가까이에서 각자 시간을 보내는 중":"곁에서 상황을 지켜보는 중";
+    detail=quiet
+      ?`${pair.first.name}와 ${pair.second.name}이 서로 반응하는 동안 굳이 끼어들지 않고, 가까운 자리에서 자신이 하던 일에 집중하고 있어요.`
+      :`${pair.first.name}와 ${pair.second.name}이 주고받는 행동을 곁에서 알아차리고, 방해하지 않을 만큼만 표정으로 반응하며 함께 머물고 있어요.`;
   }
-  return {...current,title:`${current.title} · ${suffix}`,desc:`${current.desc} ${detail}`,withIds:together.map(other=>other.id),groupInteraction:true};
+  return {...current,title:`${current.title} · ${title}`,desc:`${current.desc} ${detail}`,withIds:together.map(other=>other.id),groupInteraction:true};
 }
 export function eventFor(c,date=new Date()){return sharedPlaceScene(c,baseEventFor(c,date),date)}
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=baseEventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}
+
 
