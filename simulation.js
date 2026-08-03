@@ -295,7 +295,8 @@ function workEvent(c,time,date){
 }
 
 function socialEvent(c,time,date){
-  const pick=preferredRelation(c);
+  let pick=preferredRelation(c);
+  if(pick&&activityTown(pick.other,date)?.id!==activityTown(c,date)?.id)pick=null;
   const pair=pick?[c.id,pick.other.id].sort().join(":"):c.id;
   const p=placeFor(["카페","음식점","공원","영화관"],`${pair}:${dayKey(date)}:social-place`,c);
   if(!p)return null;
@@ -649,7 +650,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260803ax";
+const ENGINE_VERSION="20260803ay";
 function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
@@ -659,6 +660,17 @@ function mergeImmutableEntries(kept,generated){
     if(!seen.has(id)){seen.add(id);merged.push(item)}
   });
   return merged.sort((a,b)=>a.minute-b.minute);
+}
+function companionWasActuallyThere(c,item,date){
+  if(!item?.withId)return true;
+  const other=state.characters[item.withId],otherDay=other?.days?.[dayKey(date)];
+  if(!other||!Array.isArray(otherDay?.entries))return false;
+  return otherDay.entries.some(otherEntry=>
+    otherEntry.withId===c.id&&
+    otherEntry.townId===item.townId&&
+    otherEntry.placeId===item.placeId&&
+    Math.abs(otherEntry.minute-item.minute)<=90
+  );
 }
 
 export function timeline(c,date=new Date()){
@@ -676,7 +688,7 @@ export function timeline(c,date=new Date()){
       else if(target.getTime()===createdDay.getTime())entries=entries.filter(item=>item.minute>=created.getHours()*60+created.getMinutes());
     }
     if(old&&today){
-      const cutoff=nowMin(date),kept=(Array.isArray(old.entries)?old.entries:[]).filter(item=>item.minute<=cutoff);
+      const cutoff=nowMin(date),kept=(Array.isArray(old.entries)?old.entries:[]).filter(item=>item.minute<=cutoff&&companionWasActuallyThere(c,item,date));
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
     c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,entries};

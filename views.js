@@ -1,5 +1,5 @@
 ﻿import {state,active} from "./state.js?v=20260803bc";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803bg";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803bh";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -69,8 +69,8 @@ const characterLimit=()=>isPremiumMember()?Number.MAX_SAFE_INTEGER:7;
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const hasDlc=id=>(accountEntitlements.dlcPacks||[]).includes(id);
 const backgroundOptions=()=>[
-  ["world-assets/cozy-town.png","개발자 그림 · 마을",true],
-  ["world-assets/downtown.png","개발자 그림 · 도시",true],
+  ["world-assets/cozy-town.png","마을",true],
+  ["world-assets/downtown.png","도시",true],
   ["world-assets/department-store-premium.png","백화점 아트리움 · 구매 배경",hasBackground("department-store")]
 ].map(([value,label,owned])=>`<option value="${value}" ${state.world.bg===value?"selected":""} ${owned?"":"disabled"}>${owned?label:`🔒 ${label}`}</option>`).join("");
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
@@ -372,7 +372,7 @@ function relationship(){
     const orderedIds=!r.directional&&Array.isArray(r.displayOrder)&&r.displayOrder.length===2?r.displayOrder:[r.a,r.b];
     const a=state.characters[orderedIds[0]],b=state.characters[orderedIds[1]];
     const heading=r.type==="부모·자녀"?`${esc(state.characters[r.parentId||r.a]?.name||a?.name||"부모")}(${esc(r.parentRole||"부모")}) → ${esc(state.characters[r.childId||r.b]?.name||b?.name||"자녀")}`:`${esc(a?.name||"")} ${r.type==="짝사랑"?"→":"×"} ${esc(b?.name||"")}`;
-    return a&&b?`<article class="relation" style="--a:${a.theme.primary};--b:${b.theme.primary}"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${relationActivities(r)}<button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
+    return a&&b?`<article class="relation"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${relationActivities(r)}<button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
   }).join("");
   return `<section class="panel form"><div class="title"><h1>관계</h1><button data-add-rel>+ 관계 추가</button></div><p>두 사람은 물론 여러 사람을 연인, 친구 모임, 산악회처럼 한 관계로 묶을 수 있어요. 선택한 관계 단계와 행동은 생활 장면에 반영돼요.</p>${cards||'<div class="empty-mini"><b>아직 설정한 관계가 없어요.</b><p>관계를 추가하면 생활과 상호작용에 반영돼요.</p></div>'}</section>`;
 }
@@ -397,6 +397,14 @@ function view(){
 export function renderApp(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];
   document.querySelector("#app").innerHTML=`${header()}<main>${view()}</main>`;
+  const backgroundSelect=document.querySelector("[data-world-bg]");
+  if(backgroundSelect){
+    [...backgroundSelect.options].forEach(option=>{
+      if(option.value.includes("cozy-town"))option.textContent="마을";
+      else if(option.value.includes("downtown"))option.textContent="도시";
+      else if(option.value.includes("department-store"))option.textContent="백화점 아트리움";
+    });
+  }
 }
 export function setAccountLabel(text){accountText=text;const el=document.querySelector("#account-status");if(el)el.textContent=text}
 export function setAccountEntitlements(value){accountEntitlements={backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks:[],iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks:[],dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks:[],plan:value?.plan==="premium"?"premium":"free",premium:Boolean(value?.premium||value?.plan==="premium"),premiumUntil:Number(value?.premiumUntil)||0,cancelAtPeriodEnd:Boolean(value?.cancelAtPeriodEnd)}}

@@ -402,3 +402,6 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .page-guide::backdrop{background:#10182788}
 .page-guide form{display:grid;gap:13px;padding:25px}
 .page-guide h2,.page-guide p{margin:0}.page-guide small{color:var(--p);font-weight:800}.page-guide button{width:100%;margin-top:5px}
+.relation{border:1px solid var(--line);background:#fffaf3!important;color:var(--ink)!important}
+.relation h2,.relation p,.relation small,.relation summary,.relation-stage,.relation-tags span{color:var(--ink)!important}
+.relation-tags span{background:#f2ebe2}
