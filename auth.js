@@ -85,7 +85,7 @@ const accessLabel=()=>[
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:"",
   entitlements.dlcPacks.length?`DLC ${entitlements.dlcPacks.length}개`:""
 ].filter(Boolean).join(" · ")||"일반 이용자";
-const localGuideKeys=()=>["observe","home","character","wardrobe","catalog","relationship","routine","town","settings"].filter(tab=>localStorage.getItem(`drawer-village-guide-${tab}`)==="1");
+const localGuideKeys=()=>["observe","home","character","catalog","relationship","routine","town","settings"].filter(tab=>localStorage.getItem(`drawer-village-guide-${tab}`)==="1");
 const publishGuideState=value=>{
   guideState={loaded:true,seen:[...new Set(Array.isArray(value)?value.filter(x=>typeof x==="string"):[])]};
   window.dispatchEvent(new Event("drawer-village-guide-state"));
@@ -206,6 +206,24 @@ async function download({automatic=false}={}){
   }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`)}finally{busy=false}
 }
 
+async function submitFeedback({category,message,allowReply=false}={}){
+  if(!user)throw Object.assign(new Error("Google 로그인이 필요합니다."),{code:"feedback/login-required"});
+  const cleanMessage=String(message||"").trim();
+  if(!cleanMessage)throw Object.assign(new Error("피드백 내용을 입력해 주세요."),{code:"feedback/empty"});
+  const feedbackId=`${user.uid}_${Date.now()}_${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;
+  await setDoc(doc(db,"feedback",feedbackId),{
+    uid:user.uid,
+    category:String(category||"기타").slice(0,40),
+    message:cleanMessage.slice(0,3000),
+    replyEmail:allowReply?(user.email||""):"",
+    page:location.href.slice(0,500),
+    userAgent:navigator.userAgent.slice(0,500),
+    status:"new",
+    createdAt:serverTimestamp()
+  });
+  return true;
+}
+
 if(ready){
   try{
     const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);storage=getStorage(app);
@@ -221,4 +239,4 @@ if(ready){
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
-window.ParallelCityAuth={login,upload,download,markGuideSeen,resetGuides,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements,storageUsage,guideState})};
+window.ParallelCityAuth={login,upload,download,submitFeedback,markGuideSeen,resetGuides,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements,storageUsage,guideState})};

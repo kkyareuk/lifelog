@@ -1,8 +1,16 @@
-﻿import {state,save} from "./state.js?v=20260803bc";
+import {state,save} from "./state.js?v=20260803bj";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
 const hash=s=>[...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,2166136261);
+const hasBatchim=value=>{
+  const chars=[...String(value||"").trim()];
+  const code=chars.at(-1)?.charCodeAt(0);
+  return Number.isFinite(code)&&code>=0xac00&&code<=0xd7a3?(code-0xac00)%28!==0:false;
+};
+const withParticle=(value,batchim,noBatchim)=>`${value}${hasBatchim(value)?batchim:noBatchim}`;
+const subject=value=>withParticle(value,"이","가");
+const togetherWith=value=>withParticle(value,"과","와");
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 const nowMin=(d=new Date())=>d.getHours()*60+d.getMinutes();
 const jitter=(c,kind,d=new Date())=>(hash(`${c.id}:${dayKey(d)}:${kind}`)%21)-10;
@@ -650,8 +658,8 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260803ay";
-function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+const ENGINE_VERSION="20260803bj";
+function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
   const merged=[...kept],seen=new Set(kept.map(item=>`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`));
@@ -763,27 +771,27 @@ function concreteInteraction(place,first,second,relation){
   const name=second.name,type=place?.type||"";
   if(["혐관","라이벌"].includes(relation?.type))return {
     first:`${name}와 눈이 마주치자 먼저 시선을 거두고, 일부러 조금 떨어진 자리를 골라 하던 일에 집중하고 있어요.`,
-    second:`${first.name}(이)가 거리를 두는 것을 알아챘지만 따라가 말을 붙이지 않고, 자신의 자리에서 하던 일을 이어가고 있어요.`,
+    second:`${subject(first.name)} 거리를 두는 것을 알아챘지만 따라가 말을 붙이지 않고, 자신의 자리에서 하던 일을 이어가고 있어요.`,
     title:"서로 거리를 두는 중"
   };
   if(type==="공원")return {
-    first:`${name}(이)가 걷는 속도에 맞춰 보폭을 늦추고, 길가에서 눈에 띈 풍경을 손으로 가리켜 함께 바라보고 있어요.`,
-    second:`${first.name}(이)가 가리킨 쪽으로 시선을 옮긴 뒤 곁에 나란히 걸으며, 눈에 띈 것을 하나 더 찾아 보여주고 있어요.`,
+    first:`${subject(name)} 걷는 속도에 맞춰 보폭을 늦추고, 길가에서 눈에 띈 풍경을 손으로 가리켜 함께 바라보고 있어요.`,
+    second:`${subject(first.name)} 가리킨 쪽으로 시선을 옮긴 뒤 곁에 나란히 걸으며, 눈에 띈 것을 하나 더 찾아 보여주고 있어요.`,
     title:"나란히 공원을 걷는 중"
   };
   if(type==="카페")return {
-    first:`${name}(이)가 편히 앉을 수 있도록 테이블 위 물건을 한쪽으로 옮기고, 메뉴에서 눈에 띈 음료를 손가락으로 짚어 보여주고 있어요.`,
-    second:`${first.name}(이)가 보여준 메뉴를 들여다본 뒤 고개를 끄덕이고, 주문한 음료를 서로 비교해 보고 있어요.`,
+    first:`${subject(name)} 편히 앉을 수 있도록 테이블 위 물건을 한쪽으로 옮기고, 메뉴에서 눈에 띈 음료를 손가락으로 짚어 보여주고 있어요.`,
+    second:`${subject(first.name)} 보여준 메뉴를 들여다본 뒤 고개를 끄덕이고, 주문한 음료를 서로 비교해 보고 있어요.`,
     title:"한 테이블에서 시간을 보내는 중"
   };
   if(type==="음식점")return {
     first:`${name} 쪽으로 반찬 접시를 밀어 주고, 방금 먹어 본 음식 중 괜찮았던 것을 골라 권하고 있어요.`,
-    second:`${first.name}(이)가 건넨 접시에서 한입 덜어 맛본 뒤, 자기 앞의 음식도 조금 나누어 주고 있어요.`,
+    second:`${subject(first.name)} 건넨 접시에서 한입 덜어 맛본 뒤, 자기 앞의 음식도 조금 나누어 주고 있어요.`,
     title:"음식을 나누어 먹는 중"
   };
   return {
-    first:`${name}(이)가 불편하지 않도록 옆자리를 조금 비켜 주고, 지금 보고 있던 것을 손짓으로 가리켜 함께 확인하고 있어요.`,
-    second:`${first.name}(이)가 보여준 것을 잠시 함께 살펴본 뒤, 짧게 반응하고 자기 눈에 들어온 것도 하나 골라 보여주고 있어요.`,
+    first:`${subject(name)} 불편하지 않도록 옆자리를 조금 비켜 주고, 지금 보고 있던 것을 손짓으로 가리켜 함께 확인하고 있어요.`,
+    second:`${subject(first.name)} 보여준 것을 잠시 함께 살펴본 뒤, 짧게 반응하고 자기 눈에 들어온 것도 하나 골라 보여주고 있어요.`,
     title:"같은 자리에 머무는 중"
   };
 }
@@ -812,8 +820,8 @@ function sharedPlaceScene(c,current,date){
     const social=Number(c.socialEnergy??3),quiet=social<=2||/혼자|수줍|낯|조용/.test(String(c.socialStyle||""));
     title=quiet?"가까이에서 각자 시간을 보내는 중":"곁에서 상황을 지켜보는 중";
     detail=quiet
-      ?`${pair.first.name}와 ${pair.second.name}(이)가 서로 반응하는 동안 굳이 끼어들지 않고, 가까운 자리에서 자신이 하던 일에 집중하고 있어요.`
-      :`${pair.first.name}와 ${pair.second.name}(이)가 주고받는 행동을 곁에서 알아차리고, 방해하지 않을 만큼만 표정으로 반응하며 함께 머물고 있어요.`;
+      ?`${togetherWith(pair.first.name)} ${subject(pair.second.name)} 서로 반응하는 동안 굳이 끼어들지 않고, 가까운 자리에서 자신이 하던 일에 집중하고 있어요.`
+      :`${togetherWith(pair.first.name)} ${subject(pair.second.name)} 주고받는 행동을 곁에서 알아차리고, 방해하지 않을 만큼만 표정으로 반응하며 함께 머물고 있어요.`;
   }
   return {...current,title:`${current.title} · ${title}`,desc:`${current.desc} ${detail}`,withIds:together.map(other=>other.id),groupInteraction:true};
 }

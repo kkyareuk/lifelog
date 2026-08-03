@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803bc";
-import {eventFor} from "./simulation.js?v=20260803bh";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803bh";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803bj";
+import {eventFor} from "./simulation.js?v=20260803bj";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803bj";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -9,7 +9,6 @@ const PAGE_GUIDES={
   observe:["관찰","캐릭터가 지금 어디에서 무엇을 하는지 볼 수 있어요. 위쪽에서 캐릭터와 마을을 바꾸고, 아래 생활로그에서 오늘의 흐름을 확인해 보세요."],
   home:["집","방마다 누가 무엇을 하는지 보고, 집 편집에서 방 사진·동거인·함께 사는 존재·자동차를 설정할 수 있어요."],
   character:["캐릭터","프로필과 성격, 취향을 설정하면 생활 장면과 대사가 달라져요. 일반회원은 캐릭터를 최대 7명까지 만들 수 있습니다."],
-  wardrobe:["옷장","옷을 등록하고 코디를 저장하면 캐릭터가 일정과 장소에 맞춰 옷을 골라 입어요."],
   catalog:["취향 사전","음식, 작품, 음악, 향 같은 세계의 물건을 등록해 캐릭터 취향과 생활 장면에 연결할 수 있어요."],
   relationship:["관계","둘 이상의 캐릭터 관계와 자주 하는 행동을 정하면 상호작용과 생활로그에 반영돼요."],
   routine:["주간 루틴","요일과 시간을 골라 출근, 데이트, 휴식 같은 반복 일정을 만들 수 있어요."],
@@ -259,8 +258,21 @@ function bind(){
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
   $$("[data-observe-town]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.observeTown);render()});
-  $$("[data-home-select]").forEach(el=>el.onclick=()=>{setActiveHome(el.dataset.homeSelect);render()});
-  $("[data-home-edit]")?.addEventListener("click",async()=>{const was=state.homeEditMode;setHomeEditMode(!was);was?await explicitSave("집 편집 저장"):render()});
+  $$("[data-home-select]").forEach(el=>el.onclick=()=>{
+    const homeId=el.dataset.homeSelect;
+    setActiveHome(homeId);
+    const residents=state.order.filter(id=>state.characters[id]?.homeId===homeId);
+    if(residents.length&&!residents.includes(state.activeId))setActive(residents[0]);
+    render();
+  });
+  $("[data-home-edit]")?.addEventListener("click",async()=>{
+    const residents=state.order.filter(id=>state.characters[id]?.homeId===state.activeHomeId);
+    if(residents.length&&!residents.includes(state.activeId))setActive(residents[0]);
+    const was=state.homeEditMode;
+    setHomeEditMode(!was);
+    render();
+    if(was)await explicitSave("집 편집 저장");
+  });
   $("[data-add-room]")?.addEventListener("click",()=>{addRoom(state.activeHomeId);render()});
   $("[data-add-pet]")?.addEventListener("click",()=>{addPet(state.activeHomeId);render()});
   $("[data-add-car]")?.addEventListener("click",()=>{addCar(state.activeHomeId);render()});
@@ -271,6 +283,33 @@ function bind(){
   $$("[data-pet-field]").forEach(el=>{
     const apply=()=>{const value=["neutered","needsWalk","rideable"].includes(el.dataset.petField)?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))render()};
     el.oninput=apply;el.onchange=apply;
+  });
+  $$("[data-pet-trait-field]").forEach(el=>el.onclick=()=>{
+    const pet=state.homes[el.dataset.homeId]?.pets?.find(item=>item.id===el.dataset.petId);
+    if(!pet)return;
+    const field=el.dataset.petTraitField;
+    const current=Array.isArray(pet[field])?pet[field]:[];
+    updatePet(el.dataset.homeId,el.dataset.petId,{[field]:current.includes(el.dataset.value)?current.filter(value=>value!==el.dataset.value):[...current,el.dataset.value]});
+    render();
+  });
+  $("[data-feedback-form]")?.addEventListener("submit",async event=>{
+    event.preventDefault();
+    const form=event.currentTarget;
+    const button=form.querySelector('button[type="submit"]');
+    const data=new FormData(form);
+    if(!window.ParallelCityAuth?.submitFeedback){toast("피드백 기능을 불러오지 못했습니다");return}
+    button.disabled=true;
+    try{
+      await window.ParallelCityAuth.submitFeedback({
+        category:data.get("category"),
+        message:data.get("message"),
+        allowReply:data.get("allowReply")==="on"
+      });
+      form.reset();
+      toast("피드백을 보냈습니다. 고마워요!");
+    }catch(error){
+      toast(error?.message||"피드백을 보내지 못했습니다");
+    }finally{button.disabled=false}
   });
   $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 함께 사는 존재를 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
   $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
@@ -882,12 +921,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803be").catch(error=>{
+import("./auth.js?v=20260803bj").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803bh").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803bj").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

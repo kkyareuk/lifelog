@@ -94,6 +94,7 @@ function migrate(x){
   return normalizeHomes(fresh());
 }
 function normalizeHomes(x){
+  if(x.activeTab==="wardrobe")x.activeTab="catalog";
   x.schema=8;
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
@@ -194,6 +195,9 @@ function normalizeHomes(x){
       id:p.id||uid(),name:p.name||"새 식구",species:p.species||"기타",
       breed:p.breed||"",sex:p.sex||"모름",neutered:Boolean(p.neutered),
       photo:p.photo||"",icon:p.icon||"",room:p.room||"living",
+      customSpecies:p.customSpecies||"",size:["소형","중형","대형"].includes(p.size)?p.size:"중형",
+      temperaments:Array.isArray(p.temperaments)?p.temperaments:[],
+      bodyTraits:Array.isArray(p.bodyTraits)?p.bodyTraits:[],
       needsWalk:p.needsWalk===undefined?["강아지","호랑이","드래곤"].includes(p.species):Boolean(p.needsWalk),
       rideable:p.rideable===undefined?["호랑이","드래곤"].includes(p.species):Boolean(p.rideable)
     })):[];
@@ -378,7 +382,7 @@ export function addRoom(homeId){
 export function addPet(homeId){
   const h=state.homes[homeId];if(!h)return;
   h.pets=Array.isArray(h.pets)?h.pets:[];
-  const pet={id:uid(),name:"새 식구",species:"강아지",breed:"",sex:"모름",neutered:false,photo:"",icon:"",room:"living",needsWalk:true,rideable:false};
+  const pet={id:uid(),name:"새 식구",species:"강아지",customSpecies:"",size:"중형",temperaments:[],bodyTraits:[],breed:"",sex:"모름",neutered:false,photo:"",icon:"",room:"living",needsWalk:true,rideable:false};
   h.pets.push(pet);save(true);return pet.id;
 }
 export function updatePet(homeId,petId,patch){

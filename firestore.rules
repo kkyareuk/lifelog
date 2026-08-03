@@ -20,5 +20,19 @@ service cloud.firestore {
       allow delete:
         if request.auth != null && request.auth.uid == userId;
     }
+
+    match /feedback/{feedbackId} {
+      allow create:
+        if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 3000
+        && request.resource.data.category is string
+        && request.resource.data.category.size() <= 40;
+
+      // 피드백은 개발자만 Firebase 콘솔에서 확인합니다.
+      allow read, update, delete: if false;
+    }
   }
 }
