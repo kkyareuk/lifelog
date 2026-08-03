@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260803bj";
+import {state,save} from "./state.js?v=20260803bl";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -326,7 +326,30 @@ function socialEvent(c,time,date){
       혐관:`${pick.other.name}와 사소한 선택에서도 신경전을 벌이지만 먼저 자리를 뜨지는 않고 있어요.`
     };
     if(crush&&pick.r.targetId===c.id)relationDetails.짝사랑=`${pick.other.name}의 시선이 평소보다 오래 머무는 것을 어렴풋이 느끼면서도 아직 그 마음을 확신하지 못하고 있어요.`;
-    const detail=p.type==="공연장"?`${pick.other.name}와 공연을 관람하며 인상적인 장면에 대한 감상을 나누고 있어요.`:romantic?`${pick.other.name}와 나란히 시간을 보내며 서로의 하루를 묻고 있어요.`:relationDetails[pick.r.type]||`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
+    const romanticDetails={
+      카페:[
+        `${pick.other.name}가 좋아하는 메뉴를 기억해 주문을 먼저 확인하고, 디저트 접시를 둘 사이로 당겨 함께 나눠 먹고 있어요.`,
+        `${pick.other.name}의 잔이 비기 전에 물을 챙겨 주고 가까운 자리에 앉아 오늘 있었던 일을 천천히 듣고 있어요.`,
+        `${pick.other.name}의 소매에 묻은 작은 부스러기를 조용히 털어 준 뒤 서로 고른 음료를 한 모금씩 바꾸어 맛보고 있어요.`
+      ],
+      음식점:[
+        `${pick.other.name}가 꺼리는 재료를 먼저 골라 내 주고 좋아하는 반찬은 가까운 쪽으로 밀어 두며 식사를 함께하고 있어요.`,
+        `${pick.other.name}의 식사 속도에 맞춰 천천히 먹으면서 맛있었던 메뉴를 기억해 다음에 다시 오자고 이야기하고 있어요.`,
+        `${pick.other.name}와 서로 다른 메뉴를 골라 한입씩 나누고, 상대의 접시가 비면 자연스럽게 다음 음식을 챙겨 주고 있어요.`
+      ],
+      공원:[
+        `${pick.other.name}와 보폭을 맞춰 걷다가 경치가 좋은 곳에서 나란히 멈춰 서서 손에 든 음료를 건네고 있어요.`,
+        `${pick.other.name}가 관심을 보인 풍경을 함께 바라보며 가까운 길로 천천히 돌아가자고 제안하고 있어요.`,
+        `${pick.other.name}의 옷깃을 가볍게 정리해 주고 사람이 적은 산책로를 골라 어깨를 나란히 한 채 걷고 있어요.`
+      ],
+      영화관:[
+        `${pick.other.name}가 보기 편한 자리를 먼저 찾아 주고 음료와 간식을 가운데 두어 함께 집어 먹고 있어요.`,
+        `${pick.other.name}와 인상 깊었던 장면을 작은 목소리로 확인하고 영화가 끝난 뒤 더 이야기할 곳을 고르고 있어요.`
+      ]
+    };
+    const romanticPool=romanticDetails[p.type]||[`${pick.other.name}와 나란히 시간을 보내며 서로의 하루를 묻고 있어요.`];
+    const romanticDetail=romanticPool[hash(`${pair}:${dayKey(date)}:${p.id}:romantic-detail`)%romanticPool.length];
+    const detail=p.type==="공연장"?`${pick.other.name}와 공연을 관람하며 인상적인 장면에 대한 감상을 나누고 있어요.`:romantic?romanticDetail:relationDetails[pick.r.type]||`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
     return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id||drink?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
   }
   return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 식사하고 있어요.`:drink?`${drink.name}을 마시며 잠깐 쉬고 있어요.`:p.type==="공연장"?"공연을 관람하며 무대에 집중하고 있어요.":"가벼운 외출을 즐기고 있어요.",away(c,{placeId:p.id,itemId:food?.id||drink?.id,mood:"평온"}));
@@ -517,6 +540,14 @@ const HOME_ACTIVITY_POOL=[
   ["집에서 손뜨개를 하는 중","실의 장력을 맞추고 도안을 확인하며 같은 무늬를 한 코씩 이어 가고 있어요.","living"],
   ["집에서 그림을 그리는 중","빛과 색을 비교하며 큰 형태부터 잡고 마음에 걸리는 세부를 여러 번 고쳐 그리고 있어요.","study"]
 ];
+const homeActivityPoolFor=c=>{
+  const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
+  return HOME_ACTIVITY_POOL.filter(([title])=>{
+    if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
+    if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
+    return true;
+  });
+};
 
 const MEDIEVAL_HOME_SCRIPTS=[
   ["벽난로의 불씨를 돌보는 중","재를 조심스럽게 걷어 내고 장작을 보태 방 안의 온기가 오래가도록 불을 살피고 있어요.","living"],
@@ -603,7 +634,10 @@ function build(c,date=new Date()){
   }
   if(destination.id!==homeTown.id){
     const returnMinute=Math.min(sleepMinute-75,1200);
-    list.push(entry(returnMinute,`${homeTown.name}으로 돌아가는 중`,"오늘의 바깥 일정을 마치고 대중교통이나 안전하게 운전할 수 있는 동행의 차로 집이 있는 마을로 돌아가고 있어요.",{townId:homeTown.id,transit:true,mood:"이동"}));
+    const returnMode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"transit";
+    const returnTitle=returnMode==="mount"?`${rideablePet.name}을 타고 ${homeTown.name}으로 돌아가는 중`:returnMode==="partner"?`${romantic.name}의 차를 타고 ${homeTown.name}으로 돌아가는 중`:returnMode==="car"?`차를 운전해 ${homeTown.name}으로 돌아가는 중`:`대중교통으로 ${homeTown.name}으로 돌아가는 중`;
+    const returnDesc=returnMode==="mount"?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로를 따라 집이 있는 마을로 돌아가고 있어요.`:`${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 집이 있는 마을로 돌아가고 있어요.`):returnMode==="partner"?`${romantic.name}가 운전하는 차에 함께 타고 집이 있는 마을로 돌아가고 있어요.`:returnMode==="car"?"바깥 일정을 마치고 직접 차를 운전해 집이 있는 마을로 돌아가고 있어요.":"버스나 지하철 노선을 확인하고 집이 있는 마을로 돌아가고 있어요.";
+    list.push(entry(returnMinute,returnTitle,returnDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:returnMode,withId:returnMode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
   let stress=Math.max(...list.map(x=>x.stress||0));
   const housemate=state.order.map(id=>state.characters[id]).find(other=>other&&other.id!==c.id&&other.homeId===c.homeId);
@@ -615,7 +649,7 @@ function build(c,date=new Date()){
   }else if(housemate){
     list.push(roommateHomeEntry(c,housemate,eveningMinute,date));
   }else{
-    const homeScripts=[...HOME_ACTIVITY_POOL,
+    const homeScripts=[...homeActivityPoolFor(c),
       ["거실 소파에서 영상 보는 중","TV 앞 소파에 기대어 좋아하는 영상을 이어 보고 있어요.","living"],
       ["서재에서 취미를 즐기는 중","책상 위에 좋아하는 물건을 펼쳐 놓고 취미에 집중하고 있어요.","study"],
       ["주방에서 간식 만드는 중","주방 조리대에서 간단한 간식과 마실 것을 준비하고 있어요.","kitchen"],
@@ -658,7 +692,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260803bj";
+const ENGINE_VERSION="20260803bl";
 function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
@@ -668,6 +702,19 @@ function mergeImmutableEntries(kept,generated){
     if(!seen.has(id)){seen.add(id);merged.push(item)}
   });
   return merged.sort((a,b)=>a.minute-b.minute);
+}
+function cleanExactRepeatedEntries(entries){
+  const kept=[];
+  [...entries].sort((a,b)=>a.minute-b.minute).forEach(item=>{
+    const repeated=kept.some(previous=>
+      previous.title===item.title&&
+      previous.desc===item.desc&&
+      previous.room===item.room&&
+      Math.abs(Number(previous.minute)-Number(item.minute))<240
+    );
+    if(!repeated)kept.push(item);
+  });
+  return kept;
 }
 function companionWasActuallyThere(c,item,date){
   if(!item?.withId)return true;
@@ -696,7 +743,7 @@ export function timeline(c,date=new Date()){
       else if(target.getTime()===createdDay.getTime())entries=entries.filter(item=>item.minute>=created.getHours()*60+created.getMinutes());
     }
     if(old&&today){
-      const cutoff=nowMin(date),kept=(Array.isArray(old.entries)?old.entries:[]).filter(item=>item.minute<=cutoff&&companionWasActuallyThere(c,item,date));
+      const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>item.minute<=cutoff));
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
     c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,entries};
@@ -710,7 +757,10 @@ function commitLiveEntry(c,date,item){
   const key=dayKey(date),day=c.days?.[key];
   if(!day||!item)return item;
   const entries=Array.isArray(day.entries)?day.entries:[];
-  const duplicate=entries.some(entry=>entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room);
+  const duplicate=entries.some(entry=>
+    (entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room)||
+    (entry.title===item.title&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
+  );
   if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save()}
   return item;
 }
@@ -736,13 +786,16 @@ function liveGapEvent(c,last,n,date){
     const text=continuations[place?.type]||[`${place?.name||"외출 장소"}에서 시간을 보내는 중`,"지금 하고 있는 일을 마무리하며 다음 일정을 준비하고 있어요."];
     return entry(minute,text[0],personalityFlavor(c,text[1],"live-away"),{townId:last.townId||c.townId,placeId:last.placeId,mood:last.mood||"보통"});
   }
-  const scripts=[...HOME_ACTIVITY_POOL,
+  const scripts=[...homeActivityPoolFor(c),
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
     ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],
     ["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"],
     ["집 안을 정돈하는 중","눈에 띄는 물건 몇 개를 제자리로 옮기고 주변을 가볍게 정리하고 있어요.","living"]
   ];
-  const script=scripts[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%scripts.length];
+  const recentTitles=new Set((c.days?.[dayKey(date)]?.entries||[]).filter(item=>minute-Number(item.minute)<=360).map(item=>item.title));
+  const freshScripts=scripts.filter(script=>!recentTitles.has(script[0]));
+  const pool=freshScripts.length?freshScripts:scripts;
+  const script=pool[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%pool.length];
   return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home"),script[2]);
 }
 function baseEventFor(c,date=new Date()){

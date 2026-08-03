@@ -520,8 +520,8 @@ function syncTown(){
   const index=state.towns.findIndex(t=>t.id===state.activeTownId);
   if(index>=0)state.towns[index]={id:state.activeTownId,...clone(state.world)};
 }
-export function addTown(){
-  if(state.towns.length>=2)return null;
+export function addTown(limit=2){
+  if(state.towns.length>=limit)return null;
   syncTown();
   const id=uid(),base=fresh().world;
   const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,era:"modern",places:[]};

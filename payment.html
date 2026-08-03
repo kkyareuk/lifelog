@@ -22,23 +22,23 @@
 <main class="wrap">
   <div class="top"><a href="./index.html">← 서랍마을로 돌아가기</a><span><img src="./icons/drawer-village-logo.png" alt="">안전한 토스페이먼츠 결제</span></div>
   <section class="hero">
-    <span class="eyebrow" id="eyebrow">DRAWER VILLAGE PREMIUM</span>
-    <h1 id="productName">서랍마을 프리미엄</h1>
-    <p id="productDescription">캐릭터와 사진을 제한 없이 만들고, 추가 콘텐츠를 반값으로 만나는 월 이용권이에요.</p>
+    <span class="eyebrow" id="eyebrow">DRAWER VILLAGE ITEM</span>
+    <h1 id="productName">캐릭터 슬롯 5개 추가</h1>
+    <p id="productDescription">한 번 구매하면 계정에 평생 적용되는 일회성 상품이에요.</p>
   </section>
   <section class="checkout">
     <div class="card">
       <h2>포함된 혜택</h2>
-      <ul class="features" id="features"><li>캐릭터 생성 무제한</li><li>사진 저장 용량 무제한</li><li>모든 DLC 50% 할인</li></ul>
-      <p class="discount" id="discount">해지해도 결제한 기간이 끝날 때까지 혜택이 유지돼요.</p>
-      <p class="legal">프리미엄 종료 후에는 일반회원 한도가 적용됩니다. 초과 데이터는 바로 삭제하지 않고 30일 동안 잠금·백업 기간을 제공한 뒤 정리합니다.</p>
+      <ul class="features" id="features"><li>기본 7명에 슬롯 5개 추가</li><li>구독·자동결제 없음</li><li>구매 계정에 영구 적용</li></ul>
+      <p class="discount" id="discount">매달 결제되지 않는 평생 소장 상품입니다.</p>
+      <p class="legal">Google 로그인 계정에 구매 내역이 적용됩니다. 결제 완료 후 같은 계정으로 서랍마을에 접속해 주세요.</p>
     </div>
     <div class="card">
       <h2>주문 확인</h2>
-      <div class="summary"><span>상품</span><b id="summaryName">서랍마을 프리미엄</b></div>
-      <div class="summary total"><span>결제금액</span><b id="price">월 1,900원</b></div>
+      <div class="summary"><span>상품</span><b id="summaryName">캐릭터 슬롯 5개 추가</b></div>
+      <div class="summary total"><span>결제금액</span><b id="price">1,200원</b></div>
       <button class="pay" id="payButton" disabled>결제 준비 중</button>
-      <div class="status" id="status">토스페이먼츠 상점 심사와 정기결제 승인 서버 연결이 끝나면 실제 결제가 열립니다.</div>
+      <div class="status" id="status">토스페이먼츠 상점 심사와 결제 승인 서버 연결이 끝나면 실제 결제가 열립니다.</div>
       <p class="legal">비밀 키는 이 페이지나 GitHub에 저장하지 않습니다. 결제 승인 서버의 환경 변수에만 보관합니다.</p>
     </div>
   </section>
@@ -46,18 +46,22 @@
 <script>
 const config=window.PARALLEL_CITY_CONFIG||{};
 const products={
-  premium:{packageId:"premium_monthly",name:"서랍마을 프리미엄",orderName:"서랍마을 프리미엄 월 이용권",amount:1900,recurring:true},
+  character_slots_5:{packageId:"character_slots_5",name:"캐릭터 슬롯 5개 추가",orderName:"서랍마을 · 캐릭터 슬롯 5개",amount:1200,recurring:false,description:"기본 7명에 캐릭터 슬롯 5개를 영구적으로 추가합니다.",features:["캐릭터 슬롯 5개 추가","구독·자동결제 없음","구매 계정에 영구 적용"]},
+  town_slot_1:{packageId:"town_slot_1",name:"마을 슬롯 1개 추가",orderName:"서랍마을 · 마을 슬롯 1개",amount:1900,recurring:false,description:"기본 2개에 마을 슬롯 1개를 영구적으로 추가합니다.",features:["마을 슬롯 1개 추가","구독·자동결제 없음","구매 계정에 영구 적용"]},
+  storage_50mb:{packageId:"storage_50mb",name:"사진 저장 공간 50MB",orderName:"서랍마을 · 사진 저장 공간 50MB",amount:2900,recurring:false,description:"사진 저장 한도를 총 20MB에서 50MB로 영구 확장합니다.",features:["사진 저장 공간 총 50MB","사진 최대 400장","구매 계정에 영구 적용"]},
   medieval:{packageId:"dlc_medieval_scripts",name:"중세의 하루",orderName:"서랍마을 DLC · 중세의 하루",amount:1850,recurring:false}
 };
-const product=products[new URLSearchParams(location.search).get("product")]||products.premium;
+const product=products[new URLSearchParams(location.search).get("product")]||products.character_slots_5;
 document.querySelector("#productName").textContent=product.name;
 document.querySelector("#summaryName").textContent=product.name;
 document.querySelector("#price").textContent=(product.recurring?"월 ":"")+product.amount.toLocaleString("ko-KR")+"원";
-if(!product.recurring){
+if(product.description)document.querySelector("#productDescription").textContent=product.description;
+if(product.features)document.querySelector("#features").innerHTML=product.features.map(value=>`<li>${value}</li>`).join("");
+if(product.packageId==="dlc_medieval_scripts"){
   document.querySelector("#eyebrow").textContent="DRAWER VILLAGE CONTENT";
   document.querySelector("#productDescription").textContent="새로운 생활 장면과 건물 모양을 계정에 추가하는 콘텐츠예요.";
   document.querySelector("#features").innerHTML="<li>마을별 시대 설정</li><li>시대에 맞춘 생활 스크립트</li><li>전용 건물 모양</li>";
-  document.querySelector("#discount").textContent="프리미엄 이용자는 결제 서버에서 50% 할인이 자동 적용됩니다.";
+  document.querySelector("#discount").textContent="한 번 구매하면 계정에 영구 적용됩니다.";
 }
 const button=document.querySelector("#payButton"),status=document.querySelector("#status");
 if(config.paymentsEnabled){

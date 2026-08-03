@@ -9,18 +9,17 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
-let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],plan:"free",premium:false};
+let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false};
 let guideState={loaded:!ready,seen:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const MAX_PHOTOS=120;
-const UNLIMITED_PHOTOS=Number.MAX_SAFE_INTEGER;
 const FREE_TOTAL_BYTES=20*1024*1024;
-const PREMIUM_TOTAL_BYTES=60*1024*1024;
+const STORAGE_50_TOTAL_BYTES=50*1024*1024;
 const MAX_IMAGE_BYTES=1536*1024;
-const isPremium=()=>Boolean(entitlements.premium||entitlements.plan==="premium");
-const maxPhotos=()=>isPremium()?UNLIMITED_PHOTOS:MAX_PHOTOS;
-const maxTotalBytes=()=>isPremium()?PREMIUM_TOTAL_BYTES:FREE_TOTAL_BYTES;
+const hasStorage50=()=>Boolean(entitlements.storage50||entitlements.purchases?.includes("storage_50mb"));
+const maxPhotos=()=>hasStorage50()?400:MAX_PHOTOS;
+const maxTotalBytes=()=>hasStorage50()?STORAGE_50_TOTAL_BYTES:FREE_TOTAL_BYTES;
 let storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
 const toast=text=>window.ParallelCity?.toast?.(text);
 const countStoredPhotos=value=>{
@@ -38,7 +37,7 @@ const normalizeManifest=(value,gameState)=>({
 });
 const publishStorageUsage=(manifest,gameState)=>{
   const normalized=normalizeManifest(manifest,gameState);
-  storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:maxPhotos(),maxBytes:isPremium()?Number.MAX_SAFE_INTEGER:maxTotalBytes(),unlimited:isPremium()};
+  storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:maxPhotos(),maxBytes:maxTotalBytes(),unlimited:false};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.dispatchEvent(new Event("drawer-village-storage-usage"));
 };
@@ -53,34 +52,37 @@ function shortError(error){
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
   if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
   if(code.includes("photo-limit"))return `사진은 계정당 최대 ${MAX_PHOTOS}장까지 저장할 수 있어요`;
-  if(code.includes("total-size-limit"))return "일반회원 사진 저장 용량은 총 20MB까지예요";
+  if(code.includes("total-size-limit"))return `사진 저장 용량은 현재 총 ${Math.round(maxTotalBytes()/1048576)}MB까지예요`;
   if(code.includes("image-too-large"))return "압축된 사진 한 장은 1.5MB 이하여야 해요";
   if(code.includes("timeout"))return "사진 업로드 응답 없음 · Storage 요금제와 규칙을 확인해 주세요";
   if(code.includes("network"))return "인터넷 연결 확인";
   return code;
 }
 const cloudDoc=()=>doc(db,"users",user.uid);
-const normalizeEntitlements=value=>({
-  backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks.filter(x=>typeof x==="string"):[],
-  iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
-  dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks.filter(x=>typeof x==="string"):[],
-  plan:value?.plan==="premium"||value?.tier==="premium"||value?.premium===true?"premium":"free",
-  premium:Boolean(value?.premium||value?.plan==="premium"||value?.tier==="premium"),
-  premiumUntil:Number(value?.premiumUntil?.seconds)*1000||Number(value?.premiumUntil)||0,
-  cancelAtPeriodEnd:Boolean(value?.cancelAtPeriodEnd),
-  grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
-  note:typeof value?.note==="string"?value.note:""
-});
+const normalizeEntitlements=value=>{
+  const purchases=Array.isArray(value?.purchases)?value.purchases.filter(x=>typeof x==="string"):[];
+  return {
+    backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks.filter(x=>typeof x==="string"):[],
+    iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
+    dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks.filter(x=>typeof x==="string"):[],
+    purchases,
+    characterSlotPacks:Math.max(0,Number(value?.characterSlotPacks)||purchases.filter(x=>x==="character_slots_5").length),
+    townSlotPacks:Math.max(0,Number(value?.townSlotPacks)||purchases.filter(x=>x==="town_slot_1").length),
+    storage50:Boolean(value?.storage50||purchases.includes("storage_50mb")),
+    grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
+    note:typeof value?.note==="string"?value.note:""
+  };
+};
 const publishEntitlements=value=>{
   entitlements=normalizeEntitlements(value);
-  if(entitlements.premiumUntil&&entitlements.premiumUntil<=Date.now())entitlements={...entitlements,plan:"free",premium:false};
-  storageUsage={...storageUsage,maxCount:maxPhotos(),maxBytes:isPremium()?Number.MAX_SAFE_INTEGER:maxTotalBytes(),unlimited:isPremium()};
+  storageUsage={...storageUsage,maxCount:maxPhotos(),maxBytes:maxTotalBytes(),unlimited:false};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.ParallelCity?.setEntitlements?.(entitlements);
-  if(entitlements.cancelAtPeriodEnd&&entitlements.premiumUntil>Date.now())window.dispatchEvent(new CustomEvent("drawer-village-premium-ending",{detail:entitlements}));
 };
 const accessLabel=()=>[
-  isPremium()?"프리미엄 이용자":"",
+  entitlements.characterSlotPacks?`캐릭터 슬롯 +${entitlements.characterSlotPacks*5}`:"",
+  entitlements.townSlotPacks?`마을 슬롯 +${entitlements.townSlotPacks}`:"",
+  entitlements.storage50?"사진 50MB":"",
   entitlements.backgroundPacks.length?`배경 팩 ${entitlements.backgroundPacks.length}개`:"",
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:"",
   entitlements.dlcPacks.length?`DLC ${entitlements.dlcPacks.length}개`:""
@@ -110,7 +112,7 @@ async function uploadDataUrl(dataUrl,manifest){
   if(known){uploadedCache.set(dataUrl,known.url);return known.url}
   if(manifest.items.length+manifest.legacyCount>=maxPhotos())throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
   const usedBytes=manifest.items.reduce((sum,item)=>sum+(Number(item.size)||0),0);
-  if(!isPremium()&&usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
+  if(usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
   const ext=blob.type==="image/png"?"png":"webp";
   const target=ref(storage,`users/${user.uid}/media/${hash}.${ext}`);
   try{
@@ -120,7 +122,7 @@ async function uploadDataUrl(dataUrl,manifest){
   }catch(error){
     if(String(error?.code||"").includes("timeout"))throw error;
   }
-  await Promise.race([uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000"}),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),25000))]);
+  await Promise.race([uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000,immutable"}),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),25000))]);
   const url=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
   manifest.items.push({hash,size:blob.size,url});
   uploadedCache.set(dataUrl,url);
@@ -168,7 +170,7 @@ async function upload({silent=false,reason=""}={}){
     publishStorageUsage(mediaManifest,gameState);
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
     const storedPhotos=countStoredPhotos(gameState);
-    toast(storedPhotos?`동기화되었습니다 · 고유 사진 ${mediaManifest.items.length+mediaManifest.legacyCount}/${isPremium()?"무제한":`${MAX_PHOTOS}장`}`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
+    toast(storedPhotos?`동기화되었습니다 · 고유 사진 ${mediaManifest.items.length+mediaManifest.legacyCount}/${maxPhotos()}장`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
