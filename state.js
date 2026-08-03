@@ -116,12 +116,13 @@ function normalizeHomes(x){
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
   const relationList=Array.isArray(x.relationships)?x.relationships:Object.values(x.relationships||{});
   x.relationships={};
-  const relationKeys=new Set();
+  const relationIdsByKey=new Map();
   relationList.filter(Boolean).forEach(relation=>{
     const id=relation.id||uid();
     const typeMap={"폴리 관계":"연인","절친":"친구","대학 동기":"젊은 날의 친구들"};
     relation.type=typeMap[relation.type]||relation.type||"친구";
     relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
+    relation.interactionsAll=Boolean(relation.interactionsAll);
     relation.stage=relation.stage||({
       연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구",혐관:"신경전 중",짝사랑:"멀리서 바라봄"
     }[relation.type]||"편안함");
@@ -129,7 +130,20 @@ function normalizeHomes(x){
       const directional=relation.type==="짝사랑"||relation.type==="부모·자녀"||relation.directional;
       const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
       const key=`${relation.type}|${pair}|${relation.parentRole||""}`;
-      if(!relationKeys.has(key)){relationKeys.add(key);x.relationships[id]={...relation,id}}
+      const displayOrder=Array.isArray(relation.displayOrder)&&relation.displayOrder.length===2&&relation.displayOrder.every(characterId=>characterId===relation.a||characterId===relation.b)
+        ?relation.displayOrder:[relation.a,relation.b];
+      const candidate={...relation,id,displayOrder};
+      const previousId=relationIdsByKey.get(key);
+      if(!previousId){
+        relationIdsByKey.set(key,id);x.relationships[id]=candidate;
+      }else{
+        const previous=x.relationships[previousId];
+        const candidateScore=(Number(candidate.updatedAt)||0)*1000+candidate.interactions.length+(candidate.interactionsAll?100:0);
+        const previousScore=(Number(previous.updatedAt)||0)*1000+(previous.interactions?.length||0)+(previous.interactionsAll?100:0);
+        if(candidateScore>previousScore){
+          delete x.relationships[previousId];relationIdsByKey.set(key,id);x.relationships[id]=candidate;
+        }
+      }
     }
   });
   const defaultWorld=fresh().world;

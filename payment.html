@@ -22,7 +22,7 @@
   <div class="top"><a href="./index.html">← 돌아가기</a><span class="shop-mark"><img src="./icons/drawer-village-logo.png" alt=""><b>서랍마을 DLC 상점</b></span></div>
   <section class="hero">
     <div class="art" id="productArt"><img src="./world-assets/medieval-castle.svg" alt="중세 성채"></div>
-    <div class="hero-copy"><span class="eyebrow">시대 스크립트 DLC</span><h1 id="productName">중세의 하루</h1><p id="productDescription">마법은 빼고, 촛불과 손편지와 시장의 소란을 담았어요. 원하는 마을 하나를 실제 중세의 하루로 바꿔보세요.</p><div class="hero-tags"><span>마법 없음</span><span>마을별 적용</span><span>건물 3종 포함</span></div></div>
+        <div class="hero-copy"><span class="eyebrow">서랍마을 첫 번째 DLC</span><h1 id="productName">중세의 하루</h1><p id="productDescription">촛불을 켜고, 장부를 쓰고, 시장을 오가는 하루. 원하는 마을 하나를 중세의 시간으로 바꿔보세요.</p><div class="hero-tags"><span>중세 생활</span><span>마을별 적용</span><span>건물 3종 포함</span></div></div>
   </section>
   <section class="checkout">
     <div class="card">
@@ -35,7 +35,7 @@
     <div class="card order-card">
       <h2>주문 확인</h2>
       <div class="summary"><span>상품</span><b id="summaryName">중세의 하루</b></div>
-      <div class="summary total"><span>결제금액</span><b id="price">4,900원</b></div>
+          <div class="summary total"><span>결제금액</span><b id="price">1,850원</b></div>
       <button class="pay" id="payButton" disabled>결제 준비 중</button>
       <div class="status" id="status">토스페이먼츠 상점 심사와 결제 승인 서버 연결이 끝나면 실제 결제가 열립니다.</div>
       <p class="legal">시크릿 키는 이 페이지나 GitHub에 넣지 않습니다. 시크릿 키는 결제 승인 서버의 환경변수에만 보관해야 합니다.</p>
@@ -45,7 +45,7 @@
 <script>
 const config=window.PARALLEL_CITY_CONFIG||{};
 const products={
-  medieval:{packageId:"dlc_medieval_scripts",name:"중세의 하루",orderName:"서랍마을 DLC · 중세의 하루",amount:4900}
+      medieval:{packageId:"dlc_medieval_scripts",name:"중세의 하루",orderName:"서랍마을 DLC · 중세의 하루",amount:1850}
 };
 const product=products[new URLSearchParams(location.search).get("product")]||products.medieval;
 document.querySelector("#productName").textContent=product.name;

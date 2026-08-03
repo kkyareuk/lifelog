@@ -1,11 +1,13 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803av";
-import {eventFor} from "./simulation.js?v=20260803av";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803av";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803aw";
+import {eventFor} from "./simulation.js?v=20260803aw";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803aw";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
 
 function showInstallButton(){
+  const installed=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+  if(installed){document.querySelector("#install-drawer-village")?.remove();return}
   if(document.querySelector("#install-drawer-village"))return;
   const button=document.createElement("button");
   button.id="install-drawer-village";
@@ -716,8 +718,10 @@ function openRelationDialog(id=""){
     <p class="hint">선택한 행동과 관계 단계가 생활 로그와 상호작용 대사에 반영돼요. 여러 명을 함께 선택해도 모두 같은 관계 종류로 저장돼요.</p>
     <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
   </form>`;
-  document.body.append(dialog);const f=dialog.querySelector("form"),selectedInteractions=new Set(old?.interactions||[]);
-  let pairOrder=old?.a&&old?.b?[old.a,old.b]:oldMembers.slice(0,2);
+  const allInteractionValues=Object.values(RELATION_INTERACTION_GROUPS).flat();
+  document.body.append(dialog);const f=dialog.querySelector("form"),selectedInteractions=new Set(old?.interactionsAll?allInteractionValues:(old?.interactions||[]));
+  let pairOrder=Array.isArray(old?.displayOrder)&&old.displayOrder.length===2?old.displayOrder:[old?.a,old?.b].filter(Boolean);
+  if(pairOrder.length!==2)pairOrder=oldMembers.slice(0,2);
   const checkedMembers=()=>[...f.querySelectorAll('[name="member"]:checked')].map(input=>input.value);
   const syncPairOrder=()=>{
     const selected=checkedMembers();
@@ -750,9 +754,9 @@ function openRelationDialog(id=""){
       else if(!["짝사랑","부모·자녀"].includes(f.type.value)&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
       else{
         const levels=stagesFor(f.type.value),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1);
-        const hostile=f.type.value==="혐관",base={type:f.type.value,stage:f.stage.value,interactions:[...selectedInteractions],cohabit:f.cohabit.checked,intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75)};
+        const hostile=f.type.value==="혐관",base={type:f.type.value,stage:f.stage.value,interactions:[...selectedInteractions],interactionsAll:selectedInteractions.size===allInteractionValues.length,cohabit:f.cohabit.checked,intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
         if(old?.groupId)Object.values(state.relationships).filter(r=>r.groupId===old.groupId).forEach(r=>deleteRelationship(r.id));
-        else if(old)deleteRelationship(id);
+        else if(old&&(["짝사랑","부모·자녀"].includes(f.type.value)||members.length!==2))deleteRelationship(id);
         if(f.type.value==="짝사랑"){
           const groupId=directionalPairs.length>1?`crush-${Date.now()}`:"";
           directionalPairs.forEach(([a,b])=>addRelationship({...base,a,b,admirerId:a,targetId:b,directional:true,groupId,groupMembers:[...new Set([...admirers,...targets])]}));
@@ -761,7 +765,8 @@ function openRelationDialog(id=""){
           parentPairs.forEach(([parent,child,parentRole])=>addRelationship({...base,a:parent,b:child,parentId:parent,childId:child,parentRole,directional:true,groupId,groupMembers:[...new Set([...mothers,...fathers,...children])]}));
         }else if(members.length===2){
           const ordered=pairOrder.length===2&&pairOrder.every(member=>members.includes(member))?pairOrder:members;
-          addRelationship({...base,a:ordered[0],b:ordered[1]});
+          const patch={...base,a:ordered[0],b:ordered[1],displayOrder:[...ordered],directional:false,groupId:"",groupMembers:[]};
+          old?updateRelationship(id,patch):addRelationship(patch);
         }
         else{
           const groupId=`group-${members.slice().sort().join("-")}-${Date.now()}`;
@@ -822,19 +827,19 @@ window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();def
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
 setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
 render();
-if(!window.matchMedia("(display-mode: standalone)").matches)showInstallButton();
+showInstallButton();
 if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   const notice=document.createElement("dialog");notice.className="backup-notice";
   notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>사진 업로드도 정상적으로 동기화되지만 Google 저장 공간을 사용해요. 가능하면 <b>이미지 주소 링크</b>로 첨부하면 계정 용량을 거의 차지하지 않습니다. 직접 올린 사진은 고유 사진 기준 <b>최대 120장·총 60MB</b>까지 저장하고, 같은 사진은 한 번만 올려요. 사용량은 설정에서 확인할 수 있어요.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803av").catch(error=>{
+import("./auth.js?v=20260803aw").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803av").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803aw").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
