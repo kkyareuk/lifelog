@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260803ax";
+﻿import {state,save} from "./state.js?v=20260803ay";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;

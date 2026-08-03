@@ -1,9 +1,21 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ax";
-import {eventFor} from "./simulation.js?v=20260803ax";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ax";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ay";
+import {eventFor} from "./simulation.js?v=20260803ay";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ay";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
+const guidePending=new Set();
+const PAGE_GUIDES={
+  observe:["관찰","캐릭터가 지금 어디에서 무엇을 하는지 볼 수 있어요. 위쪽에서 캐릭터와 마을을 바꾸고, 아래 생활로그에서 오늘의 흐름을 확인해 보세요."],
+  home:["집","방마다 누가 무엇을 하는지 보고, 집 편집에서 방 사진·동거인·함께 사는 존재·자동차를 설정할 수 있어요."],
+  character:["캐릭터","프로필과 성격, 취향을 설정하면 생활 장면과 대사가 달라져요. 캐릭터는 최대 7명까지 만들 수 있습니다."],
+  wardrobe:["옷장","옷을 등록하고 코디를 저장하면 캐릭터가 일정과 장소에 맞춰 옷을 골라 입어요."],
+  catalog:["취향 사전","음식, 작품, 음악, 향 같은 세계의 물건을 등록해 캐릭터 취향과 생활 장면에 연결할 수 있어요."],
+  relationship:["관계","둘 이상의 캐릭터 관계와 자주 하는 행동을 정하면 상호작용과 생활로그에 반영돼요."],
+  routine:["주간 루틴","요일과 시간을 골라 출근, 데이트, 휴식 같은 반복 일정을 만들 수 있어요."],
+  town:["마을","마을은 최대 2개까지 만들 수 있어요. 건물을 추가하고 지도 위에서 위치를 옮겨 보세요."],
+  settings:["설정","동기화와 백업, 지도 표시 방식을 관리하고 개발자에게 피드백을 보낼 수 있어요."]
+};
 
 function showInstallButton(){
   const installed=window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
@@ -171,11 +183,24 @@ function render(){
     bind();
     applyTheme();
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
+    requestAnimationFrame(maybeShowPageGuide);
   }catch(error){
     console.error("화면 복구 필요",error);
     document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
     document.querySelector("#safe-reload")?.addEventListener("click",()=>location.reload());
   }
+}
+
+function maybeShowPageGuide(){
+  const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
+  if(!guide||!state.order.length||localStorage.getItem(key)==="1"||guidePending.has(tab))return;
+  guidePending.add(tab);
+  const openDialog=document.querySelector("dialog[open]");
+  if(openDialog){openDialog.addEventListener("close",()=>{guidePending.delete(tab);maybeShowPageGuide()},{once:true});return}
+  const dialog=document.createElement("dialog");dialog.className="page-guide";
+  dialog.innerHTML=`<form method="dialog"><small>처음 오셨나요?</small><h2>${guide[0]}</h2><p>${guide[1]}</p><button class="primary" value="ok">확인</button></form>`;
+  dialog.onclose=()=>{localStorage.setItem(key,"1");guidePending.delete(tab);dialog.remove()};
+  document.body.append(dialog);dialog.showModal();
 }
 
 function showToast(message){
@@ -216,7 +241,7 @@ function bind(){
   $$("[data-edit-clothing]").forEach(el=>el.onclick=event=>{event.stopPropagation();openClothingEditor(el.dataset.editClothing)});
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
   $$("[data-edit-outfit]").forEach(el=>el.onclick=()=>openOutfitEditor(el.dataset.editOutfit));
-  $$("[data-new]").forEach(el=>el.onclick=()=>{createCharacter();render()});
+  $$("[data-new]").forEach(el=>el.onclick=()=>{if(!createCharacter())showToast("캐릭터는 최대 7명까지 만들 수 있어요");render()});
   $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);setCharacterPane("profile");render()});
   $$("[data-sort]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
@@ -401,7 +426,7 @@ function bind(){
     state.world.era=e.target.value;save(true);render();showToast(e.target.value==="medieval"?"이 마을에 중세 생활 스크립트가 적용됩니다":"이 마을을 현대 시대로 바꿨습니다");
   });
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
-  $("[data-add-town]")?.addEventListener("click",()=>{addTown();render()});
+  $("[data-add-town]")?.addEventListener("click",()=>{if(!addTown())showToast("마을은 최대 2개까지 만들 수 있어요");render()});
   $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
   $("[data-add-place]")?.addEventListener("click",()=>{addPlace();render()});
   const addPlaceButton=$("[data-add-place]");
@@ -444,6 +469,11 @@ function bind(){
       }catch(error){console.error(error);showToast("서랍마을 백업 파일을 확인해 주세요")}
     };
     input.click();
+  });
+  $("[data-guide-reset]")?.addEventListener("click",()=>{
+    Object.keys(PAGE_GUIDES).forEach(tab=>localStorage.removeItem(`drawer-village-guide-${tab}`));
+    showToast("페이지 안내를 다시 볼 수 있게 했어요");
+    maybeShowPageGuide();
   });
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
   if(state.activeTab==="town")bindPlaceDrag();
@@ -834,12 +864,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803ax").catch(error=>{
+import("./auth.js?v=20260803ay").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803ax").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803ay").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
