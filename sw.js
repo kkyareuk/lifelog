@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260803au";
+const CACHE_VERSION="drawer-village-v20260803av";
 const CORE=[
   "./",
   "./index.html",
@@ -15,6 +15,12 @@ const CORE=[
   "./world-assets/department-store-premium.png",
   "./world-assets/drawer-building.png",
   "./world-assets/drawer-home.png",
+  "./world-assets/medieval-castle.svg",
+  "./world-assets/medieval-tavern.svg",
+  "./world-assets/medieval-market.svg",
+  "./payment.html",
+  "./payment-success.html",
+  "./payment-fail.html",
   "./icons/drawer-village-logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

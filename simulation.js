@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260803au";
+import {state,save} from "./state.js?v=20260803av";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -505,6 +505,34 @@ const HOME_ACTIVITY_POOL=[
   ["집에서 그림을 그리는 중","빛과 색을 비교하며 큰 형태부터 잡고 마음에 걸리는 세부를 여러 번 고쳐 그리고 있어요.","study"]
 ];
 
+const MEDIEVAL_HOME_SCRIPTS=[
+  ["벽난로의 불씨를 돌보는 중","재를 조심스럽게 걷어 내고 장작을 보태 방 안의 온기가 오래가도록 불을 살피고 있어요.","living"],
+  ["창가에서 바느질하는 중","해가 잘 드는 창가에 앉아 해진 옷의 솔기를 꿰매고 느슨해진 단추를 단단히 달고 있어요.","living"],
+  ["식료품 저장 상태를 살피는 중","말린 곡식과 소금에 절인 식재료를 하나씩 확인하고 먼저 먹어야 할 것부터 앞쪽에 놓고 있어요.","kitchen"],
+  ["밀랍초를 손질하는 중","심지를 알맞게 다듬고 녹은 밀랍을 모아 밤에 쓸 초를 새로 빚고 있어요.","living"],
+  ["손편지를 쓰는 중","깃펜 끝을 가다듬고 멀리 있는 사람에게 전할 소식을 종이 위에 천천히 적고 있어요.","study"],
+  ["시장에 가져갈 바구니를 챙기는 중","동전 주머니와 장바구니를 확인하고 오늘 구해야 할 물건을 짧은 목록으로 적고 있어요.","entry"],
+  ["가죽 장화를 손질하는 중","마른 흙을 털어 내고 가죽에 기름을 얇게 발라 다음 외출에 신을 장화를 돌보고 있어요.","entry"],
+  ["허브를 말리는 중","깨끗이 다듬은 약초와 향초를 작은 다발로 묶어 바람이 잘 통하는 그늘에 걸고 있어요.","kitchen"],
+  ["집안의 물을 채우는 중","빈 물항아리를 살피고 하루 동안 쓸 물을 길어 와 주방과 씻는 곳에 나누어 두고 있어요.","kitchen"],
+  ["빵 반죽을 치대는 중","밀가루와 물, 발효종을 섞은 반죽을 힘 있게 치대고 천을 덮어 부풀기를 기다리고 있어요.","kitchen"],
+  ["장부를 정리하는 중","양피지에 적어 둔 지출과 물품 수량을 다시 세어 보고 빠진 기록을 채우고 있어요.","study"],
+  ["뜰에서 작은 손질을 하는 중","마른 잎을 걷고 흙을 고른 뒤 자라는 채소와 약초에 필요한 만큼 물을 주고 있어요.","living"]
+];
+function medievalize(c,item,date){
+  const town=state.towns.find(t=>t.id===(item.townId||c.townId))||townFor(c);
+  if(town?.era!=="medieval")return item;
+  const swaps=[
+    [/스마트폰|휴대폰|핸드폰/g,"손편지"],[/태블릿|컴퓨터|노트북/g,"장부와 필기도구"],
+    [/TV|텔레비전|영상/g,"이야기책"],[/타이머|알람/g,"모래시계"],[/소셜 미디어|SNS/g,"소식"],
+    [/자동차|차량|차로/g,"마차"],[/버스|지하철|대중교통/g,"역마차"],[/운전하는/g,"마차를 모는"],[/운전해/g,"마차를 몰아"],[/운전할/g,"마차를 몰 수"],[/운전/g,"마차 몰기"],
+    [/카페/g,"여관"],[/커피|라테|라떼/g,"따뜻한 허브차"],[/회사|오피스/g,"길드 회관"],
+    [/냉장고/g,"식료품 저장고"],[/택배/g,"짐마차"],[/우편물/g,"전령이 전한 서신"],
+    [/충전기|충전/g,"등잔 기름"],[/전등|조명/g,"촛불"],[/엘리베이터/g,"계단"]
+  ];
+  const convert=text=>swaps.reduce((value,[pattern,replacement])=>value.replace(pattern,replacement),String(text||""));
+  return {...item,title:convert(item.title),desc:convert(item.desc)};
+}
 function build(c,date=new Date()){
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
   const sleepMinute=sleep<=wake?sleep+1440:sleep;
@@ -605,17 +633,24 @@ function build(c,date=new Date()){
     if(place)list.push(entry(minute,item.title,desc,{townId:place.townId,placeId:place.id,withId:companions[0]?.id,mood:item.type==="데이트"?"즐거움":"일정"}));
     else list.push(homeEntry(c,minute,item.title,desc,item.type==="휴식"?"living":"study"));
   });
-  return list.sort((a,b)=>a.minute-b.minute);
+  if(homeTown?.era==="medieval"){
+    const minute=Math.min(sleepMinute-120,Math.max(wake+210,600));
+    if(minute>(wake+80)&&minute<(sleepMinute-45)){
+      const script=MEDIEVAL_HOME_SCRIPTS[hash(`${c.id}:${dayKey(date)}:medieval-home`)%MEDIEVAL_HOME_SCRIPTS.length];
+      list.push(homeEntry(c,minute,script[0],script[1],script[2]));
+    }
+  }
+  return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260803au",townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),places:state.towns.flatMap(t=>t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])})}
+function signature(c){return JSON.stringify({engine:"20260803av",townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig||old.engineVersion!=="20260803au"){
-    c.days[key]={signature:sig,engineVersion:"20260803au",entries:build(c,date)};
+  if(!old||old.signature!==sig||old.engineVersion!=="20260803av"){
+    c.days[key]={signature:sig,engineVersion:"20260803av",entries:build(c,date)};
     save();
   }
   return c.days[key].entries;

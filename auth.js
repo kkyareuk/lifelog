@@ -9,7 +9,7 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
-let entitlements={backgroundPacks:[],iconPacks:[]};
+let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const MAX_PHOTOS=120;
@@ -57,6 +57,7 @@ const cloudDoc=()=>doc(db,"users",user.uid);
 const normalizeEntitlements=value=>({
   backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks.filter(x=>typeof x==="string"):[],
   iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
+  dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks.filter(x=>typeof x==="string"):[],
   grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
   note:typeof value?.note==="string"?value.note:""
 });
@@ -66,7 +67,8 @@ const publishEntitlements=value=>{
 };
 const accessLabel=()=>[
   entitlements.backgroundPacks.length?`배경 팩 ${entitlements.backgroundPacks.length}개`:"",
-  entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:""
+  entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:"",
+  entitlements.dlcPacks.length?`DLC ${entitlements.dlcPacks.length}개`:""
 ].filter(Boolean).join(" · ")||"일반 이용자";
 
 async function uploadDataUrl(dataUrl,manifest){

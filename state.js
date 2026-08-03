@@ -138,7 +138,7 @@ function normalizeHomes(x){
   x.world.bg=x.world.bg||defaultWorld.bg;
   x.world.places=Array.isArray(x.world.places)?x.world.places:clone(defaultWorld.places);
   x.towns=Array.isArray(x.towns)&&x.towns.length?x.towns:[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:t.id||uid(),name:t.name||"이름 없는 마을",bg:t.bg||defaultWorld.bg,places:Array.isArray(t.places)?t.places:[]}));
+  x.towns=x.towns.map(t=>({id:t.id||uid(),name:t.name||"이름 없는 마을",bg:t.bg||defaultWorld.bg,era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places:[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{p.iconPreset=p.iconPreset||({
     "카페":"cafe","음식점":"restaurant","식당":"restaurant","사무실":"office","병원":"hospital",
     "공원":"park","학교":"school","옷가게":"clothing","공연장":"theater","숙박":"hotel",
@@ -502,7 +502,7 @@ function syncTown(){
 export function addTown(){
   syncTown();
   const id=uid(),base=fresh().world;
-  const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,places:[]};
+  const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,era:"modern",places:[]};
   state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);
 }
 export function switchTown(id){

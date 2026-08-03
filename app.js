@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803au";
-import {eventFor} from "./simulation.js?v=20260803au";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803au";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803av";
+import {eventFor} from "./simulation.js?v=20260803av";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803av";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -43,7 +43,10 @@ function openAudienceDialog(placeId){
 }
 const BUILDING_SHAPES=[
   {id:"drawer-building",name:"쌍둥이 서랍 건물",src:"world-assets/drawer-building.png"},
-  {id:"drawer-home",name:"빨간 지붕 건물",src:"world-assets/drawer-home.png"}
+  {id:"drawer-home",name:"빨간 지붕 건물",src:"world-assets/drawer-home.png"},
+  {id:"medieval-castle",name:"중세 성채",src:"world-assets/medieval-castle.svg"},
+  {id:"medieval-tavern",name:"중세 여관",src:"world-assets/medieval-tavern.svg"},
+  {id:"medieval-market",name:"중세 시장",src:"world-assets/medieval-market.svg"}
 ];
 const FASHION_MATERIALS=["면","데님","니트","울","가죽","스웨이드","실크","린넨","폴리에스터","나일론","벨벳","레이스"];
 const FASHION_COLORS=["검정","흰색","아이보리","회색","갈색","베이지","빨강","주황","노랑","초록","파랑","남색","보라","분홍","은색","금색","여러 색"];
@@ -116,7 +119,10 @@ function openBuildingShapeDialog(placeId){
   const place=state.world.places.find(item=>item.id===placeId);if(!place)return;
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small>건물 용도와 상관없이 원하는 모양을 고를 수 있어요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${BUILDING_SHAPES.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""}"><img src="${shape.src}" alt=""><b>${shape.name}</b></button>`).join("")}</div></form>`;
-  dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{updatePlace(placeId,{iconPreset:button.dataset.buildingShape},true);dialog.close();render();showToast("건물 모양을 바꿨습니다")});
+  dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
+    if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
+    updatePlace(placeId,{iconPreset:button.dataset.buildingShape},true);dialog.close();render();showToast("건물 모양을 바꿨습니다");
+  });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 function enhanceDynamicForms(){
@@ -386,6 +392,12 @@ function bind(){
     setWorldBackground(e.target.value);render();
   });
   $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
+  $("[data-world-era]")?.addEventListener("change",e=>{
+    if(e.target.value==="medieval"&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){
+      e.target.value=state.world.era||"modern";showToast("중세의 하루 DLC를 구매한 계정에서 사용할 수 있어요");return;
+    }
+    state.world.era=e.target.value;save(true);render();showToast(e.target.value==="medieval"?"이 마을에 중세 생활 스크립트가 적용됩니다":"이 마을을 현대 시대로 바꿨습니다");
+  });
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
   $("[data-add-town]")?.addEventListener("click",()=>{addTown();render()});
   $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
@@ -817,12 +829,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803au").catch(error=>{
+import("./auth.js?v=20260803av").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803au").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803av").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
