@@ -167,7 +167,8 @@ function normalizeHomes(x){
     h.image=h.image||"";
     h.cars=Array.isArray(h.cars)?h.cars.map(car=>({
       id:car.id||uid(),name:car.name||"우리 집 자동차",type:car.type||"승용차",
-      color:car.color||"",seats:Number.isFinite(+car.seats)?Math.max(1,Math.min(12,+car.seats)):5
+      color:car.color||"",seats:Number.isFinite(+car.seats)?Math.max(1,Math.min(12,+car.seats)):5,
+      image:car.image||""
     })):[];
     h.pets=Array.isArray(h.pets)?h.pets.map(p=>({
       id:p.id||uid(),name:p.name||"새 식구",species:p.species||"기타",
@@ -372,7 +373,7 @@ export function setPetImage(homeId,petId,type,data){
 export function addCar(homeId){
   const h=state.homes[homeId];if(!h)return;
   h.cars=Array.isArray(h.cars)?h.cars:[];
-  const car={id:uid(),name:"우리 집 자동차",type:"승용차",color:"",seats:5};
+  const car={id:uid(),name:"우리 집 자동차",type:"승용차",color:"",seats:5,image:""};
   h.cars.push(car);save(true);return car.id;
 }
 export function updateCar(homeId,carId,patch){
