@@ -1,6 +1,6 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803ay";
-import {eventFor} from "./simulation.js?v=20260803ay";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803ay";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803az";
+import {eventFor} from "./simulation.js?v=20260803az";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803az";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -8,7 +8,7 @@ const guidePending=new Set();
 const PAGE_GUIDES={
   observe:["관찰","캐릭터가 지금 어디에서 무엇을 하는지 볼 수 있어요. 위쪽에서 캐릭터와 마을을 바꾸고, 아래 생활로그에서 오늘의 흐름을 확인해 보세요."],
   home:["집","방마다 누가 무엇을 하는지 보고, 집 편집에서 방 사진·동거인·함께 사는 존재·자동차를 설정할 수 있어요."],
-  character:["캐릭터","프로필과 성격, 취향을 설정하면 생활 장면과 대사가 달라져요. 캐릭터는 최대 7명까지 만들 수 있습니다."],
+  character:["캐릭터","프로필과 성격, 취향을 설정하면 생활 장면과 대사가 달라져요. 일반회원은 캐릭터를 최대 5명까지 만들 수 있습니다."],
   wardrobe:["옷장","옷을 등록하고 코디를 저장하면 캐릭터가 일정과 장소에 맞춰 옷을 골라 입어요."],
   catalog:["취향 사전","음식, 작품, 음악, 향 같은 세계의 물건을 등록해 캐릭터 취향과 생활 장면에 연결할 수 있어요."],
   relationship:["관계","둘 이상의 캐릭터 관계와 자주 하는 행동을 정하면 상호작용과 생활로그에 반영돼요."],
@@ -39,6 +39,8 @@ function showInstallButton(){
 }
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
+const isPremiumMember=()=>{const value=window.ParallelCityAuth?.getInfo?.().entitlements||{};return Boolean(value.premium||value.plan==="premium")};
+const characterLimit=()=>isPremiumMember()?7:5;
 const BASE_AUDIENCES=["혼자 조용히 있고 싶은 사람","연인·데이트","부부","가족","친구 모임","직장인","학생","대학생","어린이","청소년","중장년","고소득층","가성비 중시","디저트 러버","커피 애호가","차 애호가","매운 음식 마니아","채식 선호","한식파","일식파","면 요리 마니아","신상 맛집파","SF 덕후","로맨스 덕후","판타지 덕후","미스터리 덕후","공포 덕후","액션 덕후","코미디 덕후","애니메이션 팬","영화 팬","드라마 팬","관찰 예능 팬","게임 방송 팬","음악 팬","아이돌 팬","인디 음악 팬","클래식 애호가","게임 마니아","보드게임 팬","e스포츠 팬","패션 관심층","빈티지 애호가","향수 애호가","사진 애호가","미술 애호가","독서가","여행 애호가","반려동물 동반","운동 애호가","야외 활동파","집순이·집돌이","오타쿠","얼리어답터"];
 function audienceOptions(){
   const values=new Set(BASE_AUDIENCES),fields=["interests","hobbies","foodPreferences","drinks","favoriteStoryGenres","musicGenres","favoriteFashionStyles","favoriteVideoGenres","favoriteGameGenres","favoriteScentNotes"];
@@ -158,8 +160,8 @@ function enhanceDynamicForms(){
   });
   const sync=document.querySelector(".sync-panel");
   if(sync&&!sync.querySelector(".storage-meter")){
-    const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||JSON.parse(localStorage.getItem("drawer-village-storage-usage")||'{"count":0,"bytes":0,"maxCount":120,"maxBytes":62914560}');
-    const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||62914560)*100)),used=((usage.bytes||0)/1048576).toFixed(1),left=Math.max(0,((usage.maxBytes||62914560)-(usage.bytes||0))/1048576).toFixed(1);
+    const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||JSON.parse(localStorage.getItem("drawer-village-storage-usage")||'{"count":0,"bytes":0,"maxCount":120,"maxBytes":15728640}');
+    const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||15728640)*100)),used=((usage.bytes||0)/1048576).toFixed(1),left=Math.max(0,((usage.maxBytes||15728640)-(usage.bytes||0))/1048576).toFixed(1);
     const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>사진 저장 공간</h3><div><i style="width:${percent}%"></i></div><b>${used}MB 사용 · ${left}MB 남음</b><small>고유 사진 ${usage.count||0}/${usage.maxCount||120}장 · 이미지 링크는 이 용량을 사용하지 않아요.</small>`;sync.append(meter);
   }
   if(state.activeTab==="observe"&&!document.querySelector("[data-show-outfit]")&&document.querySelector(".detail")){
@@ -241,7 +243,7 @@ function bind(){
   $$("[data-edit-clothing]").forEach(el=>el.onclick=event=>{event.stopPropagation();openClothingEditor(el.dataset.editClothing)});
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
   $$("[data-edit-outfit]").forEach(el=>el.onclick=()=>openOutfitEditor(el.dataset.editOutfit));
-  $$("[data-new]").forEach(el=>el.onclick=()=>{if(!createCharacter())showToast("캐릭터는 최대 7명까지 만들 수 있어요");render()});
+  $$("[data-new]").forEach(el=>el.onclick=()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`${isPremiumMember()?"프리미엄 회원":"일반회원"}은 캐릭터를 최대 ${limit}명까지 만들 수 있어요`);render()});
   $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);setCharacterPane("profile");render()});
   $$("[data-sort]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
@@ -251,7 +253,7 @@ function bind(){
   $$("[data-delete-character]").forEach(el=>el.onclick=()=>{
     if(confirm("이 캐릭터와 연결된 관계를 삭제할까요?")){deleteCharacter(el.dataset.deleteCharacter);render()}
   });
-  $$("[data-roster],[data-person]").forEach(el=>el.onclick=()=>focusCharacter(el.dataset.roster||el.dataset.person));
+  $$("[data-roster],[data-person]").forEach(el=>el.onclick=event=>{event.stopPropagation();focusCharacter(el.dataset.roster||el.dataset.person)});
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
   $$("[data-observe-town]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.observeTown);render()});
@@ -860,17 +862,18 @@ render();
 showInstallButton();
 if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   const notice=document.createElement("dialog");notice.className="backup-notice";
-  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>사진 파일을 직접 올리면 Google 저장 공간에 함께 보관돼요. 용량을 아끼고 싶다면 사진 파일 대신 <b>웹에 공개된 이미지 주소</b>를 입력해 주세요. 직접 올리는 사진은 고유 사진 기준 <b>최대 120장·총 60MB</b>까지 저장하며, 같은 사진은 중복으로 올리지 않아요. 현재 사용량은 설정에서 확인할 수 있습니다.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
+  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>사진 파일을 직접 올리면 Google 저장 공간에 함께 보관돼요. 용량을 아끼고 싶다면 사진 파일 대신 <b>웹에 공개된 이미지 주소</b>를 입력해 주세요. 일반회원은 직접 올린 사진을 <b>총 15MB</b>까지 저장할 수 있고, 같은 사진은 중복으로 올리지 않아요. 현재 사용량은 설정에서 확인할 수 있습니다.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803ay").catch(error=>{
+import("./auth.js?v=20260803az").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803ay").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803az").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
 window.addEventListener("orientationchange",lockPortrait);
+

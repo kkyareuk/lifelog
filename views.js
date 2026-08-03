@@ -1,5 +1,5 @@
-﻿import {state,active} from "./state.js?v=20260803ay";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803ay";
+﻿import {state,active} from "./state.js?v=20260803az";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803az";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -63,7 +63,9 @@ const FURNITURE={
   study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"]
 };
 let accountText="Google 로그인 안 됨";
-let accountEntitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[]};
+let accountEntitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],plan:"free",premium:false};
+const isPremiumMember=()=>Boolean(accountEntitlements.premium||accountEntitlements.plan==="premium");
+const characterLimit=()=>isPremiumMember()?7:5;
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const hasDlc=id=>(accountEntitlements.dlcPacks||[]).includes(id);
 const backgroundOptions=()=>[
@@ -160,7 +162,7 @@ function peopleAtPlaceCard(p){
   const group=charactersAtPlace(p.id,state.activeTownId);if(!group.length)return"";
   const names=group.map(c=>c.name).join(", "),shown=group.slice(0,3);
   const x=Math.max(9,Math.min(91,p.x)),y=Math.max(15,Math.min(88,p.y+9));
-  return `<button class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" data-person="${group[0].id}" title="${esc(names)}" style="left:${x}%;top:${y}%"><span class="place-people-faces">${shown.map(c=>avatar(c)).join("")}${group.length>3?`<b>+${group.length-3}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</button>`;
+  return `<div class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%"><span class="place-people-faces">${shown.map(c=>`<button type="button" class="place-person-face" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</button>`).join("")}${group.length>3?`<b title="${esc(group.slice(3).map(c=>c.name).join(", "))}">+${group.length-3}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
 }
 function observe(){
   const localIds=state.order.filter(id=>visibleTownId(state.characters[id])===state.activeTownId);
@@ -334,7 +336,8 @@ function character(){
   const personality=`<h2>${esc(c.name)}의 성격</h2><p>슬라이더 대신 가장 가까운 키워드를 하나씩 골라 주세요. 생활·동거·관계 스크립트에 반영돼요.</p>${personalityChoice(c,"사람과 어울리는 방식","socialStyle",["혼자가 편함","낯을 가림","조용히 어울림","먼저 다가감","무리의 중심"])}${personalityChoice(c,"정보를 받아들이는 방식","perceptionStyle",["현실과 경험 중시","구체적인 편","균형형","가능성 중시","직관과 상상 중시"])}${personalityChoice(c,"판단하는 방식","decisionStyle",["논리 우선","이성적인 편","균형형","마음을 살핌","공감 우선"])}${personalityChoice(c,"일정을 다루는 방식","planningStyle",["무계획","즉흥적","유연한 편","상황에 따라","미리 정리함","계획적","강박적으로 계획함"])}${personalityChoice(c,"행동을 전환하는 방식","activityTempo",["한 가지씩 차분히","잠깐 쉬고 다음 일","상황에 따라","생각나면 바로 움직임","부산스럽게 여러 일을 오감","허둥대며 주의가 자주 옮겨감"],"활동적인 정도와 별개예요. 뒤쪽일수록 하던 중 다른 일이 눈에 들어오거나, 물건을 찾으러 갔다가 옆일을 먼저 하는 식의 행동이 늘어요.")}${personalityChoice(c,"깔끔한 정도","neatness",["어질러도 편함","조금 느슨함","보통","정돈을 좋아함","흐트러짐을 못 참음","결벽에 가까움"])}${personalityChoice(c,"옷을 입는 감각","fashionSense",["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"],"자동 코디의 색 조합·상황 적합성·액세서리 사용에 반영돼요.")}${personalityChoice(c,"남에게 관여하는 정도","interference",["방관자","요청할 때만 도움","적당히 관여","챙기고 확인함","강하게 간섭함","컨트롤프릭"],"방관자는 웬만한 일에 끼어들지 않고, 컨트롤프릭은 상대의 일정과 행동까지 통제하려 해 갈등 가능성이 커져요.")}${personalityChoice(c,"갈등 대응","conflictStyle",["피하는 편","시간을 두고 말함","대화로 해결","바로 따짐","끝까지 결론을 냄"])}${personalityChoice(c,"애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"])}${personalityChoice(c,"생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"])}`;
   const profileWithLicense=`<section class="profile-license">${townAssignment(c)}${profile}<label class="check"><input type="checkbox" data-character-check="${c.id}" data-field="driverLicense" ${c.driverLicense?"checked":""}> 운전면허 있음</label></section>`;
   const pane=state.characterPane==="personality"?personality:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:profileWithLicense;
-  return `<div class="editor"><aside class="panel"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=7?"disabled":""}>+ 생성 · ${state.order.length}/7</button></div>${list}</aside><section class="panel form"><div class="character-menu"><button data-character-pane="profile" class="${state.characterPane==="profile"?"on":""}">프로필</button><button data-character-pane="personality" class="${state.characterPane==="personality"?"on":""}">성격</button><button data-character-pane="taste" class="${state.characterPane==="taste"?"on":""}">취향 선택</button><button data-character-pane="worldTaste" class="${state.characterPane==="worldTaste"?"on":""}">세계관 선호</button></div>${pane}<div class="form-actions"><button class="primary" data-save>캐릭터 저장</button><button class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></div></section></div>`;
+  const limit=characterLimit();
+  return `<div class="editor"><aside class="panel"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>+ 생성 · ${state.order.length}/${limit}</button></div>${list}</aside><section class="panel form"><div class="character-menu"><button data-character-pane="profile" class="${state.characterPane==="profile"?"on":""}">프로필</button><button data-character-pane="personality" class="${state.characterPane==="personality"?"on":""}">성격</button><button data-character-pane="taste" class="${state.characterPane==="taste"?"on":""}">취향 선택</button><button data-character-pane="worldTaste" class="${state.characterPane==="worldTaste"?"on":""}">세계관 선호</button></div>${pane}<div class="form-actions"><button class="primary" data-save>캐릭터 저장</button><button class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></div></section></div>`;
 }
 function wardrobe(){
   const c=active(),owned=new Set(c.inventory?.fashion||[]);
@@ -392,4 +395,5 @@ export function renderApp(next){
   document.querySelector("#app").innerHTML=`${header()}<main>${view()}</main>`;
 }
 export function setAccountLabel(text){accountText=text;const el=document.querySelector("#account-status");if(el)el.textContent=text}
-export function setAccountEntitlements(value){accountEntitlements={backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks:[],iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks:[],dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks:[]}}
+export function setAccountEntitlements(value){accountEntitlements={backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks:[],iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks:[],dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks:[],plan:value?.plan==="premium"?"premium":"free",premium:Boolean(value?.premium||value?.plan==="premium")}}
+

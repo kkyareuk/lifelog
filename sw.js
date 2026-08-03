@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION="drawer-village-v20260803ay";
+﻿const CACHE_VERSION="drawer-village-v20260803az";
 const CORE=[
   "./",
   "./index.html",
@@ -9,18 +9,9 @@ const CORE=[
   "./views.js",
   "./auth.js",
   "./manifest.webmanifest",
-  "./social-preview.png",
   "./world-assets/cozy-town.png",
-  "./world-assets/downtown.png",
-  "./world-assets/department-store-premium.png",
   "./world-assets/drawer-building.png",
   "./world-assets/drawer-home.png",
-  "./world-assets/medieval-castle.svg",
-  "./world-assets/medieval-tavern.svg",
-  "./world-assets/medieval-market.svg",
-  "./payment.html",
-  "./payment-success.html",
-  "./payment-fail.html",
   "./icons/drawer-village-logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
@@ -47,3 +38,4 @@ self.addEventListener("fetch",event=>{
     return response;
   }).catch(()=>caches.match(event.request).then(cached=>cached||caches.match("./index.html"))));
 });
+

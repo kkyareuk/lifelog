@@ -289,8 +289,8 @@ export function save(immediate=false){
   };
   immediate?run():timer=setTimeout(run,140);
 }
-export function createCharacter(){
-  if(state.order.length>=7)return null;
+export function createCharacter(limit=5){
+  if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"필요한 만큼 소비",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);

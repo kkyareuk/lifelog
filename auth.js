@@ -9,13 +9,16 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
-let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[]};
+let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],plan:"free",premium:false};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const MAX_PHOTOS=120;
-const MAX_TOTAL_BYTES=60*1024*1024;
+const FREE_TOTAL_BYTES=15*1024*1024;
+const PREMIUM_TOTAL_BYTES=60*1024*1024;
 const MAX_IMAGE_BYTES=1536*1024;
-let storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:MAX_TOTAL_BYTES};
+const isPremium=()=>Boolean(entitlements.premium||entitlements.plan==="premium");
+const maxTotalBytes=()=>isPremium()?PREMIUM_TOTAL_BYTES:FREE_TOTAL_BYTES;
+let storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
 const toast=text=>window.ParallelCity?.toast?.(text);
 const countStoredPhotos=value=>{
   const urls=new Set();
@@ -32,7 +35,7 @@ const normalizeManifest=(value,gameState)=>({
 });
 const publishStorageUsage=(manifest,gameState)=>{
   const normalized=normalizeManifest(manifest,gameState);
-  storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:MAX_PHOTOS,maxBytes:MAX_TOTAL_BYTES};
+  storageUsage={count:normalized.items.length+normalized.legacyCount,bytes:normalized.items.reduce((sum,item)=>sum+(Number(item.size)||0),0),maxCount:MAX_PHOTOS,maxBytes:maxTotalBytes()};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.dispatchEvent(new Event("drawer-village-storage-usage"));
 };
@@ -47,7 +50,7 @@ function shortError(error){
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
   if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
   if(code.includes("photo-limit"))return `사진은 계정당 최대 ${MAX_PHOTOS}장까지 저장할 수 있어요`;
-  if(code.includes("total-size-limit"))return "사진 저장 용량은 계정당 최대 60MB예요";
+  if(code.includes("total-size-limit"))return `사진 저장 용량은 ${isPremium()?"프리미엄 회원 60MB":"일반회원 15MB"}까지예요`;
   if(code.includes("image-too-large"))return "압축된 사진 한 장은 1.5MB 이하여야 해요";
   if(code.includes("timeout"))return "사진 업로드 응답 없음 · Storage 요금제와 규칙을 확인해 주세요";
   if(code.includes("network"))return "인터넷 연결 확인";
@@ -58,11 +61,15 @@ const normalizeEntitlements=value=>({
   backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks.filter(x=>typeof x==="string"):[],
   iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
   dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks.filter(x=>typeof x==="string"):[],
+  plan:value?.plan==="premium"||value?.tier==="premium"||value?.premium===true?"premium":"free",
+  premium:Boolean(value?.premium||value?.plan==="premium"||value?.tier==="premium"),
   grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
   note:typeof value?.note==="string"?value.note:""
 });
 const publishEntitlements=value=>{
   entitlements=normalizeEntitlements(value);
+  storageUsage={...storageUsage,maxBytes:maxTotalBytes()};
+  localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.ParallelCity?.setEntitlements?.(entitlements);
 };
 const accessLabel=()=>[
@@ -79,7 +86,7 @@ async function uploadDataUrl(dataUrl,manifest){
   if(known){uploadedCache.set(dataUrl,known.url);return known.url}
   if(manifest.items.length+manifest.legacyCount>=MAX_PHOTOS)throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
   const usedBytes=manifest.items.reduce((sum,item)=>sum+(Number(item.size)||0),0);
-  if(usedBytes+blob.size>MAX_TOTAL_BYTES)throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
+  if(usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
   const ext=blob.type==="image/png"?"png":"webp";
   const target=ref(storage,`users/${user.uid}/media/${hash}.${ext}`);
   try{
