@@ -215,9 +215,13 @@ function morningScripts(c,date){
     ["거실에서 오늘 일정을 살펴보는 중","소파에 앉아 해야 할 일의 순서를 머릿속으로 정리하고 있어요.","living"],
     ["서재에서 개인 시간을 보내는 중","책상 앞에 앉아 관심 있던 글과 자료를 천천히 살펴보고 있어요.","study"]
   );
-  const firstIndex=hash(seed)%choices.length;
-  const secondIndex=choices.length>1?(firstIndex+1+(hash(seed+":next")%(choices.length-1)))%choices.length:firstIndex;
-  return [choices[firstIndex],choices[secondIndex]].map((script,index)=>[script[0],personalityFlavor(c,script[1],`morning:${index}`),script[2]]);
+  const count=Math.min(4,choices.length),picked=[],used=new Set();
+  for(let index=0;index<count;index++){
+    let choiceIndex=hash(`${seed}:step:${index}`)%choices.length;
+    while(used.has(choiceIndex))choiceIndex=(choiceIndex+1)%choices.length;
+    used.add(choiceIndex);picked.push(choices[choiceIndex]);
+  }
+  return picked.map((script,index)=>[script[0],personalityFlavor(c,script[1],`morning:${index}`),script[2]]);
 }
 
 function sharedHomeEntry(c,other,time,date){
@@ -559,9 +563,9 @@ function build(c,date=new Date()){
     list.push(entry(travelMinute,title,desc,{townId:destination.id,transit:true,withId:mode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
   const morning=morningScripts(c,date),commuteMinute=work&&c.workplaceId!=="home"?work.minute-35:Infinity;
-  [wake+90,wake+240].forEach((minute,index)=>{
+  [wake+85,wake+140,wake+200,wake+265].forEach((minute,index)=>{
     if(minute<720&&minute<commuteMinute-10){
-      const script=morning[index];
+      const script=morning[index%morning.length];
       list.push(homeEntry(c,minute,script[0],script[1],script[2]));
     }
   });
@@ -645,7 +649,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260803aw";
+const ENGINE_VERSION="20260803ax";
 function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
@@ -726,7 +730,7 @@ function baseEventFor(c,date=new Date()){
   if(sleepingNow(c,date))return entry(n,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
   const last=past.at(-1);
-  if(last&&n-last.minute>75)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
+  if(last&&n-last.minute>35)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
   if(last)return last;
   if(c.createdAt&&Date.now()-Number(c.createdAt)<24*60*60*1000)return entry(n,"아직 생활을 시작하지 않음","프로필과 집, 일정을 설정하면 지금부터 생활이 시작돼요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"대기",stress:0});
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});

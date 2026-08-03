@@ -1,6 +1,6 @@
 ﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260803bc";
-import {eventFor} from "./simulation.js?v=20260803bf";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803bf";
+import {eventFor} from "./simulation.js?v=20260803bg";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260803bg";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -195,13 +195,15 @@ function render(){
 
 function maybeShowPageGuide(){
   const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
-  if(!guide||!state.order.length||localStorage.getItem(key)==="1"||guidePending.has(tab))return;
+  const accountGuides=window.ParallelCityAuth?.getInfo?.().guideState;
+  if(accountGuides&&!accountGuides.loaded)return;
+  if(!guide||!state.order.length||accountGuides?.seen?.includes(tab)||localStorage.getItem(key)==="1"||guidePending.has(tab))return;
   guidePending.add(tab);
   const openDialog=document.querySelector("dialog[open]");
   if(openDialog){openDialog.addEventListener("close",()=>{guidePending.delete(tab);maybeShowPageGuide()},{once:true});return}
   const dialog=document.createElement("dialog");dialog.className="page-guide";
   dialog.innerHTML=`<form method="dialog"><small>처음 오셨나요?</small><h2>${guide[0]}</h2><p>${guide[1]}</p><button class="primary" value="ok">확인</button></form>`;
-  dialog.onclose=()=>{localStorage.setItem(key,"1");guidePending.delete(tab);dialog.remove()};
+  dialog.onclose=()=>{localStorage.setItem(key,"1");window.ParallelCityAuth?.markGuideSeen?.(tab);guidePending.delete(tab);dialog.remove()};
   document.body.append(dialog);dialog.showModal();
 }
 
@@ -472,8 +474,9 @@ function bind(){
     };
     input.click();
   });
-  $("[data-guide-reset]")?.addEventListener("click",()=>{
+  $("[data-guide-reset]")?.addEventListener("click",async()=>{
     Object.keys(PAGE_GUIDES).forEach(tab=>localStorage.removeItem(`drawer-village-guide-${tab}`));
+    await window.ParallelCityAuth?.resetGuides?.();
     showToast("페이지 안내를 다시 볼 수 있게 했어요");
     maybeShowPageGuide();
   });
@@ -858,6 +861,7 @@ window.ParallelCity={
 };
 
 window.addEventListener("drawer-village-cloud-loaded",render);
+window.addEventListener("drawer-village-guide-state",()=>requestAnimationFrame(maybeShowPageGuide));
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
 window.addEventListener("drawer-village-premium-ending",event=>{
   const until=Number(event.detail?.premiumUntil)||0,key=`drawer-village-premium-ending-${until}`;
@@ -878,12 +882,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260803bd").catch(error=>{
+import("./auth.js?v=20260803be").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260803bf").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260803bg").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

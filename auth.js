@@ -10,6 +10,7 @@ const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
 let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],plan:"free",premium:false};
+let guideState={loaded:!ready,seen:[]};
 let autoLoadStarted=false;
 const uploadedCache=new Map();
 const MAX_PHOTOS=120;
@@ -84,6 +85,22 @@ const accessLabel=()=>[
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:"",
   entitlements.dlcPacks.length?`DLC ${entitlements.dlcPacks.length}개`:""
 ].filter(Boolean).join(" · ")||"일반 이용자";
+const localGuideKeys=()=>["observe","home","character","wardrobe","catalog","relationship","routine","town","settings"].filter(tab=>localStorage.getItem(`drawer-village-guide-${tab}`)==="1");
+const publishGuideState=value=>{
+  guideState={loaded:true,seen:[...new Set(Array.isArray(value)?value.filter(x=>typeof x==="string"):[])]};
+  window.dispatchEvent(new Event("drawer-village-guide-state"));
+};
+async function markGuideSeen(tab){
+  if(!tab)return;
+  publishGuideState([...guideState.seen,tab]);
+  localStorage.setItem(`drawer-village-guide-${tab}`,"1");
+  if(user)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:guideState.seen}},{merge:true});
+}
+async function resetGuides(){
+  publishGuideState([]);
+  localGuideKeys().forEach(tab=>localStorage.removeItem(`drawer-village-guide-${tab}`));
+  if(user)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:[]}},{merge:true});
+}
 
 async function uploadDataUrl(dataUrl,manifest){
   if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
@@ -167,6 +184,10 @@ async function download({automatic=false}={}){
     status(`${user.displayName||"계정"} · 불러오는 중`);
     const snapshot=await getDoc(cloudDoc());
     const documentData=snapshot.exists()?snapshot.data():null;
+    const remoteGuides=Array.isArray(documentData?.uiPreferences?.pageGuides)?documentData.uiPreferences.pageGuides:[];
+    const mergedGuides=[...new Set([...remoteGuides,...localGuideKeys()])];
+    publishGuideState(mergedGuides);
+    if(user&&mergedGuides.length!==remoteGuides.length)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:mergedGuides}},{merge:true});
     publishStorageUsage(documentData?.mediaManifest,documentData?.gameState);
     publishEntitlements(documentData?.entitlements);
     const remote=documentData?.gameState||null;
@@ -192,7 +213,7 @@ if(ready){
     try{await getRedirectResult(auth)}catch(error){console.warn(error)}
     onAuthStateChanged(auth,next=>{
       user=next;
-      if(!user)publishEntitlements(null);
+      if(!user){publishEntitlements(null);publishGuideState(localGuideKeys())}
       status(user?`${user.displayName||"Google 계정"} · 저장 시 동기화`:"Google 로그인 안 됨");
       if(user&&!autoLoadStarted){autoLoadStarted=true;download({automatic:true})}
     });
@@ -200,4 +221,4 @@ if(ready){
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
-window.ParallelCityAuth={login,upload,download,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements,storageUsage})};
+window.ParallelCityAuth={login,upload,download,markGuideSeen,resetGuides,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements,storageUsage,guideState})};
