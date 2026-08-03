@@ -1,7 +1,0 @@
-#virtualMapToolbar{display:flex;justify-content:center;margin:0 0 10px;padding:10px;border:1px solid var(--line);border-radius:18px;background:var(--panel);box-shadow:var(--shadow)}
-#virtualMapToolbar .world-navigator{display:flex;gap:8px;flex-wrap:wrap;width:min(760px,100%)}
-#virtualMapToolbar select{min-width:0;flex:1}
-#map .world-map-head,#map .world-location-roster{display:none!important}
-#map .world-building{cursor:pointer!important;touch-action:pan-x pan-y!important}
-.v52-delete-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
-@media(max-width:700px){#virtualMapToolbar{justify-content:flex-start;overflow-x:auto}#virtualMapToolbar .world-navigator{min-width:620px;flex-wrap:nowrap}}
