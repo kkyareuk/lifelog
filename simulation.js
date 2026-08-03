@@ -645,13 +645,25 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260803av",createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+const ENGINE_VERSION="20260803aw";
+function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+
+function mergeImmutableEntries(kept,generated){
+  const merged=[...kept],seen=new Set(kept.map(item=>`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`));
+  generated.forEach(item=>{
+    const id=`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`;
+    if(!seen.has(id)){seen.add(id);merged.push(item)}
+  });
+  return merged.sort((a,b)=>a.minute-b.minute);
+}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
-  if(!old||old.signature!==sig||old.engineVersion!=="20260803av"){
+  const today=key===dayKey(new Date());
+  if(old&&!today)return Array.isArray(old.entries)?old.entries:[];
+  if(!old||old.signature!==sig||old.engineVersion!==ENGINE_VERSION){
     let entries=build(c,date);
     if(c.createdAt){
       const created=new Date(c.createdAt),target=new Date(date.getFullYear(),date.getMonth(),date.getDate());
@@ -659,12 +671,25 @@ export function timeline(c,date=new Date()){
       if(target<createdDay)entries=[];
       else if(target.getTime()===createdDay.getTime())entries=entries.filter(item=>item.minute>=created.getHours()*60+created.getMinutes());
     }
-    c.days[key]={signature:sig,engineVersion:"20260803av",entries};
+    if(old&&today){
+      const cutoff=nowMin(date),kept=(Array.isArray(old.entries)?old.entries:[]).filter(item=>item.minute<=cutoff);
+      entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
+    }
+    c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,entries};
     save();
   }
   return c.days[key].entries;
 }
 export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x.minute<=nowMin(date))}
+
+function commitLiveEntry(c,date,item){
+  const key=dayKey(date),day=c.days?.[key];
+  if(!day||!item)return item;
+  const entries=Array.isArray(day.entries)?day.entries:[];
+  const duplicate=entries.some(entry=>entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room);
+  if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save()}
+  return item;
+}
 function liveGapEvent(c,last,n,date){
   const minute=n-(n%15);
   if(last?.placeId){
@@ -701,7 +726,7 @@ function baseEventFor(c,date=new Date()){
   if(sleepingNow(c,date))return entry(n,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
   const last=past.at(-1);
-  if(last&&n-last.minute>75)return liveGapEvent(c,last,n,date);
+  if(last&&n-last.minute>75)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
   if(last)return last;
   if(c.createdAt&&Date.now()-Number(c.createdAt)<24*60*60*1000)return entry(n,"아직 생활을 시작하지 않음","프로필과 집, 일정을 설정하면 지금부터 생활이 시작돼요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"대기",stress:0});
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
