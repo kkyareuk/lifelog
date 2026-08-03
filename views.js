@@ -1,5 +1,5 @@
-﻿import {state,active} from "./state.js?v=20260803bb";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803bb";
+﻿import {state,active} from "./state.js?v=20260803bc";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260803bc";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -400,6 +400,7 @@ export function renderApp(next){
 }
 export function setAccountLabel(text){accountText=text;const el=document.querySelector("#account-status");if(el)el.textContent=text}
 export function setAccountEntitlements(value){accountEntitlements={backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks:[],iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks:[],dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks:[],plan:value?.plan==="premium"?"premium":"free",premium:Boolean(value?.premium||value?.plan==="premium"),premiumUntil:Number(value?.premiumUntil)||0,cancelAtPeriodEnd:Boolean(value?.cancelAtPeriodEnd)}}
+
 
 
 
