@@ -1,4 +1,4 @@
-﻿import {state,save} from "./state.js?v=20260803aw";
+﻿import {state,save} from "./state.js?v=20260803ax";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -545,15 +545,17 @@ function build(c,date=new Date()){
   const work=workEvent(c,Math.max(wake+90,540),date);
   const destination=activityTown(c,date),homeTown=townFor(c);
   const homeCars=state.homes[c.homeId]?.cars||[];
+  const rideablePet=(state.homes[c.homeId]?.pets||[]).find(p=>p.rideable&&["드래곤","호랑이"].includes(p.species));
+  const useMount=rideablePet&&(hash(`${c.id}:${dayKey(date)}:mount`)%2===0);
   const relation=preferredRelation(c),romantic=relation&&["부부","연인"].includes(relation.r.type)?relation.other:null;
   const partnerCars=romantic?state.homes[romantic.homeId]?.cars||[]:[];
   const partnerCanDrive=romantic?.driverLicense&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
   const selfCanDrive=c.driverLicense&&homeCars.length;
   if(destination.id!==homeTown.id){
     const travelMinute=Math.max(wake+75,(work?.minute||720)-45);
-    const mode=partnerCanDrive?"partner":selfCanDrive?"car":"transit";
-    const title=mode==="partner"?`${romantic.name}의 차를 타고 ${destination.name}으로 이동 중`:mode==="car"?`차를 운전해 ${destination.name}으로 이동 중`:`대중교통으로 ${destination.name} 이동 중`;
-    const desc=mode==="partner"?`${romantic.name}가 운전하는 차에 함께 타고 목적지로 향하고 있어요.`:mode==="car"?"집의 자동차를 직접 운전해 다른 마을로 이동하고 있어요. 음주한 날에는 운전하지 않아요.":"버스나 지하철 노선을 확인하고 다른 마을로 이동하고 있어요.";
+    const mode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"transit";
+    const title=mode==="mount"?`${rideablePet.name}을 타고 ${destination.name}으로 이동 중`:mode==="partner"?`${romantic.name}의 차를 타고 ${destination.name}으로 이동 중`:mode==="car"?`차를 운전해 ${destination.name}으로 이동 중`:`대중교통으로 ${destination.name} 이동 중`;
+    const desc=mode==="mount"?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 안전한 비행 경로를 따라 다른 마을로 향하고 있어요.`:`${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 다른 마을로 향하고 있어요.`):mode==="partner"?`${romantic.name}가 운전하는 차에 함께 타고 목적지로 향하고 있어요.`:mode==="car"?"집의 자동차를 직접 운전해 다른 마을로 이동하고 있어요. 음주한 날에는 운전하지 않아요.":"버스나 지하철 노선을 확인하고 다른 마을로 이동하고 있어요.";
     list.push(entry(travelMinute,title,desc,{townId:destination.id,transit:true,withId:mode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
   const morning=morningScripts(c,date),commuteMinute=work&&c.workplaceId!=="home"?work.minute-35:Infinity;
@@ -565,8 +567,8 @@ function build(c,date=new Date()){
   });
   if(work){
     if(c.workplaceId!=="home"){
-      const driving=selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
-      list.push(entry(work.minute-35,driving?"차로 출근하는 중":"대중교통으로 출근하는 중",driving?"차를 운전해 직장에 도착할 준비를 하고 있어요.":"버스나 지하철을 이용해 직장에 도착할 준비를 하고 있어요.",away(c,{placeId:work.placeId,mood:"출근"})));
+      const riding=rideablePet&&(hash(`${c.id}:${dayKey(date)}:ride-commute`)%3)===0,driving=!riding&&selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
+      list.push(entry(work.minute-35,riding?`${rideablePet.name}을 타고 출근하는 중`:driving?"차로 출근하는 중":"대중교통으로 출근하는 중",riding?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로로 직장을 향하고 있어요.`:`${rideablePet.name}의 등에 올라 안전한 길을 따라 직장을 향하고 있어요.`):driving?"차를 운전해 직장에 도착할 준비를 하고 있어요.":"버스나 지하철을 이용해 직장에 도착할 준비를 하고 있어요.",away(c,{placeId:work.placeId,mood:"출근"})));
     }
     list.push(work);
   }
@@ -643,14 +645,21 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-function signature(c){return JSON.stringify({engine:"20260803av",townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+function signature(c){return JSON.stringify({engine:"20260803av",createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
   if(!old||old.signature!==sig||old.engineVersion!=="20260803av"){
-    c.days[key]={signature:sig,engineVersion:"20260803av",entries:build(c,date)};
+    let entries=build(c,date);
+    if(c.createdAt){
+      const created=new Date(c.createdAt),target=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+      const createdDay=new Date(created.getFullYear(),created.getMonth(),created.getDate());
+      if(target<createdDay)entries=[];
+      else if(target.getTime()===createdDay.getTime())entries=entries.filter(item=>item.minute>=created.getHours()*60+created.getMinutes());
+    }
+    c.days[key]={signature:sig,engineVersion:"20260803av",entries};
     save();
   }
   return c.days[key].entries;
@@ -694,6 +703,7 @@ export function eventFor(c,date=new Date()){
   const last=past.at(-1);
   if(last&&n-last.minute>75)return liveGapEvent(c,last,n,date);
   if(last)return last;
+  if(c.createdAt&&Date.now()-Number(c.createdAt)<24*60*60*1000)return entry(n,"아직 생활을 시작하지 않음","프로필과 집, 일정을 설정하면 지금부터 생활이 시작돼요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"대기",stress:0});
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
   return entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
