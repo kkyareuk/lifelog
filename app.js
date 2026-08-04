@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804n";
-import {eventFor} from "./simulation.js?v=20260804n";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804n";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804o";
+import {eventFor} from "./simulation.js?v=20260804o";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804o";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -157,12 +157,65 @@ function openBuildingShapeDialog(placeId){
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
   const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(place.type));
   const ordered=[...recommended,...BUILDING_SHAPES.filter(shape=>!recommended.includes(shape))];
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${place.type}</b> 유형에 어울리는 모양을 먼저 보여드려요. 다른 모양도 자유롭게 쓸 수 있어요.</small></div><button value="cancel">×</button></div><details class="building-catalog-help"><summary>새 건물 그림을 코딩 없이 추가하는 방법</summary><ol><li>PNG를 <code>world-assets/building-types</code> 폴더에 넣어요.</li><li><code>world-assets/building-shapes.csv</code>를 엑셀이나 메모장으로 열어요.</li><li>이름·파일 경로·추천 유형·속성을 한 줄에 적으면 이 도감에 자동으로 나타나요.</li></ol><small>추천 유형과 속성은 여러 개일 때 <b>|</b>로 구분해요. 예: 숙박|음식점</small></details><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${place.type}</b> 유형에 어울리는 모양을 먼저 보여드려요. 보유한 건물 아이콘 팩의 그림도 이곳에 나타나요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
     if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
     const shape=BUILDING_SHAPES.find(item=>item.id===button.dataset.buildingShape);
-    updatePlace(placeId,{iconPreset:button.dataset.buildingShape,image:shape?.src||""},true);dialog.close();render();showToast("건물 모양을 바꿨습니다");
+    updatePlace(placeId,{iconPreset:button.dataset.buildingShape,image:""},true);dialog.close();render();showToast("건물 모양을 바꿨습니다");
   });
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+}
+const PROFILE_TAG_OPTIONS={
+  attractedGenders:["남성","여성","그외","없음"],
+  appearanceTags:["안경을 씀","긴 머리","짧은 머리","곱슬머리","문신","흉터","주근깨","점이 있음","근육질","마른 체형","통통한 체형","키가 큼","키가 작음","중성적인 인상","부드러운 인상","날카로운 인상","아름다움","잘생김","귀여움","우아함"],
+  attractionTraits:["남성","여성","그외","안경을 씀","긴 머리","짧은 머리","곱슬머리","문신","흉터","주근깨","점이 있음","근육질","마른 체형","통통한 체형","키가 큼","키가 작음","중성적인 인상","부드러운 인상","날카로운 인상","아름다움","잘생김","귀여움","우아함"]
+};
+function openProfileTagsDialog(field){
+  const character=active(),options=PROFILE_TAG_OPTIONS[field];if(!character||!options)return;
+  let selected=[...(character[field]||[])];
+  const titles={attractedGenders:"성지향 설정",appearanceTags:"외모 태그 정하기",attractionTraits:"끌리는 외모 태그 정하기"};
+  const dialog=document.createElement("dialog");dialog.className="profile-tags-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${titles[field]}</h2><small>여러 개를 선택할 수 있어요.${field==="attractedGenders"?" ‘없음’을 고르면 다른 선택은 해제돼요.":""}</small></div><button value="cancel">×</button></div><div class="profile-tag-grid">${options.map(value=>`<button type="button" data-profile-tag="${value}" class="${selected.includes(value)?"on":""}">${value}</button>`).join("")}</div><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  dialog.querySelectorAll("[data-profile-tag]").forEach(button=>button.onclick=()=>{
+    const value=button.dataset.profileTag;
+    if(field==="attractedGenders"){
+      if(value==="없음")selected=selected.includes(value)?[]:["없음"];
+      else selected=selected.filter(item=>item!=="없음"),selected=selected.includes(value)?selected.filter(item=>item!==value):[...selected,value];
+    }else selected=selected.includes(value)?selected.filter(item=>item!==value):[...selected,value];
+    dialog.querySelectorAll("[data-profile-tag]").forEach(item=>item.classList.toggle("on",selected.includes(item.dataset.profileTag)));
+  });
+  dialog.onclose=()=>{if(dialog.returnValue==="save")updateCharacter(character.id,{[field]:selected},true);dialog.remove();render()};
+  document.body.append(dialog);dialog.showModal();
+}
+const listText=value=>Array.isArray(value)&&value.length?value.join(", "):"정하지 않음";
+function profileExportLines(character){
+  const favorites=Object.values(character.favorites||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean);
+  return [
+    ["프로필",[`이름: ${character.name}`,`나이대: ${character.ageGroup||"정하지 않음"}`,`성별: ${character.gender||"그외"}`,`성지향: ${listText(character.attractedGenders)}`,`직업: ${character.jobTitle||character.job||"없음"}`,`소비 유형: ${character.income||"정하지 않음"}`,`기상: ${character.wake||"-"} · ${character.wakeHabit||"-"}`,`취침: ${character.sleep||"-"} · ${character.sleepHabit||"-"}`,`신체 접촉 반응: ${character.touchReaction||"정하지 않음"}`,`외모: ${character.appearanceLevel||"보통"} · ${listText(character.appearanceTags)}`,`상대 외모를 보는 정도: ${character.appearanceInterest||"보통"}`,`끌리는 외모 태그: ${listText(character.attractionTraits)}`]],
+    ["성격",[`외향·내향: ${character.socialStyle||(character.socialEnergy??"보통")}`,`정보 인식: ${character.sensingStyle||(character.sensingIntuition??"보통")}`,`판단 방식: ${character.decisionStyle||(character.thinkingFeeling??"보통")}`,`일정 방식: ${character.scheduleStyle||(character.perceivingJudging??"보통")}`,`깔끔함: ${character.cleanlinessStyle||"정하지 않음"}`,`간섭 성향: ${character.interference||"정하지 않음"}`]],
+    ["취향 선택",[`관심사: ${listText(character.interests)}`,`취미: ${listText(character.hobbies)}`,`음식: ${listText(character.foodTypes)}`,`음료: ${listText(character.drinks)}`,`음악 장르: ${listText(character.musicGenres)}`,`선호 항목: ${favorites.length?favorites.join(", "):"정하지 않음"}`]],
+    ["세계관 선호",Object.entries(character.worldPreferences||{}).map(([key,value])=>`${key}: ${Array.isArray(value)?value.join(", "):value}`).concat(Object.keys(character.worldPreferences||{}).length?[]:["정하지 않음"])]
+  ];
+}
+function exportProfilePng(character){
+  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1200,pad=76,line=38;
+  const wrap=(text,max=52)=>{const words=String(text).split(" ");const result=[];let current="";for(const word of words){const next=current?`${current} ${word}`:word;if(next.length>max){if(current)result.push(current);current=word}else current=next}if(current)result.push(current);return result};
+  const rows=sections.flatMap(([title,lines])=>[title,...lines.flatMap(value=>wrap(value))]);canvas.width=width;canvas.height=Math.max(900,210+rows.length*line+sections.length*34);
+  ctx.fillStyle="#fbf6ee";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle=character.theme?.primary||"#765036";ctx.fillRect(0,0,width,150);
+  ctx.fillStyle="#fff";ctx.font="bold 48px sans-serif";ctx.fillText(`${character.name} 프로필`,pad,94);let y=210;
+  sections.forEach(([title,lines])=>{ctx.fillStyle=character.theme?.primary||"#765036";ctx.font="bold 30px sans-serif";ctx.fillText(title,pad,y);y+=48;ctx.fillStyle="#2d251f";ctx.font="24px sans-serif";lines.flatMap(value=>wrap(value)).forEach(value=>{ctx.fillText(value,pad+12,y);y+=line});y+=26});
+  const link=document.createElement("a");link.download=`${character.name}-프로필.png`;link.href=canvas.toDataURL("image/png");link.click();
+}
+function exportProfilePdf(character){
+  const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
+  win.document.write(`<!doctype html><meta charset="utf-8"><title>${character.name} 프로필</title><style>body{font-family:sans-serif;color:#2d251f;margin:36px;line-height:1.65}header{padding:28px;color:#fff;background:${character.theme?.primary||"#765036"};border-radius:20px}section{break-inside:avoid;margin:26px 0;padding:20px;border:1px solid #ddcfc0;border-radius:16px}h1,h2{margin:0 0 12px}p{margin:4px 0}@media print{button{display:none}}</style><header><h1>${character.name} 프로필</h1><p>서랍마을 캐릭터 기록</p></header>${sections.map(([title,lines])=>`<section><h2>${title}</h2>${lines.map(line=>`<p>${line}</p>`).join("")}</section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button>`);
+  win.document.close();setTimeout(()=>win.print(),250);
+}
+function openProfileExportDialog(){
+  const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>프로필·성격·취향 선택·세계관 선호를 한 문서로 정리해요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-export-format="png"><b>PNG 이미지</b><small>바로 저장되는 긴 프로필 이미지</small></button><button type="button" data-export-format="pdf"><b>PDF</b><small>인쇄 창에서 ‘PDF로 저장’을 선택</small></button></div></form>`;
+  dialog.querySelector('[data-export-format="png"]').onclick=()=>{exportProfilePng(character);dialog.close()};
+  dialog.querySelector('[data-export-format="pdf"]').onclick=()=>{exportProfilePdf(character);dialog.close()};
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 function enhanceDynamicForms(){
@@ -175,6 +228,21 @@ function enhanceDynamicForms(){
     if(fields&&!profile.querySelector('[data-field="sleepHabit"]')){
       const label=document.createElement("label");label.className="sleep-habit-field";label.innerHTML=`수면 습관<select data-field="sleepHabit">${["이불을 단정히 덮고 잠","이불을 걷어차며 잠","옆으로 웅크려 잠","팔다리를 뻗고 잠","베개를 끌어안고 잠","잠꼬대를 자주 함","뒤척임이 많음","아주 얌전히 잠","새벽에 자주 깸","코를 골며 깊이 잠"].map(value=>`<option ${active().sleepHabit===value?"selected":""}>${value}</option>`).join("")}</select><small>자는 중 현재 장면에 반영돼요. 수면 중인 내용은 생활 로그에 기록하지 않아요.</small>`;fields.append(label);
     }
+    if(fields&&!profile.querySelector('[data-field="gender"]')){
+      const block=document.createElement("div");block.className="profile-extra-settings";
+      const select=(field,title,values,current,help="")=>`<label>${title}<select data-field="${field}">${values.map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>${help?`<small>${help}</small>`:""}</label>`;
+      block.innerHTML=
+        select("gender","성별",["남성","여성","그외"],active().gender||"그외")+
+        select("touchReaction","신체 접촉에 대한 반응",["몸에 손이 닿는 것을 극도로 꺼림","몸에 손이 닿는 것을 싫어함","허락 없는 접촉은 불편함","가까운 사람에게만 허용함","상황에 따라 자연스럽게 받아들임","신체 접촉을 좋아함","먼저 다가가는 편"],active().touchReaction||"허락 없는 접촉은 불편함","상대 캐릭터의 반응과 공식 관계를 함께 살펴 생활 장면을 자동으로 만들어요.")+
+        select("appearanceLevel","외모가 눈에 띄는 정도",["눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"],active().appearanceLevel||"보통")+
+        select("appearanceInterest","상대의 외모를 보는 정도",["거의 보지 않음","조금 봄","보통","꽤 중요하게 봄","외모에 크게 끌림"],active().appearanceInterest||"보통")+
+        `<div class="profile-tag-actions"><button type="button" data-profile-tags="attractedGenders">성지향 설정</button><small data-profile-tags-summary="attractedGenders"></small><button type="button" data-profile-tags="appearanceTags">외모 태그 정하기</button><small data-profile-tags-summary="appearanceTags"></small><button type="button" data-profile-tags="attractionTraits">끌리는 외모 태그 정하기</button><small data-profile-tags-summary="attractionTraits"></small></div><button type="button" class="profile-export-open" data-export-profile>프로필 내보내기 · PNG / PDF</button>`;
+      fields.append(block);
+    }
+    profile.querySelectorAll("[data-profile-tags-summary]").forEach(summary=>{
+      const values=active()[summary.dataset.profileTagsSummary]||[];
+      summary.textContent=values.length?values.join(" · "):"정하지 않음";
+    });
     if(fields){
       const labelOf=selector=>fields.querySelector(selector)?.closest("label");
       const photo=labelOf('[data-image="photo"]'),primary=labelOf('[data-color="primary"]'),secondary=labelOf('[data-color="secondary"]');
@@ -461,6 +529,8 @@ function bind(){
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
+  $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
+  $("[data-export-profile]")?.addEventListener("click",openProfileExportDialog);
   $$("[data-setting]").forEach(el=>el.onchange=()=>{state[el.dataset.setting]=el.value;save(true);render()});
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
@@ -472,13 +542,6 @@ function bind(){
   });
   $("[data-cloud-upload]")?.addEventListener("click",async()=>window.ParallelCityAuth?.upload());
   $("[data-cloud-download]")?.addEventListener("click",async()=>window.ParallelCityAuth?.download());
-  $$("[data-place-image]").forEach(button=>{
-    const id=button.dataset.placeImage,place=state.world.places.find(item=>item.id===id),tools=button.closest(".place-photo-tools");
-    const label=button.parentElement?.previousElementSibling;
-    if(label)label.textContent="마을 지도용 건물 아이콘";
-    if(button.parentElement)button.parentElement.innerHTML=`<small>현재 모든 건물에 공통 건물 아이콘이 적용됩니다.</small>`;
-    tools?.querySelector('[data-image-url="place"]')?.remove();
-  });
   $$("[data-place-field]").forEach(el=>{
     const apply=()=>{
       const field=el.dataset.placeField;
@@ -594,7 +657,6 @@ function bind(){
 function applyImage(type,id,room,data){
   if(type==="room")setHomeImage(id,room,data);
   else if(type==="home")setHomeBackground(id,data);
-  else if(type==="place")setPlaceImage(id,data);
   else if(type==="placeInterior")setPlaceInteriorImage(id,data);
   else if(type==="petPhoto")setPetImage(id,room,"photo",data);
   else if(type==="petIcon")setPetImage(id,room,"icon",data);
@@ -840,13 +902,6 @@ const RELATION_STAGES={
   "부모·자녀":["연락이 끊긴 사이","서먹한 부모와 자녀","필요할 때만 연락함","무난한 부모와 자녀","서로 의지하는 가족","무척 각별한 부모와 자녀"],
   default:["매우 불편함","서먹함","조금 가까움","편안함","가까움","매우 가까움"]
 };
-const RELATION_INTERACTION_GROUPS={
-  "일상·돌봄":["아침 안부 묻기","잘 자라고 인사하기","병원 같이 가기","데려다주기","마중 나가기","격려하기","고민 들어주기","조언하기","편들어주기","밥 챙겨주기","간식 나눠 먹기","함께 요리하기","같이 장보기","집안일 나누기","서로의 일정 챙기기","아플 때 돌보기","밤새 간호하기","공부 도와주기","업무 도와주기","함께 사는 존재 돌보기"],
-  "로맨스·애정":["데이트하기","여행하기","기념일 챙기기","스킨십하기","포옹하기","손잡기","머리 쓰다듬기","선물하기","연락 자주 하기"],
-  "우정·놀이":["비밀 공유하기","산책하기","운동하기","취미 함께하기","장난치기","놀리기","게임 대결하기","술자리 함께하기","가족 행사 참석하기"],
-  "경쟁·모험":["결투하기","훈련하기","내기하기","경쟁하기","구해주기","위험에서 보호하기","함께 사건 조사하기","작전 짜기"],
-  "갈등·통제":["간섭하기","잔소리하기","말다툼하기","화해하기","사과하기","험담 나누기","무시하기","감시하기"]
-};
 const stagesFor=type=>RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","젊은 날의 친구들","친구 모임","산악회"].includes(type)?RELATION_STAGES.친구:RELATION_STAGES.default);
 function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
@@ -861,12 +916,10 @@ function openRelationDialog(id=""){
     <label>관계 종류<select name="type">${RELATION_TYPES.map(type=>`<option>${type}</option>`).join("")}</select></label>
     <label>현재 관계 단계<select name="stage"></select></label>
     <label class="cohabit"><input type="checkbox" name="cohabit"> 함께 살기</label>
-    <section class="relation-interaction-picker"><div class="relation-interaction-title"><h3>이 관계에서 자주 일어나는 행동</h3><button type="button" data-interaction-all>모두 선택</button><button type="button" data-interaction-clear>모두 해제</button></div>${Object.entries(RELATION_INTERACTION_GROUPS).map(([group,values])=>`<details open><summary><b>${group}</b><span><button type="button" data-group-all="${group}">전체 선택</button><button type="button" data-group-clear="${group}">해제</button></span></summary><div>${values.map(value=>`<button type="button" data-relation-interaction="${value}" data-interaction-group="${group}" class="${(old?.interactions||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div></details>`).join("")}</section>
-    <p class="hint">선택한 행동과 관계 단계가 생활 로그와 상호작용 대사에 반영돼요. 여러 명을 함께 선택해도 모두 같은 관계 종류로 저장돼요.</p>
+    <p class="hint">공식 관계와 관계 단계, 각 캐릭터의 성격과 신체 접촉 반응을 함께 분석해 상호작용을 자동으로 만들어요.</p>
     <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
   </form>`;
-  const allInteractionValues=Object.values(RELATION_INTERACTION_GROUPS).flat();
-  document.body.append(dialog);const f=dialog.querySelector("form"),selectedInteractions=new Set(old?.interactionsAll?allInteractionValues:(old?.interactions||[]));
+  document.body.append(dialog);const f=dialog.querySelector("form");
   let pairOrder=Array.isArray(old?.displayOrder)&&old.displayOrder.length===2?old.displayOrder:[old?.a,old?.b].filter(Boolean);
   if(pairOrder.length!==2)pairOrder=oldMembers.slice(0,2);
   const checkedMembers=()=>[...f.querySelectorAll('[name="member"]:checked')].map(input=>input.value);
@@ -878,17 +931,10 @@ function openRelationDialog(id=""){
     f.querySelector("[data-relation-order-label]").textContent=selected.length===2?`${state.characters[pairOrder[0]]?.name||""} × ${state.characters[pairOrder[1]]?.name||""}`:"두 명을 선택하면 순서를 바꿀 수 있어요.";
   };
   const refreshStages=()=>{const values=stagesFor(f.type.value),selected=old?.stage&&values.includes(old.stage)?old.stage:values[Math.floor(values.length/2)];f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("")};
-  const syncButtons=()=>f.querySelectorAll("[data-relation-interaction]").forEach(button=>button.classList.toggle("on",selectedInteractions.has(button.dataset.relationInteraction)));
-  const setValues=(values,on)=>{values.forEach(value=>on?selectedInteractions.add(value):selectedInteractions.delete(value));syncButtons()};
   const updateType=()=>{refreshStages();const crush=f.type.value==="짝사랑",parent=f.type.value==="부모·자녀";f.querySelector(".crush-direction").hidden=!crush;f.querySelector(".parent-direction").hidden=!parent;f.querySelector(".relation-member-picker").hidden=crush||parent;syncPairOrder()};
   f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"?"친구":old?.type==="대학 동기"?"젊은 날의 친구들":old?.type||"친구";updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);
   f.querySelectorAll('[name="member"]').forEach(input=>input.onchange=syncPairOrder);
   f.querySelector("[data-swap-relation-order]").onclick=()=>{if(pairOrder.length===2){pairOrder.reverse();syncPairOrder()}};
-  f.querySelectorAll("[data-relation-interaction]").forEach(button=>button.onclick=()=>{const value=button.dataset.relationInteraction;selectedInteractions.has(value)?selectedInteractions.delete(value):selectedInteractions.add(value);syncButtons()});
-  f.querySelector("[data-interaction-all]").onclick=()=>setValues(Object.values(RELATION_INTERACTION_GROUPS).flat(),true);
-  f.querySelector("[data-interaction-clear]").onclick=()=>setValues([...selectedInteractions],false);
-  f.querySelectorAll("[data-group-all]").forEach(button=>button.onclick=()=>setValues(RELATION_INTERACTION_GROUPS[button.dataset.groupAll],true));
-  f.querySelectorAll("[data-group-clear]").forEach(button=>button.onclick=()=>setValues(RELATION_INTERACTION_GROUPS[button.dataset.groupClear],false));
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
       const members=checkedMembers();
@@ -901,7 +947,7 @@ function openRelationDialog(id=""){
       else if(!["짝사랑","부모·자녀"].includes(f.type.value)&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
       else{
         const levels=stagesFor(f.type.value),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1);
-        const hostile=f.type.value==="혐관",base={type:f.type.value,stage:f.stage.value,interactions:[...selectedInteractions],interactionsAll:selectedInteractions.size===allInteractionValues.length,cohabit:f.cohabit.checked,intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
+        const hostile=f.type.value==="혐관",base={type:f.type.value,stage:f.stage.value,interactions:[],interactionsAll:false,cohabit:f.cohabit.checked,intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
         if(old?.groupId)Object.values(state.relationships).filter(r=>r.groupId===old.groupId).forEach(r=>deleteRelationship(r.id));
         else if(old&&(["짝사랑","부모·자녀"].includes(f.type.value)||members.length!==2))deleteRelationship(id);
         if(f.type.value==="짝사랑"){
@@ -982,12 +1028,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260804n").catch(error=>{
+import("./auth.js?v=20260804o").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260804n").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260804o").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

@@ -295,6 +295,13 @@ function normalizeHomes(x){
     c.thinkingFeeling=Number.isFinite(+c.thinkingFeeling)?Math.max(0,Math.min(6,+c.thinkingFeeling)):3;
     c.perceivingJudging=Number.isFinite(+c.perceivingJudging)?Math.max(0,Math.min(6,+c.perceivingJudging)):3;
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
+    c.gender=["남성","여성","그외"].includes(c.gender)?c.gender:"그외";
+    c.attractedGenders=Array.isArray(c.attractedGenders)?[...new Set(c.attractedGenders)]:[];
+    c.touchReaction=c.touchReaction||"허락 없는 접촉은 불편함";
+    c.appearanceLevel=c.appearanceLevel||"보통";
+    c.appearanceInterest=c.appearanceInterest||"보통";
+    c.appearanceTags=Array.isArray(c.appearanceTags)?[...new Set(c.appearanceTags)]:[];
+    c.attractionTraits=Array.isArray(c.attractionTraits)?[...new Set(c.attractionTraits)]:[];
     c.homeId=c.homeId||c.id;
     if(!x.homes[c.homeId])x.homes[c.homeId]={id:c.homeId,name:`${c.name||"캐릭터"}의 집`,image:"",rooms:rooms(),pets:[],cleanliness:100};
     const homeRooms=x.homes[c.homeId].rooms||rooms();
@@ -328,7 +335,7 @@ export function save(immediate=false){
 export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"그외",attractedGenders:[],touchReaction:"허락 없는 접촉은 불편함",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};
@@ -484,7 +491,6 @@ export function setHomeResidents(homeId,ids){
   });
   state.activeHomeId=homeId;save(true);
 }
-export function setPlaceImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.image=data;save(true)}}
 export function setPlaceInteriorImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.interiorImage=data;save(true)}}
 export function updatePlace(placeId,patch,persist=true){
   const p=state.world.places.find(x=>x.id===placeId);if(!p)return;
@@ -535,7 +541,7 @@ export function characterViewFor(sourceId,targetId){
   const relation=Object.values(state.relationships||{}).find(item=>
     (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
   );
-  let defaults={overall:"낯선 사람으로 여김",awareness:"자기 감정을 분명히 자각함",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"조심스러움",touchReaction:"허락 없는 접촉은 불편함",boundaryRespect:"먼저 의사를 확인함",annoyance:"전혀 귀찮지 않음",attention:"관심 없음",jealousy:"질투하지 않음"};
+  let defaults={overall:"낯선 사람으로 여김",awareness:"자기 감정을 분명히 자각함",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"조심스러움",annoyance:"전혀 귀찮지 않음",attention:"관심 없음",jealousy:"질투하지 않음"};
   if(relation){
     if(["연인","부부"].includes(relation.type))defaults={...defaults,overall:"좋아함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
     else if(["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||""))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"매우 불편함",annoyance:"보기만 해도 피곤함"};
