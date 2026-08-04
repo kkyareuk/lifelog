@@ -158,9 +158,9 @@ function normalizeHomes(x){
       연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구",혐관:"신경전 중",짝사랑:"멀리서 바라봄"
     }[relation.type]||"편안함");
     if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b){
-      const directional=relation.type==="짝사랑"||relation.type==="부모·자녀"||relation.directional;
+      const directional=relation.type==="짝사랑"||relation.type==="부모·자녀"||relation.type==="보호·피보호"||relation.directional;
       const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
-      const key=`${relation.type}|${pair}|${relation.parentRole||""}`;
+      const key=`${relation.type}|${pair}|${relation.parentRole||relation.protectionRole||""}`;
       const displayOrder=Array.isArray(relation.displayOrder)&&relation.displayOrder.length===2&&relation.displayOrder.every(characterId=>characterId===relation.a||characterId===relation.b)
         ?relation.displayOrder:[relation.a,relation.b];
       const candidate={...relation,id,displayOrder};
@@ -305,6 +305,7 @@ function normalizeHomes(x){
     c.appearanceInterest=c.appearanceInterest||"보통";
     c.appearanceTags=Array.isArray(c.appearanceTags)?[...new Set(c.appearanceTags)]:[];
     c.attractionTraits=Array.isArray(c.attractionTraits)?[...new Set(c.attractionTraits)]:[];
+    c.relationshipOpenness=["연인이 있으면 다른 사람에게 끌리지 않음","아주 드물게 호감을 느낌","관계와 별개로 호감을 느낄 수 있음","새로운 사람에게 쉽게 끌림"].includes(c.relationshipOpenness)?c.relationshipOpenness:"연인이 있으면 다른 사람에게 끌리지 않음";
     c.homeId=c.homeId||c.id;
     if(!x.homes[c.homeId])x.homes[c.homeId]={id:c.homeId,name:`${c.name||"캐릭터"}의 집`,image:"",rooms:rooms(),pets:[],cleanliness:100};
     const homeRooms=x.homes[c.homeId].rooms||rooms();
@@ -550,7 +551,7 @@ export function characterViewFor(sourceId,targetId){
   if(relation){
     if(["연인","부부"].includes(relation.type))defaults={...defaults,overall:"좋아함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
     else if(["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||""))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"매우 불편함",annoyance:"보기만 해도 피곤함"};
-    else if(["친구","가족","부모·자녀"].includes(relation.type))defaults={...defaults,overall:"소중하게 여김",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
+    else if(["친구","가족","유사가족","부모·자녀","보호·피보호"].includes(relation.type))defaults={...defaults,overall:"소중하게 여김",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
     else defaults={...defaults,overall:"그저 그런 사람",trust:"보통",closeness:"보통",comfort:"보통",attention:"필요할 때만 봄"};
   }
   return {...defaults,...explicit};

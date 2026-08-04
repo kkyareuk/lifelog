@@ -74,7 +74,7 @@ const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
-const relationPriority={"부모·자녀":10,부부:9,연인:8,짝사랑:6,소꿉친구:6,친구:5,"학창 시절 친구들":5,"젊은 날의 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
+const relationPriority={"부모·자녀":10,"보호·피보호":10,부부:9,"유사가족":9,연인:8,짝사랑:6,소꿉친구:6,친구:5,"학창 시절 친구들":5,"젊은 날의 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
 function personalityFlavor(c,desc,seed=""){
@@ -498,8 +498,12 @@ function relationshipHomeEntry(c,pick,time,date){
   const uncomfortable=/매우 불편|긴장|조심스러움/.test(comfort);
   const attentive=/자주 살핌|늘 최우선/.test(attention);
   const jealous=/은근히 질투|질투가 심함|독점/.test(jealousy);
-  const attractionAllowed=!(c.attractedGenders||[]).includes("없음")&&(c.attractedGenders||[]).includes(other.gender);
-  const matchedLooks=(c.attractionTraits||[]).filter(tag=>(other.appearanceTags||[]).includes(tag));
+  const hasPartner=relationList().some(relation=>["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
+  const openness=c.relationshipOpenness||"연인이 있으면 다른 사람에게 끌리지 않음";
+  const opennessAllows=!hasPartner||openness==="관계와 별개로 호감을 느낄 수 있음"||openness==="새로운 사람에게 쉽게 끌림"||(openness==="아주 드물게 호감을 느낌"&&hash(`${c.id}:${other.id}:rare-attraction`)%12===0);
+  const attractionAllowed=opennessAllows&&!(c.attractedGenders||[]).includes("없음")&&(c.attractedGenders||[]).includes(other.gender);
+  const otherTraits=[...(other.appearanceTags||[]),other.job,other.jobTitle,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
+  const matchedLooks=(c.attractionTraits||[]).filter(tag=>otherTraits.includes(tag));
   const noticesLooks=/꽤 중요하게 봄|외모에 크게 끌림/.test(c.appearanceInterest||"");
   const visuallyDrawn=attractionAllowed&&noticesLooks&&(matchedLooks.length||/매력적임|매우 아름답거나 잘생김|시선을 사로잡음/.test(other.appearanceLevel||""));
   const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,컨트롤프릭:34}[c.interference]||0;
@@ -532,8 +536,8 @@ function relationshipHomeEntry(c,pick,time,date){
     [`${other.name}의 반응에 맞춰 거리를 조절하는 중`,`다정하게 다가가려다 ${other.name}의 몸이 굳는 것을 보고 바로 멈췄어요. 접촉 대신 필요한 것을 가까이에 놓아 주었어요.`,"living"]
   ];
   else if(welcomesTouch&&loving&&!otherTouchAverse)scripts=[
-    [`${other.name}에게 가까이 가도 되는지 먼저 묻는 중`,`손을 내밀기 전에 ${other.name}의 표정과 대답을 기다렸어요. 허락을 확인한 뒤에야 어깨를 살짝 기대며 다정한 온기를 나누고 있어요.`,"living"],
-    [`${other.name}의 반응에 맞춰 다정하게 다가가는 중`,`가까이 있고 싶은 마음은 컸지만 ${other.name}이 편안한 만큼만 거리를 좁혔어요. 손끝이 닿자 반응을 살피며 언제든 물러날 준비를 하고 있어요.`,"living"]
+    [`${other.name}와 자연스럽게 가까이 있는 중`,`익숙하게 곁에 앉아 어깨를 가볍게 맞대고 편안한 온기를 나누고 있어요. 둘 사이에 자연스러운 거리라 긴장하지 않고 이야기를 이어 갔어요.`,"living"],
+    [`${other.name}에게 다정하게 기대는 중`,`지나가며 팔을 가볍게 감싸고 잠시 곁에 기대었어요. ${other.name}도 편안하게 받아들여 가까운 거리에서 함께 쉬고 있어요.`,"living"]
   ];
   else if(loving&&distrust)scripts=[
     [`${other.name}의 말을 다시 확인하는 중`,`마음은 자꾸 ${other.name}에게 향하지만 그 말을 곧이곧대로 믿지는 못해요. 좋아하는 마음과 의심 사이에서 표정을 살피고, 방금 들은 이야기를 조심스럽게 다시 물었어요.`,"living"],
@@ -890,6 +894,16 @@ function cleanExactRepeatedEntries(entries){
   });
   return kept;
 }
+function cleanSameMinuteEntries(entries){
+  const byMinute=new Map();
+  [...entries].sort((a,b)=>a.minute-b.minute).forEach(item=>{
+    const minute=Number(item.minute);
+    if(!Number.isFinite(minute))return;
+    const previous=byMinute.get(minute);
+    if(!previous||item.groupInteraction||!previous.groupInteraction)byMinute.set(minute,item);
+  });
+  return [...byMinute.values()].sort((a,b)=>a.minute-b.minute);
+}
 function companionWasActuallyThere(c,item,date){
   if(!item?.withId)return true;
   const other=state.characters[item.withId],otherDay=other?.days?.[dayKey(date)];
@@ -906,6 +920,10 @@ export function timeline(c,date=new Date()){
   const key=dayKey(date), sig=signature(c);
   c.days??={};
   const old=c.days[key];
+  if(old?.entries){
+    const cleaned=cleanSameMinuteEntries(cleanExactRepeatedEntries(old.entries));
+    if(cleaned.length!==old.entries.length){old.entries=cleaned;save()}
+  }
   const today=key===dayKey(new Date());
   // 한 번 만든 하루의 기록은 앱 업데이트나 스크립트 팩 변경으로 다시 쓰지 않는다.
   // 현재 시각 이후에 생기는 실시간 기록은 commitLiveEntry가 기존 배열 뒤에만 추가한다.
@@ -942,7 +960,8 @@ function commitLiveEntry(c,date,item){
   return item;
 }
 function liveGapEvent(c,last,n,date){
-  const minute=n-(n%15);
+  const gap=5+(hash(`${c.id}:${dayKey(date)}:${last?.minute??n}:reaction-gap`)%11);
+  const minute=Math.min(n,(Number(last?.minute)||n)+gap);
   if(last?.placeId){
     const currentTown=state.towns.find(t=>t.id===(last.townId||c.townId))||townFor(c);
     const place=(currentTown?.places||[]).find(p=>p.id===last.placeId);
@@ -980,13 +999,14 @@ function baseEventFor(c,date=new Date()){
   if(sleepingNow(c,date))return entry(n,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
   const last=past.at(-1);
-  if(last&&n-last.minute>=5)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
+  const nextGap=last?5+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%11):15;
+  if(last&&n-last.minute>=nextGap)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
   if(last)return last;
   if(c.createdAt&&Date.now()-Number(c.createdAt)<24*60*60*1000)return entry(n,"아직 생활을 시작하지 않음","프로필과 집, 일정을 설정하면 지금부터 생활이 시작돼요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"대기",stress:0});
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
   return entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
-const RELATION_CLOSENESS={부부:100,연인:95,"부모·자녀":92,가족:88,소꿉친구:84,친구:78,짝사랑:66,직장동료:54,라이벌:42,혐관:35};
+const RELATION_CLOSENESS={부부:100,연인:95,"부모·자녀":92,"보호·피보호":92,"유사가족":90,가족:88,소꿉친구:84,친구:78,짝사랑:66,직장동료:54,라이벌:42,혐관:35};
 const VIEW_IMPORTANCE=[
   ["overall",/운명의 상대|사랑|없어서는/,42],
   ["overall",/좋아|호감|소중/,27],
@@ -1034,7 +1054,7 @@ function significantEncounter(pair,group,date){
   if(["혐관","라이벌"].includes(encounter.relation.type)){
     return ` 그러다 ${encounter.person.name}와 마주쳐 잠깐 날 선 시선을 보냈지만, 곧 다시 곁의 사람에게 주의를 돌렸어요.`;
   }
-  if(["친구","소꿉친구","가족","부모·자녀"].includes(encounter.relation.type)){
+  if(["친구","소꿉친구","가족","유사가족","부모·자녀","보호·피보호"].includes(encounter.relation.type)){
     return ` 지나가던 ${encounter.person.name}에게 짧게 인사를 건넨 뒤, 함께하던 시간을 방해하지 않도록 다시 곁의 사람에게 집중했어요.`;
   }
   return "";

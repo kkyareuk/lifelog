@@ -205,7 +205,9 @@ function home(){
 }
 function homeCard(id,chars){
   const h=state.homes[id]||{id,name:`${chars[0].name}의 집`,rooms:{}};
-  const inside=chars.filter(c=>eventFor(c).home);
+  const currentScenes=new Map(chars.map(c=>[c.id,eventFor(c)]));
+  const sceneFor=c=>currentScenes.get(c.id);
+  const inside=chars.filter(c=>sceneFor(c)?.home);
   const edit=state.homeEditMode;
   const roomKeys=Object.keys(h.rooms||{});
   const pets=h.pets||[];
@@ -230,7 +232,7 @@ function homeCard(id,chars){
       };
       return {roomKey:sleepRoomKey,title:`${sleepRoom}에서 자는 중`,desc:sleepText[pet.species]||sleepText.기타};
     }
-    const walkers=inside.filter(c=>eventFor(c).home&&!eventFor(c).transit);
+    const walkers=inside.filter(c=>sceneFor(c)?.home&&!sceneFor(c)?.transit);
     const walkSeed=[...(pet.id+now.toDateString())].reduce((sum,ch)=>sum+ch.charCodeAt(0),0);
     const walkStart=450+(walkSeed%3)*300,currentMinute=hour*60+now.getMinutes();
     if(pet.needsWalk&&walkers.length&&currentMinute>=walkStart&&currentMinute<walkStart+45){
@@ -251,7 +253,7 @@ function homeCard(id,chars){
     const seed=[...(pet.id+now.toDateString())].reduce((sum,ch)=>sum+ch.charCodeAt(0),0);
     const roomKey=candidates.length?candidates[(seed+slot)%candidates.length]:(pet.room||roomKeys[0]);
     const room=h.rooms?.[roomKey]?.name||"집 안";
-    const sameRoom=inside.filter(c=>{const scene=eventFor(c);return scene.room===roomKey&&scene.title!=="자는 중"});
+    const sameRoom=inside.filter(c=>{const scene=sceneFor(c);return scene?.room===roomKey&&scene.title!=="자는 중"});
     const resident=sameRoom.length?sameRoom[(seed+slot)%sameRoom.length]:null;
     const solo={
       강아지:["공을 앞발로 굴렸다가 입에 물고 방 안을 신나게 오가고 있어요.","노즈워크 장난감 사이에 숨은 간식 냄새를 따라 코를 바쁘게 움직이고 있어요.","현관 쪽에서 들리는 소리에 귀를 세웠다가 안전한지 확인하고 돌아왔어요.","푹신한 방석을 앞발로 몇 번 고른 뒤 가장 편한 자세로 엎드렸어요.","창밖을 구경하다 지나가는 움직임을 발견하고 꼬리를 흔들고 있어요.","아끼는 장난감을 자기 자리로 하나씩 옮겨 모으고 있어요.","물을 마신 뒤 입가의 물방울을 털고 바닥 냄새를 다시 확인하고 있어요.","갑자기 신이 나 짧게 방을 한 바퀴 달린 뒤 숨을 고르고 있어요."],
@@ -310,7 +312,7 @@ function homeCard(id,chars){
   };
   const petScenes=Object.fromEntries(pets.map(p=>[p.id,petScene(p)]));
   const roomHtml=roomKeys.map(key=>{
-    const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>eventFor(c).room===key);
+    const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>sceneFor(c)?.room===key);
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
     const capacity=2;
     const shownPeople=roomPeople.slice(0,capacity),hiddenPeople=Math.max(0,roomPeople.length-shownPeople.length);
@@ -320,7 +322,7 @@ function homeCard(id,chars){
       ${edit?`<input class="room-name" data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}">`:`<b>${esc(room.name||key)}</b>`}
       ${edit?`<div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div>`:""}
       ${edit?`<div class="furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div>`:""}
-      <div class="room-people">${shownPeople.map(c=>{const e=eventFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small></span></button>`}).join("")}${hiddenPeople?`<button class="room-more" title="${esc(roomPeople.slice(capacity).map(c=>c.name).join(", "))}">+${hiddenPeople}</button>`:""}</div>
+      <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}${hiddenPeople?`<button class="room-more" title="${esc(roomPeople.slice(capacity).map(c=>c.name).join(", "))}">+${hiddenPeople}</button>`:""}</div>
       <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}${hiddenPets?`<button class="room-more pet-more" title="${esc(roomPets.slice(petCapacity).map(p=>p.name).join(", "))}">+${hiddenPets}</button>`:""}</div>
     </div>`;
   }).join("");
