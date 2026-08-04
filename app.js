@@ -197,12 +197,10 @@ const exportSection=(title,rows)=>{
   return lines.length?[title,lines]:null;
 };
 function profileExportLines(character){
-  const favorites=Object.values(character.favorites||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean);
   const sections=[
     exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["성지향",listText(character.attractedGenders)],["직업",character.jobTitle||character.job],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["외모 태그",listText(character.appearanceTags)],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 외모 태그",listText(character.attractionTraits)]]),
     exportSection("성격",[["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm]]),
-    exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]]),
-    exportSection("세계관 선호와 소지품",[["최애 항목",favorites.join(", ")],["소지한 항목",Object.values(character.inventory||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean).join(", ")]])
+    exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]])
   ];
   return sections.filter(Boolean);
 }
@@ -249,6 +247,33 @@ async function exportProfilePng(character){
   ctx.fillStyle=primary;ctx.font='22px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad+15,canvas.height-75);
   try{const link=document.createElement("a");link.download=`${character.name}-설정표.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
 }
+async function exportProfilePngV2(character){
+  await document.fonts?.load?.('32px "Gowun Dodum"');await document.fonts?.ready;
+  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=64,gap=24;
+  canvas.width=width;
+  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary;
+  const portrait=await exportImage(character.photo),icon=await exportImage(character.icon),cardW=(width-pad*2-gap)/2,valueW=cardW-44;
+  const wrap=(text,maxWidth,font='22px "Gowun Dodum","Malgun Gothic",sans-serif')=>{ctx.font=font;const out=[];String(text).split(/\n/).forEach(paragraph=>{let line="";for(const char of paragraph){const next=line+char;if(line&&ctx.measureText(next).width>maxWidth){out.push(line);line=char}else line=next}out.push(line||" ")});return out};
+  const layouts=sections.map(([title,items])=>{const cards=items.map(([label,value])=>{const lines=wrap(value,valueW);return {label,lines,height:58+lines.length*34}});let left=0,right=0;cards.forEach((card,index)=>{card.column=index%2;card.offset=card.column?right:left;if(card.column)right+=card.height+14;else left+=card.height+14});return {title,cards,height:70+Math.max(left,right)}});
+  canvas.height=Math.max(1500,420+layouts.reduce((sum,section)=>sum+section.height+24,0)+100);
+  const rounded=(x,y,w,h,r=22)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r)};
+  const cover=(image,x,y,w,h)=>{if(!image)return false;const scale=Math.max(w/image.width,h/image.height),dw=image.width*scale,dh=image.height*scale;ctx.drawImage(image,x+(w-dw)/2,y+(h-dh)/2,dw,dh);return true};
+  ctx.fillStyle="#f8f5f0";ctx.fillRect(0,0,width,canvas.height);
+  const hx=pad,hy=54,hw=width-pad*2,hh=290;
+  ctx.save();rounded(hx,hy,hw,hh,34);ctx.clip();ctx.fillStyle=primary;ctx.fillRect(hx,hy,hw,hh);
+  if(portrait){ctx.filter="blur(18px) brightness(.48) saturate(.9)";cover(portrait,hx-24,hy-24,hw+48,hh+48);ctx.filter="none";ctx.fillStyle=primary+"66";ctx.fillRect(hx,hy,hw,hh)}
+  const avatar=icon||portrait,ax=hx+54,ay=hy+47,size=196;
+  ctx.save();ctx.beginPath();ctx.arc(ax+size/2,ay+size/2,size/2,0,Math.PI*2);ctx.clip();
+  if(!cover(avatar,ax,ay,size,size)){ctx.fillStyle=secondary;ctx.fillRect(ax,ay,size,size);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font='82px "Gowun Dodum",sans-serif';ctx.fillText(character.name.slice(0,1),ax+size/2,ay+126)}
+  ctx.restore();ctx.strokeStyle="#ffffffcc";ctx.lineWidth=7;ctx.beginPath();ctx.arc(ax+size/2,ay+size/2,size/2,0,Math.PI*2);ctx.stroke();
+  ctx.textAlign="left";ctx.fillStyle="#fff";ctx.font='bold 52px "Gowun Dodum","Malgun Gothic",sans-serif';wrap(`${character.name}의 프로필`,hw-360,'bold 52px "Gowun Dodum","Malgun Gothic",sans-serif').slice(0,2).forEach((line,index)=>ctx.fillText(line,hx+300,hy+117+index*62));
+  ctx.font='25px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillStyle="#ffffffdd";ctx.fillText("서랍마을 캐릭터 기록",hx+302,hy+260);ctx.restore();
+  let y=382;
+  layouts.forEach(section=>{ctx.fillStyle=primary;rounded(pad,y,cardW,52,18);ctx.fill();ctx.fillStyle="#fff";ctx.font='bold 27px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(section.title,pad+22,y+36);
+    section.cards.forEach(card=>{const x=pad+card.column*(cardW+gap),cy=y+66+card.offset;ctx.fillStyle="#fff";rounded(x,cy,cardW,card.height,18);ctx.fill();ctx.strokeStyle=secondary+"88";ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=primary;ctx.font='bold 20px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(card.label,x+22,cy+31);ctx.fillStyle="#2f2926";ctx.font='22px "Gowun Dodum","Malgun Gothic",sans-serif';card.lines.forEach((line,index)=>ctx.fillText(line,x+22,cy+67+index*34))});y+=section.height+24});
+  ctx.fillStyle=primary;ctx.font='20px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad,canvas.height-45);
+  try{const link=document.createElement("a");link.download=`${character.name}-프로필.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
+}
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
   const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary),photo=character.photo||character.icon;
@@ -257,8 +282,8 @@ function exportProfilePdf(character){
 }
 function openProfileExportDialog(){
   const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>프로필·성격·취향 선택·세계관 선호를 한 문서로 정리해요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-export-format="png"><b>PNG 이미지</b><small>바로 저장되는 긴 프로필 이미지</small></button><button type="button" data-export-format="pdf"><b>PDF</b><small>인쇄 창에서 ‘PDF로 저장’을 선택</small></button></div></form>`;
-  dialog.querySelector('[data-export-format="png"]').onclick=()=>{exportProfilePng(character);dialog.close()};
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>프로필·성격·취향을 캐릭터 테마의 한 문서로 정리해요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-export-format="png"><b>PNG 이미지</b><small>바로 저장되는 긴 프로필 이미지</small></button><button type="button" data-export-format="pdf"><b>PDF</b><small>인쇄 창에서 ‘PDF로 저장’을 선택</small></button></div></form>`;
+  dialog.querySelector('[data-export-format="png"]').onclick=()=>{exportProfilePngV2(character);dialog.close()};
   dialog.querySelector('[data-export-format="pdf"]').onclick=()=>{exportProfilePdf(character);dialog.close()};
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
@@ -493,7 +518,7 @@ function bind(){
     const home=state.homes[el.dataset.homeId];
     if(Object.keys(home?.rooms||{}).length<=1)return alert("집에는 방이 최소 하나 필요해요.");
     if(confirm(`‘${home.rooms[el.dataset.deleteRoom]?.name||"이 방"}’을 삭제할까요?\n이 방을 쓰던 구성원은 남은 방으로 자동 이동해요.`)){
-      deleteRoom(el.dataset.homeId,el.dataset.deleteRoom);render();
+      if(deleteRoom(el.dataset.homeId,el.dataset.deleteRoom)){render();explicitSave("방 삭제")}
     }
   });
   $$("[data-sleep-room]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.sleepRoom,{sleepRoomId:el.value});render()});
@@ -951,7 +976,7 @@ function openRoutineDialog(id){
   dialog.showModal();
 }
 
-const RELATION_TYPES=["친구","연인","부부","부모·자녀","가족","소꿉친구","학창 시절 친구들","젊은 날의 친구들","친구 모임","산악회","동아리 동료","직장 동료","짝사랑","라이벌","혐관","기타"];
+const RELATION_TYPES=["친구","연인","부부","부모·자녀","가족","유사가족","보호·피보호","소꿉친구","학창 시절 친구들","젊은 날의 친구들","친구 모임","산악회","동아리 동료","직장 동료","짝사랑","라이벌","혐관","기타"];
 const RELATION_STAGES={
   연인:["이별 통보 직전","마음이 멀어지는 중","위태로운 사이","서로 알아가는 중","편안한 연인","서로를 깊이 사랑함","운명의 상대"],
   부부:["이혼 서류가 오가는 중","별거를 고민하는 중","권태기","생활 동반자","애정이 깊은 부부","서로 없이는 못 사는 사이","운명의 상대"],
@@ -959,7 +984,9 @@ const RELATION_STAGES={
   혐관:["원수지간","마주치면 싸움","서로 못마땅함","신경전 중","경쟁하며 의식함","티격태격함"],
   짝사랑:["무자각 · 자기 감정을 모르는 중","무자각 · 호감이라고만 생각함","무자각 · 이유 없이 자꾸 신경 쓰임","포기하려는 중","마음을 숨기는 중","멀리서 바라봄","조심스럽게 다가가는 중","감정이 깊어짐","고백을 결심함"],
   가족:["연락을 끊다시피 함","서먹한 가족","필요할 때 연락함","무난한 가족","서로 챙기는 가족","각별한 가족"],
+  유사가족:["아직 가족이라 부르기 어려움","필요할 때만 함께함","한집안처럼 얽힌 사이","암묵적인 가족","서로를 가족처럼 챙김","떼어 놓을 수 없는 유사가족"],
   "부모·자녀":["연락이 끊긴 사이","서먹한 부모와 자녀","필요할 때만 연락함","무난한 부모와 자녀","서로 의지하는 가족","무척 각별한 부모와 자녀"],
+  "보호·피보호":["보호를 거부하는 사이","필요할 때만 도움","암묵적으로 지켜봄","서로 역할을 받아들임","깊이 의지하는 사이","목숨을 맡길 수 있는 사이"],
   default:["매우 불편함","서먹함","조금 가까움","편안함","가까움","매우 가까움"]
 };
 const stagesFor=type=>RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","젊은 날의 친구들","친구 모임","산악회"].includes(type)?RELATION_STAGES.친구:RELATION_STAGES.default);
@@ -975,6 +1002,8 @@ function openRelationDialog(id=""){
     <fieldset class="parent-direction" hidden><legend>부모와 자녀 지정</legend><div class="parent-columns"><section><b>엄마 역할 · 여러 명 가능</b><div>${characterChecks("mother",old?.parentRole==="엄마"?[old.parentId||old.a]:[])}</div></section><section><b>아빠 역할 · 여러 명 가능</b><div>${characterChecks("father",old?.parentRole==="아빠"?[old.parentId||old.a]:[])}</div></section><span>→</span><section><b>자녀 · 여러 명 가능</b><div>${characterChecks("child",old?.childId?[old.childId]:[])}</div></section></div><small>엄마 두 명, 아빠 두 명, 엄마와 아빠 등 원하는 가족 구성이 모두 가능해요.</small></fieldset>
     <label>관계 종류<select name="type">${RELATION_TYPES.map(type=>`<option>${type}</option>`).join("")}</select></label>
     <label>현재 관계 단계<select name="stage"></select></label>
+    <label class="relation-officiality">관계의 공식성<select name="legalStatus">${["법적으로 명시되지 않음","법적으로 가족임","법적으로 보호 관계임","당사자 사이에서만 인정함","남들 앞에서도 공개함","외부에는 숨김"].map(value=>`<option>${value}</option>`).join("")}</select><small>법적 지위와 다른 사람 앞에서 드러낼 수 있는 관계인지를 따로 기록해요.</small></label>
+    <label class="protection-role" hidden>보호 관계의 방향<select name="protectionRole"><option value="a-protects-b">왼쪽 인물 → 오른쪽 인물을 보호함</option><option value="b-protects-a">오른쪽 인물 → 왼쪽 인물을 보호함</option><option value="mutual">서로 보호함</option><option value="implicit">명시하지 않았지만 암묵적으로 보호함</option></select><small>나이와 직급에 상관없이 실제로 맡는 역할을 골라 주세요.</small></label>
     <label>스킨십 강도<select name="touchIntensity">${["신체 접촉 없음","거의 하지 않음","가끔 가벼운 접촉","자연스럽게 표현함","애정 표현이 많은 편"].map(value=>`<option>${value}</option>`).join("")}</select><small>연인이나 부부여도 신체 접촉 없이 말과 행동으로 애정을 표현할 수 있어요.</small></label>
     <label class="cohabit"><input type="checkbox" name="cohabit"> 함께 살기</label>
     <p class="hint">공식 관계와 관계 단계, 각 캐릭터의 성격과 신체 접촉 반응을 함께 분석해 상호작용을 자동으로 만들어요.</p>
@@ -992,8 +1021,8 @@ function openRelationDialog(id=""){
     f.querySelector("[data-relation-order-label]").textContent=selected.length===2?`${state.characters[pairOrder[0]]?.name||""} × ${state.characters[pairOrder[1]]?.name||""}`:"두 명을 선택하면 순서를 바꿀 수 있어요.";
   };
   const refreshStages=()=>{const values=stagesFor(f.type.value),selected=old?.stage&&values.includes(old.stage)?old.stage:values[Math.floor(values.length/2)];f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("")};
-  const updateType=()=>{refreshStages();const crush=f.type.value==="짝사랑",parent=f.type.value==="부모·자녀";f.querySelector(".crush-direction").hidden=!crush;f.querySelector(".parent-direction").hidden=!parent;f.querySelector(".relation-member-picker").hidden=crush||parent;if(!old)f.touchIntensity.value=["연인","부부"].includes(f.type.value)?"자연스럽게 표현함":"가끔 가벼운 접촉";syncPairOrder()};
-  f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"?"친구":old?.type==="대학 동기"?"젊은 날의 친구들":old?.type||"친구";updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);f.touchIntensity.value=old?.touchIntensity||(["연인","부부"].includes(f.type.value)?"자연스럽게 표현함":"가끔 가벼운 접촉");
+  const updateType=()=>{refreshStages();const crush=f.type.value==="짝사랑",parent=f.type.value==="부모·자녀",protection=f.type.value==="보호·피보호";f.querySelector(".crush-direction").hidden=!crush;f.querySelector(".parent-direction").hidden=!parent;f.querySelector(".protection-role").hidden=!protection;f.querySelector(".relation-member-picker").hidden=crush||parent;if(!old)f.touchIntensity.value=["연인","부부"].includes(f.type.value)?"자연스럽게 표현함":"가끔 가벼운 접촉";syncPairOrder()};
+  f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"?"친구":old?.type==="대학 동기"?"젊은 날의 친구들":old?.type||"친구";updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);f.touchIntensity.value=old?.touchIntensity||(["연인","부부"].includes(f.type.value)?"자연스럽게 표현함":"가끔 가벼운 접촉");f.legalStatus.value=old?.legalStatus||"법적으로 명시되지 않음";f.protectionRole.value=old?.protectionRole||"a-protects-b";
   f.querySelectorAll('[name="member"]').forEach(input=>input.onchange=syncPairOrder);
   f.querySelector("[data-swap-relation-order]").onclick=()=>{if(pairOrder.length===2){pairOrder.reverse();syncPairOrder()}};
   dialog.onclose=()=>{
@@ -1008,7 +1037,7 @@ function openRelationDialog(id=""){
       else if(!["짝사랑","부모·자녀"].includes(f.type.value)&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
       else{
         const levels=stagesFor(f.type.value),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1);
-        const hostile=f.type.value==="혐관",base={type:f.type.value,stage:f.stage.value,touchIntensity:f.touchIntensity.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked,intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
+        const hostile=f.type.value==="혐관",base={type:f.type.value,stage:f.stage.value,legalStatus:f.legalStatus.value,protectionRole:f.type.value==="보호·피보호"?f.protectionRole.value:"",touchIntensity:f.touchIntensity.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked,intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
         if(old?.groupId)Object.values(state.relationships).filter(r=>r.groupId===old.groupId).forEach(r=>deleteRelationship(r.id));
         else if(old&&(["짝사랑","부모·자녀"].includes(f.type.value)||members.length!==2))deleteRelationship(id);
         if(f.type.value==="짝사랑"){
