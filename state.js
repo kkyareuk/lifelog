@@ -295,7 +295,8 @@ function normalizeHomes(x){
     c.wealth=c.wealth||"평범한 형편";
     c.jobTitle=typeof c.jobTitle==="string"?c.jobTitle:"";
     c.workplaceId=c.workplaceId||"";
-    c.birthday=/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(c.birthday||"")?c.birthday:"";
+    const compactBirthday=String(c.birthday||"").replace(/\D/g,"");
+    c.birthday=/^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/.test(compactBirthday)?compactBirthday:"";
     c.spiceTolerance=Number.isFinite(+c.spiceTolerance)?Math.max(0,Math.min(5,+c.spiceTolerance)):2;
     c.sweetPreference=Number.isFinite(+c.sweetPreference)?Math.max(0,Math.min(5,+c.sweetPreference)):2;
     c.socialEnergy=Number.isFinite(+c.socialEnergy)?Math.max(0,Math.min(6,+c.socialEnergy)):3;

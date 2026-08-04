@@ -467,7 +467,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .pet-edit label.check{display:flex!important;align-items:center;justify-content:flex-start;gap:9px;min-height:46px;padding:9px 12px;border:1px solid var(--line);border-radius:13px;background:#fff}
 .pet-edit label.check input{flex:0 0 auto;width:20px!important;min-height:20px!important;height:20px;margin:0}
 .resident-current{display:flex;flex-direction:column;box-sizing:border-box}
-.resident-current>img{margin-top:auto!important;padding-top:16px;box-sizing:content-box}
+.resident-current>img{margin-top:auto!important;padding-top:0;box-sizing:border-box;border-radius:14px!important}
 .relation-activity-details{margin:10px 0 14px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--p) 22%,var(--line));border-radius:13px;background:#ffffffa8}
 .relation-activity-details summary{cursor:pointer;font-weight:800;color:var(--p)}
 .relation-activity-details .relation-tags{margin:10px 0 0}
