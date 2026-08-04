@@ -498,6 +498,8 @@ function relationshipHomeEntry(c,pick,time,date){
   const uncomfortable=/매우 불편|긴장|조심스러움/.test(comfort);
   const attentive=/자주 살핌|늘 최우선/.test(attention);
   const jealous=/은근히 질투|질투가 심함|독점/.test(jealousy);
+  const protectsOther=r.protectionRole==="mutual"||(r.protectionRole==="a-protects-b"&&c.id===r.a)||(r.protectionRole==="b-protects-a"&&c.id===r.b);
+  const protectedByOther=r.protectionRole==="mutual"||(r.protectionRole==="a-protects-b"&&c.id===r.b)||(r.protectionRole==="b-protects-a"&&c.id===r.a);
   const hasPartner=relationList().some(relation=>["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
   const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
   const opennessAllows=openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
@@ -517,6 +519,18 @@ function relationshipHomeEntry(c,pick,time,date){
   else if(unaware&&hating)scripts=[
     [`${other.name}에게 유난히 날이 서는 이유를 모르는 중`,`${other.name}의 평범한 행동에도 신경이 곤두섰지만 그 감정이 분노나 미움이라고는 인정하지 않았어요. ${/우정/.test(awareness)?"가까운 사이라 유난히 예민해지는 것뿐이라고 우정으로 잘못 해석했어요.":"피곤해서 그렇다고 넘기며 대답을 짧게 잘랐어요."}`,"living"],
     [`${other.name}을 무심코 피하면서도 이유를 부정하는 중`,`같은 공간에 들어온 ${other.name}을 보자 자연스럽게 거리를 벌렸어요. ${/우정/.test(awareness)?"서로 편한 사이여서 굳이 말을 섞지 않는 것이라고 생각했지만 실제로는 불쾌함을 피하고 있었어요.":"불편함의 정체를 들여다보는 대신 혼자 있고 싶을 뿐이라고 생각했어요."}`,"study"]
+  ];
+  else if(protectsOther&&distrust)scripts=[
+    [`${other.name}을 믿지 못하면서도 안전은 챙기는 중`,`${other.name}의 판단을 그대로 믿지는 않았지만 위험해질 수 있는 부분은 먼저 확인했어요. 신뢰와 책임을 섞지 않고, 필요한 도움만 분명하게 건넸어요.`,"living"],
+    [`${other.name}의 계획을 재확인하는 중`,`간섭하려는 것이 아니라 맡은 안전 책임 때문이라고 선을 그은 뒤 이동 경로와 귀가 시간을 다시 확인했어요. ${other.name}의 선택은 존중하되 문제가 생길 때 도울 준비를 하고 있어요.`,"living"]
+  ];
+  else if(protectsOther)scripts=[
+    [`${other.name}에게 필요한 것이 없는지 먼저 살피는 중`,`관계의 이름이나 나이와 상관없이 ${other.name}의 안전과 생활을 먼저 확인했어요. 혼자 할 수 있는 일에는 개입하지 않고, 도움이 필요한 부분만 맡았어요.`,"living"],
+    [`${other.name}이 곤란할 때 도울 준비를 하는 중`,`${other.name} 대신 결정을 내리지는 않았어요. 다만 문제가 생기면 바로 손을 보탤 수 있도록 필요한 정보와 물건을 가까이에 준비해 두었어요.`,"living"]
+  ];
+  else if(protectedByOther&&/방관자|요청할 때만 도움/.test(c.interference||""))scripts=[
+    [`${other.name}의 보호를 당연하게 여기지 않는 중`,`${other.name}이 자기를 챙겨 주는 이유는 알고 있지만 모든 판단을 맡기지는 않았어요. 스스로 할 수 있는 일은 직접 처리하고 정말 필요한 부분만 도움을 요청했어요.`,"living"],
+    [`${other.name}에게 필요한 도움을 구체적으로 말하는 중`,`막연히 기대는 대신 어디까지 도움이 필요한지 정리해서 전했어요. ${other.name}의 책임과 자기 선택이 뒤섞이지 않도록 서로의 범위를 확인했어요.`,"living"]
   ];
   else if(visuallyDrawn)scripts=[
     [`${other.name}의 인상에 잠깐 시선이 머무는 중`,`${matchedLooks.length?`${other.name}의 ${matchedLooks[0]} 모습이 평소 좋아하던 인상과 닮아 눈길이 갔어요.`:`${other.name}의 눈에 띄는 인상이 문득 신경 쓰였어요.`} 곧바로 시선을 거두고 하던 이야기를 이어 갔어요.`,"living"],

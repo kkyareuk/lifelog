@@ -197,8 +197,9 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 #mini-toast.show{opacity:1;transform:translate(-50%,0)}
 
 /* 전원 취침 안내 */
-.sleep-gate{margin:0 0 14px;padding:22px;border:1px solid color-mix(in srgb,var(--p) 24%,var(--line));border-radius:24px;background:linear-gradient(135deg,#eff3ff,#f7efff);text-align:center}
-.sleep-gate>div{font-size:38px}.sleep-gate h2{margin:6px 0}.sleep-gate p{margin:4px 0 14px;color:var(--muted)}
+.viewport{position:relative}
+.sleep-gate{position:absolute;z-index:40;left:50%;top:18px;transform:translateX(-50%);display:flex;align-items:center;gap:12px;width:max-content;max-width:calc(100% - 28px);padding:12px 14px;border:1px solid #ffffffb8;border-radius:18px;background:#172033d9;color:#fff;box-shadow:0 10px 32px #17203355;backdrop-filter:blur(8px)}
+.sleep-gate>span{font-size:27px}.sleep-gate>div{min-width:0}.sleep-gate h2{margin:0;font-size:18px}.sleep-gate p{margin:3px 0 0;color:#ffffffd4;font-size:12px}.sleep-gate button{flex:none;padding:9px 12px;background:#fff;color:#172033}
 
 /* 모든 사진 업로드 공통 자르기 */
 .crop-dialog{width:min(760px,calc(100vw - 24px));max-height:94dvh;padding:0;border:0;border-radius:25px;box-shadow:0 30px 90px #10182766}
@@ -472,6 +473,9 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relation-activity-details summary{cursor:pointer;font-weight:800;color:var(--p)}
 .relation-activity-details .relation-tags{margin:10px 0 0}
 .feedback-card a{display:block;width:max-content;max-width:100%;text-decoration:none}
+.feedback-status a{display:inline!important;width:auto!important;text-decoration:underline!important}
+.relation-type-help{display:block;min-height:2.8em;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--p) 7%,#fff);color:var(--muted);line-height:1.55}
+@media(max-width:600px){.sleep-gate{top:10px;align-items:flex-start}.sleep-gate p{display:none}.sleep-gate h2{font-size:15px}.sleep-gate button{padding:7px 9px}}
 .feedback-card label.check{display:flex!important;align-items:center;justify-content:flex-start;gap:10px}
 .feedback-card label.check input{flex:0 0 20px;width:20px!important;height:20px!important;min-height:20px!important;margin:0}
 .feedback-card form{display:grid;gap:18px}.feedback-card fieldset{margin:0;padding:0;border:0}.feedback-card legend{margin-bottom:10px;font-weight:800}.feedback-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.feedback-category-grid label{position:relative}.feedback-category-grid input{position:absolute;opacity:0;pointer-events:none}.feedback-category-grid span{display:block;padding:13px 15px;border:1px solid var(--line);border-radius:14px;background:#fff;text-align:center;font-weight:800}.feedback-category-grid input:checked+span{color:#fff;border-color:transparent;background:var(--grad)}.feedback-card textarea{width:100%;resize:vertical;border:1px solid var(--line);border-radius:16px;background:#f5f7fb;padding:16px;font:inherit}.feedback-status{min-height:1.4em;color:var(--p);font-weight:800}
