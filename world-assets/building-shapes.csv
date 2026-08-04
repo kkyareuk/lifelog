@@ -1,0 +1,18 @@
+id,name,src,types,features
+type-generic,기본 건물,world-assets/building-types/generic.png,기타|쇼핑몰,범용|상업
+type-cafe,카페,world-assets/building-types/cafe.png,카페,음료|디저트|데이트
+type-restaurant,음식점,world-assets/building-types/restaurant.png,음식점,식사|외식
+type-hospital,병원,world-assets/building-types/hospital.png,병원,의료|진료
+type-office,사무실·관공서,world-assets/building-types/office.png,사무실|관공서,업무|행정
+type-shop,옷가게·상점,world-assets/building-types/shop.png,옷가게|쇼핑몰,쇼핑|패션
+type-school,학교,world-assets/building-types/school.png,학교,교육|학생
+type-lodging,숙박·여관,world-assets/building-types/lodging.png,숙박,숙박|여관|휴식
+type-library,도서관,world-assets/building-types/library.png,도서관,독서|공부|조용함
+type-theater,공연장,world-assets/building-types/theater.png,공연장,공연|관람|문화
+type-park,공원,world-assets/building-types/park.png,공원,산책|운동|데이트
+type-home,작은 집,world-assets/building-types/home.png,기타,주거|집
+drawer-building,쌍둥이 서랍 건물,world-assets/drawer-building.png,기타|카페|음식점|사무실|관공서|쇼핑몰,서랍마을|범용
+drawer-home,빨간 지붕 건물,world-assets/drawer-home.png,기타|숙박,주거|숙박
+medieval-castle,중세 성채,world-assets/medieval-castle.svg,관공서|기타,중세|성채
+medieval-tavern,중세 여관,world-assets/medieval-tavern.svg,숙박|음식점|카페,중세|여관|식사
+medieval-market,중세 시장,world-assets/medieval-market.svg,쇼핑몰|옷가게,중세|시장|쇼핑
