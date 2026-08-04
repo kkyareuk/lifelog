@@ -1,6 +1,6 @@
 ﻿import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,setDoc,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
@@ -69,7 +69,15 @@ async function registerSignedInUser(){
     photoURL:user.photoURL||"",
     provider:user.providerData?.[0]?.providerId||"google.com"
   };
-  const presence={profile,lastLoginAt:serverTimestamp(),accountSchemaVersion:1};
+  const presence={
+    profile,
+    lastLoginAt:serverTimestamp(),
+    lastLoginOrigin:location.origin,
+    loginOrigins:arrayUnion(location.origin),
+    firebaseProjectId:cfg.projectId,
+    firebaseAppId:cfg.appId,
+    accountSchemaVersion:2
+  };
   if(!snapshot.exists())presence.createdAt=serverTimestamp();
   await setDoc(reference,presence,{merge:true});
 }
@@ -247,7 +255,7 @@ if(ready){
     onAuthStateChanged(auth,async next=>{
       user=next;
       if(!user){publishEntitlements(null);publishGuideState(localGuideKeys())}
-      status(user?`${user.displayName||"Google 계정"} · 저장 시 동기화`:"Google 로그인 안 됨");
+      status(user?`${user.displayName||"Google 계정"} · ${cfg.projectId} 연결됨 · 저장 시 동기화`:"Google 로그인 안 됨");
       if(user){
         try{await registerSignedInUser()}
         catch(error){console.error(error);status(`${user.displayName||"Google 계정"} · 사용자 등록 실패 · ${shortError(error)}`)}

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet">
-<script src="./config.js?v=20260729-v27"></script>
+<script src="./config.js?v=20260805h"></script>
 <style>
 :root{--a:#6f7cff;--b:#b36cff;--ink:#202334;--muted:#73798d;--line:#e1e5ef}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Do Hyeon","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:radial-gradient(circle at 8% 4%,#dce2ff,transparent 34%),radial-gradient(circle at 96% 5%,#efdfff,transparent 32%),#f4f6fb}
@@ -29,14 +29,14 @@
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-import{getFirestore,doc,getDoc,setDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import{getFirestore,doc,getDoc,setDoc,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const status=document.querySelector('#status');
 const button=document.querySelector('#googleLogin');
 const logout=document.querySelector('#logout');
 const box=document.querySelector('#user');
 const agree=document.querySelector('#agree');
-const config=window.PARALLEL_CITY_CONFIG?.firebase||{};
+const config=window.PARALLEL_CITY_FIREBASE||window.PARALLEL_CITY_CONFIG?.firebase||{};
 const ready=Boolean(config.apiKey&&config.authDomain&&config.projectId&&config.appId);
 
 function showError(error){
@@ -78,7 +78,21 @@ if(!ready){
     logout.onclick=()=>signOut(auth);
     onAuthStateChanged(auth,async user=>{
       if(user){
-        try{const ref=doc(database,'users',user.uid),snapshot=await getDoc(ref);if(!snapshot.data()?.consent?.acceptedAt)await setDoc(ref,{consent:{termsVersion:'2026-07-29',privacyVersion:'2026-07-29',acceptedAt:serverTimestamp()}},{merge:true})}catch(error){showError(error);return}
+        try{
+          const ref=doc(database,'users',user.uid),snapshot=await getDoc(ref);
+          const registration={
+            profile:{name:user.displayName||'',email:user.email||'',photoURL:user.photoURL||'',provider:user.providerData?.[0]?.providerId||'google.com'},
+            lastLoginAt:serverTimestamp(),
+            lastLoginOrigin:location.origin,
+            loginOrigins:arrayUnion(location.origin),
+            firebaseProjectId:config.projectId,
+            firebaseAppId:config.appId,
+            accountSchemaVersion:2
+          };
+          if(!snapshot.exists())registration.createdAt=serverTimestamp();
+          if(!snapshot.data()?.consent?.acceptedAt)registration.consent={termsVersion:'2026-07-29',privacyVersion:'2026-07-29',acceptedAt:serverTimestamp()};
+          await setDoc(ref,registration,{merge:true});
+        }catch(error){showError(error);return}
         const saved={uid:user.uid,name:user.displayName||'',email:user.email||'',photo:user.photoURL||''};
         localStorage.setItem('parallelCityAuthUser',JSON.stringify(saved));
         box.style.display='flex';
@@ -87,7 +101,7 @@ if(!ready){
         document.querySelector('#photo').src=saved.photo;
         button.hidden=true;logout.hidden=false;
         status.classList.add('ok');
-        status.textContent='로그인됐어요.';
+        status.textContent=`로그인됐어요 · ${config.projectId} 연결됨`;
       }else{
         localStorage.removeItem('parallelCityAuthUser');
         box.style.display='none';button.hidden=false;logout.hidden=true;
