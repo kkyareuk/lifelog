@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804k";
-import {eventFor} from "./simulation.js?v=20260804k";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804k";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804l";
+import {eventFor} from "./simulation.js?v=20260804l";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804l";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -57,7 +57,7 @@ function openAudienceDialog(placeId){
   dialog.onclose=()=>{if(dialog.returnValue==="apply"){updatePlace(placeId,{audiences:[...selected]},true);render();showToast("주요 이용층을 적용했습니다")}dialog.remove()};
   document.body.append(dialog);dialog.showModal();
 }
-const BUILDING_SHAPES=[
+const FALLBACK_BUILDING_SHAPES=[
   {id:"type-generic",name:"기본 건물",src:"world-assets/building-types/generic.png",types:["기타","쇼핑몰"]},
   {id:"type-cafe",name:"카페",src:"world-assets/building-types/cafe.png",types:["카페"]},
   {id:"type-restaurant",name:"음식점",src:"world-assets/building-types/restaurant.png",types:["음식점"]},
@@ -76,6 +76,15 @@ const BUILDING_SHAPES=[
   {id:"medieval-tavern",name:"중세 여관",src:"world-assets/medieval-tavern.svg"},
   {id:"medieval-market",name:"중세 시장",src:"world-assets/medieval-market.svg"}
 ];
+const parseBuildingShapeCatalog=text=>text.trim().split(/\r?\n/).slice(1).map(line=>{
+  const [id,name,src,types="",features=""]=line.split(",");
+  return {id:id?.trim(),name:name?.trim(),src:src?.trim(),types:types.split("|").map(value=>value.trim()).filter(Boolean),features:features.split("|").map(value=>value.trim()).filter(Boolean)};
+}).filter(shape=>shape.id&&shape.src);
+const catalogBuildingShapes=await fetch("./world-assets/building-shapes.csv",{cache:"no-cache"})
+  .then(response=>response.ok?response.text():Promise.reject(new Error("building catalog unavailable")))
+  .then(parseBuildingShapeCatalog)
+  .catch(()=>FALLBACK_BUILDING_SHAPES);
+const BUILDING_SHAPES=[...catalogBuildingShapes,...(state.buildingShapes||[]).filter(custom=>!catalogBuildingShapes.some(shape=>shape.id===custom.id))];
 const FASHION_MATERIALS=["면","데님","니트","울","가죽","스웨이드","실크","린넨","폴리에스터","나일론","벨벳","레이스"];
 const FASHION_COLORS=["검정","흰색","아이보리","회색","갈색","베이지","빨강","주황","노랑","초록","파랑","남색","보라","분홍","은색","금색","여러 색"];
 const FASHION_FLAIRS=["무지","미니멀","단정함","편안함","캐주얼","스포티","빈티지","스트리트","러블리","우아함","화려함","개성적","정장","유니폼","파티용"];
@@ -148,10 +157,11 @@ function openBuildingShapeDialog(placeId){
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
   const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(place.type));
   const ordered=[...recommended,...BUILDING_SHAPES.filter(shape=>!recommended.includes(shape))];
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${place.type}</b> 유형에 어울리는 모양을 먼저 보여드려요. 다른 모양도 자유롭게 쓸 수 있어요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b></button>`).join("")}</div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${place.type}</b> 유형에 어울리는 모양을 먼저 보여드려요. 다른 모양도 자유롭게 쓸 수 있어요.</small></div><button value="cancel">×</button></div><details class="building-catalog-help"><summary>새 건물 그림을 코딩 없이 추가하는 방법</summary><ol><li>PNG를 <code>world-assets/building-types</code> 폴더에 넣어요.</li><li><code>world-assets/building-shapes.csv</code>를 엑셀이나 메모장으로 열어요.</li><li>이름·파일 경로·추천 유형·속성을 한 줄에 적으면 이 도감에 자동으로 나타나요.</li></ol><small>추천 유형과 속성은 여러 개일 때 <b>|</b>로 구분해요. 예: 숙박|음식점</small></details><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
     if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
-    updatePlace(placeId,{iconPreset:button.dataset.buildingShape},true);dialog.close();render();showToast("건물 모양을 바꿨습니다");
+    const shape=BUILDING_SHAPES.find(item=>item.id===button.dataset.buildingShape);
+    updatePlace(placeId,{iconPreset:button.dataset.buildingShape,image:shape?.src||""},true);dialog.close();render();showToast("건물 모양을 바꿨습니다");
   });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
@@ -948,12 +958,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260804k").catch(error=>{
+import("./auth.js?v=20260804l").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260804k").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260804l").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
