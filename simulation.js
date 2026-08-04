@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260804o";
+import {state,save,characterViewFor} from "./state.js?v=20260804p";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -855,7 +855,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260804o";
+const ENGINE_VERSION="20260804p";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -971,22 +971,64 @@ function baseEventFor(c,date=new Date()){
   if(sleepingNow(c,date))return entry(n,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
   const last=past.at(-1);
-  if(last&&n-last.minute>35)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
+  if(last&&n-last.minute>8)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
   if(last)return last;
   if(c.createdAt&&Date.now()-Number(c.createdAt)<24*60*60*1000)return entry(n,"아직 생활을 시작하지 않음","프로필과 집, 일정을 설정하면 지금부터 생활이 시작돼요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"대기",stress:0});
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
   return entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
 const RELATION_CLOSENESS={부부:100,연인:95,"부모·자녀":92,가족:88,소꿉친구:84,친구:78,짝사랑:66,직장동료:54,라이벌:42,혐관:35};
+const VIEW_IMPORTANCE=[
+  ["overall",/운명의 상대|사랑|없어서는/,42],
+  ["overall",/좋아|호감|소중/,27],
+  ["overall",/매우 싫|증오|혐오/,24],
+  ["overall",/싫어|불편/,13],
+  ["closeness",/가장 가까운|가까운 사이/,20],
+  ["closeness",/친한 사이/,13],
+  ["attention",/최우선|자주 살핌/,16],
+  ["attention",/종종 신경/,8],
+  ["jealousy",/독점|질투가 심|질투함/,10]
+];
+function directedImportance(sourceId,targetId){
+  const view=characterViewFor(sourceId,targetId)||{};
+  return VIEW_IMPORTANCE.reduce((score,[key,pattern,weight])=>score+(pattern.test(String(view[key]||""))?weight:0),0);
+}
+function relationImportance(first,second,relation){
+  return (RELATION_CLOSENESS[relation?.type]||0)
+    +directedImportance(first.id,second.id)
+    +directedImportance(second.id,first.id);
+}
 function interactionPair(group){
-  const ids=new Set(group.map(person=>person.id));
-  const related=relationList().filter(r=>ids.has(r.a)&&ids.has(r.b)).sort((a,b)=>(RELATION_CLOSENESS[b.type]||50)-(RELATION_CLOSENESS[a.type]||50));
-  if(related[0]){
-    const relation=related[0];
-    return {first:group.find(person=>person.id===relation.a),second:group.find(person=>person.id===relation.b),relation};
+  const candidates=[];
+  for(let i=0;i<group.length;i++){
+    for(let j=i+1;j<group.length;j++){
+      const first=group[i],second=group[j];
+      const relation=relationList().find(r=>(r.a===first.id&&r.b===second.id)||(r.a===second.id&&r.b===first.id))||null;
+      candidates.push({first,second,relation,score:relationImportance(first,second,relation)});
+    }
   }
-  const ordered=[...group].sort((a,b)=>Number(b.socialEnergy??3)-Number(a.socialEnergy??3)||String(a.id).localeCompare(String(b.id)));
-  return {first:ordered[0],second:ordered[1],relation:null};
+  candidates.sort((a,b)=>b.score-a.score||String(a.first.id).localeCompare(String(b.first.id)));
+  return candidates[0];
+}
+function significantEncounter(pair,group,date){
+  if(!["부부","연인"].includes(pair.relation?.type))return "";
+  const others=group.filter(person=>person.id!==pair.first.id&&person.id!==pair.second.id);
+  const encounters=others.map(person=>{
+    const relation=relationList().find(r=>
+      [pair.first.id,pair.second.id].some(id=>(r.a===id&&r.b===person.id)||(r.b===id&&r.a===person.id))
+    );
+    return {person,relation};
+  }).filter(item=>item.relation);
+  if(!encounters.length||hash(`${pair.first.id}:${pair.second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/15)}:encounter`)%3)return "";
+  encounters.sort((a,b)=>(RELATION_CLOSENESS[b.relation.type]||0)-(RELATION_CLOSENESS[a.relation.type]||0));
+  const encounter=encounters[0];
+  if(["혐관","라이벌"].includes(encounter.relation.type)){
+    return ` 그러다 ${encounter.person.name}와 마주쳐 잠깐 날 선 시선을 보냈지만, 곧 다시 곁의 사람에게 주의를 돌렸어요.`;
+  }
+  if(["친구","소꿉친구","가족","부모·자녀"].includes(encounter.relation.type)){
+    return ` 지나가던 ${encounter.person.name}에게 짧게 인사를 건넨 뒤, 함께하던 시간을 방해하지 않도록 다시 곁의 사람에게 집중했어요.`;
+  }
+  return "";
 }
 function concreteInteraction(place,first,second,relation){
   const name=second.name,type=place?.type||"";
@@ -1057,6 +1099,11 @@ function sharedPlaceScene(c,current,date){
   if(!together.length)return current;
   const group=[c,...together],pair=interactionPair(group),place=interactionPlace(current.placeId,current.townId||c.townId);
   const scene=concreteInteraction(place,pair.first,pair.second,pair.relation);
+  const encounter=significantEncounter(pair,group,date);
+  if(encounter){
+    scene.first+=encounter;
+    scene.second+=encounter;
+  }
   let detail,title;
   if(c.id===pair.first?.id){
     title=scene.firstTitle||scene.title;
@@ -1069,7 +1116,7 @@ function sharedPlaceScene(c,current,date){
       (relation.a===c.id&&relation.b===other.id)||(relation.b===c.id&&relation.a===other.id)
     ));
     if(!ownRelation){
-      return {...current,desc:`${current.desc} 같은 장소에 낯선 사람들이 있지만 서로 아는 사이가 아니라 각자 적당한 거리를 두고 시간을 보내고 있어요.`};
+      return current;
     }
     const social=Number(c.socialEnergy??3),quiet=social<=2||/혼자|수줍|낯|조용/.test(String(c.socialStyle||""));
     title=quiet?"가까이에서 각자 시간을 보내는 중":"곁에서 상황을 지켜보는 중";

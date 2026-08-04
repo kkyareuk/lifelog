@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804o";
-import {eventFor} from "./simulation.js?v=20260804o";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804o";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804p";
+import {eventFor} from "./simulation.js?v=20260804p";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804p";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -192,23 +192,52 @@ function profileExportLines(character){
   const favorites=Object.values(character.favorites||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean);
   return [
     ["프로필",[`이름: ${character.name}`,`나이대: ${character.ageGroup||"정하지 않음"}`,`성별: ${character.gender||"그외"}`,`성지향: ${listText(character.attractedGenders)}`,`직업: ${character.jobTitle||character.job||"없음"}`,`소비 유형: ${character.income||"정하지 않음"}`,`기상: ${character.wake||"-"} · ${character.wakeHabit||"-"}`,`취침: ${character.sleep||"-"} · ${character.sleepHabit||"-"}`,`신체 접촉 반응: ${character.touchReaction||"정하지 않음"}`,`외모: ${character.appearanceLevel||"보통"} · ${listText(character.appearanceTags)}`,`상대 외모를 보는 정도: ${character.appearanceInterest||"보통"}`,`끌리는 외모 태그: ${listText(character.attractionTraits)}`]],
-    ["성격",[`외향·내향: ${character.socialStyle||(character.socialEnergy??"보통")}`,`정보 인식: ${character.sensingStyle||(character.sensingIntuition??"보통")}`,`판단 방식: ${character.decisionStyle||(character.thinkingFeeling??"보통")}`,`일정 방식: ${character.scheduleStyle||(character.perceivingJudging??"보통")}`,`깔끔함: ${character.cleanlinessStyle||"정하지 않음"}`,`간섭 성향: ${character.interference||"정하지 않음"}`]],
-    ["취향 선택",[`관심사: ${listText(character.interests)}`,`취미: ${listText(character.hobbies)}`,`음식: ${listText(character.foodTypes)}`,`음료: ${listText(character.drinks)}`,`음악 장르: ${listText(character.musicGenres)}`,`선호 항목: ${favorites.length?favorites.join(", "):"정하지 않음"}`]],
-    ["세계관 선호",Object.entries(character.worldPreferences||{}).map(([key,value])=>`${key}: ${Array.isArray(value)?value.join(", "):value}`).concat(Object.keys(character.worldPreferences||{}).length?[]:["정하지 않음"])]
+    ["성격",[`사람과 어울리는 방식: ${character.socialStyle||"정하지 않음"}`,`정보를 받아들이는 방식: ${character.perceptionStyle||"정하지 않음"}`,`판단하는 방식: ${character.decisionStyle||"정하지 않음"}`,`일정을 다루는 방식: ${character.planningStyle||"정하지 않음"}`,`행동 전환: ${character.activityTempo||"정하지 않음"}`,`깔끔함: ${character.neatness||"정하지 않음"}`,`간섭 성향: ${character.interference||"정하지 않음"}`,`갈등 대응: ${character.conflictStyle||"정하지 않음"}`,`애정 표현: ${character.affectionStyle||"정하지 않음"}`,`생활 에너지: ${character.energyRhythm||"정하지 않음"}`]],
+    ["취향 선택",[`관심사: ${listText(character.interests)}`,`취미: ${listText(character.hobbies)}`,`음식: ${listText(character.foodPreferences)}`,`좋아하는 음료: ${listText(character.drinks)}`,`좋아하는 이야기 장르: ${listText(character.favoriteStoryGenres)}`,`음악 장르: ${listText(character.musicGenres)}`,`패션 스타일: ${listText(character.favoriteFashionStyles)}`,`영상 종류: ${listText(character.favoriteVideoGenres)}`,`게임 장르: ${listText(character.favoriteGameGenres)}`,`향 계열: ${listText(character.favoriteScentNotes)}`]],
+    ["세계관 선호와 소지품",[`최애 항목: ${favorites.length?favorites.join(", "):"정하지 않음"}`,`소지한 항목: ${Object.values(character.inventory||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean).join(", ")||"정하지 않음"}`]]
   ];
 }
-function exportProfilePng(character){
-  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1200,pad=76,line=38;
-  const wrap=(text,max=52)=>{const words=String(text).split(" ");const result=[];let current="";for(const word of words){const next=current?`${current} ${word}`:word;if(next.length>max){if(current)result.push(current);current=word}else current=next}if(current)result.push(current);return result};
-  const rows=sections.flatMap(([title,lines])=>[title,...lines.flatMap(value=>wrap(value))]);canvas.width=width;canvas.height=Math.max(900,210+rows.length*line+sections.length*34);
-  ctx.fillStyle="#fbf6ee";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle=character.theme?.primary||"#765036";ctx.fillRect(0,0,width,150);
-  ctx.fillStyle="#fff";ctx.font="bold 48px sans-serif";ctx.fillText(`${character.name} 프로필`,pad,94);let y=210;
-  sections.forEach(([title,lines])=>{ctx.fillStyle=character.theme?.primary||"#765036";ctx.font="bold 30px sans-serif";ctx.fillText(title,pad,y);y+=48;ctx.fillStyle="#2d251f";ctx.font="24px sans-serif";lines.flatMap(value=>wrap(value)).forEach(value=>{ctx.fillText(value,pad+12,y);y+=line});y+=26});
+const exportImage=src=>new Promise(resolve=>{
+  if(!src)return resolve(null);
+  const image=new Image();image.crossOrigin="anonymous";image.onload=()=>resolve(image);image.onerror=()=>resolve(null);image.src=src;
+});
+const readableInk=color=>{
+  const hex=String(color||"#765036").replace("#",""),full=hex.length===3?hex.split("").map(x=>x+x).join(""):hex;
+  const rgb=[0,2,4].map(i=>parseInt(full.slice(i,i+2),16)||0),luminance=(.299*rgb[0]+.587*rgb[1]+.114*rgb[2]);
+  return luminance>175?"#241c18":"#ffffff";
+};
+async function exportProfilePng(character){
+  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=82,line=42;
+  const wrap=(text,max=46)=>{const words=String(text).split(" ");const result=[];let current="";for(const word of words){const next=current?`${current} ${word}`:word;if(next.length>max){if(current)result.push(current);current=word}else current=next}if(current)result.push(current);return result};
+  const expanded=sections.map(([title,lines])=>[title,lines.flatMap(value=>wrap(value))]);
+  canvas.width=width;canvas.height=Math.max(1500,480+expanded.reduce((sum,[,lines])=>sum+92+lines.length*line,0));
+  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary);
+  ctx.fillStyle="#f6f0e7";ctx.fillRect(0,0,canvas.width,canvas.height);
+  const header=ctx.createLinearGradient(0,0,width,300);header.addColorStop(0,primary);header.addColorStop(1,character.theme?.gradient?secondary:primary);ctx.fillStyle=header;ctx.fillRect(0,0,width,330);
+  ctx.fillStyle=ink;ctx.font='800 66px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`${character.name} 프로필`,360,132);
+  ctx.font='30px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText("서랍마을 캐릭터 기록",362,186);
+  const portrait=await exportImage(character.photo||character.icon);
+  ctx.save();ctx.beginPath();ctx.roundRect(82,55,220,220,32);ctx.clip();
+  if(portrait){const scale=Math.max(220/portrait.width,220/portrait.height),w=portrait.width*scale,h=portrait.height*scale;ctx.drawImage(portrait,82+(220-w)/2,55+(220-h)/2,w,h)}
+  else{ctx.fillStyle="#ffffff35";ctx.fillRect(82,55,220,220);ctx.fillStyle=ink;ctx.font='800 70px "Do Hyeon",sans-serif';ctx.textAlign="center";ctx.fillText(character.name.slice(0,1),192,190)}
+  ctx.restore();ctx.textAlign="left";
+  let y=400;
+  expanded.forEach(([title,lines],index)=>{
+    const height=82+lines.length*line;
+    ctx.fillStyle=index%2?"#fffaf4":"#ffffff";ctx.beginPath();ctx.roundRect(pad,y,width-pad*2,height,24);ctx.fill();ctx.strokeStyle="#dccfc0";ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle=primary;ctx.fillRect(pad,y,12,height);
+    ctx.font='800 34px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillStyle="#2a211c";ctx.fillText(title,pad+40,y+48);
+    ctx.font='25px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillStyle="#50463f";
+    lines.forEach((value,row)=>ctx.fillText(value,pad+48,y+92+row*line));
+    y+=height+24;
+  });
+  ctx.fillStyle=primary;ctx.font='22px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad,canvas.height-48);
   const link=document.createElement("a");link.download=`${character.name}-프로필.png`;link.href=canvas.toDataURL("image/png");link.click();
 }
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
-  win.document.write(`<!doctype html><meta charset="utf-8"><title>${character.name} 프로필</title><style>body{font-family:sans-serif;color:#2d251f;margin:36px;line-height:1.65}header{padding:28px;color:#fff;background:${character.theme?.primary||"#765036"};border-radius:20px}section{break-inside:avoid;margin:26px 0;padding:20px;border:1px solid #ddcfc0;border-radius:16px}h1,h2{margin:0 0 12px}p{margin:4px 0}@media print{button{display:none}}</style><header><h1>${character.name} 프로필</h1><p>서랍마을 캐릭터 기록</p></header>${sections.map(([title,lines])=>`<section><h2>${title}</h2>${lines.map(line=>`<p>${line}</p>`).join("")}</section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button>`);
+  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary),photo=character.photo||character.icon;
+  win.document.write(`<!doctype html><meta charset="utf-8"><title>${character.name} 프로필</title><style>*{box-sizing:border-box}body{font-family:"Do Hyeon","Malgun Gothic",sans-serif;color:#2d251f;margin:30px;background:#f6f0e7;line-height:1.55}.sheet{max-width:900px;margin:auto}.hero{display:grid;grid-template-columns:150px 1fr;gap:24px;align-items:center;padding:28px;color:${ink};background:linear-gradient(135deg,${primary},${secondary});border-radius:24px}.hero img,.fallback{width:150px;height:150px;object-fit:cover;border-radius:24px;background:#ffffff2f}.fallback{display:grid;place-items:center;font-size:54px}section{break-inside:avoid;margin:18px 0;padding:22px 26px;border:1px solid #ddcfc0;border-left:9px solid ${primary};border-radius:18px;background:#fff}h1{font-size:42px}h1,h2{margin:0 0 12px}h2{font-size:26px}p{margin:5px 0;color:#50463f}button{width:100%;padding:15px;border:0;border-radius:14px;color:#fff;background:${primary};font:inherit}@media print{body{margin:0;background:#fff}.sheet{max-width:none}button{display:none}}</style><main class="sheet"><header class="hero">${photo?`<img src="${photo}" alt="">`:`<span class="fallback">${character.name.slice(0,1)}</span>`}<div><h1>${character.name} 프로필</h1><p style="color:inherit">서랍마을 캐릭터 기록</p></div></header>${sections.map(([title,lines])=>`<section><h2>${title}</h2>${lines.map(line=>`<p>${line}</p>`).join("")}</section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main>`);
   win.document.close();setTimeout(()=>win.print(),250);
 }
 function openProfileExportDialog(){
@@ -405,24 +434,17 @@ function bind(){
     updatePet(el.dataset.homeId,el.dataset.petId,{[field]:current.includes(el.dataset.value)?current.filter(value=>value!==el.dataset.value):[...current,el.dataset.value]});
     render();
   });
-  $("[data-feedback-form]")?.addEventListener("submit",async event=>{
+  $("[data-feedback-form]")?.addEventListener("submit",event=>{
     event.preventDefault();
     const form=event.currentTarget;
-    const button=form.querySelector('button[type="submit"]');
     const data=new FormData(form);
-    if(!window.ParallelCityAuth?.submitFeedback){toast("피드백 기능을 불러오지 못했습니다");return}
-    button.disabled=true;
-    try{
-      await window.ParallelCityAuth.submitFeedback({
-        category:data.get("category"),
-        message:data.get("message"),
-        allowReply:data.get("allowReply")==="on"
-      });
-      form.reset();
-      toast("피드백을 보냈습니다. 고마워요!");
-    }catch(error){
-      toast(error?.message||"피드백을 보내지 못했습니다");
-    }finally{button.disabled=false}
+    const category=String(data.get("category")||"기타");
+    const message=String(data.get("message")||"").trim();
+    if(!message){toast("피드백 내용을 적어 주세요");return}
+    const character=active();
+    const subject=encodeURIComponent(`[서랍마을 ${category}] 사용자 피드백`);
+    const body=encodeURIComponent(`${message}\n\n---\n현재 화면: ${TAB_META[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}\n보낸 시각: ${new Date().toLocaleString("ko-KR")}`);
+    window.location.href=`mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}`;
   });
   $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 함께 사는 존재를 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
   $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
@@ -1019,7 +1041,14 @@ window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==
 window.addEventListener("parallel-city-cloud-loaded",render);
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
-setInterval(()=>{if(["observe","home"].includes(state.activeTab))render()},60000);
+function scheduleLiveSceneRefresh(){
+  const delay=(5+Math.floor(Math.random()*11))*60*1000;
+  setTimeout(()=>{
+    if(["observe","home"].includes(state.activeTab))render();
+    scheduleLiveSceneRefresh();
+  },delay);
+}
+scheduleLiveSceneRefresh();
 render();
 showInstallButton();
 if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
@@ -1028,12 +1057,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260804o").catch(error=>{
+import("./auth.js?v=20260804p").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260804o").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260804p").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
