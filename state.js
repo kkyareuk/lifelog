@@ -153,6 +153,7 @@ function normalizeHomes(x){
     relation.type=typeMap[relation.type]||relation.type||"친구";
     relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
     relation.interactionsAll=Boolean(relation.interactionsAll);
+    relation.touchIntensity=relation.touchIntensity||(["연인","부부"].includes(relation.type)?"자연스럽게 표현함":"가끔 가벼운 접촉");
     relation.stage=relation.stage||({
       연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구",혐관:"신경전 중",짝사랑:"멀리서 바라봄"
     }[relation.type]||"편안함");
@@ -299,7 +300,7 @@ function normalizeHomes(x){
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
     c.gender=["남성","여성","그외"].includes(c.gender)?c.gender:"그외";
     c.attractedGenders=Array.isArray(c.attractedGenders)?[...new Set(c.attractedGenders)]:[];
-    c.touchReaction=c.touchReaction||"허락 없는 접촉은 불편함";
+    c.touchReaction=c.touchReaction||"상황에 따라 자연스럽게 받아들임";
     c.appearanceLevel=c.appearanceLevel||"보통";
     c.appearanceInterest=c.appearanceInterest||"보통";
     c.appearanceTags=Array.isArray(c.appearanceTags)?[...new Set(c.appearanceTags)]:[];
@@ -337,7 +338,7 @@ export function save(immediate=false){
 export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"그외",attractedGenders:[],touchReaction:"허락 없는 접촉은 불편함",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"그외",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};

@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260804r";
+import {state,save,characterViewFor} from "./state.js?v=20260804s";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -487,9 +487,12 @@ function relationshipHomeEntry(c,pick,time,date){
   const loving=/좋아|사랑|소중|없어서는/.test(overall);
   const hating=/싫어|경계|불편/.test(overall);
   const unaware=/어렴풋|착각|전혀 모름|부정/.test(awareness);
-  const touchAverse=/극도로 꺼림|닿는 것을 싫어|허락 없는 접촉/.test(c.touchReaction||"");
+  const touchAverse=/극도로 꺼림|닿는 것을 싫어/.test(c.touchReaction||"");
   const likesTouch=/접촉을 좋아|먼저 다가가는/.test(c.touchReaction||"");
-  const otherTouchAverse=/극도로 꺼림|닿는 것을 싫어|허락 없는 접촉/.test(other.touchReaction||"");
+  const otherTouchAverse=/극도로 꺼림|닿는 것을 싫어/.test(other.touchReaction||"");
+  const touchIntensity=r.touchIntensity||(["연인","부부"].includes(r.type)?"자연스럽게 표현함":"가끔 가벼운 접촉");
+  const avoidsTouch=/신체 접촉 없음|거의 하지 않음/.test(touchIntensity);
+  const welcomesTouch=!avoidsTouch&&/가끔 가벼운 접촉|자연스럽게 표현함|애정 표현이 많은 편/.test(touchIntensity);
   const distrust=/전혀 믿지|의심|조심스럽게 지켜봄/.test(trust);
   const distant=/남보다도 멂|낯선|거리감/.test(closeness);
   const uncomfortable=/매우 불편|긴장|조심스러움/.test(comfort);
@@ -515,15 +518,20 @@ function relationshipHomeEntry(c,pick,time,date){
     [`${other.name}의 인상에 잠깐 시선이 머무는 중`,`${matchedLooks.length?`${other.name}의 ${matchedLooks[0]} 모습이 평소 좋아하던 인상과 닮아 눈길이 갔어요.`:`${other.name}의 눈에 띄는 인상이 문득 신경 쓰였어요.`} 곧바로 시선을 거두고 하던 이야기를 이어 갔어요.`,"living"],
     [`${other.name}의 외모에서 좋아하는 특징을 발견한 중`,`${matchedLooks.length?`${matchedLooks.join(", ")} 같은 특징을 알아차렸어요.`:"평소보다 또렷하게 보이는 표정과 분위기를 알아차렸어요."} 공식 관계와 신뢰는 그대로지만 잠시 호감이 생길 만한 인상이라고 느꼈어요.`,"living"]
   ];
+  else if(loving&&avoidsTouch)scripts=[
+    [`${other.name}와 말로 애정을 나누는 중`,`${other.name}과 몸을 맞대는 대신 마주 앉아 오늘 있었던 일을 천천히 들었어요. 둘에게 편안한 방식으로 애정을 표현하고 있어요.`,"living"],
+    [`${other.name}와 각자의 자리를 지키며 함께 있는 중`,`서로에게 닿지 않아도 같은 공간에 있는 일이 편안했어요. 각자 하던 일을 이어 가다가 눈이 마주치면 짧게 웃어 보였어요.`,"living"],
+    [`${other.name}에게 다정한 말을 건네는 중`,`접촉 대신 구체적인 말로 고마움과 애정을 전했어요. ${other.name}의 대답을 재촉하지 않고 가까운 자리에서 기다리고 있어요.`,"living"]
+  ];
   else if(touchAverse)scripts=[
     [`${other.name}과 편안한 거리를 지키는 중`,`몸이 닿지 않을 만큼 자리를 띄운 뒤 눈인사와 짧은 말로 마음을 전했어요. 가까이 붙지 않아도 함께 있다는 느낌은 충분히 나누고 있어요.`,"living"],
     [`${other.name}에게 접촉 대신 말로 마음을 전하는 중`,`자기에게 편안한 거리를 유지하며 필요한 이야기를 천천히 건넸어요. 접촉 없이도 ${other.name}과 같은 시간을 보내고 있어요.`,"living"]
   ];
-  else if(likesTouch&&loving&&otherTouchAverse)scripts=[
+  else if(welcomesTouch&&likesTouch&&loving&&otherTouchAverse)scripts=[
     [`${other.name}에게 닿는 대신 곁을 지키는 중`,`가까이 가고 싶은 마음은 컸지만 ${other.name}이 접촉을 불편해한다는 것을 알아차렸어요. 손을 뻗는 대신 마주 보이는 자리에 앉아 말을 건넸어요.`,"living"],
     [`${other.name}의 반응에 맞춰 거리를 조절하는 중`,`다정하게 다가가려다 ${other.name}의 몸이 굳는 것을 보고 바로 멈췄어요. 접촉 대신 필요한 것을 가까이에 놓아 주었어요.`,"living"]
   ];
-  else if(likesTouch&&loving&&!otherTouchAverse)scripts=[
+  else if(welcomesTouch&&loving&&!otherTouchAverse)scripts=[
     [`${other.name}에게 가까이 가도 되는지 먼저 묻는 중`,`손을 내밀기 전에 ${other.name}의 표정과 대답을 기다렸어요. 허락을 확인한 뒤에야 어깨를 살짝 기대며 다정한 온기를 나누고 있어요.`,"living"],
     [`${other.name}의 반응에 맞춰 다정하게 다가가는 중`,`가까이 있고 싶은 마음은 컸지만 ${other.name}이 편안한 만큼만 거리를 좁혔어요. 손끝이 닿자 반응을 살피며 언제든 물러날 준비를 하고 있어요.`,"living"]
   ];
@@ -706,6 +714,7 @@ const homeActivityPoolFor=c=>{
   return HOME_ACTIVITY_POOL.filter(([title])=>{
     if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
     if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
+    if(title.includes("그림을 그리는"))return hobbies.some(value=>/그림|드로잉|스케치|회화|미술|일러스트/.test(value));
     return true;
   });
 };
@@ -855,7 +864,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260804r";
+const ENGINE_VERSION="20260804s";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -971,7 +980,7 @@ function baseEventFor(c,date=new Date()){
   if(sleepingNow(c,date))return entry(n,"자는 중",sleepScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"수면",stress:0});
   const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
   const last=past.at(-1);
-  if(last&&n-last.minute>8)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
+  if(last&&n-last.minute>=5)return commitLiveEntry(c,date,liveGapEvent(c,last,n,date));
   if(last)return last;
   if(c.createdAt&&Date.now()-Number(c.createdAt)<24*60*60*1000)return entry(n,"아직 생활을 시작하지 않음","프로필과 집, 일정을 설정하면 지금부터 생활이 시작돼요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"대기",stress:0});
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
@@ -1126,7 +1135,23 @@ function sharedPlaceScene(c,current,date){
   }
   return {...current,title:`${current.title} · ${title}`,desc:`${current.desc} ${detail}`,withIds:together.map(other=>other.id),groupInteraction:true};
 }
-export function eventFor(c,date=new Date()){return sharedPlaceScene(c,baseEventFor(c,date),date)}
+export function eventFor(c,date=new Date()){
+  const current=sharedPlaceScene(c,baseEventFor(c,date),date);
+  if(current?.groupInteraction){
+    const sharedMinute=nowMin(date);
+    current.minute=sharedMinute;
+    commitLiveEntry(c,date,current);
+    (current.withIds||[]).forEach(otherId=>{
+      const other=state.characters[otherId];
+      if(!other)return;
+      const counterpart=sharedPlaceScene(other,baseEventFor(other,date),date);
+      if(!counterpart?.groupInteraction)return;
+      counterpart.minute=sharedMinute;
+      commitLiveEntry(other,date,counterpart);
+    });
+  }
+  return current;
+}
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=baseEventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}
 
