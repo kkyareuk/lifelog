@@ -555,7 +555,11 @@ function bind(){
   $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
   $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
-  $$("[data-room-type]").forEach(el=>el.onchange=()=>{setRoomType(el.dataset.homeId,el.dataset.roomType,el.value);render()});
+  $$("[data-room-type]").forEach(el=>el.onchange=()=>{
+    const editors=$$(".mobile-room-editors details"),openIndex=editors.indexOf(el.closest("details"));
+    setRoomType(el.dataset.homeId,el.dataset.roomType,el.value);render();
+    requestAnimationFrame(()=>{const next=$$(".mobile-room-editors details")[openIndex];if(next)next.open=true});
+  });
   $$("[data-delete-room]").forEach(el=>el.onclick=()=>{
     const home=state.homes[el.dataset.homeId];
     if(Object.keys(home?.rooms||{}).length<=1)return alert("집에는 방이 최소 하나 필요해요.");
@@ -564,7 +568,11 @@ function bind(){
     }
   });
   $$("[data-sleep-room]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.sleepRoom,{sleepRoomId:el.value});render()});
-  $$("[data-furniture]").forEach(el=>el.onclick=()=>{toggleFurniture(el.dataset.homeId,el.dataset.room,el.dataset.furniture);render()});
+  $$("[data-furniture]").forEach(el=>el.onclick=()=>{
+    toggleFurniture(el.dataset.homeId,el.dataset.room,el.dataset.furniture);
+    el.classList.toggle("on",state.homes[el.dataset.homeId]?.rooms?.[el.dataset.room]?.furniture?.includes(el.dataset.furniture));
+    document.querySelectorAll(`[data-furniture="${CSS.escape(el.dataset.furniture)}"][data-home-id="${CSS.escape(el.dataset.homeId)}"][data-room="${CSS.escape(el.dataset.room)}"]`).forEach(button=>button.classList.toggle("on",el.classList.contains("on")));
+  });
   $$("[data-home-resident]").forEach(el=>el.onclick=()=>{
     const homeId=el.dataset.homeId,id=el.dataset.homeResident;
     const residents=state.order.filter(cid=>state.characters[cid].homeId===homeId);
@@ -1202,7 +1210,7 @@ import("./auth.js?v=20260805b").catch(error=>{
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805b",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805c",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
