@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260804q";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804q";
+import {state,active,characterViewFor} from "./state.js?v=20260804r";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804r";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -430,7 +430,16 @@ function relationshipMap(relations){
     const angle=(Math.PI*2*index/characters.length)-Math.PI/2;
     return [character.id,{x:500+390*Math.cos(angle),y:235+170*Math.sin(angle)}];
   }));
-  const colors={연인:"#d85078",부부:"#c33f68",친구:"#4f86c6",가족:"#77994a","부모·자녀":"#9b6e45",짝사랑:"#b06ab3",혐관:"#b04a3f"};
+  const emotionColor=value=>{
+    const text=String(value||"");
+    if(/사랑|좋아|소중|애틋/.test(text))return"#d85078";
+    if(/싫|혐오|원수|증오/.test(text))return"#a83f3f";
+    if(/경계|의심|불편|귀찮/.test(text))return"#c27a2c";
+    if(/두려|무서|겁/.test(text))return"#7b5bb5";
+    if(/신뢰|편안|친근|가까/.test(text))return"#438b72";
+    if(/존경|동경/.test(text))return"#4f77b8";
+    return"#7d756d";
+  };
   const seen=new Set(),edges=relations.filter(relation=>{
     const key=[relation.a,relation.b].sort().join(":");
     if(!positions.has(relation.a)||!positions.has(relation.b)||seen.has(key))return false;
@@ -438,14 +447,16 @@ function relationshipMap(relations){
   });
   const viewLabel=(source,target)=>characterViewFor(source,target).overall;
   const lines=edges.map((relation,index)=>{
-    const a=positions.get(relation.a),b=positions.get(relation.b),color=colors[relation.type]||"#6d776f";
+    const a=positions.get(relation.a),b=positions.get(relation.b);
+    const forwardLabel=viewLabel(relation.a,relation.b),backwardLabel=viewLabel(relation.b,relation.a);
+    const forwardColor=emotionColor(forwardLabel),backwardColor=emotionColor(backwardLabel);
     const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),offsetX=-dy/length*12,offsetY=dx/length*12;
     const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${a.x} ${a.y} Q ${midX+offsetX} ${midY+offsetY} ${b.x} ${b.y}`,backward=`M ${b.x} ${b.y} Q ${midX-offsetX} ${midY-offsetY} ${a.x} ${a.y}`;
-    const marker=`relation-arrow-${index}`;
-    return `<g><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${color}"/></marker></defs><path d="${forward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><path d="${backward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><text class="map-emotion" x="${midX+offsetX*2.1}" y="${midY+offsetY*2.1}" text-anchor="middle">${esc(viewLabel(relation.a,relation.b))}</text><text class="map-emotion" x="${midX-offsetX*2.1}" y="${midY-offsetY*2.1}" text-anchor="middle">${esc(viewLabel(relation.b,relation.a))}</text><text class="map-relation" x="${midX}" y="${midY-7}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+12}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
+    const forwardMarker=`relation-arrow-${index}-forward`,backwardMarker=`relation-arrow-${index}-backward`;
+    return `<g><defs><marker id="${forwardMarker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${forwardColor}"/></marker><marker id="${backwardMarker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${backwardColor}"/></marker></defs><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3" marker-end="url(#${forwardMarker})"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3" marker-end="url(#${backwardMarker})"/><text class="map-emotion" style="fill:${forwardColor}" x="${midX+offsetX*2.1}" y="${midY+offsetY*2.1}" text-anchor="middle">${esc(forwardLabel)}</text><text class="map-emotion" style="fill:${backwardColor}" x="${midX-offsetX*2.1}" y="${midY-offsetY*2.1}" text-anchor="middle">${esc(backwardLabel)}</text><text class="map-relation" x="${midX}" y="${midY-7}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+12}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<div class="relationship-map-node" style="left:${pos.x/10}%;top:${pos.y/4.7}%">${avatar(character)}<b>${esc(character.name)}</b></div>`}).join("");
-  const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId];return `<p class="mobile-relation-direction"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(viewLabel(sourceId,targetId))}</small></span></p>`};
+  const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId],label=viewLabel(sourceId,targetId);return `<p class="mobile-relation-direction" style="--direction-color:${emotionColor(label)}"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(label)}</small></span></p>`};
   const mobileEdges=edges.map(relation=>`<article><header><b>${esc(relation.type)}</b><small>${esc(relation.stage||"")}</small></header>${mobileDirection(relation.a,relation.b)}${mobileDirection(relation.b,relation.a)}</article>`).join("");
   return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>두 캐릭터 사이에는 서로 반대 방향으로 향하는 화살표가 하나씩 보여요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 470" preserveAspectRatio="xMidYMid meet">${lines}</svg>${nodes}</div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }

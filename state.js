@@ -231,7 +231,9 @@ function normalizeHomes(x){
       rideable:p.rideable===undefined?["호랑이","드래곤"].includes(p.species):Boolean(p.rideable)
     })):[];
     h.rooms=h.rooms||{};
+    h.deletedRoomKeys=Array.isArray(h.deletedRoomKeys)?[...new Set(h.deletedRoomKeys.map(String))]:[];
     Object.entries(defaults).forEach(([key,value])=>{
+      if(h.deletedRoomKeys.includes(key))return;
       h.rooms[key]={...value,...(h.rooms[key]||{})};
       h.rooms[key].type=h.rooms[key].type||key;
       h.rooms[key].furniture=Array.isArray(h.rooms[key].furniture)?[...h.rooms[key].furniture]:[...value.furniture];
@@ -433,6 +435,8 @@ export function deleteRoom(homeId,roomKey){
   if(!remaining.length)return false;
   const fallback=remaining.includes("living")?"living":remaining[0];
   delete h.rooms[roomKey];
+  h.deletedRoomKeys=Array.isArray(h.deletedRoomKeys)?h.deletedRoomKeys:[];
+  if(!h.deletedRoomKeys.includes(roomKey))h.deletedRoomKeys.push(roomKey);
   Object.values(state.characters).forEach(c=>{
     if(c.homeId===homeId&&c.sleepRoomId===roomKey)c.sleepRoomId=fallback;
   });

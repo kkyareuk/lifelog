@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804q";
-import {eventFor} from "./simulation.js?v=20260804q";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804q";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804r";
+import {eventFor} from "./simulation.js?v=20260804r";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804r";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -197,12 +197,10 @@ const exportSection=(title,rows)=>{
   return lines.length?[title,lines]:null;
 };
 function profileExportLines(character){
-  const favorites=Object.values(character.favorites||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean);
   const sections=[
     exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["성지향",listText(character.attractedGenders)],["직업",character.jobTitle||character.job],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["외모 태그",listText(character.appearanceTags)],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 외모 태그",listText(character.attractionTraits)]]),
     exportSection("성격",[["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm]]),
-    exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]]),
-    exportSection("세계관 선호와 소지품",[["최애 항목",favorites.join(", ")],["소지한 항목",Object.values(character.inventory||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean).join(", ")]])
+    exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]])
   ];
   return sections.filter(Boolean);
 }
@@ -216,43 +214,54 @@ const readableInk=color=>{
   return luminance>175?"#241c18":"#ffffff";
 };
 async function exportProfilePng(character){
-  await document.fonts?.load?.('32px "Do Hyeon"');await document.fonts?.ready;
-  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=70,rowH=58;
-  const rows=sections.reduce((sum,[,items])=>sum+items.length,0);
-  canvas.width=width;canvas.height=Math.max(1750,430+sections.length*72+rows*rowH);
-  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary);
-  ctx.fillStyle="#fffdf9";ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.strokeStyle="#24201d";ctx.lineWidth=3;ctx.strokeRect(pad,55,width-pad*2,canvas.height-110);
-  ctx.fillStyle=primary;ctx.fillRect(pad,55,width-pad*2,110);
-  ctx.fillStyle=ink;ctx.textAlign="center";ctx.font='56px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText("캐 릭 터  설 정 표",width/2,128);
+  await document.fonts?.load?.('32px "Gowun Dodum"');await document.fonts?.ready;
+  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=58,rowH=76;
+  const rows=sections.reduce((sum,[,items])=>sum+Math.ceil(items.length/2),0);
+  canvas.width=width;canvas.height=Math.max(1180,420+sections.length*74+rows*rowH);
+  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary;
+  ctx.fillStyle="#f8f3eb";ctx.fillRect(0,0,canvas.width,canvas.height);
   const portrait=await exportImage(character.photo),icon=await exportImage(character.icon);
-  const imageX=pad+24,imageY=190,imageW=250,imageH=250;
-  ctx.fillStyle="#f4f0ea";ctx.fillRect(imageX,imageY,imageW,imageH);ctx.strokeStyle="#24201d";ctx.lineWidth=2;ctx.strokeRect(imageX,imageY,imageW,imageH);
+  const drawCover=(image,x,y,w,h)=>{if(!image)return false;const scale=Math.max(w/image.width,h/image.height),sw=w/scale,sh=h/scale,sx=(image.width-sw)/2,sy=(image.height-sh)/2;ctx.drawImage(image,sx,sy,sw,sh,x,y,w,h);return true};
   const drawContain=(image,x,y,w,h)=>{if(!image)return false;const scale=Math.min(w/image.width,h/image.height),dw=image.width*scale,dh=image.height*scale;ctx.drawImage(image,x+(w-dw)/2,y+(h-dh)/2,dw,dh);return true};
-  if(!drawContain(portrait,imageX,imageY,imageW,imageH)){ctx.fillStyle=primary;ctx.font='72px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(character.name.slice(0,1),imageX+imageW/2,imageY+145)}
-  if(icon)drawContain(icon,imageX+178,imageY+178,66,66);
-  ctx.textAlign="left";ctx.fillStyle="#24201d";ctx.font='48px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(character.name,pad+310,260);
-  ctx.font='24px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillStyle="#665d56";ctx.fillText("서랍마을 인물 기록 · 설정된 항목만 표기",pad+310,310);
-  ctx.strokeStyle="#24201d";ctx.strokeRect(pad+290,190,width-pad*2-314,250);
-  let y=480;
+  const round=(x,y,w,h,r)=>{ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.closePath()};
+  const headerX=pad,headerY=48,headerW=width-pad*2,headerH=290;
+  ctx.save();round(headerX,headerY,headerW,headerH,34);ctx.clip();
+  if(portrait){ctx.filter="blur(15px) brightness(.42) saturate(.8)";drawCover(portrait,headerX-22,headerY-22,headerW+44,headerH+44);ctx.filter="none"}
+  else{const gradient=ctx.createLinearGradient(headerX,headerY,headerX+headerW,headerY+headerH);gradient.addColorStop(0,primary);gradient.addColorStop(1,secondary);ctx.fillStyle=gradient;ctx.fillRect(headerX,headerY,headerW,headerH)}
+  ctx.fillStyle="#10101055";ctx.fillRect(headerX,headerY,headerW,headerH);ctx.restore();
+  const avatarX=headerX+55,avatarY=headerY+43,avatarS=204;
+  ctx.save();round(avatarX,avatarY,avatarS,avatarS,avatarS/2);ctx.clip();ctx.fillStyle="#ffffffdd";ctx.fillRect(avatarX,avatarY,avatarS,avatarS);
+  if(!drawCover(portrait||icon,avatarX,avatarY,avatarS,avatarS)){ctx.fillStyle=primary;ctx.fillRect(avatarX,avatarY,avatarS,avatarS);ctx.fillStyle="#fff";ctx.textAlign="center";ctx.font='84px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(character.name.slice(0,1),avatarX+avatarS/2,avatarY+132)}
+  ctx.restore();ctx.strokeStyle="#ffffffcc";ctx.lineWidth=6;round(avatarX,avatarY,avatarS,avatarS,avatarS/2);ctx.stroke();
+  ctx.textAlign="left";ctx.fillStyle="#fff";ctx.font='700 59px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(`${character.name} 프로필`,avatarX+avatarS+48,headerY+132);
+  ctx.font='27px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillStyle="#ffffffdf";ctx.fillText("서랍마을 캐릭터 기록",avatarX+avatarS+50,headerY+186);
+  let y=378;
+  const wrap=(text,x,y,maxWidth,lineHeight,maxLines=2)=>{
+    const chars=[...String(text)],lines=[];let line="";
+    chars.forEach(char=>{const next=line+char;if(ctx.measureText(next).width>maxWidth&&line){lines.push(line);line=char}else line=next});
+    if(line)lines.push(line);lines.slice(0,maxLines).forEach((value,index)=>ctx.fillText(index===maxLines-1&&lines.length>maxLines?`${value.slice(0,-1)}…`:value,x,y+index*lineHeight));
+  };
   sections.forEach(([title,items])=>{
-    ctx.fillStyle=primary;ctx.fillRect(pad,y,210,56);ctx.fillStyle=ink;ctx.font='29px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(title,pad+22,y+39);
-    ctx.strokeStyle="#24201d";ctx.lineWidth=2;ctx.strokeRect(pad,y,width-pad*2,56);y+=56;
-    items.forEach(([label,value])=>{
-      ctx.strokeRect(pad,y,width-pad*2,rowH);ctx.beginPath();ctx.moveTo(pad+270,y);ctx.lineTo(pad+270,y+rowH);ctx.stroke();
-      ctx.fillStyle="#f0ece6";ctx.fillRect(pad+1,y+1,269,rowH-2);
-      ctx.fillStyle="#302925";ctx.font='23px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(label,pad+18,y+38);
-      ctx.font='22px "Malgun Gothic",sans-serif';ctx.fillText(String(value).slice(0,72),pad+292,y+38);y+=rowH;
+    ctx.fillStyle=primary;round(pad,y,250,52,16);ctx.fill();ctx.fillStyle="#fff";ctx.font='700 27px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(title,pad+20,y+35);y+=64;
+    for(let index=0;index<items.length;index+=2){
+      const pair=items.slice(index,index+2),gap=16,cellW=(width-pad*2-gap)/2;
+      pair.forEach(([label,value],column)=>{
+        const x=pad+column*(cellW+gap);ctx.fillStyle="#fff";round(x,y,cellW,rowH-8,16);ctx.fill();ctx.strokeStyle="#dfd4c7";ctx.lineWidth=2;ctx.stroke();
+        ctx.fillStyle=primary;ctx.font='700 19px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(label,x+18,y+25);
+        ctx.fillStyle="#28221e";ctx.font='21px "Gowun Dodum","Malgun Gothic",sans-serif';wrap(value,x+18,y+52,cellW-36,24,1);
+      });y+=rowH;
     });
-    y+=22;
+    y+=18;
   });
-  ctx.fillStyle=primary;ctx.font='22px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad+15,canvas.height-75);
-  try{const link=document.createElement("a");link.download=`${character.name}-설정표.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
+  ctx.fillStyle="#756b63";ctx.font='18px "Gowun Dodum","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad,y+18);
+  const output=document.createElement("canvas");output.width=width;output.height=Math.min(canvas.height,y+48);output.getContext("2d").drawImage(canvas,0,0,width,output.height,0,0,width,output.height);
+  try{const link=document.createElement("a");link.download=`${character.name}-프로필.png`;link.href=output.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
 }
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
-  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary),photo=character.photo||character.icon;
-  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name} 설정표</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet"><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;color:#211d1a;background:#eee;font-family:"Malgun Gothic",sans-serif}.sheet{width:190mm;min-height:270mm;margin:12px auto;padding:8mm;background:#fff;border:1px solid #222}.title{padding:10px;color:${ink};background:${primary};text-align:center;font:34px "Do Hyeon",sans-serif;letter-spacing:8px}.identity{display:grid;grid-template-columns:42mm 1fr;margin-top:7mm;border:1px solid #222}.portrait{width:42mm;height:42mm;object-fit:contain;border-right:1px solid #222;background:#f5f2ed}.identity div{padding:8mm}.identity h1{margin:0;font:32px "Do Hyeon",sans-serif}.identity p{color:#746b64}section{margin-top:6mm;break-inside:avoid}h2{margin:0;padding:7px 10px;color:${ink};background:${primary};font:22px "Do Hyeon",sans-serif}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #333;padding:7px 9px;vertical-align:top;font-size:13px;overflow-wrap:anywhere}th{width:34%;background:#f1ede7;text-align:left;font-family:"Do Hyeon",sans-serif;font-size:15px}button{width:100%;margin-top:8mm;padding:12px;border:0;color:#fff;background:${primary};font:18px "Do Hyeon",sans-serif}@media print{body{background:#fff}.sheet{width:auto;min-height:0;margin:0;padding:0;border:0}button{display:none}}</style></head><body><main class="sheet"><div class="title">캐 릭 터 설 정 표</div><div class="identity">${photo?`<img class="portrait" src="${photo}" alt="">`:`<div class="portrait"></div>`}<div><h1>${character.name}</h1><p>서랍마을 인물 기록 · 설정된 항목만 표기</p></div></div>${sections.map(([title,rows])=>`<section><h2>${title}</h2><table>${rows.map(([label,value])=>`<tr><th>${label}</th><td>${value}</td></tr>`).join("")}</table></section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main></body></html>`);
+  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,photo=character.photo||character.icon;
+  const rowPairs=rows=>{let html="";for(let i=0;i<rows.length;i+=2){html+=`<div class="row">${rows.slice(i,i+2).map(([label,value])=>`<div><b>${label}</b><span>${value}</span></div>`).join("")}</div>`}return html};
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name} 프로필</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum:wght@400;700&display=swap" rel="stylesheet"><style>@page{size:A4;margin:10mm}*{box-sizing:border-box}body{margin:0;color:#29231f;background:#eee9e1;font-family:"Gowun Dodum","Malgun Gothic",sans-serif}.sheet{width:190mm;margin:10px auto;padding:7mm;background:#f8f3eb}.hero{position:relative;display:flex;align-items:center;gap:8mm;min-height:54mm;padding:8mm;overflow:hidden;border-radius:8mm;color:#fff;background:linear-gradient(135deg,${primary},${secondary})}.hero:before{content:"";position:absolute;inset:-8mm;background:${photo?`linear-gradient(#1118,#1118),url("${photo}") center/cover`:`linear-gradient(135deg,${primary},${secondary})`};filter:blur(${photo?"5px":"0"});transform:scale(1.08)}.hero>*{position:relative}.portrait{width:38mm;height:38mm;flex:0 0 38mm;border:1.5mm solid #ffffffc9;border-radius:50%;object-fit:cover;background:#fff}.hero h1{margin:0;font-size:26pt}.hero p{margin:2mm 0 0;color:#ffffffd9;font-size:11pt}section{margin-top:5mm;break-inside:avoid}h2{display:inline-block;margin:0 0 2mm;padding:2mm 5mm;border-radius:4mm;color:#fff;background:${primary};font-size:15pt}.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2mm;margin-bottom:2mm}.row>div{min-width:0;padding:3mm 4mm;border:1px solid #ded1c3;border-radius:4mm;background:#fff}.row b,.row span{display:block}.row b{margin-bottom:1mm;color:${primary};font-size:9pt}.row span{overflow-wrap:anywhere;font-size:10pt;line-height:1.45}button{width:100%;margin-top:6mm;padding:3mm;border:0;border-radius:4mm;color:#fff;background:${primary};font:700 12pt "Gowun Dodum",sans-serif}@media print{body{background:#fff}.sheet{width:auto;margin:0;padding:0}button{display:none}}</style></head><body><main class="sheet"><header class="hero">${photo?`<img class="portrait" src="${photo}" alt="">`:`<div class="portrait"></div>`}<div><h1>${character.name} 프로필</h1><p>서랍마을 캐릭터 기록</p></div></header>${sections.map(([title,rows])=>`<section><h2>${title}</h2>${rowPairs(rows)}</section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main></body></html>`);
   win.document.close();setTimeout(()=>win.print(),900);
 }
 function openProfileExportDialog(){
@@ -297,7 +306,7 @@ function enhanceDynamicForms(){
       if(wake&&wakeHabit)wake.after(wakeHabit);
       if(sleep&&sleepHabit)sleep.after(sleepHabit);
       const license=profile.querySelector('[data-field="driverLicense"]')?.closest("label");
-      if(license)fields.append(license);
+      if(license){license.classList.add("profile-license-field");fields.append(license)}
       const exportButton=profile.querySelector("[data-export-profile]");
       if(exportButton)profile.append(exportButton);
     }
@@ -390,6 +399,22 @@ async function explicitSave(label="저장 완료"){
   render();
 }
 
+let automaticCloudSyncTimer=0;
+function scheduleAutomaticCloudSync(){
+  save(true);
+  clearTimeout(automaticCloudSyncTimer);
+  automaticCloudSyncTimer=setTimeout(async()=>{
+    const auth=window.ParallelCityAuth;
+    if(!auth?.getInfo?.().user)return;
+    try{
+      await auth.upload({silent:true,reason:"설정 자동 동기화"});
+      showToast("자동 동기화되었습니다");
+    }catch(error){
+      console.warn("설정 자동 동기화 실패",error);
+    }
+  },1200);
+}
+
 function bind(){
   enhanceDynamicForms();
   $$("[data-tab]").forEach(el=>el.onclick=()=>{state.activeTab=el.dataset.tab;save();render()});
@@ -453,7 +478,7 @@ function bind(){
     updatePet(el.dataset.homeId,el.dataset.petId,{[field]:current.includes(el.dataset.value)?current.filter(value=>value!==el.dataset.value):[...current,el.dataset.value]});
     render();
   });
-  $("[data-feedback-form]")?.addEventListener("submit",async event=>{
+  $("[data-feedback-form]")?.addEventListener("submit",event=>{
     event.preventDefault();
     const form=event.currentTarget;
     const data=new FormData(form);
@@ -464,20 +489,38 @@ function bind(){
     const button=form.querySelector('button[type="submit"]'),status=form.querySelector(".feedback-status");
     button.disabled=true;button.textContent="보내는 중…";status.textContent="";
     try{
-      const response=await fetch("https://formsubmit.co/ajax/kkyaareuk@gmail.com",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify({
-          _subject:`[서랍마을 ${category}] 사용자 피드백`,
-          분류:category,
-          내용:message,
-          현재_화면:TAB_META[state.activeTab]?.[0]||state.activeTab,
-          선택_캐릭터:character?.name||"없음",
-          보낸_시각:new Date().toLocaleString("ko-KR")
-        })
+      let frame=document.querySelector("#drawer-feedback-target");
+      if(!frame){
+        frame=document.createElement("iframe");
+        frame.id=frame.name="drawer-feedback-target";
+        frame.hidden=true;
+        document.body.append(frame);
+      }
+      const relay=document.createElement("form");
+      relay.method="POST";
+      relay.action="https://formsubmit.co/kkyaareuk@gmail.com";
+      relay.target=frame.name;
+      relay.hidden=true;
+      const fields={
+        _subject:`[서랍마을 ${category}] 사용자 피드백`,
+        _captcha:"false",
+        _template:"table",
+        "분류":category,
+        "내용":message,
+        "현재 화면":TAB_META[state.activeTab]?.[0]||state.activeTab,
+        "선택 캐릭터":character?.name||"없음",
+        "보낸 시각":new Date().toLocaleString("ko-KR")
+      };
+      Object.entries(fields).forEach(([name,value])=>{
+        const input=document.createElement("input");
+        input.type="hidden";input.name=name;input.value=value;relay.append(input);
       });
-      if(!response.ok)throw new Error(`HTTP ${response.status}`);
-      form.reset();status.textContent="보냈어요. 고맙습니다!";showToast("피드백을 보냈어요");
+      document.body.append(relay);
+      relay.submit();
+      relay.remove();
+      form.reset();
+      status.textContent="전송을 요청했어요. 첫 사용이라면 개발자 메일에서 FormSubmit 인증을 한 번 완료해야 해요.";
+      showToast("피드백 전송을 요청했어요");
     }catch(error){
       console.warn("피드백 전송 실패",error);
       status.textContent="전송하지 못했어요. 잠시 뒤 다시 시도해 주세요.";
@@ -1077,6 +1120,15 @@ window.addEventListener("drawer-village-cloud-loaded",render);
 window.addEventListener("drawer-village-guide-state",()=>requestAnimationFrame(maybeShowPageGuide));
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
 window.addEventListener("parallel-city-cloud-loaded",render);
+document.addEventListener("change",event=>{
+  const control=event.target;
+  if(control.matches([
+    "select[data-field]","select[data-character-view]","select[data-setting]",
+    "select[data-room-type]","select[data-pet-field]","select[data-car-field]",
+    "select[data-home-town]","select[data-sleep-room]",
+    "input[data-character-check]","input[data-gradient]","input[data-color]"
+  ].join(",")))scheduleAutomaticCloudSync();
+},true);
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
 function scheduleLiveSceneRefresh(){
@@ -1095,12 +1147,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260804q").catch(error=>{
+import("./auth.js?v=20260804r").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260804q").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260804r").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
