@@ -34,7 +34,7 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .place-photo{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:15px;margin-top:14px}
 .life-log{padding:20px}.life-log ol{list-style:none;padding:0;margin:15px 0 0}.life-log li{display:grid;grid-template-columns:54px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line)}.life-log li span{display:grid}.life-log small,.life-log time{color:var(--muted)}.life-log .now b{color:var(--p)}
 .life-log ol{max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding-right:7px}.home-family-log ol{max-height:360px}
-.home-page{width:min(1200px,100%);margin:0 auto}.home-tabs{display:flex;gap:10px;overflow:auto;margin:12px 0 18px}.home-tabs button{min-width:172px;min-height:58px;padding:12px 18px;font-size:17px;background:var(--home-grad);background-image:linear-gradient(#17203338,#17203338),var(--home-photo,linear-gradient(transparent,transparent)),var(--home-grad);background-position:center;background-size:cover}.home-tabs .on{color:#fff}
+.home-page{width:min(1200px,100%);margin:0 auto}.home-tabs{display:flex;flex-wrap:wrap;gap:10px;overflow:visible;margin:12px 0 18px}.home-tabs button{min-width:172px;min-height:58px;padding:12px 18px;font-size:17px;background:var(--home-grad);background-image:linear-gradient(#17203338,#17203338),var(--home-photo,linear-gradient(transparent,transparent)),var(--home-grad);background-position:center;background-size:cover}.home-tabs .on{color:#fff}
 .home-grid{display:block;width:100%;margin:auto}.rooms{grid-template-rows:1.1fr .72fr 1.45fr;min-height:0;aspect-ratio:16/9}
 .room-people{position:absolute;left:10px;right:10px;bottom:10px;display:flex;flex-wrap:wrap;gap:7px;align-items:flex-end}
 .home-person{position:static}.home-person span{max-width:180px}.home-person .avatar{width:52px;height:52px}.home-person .sprite{width:66px;height:66px}
@@ -325,7 +325,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relationship-map{margin:20px 0;padding:18px;overflow:hidden;touch-action:pan-y;border:1px solid var(--line);border-radius:22px;background:#fbfaf7}
 .relationship-map-canvas{position:relative;height:470px;overflow:hidden;border-radius:18px;background:radial-gradient(circle at center,#fff 0 34%,#f4efe7 100%)}
 .relationship-map-canvas svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.relationship-map-canvas svg text{paint-order:stroke;stroke:#fff;stroke-width:5px;stroke-linejoin:round;fill:#33261f;font-size:18px;font-weight:800}
+.relationship-map-canvas svg text{paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-linejoin:round;fill:#33261f;font-size:17px;font-weight:900}
 .relationship-map-canvas svg .map-emotion{font-size:15px;font-weight:900;fill:#784a37}
 .relationship-map-canvas svg .map-relation{font-size:18px}
 .relationship-map-canvas svg .map-stage{font-size:14px;font-weight:600;fill:#74665d}

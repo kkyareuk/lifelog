@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260805a";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805a";
+import {state,active,characterViewFor} from "./state.js?v=20260805b";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805b";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -20,7 +20,7 @@ const PERSONALITY_LEVELS={
   perceivingJudging:["완전 즉흥적","흐름에 맡김","유연한 편","균형형","미리 정리함","계획적","철저한 계획형"]
 };
 const personalityRange=(c,field,title,left,right)=>`<label class="personality-range"><span class="personality-title">${title}<b data-range-label="${field}">${PERSONALITY_LEVELS[field][c[field]??3]}</b></span><span class="range-poles"><small>${left}</small><small>${right}</small></span><input type="range" min="0" max="6" data-field="${field}" data-levels="${field}" value="${c[field]??3}"></label>`;
-const townAssignment=c=>`<section class="setting-card character-town"><h2>집이 있는 마을</h2><select data-field="townId">${state.towns.map(t=>`<option value="${t.id}" ${t.id===c.townId?"selected":""}>${esc(t.name)}</option>`).join("")}</select><small>같은 집에 사는 캐릭터들의 거주 마을만 함께 변경됩니다. 취향·성격·직업 등 다른 설정은 동기화되지 않아요.</small></section>`;
+const townAssignment=c=>`<section class="setting-card character-town"><h2>주소지</h2><select data-field="townId">${state.towns.map(t=>`<option value="${t.id}" ${t.id===c.townId?"selected":""}>${esc(t.name)}</option>`).join("")}</select><small>동거인의 주소지도 함께 동기화됩니다.</small></section>`;
 const PLACE_TYPES={
   "카페":["","로스터리 카페","디저트 카페","테마 카페","찻집"],
   "음식점":["","한식당","중식당","일식당","이탈리아 식당","분식집","패스트푸드점","디저트 가게"],
@@ -452,10 +452,10 @@ function relationshipMap(relations){
     const a=positions.get(relation.a),b=positions.get(relation.b);
     const forwardLabel=viewLabel(relation.a,relation.b),backwardLabel=viewLabel(relation.b,relation.a);
     const forwardColor=emotionColor(forwardLabel),backwardColor=emotionColor(backwardLabel);
-    const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),offsetX=-dy/length*12,offsetY=dx/length*12;
+    const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),offsetX=-dy/length*28,offsetY=dx/length*28;
     const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${a.x} ${a.y} Q ${midX+offsetX} ${midY+offsetY} ${b.x} ${b.y}`,backward=`M ${b.x} ${b.y} Q ${midX-offsetX} ${midY-offsetY} ${a.x} ${a.y}`;
     const forwardMarker=`relation-arrow-${index}-forward`,backwardMarker=`relation-arrow-${index}-backward`;
-    return `<g><defs><marker id="${forwardMarker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${forwardColor}"/></marker><marker id="${backwardMarker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${backwardColor}"/></marker></defs><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3" marker-end="url(#${forwardMarker})"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3" marker-end="url(#${backwardMarker})"/><text class="map-emotion" style="fill:${forwardColor}" x="${midX+offsetX*2.1}" y="${midY+offsetY*2.1}" text-anchor="middle">${esc(forwardLabel)}</text><text class="map-emotion" style="fill:${backwardColor}" x="${midX-offsetX*2.1}" y="${midY-offsetY*2.1}" text-anchor="middle">${esc(backwardLabel)}</text><text class="map-relation" x="${midX}" y="${midY-7}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+12}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
+    return `<g><defs><marker id="${forwardMarker}" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="${forwardColor}"/></marker><marker id="${backwardMarker}" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="${backwardColor}"/></marker></defs><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="5" marker-end="url(#${forwardMarker})"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="5" marker-end="url(#${backwardMarker})"/><text class="map-emotion" style="fill:${forwardColor}" x="${midX+offsetX*1.7}" y="${midY+offsetY*1.7-8}" text-anchor="middle">${esc(forwardLabel)}</text><text class="map-emotion" style="fill:${backwardColor}" x="${midX-offsetX*1.7}" y="${midY-offsetY*1.7+18}" text-anchor="middle">${esc(backwardLabel)}</text><text class="map-relation" x="${midX}" y="${midY-16}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+24}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<div class="relationship-map-node" style="left:${pos.x/10}%;top:${pos.y/4.7}%">${avatar(character)}<b>${esc(character.name)}</b></div>`}).join("");
   const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId],label=viewLabel(sourceId,targetId);return `<p class="mobile-relation-direction" style="--direction-color:${emotionColor(label)}"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(label)}</small></span></p>`};

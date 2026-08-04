@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805a";
+import {state,save,characterViewFor} from "./state.js?v=20260805b";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -472,8 +472,10 @@ function relationSpecificEntry(c,other,r,time,date,role){
   }
   const pool=pools[r.type]||[[[`${n}와 근황을 나누는 중`,"최근 관심 있는 일과 달라진 생활을 이야기하며 상대의 반응을 살피고 있어요.","living"],[`${n}의 근황을 듣는 중`,"궁금한 부분을 자연스럽게 되묻고 자기 이야기도 하나씩 꺼내고 있어요.","living"]]];
   const scenario=pool[hash(`${[c.id,other.id].sort().join(":")}:${r.type}:${dayKey(date)}:relation-scene`)%pool.length],script=scenario[role];
-  const tone=c.socialStyle==="낯을 가림"?" 말은 짧지만 자리를 피하지 않고 곁에 머물러 있어요.":c.decisionStyle==="공감 우선"?" 상대의 표정과 말투가 달라질 때마다 속도를 맞추고 있어요.":c.interference==="강하게 간섭함"?" 자기 방식이 더 낫다고 확신해 상대의 선택에도 적극적으로 관여하고 있어요.":"";
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+tone,`specific:${r.type}:${role}`),script[2]);
+  const tone=c.socialStyle==="낯을 가림"?" 말은 짧지만 자리를 피하지 않고 곁에 머물러 있어요.":c.decisionStyle==="공감 우선"?" 상대의 표정과 말투가 달라질 때마다 속도를 맞추고 있어요.":c.interference==="강하게 간섭함"||c.interference==="통제광"?" 자기 방식이 더 낫다고 확신해 상대의 선택에도 적극적으로 관여하고 있어요.":"";
+  const ages=["영아","유아","어린이","청소년","청년","성인","중년","장년","노년"],ageGap=ages.indexOf(c.ageGroup)-ages.indexOf(other.ageGroup);
+  const ageTone=ageGap>=2?" 나이가 더 많은 쪽답게 단정 짓기보다 상대가 스스로 말할 때까지 기다리려 하고 있어요.":ageGap<=-2?" 나이 차이를 의식하면서도 일방적으로 기대기보다 자기 생각을 분명히 전하려 하고 있어요.":c.ageGroup===other.ageGroup?" 비슷한 세대라 통하는 표현과 경험을 자연스럽게 꺼내고 있어요.":"";
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+tone+ageTone,`specific:${r.type}:${role}`),script[2]);
 }
 
 function relationshipHomeEntry(c,pick,time,date){
@@ -504,7 +506,7 @@ function relationshipHomeEntry(c,pick,time,date){
   const matchedLooks=(c.attractionTraits||[]).filter(tag=>otherTraits.includes(tag));
   const noticesLooks=/꽤 중요하게 봄|외모에 크게 끌림/.test(c.appearanceInterest||"");
   const visuallyDrawn=attractionAllowed&&noticesLooks&&(matchedLooks.length||/매력적임|매우 아름답거나 잘생김|시선을 사로잡음/.test(other.appearanceLevel||""));
-  const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,컨트롤프릭:34}[c.interference]||0;
+  const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,통제광:34}[c.interference]||0;
   const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
   if(unaware&&loving)scripts=[
@@ -613,7 +615,7 @@ function relationshipHomeEntry(c,pick,time,date){
     [`${other.name}의 잔소리를 듣는 중`,"처음에는 못 들은 척하다가 상대가 챙겨 둔 것을 보고 작게 알겠다고 답하며 몸을 일으켰어요.","living"]
   ];
   else if(intimacy>=40)return relationSpecificEntry(c,other,r,time,date,role);
-  else if(c.interference==="강하게 간섭함"||c.interference==="컨트롤프릭")scripts=[
+  else if(c.interference==="강하게 간섭함"||c.interference==="통제광")scripts=[
     [`${other.name}의 귀가 시간을 따지는 중`,"늦어진 이유를 분명히 말해 달라고 요구하고 다음부터는 미리 연락하라며 단호하게 이야기하고 있어요.","living"],
     [`${other.name}에게 행동을 바로잡으라고 말하는 중`,"미뤄 둔 일을 직접 가리키며 지금 끝내야 한다고 강하게 재촉하고 있어요.","living"]
   ];
@@ -749,6 +751,49 @@ function medievalize(c,item,date){
   const convert=text=>swaps.reduce((value,[pattern,replacement])=>value.replace(pattern,replacement),String(text||""));
   return {...item,title:convert(item.title),desc:convert(item.desc)};
 }
+function contextualDailyEvent(c,time,date){
+  const age=String(c.ageGroup||"성인"),pool=[];
+  if(["영아","유아","어린이"].includes(age))pool.push(
+    ["거실 바닥에서 놀이를 펼치는 중","손에 잡히는 장난감과 그림책을 늘어놓고 마음에 드는 것을 번갈아 살펴보고 있어요.","living"],
+    ["오늘 있었던 일을 재잘거리는 중","기억나는 장면을 순서와 상관없이 신나게 꺼내며 곁의 어른에게 반응을 기다리고 있어요.","living"]);
+  if(["청소년","청년"].includes(age))pool.push(
+    ["앞으로 하고 싶은 일을 찾아보는 중","관심 분야의 영상과 글을 비교하며 지금 좋아하는 일이 오래 이어질지 생각하고 있어요.","study"],
+    ["친구들의 소식을 확인하는 중","또래가 올린 소식에 반응하면서도 자기 이야기를 어디까지 꺼낼지 잠시 고민하고 있어요.","living"]);
+  if(["중년","장년","노년"].includes(age))pool.push(
+    ["몸 상태를 천천히 점검하는 중","평소와 다른 피로가 없는지 살피고 무리하지 않도록 남은 일의 순서를 조정하고 있어요.","living"],
+    ["오래된 물건을 꺼내 보는 중","손때가 묻은 물건을 닦으며 그 시절 함께했던 사람과 장소를 잠시 떠올리고 있어요.","study"]);
+  if(/혼자가 편함|낯을 가림/.test(c.socialStyle||""))pool.push(
+    ["조용한 자리를 골라 혼자 쉬는 중","사람이 적고 방해받지 않는 곳에서 생각을 정리하며 천천히 기운을 되찾고 있어요.","living"],
+    ["답장을 쓰다 잠시 멈춘 중","상대가 오해하지 않을 표현을 고르느라 짧은 문장을 여러 번 고쳐 쓰고 있어요.","study"]);
+  if(/먼저 다가감|무리의 중심/.test(c.socialStyle||""))pool.push(
+    ["사람들을 모아 이야기를 꺼내는 중","어색하게 흩어진 분위기를 알아차리고 모두가 끼어들 수 있는 화제를 먼저 던졌어요.","living"],
+    ["다음 모임을 정리하는 중","각자의 가능한 시간을 묻고 의견이 갈리는 부분을 자연스럽게 중간에서 맞추고 있어요.","study"]);
+  if(/논리 우선|이성적인 편/.test(c.decisionStyle||""))pool.push(
+    ["선택지를 표로 비교하는 중","비용과 시간, 예상 결과를 항목별로 적어 감정에 휩쓸리지 않게 결론을 좁히고 있어요.","study"]);
+  if(/마음을 살핌|공감 우선/.test(c.decisionStyle||""))pool.push(
+    ["아까 들은 말을 다시 생각하는 중","상대가 말끝을 흐린 이유를 떠올리며 다음에는 부담스럽지 않게 안부를 물을 방법을 고민하고 있어요.","living"]);
+  if(/무계획|즉흥적/.test(c.planningStyle||""))pool.push(
+    ["갑자기 생각난 일을 시작한 중","원래 하려던 일을 잠시 미뤄 두고 지금 가장 마음이 가는 일에 손을 뻗었어요.","living"]);
+  if(/계획적|강박적으로 계획함/.test(c.planningStyle||""))pool.push(
+    ["남은 시간을 다시 배분하는 중","예상보다 늦어진 일을 확인하고 쉬는 시간까지 포함해 오늘 계획을 촘촘하게 다시 맞추고 있어요.","study"]);
+  if((c.hobbies||[]).length)pool.push(
+    [`${c.hobbies[hash(`${c.id}:${dayKey(date)}:context-hobby`)%c.hobbies.length]}에 몰두하는 중`,"좋아하는 활동에 필요한 도구를 차분히 꺼내고 자기 방식대로 집중할 환경을 만들었어요.","study"]);
+  if(!pool.length)pool.push(["잠깐 숨을 고르는 중","하던 일을 멈추고 물을 한 모금 마시며 다음에 무엇을 할지 천천히 생각하고 있어요.","living"]);
+  const script=pool[hash(`${c.id}:${dayKey(date)}:contextual-daily`)%pool.length];
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily"),script[2]);
+}
+function financialStressEvent(c,time,date){
+  const lowWealth=["생계가 빠듯함","여유가 적음"].includes(c.wealth);
+  const lavish=["취향에는 아끼지 않음","품질 우선","가격을 거의 신경 쓰지 않음"].includes(c.income);
+  if(!lowWealth||!lavish||hash(`${c.id}:${dayKey(date)}:financial-stress`)%3!==0)return null;
+  const scripts=[
+    ["카드 한도를 확인하고 굳어진 중","결제 알림을 보고 남은 한도와 이번 달 청구 예정액을 다시 계산하고 있어요. 사고 싶던 물건은 장바구니에 남겨 두었어요."],
+    ["이번 달 카드값을 나눠 계산하는 중","취향에 쓴 금액이 예상보다 커져 고정비와 결제일을 적어 보고 당분간 줄일 지출을 고르고 있어요."],
+    ["결제가 거절되어 당황한 중","평소처럼 결제하려다 한도 알림을 확인하고 다른 결제 수단과 남은 생활비를 급히 살피고 있어요."],
+    ["사고 싶은 것과 생활비 사이에서 고민하는 중","마음에 든 물건을 내려놓지 못한 채 가격표와 통장 잔액을 번갈아 확인하고 있어요."]
+  ],script=scripts[hash(`${c.id}:${dayKey(date)}:financial-script`)%scripts.length];
+  return homeEntry(c,time,script[0],script[1],"study");
+}
 function build(c,date=new Date()){
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
   const sleepMinute=sleep<=wake?sleep+1440:sleep;
@@ -795,6 +840,8 @@ function build(c,date=new Date()){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
     list.push(entry(750,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
+  list.push(contextualDailyEvent(c,930,date));
+  const financialStress=financialStressEvent(c,1005,date);if(financialStress)list.push(financialStress);
   const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
   const birthdayCharacters=state.order.map(id=>state.characters[id]).filter(character=>character?.birthday===birthdayKey);
   if(birthdayCharacters.length){
@@ -892,7 +939,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805a";
+const ENGINE_VERSION="20260805b";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

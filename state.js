@@ -259,7 +259,7 @@ function normalizeHomes(x){
     c.ageGroup=c.ageGroup||"성인";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
     c.neatness=c.neatness||"보통";
-    c.interference=c.interference==="철저히 선을 지킴"?"요청할 때만 도움":c.interference||"적당히 관여";
+    c.interference=c.interference==="철저히 선을 지킴"?"요청할 때만 도움":c.interference==="컨트롤프릭"?"통제광":c.interference||"적당히 관여";
     c.conflictStyle=c.conflictStyle||"대화로 해결";
     c.affectionStyle=c.affectionStyle||"행동으로 표현";
     c.energyRhythm=c.energyRhythm||"상황에 따라";
@@ -356,6 +356,7 @@ export function createCharacter(limit=5){
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};
+  state.activeHomeId=id;
   state.routines[id]=[];
   state.activeId=id;state.activeTab="character";save(true);return id;
 }

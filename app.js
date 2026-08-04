@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805a";
-import {eventFor} from "./simulation.js?v=20260805a";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805a";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805b";
+import {eventFor} from "./simulation.js?v=20260805b";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805b";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -304,9 +304,12 @@ function openProfileExportDialog(){
 }
 function enhanceDynamicForms(){
   const feedbackIntro=document.querySelector(".feedback-card>p");
-  if(feedbackIntro)feedbackIntro.textContent="Google 로그인 주소와 받는 주소가 같아도 전송할 수 있어요. FormSubmit 메일이 막혀도 로그인 상태에서는 Firebase 피드백함에 별도로 저장합니다.";
+  if(feedbackIntro)feedbackIntro.textContent="Google 로그인 주소와 받는 주소가 같아도 전송할 수 있어요. FormSubmit이 전달하지 못하면 같은 내용이 채워진 Gmail 작성창을 열며, 게임 데이터 동기화는 실행하지 않습니다.";
   const profile=document.querySelector(".profile-license");
   if(profile){
+    profile.querySelectorAll('[data-personality-field="interference"]').forEach(button=>{
+      if(button.dataset.value==="컨트롤프릭"){button.dataset.value="통제광";button.textContent="통제광"}
+    });
     const fields=profile.querySelector(".fields");
     if(fields&&!profile.querySelector('[data-field="wakeHabit"]')){
       const label=document.createElement("label");label.className="wake-habit-field";label.innerHTML=`기상 습관<select data-field="wakeHabit">${["알람을 듣고 천천히 일어남","알람이 울리기 전에 눈을 뜸","알람을 여러 번 미룸","눈을 뜨자마자 바로 일어남","이불 속에서 한참 뒹굶","일어나자마자 창문을 엶","일어나자마자 물을 마심","침대에서 오늘 일정을 확인함","비몽사몽한 채 방을 돌아다님","누가 깨워 줘야 일어남"].map(value=>`<option ${active().wakeHabit===value?"selected":""}>${value}</option>`).join("")}</select><small>기상 직후 장면과 아침 행동에 반영돼요.</small>`;fields.append(label);
@@ -518,13 +521,8 @@ function bind(){
     const character=active();
     const button=form.querySelector('button[type="submit"]'),status=form.querySelector(".feedback-status");
     button.disabled=true;button.textContent="보내는 중…";status.textContent="";
-    let stored=false;
     try{
       const auth=window.ParallelCityAuth;
-      if(auth?.getInfo?.().user&&auth.submitFeedback){
-        try{await auth.submitFeedback({category,message,allowReply:true});stored=true}
-        catch(storageError){console.warn("피드백함 저장 실패",storageError)}
-      }
       const response=await fetch("https://formsubmit.co/ajax/kkyaareuk@gmail.com",{
         method:"POST",
         headers:{"Content-Type":"application/json","Accept":"application/json"},
@@ -546,8 +544,11 @@ function bind(){
       form.reset();status.textContent="보냈어요. 개발자 이메일과 피드백함에 전달됐습니다.";showToast("피드백을 보냈어요");
     }catch(error){
       console.warn("피드백 전송 실패",error);
-      status.textContent=stored?"피드백함에는 안전하게 저장했지만 이메일 전달은 확인되지 않았어요. 개발자가 피드백함에서 확인할 수 있습니다.":"이메일 서비스가 전달을 확인하지 않았어요. Google 로그인 후 다시 보내면 피드백함에도 안전하게 저장됩니다.";
-      showToast(stored?"피드백함에 저장했어요":"피드백 전송을 확인하지 못했어요");
+      const subject=encodeURIComponent(`[서랍마을 ${category}] 사용자 피드백`);
+      const body=encodeURIComponent(`${message}\n\n현재 화면: ${TAB_META[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}\n보낸 시각: ${new Date().toLocaleString("ko-KR")}`);
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=kkyaareuk%40gmail.com&su=${subject}&body=${body}`,"_blank","noopener");
+      status.textContent="FormSubmit 전달이 막혀 Gmail 작성창을 열었어요. 작성창에서 보내기를 눌러 주세요. 게임 데이터 동기화는 실행하지 않았습니다.";
+      showToast("Gmail 작성창을 열었어요");
     }finally{button.disabled=false;button.textContent="피드백 보내기"}
   });
   $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 함께 사는 존재를 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
@@ -1196,12 +1197,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260805a").catch(error=>{
+import("./auth.js?v=20260805b").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805a",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805b",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
