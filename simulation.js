@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805b";
+import {state,save,characterViewFor} from "./state.js?v=20260805e";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -76,8 +76,19 @@ const activityTown=(c,date=new Date())=>{
 const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
-const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
-const relationPriority={"부모·자녀":10,"보호·피보호":10,부부:9,"유사가족":9,연인:8,짝사랑:6,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
+const relationPriority={"부모·자녀":10,"보호·피보호":10,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
+const related=c=>{
+  const grouped=new Map();
+  relationList().filter(r=>r.a===c.id||r.b===c.id).forEach(relation=>{
+    const otherId=relation.a===c.id?relation.b:relation.a;
+    if(!grouped.has(otherId))grouped.set(otherId,[]);
+    grouped.get(otherId).push(relation);
+  });
+  return [...grouped.entries()].map(([otherId,relations])=>{
+    const primary=relations.slice().sort((a,b)=>(relationPriority[b.type]||0)-(relationPriority[a.type]||0))[0],shared=relations[relations.length-1];
+    return {other:state.characters[otherId],relations,r:{...primary,types:[...new Set(relations.map(relation=>relation.type))],touchIntensity:shared.touchIntensity||primary.touchIntensity,protectionRole:shared.protectionRole||primary.protectionRole,caregiverIds:shared.caregiverIds||primary.caregiverIds,careReceiverIds:shared.careReceiverIds||primary.careReceiverIds,intimacy:Math.max(...relations.map(relation=>Number(relation.intimacy)||0)),conflict:Math.max(...relations.map(relation=>Number(relation.conflict)||0))}};
+  }).filter(item=>item.other);
+};
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
 function personalityFlavor(c,desc,seed=""){
@@ -483,6 +494,8 @@ function relationshipHomeEntry(c,pick,time,date){
   const directedView=characterViewFor(c.id,other.id);
   const {overall="",awareness="",trust="",closeness="",comfort="",annoyance="",attention="",jealousy=""}=directedView;
   const otherView=characterViewFor(other.id,c.id);
+  const combinedTypes=r.types||[r.type];
+  const combinedTone=combinedTypes.length>1?combinedTypes.includes("연인")&&combinedTypes.includes("직장 동료")?" 직장에서는 동료의 선을 지키고, 사적인 자리에서만 연인의 말투로 돌아오고 있어요.":combinedTypes.includes("연인")&&combinedTypes.includes("소꿉친구")?" 오래 알고 지낸 습관과 연인으로서의 애정이 자연스럽게 함께 묻어나요.":` 두 사람 사이의 ${combinedTypes.join("·")} 관계가 한 장면 안에서 함께 드러나고 있어요.`:"";
   const thought=[directedView.overall,directedView.trust,directedView.comfort,directedView.annoyance,directedView.attention].filter(Boolean).join(" ");
   const loving=/좋아|사랑|소중|없어서는/.test(overall);
   const hating=/싫어|경계|불편/.test(overall);
@@ -648,7 +661,7 @@ function relationshipHomeEntry(c,pick,time,date){
   else return sharedHomeEntry(c,other,time,date);
   const roleScripts=scripts.filter((_,index)=>index%2===role%2);
   const script=roleScripts[hash(`${c.id}:${other.id}:${dayKey(date)}:${time}:${overall}:${trust}:${closeness}:${comfort}:${annoyance}:${attention}:${jealousy}`)%roleScripts.length];
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],`relation:${r.id}:${role}`),script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+combinedTone,`relation:${r.id}:${role}`),script[2]);
 }
 
 function relationshipMorningEntry(c,pick,time,date){
