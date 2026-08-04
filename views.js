@@ -1,5 +1,5 @@
-import {state,active} from "./state.js?v=20260804h";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804h";
+import {state,active,characterViewFor} from "./state.js?v=20260804i";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804i";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -392,7 +392,7 @@ function catalog(){
 }
 const relationActivities=r=>r.interactions?.length?`<details class="relation-activity-details"><summary>주로 하는 활동 · ${r.interactions.length}개</summary><div class="relation-tags">${r.interactions.map(x=>`<span>${esc(x)}</span>`).join("")}</div></details>`:"";
 const CHARACTER_VIEW_OPTIONS={
-  overall:["정하지 않음","매우 싫어함","경계함","불편해함","그저 그런 사람","호감이 있음","좋아함","소중하게 여김","사랑함","없어서는 안 될 사람"],
+  overall:["정하지 않음","낯선 사람으로 여김","매우 싫어함","경계함","불편해함","그저 그런 사람","호감이 있음","좋아함","소중하게 여김","사랑함","없어서는 안 될 사람"],
   trust:["정하지 않음","전혀 믿지 않음","의심함","조심스럽게 지켜봄","보통","어느 정도 믿음","깊이 신뢰함","전적으로 의지함"],
   closeness:["정하지 않음","남보다도 멂","낯선 사이","거리감 있음","보통","편한 사이","가까운 사이","가장 가까운 사람"],
   comfort:["정하지 않음","매우 불편함","긴장함","조심스러움","보통","편안함","무방비해질 만큼 편함"],
@@ -403,14 +403,14 @@ const CHARACTER_VIEW_OPTIONS={
 const characterViewEditor=()=>{
   const first=state.order[0];
   const field=(sourceId,targetId,key,label,help)=>{
-    const current=state.characterViews?.[sourceId]?.[targetId]?.[key]||"정하지 않음";
+    const current=characterViewFor(sourceId,targetId)[key]||"정하지 않음";
     return `<label><span><b>${label}</b><small>${help}</small></span><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${CHARACTER_VIEW_OPTIONS[key].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select></label>`;
   };
   const panels=state.order.map(sourceId=>{
     const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
-    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=state.characterViews?.[sourceId]?.[targetId]?.overall||"정하지 않음";return `<details class="character-view-card" ${index===0?"open":""}><summary><span class="character-view-heading">${avatar(target)}<span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small></span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개로 이 사람을 전반적으로 어떻게 생각하는지")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","사랑해도 긴장하거나 불편할 수 있어요")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></details>`}).join("")}</div>`;
+    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall;return `<details class="character-view-card" ${index===0?"open":""}><summary><span class="character-view-heading"><span class="character-view-direction-icons">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small></span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개로 이 사람을 전반적으로 어떻게 생각하는지")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","사랑해도 긴장하거나 불편할 수 있어요")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></details>`}).join("")}</div>`;
   }).join("");
-  const sourceTabs=state.order.map((id,index)=>{const character=state.characters[id];return `<button type="button" data-view-source="${id}" class="${index===0?"on":""}">${avatar(character)}<span><b>${esc(character.name)}</b><small>이 캐릭터의 시선</small></span></button>`}).join("");
+  const sourceTabs=state.order.map((id,index)=>{const character=state.characters[id],primary=character.theme?.primary||"#176b60",secondary=character.theme?.gradient?(character.theme?.secondary||primary):primary;return `<button type="button" data-view-source="${id}" class="${index===0?"on":""}" style="--view-primary:${esc(primary)};--view-secondary:${esc(secondary)}">${avatar(character)}<span><b>${esc(character.name)}</b><small>이 캐릭터의 시선</small></span></button>`}).join("");
   return `<section class="character-view-editor"><div class="title"><div><h2>캐릭터별 관계 시선</h2><p>아이콘을 눌러 기준 캐릭터를 고른 뒤, 상대 카드를 펼쳐 감정을 정해요. 공식 관계가 원수여도 한쪽만 사랑하거나, 사랑하지만 신뢰하지 않는 관계를 만들 수 있어요.</p></div></div><div class="character-view-source-tabs">${sourceTabs}</div>${panels}</section>`;
 };
 function relationshipMap(relations){
@@ -426,7 +426,7 @@ function relationshipMap(relations){
     if(!positions.has(relation.a)||!positions.has(relation.b)||seen.has(key))return false;
     seen.add(key);return true;
   });
-  const viewLabel=(source,target)=>state.characterViews?.[source]?.[target]?.overall||"정하지 않음";
+  const viewLabel=(source,target)=>characterViewFor(source,target).overall;
   const lines=edges.map((relation,index)=>{
     const a=positions.get(relation.a),b=positions.get(relation.b),color=colors[relation.type]||"#6d776f";
     const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),offsetX=-dy/length*12,offsetY=dx/length*12;

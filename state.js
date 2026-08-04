@@ -483,6 +483,20 @@ export function togglePlaceStock(placeId,itemId){
   p.stock=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
 }
 export function setActiveHome(id){if(state.homes[id]){state.activeHomeId=id;save()}}
+export function characterViewFor(sourceId,targetId){
+  const explicit=state.characterViews?.[sourceId]?.[targetId]||{};
+  const relation=Object.values(state.relationships||{}).find(item=>
+    (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
+  );
+  let defaults={overall:"낯선 사람으로 여김",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"조심스러움",annoyance:"전혀 귀찮지 않음",attention:"관심 없음",jealousy:"질투하지 않음"};
+  if(relation){
+    if(["연인","부부"].includes(relation.type))defaults={...defaults,overall:"좋아함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
+    else if(["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||""))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"매우 불편함",annoyance:"보기만 해도 피곤함"};
+    else if(["친구","가족","부모·자녀"].includes(relation.type))defaults={...defaults,overall:"소중하게 여김",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
+    else defaults={...defaults,overall:"그저 그런 사람",trust:"보통",closeness:"보통",comfort:"보통",attention:"필요할 때만 봄"};
+  }
+  return {...defaults,...explicit};
+}
 export function addRelationship(data){const id=uid();state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true)}
 export function updateRelationship(id,data){
   const relation=state.relationships[id];if(!relation)return;
