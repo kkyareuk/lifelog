@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260804u";
+import {state,save,characterViewFor} from "./state.js?v=20260804z";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -74,7 +74,7 @@ const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const related=c=>relationList().filter(r=>r.a===c.id||r.b===c.id).map(r=>({r,other:state.characters[r.a===c.id?r.b:r.a]})).filter(x=>x.other);
-const relationPriority={"부모·자녀":10,"보호·피보호":10,부부:9,"유사가족":9,연인:8,짝사랑:6,소꿉친구:6,친구:5,"학창 시절 친구들":5,"젊은 날의 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
+const relationPriority={"부모·자녀":10,"보호·피보호":10,부부:9,"유사가족":9,연인:8,짝사랑:6,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
 function personalityFlavor(c,desc,seed=""){
@@ -340,7 +340,6 @@ function socialEvent(c,time,date){
       친구:`${pick.other.name}와 둘만 아는 농담을 주고받고 거리낌 없이 서로의 근황을 묻고 있어요.`,
       소꿉친구:`${pick.other.name}와 오래전부터 알고 지낸 사람만 알아들을 추억을 꺼내며 편하게 이야기를 이어가고 있어요.`,
       "학창 시절 친구들":`${pick.other.name}와 학창 시절의 기억과 요즘 달라진 생활을 비교하며 이야기를 이어가고 있어요.`,
-      "젊은 날의 친구들":`${pick.other.name}와 젊은 날 함께 보낸 시간을 떠올리며 지금의 생활을 나란히 이야기하고 있어요.`,
       산악회:`${pick.other.name}와 다음에 걸을 길과 준비물을 이야기하며 서로의 체력을 살피고 있어요.`,
       "직장 동료":`${pick.other.name}와 업무 밖의 이야기를 나누다가도 자연스럽게 오늘 있었던 일을 함께 정리하고 있어요.`,
       라이벌:`${pick.other.name}와 최근 결과를 은근히 비교하면서도 상대가 잘한 부분은 놓치지 않고 살피고 있어요.`,
@@ -415,10 +414,6 @@ function relationSpecificEntry(c,other,r,time,date,role){
       [[`${n}와 업무를 인계하는 중`,"진행 상황과 주의할 부분을 짧고 정확하게 정리해 상대가 바로 이어서 할 수 있게 설명하고 있어요.","study"],[`${n}에게 업무를 인계받는 중`,"중요한 부분을 메모하고 애매한 조건을 다시 물어 실수가 없도록 확인하고 있어요.","study"]],
       [[`${n}와 퇴근 후 하소연하는 중`,"오늘 있었던 답답한 일을 조심스럽게 꺼내며 상대가 공감하는 대목에서 목소리를 낮추고 있어요.","kitchen"],[`${n}의 직장 이야기를 듣는 중`,"고개를 끄덕이며 상황을 정리해 주고 내일 덜 힘들 방법을 현실적으로 제안하고 있어요.","kitchen"]]
     ],
-    "젊은 날의 친구들":[
-      [[`${n}와 옛날 이야기를 하는 중`,"같이 들었던 수업과 황당했던 과제를 떠올리며 당시에는 말하지 못한 뒷이야기를 꺼내고 있어요.","living"],[`${n}와 옛날 이야기를 하는 중`,"잊고 있던 장면을 상대의 말로 떠올리고 기억이 다른 부분을 웃으며 바로잡고 있어요.","living"]],
-      [[`${n}와 자료를 나누는 중`,"상대가 찾던 자료를 폴더별로 정리해 보내고 도움이 될 만한 메모를 덧붙이고 있어요.","study"],[`${n}가 보낸 자료를 확인하는 중`,"필요한 부분에 표시를 남기고 자기 자료도 정리해 답례로 보내고 있어요.","study"]]
-    ],
     "부모·자녀":[
       [[`${n}의 아침 상태를 살피는 중`,"잘 잤는지 묻고 얼굴빛과 체온을 살핀 뒤 오늘 필요한 준비물을 함께 확인하고 있어요.","bedroom"],[`${n}에게 아침 인사를 하는 중`,"잠이 덜 깬 목소리로 밤새 있었던 일을 이야기하고 오늘 무엇을 할지 묻고 있어요.","bedroom"]],
       [[`${n}의 식사를 챙기는 중`,"나이와 입맛에 맞는 양을 덜어 주고 천천히 먹도록 물과 수저를 가까이에 놓고 있어요.","kitchen"],[`${n}와 함께 식사하는 중`,"챙겨 준 음식을 먹으며 오늘 있었던 일과 궁금한 것을 하나씩 이야기하고 있어요.","kitchen"]],
@@ -490,7 +485,7 @@ function relationshipHomeEntry(c,pick,time,date){
   const touchAverse=/극도로 꺼림|닿는 것을 싫어/.test(c.touchReaction||"");
   const likesTouch=/접촉을 좋아|먼저 다가가는/.test(c.touchReaction||"");
   const otherTouchAverse=/극도로 꺼림|닿는 것을 싫어/.test(other.touchReaction||"");
-  const touchIntensity=r.touchIntensity||(["연인","부부"].includes(r.type)?"자연스럽게 표현함":"가끔 가벼운 접촉");
+  const touchIntensity=r.touchIntensity||(["연인","부부"].includes(r.type)?"가끔 가벼운 접촉":"신체 접촉 없음");
   const avoidsTouch=/신체 접촉 없음|거의 하지 않음/.test(touchIntensity);
   const welcomesTouch=!avoidsTouch&&/가끔 가벼운 접촉|자연스럽게 표현함|애정 표현이 많은 편/.test(touchIntensity);
   const distrust=/전혀 믿지|의심|조심스럽게 지켜봄/.test(trust);
@@ -500,9 +495,9 @@ function relationshipHomeEntry(c,pick,time,date){
   const jealous=/은근히 질투|질투가 심함|독점/.test(jealousy);
   const hasPartner=relationList().some(relation=>["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
   const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
-  const opennessAllows=openness==="관계와 무관하게 쉽게 끌림"||openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
+  const opennessAllows=openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
   const attractionAllowed=opennessAllows&&!(c.attractedGenders||[]).includes("없음")&&(c.attractedGenders||[]).includes(other.gender);
-  const otherTraits=[...(other.appearanceTags||[]),other.job,other.jobTitle,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
+  const otherTraits=[...(other.appearanceTags||[]),other.job,other.jobTitle,other.wealth,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
   const matchedLooks=(c.attractionTraits||[]).filter(tag=>otherTraits.includes(tag));
   const noticesLooks=/꽤 중요하게 봄|외모에 크게 끌림/.test(c.appearanceInterest||"");
   const visuallyDrawn=attractionAllowed&&noticesLooks&&(matchedLooks.length||/매력적임|매우 아름답거나 잘생김|시선을 사로잡음/.test(other.appearanceLevel||""));
@@ -797,6 +792,21 @@ function build(c,date=new Date()){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
     list.push(entry(750,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
+  const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+  const birthdayCharacters=state.order.map(id=>state.characters[id]).filter(character=>character?.birthday===birthdayKey);
+  if(birthdayCharacters.length){
+    const host=birthdayCharacters[0],hostTown=townFor(host),restaurants=(hostTown?.places||[]).filter(place=>place.type==="음식점");
+    const restaurant=restaurants.length&&hash(`${birthdayKey}:${date.getFullYear()}:birthday-place`)%2===0?restaurants[hash(`${birthdayKey}:restaurant`)%restaurants.length]:null;
+    const names=birthdayCharacters.map(character=>character.name).join(", "),isBirthday=birthdayCharacters.some(character=>character.id===c.id);
+    const title=isBirthday?`${names}의 생일파티에서 축하받는 중`:`${names}의 생일파티에서 함께 축하하는 중`;
+    const desc=restaurant
+      ?`${state.order.map(id=>state.characters[id]?.name).filter(Boolean).join(", ")}이 한자리에 모여 식사와 케이크를 나누고 생일을 축하하고 있어요.`
+      :`${host.name}의 집에 모두 모여 음식을 차리고 케이크와 선물을 나누며 생일을 축하하고 있어요.`;
+    const shared={mood:"축하",groupInteraction:true,withIds:state.order.filter(id=>id!==c.id),birthdayIds:birthdayCharacters.map(character=>character.id)};
+    list.push(restaurant
+      ?entry(1140,title,desc,{...shared,townId:hostTown.id,placeId:restaurant.id})
+      :entry(1140,title,desc,{...shared,home:true,visitHomeId:host.homeId,room:"living"}));
+  }
   const social=socialEvent(c,1120,date); if(social)list.push(social);
   if(social?.withId){
     const romanticRelation=relationList().find(r=>((r.a===c.id&&r.b===social.withId)||(r.b===c.id&&r.a===social.withId))&&["연인","부부"].includes(r.type));
@@ -868,10 +878,10 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260804u";
+const ENGINE_VERSION="20260804z";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-function signature(c){return JSON.stringify({createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
   const merged=[...kept],seen=new Set(kept.map(item=>`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`));

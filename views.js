@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260804u";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804u";
+import {state,active,characterViewFor} from "./state.js?v=20260804z";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804z";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -110,7 +110,7 @@ function catalogItem(id){return catalogItems().find(item=>item.id===id)}
 function townForEntry(entry){return state.towns.find(t=>t.id===entry.townId)||state.towns.find(t=>t.places?.some(p=>p.id===entry.placeId))||state.world}
 function placeForEntry(entry){return townForEntry(entry)?.places?.find(p=>p.id===entry.placeId)}
 function sceneImage(c,entry){
-  if(entry.home)return state.homes[c.homeId]?.rooms?.[entry.room]?.image||"";
+  if(entry.home)return state.homes[entry.visitHomeId||c.homeId]?.rooms?.[entry.room]?.image||"";
   const place=placeForEntry(entry);
   return catalogItem(entry.itemId)?.image||place?.interiorImage||place?.image||"";
 }
@@ -183,7 +183,7 @@ function observe(){
   const everyoneSleeping=state.order.length>0&&state.order.every(id=>eventFor(state.characters[id]).title==="자는 중");
   const sleepGate=everyoneSleeping?`<div class="sleep-gate"><div>🌙</div><h2>모든 인물이 자고 있습니다</h2><p>마을은 조용해졌어요. 집 안에서 인물들의 상태를 볼 수 있어요.</p><button class="primary" data-all-sleep-home>집으로 들어가기</button></div>`:"";
   const currentImage=sceneImage(c,e);
-  const location=e.home?`🏠 ${esc(state.homes[c.homeId]?.rooms?.[e.room]?.name||"집 안")}`:e.transit?"🚌 이동 중":place?`📍 ${esc(place.name)} · ${esc(townForEntry(e).name)}`:"📍 외출 중";
+  const location=e.home?`🏠 ${esc(state.homes[e.visitHomeId||c.homeId]?.name||"집")} · ${esc(state.homes[e.visitHomeId||c.homeId]?.rooms?.[e.room]?.name||"집 안")}`:e.transit?"🚌 이동 중":place?`📍 ${esc(place.name)} · ${esc(townForEntry(e).name)}`:"📍 외출 중";
   return `${roster()}${townSwitcher}${sleepGate}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${currentImage?`<img class="place-photo" src="${esc(currentImage)}" alt="">`:""}</div></div>${dailyLog(c)}</aside></div>`;
 }
 function roomStyle(h,key){
@@ -205,9 +205,9 @@ function home(){
 }
 function homeCard(id,chars){
   const h=state.homes[id]||{id,name:`${chars[0].name}의 집`,rooms:{}};
-  const currentScenes=new Map(chars.map(c=>[c.id,eventFor(c)]));
+  const currentScenes=new Map(state.order.map(characterId=>state.characters[characterId]).filter(Boolean).map(c=>[c.id,eventFor(c)]));
   const sceneFor=c=>currentScenes.get(c.id);
-  const inside=chars.filter(c=>sceneFor(c)?.home);
+  const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id);
   const edit=state.homeEditMode;
   const roomKeys=Object.keys(h.rooms||{});
   const pets=h.pets||[];

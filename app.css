@@ -528,4 +528,4 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 }
 @font-face{font-family:"SB Aggro";src:url("./fonts/SB_Aggro/SB%20%EC%96%B4%EA%B7%B8%EB%A1%9C%20M.ttf") format("truetype");font-display:swap}
 @font-face{font-family:"Ownglyph Corncorn";src:url("./fonts/Ownglyph_Corncorn.ttf") format("truetype");font-display:swap}
-@font-face{font-family:"Memonote Kkukkkuk";src:local("메모넌트 꾹꾹체"),local("Memonote Kkukkkuk");font-display:swap}
+@font-face{font-family:"Do Hyeon";src:url("./fonts/DoHyeon-Regular.ttf") format("truetype");font-display:swap}
