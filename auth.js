@@ -166,7 +166,6 @@ async function upload({silent=false,reason=""}={}){
     const prepared=await prepareState(window.ParallelCity.getState(),normalizeManifest(previous?.mediaManifest,previous?.gameState));
     const {gameState,mediaManifest}=prepared;
     await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
-    window.ParallelCity.replaceState(clone(gameState));
     publishStorageUsage(mediaManifest,gameState);
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
     const storedPhotos=countStoredPhotos(gameState);

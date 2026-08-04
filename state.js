@@ -157,21 +157,25 @@ function normalizeHomes(x){
       }
       return;
     }
-    const typeMap={"폴리 관계":"연인","절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구","유사가족":"가족"};
-    relation.type=typeMap[relation.type]||relation.type||"친구";
+    const originalType=relation.type,typeMap={"폴리 관계":"연인","절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구","유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"};
+    relation.type=typeMap[originalType]||originalType||"친구";
+    if(relation.type==="동거인"){
+      relation.cohabit=true;
+      if(["유사가족","가족","보호·피보호"].includes(originalType))relation.stage="유사가족 같은 동거인";
+    }
     relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
     relation.interactionsAll=Boolean(relation.interactionsAll);
     relation.touchIntensity=relation.touchIntensity||(["연인","부부"].includes(relation.type)?"가끔 가벼운 접촉":"신체 접촉 없음");
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
     relation.legalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus||"관계를 따로 명명하지 않음";
-    relation.protectionRole=["a-protects-b","b-protects-a","mutual"].includes(relation.protectionRole)?relation.protectionRole:"none";
+    delete relation.protectionRole;delete relation.caregiverIds;delete relation.careReceiverIds;
     relation.stage=relation.stage||({
       연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구",혐관:"신경전 중"
     }[relation.type]||"편안함");
     if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b){
-      const directional=relation.type==="부모·자녀"||relation.type==="보호·피보호"||relation.directional;
+      const directional=relation.type==="부모·자녀"||relation.directional;
       const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
-      const key=`${relation.type}|${pair}|${relation.parentRole||relation.protectionRole||""}`;
+      const key=`${relation.type}|${pair}|${relation.parentRole||""}`;
       const displayOrder=Array.isArray(relation.displayOrder)&&relation.displayOrder.length===2&&relation.displayOrder.every(characterId=>characterId===relation.a||characterId===relation.b)
         ?relation.displayOrder:[relation.a,relation.b];
       const candidate={...relation,id,displayOrder};
@@ -189,24 +193,8 @@ function normalizeHomes(x){
     }
   });
   const sharedByPair=new Map();
-  Object.values(x.relationships).forEach(relation=>{
-    const key=[relation.a,relation.b].sort().join("~");
-    if(!sharedByPair.has(key))sharedByPair.set(key,[]);
-    sharedByPair.get(key).push(relation);
-  });
-  sharedByPair.forEach(group=>{
-    if(group.length<2)return;
-    const latest=group.slice().sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];
-    const caregivers=Array.isArray(latest.caregiverIds)?latest.caregiverIds:latest.protectionRole==="mutual"?[latest.a,latest.b]:latest.protectionRole==="a-protects-b"?[latest.a]:latest.protectionRole==="b-protects-a"?[latest.b]:[];
-    const receivers=Array.isArray(latest.careReceiverIds)?latest.careReceiverIds:latest.protectionRole==="mutual"?[latest.a,latest.b]:latest.protectionRole==="a-protects-b"?[latest.b]:latest.protectionRole==="b-protects-a"?[latest.a]:[];
-    group.forEach(relation=>{
-      relation.touchIntensity=latest.touchIntensity;
-      relation.caregiverIds=[...caregivers];
-      relation.careReceiverIds=[...receivers];
-      const aProtects=caregivers.includes(relation.a)&&receivers.includes(relation.b),bProtects=caregivers.includes(relation.b)&&receivers.includes(relation.a);
-      relation.protectionRole=aProtects&&bProtects?"mutual":aProtects?"a-protects-b":bProtects?"b-protects-a":"none";
-    });
-  });
+  Object.values(x.relationships).forEach(relation=>{const key=[relation.a,relation.b].sort().join("~");if(!sharedByPair.has(key))sharedByPair.set(key,[]);sharedByPair.get(key).push(relation)});
+  sharedByPair.forEach(group=>{if(group.length<2)return;const latest=group.slice().sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];group.forEach(relation=>relation.touchIntensity=latest.touchIntensity)});
   const defaultWorld=fresh().world;
   x.world=x.world&&typeof x.world==="object"?x.world:defaultWorld;
   x.world.name=x.world.name||defaultWorld.name;
@@ -592,7 +580,8 @@ export function characterViewFor(sourceId,targetId){
   if(relations.length){
     if(relations.some(relation=>["연인","부부"].includes(relation.type)))defaults={...defaults,overall:"좋아함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
     else if(relations.some(relation=>["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||"")))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"매우 불편함",annoyance:"보기만 해도 피곤함"};
-    else if(relations.some(relation=>["친구","가족","부모·자녀","보호·피보호"].includes(relation.type)))defaults={...defaults,overall:"소중하게 여김",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
+    else if(relations.some(relation=>["친구","부모·자녀","형제·자매"].includes(relation.type)))defaults={...defaults,overall:"소중하게 여김",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
+    else if(relations.some(relation=>relation.type==="동거인"))defaults={...defaults,overall:"그저 그런 사람",trust:"보통",closeness:"보통",comfort:"보통",attention:"필요할 때만 봄"};
     else defaults={...defaults,overall:"그저 그런 사람",trust:"보통",closeness:"보통",comfort:"보통",attention:"필요할 때만 봄"};
   }
   return {...defaults,...explicit};

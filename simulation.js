@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805e";
+import {state,save,characterViewFor} from "./state.js?v=20260805f";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -76,7 +76,7 @@ const activityTown=(c,date=new Date())=>{
 const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
-const relationPriority={"부모·자녀":10,"보호·피보호":10,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,가족:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
+const relationPriority={"부모·자녀":10,"형제·자매":9,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,동거인:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const related=c=>{
   const grouped=new Map();
   relationList().filter(r=>r.a===c.id||r.b===c.id).forEach(relation=>{
@@ -86,7 +86,7 @@ const related=c=>{
   });
   return [...grouped.entries()].map(([otherId,relations])=>{
     const primary=relations.slice().sort((a,b)=>(relationPriority[b.type]||0)-(relationPriority[a.type]||0))[0],shared=relations[relations.length-1];
-    return {other:state.characters[otherId],relations,r:{...primary,types:[...new Set(relations.map(relation=>relation.type))],touchIntensity:shared.touchIntensity||primary.touchIntensity,protectionRole:shared.protectionRole||primary.protectionRole,caregiverIds:shared.caregiverIds||primary.caregiverIds,careReceiverIds:shared.careReceiverIds||primary.careReceiverIds,intimacy:Math.max(...relations.map(relation=>Number(relation.intimacy)||0)),conflict:Math.max(...relations.map(relation=>Number(relation.conflict)||0))}};
+    return {other:state.characters[otherId],relations,r:{...primary,types:[...new Set(relations.map(relation=>relation.type))],touchIntensity:shared.touchIntensity||primary.touchIntensity,intimacy:Math.max(...relations.map(relation=>Number(relation.intimacy)||0)),conflict:Math.max(...relations.map(relation=>Number(relation.conflict)||0))}};
   }).filter(item=>item.other);
 };
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
@@ -438,9 +438,22 @@ function relationSpecificEntry(c,other,r,time,date,role){
       [[`${n}와 외출 준비를 하는 중`,"날씨에 맞는 옷을 골라 주고 길에서 지켜야 할 약속을 다시 확인한 뒤 손을 내밀고 있어요.","entry"],[`${n}와 나갈 준비를 하는 중`,"자기가 고른 옷과 가져갈 물건을 보여 주고 빠뜨린 것이 없는지 마지막으로 확인받고 있어요.","entry"]],
       [[`${n}의 늦은 귀가를 기다린 중`,"연락이 늦어 걱정했던 마음을 감추지 못하면서도 먼저 무사히 돌아온 것을 확인하고 있어요.","entry"],[`${n}에게 늦은 이유를 설명하는 중`,"걱정하게 만든 것을 알아 먼저 미안하다고 말하고 어디에서 무엇을 했는지 차근차근 이야기하고 있어요.","entry"]]
     ],
-    가족:[
-      [[`${n}의 식사를 챙기는 중`,"끼니를 거르지 않았는지 확인하고 부담 없이 먹을 수 있는 양을 따로 덜어 두고 있어요.","kitchen"],[`${n}가 챙긴 식사를 받는 중`,"잔소리처럼 들리면서도 걱정인 걸 알아 작게 대답하고 자리에 앉아 한입 먹고 있어요.","kitchen"]],
-      [[`${n}와 생활 습관을 두고 실랑이 중`,"또 미뤄 둔 일을 가리키며 이번에는 꼭 끝내라고 말하지만 손은 이미 정리를 돕고 있어요.","living"],[`${n}의 잔소리에 대답하는 중`,"알겠다고 몇 번 답하다가 결국 함께 빨리 끝내는 편이 낫겠다며 몸을 일으키고 있어요.","living"]]
+    "형제·자매":[
+      [[`${n}와 어릴 적 기억을 맞춰 보는 중`,"같은 일을 서로 다르게 기억해 누가 맞는지 실랑이하다가, 결국 둘 다 놓친 부분이 있었다는 걸 알아내고 웃고 있어요.","living"],[`${n}와 옛날 사진을 보는 중`,"사진 속 표정과 옷을 하나씩 지적하며 그날 있었던 일을 자기 시점에서 다시 들려주고 있어요.","living"]],
+      [[`${n}의 물건을 허락받고 빌리는 중`,"예전처럼 마음대로 가져가지 않고 먼저 필요한 시간을 말한 뒤 돌려놓을 자리를 확인했어요.","bedroom"],[`${n}에게 물건을 빌려주는 중`,"언제까지 쓸 건지 물으면서도 망가뜨리지 말라는 익숙한 잔소리와 함께 건네고 있어요.","bedroom"]],
+      [[`${n}와 집안일 순서를 두고 협상 중`,"먼저 태어난 순서가 특권은 아니라며 오늘 할 일을 공평하게 다시 나누고 있어요.","kitchen"],[`${n}와 집안일을 나누는 중`,"지난번 분담까지 기억해 이번에는 자기가 덜 했던 일을 맡겠다고 말하고 있어요.","kitchen"]],
+      [[`${n}의 편을 들면서도 잘못은 짚는 중`,"다른 사람 앞에서는 먼저 편을 들었지만 둘만 남자 잘못한 부분은 분명히 이야기했어요.","living"],[`${n}의 솔직한 지적을 듣는 중`,"기분은 조금 상했지만 무조건 감싸기보다 사실대로 말해 주는 관계라는 걸 알아 끝까지 듣고 있어요.","living"]],
+      [[`${n}와 부모 이야기를 조심스럽게 나누는 중`,"서로 혈연과 성장 배경이 완전히 같지 않을 수 있다는 점을 존중하며 자기가 기억하는 가족 이야기를 강요하지 않았어요.","living"],[`${n}의 가족 기억을 듣는 중`,"자기 경험과 다른 부분을 바로 반박하지 않고, 같은 집안에서도 서로 다르게 자랐다는 것을 받아들이며 듣고 있어요.","living"]],
+      [[`${n}에게 먼저 연락할 구실을 찾는 중`,"별일은 아니지만 한동안 말이 없었던 것이 신경 쓰여 필요한 물건을 핑계로 짧은 메시지를 보냈어요.","study"],[`${n}의 어색한 연락을 확인한 중`,"용건만 적힌 메시지에서 안부를 묻고 싶은 마음을 알아차리고 먼저 요즘 어떻게 지내는지 답했어요.","study"]]
+    ],
+    동거인:[
+      [[`${n}와 공용 공간 규칙을 정하는 중`,"냉장고 칸과 욕실 사용 시간, 손님을 부를 때 알리는 방법을 하나씩 합의하고 있어요.","living"],[`${n}와 생활 규칙을 맞추는 중`,"불편했던 점을 사람에 대한 비난이 아니라 바꾸고 싶은 행동으로 설명하고 있어요.","living"]],
+      [[`${n}와 공과금을 정산하는 중`,"사용한 금액을 함께 확인하고 애매한 항목은 반으로 나눌지 사용량대로 낼지 차분히 정하고 있어요.","study"],[`${n}에게 정산 내역을 보내는 중`,"빠진 비용이 없는지 다시 확인한 뒤 부담되지 않도록 납부 날짜도 함께 알려 주고 있어요.","study"]],
+      [[`${n}와 냉장고 음식을 구분하는 중`,"함께 먹어도 되는 것과 개인 몫을 표시하고, 실수로 먹었을 때 어떻게 채워 둘지도 정했어요.","kitchen"],[`${n}와 장보기 목록을 합치는 중`,"각자 살 물건과 공용으로 살 물건을 나눠 적으며 중복 구매를 피하고 있어요.","kitchen"]],
+      [[`${n}가 늦게 들어올 때 조명을 남겨 둔 중`,"아직 아주 친하지는 않지만 어두운 현관이 불편하지 않도록 작은 조명만 켜 두었어요.","entry"],[`${n}가 남겨 둔 불빛을 발견한 중`,"부담스럽게 기다린 것은 아니라는 걸 알면서도 조용한 배려를 기억해 두고 있어요.","entry"]],
+      [[`${n}와 각자 시간을 존중하며 쉬는 중`,"같은 거실에 있으면서도 대화를 강요하지 않고 각자 하던 일에 집중하고 있어요.","living"],[`${n}와 편안한 침묵을 나누는 중`,"필요할 때만 짧게 말을 건네며 함께 살아도 혼자 쉴 수 있는 거리를 지키고 있어요.","living"]],
+      [[`${n}와 야식을 나누는 중`,"처음에는 자기 몫만 준비했다가 자연스럽게 한 사람분을 더 꺼내 취향을 물었어요.","kitchen"],[`${n}가 건넨 야식을 받는 중`,"고맙다고 답하며 다음에는 자기가 준비하겠다고 말하고 식탁 맞은편에 앉았어요.","kitchen"]],
+      [[`${n}를 가족처럼 챙기면서도 선을 묻는 중`,"오래 함께 살며 정이 깊어졌지만 당연히 개입하지 않고 도움이 필요한지 먼저 물었어요.","living"],[`${n}의 오래된 배려를 받아들이는 중`,"생활 습관을 먼저 알아차리는 모습에 가족 같은 익숙함을 느끼면서도 고마움을 말로 전했어요.","living"]]
     ],
     라이벌:[
       [[`${n}와 결과를 비교하는 중`,"상대가 잘한 부분은 인정하면서도 다음에는 자기가 앞설 거라며 세부 기록을 다시 확인하고 있어요.","study"],[`${n}의 도전을 받아치는 중`,"여유로운 척 웃으며 자기 방식의 장점을 설명하고 다음 승부 조건을 먼저 제안하고 있어요.","study"]]
@@ -486,7 +499,9 @@ function relationSpecificEntry(c,other,r,time,date,role){
   const tone=c.socialStyle==="낯을 가림"?" 말은 짧지만 자리를 피하지 않고 곁에 머물러 있어요.":c.decisionStyle==="공감 우선"?" 상대의 표정과 말투가 달라질 때마다 속도를 맞추고 있어요.":c.interference==="강하게 간섭함"||c.interference==="통제광"?" 자기 방식이 더 낫다고 확신해 상대의 선택에도 적극적으로 관여하고 있어요.":"";
   const ages=["영아","유아","어린이","청소년","청년","성인","중년","장년","노년"],ageGap=ages.indexOf(c.ageGroup)-ages.indexOf(other.ageGroup);
   const ageTone=ageGap>=2?" 나이가 더 많은 쪽답게 단정 짓기보다 상대가 스스로 말할 때까지 기다리려 하고 있어요.":ageGap<=-2?" 나이 차이를 의식하면서도 일방적으로 기대기보다 자기 생각을 분명히 전하려 하고 있어요.":c.ageGroup===other.ageGroup?" 비슷한 세대라 통하는 표현과 경험을 자연스럽게 꺼내고 있어요.":"";
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+tone+ageTone,`specific:${r.type}:${role}`),script[2]);
+  const kinshipTone=r.type==="부모·자녀"&&r.kinship==="nonblood"?" 혈연으로 이어지지는 않았지만 함께 쌓은 시간과 선택한 가족 역할을 가볍게 여기지 않아요.":r.type==="부모·자녀"?" 서로 닮은 점을 당연한 기준으로 삼지 않고 각자의 성격을 따로 존중하고 있어요.":"";
+  const siblingOrderTone=r.type==="형제·자매"?(()=>{const mine=Number(r.siblingOrder?.[c.id])||0,theirs=Number(r.siblingOrder?.[other.id])||0,blood=r.siblingBlood?.[c.id]!==false&&r.siblingBlood?.[other.id]!==false,half=r.siblingBloodType?.[c.id]==="half"||r.siblingBloodType?.[other.id]==="half";return `${mine&&theirs?(mine<theirs?" 먼저 태어났다는 이유로 명령하지 않고 필요한 경험만 나누려 해요.":" 나중에 태어났어도 자기 몫과 의견을 분명하게 말하고 있어요."):""} ${!blood?"혈연은 아니지만 서로를 형제자매로 선택해 살아온 시간을 중요하게 여겨요.":half?"한쪽 부모만 같아 서로 다른 성장 경험도 가족사의 일부로 존중하고 있어요.":""}`})():"";
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+tone+ageTone+kinshipTone+siblingOrderTone,`specific:${r.type}:${role}`),script[2]);
 }
 
 function relationshipHomeEntry(c,pick,time,date){
@@ -511,8 +526,6 @@ function relationshipHomeEntry(c,pick,time,date){
   const uncomfortable=/매우 불편|긴장|조심스러움/.test(comfort);
   const attentive=/자주 살핌|늘 최우선/.test(attention);
   const jealous=/은근히 질투|질투가 심함|독점/.test(jealousy);
-  const protectsOther=r.protectionRole==="mutual"||(r.protectionRole==="a-protects-b"&&c.id===r.a)||(r.protectionRole==="b-protects-a"&&c.id===r.b);
-  const protectedByOther=r.protectionRole==="mutual"||(r.protectionRole==="a-protects-b"&&c.id===r.b)||(r.protectionRole==="b-protects-a"&&c.id===r.a);
   const hasPartner=relationList().some(relation=>["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
   const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
   const opennessAllows=openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
@@ -532,18 +545,6 @@ function relationshipHomeEntry(c,pick,time,date){
   else if(unaware&&hating)scripts=[
     [`${other.name}에게 유난히 날이 서는 이유를 모르는 중`,`${other.name}의 평범한 행동에도 신경이 곤두섰지만 그 감정이 분노나 미움이라고는 인정하지 않았어요. ${/우정/.test(awareness)?"가까운 사이라 유난히 예민해지는 것뿐이라고 우정으로 잘못 해석했어요.":"피곤해서 그렇다고 넘기며 대답을 짧게 잘랐어요."}`,"living"],
     [`${other.name}을 무심코 피하면서도 이유를 부정하는 중`,`같은 공간에 들어온 ${other.name}을 보자 자연스럽게 거리를 벌렸어요. ${/우정/.test(awareness)?"서로 편한 사이여서 굳이 말을 섞지 않는 것이라고 생각했지만 실제로는 불쾌함을 피하고 있었어요.":"불편함의 정체를 들여다보는 대신 혼자 있고 싶을 뿐이라고 생각했어요."}`,"study"]
-  ];
-  else if(protectsOther&&distrust)scripts=[
-    [`${other.name}을 믿지 못하면서도 안전은 챙기는 중`,`${other.name}의 판단을 그대로 믿지는 않았지만 위험해질 수 있는 부분은 먼저 확인했어요. 신뢰와 책임을 섞지 않고, 필요한 도움만 분명하게 건넸어요.`,"living"],
-    [`${other.name}의 계획을 재확인하는 중`,`간섭하려는 것이 아니라 맡은 안전 책임 때문이라고 선을 그은 뒤 이동 경로와 귀가 시간을 다시 확인했어요. ${other.name}의 선택은 존중하되 문제가 생길 때 도울 준비를 하고 있어요.`,"living"]
-  ];
-  else if(protectsOther)scripts=[
-    [`${other.name}에게 필요한 것이 없는지 먼저 살피는 중`,`관계의 이름이나 나이와 상관없이 ${other.name}의 안전과 생활을 먼저 확인했어요. 혼자 할 수 있는 일에는 개입하지 않고, 도움이 필요한 부분만 맡았어요.`,"living"],
-    [`${other.name}이 곤란할 때 도울 준비를 하는 중`,`${other.name} 대신 결정을 내리지는 않았어요. 다만 문제가 생기면 바로 손을 보탤 수 있도록 필요한 정보와 물건을 가까이에 준비해 두었어요.`,"living"]
-  ];
-  else if(protectedByOther&&/방관자|요청할 때만 도움/.test(c.interference||""))scripts=[
-    [`${other.name}의 보호를 당연하게 여기지 않는 중`,`${other.name}이 자기를 챙겨 주는 이유는 알고 있지만 모든 판단을 맡기지는 않았어요. 스스로 할 수 있는 일은 직접 처리하고 정말 필요한 부분만 도움을 요청했어요.`,"living"],
-    [`${other.name}에게 필요한 도움을 구체적으로 말하는 중`,`막연히 기대는 대신 어디까지 도움이 필요한지 정리해서 전했어요. ${other.name}의 책임과 자기 선택이 뒤섞이지 않도록 서로의 범위를 확인했어요.`,"living"]
   ];
   else if(visuallyDrawn)scripts=[
     [`${other.name}의 인상에 잠깐 시선이 머무는 중`,`${matchedLooks.length?`${other.name}의 ${matchedLooks[0]} 모습이 평소 좋아하던 인상과 닮아 눈길이 갔어요.`:`${other.name}의 눈에 띄는 인상이 문득 신경 쓰였어요.`} 곧바로 시선을 거두고 하던 이야기를 이어 갔어요.`,"living"],
@@ -681,9 +682,13 @@ function relationshipMorningEntry(c,pick,time,date){
       [`${n}와 아침 음료를 나누는 중`,"상대가 좋아하는 방식으로 음료를 준비해 건네고 가까이 서서 첫 모금을 기다리고 있어요.","kitchen"],
       [`${n}의 하루를 응원하는 중`,"오늘 중요한 일이 있다는 것을 기억하고 부담스럽지 않게 잘할 수 있다고 다정히 말해 주고 있어요.","entry"]
     ],
-    가족:[
-      [`${n}의 아침을 챙기는 중`,"끼니를 거르지 말라고 말하면서 들고 나갈 수 있는 간단한 먹을 것을 손에 쥐여 주고 있어요.","kitchen"],
-      [`${n}와 아침부터 실랑이하는 중`,"늦지 않게 준비하라고 재촉하면서도 필요한 물건은 이미 찾아 현관에 놓아 두었어요.","entry"]
+    "형제·자매":[
+      [`${n}와 세면 순서를 두고 실랑이하는 중`,"먼저 일어났다는 주장과 어제 양보했다는 주장이 오가다가 오늘 순서를 빠르게 정하고 있어요.","bath"],
+      [`${n}의 아침 준비를 재촉하는 중`,"늦는 건 자기 책임이라고 말하면서도 현관에 놓인 준비물을 한 번 더 확인해 주고 있어요.","entry"]
+    ],
+    동거인:[
+      [`${n}와 조용히 아침 동선을 나누는 중`,"서로 바쁜 시간을 방해하지 않도록 욕실과 부엌을 쓰는 순서를 자연스럽게 비켜 주고 있어요.","kitchen"],
+      [`${n}에게 공용 물건이 떨어졌다고 알리는 중`,"누가 살지 따지기보다 장보기 목록에 적고 이번에는 자기가 다녀오겠다고 말했어요.","entry"]
     ],
     친구:[
       [`${n}와 느지막한 아침 이야기를 하는 중`,"먼저 깬 사람이 보낸 우스운 사진을 함께 보며 잠이 깨기도 전에 웃고 있어요.","living"],
@@ -966,7 +971,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805b";
+const ENGINE_VERSION="20260805f";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1104,7 +1109,7 @@ function baseEventFor(c,date=new Date()){
   if(n<Math.min(wakeAt(c,date),240))return entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2});
   return entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5});
 }
-const RELATION_CLOSENESS={부부:100,연인:95,"부모·자녀":92,"보호·피보호":92,"유사가족":90,가족:88,소꿉친구:84,친구:78,짝사랑:66,직장동료:54,라이벌:42,혐관:35};
+const RELATION_CLOSENESS={부부:100,연인:95,"부모·자녀":92,"형제·자매":90,소꿉친구:84,친구:78,동거인:68,직장동료:54,라이벌:42,혐관:35};
 const VIEW_IMPORTANCE=[
   ["overall",/운명의 상대|사랑|없어서는/,42],
   ["overall",/좋아|호감|소중/,27],
@@ -1152,7 +1157,7 @@ function significantEncounter(pair,group,date){
   if(["혐관","라이벌"].includes(encounter.relation.type)){
     return ` 그러다 ${encounter.person.name}와 마주쳐 잠깐 날 선 시선을 보냈지만, 곧 다시 곁의 사람에게 주의를 돌렸어요.`;
   }
-  if(["친구","소꿉친구","가족","유사가족","부모·자녀","보호·피보호"].includes(encounter.relation.type)){
+  if(["친구","소꿉친구","부모·자녀","형제·자매","동거인"].includes(encounter.relation.type)){
     return ` 지나가던 ${encounter.person.name}에게 짧게 인사를 건넨 뒤, 함께하던 시간을 방해하지 않도록 다시 곁의 사람에게 집중했어요.`;
   }
   return "";
