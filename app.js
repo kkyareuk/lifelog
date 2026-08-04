@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804p";
-import {eventFor} from "./simulation.js?v=20260804p";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804p";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804q";
+import {eventFor} from "./simulation.js?v=20260804q";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804q";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -187,15 +187,24 @@ function openProfileTagsDialog(field){
   dialog.onclose=()=>{if(dialog.returnValue==="save")updateCharacter(character.id,{[field]:selected},true);dialog.remove();render()};
   document.body.append(dialog);dialog.showModal();
 }
-const listText=value=>Array.isArray(value)&&value.length?value.join(", "):"정하지 않음";
+const listText=value=>Array.isArray(value)&&value.length?value.join(", "):"";
+const exportValue=value=>{
+  const text=String(value??"").trim();
+  return !text||["정하지 않음","없음","-"].includes(text)?"":text;
+};
+const exportSection=(title,rows)=>{
+  const lines=rows.map(([label,value])=>[label,exportValue(value)]).filter(([,value])=>value);
+  return lines.length?[title,lines]:null;
+};
 function profileExportLines(character){
   const favorites=Object.values(character.favorites||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean);
-  return [
-    ["프로필",[`이름: ${character.name}`,`나이대: ${character.ageGroup||"정하지 않음"}`,`성별: ${character.gender||"그외"}`,`성지향: ${listText(character.attractedGenders)}`,`직업: ${character.jobTitle||character.job||"없음"}`,`소비 유형: ${character.income||"정하지 않음"}`,`기상: ${character.wake||"-"} · ${character.wakeHabit||"-"}`,`취침: ${character.sleep||"-"} · ${character.sleepHabit||"-"}`,`신체 접촉 반응: ${character.touchReaction||"정하지 않음"}`,`외모: ${character.appearanceLevel||"보통"} · ${listText(character.appearanceTags)}`,`상대 외모를 보는 정도: ${character.appearanceInterest||"보통"}`,`끌리는 외모 태그: ${listText(character.attractionTraits)}`]],
-    ["성격",[`사람과 어울리는 방식: ${character.socialStyle||"정하지 않음"}`,`정보를 받아들이는 방식: ${character.perceptionStyle||"정하지 않음"}`,`판단하는 방식: ${character.decisionStyle||"정하지 않음"}`,`일정을 다루는 방식: ${character.planningStyle||"정하지 않음"}`,`행동 전환: ${character.activityTempo||"정하지 않음"}`,`깔끔함: ${character.neatness||"정하지 않음"}`,`간섭 성향: ${character.interference||"정하지 않음"}`,`갈등 대응: ${character.conflictStyle||"정하지 않음"}`,`애정 표현: ${character.affectionStyle||"정하지 않음"}`,`생활 에너지: ${character.energyRhythm||"정하지 않음"}`]],
-    ["취향 선택",[`관심사: ${listText(character.interests)}`,`취미: ${listText(character.hobbies)}`,`음식: ${listText(character.foodPreferences)}`,`좋아하는 음료: ${listText(character.drinks)}`,`좋아하는 이야기 장르: ${listText(character.favoriteStoryGenres)}`,`음악 장르: ${listText(character.musicGenres)}`,`패션 스타일: ${listText(character.favoriteFashionStyles)}`,`영상 종류: ${listText(character.favoriteVideoGenres)}`,`게임 장르: ${listText(character.favoriteGameGenres)}`,`향 계열: ${listText(character.favoriteScentNotes)}`]],
-    ["세계관 선호와 소지품",[`최애 항목: ${favorites.length?favorites.join(", "):"정하지 않음"}`,`소지한 항목: ${Object.values(character.inventory||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean).join(", ")||"정하지 않음"}`]]
+  const sections=[
+    exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["성지향",listText(character.attractedGenders)],["직업",character.jobTitle||character.job],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["외모 태그",listText(character.appearanceTags)],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 외모 태그",listText(character.attractionTraits)]]),
+    exportSection("성격",[["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm]]),
+    exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]]),
+    exportSection("세계관 선호와 소지품",[["최애 항목",favorites.join(", ")],["소지한 항목",Object.values(character.inventory||{}).flat().map(id=>Object.values(state.catalog||{}).flat().find(item=>item.id===id)?.name).filter(Boolean).join(", ")]])
   ];
+  return sections.filter(Boolean);
 }
 const exportImage=src=>new Promise(resolve=>{
   if(!src)return resolve(null);
@@ -207,38 +216,44 @@ const readableInk=color=>{
   return luminance>175?"#241c18":"#ffffff";
 };
 async function exportProfilePng(character){
-  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=82,line=42;
-  const wrap=(text,max=46)=>{const words=String(text).split(" ");const result=[];let current="";for(const word of words){const next=current?`${current} ${word}`:word;if(next.length>max){if(current)result.push(current);current=word}else current=next}if(current)result.push(current);return result};
-  const expanded=sections.map(([title,lines])=>[title,lines.flatMap(value=>wrap(value))]);
-  canvas.width=width;canvas.height=Math.max(1500,480+expanded.reduce((sum,[,lines])=>sum+92+lines.length*line,0));
+  await document.fonts?.load?.('32px "Do Hyeon"');await document.fonts?.ready;
+  const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=70,rowH=58;
+  const rows=sections.reduce((sum,[,items])=>sum+items.length,0);
+  canvas.width=width;canvas.height=Math.max(1750,430+sections.length*72+rows*rowH);
   const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary);
-  ctx.fillStyle="#f6f0e7";ctx.fillRect(0,0,canvas.width,canvas.height);
-  const header=ctx.createLinearGradient(0,0,width,300);header.addColorStop(0,primary);header.addColorStop(1,character.theme?.gradient?secondary:primary);ctx.fillStyle=header;ctx.fillRect(0,0,width,330);
-  ctx.fillStyle=ink;ctx.font='800 66px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`${character.name} 프로필`,360,132);
-  ctx.font='30px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText("서랍마을 캐릭터 기록",362,186);
-  const portrait=await exportImage(character.photo||character.icon);
-  ctx.save();ctx.beginPath();ctx.roundRect(82,55,220,220,32);ctx.clip();
-  if(portrait){const scale=Math.max(220/portrait.width,220/portrait.height),w=portrait.width*scale,h=portrait.height*scale;ctx.drawImage(portrait,82+(220-w)/2,55+(220-h)/2,w,h)}
-  else{ctx.fillStyle="#ffffff35";ctx.fillRect(82,55,220,220);ctx.fillStyle=ink;ctx.font='800 70px "Do Hyeon",sans-serif';ctx.textAlign="center";ctx.fillText(character.name.slice(0,1),192,190)}
-  ctx.restore();ctx.textAlign="left";
-  let y=400;
-  expanded.forEach(([title,lines],index)=>{
-    const height=82+lines.length*line;
-    ctx.fillStyle=index%2?"#fffaf4":"#ffffff";ctx.beginPath();ctx.roundRect(pad,y,width-pad*2,height,24);ctx.fill();ctx.strokeStyle="#dccfc0";ctx.lineWidth=2;ctx.stroke();
-    ctx.fillStyle=primary;ctx.fillRect(pad,y,12,height);
-    ctx.font='800 34px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillStyle="#2a211c";ctx.fillText(title,pad+40,y+48);
-    ctx.font='25px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillStyle="#50463f";
-    lines.forEach((value,row)=>ctx.fillText(value,pad+48,y+92+row*line));
-    y+=height+24;
+  ctx.fillStyle="#fffdf9";ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle="#24201d";ctx.lineWidth=3;ctx.strokeRect(pad,55,width-pad*2,canvas.height-110);
+  ctx.fillStyle=primary;ctx.fillRect(pad,55,width-pad*2,110);
+  ctx.fillStyle=ink;ctx.textAlign="center";ctx.font='56px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText("캐 릭 터  설 정 표",width/2,128);
+  const portrait=await exportImage(character.photo),icon=await exportImage(character.icon);
+  const imageX=pad+24,imageY=190,imageW=250,imageH=250;
+  ctx.fillStyle="#f4f0ea";ctx.fillRect(imageX,imageY,imageW,imageH);ctx.strokeStyle="#24201d";ctx.lineWidth=2;ctx.strokeRect(imageX,imageY,imageW,imageH);
+  const drawContain=(image,x,y,w,h)=>{if(!image)return false;const scale=Math.min(w/image.width,h/image.height),dw=image.width*scale,dh=image.height*scale;ctx.drawImage(image,x+(w-dw)/2,y+(h-dh)/2,dw,dh);return true};
+  if(!drawContain(portrait,imageX,imageY,imageW,imageH)){ctx.fillStyle=primary;ctx.font='72px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(character.name.slice(0,1),imageX+imageW/2,imageY+145)}
+  if(icon)drawContain(icon,imageX+178,imageY+178,66,66);
+  ctx.textAlign="left";ctx.fillStyle="#24201d";ctx.font='48px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(character.name,pad+310,260);
+  ctx.font='24px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillStyle="#665d56";ctx.fillText("서랍마을 인물 기록 · 설정된 항목만 표기",pad+310,310);
+  ctx.strokeStyle="#24201d";ctx.strokeRect(pad+290,190,width-pad*2-314,250);
+  let y=480;
+  sections.forEach(([title,items])=>{
+    ctx.fillStyle=primary;ctx.fillRect(pad,y,210,56);ctx.fillStyle=ink;ctx.font='29px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(title,pad+22,y+39);
+    ctx.strokeStyle="#24201d";ctx.lineWidth=2;ctx.strokeRect(pad,y,width-pad*2,56);y+=56;
+    items.forEach(([label,value])=>{
+      ctx.strokeRect(pad,y,width-pad*2,rowH);ctx.beginPath();ctx.moveTo(pad+270,y);ctx.lineTo(pad+270,y+rowH);ctx.stroke();
+      ctx.fillStyle="#f0ece6";ctx.fillRect(pad+1,y+1,269,rowH-2);
+      ctx.fillStyle="#302925";ctx.font='23px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(label,pad+18,y+38);
+      ctx.font='22px "Malgun Gothic",sans-serif';ctx.fillText(String(value).slice(0,72),pad+292,y+38);y+=rowH;
+    });
+    y+=22;
   });
-  ctx.fillStyle=primary;ctx.font='22px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad,canvas.height-48);
-  const link=document.createElement("a");link.download=`${character.name}-프로필.png`;link.href=canvas.toDataURL("image/png");link.click();
+  ctx.fillStyle=primary;ctx.font='22px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad+15,canvas.height-75);
+  try{const link=document.createElement("a");link.download=`${character.name}-설정표.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
 }
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
   const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary),photo=character.photo||character.icon;
-  win.document.write(`<!doctype html><meta charset="utf-8"><title>${character.name} 프로필</title><style>*{box-sizing:border-box}body{font-family:"Do Hyeon","Malgun Gothic",sans-serif;color:#2d251f;margin:30px;background:#f6f0e7;line-height:1.55}.sheet{max-width:900px;margin:auto}.hero{display:grid;grid-template-columns:150px 1fr;gap:24px;align-items:center;padding:28px;color:${ink};background:linear-gradient(135deg,${primary},${secondary});border-radius:24px}.hero img,.fallback{width:150px;height:150px;object-fit:cover;border-radius:24px;background:#ffffff2f}.fallback{display:grid;place-items:center;font-size:54px}section{break-inside:avoid;margin:18px 0;padding:22px 26px;border:1px solid #ddcfc0;border-left:9px solid ${primary};border-radius:18px;background:#fff}h1{font-size:42px}h1,h2{margin:0 0 12px}h2{font-size:26px}p{margin:5px 0;color:#50463f}button{width:100%;padding:15px;border:0;border-radius:14px;color:#fff;background:${primary};font:inherit}@media print{body{margin:0;background:#fff}.sheet{max-width:none}button{display:none}}</style><main class="sheet"><header class="hero">${photo?`<img src="${photo}" alt="">`:`<span class="fallback">${character.name.slice(0,1)}</span>`}<div><h1>${character.name} 프로필</h1><p style="color:inherit">서랍마을 캐릭터 기록</p></div></header>${sections.map(([title,lines])=>`<section><h2>${title}</h2>${lines.map(line=>`<p>${line}</p>`).join("")}</section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main>`);
-  win.document.close();setTimeout(()=>win.print(),250);
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name} 설정표</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet"><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;color:#211d1a;background:#eee;font-family:"Malgun Gothic",sans-serif}.sheet{width:190mm;min-height:270mm;margin:12px auto;padding:8mm;background:#fff;border:1px solid #222}.title{padding:10px;color:${ink};background:${primary};text-align:center;font:34px "Do Hyeon",sans-serif;letter-spacing:8px}.identity{display:grid;grid-template-columns:42mm 1fr;margin-top:7mm;border:1px solid #222}.portrait{width:42mm;height:42mm;object-fit:contain;border-right:1px solid #222;background:#f5f2ed}.identity div{padding:8mm}.identity h1{margin:0;font:32px "Do Hyeon",sans-serif}.identity p{color:#746b64}section{margin-top:6mm;break-inside:avoid}h2{margin:0;padding:7px 10px;color:${ink};background:${primary};font:22px "Do Hyeon",sans-serif}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #333;padding:7px 9px;vertical-align:top;font-size:13px;overflow-wrap:anywhere}th{width:34%;background:#f1ede7;text-align:left;font-family:"Do Hyeon",sans-serif;font-size:15px}button{width:100%;margin-top:8mm;padding:12px;border:0;color:#fff;background:${primary};font:18px "Do Hyeon",sans-serif}@media print{body{background:#fff}.sheet{width:auto;min-height:0;margin:0;padding:0;border:0}button{display:none}}</style></head><body><main class="sheet"><div class="title">캐 릭 터 설 정 표</div><div class="identity">${photo?`<img class="portrait" src="${photo}" alt="">`:`<div class="portrait"></div>`}<div><h1>${character.name}</h1><p>서랍마을 인물 기록 · 설정된 항목만 표기</p></div></div>${sections.map(([title,rows])=>`<section><h2>${title}</h2><table>${rows.map(([label,value])=>`<tr><th>${label}</th><td>${value}</td></tr>`).join("")}</table></section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main></body></html>`);
+  win.document.close();setTimeout(()=>win.print(),900);
 }
 function openProfileExportDialog(){
   const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
@@ -281,6 +296,10 @@ function enhanceDynamicForms(){
       const sleep=labelOf('[data-field="sleep"]'),sleepHabit=labelOf('[data-field="sleepHabit"]');
       if(wake&&wakeHabit)wake.after(wakeHabit);
       if(sleep&&sleepHabit)sleep.after(sleepHabit);
+      const license=profile.querySelector('[data-field="driverLicense"]')?.closest("label");
+      if(license)fields.append(license);
+      const exportButton=profile.querySelector("[data-export-profile]");
+      if(exportButton)profile.append(exportButton);
     }
   }
   document.querySelectorAll('.catalog-dex-card [data-kind="fashion"][data-catalog-field="image"]').forEach(input=>{
@@ -434,17 +453,36 @@ function bind(){
     updatePet(el.dataset.homeId,el.dataset.petId,{[field]:current.includes(el.dataset.value)?current.filter(value=>value!==el.dataset.value):[...current,el.dataset.value]});
     render();
   });
-  $("[data-feedback-form]")?.addEventListener("submit",event=>{
+  $("[data-feedback-form]")?.addEventListener("submit",async event=>{
     event.preventDefault();
     const form=event.currentTarget;
     const data=new FormData(form);
     const category=String(data.get("category")||"기타");
     const message=String(data.get("message")||"").trim();
-    if(!message){toast("피드백 내용을 적어 주세요");return}
+    if(!message){showToast("피드백 내용을 적어 주세요");return}
     const character=active();
-    const subject=encodeURIComponent(`[서랍마을 ${category}] 사용자 피드백`);
-    const body=encodeURIComponent(`${message}\n\n---\n현재 화면: ${TAB_META[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}\n보낸 시각: ${new Date().toLocaleString("ko-KR")}`);
-    window.location.href=`mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}`;
+    const button=form.querySelector('button[type="submit"]'),status=form.querySelector(".feedback-status");
+    button.disabled=true;button.textContent="보내는 중…";status.textContent="";
+    try{
+      const response=await fetch("https://formsubmit.co/ajax/kkyaareuk@gmail.com",{
+        method:"POST",
+        headers:{"Content-Type":"application/json","Accept":"application/json"},
+        body:JSON.stringify({
+          _subject:`[서랍마을 ${category}] 사용자 피드백`,
+          분류:category,
+          내용:message,
+          현재_화면:TAB_META[state.activeTab]?.[0]||state.activeTab,
+          선택_캐릭터:character?.name||"없음",
+          보낸_시각:new Date().toLocaleString("ko-KR")
+        })
+      });
+      if(!response.ok)throw new Error(`HTTP ${response.status}`);
+      form.reset();status.textContent="보냈어요. 고맙습니다!";showToast("피드백을 보냈어요");
+    }catch(error){
+      console.warn("피드백 전송 실패",error);
+      status.textContent="전송하지 못했어요. 잠시 뒤 다시 시도해 주세요.";
+      showToast("피드백 전송에 실패했어요");
+    }finally{button.disabled=false;button.textContent="피드백 보내기"}
   });
   $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 함께 사는 존재를 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
   $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
@@ -1057,12 +1095,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260804p").catch(error=>{
+import("./auth.js?v=20260804q").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260804p").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260804q").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
