@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805g";
+import {state,save,characterViewFor} from "./state.js?v=20260805j";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -93,6 +93,8 @@ const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0
 
 function personalityFlavor(c,desc,seed=""){
   const variants=[];
+  const socialScene=/함께|상대|사람|대화|인사|말을|질문|동거인|친구|연인|부부|와 |과 |에게/.test(desc);
+  const reasoningScene=/자료|기록|분석|조사|검토|확인|비교|판단|선택|계획|일정|문제|조건|규칙|단서|근거|목록|수치/.test(desc);
   const age=c.ageGroup||"성인";
   if(age==="영아")variants.push("아직 말 대신 울음과 표정, 손짓으로 필요한 것을 알리고 있어요.","익숙한 목소리가 들리면 눈을 크게 뜨고 팔다리를 작게 움직여 반응하고 있어요.","금세 피곤해져 하던 행동을 멈추고 편안한 품과 자리를 찾고 있어요.");
   if(age==="유아")variants.push("궁금한 것을 발견할 때마다 짧은 질문을 이어 가며 직접 만져 보려고 해요.","혼자 해 보겠다고 고집하다 어려운 부분에서 익숙한 어른을 찾고 있어요.","금방 다른 것에 관심이 옮겨 가 작은 발로 집 안을 바쁘게 오가고 있어요.");
@@ -124,21 +126,22 @@ function personalityFlavor(c,desc,seed=""){
   if(c.decisionStyle==="논리 우선")variants.push("가장 합리적인 방법이 무엇인지 따져 보고 군더더기 없이 움직였어요.");
   if((c.socialEnergy??3)<=1)variants.push("사람이 드문 조용한 자리를 골라 자기 속도대로 움직이고 있어요.");
   if((c.socialEnergy??3)>=5)variants.push("마주친 사람에게 먼저 반갑게 인사를 건네며 분위기를 자연스럽게 이끌고 있어요.");
-  if(c.socialStyle==="혼자가 편함")variants.push("필요한 말만 짧게 나눈 뒤 다시 혼자 집중할 수 있는 자리로 돌아갔어요.","누군가 곁에 있어도 각자 할 일을 하는 조용한 방식을 더 편안해했어요.");
-  if(c.socialStyle==="낯을 가림")variants.push("먼저 말을 꺼내지는 못하고 상대가 건넨 질문에 조금씩 긴 대답을 보탰어요.","익숙하지 않은 사람 앞에서는 표정을 살피며 안전한 이야기부터 조심스럽게 골랐어요.");
-  if(c.socialStyle==="먼저 다가감"||c.socialStyle==="무리의 중심")variants.push("어색한 침묵이 생기기 전에 먼저 화제를 꺼내 모두가 끼어들 자리를 만들었어요.","사람마다 반응을 살피며 대화가 한쪽으로 치우치지 않게 자연스럽게 연결했어요.");
+  if(socialScene&&c.socialStyle==="혼자가 편함")variants.push("필요한 말은 짧게 나누고 서로의 시간을 방해하지 않는 거리를 지켰어요.","함께 있는 동안에도 각자의 일에 집중할 수 있는 조용한 분위기를 편안해했어요.");
+  if(socialScene&&c.socialStyle==="낯을 가림")variants.push("먼저 말을 꺼내지는 못하고 상대가 건넨 질문에 조금씩 긴 대답을 보탰어요.","익숙하지 않은 사람 앞에서는 표정을 살피며 안전한 이야기부터 조심스럽게 골랐어요.");
+  if(socialScene&&(c.socialStyle==="먼저 다가감"||c.socialStyle==="무리의 중심"))variants.push("어색한 침묵이 생기기 전에 먼저 화제를 꺼내 모두가 끼어들 자리를 만들었어요.","사람마다 반응을 살피며 대화가 한쪽으로 치우치지 않게 자연스럽게 연결했어요.");
   if((c.sensingIntuition??3)<=1)variants.push("눈앞에 보이는 것부터 하나씩 확인하며 실수 없이 마무리하고 있어요.");
   if((c.sensingIntuition??3)>=5)variants.push("중간에 떠오른 새로운 생각을 잊지 않으려고 짧게 메모해 두었어요.");
   if(c.perceptionStyle==="현실과 경험 중시"||c.perceptionStyle==="구체적인 편")variants.push("전에 직접 해 봤을 때 잘됐던 방법을 떠올려 같은 순서로 손을 움직였어요.","막연한 추측보다 지금 확인할 수 있는 상태와 수치를 먼저 살폈어요.");
   if(c.perceptionStyle==="가능성 중시"||c.perceptionStyle==="직관과 상상 중시")variants.push("하던 일에서 예상하지 못한 연결을 떠올리고 다른 방식도 시험해 보고 싶어졌어요.","눈앞의 결과보다 앞으로 어떻게 달라질 수 있을지 상상하며 선택지를 넓혔어요.");
   if((c.thinkingFeeling??3)<=1)variants.push("가장 효율적인 순서를 머릿속으로 계산해 불필요한 동작을 줄이고 있어요.");
   if((c.thinkingFeeling??3)>=5)variants.push("지금 느끼는 감정을 무시하지 않고 스스로 편안한 속도를 찾고 있어요.");
-  if(c.decisionStyle==="논리 우선"||c.decisionStyle==="이성적인 편")variants.push("누가 말했는지보다 근거가 맞는지부터 따져 가장 모순이 적은 쪽을 골랐어요.","감정적인 반응은 잠시 미뤄 두고 해결에 필요한 조건을 항목별로 나눴어요.");
-  if(c.decisionStyle==="마음을 살핌"||c.decisionStyle==="공감 우선")variants.push("정답을 서둘러 말하기보다 상대가 왜 그렇게 느꼈는지 먼저 물었어요.","결과가 조금 비효율적이어도 누구도 소외되지 않는 쪽으로 말을 골랐어요.");
+  if(reasoningScene&&(c.decisionStyle==="논리 우선"||c.decisionStyle==="이성적인 편"))variants.push("출처의 권위보다 실제 내용과 확인 가능한 근거가 서로 맞는지 대조했어요.","해결에 필요한 조건을 항목별로 나누고 빠진 전제가 없는지 확인했어요.");
+  if(socialScene&&(c.decisionStyle==="마음을 살핌"||c.decisionStyle==="공감 우선"))variants.push("정답을 서둘러 말하기보다 상대가 왜 그렇게 느꼈는지 먼저 물었어요.","결과가 조금 비효율적이어도 누구도 소외되지 않는 쪽으로 말을 골랐어요.");
   if((c.perceivingJudging??3)<=1)variants.push("정해 둔 순서 없이 지금 마음이 가는 것부터 가볍게 시작했어요.");
   if((c.perceivingJudging??3)>=5)variants.push("미리 생각해 둔 순서를 따라 하나씩 확인하며 진행하고 있어요.");
   if(c.planningStyle==="유연한 편"||c.planningStyle==="상황에 따라")variants.push("큰 순서만 정해 두고 세부 방법은 그때그때 상황에 맞춰 바꿨어요.","계획을 고집하지 않으면서도 꼭 끝내야 할 핵심은 놓치지 않았어요.");
-  return variants.length?`${desc} ${variants[hash(`${c.id}:${seed}`)%variants.length]}`:desc;
+  if(!variants.length||hash(`${c.id}:${seed}:${desc}:flavor`)%3===0)return desc;
+  return `${desc} ${variants[hash(`${c.id}:${seed}:${desc}`)%variants.length]}`;
 }
 
 function catalogChoice(c,place,kind,seed){
@@ -322,18 +325,33 @@ function roommateHomeEntry(c,other,time,date){
 }
 
 function workEvent(c,time,date){
-  if(!c.workplaceId||c.job==="무직")return null;
-  if(c.workplaceId==="home")return homeEntry(c,time,"자택근무 중",`${c.jobTitle||c.job} 업무를 집에서 처리하고 있어요.`);
-  const p=(townFor(c)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(["사무실","회사","학교"],`${c.id}:work`,c);
-  const scripts={
-    "해적":["항해 준비 중","선원들과 항로와 보급품을 점검하고 있어요."],
-    "군인":["훈련 중","부대 일정에 맞춰 훈련과 장비 점검을 하고 있어요."],
-    "환경미화원":["거리 정돈 중","담당 구역을 돌며 깨끗하게 정리하고 있어요."],
-    "여관주인":["손님맞이 중","객실을 확인하고 새 손님을 맞이하고 있어요."],
-    "정치인":["공무 일정 중","회의 자료를 검토하고 공식 일정을 소화하고 있어요."],
-    "학생":["수업 중","오늘 시간표에 맞춰 수업을 듣고 있어요."]
+  if(c.job==="무직")return null;
+  const weekday=date.getDay()>=1&&date.getDay()<=5;
+  const weekendJobs=["해적","군인","환경미화원","여관주인","의사","간호사","요리사","자영업"];
+  if(!weekday&&!weekendJobs.some(job=>String(c.job).includes(job)))return null;
+  const variants={
+    "회사원":[["업무 우선순위를 정리하는 중","메일과 요청 사항을 확인하고 오늘 처리할 일을 중요도와 마감 순서로 나누고 있어요."],["회의 자료를 다듬는 중","공유할 수치와 진행 상황을 다시 확인해 핵심만 알아보기 쉽게 정리하고 있어요."]],
+    "의사":[["진료 기록을 확인하는 중","환자의 증상과 검사 결과, 복용 중인 약을 대조한 뒤 다음 진료 순서를 준비하고 있어요."],["회진 중","병실을 돌며 상태 변화를 확인하고 필요한 처치와 관찰 사항을 의료진에게 전달하고 있어요."]],
+    "간호사":[["환자 상태를 확인하는 중","체온과 활력 징후를 살피고 투약 시간과 남은 처치를 차례로 확인하고 있어요."],["인수인계를 정리하는 중","근무 중 달라진 상태와 주의할 점을 빠짐없이 기록해 다음 담당자에게 전하고 있어요."]],
+    "교사":[["수업을 진행하는 중","학생들의 반응을 살피며 준비한 내용을 설명하고 이해가 어려운 부분을 다른 예시로 풀어 주고 있어요."],["수업 자료를 준비하는 중","다음 시간에 쓸 자료와 과제를 확인하고 학생별로 필요한 안내를 정리하고 있어요."]],
+    "교수":[["강의와 연구를 병행하는 중","강의 자료를 검토한 뒤 연구 기록과 참고 문헌의 빠진 부분을 보완하고 있어요."],["연구 지도를 하는 중","학생이 가져온 결과를 함께 살피며 논리가 끊기는 지점과 다음 실험 방향을 짚어 주고 있어요."]],
+    "연구원":[["연구 데이터를 분석하는 중","수집한 결과를 기준별로 나누고 예상과 다른 값이 나온 원인을 다시 검토하고 있어요."],["실험 과정을 점검하는 중","장비 상태와 절차를 확인하고 재현할 수 있도록 조건과 결과를 꼼꼼히 기록하고 있어요."]],
+    "프로그래머":[["기능을 구현하는 중","요구 사항을 작은 단위로 나누어 코드를 작성하고 예상한 대로 작동하는지 하나씩 시험하고 있어요."],["오류를 추적하는 중","문제가 생긴 조건을 다시 만들고 기록을 따라가며 원인이 시작된 부분을 찾고 있어요."]],
+    "기자":[["취재 내용을 정리하는 중","서로 다른 증언과 자료를 대조하고 확인되지 않은 표현을 기사에서 걷어 내고 있어요."],["기사 초안을 쓰는 중","독자가 흐름을 놓치지 않도록 사실의 순서를 정리하고 제목과 첫 문장을 다듬고 있어요."]],
+    "요리사":[["주문 음식을 준비하는 중","들어온 주문 순서를 확인하고 재료의 익는 시간을 맞춰 여러 조리를 동시에 진행하고 있어요."],["주방 재료를 점검하는 중","남은 식재료의 상태와 수량을 살피고 영업에 필요한 손질과 준비를 이어가고 있어요."]],
+    "예술가":[["작품 작업을 이어가는 중","전체 균형을 살피며 마음에 걸리는 부분을 여러 방식으로 고쳐 보고 있어요."],["작업 자료를 정리하는 중","떠오른 이미지를 놓치지 않도록 스케치와 참고 자료를 펼쳐 다음 표현을 구상하고 있어요."]],
+    "환경미화원":[["담당 구역을 정돈하는 중","거리의 쓰레기를 종류별로 수거하고 사람들이 지나는 길을 안전하게 정리하고 있어요."],["청소 장비를 점검하는 중","도구와 수거함 상태를 확인하고 다음 구역으로 이동할 준비를 하고 있어요."]],
+    "학생":[["수업을 듣는 중","오늘 시간표에 맞춰 설명을 듣고 중요한 내용을 자기 말로 다시 적어 보고 있어요."],["과제를 하는 중","제출 조건을 확인하고 참고 자료를 살펴보며 해야 할 부분을 차례로 해결하고 있어요."]],
+    "해적":[["항해 준비 중","선원들과 항로와 날씨, 보급품을 점검하고 출항에 필요한 역할을 나누고 있어요."]],
+    "군인":[["훈련 중","부대 일정에 맞춰 훈련을 진행하고 장비 상태와 안전 수칙을 점검하고 있어요."]],
+    "여관주인":[["손님맞이 중","객실 상태와 예약을 확인하고 새 손님이 불편하지 않도록 필요한 물품을 챙기고 있어요."]],
+    "정치인":[["공무 일정을 소화하는 중","회의 자료와 민원 내용을 검토하고 오늘 결정해야 할 사안을 정리하고 있어요."]]
   };
-  const text=scripts[c.job]||["직장에서 일하는 중",`${c.jobTitle||c.job}의 평범한 업무를 처리하고 있어요.`];
+  const matches=Object.entries(variants).find(([key])=>c.job===key||String(c.jobTitle||"").includes(key));
+  const pool=matches?.[1]||[["직업 업무를 처리하는 중",`${c.jobTitle||c.job}에게 필요한 실무를 일정과 우선순위에 맞춰 진행하고 있어요.`]];
+  const text=pool[hash(`${c.id}:${dayKey(date)}:job-scene`)%pool.length];
+  if(!c.workplaceId||c.workplaceId==="home")return homeEntry(c,time,c.workplaceId==="home"?"자택에서 "+text[0]:text[0],text[1],"study");
+  const p=(townFor(c)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(["사무실","회사","학교"],`${c.id}:work`,c);
   return entry(time,text[0],text[1],away(c,{placeId:p?.id,mood:"집중",stress:Math.min(100,25+(hash(`${c.id}:${dayKey(date)}:work`)%35))}));
 }
 
@@ -853,7 +871,7 @@ function build(c,date=new Date()){
     const desc=mode==="mount"?(rideablePet.species==="드래곤"?`${reason}${rideablePet.name}의 등에 올라 안전한 비행 경로를 따라 ${destination.name}으로 향하고 있어요.`:`${reason}${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 ${destination.name}으로 향하고 있어요.`):mode==="partner"?`${reason}${romantic.name}가 운전하는 차에 함께 타고 ${destination.name}의 목적지로 향하고 있어요.`:mode==="car"?`${reason}집의 자동차를 직접 운전해 ${destination.name}으로 이동하고 있어요. 음주한 날에는 운전하지 않아요.`:`${reason}버스나 지하철 노선을 확인하고 ${destination.name}으로 이동하고 있어요.`;
     list.push(entry(travelMinute,title,desc,{townId:destination.id,transit:true,withId:mode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
-  const morning=morningScripts(c,date),commuteMinute=work&&c.workplaceId!=="home"?work.minute-35:Infinity;
+  const morning=morningScripts(c,date),commuteMinute=work&&!work.home?work.minute-35:Infinity;
   [wake+85,wake+140,wake+200,wake+265].forEach((minute,index)=>{
     if(minute<720&&minute<commuteMinute-10){
       const script=morning[index%morning.length];
@@ -861,7 +879,7 @@ function build(c,date=new Date()){
     }
   });
   if(work){
-    if(c.workplaceId!=="home"){
+    if(!work.home){
       const riding=rideablePet&&(hash(`${c.id}:${dayKey(date)}:ride-commute`)%3)===0,driving=!riding&&selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
       list.push(entry(work.minute-35,riding?`${rideablePet.name}을 타고 출근하는 중`:driving?"차로 출근하는 중":"대중교통으로 출근하는 중",riding?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로로 직장을 향하고 있어요.`:`${rideablePet.name}의 등에 올라 안전한 길을 따라 직장을 향하고 있어요.`):driving?"차를 운전해 직장에 도착할 준비를 하고 있어요.":"버스나 지하철을 이용해 직장에 도착할 준비를 하고 있어요.",away(c,{placeId:work.placeId,mood:"출근"})));
     }
@@ -971,7 +989,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805g";
+const ENGINE_VERSION="20260805j";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

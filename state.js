@@ -109,6 +109,7 @@ function migrate(x){
   return normalizeHomes(fresh());
 }
 function normalizeHomes(x){
+  const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
   x.schema=8;
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
@@ -255,6 +256,11 @@ function normalizeHomes(x){
     })):[];
     h.rooms=h.rooms||{};
     h.deletedRoomKeys=Array.isArray(h.deletedRoomKeys)?[...new Set(h.deletedRoomKeys.map(String))]:[];
+    if(previousSchema>=8){
+      Object.keys(defaults).forEach(key=>{
+        if(!h.rooms[key]&&!h.deletedRoomKeys.includes(key))h.deletedRoomKeys.push(key);
+      });
+    }
     Object.entries(defaults).forEach(([key,value])=>{
       if(h.deletedRoomKeys.includes(key))return;
       h.rooms[key]={...value,...(h.rooms[key]||{})};

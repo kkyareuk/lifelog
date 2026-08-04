@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260805g";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805g";
+import {state,active,characterViewFor} from "./state.js?v=20260805j";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805j";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -352,7 +352,7 @@ function homeCard(id,chars){
     <div class="rooms ${roomKeys.length>6?"has-extra":""}">${roomHtml}</div>${mobileRoomEditors}
     <section class="pets"><div class="title"><h2>함께 사는 존재</h2>${edit?`<button data-add-pet>+ 함께 사는 존재 추가</button>`:""}</div><div class="pet-grid">${petCards||"<p>아직 함께 사는 존재가 없어요.</p>"}</div></section>
     <section class="cars"><div class="title"><h2>자동차</h2>${edit?`<button data-add-car>+ 자동차 추가</button>`:""}</div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
-    <section class="resident-scenes"><div class="title"><h2>동거인 현재 장면</h2><small>같은 화면에서 나란히 확인해요</small></div><div>${residentScenes}</div></section>
+    <section class="resident-scenes"><div class="title"><h2>동거인 현재 장면</h2></div><div>${residentScenes}</div></section>
     ${homeDailyLog(chars,h)}
     <section class="home-statuses"><h2>집 사람들 상태</h2><div>${status}</div></section>
   </article>`;
@@ -468,23 +468,24 @@ function relationshipMap(relations){
     const a=positions.get(edge.a),b=positions.get(edge.b);
     const forwardLabel=viewLabel(edge.a,edge.b),backwardLabel=viewLabel(edge.b,edge.a);
     const forwardColor=emotionColor(forwardLabel),backwardColor=emotionColor(backwardLabel);
-    const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),unitX=dx/length,unitY=dy/length,normalX=-unitY,normalY=unitX,nodeRadius=54,lane=12;
+    const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),unitX=dx/length,unitY=dy/length,normalX=-unitY,normalY=unitX,nodeRadius=64,lane=12;
     const startA={x:a.x+unitX*nodeRadius+normalX*lane,y:a.y+unitY*nodeRadius+normalY*lane},endB={x:b.x-unitX*nodeRadius+normalX*lane,y:b.y-unitY*nodeRadius+normalY*lane};
     const startB={x:b.x-unitX*nodeRadius-normalX*lane,y:b.y-unitY*nodeRadius-normalY*lane},endA={x:a.x+unitX*nodeRadius-normalX*lane,y:a.y+unitY*nodeRadius-normalY*lane};
     const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${startA.x} ${startA.y} Q ${midX+normalX*lane} ${midY+normalY*lane} ${endB.x} ${endB.y}`,backward=`M ${startB.x} ${startB.y} Q ${midX-normalX*lane} ${midY-normalY*lane} ${endA.x} ${endA.y}`;
     const forwardMarker=`relation-arrow-${index}-forward`,backwardMarker=`relation-arrow-${index}-backward`;
     const likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||"");
-    const inferredText=likes(forwardLabel)!==likes(backwardLabel)?"시선 기반 · 짝사랑":likes(forwardLabel)&&likes(backwardLabel)?"시선 기반 · 상호 연심":"공식 관계 없음";
+    const inferredText=likes(forwardLabel)!==likes(backwardLabel)?"시선 기반 · 짝사랑":likes(forwardLabel)&&likes(backwardLabel)?"시선 기반 · 상호 연심":"";
     const relationText=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferredText;
     const stageText=[...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · ");
-    const officialPoint=placeLabel(midX,midY,normalX,normalY);
-    const forwardPoint=placeLabel(midX+normalX*48-unitX*length*.14,midY+normalY*48-unitY*length*.14,normalX,normalY);
-    const backwardPoint=placeLabel(midX-normalX*48+unitX*length*.14,midY-normalY*48+unitY*length*.14,-normalX,-normalY);
-    return `<g class="relationship-edge"><defs><marker id="${forwardMarker}" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="${forwardColor}"/></marker><marker id="${backwardMarker}" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="${backwardColor}"/></marker></defs><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" marker-end="url(#${forwardMarker})"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" marker-end="url(#${backwardMarker})"/><text class="map-emotion" style="fill:${forwardColor}" x="${forwardPoint.x}" y="${forwardPoint.y}" text-anchor="middle">${esc(forwardLabel)}</text><text class="map-emotion" style="fill:${backwardColor}" x="${backwardPoint.x}" y="${backwardPoint.y}" text-anchor="middle">${esc(backwardLabel)}</text><g class="map-official"><rect x="${officialPoint.x-82}" y="${officialPoint.y-23}" width="164" height="${stageText?46:30}" rx="12"/><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-4}" text-anchor="middle">${esc(relationText)}</text>${stageText?`<text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+15}" text-anchor="middle">${esc(stageText)}</text>`:""}</g></g>`;
+    const officialPoint=edge.official.length?placeLabel(midX,midY,normalX,normalY):null;
+    const forwardPoint=placeLabel(midX+normalX*lane-unitX*length*.16,midY+normalY*lane-unitY*length*.16,normalX,normalY);
+    const backwardPoint=placeLabel(midX-normalX*lane+unitX*length*.16,midY-normalY*lane+unitY*length*.16,-normalX,-normalY);
+    const officialMarkup=officialPoint?`<g class="map-official"><rect x="${officialPoint.x-82}" y="${officialPoint.y-23}" width="164" height="${stageText?46:30}" rx="12"/><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-4}" text-anchor="middle">${esc(relationText)}</text>${stageText?`<text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+15}" text-anchor="middle">${esc(stageText)}</text>`:""}</g>`:"";
+    return `<g class="relationship-edge"><defs><marker id="${forwardMarker}" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7.8" refY="4" orient="auto" viewBox="0 0 8 8"><path d="M0,0 L8,4 L0,8 z" fill="${forwardColor}"/></marker><marker id="${backwardMarker}" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7.8" refY="4" orient="auto" viewBox="0 0 8 8"><path d="M0,0 L8,4 L0,8 z" fill="${backwardColor}"/></marker></defs><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round" marker-end="url(#${forwardMarker})"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round" marker-end="url(#${backwardMarker})"/><text class="map-emotion map-emotion-on-line" style="fill:${forwardColor}" x="${forwardPoint.x}" y="${forwardPoint.y}" text-anchor="middle" dominant-baseline="middle">${esc(forwardLabel)}</text><text class="map-emotion map-emotion-on-line" style="fill:${backwardColor}" x="${backwardPoint.x}" y="${backwardPoint.y}" text-anchor="middle" dominant-baseline="middle">${esc(backwardLabel)}</text>${officialMarkup}</g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-55}" y="${pos.y-55}" width="110" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
   const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId],label=viewLabel(sourceId,targetId);return `<p class="mobile-relation-direction" style="--direction-color:${emotionColor(label)}"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(label)}</small></span></p>`};
-  const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 연심":"공식 관계 없음";return `<article><header><b>${esc(edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferred)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
+  const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 연심":"";const heading=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferred;return `<article>${heading?`<header><b>${esc(heading)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>`:""}${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
   return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>공식 관계가 없어도 직접 편집한 시선은 화살표로 표시돼요. 여러 공식 관계는 한 묶음으로 보여요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 470" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }
 function relationship(){

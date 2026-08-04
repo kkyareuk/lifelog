@@ -328,6 +328,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relationship-map-canvas svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .relationship-map-canvas svg text{paint-order:stroke;stroke:#fff;stroke-width:8px;stroke-linejoin:round;fill:#33261f;font-size:17px;font-weight:900}
 .relationship-map-canvas svg .map-emotion{font-size:15px;font-weight:900;fill:#784a37}
+.relationship-map-canvas svg .map-emotion-on-line{stroke-width:10px}
 .relationship-map-canvas svg .map-relation{font-size:18px}
 .relationship-map-canvas svg .map-stage{font-size:14px;font-weight:600;fill:#74665d}
 .relationship-map-node{display:grid;place-content:center;justify-items:center;gap:4px;width:110px;height:110px;box-sizing:border-box;text-align:center}
@@ -482,6 +483,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 @media(max-width:600px){.sleep-gate{top:8px;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:calc(100% - 16px);padding:9px 10px;border-radius:14px}.sleep-gate>span,.sleep-gate p{display:none}.sleep-gate h2{font-size:14px;line-height:1.25;white-space:normal}.sleep-gate button{padding:7px 9px;font-size:12px;white-space:nowrap}}
 .parent-kinship-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.parent-kinship-grid label{display:flex!important;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:#fff}.parent-kinship-grid label>span{display:grid}.parent-kinship-grid small{color:var(--muted)}.parent-kinship-grid input{width:20px!important;height:20px!important;min-height:20px!important}
 .sibling-role-list{display:grid!important;gap:9px}.sibling-role-list>label{display:grid!important;grid-template-columns:minmax(100px,1fr) minmax(130px,.8fr) auto minmax(180px,1fr);align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:15px;background:#fff}.sibling-role-list>label>b{font-size:17px}.sibling-role-list>label>span{display:flex;align-items:center;gap:7px}.sibling-role-list select{min-width:0}.sibling-blood input{width:20px!important;height:20px!important;min-height:20px!important}.sibling-direction>small{display:block;margin-top:10px;color:var(--muted)}
+.parent-direction [data-role-character][hidden],.sibling-direction [data-role-character][hidden]{display:none!important}
 @media(max-width:760px){.parent-kinship-grid{grid-template-columns:1fr}.sibling-role-list>label{grid-template-columns:1fr}.sibling-role-list>label>select{width:100%}}
 .feedback-card label.check{display:flex!important;align-items:center;justify-content:flex-start;gap:10px}
 .feedback-card label.check input{flex:0 0 20px;width:20px!important;height:20px!important;min-height:20px!important;margin:0}
