@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260804l";
+import {state,save,characterViewFor} from "./state.js?v=20260804n";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -36,6 +36,22 @@ const sleepScene=(c,d=new Date())=>{
   };
   const options=scenes[habit]||scenes["이불을 단정히 덮고 잠"];
   return options[hash(`${c.id}:${dayKey(d)}:${Math.floor(nowMin(d)/60)}:sleep`)%options.length];
+};
+const wakeScene=(c,d=new Date())=>{
+  const habit=c.wakeHabit||"알람을 듣고 천천히 일어남";
+  const scenes={
+    "알람을 듣고 천천히 일어남":"알람을 끄고 잠깐 눈을 감았다가 이불을 걷어 내며 천천히 몸을 일으켰어요.",
+    "알람이 울리기 전에 눈을 뜸":"알람이 울리기 전에 먼저 눈을 떠 조용한 방 안을 살피고 침대에서 일어났어요.",
+    "알람을 여러 번 미룸":"알람을 몇 번이나 미룬 뒤에야 시간을 확인하고 서둘러 이불 밖으로 나왔어요.",
+    "눈을 뜨자마자 바로 일어남":"눈을 뜨자마자 망설이지 않고 침대에서 일어나 오늘 할 일을 떠올렸어요.",
+    "이불 속에서 한참 뒹굶":"눈은 떴지만 이불 속에서 한참 자세를 바꾸다가 아쉬운 표정으로 몸을 일으켰어요.",
+    "일어나자마자 창문을 엶":"일어나자마자 창문을 열어 바깥 공기를 들이고 날씨부터 확인했어요.",
+    "일어나자마자 물을 마심":"침대에서 일어난 뒤 미리 둔 물을 천천히 마시며 잠을 깨고 있어요.",
+    "침대에서 오늘 일정을 확인함":"이불을 정리하기 전에 오늘의 일정과 약속부터 차분히 확인했어요.",
+    "비몽사몽한 채 방을 돌아다님":"아직 잠이 덜 깬 얼굴로 방 안을 서성이다 필요한 물건을 하나씩 챙겼어요.",
+    "누가 깨워 줘야 일어남":"혼자서는 쉽게 눈을 뜨지 못하다가 동거인의 인기척과 부름에 겨우 몸을 일으켰어요."
+  };
+  return scenes[habit]||scenes["알람을 듣고 천천히 일어남"];
 };
 const townFor=c=>state.towns.find(t=>t.id===c.townId)||state.towns[0]||state.world;
 const workplaceTown=c=>state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
@@ -330,7 +346,15 @@ function socialEvent(c,time,date){
       라이벌:`${pick.other.name}와 최근 결과를 은근히 비교하면서도 상대가 잘한 부분은 놓치지 않고 살피고 있어요.`,
       혐관:`${pick.other.name}와 사소한 선택에서도 신경전을 벌이지만 먼저 자리를 뜨지는 않고 있어요.`
     };
-    if(crush&&pick.r.targetId===c.id)relationDetails.짝사랑=`${pick.other.name}의 시선이 평소보다 오래 머무는 것을 어렴풋이 느끼면서도 아직 그 마음을 확신하지 못하고 있어요.`;
+    const unawareCrush=crush&&/무자각|자기 감정을 모르는|호감이라고만|자꾸 신경/.test(pick.r.stage||"");
+    if(unawareCrush&&pick.r.admirerId===c.id){
+      const shy=/수줍|내향|혼자|아싸|사람이 싫/.test(c.socialStyle||"");
+      relationDetails.짝사랑=shy
+        ?`${pick.other.name}와 우연히 같은 곳을 골랐다고 생각하면서도 자꾸 상대의 반응부터 확인해요. 말을 걸고 싶지만 이유를 찾지 못해 가까운 자리에서 혼자 시간을 보내고 있어요.`
+        :`${pick.other.name}에게 유독 자주 말을 걸고 필요한 것을 먼저 챙겨 주면서도, 그저 잘 맞는 사람이라 신경 쓰이는 것뿐이라고 생각하고 있어요.`;
+    }else if(unawareCrush&&pick.r.targetId===c.id){
+      relationDetails.짝사랑=`${pick.other.name}가 자기 취향과 작은 변화를 유난히 잘 기억하는 것을 이상하게 여기고 있어요. 당사자는 별 뜻 없다는 얼굴이라 아직 그 행동의 이유를 알지 못해요.`;
+    }else if(crush&&pick.r.targetId===c.id)relationDetails.짝사랑=`${pick.other.name}의 시선이 평소보다 오래 머무는 것을 어렴풋이 느끼면서도 아직 그 마음을 확신하지 못하고 있어요.`;
     const romanticDetails={
       카페:[
         `${pick.other.name}가 좋아하는 메뉴를 기억해 주문을 먼저 확인하고, 디저트 접시를 둘 사이로 당겨 함께 나눠 먹고 있어요.`,
@@ -376,7 +400,12 @@ function relationSpecificEntry(c,other,r,time,date,role){
     ],
     짝사랑:[
       [[`${n}를 은근히 챙기는 중`,"티가 너무 나지 않게 필요한 물건을 가까이에 놓아 주고 아무렇지 않은 척 다른 곳을 보고 있어요.","living"],[`${n}의 호의를 눈치채는 중`,"우연이라고 하기엔 세심한 배려를 발견하고 잠시 상대의 표정을 살피고 있어요.","living"]],
-      [[`${n}에게 보낼 말을 고민하는 중`,"메시지를 썼다가 너무 다정해 보일까 지우고 자연스러운 문장으로 다시 고치고 있어요.","study"],[`${n}의 메시지를 확인하는 중`,"평범한 내용인데도 몇 번 다시 읽은 뒤 너무 늦지 않게 답장을 보내고 있어요.","living"]]
+      [[`${n}에게 보낼 말을 고민하는 중`,"메시지를 썼다가 너무 다정해 보일까 지우고 자연스러운 문장으로 다시 고치고 있어요.","study"],[`${n}의 메시지를 확인하는 중`,"평범한 내용인데도 몇 번 다시 읽은 뒤 너무 늦지 않게 답장을 보내고 있어요.","living"]],
+      [[`${n}의 취향을 기억해 둔 중`,"스쳐 지나가듯 들었던 취향을 정확히 기억해 필요한 물건 옆에 놓아 주고, 왜 기억했는지는 스스로도 설명하지 못하고 있어요.","living"],[`${n}의 뜻밖의 배려를 발견한 중`,"한 번 말했을 뿐인 취향까지 기억한 것을 보고 고맙다고 하면서도 왜 이렇게 세심한지 궁금해하고 있어요.","living"]],
+      [[`${n}의 곁을 자꾸 지나치는 중`,"딱히 볼일은 없는데도 상대가 있는 방을 몇 번 오가다가, 필요한 게 있었던 것처럼 주변 물건을 하나 집어 들었어요.","living"],[`${n}가 자꾸 근처를 지나는 걸 보는 중`,"같은 사람이 몇 번이나 주변을 맴도는 것을 알아차렸지만 무슨 말을 꺼내려는지 기다리며 모른 척하고 있어요.","living"]],
+      [[`${n}의 표정을 먼저 살피는 중`,"좋은 소식을 들었는데 자기 기분보다 상대가 어떻게 받아들였는지부터 확인했어요. 왜 그 반응이 중요한지는 아직 생각해 보지 않았어요.","living"],[`${n}의 시선을 마주친 중`,"자기 반응을 기다리던 시선과 마주치자 상대가 황급히 다른 곳을 보는 모습을 조용히 기억해 두었어요.","living"]],
+      [[`${n}를 편들고도 이유를 모르는 중`,"평소라면 넘어갔을 말에 유독 빠르게 반박하고 상대 편을 들었어요. 공정하지 못한 상황이 싫었을 뿐이라고 스스로 납득하고 있어요.","living"],[`${n}가 자기 편을 드는 걸 지켜본 중`,"부탁하지 않았는데도 먼저 나서 준 것이 의외라서 고마움과 당황스러움을 함께 느끼고 있어요.","living"]],
+      [[`${n}의 빈자리를 의식하는 중`,"하던 일에 집중하려는데 평소 있던 자리가 비어 있는 것이 자꾸 눈에 들어와요. 단지 집이 조용해서 그렇다고 생각하고 있어요.","study"],[`${n}가 평소보다 조용한 걸 살피는 중`,"자기가 돌아온 뒤에야 상대가 다시 하던 일에 집중하는 모습을 보고 조금 이상하다고 생각하고 있어요.","living"]]
     ],
     친구:[
       [[`${n}와 장난을 주고받는 중`,"상대만 알아들을 오래된 농담을 꺼내고 웃음을 참는 표정을 보며 한마디를 더 얹고 있어요.","living"],[`${n}의 장난에 받아치는 중`,"질 수 없다는 듯 예전 실수를 꺼내 맞받아치고 결국 둘 다 웃음을 터뜨리고 있어요.","living"]],
@@ -411,6 +440,13 @@ function relationSpecificEntry(c,other,r,time,date,role){
       [[`${n}와 날 선 대화를 나누는 중`,"상대의 말에서 모순을 짚어 내며 물러서지 않지만 넘지 말아야 할 선은 간신히 지키고 있어요.","living"],[`${n}의 지적에 반박하는 중`,"바로 표정을 굳히고 근거부터 다시 대라며 차갑게 맞받아치고 있어요.","living"]]
     ]
   };
+  const unaware=r.type==="짝사랑"&&/무자각|자기 감정을 모르는|호감이라고만|자꾸 신경/.test(r.stage||"");
+  if(unaware){
+    const introverted=/수줍|내향|혼자|아싸|사람이 싫/.test(c.socialStyle||"");
+    pools.짝사랑.push(introverted
+      ?[[`${n}에게 말을 걸 이유를 찾는 중`,"꼭 확인할 필요가 없는 것을 몇 번이나 문장으로 만들었다가 삼켰어요. 가까이 있고 싶다는 생각은 아직 떠올리지 못한 채 조용히 같은 방에 머물고 있어요.","living"],[`${n}가 말을 망설이는 걸 기다리는 중`,"무언가 말하려다 멈추는 모습을 알아차리고 먼저 재촉하지 않은 채 상대가 편해질 때까지 기다리고 있어요.","living"]]
+      :[[`${n}를 자연스럽게 자기 일에 끌어들이는 중`,"혼자 해도 될 일인데 가장 먼저 상대를 불러 같이 하자고 했어요. 다른 사람보다 이 사람과 있으면 즐거운 이유는 깊이 생각하지 않고 있어요.","living"],[`${n}의 잦은 제안을 받아들이는 중`,"사소한 일마다 자기를 먼저 찾는 것이 조금 의아하지만 즐거워 보여서 이번에도 함께하기로 했어요.","living"]]);
+  }
   const behaviorPools={
     "병원 같이 가기":[[`${n}와 병원에 갈 준비 중`,"예약 시간과 필요한 서류를 확인하고 상대가 불안하지 않도록 옆에서 천천히 준비를 돕고 있어요.","entry"],[`${n}와 병원에 갈 준비 중`,"함께 가 주겠다는 말에 안심하면서 증상과 물어볼 내용을 휴대전화에 적고 있어요.","entry"]],
     "간섭하기":[[`${n}의 일에 참견하는 중`,"상대가 그냥 넘기려는 부분을 짚어 내고 지금 바로 고쳐야 한다며 끈질기게 이야기하고 있어요.","living"],[`${n}의 간섭에 맞서는 중`,"도움과 통제는 다르다고 선을 그으면서도 상대가 걱정하는 이유는 끝까지 듣고 있어요.","living"]],
@@ -445,9 +481,15 @@ function relationSpecificEntry(c,other,r,time,date,role){
 function relationshipHomeEntry(c,pick,time,date){
   const {r,other}=pick,pair=[c.id,other.id].sort(),role=r.type==="짝사랑"&&r.directional?(c.id===r.admirerId?0:1):pair.indexOf(c.id);
   const directedView=characterViewFor(c.id,other.id);
-  const {overall="",trust="",closeness="",comfort="",annoyance="",attention="",jealousy=""}=directedView;
+  const {overall="",awareness="",trust="",closeness="",comfort="",touchReaction="",boundaryRespect="",annoyance="",attention="",jealousy=""}=directedView;
+  const otherView=characterViewFor(other.id,c.id);
   const thought=[directedView.overall,directedView.trust,directedView.comfort,directedView.annoyance,directedView.attention].filter(Boolean).join(" ");
   const loving=/좋아|사랑|소중|없어서는/.test(overall);
+  const hating=/싫어|경계|불편/.test(overall);
+  const unaware=/어렴풋|착각|전혀 모름|부정/.test(awareness);
+  const touchAverse=/극도로 꺼림|닿는 것을 싫어|허락 없는 접촉/.test(touchReaction);
+  const likesTouch=/스킨십을 좋아|먼저 다가가는/.test(touchReaction);
+  const otherRespectsBoundary=/먼저 의사를 확인|철저히 존중|반응을 살피며 조절/.test(otherView.boundaryRespect||"");
   const distrust=/전혀 믿지|의심|조심스럽게 지켜봄/.test(trust);
   const distant=/남보다도 멂|낯선|거리감/.test(closeness);
   const uncomfortable=/매우 불편|긴장|조심스러움/.test(comfort);
@@ -456,7 +498,28 @@ function relationshipHomeEntry(c,pick,time,date){
   const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,컨트롤프릭:34}[c.interference]||0;
   const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
-  if(loving&&distrust)scripts=[
+  if(unaware&&loving)scripts=[
+    [`${other.name}에게 자꾸 시선이 가는 이유를 모르는 중`,`${other.name}의 작은 표정 변화까지 먼저 알아차리고도 특별한 감정 때문이라고는 생각하지 못했어요. ${c.socialStyle==="낯을 가림"?"말을 걸 타이밍을 놓친 채 필요한 물건만 조용히 가까이에 두었어요.":"별일 아니라는 듯 자연스럽게 다가가 방금 본 것을 먼저 알려 주었어요."}`,"living"],
+    [`${other.name}을 유난히 챙기고도 대수롭지 않게 넘기는 중`,`${other.name}에게 필요한 것을 남들보다 먼저 찾아 건넸지만 왜 이렇게 신경 쓰이는지는 깊이 생각하지 않았어요. ${c.decisionStyle==="공감 우선"?"상대가 편해진 표정을 보고 나서야 마음을 놓았어요.":"해야 할 일을 처리했을 뿐이라고 스스로 결론 내렸어요."}`,"living"],
+    [`${other.name} 곁에 머무는 일을 습관처럼 여기는 중`,`다른 자리가 비어 있는데도 자연스럽게 ${other.name} 가까이에 자리를 잡았어요. 편안해지는 이유를 우정이나 익숙함이라고만 생각하고 있어요.`,"living"]
+  ];
+  else if(unaware&&hating)scripts=[
+    [`${other.name}에게 유난히 날이 서는 이유를 모르는 중`,`${other.name}의 평범한 행동에도 신경이 곤두섰지만 싫어하는 마음 때문이라고는 인정하지 않았어요. 피곤해서 그렇다고 넘기며 대답을 짧게 잘랐어요.`,"living"],
+    [`${other.name}을 무심코 피하면서도 이유를 부정하는 중`,`같은 공간에 들어온 ${other.name}을 보자 자연스럽게 거리를 벌렸어요. 불편함의 정체를 들여다보는 대신 혼자 있고 싶을 뿐이라고 생각했어요.`,"study"]
+  ];
+  else if(touchAverse&&otherRespectsBoundary)scripts=[
+    [`${other.name}과 편안한 거리를 지키는 중`,`${other.name}이 몸에 닿기 전에 먼저 괜찮은지 묻고 반응을 살핀 덕분에 긴장이 조금 풀렸어요. 가까이 붙지 않아도 함께 있다는 느낌은 충분히 나누고 있어요.`,"living"],
+    [`${other.name}이 정해 둔 경계를 존중해 주는 중`,`접촉 대신 눈인사와 짧은 말로 마음을 전해 온 ${other.name}에게 작게 고개를 끄덕였어요. 강요받지 않는다는 확신 덕분에 같은 자리에 편안히 머물렀어요.`,"living"]
+  ];
+  else if(touchAverse&&!otherRespectsBoundary)scripts=[
+    [`${other.name}의 손길을 피하고 거리를 분명히 하는 중`,`${other.name}이 예고 없이 가까이 오자 한 걸음 물러나 몸에 손대지 말아 달라고 분명히 말했어요. 분위기를 맞추기보다 자기 경계를 지키는 쪽을 택했어요.`,"living"],
+    [`${other.name}에게 불편하다는 신호를 보내는 중`,`몸이 닿을 만큼 가까워진 ${other.name}을 손짓으로 멈춰 세웠어요. 웃어넘기지 않고 지금은 접촉하고 싶지 않다는 뜻을 정확히 전했어요.`,"living"]
+  ];
+  else if(likesTouch&&loving&&/먼저 의사를 확인|철저히 존중|반응을 살피며 조절/.test(boundaryRespect))scripts=[
+    [`${other.name}에게 가까이 가도 되는지 먼저 묻는 중`,`손을 내밀기 전에 ${other.name}의 표정과 대답을 기다렸어요. 허락을 확인한 뒤에야 어깨를 살짝 기대며 다정한 온기를 나누고 있어요.`,"living"],
+    [`${other.name}의 반응에 맞춰 다정하게 다가가는 중`,`가까이 있고 싶은 마음은 컸지만 ${other.name}이 편안한 만큼만 거리를 좁혔어요. 손끝이 닿자 반응을 살피며 언제든 물러날 준비를 하고 있어요.`,"living"]
+  ];
+  else if(loving&&distrust)scripts=[
     [`${other.name}의 말을 다시 확인하는 중`,`마음은 자꾸 ${other.name}에게 향하지만 그 말을 곧이곧대로 믿지는 못해요. 좋아하는 마음과 의심 사이에서 표정을 살피고, 방금 들은 이야기를 조심스럽게 다시 물었어요.`,"living"],
     [`${other.name}을 챙기면서도 경계를 늦추지 않는 중`,`${other.name}에게 필요한 것을 먼저 건네면서도 마음 한편의 의심은 접지 못했어요. 다정하게 곁을 지키되 판단은 서두르지 않고 있어요.`,"living"],
     [`${other.name}의 대답에서 빠진 말을 찾는 중`,`좋아하는 사람이라 더 믿고 싶었지만 애매하게 넘어간 부분이 마음에 남았어요. 몰아붙이지 않고 질문을 바꾸어 가며 사실을 확인하고 있어요.`,"living"],
@@ -670,7 +733,7 @@ function medievalize(c,item,date){
 function build(c,date=new Date()){
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
   const sleepMinute=sleep<=wake?sleep+1440:sleep;
-  const list=[entry(wake,"기상","집에서 하루를 시작했어요.",{home:true,room:c.sleepRoomId||"bedroom",mood:"평온",stress:5})];
+  const list=[entry(wake,"기상",wakeScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"평온",stress:5})];
   list.push(homeEntry(c,wake+20,"욕실에서 씻는 중","세면대 앞에서 세수하고 이를 닦으며 잠을 깨고 있어요.","bath"));
   list.push(homeEntry(c,wake+45,"주방에서 아침 준비 중","냉장고를 열어 먹을 것을 고르고 식탁에 아침을 차리고 있어요.","kitchen"));
   const morningRelation=related(c).filter(x=>x.other.homeId===c.homeId).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
@@ -784,10 +847,10 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260804l";
+const ENGINE_VERSION="20260804n";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-function signature(c){return JSON.stringify({createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+function signature(c){return JSON.stringify({createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
   const merged=[...kept],seen=new Set(kept.map(item=>`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`));

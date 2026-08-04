@@ -13,13 +13,28 @@ const renameBrand=value=>{
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const rooms=()=>({
-  living:{name:"거실",image:"",furniture:["소파","TV","책장"]},
-  kitchen:{name:"주방",image:"",furniture:["냉장고","조리대","식탁"]},
-  entry:{name:"현관",image:"",furniture:["신발장","전신거울"]},
-  bath:{name:"욕실",image:"",furniture:["샤워부스","세면대"]},
-  bedroom:{name:"침실",image:"",furniture:["침대","옷장"]},
-  study:{name:"서재·취미방",image:"",furniture:["책상","컴퓨터"]}
+  living:{name:"거실",type:"living",image:"",furniture:["소파","TV","책장"]},
+  kitchen:{name:"주방",type:"kitchen",image:"",furniture:["냉장고","조리대","식탁"]},
+  entry:{name:"현관",type:"entry",image:"",furniture:["신발장","전신거울"]},
+  bath:{name:"욕실",type:"bath",image:"",furniture:["샤워부스","세면대"]},
+  bedroom:{name:"침실",type:"bedroom",image:"",furniture:["침대","옷장"]},
+  study:{name:"서재·취미방",type:"study",image:"",furniture:["책상","컴퓨터"]}
 });
+const ROOM_FURNITURE={
+  living:["소파","TV","책장","오디오","안마의자","게임기","캣타워"],
+  kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기"],
+  entry:["신발장","전신거울","우산꽂이","함께 사는 존재 산책용품"],
+  bath:["샤워부스","욕조","세면대","세탁기","건조기"],
+  bedroom:["침대","옷장","화장대","협탁","빔프로젝터"],
+  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"],
+  dining:["식탁","의자","찬장","티 테이블","와인장"],
+  nursery:["아기 침대","수납장","놀이 매트","책장","기저귀 교환대"],
+  guest:["침대","협탁","옷걸이","작은 책상","전신거울"],
+  hobby:["작업대","수납장","그림 도구","재봉틀","악기","운동기구"],
+  balcony:["화분","야외 의자","작은 테이블","빨래 건조대"],
+  storage:["수납장","선반","보관 상자","옷걸이"],
+  other:["수납장","의자","작은 테이블"]
+};
 const defaultCatalog=()=>({
   food:[
     {id:"food-omurice",kind:"food",name:"오므라이스",category:"일본 음식",image:"",spicy:0,sweet:2},
@@ -116,6 +131,14 @@ function normalizeHomes(x){
   x.routines=x.routines&&typeof x.routines==="object"?x.routines:{};
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
   x.characterViews=x.characterViews&&typeof x.characterViews==="object"?x.characterViews:{};
+  x.buildingShapes=Array.isArray(x.buildingShapes)?x.buildingShapes.filter(shape=>shape&&shape.id&&shape.src).map(shape=>({
+    id:String(shape.id),
+    name:String(shape.name||"사용자 건물 모양"),
+    src:String(shape.src||""),
+    types:Array.isArray(shape.types)?shape.types.map(String):[],
+    features:Array.isArray(shape.features)?shape.features.map(String):[],
+    custom:true
+  })):[];
   Object.keys(x.characterViews).forEach(sourceId=>{
     if(!x.characters[sourceId]){delete x.characterViews[sourceId];return}
     const targets=x.characterViews[sourceId]&&typeof x.characterViews[sourceId]==="object"?x.characterViews[sourceId]:{};
@@ -210,8 +233,10 @@ function normalizeHomes(x){
     h.rooms=h.rooms||{};
     Object.entries(defaults).forEach(([key,value])=>{
       h.rooms[key]={...value,...(h.rooms[key]||{})};
+      h.rooms[key].type=h.rooms[key].type||key;
       h.rooms[key].furniture=Array.isArray(h.rooms[key].furniture)?[...h.rooms[key].furniture]:[...value.furniture];
     });
+    Object.entries(h.rooms).forEach(([key,room])=>room.type=room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
   });
   Object.values(x.characters||{}).forEach(c=>{
@@ -223,6 +248,7 @@ function normalizeHomes(x){
       notes:r.notes||""
     })):[];
     c.driverLicense=Boolean(c.driverLicense);
+    c.wakeHabit=c.wakeHabit||"알람을 듣고 천천히 일어남";
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.ageGroup=c.ageGroup||"성인";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
@@ -302,7 +328,7 @@ export function save(immediate=false){
 export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",sleep:"00:30",income:"필요한 만큼 소비",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",job:"무직",jobTitle:"",workplaceId:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};
@@ -381,9 +407,30 @@ export function addRoom(homeId){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
   const key=`room-${uid()}`;
-  h.rooms[key]={name:"새 방",image:"",furniture:[]};
+  h.rooms[key]={name:"새 방",type:"other",image:"",furniture:[...ROOM_FURNITURE.other]};
   save(true);
   return key;
+}
+export function setRoomType(homeId,roomKey,type){
+  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room||!ROOM_FURNITURE[type])return;
+  const oldType=room.type||"other";
+  const defaultNames={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
+  room.type=type;
+  room.furniture=[...ROOM_FURNITURE[type]];
+  if(!room.name||room.name==="새 방"||room.name===defaultNames[oldType])room.name=defaultNames[type];
+  save(true);
+}
+export function deleteRoom(homeId,roomKey){
+  const h=state.homes[homeId];if(!h?.rooms?.[roomKey])return false;
+  const remaining=Object.keys(h.rooms).filter(key=>key!==roomKey);
+  if(!remaining.length)return false;
+  const fallback=remaining.includes("living")?"living":remaining[0];
+  delete h.rooms[roomKey];
+  Object.values(state.characters).forEach(c=>{
+    if(c.homeId===homeId&&c.sleepRoomId===roomKey)c.sleepRoomId=fallback;
+  });
+  (h.pets||[]).forEach(p=>{if(p.room===roomKey)p.room=fallback});
+  save(true);return true;
 }
 export function addPet(homeId){
   const h=state.homes[homeId];if(!h)return;
@@ -488,7 +535,7 @@ export function characterViewFor(sourceId,targetId){
   const relation=Object.values(state.relationships||{}).find(item=>
     (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
   );
-  let defaults={overall:"낯선 사람으로 여김",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"조심스러움",annoyance:"전혀 귀찮지 않음",attention:"관심 없음",jealousy:"질투하지 않음"};
+  let defaults={overall:"낯선 사람으로 여김",awareness:"자기 감정을 분명히 자각함",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"조심스러움",touchReaction:"허락 없는 접촉은 불편함",boundaryRespect:"먼저 의사를 확인함",annoyance:"전혀 귀찮지 않음",attention:"관심 없음",jealousy:"질투하지 않음"};
   if(relation){
     if(["연인","부부"].includes(relation.type))defaults={...defaults,overall:"좋아함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안함",attention:"종종 신경 씀"};
     else if(["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||""))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"매우 불편함",annoyance:"보기만 해도 피곤함"};

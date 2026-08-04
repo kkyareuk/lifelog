@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260804l";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804l";
+import {state,active,characterViewFor} from "./state.js?v=20260804n";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804n";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -60,8 +60,17 @@ const FURNITURE={
   entry:["신발장","전신거울","우산꽂이","반려동물 산책용품"],
   bath:["샤워부스","욕조","세면대","세탁기","건조기"],
   bedroom:["침대","옷장","화장대","협탁","빔프로젝터"],
-  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"]
+  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"],
+  dining:["식탁","의자","찬장","티 테이블","와인장"],
+  nursery:["아기 침대","수납장","놀이 매트","책장","기저귀 교환대"],
+  guest:["침대","협탁","옷걸이","작은 책상","전신거울"],
+  hobby:["작업대","수납장","그림 도구","재봉틀","악기","운동기구"],
+  balcony:["화분","야외 의자","작은 테이블","빨래 건조대"],
+  storage:["수납장","선반","보관 상자","옷걸이"],
+  other:["수납장","의자","작은 테이블"]
 };
+const ROOM_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
+const roomTypeOptions=room=>Object.entries(ROOM_TYPES).map(([value,label])=>`<option value="${value}" ${(room.type||"other")===value?"selected":""}>${label}</option>`).join("");
 let accountText="Google 로그인 안 됨";
 let accountEntitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false};
 const characterLimit=()=>7+(Math.max(0,Number(accountEntitlements.characterSlotPacks)||0)*5);
@@ -306,7 +315,7 @@ function homeCard(id,chars){
     const capacity=2;
     const shownPeople=roomPeople.slice(0,capacity),hiddenPeople=Math.max(0,roomPeople.length-shownPeople.length);
     const petCapacity=Math.max(0,capacity-shownPeople.length),shownPets=roomPets.slice(0,petCapacity),hiddenPets=Math.max(0,roomPets.length-shownPets.length);
-    const furniture=FURNITURE[key]||[];
+    const furniture=FURNITURE[room.type||key]||FURNITURE.other;
     return `<div class="room ${roomClasses[key]||"custom-room"}" ${roomStyle(h,key)}>
       ${edit?`<input class="room-name" data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}">`:`<b>${esc(room.name||key)}</b>`}
       ${edit?`<div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div>`:""}
@@ -315,7 +324,7 @@ function homeCard(id,chars){
       <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}${hiddenPets?`<button class="room-more pet-more" title="${esc(roomPets.slice(petCapacity).map(p=>p.name).join(", "))}">+${hiddenPets}</button>`:""}</div>
     </div>`;
   }).join("");
-  const mobileRoomEditors=edit?`<section class="mobile-room-editors"><div class="room-editor-guide"><h3>방 사진과 가구 꾸미기</h3><p>아래에서 방을 하나씩 열어 사진·이름·가구를 편집하세요. 위의 집 배치는 미리보기라서 그대로 유지돼요.</p></div>${roomKeys.map(key=>{const room=h.rooms?.[key]||{},furniture=FURNITURE[key]||[];return `<details><summary><span class="room-editor-thumb" ${room.image?`style="background-image:url('${esc(room.image)}')"`:""}></span><span><b>${esc(room.name||key)}</b><small>${room.image?"사진 등록됨":"아직 방 사진 없음"}</small></span></summary><div class="mobile-room-editor-body"><label>방 이름<input data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}"></label><div class="mobile-room-image-actions"><button class="primary" data-room-bg="${id}" data-home-id="${id}" data-room="${key}">내 사진에서 선택</button><button data-image-url="room" data-id="${id}" data-room="${key}">이미지 주소로 넣기</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">현재 사진 지우기</button>`:""}</div><div><b>이 방에 있는 가구</b><p class="room-editor-note">있는 가구를 눌러 초록색으로 켜 주세요.</p></div><div class="mobile-room-furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div></div></details>`}).join("")}</section>`:"";
+  const mobileRoomEditors=edit?`<section class="mobile-room-editors"><div class="room-editor-guide"><h3>방 사진과 가구 꾸미기</h3><p>방 유형을 고르면 그 공간에 어울리는 가구로 한 번에 바뀌어요. 필요 없는 방은 각 편집창 위에서 삭제할 수 있어요.</p></div>${roomKeys.map(key=>{const room=h.rooms?.[key]||{},furniture=FURNITURE[room.type||key]||FURNITURE.other;return `<details><summary><span class="room-editor-thumb" ${room.image?`style="background-image:url('${esc(room.image)}')"`:""}></span><span><b>${esc(room.name||key)}</b><small>${esc(ROOM_TYPES[room.type||key]||"기타 방")} · ${room.image?"사진 등록됨":"사진 없음"}</small></span></summary><div class="mobile-room-editor-body"><div class="room-editor-heading"><b>${esc(room.name||key)} 편집</b><button class="danger" data-delete-room="${key}" data-home-id="${id}">방 삭제</button></div><label>방 유형<select data-room-type="${key}" data-home-id="${id}">${roomTypeOptions(room)}</select></label><label>방 이름<input data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}"></label><div class="mobile-room-image-actions"><button class="primary" data-room-bg="${id}" data-home-id="${id}" data-room="${key}">내 사진에서 선택</button><button data-image-url="room" data-id="${id}" data-room="${key}">이미지 주소로 넣기</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">현재 사진 지우기</button>`:""}</div><div><b>이 방에 있는 가구</b><p class="room-editor-note">방 유형을 바꾸면 추천 가구로 갱신돼요. 버튼으로 가구를 더하거나 뺄 수 있어요.</p></div><div class="mobile-room-furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div></div></details>`}).join("")}</section>`:"";
   const residentEditor=edit?`<section class="resident-editor"><h3>함께 사는 캐릭터</h3><div>${state.order.map(cid=>{const c=state.characters[cid],on=c.homeId===id;return `<div class="resident-setting"><button data-home-resident="${cid}" data-home-id="${id}" class="${on?"on":""}">${avatar(c)} ${esc(c.name)}</button></div>`}).join("")}</div><small>거주 마을은 캐릭터 프로필에서 설정해요. 취향과 성격은 동거인끼리 섞이지 않습니다.</small></section>`:"";
   const sleepEditor=edit?`<section class="sleep-room-editor"><div class="title"><h3>자는 방 배정</h3><button data-add-room>+ 방 추가</button></div>${chars.map(c=>`<label>${esc(c.name)}<select data-sleep-room="${c.id}">${roomKeys.map(key=>`<option value="${key}" ${(c.sleepRoomId||"bedroom")===key?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label>`).join("")}</section>`:"";
   const status=chars.map(c=>{const e=eventFor(c);return `<button class="home-status" data-home-person="${c.id}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small><em>${esc(e.desc||"")}</em></span></button>`}).join("");
@@ -393,9 +402,12 @@ function catalog(){
 const relationActivities=r=>r.interactions?.length?`<details class="relation-activity-details"><summary>주로 하는 활동 · ${r.interactions.length}개</summary><div class="relation-tags">${r.interactions.map(x=>`<span>${esc(x)}</span>`).join("")}</div></details>`:"";
 const CHARACTER_VIEW_OPTIONS={
   overall:["정하지 않음","낯선 사람으로 여김","매우 싫어함","경계함","불편해함","그저 그런 사람","호감이 있음","좋아함","소중하게 여김","사랑함","없어서는 안 될 사람"],
+  awareness:["정하지 않음","자기 감정을 분명히 자각함","감정을 어렴풋이 느낌","감정을 우정으로 착각함","감정을 경쟁심으로 착각함","감정을 불편함으로 착각함","자기 감정을 전혀 모름","느끼는 감정을 부정함"],
   trust:["정하지 않음","전혀 믿지 않음","의심함","조심스럽게 지켜봄","보통","어느 정도 믿음","깊이 신뢰함","전적으로 의지함"],
   closeness:["정하지 않음","남보다도 멂","낯선 사이","거리감 있음","보통","편한 사이","가까운 사이","가장 가까운 사람"],
   comfort:["정하지 않음","매우 불편함","긴장함","조심스러움","보통","편안함","무방비해질 만큼 편함"],
+  touchReaction:["정하지 않음","몸에 손이 닿는 것을 극도로 꺼림","몸에 손이 닿는 것을 싫어함","허락 없는 접촉은 불편함","가까운 사람에게만 허용함","상황에 따라 자연스럽게 받아들임","스킨십을 좋아함","먼저 다가가는 편"],
+  boundaryRespect:["정하지 않음","상대의 경계를 무시함","거절해도 밀어붙임","자기 기준으로 판단함","반응을 살피며 조절함","먼저 의사를 확인함","상대의 경계를 철저히 존중함"],
   annoyance:["정하지 않음","전혀 귀찮지 않음","가끔 성가심","종종 귀찮음","많이 귀찮음","보기만 해도 피곤함"],
   attention:["정하지 않음","관심 없음","필요할 때만 봄","종종 신경 씀","자주 살핌","늘 최우선으로 챙김"],
   jealousy:["정하지 않음","질투하지 않음","가끔 신경 쓰임","은근히 질투함","질투가 심함","독점하고 싶어 함"]
@@ -408,10 +420,10 @@ const characterViewEditor=()=>{
   };
   const panels=state.order.map(sourceId=>{
     const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
-    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall;return `<details class="character-view-card" ${index===0?"open":""}><summary><span class="character-view-heading"><span class="character-view-direction-icons">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small></span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개로 이 사람을 전반적으로 어떻게 생각하는지")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","사랑해도 긴장하거나 불편할 수 있어요")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></details>`}).join("")}</div>`;
+    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall;return `<details class="character-view-card" ${index===0?"open":""}><summary><span class="character-view-heading"><span class="character-view-direction-icons">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small></span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"awareness","감정 자각","호감이나 혐오를 스스로 모르는 관계도 만들 수 있어요")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","사랑해도 긴장하거나 불편할 수 있어요")}${field(sourceId,targetId,"touchReaction","신체 접촉에 대한 반응","이 상대가 몸에 닿는 것을 어떻게 느끼는지")}${field(sourceId,targetId,"boundaryRespect","상대의 바운더리를 존중하는 정도","상대의 거절과 불편 신호를 얼마나 존중하는지")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></details>`}).join("")}</div>`;
   }).join("");
   const sourceTabs=state.order.map((id,index)=>{const character=state.characters[id],primary=character.theme?.primary||"#176b60",secondary=character.theme?.gradient?(character.theme?.secondary||primary):primary;return `<button type="button" data-view-source="${id}" class="${index===0?"on":""}" style="--view-primary:${esc(primary)};--view-secondary:${esc(secondary)}">${avatar(character)}<span><b>${esc(character.name)}</b><small>이 캐릭터의 시선</small></span></button>`}).join("");
-  return `<section class="character-view-editor"><div class="title"><div><h2>캐릭터별 관계 시선</h2><p>아이콘을 눌러 기준 캐릭터를 고른 뒤, 상대 카드를 펼쳐 감정을 정해요. 공식 관계가 원수여도 한쪽만 사랑하거나, 사랑하지만 신뢰하지 않는 관계를 만들 수 있어요.</p></div></div><div class="character-view-source-tabs">${sourceTabs}</div>${panels}</section>`;
+  return `<section class="character-view-editor"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p><b>공식 관계</b>는 두 사람에게 함께 적용되고, 아래의 감정·자각·신뢰·경계는 각 방향마다 따로 저장돼요. 친구인데 자기 호감을 모르는 사람, 원수인데 사랑하는 사람도 만들 수 있어요.</p></div><button data-add-rel>+ 공식 관계 설정</button></div><div class="character-view-source-tabs">${sourceTabs}</div>${panels}</section>`;
 };
 function relationshipMap(relations){
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
@@ -453,7 +465,7 @@ function relationship(){
     const heading=r.type==="부모·자녀"?`${esc(state.characters[r.parentId||r.a]?.name||a?.name||"부모")}(${esc(r.parentRole||"부모")}) → ${esc(state.characters[r.childId||r.b]?.name||b?.name||"자녀")}`:`${esc(a?.name||"")} ${r.type==="짝사랑"?"→":"×"} ${esc(b?.name||"")}`;
     return a&&b?`<article class="relation"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${relationActivities(r)}<button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
   }).join("");
-  return `<section class="panel form"><div class="title"><h1>관계</h1><button data-add-rel>+ 관계 추가</button></div><p>두 사람은 물론 여러 사람을 연인, 친구 모임, 산악회처럼 한 관계로 묶을 수 있어요. 선택한 관계 단계와 행동은 생활 장면에 반영돼요.</p>${characterViewEditor()}${relationshipMap(all)}<div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 관계가 없어요.</b><p>관계를 추가하면 생활과 상호작용에 반영돼요.</p></div>'}</div></section>`;
+  return `<section class="panel form"><div class="title"><h1>관계</h1></div><p>공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.</p>${characterViewEditor()}${relationshipMap(all)}<h2 class="official-relation-heading">공식 관계 목록</h2><div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 공식 관계가 없어요.</b><p>공식 관계가 없는 캐릭터끼리는 서로 낯선 사람으로 행동해요.</p></div>'}</div></section>`;
 }
 function routine(){
   const c=active(),days=["일","월","화","수","목","금","토"],items=(state.routines[c.id]||[]).slice().sort((a,b)=>a.day-b.day||a.start.localeCompare(b.start));
