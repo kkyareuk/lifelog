@@ -1,5 +1,5 @@
-import {state,active} from "./state.js?v=20260804g";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804g";
+import {state,active} from "./state.js?v=20260804h";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804h";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -435,7 +435,8 @@ function relationshipMap(relations){
     return `<g><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${color}"/></marker></defs><path d="${forward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><path d="${backward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><text class="map-emotion" x="${midX+offsetX*2.1}" y="${midY+offsetY*2.1}" text-anchor="middle">${esc(viewLabel(relation.a,relation.b))}</text><text class="map-emotion" x="${midX-offsetX*2.1}" y="${midY-offsetY*2.1}" text-anchor="middle">${esc(viewLabel(relation.b,relation.a))}</text><text class="map-relation" x="${midX}" y="${midY-7}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+12}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<div class="relationship-map-node" style="left:${pos.x/10}%;top:${pos.y/4.7}%">${avatar(character)}<b>${esc(character.name)}</b></div>`}).join("");
-  const mobileEdges=edges.map(relation=>`<article><b>${esc(relation.type)} · ${esc(relation.stage||"")}</b><p>${esc(state.characters[relation.a]?.name||"")} → ${esc(state.characters[relation.b]?.name||"")}<small>${esc(viewLabel(relation.a,relation.b))}</small></p><p>${esc(state.characters[relation.b]?.name||"")} → ${esc(state.characters[relation.a]?.name||"")}<small>${esc(viewLabel(relation.b,relation.a))}</small></p></article>`).join("");
+  const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId];return `<p class="mobile-relation-direction"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(viewLabel(sourceId,targetId))}</small></span></p>`};
+  const mobileEdges=edges.map(relation=>`<article><header><b>${esc(relation.type)}</b><small>${esc(relation.stage||"")}</small></header>${mobileDirection(relation.a,relation.b)}${mobileDirection(relation.b,relation.a)}</article>`).join("");
   return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>두 캐릭터 사이에는 서로 반대 방향으로 향하는 화살표가 하나씩 보여요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 470" preserveAspectRatio="xMidYMid meet">${lines}</svg>${nodes}</div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }
 function relationship(){
