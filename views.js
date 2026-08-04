@@ -1,5 +1,5 @@
-import {state,active} from "./state.js?v=20260804d";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804d";
+import {state,active} from "./state.js?v=20260804f";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804f";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -303,7 +303,7 @@ function homeCard(id,chars){
   const roomHtml=roomKeys.map(key=>{
     const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>eventFor(c).room===key);
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
-    const capacity={living:3,kitchen:1,entry:1,bath:1,bedroom:2,study:2}[key]||2;
+    const capacity=2;
     const shownPeople=roomPeople.slice(0,capacity),hiddenPeople=Math.max(0,roomPeople.length-shownPeople.length);
     const petCapacity=Math.max(0,capacity-shownPeople.length),shownPets=roomPets.slice(0,petCapacity),hiddenPets=Math.max(0,roomPets.length-shownPets.length);
     const furniture=FURNITURE[key]||[];
@@ -391,6 +391,52 @@ function catalog(){
   return `<section class="panel form catalog-shell"><div class="title"><div><h1>세계관 취향 도감</h1><p>아이콘을 누르면 세부 정보와 편집 항목이 열려요.</p></div><button class="primary" data-catalog-save>도감 저장</button></div>${sections}</section>`;
 }
 const relationActivities=r=>r.interactions?.length?`<details class="relation-activity-details"><summary>주로 하는 활동 · ${r.interactions.length}개</summary><div class="relation-tags">${r.interactions.map(x=>`<span>${esc(x)}</span>`).join("")}</div></details>`:"";
+const CHARACTER_VIEW_OPTIONS={
+  overall:["정하지 않음","매우 싫어함","경계함","불편해함","그저 그런 사람","호감이 있음","좋아함","소중하게 여김","사랑함","없어서는 안 될 사람"],
+  trust:["정하지 않음","전혀 믿지 않음","의심함","조심스럽게 지켜봄","보통","어느 정도 믿음","깊이 신뢰함","전적으로 의지함"],
+  closeness:["정하지 않음","남보다도 멂","낯선 사이","거리감 있음","보통","편한 사이","가까운 사이","가장 가까운 사람"],
+  comfort:["정하지 않음","매우 불편함","긴장함","조심스러움","보통","편안함","무방비해질 만큼 편함"],
+  annoyance:["정하지 않음","전혀 귀찮지 않음","가끔 성가심","종종 귀찮음","많이 귀찮음","보기만 해도 피곤함"],
+  attention:["정하지 않음","관심 없음","필요할 때만 봄","종종 신경 씀","자주 살핌","늘 최우선으로 챙김"],
+  jealousy:["정하지 않음","질투하지 않음","가끔 신경 쓰임","은근히 질투함","질투가 심함","독점하고 싶어 함"]
+};
+const characterViewEditor=()=>{
+  const first=state.order[0],selectOptions=state.order.map(id=>`<option value="${id}">${esc(state.characters[id].name)}</option>`).join("");
+  const field=(sourceId,targetId,key,label,help)=>{
+    const current=state.characterViews?.[sourceId]?.[targetId]?.[key]||"정하지 않음";
+    return `<label><span><b>${label}</b><small>${help}</small></span><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${CHARACTER_VIEW_OPTIONS[key].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select></label>`;
+  };
+  const panels=state.order.map(sourceId=>{
+    const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
+    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map(targetId=>{const target=state.characters[targetId];return `<article class="character-view-card"><div class="character-view-heading">${avatar(target)}<div><h3>${esc(source.name)} → ${esc(target.name)}</h3><p><b>${esc(source.name)}</b>이(가) <b>${esc(target.name)}</b>을(를) 어떻게 보고 행동하는지 정해요.</p></div></div><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","이 사람을 전반적으로 어떻게 생각하는지")}${field(sourceId,targetId,"trust","신뢰","비밀이나 판단을 얼마나 믿는지")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","같은 공간에서 얼마나 긴장을 푸는지")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></article>`}).join("")}</div>`;
+  }).join("");
+  return `<section class="character-view-editor"><div class="title"><div><h2>캐릭터별 관계 시선</h2><p>먼저 기준이 될 캐릭터를 고른 다음, 그 캐릭터가 다른 사람 한 명 한 명을 어떻게 보는지 선택해요. 반대 방향은 따로 설정할 수 있어요.</p></div><label>누구의 생각을 편집할까요?<select data-view-source>${selectOptions}</select></label></div>${panels}</section>`;
+};
+function relationshipMap(relations){
+  const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
+  if(characters.length<2||!relations.length)return"";
+  const positions=new Map(characters.map((character,index)=>{
+    const angle=(Math.PI*2*index/characters.length)-Math.PI/2;
+    return [character.id,{x:500+390*Math.cos(angle),y:235+170*Math.sin(angle)}];
+  }));
+  const colors={연인:"#d85078",부부:"#c33f68",친구:"#4f86c6",가족:"#77994a","부모·자녀":"#9b6e45",짝사랑:"#b06ab3",혐관:"#b04a3f"};
+  const seen=new Set(),edges=relations.filter(relation=>{
+    const key=[relation.a,relation.b].sort().join(":");
+    if(!positions.has(relation.a)||!positions.has(relation.b)||seen.has(key))return false;
+    seen.add(key);return true;
+  });
+  const lines=edges.map((relation,index)=>{
+    const a=positions.get(relation.a),b=positions.get(relation.b),color=colors[relation.type]||"#6d776f";
+    const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),offsetX=-dy/length*12,offsetY=dx/length*12;
+    const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${a.x} ${a.y} Q ${midX+offsetX} ${midY+offsetY} ${b.x} ${b.y}`,backward=`M ${b.x} ${b.y} Q ${midX-offsetX} ${midY-offsetY} ${a.x} ${a.y}`;
+    const marker=`relation-arrow-${index}`;
+    return `<g><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${color}"/></marker></defs><path d="${forward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><path d="${backward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><text x="${midX}" y="${midY-7}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+12}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
+  }).join("");
+  const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<div class="relationship-map-node" style="left:${pos.x/10}%;top:${pos.y/4.7}%">${avatar(character)}<b>${esc(character.name)}</b></div>`}).join("");
+  const viewLabel=(source,target)=>state.characterViews?.[source]?.[target]?.overall||"정하지 않음";
+  const mobileEdges=edges.map(relation=>`<article><b>${esc(relation.type)} · ${esc(relation.stage||"")}</b><p>${esc(state.characters[relation.a]?.name||"")} → ${esc(state.characters[relation.b]?.name||"")}<small>${esc(viewLabel(relation.a,relation.b))}</small></p><p>${esc(state.characters[relation.b]?.name||"")} → ${esc(state.characters[relation.a]?.name||"")}<small>${esc(viewLabel(relation.b,relation.a))}</small></p></article>`).join("");
+  return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>두 캐릭터 사이에는 서로 반대 방향으로 향하는 화살표가 하나씩 보여요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 470" preserveAspectRatio="xMidYMid meet">${lines}</svg>${nodes}</div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
+}
 function relationship(){
   const all=Object.values(state.relationships),shownGroups=new Set();
   const cards=all.map(r=>{
@@ -405,7 +451,7 @@ function relationship(){
     const heading=r.type==="부모·자녀"?`${esc(state.characters[r.parentId||r.a]?.name||a?.name||"부모")}(${esc(r.parentRole||"부모")}) → ${esc(state.characters[r.childId||r.b]?.name||b?.name||"자녀")}`:`${esc(a?.name||"")} ${r.type==="짝사랑"?"→":"×"} ${esc(b?.name||"")}`;
     return a&&b?`<article class="relation"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(r.type)} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${relationActivities(r)}<button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
   }).join("");
-  return `<section class="panel form"><div class="title"><h1>관계</h1><button data-add-rel>+ 관계 추가</button></div><p>두 사람은 물론 여러 사람을 연인, 친구 모임, 산악회처럼 한 관계로 묶을 수 있어요. 선택한 관계 단계와 행동은 생활 장면에 반영돼요.</p>${cards||'<div class="empty-mini"><b>아직 설정한 관계가 없어요.</b><p>관계를 추가하면 생활과 상호작용에 반영돼요.</p></div>'}</section>`;
+  return `<section class="panel form"><div class="title"><h1>관계</h1><button data-add-rel>+ 관계 추가</button></div><p>두 사람은 물론 여러 사람을 연인, 친구 모임, 산악회처럼 한 관계로 묶을 수 있어요. 선택한 관계 단계와 행동은 생활 장면에 반영돼요.</p>${characterViewEditor()}${relationshipMap(all)}<div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 관계가 없어요.</b><p>관계를 추가하면 생활과 상호작용에 반영돼요.</p></div>'}</div></section>`;
 }
 function routine(){
   const c=active(),days=["일","월","화","수","목","금","토"],items=(state.routines[c.id]||[]).slice().sort((a,b)=>a.day-b.day||a.start.localeCompare(b.start));

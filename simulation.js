@@ -1,4 +1,4 @@
-import {state,save} from "./state.js?v=20260804d";
+import {state,save} from "./state.js?v=20260804f";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -85,7 +85,7 @@ function personalityFlavor(c,desc,seed=""){
   if(c.planningStyle==="즉흥적")variants.push("그 순간 가장 마음이 가는 일을 골라 가볍게 시작했어요.");
   if(c.planningStyle==="강박적으로 계획함")variants.push("예정 시각과 실제 진행 시간을 몇 번이나 비교하고 어긋난 부분을 즉시 다시 배치했어요.","예상 밖의 변수가 생기자 계획표를 처음부터 검토해 빈틈이 없도록 순서를 다시 짰어요.","끝낸 항목에 표시한 뒤 다음 단계의 시작 시각까지 확인해야 비로소 움직였어요.");
   if(c.planningStyle==="무계획")variants.push("앞일을 미리 정하지 않고 지금 눈앞에서 가장 손쉬운 것부터 건드리고 있어요.","무엇을 할지 정하지 않은 채 돌아다니다가 흥미가 생긴 일에 자연스럽게 빠져들었어요.","정해 둔 종료 시각 없이 기분과 상황이 바뀌는 대로 다음 행동을 골랐어요.");
-  if(c.decisionStyle==="공감 우선")variants.push("상대가 어떻게 느낄지 먼저 살핀 뒤 부드럽게 말을 골랐어요.");
+  if(c.decisionStyle==="공감 우선")variants.push("장면의 감정선과 마음에 걸리는 부분을 지나치지 않고 세심하게 살펴보고 있어요.");
   if(c.decisionStyle==="논리 우선")variants.push("가장 합리적인 방법이 무엇인지 따져 보고 군더더기 없이 움직였어요.");
   if((c.socialEnergy??3)<=1)variants.push("사람이 드문 조용한 자리를 골라 자기 속도대로 움직이고 있어요.");
   if((c.socialEnergy??3)>=5)variants.push("마주친 사람에게 먼저 반갑게 인사를 건네며 분위기를 자연스럽게 이끌고 있어요.");
@@ -439,10 +439,28 @@ function relationSpecificEntry(c,other,r,time,date,role){
 
 function relationshipHomeEntry(c,pick,time,date){
   const {r,other}=pick,pair=[c.id,other.id].sort(),role=r.type==="짝사랑"&&r.directional?(c.id===r.admirerId?0:1):pair.indexOf(c.id);
+  const directedView=state.characterViews?.[c.id]?.[other.id]||{};
+  const thought=[directedView.overall,directedView.trust,directedView.comfort,directedView.annoyance,directedView.attention].filter(Boolean).join(" ");
   const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,컨트롤프릭:34}[c.interference]||0;
   const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
-  if(conflict>=65)scripts=[
+  if(/가끔 성가|종종 귀찮|많이 귀찮|보기만 해도 피곤|부담/.test(thought))scripts=[
+    [`${other.name}의 장난을 흘려듣는 중`,"몇 번째 부름에는 대답 대신 짧게 한숨을 쉬었지만, 정말 필요한 말인지 확인하려고 하던 손을 잠시 멈췄어요.","living"],
+    [`${other.name}에게 잠깐 혼자 있고 싶다고 말하는 중`,"싫어서 피하는 것은 아니라고 선을 그은 뒤, 지금 하던 일을 마칠 때까지만 조용히 두어 달라고 부탁했어요.","study"]
+  ];
+  else if(/어느 정도 믿음|깊이 신뢰|전적으로 의지|든든/.test(thought))scripts=[
+    [`${other.name}에게 먼저 의견을 묻는 중`,"혼자 정해도 될 일이지만 이 사람의 판단이라면 믿을 만하다고 생각해 선택지를 하나씩 보여 주고 있어요.","living"],
+    [`${other.name}의 곁에서 마음을 놓는 중`,"길게 설명하지 않아도 상황을 알아줄 거라는 믿음에 오늘 있었던 일을 천천히 꺼내고 있어요.","living"]
+  ];
+  else if(/좋아|사랑|소중|애틋/.test(thought))scripts=[
+    [`${other.name}가 편히 쉬도록 자리를 정리하는 중`,"상대가 눈치채기 전에 주변의 어수선한 물건을 치우고 손이 닿기 좋은 곳에 필요한 것을 놓아 두고 있어요.","living"],
+    [`${other.name}의 사소한 이야기를 오래 듣는 중`,"결론을 재촉하지 않고 표정이 밝아지는 대목을 기억해 두며 자연스럽게 다음 이야기를 물었어요.","living"]
+  ];
+  else if(/싫|경계|불편|의심/.test(thought))scripts=[
+    [`${other.name}와 필요한 말만 나누는 중`,"같은 공간에 있지만 사적인 이야기는 꺼내지 않은 채 지금 함께 처리해야 할 일만 짧고 분명하게 확인했어요.","living"],
+    [`${other.name}와 거리를 두고 지켜보는 중`,"상대가 무엇을 하는지 한 번 확인한 뒤 굳이 가까이 가지 않고 자기 자리를 지키고 있어요.","study"]
+  ];
+  else if(conflict>=65)scripts=[
     [`${other.name}와 말다툼하는 중`,"쌓아 둔 서운함을 꺼내다 목소리가 높아졌지만 피하지 않고 자기 마음을 끝까지 설명하고 있어요.","living"],
     [`${other.name}와 말다툼하는 중`,"바로 반박했다가 잠시 숨을 고르고, 무엇이 속상했는지 상대에게 차근차근 되묻고 있어요.","living"]
   ];
@@ -458,6 +476,14 @@ function relationshipHomeEntry(c,pick,time,date){
   else if(c.interference==="챙기고 확인함")scripts=[
     [`${other.name}를 데려다줄 준비 중`,"늦은 시간 혼자 움직이지 않도록 목적지와 돌아올 시간을 확인하고 외투와 차 키를 챙기고 있어요.","entry"],
     [`${other.name}의 준비물을 확인하는 중`,"빠뜨린 것이 없는지 옆에서 하나씩 확인하고 필요한 물건을 가방에 넣어 주고 있어요.","entry"]
+  ];
+  else if(intimacy<40&&["활발하게 어울림","무리의 중심"].includes(c.socialStyle))scripts=[
+    [`${other.name}를 자꾸 귀찮게 하는 중`,"혼자 조용히 있으려는 상대의 곁을 맴돌며 사소한 질문을 연달아 던지고, 대답이 짧아도 새 이야기를 꺼내고 있어요.","living"],
+    [`${other.name}의 집중을 흐트러뜨리는 중`,"옆을 지나갈 때마다 방금 떠오른 이야기를 하나씩 보태며 상대가 결국 고개를 들 때까지 말을 걸고 있어요.","study"]
+  ];
+  else if(intimacy<40&&["강박적","철저히 계획함"].includes(c.planningStyle))scripts=[
+    [`${other.name}가 어질러 둔 순서를 바로잡는 중`,"상대가 다시 쓸 물건이라는 말을 듣고도 제자리에 있어야 찾기 쉽다며 하나씩 정리하고 있어요.","living"],
+    [`${other.name}에게 다음 일정을 재확인하는 중`,"이미 들은 약속도 시간이 바뀌지 않았는지 다시 묻고 현관 가까이에 필요한 물건을 모아 두고 있어요.","entry"]
   ];
   else return sharedHomeEntry(c,other,time,date);
   const script=scripts[role];
@@ -692,7 +718,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260804d";
+const ENGINE_VERSION="20260804f";
 function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){

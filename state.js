@@ -61,7 +61,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",lastSaved:0,characters:{},order:[],homes:{},relationships:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterViews:{},routines:{},dailyPlans:{},catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -115,6 +115,12 @@ function normalizeHomes(x){
   x.homes=x.homes&&typeof x.homes==="object"?x.homes:{};
   x.routines=x.routines&&typeof x.routines==="object"?x.routines:{};
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
+  x.characterViews=x.characterViews&&typeof x.characterViews==="object"?x.characterViews:{};
+  Object.keys(x.characterViews).forEach(sourceId=>{
+    if(!x.characters[sourceId]){delete x.characterViews[sourceId];return}
+    const targets=x.characterViews[sourceId]&&typeof x.characterViews[sourceId]==="object"?x.characterViews[sourceId]:{};
+    x.characterViews[sourceId]=Object.fromEntries(Object.entries(targets).filter(([targetId])=>targetId!==sourceId&&x.characters[targetId]).map(([targetId,value])=>[targetId,value&&typeof value==="object"?value:{}]));
+  });
   const relationList=Array.isArray(x.relationships)?x.relationships:Object.values(x.relationships||{});
   x.relationships={};
   const relationIdsByKey=new Map();
