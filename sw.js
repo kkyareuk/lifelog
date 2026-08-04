@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260804j";
+const CACHE_VERSION="drawer-village-v20260804k";
 const CORE=[
   "./",
   "./index.html",
@@ -14,6 +14,18 @@ const CORE=[
   "./world-assets/cozy-town.png",
   "./world-assets/drawer-building.png",
   "./world-assets/drawer-home.png",
+  "./world-assets/building-types/generic.png",
+  "./world-assets/building-types/cafe.png",
+  "./world-assets/building-types/restaurant.png",
+  "./world-assets/building-types/hospital.png",
+  "./world-assets/building-types/office.png",
+  "./world-assets/building-types/shop.png",
+  "./world-assets/building-types/school.png",
+  "./world-assets/building-types/lodging.png",
+  "./world-assets/building-types/library.png",
+  "./world-assets/building-types/theater.png",
+  "./world-assets/building-types/park.png",
+  "./world-assets/building-types/home.png",
   "./icons/drawer-village-logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"

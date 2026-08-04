@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260804j";
+import {state,save,characterViewFor} from "./state.js?v=20260804k";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -39,15 +39,20 @@ const sleepScene=(c,d=new Date())=>{
 };
 const townFor=c=>state.towns.find(t=>t.id===c.townId)||state.towns[0]||state.world;
 const workplaceTown=c=>state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
-const activityTown=(c,date=new Date())=>{
+const scheduledTown=(c,date=new Date())=>{
+  const routine=(state.routines?.[c.id]||[]).find(item=>Number(item.day)===date.getDay()&&item.placeId);
+  return routine?state.towns.find(t=>t.places?.some(p=>p.id===routine.placeId)):null;
+};
+const travelPurpose=(c,date=new Date())=>{
   const workTown=workplaceTown(c);
-  if(workTown&&c.job!=="무직")return workTown;
-  const home=townFor(c),others=state.towns.filter(t=>t.id!==home.id);
-  if(!others.length)return home;
-  const weekend=[0,6].includes(date.getDay()),restDay=weekend&&hash(`${c.id}:${dayKey(date)}:rest`)%4!==0;
-  if(restDay||hash(`${c.id}:${dayKey(date)}:town-trip`)%3!==0)return home;
-  const romantic=preferredRelation(c),pair=romantic&&["부부","연인"].includes(romantic.r.type)?[c.id,romantic.other.id].sort().join(":"):c.id;
-  return others[hash(`${pair}:${dayKey(date)}:destination`)%others.length];
+  if(workTown&&c.job!=="무직")return {town:workTown,label:"출근 일정"};
+  const routine=(state.routines?.[c.id]||[]).find(item=>Number(item.day)===date.getDay()&&item.placeId);
+  const town=scheduledTown(c,date);
+  if(town)return {town,label:routine?.title||routine?.type||"등록한 일정"};
+  return {town:townFor(c),label:""};
+};
+const activityTown=(c,date=new Date())=>{
+  return travelPurpose(c,date).town;
 };
 const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
@@ -673,6 +678,7 @@ function build(c,date=new Date()){
   if(morningTogether)list.push(morningTogether);
   const work=workEvent(c,Math.max(wake+90,540),date);
   const destination=activityTown(c,date),homeTown=townFor(c);
+  const destinationPurpose=travelPurpose(c,date).label;
   const homeCars=state.homes[c.homeId]?.cars||[];
   const rideablePet=(state.homes[c.homeId]?.pets||[]).find(p=>p.rideable&&["드래곤","호랑이"].includes(p.species));
   const useMount=rideablePet&&(hash(`${c.id}:${dayKey(date)}:mount`)%2===0);
@@ -684,7 +690,8 @@ function build(c,date=new Date()){
     const travelMinute=Math.max(wake+75,(work?.minute||720)-45);
     const mode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"transit";
     const title=mode==="mount"?`${rideablePet.name}을 타고 ${destination.name}으로 이동 중`:mode==="partner"?`${romantic.name}의 차를 타고 ${destination.name}으로 이동 중`:mode==="car"?`차를 운전해 ${destination.name}으로 이동 중`:`대중교통으로 ${destination.name} 이동 중`;
-    const desc=mode==="mount"?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 안전한 비행 경로를 따라 다른 마을로 향하고 있어요.`:`${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 다른 마을로 향하고 있어요.`):mode==="partner"?`${romantic.name}가 운전하는 차에 함께 타고 목적지로 향하고 있어요.`:mode==="car"?"집의 자동차를 직접 운전해 다른 마을로 이동하고 있어요. 음주한 날에는 운전하지 않아요.":"버스나 지하철 노선을 확인하고 다른 마을로 이동하고 있어요.";
+    const reason=destinationPurpose?`${destinationPurpose} 때문에 `:"";
+    const desc=mode==="mount"?(rideablePet.species==="드래곤"?`${reason}${rideablePet.name}의 등에 올라 안전한 비행 경로를 따라 ${destination.name}으로 향하고 있어요.`:`${reason}${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 ${destination.name}으로 향하고 있어요.`):mode==="partner"?`${reason}${romantic.name}가 운전하는 차에 함께 타고 ${destination.name}의 목적지로 향하고 있어요.`:mode==="car"?`${reason}집의 자동차를 직접 운전해 ${destination.name}으로 이동하고 있어요. 음주한 날에는 운전하지 않아요.`:`${reason}버스나 지하철 노선을 확인하고 ${destination.name}으로 이동하고 있어요.`;
     list.push(entry(travelMinute,title,desc,{townId:destination.id,transit:true,withId:mode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
   const morning=morningScripts(c,date),commuteMinute=work&&c.workplaceId!=="home"?work.minute-35:Infinity;
@@ -777,7 +784,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260804j";
+const ENGINE_VERSION="20260804k";
 function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
