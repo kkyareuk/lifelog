@@ -300,12 +300,19 @@ function normalizeHomes(x){
     c.theme={primary:"#176b60",secondary:"#6fd0ae",gradient:true,...(c.theme||{})};
     c.gender=["남성","여성","그외"].includes(c.gender)?c.gender:"그외";
     c.attractedGenders=Array.isArray(c.attractedGenders)?[...new Set(c.attractedGenders)]:[];
+    c.attractionTarget=c.attractionTarget||(
+      c.attractedGenders.includes("없음")||!c.attractedGenders.length?"설정하지 않음 · 누구에게도 끌리지 않음":
+      c.attractedGenders.includes("남성")&&c.attractedGenders.includes("여성")&&c.attractedGenders.includes("그외")?"성별과 무관하게 끌림":
+      c.attractedGenders.includes("남성")&&c.attractedGenders.includes("여성")?"여성과 남성에게 끌림":
+      c.attractedGenders.includes("여성")?"여성에게 끌림":c.attractedGenders.includes("남성")?"남성에게 끌림":"그외 성별에게 끌림"
+    );
     c.touchReaction=c.touchReaction||"상황에 따라 자연스럽게 받아들임";
     c.appearanceLevel=c.appearanceLevel||"보통";
     c.appearanceInterest=c.appearanceInterest||"보통";
     c.appearanceTags=Array.isArray(c.appearanceTags)?[...new Set(c.appearanceTags)]:[];
     c.attractionTraits=Array.isArray(c.attractionTraits)?[...new Set(c.attractionTraits)]:[];
-    c.relationshipOpenness=["연인이 있으면 다른 사람에게 끌리지 않음","아주 드물게 호감을 느낌","관계와 별개로 호감을 느낄 수 있음","새로운 사람에게 쉽게 끌림"].includes(c.relationshipOpenness)?c.relationshipOpenness:"연인이 있으면 다른 사람에게 끌리지 않음";
+    const opennessMigration={"연인이 있으면 다른 사람에게 끌리지 않음":"설정하지 않음 · 절대 끌리지 않음","아주 드물게 호감을 느낌":"연인이 있어도 취향이면 끌릴 수 있음","관계와 별개로 호감을 느낄 수 있음":"연인이 있어도 취향이면 끌릴 수 있음","새로운 사람에게 쉽게 끌림":"관계와 무관하게 쉽게 끌림"};
+    c.relationshipOpenness=opennessMigration[c.relationshipOpenness]||(["설정하지 않음 · 절대 끌리지 않음","연인이 없을 때만 취향이면 끌림","연인이 있어도 취향이면 끌릴 수 있음","관계와 무관하게 쉽게 끌림"].includes(c.relationshipOpenness)?c.relationshipOpenness:"설정하지 않음 · 절대 끌리지 않음");
     c.homeId=c.homeId||c.id;
     if(!x.homes[c.homeId])x.homes[c.homeId]={id:c.homeId,name:`${c.name||"캐릭터"}의 집`,image:"",rooms:rooms(),pets:[],cleanliness:100};
     const homeRooms=x.homes[c.homeId].rooms||rooms();

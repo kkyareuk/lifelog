@@ -499,8 +499,8 @@ function relationshipHomeEntry(c,pick,time,date){
   const attentive=/자주 살핌|늘 최우선/.test(attention);
   const jealous=/은근히 질투|질투가 심함|독점/.test(jealousy);
   const hasPartner=relationList().some(relation=>["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
-  const openness=c.relationshipOpenness||"연인이 있으면 다른 사람에게 끌리지 않음";
-  const opennessAllows=!hasPartner||openness==="관계와 별개로 호감을 느낄 수 있음"||openness==="새로운 사람에게 쉽게 끌림"||(openness==="아주 드물게 호감을 느낌"&&hash(`${c.id}:${other.id}:rare-attraction`)%12===0);
+  const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
+  const opennessAllows=openness==="관계와 무관하게 쉽게 끌림"||openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
   const attractionAllowed=opennessAllows&&!(c.attractedGenders||[]).includes("없음")&&(c.attractedGenders||[]).includes(other.gender);
   const otherTraits=[...(other.appearanceTags||[]),other.job,other.jobTitle,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
   const matchedLooks=(c.attractionTraits||[]).filter(tag=>otherTraits.includes(tag));
