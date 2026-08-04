@@ -364,8 +364,10 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   .character-view-card>summary{grid-template-columns:minmax(0,1fr)}
   .character-view-card>summary em{max-width:100%;justify-self:start}
   .character-view-heading .avatar,.character-view-heading .sprite{width:50px;height:50px;flex-basis:50px}
-  .relationship-map{padding:13px;overflow:visible;touch-action:pan-y}
-  .relationship-map-canvas{display:none}.relationship-map-mobile{display:grid;gap:10px;touch-action:pan-y}
+  .relationship-map{padding:10px;overflow:hidden;touch-action:pan-y}
+  .relationship-map-canvas{display:block;width:100%;height:auto;aspect-ratio:1000/470;border-radius:12px}
+  .relationship-map-canvas svg text{stroke-width:7px}
+  .relationship-map-mobile{display:none}
   .relationship-map-mobile article{display:grid;gap:9px;min-width:0;padding:12px;border-left:4px solid var(--p);border-radius:14px;background:#fff}
   .relationship-map-mobile header{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
   .relationship-map-mobile header small,.relationship-map-mobile p small{color:var(--muted)}

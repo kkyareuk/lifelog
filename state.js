@@ -143,6 +143,10 @@ function normalizeHomes(x){
     if(!x.characters[sourceId]){delete x.characterViews[sourceId];return}
     const targets=x.characterViews[sourceId]&&typeof x.characterViews[sourceId]==="object"?x.characterViews[sourceId]:{};
     x.characterViews[sourceId]=Object.fromEntries(Object.entries(targets).filter(([targetId])=>targetId!==sourceId&&x.characters[targetId]).map(([targetId,value])=>[targetId,value&&typeof value==="object"?value:{}]));
+    Object.values(x.characterViews[sourceId]).forEach(view=>{
+      const overallMigration={"호감이 있음":"인간적인 호감이 있음","좋아함":"연애 감정으로 좋아함","사랑함":"깊이 사랑함"};
+      if(view?.overall) view.overall=overallMigration[view.overall]||view.overall;
+    });
   });
   const relationList=Array.isArray(x.relationships)?x.relationships:Object.values(x.relationships||{});
   x.relationships={};

@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260805f";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805f";
+import {state,active,characterViewFor} from "./state.js?v=20260805g";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805g";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -403,7 +403,7 @@ function catalog(){
 }
 const relationActivities=()=> "";
 const CHARACTER_VIEW_OPTIONS={
-  overall:["정하지 않음","낯선 사람으로 여김","매우 싫어함","경계함","불편해함","그저 그런 사람","호감이 있음","좋아함","소중하게 여김","사랑함","없어서는 안 될 사람"],
+  overall:["정하지 않음","낯선 사람으로 여김","매우 싫어함","미워함","경계함","불편해함","부담스러워함","경쟁심을 느낌","애증을 느낌","그저 그런 사람","흥미롭게 여김","인간적인 호감이 있음","친구로 좋아함","존경함","동경함","안쓰럽게 여김","소중하게 여김","연애 감정이 싹틈","연애 감정으로 좋아함","깊이 사랑함","없어서는 안 될 사람"],
   awareness:["정하지 않음","자기 감정을 분명히 자각함","감정을 어렴풋이 느낌","감정을 우정으로 착각함","감정을 경쟁심으로 착각함","감정을 불편함으로 착각함","자기 감정을 전혀 모름","느끼는 감정을 부정함"],
   trust:["정하지 않음","전혀 믿지 않음","의심함","조심스럽게 지켜봄","보통","어느 정도 믿음","깊이 신뢰함","전적으로 의지함"],
   closeness:["정하지 않음","남보다도 멂","낯선 사이","거리감 있음","보통","편한 사이","가까운 사이","가장 가까운 사람"],
@@ -473,8 +473,8 @@ function relationshipMap(relations){
     const startB={x:b.x-unitX*nodeRadius-normalX*lane,y:b.y-unitY*nodeRadius-normalY*lane},endA={x:a.x+unitX*nodeRadius-normalX*lane,y:a.y+unitY*nodeRadius-normalY*lane};
     const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${startA.x} ${startA.y} Q ${midX+normalX*lane} ${midY+normalY*lane} ${endB.x} ${endB.y}`,backward=`M ${startB.x} ${startB.y} Q ${midX-normalX*lane} ${midY-normalY*lane} ${endA.x} ${endA.y}`;
     const forwardMarker=`relation-arrow-${index}-forward`,backwardMarker=`relation-arrow-${index}-backward`;
-    const likes=value=>/호감|좋아|소중|사랑|없어서는/.test(value||"");
-    const inferredText=likes(forwardLabel)!==likes(backwardLabel)?"시선 기반 · 짝사랑":likes(forwardLabel)&&likes(backwardLabel)?"시선 기반 · 상호 호감":"공식 관계 없음";
+    const likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||"");
+    const inferredText=likes(forwardLabel)!==likes(backwardLabel)?"시선 기반 · 짝사랑":likes(forwardLabel)&&likes(backwardLabel)?"시선 기반 · 상호 연심":"공식 관계 없음";
     const relationText=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferredText;
     const stageText=[...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · ");
     const officialPoint=placeLabel(midX,midY,normalX,normalY);
@@ -484,7 +484,7 @@ function relationshipMap(relations){
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-55}" y="${pos.y-55}" width="110" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
   const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId],label=viewLabel(sourceId,targetId);return `<p class="mobile-relation-direction" style="--direction-color:${emotionColor(label)}"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(label)}</small></span></p>`};
-  const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/호감|좋아|소중|사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 호감":"공식 관계 없음";return `<article><header><b>${esc(edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferred)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
+  const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 연심":"공식 관계 없음";return `<article><header><b>${esc(edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferred)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
   return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>공식 관계가 없어도 직접 편집한 시선은 화살표로 표시돼요. 여러 공식 관계는 한 묶음으로 보여요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 470" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }
 function relationship(){

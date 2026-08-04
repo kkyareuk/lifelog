@@ -59,6 +59,20 @@ function shortError(error){
   return code;
 }
 const cloudDoc=()=>doc(db,"users",user.uid);
+async function registerSignedInUser(){
+  if(!user)return;
+  const reference=cloudDoc();
+  const snapshot=await getDoc(reference);
+  const profile={
+    name:user.displayName||"",
+    email:user.email||"",
+    photoURL:user.photoURL||"",
+    provider:user.providerData?.[0]?.providerId||"google.com"
+  };
+  const presence={profile,lastLoginAt:serverTimestamp(),accountSchemaVersion:1};
+  if(!snapshot.exists())presence.createdAt=serverTimestamp();
+  await setDoc(reference,presence,{merge:true});
+}
 const normalizeEntitlements=value=>{
   const purchases=Array.isArray(value?.purchases)?value.purchases.filter(x=>typeof x==="string"):[];
   return {
@@ -230,11 +244,15 @@ if(ready){
     const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);storage=getStorage(app);
     await setPersistence(auth,browserLocalPersistence);
     try{await getRedirectResult(auth)}catch(error){console.warn(error)}
-    onAuthStateChanged(auth,next=>{
+    onAuthStateChanged(auth,async next=>{
       user=next;
       if(!user){publishEntitlements(null);publishGuideState(localGuideKeys())}
       status(user?`${user.displayName||"Google 계정"} · 저장 시 동기화`:"Google 로그인 안 됨");
-      if(user&&!autoLoadStarted){autoLoadStarted=true;download({automatic:true})}
+      if(user){
+        try{await registerSignedInUser()}
+        catch(error){console.error(error);status(`${user.displayName||"Google 계정"} · 사용자 등록 실패 · ${shortError(error)}`)}
+        if(!autoLoadStarted){autoLoadStarted=true;download({automatic:true})}
+      }
     });
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}
 }else status("Firebase 설정 필요");

@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805f";
-import {eventFor} from "./simulation.js?v=20260805f";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805f";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805g";
+import {eventFor} from "./simulation.js?v=20260805g";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805g";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -762,9 +762,13 @@ function bind(){
       render();
       $$("[data-view-source]").forEach(button=>button.classList.toggle("on",button.dataset.viewSource===source));
       $$("[data-view-panel]").forEach(panel=>panel.hidden=panel.dataset.viewPanel!==source);
-      const card=document.querySelector(`[data-view-card-source="${CSS.escape(source)}"][data-view-card-target="${CSS.escape(target)}"]`);
-      if(card)card.open=true;
-      window.scrollTo({top:scrollTop,behavior:"auto"});
+      requestAnimationFrame(()=>{
+        const panel=document.querySelector(`[data-view-panel="${CSS.escape(source)}"]`);
+        panel?.querySelectorAll(".character-view-card").forEach(item=>item.open=false);
+        const card=panel?.querySelector(`[data-view-card-source="${CSS.escape(source)}"][data-view-card-target="${CSS.escape(target)}"]`);
+        if(card)card.open=true;
+        window.scrollTo({top:scrollTop,behavior:"auto"});
+      });
     }
   });
   $$("[data-delete-rel]").forEach(el=>el.onclick=()=>{
@@ -1264,12 +1268,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260805f").catch(error=>{
+import("./auth.js?v=20260805g").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805f",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805g",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
