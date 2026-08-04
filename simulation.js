@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260804i";
+import {state,save,characterViewFor} from "./state.js?v=20260804j";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -777,7 +777,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260804i";
+const ENGINE_VERSION="20260804j";
 function signature(c){return JSON.stringify({engine:ENGINE_VERSION,createdAt:c.createdAt,townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,wake:c.wake,sleep:c.sleep,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
@@ -907,11 +907,33 @@ function interactionPair(group){
 }
 function concreteInteraction(place,first,second,relation){
   const name=second.name,type=place?.type||"";
-  if(!relation)return {
-    first:`${name}와 같은 공간에 있지만 아직 서로를 잘 알지 못해요. 시선이 마주쳤을 때 가볍게 목례한 뒤 각자 보던 것과 하던 일로 돌아갔어요.`,
-    second:`${subject(first.name)} 가까이에 있다는 것은 알아챘지만 아는 사이가 아니라 굳이 말을 붙이지 않았어요. 서로의 동선을 방해하지 않을 만큼 거리를 두고 있어요.`,
-    title:"낯선 사람과 각자 시간을 보내는 중"
-  };
+  if(!relation){
+    const firstExplicit=state.characterViews?.[first.id]?.[second.id]||{};
+    const secondExplicit=state.characterViews?.[second.id]?.[first.id]||{};
+    const likes=value=>/호감|좋아|소중|사랑|없어서는/.test(value?.overall||"");
+    const firstLikes=likes(firstExplicit),secondLikes=likes(secondExplicit);
+    const admirer=firstLikes&&!secondLikes?first:secondLikes&&!firstLikes?second:null;
+    if(admirer){
+      const stranger=admirer.id===first.id?second:first;
+      const introverted=Number(admirer.socialEnergy??3)<=2||/혼자|낯|수줍|조용/.test(String(admirer.socialStyle||""));
+      const admirerText=introverted
+        ?`${stranger.name}에게 호감이 있지만 선뜻 말을 걸지 못했어요. 가까운 곳을 몇 번 맴돌다가 시선이 마주치면 금세 다른 곳을 보는 척하고 있어요.`
+        :`${stranger.name}에게 호감이 있어 자연스럽게 인사를 건네고 눈에 띈 것을 함께 보자고 제안했어요. 아직 친한 사이는 아니라 반응을 재촉하지 않고 한 걸음 물러서 기다리고 있어요.`;
+      const strangerText=`${subject(admirer.name)} 자신을 유난히 의식하는 듯해 조금 당황했어요. 아직 잘 모르는 사람이라 바로 친근하게 맞추기보다는 조심스럽게 인사하고, 왜 다가왔는지 반응을 살피고 있어요.`;
+      return {
+        first:first.id===admirer.id?admirerText:strangerText,
+        second:second.id===admirer.id?admirerText:strangerText,
+        firstTitle:first.id===admirer.id?(introverted?"좋아하지만 말을 걸지 못하는 중":"호감 있는 사람에게 조심스럽게 다가가는 중"):"낯선 사람의 호감에 당황하는 중",
+        secondTitle:second.id===admirer.id?(introverted?"좋아하지만 말을 걸지 못하는 중":"호감 있는 사람에게 조심스럽게 다가가는 중"):"낯선 사람의 호감에 당황하는 중",
+        title:"엇갈린 호감을 느끼는 중"
+      };
+    }
+    return {
+      first:`${name}와 같은 공간에 있지만 아직 서로를 잘 알지 못해요. 시선이 마주쳤을 때 가볍게 목례한 뒤 각자 보던 것과 하던 일로 돌아갔어요.`,
+      second:`${subject(first.name)} 가까이에 있다는 것은 알아챘지만 아는 사이가 아니라 굳이 말을 붙이지 않았어요. 서로의 동선을 방해하지 않을 만큼 거리를 두고 있어요.`,
+      title:"낯선 사람과 각자 시간을 보내는 중"
+    };
+  }
   if(["혐관","라이벌"].includes(relation?.type))return {
     first:`${name}와 눈이 마주치자 먼저 시선을 거두고, 일부러 조금 떨어진 자리를 골라 하던 일에 집중하고 있어요.`,
     second:`${subject(first.name)} 거리를 두는 것을 알아챘지만 따라가 말을 붙이지 않고, 자신의 자리에서 하던 일을 이어가고 있어요.`,
@@ -954,10 +976,10 @@ function sharedPlaceScene(c,current,date){
   const scene=concreteInteraction(place,pair.first,pair.second,pair.relation);
   let detail,title;
   if(c.id===pair.first?.id){
-    title=scene.title;
+    title=scene.firstTitle||scene.title;
     detail=scene.first;
   }else if(c.id===pair.second?.id){
-    title=scene.title;
+    title=scene.secondTitle||scene.title;
     detail=scene.second;
   }else{
     const ownRelation=relationList().find(relation=>together.some(other=>
