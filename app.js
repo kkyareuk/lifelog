@@ -304,7 +304,7 @@ function openProfileExportDialog(){
 }
 function enhanceDynamicForms(){
   const feedbackIntro=document.querySelector(".feedback-card>p");
-  if(feedbackIntro)feedbackIntro.textContent="Google 로그인 주소와 받는 주소가 같아도 전송할 수 있어요. FormSubmit이 전달하지 못하면 같은 내용이 채워진 Gmail 작성창을 열며, 게임 데이터 동기화는 실행하지 않습니다.";
+  if(feedbackIntro)feedbackIntro.textContent="Google 로그인 후 Firestore 피드백함에 먼저 저장하고 이메일 전달을 추가로 시도해요. 성공·실패 결과는 버튼 아래에 표시되며 게임 데이터 동기화는 실행하지 않습니다.";
   const profile=document.querySelector(".profile-license");
   if(profile){
     profile.querySelectorAll('[data-personality-field="interference"]').forEach(button=>{
@@ -522,38 +522,48 @@ function bind(){
     const data=new FormData(form);
     const category=String(data.get("category")||"기타");
     const message=String(data.get("message")||"").trim();
-    if(!message){showToast("피드백 내용을 적어 주세요");return}
-    const character=active();
     const button=form.querySelector('button[type="submit"]'),status=form.querySelector(".feedback-status");
-    button.disabled=true;button.textContent="보내는 중…";status.textContent="";
+    if(!message){status.textContent="피드백 내용을 적어 주세요.";showToast("피드백 내용을 적어 주세요");return}
+    const character=active(),auth=window.ParallelCityAuth,info=auth?.getInfo?.();
+    if(!auth?.submitFeedback){
+      status.textContent="Firebase 연결 코드를 불러오지 못했어요. 페이지를 새로고침한 뒤 다시 시도해 주세요.";
+      showToast("피드백 연결을 불러오지 못했어요");return;
+    }
+    if(!info?.user){
+      status.textContent="Google 로그인 후 피드백을 보낼 수 있어요. 위의 ‘Google 로그인 / 로그아웃’을 먼저 눌러 주세요.";
+      showToast("Google 로그인이 필요합니다");return;
+    }
+    button.disabled=true;button.textContent="피드백함에 저장 중…";status.textContent="Firestore 피드백함에 안전하게 저장하는 중이에요.";
     try{
-      const auth=window.ParallelCityAuth;
-      const response=await fetch("https://formsubmit.co/ajax/kkyaareuk@gmail.com",{
-        method:"POST",
-        headers:{"Content-Type":"application/json","Accept":"application/json"},
-        body:JSON.stringify({
-          _subject:`[서랍마을 ${category}] 사용자 피드백`,
-          _template:"table",
-          _captcha:"false",
-          _replyto:auth?.getInfo?.().user?.email||"",
-          분류:category,
-          내용:message,
-          현재_화면:TAB_META[state.activeTab]?.[0]||state.activeTab,
-          선택_캐릭터:character?.name||"없음",
-          보낸_시각:new Date().toLocaleString("ko-KR")
-        })
-      });
-      if(!response.ok)throw new Error(`HTTP ${response.status}`);
-      const result=await response.json().catch(()=>null);
-      if(!result||![true,"true"].includes(result.success))throw new Error(result?.message||"메일 서비스가 전달을 확인하지 않았습니다.");
-      form.reset();status.textContent="보냈어요. 개발자 이메일과 피드백함에 전달됐습니다.";showToast("피드백을 보냈어요");
+      await Promise.race([
+        auth.submitFeedback({category,message,allowReply:true}),
+        new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("Firestore 응답 시간 초과"),{code:"feedback/timeout"})),12000))
+      ]);
+      form.reset();status.textContent="피드백함에 저장됐어요. 이메일 전달도 확인하는 중이에요.";showToast("피드백함에 저장됐어요");
+      button.textContent="이메일 전달 확인 중…";
+      try{
+        const response=await Promise.race([
+          fetch("https://formsubmit.co/ajax/kkyaareuk@gmail.com",{
+            method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
+            body:JSON.stringify({_subject:`[서랍마을 ${category}] 사용자 피드백`,_template:"table",_captcha:"false",_replyto:info.user.email||"",분류:category,내용:message,현재_화면:TAB_META[state.activeTab]?.[0]||state.activeTab,선택_캐릭터:character?.name||"없음",보낸_시각:new Date().toLocaleString("ko-KR")})
+          }),
+          new Promise((_,reject)=>setTimeout(()=>reject(new Error("메일 응답 시간 초과")),8000))
+        ]);
+        const result=response.ok?await response.json().catch(()=>null):null;
+        status.textContent=result&&[true,"true"].includes(result.success)
+          ?"피드백함에 저장됐고 개발자 이메일에도 전달됐어요."
+          :"피드백함 저장 완료 · 이메일 서비스는 전달을 확인하지 못했어요.";
+      }catch{
+        status.textContent="피드백함 저장 완료 · 이메일 전달은 실패했지만 내용은 안전하게 보관됐어요.";
+      }
     }catch(error){
-      console.warn("피드백 전송 실패",error);
+      console.error("Firestore 피드백 저장 실패",error);
       const subject=encodeURIComponent(`[서랍마을 ${category}] 사용자 피드백`);
       const body=encodeURIComponent(`${message}\n\n현재 화면: ${TAB_META[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}\n보낸 시각: ${new Date().toLocaleString("ko-KR")}`);
       const gmailUrl=`https://mail.google.com/mail/?view=cm&fs=1&to=kkyaareuk%40gmail.com&su=${subject}&body=${body}`;
-      status.innerHTML=`FormSubmit 전달이 막혔어요. <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer">여기를 눌러 Gmail 작성창 열기</a>`;
-      showToast("아래 Gmail 작성 링크를 눌러 주세요");
+      const code=String(error?.code||error?.message||"알 수 없는 오류").replace("firebase/","");
+      status.innerHTML=`피드백함 저장 실패 (${esc(code)}). Firebase 보안 규칙을 게시했는지 확인해 주세요. <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer">Gmail 작성창으로 대신 보내기</a>`;
+      showToast("피드백 저장에 실패했어요 · 화면의 오류를 확인해 주세요");
     }finally{button.disabled=false;button.textContent="피드백 보내기"}
   });
   $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 함께 사는 존재를 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
@@ -1268,12 +1278,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260805h").catch(error=>{
+import("./auth.js?v=20260805i").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805h",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805i",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
