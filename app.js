@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804f";
-import {eventFor} from "./simulation.js?v=20260804f";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804f";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260804g";
+import {eventFor} from "./simulation.js?v=20260804g";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260804g";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -486,8 +486,9 @@ function bind(){
   $$(".place-editor [data-delete-place]").forEach(button=>button.remove());
   $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
-  $("[data-view-source]")?.addEventListener("change",event=>{
-    $$("[data-view-panel]").forEach(panel=>panel.hidden=panel.dataset.viewPanel!==event.target.value);
+  $$("[data-view-source]").forEach(button=>button.onclick=()=>{
+    $$("[data-view-source]").forEach(item=>item.classList.toggle("on",item===button));
+    $$("[data-view-panel]").forEach(panel=>panel.hidden=panel.dataset.viewPanel!==button.dataset.viewSource);
   });
   $$("[data-character-view]").forEach(select=>select.onchange=()=>{
     const source=select.dataset.source,target=select.dataset.target,field=select.dataset.viewField;
@@ -496,6 +497,10 @@ function bind(){
     state.characterViews[source][target]=state.characterViews[source][target]&&typeof state.characterViews[source][target]==="object"?state.characterViews[source][target]:{};
     if(select.value==="정하지 않음")delete state.characterViews[source][target][field];
     else state.characterViews[source][target][field]=select.value;
+    if(field==="overall"){
+      const summary=$$("[data-view-summary]").find(item=>item.dataset.viewSummary===`${source}:${target}`);
+      if(summary)summary.textContent=select.value;
+    }
     save(true);showToast(`${state.characters[source]?.name||"캐릭터"}의 생각을 저장했어요`);
   });
   $$("[data-delete-rel]").forEach(el=>el.onclick=()=>{
@@ -930,12 +935,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260804f").catch(error=>{
+import("./auth.js?v=20260804g").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260804f").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260804g").catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

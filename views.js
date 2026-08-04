@@ -1,5 +1,5 @@
-import {state,active} from "./state.js?v=20260804f";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804f";
+import {state,active} from "./state.js?v=20260804g";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260804g";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -401,16 +401,17 @@ const CHARACTER_VIEW_OPTIONS={
   jealousy:["정하지 않음","질투하지 않음","가끔 신경 쓰임","은근히 질투함","질투가 심함","독점하고 싶어 함"]
 };
 const characterViewEditor=()=>{
-  const first=state.order[0],selectOptions=state.order.map(id=>`<option value="${id}">${esc(state.characters[id].name)}</option>`).join("");
+  const first=state.order[0];
   const field=(sourceId,targetId,key,label,help)=>{
     const current=state.characterViews?.[sourceId]?.[targetId]?.[key]||"정하지 않음";
     return `<label><span><b>${label}</b><small>${help}</small></span><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${CHARACTER_VIEW_OPTIONS[key].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select></label>`;
   };
   const panels=state.order.map(sourceId=>{
     const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
-    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map(targetId=>{const target=state.characters[targetId];return `<article class="character-view-card"><div class="character-view-heading">${avatar(target)}<div><h3>${esc(source.name)} → ${esc(target.name)}</h3><p><b>${esc(source.name)}</b>이(가) <b>${esc(target.name)}</b>을(를) 어떻게 보고 행동하는지 정해요.</p></div></div><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","이 사람을 전반적으로 어떻게 생각하는지")}${field(sourceId,targetId,"trust","신뢰","비밀이나 판단을 얼마나 믿는지")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","같은 공간에서 얼마나 긴장을 푸는지")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></article>`}).join("")}</div>`;
+    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=state.characterViews?.[sourceId]?.[targetId]?.overall||"정하지 않음";return `<details class="character-view-card" ${index===0?"open":""}><summary><span class="character-view-heading">${avatar(target)}<span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small></span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개로 이 사람을 전반적으로 어떻게 생각하는지")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","사랑해도 긴장하거나 불편할 수 있어요")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></details>`}).join("")}</div>`;
   }).join("");
-  return `<section class="character-view-editor"><div class="title"><div><h2>캐릭터별 관계 시선</h2><p>먼저 기준이 될 캐릭터를 고른 다음, 그 캐릭터가 다른 사람 한 명 한 명을 어떻게 보는지 선택해요. 반대 방향은 따로 설정할 수 있어요.</p></div><label>누구의 생각을 편집할까요?<select data-view-source>${selectOptions}</select></label></div>${panels}</section>`;
+  const sourceTabs=state.order.map((id,index)=>{const character=state.characters[id];return `<button type="button" data-view-source="${id}" class="${index===0?"on":""}">${avatar(character)}<span><b>${esc(character.name)}</b><small>이 캐릭터의 시선</small></span></button>`}).join("");
+  return `<section class="character-view-editor"><div class="title"><div><h2>캐릭터별 관계 시선</h2><p>아이콘을 눌러 기준 캐릭터를 고른 뒤, 상대 카드를 펼쳐 감정을 정해요. 공식 관계가 원수여도 한쪽만 사랑하거나, 사랑하지만 신뢰하지 않는 관계를 만들 수 있어요.</p></div></div><div class="character-view-source-tabs">${sourceTabs}</div>${panels}</section>`;
 };
 function relationshipMap(relations){
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
@@ -425,15 +426,15 @@ function relationshipMap(relations){
     if(!positions.has(relation.a)||!positions.has(relation.b)||seen.has(key))return false;
     seen.add(key);return true;
   });
+  const viewLabel=(source,target)=>state.characterViews?.[source]?.[target]?.overall||"정하지 않음";
   const lines=edges.map((relation,index)=>{
     const a=positions.get(relation.a),b=positions.get(relation.b),color=colors[relation.type]||"#6d776f";
     const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),offsetX=-dy/length*12,offsetY=dx/length*12;
     const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${a.x} ${a.y} Q ${midX+offsetX} ${midY+offsetY} ${b.x} ${b.y}`,backward=`M ${b.x} ${b.y} Q ${midX-offsetX} ${midY-offsetY} ${a.x} ${a.y}`;
     const marker=`relation-arrow-${index}`;
-    return `<g><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${color}"/></marker></defs><path d="${forward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><path d="${backward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><text x="${midX}" y="${midY-7}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+12}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
+    return `<g><defs><marker id="${marker}" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="${color}"/></marker></defs><path d="${forward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><path d="${backward}" fill="none" stroke="${color}" stroke-width="3" marker-end="url(#${marker})"/><text class="map-emotion" x="${midX+offsetX*2.1}" y="${midY+offsetY*2.1}" text-anchor="middle">${esc(viewLabel(relation.a,relation.b))}</text><text class="map-emotion" x="${midX-offsetX*2.1}" y="${midY-offsetY*2.1}" text-anchor="middle">${esc(viewLabel(relation.b,relation.a))}</text><text class="map-relation" x="${midX}" y="${midY-7}" text-anchor="middle">${esc(relation.type)}</text><text class="map-stage" x="${midX}" y="${midY+12}" text-anchor="middle">${esc(relation.stage||"")}</text></g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<div class="relationship-map-node" style="left:${pos.x/10}%;top:${pos.y/4.7}%">${avatar(character)}<b>${esc(character.name)}</b></div>`}).join("");
-  const viewLabel=(source,target)=>state.characterViews?.[source]?.[target]?.overall||"정하지 않음";
   const mobileEdges=edges.map(relation=>`<article><b>${esc(relation.type)} · ${esc(relation.stage||"")}</b><p>${esc(state.characters[relation.a]?.name||"")} → ${esc(state.characters[relation.b]?.name||"")}<small>${esc(viewLabel(relation.a,relation.b))}</small></p><p>${esc(state.characters[relation.b]?.name||"")} → ${esc(state.characters[relation.a]?.name||"")}<small>${esc(viewLabel(relation.b,relation.a))}</small></p></article>`).join("");
   return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>두 캐릭터 사이에는 서로 반대 방향으로 향하는 화살표가 하나씩 보여요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 470" preserveAspectRatio="xMidYMid meet">${lines}</svg>${nodes}</div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }
