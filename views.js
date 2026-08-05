@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260805u";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805u";
+import {state,active,characterViewFor} from "./state.js?v=20260805x";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805x";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -415,7 +415,7 @@ const CHARACTER_VIEW_OPTIONS={
   jealousy:["정하지 않음","질투하지 않음","가끔 신경 쓰임","은근히 질투함","질투가 심함","독점하고 싶어 함"],
   conflictIntensity:["정하지 않음","갈등이 거의 없음","가끔 부딪힘","자주 충돌함","격렬하게 충돌함","파국적인 충돌을 반복함"],
   expectation:["정하지 않음","언제든 끝날 수 있다고 생각함","곧 헤어질 거라고 예상함","당분간 이어질 거라 생각함","오래 함께할 거라 기대함","평생 이어질 관계라고 믿음"],
-  touchIntensity:["정하지 않음","신체 접촉 없음","인사·부축 같은 의례적 접촉만","손잡기·팔짱까지","포옹·기대기까지","가벼운 입맞춤까지","깊은 입맞춤까지","성인 간 합의된 친밀한 접촉까지"],
+  touchIntensity:["정하지 않음","신체 접촉 없음","인사·부축 같은 의례적 접촉만","손잡기·팔짱까지","포옹·기대기까지","가벼운 입맞춤까지","깊은 입맞춤까지","성인 간 친밀한 접촉까지"],
   aggression:["정하지 않음","공격 충동 없음","거친 말을 하고 싶은 충동","몸으로 밀어내고 싶은 충동","해치고 싶은 충동","죽이고 싶을 만큼 격한 충동"]
 };
 const characterViewEditor=()=>{
@@ -431,6 +431,43 @@ const characterViewEditor=()=>{
   const sourceTabs=state.order.map(id=>{const character=state.characters[id],primary=character.theme?.primary||"#176b60",secondary=character.theme?.gradient?(character.theme?.secondary||primary):primary;return `<button type="button" data-view-source="${id}" class="${id===first?"on":""}" style="--view-primary:${esc(primary)};--view-secondary:${esc(secondary)}">${avatar(character)}<span><b>${esc(character.name)}</b><small>이 캐릭터의 시선</small></span></button>`}).join("");
   return `<section class="character-view-editor"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p><b>공식 관계</b>는 두 사람에게 함께 적용되고, 아래의 감정·자각·신뢰·경계는 각 방향마다 따로 저장돼요. 친구인데 자기 호감을 모르는 사람, 원수인데 사랑하는 사람도 만들 수 있어요.</p></div><button data-add-rel>+ 공식 관계 설정</button></div><div class="character-view-source-tabs">${sourceTabs}</div>${panels}</section>`;
 };
+const relationPairKey=(a,b)=>[a,b].sort().join("~");
+function siblingWord(relation){
+  const ids=relation.groupMembers?.length?relation.groupMembers:[relation.a,relation.b];
+  const genders=[...new Set(ids.map(id=>state.characters[id]?.gender).filter(Boolean))];
+  const base=genders.length===1&&genders[0]==="남성"?"형제":genders.length===1&&genders[0]==="여성"?"자매":genders.every(value=>["남성","여성"].includes(value))?"남매":"형제·자매";
+  const pairs=ids.flatMap((a,index)=>ids.slice(index+1).map(b=>relation.siblingKinshipByPair?.[relationPairKey(a,b)]||"full"));
+  return pairs.length&&pairs.every(value=>value==="nonblood")?`의${base}`:base;
+}
+function currentOfficialLabel(relation){
+  const base=relation.type==="형제·자매"?siblingWord(relation):relation.type;
+  if(relation.temporalStatus==="past"){
+    const past={연인:"헤어진 연인",부부:"이혼한 부부",친구:"절연한 친구","소꿉친구":"멀어진 소꿉친구","학창 시절 친구들":"멀어진 학창 시절 친구","직장 동료":"전 직장 동료",동거인:"옛 동거인","부모·자녀":"절연한 부모·자녀","형제·자매":`절연한 ${base}`,라이벌:"과거의 라이벌",혐관:"과거의 악연"};
+    return past[relation.type]||`과거의 ${base}`;
+  }
+  return relation.legalStatus==="관계를 따로 명명하지 않음"?`유사 ${base}`:base;
+}
+function relationshipReality(a,b,official=[]){
+  const av=characterViewFor(a,b),bv=characterViewFor(b,a);
+  const love=value=>/연애 감정|깊이 사랑|없어서는|사랑함/.test(value?.overall||"");
+  const hate=value=>/싫|혐오|증오|원수/.test(value?.overall||"");
+  const distant=value=>/낯선|거리|가깝지|가장 바깥/.test(value?.closeness||"")||/매우 불편|숨막|대화도.*통하지/.test(value?.comfort||"");
+  const close=value=>/가장 가까운|가까운 사이|친한 사이/.test(value?.closeness||"");
+  const distrust=value=>/믿지|의심|경계/.test(value?.trust||"");
+  const confirmed=value=>/서로의 마음을 확인/.test(value?.mutualAwareness||"");
+  const conflict=value=>/자주 충돌|격렬|파국/.test(value?.conflictIntensity||"");
+  const past=official.some(relation=>relation.temporalStatus==="past");
+  const sibling=official.some(relation=>relation.type==="형제·자매");
+  if(sibling&&(distant(av)||distant(bv)||hate(av)||hate(bv)))return past?"절연한 형제 사이":"가족이지만 사실상 절연";
+  if(love(av)&&love(bv)&&confirmed(av)&&confirmed(bv))return distant(av)||distant(bv)?"서로 사랑하지만 가까워지기 어려운 사이":"서로 마음을 확인한 사이";
+  if(love(av)&&love(bv))return distrust(av)||distrust(bv)?"쌍방 연심이지만 서로 믿지 못함":"쌍방 짝사랑";
+  if(love(av)!==love(bv))return"한쪽만 품고 있는 연심";
+  if(hate(av)&&hate(bv))return conflict(av)||conflict(bv)?"서로 강하게 맞서는 사이":"서로 반감을 품은 사이";
+  if(close(av)&&close(bv))return"서로 의지하는 사이";
+  if(distant(av)&&distant(bv))return past?"이름만 남은 관계":"서로 거리를 두는 사이";
+  if(close(av)!==close(bv))return"한쪽만 관계를 붙잡는 중";
+  return official.length?"관계의 이름과 속마음이 엇갈린 사이":"서로를 알아가는 중";
+}
 function relationshipMap(relations){
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
   if(characters.length<2)return"";
@@ -482,37 +519,36 @@ function relationshipMap(relations){
     const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${startA.x} ${startA.y} Q ${midX+normalX*lane} ${midY+normalY*lane} ${forwardBase.x} ${forwardBase.y}`,backward=`M ${startB.x} ${startB.y} Q ${midX-normalX*lane} ${midY-normalY*lane} ${backwardBase.x} ${backwardBase.y}`;
     const forwardArrow=`${endB.x},${endB.y} ${forwardBase.x+normalX*arrowHalfWidth},${forwardBase.y+normalY*arrowHalfWidth} ${forwardBase.x-normalX*arrowHalfWidth},${forwardBase.y-normalY*arrowHalfWidth}`;
     const backwardArrow=`${endA.x},${endA.y} ${backwardBase.x+normalX*arrowHalfWidth},${backwardBase.y+normalY*arrowHalfWidth} ${backwardBase.x-normalX*arrowHalfWidth},${backwardBase.y-normalY*arrowHalfWidth}`;
-    const likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||"");
-    const relationText=edge.official.length?[...new Set(edge.official.map(relation=>relation.legalStatus==="관계를 따로 명명하지 않음"?`유사 ${relation.type}`:relation.type))].join(" · "):"이방인";
-    const stageText=[...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · ");
+    const relationText=edge.official.length?[...new Set(edge.official.map(currentOfficialLabel))].join(" · "):"이방인";
+    const stageText=relationshipReality(edge.a,edge.b,edge.official);
     const officialPoint=placeLabel(midX,midY,normalX,normalY);
     const normalizeAngle=value=>{let angle=value;while(angle>180)angle-=360;while(angle<=-180)angle+=360;if(angle>90)angle-=180;if(angle<-90)angle+=180;return angle};
     const forwardAngle=normalizeAngle(Math.atan2(dy,dx)*180/Math.PI),backwardAngle=normalizeAngle(Math.atan2(-dy,-dx)*180/Math.PI);
     const forwardPoint=placeLabel(midX+normalX*lane-unitX*length*.27,midY+normalY*lane-unitY*length*.27,normalX,normalY);
     const backwardPoint=placeLabel(midX-normalX*lane+unitX*length*.27,midY-normalY*lane+unitY*length*.27,-normalX,-normalY);
-    const officialAngle=forwardAngle;
-    const officialMarkup=`<g class="map-official" transform="rotate(${officialAngle} ${officialPoint.x} ${officialPoint.y})"><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-4}" text-anchor="middle">${esc(relationText||"이방인")}</text>${stageText?`<text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+15}" text-anchor="middle">${esc(stageText)}</text>`:""}</g>`;
+    const boxWidth=Math.min(220,Math.max(100,(Math.max(relationText.length,stageText.length)*13)+24));
+    const officialMarkup=`<g class="map-official"><rect x="${officialPoint.x-boxWidth/2}" y="${officialPoint.y-24}" width="${boxWidth}" height="48" rx="12"/><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-5}" text-anchor="middle">${esc(relationText||"이방인")}</text><text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+14}" text-anchor="middle">${esc(stageText)}</text></g>`;
     return `<g class="relationship-edge"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/><text class="map-emotion map-emotion-on-line" style="fill:${forwardColor}" x="${forwardPoint.x}" y="${forwardPoint.y}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${forwardAngle} ${forwardPoint.x} ${forwardPoint.y})">${esc(forwardLabel)}</text><text class="map-emotion map-emotion-on-line" style="fill:${backwardColor}" x="${backwardPoint.x}" y="${backwardPoint.y}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${backwardAngle} ${backwardPoint.x} ${backwardPoint.y})">${esc(backwardLabel)}</text>${officialMarkup}</g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-55}" y="${pos.y-55}" width="110" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
   const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId],label=viewLabel(sourceId,targetId);return `<p class="mobile-relation-direction" style="--direction-color:${emotionColor(label)}"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(label)}</small></span></p>`};
-  const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 연심":"이방인";const heading=edge.official.length?[...new Set(edge.official.map(relation=>relation.legalStatus==="관계를 따로 명명하지 않음"?`유사 ${relation.type}`:relation.type))].join(" · "):inferred;return `<article>${heading?`<header><b>${esc(heading)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>`:""}${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
+  const mobileEdges=edges.map(edge=>{const heading=edge.official.length?[...new Set(edge.official.map(currentOfficialLabel))].join(" · "):"이방인",reality=relationshipReality(edge.a,edge.b,edge.official);return `<article><header><b>${esc(heading)}</b><small>${esc(reality)}</small></header>${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
   return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>공식 관계가 없는 사이는 이방인으로 표시돼요. 화살표 위에서도 페이지를 그대로 스크롤할 수 있어요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }
 function relationship(){
   const all=Object.values(state.relationships),shownGroups=new Set();
-  const displayType=relation=>relation.legalStatus==="관계를 따로 명명하지 않음"?`유사 ${relation.type}`:relation.type;
+  const displayType=currentOfficialLabel;
   const cards=all.map(r=>{
     if(r.groupId){
       if(shownGroups.has(r.groupId))return"";shownGroups.add(r.groupId);
       const group=all.filter(x=>x.groupId===r.groupId),members=[...new Set(group.flatMap(x=>[x.a,x.b]))].map(id=>state.characters[id]).filter(Boolean);
       const direction=r.type==="짝사랑"?`${[...new Set(group.map(x=>state.characters[x.admirerId||x.a]?.name).filter(Boolean))].map(esc).join(" · ")} → ${[...new Set(group.map(x=>state.characters[x.targetId||x.b]?.name).filter(Boolean))].map(esc).join(" · ")}`:r.type==="부모·자녀"?`${[...new Set(group.map(x=>`${state.characters[x.parentId||x.a]?.name||"부모"}(${x.parentRole||"부모"})`))].map(esc).join(" · ")} → ${[...new Set(group.map(x=>state.characters[x.childId||x.b]?.name).filter(Boolean))].map(esc).join(" · ")}`:members.map(member=>esc(member.name)).join(" · ");
-      return `<article class="relation group-relation"><div class="relation-avatars">${members.map(member=>avatar(member)).join("")}</div><h2>${direction}</h2><p>${esc(displayType(r))} · ${members.length}명이 함께 맺은 관계</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${relationActivities(r)}<button data-edit-rel="${r.id}">구성원·관계 편집</button><button class="danger" data-delete-group="${r.groupId}">그룹 관계 삭제</button></article>`;
+      return `<article class="relation group-relation"><div class="relation-avatars">${members.map(member=>avatar(member)).join("")}</div><h2>${direction}</h2><p>${esc(displayType(r))} · ${members.length}명이 함께 맺은 관계</p><p class="relation-stage">${r.temporalStatus==="past"?"과거 관계 · ":""}${esc(r.stage||"편안한 사이")}</p>${r.temporalStatus==="past"&&r.faultReason&&r.faultReason!=="정하지 않음"?`<p class="relation-fault">관계가 끝난 이유 · ${esc(r.faultReason)}</p>`:""}${relationActivities(r)}<button data-edit-rel="${r.id}">구성원·관계 편집</button><button class="danger" data-delete-group="${r.groupId}">그룹 관계 삭제</button></article>`;
     }
     const orderedIds=!r.directional&&Array.isArray(r.displayOrder)&&r.displayOrder.length===2?r.displayOrder:[r.a,r.b];
     const a=state.characters[orderedIds[0]],b=state.characters[orderedIds[1]];
     const heading=r.type==="부모·자녀"?`${esc(state.characters[r.parentId||r.a]?.name||a?.name||"부모")}(${esc(r.parentRole||"부모")}) → ${esc(state.characters[r.childId||r.b]?.name||b?.name||"자녀")}`:`${esc(a?.name||"")} ${r.type==="짝사랑"?"→":"×"} ${esc(b?.name||"")}`;
-    return a&&b?`<article class="relation"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(displayType(r))} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p>${relationActivities(r)}<button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
+    return a&&b?`<article class="relation"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(displayType(r))} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${r.temporalStatus==="past"?"과거 관계 · ":""}${esc(r.stage||"편안한 사이")}</p><p class="relation-reality">관계 실체 · ${esc(relationshipReality(r.a,r.b,[r]))}</p>${r.temporalStatus==="past"&&r.faultReason&&r.faultReason!=="정하지 않음"?`<p class="relation-fault">관계가 끝난 이유 · ${esc(r.faultReason)}</p>`:""}${relationActivities(r)}<button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></article>`:"";
   }).join("");
   return `<section class="panel form"><div class="title"><h1>관계</h1></div><p>공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.</p>${characterViewEditor()}${relationshipMap(all)}<h2 class="official-relation-heading">공식 관계 목록</h2><div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 공식 관계가 없어요.</b><p>공식 관계가 없는 캐릭터끼리는 서로 낯선 사람으로 행동해요.</p></div>'}</div></section>`;
 }
