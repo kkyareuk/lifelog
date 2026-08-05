@@ -114,7 +114,7 @@ function normalizeHomes(x){
   x.schema=8;
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
-  x.uiFont=["system","noto","gowun","myeongjo","dohyeon"].includes(x.uiFont)?x.uiFont:"system";
+  x.uiFont=["system","noto","kopub","cafe24slim","changwonround","konkon","gowun","myeongjo","dohyeon"].includes(x.uiFont)?x.uiFont:"system";
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
   x.characterPane=["profile","personality","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";

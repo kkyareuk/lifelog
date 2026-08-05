@@ -1,12 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap");
+@font-face{font-family:"OngleipKonkon";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumLight.woff2") format("woff2");font-weight:300;font-display:swap}
+@font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumMedium.woff2") format("woff2");font-weight:400 600;font-display:swap}
+@font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumBold.woff2") format("woff2");font-weight:700 900;font-display:swap}
+@font-face{font-family:"Cafe24ProSlim";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/Cafe24PROSlim-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Cafe24ProSlim";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/Cafe24PROSlim-Bold.woff2") format("woff2");font-weight:700 900;font-display:swap}
+@font-face{font-family:"ChangwonDangamRounded";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/ChangwonDangamRound-Regular.woff2") format("woff2");font-weight:400 900;font-display:swap}
 :root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--ui-font:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="system"]{--ui-font:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="noto"]{--ui-font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+html[data-ui-font="kopub"]{--ui-font:"KoPubWorldDotum","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="cafe24slim"]{--ui-font:"Cafe24ProSlim","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="changwonround"]{--ui-font:"ChangwonDangamRounded","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="konkon"]{--ui-font:"OngleipKonkon","Noto Sans KR","Malgun Gothic",sans-serif}
 html[data-ui-font="gowun"]{--ui-font:"Gowun Dodum","Noto Sans KR","Malgun Gothic",sans-serif}
 html[data-ui-font="myeongjo"]{--ui-font:"Nanum Myeongjo","Batang",serif}
 html[data-ui-font="dohyeon"]{--ui-font:"Do Hyeon","Noto Sans KR","Malgun Gothic",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui-font)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 17px}button.primary,header nav .on{color:#fff;background:var(--grad);border-color:transparent}.panel{background:#fff;border:1px solid var(--line);border-radius:27px;box-shadow:0 18px 45px #27334b10}
 .font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
+.place-people-faces{justify-content:center!important;flex-wrap:wrap!important;max-width:200px!important;gap:clamp(0px,calc(8px - var(--people-count)*1px),3px)!important}
+.place-people-faces .avatar,.place-people-faces .sprite{width:clamp(28px,calc(66px - var(--people-count)*4px),52px)!important;height:clamp(32px,calc(72px - var(--people-count)*4px),58px)!important}
+.place-people-names{max-width:200px!important}
 .scene h3{line-height:1.45;margin:10px 0 12px;word-break:keep-all}.scene p{line-height:1.75;margin:0 0 15px;word-break:keep-all}.scene>b{display:block;line-height:1.55;margin-top:4px}
 header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}.brand{display:flex;align-items:center;gap:13px;min-width:270px}.brand h1{margin:0;font-size:31px}.brand small,#save-state{color:var(--muted)}.logo{width:76px;height:68px;display:grid;place-items:center;background:transparent}.logo img{display:block;width:100%;height:100%;object-fit:contain}nav{display:flex;gap:8px;overflow:auto;flex:1}header nav button{white-space:nowrap;font-size:19px}.account{white-space:nowrap}main{padding:26px;max-width:1900px;margin:auto}
 .title{display:flex;align-items:center;justify-content:space-between;gap:12px}.empty{max-width:760px;margin:10vh auto;text-align:center;padding:70px 20px}.roster{display:flex;gap:13px;overflow:auto;padding:5px 3px 18px}.roster-card{display:flex;align-items:center;gap:12px;min-width:265px;text-align:left;border:2px solid transparent}.roster-card.on{border-color:var(--own);box-shadow:0 7px 22px color-mix(in srgb,var(--own) 25%,transparent)}.roster-card span{display:grid}.roster-card b{font-size:22px}.roster-card small{color:var(--muted)}

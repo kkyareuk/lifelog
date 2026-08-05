@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805aj";
+import {state,save,characterViewFor} from "./state.js?v=20260805ak";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -330,10 +330,11 @@ function roommateHomeEntry(c,other,time,date){
 function workEvent(c,time,date){
   if(c.job==="무직")return null;
   const weekday=date.getDay()>=1&&date.getDay()<=5;
-  const weekendJobs=["해적","군인","환경미화원","여관주인","의사","간호사","요리사","자영업"];
+  const weekendJobs=["해적","군인","범죄자","환경미화원","여관주인","의사","간호사","요리사","자영업"];
   if(!weekday&&!weekendJobs.some(job=>String(c.job).includes(job)))return null;
   const variants={
     "회사원":[["업무 우선순위를 정리하는 중","메일과 요청 사항을 확인하고 오늘 처리할 일을 중요도와 마감 순서로 나누고 있어요."],["회의 자료를 다듬는 중","공유할 수치와 진행 상황을 다시 확인해 핵심만 알아보기 쉽게 정리하고 있어요."]],
+    "CEO":[["경영 회의를 진행하는 중","부서별 실적과 현안을 보고받고 지금 결정해야 할 투자와 인력 문제의 우선순위를 정하고 있어요."],["사업 계약을 검토하는 중","계약 조건과 위험 요소를 확인하고 담당자에게 수정할 항목과 협상 기준을 전달하고 있어요."],["임원 보고를 받는 중","핵심 수치와 현장 문제를 차례로 듣고 책임자와 마감 시점을 분명하게 정하고 있어요."]],
     "의사":[["진료 기록을 확인하는 중","환자의 증상과 검사 결과, 복용 중인 약을 대조한 뒤 다음 진료 순서를 준비하고 있어요."],["회진 중","병실을 돌며 상태 변화를 확인하고 필요한 처치와 관찰 사항을 의료진에게 전달하고 있어요."]],
     "간호사":[["환자 상태를 확인하는 중","체온과 활력 징후를 살피고 투약 시간과 남은 처치를 차례로 확인하고 있어요."],["인수인계를 정리하는 중","근무 중 달라진 상태와 주의할 점을 빠짐없이 기록해 다음 담당자에게 전하고 있어요."]],
     "교사":[["수업을 진행하는 중","학생들의 반응을 살피며 준비한 내용을 설명하고 이해가 어려운 부분을 다른 예시로 풀어 주고 있어요."],["수업 자료를 준비하는 중","다음 시간에 쓸 자료와 과제를 확인하고 학생별로 필요한 안내를 정리하고 있어요."]],
@@ -346,7 +347,8 @@ function workEvent(c,time,date){
     "환경미화원":[["담당 구역을 정돈하는 중","거리의 쓰레기를 종류별로 수거하고 사람들이 지나는 길을 안전하게 정리하고 있어요."],["청소 장비를 점검하는 중","도구와 수거함 상태를 확인하고 다음 구역으로 이동할 준비를 하고 있어요."]],
     "학생":[["수업을 듣는 중","오늘 시간표에 맞춰 설명을 듣고 중요한 내용을 자기 말로 다시 적어 보고 있어요."],["과제를 하는 중","제출 조건을 확인하고 참고 자료를 살펴보며 해야 할 부분을 차례로 해결하고 있어요."]],
     "해적":[["항해 준비 중","선원들과 항로와 날씨, 보급품을 점검하고 출항에 필요한 역할을 나누고 있어요."]],
-    "군인":[["훈련 중","부대 일정에 맞춰 훈련을 진행하고 장비 상태와 안전 수칙을 점검하고 있어요."]],
+    "군인":[["전술 훈련 중","정해진 목표 지점까지 이동하며 대형과 신호를 맞추고 장비 상태를 반복해서 확인하고 있어요."],["경계 근무 중","담당 구역의 출입과 주변 변화를 살피고 교대할 인원에게 특이 사항을 빠짐없이 전달하고 있어요."],["장비를 정비하는 중","훈련에 사용한 장비를 분해해 이상 여부를 확인하고 다음 일정에 맞춰 다시 정돈하고 있어요."],["상황 보고를 하는 중","현장에서 확인한 내용을 시간 순서대로 정리해 지휘 계통에 간결하게 보고하고 있어요."]],
+    "범죄자":[["은밀한 거래를 준비하는 중","약속 장소와 시간을 다시 확인하고 눈에 띄는 흔적을 남기지 않도록 필요한 물건만 챙기고 있어요."],["주변의 감시를 확인하는 중","같은 길을 반복하지 않고 이동하며 뒤따르는 사람이 없는지 유리창과 골목을 통해 살피고 있어요."],["도주 경로를 점검하는 중","막힐 가능성이 있는 길과 대체 이동 수단을 확인하고 연락할 사람과 신호를 다시 맞추고 있어요."],["장부를 숨겨 정리하는 중","거래 내역을 알아보기 어려운 표시로 옮겨 적고 원본은 쉽게 찾을 수 없는 곳에 감추고 있어요."]],
     "여관주인":[["손님맞이 중","객실 상태와 예약을 확인하고 새 손님이 불편하지 않도록 필요한 물품을 챙기고 있어요."]],
     "정치인":[["공무 일정을 소화하는 중","회의 자료와 민원 내용을 검토하고 오늘 결정해야 할 사안을 정리하고 있어요."]]
   };
@@ -1185,7 +1187,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805aj";
+const ENGINE_VERSION="20260805ak";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1623,6 +1625,11 @@ function relationCombinationScene(place,first,second,relation,date){
   if(!relation&&Object.keys(firstView).length+Object.keys(secondView).length<2)return null;
   const romanticView=view=>/연애 감정|깊이 사랑|없어서는 안 될/.test(view.overall||"");
   const firstRomantic=romanticView(firstView),secondRomantic=romanticView(secondView);
+  const activeRomanticPartners=person=>relationList()
+    .filter(item=>item.temporalStatus!=="past"&&["연인","부부"].includes(item.type)&&[item.a,item.b].includes(person.id))
+    .map(item=>item.a===person.id?item.b:item.a);
+  const affairActors=[first,second].filter(person=>activeRomanticPartners(person).some(partnerId=>partnerId!==first.id&&partnerId!==second.id));
+  const affairAllowed=affairActors.length>0&&affairActors.every(person=>/연인이 있어도 취향이면 끌릴 수 있음/.test(person.relationshipOpenness||""));
   if(firstRomantic!==secondRomantic){
     const admirer=firstRomantic?first:second;
     const other=firstRomantic?second:first;
@@ -1660,9 +1667,20 @@ function relationCombinationScene(place,first,second,relation,date){
     :hiddenMutualRomance
       ?`서로 마음을 숨기는 쌍방 연심 · ${RELATION_COMBINATION_TENSIONS[tensionIndex].label}`
       :profile.label;
+  const directTitle=pairedConflict
+    ?`${second.name}와 거칠게 충돌하는 중`
+    :affairAllowed&&firstRomantic&&secondRomantic
+      ?`${second.name}와 숨겨 둔 만남을 이어 가는 중`
+      :tension.key==="distrust"
+        ?`${second.name}을(를) 믿지 못한 채 함께 있는 중`
+        :tension.key==="strained"
+          ?`${second.name}과(와) 가까이 있지만 불편해하는 중`
+          :["devoted","romantic"].includes(bond.key)
+            ?`${second.name}와 둘만의 시간을 보내는 중`
+            :`${second.name}와 함께 시간을 보내는 중`;
   if(pairedConflict){
     return {
-      title:`${second.name}와 ${placeName}에서 ${profileLabel}`,
+      title:directTitle,
       first:pairedConflict.first,
       second:pairedConflict.second,
       relationProfile:profile.key
@@ -1670,10 +1688,12 @@ function relationCombinationScene(place,first,second,relation,date){
   }
   const firstExtra=firstIntimacy||firstDetachedIntimacy||firstConflict||tension.lines[variant](first,second);
   const secondExtra=secondIntimacy||secondDetachedIntimacy||secondConflict||tension.lines[variant](second,first);
+  const affairFirst=affairAllowed?`${first.name}은(는) 이미 이어지고 있는 관계가 있다는 사실을 의식하면서도 ${second.name}과(와)의 만남을 끊지 않았고, 아는 사람과 마주치지 않을 자리를 골랐어요. `:"";
+  const affairSecond=affairAllowed?`${second.name}은(는) 이 만남이 다른 관계와 충돌할 수 있다는 것을 알면서도 ${first.name}과(와) 정한 시간까지 자리를 지켰어요. `:"";
   return {
-    title:`${second.name}와 ${placeName}에서 ${profileLabel}`,
-    first:`${bond.actions[variant](first,second)} ${firstExtra}`.trim(),
-    second:`${bond.actions[reverseVariant](second,first)} ${secondExtra}`.trim(),
+    title:directTitle,
+    first:`${affairFirst}${bond.actions[variant](first,second)} ${firstExtra}`.trim(),
+    second:`${affairSecond}${bond.actions[reverseVariant](second,first)} ${secondExtra}`.trim(),
     relationProfile:profile.key
   };
 }
