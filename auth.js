@@ -172,7 +172,7 @@ async function prepareState(local,manifest){
   const usedUrls=storedPhotoUrls(next);
   manifest.items=manifest.items.filter(item=>usedUrls.has(item.url));
   manifest.legacyCount=Math.max(0,usedUrls.size-manifest.items.length);
-  return {gameState:next,mediaManifest:manifest};
+  return {gameState:next,mediaManifest:manifest,uploadedCount:jobs.length};
 }
 
 async function login(){
@@ -197,12 +197,11 @@ async function upload({silent=false,reason=""}={}){
     status(`${user.displayName||"계정"} · 올리는 중`);
     const previousSnapshot=await getDoc(cloudDoc()),previous=previousSnapshot.exists()?previousSnapshot.data():null;
     const prepared=await prepareState(window.ParallelCity.getState(),normalizeManifest(previous?.mediaManifest,previous?.gameState));
-    const {gameState,mediaManifest}=prepared;
+    const {gameState,mediaManifest,uploadedCount}=prepared;
     await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
     publishStorageUsage(mediaManifest,gameState);
     status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
-    const storedPhotos=countStoredPhotos(gameState);
-    toast(storedPhotos?`동기화되었습니다 · 고유 사진 ${mediaManifest.items.length+mediaManifest.legacyCount}/${maxPhotos()}장`:"동기화되었습니다 · 새로 올릴 기기 사진 없음");
+    toast(uploadedCount?`동기화되었습니다 · 새 사진 ${uploadedCount}장 저장`:"동기화되었습니다");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);

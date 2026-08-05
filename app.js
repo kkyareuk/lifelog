@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805s";
-import {eventFor} from "./simulation.js?v=20260805s";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805s";
-import {recordCharacterInteraction} from "./state.js?v=20260805s";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805t";
+import {eventFor} from "./simulation.js?v=20260805t";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805t";
+import {recordCharacterInteraction} from "./state.js?v=20260805t";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -861,10 +861,9 @@ async function useImageUrl(type,id,room){
     if(!response.ok)throw new Error("image-download-failed");
     const blob=await response.blob();
     if(!blob.type.startsWith("image/"))throw new Error("not-an-image");
-    const cropped=await cropImage(new File([blob],"linked-image",{type:blob.type}),type);
-    if(!cropped)return;
-    applyImage(type,id,room,cropped);
+    applyImage(type,id,room,url.href);
     render();
+    showToast("이미지 링크를 저장했습니다 · 사진 저장 용량을 사용하지 않아요");
   }catch(error){
     console.error(error);
     const url=new URL(value,location.href);
@@ -982,7 +981,7 @@ $("#image-picker").onchange=async e=>{
 };
 
 function cropImage(file,type){
-  const ratios={photo:4/5,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,home:16/9,place:1,placeInterior:16/9};
+  const ratios={photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,home:16/9,place:1,placeInterior:16/9};
   const ratio=ratios[type]||16/9;
   const output=ratio<1?600:ratio===1?500:800;
   return new Promise((resolve,reject)=>{
@@ -1282,12 +1281,12 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260805s").catch(error=>{
+import("./auth.js?v=20260805t").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805s",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805t",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
