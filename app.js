@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805ac";
-import {eventFor} from "./simulation.js?v=20260805ac";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805ac";
-import {recordCharacterInteraction} from "./state.js?v=20260805ac";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805af";
+import {eventFor} from "./simulation.js?v=20260805af";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805af";
+import {recordCharacterInteraction} from "./state.js?v=20260805af";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -390,9 +390,19 @@ const deleteRoutine=(characterId,id)=>{state.routines[characterId]=(state.routin
 const addCar=homeId=>{const home=state.homes[homeId];if(!home)return;home.cars=Array.isArray(home.cars)?home.cars:[];home.cars.push({id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,name:"우리 집 자동차",type:"승용차",color:"",seats:5,image:""});save(true)};
 const updateCar=(homeId,id,patch)=>{const car=state.homes[homeId]?.cars?.find(item=>item.id===id);if(car){Object.assign(car,patch);save(true)}};
 const deleteCar=(homeId,id)=>{const home=state.homes[homeId];if(home){home.cars=(home.cars||[]).filter(item=>item.id!==id);save(true)}};
+const maintenanceConfig=()=>window.PARALLEL_CITY_CONFIG?.maintenance||{};
+const maintenanceEnabled=()=>Boolean(maintenanceConfig().enabled);
+function renderMaintenance(){
+  const config=maintenanceConfig();
+  document.body.classList.add("maintenance-mode");
+  document.querySelector("#app").innerHTML=`<main class="maintenance-screen"><section><span>🛠️</span><p>EMERGENCY MAINTENANCE</p><h1>${config.title||"서랍마을을 잠시 점검하고 있어요"}</h1><p>${config.message||"예상치 못한 문제를 확인하고 있습니다."}</p><small>${config.eta||""}</small><button class="primary" type="button" id="maintenance-reload">다시 확인하기</button></section></main>`;
+  document.querySelector("#maintenance-reload")?.addEventListener("click",()=>location.reload());
+}
 
 function render(){
   try{
+    if(maintenanceEnabled()){renderMaintenance();return}
+    document.body.classList.remove("maintenance-mode");
     renderApp(state);
     const grid=document.querySelector(".shop-product-grid");
     if(grid&&!grid.querySelector('[data-cart-add="green_tea"]')){
@@ -1197,7 +1207,7 @@ function openRelationDialog(id=""){
     refreshFaultParties();
   };
   const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
-  f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);f.legalStatus.value=officialityMigration[old?.legalStatus]||old?.legalStatus||"관계를 따로 명명하지 않음";
+  f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);f.legalStatus.value=officialityMigration[old?.legalStatus]||old?.legalStatus||"가까운 사람에게만 알림";
   f.querySelectorAll('[name="member"]').forEach(input=>input.onchange=syncPairOrder);
   f.querySelectorAll('[name="temporalStatus"]').forEach(input=>input.onchange=()=>{refreshStages();refreshFaultParties()});
   f.querySelectorAll('[name="mother"],[name="father"],[name="child"]').forEach(input=>input.onchange=refreshParentKinship);
@@ -1325,19 +1335,21 @@ document.addEventListener("change",event=>{
   },1500);
 });
 render();
-showInstallButton();
-if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
+if(!maintenanceEnabled())showInstallButton();
+if(!maintenanceEnabled()&&localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localStorage.getItem("parallel-city-hide-photo-backup-notice")!=="1"){
   const notice=document.createElement("dialog");notice.className="backup-notice";
   notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>사진 파일을 직접 올리면 Google 저장 공간에 함께 보관돼요. 용량을 아끼고 싶다면 사진 파일 대신 <b>웹에 공개된 이미지 주소</b>를 입력해 주세요. 기본 사진 저장 공간은 <b>최대 120장·총 20MB</b>이며 상점에서 50MB로 늘릴 수 있어요. 같은 사진은 중복으로 올리지 않고, 현재 사용량은 설정에서 확인할 수 있습니다.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260805ac").catch(error=>{
-  console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
-  setAccountLabel("Google 로그인");
-});
+if(!maintenanceEnabled()){
+  import("./auth.js?v=20260805af").catch(error=>{
+    console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
+    setAccountLabel("Google 로그인");
+  });
+}
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805ac",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805af",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

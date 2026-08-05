@@ -565,3 +565,9 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 @font-face{font-family:"SB Aggro";src:url("./fonts/SB_Aggro/SB%20%EC%96%B4%EA%B7%B8%EB%A1%9C%20M.ttf") format("truetype");font-display:swap}
 @font-face{font-family:"Ownglyph Corncorn";src:url("./fonts/Ownglyph_Corncorn.ttf") format("truetype");font-display:swap}
 @font-face{font-family:"Do Hyeon";src:url("./fonts/DoHyeon-Regular.ttf") format("truetype");font-display:swap}
+.maintenance-mode{min-height:100vh;background:linear-gradient(145deg,#f8f4ec,#e9f2ef)}
+.maintenance-mode .site-footer,.maintenance-mode #image-picker{display:none!important}
+.maintenance-screen{min-height:100vh;display:grid;place-items:center;padding:24px}
+.maintenance-screen section{width:min(680px,100%);padding:48px 36px;border:1px solid #d8cbbd;border-radius:32px;background:#fff;text-align:center;box-shadow:0 24px 70px #4333241a}
+.maintenance-screen section>span{display:block;font-size:58px}.maintenance-screen section>p:first-of-type{margin:18px 0 8px;color:#887565;font-size:13px;font-weight:900;letter-spacing:.12em}
+.maintenance-screen h1{margin:0 0 18px;font-size:clamp(30px,6vw,52px)}.maintenance-screen p{line-height:1.7}.maintenance-screen small{display:block;margin:18px 0;color:#74675d}.maintenance-screen button{margin-top:12px}
