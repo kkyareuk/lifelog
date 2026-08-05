@@ -32,13 +32,14 @@ const config=window.PARALLEL_CITY_CONFIG||{};
 const CART_KEY="drawer-village-cart";
 const products={
   character_slots_5:{packageId:"character_slots_5",name:"캐릭터 슬롯 5개 추가",amount:1200},
-  town_slot_1:{packageId:"town_slot_1",name:"마을 슬롯 1개 추가",amount:1900}
+  town_slot_1:{packageId:"town_slot_1",name:"마을 슬롯 1개 추가",amount:1900},
+  green_tea:{packageId:"green_tea",name:"개발자에게 녹차 사주기",amount:1500}
 };
 const params=new URLSearchParams(location.search);
 let rawCart={};
 try{rawCart=JSON.parse(localStorage.getItem(CART_KEY)||"{}")||{}}catch{}
 if(!params.has("cart")&&products[params.get("product")])rawCart={[params.get("product")]:1};
-const items=Object.entries(rawCart).filter(([id,quantity])=>products[id]&&Number.isInteger(Number(quantity))&&Number(quantity)>0&&Number(quantity)<=99).map(([packageId,quantity])=>({packageId,quantity:Number(quantity)}));
+const items=Object.entries(rawCart).filter(([id,quantity])=>products[id]&&Number.isInteger(Number(quantity))&&Number(quantity)>0&&Number(quantity)<=(id==="green_tea"?1:99)).map(([packageId,quantity])=>({packageId,quantity:Number(quantity)}));
 const total=items.reduce((sum,item)=>sum+products[item.packageId].amount*item.quantity,0);
 const count=items.reduce((sum,item)=>sum+item.quantity,0);
 document.querySelector("#orderLines").innerHTML=items.length?items.map(item=>{const product=products[item.packageId],totalName=item.packageId==="character_slots_5"?`캐릭터 ${item.quantity*5}명 추가`:item.packageId==="town_slot_1"?`마을 ${item.quantity}개 추가`:product.name;return `<article class="order-line"><div><b>${totalName}</b><small>${product.name} · ${product.amount.toLocaleString("ko-KR")}원 × ${item.quantity}</small></div><b>${(product.amount*item.quantity).toLocaleString("ko-KR")}원</b></article>`}).join(""):"<p>장바구니가 비어 있어요.</p>";

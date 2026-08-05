@@ -9,9 +9,12 @@ const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
-let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false};
+let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false,teaSupportMonth:""};
 let guideState={loaded:!ready,seen:[]};
 let autoLoadStarted=false;
+const REFRESH_GUARD_MS=30*60*1000;
+const sessionStamp=key=>Number(localStorage.getItem(key)||0);
+const stampSession=key=>localStorage.setItem(key,String(Date.now()));
 const uploadedCache=new Map();
 const MAX_PHOTOS=120;
 const FREE_TOTAL_BYTES=20*1024*1024;
@@ -61,6 +64,8 @@ function shortError(error){
 const cloudDoc=()=>doc(db,"users",user.uid);
 async function registerSignedInUser(){
   if(!user)return;
+  const guardKey=`drawer-village-login-write-${user.uid}`;
+  if(Date.now()-sessionStamp(guardKey)<REFRESH_GUARD_MS)return;
   const reference=cloudDoc();
   const snapshot=await getDoc(reference);
   const profile={
@@ -80,6 +85,7 @@ async function registerSignedInUser(){
   };
   if(!snapshot.exists())presence.createdAt=serverTimestamp();
   await setDoc(reference,presence,{merge:true});
+  stampSession(guardKey);
 }
 const normalizeEntitlements=value=>{
   const purchases=Array.isArray(value?.purchases)?value.purchases.filter(x=>typeof x==="string"):[];
@@ -91,6 +97,7 @@ const normalizeEntitlements=value=>{
     characterSlotPacks:Math.max(0,Number(value?.characterSlotPacks)||purchases.filter(x=>x==="character_slots_5").length),
     townSlotPacks:Math.max(0,Number(value?.townSlotPacks)||purchases.filter(x=>x==="town_slot_1").length),
     storage50:Boolean(value?.storage50||purchases.includes("storage_50mb")),
+    teaSupportMonth:typeof value?.teaSupportMonth==="string"?value.teaSupportMonth:"",
     grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
     note:typeof value?.note==="string"?value.note:""
   };
@@ -226,7 +233,8 @@ async function download({automatic=false}={}){
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
     status(`${user.displayName||"계정"} · ${accessLabel()} · 불러오기 완료`);
     toast(automatic?"자동으로 불러왔습니다":"불러왔습니다");
-  }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`)}finally{busy=false}
+    return true;
+  }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false}
 }
 
 async function submitFeedback({category,message,allowReply=false}={}){
@@ -259,7 +267,12 @@ if(ready){
       if(user){
         try{await registerSignedInUser()}
         catch(error){console.error(error);status(`${user.displayName||"Google 계정"} · 사용자 등록 실패 · ${shortError(error)}`)}
-        if(!autoLoadStarted){autoLoadStarted=true;download({automatic:true})}
+        const loadKey=`drawer-village-auto-load-${user.uid}`;
+        if(!autoLoadStarted&&Date.now()-sessionStamp(loadKey)>=REFRESH_GUARD_MS){
+          autoLoadStarted=true;
+          const loaded=await download({automatic:true});
+          if(loaded!==false)stampSession(loadKey);
+        }
       }
     });
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}

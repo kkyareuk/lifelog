@@ -1,6 +1,7 @@
-﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805n";
-import {eventFor} from "./simulation.js?v=20260805n";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805n";
+﻿import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805o";
+import {eventFor} from "./simulation.js?v=20260805o";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805o";
+import {recordCharacterInteraction} from "./state.js?v=20260805o";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -393,6 +394,14 @@ const deleteCar=(homeId,id)=>{const home=state.homes[homeId];if(home){home.cars=
 function render(){
   try{
     renderApp(state);
+    const grid=document.querySelector(".shop-product-grid");
+    if(grid&&!grid.querySelector('[data-cart-add="green_tea"]')){
+      const month=new Date().toISOString().slice(0,7),rights=purchases(),bought=rights.teaSupportMonth===month||(rights.purchases||[]).includes(`green_tea_${month}`);
+      const card=document.createElement("article");
+      card.className="premium-product one-time-product";
+      card.innerHTML=`<div class="premium-product-heading"><span>월 1회 응원</span><div><small>개발 응원</small><h2>개발자에게 녹차 사주기 🍵</h2></div><b>1,500원</b></div><p>서랍마을 개발을 응원하는 일회성 후원이에요. 같은 달에는 한 번만 구매할 수 있어요.</p><button class="${bought?"":"primary "}premium-buy" ${bought?"disabled":'data-cart-add="green_tea"'}>${bought?"감사합니다! 🍵":"장바구니에 담기"}</button>`;
+      grid.insertBefore(card,grid.lastElementChild);
+    }
     bind();
     applyTheme();
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
@@ -454,8 +463,8 @@ function bind(){
   const cartKey="drawer-village-cart";
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};
-  $$("[data-cart-add]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartAdd;cart[id]=Math.min(99,(Number(cart[id])||0)+1);writeCart(cart);showToast("장바구니에 담았어요")});
-  $$("[data-cart-plus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartPlus;cart[id]=Math.min(99,(Number(cart[id])||0)+1);writeCart(cart)});
+  $$("[data-cart-add]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartAdd;cart[id]=Math.min(id==="green_tea"?1:99,(Number(cart[id])||0)+1);writeCart(cart);showToast("장바구니에 담았어요")});
+  $$("[data-cart-plus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartPlus;cart[id]=Math.min(id==="green_tea"?1:99,(Number(cart[id])||0)+1);writeCart(cart)});
   $$("[data-cart-minus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartMinus,next=(Number(cart[id])||0)-1;if(next>0)cart[id]=next;else delete cart[id];writeCart(cart)});
   $$("[data-cart-remove]").forEach(el=>el.onclick=()=>{const cart=readCart();delete cart[el.dataset.cartRemove];writeCart(cart)});
   $$("[data-wardrobe-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.wardrobeCharacter);state.activeTab="wardrobe";save();render()});
@@ -623,6 +632,13 @@ function bind(){
   $$("[data-chip]").forEach(el=>el.onclick=()=>{toggleChip(active().id,el.dataset.chip,el.dataset.value);render()});
   $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{toggleFavorite(active().id,el.dataset.favoriteKind,el.dataset.favoriteId);render()});
   $$("[data-owned-kind]").forEach(el=>el.onclick=()=>{toggleOwned(active().id,el.dataset.ownedKind,el.dataset.ownedId);render()});
+  $$("[data-character-interaction]").forEach(el=>el.onclick=()=>{
+    const item=String($("[data-character-interaction-item]")?.value||"").split(":");
+    const type=el.dataset.characterInteraction,targetId=$("[data-character-interaction-target]")?.value||"";
+    if(recordCharacterInteraction({type,actorId:active().id,targetId,itemKind:item[0],itemId:item.slice(1).join(":")})){
+      showToast(type==="gift"?"선물을 건넸어요":type==="exercise"?"함께 운동을 시작했어요":type==="outing"?"함께 나들이를 시작했어요":"물건을 구매했어요");render();
+    }else showToast("상대와 물건을 먼저 골라 주세요");
+  });
   $$("[data-add-catalog]").forEach(el=>el.onclick=()=>{addCatalogItem(el.dataset.addCatalog,{name:"새 항목",category:"기타"});render()});
   $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{
     const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;
@@ -1278,16 +1294,17 @@ if(localStorage.getItem("drawer-village-hide-photo-backup-notice")!=="1"&&localS
   notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
   document.body.append(notice);notice.showModal();
 }
-import("./auth.js?v=20260805n").catch(error=>{
+import("./auth.js?v=20260805o").catch(error=>{
   console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
   setAccountLabel("Google 로그인");
 });
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805n",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805o",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
 window.addEventListener("orientationchange",lockPortrait);
+
 
 
 
