@@ -1,4 +1,4 @@
-﻿import {state,save,characterViewFor} from "./state.js?v=20260805q";
+import {state,save,characterViewFor} from "./state.js?v=20260805r";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -577,11 +577,11 @@ function relationSpecificEntry(c,other,r,time,date,role){
 function relationshipHomeEntry(c,pick,time,date){
   const {r,other}=pick,pair=[c.id,other.id].sort(),role=r.type==="짝사랑"&&r.directional?(c.id===r.admirerId?0:1):pair.indexOf(c.id);
   const directedView=characterViewFor(c.id,other.id);
-  const {overall="",awareness="",trust="",closeness="",comfort="",annoyance="",attention="",jealousy="",conflictIntensity="",expectation="",rapport="",aggression=""}=directedView;
+  const {overall="",awareness="",mutualAwareness="",trust="",closeness="",comfort="",annoyance="",attention="",jealousy="",conflictIntensity="",expectation="",aggression=""}=directedView;
   const otherView=characterViewFor(other.id,c.id);
   const combinedTypes=r.types||[r.type];
   const combinedTone=combinedTypes.length>1?combinedTypes.includes("연인")&&combinedTypes.includes("직장 동료")?" 직장에서는 동료의 선을 지키고, 사적인 자리에서만 연인의 말투로 돌아오고 있어요.":combinedTypes.includes("연인")&&combinedTypes.includes("소꿉친구")?" 오래 알고 지낸 습관과 연인으로서의 애정이 자연스럽게 함께 묻어나요.":` 두 사람 사이의 ${combinedTypes.join("·")} 관계가 한 장면 안에서 함께 드러나고 있어요.`:"";
-  const thought=[overall,trust,comfort,annoyance,attention,conflictIntensity,expectation,rapport,aggression].filter(Boolean).join(" ");
+  const thought=[overall,mutualAwareness,trust,comfort,annoyance,attention,conflictIntensity,expectation,aggression].filter(Boolean).join(" ");
   const loving=/좋아|사랑|소중|없어서는/.test(overall);
   const hating=/싫어|경계|불편/.test(overall);
   const unaware=/어렴풋|착각|전혀 모름|부정/.test(awareness);
@@ -593,23 +593,26 @@ function relationshipHomeEntry(c,pick,time,date){
   const welcomesTouch=!avoidsTouch&&/가끔 가벼운 접촉|자연스럽게 표현함|애정 표현이 많은 편/.test(touchIntensity);
   const distrust=/전혀 믿지|의심|조심스럽게 지켜봄/.test(trust);
   const distant=/남보다도 멂|낯선|거리감/.test(closeness);
-  const uncomfortable=/매우 불편|긴장|조심스러움/.test(comfort);
+  const uncomfortable=/매우 불편|긴장|조심스러움|숨 막힘|공간 공유는 불편/.test(comfort);
   const attentive=/자주 살핌|늘 최우선/.test(attention);
   const jealous=/은근히 질투|질투가 심함|독점/.test(jealousy);
   const nonPossessive=/질투하지 않음/.test(jealousy);
-  const suffocating=/개인 공간 공유가 불편함|같은 집이나 차에 단둘이 있으면 숨 막힘/.test(comfort);
-  const goodRapport=/농담과 장난이 잘 통함|주파수가 완벽하게 맞음/.test(rapport);
+  const suffocating=/숨 막힘|공간 공유는 불편/.test(comfort);
+  const goodRapport=/농담과 장난은 잘 통함|대화는 편안함|농담과 장난이 잘 통함|공간도 대화도 완벽/.test(comfort);
   const endingSoon=/언제든 끝날 수 있다고 생각함|곧 헤어질 거라고 예상함/.test(expectation);
   const aggressive=/몸으로 밀어내고 싶은 충동|해치고 싶은 충동|죽이고 싶을 만큼 격한 충동/.test(aggression);
   const highConflict=/자주 충돌함|격렬하게 충돌함|파국적인 충돌을 반복함/.test(conflictIntensity);
   const siblingRelation=combinedTypes.includes("형제·자매")||r.type==="형제·자매";
-  const romanceStatus=r.romanceStatus||(["연인","부부"].includes(r.type)?"공식적으로 교제 중":"사귀지 않음");
   const romanticFeeling=/연애 감정|깊이 사랑|없어서는/.test(overall);
   const otherLoving=/연애 감정|깊이 사랑|없어서는/.test(otherView.overall||"");
-  const mutualLonging=romanceStatus==="사귀지 않음"&&romanticFeeling&&otherLoving;
-  const nearlyDating=romanceStatus==="서로 마음은 있지만 고백 전"||romanceStatus==="사귀기 직전";
-  const nominalDating=romanceStatus==="명목상 연인";
-  const unlabeledIntimacy=romanceStatus==="연애로 규정하지 않는 성인 간 친밀한 사이";
+  const officialRomance=combinedTypes.some(type=>["연인","부부"].includes(type));
+  const familyRelation=combinedTypes.some(type=>["부모·자녀","형제·자매"].includes(type));
+  const confirmedFeelings=/서로의 마음을 확인함/.test(mutualAwareness)&&/서로의 마음을 확인함/.test(otherView.mutualAwareness||"");
+  const mutualLonging=!officialRomance&&!familyRelation&&romanticFeeling&&otherLoving&&!confirmedFeelings;
+  const nearlyDating=!officialRomance&&!familyRelation&&romanticFeeling&&otherLoving&&confirmedFeelings;
+  const nominalDating=officialRomance&&(!romanticFeeling||!otherLoving||avoidsTouch||distant);
+  const bothAdults=![c,other].some(character=>["영아","유아","어린이","청소년"].includes(character.ageGroup));
+  const unlabeledIntimacy=!officialRomance&&!familyRelation&&bothAdults&&confirmedFeelings&&welcomesTouch&&!endingSoon&&(/가까운 사이|가장 가까운/.test(closeness)||/가까운 사이|가장 가까운/.test(otherView.closeness||""));
   const hasPartner=relationList().some(relation=>["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
   const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
   const opennessAllows=openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
@@ -621,15 +624,15 @@ function relationshipHomeEntry(c,pick,time,date){
   const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,통제광:34}[c.interference]||0;
   const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
-  if(mutualLonging)scripts=[
+  if(nearlyDating)scripts=[
+    [`${other.name}와 고백 직전의 말을 삼키는 중`,`서로의 마음을 이미 확인했지만 아직 공식 관계에는 이름을 붙이지 않았어요. 평소보다 가까운 거리에서 다음 말을 고르며 관계를 한 걸음 옮길 순간을 기다리고 있어요.`,"living"],
+    [`${other.name}와 사귀기 직전의 설렘을 나누는 중`,`서로 좋아한다는 사실은 알지만 연인이라고 정한 적은 없어요. 손이 스칠 듯 가까워질 때마다 웃으며 다른 이야기를 꺼내고, 다음 만남을 자연스럽게 약속했어요.`,"living"],
+    [`${other.name}와 확인한 마음을 천천히 다루는 중`,`쌍방의 마음을 안다고 해서 관계를 자동으로 연애라고 부르지는 않았어요. 둘이 원하는 관계와 속도를 조심스럽게 이야기하고 있어요.`,"living"]
+  ];
+  else if(mutualLonging)scripts=[
     [`${other.name}와 서로 좋아하면서도 고백하지 않는 중`,`둘 다 상대를 향한 마음이 깊지만 아직 사귀는 사이는 아니에요. 평범한 대화인 척 말을 고르면서도 시선이 마주칠 때마다 조금씩 표정이 풀리고 있어요.`,"living"],
     [`${other.name}의 마음을 눈치채고도 지금의 거리를 지키는 중`,`${other.name}도 자신을 좋아한다는 기색을 느끼지만 관계를 서둘러 이름 붙이지 않았어요. 작은 호의 하나에도 의미를 찾으면서 다음 말을 오래 고르고 있어요.`,"living"],
     [`${other.name}와 연인처럼 굴고도 친구라고 부르는 중`,`서로의 몫을 먼저 챙기고 자연스럽게 하루를 함께했지만 밖에서는 여전히 친구라고 말했어요. 사귀지 않는다는 사실과 쌍방의 연심이 동시에 선명해지고 있어요.`,"living"]
-  ];
-  else if(nearlyDating)scripts=[
-    [`${other.name}와 고백 직전의 말을 삼키는 중`,`평소보다 가까운 거리에서 서로의 반응을 살피며 거의 고백처럼 들리는 말을 건넸어요. 대답을 재촉하지 않은 채 다음 만남을 자연스럽게 약속했어요.`,"living"],
-    [`${other.name}와 사귀기 직전의 어색한 설렘을 나누는 중`,`손이 스칠 듯 가까워질 때마다 둘 다 괜히 다른 이야기를 꺼냈어요. 아직 연인이라는 이름은 없지만 서로를 대하는 태도는 이미 특별해졌어요.`,"living"],
-    [`${other.name}에게 관계를 한 걸음 더 묻고 싶은 중`,`지금도 충분히 소중하지만 이 사이를 어떻게 부르고 싶은지 조심스럽게 물을 타이밍을 찾고 있어요. 평범한 농담 뒤에 진심을 조금씩 섞었어요.`,"living"]
   ];
   else if(nominalDating)scripts=[
     [`${other.name}와 공개적으로 연인이지만 각자의 시간을 보내는 중`,`밖에서는 분명 연인으로 알려져 있지만 둘 사이에서는 연인다운 행동을 일부러 만들지 않았어요. 호칭보다 각자 편한 거리와 생활 방식을 우선하고 있어요.`,"living"],
@@ -710,6 +713,10 @@ function relationshipHomeEntry(c,pick,time,date){
     [`${other.name}에게 다가갔다가 한 걸음 물러서는 중`,`말을 걸려고 가까이 갔지만 막상 무슨 말을 해야 할지 떠오르지 않았어요. 필요한 물건만 건넨 뒤 너무 멀지도 가깝지도 않은 자리에 머물렀어요.`,"living"],
     [`${other.name} 앞에서 평소답지 않게 말을 고르는 중`,`다른 사람에게라면 바로 했을 말을 몇 번이나 삼켰어요. 마음을 들킬까 걱정하면서도 차갑게 보이고 싶지는 않아 조심스럽게 안부를 물었어요.`,"living"]
   ];
+  else if(/전혀 귀찮거나 성가시지 않지만 성가시다고 말함/.test(annoyance))scripts=[
+    [`${other.name}에게 귀찮다고 말하면서도 바로 반응하는 중`,`말로는 또 성가시게 한다고 투덜거렸지만 실제로는 귀찮거나 불쾌하지 않았어요. 익숙한 말버릇처럼 불평한 뒤 ${other.name}의 이야기를 끝까지 듣고 있어요.`,"living"],
+    [`${other.name}을 성가시다고 놀리는 중`,`귀찮다는 말을 장난처럼 건넸지만 몸을 피하거나 대화를 끊지는 않았어요. 말과 실제 감정이 다르다는 것을 드러내듯 자연스럽게 곁에 남았어요.`,"living"]
+  ];
   else if(loving&&/종종 귀찮|많이 귀찮|보기만 해도 피곤/.test(annoyance))scripts=[
     [`${other.name}에게 투덜거리면서도 도와주는 중`,`또 자기 몫이 늘었다며 작게 불평했지만 ${other.name}이 곤란해하는 모습을 외면하지 못했어요. 잔소리를 섞어 결국 끝까지 손을 보탰어요.`,"living"],
     [`${other.name}을 귀찮아하면서 곁에 남은 중`,`잠깐 혼자 있고 싶다고 말하면서도 정말 자리를 뜨지는 않았어요. 대답은 짧아졌지만 ${other.name}이 부르면 들을 수 있는 거리를 지키고 있어요.`,"living"],
@@ -722,7 +729,7 @@ function relationshipHomeEntry(c,pick,time,date){
   ];
   else if(loving&&distant)scripts=[
     [`${other.name}을 멀찍이서 챙기는 중`,`가까이 다가서지는 못한 채 ${other.name}이 불편해 보이지 않는지만 살폈어요. 좋아하는 마음을 들키지 않도록 필요한 물건을 손 닿기 좋은 곳에 조용히 두었어요.`,"living"],
-    [`${other.name}에게 건넬 말을 고르는 중`,`마음의 거리는 아직 멀게 느껴지지만 모른 척 지나치고 싶지는 않았어요. 부담스럽지 않을 짧은 안부를 오래 고른 뒤 조심스럽게 건넸어요.`,"living"]
+    [`${other.name}에게 건넬 말을 고르는 중`,`정서적으로는 아직 멀게 느껴지지만 모른 척 지나치고 싶지는 않았어요. 부담스럽지 않을 짧은 안부를 오래 고른 뒤 조심스럽게 건넸어요.`,"living"]
   ];
   else if(jealous)scripts=[
     [`${other.name}의 관심이 어디로 향하는지 신경 쓰는 중`,`${other.name}이 다른 사람에게 오래 시선을 두자 괜히 손에 쥔 것을 만지작거렸어요. 직접 따져 묻기보다는 평소보다 가까운 자리에 머물며 반응을 살피고 있어요.`,"living"],
@@ -793,7 +800,7 @@ function relationshipHomeEntry(c,pick,time,date){
   ];
   else return sharedHomeEntry(c,other,time,date);
   const roleScripts=scripts.filter((_,index)=>index%2===role%2);
-  const script=roleScripts[hash(`${c.id}:${other.id}:${dayKey(date)}:${time}:${overall}:${trust}:${closeness}:${comfort}:${annoyance}:${attention}:${jealousy}:${conflictIntensity}:${expectation}:${rapport}:${aggression}`)%roleScripts.length];
+  const script=roleScripts[hash(`${c.id}:${other.id}:${dayKey(date)}:${time}:${overall}:${mutualAwareness}:${trust}:${closeness}:${comfort}:${annoyance}:${attention}:${jealousy}:${conflictIntensity}:${expectation}:${aggression}`)%roleScripts.length];
   return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+combinedTone,`relation:${r.id}:${role}`),script[2]);
 }
 
@@ -1158,7 +1165,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805q";
+const ENGINE_VERSION="20260805r";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1319,8 +1326,8 @@ const VIEW_IMPORTANCE=[
   ["jealousy",/독점|질투가 심|질투함/,10],
   ["conflictIntensity",/자주 충돌함|격렬하게 충돌함|파국적인 충돌/,20],
   ["aggression",/몸으로 밀어내고 싶은 충동|해치고 싶은|죽이고 싶을 만큼/,22],
-  ["comfort",/개인 공간 공유가 불편함|같은 집이나 차에 단둘이 있으면 숨 막힘/,12],
-  ["rapport",/농담과 장난이 잘 통함|주파수가 완벽하게 맞음/,14],
+  ["comfort",/숨 막힘|공간 공유는 불편/,12],
+  ["comfort",/농담과 장난은 잘 통함|대화는 편안함|농담과 장난이 잘 통함|공간도 대화도 완벽/,14],
   ["expectation",/언제든 끝날 수|곧 헤어질/,8]
 ];
 function directedImportance(sourceId,targetId){
@@ -1479,9 +1486,3 @@ export function eventFor(c,date=new Date()){
 }
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=baseEventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(c)(out[c.homeId||id]??=[]).push(c)});return out}
-
-
-
-
-
-

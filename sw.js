@@ -1,4 +1,4 @@
-﻿const CACHE_VERSION="drawer-village-v20260805q";
+const CACHE_VERSION="drawer-village-v20260805r";
 const CORE=[
   "./",
   "./index.html",
@@ -58,6 +58,3 @@ self.addEventListener("fetch",event=>{
     return response;
   }).catch(()=>caches.match(event.request).then(cached=>cached||caches.match("./index.html"))));
 });
-
-
-

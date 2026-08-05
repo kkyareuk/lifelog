@@ -1,5 +1,5 @@
-﻿import {state,active,characterViewFor} from "./state.js?v=20260805q";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805q";
+import {state,active,characterViewFor} from "./state.js?v=20260805r";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805r";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -38,7 +38,8 @@ const PLACE_TYPES={
 };
 const CATALOG_LABELS={food:"음식",drink:"음료",fashion:"옷·패션",music:"음악",idol:"아이돌·밴드",book:"책·작품",movie:"영화·영상",game:"게임",perfume:"향수",hobby:"취미 물품",electronics:"전자기기",weapon:"무기"};
 const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식"],drink:["커피","차","라테","탄산음료","주스","술","기타 음료"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리"],music:["노래","앨범","플레이리스트","악기"],idol:["솔로 가수","아이돌","밴드","가상 아티스트"],book:["소설","만화","잡지","에세이","전문서적"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임"],perfume:["향수","디퓨저","캔들","바디 제품"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기"]};
-const WEAPON_SUBTYPES={총기:["권총","리볼버","기관단총","돌격소총","소총","저격소총","산탄총","기관총"],"검·도검":["단검","쇼트소드","롱소드","레이피어","세이버","카타나","대검","쌍검"],"활·석궁":["단궁","장궁","복합궁","컴파운드 보우","석궁"],둔기:["곤봉","메이스","철퇴","전투망치"],"창·장병기":["창","장창","할버드","언월도","삼지창"],방어구:["방패","경갑","중갑","투구"],"판타지 무기":["마법봉","지팡이","마도서","마검","에너지 무기"]};
+const BLADE_SUBTYPES=["단검","나이프","쇼트소드","아밍소드","롱소드","바스타드소드","대검","클레이모어","레이피어","에페","세이버","커틀러스","샴시르","시미터","카타나","타치","와키자시","노다치","쌍검","검지팡이","의장검"];
+const WEAPON_SUBTYPES={총기:["권총","리볼버","기관단총","돌격소총","소총","저격소총","산탄총","기관총"],"검·도검":BLADE_SUBTYPES,도검:BLADE_SUBTYPES,검:BLADE_SUBTYPES,"활·석궁":["단궁","장궁","복합궁","컴파운드 보우","석궁"],둔기:["곤봉","메이스","철퇴","전투망치"],"창·장병기":["창","장창","할버드","언월도","삼지창"],방어구:["방패","경갑","중갑","투구"],"판타지 무기":["마법봉","지팡이","마도서","마검","에너지 무기"]};
 const DETAIL_OPTIONS={food:["국물","면","밥","구이","튀김","샐러드","케이크","쿠키"],drink:["따뜻하게","차갑게","무카페인","카페인","무알코올","알코올"],fashion:["캐주얼","정장","스포츠","빈티지","스트리트","럭셔리"],music:["보컬곡","연주곡","라이브","기타","피아노","바이올린","드럼","베이스","관악기"],idol:["보컬","댄스","밴드","버추얼","솔로","그룹"],book:["로맨스","판타지","추리","공포","SF","역사","교양"],game:["MOBA","MMORPG","액션 RPG","턴제 RPG","FPS","TPS","배틀로얄","RTS","전략","시뮬레이션","샌드박스","서바이벌","어드벤처","퍼즐","리듬","격투","레이싱","스포츠","공포","소셜·파티"],hobby:["입문용","전문가용","휴대용","수집용","실내용","야외용"],electronics:["스마트폰","태블릿","노트북","데스크톱","콘솔","헤드폰","스피커","카메라","스마트워치"],weapon:[]};
 const PERFUME_NOTES=["우디","플로럴","시트러스","머스크","앰버","아쿠아","그린","파우더리","프루티","스파이시","구르망","레더"];
 const VIDEO_GENRES={
@@ -407,15 +408,15 @@ const relationActivities=()=> "";
 const CHARACTER_VIEW_OPTIONS={
   overall:["정하지 않음","낯선 사람으로 여김","매우 싫어함","미워함","경계함","불편해함","부담스러워함","경쟁심을 느낌","애증을 느낌","그저 그런 사람","흥미롭게 여김","인간적인 호감이 있음","친구로 좋아함","존경함","동경함","안쓰럽게 여김","소중하게 여김","연애 감정이 싹틈","연애 감정으로 좋아함","깊이 사랑함","없어서는 안 될 사람"],
   awareness:["정하지 않음","자기 감정을 분명히 자각함","감정을 어렴풋이 느낌","감정을 우정으로 착각함","감정을 경쟁심으로 착각함","감정을 불편함으로 착각함","자기 감정을 전혀 모름","느끼는 감정을 부정함"],
+  mutualAwareness:["정하지 않음","상대의 마음을 전혀 모름","상대의 마음을 어렴풋이 눈치챔","상대가 나를 좋아한다는 걸 알고 있음","서로의 마음을 확인함","상대의 마음을 오해하고 있음"],
   trust:["정하지 않음","전혀 믿지 않음","의심함","조심스럽게 지켜봄","보통","어느 정도 믿음","깊이 신뢰함","전적으로 의지함"],
   closeness:["정하지 않음","남보다도 멂","낯선 사이","거리감 있음","보통","편한 사이","가까운 사이","가장 가까운 사람"],
-  comfort:["정하지 않음","매우 불편함","긴장함","조심스러움","상대 공간에서는 조금 어색함","서로의 개인 공간 공유가 불편함","같은 집이나 차에 단둘이 있으면 숨 막힘","보통","편안함","공간을 편하게 공유함","무방비해질 만큼 편함"],
-  annoyance:["정하지 않음","전혀 귀찮거나 성가시지 않음","가끔 성가심","종종 귀찮음","많이 귀찮고 성가심","보기만 해도 피곤함"],
+  comfort:["정하지 않음","함께 있으면 매우 불편하고 대화도 전혀 통하지 않음","같은 공간에서는 숨 막히지만 농담과 장난은 잘 통함","공간 공유는 불편하지만 대화는 편안함","긴장하고 대화도 조심스러움","어색하지만 필요한 대화는 무난함","함께 있는 건 편하지만 대화 호흡은 평범함","편안하고 농담과 장난이 잘 통함","말없이 함께 있어도 편안함","공간도 대화도 완벽하게 편안함"],
+  annoyance:["정하지 않음","전혀 귀찮거나 성가시지 않음","전혀 귀찮거나 성가시지 않지만 성가시다고 말함","가끔 성가심","종종 귀찮음","많이 귀찮고 성가심","보기만 해도 피곤함"],
   attention:["정하지 않음","관심 없음","필요할 때만 봄","종종 신경 씀","자주 살핌","늘 최우선으로 챙김"],
   jealousy:["정하지 않음","질투하지 않음","가끔 신경 쓰임","은근히 질투함","질투가 심함","독점하고 싶어 함"],
   conflictIntensity:["정하지 않음","갈등이 거의 없음","가끔 부딪힘","자주 충돌함","격렬하게 충돌함","파국적인 충돌을 반복함"],
   expectation:["정하지 않음","언제든 끝날 수 있다고 생각함","곧 헤어질 거라고 예상함","당분간 이어질 거라 생각함","오래 함께할 거라 기대함","평생 이어질 관계라고 믿음"],
-  rapport:["정하지 않음","대화가 전혀 통하지 않음","말할수록 부딪힘","무난하게 대화함","농담과 장난이 잘 통함","주파수가 완벽하게 맞음"],
   aggression:["정하지 않음","공격 충동 없음","거친 말을 하고 싶은 충동","몸으로 밀어내고 싶은 충동","해치고 싶은 충동","죽이고 싶을 만큼 격한 충동"]
 };
 const characterViewEditor=()=>{
@@ -426,7 +427,7 @@ const characterViewEditor=()=>{
   };
   const panels=state.order.map(sourceId=>{
     const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
-    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall,official=Object.values(state.relationships||{}).filter(relation=>(relation.a===sourceId&&relation.b===targetId)||(relation.a===targetId&&relation.b===sourceId)),officialText=[...new Set(official.map(relation=>relation.type))].join(" · ");return `<details class="character-view-card" data-view-card-source="${sourceId}" data-view-card-target="${targetId}" ${index===0?"open":""}><summary><span class="character-view-heading"><span class="character-view-direction-icons">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small>${official.length?`<span class="official-relation-inline"><b>공식 관계</b> ${esc(officialText)}</span>`:`<span class="official-relation-inline none">이방인 · 시선만 설정 가능</span>`}</span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"awareness","감정 자각","어떤 감정이든 우정·경쟁심·불편함으로 잘못 해석할 수 있어요")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함·공간 반응","사랑해도 상대와 함께 있거나 집·방·차를 공유할 때 불편하고 숨 막힐 수 있어요.")}${field(sourceId,targetId,"annoyance","실제로 귀찮고 성가신 정도","표현 방식이 아니라 실제로 느끼는 성가심이에요. 좋아하고 사랑하면서도 많이 귀찮아할 수 있습니다.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개예요. 깊이 사랑해도 자유롭게 두거나, 친구에게 강한 독점욕을 느낄 수 있어요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개로 실제로 얼마나 자주, 격렬하게 충돌하는지")}${field(sourceId,targetId,"expectation","관계에 대한 기대","지금 사랑하더라도 곧 끝날 관계라고 예상할 수 있어요.")}${field(sourceId,targetId,"rapport","대화 호흡","친밀도와 별개로 농담, 장난, 말의 주파수가 얼마나 잘 맞는지")}${field(sourceId,targetId,"aggression","공격·위해 충동","사랑·가족애와 동시에 존재할 수 있는 충동입니다. 장면에서는 감정과 충돌로 표현됩니다.")}</div></details>`}).join("")}</div>`;
+    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall,official=Object.values(state.relationships||{}).filter(relation=>(relation.a===sourceId&&relation.b===targetId)||(relation.a===targetId&&relation.b===sourceId)),officialText=[...new Set(official.map(relation=>relation.type))].join(" · ");return `<details class="character-view-card" data-view-card-source="${sourceId}" data-view-card-target="${targetId}" ${index===0?"open":""}><summary><span class="character-view-heading"><span class="character-view-direction-icons">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small>${official.length?`<span class="official-relation-inline"><b>공식 관계</b> ${esc(officialText)}</span>`:`<span class="official-relation-inline none">이방인 · 시선만 설정 가능</span>`}</span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 마음을 알고 있는지와 서로 확인했는지를 정해요. 공식 관계와 함께 실제 관계 양상을 자동 계산합니다.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요. 실제 교제 여부나 연락 빈도와는 별개예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함과 대화 호흡","공간을 함께 쓸 때의 편안함과 둘 사이의 말·농담 호흡을 하나의 조합으로 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개예요. 깊이 사랑해도 자유롭게 두거나, 친구에게 강한 독점욕을 느낄 수 있어요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개로 실제로 얼마나 자주, 격렬하게 충돌하는지")}${field(sourceId,targetId,"expectation","관계에 대한 기대","지금 사랑하더라도 곧 끝날 관계라고 예상할 수 있어요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","사랑·가족애와 동시에 존재할 수 있는 충동입니다. 장면에서는 감정과 충돌로 표현됩니다.")}</div></details>`}).join("")}</div>`;
   }).join("");
   const sourceTabs=state.order.map((id,index)=>{const character=state.characters[id],primary=character.theme?.primary||"#176b60",secondary=character.theme?.gradient?(character.theme?.secondary||primary):primary;return `<button type="button" data-view-source="${id}" class="${index===0?"on":""}" style="--view-primary:${esc(primary)};--view-secondary:${esc(secondary)}">${avatar(character)}<span><b>${esc(character.name)}</b><small>이 캐릭터의 시선</small></span></button>`}).join("");
   return `<section class="character-view-editor"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p><b>공식 관계</b>는 두 사람에게 함께 적용되고, 아래의 감정·자각·신뢰·경계는 각 방향마다 따로 저장돼요. 친구인데 자기 호감을 모르는 사람, 원수인데 사랑하는 사람도 만들 수 있어요.</p></div><button data-add-rel>+ 공식 관계 설정</button></div><div class="character-view-source-tabs">${sourceTabs}</div>${panels}</section>`;
@@ -436,7 +437,7 @@ function relationshipMap(relations){
   if(characters.length<2)return"";
   const positions=new Map(characters.map((character,index)=>{
     const angle=(Math.PI*2*index/characters.length)-Math.PI/2;
-    return [character.id,{x:500+420*Math.cos(angle),y:380+300*Math.sin(angle)}];
+    return [character.id,{x:500+400*Math.cos(angle),y:500+400*Math.sin(angle)}];
   }));
   const emotionColor=value=>{
     const text=String(value||"");
@@ -465,7 +466,7 @@ function relationshipMap(relations){
       const hitsNode=[...positions.values()].some(node=>Math.hypot(node.x-point.x,node.y-point.y)<82);
       if(!hitsLabel&&!hitsNode)break;
       const direction=attempt%2===0?1:-1,distance=(Math.floor(attempt/2)+1)*34;
-      point={x:Math.max(70,Math.min(930,x+nx*distance*direction)),y:Math.max(45,Math.min(715,y+ny*distance*direction))};
+      point={x:Math.max(70,Math.min(930,x+nx*distance*direction)),y:Math.max(70,Math.min(930,y+ny*distance*direction))};
     }
     occupiedLabels.push(point);
     return point;
@@ -497,7 +498,7 @@ function relationshipMap(relations){
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-55}" y="${pos.y-55}" width="110" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
   const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId],label=viewLabel(sourceId,targetId);return `<p class="mobile-relation-direction" style="--direction-color:${emotionColor(label)}"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(label)}</small></span></p>`};
   const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 연심":"이방인";const heading=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferred;return `<article>${heading?`<header><b>${esc(heading)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>`:""}${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
-  return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>공식 관계가 없는 사이는 이방인으로 표시돼요. 화살표 위에서도 페이지를 그대로 스크롤할 수 있어요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 760" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
+  return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>공식 관계가 없는 사이는 이방인으로 표시돼요. 화살표 위에서도 페이지를 그대로 스크롤할 수 있어요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }
 function relationship(){
   const all=Object.values(state.relationships),shownGroups=new Set();
@@ -562,10 +563,3 @@ function shop(){
   const count=lines.reduce((sum,[,qty])=>sum+Number(qty),0);
   return `<section class="panel form dlc-store shop-store"><div class="title"><div><h1>상점</h1><p>원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요. 모든 상품은 구독이 아닌 일회성 구매예요.</p></div></div><div class="shop-product-grid">${product("character_slots_5",SHOP_PRODUCTS.character_slots_5,Number(accountEntitlements.characterSlotPacks)||0)}${product("town_slot_1",SHOP_PRODUCTS.town_slot_1,Number(accountEntitlements.townSlotPacks)||0)}${product("storage_pack",SHOP_PRODUCTS.storage_pack,0)}</div><section class="shop-cart"><div class="title"><div><h2>장바구니</h2><p>같은 상품도 여러 개 담을 수 있어요.</p></div><b>${count}개</b></div><div class="cart-lines">${cartHtml}</div><div class="cart-total"><span>총 결제금액</span><b>${total.toLocaleString("ko-KR")}원</b></div><a class="primary premium-buy ${lines.length?"":"disabled"}" ${lines.length?'href="./payment.html?cart=1" aria-disabled="false"':'aria-disabled="true"'}>장바구니 결제하기</a></section><section class="shop-coming"><h2>테마 DLC</h2><p>전용 건물·배경·생활 스크립트를 갖춘 콘텐츠를 준비하고 있어요.</p></section><div class="dlc-hidden" hidden>${dlc()}</div></section>`;
 }
-
-
-
-
-
-
-

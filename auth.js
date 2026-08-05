@@ -25,15 +25,16 @@ const maxPhotos=()=>hasStorage50()?400:MAX_PHOTOS;
 const maxTotalBytes=()=>hasStorage50()?STORAGE_50_TOTAL_BYTES:FREE_TOTAL_BYTES;
 let storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
 const toast=text=>window.ParallelCity?.toast?.(text);
-const countStoredPhotos=value=>{
+const storedPhotoUrls=value=>{
   const urls=new Set();
   const walk=node=>{
     if(typeof node==="string"&&/firebasestorage\.googleapis\.com|firebasestorage\.app|storage\.googleapis\.com/.test(node)){urls.add(node);return}
     if(!node||typeof node!=="object")return;
     Object.values(node).forEach(walk);
   };
-  walk(value);return urls.size;
+  walk(value);return urls;
 };
+const countStoredPhotos=value=>storedPhotoUrls(value).size;
 const normalizeManifest=(value,gameState)=>({
   items:Array.isArray(value?.items)?value.items.filter(item=>item&&typeof item.hash==="string"&&typeof item.url==="string").slice(0,maxPhotos()):[],
   legacyCount:Math.max(Number(value?.legacyCount)||0,Math.max(0,countStoredPhotos(gameState)-(Array.isArray(value?.items)?value.items.length:0)))
@@ -168,6 +169,9 @@ async function prepareState(local,manifest){
     status(`${user.displayName||"계정"} · 사진 ${i+1}/${jobs.length} 올리는 중`);
     jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest);
   }
+  const usedUrls=storedPhotoUrls(next);
+  manifest.items=manifest.items.filter(item=>usedUrls.has(item.url));
+  manifest.legacyCount=Math.max(0,usedUrls.size-manifest.items.length);
   return {gameState:next,mediaManifest:manifest};
 }
 
