@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805t";
+import {state,save,characterViewFor} from "./state.js?v=20260805u";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1168,7 +1168,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805t";
+const ENGINE_VERSION="20260805u";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1214,6 +1214,13 @@ function cleanInvalidRoomAndHobbyEntries(c,entries){
     return item;
   });
 }
+function cleanAccumulatedGroupEntries(entries){
+  return entries.map(item=>{
+    if(!item?.groupInteraction)return item;
+    const title=[...new Set(String(item.title||"").split(" · ").map(part=>part.trim()).filter(Boolean))].join(" · ");
+    return {...item,title,desc:cleanRepeatedSceneText(item.desc)};
+  });
+}
 function companionWasActuallyThere(c,item,date){
   if(!item?.withId)return true;
   const other=state.characters[item.withId],otherDay=other?.days?.[dayKey(date)];
@@ -1231,7 +1238,7 @@ export function timeline(c,date=new Date()){
   c.days??={};
   const old=c.days[key];
   if(old?.entries){
-    const cleaned=cleanInvalidRoomAndHobbyEntries(c,cleanSameMinuteEntries(cleanExactRepeatedEntries(old.entries)));
+    const cleaned=cleanAccumulatedGroupEntries(cleanInvalidRoomAndHobbyEntries(c,cleanSameMinuteEntries(cleanExactRepeatedEntries(old.entries))));
     if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save()}
   }
   const today=key===dayKey(new Date());
@@ -1433,7 +1440,22 @@ function interactionPlace(placeId,townId){
   const town=state.towns.find(item=>item.id===townId)||state.towns.find(item=>item.places?.some(place=>place.id===placeId))||state.world;
   return town?.places?.find(place=>place.id===placeId);
 }
+function cleanRepeatedSceneText(value){
+  const parts=String(value||"").split(/(?<=[.!?])\s+/).map(part=>part.trim()).filter(Boolean);
+  return [...new Set(parts)].join(" ");
+}
+function baseSceneFrom(value){
+  if(!value?.groupInteraction)return value;
+  return {
+    ...value,
+    title:value.baseTitle||String(value.title||"").split(" · ")[0],
+    desc:value.baseDesc||cleanRepeatedSceneText(value.desc),
+    groupInteraction:false,
+    withIds:[]
+  };
+}
 function sharedPlaceScene(c,current,date){
+  current=baseSceneFrom(current);
   if(!current?.placeId||current.transit||current.home)return current;
   const together=state.order.map(id=>state.characters[id]).filter(other=>{
     if(!other||other.id===c.id)return false;
@@ -1468,7 +1490,8 @@ function sharedPlaceScene(c,current,date){
       ?`${togetherWith(pair.first.name)} ${subject(pair.second.name)} 서로 반응하는 동안 굳이 끼어들지 않고, 가까운 자리에서 자신이 하던 일에 집중하고 있어요.`
       :`${togetherWith(pair.first.name)} ${subject(pair.second.name)} 주고받는 행동을 곁에서 알아차리고, 방해하지 않을 만큼만 표정으로 반응하며 함께 머물고 있어요.`;
   }
-  return {...current,title:`${current.title} · ${title}`,desc:`${current.desc} ${detail}`,withIds:together.map(other=>other.id),groupInteraction:true};
+  const baseTitle=current.baseTitle||current.title,baseDesc=current.baseDesc||current.desc;
+  return {...current,baseTitle,baseDesc,title:[...new Set([baseTitle,title].filter(Boolean))].join(" · "),desc:cleanRepeatedSceneText(`${baseDesc} ${detail}`),withIds:together.map(other=>other.id),groupInteraction:true};
 }
 export function eventFor(c,date=new Date()){
   const current=sharedPlaceScene(c,baseEventFor(c,date),date);
