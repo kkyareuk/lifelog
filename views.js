@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260805j";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805j";
+﻿import {state,active,characterViewFor} from "./state.js?v=20260805n";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805n";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -410,7 +410,12 @@ const CHARACTER_VIEW_OPTIONS={
   comfort:["정하지 않음","매우 불편함","긴장함","조심스러움","보통","편안함","무방비해질 만큼 편함"],
   annoyance:["정하지 않음","전혀 귀찮지 않음","가끔 성가심","종종 귀찮음","많이 귀찮음","보기만 해도 피곤함"],
   attention:["정하지 않음","관심 없음","필요할 때만 봄","종종 신경 씀","자주 살핌","늘 최우선으로 챙김"],
-  jealousy:["정하지 않음","질투하지 않음","가끔 신경 쓰임","은근히 질투함","질투가 심함","독점하고 싶어 함"]
+  jealousy:["정하지 않음","질투하지 않음","가끔 신경 쓰임","은근히 질투함","질투가 심함","독점하고 싶어 함"],
+  conflictIntensity:["정하지 않음","갈등이 거의 없음","가끔 부딪힘","자주 충돌함","격렬하게 충돌함","파국적인 충돌을 반복함"],
+  expectation:["정하지 않음","언제든 끝날 수 있다고 생각함","곧 헤어질 거라고 예상함","당분간 이어질 거라 생각함","오래 함께할 거라 기대함","평생 이어질 관계라고 믿음"],
+  spaceComfort:["정하지 않음","공간을 편하게 공유함","상대 공간에서는 조금 어색함","서로의 개인 공간 공유가 불편함","같은 집이나 차에 단둘이 있으면 숨 막힘"],
+  rapport:["정하지 않음","대화가 전혀 통하지 않음","말할수록 부딪힘","무난하게 대화함","농담과 장난이 잘 통함","주파수가 완벽하게 맞음"],
+  aggression:["정하지 않음","공격 충동 없음","거친 말을 하고 싶은 충동","몸으로 밀어내고 싶은 충동","해치고 싶은 충동","죽이고 싶을 만큼 격한 충동"]
 };
 const characterViewEditor=()=>{
   const first=state.order[0];
@@ -420,7 +425,7 @@ const characterViewEditor=()=>{
   };
   const panels=state.order.map(sourceId=>{
     const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
-    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall,official=Object.values(state.relationships||{}).filter(relation=>(relation.a===sourceId&&relation.b===targetId)||(relation.a===targetId&&relation.b===sourceId)),officialText=[...new Set(official.map(relation=>relation.type))].join(" · ");return `<details class="character-view-card" data-view-card-source="${sourceId}" data-view-card-target="${targetId}" ${index===0?"open":""}><summary><span class="character-view-heading"><span class="character-view-direction-icons">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small>${official.length?`<span class="official-relation-inline"><b>공식 관계</b> ${esc(officialText)}</span>`:`<span class="official-relation-inline none">공식 관계 없음 · 시선만 설정 가능</span>`}</span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"awareness","감정 자각","어떤 감정이든 우정·경쟁심·불편함으로 잘못 해석할 수 있어요")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","사랑해도 긴장하거나 불편할 수 있어요")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","말을 걸거나 간섭할 때 얼마나 성가신지")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","다른 사람과 가까울 때 어떤지")}</div></details>`}).join("")}</div>`;
+    return `<div class="character-view-panel" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map((targetId,index)=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall,official=Object.values(state.relationships||{}).filter(relation=>(relation.a===sourceId&&relation.b===targetId)||(relation.a===targetId&&relation.b===sourceId)),officialText=[...new Set(official.map(relation=>relation.type))].join(" · ");return `<details class="character-view-card" data-view-card-source="${sourceId}" data-view-card-target="${targetId}" ${index===0?"open":""}><summary><span class="character-view-heading"><span class="character-view-direction-icons">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source.name)} → ${esc(target.name)}</b><small>${esc(source.name)}이(가) ${esc(target.name)}을(를) 보는 시선</small>${official.length?`<span class="official-relation-inline"><b>공식 관계</b> ${esc(officialText)}</span>`:`<span class="official-relation-inline none">이방인 · 시선만 설정 가능</span>`}</span></span><em data-view-summary="${sourceId}:${targetId}">${esc(overall)}</em></summary><div class="character-view-fields">${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"awareness","감정 자각","어떤 감정이든 우정·경쟁심·불편함으로 잘못 해석할 수 있어요")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","마음의 거리","얼마나 가까운 사람으로 느끼는지")}${field(sourceId,targetId,"comfort","함께 있을 때 편안함","사랑해도 긴장하거나 불편할 수 있어요")}${field(sourceId,targetId,"annoyance","귀찮게 느끼는 정도","연락과 부탁을 귀찮아하는 정도예요. 존재 자체에 대한 감정과는 별개입니다.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살피는지")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개예요. 깊이 사랑해도 자유롭게 두거나, 친구에게 강한 독점욕을 느낄 수 있어요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개로 실제로 얼마나 자주, 격렬하게 충돌하는지")}${field(sourceId,targetId,"expectation","관계에 대한 기대","지금 사랑하더라도 곧 끝날 관계라고 예상할 수 있어요.")}${field(sourceId,targetId,"spaceComfort","공간 공유 반응","대화는 잘 통하면서도 상대의 집·방·차 안에서는 숨 막힐 수 있어요.")}${field(sourceId,targetId,"rapport","대화 호흡","친밀도와 별개로 농담, 장난, 말의 주파수가 얼마나 잘 맞는지")}${field(sourceId,targetId,"aggression","공격·위해 충동","사랑·가족애와 동시에 존재할 수 있는 충동입니다. 장면에서는 감정과 충돌로 표현됩니다.")}</div></details>`}).join("")}</div>`;
   }).join("");
   const sourceTabs=state.order.map((id,index)=>{const character=state.characters[id],primary=character.theme?.primary||"#176b60",secondary=character.theme?.gradient?(character.theme?.secondary||primary):primary;return `<button type="button" data-view-source="${id}" class="${index===0?"on":""}" style="--view-primary:${esc(primary)};--view-secondary:${esc(secondary)}">${avatar(character)}<span><b>${esc(character.name)}</b><small>이 캐릭터의 시선</small></span></button>`}).join("");
   return `<section class="character-view-editor"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p><b>공식 관계</b>는 두 사람에게 함께 적용되고, 아래의 감정·자각·신뢰·경계는 각 방향마다 따로 저장돼요. 친구인데 자기 호감을 모르는 사람, 원수인데 사랑하는 사람도 만들 수 있어요.</p></div><button data-add-rel>+ 공식 관계 설정</button></div><div class="character-view-source-tabs">${sourceTabs}</div>${panels}</section>`;
@@ -430,7 +435,7 @@ function relationshipMap(relations){
   if(characters.length<2)return"";
   const positions=new Map(characters.map((character,index)=>{
     const angle=(Math.PI*2*index/characters.length)-Math.PI/2;
-    return [character.id,{x:500+370*Math.cos(angle),y:235+155*Math.sin(angle)}];
+    return [character.id,{x:500+420*Math.cos(angle),y:380+300*Math.sin(angle)}];
   }));
   const emotionColor=value=>{
     const text=String(value||"");
@@ -459,7 +464,7 @@ function relationshipMap(relations){
       const hitsNode=[...positions.values()].some(node=>Math.hypot(node.x-point.x,node.y-point.y)<82);
       if(!hitsLabel&&!hitsNode)break;
       const direction=attempt%2===0?1:-1,distance=(Math.floor(attempt/2)+1)*34;
-      point={x:Math.max(90,Math.min(910,x+nx*distance*direction)),y:Math.max(35,Math.min(435,y+ny*distance*direction))};
+      point={x:Math.max(70,Math.min(930,x+nx*distance*direction)),y:Math.max(45,Math.min(715,y+ny*distance*direction))};
     }
     occupiedLabels.push(point);
     return point;
@@ -471,22 +476,27 @@ function relationshipMap(relations){
     const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),unitX=dx/length,unitY=dy/length,normalX=-unitY,normalY=unitX,nodeRadius=64,lane=12;
     const startA={x:a.x+unitX*nodeRadius+normalX*lane,y:a.y+unitY*nodeRadius+normalY*lane},endB={x:b.x-unitX*nodeRadius+normalX*lane,y:b.y-unitY*nodeRadius+normalY*lane};
     const startB={x:b.x-unitX*nodeRadius-normalX*lane,y:b.y-unitY*nodeRadius-normalY*lane},endA={x:a.x+unitX*nodeRadius-normalX*lane,y:a.y+unitY*nodeRadius-normalY*lane};
-    const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${startA.x} ${startA.y} Q ${midX+normalX*lane} ${midY+normalY*lane} ${endB.x} ${endB.y}`,backward=`M ${startB.x} ${startB.y} Q ${midX-normalX*lane} ${midY-normalY*lane} ${endA.x} ${endA.y}`;
-    const forwardMarker=`relation-arrow-${index}-forward`,backwardMarker=`relation-arrow-${index}-backward`;
+    const arrowLength=11,arrowHalfWidth=5;
+    const forwardBase={x:endB.x-unitX*arrowLength,y:endB.y-unitY*arrowLength},backwardBase={x:endA.x+unitX*arrowLength,y:endA.y+unitY*arrowLength};
+    const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${startA.x} ${startA.y} Q ${midX+normalX*lane} ${midY+normalY*lane} ${forwardBase.x} ${forwardBase.y}`,backward=`M ${startB.x} ${startB.y} Q ${midX-normalX*lane} ${midY-normalY*lane} ${backwardBase.x} ${backwardBase.y}`;
+    const forwardArrow=`${endB.x},${endB.y} ${forwardBase.x+normalX*arrowHalfWidth},${forwardBase.y+normalY*arrowHalfWidth} ${forwardBase.x-normalX*arrowHalfWidth},${forwardBase.y-normalY*arrowHalfWidth}`;
+    const backwardArrow=`${endA.x},${endA.y} ${backwardBase.x+normalX*arrowHalfWidth},${backwardBase.y+normalY*arrowHalfWidth} ${backwardBase.x-normalX*arrowHalfWidth},${backwardBase.y-normalY*arrowHalfWidth}`;
     const likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||"");
-    const inferredText=likes(forwardLabel)!==likes(backwardLabel)?"시선 기반 · 짝사랑":likes(forwardLabel)&&likes(backwardLabel)?"시선 기반 · 상호 연심":"";
-    const relationText=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferredText;
+    const relationText=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):"이방인";
     const stageText=[...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · ");
-    const officialPoint=edge.official.length?placeLabel(midX,midY,normalX,normalY):null;
-    const forwardPoint=placeLabel(midX+normalX*lane-unitX*length*.16,midY+normalY*lane-unitY*length*.16,normalX,normalY);
-    const backwardPoint=placeLabel(midX-normalX*lane+unitX*length*.16,midY-normalY*lane+unitY*length*.16,-normalX,-normalY);
-    const officialMarkup=officialPoint?`<g class="map-official"><rect x="${officialPoint.x-82}" y="${officialPoint.y-23}" width="164" height="${stageText?46:30}" rx="12"/><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-4}" text-anchor="middle">${esc(relationText)}</text>${stageText?`<text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+15}" text-anchor="middle">${esc(stageText)}</text>`:""}</g>`:"";
-    return `<g class="relationship-edge"><defs><marker id="${forwardMarker}" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7.8" refY="4" orient="auto" viewBox="0 0 8 8"><path d="M0,0 L8,4 L0,8 z" fill="${forwardColor}"/></marker><marker id="${backwardMarker}" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" refX="7.8" refY="4" orient="auto" viewBox="0 0 8 8"><path d="M0,0 L8,4 L0,8 z" fill="${backwardColor}"/></marker></defs><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round" marker-end="url(#${forwardMarker})"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round" marker-end="url(#${backwardMarker})"/><text class="map-emotion map-emotion-on-line" style="fill:${forwardColor}" x="${forwardPoint.x}" y="${forwardPoint.y}" text-anchor="middle" dominant-baseline="middle">${esc(forwardLabel)}</text><text class="map-emotion map-emotion-on-line" style="fill:${backwardColor}" x="${backwardPoint.x}" y="${backwardPoint.y}" text-anchor="middle" dominant-baseline="middle">${esc(backwardLabel)}</text>${officialMarkup}</g>`;
+    const officialPoint=placeLabel(midX,midY,normalX,normalY);
+    const normalizeAngle=value=>{let angle=value;while(angle>180)angle-=360;while(angle<=-180)angle+=360;if(angle>90)angle-=180;if(angle<-90)angle+=180;return angle};
+    const forwardAngle=normalizeAngle(Math.atan2(dy,dx)*180/Math.PI),backwardAngle=normalizeAngle(Math.atan2(-dy,-dx)*180/Math.PI);
+    const forwardPoint=placeLabel(midX+normalX*lane-unitX*length*.27,midY+normalY*lane-unitY*length*.27,normalX,normalY);
+    const backwardPoint=placeLabel(midX-normalX*lane+unitX*length*.27,midY-normalY*lane+unitY*length*.27,-normalX,-normalY);
+    const officialAngle=forwardAngle;
+    const officialMarkup=`<g class="map-official" transform="rotate(${officialAngle} ${officialPoint.x} ${officialPoint.y})"><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-4}" text-anchor="middle">${esc(relationText||"이방인")}</text>${stageText?`<text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+15}" text-anchor="middle">${esc(stageText)}</text>`:""}</g>`;
+    return `<g class="relationship-edge"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/><text class="map-emotion map-emotion-on-line" style="fill:${forwardColor}" x="${forwardPoint.x}" y="${forwardPoint.y}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${forwardAngle} ${forwardPoint.x} ${forwardPoint.y})">${esc(forwardLabel)}</text><text class="map-emotion map-emotion-on-line" style="fill:${backwardColor}" x="${backwardPoint.x}" y="${backwardPoint.y}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${backwardAngle} ${backwardPoint.x} ${backwardPoint.y})">${esc(backwardLabel)}</text>${officialMarkup}</g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-55}" y="${pos.y-55}" width="110" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
   const mobileDirection=(sourceId,targetId)=>{const source=state.characters[sourceId],target=state.characters[targetId],label=viewLabel(sourceId,targetId);return `<p class="mobile-relation-direction" style="--direction-color:${emotionColor(label)}"><span class="mobile-relation-people">${avatar(source)}<i>→</i>${avatar(target)}</span><span><b>${esc(source?.name||"")} → ${esc(target?.name||"")}</b><small>${esc(label)}</small></span></p>`};
-  const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 연심":"";const heading=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferred;return `<article>${heading?`<header><b>${esc(heading)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>`:""}${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
-  return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>공식 관계가 없어도 직접 편집한 시선은 화살표로 표시돼요. 여러 공식 관계는 한 묶음으로 보여요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 470" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
+  const mobileEdges=edges.map(edge=>{const forward=viewLabel(edge.a,edge.b),backward=viewLabel(edge.b,edge.a),likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value||""),inferred=likes(forward)!==likes(backward)?"시선 기반 · 짝사랑":likes(forward)&&likes(backward)?"시선 기반 · 상호 연심":"이방인";const heading=edge.official.length?[...new Set(edge.official.map(relation=>relation.type))].join(" · "):inferred;return `<article>${heading?`<header><b>${esc(heading)}</b><small>${esc([...new Set(edge.official.map(relation=>relation.stage).filter(Boolean))].join(" · "))}</small></header>`:""}${mobileDirection(edge.a,edge.b)}${mobileDirection(edge.b,edge.a)}</article>`}).join("");
+  return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>공식 관계가 없는 사이는 이방인으로 표시돼요. 화살표 위에서도 페이지를 그대로 스크롤할 수 있어요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 760" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div><div class="relationship-map-mobile">${mobileEdges}</div></section>`;
 }
 function relationship(){
   const all=Object.values(state.relationships),shownGroups=new Set();
