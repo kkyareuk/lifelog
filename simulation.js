@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805x";
+import {state,save,characterViewFor} from "./state.js?v=20260805ac";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1185,7 +1185,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805x";
+const ENGINE_VERSION="20260805ac";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1256,7 +1256,7 @@ export function timeline(c,date=new Date()){
   const old=c.days[key];
   if(old?.entries){
     const cleaned=cleanAccumulatedGroupEntries(cleanInvalidRoomAndHobbyEntries(c,cleanSameMinuteEntries(cleanExactRepeatedEntries(old.entries))));
-    if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save()}
+    if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
   }
   const today=key===dayKey(new Date());
   // 한 번 만든 하루의 기록은 앱 업데이트나 스크립트 팩 변경으로 다시 쓰지 않는다.
@@ -1276,7 +1276,7 @@ export function timeline(c,date=new Date()){
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
     c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,entries};
-    save();
+    save(false,false);
   }
   return c.days[key].entries;
 }
@@ -1291,7 +1291,7 @@ function commitLiveEntry(c,date,item){
     (entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room)||
     (sceneKey(entry.title)===sceneKey(item.title)&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
   );
-  if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save()}
+  if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save(false,false)}
   return item;
 }
 function liveGapEvent(c,last,n,date){
@@ -1350,6 +1350,10 @@ function baseEventFor(c,date=new Date()){
 }
 const RELATION_CLOSENESS={부부:100,연인:95,"부모·자녀":92,"형제·자매":90,소꿉친구:84,친구:78,동거인:68,직장동료:54,라이벌:42,혐관:35};
 const VIEW_IMPORTANCE=[
+  ["importance",/^1순위/,55],
+  ["importance",/^2순위/,40],
+  ["importance",/^3순위/,28],
+  ["importance",/^\d+순위/,12],
   ["overall",/운명의 상대|사랑|없어서는/,42],
   ["overall",/좋아|호감|소중/,27],
   ["overall",/매우 싫|증오|혐오/,24],
@@ -1373,6 +1377,14 @@ function relationImportance(first,second,relation){
   return (RELATION_CLOSENESS[relation?.type]||0)
     +directedImportance(first.id,second.id)
     +directedImportance(second.id,first.id);
+}
+function dateLikePair(first,second,relation){
+  if(relation?.temporalStatus==="past"||["부모·자녀","형제·자매"].includes(relation?.type))return false;
+  if(["연인","부부"].includes(relation?.type))return true;
+  const firstView=characterViewFor(first.id,second.id),secondView=characterViewFor(second.id,first.id);
+  const romantic=value=>/연애 감정|깊이 사랑|없어서는/.test(value?.overall||"");
+  const important=value=>/^1순위|^2순위/.test(value?.importance||"");
+  return romantic(firstView)&&romantic(secondView)&&(important(firstView)||important(secondView));
 }
 function interactionPair(group){
   const candidates=[];
@@ -1414,8 +1426,181 @@ function significantEncounter(pair,group,date){
   }
   return "";
 }
+const RELATION_COMBINATION_BONDS=[
+  {key:"devoted",label:"서로를 가장 깊이 사랑함",test:(a,b)=>/깊이 사랑|없어서는 안 될/.test(`${a.overall} ${b.overall}`),actions:[
+    (a,b)=>`${a.name}은(는) 사소한 변화부터 알아보고 ${b.name}이(가) 말하기 전에 필요한 것을 건넸어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}과(와) 눈이 마주치자 굳이 설명하지 않아도 알겠다는 듯 자리를 가까이했어요.`,
+    (a,b)=>`${a.name}은(는) 다른 사람과 이야기하면서도 ${b.name}의 표정과 움직임을 놓치지 않았어요.`,
+    (a,b)=>`${a.name}은(는) 먼저 떠나려다가 ${b.name}의 속도에 맞춰 함께 움직이기로 했어요.`]},
+  {key:"romantic",label:"분명한 연심을 품음",test:(a,b)=>/연애 감정/.test(`${a.overall} ${b.overall}`),actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}과(와) 나란히 할 수 있는 일을 골라 자연스럽게 둘만의 시간을 만들었어요.`,
+    (a,b)=>`${a.name}은(는) 가까워진 거리를 의식하면서도 물러나지 않고 ${b.name}의 이야기를 들었어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}에게만 알아들을 수 있는 짧은 농담을 건네며 웃었어요.`,
+    (a,b)=>`${a.name}은(는) 헤어질 시간이 되었는데도 대화를 하나 더 꺼내 조금 더 머물렀어요.`]},
+  {key:"unspoken",label:"말하지 못한 마음이 있음",test:(a,b)=>/싹틈|부정함|전혀 모름|우정으로 착각/.test(`${a.overall} ${a.awareness} ${b.overall} ${b.awareness}`),actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}을(를) 먼저 도와 놓고도 특별한 뜻은 없었다는 듯 시선을 돌렸어요.`,
+    (a,b)=>`${a.name}은(는) 둘만 남자 갑자기 말수가 줄었지만 자리를 피하지는 않았어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}이(가) 다른 사람과 웃는 모습을 오래 보다가 뒤늦게 하던 일로 돌아갔어요.`,
+    (a,b)=>`${a.name}은(는) 먼저 연락할 이유를 찾지 못해 망설이다가 사소한 핑계를 하나 만들었어요.`]},
+  {key:"precious",label:"소중한 사람으로 여김",test:(a,b)=>/소중|안쓰럽|존경|동경/.test(`${a.overall} ${b.overall}`),actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}이(가) 곤란해지기 전에 조용히 옆에서 일을 나눠 맡았어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}의 말을 끊지 않고 끝까지 들은 뒤 현실적인 도움을 하나 제안했어요.`,
+    (a,b)=>`${a.name}은(는) 사람들 사이에서도 ${b.name}이(가) 불편하지 않은지 먼저 살폈어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}이(가) 무사히 돌아가는 것을 확인하고서야 자기 일로 돌아갔어요.`]},
+  {key:"friends",label:"편하고 가까운 우정",test:(a,b)=>/친구로 좋아|인간적인 호감/.test(`${a.overall} ${b.overall}`),actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}에게 방금 본 것을 과장해 이야기하며 자연스럽게 웃음을 끌어냈어요.`,
+    (a,b)=>`${a.name}은(는) 말이 잠시 끊겨도 어색해하지 않고 ${b.name}과(와) 각자 할 일을 이어 갔어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}의 실수를 가볍게 놀린 뒤 아무렇지 않게 수습을 도왔어요.`,
+    (a,b)=>`${a.name}은(는) 다음에 같이 할 일을 즉석에서 정하고 짧게 손을 흔들었어요.`]},
+  {key:"family",label:"생활에 밴 가족애",test:(a,b,r)=>["부모·자녀","형제·자매"].includes(r?.type),actions:[
+    (a,b)=>`${a.name}은(는) 묻지도 않고 ${b.name}의 몫까지 챙겼고, ${b.name}도 익숙하다는 듯 받아들였어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}의 생활 습관을 잔소리하면서도 필요한 것은 이미 준비해 두었어요.`,
+    (a,b)=>`${a.name}은(는) 남들 앞에서는 퉁명스럽게 굴었지만 ${b.name}이(가) 곤란해지자 바로 편을 들었어요.`,
+    (a,b)=>`${a.name}은(는) 돌아갈 시간을 재촉하면서도 결국 ${b.name}과(와) 같은 방향으로 움직였어요.`]},
+  {key:"rivals",label:"서로를 의식하는 경쟁 관계",test:(a,b)=>/경쟁심/.test(`${a.overall} ${b.overall}`),actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}의 방식을 유심히 본 뒤 조금 더 나은 결과를 내려고 속도를 올렸어요.`,
+    (a,b)=>`${a.name}은(는) 칭찬 대신 허점을 하나 짚었지만, 실력만큼은 인정하는 기색을 숨기지 못했어요.`,
+    (a,b)=>`${a.name}은(는) 다른 사람이 ${b.name}을(를) 낮게 평가하자 자신이 이길 상대를 함부로 보지 말라고 잘라 말했어요.`,
+    (a,b)=>`${a.name}은(는) 다음에는 확실히 승부를 내자고 말하며 먼저 돌아섰어요.`]},
+  {key:"love_hate",label:"애정과 반감이 동시에 있음",test:(a,b)=>/애증/.test(`${a.overall} ${b.overall}`)||(/사랑/.test(a.overall||"")&&/싫어|미워|애증/.test(b.overall||""))||(/사랑/.test(b.overall||"")&&/싫어|미워|애증/.test(a.overall||"")),actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}을(를) 도와주면서도 왜 자신이 이러고 있는지 화가 난다는 듯 말을 거칠게 했어요.`,
+    (a,b)=>`${a.name}은(는) 가까이 있고 싶어 하면서도 먼저 다정하게 굴지는 못해 사소한 시비를 걸었어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}을(를) 험하게 말하다가 다른 사람이 같은 말을 하자 표정이 단단히 굳었어요.`,
+    (a,b)=>`${a.name}은(는) 다시는 보지 말자고 말했지만 ${b.name}이(가) 무사히 떠나는 모습까지 지켜봤어요.`]},
+  {key:"hostile",label:"서로를 경계하거나 미워함",test:(a,b,r)=>["혐관","적","라이벌"].includes(r?.type)||/매우 싫어|미워|경계/.test(`${a.overall} ${b.overall}`),actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}의 동선을 살피며 등을 보이지 않고 필요한 말만 짧게 주고받았어요.`,
+    (a,b)=>`${a.name}은(는) 둘만 남자 침묵을 깨지 않은 채 서로의 다음 행동을 경계했어요.`,
+    (a,b)=>`${a.name}은(는) 다른 사람 앞에서 감정을 드러내지 않았지만 ${b.name}의 말에는 즉시 반박했어요.`,
+    (a,b)=>`${a.name}은(는) 더 충돌하기 전에 먼저 자리를 벗어나며 다음에는 물러서지 않겠다고 생각했어요.`]},
+  {key:"distant",label:"아직 거리가 있는 사이",test:()=>true,actions:[
+    (a,b)=>`${a.name}은(는) ${b.name}과(와) 필요한 역할을 나누되 서로의 영역을 침범하지 않았어요.`,
+    (a,b)=>`${a.name}은(는) 어색한 침묵이 길어지기 전에 무난한 화제를 하나 꺼냈어요.`,
+    (a,b)=>`${a.name}은(는) 다른 사람들과 함께 있을 때만 ${b.name}에게 자연스럽게 말을 건넸어요.`,
+    (a,b)=>`${a.name}은(는) 짧게 인사하고 각자 가야 할 방향으로 돌아섰어요.`]}
+];
+const RELATION_COMBINATION_TENSIONS=[
+  {key:"violent",label:"사랑과 위해 충동이 충돌함",test:(a,b)=>/해치고 싶|죽이고 싶/.test(`${a.aggression} ${b.aggression}`),lines:[
+    (a,b)=>`그러나 ${a.name}은(는) 애정과 별개로 ${b.name}을(를) 해치고 싶은 충동이 치밀자 손에 힘을 주었다가 스스로 거리를 벌렸어요.`,
+    (a,b)=>`둘은 성인 사이의 친밀함을 허용할 만큼 가까울 수 있어도, 분노가 올라온 순간에는 접촉을 멈추고 날 선 말로 맞섰어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}에게 화가 났지만 충동대로 행동하지 않기 위해 물건을 내려놓고 대화를 중단했어요.`,
+    (a,b)=>`서로를 원하는 마음과 안전하게 함께할 수 있는지는 다른 문제라, 둘은 감정이 가라앉을 때까지 각자 떨어져 있기로 했어요.`]},
+  {key:"explosive",label:"애정과 격렬한 갈등이 공존함",test:(a,b)=>/격렬하게|파국적인|자주 충돌/.test(`${a.conflictIntensity} ${b.conflictIntensity}`),lines:[
+    ()=>`사소한 방식 차이가 곧바로 언쟁으로 번졌지만 두 사람 모두 관계 자체를 포기한 듯 자리를 뜨지는 않았어요.`,
+    ()=>`가까운 거리와 편한 접촉은 허용하면서도 의견이 맞부딪치자 말투가 빠르게 거칠어졌어요.`,
+    ()=>`주변 사람이 눈치를 볼 만큼 날카롭게 다퉜지만, 정작 다른 사람이 끼어드는 것은 둘 다 원하지 않았어요.`,
+    ()=>`오늘의 싸움을 오늘 끝내지는 못했지만 최소한 다음 대화를 위한 시간과 장소는 정해 두었어요.`]},
+  {key:"distrust",label:"끌리지만 믿지 못함",test:(a,b)=>/전혀 믿지 않|의심함/.test(`${a.trust} ${b.trust}`),lines:[
+    (a,b)=>`${a.name}은(는) 다정한 행동을 받아들이면서도 그 의도를 확인하려는 질문을 멈추지 않았어요.`,
+    ()=>`둘 사이의 거리와 접촉은 가까웠지만, 중요한 정보만큼은 서로에게 전부 내보이지 않았어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}이(가) 다른 사람과 나눈 말을 기억해 두고 앞뒤가 맞는지 조용히 따져 봤어요.`,
+    ()=>`함께 돌아가자는 제안에는 응했지만 완전히 등을 맡기지는 않은 채 나란히 걸었어요.`]},
+  {key:"strained",label:"좋아하지만 함께 있으면 불편함",test:(a,b)=>/숨 막히|매우 불편|공간 공유는 불편|긴장하고/.test(`${a.comfort} ${b.comfort}`)||/많이 귀찮|보기만 해도 피곤/.test(`${a.annoyance} ${b.annoyance}`),lines:[
+    (a,b)=>`${a.name}은(는) ${b.name}을(를) 싫어하지 않지만 같은 공간에 오래 있자 숨이 막혀 창가 쪽으로 자리를 옮겼어요.`,
+    ()=>`둘만 있으면 불편해하면서도 농담의 호흡은 잘 맞아, 거리를 둔 채 한참 웃고 떠들었어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}을(를) 많이 성가셔하면서도 다른 사람이 데려가려 하자 조금 더 있으라고 붙잡았어요.`,
+    ()=>`연락을 귀찮아해 답을 미뤘지만, 헤어지기 전에는 다음에 볼 수 있는 날을 대충이라도 확인했어요.`]},
+  {key:"steady",label:"갈등을 안전하게 조율함",test:()=>true,lines:[
+    ()=>`의견이 조금 달랐지만 각자 원하는 것을 한 번씩 말한 뒤 무리 없는 쪽으로 조정했어요.`,
+    ()=>`가까이 머무는 동안 서로가 허용한 거리와 접촉 범위를 자연스럽게 지켰어요.`,
+    ()=>`다른 사람이 끼어들어도 둘 사이의 대화가 끊기지 않도록 하던 이야기를 차분히 마무리했어요.`,
+    ()=>`헤어지기 전에 오늘 불편했던 점이 없는지 짧게 확인하고 다음 일정을 정했어요.`]}
+];
+const RELATION_COMBINATION_PROFILES=RELATION_COMBINATION_BONDS.flatMap((bond,bondIndex)=>
+  RELATION_COMBINATION_TENSIONS.map((tension,tensionIndex)=>({key:`${bond.key}_${tension.key}`,label:`${bond.label} · ${tension.label}`,bondIndex,tensionIndex}))
+);
+const TOUCH_INTIMACY_LEVELS=["신체 접촉 없음","인사·부축 같은 의례적 접촉만","손잡기·팔짱까지","포옹·기대기까지","가벼운 입맞춤까지","깊은 입맞춤까지","성인 간 친밀한 접촉까지"];
+function sharedIntimacyLevel(first,second){
+  const firstTouch=state.characterViews?.[first.id]?.[second.id]?.touchIntensity||"신체 접촉 없음";
+  const secondTouch=state.characterViews?.[second.id]?.[first.id]?.touchIntensity||"신체 접촉 없음";
+  const firstLevel=Math.max(0,TOUCH_INTIMACY_LEVELS.indexOf(firstTouch));
+  const secondLevel=Math.max(0,TOUCH_INTIMACY_LEVELS.indexOf(secondTouch));
+  return Math.min(firstLevel,secondLevel);
+}
+function intimacyBeat(first,second,variant,bondKey){
+  if(!["devoted","romantic","love_hate"].includes(bondKey))return "";
+  const level=sharedIntimacyLevel(first,second);
+  if(level<2)return "";
+  const beats={
+    2:[
+      `${first.name}은(는) 말끝을 흐리며 ${second.name}의 손을 먼저 잡았고, 손가락을 느슨하게 얽은 채 놓지 않았어요.`,
+      `언쟁이 잦아든 뒤 ${first.name}은(는) ${second.name}의 손목이 아니라 손바닥을 조심스럽게 잡아 다시 가까이 불렀어요.`,
+      `${first.name}은(는) 다른 사람이 보지 않는 틈에 ${second.name}의 팔짱을 끼고 태연한 얼굴을 했어요.`,
+      `헤어지기 직전 ${first.name}은(는) ${second.name}의 손을 한 번 더 당겨 짧게 붙잡아 두었어요.`
+    ],
+    3:[
+      `${first.name}은(는) ${second.name}의 허리를 끌어안아 한동안 품 안에 두었고, 떨어진 뒤에도 어깨에 손을 남겨 두었어요.`,
+      `날 선 대화가 멎자 둘은 말 대신 가까이 기대어 숨을 고르며 서로가 물러나지 않았다는 것을 확인했어요.`,
+      `${first.name}은(는) ${second.name}을(를) 뒤에서 가볍게 끌어안고 턱을 어깨 가까이에 기댔어요.`,
+      `돌아서려던 ${second.name}을(를) 다시 품에 당겨 짧고 단단하게 안은 뒤에야 보내 주었어요.`
+    ],
+    4:[
+      `${first.name}은(는) ${second.name}의 표정을 살핀 뒤 가까이 다가가 입술에 짧게 입을 맞추고, 바로 떨어지지 않은 채 이마를 맞댔어요.`,
+      `서로 화가 남아 있었지만 ${first.name}은(는) ${second.name}이(가) 피하지 않는 것을 확인한 뒤 화해 대신 짧은 입맞춤을 건넸어요.`,
+      `${first.name}은(는) 사람들의 시선이 끊긴 곳에서 ${second.name}의 뺨을 감싸고 가볍게 입을 맞췄어요.`,
+      `작별 인사가 끝났는데도 둘은 다시 가까워져 한 번 더 짧게 입을 맞춘 뒤 천천히 떨어졌어요.`
+    ],
+    5:[
+      `${first.name}은(는) ${second.name}의 허리를 감싸 가까이 당겼고, 그대로 한동안 길게 입을 맞췄어요.`,
+      `거친 말이 오간 직후 둘은 숨이 닿을 만큼 가까이 마주 섰고, 분노와 그리움이 뒤섞인 채 한동안 깊게 입을 맞췄어요.`,
+      `${first.name}은(는) ${second.name}의 목덜미에 손을 얹어 조심스럽게 끌어당기고, 주변을 잊은 듯 긴 입맞춤을 나눴어요.`,
+      `문 앞에서 몇 번이나 헤어지지 못하던 둘은 다시 서로를 끌어안고 길게 입을 맞춘 뒤에야 손을 놓았어요.`
+    ],
+    6:[
+      `둘은 한동안 문이 닫힌 조용한 공간에서 둘만의 시간을 보냈어요. 장면이 끝난 뒤 ${first.name}은(는) 흐트러진 옷매무새를 정리하며 ${second.name}의 표정을 살폈어요.`,
+      `심하게 다툰 뒤에도 서로를 원하는 마음은 사라지지 않았어요. 감정이 가라앉은 뒤 다시 가까워진 둘은 한동안 서로에게서 떨어지지 않았어요.`,
+      `${first.name}은(는) ${second.name}과(와) 입을 맞추며 문이 닫힌 안쪽으로 자리를 옮겼어요. 이후의 시간은 둘만의 것으로 남겨 두었고, 다시 나왔을 때는 서로의 상태부터 확인했어요.`,
+      `떠날 시간이 한참 지났지만 둘은 더 오래 함께 머물렀어요. 가까운 시간이 지난 뒤에도 ${first.name}은(는) ${second.name}의 곁을 바로 떠나지 않았어요.`
+    ]
+  };
+  return beats[level]?.[variant]||"";
+}
+function heightenedConflictBeat(first,second,tensionKey,variant){
+  if(!["violent","explosive"].includes(tensionKey))return "";
+  const firstAggression=state.characterViews?.[first.id]?.[second.id]?.aggression||"";
+  const secondAggression=state.characterViews?.[second.id]?.[first.id]?.aggression||"";
+  const aggression=`${firstAggression} ${secondAggression}`;
+  if(/죽이고 싶|해치고 싶/.test(aggression)){
+    return [
+      `${first.name}은(는) ${second.name}의 멱살을 잡아 벽으로 세게 밀어붙였어요. ${second.name}이(가) 곧바로 주먹을 날리자 ${first.name}도 그대로 되받아쳤고, 둘은 팔과 어깨에 시퍼런 멍이 들 때까지 치고받았어요.`,
+      `${first.name}의 주먹이 ${second.name}의 얼굴을 정면으로 가격했고 곧바로 더 거센 반격이 돌아왔어요. 둘은 탁자에 몸을 부딪치고 의자를 걷어차 넘어뜨리면서도 멈추지 않고 서로에게 달려들었어요.`,
+      `${first.name}은(는) ${second.name}의 허리를 잡아 바닥에 메친 뒤 위에서 팔을 눌렀어요. ${second.name}은(는) 몸을 뒤집어 빠져나오자마자 ${first.name}의 턱을 올려쳤고, 둘은 바닥을 구르며 다시 주먹질을 벌였어요.`,
+      `${first.name}은(는) ${second.name}의 멱살을 잡아 바닥에 내동댕이쳤어요. ${second.name}은(는) 곧장 일어나 ${first.name}의 뺨을 후려치고 몸통을 걷어찼고, 둘은 방 안이 엉망이 될 때까지 서로를 묵사발로 만들 듯 싸웠어요.`
+    ][variant];
+  }
+  return [
+    `${first.name}은(는) ${second.name}의 어깨를 세게 밀쳤고, 곧바로 멱살을 잡힌 채 벽에 부딪혔어요. 둘은 서로를 다시 벽으로 밀어붙이고 팔을 비틀며 한동안 거친 몸싸움을 벌였어요.`,
+    `말다툼 끝에 ${first.name}이(가) 먼저 뺨을 후려쳤고 ${second.name}도 주먹으로 맞받아쳤어요. 두 사람은 얼굴과 팔에 멍이 번질 때까지 서로의 옷깃을 놓지 않았어요.`,
+    `${first.name}은(는) 들고 있던 물건을 바닥에 내던지고 ${second.name}에게 달려들었어요. ${second.name}도 피하지 않고 맞받아쳐, 둘은 소파와 의자가 밀려날 만큼 난폭하게 치고받았어요.`,
+    `말싸움은 대놓고 주먹다짐으로 번졌어요. 서로 한 대씩 확실하게 돌려주고 바닥을 구르며 엉겨 붙은 끝에, 둘 다 제대로 묵사발이 된 몰골로 숨을 몰아쉬었어요.`
+  ][variant];
+}
+function relationCombinationScene(place,first,second,relation,date){
+  const firstView=state.characterViews?.[first.id]?.[second.id]||{};
+  const secondView=state.characterViews?.[second.id]?.[first.id]||{};
+  if(!relation&&Object.keys(firstView).length+Object.keys(secondView).length<2)return null;
+  const foundBond=RELATION_COMBINATION_BONDS.findIndex(item=>item.test(firstView,secondView,relation));
+  const foundTension=RELATION_COMBINATION_TENSIONS.findIndex(item=>item.test(firstView,secondView,relation));
+  const bondIndex=Math.max(0,foundBond),tensionIndex=Math.max(0,foundTension);
+  const profile=RELATION_COMBINATION_PROFILES.find(item=>item.bondIndex===bondIndex&&item.tensionIndex===tensionIndex);
+  const variant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/45)}:${profile.key}`)%4;
+  const reverseVariant=(variant+2)%4;
+  const bond=RELATION_COMBINATION_BONDS[bondIndex],tension=RELATION_COMBINATION_TENSIONS[tensionIndex];
+  const placeName=place?.name||place?.type||"같은 장소";
+  const firstIntimacy=intimacyBeat(first,second,variant,bond.key);
+  const secondIntimacy=intimacyBeat(second,first,variant,bond.key);
+  const firstConflict=heightenedConflictBeat(first,second,tension.key,variant);
+  const secondConflict=heightenedConflictBeat(second,first,tension.key,variant);
+  return {
+    title:`${second.name}와 ${placeName}에서 ${profile.label}`,
+    first:`${bond.actions[variant](first,second)} ${tension.lines[variant](first,second)} ${firstConflict} ${firstIntimacy}`.trim(),
+    second:`${bond.actions[reverseVariant](second,first)} ${tension.lines[variant](second,first)} ${secondConflict} ${secondIntimacy}`.trim(),
+    relationProfile:profile.key
+  };
+}
 function concreteInteraction(place,first,second,relation,date=new Date()){
   const name=second.name,type=place?.type||"";
+  const combinationScene=relationCombinationScene(place,first,second,relation,date);
+  if(combinationScene)return combinationScene;
   if(!relation){
     const firstExplicit=state.characterViews?.[first.id]?.[second.id]||{};
     const secondExplicit=state.characterViews?.[second.id]?.[first.id]||{};
@@ -1471,7 +1656,7 @@ function concreteInteraction(place,first,second,relation,date=new Date()){
       },
       {
         title:`${name}와 벤치에 앉아 지나가는 개를 보는 중`,
-        first:`산책하던 개가 신이 나 낙엽 더미로 뛰어드는 모습을 보고 ${energetic?"먼저 웃음을 터뜨리며 ${name}에게 저쪽을 보라고 손짓했어요.":"조용히 시선을 보내다가 ${name}도 보고 있다는 걸 확인하고 작게 웃었어요."} ${romantic?"둘만 알아들을 농담을 건네며 어깨가 닿을 만큼 가까운 벤치에 머물렀어요.":""}`,
+        first:`산책하던 개가 신이 나 낙엽 더미로 뛰어드는 모습을 보고 ${energetic?`먼저 웃음을 터뜨리며 ${name}에게 저쪽을 보라고 손짓했어요.`:`조용히 시선을 보내다가 ${name}도 보고 있다는 걸 확인하고 작게 웃었어요.`} ${romantic?"둘만 알아들을 농담을 건네며 어깨가 닿을 만큼 가까운 벤치에 머물렀어요.":""}`,
         second:`${subject(first.name)} 반응을 보고 같은 장면을 바라보다가 개가 사라진 뒤에도 바로 일어나지 않고 잠시 이야기를 이어 갔어요.`
       }
     ];
@@ -1521,18 +1706,23 @@ function sharedPlaceScene(c,current,date){
     return otherEvent.placeId===current.placeId&&(otherEvent.townId||other.townId)===(current.townId||c.townId)&&!otherEvent.transit;
   });
   if(!together.length)return current;
-  const group=[c,...together],pair=interactionPairFor(c,together),place=interactionPlace(current.placeId,current.townId||c.townId);
-  if(!pair)return current;
+  const group=[c,...together],preferred=interactionPairFor(c,together),place=interactionPlace(current.placeId,current.townId||c.townId);
+  if(!preferred)return current;
+  const ordered=[preferred.first,preferred.second].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+  const pair={...preferred,first:ordered[0],second:ordered[1]};
   const scene=concreteInteraction(place,pair.first,pair.second,pair.relation,date);
   const encounter=significantEncounter(pair,group,date);
   if(encounter){
     scene.first+=encounter;
     scene.second+=encounter;
   }
-  const title=scene.firstTitle||scene.title,detail=scene.first;
+  const isFirst=c.id===pair.first.id;
+  let title=(isFirst?scene.firstTitle:scene.secondTitle)||scene.title;
+  const detail=isFirst?scene.first:scene.second;
+  if(dateLikePair(pair.first,pair.second,pair.relation)&&!title.includes("데이트"))title=`${preferred.second.name}와 ${place?.type==="공원"?"공원 ":""}데이트 중 · ${title}`;
   const baseTitle=current.baseTitle||current.title,baseDesc=current.baseDesc||current.desc;
   const bothWalking=/공원.*걷|걷.*공원/.test(`${baseTitle} ${title}`);
-  const combinedTitle=bothWalking?title:[...new Set([baseTitle,title].filter(Boolean))].join(" · ");
+  const combinedTitle=bothWalking||title.includes("데이트")?title:[...new Set([baseTitle,title].filter(Boolean))].join(" · ");
   const combinedDesc=place?.type==="공원"?detail:cleanRepeatedSceneText(`${baseDesc} ${detail}`);
   return {...current,baseTitle,baseDesc,title:combinedTitle,desc:combinedDesc,withIds:together.map(other=>other.id),groupInteraction:true};
 }

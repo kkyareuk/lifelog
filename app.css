@@ -336,15 +336,20 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relationship-map-node b{max-width:86px;padding:3px 7px;border-radius:999px;background:#fff;box-shadow:0 3px 12px #2f241b1c}
 .relationship-map-canvas .map-official rect{fill:rgba(255,255,255,.94);stroke:#ded2c7;stroke-width:1.5px}
 .relationship-map-canvas .map-official text{stroke:none;paint-order:normal}
-.relation-temporal{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.relation-temporal{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:center;gap:10px;max-width:620px;margin:12px auto;padding:14px 18px}
 .relation-temporal legend,.past-fault legend{font-weight:800}
-.relation-temporal label{display:flex;align-items:center;gap:7px;margin:0}
-.relation-temporal small{flex-basis:100%}
+.relation-temporal label{display:flex;align-items:center;justify-content:center;gap:7px;margin:0;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:#f7f8fb}
+.relation-temporal small{grid-column:1/-1;text-align:center}
 .past-fault{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.past-fault[hidden],.sibling-direction[hidden],.parent-direction[hidden]{display:none!important}
 .past-fault small{grid-column:1/-1}
 .sibling-kinship-grid{display:grid;gap:10px;margin-top:14px}
 .sibling-kinship-grid label{display:grid;grid-template-columns:minmax(140px,.7fr) minmax(220px,1.3fr);align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:16px}
-@media(max-width:720px){.past-fault{grid-template-columns:1fr}.sibling-kinship-grid label{grid-template-columns:1fr}}
+.sibling-pair-people{display:grid;grid-template-columns:38px minmax(0,1fr) 24px 38px minmax(0,1fr);align-items:center;gap:7px}
+.sibling-pair-people i{text-align:center;font-style:normal}.relation-mini-avatar{width:38px;height:38px;border-radius:50%;object-fit:cover;background:#e8ecef}.relation-mini-avatar.fallback{display:grid;place-items:center;font-weight:900;color:#fff;background:#577}
+.character-view-dialog-title .character-view-dialog-direction{display:flex;align-items:center;gap:10px}.character-view-dialog-direction>.avatar{width:58px;height:58px}.character-view-dialog-direction>i{font-size:24px;font-style:normal}.character-view-dialog-direction h2{margin:0}
+.character-view-fields label{grid-template-columns:minmax(0,1fr) minmax(220px,.9fr);align-items:center}.character-view-fields label>select{align-self:center}
+@media(max-width:720px){.past-fault{grid-template-columns:1fr}.sibling-kinship-grid label,.character-view-fields label{grid-template-columns:1fr}.relation-temporal{grid-template-columns:1fr}.relation-temporal small{grid-column:1}.sibling-pair-people{grid-template-columns:34px 1fr 20px 34px 1fr}}
 .relationship-map-mobile{display:none}
 .character-view-editor{min-width:0;max-width:100%;margin:20px 0;padding:18px;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:#f8f6f2}
 .character-view-source-tabs{display:flex;gap:8px;max-width:100%;padding:4px 2px 12px;overflow-x:auto}

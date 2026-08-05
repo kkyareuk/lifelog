@@ -386,7 +386,7 @@ function load(){
 export let state=load();
 let timer;
 export const active=()=>state.characters[state.activeId];
-export function save(immediate=false){
+export function save(immediate=false,notify=true){
   clearTimeout(timer);
   const run=()=>{
     syncTown();
@@ -397,7 +397,7 @@ export function save(immediate=false){
       console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
     }
     document.querySelector("#save-state")?.replaceChildren(document.createTextNode("기기에 저장됨"));
-    window.dispatchEvent(new Event("parallel-city-saved"));
+    if(notify)window.dispatchEvent(new Event("parallel-city-saved"));
   };
   immediate?run():timer=setTimeout(run,140);
 }
@@ -632,7 +632,7 @@ export function characterViewFor(sourceId,targetId){
     (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
   );
   const currentRelations=relations.filter(item=>item.temporalStatus!=="past");
-  let defaults={overall:"낯선 사람으로 여김",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음"};
+  let defaults={overall:"낯선 사람으로 여김",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음"};
   if(currentRelations.length){
     if(currentRelations.some(relation=>["연인","부부"].includes(relation.type)))defaults={...defaults,overall:"연애 감정으로 좋아함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀",touchIntensity:"포옹·기대기까지"};
     else if(currentRelations.some(relation=>["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||"")))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함"};
