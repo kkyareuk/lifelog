@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805r";
+import {state,save,characterViewFor} from "./state.js?v=20260805s";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -85,8 +85,8 @@ const related=c=>{
     grouped.get(otherId).push(relation);
   });
   return [...grouped.entries()].map(([otherId,relations])=>{
-    const primary=relations.slice().sort((a,b)=>(relationPriority[b.type]||0)-(relationPriority[a.type]||0))[0],shared=relations[relations.length-1];
-    return {other:state.characters[otherId],relations,r:{...primary,types:[...new Set(relations.map(relation=>relation.type))],touchIntensity:shared.touchIntensity||primary.touchIntensity,intimacy:Math.max(...relations.map(relation=>Number(relation.intimacy)||0)),conflict:Math.max(...relations.map(relation=>Number(relation.conflict)||0))}};
+    const primary=relations.slice().sort((a,b)=>(relationPriority[b.type]||0)-(relationPriority[a.type]||0))[0];
+    return {other:state.characters[otherId],relations,r:{...primary,types:[...new Set(relations.map(relation=>relation.type))],intimacy:Math.max(...relations.map(relation=>Number(relation.intimacy)||0)),conflict:Math.max(...relations.map(relation=>Number(relation.conflict)||0))}};
   }).filter(item=>item.other);
 };
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
@@ -588,9 +588,12 @@ function relationshipHomeEntry(c,pick,time,date){
   const touchAverse=/극도로 꺼림|닿는 것을 싫어/.test(c.touchReaction||"");
   const likesTouch=/접촉을 좋아|먼저 다가가는/.test(c.touchReaction||"");
   const otherTouchAverse=/극도로 꺼림|닿는 것을 싫어/.test(other.touchReaction||"");
-  const touchIntensity=r.touchIntensity||(["연인","부부"].includes(r.type)?"가끔 가벼운 접촉":"신체 접촉 없음");
-  const avoidsTouch=/신체 접촉 없음|거의 하지 않음/.test(touchIntensity);
-  const welcomesTouch=!avoidsTouch&&/가끔 가벼운 접촉|자연스럽게 표현함|애정 표현이 많은 편/.test(touchIntensity);
+  const touchLevels=["신체 접촉 없음","인사·부축 같은 의례적 접촉만","손잡기·팔짱까지","포옹·기대기까지","가벼운 입맞춤까지","깊은 입맞춤까지","성인 간 합의된 친밀한 접촉까지"];
+  const ownTouch=directedView.touchIntensity||"신체 접촉 없음",otherTouch=otherView.touchIntensity||"신체 접촉 없음";
+  const ownTouchIndex=Math.max(0,touchLevels.indexOf(ownTouch)),otherTouchIndex=Math.max(0,touchLevels.indexOf(otherTouch));
+  const touchIntensity=touchLevels[Math.min(ownTouchIndex,otherTouchIndex)];
+  const avoidsTouch=ownTouchIndex===0||otherTouchIndex===0;
+  const welcomesTouch=!avoidsTouch&&Math.min(ownTouchIndex,otherTouchIndex)>=2;
   const distrust=/전혀 믿지|의심|조심스럽게 지켜봄/.test(trust);
   const distant=/남보다도 멂|낯선|거리감/.test(closeness);
   const uncomfortable=/매우 불편|긴장|조심스러움|숨 막힘|공간 공유는 불편/.test(comfort);
@@ -1165,7 +1168,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805r";
+const ENGINE_VERSION="20260805s";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

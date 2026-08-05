@@ -171,7 +171,17 @@ function normalizeHomes(x){
     }
     relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
     relation.interactionsAll=Boolean(relation.interactionsAll);
-    relation.touchIntensity=relation.touchIntensity||(["연인","부부"].includes(relation.type)?"가끔 가벼운 접촉":"신체 접촉 없음");
+    const legacyTouchMap={"거의 하지 않음":"인사·부축 같은 의례적 접촉만","가끔 가벼운 접촉":"손잡기·팔짱까지","자연스럽게 표현함":"포옹·기대기까지","애정 표현이 많은 편":"가벼운 입맞춤까지"};
+    const legacyTouch=legacyTouchMap[relation.touchIntensity]||relation.touchIntensity||(["연인","부부"].includes(relation.type)?"포옹·기대기까지":"신체 접촉 없음");
+    if(x.characters[relation.a]&&x.characters[relation.b]){
+      x.characterViews[relation.a]=x.characterViews[relation.a]||{};
+      x.characterViews[relation.b]=x.characterViews[relation.b]||{};
+      x.characterViews[relation.a][relation.b]=x.characterViews[relation.a][relation.b]||{};
+      x.characterViews[relation.b][relation.a]=x.characterViews[relation.b][relation.a]||{};
+      if(!x.characterViews[relation.a][relation.b].touchIntensity)x.characterViews[relation.a][relation.b].touchIntensity=legacyTouch;
+      if(!x.characterViews[relation.b][relation.a].touchIntensity)x.characterViews[relation.b][relation.a].touchIntensity=legacyTouch;
+    }
+    delete relation.touchIntensity;
     delete relation.romanceStatus;
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
     relation.legalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus||"관계를 따로 명명하지 않음";
@@ -199,9 +209,6 @@ function normalizeHomes(x){
       }
     }
   });
-  const sharedByPair=new Map();
-  Object.values(x.relationships).forEach(relation=>{const key=[relation.a,relation.b].sort().join("~");if(!sharedByPair.has(key))sharedByPair.set(key,[]);sharedByPair.get(key).push(relation)});
-  sharedByPair.forEach(group=>{if(group.length<2)return;const latest=group.slice().sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];group.forEach(relation=>{relation.touchIntensity=latest.touchIntensity})});
   const defaultWorld=fresh().world;
   x.world=x.world&&typeof x.world==="object"?x.world:defaultWorld;
   x.world.name=x.world.name||defaultWorld.name;
@@ -607,9 +614,9 @@ export function characterViewFor(sourceId,targetId){
   const relations=Object.values(state.relationships||{}).filter(item=>
     (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
   );
-  let defaults={overall:"낯선 사람으로 여김",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",aggression:"공격 충동 없음"};
+  let defaults={overall:"낯선 사람으로 여김",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음"};
   if(relations.length){
-    if(relations.some(relation=>["연인","부부"].includes(relation.type)))defaults={...defaults,overall:"연애 감정으로 좋아함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀"};
+    if(relations.some(relation=>["연인","부부"].includes(relation.type)))defaults={...defaults,overall:"연애 감정으로 좋아함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀",touchIntensity:"포옹·기대기까지"};
     else if(relations.some(relation=>["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||"")))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함"};
     else if(relations.some(relation=>["친구","부모·자녀","형제·자매"].includes(relation.type)))defaults={...defaults,overall:"소중하게 여김",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀"};
     else if(relations.some(relation=>relation.type==="동거인"))defaults={...defaults,overall:"그저 그런 사람",trust:"보통",closeness:"보통",comfort:"함께 있는 건 편하지만 대화 호흡은 평범함",attention:"필요할 때만 봄"};

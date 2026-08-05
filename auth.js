@@ -187,7 +187,12 @@ async function login(){
 
 async function upload({silent=false,reason=""}={}){
   if(!user){if(!silent)toast("Google 로그인이 필요합니다");return false}
-  if(busy)return false;busy=true;
+  if(busy){
+    const started=Date.now();
+    while(busy&&Date.now()-started<30000)await new Promise(resolve=>setTimeout(resolve,80));
+    if(busy)return false;
+  }
+  busy=true;
   try{
     status(`${user.displayName||"계정"} · 올리는 중`);
     const previousSnapshot=await getDoc(cloudDoc()),previous=previousSnapshot.exists()?previousSnapshot.data():null;
@@ -227,6 +232,12 @@ async function download({automatic=false}={}){
       status(`${user.displayName||"계정"} · 기기 데이터 유지`);
       toast("기기의 캐릭터 데이터를 유지했습니다");
       return;
+    }
+    const localState=window.ParallelCity.getState();
+    if(automatic&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
+      status(`${user.displayName||"계정"} · 더 최신인 기기 데이터 유지`);
+      toast("기기의 최신 변경사항을 유지했습니다");
+      return false;
     }
     window.ParallelCity.replaceState(clone(remote));
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));

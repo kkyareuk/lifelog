@@ -345,6 +345,12 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .character-view-panel{display:grid;grid-template-columns:1fr;gap:10px;min-width:0}
 .character-view-panel[hidden]{display:none}
 .character-view-card{min-width:0;padding:0;overflow:hidden;border:1px solid var(--line);border-radius:18px;background:#fff}
+.character-view-open{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:12px;text-align:left;border:0;border-radius:0;background:#fff}
+.character-view-open:hover{background:#f8f5ef}
+.character-view-open em{max-width:190px;padding:7px 10px;overflow:hidden;border-radius:999px;background:#f2ece5;font-style:normal;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
+.character-view-dialog{width:min(920px,calc(100vw - 28px));max-height:min(88vh,900px);padding:0;overflow:auto;border:1px solid var(--line);border-radius:22px;background:#fff}
+.character-view-dialog::backdrop{background:#1d1712a8;backdrop-filter:blur(3px)}
+.character-view-dialog>form{padding:18px}.character-view-dialog .title{position:sticky;top:-18px;z-index:2;margin:-18px -18px 8px;padding:18px;background:#fff;border-bottom:1px solid var(--line)}
 .character-view-card>summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:12px;cursor:pointer;list-style:none}
 .character-view-card>summary::-webkit-details-marker{display:none}
 .character-view-card>summary em{max-width:190px;padding:7px 10px;overflow:hidden;border-radius:999px;background:#f2ece5;font-style:normal;font-weight:800;text-overflow:ellipsis;white-space:nowrap}
@@ -362,6 +368,9 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   .character-view-editor{padding:13px}
   .character-view-source-tabs button{min-width:120px;padding:7px 9px}
   .character-view-card>summary{grid-template-columns:minmax(0,1fr)}
+  .character-view-open{grid-template-columns:minmax(0,1fr)}
+  .character-view-open em{max-width:100%;justify-self:start}
+  .character-view-dialog>form{padding:13px}.character-view-dialog .title{top:-13px;margin:-13px -13px 6px;padding:13px}
   .character-view-card>summary em{max-width:100%;justify-self:start}
   .character-view-heading .avatar,.character-view-heading .sprite{width:50px;height:50px;flex-basis:50px}
   .relationship-map{padding:10px;overflow:hidden;touch-action:pan-y}
