@@ -172,6 +172,7 @@ function normalizeHomes(x){
     relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
     relation.interactionsAll=Boolean(relation.interactionsAll);
     relation.touchIntensity=relation.touchIntensity||(["연인","부부"].includes(relation.type)?"가끔 가벼운 접촉":"신체 접촉 없음");
+    relation.romanceStatus=relation.romanceStatus||(["연인","부부"].includes(relation.type)?"공식적으로 교제 중":"사귀지 않음");
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
     relation.legalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus||"관계를 따로 명명하지 않음";
     delete relation.protectionRole;delete relation.caregiverIds;delete relation.careReceiverIds;
@@ -200,7 +201,7 @@ function normalizeHomes(x){
   });
   const sharedByPair=new Map();
   Object.values(x.relationships).forEach(relation=>{const key=[relation.a,relation.b].sort().join("~");if(!sharedByPair.has(key))sharedByPair.set(key,[]);sharedByPair.get(key).push(relation)});
-  sharedByPair.forEach(group=>{if(group.length<2)return;const latest=group.slice().sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];group.forEach(relation=>relation.touchIntensity=latest.touchIntensity)});
+  sharedByPair.forEach(group=>{if(group.length<2)return;const latest=group.slice().sort((a,b)=>(Number(b.updatedAt)||0)-(Number(a.updatedAt)||0))[0];group.forEach(relation=>{relation.touchIntensity=latest.touchIntensity;relation.romanceStatus=latest.romanceStatus})});
   const defaultWorld=fresh().world;
   x.world=x.world&&typeof x.world==="object"?x.world:defaultWorld;
   x.world.name=x.world.name||defaultWorld.name;

@@ -1,5 +1,5 @@
-﻿import {state,active,characterViewFor} from "./state.js?v=20260805o";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805o";
+﻿import {state,active,characterViewFor} from "./state.js?v=20260805q";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805q";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","환경미화원","여관주인","자영업·직접 입력"];
@@ -562,6 +562,8 @@ function shop(){
   const count=lines.reduce((sum,[,qty])=>sum+Number(qty),0);
   return `<section class="panel form dlc-store shop-store"><div class="title"><div><h1>상점</h1><p>원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요. 모든 상품은 구독이 아닌 일회성 구매예요.</p></div></div><div class="shop-product-grid">${product("character_slots_5",SHOP_PRODUCTS.character_slots_5,Number(accountEntitlements.characterSlotPacks)||0)}${product("town_slot_1",SHOP_PRODUCTS.town_slot_1,Number(accountEntitlements.townSlotPacks)||0)}${product("storage_pack",SHOP_PRODUCTS.storage_pack,0)}</div><section class="shop-cart"><div class="title"><div><h2>장바구니</h2><p>같은 상품도 여러 개 담을 수 있어요.</p></div><b>${count}개</b></div><div class="cart-lines">${cartHtml}</div><div class="cart-total"><span>총 결제금액</span><b>${total.toLocaleString("ko-KR")}원</b></div><a class="primary premium-buy ${lines.length?"":"disabled"}" ${lines.length?'href="./payment.html?cart=1" aria-disabled="false"':'aria-disabled="true"'}>장바구니 결제하기</a></section><section class="shop-coming"><h2>테마 DLC</h2><p>전용 건물·배경·생활 스크립트를 갖춘 콘텐츠를 준비하고 있어요.</p></section><div class="dlc-hidden" hidden>${dlc()}</div></section>`;
 }
+
+
 
 
 

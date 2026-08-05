@@ -54,6 +54,8 @@ function shortError(error){
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
   if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
+  if(code.includes("unauthenticated")||code.includes("billing")||code.includes("payment-required"))return "Firebase Storage는 Blaze 요금제 연결이 필요해요";
+  if(code.includes("unknown")||code.includes("retry-limit"))return "Storage 접근 실패 · Blaze 요금제와 버킷 설정을 확인해 주세요";
   if(code.includes("photo-limit"))return `사진은 계정당 최대 ${MAX_PHOTOS}장까지 저장할 수 있어요`;
   if(code.includes("total-size-limit"))return `사진 저장 용량은 현재 총 ${Math.round(maxTotalBytes()/1048576)}MB까지예요`;
   if(code.includes("image-too-large"))return "압축된 사진 한 장은 1.5MB 이하여야 해요";
@@ -144,13 +146,6 @@ async function uploadDataUrl(dataUrl,manifest){
   if(usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
   const ext=blob.type==="image/png"?"png":"webp";
   const target=ref(storage,`users/${user.uid}/media/${hash}.${ext}`);
-  try{
-    const existing=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
-    manifest.items.push({hash,size:blob.size,url:existing});
-    uploadedCache.set(dataUrl,existing);return existing;
-  }catch(error){
-    if(String(error?.code||"").includes("timeout"))throw error;
-  }
   await Promise.race([uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000,immutable"}),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),25000))]);
   const url=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
   manifest.items.push({hash,size:blob.size,url});
