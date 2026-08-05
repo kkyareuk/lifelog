@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260805an";
+﻿import {state,save,characterViewFor} from "./state.js?v=20260806ao";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -152,9 +152,9 @@ function personalityFlavor(c,desc,seed=""){
 }
 
 function openlyPlayful(c){
-  return /장난|유머|활발|무리의 중심|먼저 다가감|표현이 풍부|말로 표현/.test(
-    `${c.socialStyle||""} ${c.affectionStyle||""} ${c.energyRhythm||""} ${c.activityTempo||""}`
-  );
+  if(["장난을 거의 하지 않음","건조한 농담만 함"].includes(c.humorStyle))return false;
+  if(["표정 변화가 거의 없음","감정을 잘 드러내지 않음"].includes(c.emotionalExpression)&&!["유머로 분위기를 이끎","장난을 즐김"].includes(c.humorStyle))return false;
+  return /가끔 장난|장난을 즐김|유머로 분위기를 이끎/.test(c.humorStyle||"");
 }
 function characterVoice(c,text){
   let value=String(text||"");
@@ -176,6 +176,46 @@ function characterVoice(c,text){
     .replace(/웃는 모습을/g,"편하게 대화하는 모습을")
     .replace(/웃자/g,"반응하자");
   return value;
+}
+
+const AGGRESSION_URGE_LEVEL={
+  "공격 충동 없음":0,
+  "거친 말을 하고 싶은 충동":1,
+  "몸으로 밀어내고 싶은 충동":3,
+  "해치고 싶은 충동":4,
+  "죽이고 싶을 만큼 격한 충동":5
+};
+const AGGRESSION_ACTION_LEVEL={
+  "행동으로 옮기지 않음":0,
+  "대부분 참지만 가끔 거친 말이 나옴":1,
+  "거친 말로만 표출함":1,
+  "물건이나 벽에 화풀이할 수 있음":2,
+  "상대를 밀칠 수 있음":3,
+  "실제로 때릴 수 있음":4,
+  "심한 폭력을 행사할 수 있음":5
+};
+const CONFLICT_LEVEL={
+  "갈등이 거의 없음":0,
+  "가끔 부딪힘":1,
+  "자주 충돌함":2,
+  "격렬하게 충돌함":3,
+  "파국적인 충돌을 반복함":4
+};
+function aggressionExpressionLevel(character,view={}){
+  const urge=AGGRESSION_URGE_LEVEL[view.aggression]??0;
+  const action=AGGRESSION_ACTION_LEVEL[view.aggressionAction]??0;
+  let level=Math.min(urge,action);
+  const conflict=CONFLICT_LEVEL[view.conflictIntensity]??0;
+  if(conflict<2)level=Math.min(level,1);
+  if(conflict<3)level=Math.min(level,3);
+  if(character.impulseControl==="매우 잘 참음")level=0;
+  else if(["대체로 참음","가끔 욱하지만 멈춤"].includes(character.impulseControl))level=Math.min(level,1);
+  if(["피하는 편","시간을 두고 말함","대화로 해결"].includes(character.conflictStyle))level=Math.min(level,1);
+  return level;
+}
+function hasVerbalConflict(view={}){
+  return (CONFLICT_LEVEL[view.conflictIntensity]??0)>=1||
+    (AGGRESSION_URGE_LEVEL[view.aggression]??0)>=1;
 }
 
 function catalogChoice(c,place,kind,seed){
@@ -1225,7 +1265,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805an";
+const ENGINE_VERSION="20260806ao";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1535,16 +1575,22 @@ const RELATION_COMBINATION_BONDS=[
     (a,b)=>`${a.name}은(는) 짧게 인사하고 각자 가야 할 방향으로 돌아섰어요.`]}
 ];
 const RELATION_COMBINATION_TENSIONS=[
-  {key:"violent",label:"사랑과 위해 충동이 충돌함",test:(a,b)=>/해치고 싶|죽이고 싶/.test(`${a.aggression} ${b.aggression}`),lines:[
+  {key:"violent",label:"사랑과 실제 위해 행동이 충돌함",test:(a,b,relation,first,second)=>
+    aggressionExpressionLevel(first,a)>=3||aggressionExpressionLevel(second,b)>=3,lines:[
     (a,b)=>`그러나 ${a.name}은(는) 애정과 별개로 ${b.name}을(를) 해치고 싶은 충동이 치밀자 손에 힘을 주었다가 스스로 거리를 벌렸어요.`,
     (a,b)=>`${a.name}은(는) ${b.name}과(와) 가까이 붙어 있다가 말 한마디에 표정이 굳었고, 곧 서로를 밀어내며 날 선 말로 맞섰어요.`,
     (a,b)=>`${a.name}은(는) ${b.name}에게 화가 났지만 충동대로 행동하지 않기 위해 물건을 내려놓고 대화를 중단했어요.`,
     (a,b)=>`서로를 원하는 마음과 안전하게 함께할 수 있는지는 다른 문제라, 둘은 감정이 가라앉을 때까지 각자 떨어져 있기로 했어요.`]},
-  {key:"explosive",label:"애정과 격렬한 갈등이 공존함",test:(a,b)=>/격렬하게|파국적인|자주 충돌/.test(`${a.conflictIntensity} ${b.conflictIntensity}`),lines:[
+  {key:"explosive",label:"애정과 격렬한 갈등이 공존함",test:(a,b)=>/격렬하게|파국적인/.test(`${a.conflictIntensity} ${b.conflictIntensity}`),lines:[
     ()=>`사소한 방식 차이가 곧바로 언쟁으로 번졌지만 두 사람 모두 관계 자체를 포기한 듯 자리를 뜨지는 않았어요.`,
     ()=>`가까운 거리와 편한 접촉은 허용하면서도 의견이 맞부딪치자 말투가 빠르게 거칠어졌어요.`,
     ()=>`주변 사람이 눈치를 볼 만큼 날카롭게 다퉜지만, 정작 다른 사람이 끼어드는 것은 둘 다 원하지 않았어요.`,
     ()=>`오늘의 싸움을 오늘 끝내지는 못했지만 최소한 다음 대화를 위한 시간과 장소는 정해 두었어요.`]},
+  {key:"verbal",label:"감정은 거칠지만 행동은 억제함",test:(a,b)=>hasVerbalConflict(a)||hasVerbalConflict(b),lines:[
+    (a,b)=>`${a.name}은(는) 순간 거친 말이 떠올랐지만 그대로 내뱉지 않고 짧게 숨을 고른 뒤 불만만 분명히 말했어요.`,
+    (a,b)=>`${a.name}은(는) ${b.name}의 말에 표정이 굳었지만 손을 쓰지 않았고, 대화를 잠시 멈추자고 선을 그었어요.`,
+    (a,b)=>`${a.name}은(는) 말끝이 날카로워진 것을 알아차리고 한 걸음 물러나 필요한 말만 남겼어요.`,
+    (a,b)=>`${a.name}은(는) 욱한 기색을 감추지 못했지만 자리를 박차고 나가는 대신 목소리를 낮춰 다시 말했어요.`]},
   {key:"distrust",label:"끌리지만 믿지 못함",test:(a,b)=>/전혀 믿지 않|의심함/.test(`${a.trust} ${b.trust}`),lines:[
     (a,b)=>`${a.name}은(는) 다정한 행동을 받아들이면서도 그 의도를 확인하려는 질문을 멈추지 않았어요.`,
     ()=>`둘 사이의 거리와 접촉은 가까웠지만, 중요한 정보만큼은 서로에게 전부 내보이지 않았어요.`,
@@ -1599,31 +1645,31 @@ function intimacyBeat(first,second,variant,bondKey){
   const beats={
     2:[
       `${first.name}은(는) 말끝을 흐리며 ${second.name}의 손을 먼저 잡았고, 손가락을 느슨하게 얽은 채 놓지 않았어요.`,
-      `언쟁이 잦아든 뒤 ${first.name}은(는) ${second.name}의 손목이 아니라 손바닥을 조심스럽게 잡아 다시 가까이 불렀어요.`,
+      `${first.name}은(는) 나란히 걷던 ${second.name}의 손바닥을 조심스럽게 잡아 자기 쪽으로 가까이 불렀어요.`,
       `${first.name}은(는) 다른 사람이 보지 않는 틈에 ${second.name}의 팔짱을 끼고 태연한 얼굴을 했어요.`,
       `헤어지기 직전 ${first.name}은(는) ${second.name}의 손을 한 번 더 당겨 짧게 붙잡아 두었어요.`
     ],
     3:[
       `${first.name}은(는) ${second.name}의 허리를 끌어안아 한동안 품 안에 두었고, 떨어진 뒤에도 어깨에 손을 남겨 두었어요.`,
-      `날 선 대화가 멎자 둘은 말 대신 가까이 기대어 숨을 고르며 서로가 물러나지 않았다는 것을 확인했어요.`,
+      `대화가 잠시 끊기자 둘은 말 대신 가까이 기대어 같은 음악을 조용히 들었어요.`,
       `${first.name}은(는) ${second.name}을(를) 뒤에서 가볍게 끌어안고 턱을 어깨 가까이에 기댔어요.`,
       `돌아서려던 ${second.name}을(를) 다시 품에 당겨 짧고 단단하게 안은 뒤에야 보내 주었어요.`
     ],
     4:[
       `${first.name}은(는) ${second.name}의 표정을 살핀 뒤 가까이 다가가 입술에 짧게 입을 맞추고, 바로 떨어지지 않은 채 이마를 맞댔어요.`,
-      `서로 화가 남아 있었지만 ${first.name}은(는) ${second.name}이(가) 피하지 않는 것을 확인한 뒤 화해 대신 짧은 입맞춤을 건넸어요.`,
+      `${first.name}은(는) ${second.name}이(가) 가까이 머무는 것을 확인한 뒤 고개를 기울여 짧은 입맞춤을 건넸어요.`,
       `${first.name}은(는) 사람들의 시선이 끊긴 곳에서 ${second.name}의 뺨을 감싸고 가볍게 입을 맞췄어요.`,
       `작별 인사가 끝났는데도 둘은 다시 가까워져 한 번 더 짧게 입을 맞춘 뒤 천천히 떨어졌어요.`
     ],
     5:[
       `${first.name}은(는) ${second.name}의 허리를 감싸 가까이 당겼고, 그대로 한동안 길게 입을 맞췄어요.`,
-      `거친 말이 오간 직후 둘은 숨이 닿을 만큼 가까이 마주 섰고, 분노와 그리움이 뒤섞인 채 한동안 깊게 입을 맞췄어요.`,
+      `둘은 숨이 닿을 만큼 가까이 마주 섰고, 서로의 눈을 오래 바라보다 한동안 깊게 입을 맞췄어요.`,
       `${first.name}은(는) ${second.name}의 목덜미에 손을 얹어 조심스럽게 끌어당기고, 주변을 잊은 듯 긴 입맞춤을 나눴어요.`,
       `문 앞에서 몇 번이나 헤어지지 못하던 둘은 다시 서로를 끌어안고 길게 입을 맞춘 뒤에야 손을 놓았어요.`
     ],
     6:[
       `둘은 한동안 문이 닫힌 조용한 공간에서 둘만의 시간을 보냈어요. 장면이 끝난 뒤 ${first.name}은(는) 흐트러진 옷매무새를 정리하며 ${second.name}의 표정을 살폈어요.`,
-      `심하게 다툰 뒤에도 서로를 원하는 마음은 사라지지 않았어요. 감정이 가라앉은 뒤 다시 가까워진 둘은 한동안 서로에게서 떨어지지 않았어요.`,
+      `둘은 예정했던 일을 잠시 미루고 서로에게만 집중했어요. 다시 일상으로 돌아갈 때까지 한동안 서로에게서 떨어지지 않았어요.`,
       `${first.name}은(는) ${second.name}과(와) 입을 맞추며 문이 닫힌 안쪽으로 자리를 옮겼어요. 이후의 시간은 둘만의 것으로 남겨 두었고, 다시 나왔을 때는 서로의 상태부터 확인했어요.`,
       `떠날 시간이 한참 지났지만 둘은 더 오래 함께 머물렀어요. 가까운 시간이 지난 뒤에도 ${first.name}은(는) ${second.name}의 곁을 바로 떠나지 않았어요.`
     ]
@@ -1660,27 +1706,32 @@ function detachedIntimacyBeat(first,second,variant,bondKey){
   return level>=6?restrained[variant]:restrained[variant].replace(/문이 닫힌 안쪽에서 한동안 가까운 시간을 보냈어요\./,"사람들의 시선이 닿지 않는 곳에서 길게 입을 맞췄어요.");
 }
 function heightenedConflictBeat(first,second,tensionKey,variant){
-  if(!["violent","explosive"].includes(tensionKey))return "";
-  const firstAggression=state.characterViews?.[first.id]?.[second.id]?.aggression||"";
-  const secondAggression=state.characterViews?.[second.id]?.[first.id]?.aggression||"";
-  const aggression=`${firstAggression} ${secondAggression}`;
-  if(/죽이고 싶|해치고 싶/.test(aggression)){
-    return [
-      `${first.name}은(는) ${second.name}의 멱살을 잡아 벽으로 세게 밀어붙였어요. ${second.name}이(가) 곧바로 주먹을 날리자 ${first.name}도 그대로 되받아쳤고, 둘은 팔과 어깨에 시퍼런 멍이 들 때까지 치고받았어요.`,
-      `${first.name}의 주먹이 ${second.name}의 얼굴을 정면으로 가격했고 곧바로 더 거센 반격이 돌아왔어요. 둘은 탁자에 몸을 부딪치고 의자를 걷어차 넘어뜨리면서도 멈추지 않고 서로에게 달려들었어요.`,
-      `${first.name}은(는) ${second.name}의 허리를 잡아 바닥에 메친 뒤 위에서 팔을 눌렀어요. ${second.name}은(는) 몸을 뒤집어 빠져나오자마자 ${first.name}의 턱을 올려쳤고, 둘은 바닥을 구르며 다시 주먹질을 벌였어요.`,
-      `${first.name}은(는) ${second.name}의 멱살을 잡아 바닥에 내동댕이쳤어요. ${second.name}은(는) 곧장 일어나 ${first.name}의 뺨을 후려치고 몸통을 걷어찼고, 둘은 방 안이 엉망이 될 때까지 서로를 묵사발로 만들 듯 싸웠어요.`
-    ][variant];
-  }
+  const level=aggressionExpressionLevel(first,characterViewFor(first.id,second.id));
+  if(level<3)return "";
+  if(level===3)return [
+    `${first.name}은(는) 욱한 순간 ${second.name}을(를) 한 번 밀쳤지만 곧 손을 거두고 더 가까이 오지 말라고 경고했어요.`,
+    `${first.name}은(는) ${second.name}의 팔을 밀어 거리를 벌린 뒤 더 손을 쓰기 전에 대화를 끊었어요.`,
+    `${first.name}은(는) 순간적으로 어깨를 밀쳤다가 바로 물러서며 흥분이 가라앉을 때까지 떨어져 있었어요.`,
+    `${first.name}은(는) 길을 막은 ${second.name}을(를) 밀어냈지만 뒤쫓아가 공격하지는 않았어요.`
+  ][variant];
   return [
-    `${first.name}은(는) ${second.name}의 어깨를 세게 밀쳤고, 곧바로 멱살을 잡힌 채 벽에 부딪혔어요. 둘은 서로를 다시 벽으로 밀어붙이고 팔을 비틀며 한동안 거친 몸싸움을 벌였어요.`,
-    `말다툼 끝에 ${first.name}이(가) 먼저 뺨을 후려쳤고 ${second.name}도 주먹으로 맞받아쳤어요. 두 사람은 얼굴과 팔에 멍이 번질 때까지 서로의 옷깃을 놓지 않았어요.`,
-    `${first.name}은(는) 들고 있던 물건을 바닥에 내던지고 ${second.name}에게 달려들었어요. ${second.name}도 피하지 않고 맞받아쳐, 둘은 소파와 의자가 밀려날 만큼 난폭하게 치고받았어요.`,
-    `말싸움은 대놓고 주먹다짐으로 번졌어요. 서로 한 대씩 확실하게 돌려주고 바닥을 구르며 엉겨 붙은 끝에, 둘 다 제대로 묵사발이 된 몰골로 숨을 몰아쉬었어요.`
+    `${first.name}은(는) 쌓인 말이 터지자 ${second.name}과(와) 거칠게 치고받았어요. 한차례 몸싸움 뒤 둘은 숨을 고르며 더 이어 가지 않았어요.`,
+    `${first.name}은(는) ${second.name}의 폭언을 듣고 참지 못해 주먹을 휘둘렀고, 반격이 돌아오며 둘은 한동안 거칠게 싸웠어요.`,
+    `${first.name}은(는) 말다툼 끝에 ${second.name}과(와) 몸싸움을 벌였어요. 넘어진 가구를 사이에 두고서야 둘은 서로에게서 떨어졌어요.`,
+    `${first.name}은(는) 끝내 분을 참지 못하고 ${second.name}과(와) 치고받았어요. 둘 다 지쳐 물러난 뒤에야 싸움이 멎었어요.`
   ][variant];
 }
 function pairedConflictScene(first,second,tensionKey,variant,firstView,secondView){
   if(!["violent","explosive"].includes(tensionKey))return null;
+  const firstLevel=aggressionExpressionLevel(first,firstView);
+  const secondLevel=aggressionExpressionLevel(second,secondView);
+  if(Math.max(firstLevel,secondLevel)<3)return null;
+  if(Math.min(firstLevel,secondLevel)<4)return{
+    first:heightenedConflictBeat(first,second,tensionKey,variant),
+    second:secondLevel>=3
+      ?heightenedConflictBeat(second,first,tensionKey,(variant+1)%4)
+      :`${second.name}은(는) 갑작스러운 행동을 막아 내고 곧바로 거리를 벌렸어요.`
+  };
   const mutualHate=/매우 싫어|미워|경계|애증/.test(firstView.overall||"")&&/매우 싫어|미워|경계|애증/.test(secondView.overall||"");
   const triggers=[
     mutualHate
@@ -1742,7 +1793,7 @@ function relationCombinationScene(place,first,second,relation,date){
     return {title:`${object(other.name)} 향한 일방적인 연심`,first:first.id===admirer.id?lines.admirer:lines.other,second:second.id===admirer.id?lines.admirer:lines.other,relationProfile:"one_sided_romance"};
   }
   const foundBond=RELATION_COMBINATION_BONDS.findIndex(item=>item.test(firstView,secondView,relation));
-  const foundTension=RELATION_COMBINATION_TENSIONS.findIndex(item=>item.test(firstView,secondView,relation));
+  const foundTension=RELATION_COMBINATION_TENSIONS.findIndex(item=>item.test(firstView,secondView,relation,first,second));
   const bondIndex=Math.max(0,foundBond),tensionIndex=Math.max(0,foundTension);
   const profile=RELATION_COMBINATION_PROFILES.find(item=>item.bondIndex===bondIndex&&item.tensionIndex===tensionIndex);
   const variant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/15)}:${profile.key}`)%10;

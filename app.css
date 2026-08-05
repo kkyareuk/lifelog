@@ -597,3 +597,14 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .scene h3{line-height:1.45;margin:10px 0 12px;word-break:keep-all}
 .scene p{line-height:1.75;margin:0 0 15px;word-break:keep-all}
 .scene>b{display:block;line-height:1.55;margin-top:4px}
+.view-aggression-action .field-warning{
+  display:block;
+  margin-top:8px;
+  padding:10px 12px;
+  border:1px solid #d59b55;
+  border-radius:12px;
+  background:#fff7e9;
+  color:#7b431d;
+  line-height:1.55;
+}
+.personality-extra{margin-top:24px}
