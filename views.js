@@ -1,5 +1,5 @@
-﻿import {state,active,characterViewFor} from "./state.js?v=20260806ao";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806ao";
+import {state,active,characterViewFor} from "./state.js?v=20260806as";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806as";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","CEO","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","범죄자","환경미화원","여관주인","자영업·직접 입력"];
@@ -56,19 +56,19 @@ const placeSubtypeOptions=place=>(PLACE_TYPES[place.type]||[""]).map(type=>`<opt
 const CATALOG_ICONS={food:"🍽️",drink:"🥤",fashion:"👗",music:"🎵",idol:"🎤",book:"📚",movie:"🎬",game:"🎮",perfume:"🧴",hobby:"🎨",electronics:"💻",weapon:"⚔️"};
 const roomClasses={living:"living",kitchen:"kitchen",entry:"entry",bath:"bath",bedroom:"bedroom",study:"study"};
 const FURNITURE={
-  living:["소파","TV","책장","오디오","안마의자","게임기","캣타워"],
-  kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기"],
-  entry:["신발장","전신거울","우산꽂이","반려동물 산책용품"],
-  bath:["샤워부스","욕조","세면대","세탁기","건조기"],
-  bedroom:["침대","옷장","화장대","협탁","빔프로젝터"],
-  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"],
+  living:["소파","TV","책장","오디오","안마의자","게임기","캣타워","턴테이블","보드게임장","홈시어터","프로젝터","악기 진열장","수집품 진열장","독서 의자","반려동물 장난감","러닝머신"],
+  kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기","에스프레소 머신","티 세트","제빵 도구","칵테일 바","와인 냉장고","향신료 선반","요리책 선반"],
+  entry:["신발장","전신거울","우산꽂이","반려동물 산책용품","자전거 보관대","운동 장비 선반","캠핑 장비"],
+  bath:["샤워부스","욕조","세면대","세탁기","건조기","입욕제 선반","향수 선반","스킨케어 선반"],
+  bedroom:["침대","옷장","화장대","협탁","빔프로젝터","독서등","향수 진열대","레코드 플레이어","작은 게임기","봉제인형","수집품 진열장"],
+  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구","디지털 드로잉 장비","촬영 장비","보드게임 선반","공예 도구","뜨개 도구","프라모델 작업대","천체망원경","악기"],
   dining:["식탁","의자","찬장","티 테이블","와인장"],
   nursery:["아기 침대","수납장","놀이 매트","책장","기저귀 교환대"],
   guest:["침대","협탁","옷걸이","작은 책상","전신거울"],
-  hobby:["작업대","수납장","그림 도구","재봉틀","악기","운동기구"],
-  balcony:["화분","야외 의자","작은 테이블","빨래 건조대"],
-  storage:["수납장","선반","보관 상자","옷걸이"],
-  other:["수납장","의자","작은 테이블"]
+  hobby:["작업대","수납장","그림 도구","재봉틀","악기","운동기구","디지털 드로잉 장비","촬영 장비","보드게임 선반","공예 도구","뜨개 도구","프라모델 작업대","천체망원경"],
+  balcony:["화분","야외 의자","작은 테이블","빨래 건조대","원예 도구","캠핑 의자","천체망원경"],
+  storage:["수납장","선반","보관 상자","옷걸이","캠핑 장비","운동 장비","수집품 상자"],
+  other:["수납장","의자","작은 테이블","책장","오디오"]
 };
 const ROOM_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
 const roomTypeOptions=room=>Object.entries(ROOM_TYPES).map(([value,label])=>`<option value="${value}" ${(room.type||"other")===value?"selected":""}>${label}</option>`).join("");
@@ -339,15 +339,14 @@ function homeCard(id,chars){
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
     const shownPeople=roomPeople,shownPets=roomPets;
     const furniture=FURNITURE[room.type||key]||FURNITURE.other;
-    return `<div class="room ${roomClasses[key]||"custom-room"}" ${roomStyle(h,key)}>
-      ${edit?`<input class="room-name" data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}">`:`<b>${esc(room.name||key)}</b>`}
-      ${edit?`<div class="room-tools"><button data-room-bg="${id}" data-home-id="${id}" data-room="${key}">사진</button><button data-image-url="room" data-id="${id}" data-room="${key}">링크</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">지우기</button>`:""}</div>`:""}
-      ${edit?`<div class="furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div>`:""}
+    return `<div class="room ${roomClasses[key]||"custom-room"} room-edit-target" ${roomStyle(h,key)} data-open-room-editor="${key}" data-home-id="${id}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집">
+      <b>${esc(room.name||key)}</b>
+      ${!room.image?`<button type="button" class="room-empty-image" data-open-room-editor="${key}" data-home-id="${id}"><span>＋</span>사진 추가하기</button>`:""}
+      <button type="button" class="room-edit-hint" data-open-room-editor="${key}" data-home-id="${id}">방 편집하기</button>
       <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}</div>
       <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}</div>
     </div>`;
   }).join("");
-  const mobileRoomEditors=edit?`<section class="mobile-room-editors"><div class="room-editor-guide"><h3>방 사진과 가구 꾸미기</h3><p>방 유형을 고르면 그 공간에 어울리는 가구로 한 번에 바뀌어요. 필요 없는 방은 각 편집창 위에서 삭제할 수 있어요.</p></div>${roomKeys.map(key=>{const room=h.rooms?.[key]||{},furniture=FURNITURE[room.type||key]||FURNITURE.other;return `<details><summary><span class="room-editor-thumb" ${room.image?`style="background-image:url('${esc(room.image)}')"`:""}></span><span><b>${esc(room.name||key)}</b><small>${esc(ROOM_TYPES[room.type||key]||"기타 방")} · ${room.image?"사진 등록됨":"사진 없음"}</small></span></summary><div class="mobile-room-editor-body"><div class="room-editor-heading"><b>${esc(room.name||key)} 편집</b><button class="danger" data-delete-room="${key}" data-home-id="${id}">방 삭제</button></div><label>방 유형<select data-room-type="${key}" data-home-id="${id}">${roomTypeOptions(room)}</select></label><label>방 이름<input data-room-name="${key}" data-home-id="${id}" value="${esc(room.name||key)}"></label><div class="mobile-room-image-actions"><button class="primary" data-room-bg="${id}" data-home-id="${id}" data-room="${key}">내 사진에서 선택</button><button data-image-url="room" data-id="${id}" data-room="${key}">이미지 주소로 넣기</button>${room.image?`<button data-clear-room-bg data-home-id="${id}" data-room="${key}">현재 사진 지우기</button>`:""}</div><div><b>이 방에 있는 가구</b><p class="room-editor-note">방 유형을 바꾸면 추천 가구로 갱신돼요. 버튼으로 가구를 더하거나 뺄 수 있어요.</p></div><div class="mobile-room-furniture">${furniture.map(item=>`<button data-furniture="${item}" data-home-id="${id}" data-room="${key}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")}</div></div></details>`}).join("")}</section>`:"";
   const residentEditor=edit?`<section class="resident-editor"><h3>함께 사는 캐릭터</h3><div>${state.order.map(cid=>{const c=state.characters[cid],on=c.homeId===id;return `<div class="resident-setting"><button data-home-resident="${cid}" data-home-id="${id}" class="${on?"on":""}">${avatar(c)} ${esc(c.name)}</button></div>`}).join("")}</div><small>거주 마을은 캐릭터 프로필에서 설정해요. 취향과 성격은 동거인끼리 섞이지 않습니다.</small></section>`:"";
   const sleepEditor=edit?`<section class="sleep-room-editor"><div class="title"><h3>자는 방 배정</h3><button data-add-room>+ 방 추가</button></div>${chars.map(c=>`<label>${esc(c.name)}<select data-sleep-room="${c.id}">${roomKeys.map(key=>`<option value="${key}" ${(c.sleepRoomId||"bedroom")===key?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label>`).join("")}</section>`:"";
   const status=chars.map(c=>{const e=eventFor(c);return `<button class="home-status" data-home-person="${c.id}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small><em>${esc(e.desc||"")}</em></span></button>`}).join("");
@@ -370,7 +369,7 @@ function homeCard(id,chars){
     <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.map(c=>c.name).join(" · ")} 거주 중</small></div><b>${inside.length}명 귀가</b></div>
     ${edit?`<div class="home-photo-editor"><b>집 선택 버튼 배경 사진</b><span><button data-home-bg="${id}">사진</button><button data-image-url="home" data-id="${id}">링크</button>${h.image?`<button data-clear-home-bg="${id}">지우기</button>`:""}</span></div>`:""}
     ${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
-    <div class="rooms ${roomKeys.length>6?"has-extra":""}">${roomHtml}</div>${mobileRoomEditors}
+    <div class="rooms ${roomKeys.length>6?"has-extra":""}">${roomHtml}</div>
     <section class="pets"><div class="title"><h2>함께 사는 존재</h2>${edit?`<button data-add-pet>+ 함께 사는 존재 추가</button>`:""}</div><div class="pet-grid">${petCards||"<p>아직 함께 사는 존재가 없어요.</p>"}</div></section>
     <section class="cars"><div class="title"><h2>자동차</h2>${edit?`<button data-add-car>+ 자동차 추가</button>`:""}</div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
     <section class="resident-scenes"><div class="title"><h2>동거인 현재 장면</h2></div><div>${residentScenes}</div></section>
@@ -441,7 +440,7 @@ const CHARACTER_VIEW_OPTIONS={
   expectation:["정하지 않음","언제든 끝날 수 있다고 생각함","곧 헤어질 거라고 예상함","당분간 이어질 거라 생각함","오래 함께할 거라 기대함","평생 이어질 관계라고 믿음"],
   touchIntensity:["정하지 않음","신체 접촉 없음","인사·부축 같은 의례적 접촉만","손잡기·팔짱까지","포옹·기대기까지","가벼운 입맞춤까지","깊은 입맞춤까지","성인 간 친밀한 접촉까지"],
   aggression:["정하지 않음","공격 충동 없음","거친 말을 하고 싶은 충동","몸으로 밀어내고 싶은 충동","해치고 싶은 충동","죽이고 싶을 만큼 격한 충동"],
-  aggressionAction:["정하지 않음","행동으로 옮기지 않음","대부분 참지만 가끔 거친 말이 나옴","거친 말로만 표출함","물건이나 벽에 화풀이할 수 있음","상대를 밀칠 수 있음","실제로 때릴 수 있음","심한 폭력을 행사할 수 있음"]
+  aggressionAction:["정하지 않음","행동으로 옮기지 않음","대부분 참지만 가끔 거친 말이 나옴","거친 말로만 표출함","물건이나 벽에 화풀이할 수 있음","상대를 때릴 수 있음","실제로 때릴 수 있음","심한 폭력을 행사할 수 있음"]
 };
 const characterViewOptions=key=>{
   if(key==="importance")return["선택하지 않음",...state.order.map((_,index)=>`${index+1}순위${index===0?" · 가장 중요한 사람":""}`)];
@@ -453,7 +452,7 @@ const characterViewEditor=()=>{
     const explicit=state.characterViews?.[sourceId]?.[targetId]||{};
     const current=explicit[key]==="정하지 않음"?"선택하지 않음":(explicit[key]||"선택하지 않음");
     const options=characterViewOptions(key),legacy=current!=="선택하지 않음"&&!options.includes(current)?[current]:[];
-    return `<label class="${key==="aggressionAction"?"view-aggression-action":""}"><span><b>${label}</b><small>${help}</small></span><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${[...legacy,...options].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>${key==="aggressionAction"?`<small class="field-warning">‘상대를 밀칠 수 있음’ 이상을 고르면 설정한 충동·갈등·성격에 따라 상대를 밀치거나 때리는 장면이 나올 수 있어요. 충동만 있고 실행하지 않는 캐릭터는 반드시 ‘행동으로 옮기지 않음’을 골라 주세요.</small>`:""}</label>`;
+    return `<label class="${key==="aggressionAction"?"view-aggression-action":""}"><span><b>${label}</b><small>${help}</small></span><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${[...legacy,...options].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>${key==="aggressionAction"?`<small class="field-warning">‘상대를 때릴 수 있음’ 이상을 고르면 설정한 충동·갈등·성격에 따라 낮은 수위의 폭행 장면이 나올 수 있어요. 충동만 있고 실행하지 않는 캐릭터는 반드시 ‘행동으로 옮기지 않음’을 골라 주세요.</small>`:""}</label>`;
   };
   const panels=state.order.map(sourceId=>{
     const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
@@ -491,7 +490,12 @@ function relationshipReality(a,b,official=[]){
   const sibling=official.some(relation=>relation.type==="형제·자매");
   if(sibling&&(distant(av)||distant(bv)||hate(av)||hate(bv)))return past?"절연한 형제 사이":"가족이지만 사실상 절연";
   if(love(av)&&love(bv)&&confirmed(av)&&confirmed(bv))return distant(av)||distant(bv)?"서로 사랑하지만 가까워지기 어려운 사이":"서로 마음을 확인한 사이";
-  if(love(av)&&love(bv))return distrust(av)||distrust(bv)?"쌍방 연심이지만 서로 믿지 못함":"쌍방 짝사랑";
+  if(love(av)&&love(bv)){
+    const denied=value=>/인정하지|오해하고|눈치챔|전혀 모름/.test(value?.mutualAwareness||"")||/부정|잘못 해석/.test(value?.awareness||"");
+    if(denied(av)&&denied(bv))return"쌍방 연심이지만 인정하지 않음";
+    if(hate(av)&&hate(bv))return"서로 반감을 품고도 끌리는 사이";
+    return distrust(av)||distrust(bv)?"쌍방 연심과 불신이 함께 있는 사이":"쌍방 짝사랑";
+  }
   if(love(av)!==love(bv))return"한쪽만 품고 있는 연심";
   if(hate(av)&&hate(bv))return conflict(av)||conflict(bv)?"서로 강하게 맞서는 사이":"서로 반감을 품은 사이";
   if(close(av)&&close(bv))return"서로 의지하는 사이";

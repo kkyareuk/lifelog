@@ -1,5 +1,5 @@
 ﻿import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
@@ -52,6 +52,7 @@ const digestBlob=async blob=>{
 
 function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
+  if(code.includes("character-slot-limit"))return `캐릭터 슬롯 초과 (${error?.detail||""}) · 초과 인원을 정리한 뒤 다시 저장해 주세요`;
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("bucket-not-found")||code.includes("object-not-found"))return "사진 저장소 확인 필요";
   if(code.includes("quota"))return "Storage 용량 초과 · Firebase 요금제와 저장 파일을 확인해 주세요";
@@ -179,6 +180,12 @@ async function login(){
   if(!ready){alert("config.js의 Firebase 웹 앱 설정을 확인해 주세요.");return}
   const provider=new GoogleAuthProvider();
   provider.setCustomParameters({prompt:"select_account"});
+  if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
+    const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
+    const credential=GoogleAuthProvider.credential(result.credential?.idToken,result.credential?.accessToken);
+    await signInWithCredential(auth,credential);
+    return;
+  }
   try{await signInWithPopup(auth,provider)}catch(error){
     if(["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request"].includes(error.code))await signInWithRedirect(auth,provider);
     else alert(`로그인 실패: ${error.message||error.code}`);
@@ -195,8 +202,19 @@ async function upload({silent=false,reason=""}={}){
   busy=true;
   try{
     status(`${user.displayName||"계정"} · 올리는 중`);
+    const localState=window.ParallelCity.getState();
+    const allowedCharacters=7+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5);
+    const localCharacterCount=Array.isArray(localState?.order)
+      ?new Set(localState.order.filter(id=>localState.characters?.[id])).size
+      :Object.keys(localState?.characters||{}).length;
+    if(localCharacterCount>allowedCharacters){
+      throw Object.assign(new Error("character-slot-limit"),{
+        code:"sync/character-slot-limit",
+        detail:`${localCharacterCount}/${allowedCharacters}`
+      });
+    }
     const previousSnapshot=await getDoc(cloudDoc()),previous=previousSnapshot.exists()?previousSnapshot.data():null;
-    const prepared=await prepareState(window.ParallelCity.getState(),normalizeManifest(previous?.mediaManifest,previous?.gameState));
+    const prepared=await prepareState(localState,normalizeManifest(previous?.mediaManifest,previous?.gameState));
     const {gameState,mediaManifest,uploadedCount}=prepared;
     await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
     publishStorageUsage(mediaManifest,gameState);
@@ -233,6 +251,21 @@ async function download({automatic=false}={}){
       return;
     }
     const localState=window.ParallelCity.getState();
+    const characterIds=value=>new Set(Array.isArray(value?.order)?value.order:Object.keys(value?.characters||{}));
+    const localIds=characterIds(localState),remoteIds=characterIds(remote);
+    const differentCharacters=localIds.size>0&&remoteIds.size>0&&(localIds.size!==remoteIds.size||[...localIds].some(id=>!remoteIds.has(id)));
+    if(differentCharacters){
+      if(automatic){
+        status(`${user.displayName||"계정"} · 기기와 클라우드 인물 구성이 달라 자동 불러오기 중지`);
+        toast("인물 구성이 달라 자동 동기화를 멈췄어요 · 설정에서 어느 데이터를 쓸지 선택해 주세요");
+        return false;
+      }
+      if(!confirm(`현재 기기에는 ${localCount}명, 클라우드에는 ${remoteCount}명이 있어요.\n\n클라우드 데이터로 기기의 마을 전체를 교체할까요?\n취소하면 현재 기기 데이터를 그대로 유지합니다.`)){
+        status(`${user.displayName||"계정"} · 기기 데이터 유지`);
+        toast("기기의 캐릭터 데이터를 유지했습니다");
+        return false;
+      }
+    }
     if(automatic&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
       status(`${user.displayName||"계정"} · 더 최신인 기기 데이터 유지`);
       toast("기기의 최신 변경사항을 유지했습니다");

@@ -1,4 +1,4 @@
-﻿import {state,save,characterViewFor} from "./state.js?v=20260806ao";
+import {state,save,characterViewFor} from "./state.js?v=20260806as";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -191,6 +191,7 @@ const AGGRESSION_ACTION_LEVEL={
   "거친 말로만 표출함":1,
   "물건이나 벽에 화풀이할 수 있음":2,
   "상대를 밀칠 수 있음":3,
+  "상대를 때릴 수 있음":3,
   "실제로 때릴 수 있음":4,
   "심한 폭력을 행사할 수 있음":5
 };
@@ -709,8 +710,17 @@ function relationshipHomeEntry(c,pick,time,date){
   if(r.temporalStatus==="past"){
     const faultName=r.faultParty==="both"?"두 사람 모두":r.faultParty==="none"?"누구도":state.characters[r.faultParty]?.name||"누구인지 정하지 않은 쪽";
     const reason=r.faultReason&&r.faultReason!=="정하지 않음"?`${r.faultReason} 때문에`:"여러 사정으로";
+    const presentFeeling=/사랑|좋아/.test(overall)?"마음이 남아 있어도":/싫|혐오|증오/.test(overall)?"반감이 아직 남아 있어도":"지금은 감정이 크지 않아도";
+    const faultBeat=/금전|빚|과소비|재산|수입/.test(r.faultReason||"")
+      ?`${presentFeeling} 돈을 빌리거나 대신 결제하는 일은 하지 않았고, 공동 비용과 남은 물건만 기록을 확인하며 정리했어요.`
+      :/거짓말|은폐|신뢰/.test(r.faultReason||"")
+        ?`${presentFeeling} 설명을 곧바로 믿지 않고 확인 가능한 사실과 약속만 기준으로 대화를 이어 갔어요.`
+        :/연락 단절/.test(r.faultReason||"")
+          ?`${presentFeeling} 답을 재촉하지 않았고, 꼭 전달해야 할 내용만 한 번 남긴 뒤 더 연락하지 않았어요.`
+          :`${presentFeeling} 끝난 이유를 되풀이해 다투지 않고 현재 필요한 경계만 분명히 지켰어요.`;
     scripts=[
       [`${other.name}와 끝난 관계의 경계를 지키는 중`,`${reason} 관계가 끝났다는 사실을 알고 있어요. ${faultName}에게 책임이 있다고 정리한 기억과 지금의 속마음을 구분하며, 예전처럼 친근하게 굴지 않고 필요한 말만 나누고 있어요.`,"living"],
+      [`${other.name}와 남은 문제를 정리하는 중`,faultBeat,"study"],
       [`${other.name}와 과거의 일을 조심스럽게 정리하는 중`,`${r.stage||"끝난 관계"}라는 현재 상태에 맞춰 연락과 만남의 거리를 지켰어요. 미련이나 반감이 남아 있더라도 이미 끝난 관계의 권리를 요구하지 않았어요.`,"study"],
       [`${other.name}을 마주치고도 옛 습관을 멈추는 중`,`예전 같으면 자연스럽게 챙겼을 일을 하려다 손을 거두었어요. 지금 두 사람의 시선과 경계가 허용하는 만큼만 반응하고 각자의 자리로 돌아갔어요.`,"living"]
     ];
@@ -1022,6 +1032,20 @@ const homeActivityPoolFor=c=>{
     `손가락을 어디에 놓아야 소리가 나는지도 몰라 괜히 건드렸다 망가뜨릴까 봐 가까이에서 생김새만 살펴보고 있어요.`,
     "study"
   ]);
+  Object.entries(state.homes[c.homeId]?.rooms||{}).forEach(([roomKey,room])=>{
+    (room.furniture||[]).forEach(rawName=>{
+      const spec=FURNITURE_BEHAVIOR[normalizedFurnitureName(rawName)];
+      if(!spec)return;
+      const familiar=spec.interest.test(characterInterests(c));
+      const variants=familiar?spec.skilled:spec.novice;
+      variants.forEach((text,index)=>pool.push([
+        familiar?spec.title:`${rawName}을 서툴게 만져 보는 중`,
+        text,
+        roomKey,
+        `furniture:${rawName}:${familiar?"familiar":"novice"}:${index}`
+      ]));
+    });
+  });
   return pool;
 };
 
@@ -1265,7 +1289,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260806ao";
+const ENGINE_VERSION="20260806as";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1481,6 +1505,94 @@ function datePurpose(place,first,second,date){
   };
   const pool=choices[type]||choices[place?.id?.startsWith("home:")?"집":"공원"];
   return pool[hash(`${[first.id,second.id].sort().join(":")}:${dayKey(date)}:${place?.id}:date-purpose`)%pool.length];
+}
+const FURNITURE_BEHAVIOR={
+  "게임기":{interest:/게임|e스포츠/,title:"게임기를 즐기는 중",skilled:["익숙하게 설정을 맞추고 어려운 구간을 가볍게 넘겼어요.","손에 익은 조작으로 기록을 갱신하고 다음 판을 바로 준비했어요.","좋아하는 장르를 골라 집중한 채 한 판을 끝냈어요."],novice:["버튼 설명을 몇 번이나 다시 읽고 엉뚱한 메뉴를 열었어요.","조작기를 거꾸로 들었다가 화면이 움직이지 않자 머쓱하게 바로잡았어요.","튜토리얼부터 막혀 잠시 끙끙대다가 그래도 한 번 더 시도했어요."]},
+  "보드게임장":{interest:/보드게임|퍼즐|방탈출/,title:"보드게임을 펼쳐 보는 중",skilled:["규칙을 빠르게 훑고 다음 수를 몇 단계 앞까지 계산했어요.","구성물을 종류별로 정리한 뒤 익숙하게 판을 준비했어요.","상대의 선택을 읽으며 마지막까지 팽팽한 판을 만들었어요."],novice:["설명서를 읽고도 차례를 헷갈려 말 하나를 엉뚱한 칸에 놓았어요.","구성물이 너무 많아 무엇부터 꺼내야 할지 몰라 한참 상자만 들여다봤어요.","규칙을 절반쯤 이해한 채 시작했다가 매 차례 도움을 청했어요."]},
+  "턴테이블":{interest:/음악|레코드|LP/,title:"턴테이블로 음악을 듣는 중",skilled:["바늘을 조심스럽게 내려 좋아하는 곡의 첫 소리를 기다렸어요.","음반의 상태를 확인하고 오늘 분위기에 맞는 면을 골라 재생했어요.","재생이 끝나자 음반을 닦아 속지에 반듯하게 넣었어요."],novice:["바늘을 어디에 놓아야 할지 몰라 한참 손을 허공에 멈췄어요.","음반을 뒤집는 타이밍을 놓치고 조용해진 방에서 기계를 바라봤어요.","버튼이 거의 없어 더 어렵다며 설명을 다시 찾아봤어요."]},
+  "그림 도구":{interest:/그림|드로잉|미술|일러스트/,title:"그림 도구를 꺼내는 중",skilled:["재료에 맞는 종이와 도구를 골라 망설임 없이 첫 선을 그었어요.","큰 형태부터 잡은 뒤 색을 겹쳐 원하는 분위기를 만들었어요.","쓰던 도구를 닦아 색과 크기별로 다시 정리했어요."],novice:["붓에 물을 너무 많이 묻혀 색이 번지자 당황해 휴지부터 찾았어요.","어떤 연필을 써야 할지 몰라 가장 손에 잡히는 것으로 어설프게 선을 그었어요.","생각한 모양과 전혀 다르게 나오자 고개를 갸웃하면서도 조금 더 시도했어요."]},
+  "디지털 드로잉 장비":{interest:/디지털 드로잉|그림|일러스트/,title:"디지털 그림을 그리는 중",skilled:["단축키와 레이어를 빠르게 오가며 선을 정리했어요.","브러시를 조절해 원하는 질감을 만들고 색을 차분히 쌓았어요.","수정 전 파일을 따로 저장한 뒤 과감하게 구도를 바꿨어요."],novice:["펜을 움직였는데 엉뚱한 레이어에 선이 생겨 급히 되돌리기를 눌렀어요.","화면은 켰지만 브러시 크기부터 찾지 못해 메뉴를 오래 헤맸어요.","손으로 종이에 그릴 때와 다른 감각에 적응하지 못하고 선을 여러 번 지웠어요."]},
+  "악기":{interest:/음악|악기|연주|피아노|기타/,title:"악기를 연주하는 중",skilled:["손을 가볍게 풀고 익숙한 곡의 어려운 부분부터 천천히 맞췄어요.","음이 흔들리는 구간을 골라 속도를 낮추고 반복했어요.","좋아하는 곡을 끝까지 연주한 뒤 마지막 울림을 잠시 들었어요."],novice:["소리를 내는 자세부터 몰라 조심스럽게 손을 얹었다가 금세 뗐어요.","한 음을 내는 데 성공하고도 다음 손가락 위치를 몰라 그대로 멈췄어요.","생각보다 큰 소리가 나자 놀라 주변을 살핀 뒤 더 작게 다시 시도했어요."]},
+  "제빵 도구":{interest:/베이킹|요리|빵/,title:"제빵 도구를 쓰는 중",skilled:["재료를 정확히 계량하고 반죽 상태에 맞춰 힘과 속도를 조절했어요.","오븐 온도와 시간을 맞춘 뒤 남은 도구를 바로 씻어 정리했어요.","구워지는 향을 확인하고 가장 알맞은 순간에 오븐을 열었어요."],novice:["계량 단위를 잘못 보고 밀가루를 너무 많이 부어 급히 덜어냈어요.","반죽이 손에 잔뜩 붙자 왜 이걸 즐기는지 모르겠다며 주걱을 찾았어요.","오븐 예열을 잊어 완성 시간이 한참 미뤄졌어요."]},
+  "커피머신":{interest:/커피|카페/,title:"커피를 내리는 중",skilled:["원두 굵기와 물의 양을 맞춰 익숙하게 한 잔을 완성했어요.","향을 먼저 확인하고 오늘 마실 방식에 맞춰 설정을 바꿨어요.","추출이 끝난 뒤 기계를 닦고 남은 원두를 밀봉했어요."],novice:["버튼이 너무 많아 가장 큰 버튼부터 눌렀다가 물만 받아냈어요.","필터를 빼는 법을 몰라 한참 씨름한 뒤 설명서를 펼쳤어요.","쓴맛에 놀라 우유와 시럽을 차례로 더하며 자기 입맛을 찾았어요."]},
+  "향수 진열대":{interest:/향수|향기|조향|시향/,title:"향을 고르는 중",skilled:["첫 향과 잔향을 구분해 맡고 오늘 옷차림에 어울리는 것을 골랐어요.","시향지를 나란히 놓고 비슷한 향조의 미세한 차이를 비교했어요.","공기 중에 한 번만 뿌려 퍼지는 향을 확인한 뒤 조심스럽게 병을 닫았어요."],novice:["비슷해 보이는 병이 왜 이렇게 많은지 이해하지 못하고 라벨만 읽었어요.","여러 향을 연달아 맡았다가 구분이 안 되어 창문을 열고 코를 쉬게 했어요.","분사 방향을 잘못 잡아 자기 쪽으로 향이 퍼지자 한동안 재채기를 참았어요."]},
+  "천체망원경":{interest:/천문|우주|별|천체/,title:"천체망원경을 들여다보는 중",skilled:["별자리 위치를 확인하고 망원경을 정확한 방향으로 천천히 돌렸어요.","초점을 미세하게 조절해 흐릿하던 빛을 또렷한 점으로 맞췄어요.","관측한 시간과 위치를 짧게 기록한 뒤 다음 대상을 찾았어요."],novice:["렌즈를 들여다봐도 캄캄하기만 해 덮개부터 다시 확인했어요.","별 하나를 찾으려다 망원경이 자꾸 다른 방향으로 움직여 애를 먹었어요.","맨눈으로 보는 것과 무엇이 다른지 몰라 초점 손잡이를 계속 돌렸어요."]},
+  "캣타워":{interest:/고양이|반려동물|동물/,title:"캣타워 곁에서 놀아 주는 중",skilled:["고양이가 좋아하는 높이와 거리를 알고 장난감을 천천히 움직였어요.","숨을 곳을 방해하지 않은 채 먼저 다가올 때까지 기다렸어요.","발톱 상태와 흔들리는 부분까지 살펴 안전하게 고쳐 놓았어요."],novice:["고양이가 반응하지 않자 장난감을 너무 빠르게 흔들다가 오히려 피하게 했어요.","어디를 만져야 좋아하는지 몰라 손을 내밀었다가 조용히 거두었어요.","갑자기 높은 곳에서 내려오는 모습에 놀라 자기가 먼저 한 걸음 물러났어요."]},
+  "러닝머신":{interest:/러닝|운동|헬스/,title:"러닝머신을 쓰는 중",skilled:["몸을 충분히 푼 뒤 속도를 조금씩 올려 안정된 호흡을 찾았어요.","자세가 흐트러지지 않게 속도와 경사를 세밀하게 조절했어요.","운동을 마치고 천천히 걸으며 심박을 낮췄어요."],novice:["속도를 너무 높게 눌러 손잡이를 붙잡고 급히 정지 버튼을 찾았어요.","몇 분 지나지 않아 숨이 차 속도를 크게 낮추고 화면만 노려봤어요.","발을 어디에 두어야 할지 어색해 짧게 걷고 먼저 스트레칭부터 배웠어요."]}
+};
+function normalizedFurnitureName(name){
+  if(/게임기/.test(name))return "게임기";
+  if(/보드게임/.test(name))return "보드게임장";
+  if(/레코드|턴테이블/.test(name))return "턴테이블";
+  if(/그림/.test(name))return "그림 도구";
+  if(/디지털 드로잉/.test(name))return "디지털 드로잉 장비";
+  if(/피아노|기타|악기/.test(name))return "악기";
+  if(/제빵/.test(name))return "제빵 도구";
+  if(/커피|에스프레소/.test(name))return "커피머신";
+  if(/향수/.test(name))return "향수 진열대";
+  if(/천체망원경/.test(name))return "천체망원경";
+  if(/캣타워/.test(name))return "캣타워";
+  if(/러닝머신|운동기구/.test(name))return "러닝머신";
+  return name;
+}
+function characterInterests(character){return [...(character.hobbies||[]),...(character.interests||[])].map(String).join(" ")}
+function datePurposeScene(purpose,place,first,second,date){
+  const name=second.name,seed=`${first.id}:${second.id}:${dayKey(date)}:${purpose}`;
+  if(/게임/.test(purpose)){
+    const firstLikes=/게임|e스포츠|보드게임/.test(characterInterests(first)),secondLikes=/게임|e스포츠|보드게임/.test(characterInterests(second));
+    const beats=[
+      {first:`${firstLikes?"익숙한 조작으로 초반을 이끌다가":`조작법을 몇 번이나 물어보면서도`} ${name}에게 중요한 선택은 직접 해 보라고 조작기를 건넸어요.`,second:`${secondLikes?"금세 규칙을 파악해":`버튼을 자꾸 헷갈리면서도`} ${first.name}과 마지막 구간까지 함께 넘기고 엔딩 화면을 나란히 봤어요.`},
+      {first:`실수할 때마다 ${name}의 반응을 살피며 가볍게 놀렸지만, 어려운 구간에서는 자기 차례를 양보해 함께 판을 이어 갔어요.`,second:`${first.name}의 농담에 바로 받아치고 점수 차이를 끝까지 따라붙어 마지막 결과가 뜰 때까지 자리를 뜨지 않았어요.`},
+      {first:`둘이 맡을 역할을 나눈 뒤 ${name}의 움직임에 맞춰 타이밍을 조절했어요. 한 번 실패하자 같은 구간부터 다시 시작했어요.`,second:`${first.name}이 놓친 단서를 찾아 알려 주고, 마지막 목표를 함께 달성하자 짧게 손을 마주쳤어요.`}
+    ];
+    return {title:"데이트 · 게임 한 판을 같이 끝내기",...beats[hash(seed)%beats.length]};
+  }
+  if(/영화/.test(purpose)){
+    const beats=[
+      {first:`${name}이 고른 영화의 재생 목록을 확인하고 조명을 낮춘 뒤 간식을 손이 닿는 곳에 놓았어요.`,second:`중간에 마음에 든 장면이 나오자 ${first.name}을 한 번 바라봤지만 말을 아끼고 영화가 끝난 뒤 감상을 꺼냈어요.`},
+      {first:`서로 후보를 하나씩 고른 뒤 짧게 예고편을 보고 오늘 볼 영화를 정했어요.`,second:`${first.name}이 놓친 장면을 조용히 짚어 주고 엔딩 크레딧이 끝날 때까지 소파에 함께 남았어요.`}
+    ];return {title:`데이트 · ${purpose}`,...beats[hash(seed)%beats.length]};
+  }
+  if(/음악/.test(purpose)){
+    return {title:`데이트 · ${purpose}`,first:`${name}에게 꼭 들려주고 싶었던 곡을 골라 재생하고 좋아하는 부분이 나올 때까지 반응을 기다렸어요.`,second:`${first.name}이 고른 곡을 끝까지 들은 뒤 자기 취향의 곡도 하나 이어 재생하며 서로 다른 이유를 이야기했어요.`};
+  }
+  return null;
+}
+function placeObjectScene(place,first,second,relation,date){
+  const type=place?.type||"";
+  const objects={
+    공원:["안내판","벤치","분수","산책로"],
+    카페:["메뉴판","커피머신","디저트 진열장","창가 테이블"],
+    음식점:["메뉴판","테이블","공용 반찬","디저트 카트"],
+    도서관:["검색대","책장","열람대","반납함"],
+    공연장:["공연 안내서","좌석표","무대","기념품 진열대"],
+    쇼핑몰:["쇼윈도","전신거울","상품 진열대","안내 키오스크"]
+  };
+  let pool=objects[type]||[];
+  if(place?.id?.startsWith("home:")){
+    const [,homeId,roomKey]=place.id.split(":");
+    pool=state.homes[homeId]?.rooms?.[roomKey]?.furniture||[];
+  }
+  if(!pool.length)return null;
+  const object=pool[hash(`${first.id}:${second.id}:${place.id}:${dayKey(date)}:object`)%pool.length];
+  const viewA=characterViewFor(first.id,second.id)||{},viewB=characterViewFor(second.id,first.id)||{};
+  const tense=["혐관","적","라이벌"].includes(relation?.type)||/자주 충돌|격렬|파국/.test(`${viewA.conflictIntensity} ${viewB.conflictIntensity}`);
+  const playful=/장난|유머|농담|표현이 풍부|먼저 다가/.test(`${first.humorStyle} ${second.humorStyle} ${first.socialStyle} ${second.socialStyle}`);
+  if(tense){
+    const scenes=[
+      {title:`${object} 앞에서 말다툼하는 중`,first:`${first.name}은(는) ${object}을(를) 쓰는 순서를 두고 ${second.name}의 말을 끊으며 자기 방식이 맞다고 날카롭게 받아쳤어요.`,second:`${second.name}은(는) 물러서지 않고 잘못 건드린 부분을 하나씩 짚었고, 둘의 목소리는 잠시 높아졌어요.`},
+      {title:`${object}을 두고 신경전을 벌이는 중`,first:`${first.name}은(는) ${second.name}이(가) 고른 방식이 마음에 들지 않아 비꼬듯 한마디를 던졌어요.`,second:`${second.name}은(는) 곧바로 같은 어조로 되받아치고 ${object}을(를) 자기 쪽으로 돌려놓았어요.`},
+      {title:`${object} 앞에서 의견이 부딪힌 중`,first:`${first.name}은(는) 설명을 끝까지 듣지 않고 ${second.name}의 선택이 비효율적이라고 잘라 말했어요.`,second:`${second.name}은(는) 그 말투부터 문제라며 정면으로 맞받았지만, 서로 손을 쓰지는 않고 말로 끝냈어요.`}
+    ];return scenes[hash(`${first.id}:${second.id}:${object}:fight`)%scenes.length];
+  }
+  if(playful){
+    const scenes=[
+      {title:`${object}으로 서로를 놀리는 중`,first:`${first.name}은(는) ${second.name}이(가) ${object}을(를) 다루는 모습을 과장되게 흉내 내며 웃음을 참았어요.`,second:`${second.name}은(는) 곧바로 ${first.name}의 실수를 하나 들춰내 더 큰 농담으로 되갚았어요.`},
+      {title:`${object} 앞에서 장난을 주고받는 중`,first:`${first.name}은(는) ${object}을(를) 먼저 차지하고 쓰고 싶으면 부탁해 보라며 장난스럽게 버텼어요.`,second:`${second.name}은(는) 부탁하는 대신 허점을 노려 슬쩍 가져가고 태연한 얼굴을 했어요.`},
+      {title:`${object}을 같이 시험해 보는 중`,first:`${first.name}은(는) ${second.name}에게 먼저 해 보라고 권한 뒤 서툰 부분을 가볍게 놀렸어요.`,second:`${second.name}은(는) 웃으며 받아치고 이번에는 ${first.name}에게 더 어려운 방법을 시켜 봤어요.`}
+    ];return scenes[hash(`${first.id}:${second.id}:${object}:play`)%scenes.length];
+  }
+  return null;
 }
 function interactionPair(group){
   const candidates=[];
@@ -1709,10 +1821,10 @@ function heightenedConflictBeat(first,second,tensionKey,variant){
   const level=aggressionExpressionLevel(first,characterViewFor(first.id,second.id));
   if(level<3)return "";
   if(level===3)return [
-    `${first.name}은(는) 욱한 순간 ${second.name}을(를) 한 번 밀쳤지만 곧 손을 거두고 더 가까이 오지 말라고 경고했어요.`,
-    `${first.name}은(는) ${second.name}의 팔을 밀어 거리를 벌린 뒤 더 손을 쓰기 전에 대화를 끊었어요.`,
-    `${first.name}은(는) 순간적으로 어깨를 밀쳤다가 바로 물러서며 흥분이 가라앉을 때까지 떨어져 있었어요.`,
-    `${first.name}은(는) 길을 막은 ${second.name}을(를) 밀어냈지만 뒤쫓아가 공격하지는 않았어요.`
+    `${first.name}은(는) 욱한 순간 ${second.name}의 팔을 한 차례 쳤어요. ${second.name}은(는) 맞서 때리지 않고 팔을 막으며 곧바로 거리를 벌렸어요.`,
+    `${first.name}은(는) 말다툼 끝에 ${second.name}의 어깨를 한 번 가격했어요. ${second.name}은(는) 반격하지 않고 손을 막아 세운 뒤 자리를 피했어요.`,
+    `${first.name}은(는) 순간적으로 ${second.name}을 한 차례 때렸지만 계속 쫓아가지는 않았어요. ${second.name}은(는) 몸을 지키며 사람 있는 쪽으로 물러났어요.`,
+    `${first.name}은(는) 화를 참지 못하고 ${second.name}의 팔을 세게 쳤어요. ${second.name}은(는) 맞서 싸우지 않고 더 다가오지 말라고 경고했어요.`
   ][variant];
   return [
     `${first.name}은(는) 쌓인 말이 터지자 ${second.name}과(와) 거칠게 치고받았어요. 한차례 몸싸움 뒤 둘은 숨을 고르며 더 이어 가지 않았어요.`,
@@ -1989,18 +2101,23 @@ function sharedPlaceScene(c,current,date){
   if(!preferred)return current;
   const ordered=[preferred.first,preferred.second].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
   const pair={...preferred,first:ordered[0],second:ordered[1]};
-  const scene=concreteInteraction(place,pair.first,pair.second,pair.relation,date);
+  let scene=concreteInteraction(place,pair.first,pair.second,pair.relation,date);
+  const objectScene=placeObjectScene(place,pair.first,pair.second,pair.relation,date);
+  if(objectScene&&!/때리|싸우|충돌|밀어|몸싸움/.test(`${scene.title} ${scene.first} ${scene.second}`))scene={...scene,...objectScene};
   const encounter=significantEncounter(pair,group,date);
   if(encounter){
     scene.first+=encounter;
     scene.second+=encounter;
   }
   const isFirst=c.id===pair.first.id;
+  const dating=dateLikePair(pair.first,pair.second,pair.relation);
+  const purpose=dating?datePurpose(place,pair.first,pair.second,date):"";
+  const alignedDateScene=dating?datePurposeScene(purpose,place,pair.first,pair.second,date):null;
+  if(alignedDateScene)scene={...scene,...alignedDateScene};
   let title=(isFirst?scene.firstTitle:scene.secondTitle)||scene.title;
   const detail=isFirst?scene.first:scene.second;
-  const dating=dateLikePair(pair.first,pair.second,pair.relation);
   const dateGroup=dating?`date-${[pair.first.id,pair.second.id].sort().join("-")}-${dayKey(date)}`:"";
-  if(dating)title=`데이트 · ${datePurpose(place,pair.first,pair.second,date)}`;
+  if(dating&&!alignedDateScene)title=`데이트 · ${purpose}`;
   const baseTitle=current.baseTitle||current.title,baseDesc=current.baseDesc||current.desc;
   const bothWalking=/공원.*걷|걷.*공원/.test(`${baseTitle} ${title}`);
   const combinedTitle=bothWalking||title.includes("데이트")?title:[...new Set([baseTitle,title].filter(Boolean))].join(" · ");

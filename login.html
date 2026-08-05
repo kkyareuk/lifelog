@@ -28,7 +28,7 @@
 </main>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
-import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,onAuthStateChanged,signOut,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import{getAuth,GoogleAuthProvider,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,onAuthStateChanged,signOut,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,setDoc,serverTimestamp,arrayUnion}from"https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 const status=document.querySelector('#status');
@@ -72,7 +72,10 @@ if(!ready){
       status.classList.remove('ok');
       status.textContent='Google 로그인 창을 여는 중…';
       try{
-        await signInWithPopup(auth,provider);
+        if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
+          const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
+          await signInWithCredential(auth,GoogleAuthProvider.credential(result.credential?.idToken,result.credential?.accessToken));
+        }else await signInWithPopup(auth,provider);
       }catch(error){showError(error)}
     };
     logout.onclick=()=>signOut(auth);

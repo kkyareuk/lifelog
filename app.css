@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap");
-@font-face{font-family:"OngleipKonkon";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2412-1@1.0/Ownglyph_corncorn-Rg.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"OngleipKonkon";src:url("./fonts/Ownglyph_Corncorn.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"Do Hyeon";src:url("./fonts/DoHyeon-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
 @font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumLight.woff2") format("woff2");font-weight:300;font-display:swap}
 @font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumMedium.woff2") format("woff2");font-weight:400 600;font-display:swap}
 @font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumBold.woff2") format("woff2");font-weight:700 900;font-display:swap}
@@ -408,9 +409,9 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   .character-view-card>summary em{max-width:100%;justify-self:start}
   .character-view-heading .avatar,.character-view-heading .sprite{width:50px;height:50px;flex-basis:50px}
   .relationship-map{padding:10px;overflow:hidden;touch-action:pan-y}
-  .relationship-map-canvas{display:block;width:100%;height:auto;aspect-ratio:1/1;border-radius:12px}
+  .relationship-map-canvas{display:none}
   .relationship-map-canvas svg text{stroke-width:7px}
-  .relationship-map-mobile{display:none}
+  .relationship-map-mobile{display:grid;gap:10px}
   .relationship-map-mobile article{display:grid;gap:9px;min-width:0;padding:12px;border-left:4px solid var(--p);border-radius:14px;background:#fff}
   .relationship-map-mobile header{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
   .relationship-map-mobile header small,.relationship-map-mobile p small{color:var(--muted)}
@@ -608,3 +609,34 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   line-height:1.55;
 }
 .personality-extra{margin-top:24px}
+.native-app body{padding-top:env(safe-area-inset-top)}
+#native-network-banner{
+  position:sticky;
+  top:0;
+  z-index:10000;
+  padding:12px 18px;
+  background:#3b3029;
+  color:#fff;
+  text-align:center;
+  font:600 14px/1.5 system-ui,sans-serif;
+}
+
+/* 첫 실행 안내와 방 단위 편집 */
+.onboarding-dialog,.setup-coach-dialog,.room-image-dialog,.room-illustration-dialog,.room-editor-dialog{width:min(680px,calc(100vw - 24px));max-height:calc(100dvh - 24px);padding:0;border:0;border-radius:26px;box-shadow:0 28px 90px #10182766}
+.onboarding-dialog::backdrop,.setup-coach-dialog::backdrop,.room-image-dialog::backdrop,.room-illustration-dialog::backdrop,.room-editor-dialog::backdrop{background:#10182799;backdrop-filter:blur(3px)}
+.onboarding-dialog form{display:grid;min-height:420px;padding:30px}.onboarding-dialog section{display:grid;align-content:center;gap:16px;text-align:center}.onboarding-dialog h1,.onboarding-dialog p{margin:0}.onboarding-dialog p{color:var(--muted);line-height:1.75}.onboarding-progress{display:flex;justify-content:center;gap:7px}.onboarding-progress i{width:26px;height:5px;border-radius:999px;background:#d8dce2}.onboarding-progress i.on{background:var(--p)}.onboarding-name{display:grid;gap:7px;text-align:left}.onboarding-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.onboarding-back{justify-self:start;margin-top:auto;padding:8px 10px}
+.setup-coach-dialog form{display:grid;gap:13px;padding:26px}.setup-coach-dialog h2,.setup-coach-dialog p{margin:0}.setup-coach-dialog p{color:var(--muted);line-height:1.7}.setup-coach-dialog form>div{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.room-image-dialog form,.room-illustration-dialog form,.room-editor-dialog form{display:grid;gap:19px;padding:22px}.room-image-dialog .title h2,.room-image-dialog .title small,.room-editor-dialog .title h2,.room-editor-dialog .title small{margin:0}.room-image-choice{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.room-image-choice button{display:grid;place-items:center;gap:7px;min-height:150px;padding:18px;font-size:28px}.room-image-choice b{font-size:16px}.room-image-choice small{color:var(--muted);font-size:11px}
+.room-illustration-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.room-illustration-grid button{height:220px;padding:12px;background:center/cover no-repeat;display:flex;align-items:flex-end}.room-illustration-grid span{padding:7px 10px;border-radius:10px;background:#fffffff0}
+.room-editor-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.room-editor-fields label{display:grid;gap:6px}.room-editor-photo{display:grid;grid-template-columns:100px minmax(0,1fr);align-items:center;gap:14px;text-align:left}.room-editor-photo span{display:grid;place-items:center;width:100px;height:72px;border-radius:12px;background:#e8ebee center/cover no-repeat;font-size:28px}.room-editor-furniture-wrap{margin-top:24px}.room-editor-furniture-wrap>p{margin-bottom:14px!important}.room-editor-furniture{display:flex;flex-wrap:wrap;gap:10px 9px;margin-top:12px}.room-editor-furniture button{min-height:48px;padding:10px 16px}.room-editor-furniture button.on{color:#fff;background:var(--grad);border-color:transparent}.room-edit-target{cursor:pointer;outline:0}.room-edit-target:focus{box-shadow:inset 0 0 0 3px var(--p)}.room-edit-hint{position:absolute;right:8px;bottom:8px;z-index:7;padding:4px 7px;border-radius:8px;background:#18202fd9;color:#fff;font-size:10px}.room-empty-image{position:absolute;inset:50% auto auto 50%;z-index:8;transform:translate(-50%,-50%);display:grid;place-items:center;gap:2px;min-width:120px;padding:10px;background:#fffffff2}.room-empty-image span{font-size:24px;line-height:1}
+
+/* 앱과 작은 화면의 정보 밀도 */
+@media(max-width:600px){
+  header{padding:6px 8px!important;gap:5px!important}.brand{min-width:0!important;gap:7px!important}.logo{width:38px!important;height:38px!important}.brand h1{font-size:21px!important}.preview-badge{padding:4px 7px;font-size:9px}#save-state{font-size:10px!important}
+  header nav{gap:5px!important;padding:3px 0!important}header nav button{min-height:36px!important;padding:6px 10px!important;border-radius:12px!important;font-size:14px!important;white-space:nowrap}
+  main{padding:5px!important}.roster{gap:6px!important;padding:3px 1px 7px!important}.roster-card{min-width:142px!important;width:142px!important;gap:6px!important;padding:6px 7px!important;border-radius:14px!important}.roster-card .avatar{width:34px!important;height:34px!important}.roster-card .sprite{width:39px!important;height:39px!important}.roster-card>.roster-info b{font-size:14px!important}.roster-card>.roster-info small{max-width:86px!important;font-size:9px!important;line-height:1.3!important;display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden!important}
+  .world-hud{gap:6px!important;margin:0 0 6px!important}.world-hud>div{padding:6px 8px!important;border-radius:12px!important;font-size:10px!important;line-height:1.25}.world-hud small{font-size:8px!important}.world-hud b{font-size:12px!important}
+  .sleep-gate{top:5px!important;width:calc(100% - 10px)!important;padding:7px 8px!important;background:#172033fa!important;backdrop-filter:none!important}.sleep-gate h2{font-size:13px!important}.sleep-gate button{padding:6px 8px!important;font-size:10px!important}
+  .onboarding-dialog form{min-height:min(480px,calc(100dvh - 24px));padding:22px 18px}.onboarding-dialog h1{font-size:29px}.onboarding-actions,.room-image-choice,.room-editor-fields{grid-template-columns:1fr}.room-image-choice button{grid-template-columns:auto 1fr;justify-items:start;min-height:76px;font-size:24px}.room-image-choice button small{grid-column:2}.room-illustration-grid button{height:155px}.room-editor-dialog form{padding:16px}.room-editor-photo{grid-template-columns:82px minmax(0,1fr)}.room-editor-photo span{width:82px;height:62px}
+  .room-empty-image{min-width:98px;padding:7px;font-size:11px}.room-empty-image span{font-size:19px}.room-edit-hint{font-size:8px;padding:3px 5px}
+}
