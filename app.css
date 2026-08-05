@@ -7,6 +7,7 @@ html[data-ui-font="myeongjo"]{--ui-font:"Nanum Myeongjo","Batang",serif}
 html[data-ui-font="dohyeon"]{--ui-font:"Do Hyeon","Noto Sans KR","Malgun Gothic",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui-font)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 17px}button.primary,header nav .on{color:#fff;background:var(--grad);border-color:transparent}.panel{background:#fff;border:1px solid var(--line);border-radius:27px;box-shadow:0 18px 45px #27334b10}
 .font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
+.scene h3{line-height:1.45;margin:10px 0 12px;word-break:keep-all}.scene p{line-height:1.75;margin:0 0 15px;word-break:keep-all}.scene>b{display:block;line-height:1.55;margin-top:4px}
 header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}.brand{display:flex;align-items:center;gap:13px;min-width:270px}.brand h1{margin:0;font-size:31px}.brand small,#save-state{color:var(--muted)}.logo{width:76px;height:68px;display:grid;place-items:center;background:transparent}.logo img{display:block;width:100%;height:100%;object-fit:contain}nav{display:flex;gap:8px;overflow:auto;flex:1}header nav button{white-space:nowrap;font-size:19px}.account{white-space:nowrap}main{padding:26px;max-width:1900px;margin:auto}
 .title{display:flex;align-items:center;justify-content:space-between;gap:12px}.empty{max-width:760px;margin:10vh auto;text-align:center;padding:70px 20px}.roster{display:flex;gap:13px;overflow:auto;padding:5px 3px 18px}.roster-card{display:flex;align-items:center;gap:12px;min-width:265px;text-align:left;border:2px solid transparent}.roster-card.on{border-color:var(--own);box-shadow:0 7px 22px color-mix(in srgb,var(--own) 25%,transparent)}.roster-card span{display:grid}.roster-card b{font-size:22px}.roster-card small{color:var(--muted)}
 .avatar{width:58px;height:58px;border-radius:50%;object-fit:cover;background:var(--own,var(--p));color:#fff;display:grid;place-items:center;flex:none;font-size:22px}.sprite{width:76px;height:76px;object-fit:contain;background:transparent;border:0;outline:0;filter:drop-shadow(0 6px 5px #17203355);flex:none}
@@ -37,7 +38,7 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
 .person .sprite{width:clamp(54px,6vw,92px);height:clamp(54px,6vw,92px)}
 .detail-column{display:grid;gap:16px}
 .hero{height:270px}
-.place-photo{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:15px;margin-top:14px}
+.place-photo{display:block;width:100%;max-height:220px;object-fit:cover;border-radius:15px;margin-top:20px}
 .life-log{padding:20px}.life-log ol{list-style:none;padding:0;margin:15px 0 0}.life-log li{display:grid;grid-template-columns:54px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line)}.life-log li span{display:grid}.life-log small,.life-log time{color:var(--muted)}.life-log .now b{color:var(--p)}
 .life-log ol{max-height:460px;overflow-y:auto;overscroll-behavior:contain;padding-right:7px}.home-family-log ol{max-height:360px}
 .home-page{width:min(1200px,100%);margin:0 auto}.home-tabs{display:flex;flex-wrap:wrap;gap:10px;overflow:visible;margin:12px 0 18px}.home-tabs button{min-width:172px;min-height:58px;padding:12px 18px;font-size:17px;background:var(--home-grad);background-image:linear-gradient(#17203338,#17203338),var(--home-photo,linear-gradient(transparent,transparent)),var(--home-grad);background-position:center;background-size:cover}.home-tabs .on{color:#fff}
@@ -316,8 +317,8 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .resident-profile>img{width:100%;height:150px;object-fit:cover;border-radius:17px}.resident-profile>.avatar,.resident-profile>.sprite{width:100%;height:150px;border-radius:17px}
 .resident-profile h3{margin:0;font-size:27px}.resident-profile small{color:var(--muted)}
 .resident-current{align-self:stretch;box-sizing:border-box;margin:11px 0 8px;padding:13px;border-radius:17px;background:color-mix(in srgb,var(--resident-theme) 6%,#f5f7fb);overflow:hidden}
-.resident-current>small{color:var(--resident-theme)}.resident-current h3{margin:6px 0;font-size:21px}.resident-current p{margin:5px 0 9px}.resident-current>b{display:block}
-.resident-current>img{display:block;width:100%;height:150px;margin-top:10px;border-radius:14px;object-fit:cover;overflow:hidden}
+.resident-current>small{color:var(--resident-theme);line-height:1.45}.resident-current h3{margin:9px 0 12px;font-size:21px;line-height:1.45;word-break:keep-all}.resident-current p{margin:0 0 16px;line-height:1.75;word-break:keep-all}.resident-current>b{display:block;line-height:1.55;margin-top:2px}
+.resident-current>img{display:block;width:100%;height:150px;margin-top:20px;border-radius:14px;object-fit:cover;overflow:hidden}
 .home-person span{min-width:0}
 @media(min-width:601px){.home-person span{max-width:320px}.home-person small{overflow:visible;text-overflow:clip;white-space:normal;word-break:keep-all}}
 @media(min-width:601px){
@@ -502,7 +503,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .pet-edit label.check{display:flex!important;align-items:center;justify-content:flex-start;gap:9px;min-height:46px;padding:9px 12px;border:1px solid var(--line);border-radius:13px;background:#fff}
 .pet-edit label.check input{flex:0 0 auto;width:20px!important;min-height:20px!important;height:20px;margin:0}
 .resident-current{display:flex;flex-direction:column;box-sizing:border-box}
-.resident-current>img{margin-top:auto!important;padding-top:0;box-sizing:border-box;border-radius:14px!important}
+.resident-current>img{margin-top:20px!important;padding-top:0;box-sizing:border-box;border-radius:14px!important}
 .relation-activity-details{margin:10px 0 14px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--p) 22%,var(--line));border-radius:13px;background:#ffffffa8}
 .relation-activity-details summary{cursor:pointer;font-weight:800;color:var(--p)}
 .relation-activity-details .relation-tags{margin:10px 0 0}
@@ -577,3 +578,10 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .maintenance-screen section{width:min(680px,100%);padding:48px 36px;border:1px solid #d8cbbd;border-radius:32px;background:#fff;text-align:center;box-shadow:0 24px 70px #4333241a}
 .maintenance-screen section>span{display:block;font-size:58px}.maintenance-screen section>p:first-of-type{margin:18px 0 8px;color:#887565;font-size:13px;font-weight:900;letter-spacing:.12em}
 .maintenance-screen h1{margin:0 0 18px;font-size:clamp(30px,6vw,52px)}.maintenance-screen p{line-height:1.7}.maintenance-screen small{display:block;margin:18px 0;color:#74675d}.maintenance-screen button{margin-top:12px}
+.preview-badge{display:inline-flex;align-items:center;justify-content:center;flex:none;padding:6px 10px;border-radius:999px;background:#fff1bf;color:#6c4b00;font-size:12px;font-weight:900;white-space:nowrap;box-shadow:inset 0 0 0 1px #e8c95d}
+.preview-notice{padding:18px 20px;border:1px solid #e4c354;border-radius:19px;background:#fff8d9;color:#5d4211}.preview-notice b{font-size:20px}.preview-notice p{margin:7px 0 0;line-height:1.7}
+
+/* 현재 장면 카드 가독성 */
+.scene h3{line-height:1.45;margin:10px 0 12px;word-break:keep-all}
+.scene p{line-height:1.75;margin:0 0 15px;word-break:keep-all}
+.scene>b{display:block;line-height:1.55;margin-top:4px}

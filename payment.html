@@ -29,6 +29,12 @@
 </main>
 <script>
 const config=window.PARALLEL_CITY_CONFIG||{};
+if(config.beta?.enabled){
+  document.querySelector(".top span").lastChild.textContent="서랍마을 사전 체험";
+  document.querySelector(".hero .eyebrow").textContent="EARLY PREVIEW";
+  document.querySelector(".hero h1").textContent="사전 체험 기간이에요";
+  document.querySelector(".hero p").textContent="상품과 가격은 미리 볼 수 있지만 실제 결제는 진행되지 않아요.";
+}
 const CART_KEY="drawer-village-cart";
 const products={
   character_slots_5:{packageId:"character_slots_5",name:"캐릭터 슬롯 5개 추가",amount:1200},
@@ -48,7 +54,12 @@ document.querySelector("#price").textContent=`${total.toLocaleString("ko-KR")}�
 const button=document.querySelector("#payButton"),status=document.querySelector("#status");
 if(!items.length){status.textContent="상점에서 상품을 먼저 담아 주세요."}
 else if(config.paymentsEnabled){button.disabled=false;button.textContent=`토스로 ${total.toLocaleString("ko-KR")}원 결제하기`}
-else{status.textContent="토스페이먼츠 상점 심사와 결제 승인 서버 연결이 끝나면 실제 결제가 열립니다."}
+else{
+  button.textContent=config.beta?.enabled?"사전 체험 중 결제 불가":"결제 준비 중";
+  status.textContent=config.beta?.enabled
+    ?"현재 사전 체험 기간이라 실제 결제를 진행하지 않아요. 서랍마을로 돌아가 기능을 자유롭게 체험해 주세요."
+    :"토스페이먼츠 상점 심사와 결제 승인 서버 연결이 끝나면 실제 결제가 열립니다.";
+}
 button.addEventListener("click",async()=>{
   const clientKey=String(config.tossPaymentsClientKey||"").trim();
   const backend=String(config.paymentBackendUrl||"").replace(/\/$/,"");

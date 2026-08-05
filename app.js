@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805ag";
-import {eventFor} from "./simulation.js?v=20260805ag";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805ag";
-import {recordCharacterInteraction} from "./state.js?v=20260805ag";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260805aj";
+import {eventFor} from "./simulation.js?v=20260805aj";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260805aj";
+import {recordCharacterInteraction} from "./state.js?v=20260805aj";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -406,7 +406,7 @@ function render(){
     document.body.classList.remove("maintenance-mode");
     renderApp(state);
     const grid=document.querySelector(".shop-product-grid");
-    if(grid&&!grid.querySelector('[data-cart-add="green_tea"]')){
+    if(grid&&!grid.querySelector('[data-product-id="green_tea"]')){
       const card=document.createElement("article");
       card.className="premium-product one-time-product";
       card.innerHTML=`<div class="premium-product-heading"><span>응원</span><div><small>개발 응원</small><h2>개발자에게 녹차 사주기 🍵</h2></div><b>1,500원</b></div><p>원하는 만큼 장바구니에 담아 개발자를 응원할 수 있어요.</p><button class="primary premium-buy" data-cart-add="green_tea">장바구니에 담기</button>`;
@@ -1344,13 +1344,13 @@ if(!maintenanceEnabled()&&localStorage.getItem("drawer-village-hide-photo-backup
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260805ag").catch(error=>{
+  import("./auth.js?v=20260805aj").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260805ag",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260805aj",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
