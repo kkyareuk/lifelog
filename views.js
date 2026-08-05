@@ -1,5 +1,5 @@
-﻿import {state,active,characterViewFor} from "./state.js?v=20260805am";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805am";
+import {state,active,characterViewFor} from "./state.js?v=20260805an";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260805an";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","CEO","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","범죄자","환경미화원","여관주인","자영업·직접 입력"];
@@ -125,10 +125,16 @@ function importantEntry(entry){return /출근|수업|직장|데이트|병원|다
 const loggableEntry=entry=>entry?.title!=="자는 중"&&!/에서 자는 중$/.test(entry?.title||"");
 function dailyLogItems(entries,c){
   const seen=new Set();
+  const canonicalDateGroup=x=>{
+    if(!x?.dateGroup)return "";
+    const partnerId=x.withId&&x.withId!==c.id?x.withId:"";
+    return partnerId?`date-${[c.id,partnerId].sort().join("-")}`:String(x.dateGroup).replace(/-(home:)?[^-:]+(?::[^-]+)*$/,"");
+  };
   return entries.map(x=>{
     if(x.dateGroup){
-      if(seen.has(x.dateGroup))return"";seen.add(x.dateGroup);
-      const steps=entries.filter(step=>step.dateGroup===x.dateGroup);
+      const groupKey=canonicalDateGroup(x);
+      if(seen.has(groupKey))return"";seen.add(groupKey);
+      const steps=entries.filter(step=>canonicalDateGroup(step)===groupKey).sort((a,b)=>a.minute-b.minute);
       const partner=state.characters[x.withId],title=partner?`${partner.name}와 데이트`:`데이트 일정`;
       return `<li class="date-schedule" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><div class="date-schedule-title"><b>${esc(title)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^데이트 · /,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
     }

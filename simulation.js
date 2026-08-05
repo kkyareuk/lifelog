@@ -1,4 +1,4 @@
-﻿import {state,save,characterViewFor} from "./state.js?v=20260805am";
+import {state,save,characterViewFor} from "./state.js?v=20260805an";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -149,6 +149,33 @@ function personalityFlavor(c,desc,seed=""){
   if(c.planningStyle==="유연한 편"||c.planningStyle==="상황에 따라")variants.push("큰 순서만 정해 두고 세부 방법은 그때그때 상황에 맞춰 바꿨어요.","계획을 고집하지 않으면서도 꼭 끝내야 할 핵심은 놓치지 않았어요.");
   if(!variants.length||hash(`${c.id}:${seed}:${desc}:flavor`)%3===0)return desc;
   return `${desc} ${variants[hash(`${c.id}:${seed}:${desc}`)%variants.length]}`;
+}
+
+function openlyPlayful(c){
+  return /장난|유머|활발|무리의 중심|먼저 다가감|표현이 풍부|말로 표현/.test(
+    `${c.socialStyle||""} ${c.affectionStyle||""} ${c.energyRhythm||""} ${c.activityTempo||""}`
+  );
+}
+function characterVoice(c,text){
+  let value=String(text||"");
+  if(openlyPlayful(c))return value;
+  value=value
+    .replace(/먼저 웃음을 터뜨리며/g,"표정만 조금 누그러뜨리며")
+    .replace(/짧게 웃으며/g,"짧게 고개를 기울이며")
+    .replace(/작게 웃었어요/g,"잠시 시선을 머물렀어요")
+    .replace(/따라 웃다가/g,"반응을 보이다가")
+    .replace(/한참 웃은 뒤/g,"한동안 이야기를 나눈 뒤")
+    .replace(/둘 다 웃음을 터뜨리고/g,"둘 다 더는 반박하지 못하고")
+    .replace(/웃음을 참는 표정을 보며/g,"미묘하게 달라진 표정을 보며")
+    .replace(/웃음이 끊이지 않았지만/g,"대화가 끊이지 않았지만")
+    .replace(/웃고 떠들었어요/g,"말을 주고받았어요")
+    .replace(/웃고 있어요/g,"조용히 반응하고 있어요")
+    .replace(/웃었어요/g,"짧게 반응했어요")
+    .replace(/웃어 보였어요/g,"시선으로 답했어요")
+    .replace(/웃어 보이자/g,"반응을 보이자")
+    .replace(/웃는 모습을/g,"편하게 대화하는 모습을")
+    .replace(/웃자/g,"반응하자");
+  return value;
 }
 
 function catalogChoice(c,place,kind,seed){
@@ -1198,7 +1225,7 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260805am";
+const ENGINE_VERSION="20260805an";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1251,6 +1278,9 @@ function cleanAccumulatedGroupEntries(entries){
     return {...item,title,desc:cleanRepeatedSceneText(item.desc)};
   });
 }
+function cleanSelfCompanionEntries(c,entries){
+  return entries.filter(item=>item?.withId!==c.id);
+}
 function companionWasActuallyThere(c,item,date){
   if(!item?.withId)return true;
   const other=state.characters[item.withId],otherDay=other?.days?.[dayKey(date)];
@@ -1268,7 +1298,7 @@ export function timeline(c,date=new Date()){
   c.days??={};
   const old=c.days[key];
   if(old?.entries){
-    const cleaned=cleanAccumulatedGroupEntries(cleanInvalidRoomAndHobbyEntries(c,cleanSameMinuteEntries(cleanExactRepeatedEntries(old.entries))));
+    const cleaned=cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanSameMinuteEntries(cleanExactRepeatedEntries(old.entries)))));
     if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
   }
   const today=key===dayKey(new Date());
@@ -1300,10 +1330,13 @@ function commitLiveEntry(c,date,item){
   if(!day||!item)return item;
   const entries=Array.isArray(day.entries)?day.entries:[];
   const sceneKey=value=>String(value||"").split(" · ")[0].replace(/\s+/g," ").trim();
+  const sameDateEntries=item.dateGroup?entries.filter(entry=>entry.dateGroup===item.dateGroup):[];
+  const lastDateEntry=sameDateEntries.slice().sort((a,b)=>Number(a.minute)-Number(b.minute)).at(-1);
+  const dateGap=lastDateEntry?15+(hash(`${item.dateGroup}:${lastDateEntry.minute}:date-gap`)%16):0;
   const duplicate=entries.some(entry=>
     (entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room)||
-    (sceneKey(entry.title)===sceneKey(item.title)&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
-  );
+    (!item.dateGroup&&sceneKey(entry.title)===sceneKey(item.title)&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
+  )||Boolean(lastDateEntry&&Number(item.minute)-Number(lastDateEntry.minute)<dateGap);
   if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save(false,false)}
   return item;
 }
@@ -1528,6 +1561,24 @@ const RELATION_COMBINATION_TENSIONS=[
     ()=>`다른 사람이 끼어들어도 둘 사이의 대화가 끊기지 않도록 하던 이야기를 차분히 마무리했어요.`,
     ()=>`헤어지기 전에 오늘 불편했던 점이 없는지 짧게 확인하고 다음 일정을 정했어요.`]}
 ];
+const EXTRA_BOND_ACTIONS=[
+  (a,b)=>`${topic(a.name)} ${b.name}의 말투가 평소와 다른 것을 알아차리고, 이유를 캐묻기보다 필요한 순간까지 곁에 머물렀어요.`,
+  (a,b)=>`${topic(a.name)} ${b.name}이 먼저 고른 방식에 맞추되 자기 의사는 짧고 분명하게 덧붙였어요.`,
+  (a,b)=>`${topic(a.name)} 다른 사람에게는 넘겼을 사소한 변화를 ${b.name}에게서는 놓치지 않고 기억해 두었어요.`,
+  (a,b)=>`${topic(a.name)} ${b.name}과 대화가 끊긴 뒤에도 자리를 서둘러 떠나지 않고 각자 하던 일을 이어 갔어요.`,
+  (a,b)=>`${topic(a.name)} ${b.name}에게 필요한 것을 직접 묻지 않고도 선택할 수 있도록 두 가지를 나란히 내밀었어요.`,
+  (a,b)=>`${topic(a.name)} 헤어지기 전에 ${b.name}의 다음 일정만 확인하고, 부담스럽지 않게 먼저 한 걸음 물러났어요.`
+];
+const EXTRA_TENSION_LINES=[
+  (a,b)=>`${topic(a.name)} ${b.name}이 가까워질 때마다 손에 쥔 물건을 다시 고쳐 잡으며 긴장을 감추려 했어요.`,
+  (a,b)=>`${topic(a.name)} ${b.name}을 신경 쓰면서도 곧바로 다가가지 못하고, 한 사람 정도 들어갈 거리를 계속 남겨 두었어요.`,
+  (a,b)=>`${topic(a.name)} 대답하기 전에 ${b.name}의 표정을 오래 살폈고, 평소보다 짧은 문장만 골라 말했어요.`,
+  (a,b)=>`${topic(a.name)} 함께 있고 싶은 마음과 편히 숨 쉴 공간이 모두 필요해, 옆자리 대신 비스듬히 마주 보는 자리를 골랐어요.`,
+  (a,b)=>`${topic(a.name)} ${b.name}의 행동을 믿어도 되는지 판단하지 못해 먼저 등을 보이지 않고 나란히 움직였어요.`,
+  (a,b)=>`${topic(a.name)} 감정이 드러날까 하던 말을 한 번 삼켰지만, ${b.name}이 떠날 때까지 시선은 거두지 않았어요.`
+];
+RELATION_COMBINATION_BONDS.forEach(bond=>bond.actions=[...bond.actions,...EXTRA_BOND_ACTIONS]);
+RELATION_COMBINATION_TENSIONS.forEach(tension=>tension.lines=[...tension.lines,...EXTRA_TENSION_LINES]);
 const RELATION_COMBINATION_PROFILES=RELATION_COMBINATION_BONDS.flatMap((bond,bondIndex)=>
   RELATION_COMBINATION_TENSIONS.map((tension,tensionIndex)=>({key:`${bond.key}_${tension.key}`,label:`${bond.label} · ${tension.label}`,bondIndex,tensionIndex}))
 );
@@ -1694,17 +1745,18 @@ function relationCombinationScene(place,first,second,relation,date){
   const foundTension=RELATION_COMBINATION_TENSIONS.findIndex(item=>item.test(firstView,secondView,relation));
   const bondIndex=Math.max(0,foundBond),tensionIndex=Math.max(0,foundTension);
   const profile=RELATION_COMBINATION_PROFILES.find(item=>item.bondIndex===bondIndex&&item.tensionIndex===tensionIndex);
-  const variant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/45)}:${profile.key}`)%4;
-  const reverseVariant=(variant+2)%4;
+  const variant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/15)}:${profile.key}`)%10;
+  const reverseVariant=(variant+5)%10;
   const bond=RELATION_COMBINATION_BONDS[bondIndex],tension=RELATION_COMBINATION_TENSIONS[tensionIndex];
   const placeName=place?.name||place?.type||"같은 장소";
-  const firstIntimacy=unconfirmedMutualRomance?unconfirmedMutualRomanceBeat(first,second,variant):intimacyBeat(first,second,variant,bond.key);
-  const secondIntimacy=unconfirmedMutualRomance?unconfirmedMutualRomanceBeat(second,first,reverseVariant):intimacyBeat(second,first,variant,bond.key);
-  const firstDetachedIntimacy=detachedIntimacyBeat(first,second,variant,bond.key);
-  const secondDetachedIntimacy=detachedIntimacyBeat(second,first,variant,bond.key);
-  const firstConflict=heightenedConflictBeat(first,second,tension.key,variant);
-  const secondConflict=heightenedConflictBeat(second,first,tension.key,variant);
-  const pairedConflict=pairedConflictScene(first,second,tension.key,variant,firstView,secondView);
+  const beatVariant=variant%4,reverseBeatVariant=reverseVariant%4;
+  const firstIntimacy=unconfirmedMutualRomance?unconfirmedMutualRomanceBeat(first,second,variant):intimacyBeat(first,second,beatVariant,bond.key);
+  const secondIntimacy=unconfirmedMutualRomance?unconfirmedMutualRomanceBeat(second,first,reverseVariant):intimacyBeat(second,first,reverseBeatVariant,bond.key);
+  const firstDetachedIntimacy=detachedIntimacyBeat(first,second,beatVariant,bond.key);
+  const secondDetachedIntimacy=detachedIntimacyBeat(second,first,reverseBeatVariant,bond.key);
+  const firstConflict=heightenedConflictBeat(first,second,tension.key,beatVariant);
+  const secondConflict=heightenedConflictBeat(second,first,tension.key,reverseBeatVariant);
+  const pairedConflict=pairedConflictScene(first,second,tension.key,variant%4,firstView,secondView);
   const familyRomance=["부모·자녀","형제·자매"].includes(relation?.type)&&["devoted","romantic","love_hate"].includes(bond.key);
   const hiddenMutualRomance=!relation&&firstRomantic&&secondRomantic&&!/확인함/.test(`${firstView.mutualAwareness} ${secondView.mutualAwareness}`);
   const profileLabel=familyRomance
@@ -1725,9 +1777,24 @@ function relationCombinationScene(place,first,second,relation,date){
           :["devoted","romantic"].includes(bond.key)
             ?`${second.name}와 둘만의 시간을 보내는 중`
             :`${second.name}와 함께 시간을 보내는 중`;
+  const reverseTitle=pairedConflict
+    ?`${first.name}와 거칠게 충돌하는 중`
+    :affairAllowed&&firstRomantic&&secondRomantic
+      ?`${first.name}와 숨겨 둔 만남을 이어 가는 중`
+      :tension.key==="distrust"
+        ?`${object(first.name)} 믿지 못한 채 함께 있는 중`
+        :tension.key==="strained"
+          ?`${first.name} 옆에서 자꾸 앉을 자리를 바꾸는 중`
+          :unconfirmedMutualRomance
+            ?`${first.name}과 친구인 척 조금 더 머무는 중`
+            :["devoted","romantic"].includes(bond.key)
+              ?`${first.name}와 둘만의 시간을 보내는 중`
+              :`${first.name}와 함께 시간을 보내는 중`;
   if(pairedConflict){
     return {
       title:directTitle,
+      firstTitle:directTitle,
+      secondTitle:reverseTitle,
       first:pairedConflict.first,
       second:pairedConflict.second,
       relationProfile:profile.key
@@ -1739,8 +1806,10 @@ function relationCombinationScene(place,first,second,relation,date){
   const affairSecond=affairAllowed?`${topic(second.name)} 이 만남이 다른 관계와 충돌할 수 있다는 것을 알면서도 ${togetherWith(first.name)} 정한 시간까지 자리를 지켰어요. `:"";
   return {
     title:directTitle,
-    first:`${affairFirst}${bond.actions[variant](first,second)} ${firstExtra}`.trim(),
-    second:`${affairSecond}${bond.actions[reverseVariant](second,first)} ${secondExtra}`.trim(),
+    firstTitle:directTitle,
+    secondTitle:reverseTitle,
+    first:characterVoice(first,`${affairFirst}${bond.actions[variant](first,second)} ${firstExtra}`.trim()),
+    second:characterVoice(second,`${affairSecond}${bond.actions[reverseVariant](second,first)} ${secondExtra}`.trim()),
     relationProfile:profile.key
   };
 }
@@ -1879,13 +1948,14 @@ function sharedPlaceScene(c,current,date){
   let title=(isFirst?scene.firstTitle:scene.secondTitle)||scene.title;
   const detail=isFirst?scene.first:scene.second;
   const dating=dateLikePair(pair.first,pair.second,pair.relation);
-  const dateGroup=dating?`date-${[pair.first.id,pair.second.id].sort().join("-")}-${dayKey(date)}-${place?.id}`:"";
+  const dateGroup=dating?`date-${[pair.first.id,pair.second.id].sort().join("-")}-${dayKey(date)}`:"";
   if(dating)title=`데이트 · ${datePurpose(place,pair.first,pair.second,date)}`;
   const baseTitle=current.baseTitle||current.title,baseDesc=current.baseDesc||current.desc;
   const bothWalking=/공원.*걷|걷.*공원/.test(`${baseTitle} ${title}`);
   const combinedTitle=bothWalking||title.includes("데이트")?title:[...new Set([baseTitle,title].filter(Boolean))].join(" · ");
   const combinedDesc=place?.type==="공원"?detail:cleanRepeatedSceneText(`${baseDesc} ${detail}`);
-  return {...current,baseTitle,baseDesc,title:resolveParticles(combinedTitle),desc:resolveParticles(combinedDesc),withId:dating?preferred.second.id:current.withId,withIds:together.map(other=>other.id),groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood};
+  const actualPartnerId=c.id===pair.first.id?pair.second.id:pair.first.id;
+  return {...current,baseTitle,baseDesc,title:resolveParticles(combinedTitle),desc:resolveParticles(characterVoice(c,combinedDesc)),withId:actualPartnerId,withIds:together.map(other=>other.id),groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood};
 }
 export function eventFor(c,date=new Date()){
   const current=sharedPlaceScene(c,baseEventFor(c,date),date);
