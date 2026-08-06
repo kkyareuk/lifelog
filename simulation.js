@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260806au";
+import {state,save,characterViewFor} from "./state.js?v=20260806av";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1206,13 +1206,12 @@ function build(c,date=new Date()){
       ?entry(1140,title,desc,{...shared,townId:hostTown.id,placeId:restaurant.id})
       :entry(1140,title,desc,{...shared,home:true,visitHomeId:host.homeId,room:"living"}));
   }
-  const romanticConnection=related(c).some((relation)=>{
-    const other=relation.characters.map(byId).find((character)=>character&&character.id!==c.id);
+  const romanticConnection=related(c).some(({other,r})=>{
     if(!other)return false;
     const view=state.characterViews?.[c.id]?.[other.id]||{};
-    return !relation.isPast&&(
-      /연인|부부/.test(String(relation.type||""))
-      || /연애 감정|사랑/.test(String(view.overallFeeling||""))
+    return r?.temporalStatus!=="past"&&(
+      /연인|부부/.test(String(r?.type||""))
+      || /연애 감정|사랑/.test(String(view.overall||""))
     );
   });
   const socialChance=romanticConnection?2:4;

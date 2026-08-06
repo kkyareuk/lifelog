@@ -7,6 +7,30 @@ const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
 const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
+const applyLocalTombstones=(remote,local)=>{
+  const next=clone(remote||{});
+  const deletedCharacters=new Set([...(local?.deletedCharacterIds||[]),...(next.deletedCharacterIds||[])].map(String));
+  const deletedRelationships=new Set([...(local?.deletedRelationshipIds||[]),...(next.deletedRelationshipIds||[])].map(String));
+  next.deletedCharacterIds=[...deletedCharacters];
+  next.deletedRelationshipIds=[...deletedRelationships];
+  if(Array.isArray(next.characters))next.characters=next.characters.filter(character=>character&&!deletedCharacters.has(String(character.id)));
+  else Object.keys(next.characters||{}).forEach(id=>{if(deletedCharacters.has(String(id)))delete next.characters[id]});
+  next.order=(Array.isArray(next.order)?next.order:[]).filter(id=>!deletedCharacters.has(String(id)));
+  if(Array.isArray(next.relationships)){
+    next.relationships=next.relationships.filter(relation=>relation&&!deletedRelationships.has(String(relation.id))&&!deletedCharacters.has(String(relation.a))&&!deletedCharacters.has(String(relation.b)));
+  }else{
+    Object.entries(next.relationships||{}).forEach(([id,relation])=>{
+      if(deletedRelationships.has(String(id))||deletedCharacters.has(String(relation?.a))||deletedCharacters.has(String(relation?.b)))delete next.relationships[id];
+    });
+  }
+  Object.entries(next.homes||{}).forEach(([homeId,home])=>{
+    if(!home||typeof home!=="object")return;
+    const localDeleted=local?.homes?.[homeId]?.deletedRoomKeys||[];
+    home.deletedRoomKeys=[...new Set([...localDeleted,...(home.deletedRoomKeys||[])].map(String))];
+    home.deletedRoomKeys.forEach(key=>{if(home.rooms&&typeof home.rooms==="object")delete home.rooms[key]});
+  });
+  return next;
+};
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
 let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false,teaSupportMonth:""};
@@ -271,7 +295,7 @@ async function download({automatic=false}={}){
       toast("기기의 최신 변경사항을 유지했습니다");
       return false;
     }
-    window.ParallelCity.replaceState(clone(remote));
+    window.ParallelCity.replaceState(applyLocalTombstones(remote,localState));
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
     status(`${user.displayName||"계정"} · ${accessLabel()} · 불러오기 완료`);
     toast(automatic?"자동으로 불러왔습니다":"불러왔습니다");

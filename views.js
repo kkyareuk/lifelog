@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260806au";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806au";
+import {state,active,characterViewFor} from "./state.js?v=20260806av";
+import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806av";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const JOBS=["무직","학생","회사원","CEO","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","범죄자","환경미화원","여관주인","자영업·직접 입력"];
@@ -610,7 +610,13 @@ function view(){
 }
 export function renderApp(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];
-  document.querySelector("#app").innerHTML=`${header()}<main>${view()}</main>`;
+  let content;
+  try{content=view()}
+  catch(error){
+    console.error(`화면 일부 렌더링 실패 · ${state.activeTab}`,error);
+    content=`<section class="panel empty view-error"><h1>이 화면의 일부 데이터를 읽지 못했어요</h1><p>저장 데이터는 지우거나 바꾸지 않았습니다. 다른 화면은 계속 사용할 수 있어요.</p><div class="sync-actions"><button class="primary" data-tab="observe">관찰 화면으로 이동</button><button data-tab="settings">설정 열기</button></div></section>`;
+  }
+  document.querySelector("#app").innerHTML=`${header()}<main>${content}</main>`;
   const backgroundSelect=document.querySelector("[data-world-bg]");
   if(backgroundSelect){
     [...backgroundSelect.options].forEach(option=>{

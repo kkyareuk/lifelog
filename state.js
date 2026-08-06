@@ -76,7 +76,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:9,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -86,6 +86,7 @@ const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeI
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===9)return normalizeHomes(x);
   if(x.schema===8)return normalizeHomes(x);
   if(x.schema===7)return normalizeHomes(x);
   if(x.schema===6)return normalizeHomes(x);
@@ -109,9 +110,11 @@ function migrate(x){
   return normalizeHomes(fresh());
 }
 function normalizeHomes(x){
+  if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=8;
+  x.schema=9;
+  x.activeTab=["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(x.activeTab)?x.activeTab:"character";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   x.uiFont=["system","noto","kopub","cafe24slim","changwonround","konkon","gowun","myeongjo","dohyeon"].includes(x.uiFont)?x.uiFont:"system";
@@ -119,23 +122,27 @@ function normalizeHomes(x){
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
   x.characterPane=["profile","personality","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
   if(Array.isArray(x.characters)){
-    const list=x.characters.filter(Boolean);
-    x.characters=Object.fromEntries(list.map(c=>[c.id||uid(),c]));
-    x.order=list.map(c=>c.id).filter(Boolean);
+    const list=x.characters.filter(c=>c&&typeof c==="object"&&!Array.isArray(c));
+    x.characters=Object.fromEntries(list.map(c=>{const id=String(c.id||uid());c.id=id;return[id,c]}));
+    x.order=list.map(c=>c.id);
   }
   x.characters=x.characters&&typeof x.characters==="object"?x.characters:{};
+  x.characters=Object.fromEntries(Object.entries(x.characters).filter(([,c])=>c&&typeof c==="object"&&!Array.isArray(c)).map(([key,c])=>{
+    const id=String(c.id||key||uid());c.id=id;return[id,c];
+  }));
   x.deletedCharacterIds=Array.isArray(x.deletedCharacterIds)?[...new Set(x.deletedCharacterIds.map(String))]:[];
   x.deletedRelationshipIds=Array.isArray(x.deletedRelationshipIds)?[...new Set(x.deletedRelationshipIds.map(String))]:[];
   x.deletedCharacterIds.forEach(id=>delete x.characters[id]);
   const characterIds=Object.keys(x.characters);
-  x.order=Array.isArray(x.order)?x.order.filter((id,index,list)=>x.characters[id]&&list.indexOf(id)===index):[];
+  x.order=Array.isArray(x.order)?x.order.map(String).filter((id,index,list)=>x.characters[id]&&list.indexOf(id)===index):[];
   characterIds.forEach(id=>{if(!x.order.includes(id))x.order.push(id)});
   x.activeId=x.characters[x.activeId]?x.activeId:(x.order[0]||null);
-  if(Array.isArray(x.homes))x.homes=Object.fromEntries(x.homes.filter(Boolean).map(h=>[h.id||uid(),h]));
+  if(Array.isArray(x.homes))x.homes=Object.fromEntries(x.homes.filter(h=>h&&typeof h==="object"&&!Array.isArray(h)).map(h=>{const id=String(h.id||uid());h.id=id;return[id,h]}));
   x.homes=x.homes&&typeof x.homes==="object"?x.homes:{};
+  x.homes=Object.fromEntries(Object.entries(x.homes).filter(([,h])=>h&&typeof h==="object"&&!Array.isArray(h)).map(([key,h])=>{const id=String(h.id||key||uid());h.id=id;return[id,h]}));
   x.routines=x.routines&&typeof x.routines==="object"?x.routines:{};
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
-  x.interactions=Array.isArray(x.interactions)?x.interactions.filter(Boolean).slice(-120):[];
+  x.interactions=Array.isArray(x.interactions)?x.interactions.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)).slice(-120):[];
   x.characterViews=x.characterViews&&typeof x.characterViews==="object"?x.characterViews:{};
   x.buildingShapes=Array.isArray(x.buildingShapes)?x.buildingShapes.filter(shape=>shape&&shape.id&&shape.src).map(shape=>({
     id:String(shape.id),
@@ -158,7 +165,7 @@ function normalizeHomes(x){
       if(view?.aggression&&!view.aggressionAction)view.aggressionAction="행동으로 옮기지 않음";
     });
   });
-  const relationList=Array.isArray(x.relationships)?x.relationships:Object.values(x.relationships||{});
+  const relationList=(Array.isArray(x.relationships)?x.relationships:Object.values(x.relationships||{})).filter(relation=>relation&&typeof relation==="object"&&!Array.isArray(relation));
   x.relationships={};
   const relationIdsByKey=new Map();
   relationList.filter(Boolean).forEach(relation=>{
@@ -235,23 +242,32 @@ function normalizeHomes(x){
     }
   });
   const defaultWorld=fresh().world;
-  x.world=x.world&&typeof x.world==="object"?x.world:defaultWorld;
+  x.world=x.world&&typeof x.world==="object"&&!Array.isArray(x.world)?x.world:clone(defaultWorld);
   x.world.name=x.world.name||defaultWorld.name;
   x.world.bg=x.world.bg||defaultWorld.bg;
-  x.world.places=Array.isArray(x.world.places)?x.world.places:clone(defaultWorld.places);
-  x.towns=Array.isArray(x.towns)&&x.towns.length?x.towns:[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:t.id||uid(),name:t.name||"이름 없는 마을",bg:t.bg||defaultWorld.bg,era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places:[]}));
-  x.towns.forEach(t=>t.places.forEach(p=>{p.iconPreset=p.iconPreset||({
+  x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
+  x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
+  if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:String(t.bg||defaultWorld.bg),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
+  x.towns.forEach(t=>t.places.forEach(p=>{
+    p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
+    p.iconPreset=p.iconPreset||({
     "카페":"cafe","음식점":"restaurant","식당":"restaurant","사무실":"office","병원":"hospital",
     "공원":"park","학교":"school","옷가게":"clothing","공연장":"theater","숙박":"hotel",
     "백화점":"department","도서관":"library"
-  }[p.type]||"shop")}));
+    }[p.type]||"shop");
+    p.subtype=String(p.subtype||"");p.interiorImage=String(p.interiorImage||"");p.stock=Array.isArray(p.stock)?p.stock.map(String):[];
+    p.audiences=Array.isArray(p.audiences)?p.audiences.map(String):[];p.priceRange=String(p.priceRange||"보통");p.servicePrice=String(p.servicePrice||p.priceRange);
+    p.imageScale=Number.isFinite(+p.imageScale)?Math.max(.45,Math.min(2,+p.imageScale)):1;
+    p.spicy=Number.isFinite(+p.spicy)?Math.max(0,Math.min(5,+p.spicy)):0;p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
+    p.x=Number.isFinite(+p.x)?Math.max(0,Math.min(100,+p.x)):50;p.y=Number.isFinite(+p.y)?Math.max(0,Math.min(100,+p.y)):50;
+  }));
   x.activeTownId=x.towns.some(t=>t.id===x.activeTownId)?x.activeTownId:x.towns[0].id;
   x.world=clone(x.towns.find(t=>t.id===x.activeTownId));
   const defaultsCatalog=defaultCatalog();
-  x.catalog=x.catalog||defaultsCatalog;
+  x.catalog=x.catalog&&typeof x.catalog==="object"&&!Array.isArray(x.catalog)?x.catalog:{};
   Object.keys(defaultsCatalog).forEach(kind=>{
-    x.catalog[kind]=Array.isArray(x.catalog[kind])?x.catalog[kind].map(item=>({...item,kind:item.kind||kind})):defaultsCatalog[kind];
+    x.catalog[kind]=Array.isArray(x.catalog[kind])?x.catalog[kind].filter(item=>item&&typeof item==="object"&&!Array.isArray(item)).map(item=>({...item,id:String(item.id||uid()),kind:item.kind||kind})):[];
   });
   x.catalog.fashion.forEach(item=>{
     item.materials=Array.isArray(item.materials)?item.materials:(item.material?[item.material]:[]);
@@ -273,12 +289,12 @@ function normalizeHomes(x){
   const defaults=rooms();
   Object.values(x.homes||{}).forEach(h=>{
     h.image=h.image||"";
-    h.cars=Array.isArray(h.cars)?h.cars.map(car=>({
+    h.cars=Array.isArray(h.cars)?h.cars.filter(car=>car&&typeof car==="object"&&!Array.isArray(car)).map(car=>({
       id:car.id||uid(),name:car.name||"우리 집 자동차",type:car.type||"승용차",
       color:car.color||"",seats:Number.isFinite(+car.seats)?Math.max(1,Math.min(12,+car.seats)):5,
       image:car.image||""
     })):[];
-    h.pets=Array.isArray(h.pets)?h.pets.map(p=>({
+    h.pets=Array.isArray(h.pets)?h.pets.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)).map(p=>({
       id:p.id||uid(),name:p.name||"새 식구",species:p.species||"기타",
       breed:p.breed||"",sex:p.sex||"모름",neutered:Boolean(p.neutered),
       photo:p.photo||"",icon:p.icon||"",room:p.room||"living",
@@ -288,25 +304,19 @@ function normalizeHomes(x){
       needsWalk:p.needsWalk===undefined?["강아지","호랑이","드래곤"].includes(p.species):Boolean(p.needsWalk),
       rideable:p.rideable===undefined?["호랑이","드래곤"].includes(p.species):Boolean(p.rideable)
     })):[];
-    h.rooms=h.rooms||{};
+    h.rooms=h.rooms&&typeof h.rooms==="object"&&!Array.isArray(h.rooms)?h.rooms:{};
     h.deletedRoomKeys=Array.isArray(h.deletedRoomKeys)?[...new Set(h.deletedRoomKeys.map(String))]:[];
-    if(previousSchema>=8){
-      Object.keys(defaults).forEach(key=>{
-        if(!h.rooms[key]&&!h.deletedRoomKeys.includes(key))h.deletedRoomKeys.push(key);
-      });
-    }
-    Object.entries(defaults).forEach(([key,value])=>{
-      if(h.deletedRoomKeys.includes(key))return;
-      h.rooms[key]={...value,...(h.rooms[key]||{})};
-      h.rooms[key].type=h.rooms[key].type||key;
-      h.rooms[key].furniture=Array.isArray(h.rooms[key].furniture)?[...h.rooms[key].furniture]:[...value.furniture];
-    });
-    Object.entries(h.rooms).forEach(([key,room])=>room.type=room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
+    h.deletedRoomKeys.forEach(key=>delete h.rooms[key]);
+    h.rooms=Object.fromEntries(Object.entries(h.rooms).filter(([,room])=>room&&typeof room==="object"&&!Array.isArray(room)).map(([key,room])=>{
+      room.name=String(room.name||"이름 없는 방");room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
+      room.image=String(room.image||"");room.furniture=Array.isArray(room.furniture)?room.furniture.map(String):[];
+      return[String(key),room];
+    }));
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
   });
   Object.values(x.characters||{}).forEach(c=>{
     c.townId=x.towns.some(t=>t.id===c.townId)?c.townId:x.towns[0].id;
-    x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].map(r=>({
+    x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)).map(r=>({
       id:r.id||uid(),day:Number.isFinite(+r.day)?Math.max(0,Math.min(6,+r.day)):1,
       start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
       title:r.title||"새 일정",placeId:r.placeId||"",withIds:Array.isArray(r.withIds)?r.withIds:[],
@@ -324,7 +334,7 @@ function normalizeHomes(x){
     c.energyRhythm=c.energyRhythm||"상황에 따라";
     c.activityTempo=c.activityTempo||"상황에 따라";
     c.fashionSense=c.fashionSense||"보통";
-    c.savedOutfits=Array.isArray(c.savedOutfits)?c.savedOutfits.map(outfit=>({
+    c.savedOutfits=Array.isArray(c.savedOutfits)?c.savedOutfits.filter(outfit=>outfit&&typeof outfit==="object"&&!Array.isArray(outfit)).map(outfit=>({
       id:outfit.id||uid(),name:outfit.name||"저장 코디",layout:outfit.layout||"cluster-1",
       itemIds:Array.isArray(outfit.itemIds)?outfit.itemIds:[],
       tags:Array.isArray(outfit.tags)?outfit.tags:[]
@@ -381,9 +391,8 @@ function normalizeHomes(x){
     const opennessMigration={"연인이 있으면 다른 사람에게 끌리지 않음":"설정하지 않음 · 절대 끌리지 않음","아주 드물게 호감을 느낌":"연인이 있어도 취향이면 끌릴 수 있음","관계와 별개로 호감을 느낄 수 있음":"연인이 있어도 취향이면 끌릴 수 있음","새로운 사람에게 쉽게 끌림":"연인이 있어도 취향이면 끌릴 수 있음","관계와 무관하게 쉽게 끌림":"연인이 있어도 취향이면 끌릴 수 있음"};
     c.relationshipOpenness=opennessMigration[c.relationshipOpenness]||(["설정하지 않음 · 절대 끌리지 않음","연인이 없을 때만 취향이면 끌림","연인이 있어도 취향이면 끌릴 수 있음"].includes(c.relationshipOpenness)?c.relationshipOpenness:"설정하지 않음 · 절대 끌리지 않음");
     c.homeId=c.homeId||c.id;
-    if(!x.homes[c.homeId])x.homes[c.homeId]={id:c.homeId,name:`${c.name||"캐릭터"}의 집`,image:"",rooms:rooms(),pets:[],cleanliness:100};
-    const homeRooms=x.homes[c.homeId].rooms||rooms();
-    c.sleepRoomId=homeRooms[c.sleepRoomId]?c.sleepRoomId:(homeRooms.bedroom?"bedroom":Object.keys(homeRooms)[0]);
+    const homeRooms=x.homes[c.homeId]?.rooms||{};
+    c.sleepRoomId=homeRooms[c.sleepRoomId]?c.sleepRoomId:(homeRooms.bedroom?"bedroom":Object.keys(homeRooms)[0]||"");
   });
   return renameBrand(x);
 }
