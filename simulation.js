@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260806av";
+import {state,save,characterViewFor} from "./state.js?v=20260806aw";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1371,10 +1371,13 @@ function companionWasActuallyThere(c,item,date){
 }
 
 export function timeline(c,date=new Date()){
+  if(!c||typeof c!=="object")return[];
   const key=dayKey(date), sig=signature(c);
-  c.days??={};
+  if(!c.days||typeof c.days!=="object"||Array.isArray(c.days))c.days={};
+  if(c.days[key]&&(!c.days[key]||typeof c.days[key]!=="object"||Array.isArray(c.days[key])))delete c.days[key];
   const old=c.days[key];
-  if(old?.entries){
+  if(old&&Array.isArray(old.entries)){
+    old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
     const cleaned=cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanSameMinuteEntries(cleanExactRepeatedEntries(old.entries)))));
     if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
   }
@@ -1398,9 +1401,9 @@ export function timeline(c,date=new Date()){
     c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,entries};
     save(false,false);
   }
-  return c.days[key].entries;
+  return Array.isArray(c.days[key]?.entries)?c.days[key].entries:[];
 }
-export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x.minute<=nowMin(date))}
+export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x&&Number(x.minute)<=nowMin(date))}
 
 function commitLiveEntry(c,date,item){
   const key=dayKey(date),day=c.days?.[key];

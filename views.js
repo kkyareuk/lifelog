@@ -1,7 +1,26 @@
-import {state,active,characterViewFor} from "./state.js?v=20260806av";
-import {eventFor,visibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806av";
+import {state,active,characterViewFor} from "./state.js?v=20260806aw";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806aw";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+const sceneFailureIds=new Set();
+const fallbackEvent=c=>{
+  const roomKeys=Object.keys(state.homes?.[c?.homeId]?.rooms||{});
+  return {minute:new Date().getHours()*60+new Date().getMinutes(),title:"생활 장면을 다시 계산하는 중",desc:"저장된 설정은 그대로 두고 현재 장면만 안전하게 다시 계산하고 있어요.",home:true,room:c?.sleepRoomId||roomKeys[0]||"",townId:c?.townId||state.activeTownId,mood:"대기"};
+};
+const eventFor=(c,date=new Date())=>{
+  try{return simulateEventFor(c,date)||fallbackEvent(c)}
+  catch(error){
+    if(!sceneFailureIds.has(c?.id)){sceneFailureIds.add(c?.id);console.error(`캐릭터 장면 계산 실패 · ${c?.id||"unknown"}`,error)}
+    return fallbackEvent(c);
+  }
+};
+const visibleTimeline=(c,date=new Date())=>{
+  try{const entries=simulateVisibleTimeline(c,date);return Array.isArray(entries)?entries:[]}
+  catch(error){
+    if(!sceneFailureIds.has(c?.id)){sceneFailureIds.add(c?.id);console.error(`캐릭터 생활 로그 계산 실패 · ${c?.id||"unknown"}`,error)}
+    return[];
+  }
+};
 const JOBS=["무직","학생","회사원","CEO","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","예술가","해적","군인","범죄자","환경미화원","여관주인","자영업·직접 입력"];
 const TASTES=["아재 입맛","어린이 입맛","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
 const INTERESTS=["향수","애니메이션","만화","게임","패션","미술","음악","영화","드라마","예능","문구","인테리어","역사","기계","자동차","오토바이","철도","항공","천문학","우주","과학","의학","심리학","철학","정치","경제","법률","언어","외국어","여행","지도","지리","건축","사진","영상 편집","글쓰기","소설","시","요리","베이킹","커피","차","와인","반려동물","식물","원예","자연","환경","캠핑","등산","러닝","헬스","요가","축구","야구","농구","e스포츠","보드게임","퍼즐","마술","공예","뜨개질","재봉","목공","도예","수집","빈티지","전자기기","프로그래밍","로봇","인공지능","오컬트","신화","종교","범죄 사건","추리","밀리터리","무기"];

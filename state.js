@@ -316,6 +316,18 @@ function normalizeHomes(x){
   });
   Object.values(x.characters||{}).forEach(c=>{
     c.townId=x.towns.some(t=>t.id===c.townId)?c.townId:x.towns[0].id;
+    c.days=c.days&&typeof c.days==="object"&&!Array.isArray(c.days)?c.days:{};
+    c.days=Object.fromEntries(Object.entries(c.days).filter(([,day])=>day&&typeof day==="object"&&!Array.isArray(day)).map(([key,day])=>{
+      day.signature=typeof day.signature==="string"?day.signature:"";
+      day.engineVersion=String(day.engineVersion||"");
+      day.entries=Array.isArray(day.entries)?day.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)).map(item=>({
+        ...item,
+        minute:Number.isFinite(Number(item.minute))?Number(item.minute):0,
+        title:String(item.title||"생활 중"),
+        desc:String(item.desc||"")
+      })):[];
+      return[String(key),day];
+    }));
     x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)).map(r=>({
       id:r.id||uid(),day:Number.isFinite(+r.day)?Math.max(0,Math.min(6,+r.day)):1,
       start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
