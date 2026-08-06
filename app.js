@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807c";
-import {eventFor} from "./simulation.js?v=20260807c";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260807c";
-import {recordCharacterInteraction} from "./state.js?v=20260807c";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807d";
+import {eventFor} from "./simulation.js?v=20260807d";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807d";
+import {recordCharacterInteraction} from "./state.js?v=20260807d";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -581,6 +581,19 @@ async function explicitSave(label="저장 완료"){
 
 function bind(){
   $$("[data-tab]").forEach(el=>el.onclick=()=>navigateToTab(el.dataset.tab));
+  $$("[data-home-character]").forEach(el=>el.onclick=event=>{
+    event.stopPropagation();
+    setActive(el.dataset.homeCharacter);
+    render();
+  });
+  $("[data-mobile-town-edit-toggle]")?.addEventListener("click",()=>{
+    const editing=document.querySelector(".mobile-town-shell")?.classList.contains("editing");
+    setMobileTownEditing(!editing);
+    render();
+  });
+  $("[data-mobile-town-settings]")?.addEventListener("click",()=>{setMobileTownPanel("world");render()});
+  $("[data-mobile-town-close]")?.addEventListener("click",()=>{setMobileTownPanel("");render()});
+  $$("[data-mobile-town-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.mobileTownCharacter);render();centerMobileTownMap(el.dataset.mobileTownCharacter)});
   try{enhanceDynamicForms()}catch(error){console.error("동적 편집 화면 연결 실패",error)}
   const cartKey="drawer-village-cart";
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
@@ -960,10 +973,16 @@ function bind(){
     }
     state.world.era=e.target.value;save(true);render();showToast(e.target.value==="medieval"?"이 마을에 중세 생활 스크립트가 적용됩니다":"이 마을을 현대 시대로 바꿨습니다");
   });
-  $$("[data-town-select]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.townSelect);render()});
+  $$("[data-town-select]").forEach(el=>el.onclick=()=>{setMobileTownPanel("");switchTown(el.dataset.townSelect);render();centerMobileTownMap()});
   $("[data-add-town]")?.addEventListener("click",()=>{const limit=townLimit();if(!addTown(limit))showToast(`현재 마을 슬롯은 ${limit}개까지예요`);render()});
   $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
-  $("[data-add-place]")?.addEventListener("click",()=>{addPlace();render()});
+  $$("[data-add-place]").forEach(el=>el.addEventListener("click",()=>{
+    const before=new Set(state.world.places.map(place=>place.id));
+    addPlace();
+    const added=state.world.places.find(place=>!before.has(place.id));
+    if(added)setMobileTownPanel(added.id);
+    render();
+  }));
   const addPlaceButton=$("[data-add-place]");
   $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
@@ -1058,7 +1077,21 @@ function navigateToTab(tab){
   state.activeTab=tab;
   save();
   render();
+  if(tab==="town")centerMobileTownMap();
   window.scrollTo({top:0,behavior:"auto"});
+}
+
+function centerMobileTownMap(characterId=state.activeId){
+  if(!document.documentElement.classList.contains("native-app"))return;
+  requestAnimationFrame(()=>{
+    const scroller=document.querySelector(".town-map-scroll"),world=scroller?.querySelector(".world");
+    if(!scroller||!world)return;
+    const character=state.characters[characterId],entry=character?eventFor(character):null;
+    const place=entry?.placeId?state.world.places.find(item=>item.id===entry.placeId):null;
+    const ratio=place?Math.max(0,Math.min(1,Number(place.x||50)/100)):.5;
+    const target=world.scrollWidth*ratio-scroller.clientWidth/2;
+    scroller.scrollTo({left:Math.max(0,target),behavior:"smooth"});
+  });
 }
 
 async function useImageUrl(type,id,room){
@@ -1468,14 +1501,20 @@ function openRelationDialog(id=""){
 }
 
 function bindPlaceDrag(){
+  const mobile=document.documentElement.classList.contains("native-app");
+  const editing=document.querySelector(".mobile-town-shell")?.classList.contains("editing");
+  if(mobile&&!editing)return;
   $$(".town-edit .place").forEach(el=>el.onpointerdown=e=>{
     e.preventDefault();
+    let moved=false;
+    const pointerStart={x:e.clientX,y:e.clientY};
     const startRect=el.getBoundingClientRect();
     const grabX=(e.clientX-(startRect.left+startRect.width/2))/startRect.width;
     const grabY=(e.clientY-(startRect.top+startRect.height/2))/startRect.height;
     el.setPointerCapture(e.pointerId);
     el.classList.add("dragging");
     el.onpointermove=ev=>{
+      if(Math.hypot(ev.clientX-pointerStart.x,ev.clientY-pointerStart.y)>5)moved=true;
       const box=el.parentElement.getBoundingClientRect();
       const currentRect=el.getBoundingClientRect();
       movePlace(el.dataset.place,
@@ -1484,7 +1523,15 @@ function bindPlaceDrag(){
       const p=state.world.places.find(x=>x.id===el.dataset.place);
       el.style.left=p.x+"%";el.style.top=p.y+"%";
     };
-    const finish=()=>{el.onpointermove=null;el.classList.remove("dragging");save()};
+    const finish=()=>{
+      el.onpointermove=null;
+      el.classList.remove("dragging");
+      save();
+      if(mobile&&!moved){
+        setMobileTownPanel(el.dataset.place);
+        render();
+      }
+    };
     el.onpointerup=finish;el.onpointercancel=finish;
   });
 }
@@ -1551,13 +1598,13 @@ if(!maintenanceEnabled()&&state.order.length&&localStorage.getItem("drawer-villa
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807c").catch(error=>{
+  import("./auth.js?v=20260807d").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807c",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260807d",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
