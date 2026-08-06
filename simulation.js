@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260806bf";
+import {state,save,characterViewFor} from "./state.js?v=20260807a";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -83,10 +83,10 @@ const wakeScene=(c,d=new Date())=>{
 const residenceForDate=(c,date=new Date())=>{
   const residences=(Array.isArray(c?.residences)?c.residences:[]).filter(item=>item&&state.homes?.[item.homeId]);
   const primary=residences.find(item=>item.isPrimary)||residences.find(item=>item.homeId===c?.homeId)||residences[0]||null;
-  const day=date.getDay(),dateKey=`${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+  const day=date.getDay(),dateKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
   const scheduled=residences.filter(item=>{
     if(item===primary)return false;
-    const exact=String(item.visitDates||"").split(/[\s,]+/).includes(dateKey);
+    const exact=String(item.visitDates||"").split(/[\s,]+/).map(value=>value.replace(/\D/g,"")).includes(dateKey);
     const chosenDay=(item.visitDays||[]).map(Number).includes(day);
     if(exact)return true;
     if(item.stayPattern==="요일 지정")return chosenDay;
@@ -153,7 +153,7 @@ const appearanceTraitTags=c=>{
   if(["가슴 길이","허리 길이","허리보다 김"].includes(a.hairLength))tags.push("장발");
   if(a.hairLength==="단발")tags.push("단발");
   if(["삭발·매우 짧음","귀 위 길이","숏컷"].includes(a.hairLength))tags.push("숏컷");
-  (a.hairStyles||[]).forEach(style=>tags.push(style.replace(" 스타일링","머리").replace("번 헤어","올림머리")));
+  (a.hairStyles||[]).forEach(style=>tags.push(style,style.replace(" 스타일링","머리").replace("번 헤어","올림머리")));
   return [...new Set(tags.filter(Boolean))];
 };
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
@@ -185,8 +185,13 @@ function selectedBodyVariants(c,socialScene){
     if(socialScene)variants.push("함께 있는 사람은 휠체어나 손잡이에 먼저 손대지 않고 도움이 필요한지 물은 뒤 대답을 기다렸어요.","일행은 계단 없는 동선과 들어가기 편한 자리를 함께 확인하되 최종 선택은 당사자에게 맡겼어요.");
   }
   if(arm.side&&arm.side!=="사용하지 않음"){
-    const label=`${sideText(arm.side)} ${arm.custom||arm.type||"의수"}`.trim();
+    const armType=arm.custom||arm.type||"의수",label=`${sideText(arm.side)} ${armType}`.trim();
     variants.push(`${label}의 착용감과 연결 부위를 확인하고 지금 할 일에 편한 방식으로 조절했어요.`,`${label}에 맞는 익숙한 손동작으로 필요한 물건을 안정적으로 다뤘어요.`);
+    if(/갈고리|집게/.test(armType))variants.push("오늘 다룰 물건에 맞춰 갈고리·집게형 단말의 벌어짐과 장력을 확인하고 익숙한 각도로 잡았어요.","옷이나 물건이 걸리지 않도록 단말의 위치를 조절한 뒤 필요한 힘만 사용해 안정적으로 작업했어요.");
+    if(/바디파워/.test(armType))variants.push("하네스와 케이블의 장력이 몸에 맞는지 확인하고 어깨 움직임으로 여닫는 범위를 천천히 점검했어요.","반복 동작에서 연결 부위가 불편하지 않도록 케이블 길이와 자세를 자기 몸에 맞게 조절했어요.");
+    if(/근전동|전자/.test(armType))variants.push("배터리와 전극 접촉 상태를 확인하고 오늘 자주 쓸 쥐기 모드를 차례로 시험했어요.","힘을 과하게 주지 않아도 원하는 동작이 나오는지 센서 반응을 확인한 뒤 일상 동작을 이어 갔어요.");
+    if(/스포츠|활동|특정 작업|교체 도구/.test(armType))variants.push("오늘 할 활동에 맞는 교체 부품을 고르고 연결부가 단단히 고정됐는지 직접 확인했어요.","일상용 부품과 작업용 부품 가운데 지금 필요한 것을 선택해 안전하게 교체하고 동작 범위를 점검했어요.");
+    if(/손형|미관/.test(armType))variants.push("손형 의수의 손가락과 표면 상태를 살피고 옷소매와 닿는 부분이 불편하지 않게 정돈했어요.","오늘 필요한 동작과 차림에 맞춰 손형 의수의 위치와 착용감을 자기 기준으로 조절했어요.");
     if(socialScene)variants.push("상대는 의수에 허락 없이 손대거나 대신 해내려 하지 않고 필요한 방식이 있는지 먼저 물었어요.");
   }
   if(leg.side&&leg.side!=="사용하지 않음"){
@@ -288,6 +293,23 @@ function personalityFlavor(c,desc,seed=""){
       "장난기 많음":socialScene?["진지한 흐름을 해치지 않는 선에서 짧은 장난으로 반응을 끌어냈어요.","상대가 받아들일 수 있는 농담을 골라 분위기를 가볍게 바꾸었어요.","상대의 말끝을 재치 있게 받아치며 둘만 알아들을 웃음을 만들었어요.","평범한 대답 대신 뜻밖의 표현을 골라 상대의 표정을 살폈어요.","분위기가 굳어지기 전에 작은 장난을 던져 긴장을 풀었어요."]:["혼자서도 사소한 규칙을 만들어 놀이처럼 즐겼어요.","평범한 과정에 작은 장난을 섞어 자기 방식으로 재미를 만들었어요.","반복되는 순서에 엉뚱한 목표를 하나 끼워 넣어 스스로 즐겼어요.","별것 아닌 결과에도 재미있는 이름을 붙이며 혼자 흡족해했어요.","정해진 방법을 살짝 비틀어 예상하지 못한 재미를 찾아냈어요."]
     }[type]||[];
     priorityVariants.push(...bank);
+  });
+  types.forEach(type=>{
+    const extraBank={
+      "철두철미함":["끝낸 항목을 머릿속으로 다시 짚어 빠뜨린 단계가 없는지 확인했어요.","도구마다 사용할 순서와 놓을 자리를 정해 동선이 겹치지 않게 했어요.","예상보다 시간이 남아도 확인 절차를 생략하지 않고 같은 기준을 지켰어요.","작은 오차를 발견하자 임시로 덮지 않고 원인을 찾은 뒤 처음 기준에 맞게 바로잡았어요."],
+      "차분하고 신중함":["대답이나 행동을 재촉받아도 필요한 만큼 생각한 뒤 자기 결정을 내렸어요.","익숙하지 않은 부분에서는 먼저 안전한 범위를 확인하고 조금씩 시도했어요.","결과가 바로 나오지 않아도 조급해하지 않고 변화가 생기는 과정을 지켜봤어요.","주변의 빠른 분위기에 휩쓸리지 않고 차례가 올 때까지 조용히 기다렸어요."],
+      "냉정하고 논리적":["서로 다른 설명에서 공통으로 확인되는 사실만 추려 판단의 기준으로 삼았어요.","비용과 시간, 예상 결과를 나란히 놓고 가장 손실이 적은 방법을 골랐어요.","감정적인 표현에 반응하기 전에 지금 해결해야 할 문제를 한 문장으로 다시 정리했어요.","한 번 세운 가설도 새 정보와 맞지 않으면 미련 없이 버리고 판단을 수정했어요."],
+      "다정하고 세심함":["상대가 거절하기 어렵지 않도록 도움과 혼자 할 선택을 함께 제시했어요.","누군가 놓고 간 작은 물건을 발견하고 찾기 쉬운 자리에 조용히 챙겨 두었어요.","말보다 표정이 먼저 굳은 것을 알아차리고 질문의 속도와 목소리를 낮췄어요.","자기가 애쓴 티를 내기보다 상대가 편해진 것을 확인하고 자연스럽게 물러났어요."],
+      "수줍고 내향적":["하고 싶은 말은 미리 짧게 정리해 두었다가 둘만 남은 순간 조심스럽게 꺼냈어요.","여럿의 대화에서는 오래 듣다가 꼭 필요한 한마디만 분명하게 보탰어요.","낯선 반응이 돌아오자 성급히 덧붙이지 않고 상대의 뜻을 다시 살폈어요.","혼자 정리할 시간이 생기자 그제야 방금 느낀 감정과 생각을 차분히 돌아봤어요."],
+      "활발하고 사교적":["처음 만난 사람끼리도 말을 섞을 수 있도록 공통으로 아는 화제를 빠르게 찾아냈어요.","자기 이야기만 이어 가지 않고 조용한 사람에게도 자연스럽게 질문을 건넸어요.","기운이 처진 분위기를 알아차리고 몸을 움직일 수 있는 가벼운 제안을 꺼냈어요.","여럿의 반응이 엇갈리자 한쪽을 몰아붙이지 않고 다음 화제로 흐름을 매끄럽게 넘겼어요."],
+      "즉흥적이고 자유로움":["예정에 없던 빈 시간이 생기자 바로 주변에서 재미있어 보이는 일을 골랐어요.","준비가 완벽하지 않아도 지금 할 수 있는 만큼부터 시작해 흐름을 만들었어요.","계획과 다른 길이 더 마음에 들자 이유를 길게 붙이지 않고 방향을 바꿨어요.","결과를 통제하려 하기보다 우연히 생긴 모양과 변화를 그대로 살려 이어 갔어요."],
+      "호기심 많고 창의적":["익숙한 답을 그대로 쓰기보다 왜 그런 방식이 굳어졌는지부터 궁금해했어요.","서로 상관없어 보이는 두 아이디어를 연결해 새로운 사용법을 떠올렸어요.","실패한 결과에서도 달라진 조건을 찾아 다음 시도에 쓸 단서로 남겼어요.","완성된 물건을 보고도 다른 재료와 크기로 바꾸면 어떻게 될지 상상했어요."],
+      "완고하고 통제적":["자기 기준이 흔들릴 조짐이 보이자 선택지를 줄이고 결정권을 다시 쥐려 했어요.","상대가 충분히 설명해도 기존 방식이 더 안전하다며 쉽게 뜻을 바꾸지 않았어요.","예외를 한 번 허용하면 질서가 무너진다고 생각해 같은 규칙을 끝까지 요구했어요.","예정 밖의 변화가 생기자 다른 사람보다 먼저 세부 순서를 다시 정해 알려 주었어요."],
+      "무심하고 독립적":["필요한 도움은 직접 요청하되 위로나 관심까지 기대하지 않고 자기 몫을 이어 갔어요.","누군가의 시선이 머물러도 행동을 설명하거나 변명하지 않고 하던 일에 집중했어요.","각자 선택한 결과는 각자가 감당하는 편이 공평하다고 생각해 대신 결정하지 않았어요.","연락이나 반응이 늦어도 의미를 과하게 붙이지 않고 자기 일정부터 마쳤어요."],
+      "감정적이고 충동적":["기대가 커진 만큼 작은 변화에도 표정이 빠르게 밝아지거나 굳었어요.","마음에 걸리는 말을 듣자 생각을 정리하기 전에 먼저 반응이 튀어나왔어요.","흥분이 가라앉은 뒤에는 방금 선택이 지금의 진심과 같은지 다시 돌아봤어요.","강하게 끌리는 쪽으로 움직이다가도 불편함이 커지면 곧바로 거리를 바꿨어요."],
+      "장난기 많음":["상대가 진지하게 받아들이는 기색을 보이자 장난을 멈추고 뜻을 분명히 설명했어요.","익숙한 물건과 상황에 우스운 별명을 붙여 혼자만의 놀이 규칙을 만들었어요.","뻔한 질문에도 곧장 답하지 않고 엉뚱하지만 알아들을 만한 표현으로 받아쳤어요.","상대가 먼저 장난을 돌려주자 한 단계 더 재치 있게 이어 가되 불편한 선은 넘지 않았어요."]
+    }[type]||[];
+    priorityVariants.push(...extraBank);
   });
   const age=c.ageGroup||"성인";
   if(age==="영아")variants.push("아직 말 대신 울음과 표정, 손짓으로 필요한 것을 알리고 있어요.","익숙한 목소리가 들리면 눈을 크게 뜨고 팔다리를 작게 움직여 반응하고 있어요.","금세 피곤해져 하던 행동을 멈추고 편안한 품과 자리를 찾고 있어요.");
@@ -497,6 +519,62 @@ function withResidenceLocation(c,item,date=new Date()){
 }
 const away=(c,extra={},date=new Date())=>({townId:activityTown(c,date)?.id||c.townId||state.towns[0]?.id,...extra});
 
+const HAIR_STYLE_ROUTINES={
+  "자연스럽게 풀어 둠":["빗으로 엉킨 부분만 천천히 풀고 머리가 자연스럽게 떨어지는 방향을 살렸어요.","정수리와 옆머리의 눌린 부분만 손으로 가볍게 정리하고 그대로 풀어 두었어요.","끝부분의 건조한 곳에 손질제를 조금 바른 뒤 과하게 모양내지 않고 결을 정돈했어요."],
+  "앞머리 있음":["앞머리의 갈라진 부분을 물로 가볍게 적시고 눈을 가리지 않는 길이로 가지런히 말렸어요.","앞머리가 한쪽으로 쏠리지 않도록 뿌리 방향을 바꾸어 말린 뒤 손끝으로 모양을 잡았어요.","이마에 닿는 앞머리의 유분을 정리하고 평소 가르마와 길이에 맞게 빗었어요."],
+  "앞머리 없음":["이마가 드러나는 가르마를 다시 잡고 잔머리가 흩어지지 않게 가볍게 눌러 정돈했어요.","앞쪽 머리를 옆으로 넘겨 얼굴선을 따라 자연스럽게 이어지도록 말렸어요.","가르마가 무너지지 않도록 뿌리 쪽 볼륨만 살리고 앞머리를 깔끔하게 넘겼어요."],
+  "올백":["앞머리부터 뒤로 빗어 넘기고 옆머리가 들뜨지 않도록 소량의 제품으로 고정했어요.","머리선을 따라 잔머리를 정리한 뒤 정면과 옆모습에서 올백의 흐름이 고른지 확인했어요.","뿌리부터 뒤쪽으로 결을 맞춰 빗고 움직여도 쉽게 흐트러지지 않을 정도로만 고정했어요."],
+  "보브컷":["턱선을 따라 떨어지는 길이를 둥근 브러시로 정리하고 양쪽 끝이 비슷하게 말렸는지 살폈어요.","보브컷의 무게감이 한쪽으로 쏠리지 않게 가르마를 맞추고 끝부분을 안쪽으로 정돈했어요.","목덜미 쪽 눌린 부분을 털어 말린 뒤 또렷한 커트선이 살아나도록 빗었어요."],
+  "레이어드컷":["층마다 다른 길이가 겹쳐 보이지 않도록 아래에서 위로 나누어 말리고 끝의 방향을 다듬었어요.","레이어드컷의 가벼운 층이 자연스럽게 움직이도록 손가락으로 결을 나누어 정돈했어요.","얼굴 주변의 짧은 층과 긴 머리가 부드럽게 이어지도록 브러시 각도를 바꾸어 손질했어요."],
+  "울프컷":["정수리의 짧은 층은 가볍게 살리고 목덜미의 긴 부분은 결을 따라 정리해 울프컷의 대비를 살렸어요.","층이 많은 부분을 손으로 털어 말린 뒤 끝이 한 덩어리로 뭉치지 않게 나누었어요.","앞쪽의 거친 질감과 뒤쪽 길이가 자연스럽게 이어지도록 소량의 왁스로 끝을 잡았어요."],
+  "투블럭":["짧게 정리된 옆머리가 뜨지 않게 눌러 말리고 윗머리는 원하는 방향으로 가르마를 잡았어요.","투블럭 경계가 지저분해 보이지 않도록 옆선과 뒷선을 살핀 뒤 윗머리의 볼륨을 정돈했어요.","윗머리를 손가락으로 나누어 말리고 짧은 옆머리와 자연스럽게 연결되도록 모양을 잡았어요."],
+  "언더컷":["짧게 민 부분의 선을 확인하고 긴 윗머리를 어느 쪽으로 넘길지 정해 언더컷의 대비를 살렸어요.","언더컷이 드러나는 쪽의 잔머리를 정리하고 반대쪽 긴 머리는 흐름대로 단정히 빗었어요.","목덜미와 옆선이 깔끔한지 거울로 확인한 뒤 윗머리를 가볍게 고정했어요."],
+  "포니테일":["머리를 한데 모아 당기는 힘이 지나치지 않게 높이를 정하고 잔머리를 부드럽게 정리했어요.","고무줄이 느슨하지 않은지 확인한 뒤 묶인 머리가 한쪽으로 치우치지 않게 다시 나누었어요.","목덜미의 잔머리는 불편하지 않을 만큼만 정리하고 포니테일 끝의 엉킨 결을 빗었어요."],
+  "양갈래":["양쪽 머리의 양과 높이가 비슷하도록 가르마를 나누고 각각 편안한 세기로 묶었어요.","양갈래가 움직일 때 한쪽만 풀리지 않도록 고무줄을 확인하고 끝부분을 가볍게 빗었어요.","정수리 가르마가 비뚤어지지 않았는지 살핀 뒤 양쪽 묶음의 위치를 조금씩 맞췄어요."],
+  "반묶음":["윗부분 머리만 부드럽게 모아 반묶음으로 고정하고 아래쪽 머리는 자연스럽게 풀어 두었어요.","귀 위의 머리를 양쪽에서 같은 양만큼 잡아 뒤로 묶고 얼굴 주변 잔머리를 정리했어요.","반묶음이 너무 당기지 않는지 확인한 뒤 풀어 둔 머리의 결을 손가락으로 가볍게 나누었어요."],
+  "땋은 머리":["세 갈래의 굵기가 비슷하도록 나눈 뒤 당기는 힘을 일정하게 유지하며 차례로 땋았어요.","땋은 부분이 중간에서 느슨해지지 않도록 끝까지 손의 간격을 맞추고 매듭을 고정했어요.","완성한 땋은 머리의 양옆을 조금씩 풀어 원하는 굵기와 자연스러운 모양을 만들었어요."],
+  "로우번":["목덜미 가까이 머리를 낮게 모아 돌려 감고 오래 있어도 당기지 않도록 핀의 위치를 조절했어요.","낮게 묶은 머리를 단정한 로우번으로 말아 넣고 옆선의 잔머리만 부드럽게 정리했어요.","가르마를 정돈한 뒤 목 뒤의 로우번이 한쪽으로 기울지 않았는지 손거울로 확인했어요."],
+  "하이번":["정수리 가까이 머리를 높게 모아 균형을 잡고 움직여도 풀리지 않게 핀을 나누어 꽂았어요.","높게 묶은 머리를 둥글게 말아 하이번을 만들고 목덜미 잔머리를 가볍게 정리했어요.","하이번의 중심이 치우치지 않았는지 앞뒤 거울로 확인하고 당기는 곳의 핀을 다시 조절했어요."],
+  "번 헤어":["오늘 움직임에 맞춰 머리를 낮거나 높게 모은 뒤 당기지 않도록 핀의 위치를 조절했어요.","머리를 둥글게 말아 고정하고 잔머리가 불편하게 닿는 부분만 정리했어요.","묶은 머리가 한쪽으로 기울지 않았는지 거울로 확인하고 느슨한 곳을 다시 고정했어요."],
+  "드레드록":["각 록의 뿌리와 두피 상태를 살피고 서로 엉켜 붙은 부분을 조심스럽게 나누었어요.","드레드록에 남은 수분이 없도록 충분히 말린 뒤 필요한 부분만 가볍게 정리했어요.","눌린 록을 손으로 풀어 원하는 방향으로 배치하고 두피가 당기지 않는지 확인했어요."],
+  "히메컷":["얼굴 옆의 짧고 곧은 단과 뒤의 긴 머리를 따로 빗어 히메컷의 선을 또렷하게 살렸어요.","양옆의 짧은 머리가 같은 높이로 떨어지는지 확인하고 긴 뒷머리는 차분히 정돈했어요.","얼굴선을 감싸는 옆머리 끝을 곧게 다듬어 커트의 층이 흐려지지 않게 했어요."],
+  "웨이브 스타일":["웨이브가 뭉개진 부분을 손가락으로 나누고 컬의 방향을 따라 가볍게 쥐어 모양을 되살렸어요.","머리가 완전히 마르기 전 웨이브 결을 아래에서 받쳐 말려 부스스함을 줄였어요.","컬마다 탄력이 다르지 않도록 손질제를 고르게 바르고 굵은 웨이브의 흐름을 정돈했어요."],
+  "고데기 스타일링":["열 보호제를 먼저 바르고 머리를 작은 구역으로 나누어 필요한 부분에만 고데기를 사용했어요.","같은 곳에 열을 오래 대지 않도록 속도를 맞추며 앞쪽부터 뒤쪽까지 차례로 모양을 잡았어요.","고데기로 만든 결이 충분히 식은 뒤 손가락으로 풀어 과하게 굳어 보이지 않게 정리했어요."]
+};
+function hairStyleRoutine(c,style,hair,date){
+  const bank=HAIR_STYLE_ROUTINES[style]||HAIR_STYLE_ROUTINES["자연스럽게 풀어 둠"];
+  const line=bank[hash(`${c.id}:${dayKey(date)}:${style}:hair-routine`)%bank.length];
+  return hair?`${hair}를 살피고 ${line}`:line;
+}
+function hairStyleSocialDetail(c,seed=""){
+  const styles=appearanceProfile(c).hairStyles||[];
+  if(!styles.length)return"";
+  const style=styles[hash(`${c.id}:${seed}:social-hair-style`)%styles.length];
+  const details={
+    "자연스럽게 풀어 둠":"풀어 둔 머리가 움직일 때마다 자연스럽게 달라지는 결",
+    "앞머리 있음":"표정에 따라 조금씩 움직이는 앞머리",
+    "앞머리 없음":"이마와 얼굴선이 또렷하게 드러나는 가르마",
+    "올백":"단정하게 뒤로 넘긴 올백의 선",
+    "보브컷":"턱선을 따라 또렷하게 떨어지는 보브컷",
+    "레이어드컷":"움직일 때 층마다 가볍게 흩어지는 레이어드컷",
+    "울프컷":"짧은 층과 긴 뒷머리가 대비되는 울프컷",
+    "투블럭":"짧은 옆선과 정돈된 윗머리가 이어지는 투블럭",
+    "언더컷":"긴 머리 아래로 드러나는 언더컷의 짧은 선",
+    "포니테일":"고개를 돌릴 때 가볍게 흔들리는 포니테일",
+    "양갈래":"양쪽에서 리듬 있게 움직이는 양갈래",
+    "반묶음":"묶은 윗머리와 풀어 둔 아래 머리가 겹치는 반묶음",
+    "땋은 머리":"일정한 결로 이어진 땋은 머리",
+    "로우번":"목덜미 가까이 단정하게 자리 잡은 로우번",
+    "하이번":"정수리 가까이 높게 묶어 올린 하이번",
+    "번 헤어":"둥글게 말아 올린 번 헤어",
+    "드레드록":"한 가닥씩 고유한 결을 가진 드레드록",
+    "히메컷":"얼굴 옆의 짧은 단과 긴 머리가 또렷한 히메컷",
+    "웨이브 스타일":"빛과 움직임에 따라 결이 달라지는 웨이브",
+    "고데기 스타일링":"의도한 방향으로 정교하게 잡힌 스타일링"
+  };
+  return details[style]||style;
+}
+
 function appearanceMorningEntry(c,time,date){
   const a=appearanceProfile(c),makeup=configuredAppearanceValue(a.makeupLevel),hair=hairLookPhrase(c),styles=a.makeupStyles||[],hairStyles=a.hairStyles||[];
   const parts=[];
@@ -514,7 +592,7 @@ function appearanceMorningEntry(c,time,date){
   if(hair){
     if(!title)title="머리를 정돈하며 외출을 준비하는 중";
     const style=hairStyles.length?hairStyles[hash(`${c.id}:${dayKey(date)}:hair-style`)%hairStyles.length]:"평소 방식";
-    parts.push(`${hair}의 결을 살피며 ${style}으로 정돈하고 흐트러진 부분을 손봤어요.`);
+    parts.push(style==="평소 방식"?`${hair}의 결을 살피며 평소 손질 순서대로 흐트러진 부분을 정돈했어요.`:hairStyleRoutine(c,style,hair,date));
   }
   if(!title)return null;
   return homeEntry(c,time,title,personalityFlavor(c,parts.join(" "),`appearance-morning:${makeup||"hair"}`),"bath");
@@ -1106,8 +1184,10 @@ function relationshipHomeEntry(c,pick,time,date){
       [`${other.name}의 눈빛에 시선이 머무는 중`,`${other.name}의 ${otherEyes}에 비친 표정이 문득 선명하게 보여 말끝을 늦췄어요. 가까운 사이에서만 허용된 거리와 상대의 반응을 살피며 시선을 맞췄어요.`,"living"]
     ]:[]),
     ...(otherHair?[
-      [`${other.name}의 머리를 바라보다 미소 짓는 중`,`${other.name}의 ${otherHair}가 움직일 때마다 달라지는 모양을 눈으로 따라갔어요. 손을 대기 전에는 먼저 괜찮은지 묻고, 허락받은 범위 안에서만 가까이 다가갔어요.`,"living"],
-      [`${other.name}의 달라진 머리를 알아보는 중`,`${other.name}의 ${otherHair}가 평소와 다르게 정돈된 것을 알아차렸어요. 잘 어울린다는 말을 구체적으로 건네되 바뀐 이유를 캐묻지는 않았어요.`,"living"]
+      [`${other.name}의 머리를 바라보다 미소 짓는 중`,`${other.name}의 ${object(hairStyleSocialDetail(other,`${c.id}:romance-look`)||otherHair)} 눈으로 따라갔어요. 손을 대기 전에는 먼저 괜찮은지 묻고, 허락받은 범위 안에서만 가까이 다가갔어요.`,"living"],
+      [`${other.name}의 달라진 머리를 알아보는 중`,`${other.name}의 ${subject(hairStyleSocialDetail(other,`${c.id}:romance-change`)||otherHair)} 평소와 다르게 정돈된 것을 알아차렸어요. 잘 어울린다는 말을 구체적으로 건네되 바뀐 이유를 캐묻지는 않았어요.`,"living"],
+      [`${other.name}의 머리 손질을 구체적으로 알아보는 중`,`${other.name}의 ${object(hairStyleSocialDetail(other,`${c.id}:romance-detail`)||otherHair)} 알아차리고 오늘 특히 마음에 드는 부분을 말해 주었어요. 외형을 평가하기보다 상대가 직접 고른 스타일과 손질을 존중해 표현했어요.`,"living"],
+      [`${other.name}의 머리가 흐트러진 것을 알려 주는 중`,`${other.name}에게 손을 대기 전에 머리가 조금 흐트러졌다고 먼저 알려 주었어요. 직접 정리할지 도움을 받을지 선택하게 기다린 뒤 상대가 고른 방식에 따랐어요.`,"living"]
     ]:[])
   ];
   else if(visuallyDrawn)scripts=[
@@ -1675,7 +1755,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260806bf";
+const ENGINE_VERSION="20260807a";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,Object.keys(home?.rooms||{}),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

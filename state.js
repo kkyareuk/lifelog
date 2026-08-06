@@ -500,7 +500,7 @@ function normalizeHomes(x){
       if(!item||typeof item!=="object"||!x.homes[item.homeId])return;
       const homeId=String(item.homeId);
       const homeRooms=x.homes[homeId]?.rooms||{};
-      const visitDates=String(item.visitDates||"").split(/[\s,]+/).map(value=>value.trim()).filter(value=>/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(value));
+      const visitDates=String(item.visitDates||"").split(/[\s,]+/).map(value=>value.trim()).filter(value=>/^(0[1-9]|1[0-2])-?(0[1-9]|[12]\d|3[01])$/.test(value));
       residenceMap.set(homeId,{
         homeId,
         role:["주거지","본가","별채","주말집","업무용 숙소","연인의 집","친척집","기타"].includes(item.role)?item.role:"주거지",
