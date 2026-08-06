@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260806aw";
+import {state,save,characterViewFor} from "./state.js?v=20260806ax";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -100,8 +100,28 @@ const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0
 
 function personalityFlavor(c,desc,seed=""){
   const variants=[];
+  const priorityVariants=[];
   const socialScene=/함께|상대|사람|대화|인사|말을|질문|동거인|친구|연인|부부|와 |과 |에게/.test(desc);
   const reasoningScene=/자료|기록|분석|조사|검토|확인|비교|판단|선택|계획|일정|문제|조건|규칙|단서|근거|목록|수치/.test(desc);
+  const types=Array.isArray(c.personalityTypes)?c.personalityTypes:[];
+  const soloScene=!socialScene;
+  types.forEach(type=>{
+    const bank={
+      "철두철미함":reasoningScene?["정한 순서와 기준을 하나씩 대조해 빠뜨린 부분 없이 마무리했어요.","사용한 물건의 위치와 상태를 확인한 뒤 정확히 제자리에 돌려놓았어요.","시작 전에 필요한 조건을 점검하고 끝낸 뒤 결과까지 다시 확인했어요.","예외가 생길 경우까지 미리 따져 두고 가장 안정적인 순서로 처리했어요.","결과가 기준에 맞는지 항목마다 짚어 본 뒤에야 손을 뗐어요."]:["손댄 곳의 순서가 흐트러지지 않게 한 가지씩 정확히 마무리했어요.","필요한 도구를 먼저 갖춘 뒤 중간에 다른 일로 새지 않고 끝까지 이어 갔어요.","정돈된 상태를 유지하며 시작과 마무리의 경계를 분명하게 지켰어요.","한 번 끝낸 부분도 흐트러진 곳이 없는지 눈으로 다시 훑었어요.","쓰임이 끝난 물건은 망설임 없이 원래 자리에 정리했어요."],
+      "차분하고 신중함":["서두르지 않고 지금 할 일의 흐름을 살핀 뒤 자기 속도로 이어 갔어요.","작은 변화도 한 번 더 살피고 확신이 든 뒤 다음 행동으로 넘어갔어요.","급하게 결론 내리지 않고 충분히 보고 들은 뒤 움직였어요.","주변이 분주해도 호흡을 고르고 자기 페이스를 잃지 않았어요.","실수하기 쉬운 지점에서는 잠깐 멈춰 상태를 차근차근 살폈어요.","충분히 익숙해질 때까지 속도를 올리지 않고 안정적으로 이어 갔어요."],
+      "냉정하고 논리적":reasoningScene?["필요한 정보와 불필요한 부분을 나누어 가장 효율적인 순서로 처리했어요.","감상보다 확인 가능한 사실을 우선해 판단하고 바로 실행했어요.","조건을 항목별로 나눈 뒤 모순되는 부분부터 정리했어요.","원인과 결과를 분리해 보고 가능성이 낮은 선택지는 일찍 제외했어요.","확인할 수 없는 추측은 보류하고 지금 가진 근거만으로 결론을 좁혔어요."]:["기분에 휩쓸리지 않고 지금 필요한 행동만 간결하게 골랐어요.","목적에 직접 도움이 되는 방법을 골라 군더더기 없이 움직였어요.","익숙함보다는 효율을 기준으로 가장 짧은 동선을 택했어요.","해야 할 일과 나중으로 미룰 일을 분명히 나누어 처리했어요.","감정적인 망설임 대신 결과가 분명한 선택을 먼저 실행했어요."],
+      "다정하고 세심함":socialScene?["상대의 표정과 속도를 살피며 부담되지 않는 방식으로 맞춰 주었어요.","자기 방식보다 상대가 편안한지를 먼저 확인하며 행동했어요.","작은 반응도 놓치지 않고 필요해 보이는 부분만 조용히 챙겼어요.","상대가 말하지 않은 불편함까지 눈치채고 자연스럽게 선택지를 바꾸었어요.","도움을 과하게 드러내지 않고 상대가 스스로 해낸 것처럼 자리를 내주었어요."]:["자기 몸과 주변 상태를 세심하게 살피며 무리하지 않는 방식으로 이어 갔어요.","사소한 변화도 지나치지 않고 정성스럽게 손을 보았어요.","나중에 사용할 사람까지 생각해 보기 편한 상태로 남겨 두었어요.","작은 손상이 더 커지지 않도록 조심스러운 손길로 다루었어요.","서두르기보다 오래 편안하게 쓸 수 있는 쪽을 골랐어요."],
+      "수줍고 내향적":socialScene?["먼저 길게 말하지는 않았지만 필요한 대답은 피하지 않고 조용히 전했어요.","사람들의 시선을 끌지 않는 자리에서 짧고 솔직하게 반응했어요.","말을 꺼내기 전 몇 번 고르다가 가장 안전한 표현으로 뜻을 전했어요.","큰 반응 대신 작게 고개를 끄덕이며 상대의 이야기를 오래 들었어요.","분위기에 익숙해질 때까지 가장자리에서 조용히 상황을 살폈어요."]:["방해받지 않는 자리를 골라 혼자 깊이 집중했어요.","혼자만의 속도로 조용히 몰입하며 바깥의 소음을 잊었어요.","눈에 띄지 않는 편안한 자리에서 자기 관심사에 오래 머물렀어요.","사람이 드나들지 않는 곳에서 생각을 차분히 가라앉혔어요.","말없이 이어지는 혼자만의 시간이 오히려 편안하게 느껴졌어요."],
+      "활발하고 사교적":socialScene?["먼저 말을 꺼내고 상대도 자연스럽게 끼어들 수 있게 분위기를 열었어요.","반응이 느린 사람까지 살피며 대화의 흐름을 활기차게 이끌었어요.","자기가 느낀 재미를 바로 나누며 주변의 반응을 끌어냈어요.","어색해진 순간에는 새로운 화제를 꺼내 분위기를 빠르게 되살렸어요.","상대의 좋은 반응을 발견하자 그 부분을 중심으로 대화를 넓혔어요."]:["가만히 머무르기보다 직접 움직이며 빠르게 즐길 지점을 찾아냈어요.","기운이 남아 한 번 시작한 활동을 활발하게 이어 갔어요.","새로운 단계가 보일 때마다 망설임 없이 몸부터 움직였어요.","혼자 하는 중에도 리듬을 타듯 템포를 높여 지루할 틈을 만들지 않았어요.","작은 성과에도 힘을 얻어 다음 동작을 씩씩하게 이어 갔어요."],
+      "즉흥적이고 자유로움":["처음 정한 순서에 얽매이지 않고 그 순간 가장 끌리는 방식으로 즐겼어요.","계획에 없던 변화도 망설이지 않고 자기 방식으로 받아들였어요.","완벽한 준비보다 지금 생긴 흥미를 따라 바로 시작했어요.","중간에 더 재미있는 방향을 발견하자 부담 없이 흐름을 바꾸었어요.","정답을 정해 두지 않고 손이 가는 선택을 이어 붙여 결과를 만들었어요.","끝을 미리 정하지 않은 채 순간의 감각에 맞춰 속도를 조절했어요."],
+      "호기심 많고 창의적":["익숙한 방식에서 조금 벗어나 새로운 조합과 가능성을 직접 시험했어요.","당연하게 보이던 부분을 다르게 바꾸어 자기만의 방법을 찾아봤어요.","작은 차이에서 새로운 아이디어를 떠올리고 바로 적용해 보았어요.","왜 이런 결과가 나오는지 궁금해 조건을 하나씩 바꾸어 보았어요.","평범한 재료의 예상 밖 쓰임을 찾아 색다른 결과로 연결했어요.","완성보다 탐색 자체를 즐기며 여러 가능성을 가볍게 시험했어요."],
+      "완고하고 통제적":socialScene?["자기가 옳다고 여긴 순서를 쉽게 양보하지 않고 상대에게도 분명히 요구했어요.","상대가 다른 방식을 고르자 이유를 따져 묻고 자기 기준을 고수했어요.","결정권을 넘기지 않은 채 세부 순서까지 직접 정하려 했어요.","예상과 다른 반응이 돌아오자 타협보다 자기 주장을 다시 강조했어요.","흐름이 자기 계획에서 벗어나지 않도록 상대의 행동까지 살폈어요."]:["한번 정한 방식에서 벗어나지 않고 끝까지 자기 기준대로 진행했어요.","예상과 다른 결과가 나오자 처음 세운 기준에 맞을 때까지 다시 손보았어요.","작은 변수도 그대로 두지 않고 통제 가능한 상태로 되돌렸어요.","자기가 세운 규칙을 예외 없이 적용하며 흐름을 붙들었어요.","완성된 뒤에도 자기 기준에 어긋난 곳을 찾아 다시 바로잡았어요."],
+      "무심하고 독립적":socialScene?["필요한 말만 주고받고 상대의 선택에는 더 깊이 관여하지 않았어요.","상대가 곁에 있어도 각자의 몫은 각자 해결하는 편을 택했어요.","도움을 주고받기보다 서로 방해하지 않는 거리를 편하게 여겼어요.","상대의 반응을 재촉하지 않고 자기 할 일로 시선을 돌렸어요.","분위기를 맞추기 위한 말은 생략하고 필요한 내용만 정확히 전했어요."]:["남의 평가를 의식하지 않고 자기에게 편한 방식으로 시간을 보냈어요.","도움이나 반응을 기다리지 않고 혼자 필요한 일을 끝냈어요.","누가 알아주지 않아도 개의치 않고 자기 기준대로 마무리했어요.","외부의 소음과 유행에는 관심을 두지 않고 하던 일에 머물렀어요.","혼자 해결할 수 있는 일에 굳이 다른 사람을 끌어들이지 않았어요."],
+      "감정적이고 충동적":["마음이 움직이자 오래 재지 않고 바로 행동으로 옮겼어요.","순간 올라온 감정이 표정과 동작에 곧바로 드러났어요.","흥미가 생긴 순간 속도를 늦추지 않고 깊이 빠져들었어요.","기대했던 것과 달라지자 실망이 숨겨지지 않고 손끝에 묻어났어요.","마음에 든 지점을 발견하자 다른 순서를 건너뛰고 거기에 먼저 몰두했어요.","감정이 가라앉기 전에 떠오른 선택을 곧바로 시험해 보았어요."],
+      "장난기 많음":socialScene?["진지한 흐름을 해치지 않는 선에서 짧은 장난으로 반응을 끌어냈어요.","상대가 받아들일 수 있는 농담을 골라 분위기를 가볍게 바꾸었어요.","상대의 말끝을 재치 있게 받아치며 둘만 알아들을 웃음을 만들었어요.","평범한 대답 대신 뜻밖의 표현을 골라 상대의 표정을 살폈어요.","분위기가 굳어지기 전에 작은 장난을 던져 긴장을 풀었어요."]:["혼자서도 사소한 규칙을 만들어 놀이처럼 즐겼어요.","평범한 과정에 작은 장난을 섞어 자기 방식으로 재미를 만들었어요.","반복되는 순서에 엉뚱한 목표를 하나 끼워 넣어 스스로 즐겼어요.","별것 아닌 결과에도 재미있는 이름을 붙이며 혼자 흡족해했어요.","정해진 방법을 살짝 비틀어 예상하지 못한 재미를 찾아냈어요."]
+    }[type]||[];
+    priorityVariants.push(...bank);
+  });
   const age=c.ageGroup||"성인";
   if(age==="영아")variants.push("아직 말 대신 울음과 표정, 손짓으로 필요한 것을 알리고 있어요.","익숙한 목소리가 들리면 눈을 크게 뜨고 팔다리를 작게 움직여 반응하고 있어요.","금세 피곤해져 하던 행동을 멈추고 편안한 품과 자리를 찾고 있어요.");
   if(age==="유아")variants.push("궁금한 것을 발견할 때마다 짧은 질문을 이어 가며 직접 만져 보려고 해요.","혼자 해 보겠다고 고집하다 어려운 부분에서 익숙한 어른을 찾고 있어요.","금방 다른 것에 관심이 옮겨 가 작은 발로 집 안을 바쁘게 오가고 있어요.");
@@ -137,7 +157,6 @@ function personalityFlavor(c,desc,seed=""){
   if(socialScene&&c.socialStyle==="낯을 가림")variants.push("먼저 말을 꺼내지는 못하고 상대가 건넨 질문에 조금씩 긴 대답을 보탰어요.","익숙하지 않은 사람 앞에서는 표정을 살피며 안전한 이야기부터 조심스럽게 골랐어요.");
   if(socialScene&&(c.socialStyle==="먼저 다가감"||c.socialStyle==="무리의 중심"))variants.push("어색한 침묵이 생기기 전에 먼저 화제를 꺼내 모두가 끼어들 자리를 만들었어요.","사람마다 반응을 살피며 대화가 한쪽으로 치우치지 않게 자연스럽게 연결했어요.");
   if((c.sensingIntuition??3)<=1)variants.push("눈앞에 보이는 것부터 하나씩 확인하며 실수 없이 마무리하고 있어요.");
-  if((c.sensingIntuition??3)>=5)variants.push("중간에 떠오른 새로운 생각을 잊지 않으려고 짧게 메모해 두었어요.");
   if(c.perceptionStyle==="현실과 경험 중시"||c.perceptionStyle==="구체적인 편")variants.push("전에 직접 해 봤을 때 잘됐던 방법을 떠올려 같은 순서로 손을 움직였어요.","막연한 추측보다 지금 확인할 수 있는 상태와 수치를 먼저 살폈어요.");
   if(c.perceptionStyle==="가능성 중시"||c.perceptionStyle==="직관과 상상 중시")variants.push("하던 일에서 예상하지 못한 연결을 떠올리고 다른 방식도 시험해 보고 싶어졌어요.","눈앞의 결과보다 앞으로 어떻게 달라질 수 있을지 상상하며 선택지를 넓혔어요.");
   if((c.thinkingFeeling??3)<=1)variants.push("가장 효율적인 순서를 머릿속으로 계산해 불필요한 동작을 줄이고 있어요.");
@@ -147,8 +166,13 @@ function personalityFlavor(c,desc,seed=""){
   if((c.perceivingJudging??3)<=1)variants.push("정해 둔 순서 없이 지금 마음이 가는 것부터 가볍게 시작했어요.");
   if((c.perceivingJudging??3)>=5)variants.push("미리 생각해 둔 순서를 따라 하나씩 확인하며 진행하고 있어요.");
   if(c.planningStyle==="유연한 편"||c.planningStyle==="상황에 따라")variants.push("큰 순서만 정해 두고 세부 방법은 그때그때 상황에 맞춰 바꿨어요.","계획을 고집하지 않으면서도 꼭 끝내야 할 핵심은 놓치지 않았어요.");
-  if(!variants.length||hash(`${c.id}:${seed}:${desc}:flavor`)%3===0)return desc;
-  return `${desc} ${variants[hash(`${c.id}:${seed}:${desc}`)%variants.length]}`;
+  const sentences=String(desc||"").match(/[^.!?。]+[.!?。]?/g)||[String(desc||"")];
+  const base=sentences.slice(0,types.length?1:2).join(" ").trim();
+  const pool=priorityVariants.length?priorityVariants:variants;
+  if(!pool.length)return base;
+  const flavor=pool[hash(`${c.id}:${seed}:${desc}:flavor`)%pool.length];
+  const combined=types.length?`${base} ${flavor}`:hash(`${c.id}:${seed}:${desc}:plain`)%3===0?base:`${base} ${flavor}`;
+  return combined.length>170?`${combined.slice(0,167).replace(/\s+\S*$/,"")}…`:combined;
 }
 
 function openlyPlayful(c){
@@ -994,6 +1018,7 @@ const homeActivityPoolFor=c=>{
   const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
   const pool=HOME_ACTIVITY_POOL.filter(([title])=>{
+    if(title.includes("잃어버린 물건")&&((c.personalityTypes||[]).includes("철두철미함")||["계획적","강박적으로 계획함"].includes(c.planningStyle)||["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness)))return false;
     if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
     if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
     if(title.includes("그림을 그리는"))return hobbies.some(value=>/그림|드로잉|스케치|회화|미술|일러스트/.test(value));
@@ -1302,10 +1327,10 @@ function build(c,date=new Date()){
   return list.map(item=>medievalize(c,item,date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260806as";
+const ENGINE_VERSION="20260806ax";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,pets:(state.homes[c.homeId]?.pets||[]).map(p=>[p.id,p.species,p.customSpecies,p.size,p.temperaments,p.bodyTraits,p.needsWalk,p.rideable]),housemates:state.order.map(id=>state.characters[id]).filter(x=>x?.homeId===c.homeId).map(x=>[x.id,x.wake,x.sleep]),rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 function mergeImmutableEntries(kept,generated){
   const merged=[...kept],seen=new Set(kept.map(item=>`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`));
@@ -1437,7 +1462,7 @@ function liveGapEvent(c,last,n,date){
       ["공원 벤치에서 잠시 쉬는 중","걷던 길 옆 벤치에 앉아 물을 마시며 나무와 지나가는 사람들을 느긋하게 바라보고 있어요."],
       ["공원 안내판을 살펴보는 중","산책로와 주변 시설이 표시된 안내판 앞에서 다음에 둘러볼 곳을 천천히 고르고 있어요."],
       ["공원의 조용한 자리를 찾는 중","사람이 몰린 길을 벗어나 햇빛과 바람이 편안한 자리를 골라 잠시 머물고 있어요."],
-      ["공원 풍경을 기록하는 중","눈에 들어온 나무와 하늘의 색을 사진이나 짧은 메모로 남기며 천천히 둘러보고 있어요."]
+      ["공원 풍경을 기록하는 중","눈에 들어온 나무와 하늘의 색을 사진으로 남기며 천천히 둘러보고 있어요."]
     ];
     const parkScene=parkScenes[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/45)}:park-continuation`)%parkScenes.length];
     const continuations={

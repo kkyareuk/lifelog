@@ -339,6 +339,7 @@ function normalizeHomes(x){
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.ageGroup=c.ageGroup||"성인";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
+    c.personalityTypes=Array.isArray(c.personalityTypes)?[...new Set(c.personalityTypes.map(String))].slice(0,4):[];
     c.neatness=c.neatness||"보통";
     c.interference=c.interference==="철저히 선을 지킴"?"요청할 때만 도움":c.interference==="컨트롤프릭"?"통제광":c.interference||"적당히 관여";
     c.conflictStyle=c.conflictStyle||"대화로 해결";
@@ -435,7 +436,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],job:"무직",jobTitle:"",workplaceId:"",birthday:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],personalityTypes:[],job:"무직",jobTitle:"",workplaceId:"",birthday:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.homes[id]={id,name:"새 캐릭터의 집",image:"",rooms:rooms(),pets:[],cleanliness:100};

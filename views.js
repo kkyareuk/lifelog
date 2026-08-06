@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260806aw";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806aw";
+import {state,active,characterViewFor} from "./state.js?v=20260806ax";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806ax";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const sceneFailureIds=new Set();
@@ -402,6 +402,11 @@ function personalityChoice(c,title,field,options,help=""){
   const current=c[field]||defaults[field];
   return `<section class="chips personality-choice"><h3>${title}</h3>${help?`<small>${help}</small>`:""}<div>${options.map(value=>`<button data-personality-field="${field}" data-value="${value}" class="${current===value?"on":""}">${value}</button>`).join("")}</div></section>`;
 }
+const PERSONALITY_TYPES=["철두철미함","차분하고 신중함","냉정하고 논리적","다정하고 세심함","수줍고 내향적","활발하고 사교적","즉흥적이고 자유로움","호기심 많고 창의적","완고하고 통제적","무심하고 독립적","감정적이고 충동적","장난기 많음"];
+function personalityTypeChoice(c){
+  const selected=new Set(c.personalityTypes||[]);
+  return `<section class="chips personality-choice personality-type-choice"><h3>이 캐릭터의 전체적인 유형 · 최대 4개</h3><small>여기서 고른 유형이 혼자 하는 행동과 말투의 기본이 되고, 관계 설정은 그다음에 상대별 차이를 더해요.</small><div>${PERSONALITY_TYPES.map(value=>`<button type="button" data-personality-type="${value}" class="${selected.has(value)?"on":""}">${value}</button>`).join("")}</div></section>`;
+}
 function character(){
   const c=active();
   const list=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="char-sort-row"><button class="char-row ${id===c.id?"on":""}" data-edit="${id}" style="--own:${x.theme.primary}">${avatar(x)}<span><b>${esc(x.name)}</b><small>${esc(x.job)}</small></span></button><span class="sort-controls"><button data-sort="${id}" data-direction="-1" ${index===0?"disabled":""} aria-label="위로">▲</button><button data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""} aria-label="아래로">▼</button></span></div>`}).join("");
@@ -416,9 +421,9 @@ function character(){
   const videoFormats=["영화","드라마","애니메이션","다큐멘터리","연애 예능","여행 예능","음악 예능","관찰 예능","게임 예능","토크쇼","서바이벌","코미디 예능","브이로그","게임 방송","먹방","리뷰","교육","숏폼","웹예능","웹드라마"],gameGenres=DETAIL_OPTIONS.game;
   const storyGenres=["로맨스","코미디","액션","판타지","SF","스릴러","공포","미스터리","범죄","드라마","시대극","일상","청춘","가족","모험"];
   const taste=`<h2>${esc(c.name)}의 취향 선택</h2><p>‘좋아하는 장르’는 책·영화·드라마·애니메이션 등 이야기 콘텐츠 전체에 공통으로 반영돼요.</p>${chips("관심사",INTERESTS,c.interests||[],"interests")}${chips("취미",HOBBIES,c.hobbies||[],"hobbies")}${chips("음식",FOOD_PREFERENCES,c.foodPreferences||[],"foodPreferences")}${chips("좋아하는 음료",DRINKS,c.drinks||[],"drinks")}${chips("좋아하는 장르 · 이야기 전체",storyGenres,c.favoriteStoryGenres||[],"favoriteStoryGenres")}${chips("좋아하는 음악 장르",MUSIC,c.musicGenres||[],"musicGenres")}${chips("좋아하는 패션 스타일",DETAIL_OPTIONS.fashion,c.favoriteFashionStyles||[],"favoriteFashionStyles")}${chips("좋아하는 영상 종류",videoFormats,c.favoriteVideoGenres||[],"favoriteVideoGenres")}${chips("좋아하는 게임 장르",gameGenres,c.favoriteGameGenres||[],"favoriteGameGenres")}${chips("좋아하는 향 계열",PERFUME_NOTES,c.favoriteScentNotes||[],"favoriteScentNotes")}`;
-  const personality=`<h2>${esc(c.name)}의 성격</h2><p>가장 가까운 키워드를 하나씩 골라 주세요. 생활·동거·관계 스크립트에 반영돼요.</p>${personalityChoice(c,"사람과 어울리는 방식","socialStyle",["혼자가 편함","낯을 가림","조용히 어울림","먼저 다가감","무리의 중심"])}${personalityChoice(c,"정보를 받아들이는 방식","perceptionStyle",["현실과 경험 중시","구체적인 편","균형형","가능성 중시","직관과 상상 중시"])}${personalityChoice(c,"판단하는 방식","decisionStyle",["논리 우선","이성적인 편","균형형","마음을 살핌","공감 우선"])}${personalityChoice(c,"일정을 다루는 방식","planningStyle",["무계획","즉흥적","유연한 편","상황에 따라","미리 정리함","계획적","강박적으로 계획함"])}${personalityChoice(c,"행동을 전환하는 방식","activityTempo",["한 가지씩 차분히","잠깐 쉬고 다음 일","상황에 따라","생각나면 바로 움직임","부산스럽게 여러 일을 오감","허둥대며 주의가 자주 옮겨감"],"활동적인 정도와 별개예요. 뒤쪽일수록 하던 중 다른 일이 눈에 들어오거나, 물건을 찾으러 갔다가 옆일을 먼저 하는 식의 행동이 늘어요.")}${personalityChoice(c,"깔끔한 정도","neatness",["어질러도 편함","조금 느슨함","보통","정돈을 좋아함","흐트러짐을 못 참음","결벽에 가까움"])}${personalityChoice(c,"옷을 입는 감각","fashionSense",["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"],"자동 코디의 색 조합·상황 적합성·액세서리 사용에 반영돼요.")}${personalityChoice(c,"남에게 관여하는 정도","interference",["방관자","요청할 때만 도움","적당히 관여","챙기고 확인함","강하게 간섭함","컨트롤프릭"],"방관자는 웬만한 일에 끼어들지 않고, 컨트롤프릭은 상대의 일정과 행동까지 통제하려 해 갈등 가능성이 커져요.")}${personalityChoice(c,"갈등 대응","conflictStyle",["피하는 편","시간을 두고 말함","대화로 해결","바로 따짐","끝까지 결론을 냄"])}${personalityChoice(c,"애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"])}${personalityChoice(c,"생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"])}`;
+  const personality=`<h2>${esc(c.name)}의 성격</h2><p>전체 유형을 먼저 고르고, 아래에서 세부 성향을 조절해 주세요.</p>${personalityTypeChoice(c)}${personalityChoice(c,"사람과 어울리는 방식","socialStyle",["혼자가 편함","낯을 가림","조용히 어울림","먼저 다가감","무리의 중심"])}${personalityChoice(c,"정보를 받아들이는 방식","perceptionStyle",["현실과 경험 중시","구체적인 편","균형형","가능성 중시","직관과 상상 중시"])}${personalityChoice(c,"판단하는 방식","decisionStyle",["논리 우선","이성적인 편","균형형","마음을 살핌","공감 우선"])}${personalityChoice(c,"일정을 다루는 방식","planningStyle",["무계획","즉흥적","유연한 편","상황에 따라","미리 정리함","계획적","강박적으로 계획함"])}${personalityChoice(c,"행동을 전환하는 방식","activityTempo",["한 가지씩 차분히","잠깐 쉬고 다음 일","상황에 따라","생각나면 바로 움직임","부산스럽게 여러 일을 오감","허둥대며 주의가 자주 옮겨감"],"활동적인 정도와 별개예요. 뒤쪽일수록 하던 중 다른 일이 눈에 들어오는 행동이 늘어요.")}${personalityChoice(c,"깔끔한 정도","neatness",["어질러도 편함","조금 느슨함","보통","정돈을 좋아함","흐트러짐을 못 참음","결벽에 가까움"])}${personalityChoice(c,"옷을 입는 감각","fashionSense",["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"],"자동 코디의 색 조합·상황 적합성·액세서리 사용에 반영돼요.")}${personalityChoice(c,"남에게 관여하는 정도","interference",["방관자","요청할 때만 도움","적당히 관여","챙기고 확인함","강하게 간섭함","컨트롤프릭"],"방관자는 웬만한 일에 끼어들지 않고, 컨트롤프릭은 상대의 일정과 행동까지 통제하려 해 갈등 가능성이 커져요.")}${personalityChoice(c,"갈등 대응","conflictStyle",["피하는 편","시간을 두고 말함","대화로 해결","바로 따짐","끝까지 결론을 냄"])}${personalityChoice(c,"애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"])}${personalityChoice(c,"생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"])}`;
   const profileWithLicense=`<section class="profile-license">${townAssignment(c)}${profile}<label class="check"><input type="checkbox" data-character-check="${c.id}" data-field="driverLicense" ${c.driverLicense?"checked":""}> 운전면허 있음</label></section>`;
-  const personalityExtras=`<section class="personality-extra"><h2>말투·표현·충동 조절</h2>${personalityChoice(c,"유머·장난 성향","humorStyle",["장난을 거의 하지 않음","건조한 농담만 함","가끔 장난을 즐김","장난을 즐김","유머로 분위기를 이끎"],"웃음·농담·장난 장면의 빈도와 표현을 정해요.")}${personalityChoice(c,"감정 표현의 크기","emotionalExpression",["표정 변화가 거의 없음","감정을 잘 드러내지 않음","상황에 따라 표현함","표현이 풍부함","감정이 바로 드러남"],"같은 감정이라도 표정과 몸짓으로 얼마나 드러나는지 정해요.")}${personalityChoice(c,"충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],"공격 충동이 있어도 이 성향과 실제 행동 단계가 허용해야 행동으로 나와요.")}</section>`;
+  const personalityExtras=`<section class="personality-extra">${personalityChoice(c,"유머·장난 성향","humorStyle",["장난을 거의 하지 않음","건조한 농담만 함","가끔 장난을 즐김","장난을 즐김","유머로 분위기를 이끎"],"웃음·농담·장난 장면의 빈도와 표현을 정해요.")}${personalityChoice(c,"감정 표현의 크기","emotionalExpression",["표정 변화가 거의 없음","감정을 잘 드러내지 않음","상황에 따라 표현함","표현이 풍부함","감정이 바로 드러남"],"같은 감정이라도 표정과 몸짓으로 얼마나 드러나는지 정해요.")}${personalityChoice(c,"충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],"공격 충동이 있어도 이 성향과 실제 행동 단계가 허용해야 행동으로 나와요.")}</section>`;
   const pane=state.characterPane==="personality"?`${personality}${personalityExtras}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:profileWithLicense;
   const limit=characterLimit();
   const slotLabel=state.order.length>limit?`${state.order.length}명 저장됨 · 한도 ${limit}명`:`+ 생성 · ${state.order.length}/${limit}`;
@@ -505,6 +510,7 @@ function relationshipReality(a,b,official=[]){
   const distrust=value=>/믿지|의심|경계/.test(value?.trust||"");
   const confirmed=value=>/서로의 마음을 확인/.test(value?.mutualAwareness||"");
   const conflict=value=>/자주 충돌|격렬|파국/.test(value?.conflictIntensity||"");
+  const guarded=value=>distrust(value)||distant(value)||hate(value)||/경계|탐탁지|꺼림/.test(`${value?.overall||""} ${value?.comfort||""} ${value?.annoyance||""}`);
   const past=official.some(relation=>relation.temporalStatus==="past");
   const sibling=official.some(relation=>relation.type==="형제·자매");
   if(sibling&&(distant(av)||distant(bv)||hate(av)||hate(bv)))return past?"절연한 형제 사이":"가족이지만 사실상 절연";
@@ -517,6 +523,9 @@ function relationshipReality(a,b,official=[]){
   }
   if(love(av)!==love(bv))return"한쪽만 품고 있는 연심";
   if(hate(av)&&hate(bv))return conflict(av)||conflict(bv)?"서로 강하게 맞서는 사이":"서로 반감을 품은 사이";
+  if(guarded(av)&&guarded(bv))return conflict(av)||conflict(bv)?"서로 경계하며 충돌하는 사이":"서로 믿지 않고 거리를 두는 사이";
+  if(distrust(av)&&distrust(bv))return"서로 믿지 못하는 사이";
+  if(guarded(av)!==guarded(bv))return"한쪽은 가까워지고 한쪽은 경계하는 사이";
   if(close(av)&&close(bv))return"서로 의지하는 사이";
   if(distant(av)&&distant(bv))return past?"이름만 남은 관계":"서로 거리를 두는 사이";
   if(close(av)!==close(bv))return"한쪽만 관계를 붙잡는 중";
@@ -534,7 +543,7 @@ function relationshipMap(relations){
   }));
   const emotionColor=value=>{
     const text=String(value||"");
-    if(/사랑|좋아|소중|애틋/.test(text))return"#d85078";
+    if(/사랑|좋아|소중|애틋|연애 감정|연심|끌림|싹틈/.test(text))return"#d85078";
     if(/싫|혐오|원수|증오/.test(text))return"#a83f3f";
     if(/경계|의심|불편|귀찮/.test(text))return"#c27a2c";
     if(/두려|무서|겁/.test(text))return"#7b5bb5";

@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260806aw";
-import {eventFor} from "./simulation.js?v=20260806aw";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260806aw";
-import {recordCharacterInteraction} from "./state.js?v=20260806aw";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260806ax";
+import {eventFor} from "./simulation.js?v=20260806ax";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260806ax";
+import {recordCharacterInteraction} from "./state.js?v=20260806ax";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -735,6 +735,13 @@ function bind(){
   });
   $$("[data-home-town]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.homeTown,{townId:el.value});render()});
   $$("[data-personality-field]").forEach(el=>el.onclick=()=>{updateCharacter(active().id,{[el.dataset.personalityField]:el.dataset.value});render()});
+  $$("[data-personality-type]").forEach(el=>el.onclick=()=>{
+    const character=active(),value=el.dataset.personalityType,current=Array.isArray(character.personalityTypes)?character.personalityTypes:[];
+    if(current.includes(value))character.personalityTypes=current.filter(item=>item!==value);
+    else if(current.length<4)character.personalityTypes=[...current,value];
+    else return showToast("전체 성격 유형은 최대 4개까지 고를 수 있어요");
+    save();render();
+  });
   $$("[data-field]").forEach(el=>el.oninput=()=>{
     const numeric=["spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging"].includes(el.dataset.field);
     const patch={[el.dataset.field]:numeric?Number(el.value):el.value};
@@ -916,7 +923,7 @@ function bind(){
       if(summary)summary.textContent=select.value;
     }
     const physicalWarning=field==="aggressionAction"&&["상대를 밀칠 수 있음","실제로 때릴 수 있음","심한 폭력을 행사할 수 있음"].includes(select.value);
-    save(true);showToast(physicalWarning
+    save();showToast(physicalWarning
       ?"주의: 이 단계부터는 충동·갈등·성격 조건이 함께 맞을 때 물리적 행동 장면이 나올 수 있어요"
       :`${state.characters[source]?.name||"캐릭터"}의 생각을 저장했어요`);
   });
@@ -1468,13 +1475,13 @@ if(!maintenanceEnabled()&&state.order.length&&localStorage.getItem("drawer-villa
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260806aw").catch(error=>{
+  import("./auth.js?v=20260806ax").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260806aw",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260806ax",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
