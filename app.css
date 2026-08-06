@@ -708,3 +708,233 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   .onboarding-dialog form{min-height:min(480px,calc(100dvh - 24px));padding:22px 18px}.onboarding-dialog h1{font-size:29px}.onboarding-actions,.room-image-choice,.room-editor-fields{grid-template-columns:1fr}.room-image-choice button{grid-template-columns:auto 1fr;justify-items:start;min-height:76px;font-size:24px}.room-image-choice button small{grid-column:2}.room-illustration-grid button{height:155px}.room-editor-dialog form{padding:16px}.room-editor-photo{grid-template-columns:82px minmax(0,1fr)}.room-editor-photo span{width:82px;height:62px}
   .room-empty-image{min-width:98px;padding:7px;font-size:11px}.room-empty-image span{font-size:19px}.room-edit-hint{font-size:8px;padding:3px 5px}
 }
+
+/* 설치형 모바일 앱 전용 게임형 홈과 화면 이동 */
+.native-sub-header,.native-observe-home,.native-game-menu{display:none}
+.tab-icon{display:none}
+.town-map-scroll{min-width:0;overflow:auto;border-radius:27px;overscroll-behavior:contain}
+.town-map-scroll>.world{width:100%;min-width:0;height:auto;aspect-ratio:1672/941}
+.native-app header{display:none!important}
+.native-app .site-footer{display:none!important}
+.native-app .native-sub-header{
+  position:sticky;
+  top:0;
+  z-index:90;
+  display:grid;
+  grid-template-columns:48px minmax(0,1fr) auto;
+  align-items:center;
+  gap:10px;
+  min-height:60px;
+  padding:8px max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));
+  border-bottom:1px solid #ffffff2e;
+  background:color-mix(in srgb,var(--p) 88%,#172033);
+  color:#fff;
+  box-shadow:0 8px 24px #1720332b;
+}
+.native-app .native-sub-header button{
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  padding:0;
+  border-color:#ffffff40;
+  background:#ffffff18;
+  color:#fff;
+  font-size:34px;
+  line-height:1;
+}
+.native-app .native-sub-header b{font-size:20px}
+.native-app .native-sub-header span{font-size:11px;opacity:.72}
+.native-app[data-active-tab="observe"] main{
+  width:100%;
+  max-width:none;
+  min-height:calc(100dvh - env(safe-area-inset-top));
+  margin:0;
+  padding:0!important;
+  overflow:hidden;
+}
+.native-app[data-active-tab="observe"] .standard-observe-view{display:none}
+.native-app[data-active-tab="observe"] .native-observe-home{
+  position:relative;
+  isolation:isolate;
+  display:grid;
+  grid-template-rows:auto minmax(190px,1fr) auto auto;
+  gap:10px;
+  width:100%;
+  min-height:calc(100dvh - env(safe-area-inset-top));
+  padding:max(14px,env(safe-area-inset-top)) 74px max(14px,env(safe-area-inset-bottom));
+  overflow:hidden;
+  color:#fff;
+  background:#18202d;
+}
+.native-app .native-observe-backdrop,.native-app .native-observe-shade{position:absolute;inset:-24px;z-index:-2}
+.native-app .native-observe-backdrop{
+  background-position:center;
+  background-size:cover;
+  filter:blur(18px) saturate(.82);
+  transform:scale(1.08);
+}
+.native-app .native-observe-shade{
+  z-index:-1;
+  background:linear-gradient(180deg,#101722a8 0%,#10172245 35%,#1017229c 70%,#101722f2 100%);
+}
+.native-app .native-observe-top{display:flex;align-items:center;justify-content:space-between;gap:12px;text-shadow:0 2px 8px #000}
+.native-app .native-observe-top>span{display:grid}.native-app .native-observe-top b{font-size:22px}.native-app .native-observe-top small{opacity:.78}.native-app .native-observe-top time{font-weight:900}
+.native-app .native-character-stage{
+  position:relative;
+  align-self:center;
+  justify-self:center;
+  display:grid;
+  place-items:end center;
+  width:min(48vw,220px);
+  height:min(34dvh,310px);
+  padding:0;
+  border:0;
+  background:transparent;
+  overflow:visible;
+  animation:native-character-float 3.2s ease-in-out infinite;
+}
+.native-app .native-character-stage .native-main-character{
+  position:relative;
+  z-index:2;
+  width:100%!important;
+  height:100%!important;
+  border:0;
+  border-radius:24px;
+  object-fit:contain;
+  background:transparent;
+  filter:drop-shadow(0 18px 12px #0008);
+}
+.native-app .native-character-stage .avatar.native-main-character{object-fit:cover;background:var(--native-own)}
+.native-app .native-character-stage i{
+  position:absolute;
+  left:12%;
+  right:12%;
+  bottom:-6px;
+  height:24px;
+  border-radius:50%;
+  background:#05090e99;
+  filter:blur(8px);
+  animation:native-shadow-pulse 3.2s ease-in-out infinite;
+}
+@keyframes native-character-float{0%,100%{transform:translateY(4px)}50%{transform:translateY(-11px)}}
+@keyframes native-shadow-pulse{0%,100%{opacity:.72;transform:scaleX(1)}50%{opacity:.38;transform:scaleX(.78)}}
+.native-app .native-character-picker{
+  display:flex;
+  gap:7px;
+  width:100%;
+  overflow-x:auto;
+  padding:3px 0;
+  scrollbar-width:none;
+}
+.native-app .native-character-picker::-webkit-scrollbar{display:none}
+.native-app .native-character-picker button{
+  flex:0 0 58px;
+  display:grid;
+  place-items:center;
+  gap:1px;
+  min-width:58px;
+  padding:4px;
+  border-color:#ffffff30;
+  background:#12192399;
+  color:#fff;
+  border-radius:16px;
+}
+.native-app .native-character-picker button.on{border-color:#fff;background:color-mix(in srgb,var(--native-own) 72%,#172033)}
+.native-app .native-character-picker .avatar,.native-app .native-character-picker .sprite{width:38px;height:38px}
+.native-app .native-character-picker small{max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px}
+.native-app .native-status-card,.native-app .native-log-card{
+  border:1px solid #ffffff2e;
+  border-radius:21px;
+  background:#111822d6;
+  box-shadow:0 16px 34px #0005;
+  backdrop-filter:blur(12px);
+}
+.native-app .native-status-card{padding:14px 16px}
+.native-app .native-status-card>small{color:#ffffffb5;font-weight:900;letter-spacing:.06em}
+.native-app .native-status-card h1{margin:4px 0 6px;font-size:21px;line-height:1.35;word-break:keep-all}
+.native-app .native-status-card p{display:-webkit-box;margin:0 0 8px;overflow:hidden;color:#ffffffdc;font-size:12px;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+.native-app .native-status-card b{font-size:11px;color:#fff}
+.native-app .native-log-card{padding:12px 14px}
+.native-app .native-log-card>div{display:flex;align-items:center;justify-content:space-between}
+.native-app .native-log-card>div button{padding:5px 8px;border-color:#ffffff30;background:#ffffff12;color:#fff;font-size:10px}
+.native-app .native-log-card ol{display:grid;gap:6px;max-height:118px;margin:9px 0 0;padding:0;overflow-y:auto;list-style:none}
+.native-app .native-log-card li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:7px;padding-top:6px;border-top:1px solid #ffffff1f}
+.native-app .native-log-card time{color:#ffffff8c;font-size:10px}.native-app .native-log-card li span{display:grid;min-width:0}.native-app .native-log-card li b{font-size:11px}.native-app .native-log-card li small{overflow:hidden;color:#ffffffa8;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.native-app[data-active-tab="observe"] .native-game-menu{display:contents}
+.native-app .native-game-menu button{
+  position:fixed;
+  top:calc(max(80px,env(safe-area-inset-top) + 66px) + var(--native-menu-row) * 68px);
+  z-index:80;
+  display:grid;
+  place-items:center;
+  gap:1px;
+  width:58px;
+  min-width:58px;
+  height:58px;
+  padding:5px 2px;
+  border:1px solid #ffffff35;
+  border-radius:17px;
+  background:#111823d9;
+  color:#fff;
+  box-shadow:0 8px 18px #0005,inset 0 1px 0 #ffffff26;
+  backdrop-filter:blur(9px);
+}
+.native-app .native-game-menu .native-menu-left{left:max(8px,env(safe-area-inset-left))}
+.native-app .native-game-menu .native-menu-right{right:max(8px,env(safe-area-inset-right))}
+.native-app .native-game-menu button>span{font-size:25px;line-height:1}.native-app .native-game-menu button>small{font-size:8px;line-height:1.1;white-space:nowrap}
+.native-app .native-observe-empty{place-items:center;text-align:center}.native-app .native-observe-empty>div{padding:24px;border-radius:24px;background:#111822d6}.native-app .native-observe-empty span{font-size:48px}
+
+/* 앱 안의 편집 화면은 작은 화면에서도 입력칸을 두 열로 유지한다. */
+@media(max-width:720px){
+  .native-app main{padding:10px!important}
+  .native-app .fields,
+  .native-app .profile-license .fields,
+  .native-app .health-field-grid,
+  .native-app .character-view-fields,
+  .native-app .relation-pair-fields,
+  .native-app .place-config,
+  .native-app .room-editor-fields,
+  .native-app .home-identity-editor,
+  .native-app .residence-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .native-app .fields label,.native-app .health-field-grid label,.native-app .character-view-fields label{min-width:0}
+  .native-app input,.native-app select{min-width:0;min-height:48px;padding:9px 10px;font-size:13px}
+  .native-app .town-tabs{position:sticky;top:60px;z-index:70;display:flex;flex-wrap:nowrap;overflow-x:auto;padding:8px 0;background:var(--bg)}
+  .native-app .town-tabs button{flex:0 0 auto;padding:9px 11px}
+  .native-app .town-edit{display:grid!important;grid-template-columns:1fr!important;overflow:visible!important}
+  .native-app .town-map-scroll{
+    width:calc(100% + 20px);
+    height:calc(100dvh - 138px);
+    min-height:520px;
+    margin-left:-10px;
+    overflow:auto;
+    border-radius:0;
+    background:#d9e9df;
+    touch-action:pan-x pan-y;
+  }
+  .native-app .town-map-scroll>.world{
+    width:max(1200px,calc((100dvh - 138px) * 1.776));
+    min-width:1200px;
+    height:max(676px,calc(100dvh - 138px));
+    aspect-ratio:auto;
+  }
+  .native-app .town-edit>.form{width:100%;min-width:0;margin-top:12px}
+}
+
+/* 모바일 웹은 기존의 넉넉한 메뉴 크기를 유지한다. */
+@media(max-width:600px){
+  html:not(.native-app) header{padding:9px!important;gap:10px!important}
+  html:not(.native-app) .logo{width:50px!important;height:50px!important}
+  html:not(.native-app) .brand h1{font-size:25px!important}
+  html:not(.native-app) header nav{gap:8px!important;padding:5px 0!important}
+  html:not(.native-app) header nav button{min-height:44px!important;padding:10px 14px!important;font-size:16px!important}
+  html:not(.native-app) main{padding:8px!important}
+  html:not(.native-app) .roster{gap:8px!important;padding:5px 3px 12px!important}
+  html:not(.native-app) .roster-card{width:auto!important;min-width:210px!important;padding:9px 11px!important}
+  html:not(.native-app) .roster-card .avatar{width:42px!important;height:42px!important}
+  html:not(.native-app) .roster-card .sprite{width:48px!important;height:48px!important}
+  html:not(.native-app) .roster-card>.roster-info b{font-size:16px!important}
+  html:not(.native-app) .roster-card>.roster-info small{max-width:135px!important;font-size:11px!important}
+  html:not(.native-app) .char-sort-row .char-row{min-height:86px;padding:10px 12px}
+  html:not(.native-app) .char-row .avatar,html:not(.native-app) .char-row .sprite{width:56px;height:56px}
+}
