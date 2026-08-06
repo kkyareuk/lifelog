@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260806as";
-import {eventFor} from "./simulation.js?v=20260806as";
-import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260806as";
-import {recordCharacterInteraction} from "./state.js?v=20260806as";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260806au";
+import {eventFor} from "./simulation.js?v=20260806au";
+import {renderApp, setAccountLabel, setAccountEntitlements} from "./views.js?v=20260806au";
+import {recordCharacterInteraction} from "./state.js?v=20260806au";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -578,7 +578,7 @@ async function explicitSave(label="저장 완료"){
 
 function bind(){
   enhanceDynamicForms();
-  $$("[data-tab]").forEach(el=>el.onclick=()=>{state.activeTab=el.dataset.tab;save();render()});
+  $$("[data-tab]").forEach(el=>el.onclick=()=>navigateToTab(el.dataset.tab));
   const cartKey="drawer-village-cart";
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};
@@ -972,13 +972,12 @@ function applyImage(type,id,room,data){
   else setCharacterImage(id,type,data);
 }
 
-if(!window.__drawerVillageTabNavigation){
-  window.__drawerVillageTabNavigation=true;
-  document.addEventListener("click",event=>{
-    const tab=event.target.closest?.("[data-tab]");if(!tab)return;
-    event.preventDefault();event.stopImmediatePropagation();
-    state.activeTab=tab.dataset.tab;save(true);render();window.scrollTo({top:0,behavior:"auto"});
-  },true);
+function navigateToTab(tab){
+  if(!["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(tab))return;
+  state.activeTab=tab;
+  save();
+  render();
+  window.scrollTo({top:0,behavior:"auto"});
 }
 
 async function useImageUrl(type,id,room){
@@ -1164,7 +1163,7 @@ function focusCharacter(id){
     requestAnimationFrame(()=>focusHomeCharacter(id));
     return;
   }
-  if(e.townId&&e.townId!==state.activeTownId)switchTown(e.townId);
+  if(e.townId&&e.townId!==state.activeTownId)switchTown(e.townId,{activeId:id});
   render();
   requestAnimationFrame(()=>{
     const marker=document.querySelector(`[data-person="${CSS.escape(id)}"]`);
@@ -1435,7 +1434,7 @@ window.addEventListener("parallel-city-cloud-loaded",render);
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
 function scheduleLiveSceneRefresh(){
-  const delay=(5+Math.floor(Math.random()*11))*60*1000;
+  const delay=(15+Math.floor(Math.random()*16))*60*1000;
   setTimeout(()=>{
     if(["observe","home"].includes(state.activeTab)){
       const now=new Date();
@@ -1449,6 +1448,9 @@ scheduleLiveSceneRefresh();
 
 let automaticCloudSyncTimer=0;
 document.addEventListener("change",event=>{
+  // Cloud writes are explicit only. Form drafts must never overwrite a newer
+  // device or resurrect deleted characters, rooms, and relationships.
+  return;
   if(!event.target?.matches("select,input,textarea"))return;
   clearTimeout(automaticCloudSyncTimer);
   automaticCloudSyncTimer=setTimeout(async()=>{
@@ -1466,13 +1468,13 @@ if(!maintenanceEnabled()&&state.order.length&&localStorage.getItem("drawer-villa
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260806as").catch(error=>{
+  import("./auth.js?v=20260806au").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260806as",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260806au",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

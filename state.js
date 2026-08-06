@@ -76,7 +76,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:8,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -124,6 +124,9 @@ function normalizeHomes(x){
     x.order=list.map(c=>c.id).filter(Boolean);
   }
   x.characters=x.characters&&typeof x.characters==="object"?x.characters:{};
+  x.deletedCharacterIds=Array.isArray(x.deletedCharacterIds)?[...new Set(x.deletedCharacterIds.map(String))]:[];
+  x.deletedRelationshipIds=Array.isArray(x.deletedRelationshipIds)?[...new Set(x.deletedRelationshipIds.map(String))]:[];
+  x.deletedCharacterIds.forEach(id=>delete x.characters[id]);
   const characterIds=Object.keys(x.characters);
   x.order=Array.isArray(x.order)?x.order.filter((id,index,list)=>x.characters[id]&&list.indexOf(id)===index):[];
   characterIds.forEach(id=>{if(!x.order.includes(id))x.order.push(id)});
@@ -160,6 +163,8 @@ function normalizeHomes(x){
   const relationIdsByKey=new Map();
   relationList.filter(Boolean).forEach(relation=>{
     const id=relation.id||uid();
+    if(x.deletedRelationshipIds.includes(String(id)))return;
+    if(x.deletedCharacterIds.includes(String(relation.a))||x.deletedCharacterIds.includes(String(relation.b)))return;
     if(relation.type==="짝사랑"){
       const source=relation.admirerId||relation.a,target=relation.targetId||relation.b;
       if(x.characters[source]&&x.characters[target]){
@@ -408,6 +413,7 @@ export function save(immediate=false,notify=true){
 export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
+  state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
   state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],job:"무직",jobTitle:"",workplaceId:"",birthday:"",photo:"",icon:"",wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
@@ -426,12 +432,18 @@ export function moveCharacter(id,direction){
 }
 export function deleteCharacter(id){
   if(!state.characters[id])return;
+  state.deletedCharacterIds=Array.isArray(state.deletedCharacterIds)?state.deletedCharacterIds:[];
+  if(!state.deletedCharacterIds.includes(id))state.deletedCharacterIds.push(id);
   const homeId=state.characters[id].homeId;
   delete state.characters[id];
   state.order=state.order.filter(characterId=>characterId!==id);
   Object.keys(state.relationships).forEach(relationId=>{
     const relation=state.relationships[relationId];
-    if(relation.a===id||relation.b===id)delete state.relationships[relationId];
+    if(relation.a===id||relation.b===id){
+      state.deletedRelationshipIds=Array.isArray(state.deletedRelationshipIds)?state.deletedRelationshipIds:[];
+      if(!state.deletedRelationshipIds.includes(relationId))state.deletedRelationshipIds.push(relationId);
+      delete state.relationships[relationId];
+    }
   });
   delete state.routines[id];
   if(homeId&&!state.order.some(characterId=>state.characters[characterId]?.homeId===homeId))delete state.homes[homeId];
@@ -505,6 +517,7 @@ export function addRoom(homeId){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
   const key=`room-${uid()}`;
+  h.deletedRoomKeys=(h.deletedRoomKeys||[]).filter(value=>value!==key);
   h.rooms[key]={name:"새 방",type:"other",image:"",furniture:[...ROOM_FURNITURE.other]};
   save(true);
   return key;
@@ -663,7 +676,12 @@ export function characterViewFor(sourceId,targetId){
   const {rapport:_oldRapport,spaceComfort:_oldSpaceComfort,...cleanExplicit}=explicit;
   return {...defaults,...cleanExplicit,comfort:migratedComfort||defaults.comfort};
 }
-export function addRelationship(data){const id=uid();state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true)}
+export function addRelationship(data){
+  const id=uid();
+  state.deletedRelationshipIds=(state.deletedRelationshipIds||[]).filter(value=>value!==id);
+  state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true);
+  return id;
+}
 export function updateRelationship(id,data){
   const relation=state.relationships[id];if(!relation)return;
   const wasCohabiting=Boolean(relation.cohabit);
@@ -688,6 +706,8 @@ export function toggleOwned(characterId,kind,itemId){
 }
 export function deleteRelationship(id){
   if(!state.relationships[id])return;
+  state.deletedRelationshipIds=Array.isArray(state.deletedRelationshipIds)?state.deletedRelationshipIds:[];
+  if(!state.deletedRelationshipIds.includes(id))state.deletedRelationshipIds.push(id);
   delete state.relationships[id];
   save(true);
 }
@@ -713,10 +733,11 @@ export function addTown(limit=2){
   const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,era:"modern",places:[]};
   state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);return id;
 }
-export function switchTown(id){
+export function switchTown(id,{activeId}={}){
   syncTown();const town=state.towns.find(t=>t.id===id);if(!town)return;
   state.activeTownId=id;state.world=clone(town);
-  const localCharacter=state.order.find(cid=>state.characters[cid]?.townId===id);
+  const requestedCharacter=state.characters[activeId]?.townId===id?activeId:null;
+  const localCharacter=requestedCharacter||state.order.find(cid=>state.characters[cid]?.townId===id);
   if(localCharacter)state.activeId=localCharacter;
   save(true);
 }
