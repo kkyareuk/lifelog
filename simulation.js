@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260806be";
+import {state,save,characterViewFor} from "./state.js?v=20260806bf";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -122,6 +122,40 @@ const activityTown=(c,date=new Date())=>{
   return travelPurpose(c,date).town;
 };
 const placeFor=(types,seed,c,date=new Date())=>{const places=activityTown(c,date)?.places||[],list=places.filter(p=>types.includes(p.type));return list.length?list[hash(seed)%list.length]:places[hash(seed)%Math.max(1,places.length)]};
+const configuredAppearanceValue=value=>value&&!["설정하지 않음","하지 않음"].includes(value)?String(value):"";
+const hairColorText=value=>({
+  "검은색":"검은","짙은 갈색":"짙은 갈색","갈색":"갈색","밝은 갈색":"밝은 갈색","금발":"금빛","백발·은발":"백색·은색","회색":"회색","청회색":"청회색","빨간색":"붉은","주황색":"주황색","분홍색":"분홍색","보라색":"보라색","파란색":"파란색","청록색":"청록색","초록색":"초록색","여러 색":"여러 색"
+}[value]||configuredAppearanceValue(value));
+const eyeColorText=value=>({
+  "검은색":"검은","짙은 갈색":"짙은 갈색","갈색":"갈색","연갈색":"연갈색","호박색":"호박색","금색":"금색","초록색":"초록색","청록색":"청록색","파란색":"파란색","청회색":"청회색","회색":"회색","보라색":"보라색","분홍색":"분홍색","빨간색":"붉은","백색":"백색","여러 색":"여러 색"
+}[value]||configuredAppearanceValue(value));
+const appearanceProfile=c=>c?.bodyProfile?.appearance||{};
+const hairLookPhrase=c=>{
+  const a=appearanceProfile(c),color=hairColorText(a.hairColor),texture=configuredAppearanceValue(a.hairTexture);
+  const textureText={"약한 반곱슬":"반곱슬","강한 반곱슬":"짙은 반곱슬","곱슬":"곱슬","강한 곱슬":"강한 곱슬","직모":"곧은"}[texture]||"";
+  return [color,textureText].filter(Boolean).join(" ")+(color||textureText?"머리":"");
+};
+const eyeLookPhrase=c=>{
+  const a=appearanceProfile(c),left=eyeColorText(a.leftEyeColor),right=eyeColorText(a.rightEyeColor);
+  if(left&&right&&left!==right)return `왼쪽은 ${left}, 오른쪽은 ${right}인 눈`;
+  const color=left||right;
+  return color?`${color} 눈`:"";
+};
+const appearanceTraitTags=c=>{
+  const a=appearanceProfile(c),tags=[],hairColor=hairColorText(a.hairColor),eyeColor=eyeColorText(a.leftEyeColor===a.rightEyeColor?a.leftEyeColor:"");
+  const hairTags={"검은":"검은 머리","갈색":"갈색 머리","짙은 갈색":"갈색 머리","밝은 갈색":"갈색 머리","금빛":"금발","백색·은색":"백발·은발","붉은":"빨간 머리","분홍색":"분홍 머리","보라색":"보라 머리","파란색":"파란 머리","청록색":"청록 머리","초록색":"초록 머리"};
+  const eyeTags={"검은":"검은 눈","갈색":"갈색 눈","짙은 갈색":"갈색 눈","연갈색":"갈색 눈","호박색":"호박색 눈","금색":"금색 눈","초록색":"초록색 눈","파란색":"파란색 눈","청회색":"청회색 눈","회색":"회색 눈","보라색":"보라색 눈"};
+  if(hairTags[hairColor])tags.push(hairTags[hairColor]);
+  if(eyeTags[eyeColor])tags.push(eyeTags[eyeColor]);
+  if(a.leftEyeColor&&a.rightEyeColor&&a.leftEyeColor!==a.rightEyeColor)tags.push("오드아이");
+  if(/곱슬/.test(a.hairTexture||""))tags.push("곱슬머리");
+  if(/웨이브/.test((a.hairStyles||[]).join(" ")))tags.push("웨이브머리");
+  if(["가슴 길이","허리 길이","허리보다 김"].includes(a.hairLength))tags.push("장발");
+  if(a.hairLength==="단발")tags.push("단발");
+  if(["삭발·매우 짧음","귀 위 길이","숏컷"].includes(a.hairLength))tags.push("숏컷");
+  (a.hairStyles||[]).forEach(style=>tags.push(style.replace(" 스타일링","머리").replace("번 헤어","올림머리")));
+  return [...new Set(tags.filter(Boolean))];
+};
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
 const relationList=()=>Object.values(state.relationships||{});
 const relationPriority={"부모·자녀":10,"형제·자매":9,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,동거인:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
@@ -462,6 +496,57 @@ function withResidenceLocation(c,item,date=new Date()){
   return {...item,visitHomeId:homeId,room};
 }
 const away=(c,extra={},date=new Date())=>({townId:activityTown(c,date)?.id||c.townId||state.towns[0]?.id,...extra});
+
+function appearanceMorningEntry(c,time,date){
+  const a=appearanceProfile(c),makeup=configuredAppearanceValue(a.makeupLevel),hair=hairLookPhrase(c),styles=a.makeupStyles||[],hairStyles=a.hairStyles||[];
+  const parts=[];
+  let title="";
+  if(makeup&&makeup!=="스킨케어만"){
+    title=makeup==="선크림·기초만"?"기초 화장을 준비하는 중":makeup==="풀 메이크업"?"풀 메이크업으로 외출을 준비하는 중":"화장하며 외출을 준비하는 중";
+    if(makeup==="선크림·기초만")parts.push("스킨케어를 마친 뒤 선크림과 필요한 기초 제품을 얇게 바르며 피부 표현을 정돈했어요.");
+    else if(makeup==="가벼운 메이크업")parts.push("기초를 가볍게 정리하고 필요한 부분만 자연스럽게 다듬었어요.");
+    else if(makeup==="포인트 메이크업")parts.push(`${styles.length?`${styles[0]} 스타일에 맞춰 `:""}눈이나 입술 가운데 오늘 강조할 한 곳을 골라 색과 선을 조절했어요.`);
+    else parts.push(`${styles.length?`${styles.join("·")} 느낌을 살리되 `:""}기초부터 색조까지 순서대로 완성하고 조명에 따라 색이 달라 보이지 않는지 확인했어요.`);
+  }else if(makeup==="스킨케어만"){
+    title="아침 스킨케어를 하는 중";
+    parts.push("세안 뒤 자기 피부에 맞는 제품을 순서대로 바르고 흡수될 시간을 두었어요.");
+  }
+  if(hair){
+    if(!title)title="머리를 정돈하며 외출을 준비하는 중";
+    const style=hairStyles.length?hairStyles[hash(`${c.id}:${dayKey(date)}:hair-style`)%hairStyles.length]:"평소 방식";
+    parts.push(`${hair}의 결을 살피며 ${style}으로 정돈하고 흐트러진 부분을 손봤어요.`);
+  }
+  if(!title)return null;
+  return homeEntry(c,time,title,personalityFlavor(c,parts.join(" "),`appearance-morning:${makeup||"hair"}`),"bath");
+}
+
+function appearanceCareEvent(c,time,date){
+  const a=appearanceProfile(c),origin=configuredAppearanceValue(a.hairColorOrigin),frequency=a.salonFrequency||"자동 · 설정에 맞춤";
+  const dyed=/염색/.test(origin),hasHairSetting=!!hairLookPhrase(c);
+  if(!hasHairSetting&&frequency==="자동 · 설정에 맞춤")return null;
+  const interval={
+    "거의 가지 않음":120,
+    "3~4개월에 한 번":90,
+    "1~2개월에 한 번":45,
+    "한 달에 한 번":30,
+    "2주에 한 번":14,
+    "주 1회 이상":7
+  }[frequency]||(dyed?21:75);
+  if(hash(`${c.id}:${dayKey(date)}:salon-visit`)%interval!==0)return null;
+  const salons=(activityTown(c,date)?.places||[]).filter(place=>/미용실|헤어|뷰티|이발/.test(`${place.type||""} ${place.name||""}`));
+  const salon=salons.length?salons[hash(`${c.id}:${dayKey(date)}:salon-place`)%salons.length]:null;
+  if(salon){
+    const color=hairColorText(a.hairColor);
+    const desc=dyed
+      ?`${color?`${color} 머리의 `:""}색이 빠진 정도와 자란 뿌리를 확인한 뒤 원하는 색과 손상 관리 범위를 미용사와 구체적으로 상의했어요.`
+      :"평소 기장과 손질 습관을 설명하고 오늘 다듬을 길이와 스타일을 직접 골랐어요.";
+    return entry(time,`${salon.name}에서 머리를 관리하는 중`,desc,{townId:activityTown(c,date)?.id,placeId:salon.id,mood:"관리"});
+  }
+  const desc=dyed
+    ?"거울로 염색한 머리의 색 빠짐과 자란 뿌리를 확인하고, 원하는 색을 유지할 수 있는 날짜로 미용실 예약을 잡았어요."
+    :"머리 길이와 손질하기 불편한 부분을 확인하고 다음에 다듬을 때 설명할 내용을 메모했어요.";
+  return homeEntry(c,time,"머리 상태를 확인하고 미용실 일정을 잡는 중",desc,"bath");
+}
 
 function morningScripts(c,date){
   const likes=[...(c.hobbies||[]),...(c.interests||[])],seed=`${c.id}:${dayKey(date)}:morning`;
@@ -903,7 +988,7 @@ function relationshipHomeEntry(c,pick,time,date){
   const suffocating=/숨 막힘|공간 공유는 불편/.test(comfort);
   const goodRapport=/농담과 장난은 잘 통함|대화는 편안함|농담과 장난이 잘 통함|공간도 대화도 완벽/.test(comfort);
   const endingSoon=/언제든 끝날 수 있다고 생각함|곧 헤어질 거라고 예상함/.test(expectation);
-  const aggressive=/몸으로 밀어내고 싶은 충동|해치고 싶은 충동|죽이고 싶을 만큼 격한 충동/.test(aggression);
+  const aggressive=!/없음|전혀 느끼지|행동하지 않|스스로 멈춤/.test(aggression)&&/몸으로 밀어내고 싶은 충동|해치고 싶은 충동|죽이고 싶을 만큼 격한 충동/.test(aggression);
   const highConflict=/자주 충돌함|격렬하게 충돌함|파국적인 충돌을 반복함/.test(conflictIntensity);
   const siblingRelation=combinedTypes.includes("형제·자매")||r.type==="형제·자매";
   const romanticFeeling=/연애 감정|깊이 사랑|없어서는/.test(overall);
@@ -920,10 +1005,14 @@ function relationshipHomeEntry(c,pick,time,date){
   const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
   const opennessAllows=openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
   const attractionAllowed=opennessAllows&&!(c.attractedGenders||[]).includes("없음")&&(c.attractedGenders||[]).includes(other.gender);
-  const otherTraits=[...(other.appearanceTags||[]),...(other.bodyProfile?.physicalTraits||[]),other.job,other.jobTitle,other.wealth,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
+  const otherTraits=[...(other.appearanceTags||[]),...(other.bodyProfile?.physicalTraits||[]),...appearanceTraitTags(other),other.bodyProfile?.bodySize,other.job,other.jobTitle,other.wealth,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
   const matchedLooks=(c.attractionTraits||[]).filter(tag=>otherTraits.includes(tag));
   const noticesLooks=/꽤 중요하게 봄|외모에 크게 끌림/.test(c.appearanceInterest||"");
   const visuallyDrawn=attractionAllowed&&noticesLooks&&(matchedLooks.length||/매력적임|매우 아름답거나 잘생김|시선을 사로잡음/.test(other.appearanceLevel||""));
+  const otherEyes=eyeLookPhrase(other),otherHair=hairLookPhrase(other),selfHair=hairLookPhrase(c);
+  const otherAnnoyed=/종종 귀찮|많이 귀찮|보기만 해도 피곤|자주 성가|부담/.test(otherView.annoyance||"");
+  const reactsAngrily=/바로 따짐|끝까지 결론/.test(c.conflictStyle||"")&&/쉽게 욱함|거의 참지 않음/.test(c.impulseControl||"");
+  const hairTeasingConflict=!!selfHair&&highConflict&&otherAnnoyed&&reactsAngrily;
   const interferenceBoost={방관자:-22,"요청할 때만 도움":-5,"적당히 관여":0,"챙기고 확인함":8,"강하게 간섭함":20,통제광:34}[c.interference]||0;
   const conflict=Math.max(0,+(r.conflict||0)+interferenceBoost),intimacy=+(r.intimacy||0);
   let scripts;
@@ -1005,7 +1094,21 @@ function relationshipHomeEntry(c,pick,time,date){
   ];
   else if(unaware&&hating)scripts=[
     [`${other.name}에게 유난히 날이 서는 이유를 모르는 중`,`${other.name}의 평범한 행동에도 신경이 곤두섰지만 그 감정이 분노나 미움이라고는 인정하지 않았어요. ${/우정/.test(awareness)?"가까운 사이라 유난히 예민해지는 것뿐이라고 우정으로 잘못 해석했어요.":"피곤해서 그렇다고 넘기며 대답을 짧게 잘랐어요."}`,"living"],
-    [`${other.name}을 무심코 피하면서도 이유를 부정하는 중`,`같은 공간에 들어온 ${other.name}을 보자 자연스럽게 거리를 벌렸어요. ${/우정/.test(awareness)?"서로 편한 사이여서 굳이 말을 섞지 않는 것이라고 생각했지만 실제로는 불쾌함을 피하고 있었어요.":"불편함의 정체를 들여다보는 대신 혼자 있고 싶을 뿐이라고 생각했어요."}`,"study"]
+      [`${other.name}을 무심코 피하면서도 이유를 부정하는 중`,`같은 공간에 들어온 ${other.name}을 보자 자연스럽게 거리를 벌렸어요. ${/우정/.test(awareness)?"서로 편한 사이여서 굳이 말을 섞지 않는 것이라고 생각했지만 실제로는 불쾌함을 피하고 있었어요.":"불편함의 정체를 들여다보는 대신 혼자 있고 싶을 뿐이라고 생각했어요."}`,"study"]
+  ];
+  else if(hairTeasingConflict)scripts=[
+    [`${other.name}의 머리 놀림에 화가 난 중`,`${subject(other.name)} ${object(selfHair)} 두고 같은 말을 거듭 놀리자 얼굴이 굳었어요. 웃어넘기지 않고 싫다고 분명히 말한 뒤, 더 이어지면 자리를 뜨겠다고 선을 그었어요.`,"living"],
+    [`${other.name}에게 머리 이야기를 그만하라고 따지는 중`,`${subject(other.name)} ${object(selfHair)} 웃음거리로 삼자 곧바로 말을 끊었어요. 외형을 평가할 권리는 없다고 분명히 짚고 사과할 때까지 거리를 두었어요.`,"living"]
+  ];
+  else if((officialRomance||loving)&&noticesLooks&&!hating&&!uncomfortable&&!distrust&&(otherEyes||otherHair))scripts=[
+    ...(otherEyes?[
+      [`${other.name}의 눈을 가만히 들여다보는 중`,`${other.name}과 가까이 마주 앉아 ${object(otherEyes)} 잠시 들여다보았어요. 눈빛이 달라지는 순간을 알아차리고도 품평하듯 말하지 않고 다정하게 시선을 맞췄어요.`,"living"],
+      [`${other.name}의 눈빛에 시선이 머무는 중`,`${other.name}의 ${otherEyes}에 비친 표정이 문득 선명하게 보여 말끝을 늦췄어요. 가까운 사이에서만 허용된 거리와 상대의 반응을 살피며 시선을 맞췄어요.`,"living"]
+    ]:[]),
+    ...(otherHair?[
+      [`${other.name}의 머리를 바라보다 미소 짓는 중`,`${other.name}의 ${otherHair}가 움직일 때마다 달라지는 모양을 눈으로 따라갔어요. 손을 대기 전에는 먼저 괜찮은지 묻고, 허락받은 범위 안에서만 가까이 다가갔어요.`,"living"],
+      [`${other.name}의 달라진 머리를 알아보는 중`,`${other.name}의 ${otherHair}가 평소와 다르게 정돈된 것을 알아차렸어요. 잘 어울린다는 말을 구체적으로 건네되 바뀐 이유를 캐묻지는 않았어요.`,"living"]
+    ]:[])
   ];
   else if(visuallyDrawn)scripts=[
     [`${other.name}의 인상에 잠깐 시선이 머무는 중`,`${matchedLooks.length?`${other.name}의 ${matchedLooks[0]} 모습이 평소 좋아하던 인상과 닮아 눈길이 갔어요.`:`${other.name}의 눈에 띄는 인상이 문득 신경 쓰였어요.`} 곧바로 시선을 거두고 하던 이야기를 이어 갔어요.`,"living"],
@@ -1410,9 +1513,13 @@ function build(c,date=new Date()){
   const list=[entry(wake,"기상",wakeScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"평온",stress:5})];
   list.push(...recordedInteractionEntries(c,date));
   list.push(homeEntry(c,wake+20,"욕실에서 씻는 중","세면대 앞에서 세수하고 이를 닦으며 잠을 깨고 있어요.","bath"));
-  list.push(homeEntry(c,wake+45,"주방에서 아침 준비 중","냉장고를 열어 먹을 것을 고르고 식탁에 아침을 차리고 있어요.","kitchen"));
+  const morningAppearance=appearanceMorningEntry(c,wake+38,date);
+  if(morningAppearance)list.push(morningAppearance);
+  const makeupLevel=appearanceProfile(c).makeupLevel||"하지 않음";
+  const breakfastMinute=Math.max(wake+45+({스킨케어만:5,"선크림·기초만":8,"가벼운 메이크업":12,"포인트 메이크업":18,"풀 메이크업":25}[makeupLevel]||0),morningAppearance?wake+53:wake+45);
+  list.push(homeEntry(c,breakfastMinute,"주방에서 아침 준비 중","냉장고를 열어 먹을 것을 고르고 식탁에 아침을 차리고 있어요.","kitchen"));
   const morningRelation=related(c).filter(x=>homeIdForDate(x.other,date)===currentHomeId).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
-  const morningTogether=morningRelation&&relationshipMorningEntry(c,morningRelation,wake+58,date);
+  const morningTogether=morningRelation&&relationshipMorningEntry(c,morningRelation,breakfastMinute+20,date);
   if(morningTogether)list.push(morningTogether);
   const purpose=travelPurpose(c,date),destination=purpose.town,homeTown=townFor(c,date);
   const destinationPurpose=purpose.label;
@@ -1454,6 +1561,7 @@ function build(c,date=new Date()){
     list.push(entry(lunchMinute,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
   list.push(contextualDailyEvent(c,930,date));
+  const hairCare=(!work||work.home)?appearanceCareEvent(c,990,date):null;if(hairCare)list.push(hairCare);
   const financialStress=financialStressEvent(c,1005,date);if(financialStress)list.push(financialStress);
   const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
   const birthdayCharacters=state.order.map(id=>state.characters[id]).filter(character=>character?.birthday===birthdayKey);
@@ -1488,8 +1596,8 @@ function build(c,date=new Date()){
       const partner=state.characters[social.withId],dateGroup=`date-${[c.id,social.withId].sort().join("-")}-${dayKey(date)}`;
       const datePlace=interactionPlace(social.placeId,social.townId||c.townId);
       const purpose=datePurpose(datePlace||{type:"집",id:`home:${currentHomeId}`},c,partner,date);
-      social.title=`${partner?.name}와 데이트 · ${purpose}`;
-      social.desc=`${partner?.name}와 오늘 하기로 정한 ‘${purpose}’을(를) 이어 가며 각자의 속도와 취향에 맞춰 시간을 보내고 있어요.`;
+      social.title=resolveEntityParticles(`${partner?.name}와 데이트 · ${purpose}`);
+      social.desc=resolveEntityParticles(`${partner?.name}와 오늘 하기로 정한 ${object(purpose)} 이어 가며 각자의 속도와 취향에 맞춰 시간을 보내고 있어요.`);
       social.dateGroup=dateGroup;social.mood="데이트";
       list.push(entry(social.minute-25,`${partner?.name}와 데이트 · ${purpose} 약속에서 만남`,`${partner?.name}와 만나 오늘 할 일을 확인하고 필요한 표나 간식, 자리를 함께 준비하고 있어요.`,{townId:social.townId,placeId:social.placeId,withId:social.withId,mood:"데이트",dateGroup}));
       list.push(entry(social.minute+65,`${partner?.name}와 데이트 · ${purpose} 마무리`,`${partner?.name}와 오늘 가장 좋았던 순간을 하나씩 이야기하고, 더 머물지 다음 장소로 갈지 함께 정하고 있어요.`,{townId:social.townId,placeId:social.placeId,withId:social.withId,mood:"데이트",dateGroup}));
@@ -1567,7 +1675,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260806be";
+const ENGINE_VERSION="20260806bf";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,Object.keys(home?.rooms||{}),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

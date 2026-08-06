@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260806be";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806be";
+import {state,active,characterViewFor} from "./state.js?v=20260806bf";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260806bf";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -468,31 +468,71 @@ function characterTraitChoice(c){
   </section>`;
 }
 const HEALTH_CONDITIONS=["당뇨병","고혈압","고지혈증","심혈관 질환","천식","관절 질환","만성 통증","신장 질환","기타 건강 상태"];
-const PHYSICAL_TRAITS=["키가 큼","키가 작음","마른 체형","슬림한 체형","통통한 체형","비만 체형","근육질","탄탄한 체형","어깨가 넓음","손이 큼","흉터가 있음","문신이 있음"];
+const BODY_SIZES=["설정하지 않음","매우 마른 체형","마른 체형","슬림한 체형","보통 체형","통통한 체형","비만 체형","근육질 체형","탄탄한 체형","골격이 큰 체형","골격이 작은 체형"];
+const PHYSICAL_TRAITS=["키가 매우 큼","키가 큼","키가 작음","키가 매우 작음","팔다리가 긴 편","어깨가 넓음","어깨가 좁음","손이 큼","손이 작음","근육이 발달함","유연한 편","흉터가 있음","문신이 있음","주근깨가 있음","점이 있음","보조개가 있음","피어싱을 함","피부가 밝은 편","중간 피부톤","피부가 어두운 편","구릿빛 피부","창백한 편"];
+const HAIR_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","밝은 갈색","금발","백발·은발","회색","청회색","빨간색","주황색","분홍색","보라색","파란색","청록색","초록색","여러 색","기타"];
+const HAIR_ORIGINS=["설정하지 않음","자연모","전체 염색","부분 염색","탈색 후 염색","가발·헤어피스"];
+const HAIR_LENGTHS=["설정하지 않음","삭발·매우 짧음","귀 위 길이","숏컷","단발","어깨 길이","가슴 길이","허리 길이","허리보다 김"];
+const HAIR_TEXTURES=["설정하지 않음","직모","약한 반곱슬","강한 반곱슬","곱슬","강한 곱슬"];
+const HAIR_STYLES=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","올백","보브컷","레이어드컷","울프컷","투블럭","언더컷","포니테일","양갈래","반묶음","땋은 머리","번 헤어","드레드록","히메컷","웨이브 스타일","고데기 스타일링"];
+const EYE_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","연갈색","호박색","금색","초록색","청록색","파란색","청회색","회색","보라색","분홍색","빨간색","백색","여러 색","기타"];
+const MAKEUP_LEVELS=["하지 않음","스킨케어만","선크림·기초만","가벼운 메이크업","포인트 메이크업","풀 메이크업"];
+const MAKEUP_STYLES=["내추럴","글로우","매트","음영","아이 메이크업 중심","립 중심","화려한 색조","무대·촬영용","고딕","복고풍"];
+const SALON_FREQUENCIES=["자동 · 설정에 맞춤","거의 가지 않음","3~4개월에 한 번","1~2개월에 한 번","한 달에 한 번","2주에 한 번","주 1회 이상"];
+const SURGERY_AREAS=["눈","코","입술","윤곽·턱","피부·흉터","가슴","체형 교정","성별확정 의료 과정","기타"];
 const ACCESSIBILITY_PREFERENCES=["도움 전에 먼저 물어보기","보조기기 함부로 만지지 않기","접근 가능한 동선 먼저 확인","쉬는 시간을 충분히 두기","조용한 자리 선호","문자·시각 정보 함께 제공","말로 주변 정보 설명","직접 선택하고 결정할 시간 주기"];
 function profileSelect(label,path,options,current){
   return `<label>${label}<select data-body-field="${path}">${options.map(value=>`<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`).join("")}</select></label>`;
 }
 function profileMultiChoice(title,key,options,selected){
   const values=new Set(selected||[]);
-  return `<fieldset><legend>${title}</legend><div class="chips">${options.map(value=>`<button type="button" data-body-list="${key}" data-value="${esc(value)}" class="${values.has(value)?"on":""}">${esc(value)}</button>`).join("")}</div></fieldset>`;
+  const all=[...options,...[...values].filter(value=>!options.includes(value))];
+  return `<fieldset><legend>${title}</legend><div class="chips">${all.map(value=>`<button type="button" data-body-list="${key}" data-value="${esc(value)}" class="${values.has(value)?"on":""}">${esc(value)}</button>`).join("")}</div></fieldset>`;
 }
-function appearanceSettings(c){
-  const appearanceTags=Array.isArray(c.appearanceTags)?c.appearanceTags:[],attractionTraits=Array.isArray(c.attractionTraits)?c.attractionTraits:[];
-  return `<section class="setting-card appearance-settings">
-    <h2>외형과 외모 인식</h2>
-    <p>캐릭터의 외형과, 이 캐릭터가 다른 사람의 외모를 얼마나 중요하게 보는지를 따로 정해요. 외모 설정만으로 관계나 호감이 자동 생성되지는 않습니다.</p>
+function profileAttractionSettings(c){
+  const attractionTraits=Array.isArray(c.attractionTraits)?c.attractionTraits:[];
+  return `<section class="setting-card profile-attraction-settings">
+    <h2>끌림과 외모 인식</h2>
+    <p>이 캐릭터가 상대의 외모를 얼마나 보는지와, 어떤 외형·성격·말투·삶의 태도에 끌리는지를 정해요. 이 설정만으로 관계나 호감은 자동 생성되지 않습니다.</p>
     <div class="health-field-grid">
-      <label>외모가 눈에 띄는 정도<select data-field="appearanceLevel">${["매우 추함","못생김","눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"].map(value=>`<option ${value===(c.appearanceLevel||"보통")?"selected":""}>${value}</option>`).join("")}</select></label>
       <label>상대의 외모를 보는 정도<select data-field="appearanceInterest">${["거의 보지 않음","조금 봄","보통","꽤 중요하게 봄","외모에 크게 끌림"].map(value=>`<option ${value===(c.appearanceInterest||"보통")?"selected":""}>${value}</option>`).join("")}</select></label>
     </div>
     <div class="profile-tag-actions">
-      <button type="button" data-profile-tags="appearanceTags">이 캐릭터의 외모 태그 정하기</button>
-      <small data-profile-tags-summary="appearanceTags">${appearanceTags.length?esc(appearanceTags.join(" · ")):"정하지 않음"}</small>
-      <button type="button" data-profile-tags="attractionTraits">이 캐릭터가 끌리는 외형 정하기</button>
+      <button type="button" data-profile-tags="attractionTraits">이 캐릭터가 끌리는 특성 정하기</button>
       <small data-profile-tags-summary="attractionTraits">${attractionTraits.length?esc(attractionTraits.join(" · ")):"정하지 않음"}</small>
     </div>
-    <small>외모 관련 장면은 끌리는 대상, 새로운 사람에게 끌리는 정도, 상대별 시선과 공식 관계까지 함께 허용할 때만 후보가 됩니다.</small>
+    <small>상대별 시선과 관계 단계가 먼저이며, 끌리는 특성은 그 관계 안에서 시선이 머무는 이유와 표현 후보에만 반영됩니다.</small>
+  </section>`;
+}
+function physicalAppearanceSettings(c){
+  const appearanceTags=Array.isArray(c.appearanceTags)?c.appearanceTags:[];
+  const p=c.bodyProfile||{},a=p.appearance||{};
+  return `<section class="setting-card physical-appearance-settings">
+    <h2>신체와 외형</h2>
+    <p>직접 고른 항목만 묘사에 사용합니다. 머리·눈·화장 설정은 아침 준비, 미용실, 가까운 관계의 시선 같은 생활 장면에 드물게 반영돼요.</p>
+    <div class="health-field-grid">
+      <label>외모가 눈에 띄는 정도<select data-field="appearanceLevel">${["매우 추함","못생김","눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"].map(value=>`<option ${value===(c.appearanceLevel||"보통")?"selected":""}>${value}</option>`).join("")}</select></label>
+      ${profileSelect("체형","bodySize",BODY_SIZES,p.bodySize||"설정하지 않음")}
+      ${profileSelect("현재 머리색","appearance.hairColor",HAIR_COLORS,a.hairColor||"설정하지 않음")}
+      ${profileSelect("머리색 설정","appearance.hairColorOrigin",HAIR_ORIGINS,a.hairColorOrigin||"설정하지 않음")}
+      ${profileSelect("본래 머리색 · 염색모일 때","appearance.naturalHairColor",HAIR_COLORS,a.naturalHairColor||"설정하지 않음")}
+      ${profileSelect("머리 기장","appearance.hairLength",HAIR_LENGTHS,a.hairLength||"설정하지 않음")}
+      ${profileSelect("머리 결","appearance.hairTexture",HAIR_TEXTURES,a.hairTexture||"설정하지 않음")}
+      ${profileSelect("왼쪽 눈 색","appearance.leftEyeColor",EYE_COLORS,a.leftEyeColor||"설정하지 않음")}
+      ${profileSelect("오른쪽 눈 색","appearance.rightEyeColor",EYE_COLORS,a.rightEyeColor||"설정하지 않음")}
+      ${profileSelect("화장 정도","appearance.makeupLevel",MAKEUP_LEVELS,a.makeupLevel||"하지 않음")}
+      ${profileSelect("미용실 방문 빈도","appearance.salonFrequency",SALON_FREQUENCIES,a.salonFrequency||"자동 · 설정에 맞춤")}
+      ${profileSelect("성형·외형 의료 시술 여부","appearance.cosmeticSurgery",["설정하지 않음","하지 않음","과거에 받음","정기적으로 관리 중","받을 계획이 있음"],a.cosmeticSurgery||"설정하지 않음")}
+    </div>
+    ${profileMultiChoice("머리 스타일 · 여러 개 선택 가능","appearance.hairStyles",HAIR_STYLES,a.hairStyles)}
+    ${profileMultiChoice("화장 스타일 · 화장할 때 반영","appearance.makeupStyles",MAKEUP_STYLES,a.makeupStyles)}
+    ${profileMultiChoice("신체 특성 · 직접 고른 항목만 반영","physicalTraits",PHYSICAL_TRAITS,p.physicalTraits)}
+    ${profileMultiChoice("성형·외형 의료 시술 부위 · 원할 때만","appearance.cosmeticSurgeryAreas",SURGERY_AREAS,a.cosmeticSurgeryAreas)}
+    <div class="profile-tag-actions">
+      <button type="button" data-profile-tags="appearanceTags">그 외 외모 태그 정하기</button>
+      <small data-profile-tags-summary="appearanceTags">${appearanceTags.length?esc(appearanceTags.join(" · ")):"정하지 않음"}</small>
+    </div>
+    <div class="representation-warning compact"><b>표현 원칙</b><p>체형, 피부, 성형 여부를 우열이나 웃음거리로 만들지 않습니다. 성형 부위는 설정표 보관용이며 상대가 함부로 알아채거나 품평하는 장면을 만들지 않아요. 머리 놀림 같은 갈등 장면도 실제 상대별 성가심·갈등·공격 표현 범위가 함께 설정된 경우에만 후보가 됩니다.</p></div>
   </section>`;
 }
 function healthAccessibilitySettings(c){
@@ -500,10 +540,9 @@ function healthAccessibilitySettings(c){
   const sideOptions=["사용하지 않음","왼쪽","오른쪽","양쪽"];
   const sensorySides=["설정하지 않음","왼쪽","오른쪽","양쪽"];
   return `<section class="setting-card health-accessibility-settings">
-    <h2>신체·건강·접근성 설정 · 선택 사항</h2>
+    <h2>건강·장애·접근성 설정 · 선택 사항</h2>
     <div class="representation-warning"><b>표현 안전 안내</b><p>이 항목은 진단이나 의학 조언이 아닙니다. 장애·질환·체형을 무능, 비극, 웃음거리, 영감의 소재, 폭력성과 연결하지 않아요. 생활 장면에는 당사자가 직접 고른 보조기기·접근성·건강 관리 방식만 가끔 반영하며, 도움은 먼저 묻고 동의받는 방식으로 표현합니다. 사람마다 선호하는 말과 경험이 다르므로 원하지 않는 항목은 고르지 않아도 됩니다.</p></div>
     <div class="health-field-grid">
-      ${profileSelect("체형", "bodySize",["설정하지 않음","비만 체형"],p.bodySize||"설정하지 않음")}
       ${profileSelect("휠체어", "wheelchair.type",["사용하지 않음","수동 휠체어","전동 휠체어","스포츠용 휠체어","기타 휠체어"],wheelchair.type||"사용하지 않음")}
       ${profileSelect("휠체어 이용 방식", "wheelchair.pattern",["","항상 이용","장거리·외출 시 이용","피로하거나 통증이 있을 때 이용","활동에 따라 바꾸어 이용"],wheelchair.pattern||"")}
       ${profileSelect("의수 사용 부위", "prostheticArm.side",sideOptions,arm.side||"사용하지 않음")}
@@ -515,7 +554,6 @@ function healthAccessibilitySettings(c){
       ${profileSelect("시각장애·저시력 부위", "vision.side",sensorySides,vision.side||"설정하지 않음")}
       ${profileSelect("시각 특성", "vision.level",["","저시력","맹·시각장애","시야 범위가 제한됨","빛에 민감함","기타"],vision.level||"")}
     </div>
-    ${profileMultiChoice("신체 특성 · 직접 고른 항목만 반영", "physicalTraits",PHYSICAL_TRAITS,p.physicalTraits)}
     ${profileMultiChoice("만성질환·건강 관리", "healthConditions",HEALTH_CONDITIONS,p.healthConditions)}
     ${profileMultiChoice("청각 접근 방식", "hearing.supports",["보청기","인공와우","수어","문자 대화","입모양이 보이는 대화","자막","조용한 환경"],hearing.supports)}
     ${profileMultiChoice("시각 접근 방식", "vision.supports",["흰지팡이","안내견","화면 읽기","확대·고대비","음성 안내","촉각 표식","동행 안내"],vision.supports)}
@@ -544,8 +582,8 @@ function character(){
   const storyGenres=["로맨스","코미디","액션","판타지","SF","스릴러","공포","미스터리","범죄","드라마","시대극","일상","청춘","가족","모험"];
   const taste=`<h2>${esc(c.name)}의 취향 선택</h2><p>‘좋아하는 장르’는 책·영화·드라마·애니메이션 등 이야기 콘텐츠 전체에 공통으로 반영돼요.</p>${chips("관심사",INTERESTS,c.interests||[],"interests")}${chips("취미",HOBBIES,c.hobbies||[],"hobbies")}${chips("음식",FOOD_PREFERENCES,c.foodPreferences||[],"foodPreferences")}${chips("좋아하는 음료",DRINKS,c.drinks||[],"drinks")}${chips("좋아하는 장르 · 이야기 전체",storyGenres,c.favoriteStoryGenres||[],"favoriteStoryGenres")}${chips("좋아하는 음악 장르",MUSIC,c.musicGenres||[],"musicGenres")}${chips("좋아하는 패션 스타일",DETAIL_OPTIONS.fashion,c.favoriteFashionStyles||[],"favoriteFashionStyles")}${chips("좋아하는 영상 종류",videoFormats,c.favoriteVideoGenres||[],"favoriteVideoGenres")}${chips("좋아하는 게임 장르",gameGenres,c.favoriteGameGenres||[],"favoriteGameGenres")}${chips("좋아하는 향 계열",PERFUME_NOTES,c.favoriteScentNotes||[],"favoriteScentNotes")}`;
   const personality=`<h2>${esc(c.name)}의 성격</h2><p>전체 유형을 먼저 고르고, 아래에서 세부 성향과 서사·인지 특성을 조절해 주세요.</p>${personalityTypeChoice(c)}${personalityChoice(c,"사람과 어울리는 방식","socialStyle",["혼자가 편함","낯을 가림","조용히 어울림","먼저 다가감","무리의 중심"])}${personalityChoice(c,"정보를 받아들이는 방식","perceptionStyle",["현실과 경험 중시","구체적인 편","균형형","가능성 중시","직관과 상상 중시"])}${personalityChoice(c,"판단하는 방식","decisionStyle",["논리 우선","이성적인 편","균형형","마음을 살핌","공감 우선"])}${personalityChoice(c,"일정을 다루는 방식","planningStyle",["무계획","즉흥적","유연한 편","상황에 따라","미리 정리함","계획적","강박적으로 계획함"])}${personalityChoice(c,"행동을 전환하는 방식","activityTempo",["한 가지씩 차분히","잠깐 쉬고 다음 일","상황에 따라","생각나면 바로 움직임","부산스럽게 여러 일을 오감","허둥대며 주의가 자주 옮겨감"],"활동적인 정도와 별개예요. 뒤쪽일수록 하던 중 다른 일이 눈에 들어오는 행동이 늘어요.")}${personalityChoice(c,"깔끔한 정도","neatness",["어질러도 편함","조금 느슨함","보통","정돈을 좋아함","흐트러짐을 못 참음","결벽에 가까움"])}${personalityChoice(c,"옷을 입는 감각","fashionSense",["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"],"자동 코디의 색 조합·상황 적합성·액세서리 사용에 반영돼요.")}${personalityChoice(c,"남에게 관여하는 정도","interference",["방관자","요청할 때만 도움","적당히 관여","챙기고 확인함","강하게 간섭함","컨트롤프릭"],"방관자는 웬만한 일에 끼어들지 않고, 컨트롤프릭은 상대의 일정과 행동까지 통제하려 해 갈등 가능성이 커져요.")}${personalityChoice(c,"갈등 대응","conflictStyle",["피하는 편","시간을 두고 말함","대화로 해결","바로 따짐","끝까지 결론을 냄"])}${personalityChoice(c,"애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"])}${personalityChoice(c,"생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"])}`;
-  const profileWithLicense=`<section class="profile-license">${townAssignment(c)}${profile}<label class="check"><input type="checkbox" data-character-check="${c.id}" data-field="driverLicense" ${c.driverLicense?"checked":""}> 운전면허 있음</label></section>`;
-  const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>외모, 신체 특성, 건강과 접근성을 이곳에서 정해요. 고르지 않은 특성은 장면에서 지어내지 않습니다.</p></div>${appearanceSettings(c)}${healthAccessibilitySettings(c)}</section>`;
+  const profileWithLicense=`<section class="profile-license">${townAssignment(c)}${profile}<label class="check"><input type="checkbox" data-character-check="${c.id}" data-field="driverLicense" ${c.driverLicense?"checked":""}> 운전면허 있음</label>${profileAttractionSettings(c)}</section>`;
+  const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>체형, 머리, 눈, 화장 같은 외형과 건강·접근성을 나누어 정해요. 고르지 않은 특성은 장면에서 지어내지 않습니다.</p></div>${physicalAppearanceSettings(c)}${healthAccessibilitySettings(c)}</section>`;
   const personalityExtras=`<section class="personality-extra">${personalityChoice(c,"유머·장난 성향","humorStyle",["장난을 거의 하지 않음","건조한 농담만 함","가끔 장난을 즐김","장난을 즐김","유머로 분위기를 이끎"],"웃음·농담·장난 장면의 빈도와 표현을 정해요.")}${personalityChoice(c,"감정 표현의 크기","emotionalExpression",["표정 변화가 거의 없음","감정을 잘 드러내지 않음","상황에 따라 표현함","표현이 풍부함","감정이 바로 드러남"],"같은 감정이라도 표정과 몸짓으로 얼마나 드러나는지 정해요.")}${personalityChoice(c,"충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],"공격 충동이 있어도 이 성향과 실제 행동 단계가 허용해야 행동으로 나와요.")}</section>`;
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${personalityExtras}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:profileWithLicense;
   const limit=characterLimit();

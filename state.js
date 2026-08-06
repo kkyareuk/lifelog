@@ -23,6 +23,21 @@ const rooms=()=>({
 const defaultBodyProfile=()=>({
   bodySize:"설정하지 않음",
   physicalTraits:[],
+  appearance:{
+    hairColor:"설정하지 않음",
+    hairColorOrigin:"설정하지 않음",
+    naturalHairColor:"설정하지 않음",
+    hairLength:"설정하지 않음",
+    hairTexture:"설정하지 않음",
+    hairStyles:[],
+    leftEyeColor:"설정하지 않음",
+    rightEyeColor:"설정하지 않음",
+    makeupLevel:"하지 않음",
+    makeupStyles:[],
+    salonFrequency:"자동 · 설정에 맞춤",
+    cosmeticSurgery:"설정하지 않음",
+    cosmeticSurgeryAreas:[]
+  },
   healthConditions:[],
   healthOther:"",
   wheelchair:{type:"사용하지 않음",pattern:""},
@@ -43,11 +58,30 @@ const normalizedBodyProfile=value=>{
     type:String(source[key]?.type||defaults[key].type||""),
     custom:String(source[key]?.custom||"").slice(0,120)
   });
+  const appearanceSource=source.appearance&&typeof source.appearance==="object"&&!Array.isArray(source.appearance)?source.appearance:{};
+  const appearanceDefaults=defaults.appearance;
   return{
     ...defaults,
     ...source,
     bodySize:String(source.bodySize||defaults.bodySize),
-    physicalTraits:Array.isArray(source.physicalTraits)?[...new Set(source.physicalTraits.map(String))].slice(0,12):[],
+    physicalTraits:Array.isArray(source.physicalTraits)?[...new Set(source.physicalTraits.map(String))].slice(0,20):[],
+    appearance:{
+      ...appearanceDefaults,
+      ...appearanceSource,
+      hairColor:String(appearanceSource.hairColor||appearanceDefaults.hairColor),
+      hairColorOrigin:String(appearanceSource.hairColorOrigin||appearanceDefaults.hairColorOrigin),
+      naturalHairColor:String(appearanceSource.naturalHairColor||appearanceDefaults.naturalHairColor),
+      hairLength:String(appearanceSource.hairLength||appearanceDefaults.hairLength),
+      hairTexture:String(appearanceSource.hairTexture||appearanceDefaults.hairTexture),
+      hairStyles:Array.isArray(appearanceSource.hairStyles)?[...new Set(appearanceSource.hairStyles.map(String))].slice(0,8):[],
+      leftEyeColor:String(appearanceSource.leftEyeColor||appearanceDefaults.leftEyeColor),
+      rightEyeColor:String(appearanceSource.rightEyeColor||appearanceDefaults.rightEyeColor),
+      makeupLevel:String(appearanceSource.makeupLevel||appearanceDefaults.makeupLevel),
+      makeupStyles:Array.isArray(appearanceSource.makeupStyles)?[...new Set(appearanceSource.makeupStyles.map(String))].slice(0,6):[],
+      salonFrequency:String(appearanceSource.salonFrequency||appearanceDefaults.salonFrequency),
+      cosmeticSurgery:String(appearanceSource.cosmeticSurgery||appearanceDefaults.cosmeticSurgery),
+      cosmeticSurgeryAreas:Array.isArray(appearanceSource.cosmeticSurgeryAreas)?[...new Set(appearanceSource.cosmeticSurgeryAreas.map(String))].slice(0,8):[]
+    },
     healthConditions:Array.isArray(source.healthConditions)?[...new Set(source.healthConditions.map(String))].slice(0,12):[],
     healthOther:String(source.healthOther||"").slice(0,200),
     wheelchair:normalizeDevice("wheelchair","사용하지 않음"),
@@ -115,7 +149,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:10,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:11,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -125,6 +159,7 @@ const fresh=()=>({schema:10,activeTab:"character",characterPane:"profile",active
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===11)return normalizeHomes(x);
   if(x.schema===10)return normalizeHomes(x);
   if(x.schema===9)return normalizeHomes(x);
   if(x.schema===8)return normalizeHomes(x);
@@ -153,7 +188,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=10;
+  x.schema=11;
   x.activeTab=["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(x.activeTab)?x.activeTab:"character";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";

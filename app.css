@@ -611,10 +611,15 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .personality-extra{margin-top:24px}
 .character-traits-pane{display:grid;gap:22px}
 .traits-pane-heading{display:grid;gap:7px}.traits-pane-heading h2,.traits-pane-heading p{margin:0}
-.traits-pane-heading p,.appearance-settings>p,.appearance-settings>small{color:var(--muted);line-height:1.6}
-.appearance-settings{display:grid;gap:14px;border:2px solid color-mix(in srgb,var(--p) 18%,var(--line));background:color-mix(in srgb,var(--p) 3%,#fff)}
-.appearance-settings>h2,.appearance-settings>p{margin:0}
-.appearance-settings .profile-tag-actions{background:#fff}
+.traits-pane-heading p,.physical-appearance-settings>p,.physical-appearance-settings>small,.profile-attraction-settings>p,.profile-attraction-settings>small{color:var(--muted);line-height:1.6}
+.physical-appearance-settings,.profile-attraction-settings{display:grid;gap:14px;border:2px solid color-mix(in srgb,var(--p) 18%,var(--line));background:color-mix(in srgb,var(--p) 3%,#fff)}
+.physical-appearance-settings>h2,.physical-appearance-settings>p,.profile-attraction-settings>h2,.profile-attraction-settings>p{margin:0}
+.physical-appearance-settings .profile-tag-actions,.profile-attraction-settings .profile-tag-actions{background:#fff}
+.physical-appearance-settings fieldset{margin:0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.physical-appearance-settings legend{padding:0 7px;font-weight:900}
+.physical-appearance-settings fieldset .chips{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;border:0}
+.physical-appearance-settings fieldset button.on{color:#fff;border-color:transparent;background:var(--grad)}
+.representation-warning.compact{margin-top:2px}
 .personality-type-choice{margin-bottom:20px;border-width:2px;background:color-mix(in srgb,var(--p) 5%,#fff)}
 .personality-type-choice>div{gap:9px}
 .character-trait-settings{display:grid;gap:14px;margin-top:32px;padding-top:28px;border-top:1px solid var(--line)}
@@ -641,7 +646,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .health-accessibility-settings fieldset button.on{color:#fff;border-color:transparent;background:var(--grad)}
 .health-accessibility-settings textarea{width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--line);border-radius:15px;background:#f5f7fb;padding:13px;font:inherit}
 .health-accessibility-settings>small{color:var(--muted);line-height:1.6}
-@media(max-width:700px){.health-field-grid{grid-template-columns:1fr}.health-accessibility-settings{padding:14px}.representation-warning{padding:13px}}
+@media(max-width:700px){.health-field-grid{grid-template-columns:1fr}.health-accessibility-settings,.physical-appearance-settings,.profile-attraction-settings{padding:14px}.representation-warning{padding:13px}}
 .character-view-fields{contain:layout style}
 .character-view-fields label{content-visibility:auto;contain-intrinsic-size:110px}
 
