@@ -609,10 +609,62 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   line-height:1.55;
 }
 .personality-extra{margin-top:24px}
+.character-traits-pane{display:grid;gap:22px}
+.traits-pane-heading{display:grid;gap:7px}.traits-pane-heading h2,.traits-pane-heading p{margin:0}
+.traits-pane-heading p,.appearance-settings>p,.appearance-settings>small{color:var(--muted);line-height:1.6}
+.appearance-settings{display:grid;gap:14px;border:2px solid color-mix(in srgb,var(--p) 18%,var(--line));background:color-mix(in srgb,var(--p) 3%,#fff)}
+.appearance-settings>h2,.appearance-settings>p{margin:0}
+.appearance-settings .profile-tag-actions{background:#fff}
 .personality-type-choice{margin-bottom:20px;border-width:2px;background:color-mix(in srgb,var(--p) 5%,#fff)}
 .personality-type-choice>div{gap:9px}
+.character-trait-settings{display:grid;gap:14px;margin-top:32px;padding-top:28px;border-top:1px solid var(--line)}
+.character-trait-heading{display:grid;gap:7px}
+.character-trait-settings h2,.character-trait-settings h3,.character-trait-settings p{margin:0}
+.character-trait-heading p{color:var(--muted);line-height:1.6}
+.character-trait-settings .personality-choice{margin:0}
+.character-trait-settings label{display:grid;gap:7px}
+.character-trait-settings textarea{width:100%;box-sizing:border-box;resize:vertical}
+.character-trait-settings small{color:var(--muted);line-height:1.55}
+.trait-note-field{margin-top:3px}
+.trait-note-switch{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;gap:10px!important;margin:0;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:#fff}
+.trait-note-switch input{width:20px!important;height:20px;min-height:0;margin:0}
+.health-accessibility-settings{margin-top:26px;border:2px solid color-mix(in srgb,var(--p) 22%,var(--line));background:color-mix(in srgb,var(--p) 3%,#fff)}
+.health-accessibility-settings>h2,.health-accessibility-settings>p{margin:0}
+.representation-warning{padding:15px 17px;border:1px solid #d59b55;border-radius:16px;background:#fff8ec;color:#603b22}
+.representation-warning b{display:block;margin-bottom:5px}
+.representation-warning p{margin:0;line-height:1.65}
+.health-field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.health-field-grid label,.health-accessibility-settings>label{display:grid;gap:7px;color:var(--muted)}
+.health-accessibility-settings fieldset{margin:0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.health-accessibility-settings legend{padding:0 7px;font-weight:900}
+.health-accessibility-settings fieldset .chips{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;border:0}
+.health-accessibility-settings fieldset button.on{color:#fff;border-color:transparent;background:var(--grad)}
+.health-accessibility-settings textarea{width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--line);border-radius:15px;background:#f5f7fb;padding:13px;font:inherit}
+.health-accessibility-settings>small{color:var(--muted);line-height:1.6}
+@media(max-width:700px){.health-field-grid{grid-template-columns:1fr}.health-accessibility-settings{padding:14px}.representation-warning{padding:13px}}
 .character-view-fields{contain:layout style}
 .character-view-fields label{content-visibility:auto;contain-intrinsic-size:110px}
+
+/* 여러 집·생활 거점 */
+.home-page>.title{align-items:flex-start;gap:18px}.home-page>.title h1,.home-page>.title p{margin:0}.home-page>.title p{margin-top:7px;color:var(--muted);line-height:1.55}
+.home-top-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+.home-tabs button{display:grid;gap:3px;min-width:190px;text-align:left}.home-tabs button small{font-size:11px;color:inherit;opacity:.82}
+.home-identity-editor{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;align-items:end;gap:10px;margin:14px 0;padding:15px;border:1px solid var(--line);border-radius:18px;background:#faf8f5}
+.home-identity-editor label{display:grid;gap:6px;min-width:0}.home-identity-editor .danger{white-space:nowrap}
+.resident-editor{display:grid;gap:13px}.resident-editor>.title h3,.resident-editor>.title small{margin:0}.resident-editor>.title small{display:block;margin-top:5px;color:var(--muted)}
+.resident-editor>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.resident-setting{display:grid;gap:10px;padding:10px;border:1px solid var(--line);border-radius:17px;background:#fff}
+.resident-setting>button{width:100%;justify-content:flex-start;text-align:left}.resident-setting>button span{display:grid;gap:2px}.resident-setting>button small{color:var(--muted)}
+.resident-setting.on{border-color:color-mix(in srgb,var(--p) 45%,var(--line));background:color-mix(in srgb,var(--p) 4%,#fff)}
+.residence-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;padding-top:10px;border-top:1px solid var(--line)}
+.residence-fields label,.residence-fields fieldset{display:grid;gap:5px;min-width:0;margin:0}.residence-fields input,.residence-fields select{width:100%;min-width:0}
+.residence-fields fieldset{padding:9px;border:1px solid var(--line);border-radius:13px;background:#fff}.residence-fields legend{padding:0 5px;font-size:12px;font-weight:800}
+.residence-days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.resident-editor .residence-days button{display:grid;place-items:center;min-width:0;padding:7px 2px}
+.residence-fields>[data-residence-primary]{align-self:end;justify-content:center}.residence-fields>[data-residence-primary].on{color:#fff;background:var(--grad);border-color:transparent}
+.body-pane .health-accessibility-settings{margin-top:0}
+@media(max-width:850px){.home-identity-editor{grid-template-columns:1fr 1fr}.home-identity-editor .danger{grid-column:1/-1}.resident-editor>div{grid-template-columns:1fr}}
+@media(max-width:600px){.home-page>.title{display:grid}.home-top-actions{justify-content:stretch}.home-top-actions button{flex:1}.home-identity-editor,.residence-fields{grid-template-columns:1fr}.home-identity-editor .danger{grid-column:auto}.resident-setting{padding:8px}.residence-days{gap:2px}}
+
 .native-app body{padding-top:env(safe-area-inset-top)}
 #native-network-banner{
   position:sticky;

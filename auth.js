@@ -11,8 +11,10 @@ const applyLocalTombstones=(remote,local)=>{
   const next=clone(remote||{});
   const deletedCharacters=new Set([...(local?.deletedCharacterIds||[]),...(next.deletedCharacterIds||[])].map(String));
   const deletedRelationships=new Set([...(local?.deletedRelationshipIds||[]),...(next.deletedRelationshipIds||[])].map(String));
+  const deletedHomes=new Set([...(local?.deletedHomeIds||[]),...(next.deletedHomeIds||[])].map(String));
   next.deletedCharacterIds=[...deletedCharacters];
   next.deletedRelationshipIds=[...deletedRelationships];
+  next.deletedHomeIds=[...deletedHomes];
   if(Array.isArray(next.characters))next.characters=next.characters.filter(character=>character&&!deletedCharacters.has(String(character.id)));
   else Object.keys(next.characters||{}).forEach(id=>{if(deletedCharacters.has(String(id)))delete next.characters[id]});
   next.order=(Array.isArray(next.order)?next.order:[]).filter(id=>!deletedCharacters.has(String(id)));
@@ -23,11 +25,18 @@ const applyLocalTombstones=(remote,local)=>{
       if(deletedRelationships.has(String(id))||deletedCharacters.has(String(relation?.a))||deletedCharacters.has(String(relation?.b)))delete next.relationships[id];
     });
   }
+  if(Array.isArray(next.homes))next.homes=next.homes.filter(home=>home&&!deletedHomes.has(String(home.id)));
   Object.entries(next.homes||{}).forEach(([homeId,home])=>{
+    if(deletedHomes.has(String(homeId))||deletedHomes.has(String(home?.id))){delete next.homes[homeId];return}
     if(!home||typeof home!=="object")return;
     const localDeleted=local?.homes?.[homeId]?.deletedRoomKeys||[];
     home.deletedRoomKeys=[...new Set([...localDeleted,...(home.deletedRoomKeys||[])].map(String))];
     home.deletedRoomKeys.forEach(key=>{if(home.rooms&&typeof home.rooms==="object")delete home.rooms[key]});
+  });
+  Object.values(next.characters||{}).forEach(character=>{
+    if(!character||typeof character!=="object")return;
+    if(Array.isArray(character.residences))character.residences=character.residences.filter(item=>item&&!deletedHomes.has(String(item.homeId)));
+    if(deletedHomes.has(String(character.homeId)))character.homeId="";
   });
   return next;
 };
