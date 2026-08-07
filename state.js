@@ -64,7 +64,7 @@ const normalizedBodyProfile=value=>{
     ...defaults,
     ...source,
     bodySize:String(source.bodySize||defaults.bodySize),
-    physicalTraits:Array.isArray(source.physicalTraits)?[...new Set(source.physicalTraits.map(String))].slice(0,20):[],
+    physicalTraits:Array.isArray(source.physicalTraits)?[...new Set(source.physicalTraits.map(String))].slice(0,40):[],
     appearance:{
       ...appearanceDefaults,
       ...appearanceSource,
@@ -73,7 +73,7 @@ const normalizedBodyProfile=value=>{
       naturalHairColor:String(appearanceSource.naturalHairColor||appearanceDefaults.naturalHairColor),
       hairLength:String(appearanceSource.hairLength||appearanceDefaults.hairLength),
       hairTexture:String(appearanceSource.hairTexture||appearanceDefaults.hairTexture),
-      hairStyles:Array.isArray(appearanceSource.hairStyles)?[...new Set(appearanceSource.hairStyles.map(String))].slice(0,8):[],
+      hairStyles:Array.isArray(appearanceSource.hairStyles)?[...new Set(appearanceSource.hairStyles.map(String))].slice(0,12):[],
       leftEyeColor:String(appearanceSource.leftEyeColor||appearanceDefaults.leftEyeColor),
       rightEyeColor:String(appearanceSource.rightEyeColor||appearanceDefaults.rightEyeColor),
       makeupLevel:String(appearanceSource.makeupLevel||appearanceDefaults.makeupLevel),
@@ -621,12 +621,12 @@ export function updateRoutine(characterId,routineId,patch){
 export function deleteRoutine(characterId,routineId){
   state.routines[characterId]=(state.routines[characterId]||[]).filter(item=>item.id!==routineId);if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();save(true);
 }
-export function toggleChip(id,key,value){
+export function toggleChip(id,key,value,persist=true){
   const c=state.characters[id];
   const own=Array.isArray(c[key])?[...c[key]]:[];
   c[key]=own.includes(value)?own.filter(x=>x!==value):[...own,value];
   c.timelineResetAt=Date.now();
-  save(true);
+  if(persist)save(true);
 }
 export function setCharacterImage(id,type,data){state.characters[id][type]=data;save(true)}
 export function setHomeImage(homeId,room,data){
@@ -841,10 +841,10 @@ export function deleteCatalogItem(kind,id){
   state.world.places.forEach(p=>p.stock=(p.stock||[]).filter(x=>x!==id));
   save(true);
 }
-export function toggleFavorite(characterId,kind,itemId){
+export function toggleFavorite(characterId,kind,itemId,persist=true){
   const c=state.characters[characterId];if(!c)return;
   c.favorites=c.favorites||{};const list=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[];
-  c.favorites[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
+  c.favorites[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);
 }
 export function togglePlaceStock(placeId,itemId){
   const p=state.world.places.find(x=>x.id===placeId);if(!p)return;
@@ -886,7 +886,22 @@ export function characterViewFor(sourceId,targetId){
   const {rapport:_oldRapport,spaceComfort:_oldSpaceComfort,...cleanExplicit}=explicit;
   return {...defaults,...cleanExplicit,comfort:migratedComfort||defaults.comfort};
 }
+function relationshipIdentity(data){
+  if(!data?.a||!data?.b||data.a===data.b)return"";
+  const directional=data.type==="부모·자녀"||Boolean(data.directional);
+  const pair=directional?`${data.a}>${data.b}`:[data.a,data.b].sort().join("~");
+  return`${String(data.type||"친구")}|${pair}|${String(data.parentRole||"")}`;
+}
+function matchingRelationship(data,excludeId=""){
+  const identity=relationshipIdentity(data);
+  return identity?Object.values(state.relationships||{}).find(relation=>relation.id!==excludeId&&relationshipIdentity(relation)===identity):null;
+}
 export function addRelationship(data){
+  const existing=matchingRelationship(data);
+  if(existing){
+    updateRelationship(existing.id,data);
+    return existing.id;
+  }
   const id=uid();
   state.deletedRelationshipIds=(state.deletedRelationshipIds||[]).filter(value=>value!==id);
   state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true);
@@ -896,6 +911,16 @@ export function updateRelationship(id,data){
   const relation=state.relationships[id];if(!relation)return;
   const wasCohabiting=Boolean(relation.cohabit);
   Object.assign(relation,data);
+  const duplicate=matchingRelationship(relation,id);
+  if(duplicate){
+    Object.assign(duplicate,relation,{id:duplicate.id});
+    state.deletedRelationshipIds=Array.isArray(state.deletedRelationshipIds)?state.deletedRelationshipIds:[];
+    if(!state.deletedRelationshipIds.includes(id))state.deletedRelationshipIds.push(id);
+    delete state.relationships[id];
+    applyCohabit(duplicate);
+    save(true);
+    return duplicate.id;
+  }
   if(relation.cohabit)applyCohabit(relation);
   else if(wasCohabiting){
     const b=state.characters[relation.b];
@@ -911,11 +936,12 @@ export function updateRelationship(id,data){
     }
   }
   save(true);
+  return id;
 }
-export function toggleOwned(characterId,kind,itemId){
+export function toggleOwned(characterId,kind,itemId,persist=true){
   const c=state.characters[characterId];if(!c)return;
   c.inventory=c.inventory||{};const list=Array.isArray(c.inventory[kind])?[...c.inventory[kind]]:[];
-  c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
+  c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);
 }
 export function deleteRelationship(id){
   if(!state.relationships[id])return;

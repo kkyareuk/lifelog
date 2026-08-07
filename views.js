@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260807d";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807d";
+import {state,active,characterViewFor} from "./state.js?v=20260807f";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807f";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -212,15 +212,32 @@ function dailyLogItems(entries,c){
     return `<li class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
   }).join("");
 }
+function displayTimeline(c,current=eventFor(c)){
+  const entries=visibleTimeline(c).filter(loggableEntry);
+  if(loggableEntry(current)){
+    // 현재 장면은 시뮬레이션 타이머가 저장한 같은 분의 항목과 제목이 조금
+    // 달라도 하나의 순간이다. 같은 시각의 기존 항목을 치환해 이중 표기를 막는다.
+    const withoutSameMinute=entries.filter(item=>Number(item.minute)!==Number(current.minute));
+    entries.splice(0,entries.length,...withoutSameMinute,current);
+  }
+  const byMoment=new Map();
+  entries.sort((a,b)=>Number(a.minute)-Number(b.minute)).forEach(item=>{
+    const key=item.dateGroup?`date:${item.dateGroup}:${item.minute}`:`minute:${item.minute}`;
+    byMoment.set(key,item);
+  });
+  return [...byMoment.values()].sort((a,b)=>Number(a.minute)-Number(b.minute));
+}
 function dailyLog(c){
-  const logs=visibleTimeline(c),current=eventFor(c);
-  const cleanLogs=logs.filter(loggableEntry),entries=loggableEntry(current)&&!cleanLogs.some(x=>x.title===current.title&&x.minute===current.minute)?[...cleanLogs,current]:cleanLogs;
+  const entries=displayTimeline(c);
   return `<section class="panel life-log shared-life-log"><div class="title"><h2>오늘의 생활 로그</h2><small>${esc(c.name)} · 관찰과 집에서 같은 기록을 보여줘요</small></div><ol>${dailyLogItems(entries,c)}</ol></section>`;
 }
 function homeDailyLog(chars,h){
   const now=new Date(),nowMinute=now.getHours()*60+now.getMinutes(),time=minute=>`${String(Math.floor(minute/60)).padStart(2,"0")}:${String(minute%60).padStart(2,"0")}`;
   const entries=chars.flatMap(c=>{
-    const visible=visibleTimeline(c).filter(loggableEntry),current=eventFor(c),sequence=loggableEntry(current)&&!visible.some(x=>x.title===current.title&&x.minute===current.minute)?[...visible,current]:visible;
+    const visible=visibleTimeline(c).filter(loggableEntry),current=eventFor(c);
+    // 집 전체 로그에서도 현재 장면과 같은 분의 저장 항목은 제목이 조금 달라도
+    // 하나의 순간으로 취급한다. 저장 타이머 직전/직후의 이중 표기를 막는다.
+    const sequence=loggableEntry(current)?[...visible.filter(item=>Number(item.minute)!==Number(current.minute)),current]:visible;
     const own=[];
     sequence.forEach((x,index)=>{
       const previous=sequence[index-1];
@@ -250,12 +267,16 @@ function homeDailyLog(chars,h){
   }
   entries.push(...houseEvents.filter(x=>x.minute<=nowMinute).map(x=>({...x,time:time(x.minute)})));
   entries.sort((a,b)=>a.minute-b.minute);
-  // 공동 장면은 상대의 타임라인에도 동시에 기록됩니다. 렌더링할 때 같은
-  // 인물·시각·제목·본문을 한 번만 남겨 관찰 탭을 다시 눌러도 불어나지 않게 합니다.
+  // 공동 장면은 상대의 타임라인에도 동시에 기록됩니다. 한 인물에게 같은 분의
+  // 제목만 조금 다른 항목이 겹쳐도 하나의 순간으로 보이도록 마지막 항목만 남깁니다.
   const deduped=[],seenEntries=new Set();
   entries.forEach(item=>{
-    const key=[item.character?.id||item.pet?.id||"house",item.minute,item.title,item.desc].join("|");
-    if(seenEntries.has(key))return;
+    const key=[item.character?.id||item.pet?.id||"house",item.minute].join("|");
+    if(seenEntries.has(key)){
+      const index=deduped.findIndex(previous=>[previous.character?.id||previous.pet?.id||"house",previous.minute].join("|")===key);
+      if(index>=0)deduped[index]=item;
+      return;
+    }
     seenEntries.add(key);
     deduped.push(item);
   });
@@ -286,9 +307,10 @@ function observe(){
     ?state.homes[e.visitHomeId||c.homeId]?.rooms?.[e.room]?.image||""
     :(place?.interiorImage||place?.image||"");
   const nativeBackground=locationBackground||c.photo||state.world.bg;
-  const cleanLogs=visibleTimeline(c).filter(loggableEntry),nativeEntries=loggableEntry(e)&&!cleanLogs.some(item=>item.minute===e.minute&&item.title===e.title)?[...cleanLogs,e]:cleanLogs;
+  const nativeEntries=displayTimeline(c,e);
   const nativeLog=nativeEntries.slice(-4).reverse().map(item=>`<li><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
-  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time></div><button type="button" class="native-character-stage" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}<i></i></button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card"><div><b>오늘의 기록</b><button type="button" data-tab="home">집 보기</button></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section></section>`;
+  const nativeFullLog=`<dialog class="native-log-dialog" data-native-log-dialog><form method="dialog"><div class="native-log-dialog-head"><span><small>오늘의 기록</small><h2>${esc(c.name)}의 생활 로그</h2></span><button value="close" aria-label="닫기">×</button></div><ol>${dailyLogItems(nativeEntries,c)||"<li>아직 기록이 없어요.</li>"}</ol><button class="primary native-log-dialog-close" value="close">닫기</button></form></dialog>`;
+  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time></div><button type="button" class="native-character-stage" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}<i></i></button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card"><div><b>오늘의 기록</b><span><button type="button" data-open-native-log>전체 로그</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
   return `${nativeHome}<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${currentImage?`<img class="place-photo" src="${esc(currentImage)}" alt="">`:""}</div></div>${dailyLog(c)}</aside></div></div>`;
 }
 function roomStyle(h,key){
@@ -422,10 +444,10 @@ function homeCard(id,chars){
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
     const shownPeople=roomPeople,shownPets=roomPets;
     const furniture=FURNITURE[room.type||key]||FURNITURE.other;
-    return `<div class="room ${roomClasses[key]||"custom-room"} room-edit-target" ${roomStyle(h,key)} data-open-room-editor="${key}" data-home-id="${id}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집">
-      <b>${esc(room.name||key)}</b>
-      ${!room.image?`<button type="button" class="room-empty-image" data-open-room-editor="${key}" data-home-id="${id}"><span>＋</span>사진 추가하기</button>`:""}
-      <button type="button" class="room-edit-hint" data-open-room-editor="${key}" data-home-id="${id}">방 편집하기</button>
+    const editAttributes=edit?`data-open-room-editor="${key}" data-home-id="${id}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`:"";
+    return `<div class="room ${roomClasses[key]||"custom-room"} ${edit?"room-edit-target":""}" ${roomStyle(h,key)} ${editAttributes}>
+      <div class="room-heading"><b>${esc(room.name||key)}</b>${edit?`<button type="button" class="room-edit-hint" data-open-room-editor="${key}" data-home-id="${id}">편집하기</button>`:""}</div>
+      ${edit&&!room.image?`<button type="button" class="room-empty-image" data-open-room-editor="${key}" data-home-id="${id}"><span>＋</span>사진 추가하기</button>`:""}
       <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}</div>
       <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}</div>
     </div>`;
@@ -457,7 +479,7 @@ function homeCard(id,chars){
     ${edit?`<section class="home-identity-editor"><label>집의 종류<select data-home-field="kind" data-home-id="${id}">${["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기타"].map(value=>`<option ${value===(h.kind||"일반 주거")?"selected":""}>${value}</option>`).join("")}</select></label><label>집이 있는 마을<select data-home-field="townId" data-home-id="${id}"><option value="">마을 지정 안 함</option>${state.towns.map(town=>`<option value="${town.id}" ${town.id===h.townId?"selected":""}>${esc(town.name)}</option>`).join("")}</select></label><label>집 설명<input data-home-field="notes" data-home-id="${id}" maxlength="300" value="${esc(h.notes||"")}" placeholder="예: 주말에 쉬러 가는 바닷가 별채"></label><button type="button" class="danger" data-delete-home="${id}">이 집 삭제</button></section>`:""}
     ${edit?`<div class="home-photo-editor"><b>집 선택 버튼 배경 사진</b><span><button data-home-bg="${id}">사진</button><button data-image-url="home" data-id="${id}">링크</button>${h.image?`<button data-clear-home-bg="${id}">지우기</button>`:""}</span></div>`:""}
     ${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
-    <div class="rooms ${roomKeys.length>6?"has-extra":""}">${roomHtml}</div>
+    <div class="rooms ${roomKeys.length>6?"has-extra":""}" style="--room-count:${roomKeys.length};--room-cols:${Math.min(3,Math.max(1,Math.ceil(Math.sqrt(roomKeys.length))))};--room-rows:${Math.max(1,Math.ceil(roomKeys.length/Math.min(3,Math.max(1,Math.ceil(Math.sqrt(roomKeys.length))))))}">${roomHtml}</div>
     <section class="pets"><div class="title"><h2>함께 사는 존재</h2>${edit?`<button data-add-pet>+ 함께 사는 존재 추가</button>`:""}</div><div class="pet-grid">${petCards||"<p>아직 함께 사는 존재가 없어요.</p>"}</div></section>
     <section class="cars"><div class="title"><h2>자동차</h2>${edit?`<button data-add-car>+ 자동차 추가</button>`:""}</div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
     <section class="resident-scenes"><div class="title"><h2>동거인 현재 장면</h2></div><div>${residentScenes}</div></section>
@@ -467,9 +489,9 @@ function homeCard(id,chars){
 }
 function chips(title,all,selected,key){return `<section class="chips"><h3>${title}</h3>${all.map(x=>`<button data-chip="${key}" data-value="${x}" class="${selected.includes(x)?"on":""}">${x}</button>`).join("")}</section>`}
 function personalityChoice(c,title,field,options,help=""){
-  const defaults={socialStyle:"조용히 어울림",perceptionStyle:"균형형",decisionStyle:"균형형",planningStyle:"상황에 따라",neatness:"보통",interference:"적당히 관여",conflictStyle:"대화로 해결",affectionStyle:"행동으로 표현",energyRhythm:"상황에 따라"};
+  const defaults={socialStyle:"조용히 어울림",perceptionStyle:"균형형",decisionStyle:"균형형",planningStyle:"상황에 따라",activityTempo:"상황에 따라",neatness:"보통",fashionSense:"무난하게 입음",interference:"적당히 관여",conflictStyle:"대화로 해결",affectionStyle:"행동으로 표현",energyRhythm:"상황에 따라",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤"};
   const current=c[field]||defaults[field];
-  return `<section class="chips personality-choice"><h3>${title}</h3>${help?`<small>${help}</small>`:""}<div>${options.map(value=>`<button data-personality-field="${field}" data-value="${value}" class="${current===value?"on":""}">${value}</button>`).join("")}</div></section>`;
+  return `<label class="personality-choice"><span><b>${title}</b>${help?`<small>${help}</small>`:""}</span><select data-personality-field="${field}">${options.map(value=>`<option value="${esc(value)}" ${current===value?"selected":""}>${esc(value)}</option>`).join("")}</select></label>`;
 }
 const PERSONALITY_TYPES=["철두철미함","차분하고 신중함","냉정하고 논리적","다정하고 세심함","수줍고 내향적","활발하고 사교적","즉흥적이고 자유로움","호기심 많고 창의적","완고하고 통제적","무심하고 독립적","감정적이고 충동적","장난기 많음"];
 function personalityTypeChoice(c){
@@ -484,19 +506,25 @@ function characterTraitChoice(c){
     <div class="character-trait-heading"><h2>서사·인지 특성 · 선택 사항</h2><p>진단명이나 설정 라벨만으로 행동을 추측하지 않아요. 먼저 설정을 표시하고, 실제 생활 장면에 나타낼 방식은 아래에서 따로 골라 주세요.</p></div>
     <section class="chips personality-choice"><h3>설정 라벨 · 최대 8개</h3><div>${CHARACTER_TRAITS.map(value=>`<button type="button" data-character-trait="${value}" class="${traits.has(value)?"on":""}">${value}</button>`).join("")}</div></section>
     <section class="chips personality-choice"><h3>실제 장면에 반영할 표현 · 최대 8개</h3><div>${TRAIT_EXPRESSIONS.map(value=>`<button type="button" data-trait-expression="${value}" class="${expressions.has(value)?"on":""}">${value}</button>`).join("")}</div><small>예: ADHD 설정을 골라도 ‘주의가 쉽게 전환됨’을 별도로 고르지 않으면 모든 행동을 산만하게 만들지 않습니다.</small></section>
-    <label class="trait-note-field">직접 설정한 표현 메모<textarea data-trait-notes maxlength="1200" rows="5" placeholder="한 줄에 한 문장씩 적어 주세요. 예: 대화가 격해지면 창가로 물러나 호흡을 고른다.">${esc(c.traitNotes||"")}</textarea></label>
-    <label class="check trait-note-switch"><input type="checkbox" data-trait-notes-in-scripts ${c.traitNotesInScripts?"checked":""}> 이 메모의 문장을 생활 로그에 직접 반영</label>
-    <small>이 스위치를 켜면 메모가 장면 문구에 그대로 나올 수 있어요. 라벨만 고른 상태에서는 행동을 자동 추측하지 않습니다. 사이코패스 성향이나 간헐적 폭발 장애 설정도 폭력·범죄·가해 행동과 자동 연결하지 않으며, 실제 공격 행동은 별도의 관계 안전 설정이 허용한 범위를 넘지 않습니다.</small>
+    <label class="trait-note-field"><span><b>사용자 정의 특성 표현 · 선택 사항</b><small>위 선택지에 없는 표현만 적어 주세요. 고른 ‘주의가 쉽게 전환됨’ 같은 항목은 메모 없이도 생활 장면 후보에 반영됩니다.</small></span><textarea data-trait-notes maxlength="1200" rows="5" placeholder="한 줄에 한 문장씩 적어 주세요. 예: 대화가 격해지면 창가로 물러나 호흡을 고른다.">${esc(c.traitNotes||"")}</textarea></label>
+    <label class="check trait-note-switch"><input type="checkbox" data-trait-notes-in-scripts ${c.traitNotesInScripts?"checked":""}> 위 사용자 정의 문장도 생활 로그에 반영</label>
+    <small>선택형 표현은 고르는 즉시 행동 후보에 반영됩니다. 이 스위치는 직접 적은 문장에만 적용돼요. 설정 라벨만으로 행동을 추측하지 않으며, 실제 공격 행동은 별도의 관계 안전 설정이 허용한 범위를 넘지 않습니다.</small>
   </section>`;
 }
 const HEALTH_CONDITIONS=["당뇨병","고혈압","고지혈증","심혈관 질환","천식","관절 질환","만성 통증","신장 질환","기타 건강 상태"];
 const BODY_SIZES=["설정하지 않음","매우 마른 체형","마른 체형","슬림한 체형","보통 체형","통통한 체형","비만 체형","근육질 체형","탄탄한 체형","골격이 큰 체형","골격이 작은 체형"];
-const PHYSICAL_TRAITS=["키가 매우 큼","키가 큼","키가 작음","키가 매우 작음","팔다리가 긴 편","어깨가 넓음","어깨가 좁음","손이 큼","손이 작음","근육이 발달함","유연한 편","흉터가 있음","문신이 있음","주근깨가 있음","점이 있음","보조개가 있음","피어싱을 함","피부가 밝은 편","중간 피부톤","피부가 어두운 편","구릿빛 피부","창백한 편"];
+const PHYSICAL_TRAIT_GROUPS={
+  "키·골격":["키가 매우 큼","키가 큼","키가 작음","키가 매우 작음","팔다리가 긴 편","어깨가 넓음","어깨가 좁음","손이 큼","손이 작음"],
+  "체형의 세부 인상":["글래머","근육이 발달함","유연한 편"],
+  "피부·고유 특징":["피부가 밝은 편","중간 피부톤","피부가 어두운 편","구릿빛 피부","창백한 편","흉터가 있음","문신이 있음","주근깨가 있음","점이 있음","보조개가 있음","피어싱을 함"],
+  "얼굴·눈의 인상":["안경을 씀","안대","특이동공","세로동공","삼백안","날카로운 눈매","처진 눈매","속눈썹이 김","두꺼운 눈썹"],
+  "전체적인 분위기":["중성적인 인상","부드러운 인상","날카로운 인상","아름다움","잘생김","귀여움","우아함","위압적인 분위기","단정한 분위기","퇴폐적인 분위기","신비로운 분위기","소년미","성숙미"]
+};
 const HAIR_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","밝은 갈색","금발","백발·은발","회색","청회색","빨간색","주황색","분홍색","보라색","파란색","청록색","초록색","여러 색","기타"];
 const HAIR_ORIGINS=["설정하지 않음","자연모","전체 염색","부분 염색","탈색 후 염색","가발·헤어피스"];
 const HAIR_LENGTHS=["설정하지 않음","삭발·매우 짧음","귀 위 길이","숏컷","단발","어깨 길이","가슴 길이","허리 길이","허리보다 김"];
 const HAIR_TEXTURES=["설정하지 않음","직모","약한 반곱슬","강한 반곱슬","곱슬","강한 곱슬"];
-const HAIR_STYLES=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","올백","보브컷","레이어드컷","울프컷","투블럭","언더컷","포니테일","양갈래","반묶음","땋은 머리","로우번","하이번","드레드록","히메컷","웨이브 스타일","고데기 스타일링"];
+const HAIR_STYLES=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","시스루 앞머리","일자 앞머리","처피뱅","커튼뱅","옆으로 넘긴 앞머리","앞머리가 한쪽 눈을 가림","앞머리가 양쪽 눈을 가림","올백","슬릭백","보브컷","픽시컷","댄디컷","리프컷","레이어드컷","허쉬컷","샤기컷","울프컷","투블럭","언더컷","모히칸","리젠트","포니테일","사이드 포니테일","트윈테일","양갈래","반묶음","하프업 번","땋은 머리","프렌치 브레이드","피시테일 브레이드","콘로우","박스 브레이드","로우번","하이번","스페이스 번","브레이드 업두","드레드록","히메컷","롱 스트레이트","단발 웨이브","웨이브 스타일","베이비펌","히피펌","가르마펌","고데기 스타일링"];
 const EYE_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","연갈색","호박색","금색","초록색","청록색","파란색","청회색","회색","보라색","분홍색","빨간색","백색","여러 색","기타"];
 const MAKEUP_LEVELS=["하지 않음","스킨케어만","선크림·기초만","가벼운 메이크업","포인트 메이크업","풀 메이크업"];
 const MAKEUP_STYLES=["내추럴","글로우","매트","음영","아이 메이크업 중심","립 중심","화려한 색조","무대·촬영용","고딕","복고풍"];
@@ -527,8 +555,9 @@ function profileAttractionSettings(c){
   </section>`;
 }
 function physicalAppearanceSettings(c){
-  const appearanceTags=Array.isArray(c.appearanceTags)?c.appearanceTags:[];
   const p=c.bodyProfile||{},a=p.appearance||{};
+  const physicalTraits=new Set([...(p.physicalTraits||[]),...(c.appearanceTags||[])]);
+  const physicalTraitGroups=Object.entries(PHYSICAL_TRAIT_GROUPS).map(([group,options])=>`<fieldset class="physical-trait-group"><legend>${esc(group)}</legend><div class="chips">${options.map(value=>`<button type="button" data-body-list="physicalTraits" data-value="${esc(value)}" class="${physicalTraits.has(value)?"on":""}">${esc(value)}</button>`).join("")}</div></fieldset>`).join("");
   return `<section class="setting-card physical-appearance-settings">
     <h2>신체와 외형</h2>
     <p>직접 고른 항목만 묘사에 사용합니다. 머리·눈·화장 설정은 아침 준비, 미용실, 가까운 관계의 시선 같은 생활 장면에 드물게 반영돼요.</p>
@@ -540,21 +569,18 @@ function physicalAppearanceSettings(c){
       ${profileSelect("본래 머리색 · 염색모일 때","appearance.naturalHairColor",HAIR_COLORS,a.naturalHairColor||"설정하지 않음")}
       ${profileSelect("머리 기장","appearance.hairLength",HAIR_LENGTHS,a.hairLength||"설정하지 않음")}
       ${profileSelect("머리 결","appearance.hairTexture",HAIR_TEXTURES,a.hairTexture||"설정하지 않음")}
-      ${profileSelect("왼쪽 눈 색","appearance.leftEyeColor",EYE_COLORS,a.leftEyeColor||"설정하지 않음")}
-      ${profileSelect("오른쪽 눈 색","appearance.rightEyeColor",EYE_COLORS,a.rightEyeColor||"설정하지 않음")}
+      <div class="eye-color-pair">
+        ${profileSelect("왼쪽 눈 색","appearance.leftEyeColor",EYE_COLORS,a.leftEyeColor||"설정하지 않음")}
+        ${profileSelect("오른쪽 눈 색","appearance.rightEyeColor",EYE_COLORS,a.rightEyeColor||"설정하지 않음")}
+      </div>
       ${profileSelect("화장 정도","appearance.makeupLevel",MAKEUP_LEVELS,a.makeupLevel||"하지 않음")}
       ${profileSelect("미용실 방문 빈도","appearance.salonFrequency",SALON_FREQUENCIES,a.salonFrequency||"자동 · 설정에 맞춤")}
       ${profileSelect("성형·외형 의료 시술 여부","appearance.cosmeticSurgery",["설정하지 않음","하지 않음","과거에 받음","정기적으로 관리 중","받을 계획이 있음"],a.cosmeticSurgery||"설정하지 않음")}
     </div>
     ${profileMultiChoice("머리 스타일 · 여러 개 선택 가능","appearance.hairStyles",HAIR_STYLES,a.hairStyles)}
     ${profileMultiChoice("화장 스타일 · 화장할 때 반영","appearance.makeupStyles",MAKEUP_STYLES,a.makeupStyles)}
-    ${profileMultiChoice("신체 특성 · 직접 고른 항목만 반영","physicalTraits",PHYSICAL_TRAITS,p.physicalTraits)}
+    <section class="physical-trait-groups"><div><h3>신체 특성</h3><small>기존 ‘그 외 외모 태그’도 이곳에서 함께 확인할 수 있어요. 체형·머리색·눈색처럼 위에서 정하는 항목은 중복해서 두지 않았습니다.</small></div>${physicalTraitGroups}</section>
     ${profileMultiChoice("성형·외형 의료 시술 부위 · 원할 때만","appearance.cosmeticSurgeryAreas",SURGERY_AREAS,a.cosmeticSurgeryAreas)}
-    <div class="profile-tag-actions">
-      <button type="button" data-profile-tags="appearanceTags">그 외 외모 태그 정하기</button>
-      <small data-profile-tags-summary="appearanceTags">${appearanceTags.length?esc(appearanceTags.join(" · ")):"정하지 않음"}</small>
-    </div>
-    <div class="representation-warning compact"><b>표현 원칙</b><p>체형, 피부, 성형 여부를 우열이나 웃음거리로 만들지 않습니다. 성형 부위는 설정표 보관용이며 상대가 함부로 알아채거나 품평하는 장면을 만들지 않아요. 머리 놀림 같은 갈등 장면도 실제 상대별 성가심·갈등·공격 표현 범위가 함께 설정된 경우에만 후보가 됩니다.</p></div>
   </section>`;
 }
 function healthAccessibilitySettings(c){
@@ -603,14 +629,45 @@ function character(){
   const videoFormats=["영화","드라마","애니메이션","다큐멘터리","연애 예능","여행 예능","음악 예능","관찰 예능","게임 예능","토크쇼","서바이벌","코미디 예능","브이로그","게임 방송","먹방","리뷰","교육","숏폼","웹예능","웹드라마"],gameGenres=DETAIL_OPTIONS.game;
   const storyGenres=["로맨스","코미디","액션","판타지","SF","스릴러","공포","미스터리","범죄","드라마","시대극","일상","청춘","가족","모험"];
   const taste=`<h2>${esc(c.name)}의 취향 선택</h2><p>‘좋아하는 장르’는 책·영화·드라마·애니메이션 등 이야기 콘텐츠 전체에 공통으로 반영돼요.</p>${chips("관심사",INTERESTS,c.interests||[],"interests")}${chips("취미",HOBBIES,c.hobbies||[],"hobbies")}${chips("음식",FOOD_PREFERENCES,c.foodPreferences||[],"foodPreferences")}${chips("좋아하는 음료",DRINKS,c.drinks||[],"drinks")}${chips("좋아하는 장르 · 이야기 전체",storyGenres,c.favoriteStoryGenres||[],"favoriteStoryGenres")}${chips("좋아하는 음악 장르",MUSIC,c.musicGenres||[],"musicGenres")}${chips("좋아하는 패션 스타일",DETAIL_OPTIONS.fashion,c.favoriteFashionStyles||[],"favoriteFashionStyles")}${chips("좋아하는 영상 종류",videoFormats,c.favoriteVideoGenres||[],"favoriteVideoGenres")}${chips("좋아하는 게임 장르",gameGenres,c.favoriteGameGenres||[],"favoriteGameGenres")}${chips("좋아하는 향 계열",PERFUME_NOTES,c.favoriteScentNotes||[],"favoriteScentNotes")}`;
-  const personality=`<h2>${esc(c.name)}의 성격</h2><p>전체 유형을 먼저 고르고, 아래에서 세부 성향과 서사·인지 특성을 조절해 주세요.</p>${personalityTypeChoice(c)}${personalityChoice(c,"사람과 어울리는 방식","socialStyle",["혼자가 편함","낯을 가림","조용히 어울림","먼저 다가감","무리의 중심"])}${personalityChoice(c,"정보를 받아들이는 방식","perceptionStyle",["현실과 경험 중시","구체적인 편","균형형","가능성 중시","직관과 상상 중시"])}${personalityChoice(c,"판단하는 방식","decisionStyle",["논리 우선","이성적인 편","균형형","마음을 살핌","공감 우선"])}${personalityChoice(c,"일정을 다루는 방식","planningStyle",["무계획","즉흥적","유연한 편","상황에 따라","미리 정리함","계획적","강박적으로 계획함"])}${personalityChoice(c,"행동을 전환하는 방식","activityTempo",["한 가지씩 차분히","잠깐 쉬고 다음 일","상황에 따라","생각나면 바로 움직임","부산스럽게 여러 일을 오감","허둥대며 주의가 자주 옮겨감"],"활동적인 정도와 별개예요. 뒤쪽일수록 하던 중 다른 일이 눈에 들어오는 행동이 늘어요.")}${personalityChoice(c,"깔끔한 정도","neatness",["어질러도 편함","조금 느슨함","보통","정돈을 좋아함","흐트러짐을 못 참음","결벽에 가까움"])}${personalityChoice(c,"옷을 입는 감각","fashionSense",["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"],"자동 코디의 색 조합·상황 적합성·액세서리 사용에 반영돼요.")}${personalityChoice(c,"남에게 관여하는 정도","interference",["방관자","요청할 때만 도움","적당히 관여","챙기고 확인함","강하게 간섭함","컨트롤프릭"],"방관자는 웬만한 일에 끼어들지 않고, 컨트롤프릭은 상대의 일정과 행동까지 통제하려 해 갈등 가능성이 커져요.")}${personalityChoice(c,"갈등 대응","conflictStyle",["피하는 편","시간을 두고 말함","대화로 해결","바로 따짐","끝까지 결론을 냄"])}${personalityChoice(c,"애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"])}${personalityChoice(c,"생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"])}`;
+  const personalityDetails=[
+    personalityChoice(c,"사람과 어울리는 방식","socialStyle",["혼자가 편함","낯을 가림","조용히 어울림","먼저 다가감","무리의 중심"]),
+    personalityChoice(c,"정보를 받아들이는 방식","perceptionStyle",["현실과 경험 중시","구체적인 편","균형형","가능성 중시","직관과 상상 중시"]),
+    personalityChoice(c,"판단하는 방식","decisionStyle",["논리 우선","이성적인 편","균형형","마음을 살핌","공감 우선"]),
+    personalityChoice(c,"일정을 다루는 방식","planningStyle",["무계획","즉흥적","유연한 편","상황에 따라","미리 정리함","계획적","강박적으로 계획함"]),
+    personalityChoice(c,"행동을 전환하는 방식","activityTempo",["한 가지씩 차분히","잠깐 쉬고 다음 일","상황에 따라","생각나면 바로 움직임","부산스럽게 여러 일을 오감","허둥대며 주의가 자주 옮겨감"],"활동적인 정도와 별개예요. 뒤쪽일수록 하던 중 다른 일이 눈에 들어오는 행동이 늘어요."),
+    personalityChoice(c,"깔끔한 정도","neatness",["어질러도 편함","조금 느슨함","보통","정돈을 좋아함","흐트러짐을 못 참음","결벽에 가까움"]),
+    personalityChoice(c,"옷을 입는 감각","fashionSense",["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"],"자동 코디의 색 조합·상황 적합성·액세서리 사용에 반영돼요."),
+    personalityChoice(c,"남에게 관여하는 정도","interference",["방관자","요청할 때만 도움","적당히 관여","챙기고 확인함","강하게 간섭함","컨트롤프릭"],"방관자는 웬만한 일에 끼어들지 않고, 컨트롤프릭은 상대의 일정과 행동까지 통제하려 해 갈등 가능성이 커져요."),
+    personalityChoice(c,"갈등 대응","conflictStyle",["피하는 편","시간을 두고 말함","대화로 해결","바로 따짐","끝까지 결론을 냄"]),
+    personalityChoice(c,"애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"]),
+    personalityChoice(c,"생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"]),
+    personalityChoice(c,"유머·장난 성향","humorStyle",["장난을 거의 하지 않음","건조한 농담만 함","가끔 장난을 즐김","장난을 즐김","유머로 분위기를 이끎"],"웃음·농담·장난 장면의 빈도와 표현을 정해요."),
+    personalityChoice(c,"감정 표현의 크기","emotionalExpression",["표정 변화가 거의 없음","감정을 잘 드러내지 않음","상황에 따라 표현함","표현이 풍부함","감정이 바로 드러남"],"같은 감정이라도 표정과 몸짓으로 얼마나 드러나는지 정해요."),
+    personalityChoice(c,"충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],"공격 충동이 있어도 이 성향과 실제 행동 단계가 허용해야 행동으로 나와요.")
+  ].join("");
+  const personality=`<h2>${esc(c.name)}의 성격</h2><p>전체 유형을 먼저 고르고, 아래에서 세부 성향과 서사·인지 특성을 조절해 주세요.</p>${personalityTypeChoice(c)}<section class="personality-detail-grid">${personalityDetails}</section>`;
   const profileWithLicense=`<section class="profile-license">${townAssignment(c)}${profile}<label class="check"><input type="checkbox" data-character-check="${c.id}" data-field="driverLicense" ${c.driverLicense?"checked":""}> 운전면허 있음</label>${profileAttractionSettings(c)}</section>`;
   const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>체형, 머리, 눈, 화장 같은 외형과 건강·접근성을 나누어 정해요. 고르지 않은 특성은 장면에서 지어내지 않습니다.</p></div>${physicalAppearanceSettings(c)}${healthAccessibilitySettings(c)}</section>`;
-  const personalityExtras=`<section class="personality-extra">${personalityChoice(c,"유머·장난 성향","humorStyle",["장난을 거의 하지 않음","건조한 농담만 함","가끔 장난을 즐김","장난을 즐김","유머로 분위기를 이끎"],"웃음·농담·장난 장면의 빈도와 표현을 정해요.")}${personalityChoice(c,"감정 표현의 크기","emotionalExpression",["표정 변화가 거의 없음","감정을 잘 드러내지 않음","상황에 따라 표현함","표현이 풍부함","감정이 바로 드러남"],"같은 감정이라도 표정과 몸짓으로 얼마나 드러나는지 정해요.")}${personalityChoice(c,"충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],"공격 충동이 있어도 이 성향과 실제 행동 단계가 허용해야 행동으로 나와요.")}</section>`;
-  const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${personalityExtras}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:profileWithLicense;
+  const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:profileWithLicense;
   const limit=characterLimit();
   const slotLabel=state.order.length>limit?`${state.order.length}명 저장됨 · 한도 ${limit}명`:`+ 생성 · ${state.order.length}/${limit}`;
-  return `<div class="editor"><aside class="panel"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside><section class="panel form"><div class="character-menu"><button data-character-pane="profile" class="${state.characterPane==="profile"?"on":""}">프로필</button><button data-character-pane="body" class="${state.characterPane==="body"?"on":""}">신체</button><button data-character-pane="personality" class="${state.characterPane==="personality"?"on":""}">성격</button><button data-character-pane="taste" class="${state.characterPane==="taste"?"on":""}">취향 선택</button><button data-character-pane="worldTaste" class="${state.characterPane==="worldTaste"?"on":""}">세계관 선호</button></div>${pane}<button type="button" class="profile-export-open" data-export-profile>프로필 내보내기 · PNG / PDF</button><div class="form-actions"><button class="primary" data-save>캐릭터 저장</button><button class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></div></section></div>`;
+  const paneMeta={profile:["프로필","기본 정보·끌림","👤"],body:["신체","외형·건강·접근성","✦"],personality:["성격","성향·서사·인지","◈"],taste:["취향 선택","취미·음식·콘텐츠","♡"],worldTaste:["세계관 선호","최애·소지품","⌂"]};
+  const paneButtons=Object.entries(paneMeta).map(([key,[label,help,icon]])=>`<button type="button" data-open-character-pane="${key}" class="${state.characterPane===key?"on":""}"><span>${icon}</span><b>${label}</b><small>${help}</small></button>`).join("");
+  const mobileStrip=state.order.map(id=>{const x=state.characters[id];return `<button type="button" data-mobile-character-select="${id}" class="${id===c.id?"on":""}" style="--own:${x.theme.primary}">${avatar(x)}<small>${esc(x.name)}</small></button>`}).join("");
+  const reorderRows=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="mobile-character-reorder-row">${avatar(x)}<b>${esc(x.name)}</b><span><button type="button" data-sort="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""}>→</button></span></div>`}).join("");
+  return `<div class="editor character-editor">
+    <aside class="panel desktop-character-list"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside>
+    <section class="panel form">
+      <section class="mobile-character-dashboard">
+        <div class="mobile-character-top"><div class="mobile-character-strip">${mobileStrip}</div><div><button type="button" data-new ${state.order.length>=limit?"disabled":""}>＋</button><button type="button" data-open-character-reorder>위치 바꾸기</button></div></div>
+        <div class="mobile-character-heading">${avatar(c)}<span><small>CHARACTER SETTING</small><h1>${esc(c.name)}</h1><p>편집할 항목을 선택하세요.</p></span></div>
+        <div class="mobile-character-pane-grid">${paneButtons}</div>
+      </section>
+      <section class="desktop-character-editor"><div class="character-menu">${Object.entries(paneMeta).map(([key,[label]])=>`<button data-character-pane="${key}" class="${state.characterPane===key?"on":""}">${label}</button>`).join("")}</div>${pane}<button type="button" class="profile-export-open" data-export-profile>프로필 내보내기 · PNG / PDF</button><div class="form-actions"><button class="primary" data-save>캐릭터 저장</button><button class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></div></section>
+      <dialog class="mobile-character-editor-dialog" data-mobile-character-editor-dialog="${state.characterPane}"><div class="mobile-character-editor-shell"><div class="mobile-editor-head"><span>${avatar(c)}<small>${paneMeta[state.characterPane]?.[0]||"프로필"}</small><b>${esc(c.name)}</b></span><button type="button" data-close-mobile-character-editor aria-label="편집을 저장하고 닫기">×</button></div><div class="mobile-character-editor-body">${pane}</div><div class="mobile-character-editor-actions"><button type="button" data-export-profile>프로필 내보내기</button><button type="button" class="primary" data-save-mobile-character-editor>편집 완료·저장</button><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></div></div></dialog>
+      <dialog class="mobile-character-reorder-dialog" data-mobile-character-reorder-dialog><form method="dialog"><div class="mobile-editor-head"><span><small>CHARACTER ORDER</small><b>캐릭터 위치 바꾸기</b></span><button value="close">×</button></div><p>화살표를 눌러 홈과 캐릭터 목록의 순서를 바꿔요.</p><div>${reorderRows}</div><button class="primary" value="close">완료</button></form></dialog>
+    </section>
+  </div>`;
 }
 function wardrobe(){
   const c=active(),owned=new Set(c.inventory?.fashion||[]);
@@ -654,19 +711,43 @@ const characterViewOptions=key=>{
   return (CHARACTER_VIEW_OPTIONS[key]||[]).map(value=>value==="정하지 않음"?"선택하지 않음":value);
 };
 const characterViewEditor=()=>{
-  const first=state.order.includes(state.characterViewSource)?state.characterViewSource:state.order[0];
+  const sourceId=state.order.includes(state.characterViewSource)?state.characterViewSource:state.order[0];
+  const targetIds=state.order.filter(id=>id!==sourceId);
+  const targetId=targetIds.includes(state.characterViewTarget)?state.characterViewTarget:targetIds[0];
+  const source=state.characters[sourceId],target=state.characters[targetId];
   const field=(sourceId,targetId,key,label,help)=>{
     const explicit=state.characterViews?.[sourceId]?.[targetId]||{};
     const current=explicit[key]==="정하지 않음"?"선택하지 않음":(explicit[key]||"선택하지 않음");
     const options=characterViewOptions(key),legacy=current!=="선택하지 않음"&&!options.includes(current)?[current]:[];
     return `<label class="${key==="aggressionAction"?"view-aggression-action":""}"><span><b>${label}</b><small>${help}</small></span><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${[...legacy,...options].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>${key==="aggressionAction"?`<small class="field-warning">‘상대를 때릴 수 있음’ 이상을 고르면 설정한 충동·갈등·성격에 따라 낮은 수위의 폭행 장면이 나올 수 있어요. 충동만 있고 실행하지 않는 캐릭터는 반드시 ‘행동으로 옮기지 않음’을 골라 주세요.</small>`:""}</label>`;
   };
-  const panels=state.order.map(sourceId=>{
-    const source=state.characters[sourceId],targets=state.order.filter(id=>id!==sourceId);
-    return `<div class="character-view-panel character-view-dex" data-view-panel="${sourceId}" ${sourceId===first?"":"hidden"}>${targets.map(targetId=>{const target=state.characters[targetId],overall=characterViewFor(sourceId,targetId).overall,official=Object.values(state.relationships||{}).filter(relation=>(relation.a===sourceId&&relation.b===targetId)||(relation.a===targetId&&relation.b===sourceId)),officialText=[...new Set(official.map(relation=>relation.legalStatus==="관계를 따로 명명하지 않음"?`유사 ${relation.type}`:relation.type))].join(" · ");const fields=`${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"importance","중요도","이 캐릭터의 삶에서 상대가 몇 번째로 중요한 사람인지 정해요.")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 감정이 호감인지 반감인지 단정하지 않고, 얼마나 파악하고 있는지만 정해요.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요. 실제 교제 여부나 연락 빈도와는 별개예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함과 대화 호흡","공간을 함께 쓸 때의 편안함과 둘 사이의 말·농담 호흡을 하나의 조합으로 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살필지")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개예요. 깊이 사랑해도 자유롭게 두거나, 친구에게 강한 독점욕을 느낄 수 있어요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개로 실제로 얼마나 자주, 격렬하게 충돌하는지")}${field(sourceId,targetId,"expectation","관계에 대한 기대","지금 사랑하더라도 곧 끝날 관계라고 예상할 수 있어요.")}${field(sourceId,targetId,"touchIntensity","허용하고 표현하는 스킨십 범위","이 캐릭터가 이 상대에게 편안하게 허용하거나 먼저 표현할 수 있는 최대 범위예요. 두 캐릭터의 범위가 다르면 더 낮은 쪽까지 장면에 반영돼요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","머릿속에 어떤 충동이 드는지를 정합니다. 이것만으로 실제 공격하지 않아요.")}${field(sourceId,targetId,"aggressionAction","충동을 실제로 표현하는 단계","충동이 들었을 때 실제 행동을 어디까지 할 수 있는지 정합니다. 충동 단계보다 센 행동은 절대 나오지 않아요.")}`;const targetPrimary=target.theme?.primary||"#176b60";return `<article class="character-view-card character-view-token" style="--target-theme:${esc(targetPrimary)}"><button type="button" class="character-view-open" data-open-view-dialog="${sourceId}:${targetId}" aria-label="${esc(target.name)}의 시선 설정 열기" title="${esc(target.name)} · ${esc(overall)}${officialText?` · ${esc(officialText)}`:""}">${avatar(target)}<span class="character-view-token-summary" data-view-summary="${sourceId}:${targetId}">${esc(overall)}</span></button><dialog class="character-view-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><div class="title character-view-dialog-title"><div class="character-view-dialog-direction">${avatar(source)}<i>→</i>${avatar(target)}<span><h2>${esc(source.name)} → ${esc(target.name)}</h2><small>${esc(source.name)}이(가) ${esc(target.name)}에게 느끼는 감정과 행동 기준</small></span></div><button value="close" aria-label="닫기">×</button></div><div class="character-view-dialog-context"><b>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</b><span>${esc(overall)}</span></div><div class="character-view-fields">${fields}</div><div class="crop-actions"><button class="primary" value="close">편집 완료</button></div></form></dialog></article>`}).join("")}</div>`;
-  }).join("");
-  const sourceTabs=state.order.map(id=>{const character=state.characters[id],primary=character.theme?.primary||"#176b60",secondary=character.theme?.gradient?(character.theme?.secondary||primary):primary;return `<button type="button" data-view-source="${id}" class="${id===first?"on":""}" style="--view-primary:${esc(primary)};--view-secondary:${esc(secondary)}" aria-label="${esc(character.name)}의 시선 보기" title="${esc(character.name)}">${avatar(character)}</button>`}).join("");
-  return `<section class="character-view-editor"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p><b>위에서 바라보는 캐릭터</b>를 고른 뒤, 아래에서 상대 아이콘을 누르세요. 공식 관계와 별개인 감정·자각·신뢰·경계는 방향마다 따로 저장돼요.</p></div><button data-add-rel>+ 공식 관계 설정</button></div><div class="character-view-source-tabs" aria-label="바라보는 캐릭터 선택">${sourceTabs}</div>${panels}</section>`;
+  if(!source||!target)return `<section class="character-view-editor"><h2>관계와 캐릭터별 시선</h2><p>시선을 설정하려면 캐릭터가 두 명 이상 필요해요.</p><button data-add-rel>+ 공식 관계 설정</button></section>`;
+  const official=Object.values(state.relationships||{}).filter(relation=>(relation.a===sourceId&&relation.b===targetId)||(relation.a===targetId&&relation.b===sourceId));
+  const officialText=[...new Set(official.map(relation=>currentOfficialLabel(relation)))].join(" · ");
+  const overall=characterViewFor(sourceId,targetId).overall;
+  const fields=`${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"importance","중요도","이 캐릭터의 삶에서 상대가 몇 번째로 중요한 사람인지 정해요.")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 감정이 호감인지 반감인지 단정하지 않고, 얼마나 파악하고 있는지만 정해요.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함과 대화 호흡","공간을 함께 쓸 때의 편안함과 둘 사이의 말·농담 호흡을 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살필지")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개로 정해요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개인 실제 충돌 강도예요.")}${field(sourceId,targetId,"expectation","관계에 대한 기대","이 관계가 얼마나 이어질 거라 생각하는지 정해요.")}${field(sourceId,targetId,"touchIntensity","허용하고 표현하는 스킨십 범위","두 캐릭터의 범위가 다르면 더 낮은 쪽까지만 반영돼요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","충동만으로 실제 공격하지 않아요.")}${field(sourceId,targetId,"aggressionAction","충동을 실제로 표현하는 단계","충동 단계보다 센 행동은 절대 나오지 않아요.")}`;
+  const railButton=(id,kind,selected,index,selectedIndex)=>{
+    const character=state.characters[id],primary=character.theme?.primary||"#176b60";
+    const distance=index-selectedIndex,angle=Math.max(-13,Math.min(13,distance*4))*(kind==="source"?-1:1),shift=Math.min(18,Math.abs(distance)*4)*(kind==="source"?1:-1);
+    return `<button type="button" data-view-${kind}="${id}" class="${selected?"on":""}" style="--view-primary:${esc(primary)};--fan-angle:${angle}deg;--fan-shift:${shift}px;--fan-delay:${Math.min(index,8)*28}ms" aria-label="${esc(character.name)} ${kind==="source"?"선택":"대상 선택"}">${avatar(character)}<small>${esc(character.name)}</small></button>`;
+  };
+  const sourceIndex=Math.max(0,state.order.indexOf(sourceId)),targetIndex=Math.max(0,targetIds.indexOf(targetId));
+  return `<section class="character-view-editor"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p>왼쪽에서 마음의 주체를, 오른쪽에서 그 감정을 받는 상대를 고르세요. 가운데 선택 자리에 아이콘이 붙으면 두 사람의 시선을 편집할 수 있어요.</p></div><button data-add-rel>+ 공식 관계 설정</button></div>
+    <div class="relationship-pair-magnet">
+      <div class="relationship-character-rail source-rail" aria-label="감정을 느끼는 캐릭터">${state.order.map((id,index)=>railButton(id,"source",id===sourceId,index,sourceIndex)).join("")}</div>
+      <div class="relationship-pair-core">
+        <div class="relationship-pair-icons">${avatar(source)}<i>×</i>${avatar(target)}</div>
+        <small>${esc(subjectText(source.name))} ${esc(objectText(target.name))}</small>
+        <strong data-view-summary="${sourceId}:${targetId}">${esc(overall)}</strong>
+        <span>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</span>
+        <em>${esc(relationshipReality(sourceId,targetId,official))}</em>
+        <button type="button" class="primary" data-open-view-dialog="${sourceId}:${targetId}">이 시선 편집하기</button>
+        <button type="button" data-open-relationship-map>관계도 보기</button>
+      </div>
+      <div class="relationship-character-rail target-rail" aria-label="감정의 대상 캐릭터">${targetIds.map((id,index)=>railButton(id,"target",id===targetId,index,targetIndex)).join("")}</div>
+    </div>
+    <dialog class="character-view-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><div class="title character-view-dialog-title"><div class="character-view-dialog-direction">${avatar(source)}<i>→</i>${avatar(target)}<span><h2>${esc(source.name)} → ${esc(target.name)}</h2><small>${esc(subjectText(source.name))} ${esc(objectText(target.name))} 바라보는 감정과 행동 기준</small></span></div><button value="close" aria-label="닫기">×</button></div><div class="character-view-dialog-context"><b>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</b><span>${esc(overall)}</span></div><div class="character-view-fields">${fields}</div><div class="crop-actions"><button class="primary" value="close">편집 완료</button></div></form></dialog>
+  </section>`;
 };
 const relationPairKey=(a,b)=>[a,b].sort().join("~");
 function siblingWord(relation){
@@ -726,13 +807,21 @@ function relationshipMap(relations){
   }));
   const emotionColor=value=>{
     const text=String(value||"");
-    if(/사랑|좋아|소중|애틋|연애 감정|연심|끌림|싹틈/.test(text))return"#d85078";
+    if(/없어서는 안 될|깊이 사랑|사랑함|애틋|강한 사랑/.test(text))return"#EA69A4";
+    if(/연애 감정|연심|끌림|싹틈|약한 사랑/.test(text))return"#FF97C7";
+    if(/친구로 좋아|인간적인 호감|소중하게|친근|우호/.test(text))return"#3f83c7";
     if(/싫|혐오|원수|증오/.test(text))return"#a83f3f";
     if(/경계|의심|불편|귀찮/.test(text))return"#c27a2c";
     if(/두려|무서|겁/.test(text))return"#7b5bb5";
     if(/신뢰|편안|친근|가까/.test(text))return"#438b72";
     if(/존경|동경/.test(text))return"#4f77b8";
     return"#7d756d";
+  };
+  const loveTier=value=>{
+    const text=String(value||"");
+    if(/없어서는 안 될|깊이 사랑|사랑함|애틋|강한 사랑/.test(text))return"strong";
+    if(/연애 감정|연심|끌림|싹틈|약한 사랑/.test(text))return"weak";
+    return"";
   };
   const edges=[];
   for(let i=0;i<characters.length;i++)for(let j=i+1;j<characters.length;j++){
@@ -763,20 +852,32 @@ function relationshipMap(relations){
     const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),unitX=dx/length,unitY=dy/length,normalX=-unitY,normalY=unitX,nodeRadius=64,lane=12;
     const startA={x:a.x+unitX*nodeRadius+normalX*lane,y:a.y+unitY*nodeRadius+normalY*lane},endB={x:b.x-unitX*nodeRadius+normalX*lane,y:b.y-unitY*nodeRadius+normalY*lane};
     const startB={x:b.x-unitX*nodeRadius-normalX*lane,y:b.y-unitY*nodeRadius-normalY*lane},endA={x:a.x+unitX*nodeRadius-normalX*lane,y:a.y+unitY*nodeRadius-normalY*lane};
-    const arrowLength=11,arrowHalfWidth=5;
-    const forwardBase={x:endB.x-unitX*arrowLength,y:endB.y-unitY*arrowLength},backwardBase={x:endA.x+unitX*arrowLength,y:endA.y+unitY*arrowLength};
-    const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2,forward=`M ${startA.x} ${startA.y} Q ${midX+normalX*lane} ${midY+normalY*lane} ${forwardBase.x} ${forwardBase.y}`,backward=`M ${startB.x} ${startB.y} Q ${midX-normalX*lane} ${midY-normalY*lane} ${backwardBase.x} ${backwardBase.y}`;
-    const forwardArrow=`${endB.x},${endB.y} ${forwardBase.x+normalX*arrowHalfWidth},${forwardBase.y+normalY*arrowHalfWidth} ${forwardBase.x-normalX*arrowHalfWidth},${forwardBase.y-normalY*arrowHalfWidth}`;
-    const backwardArrow=`${endA.x},${endA.y} ${backwardBase.x+normalX*arrowHalfWidth},${backwardBase.y+normalY*arrowHalfWidth} ${backwardBase.x-normalX*arrowHalfWidth},${backwardBase.y-normalY*arrowHalfWidth}`;
+    const arrowLength=11,arrowHalfWidth=5,minimumArrowLength=185,availableLength=Math.max(0,length-(nodeRadius*2)),curved=availableLength<minimumArrowLength;
+    const midX=(a.x+b.x)/2,midY=(a.y+b.y)/2;
+    const bend=curved?Math.max(76,Math.sqrt(Math.max(0,minimumArrowLength**2-availableLength**2))*.82)+(index%3)*18:0;
+    const forwardControl={x:midX+normalX*bend,y:midY+normalY*bend},backwardControl={x:midX-normalX*bend,y:midY-normalY*bend};
+    const forwardTangent=curved?{x:endB.x-forwardControl.x,y:endB.y-forwardControl.y}:{x:unitX,y:unitY};
+    const backwardTangent=curved?{x:endA.x-backwardControl.x,y:endA.y-backwardControl.y}:{x:-unitX,y:-unitY};
+    const normalizeVector=vector=>{const size=Math.max(1,Math.hypot(vector.x,vector.y));return{x:vector.x/size,y:vector.y/size}};
+    const ft=normalizeVector(forwardTangent),bt=normalizeVector(backwardTangent),fn={x:-ft.y,y:ft.x},bn={x:-bt.y,y:bt.x};
+    const forwardBase={x:endB.x-ft.x*arrowLength,y:endB.y-ft.y*arrowLength},backwardBase={x:endA.x-bt.x*arrowLength,y:endA.y-bt.y*arrowLength};
+    const forward=curved?`M ${startA.x} ${startA.y} Q ${forwardControl.x} ${forwardControl.y} ${forwardBase.x} ${forwardBase.y}`:`M ${startA.x} ${startA.y} L ${forwardBase.x} ${forwardBase.y}`;
+    const backward=curved?`M ${startB.x} ${startB.y} Q ${backwardControl.x} ${backwardControl.y} ${backwardBase.x} ${backwardBase.y}`:`M ${startB.x} ${startB.y} L ${backwardBase.x} ${backwardBase.y}`;
+    const forwardArrow=`${endB.x},${endB.y} ${forwardBase.x+fn.x*arrowHalfWidth},${forwardBase.y+fn.y*arrowHalfWidth} ${forwardBase.x-fn.x*arrowHalfWidth},${forwardBase.y-fn.y*arrowHalfWidth}`;
+    const backwardArrow=`${endA.x},${endA.y} ${backwardBase.x+bn.x*arrowHalfWidth},${backwardBase.y+bn.y*arrowHalfWidth} ${backwardBase.x-bn.x*arrowHalfWidth},${backwardBase.y-bn.y*arrowHalfWidth}`;
+    const pathPoint=(start,control,end)=>curved?{x:start.x*.25+control.x*.5+end.x*.25,y:start.y*.25+control.y*.5+end.y*.25}:{x:(start.x+end.x)/2,y:(start.y+end.y)/2};
+    const forwardHeart=pathPoint(startA,forwardControl,forwardBase),backwardHeart=pathPoint(startB,backwardControl,backwardBase);
+    const hearts=`${loveTier(forwardLabel)?`<text class="map-heart ${loveTier(forwardLabel)}" x="${forwardHeart.x}" y="${forwardHeart.y+7}" text-anchor="middle" style="fill:${forwardColor}">♥</text>`:""}${loveTier(backwardLabel)?`<text class="map-heart ${loveTier(backwardLabel)}" x="${backwardHeart.x}" y="${backwardHeart.y+7}" text-anchor="middle" style="fill:${backwardColor}">♥</text>`:""}`;
     const relationText=edge.official.length?[...new Set(edge.official.map(currentOfficialLabel))].join(" · "):"이방인";
     const stageText=relationshipReality(edge.a,edge.b,edge.official);
-    const officialPoint=placeLabel(midX,midY,normalX,normalY);
+    const labelOffset=curved?Math.min(128,bend*.58):58;
+    const officialPoint=placeLabel(midX+normalX*labelOffset,midY+normalY*labelOffset,normalX,normalY);
     const boxWidth=Math.min(220,Math.max(100,(Math.max(relationText.length,stageText.length)*13)+24));
     const officialMarkup=`<g class="map-official"><rect x="${officialPoint.x-boxWidth/2}" y="${officialPoint.y-24}" width="${boxWidth}" height="48" rx="12"/><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-5}" text-anchor="middle">${esc(relationText||"이방인")}</text><text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+14}" text-anchor="middle">${esc(stageText)}</text></g>`;
-    return `<g class="relationship-edge"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/>${officialMarkup}</g>`;
+    return `<g class="relationship-edge"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/>${hearts}${officialMarkup}</g>`;
   }).join("");
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-55}" y="${pos.y-55}" width="110" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
-  return `<section class="relationship-map"><div class="title"><div><h2>인물 관계도</h2><small>화살표 색은 각 캐릭터가 상대를 보는 감정 방향을 나타내고, 글자는 공식 관계와 계산된 관계 상태만 표시해요.</small></div></div><div class="relationship-map-canvas"><svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div></section>`;
+  return `<section class="relationship-map"><div class="relationship-map-scroll"><div class="relationship-map-canvas"><svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div></div></section>`;
 }
 function relationship(){
   const all=Object.values(state.relationships),shownGroups=new Set();
@@ -793,7 +894,8 @@ function relationship(){
     const heading=r.type==="부모·자녀"?`${esc(state.characters[r.parentId||r.a]?.name||a?.name||"부모")}(${esc(r.parentRole||"부모")}) → ${esc(state.characters[r.childId||r.b]?.name||b?.name||"자녀")}`:`${esc(a?.name||"")} ${r.type==="짝사랑"?"→":"×"} ${esc(b?.name||"")}`;
     return a&&b?`<article class="relation"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(displayType(r))} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${r.temporalStatus==="past"?"과거 관계 · ":""}${esc(r.stage||"편안한 사이")}</p><p class="relation-reality">관계 실체 · ${esc(relationshipReality(r.a,r.b,[r]))}</p>${r.temporalStatus==="past"&&r.faultReason&&r.faultReason!=="정하지 않음"?`<p class="relation-fault">관계가 끝난 이유 · ${esc(r.faultReason)}</p>`:""}${relationActivities(r)}<div class="relation-actions"><button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></div></article>`:"";
   }).join("");
-  return `<section class="panel form"><div class="title"><h1>관계</h1></div><p>공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.</p>${characterViewEditor()}${relationshipMap(all)}<h2 class="official-relation-heading">공식 관계 목록</h2><div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 공식 관계가 없어요.</b><p>공식 관계가 없는 캐릭터끼리는 서로 낯선 사람으로 행동해요.</p></div>'}</div></section>`;
+  const map=relationshipMap(all);
+  return `<section class="panel form"><div class="title"><h1>관계</h1></div><p>공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.</p>${characterViewEditor()}<dialog class="relationship-map-dialog" data-relationship-map-dialog><form method="dialog"><div class="relationship-map-dialog-head"><span><small>RELATIONSHIP MAP</small><h2>인물 관계도</h2></span><button value="close" aria-label="닫기">×</button></div><p>화살표 색은 각 캐릭터가 상대를 보는 감정 방향을 나타냅니다. 사랑하는 감정의 화살표에는 하트가 표시돼요.</p><div class="relationship-color-legend"><span class="friendly">친구·우호</span><span class="romantic">약한 사랑</span><span class="love">강한 사랑</span></div><button type="button" data-refresh-relationship-map>현재 설정으로 관계도 새로고침</button>${map||"<div class='empty-mini'>표시할 관계가 아직 없어요.</div>"}</form></dialog><h2 class="official-relation-heading">공식 관계 목록</h2><div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 공식 관계가 없어요.</b><p>공식 관계가 없는 캐릭터끼리는 서로 낯선 사람으로 행동해요.</p></div>'}</div></section>`;
 }
 function routine(){
   const c=active(),days=["일","월","화","수","목","금","토"],items=(state.routines[c.id]||[]).slice().sort((a,b)=>a.day-b.day||a.start.localeCompare(b.start));

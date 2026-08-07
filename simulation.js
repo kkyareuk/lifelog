@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260807d";
+import {state,save,characterViewFor} from "./state.js?v=20260807f";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -173,7 +173,11 @@ const related=c=>{
 };
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
-function selectedBodyVariants(c,socialScene){
+function selectedBodyVariants(c,socialScene,seed="",date=new Date()){
+  // 신체·접근성 설정은 존중해야 하지만 캐릭터의 모든 장면을 그 특성으로
+  // 설명하지 않는다. 이동 문구 자체의 안전성은 adaptAccessibilityWording에서
+  // 항상 지키고, 구체적인 보조기기 언급은 드문 생활 장면에서만 고른다.
+  if(hash(`${c.id}:${dayKey(date)}:${seed}:body-mention`)%24!==0)return[];
   const p=c.bodyProfile||{},variants=[];
   const sideText=value=>value==="양쪽"?"양쪽":value==="왼쪽"?"왼쪽":value==="오른쪽"?"오른쪽":"";
   const wheelchair=p.wheelchair||{},arm=p.prostheticArm||{},leg=p.prostheticLeg||{},hearing=p.hearing||{},vision=p.vision||{};
@@ -235,7 +239,7 @@ function directTraitLines(c){
     return /[.!?。요다음]$/.test(clean)?clean:`${clean}.`;
   }).filter(Boolean);
 }
-function respectfulAccessibilityFor(target,seed=""){
+function respectfulAccessibilityFor(target,seed="",date=new Date()){
   const p=target?.bodyProfile||{},variants=[],wheelchair=p.wheelchair||{},arm=p.prostheticArm||{},leg=p.prostheticLeg||{},hearing=p.hearing||{},vision=p.vision||{};
   if(wheelchair.type&&wheelchair.type!=="사용하지 않음")variants.push(
     " 이동을 도울 필요가 있는지 먼저 물었고, 휠체어나 손잡이에는 허락 없이 손대지 않았어요.",
@@ -268,9 +272,10 @@ function respectfulAccessibilityFor(target,seed=""){
   if(preferences.includes("조용한 자리 선호"))variants.push(" 소리가 덜 겹치는 자리를 함께 찾고 대화를 이어 가기 편한 환경인지 확인했어요.");
   if(preferences.includes("말로 주변 정보 설명"))variants.push(" 눈앞에서 달라진 위치와 주변 상황을 짧고 구체적인 말로 함께 알려 줬어요.");
   if((p.healthConditions||[]).length)variants.push(" 몸 상태를 멋대로 판단하거나 치료법을 권하지 않고, 지금 필요한 속도와 휴식이 있는지만 물었어요.");
-  return variants.length?variants[hash(`${target?.id||""}:${seed}:accessibility`)%variants.length]:"";
+  if(!variants.length||hash(`${target?.id||""}:${dayKey(date)}:${seed}:accessibility-frequency`)%16!==0)return"";
+  return variants[hash(`${target?.id||""}:${seed}:accessibility`)%variants.length];
 }
-function personalityFlavor(c,desc,seed=""){
+function personalityFlavor(c,desc,seed="",date=new Date()){
   const variants=[];
   const priorityVariants=[];
   const socialScene=/함께|상대|사람|대화|인사|말을|질문|동거인|친구|연인|부부|에게/.test(desc);
@@ -368,7 +373,7 @@ function personalityFlavor(c,desc,seed=""){
   if(traitExpressions.includes("죄책감이나 공감이 낮게 표현됨"))variants.push("기대되는 감정 반응을 억지로 흉내 내기보다 상황의 규칙과 상대가 분명히 말한 요구를 기준으로 행동했어요.");
   if(traitExpressions.includes("감정이 급격히 치솟는 때가 있음"))variants.push("감정이 빠르게 치솟는 것을 알아차리자 행동으로 옮기기 전에 호흡과 거리를 먼저 확보했어요.");
   if(traitExpressions.includes("격해지면 먼저 거리를 두고 진정함"))variants.push("말이 거칠어지기 전에 잠시 자리를 벗어나 진정한 뒤 다시 이야기할 시점을 정했어요.");
-  variants.push(...selectedBodyVariants(c,socialScene));
+  variants.push(...selectedBodyVariants(c,socialScene,seed,date));
   priorityVariants.push(...directTraitLines(c));
   const sentences=String(desc||"").match(/[^.!?。]+[.!?。]?/g)||[String(desc||"")];
   const base=sentences.slice(0,types.length?1:2).join(" ").trim();
@@ -466,7 +471,16 @@ function catalogChoice(c,place,kind,seed){
   }
 }
 
-function entry(time,title,desc,extra={}){return {time:clock(time),minute:time,title:resolveEntityParticles(title),desc:resolveEntityParticles(desc),...extra}}
+function compactLogDescription(value,maxLength=168){
+  const clean=String(value||"").replace(/\s+/g," ").trim();
+  if(!clean)return"";
+  const sentences=clean.match(/[^.!?。]+[.!?。]?/g)||[clean];
+  let result=sentences.slice(0,2).join(" ").trim();
+  if(result.length<=maxLength)return result;
+  const shortened=result.slice(0,maxLength-1).replace(/\s+\S*$/,"").trim();
+  return `${shortened||result.slice(0,maxLength-1).trim()}…`;
+}
+function entry(time,title,desc,extra={}){return {time:clock(time),minute:time,title:resolveEntityParticles(title),desc:resolveEntityParticles(compactLogDescription(desc)),...extra}}
 function adaptAccessibilityWording(c,item){
   if(!item)return item;
   let title=String(item.title||""),desc=String(item.desc||"");
@@ -539,12 +553,41 @@ const HAIR_STYLE_ROUTINES={
   "드레드록":["각 록의 뿌리와 두피 상태를 살피고 서로 엉켜 붙은 부분을 조심스럽게 나누었어요.","드레드록에 남은 수분이 없도록 충분히 말린 뒤 필요한 부분만 가볍게 정리했어요.","눌린 록을 손으로 풀어 원하는 방향으로 배치하고 두피가 당기지 않는지 확인했어요."],
   "히메컷":["얼굴 옆의 짧고 곧은 단과 뒤의 긴 머리를 따로 빗어 히메컷의 선을 또렷하게 살렸어요.","양옆의 짧은 머리가 같은 높이로 떨어지는지 확인하고 긴 뒷머리는 차분히 정돈했어요.","얼굴선을 감싸는 옆머리 끝을 곧게 다듬어 커트의 층이 흐려지지 않게 했어요."],
   "웨이브 스타일":["웨이브가 뭉개진 부분을 손가락으로 나누고 컬의 방향을 따라 가볍게 쥐어 모양을 되살렸어요.","머리가 완전히 마르기 전 웨이브 결을 아래에서 받쳐 말려 부스스함을 줄였어요.","컬마다 탄력이 다르지 않도록 손질제를 고르게 바르고 굵은 웨이브의 흐름을 정돈했어요."],
-  "고데기 스타일링":["열 보호제를 먼저 바르고 머리를 작은 구역으로 나누어 필요한 부분에만 고데기를 사용했어요.","같은 곳에 열을 오래 대지 않도록 속도를 맞추며 앞쪽부터 뒤쪽까지 차례로 모양을 잡았어요.","고데기로 만든 결이 충분히 식은 뒤 손가락으로 풀어 과하게 굳어 보이지 않게 정리했어요."]
+  "고데기 스타일링":["열 보호제를 먼저 바르고 머리를 작은 구역으로 나누어 필요한 부분에만 고데기를 사용했어요.","같은 곳에 열을 오래 대지 않도록 속도를 맞추며 앞쪽부터 뒤쪽까지 차례로 모양을 잡았어요.","고데기로 만든 결이 충분히 식은 뒤 손가락으로 풀어 과하게 굳어 보이지 않게 정리했어요."],
+  "시스루 앞머리":["이마가 은은하게 비치는 앞머리의 양을 나누고 가벼운 결이 뭉치지 않게 정리했어요.","가느다란 앞머리 사이의 간격을 손끝으로 맞추고 뿌리 볼륨만 살짝 살렸어요."],
+  "일자 앞머리":["눈썹선을 따라 떨어지는 앞머리가 한쪽으로 기울지 않게 곧게 빗었어요.","일자 앞머리의 끝선이 흐트러진 곳만 가볍게 적셔 반듯하게 말렸어요."],
+  "처피뱅":["짧은 앞머리의 끝이 서로 뭉치지 않도록 손끝으로 가볍게 나누었어요.","처피뱅의 짧은 선을 살리면서 들뜬 부분만 눌러 정돈했어요."],
+  "커튼뱅":["가운데에서 갈라지는 앞머리를 양쪽 얼굴선으로 자연스럽게 이어 말렸어요.","커튼뱅이 한쪽만 무겁지 않도록 가르마와 볼륨을 맞추었어요."],
+  "옆으로 넘긴 앞머리":["앞머리를 평소 방향으로 넘기고 관자놀이 쪽 잔머리와 자연스럽게 이어 주었어요.","옆으로 흐르는 앞머리가 다시 내려오지 않도록 뿌리 방향부터 천천히 말렸어요."],
+  "앞머리가 한쪽 눈을 가림":["한쪽 눈을 덮는 앞머리의 방향은 유지하되 시야가 필요한 순간에는 넘길 수 있게 결을 정리했어요.","눈가를 스치는 머리끝이 불편하지 않은지 확인하고 한쪽으로 흐르는 선을 다듬었어요."],
+  "앞머리가 양쪽 눈을 가림":["양쪽 눈 앞에 내려온 앞머리가 서로 엉키지 않도록 가닥을 나누어 정리했어요.","시야를 확보해야 할 때 쉽게 걷어 낼 수 있도록 눈앞의 머리결을 가볍게 빗었어요."],
+  "슬릭백":["머리 전체를 뒤로 매끈하게 넘기고 표면의 잔머리를 소량의 제품으로 눌렀어요.","윤기가 한곳에만 몰리지 않게 제품을 얇게 펴 바르며 슬릭백의 선을 정돈했어요."],
+  "픽시컷":["짧은 층을 손가락으로 나누어 픽시컷의 가벼운 방향을 살렸어요.","귀 주변과 목덜미의 짧은 머리가 들뜨지 않도록 결을 따라 말렸어요."],
+  "댄디컷":["앞머리와 옆머리가 단정하게 이어지도록 가르마와 볼륨을 차분히 맞췄어요.","댄디컷의 둥근 실루엣이 무너지지 않게 눌린 부분만 살려 냈어요."],
+  "리프컷":["얼굴선을 감싸며 갈라지는 머리끝을 잎처럼 자연스럽게 바깥으로 정리했어요.","리프컷의 앞뒤 층이 끊겨 보이지 않도록 귀 주변의 흐름을 맞추었어요."],
+  "허쉬컷":["가벼운 층이 얼굴 주변에서 자연스럽게 흩어지도록 아래에서 받쳐 말렸어요.","허쉬컷의 얇은 끝선이 한 덩어리로 붙지 않게 손가락으로 결을 나누었어요."],
+  "샤기컷":["거칠게 층진 끝부분을 소량의 왁스로 나누어 샤기컷의 질감을 살렸어요.","정수리의 짧은 층과 긴 끝이 자연스럽게 이어지도록 털어 말렸어요."],
+  "모히칸":["가운데 긴 부분의 방향을 세우고 양옆의 짧은 선이 깔끔한지 확인했어요.","모히칸의 높이가 한쪽으로 기울지 않도록 앞과 뒤의 고정력을 나누어 조절했어요."],
+  "리젠트":["앞머리를 위로 올려 뒤로 흐르게 만들고 옆머리는 단정히 눌렀어요.","리젠트의 앞쪽 볼륨과 뒤로 넘어가는 곡선이 매끄럽게 이어지는지 살폈어요."],
+  "사이드 포니테일":["머리를 한쪽으로 모아 묶고 목과 어깨에 닿는 위치가 불편하지 않게 조절했어요.","사이드 포니테일이 앞으로 쏠리지 않도록 매듭과 잔머리를 다시 정리했어요."],
+  "트윈테일":["양쪽 묶음의 높이와 머리 양을 맞추고 당기는 곳이 없는지 확인했어요.","트윈테일의 끝을 각각 빗어 움직일 때 결이 자연스럽게 흩어지도록 했어요."],
+  "하프업 번":["윗머리만 모아 작은 번으로 고정하고 아래에 풀린 머리는 결대로 정리했어요.","하프업 번이 너무 무겁지 않도록 묶는 양과 핀의 위치를 조절했어요."],
+  "프렌치 브레이드":["정수리부터 머리를 조금씩 더하며 단단하고 고른 프렌치 브레이드를 만들었어요.","머리선을 따라 이어지는 땋은 결의 간격이 일정한지 손끝으로 확인했어요."],
+  "피시테일 브레이드":["가느다란 머리 가닥을 번갈아 넘기며 촘촘한 피시테일 모양을 만들었어요.","땋은 끝을 조금씩 풀어 물고기 꼬리처럼 이어지는 결을 자연스럽게 정돈했어요."],
+  "콘로우":["두피를 따라 이어지는 가르마와 땋은 줄의 간격을 차분히 확인했어요.","콘로우의 뿌리가 지나치게 당기지 않는지 살피고 느슨한 끝만 다시 고정했어요."],
+  "박스 브레이드":["나뉜 구역마다 브레이드의 굵기와 길이가 고른지 차례로 확인했어요.","박스 브레이드가 서로 엉키지 않게 나누고 두피가 당기는 부분을 조절했어요."],
+  "스페이스 번":["양쪽 머리를 높게 말아 올려 두 번의 크기와 위치를 맞추었어요.","스페이스 번의 중심이 기울지 않게 핀을 나누어 꽂고 잔머리를 정리했어요."],
+  "브레이드 업두":["땋은 머리를 뒤쪽으로 감아 올리고 보이지 않는 곳에 핀을 나누어 고정했어요.","브레이드 업두의 무게가 한쪽에 몰리지 않도록 매듭과 핀 위치를 다시 살폈어요."],
+  "롱 스트레이트":["긴 머리를 구역별로 나누어 빗고 끝까지 곧게 이어지는 결을 정돈했어요.","등 뒤로 흐르는 긴 직모가 엉키지 않도록 아래쪽부터 천천히 풀어 주었어요."],
+  "단발 웨이브":["단발 끝의 웨이브가 얼굴 양쪽에서 비슷하게 흐르도록 컬을 나누었어요.","턱선 부근의 웨이브가 뭉치지 않게 손끝으로 가볍게 풀어 주었어요."],
+  "베이비펌":["짧고 잔잔한 컬을 손으로 눌러 뭉치지 않게 하나씩 되살렸어요.","베이비펌의 작은 컬이 부스스해지지 않도록 수분과 손질제를 가볍게 더했어요."],
+  "히피펌":["굵기와 방향이 다른 컬을 자연스럽게 나누어 히피펌의 풍성함을 살렸어요.","컬을 아래에서 받쳐 말리며 전체 볼륨이 한쪽으로 치우치지 않게 했어요."],
+  "가르마펌":["가르마 양쪽의 컬이 얼굴선을 따라 흐르도록 뿌리부터 방향을 잡았어요.","앞머리의 곡선과 옆머리의 볼륨이 자연스럽게 이어지도록 손질했어요."]
 };
 function hairStyleRoutine(c,style,hair,date){
   const bank=HAIR_STYLE_ROUTINES[style]||HAIR_STYLE_ROUTINES["자연스럽게 풀어 둠"];
   const line=bank[hash(`${c.id}:${dayKey(date)}:${style}:hair-routine`)%bank.length];
-  return hair?`${hair}를 살피고 ${line}`:line;
+  return hair?`${object(hair)} 살피고 ${line}`:line;
 }
 function hairStyleSocialDetail(c,seed=""){
   const styles=appearanceProfile(c).hairStyles||[];
@@ -570,7 +613,36 @@ function hairStyleSocialDetail(c,seed=""){
     "드레드록":"한 가닥씩 고유한 결을 가진 드레드록",
     "히메컷":"얼굴 옆의 짧은 단과 긴 머리가 또렷한 히메컷",
     "웨이브 스타일":"빛과 움직임에 따라 결이 달라지는 웨이브",
-    "고데기 스타일링":"의도한 방향으로 정교하게 잡힌 스타일링"
+    "고데기 스타일링":"의도한 방향으로 정교하게 잡힌 스타일링",
+    "시스루 앞머리":"이마가 은은하게 비치는 가벼운 시스루 앞머리",
+    "일자 앞머리":"반듯한 선으로 떨어지는 일자 앞머리",
+    "처피뱅":"이마 위로 짧고 선명하게 잘린 처피뱅",
+    "커튼뱅":"얼굴 양옆으로 부드럽게 갈라지는 커튼뱅",
+    "옆으로 넘긴 앞머리":"한쪽 얼굴선으로 자연스럽게 흐르는 앞머리",
+    "앞머리가 한쪽 눈을 가림":"한쪽 눈 위로 비스듬히 내려온 앞머리",
+    "앞머리가 양쪽 눈을 가림":"두 눈 앞에 길게 드리운 앞머리",
+    "슬릭백":"윤기 있게 뒤로 정돈한 슬릭백",
+    "픽시컷":"짧은 층이 가볍게 살아 있는 픽시컷",
+    "댄디컷":"단정한 둥근 선이 이어지는 댄디컷",
+    "리프컷":"얼굴선을 따라 잎처럼 갈라지는 리프컷",
+    "허쉬컷":"얇은 층이 가볍게 흩어지는 허쉬컷",
+    "샤기컷":"거칠고 가벼운 끝선이 살아 있는 샤기컷",
+    "모히칸":"가운데로 힘 있게 이어지는 모히칸",
+    "리젠트":"앞에서 뒤로 높게 넘어가는 리젠트",
+    "사이드 포니테일":"한쪽 어깨로 흐르는 사이드 포니테일",
+    "트윈테일":"양쪽에서 높이 맞춰 흔들리는 트윈테일",
+    "하프업 번":"작게 말아 올린 윗머리와 풀린 머리가 겹치는 하프업 번",
+    "프렌치 브레이드":"정수리부터 촘촘하게 이어지는 프렌치 브레이드",
+    "피시테일 브레이드":"가느다란 결이 교차하는 피시테일 브레이드",
+    "콘로우":"두피선을 따라 정교하게 이어지는 콘로우",
+    "박스 브레이드":"일정한 구역과 굵기로 나뉜 박스 브레이드",
+    "스페이스 번":"머리 양쪽에 둥글게 올라간 스페이스 번",
+    "브레이드 업두":"땋은 결을 감아 올려 완성한 업두",
+    "롱 스트레이트":"등 뒤로 곧게 흐르는 긴 직모",
+    "단발 웨이브":"턱선 주변에서 부드럽게 움직이는 단발 웨이브",
+    "베이비펌":"작고 잔잔한 컬이 촘촘한 베이비펌",
+    "히피펌":"풍성하고 자유로운 컬이 이어지는 히피펌",
+    "가르마펌":"가르마 양쪽으로 자연스럽게 흐르는 컬"
   };
   return details[style]||style;
 }
@@ -595,7 +667,7 @@ function appearanceMorningEntry(c,time,date){
     parts.push(style==="평소 방식"?`${hair}의 결을 살피며 평소 손질 순서대로 흐트러진 부분을 정돈했어요.`:hairStyleRoutine(c,style,hair,date));
   }
   if(!title)return null;
-  return homeEntry(c,time,title,personalityFlavor(c,parts.join(" "),`appearance-morning:${makeup||"hair"}`),"bath");
+  return homeEntry(c,time,title,personalityFlavor(c,parts.join(" "),`appearance-morning:${makeup||"hair"}`,date),"bath");
 }
 
 function appearanceCareEvent(c,time,date){
@@ -728,7 +800,7 @@ function morningScripts(c,date){
     while(used.has(choiceIndex))choiceIndex=(choiceIndex+1)%choices.length;
     used.add(choiceIndex);picked.push(choices[choiceIndex]);
   }
-  return picked.map((script,index)=>[script[0],personalityFlavor(c,script[1],`morning:${index}`),script[2]]);
+  return picked.map((script,index)=>[script[0],personalityFlavor(c,script[1],`morning:${index}`,date),script[2]]);
 }
 
 function sharedHomeEntry(c,other,time,date){
@@ -768,7 +840,7 @@ function sharedHomeEntry(c,other,time,date){
     ]
   ];
   const script=scripts[kind][role];
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+respectfulAccessibilityFor(other,`shared:${kind}:${role}`),`shared:${kind}:${role}`),script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+respectfulAccessibilityFor(other,`shared:${kind}:${role}`,date),`shared:${kind}:${role}`,date),script[2]);
 }
 
 function roommateHomeEntry(c,other,time,date){
@@ -782,7 +854,7 @@ function roommateHomeEntry(c,other,time,date){
     [["주방에서 설거지하는 중","자기가 사용한 그릇을 헹군 뒤 물기를 털어 건조대에 올리고 있어요.","kitchen"],["욕실에서 씻을 준비 중","갈아입을 옷과 수건을 챙겨 욕실 앞에서 차례를 기다리고 있어요.","bath"]]
   ];
   const script=scripts[hash(`${pair.join(":")}:${dayKey(date)}:roommate`)%scripts.length][role];
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],`roommate:${role}`),script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],`roommate:${role}`,date),script[2]);
 }
 
 function workEvent(c,time,date){
@@ -1025,7 +1097,7 @@ function relationSpecificEntry(c,other,r,time,date,role){
   const enabled=[];
   if(enabled.length){
     const behavior=enabled[hash(`${r.id}:${dayKey(date)}:behavior`)%enabled.length],script=behaviorPools[behavior][role];
-    return homeEntry(c,time,script[0],personalityFlavor(c,script[1],`behavior:${behavior}:${role}`),script[2]);
+    return homeEntry(c,time,script[0],personalityFlavor(c,script[1],`behavior:${behavior}:${role}`,date),script[2]);
   }
   const pool=pools[r.type]||[[[`${n}와 근황을 나누는 중`,"최근 관심 있는 일과 달라진 생활을 이야기하며 상대의 반응을 살피고 있어요.","living"],[`${n}의 근황을 듣는 중`,"궁금한 부분을 자연스럽게 되묻고 자기 이야기도 하나씩 꺼내고 있어요.","living"]]];
   const scenario=pool[hash(`${[c.id,other.id].sort().join(":")}:${r.type}:${dayKey(date)}:relation-scene`)%pool.length],script=scenario[role];
@@ -1034,7 +1106,7 @@ function relationSpecificEntry(c,other,r,time,date,role){
   const ageTone=ageGap>=2?" 나이가 더 많은 쪽답게 단정 짓기보다 상대가 스스로 말할 때까지 기다리려 하고 있어요.":ageGap<=-2?" 나이 차이를 의식하면서도 일방적으로 기대기보다 자기 생각을 분명히 전하려 하고 있어요.":c.ageGroup===other.ageGroup?" 비슷한 세대라 통하는 표현과 경험을 자연스럽게 꺼내고 있어요.":"";
   const kinshipTone=r.type==="부모·자녀"&&r.kinship==="nonblood"?" 혈연으로 이어지지는 않았지만 함께 쌓은 시간과 선택한 가족 역할을 가볍게 여기지 않아요.":r.type==="부모·자녀"?" 서로 닮은 점을 당연한 기준으로 삼지 않고 각자의 성격을 따로 존중하고 있어요.":"";
   const siblingOrderTone=r.type==="형제·자매"?(()=>{const mine=Number(r.siblingOrder?.[c.id])||0,theirs=Number(r.siblingOrder?.[other.id])||0,kinship=r.siblingKinshipByPair?.[[c.id,other.id].sort().join("~")]||"full";return `${mine&&theirs?(mine<theirs?" 먼저 태어났다는 이유로 명령하지 않고 필요한 경험만 나누려 해요.":" 나중에 태어났어도 자기 몫과 의견을 분명하게 말하고 있어요."):""} ${kinship==="nonblood"?"혈연은 아니지만 서로를 형제로 선택해 살아온 시간을 중요하게 여겨요.":kinship==="half"?"한쪽 부모만 같아 서로 다른 성장 경험도 가족사의 일부로 존중하고 있어요.":""}`})():"";
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+tone+ageTone+kinshipTone+siblingOrderTone+respectfulAccessibilityFor(other,`specific:${r.type}:${role}`),`specific:${r.type}:${role}`),script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+tone+ageTone+kinshipTone+siblingOrderTone+respectfulAccessibilityFor(other,`specific:${r.type}:${role}`,date),`specific:${r.type}:${role}`,date),script[2]);
 }
 
 function relationshipHomeEntry(c,pick,time,date){
@@ -1310,7 +1382,7 @@ function relationshipHomeEntry(c,pick,time,date){
   else return sharedHomeEntry(c,other,time,date);
   const roleScripts=scripts.filter((_,index)=>index%2===role%2);
   const script=roleScripts[hash(`${c.id}:${other.id}:${dayKey(date)}:${time}:${overall}:${mutualAwareness}:${trust}:${closeness}:${comfort}:${annoyance}:${attention}:${jealousy}:${conflictIntensity}:${expectation}:${aggression}`)%roleScripts.length];
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+combinedTone+respectfulAccessibilityFor(other,`relation:${r.id}:${role}`),`relation:${r.id}:${role}`),script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+combinedTone+respectfulAccessibilityFor(other,`relation:${r.id}:${role}`,date),`relation:${r.id}:${role}`,date),script[2]);
 }
 
 function relationshipMorningEntry(c,pick,time,date){
@@ -1347,7 +1419,7 @@ function relationshipMorningEntry(c,pick,time,date){
   if(!pool)return null;
   const script=pool[hash(seed)%pool.length];
   const stageTone=/이별|이혼|냉랭|서먹/.test(stage)?" 아직 풀리지 않은 감정 때문에 말끝은 조심스럽고 짧아요.":/운명의|없어서는|깊이|최고/.test(stage)?" 오래 설명하지 않아도 서로 필요한 것을 자연스럽게 알아차리고 있어요.":"";
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+stageTone,`morning-relation:${r.type}`),script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1]+stageTone,`morning-relation:${r.type}`,date),script[2]);
 }
 
 const HOME_ACTIVITY_POOL=[
@@ -1393,7 +1465,7 @@ const HOME_ACTIVITY_POOL=[
   ["집에서 손뜨개를 하는 중","실의 장력을 맞추고 도안을 확인하며 같은 무늬를 한 코씩 이어 가고 있어요.","living"],
   ["집에서 그림을 그리는 중","빛과 색을 비교하며 큰 형태부터 잡고 마음에 걸리는 세부를 여러 번 고쳐 그리고 있어요.","study"]
 ];
-const homeActivityPoolFor=c=>{
+const homeActivityPoolFor=(c,date=new Date())=>{
   const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
   const pool=HOME_ACTIVITY_POOL.filter(([title])=>{
@@ -1451,11 +1523,9 @@ const homeActivityPoolFor=c=>{
     });
   });
   const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{},hearing=body.hearing||{},vision=body.vision||{};
-  if(wheelchair.type&&wheelchair.type!=="사용하지 않음"){
+  if(wheelchair.type&&wheelchair.type!=="사용하지 않음"&&hash(`${c.id}:${dayKey(date)}:wheelchair-home-focus`)%12===0){
     pool.push(
-      ["현관에서 휠체어를 점검하는 중",wheelchair.type==="전동 휠체어"?"배터리 잔량과 조작부, 타이어 상태를 확인하고 오늘 이동할 접근 가능한 동선을 살펴봤어요.":"타이어와 브레이크, 쿠션 위치를 확인하고 자기 몸에 편안한 상태로 맞췄어요.","entry"],
-      ["외출할 접근 가능한 동선을 확인하는 중","경사로와 출입구 폭, 이용 가능한 이동 수단을 확인하고 어느 길로 갈지 직접 골랐어요.","study"],
-      ["거실에서 편안한 위치를 잡는 중","가구 사이의 회전 공간과 손이 닿는 위치를 살핀 뒤 방해받지 않고 하던 일을 이어 갈 자리를 골랐어요.","living"]
+      ["현관에서 이동 준비를 점검하는 중",wheelchair.type==="전동 휠체어"?"배터리 잔량과 조작부, 타이어 상태를 확인하고 오늘 이동할 동선을 살펴봤어요.":"타이어와 브레이크, 쿠션 위치를 확인하고 자기 몸에 편안한 상태로 맞췄어요.","entry"]
     );
   }
   if(arm.side&&arm.side!=="사용하지 않음"){
@@ -1552,7 +1622,7 @@ function contextualDailyEvent(c,time,date){
     [`${c.hobbies[hash(`${c.id}:${dayKey(date)}:context-hobby`)%c.hobbies.length]}에 몰두하는 중`,"좋아하는 활동에 필요한 도구를 차분히 꺼내고 자기 방식대로 집중할 환경을 만들었어요.","study"]);
   if(!pool.length)pool.push(["잠깐 숨을 고르는 중","하던 일을 멈추고 물을 한 모금 마시며 다음에 무엇을 할지 천천히 생각하고 있어요.","living"]);
   const script=pool[hash(`${c.id}:${dayKey(date)}:contextual-daily`)%pool.length];
-  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily"),script[2]);
+  return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily",date),script[2]);
 }
 function financialStressEvent(c,time,date){
   const lowWealth=["생계가 빠듯함","여유가 적음"].includes(c.wealth);
@@ -1711,7 +1781,7 @@ function build(c,date=new Date()){
   }else if(housemate){
     list.push(roommateHomeEntry(c,housemate,eveningMinute,date));
   }else{
-    const homeScripts=[...homeActivityPoolFor(c),
+    const homeScripts=[...homeActivityPoolFor(c,date),
       ["거실 소파에서 영상 보는 중","TV 앞 소파에 기대어 좋아하는 영상을 이어 보고 있어요.","living"],
       ["서재에서 취미를 즐기는 중","책상 위에 좋아하는 물건을 펼쳐 놓고 취미에 집중하고 있어요.","study"],
       ["주방에서 간식 만드는 중","주방 조리대에서 간단한 간식과 마실 것을 준비하고 있어요.","kitchen"],
@@ -1733,7 +1803,7 @@ function build(c,date=new Date()){
     if(c.neatness==="결벽에 가까움")homeScripts.push(["욕실과 손잡이를 소독하는 중","자주 손이 닿는 곳을 순서대로 닦고 마른 자국이 남지 않았는지 빛에 비춰 다시 확인하고 있어요.","bath"]);
     if(c.fashionSense==="옷을 매우 잘 입음"||c.fashionSense==="감각적으로 잘 입음")homeScripts.push(["침실에서 내일 코디를 맞추는 중","옷의 색과 소재를 번갈아 대 보며 신발과 소품까지 자연스럽게 이어지는 조합을 만들고 있어요.","bedroom"]);
     const script=homeScripts[hash(`${c.id}:${dayKey(date)}:home-evening`)%homeScripts.length];
-    list.push(homeEntry(c,eveningMinute,script[0],personalityFlavor(c,script[1],"evening"),script[2]));
+    list.push(homeEntry(c,eveningMinute,script[0],personalityFlavor(c,script[1],"evening",date),script[2]));
   }
   const scheduled=(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay());
   scheduled.forEach(item=>{
@@ -1755,7 +1825,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260807d";
+const ENGINE_VERSION="20260807f";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,Object.keys(home?.rooms||{}),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1904,9 +1974,9 @@ function liveGapEvent(c,last,n,date){
       공원:parkScene
     };
     const text=continuations[place?.type]||[`${place?.name||"외출 장소"}에서 시간을 보내는 중`,"지금 하고 있는 일을 마무리하며 다음 일정을 준비하고 있어요."];
-    return entry(minute,text[0],personalityFlavor(c,text[1],"live-away"),{townId:last.townId||c.townId,placeId:last.placeId,mood:last.mood||"보통"});
+    return entry(minute,text[0],personalityFlavor(c,text[1],"live-away",date),{townId:last.townId||c.townId,placeId:last.placeId,mood:last.mood||"보통"});
   }
-  const scripts=[...homeActivityPoolFor(c),
+  const scripts=[...homeActivityPoolFor(c,date),
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
     ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],
     ["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"],
@@ -1916,7 +1986,7 @@ function liveGapEvent(c,last,n,date){
   const freshScripts=scripts.filter(script=>!recentTitles.has(script[0]));
   const pool=freshScripts.length?freshScripts:scripts;
   const script=pool[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%pool.length];
-  return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home"),script[2]);
+  return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2]);
 }
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
@@ -2680,7 +2750,7 @@ function sharedPlaceScene(c,current,date){
   const bothWalking=/공원.*걷|걷.*공원/.test(`${baseTitle} ${title}`);
   const combinedTitle=bothWalking||title.includes("데이트")?title:[...new Set([baseTitle,title].filter(Boolean))].join(" · ");
   const combinedDesc=place?.type==="공원"?detail:cleanRepeatedSceneText(`${baseDesc} ${detail}`);
-  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(characterVoice(c,combinedDesc)),withId:actualPartnerId,withIds:together.map(other=>other.id),groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood};
+  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,combinedDesc))),withId:actualPartnerId,withIds:together.map(other=>other.id),groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood};
 }
 export function eventFor(c,date=new Date()){
   const current=adaptAccessibilityWording(c,sharedPlaceScene(c,baseEventFor(c,date),date));
