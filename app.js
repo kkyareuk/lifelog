@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808a";
-import {eventFor} from "./simulation.js?v=20260808a";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808a";
-import {recordCharacterInteraction} from "./state.js?v=20260808a";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808b";
+import {eventFor} from "./simulation.js?v=20260808b";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808b";
+import {recordCharacterInteraction} from "./state.js?v=20260808b";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -769,8 +769,18 @@ async function explicitSave(label="저장 완료"){
   }else showToast("기기에 저장되었습니다");
 }
 
+let menuNavigationListenerBound=false;
+
 function bind(){
-  $$("[data-tab]").forEach(el=>el.onclick=()=>navigateToTab(el.dataset.tab));
+  if(!menuNavigationListenerBound){
+    document.addEventListener("click",event=>{
+      const menuButton=event.target.closest?.("[data-tab]");
+      if(!menuButton)return;
+      event.preventDefault();
+      navigateToTab(menuButton.dataset.tab);
+    });
+    menuNavigationListenerBound=true;
+  }
   const openNativeLog=()=>document.querySelector("[data-native-log-dialog]")?.showModal();
   $("[data-open-native-log-card]")?.addEventListener("click",event=>{
     if(event.target.closest("[data-tab]"))return;
@@ -2206,31 +2216,14 @@ const mobileSiteQuery=window.matchMedia?.("(max-width:720px)");
 mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
-function showPhotoBackupNotice(){
-  if(maintenanceEnabled()||!state.order.length||localStorage.getItem("drawer-village-hide-photo-backup-notice")==="1"||localStorage.getItem("parallel-city-hide-photo-backup-notice")==="1"||document.querySelector(".backup-notice"))return;
-  const openDialog=document.querySelector("dialog[open]");
-  if(openDialog){
-    if(openDialog.dataset.waitingForBackupNotice!=="1"){
-      openDialog.dataset.waitingForBackupNotice="1";
-      openDialog.addEventListener("close",()=>requestAnimationFrame(showPhotoBackupNotice),{once:true});
-    }
-    return;
-  }
-  const notice=document.createElement("dialog");notice.className="backup-notice";
-  notice.innerHTML=`<form method="dialog"><h2>사진 보관 안내</h2><p>사진 파일을 직접 올리면 Google 저장 공간에 함께 보관돼요. 용량을 아끼고 싶다면 사진 파일 대신 <b>웹에 공개된 이미지 주소</b>를 입력해 주세요. 기본 사진 저장 공간은 <b>최대 120장·총 20MB</b>이며 상점에서 50MB로 늘릴 수 있어요. 같은 사진은 중복으로 올리지 않고, 현재 사용량은 설정에서 확인할 수 있습니다.</p><label><input type="checkbox" name="hide"> 다시는 보지 않기</label><button class="primary" value="ok">알겠어요</button></form>`;
-  notice.onclose=()=>{if(notice.querySelector('[name="hide"]')?.checked)localStorage.setItem("drawer-village-hide-photo-backup-notice","1");notice.remove()};
-  document.body.append(notice);
-  try{notice.showModal()}catch(error){notice.show()}
-}
-requestAnimationFrame(showPhotoBackupNotice);
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260808a").catch(error=>{
+  import("./auth.js?v=20260808b").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260808a",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260808b",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
