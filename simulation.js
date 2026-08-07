@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807n";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807o";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1561,6 +1561,22 @@ const homeActivityPoolFor=(c,date=new Date())=>{
     `손가락을 어디에 놓아야 소리가 나는지도 몰라 괜히 건드렸다 망가뜨릴까 봐 가까이에서 생김새만 살펴보고 있어요.`,
     "study"
   ]);
+  (home?.pets||[]).forEach(pet=>{
+    const roomKey=home.rooms?.[pet.room]?pet.room:(home.rooms?.living?"living":Object.keys(home.rooms||{})[0]||"living");
+    const species=pet.species==="기타"?(pet.customSpecies?.trim()||"함께 사는 존재"):pet.species;
+    const playText={
+      강아지:`${pet.name}이 좋아하는 장난감을 굴려 주고, 흥분이 너무 높아지지 않게 잠깐씩 쉬어 가며 함께 놀고 있어요.`,
+      고양이:`${pet.name}이 먼저 관심을 보이는 거리에서 장난감을 천천히 움직이고, 숨거나 쉬고 싶을 때는 방해하지 않았어요.`,
+      새:`${pet.name}이 안전하게 움직일 수 있는 범위를 확인한 뒤 좋아하는 놀이와 간식을 번갈아 건네고 있어요.`,
+      거북이:`${pet.name}의 속도를 재촉하지 않고 탐색하는 방향을 지켜보며 안전한 공간을 천천히 정돈해 주고 있어요.`,
+      호랑이:`${pet.name}과 충분한 거리를 유지한 채 튼튼한 장난감을 움직여 주고, 반응을 살피며 안전하게 놀고 있어요.`,
+      인공지능:`${pet.name}과 짧은 게임을 실행하고 서로의 반응 속도와 선택을 비교하며 함께 시간을 보내고 있어요.`,
+      식물:`${pet.name}의 흙과 잎 상태를 살피고 화분을 돌려 빛을 고르게 받도록 조용히 돌보고 있어요.`,
+      드래곤:`${pet.name}이 쫓기 좋아하는 장난감을 움직여 주자 꼬리와 날개를 들썩이며 주위를 신나게 돌고 있어요.`,
+      기타:`${pet.name}이 좋아하는 방식과 싫어하는 자극을 살피며 무리하지 않는 범위에서 함께 놀고 있어요.`
+    };
+    pool.push([`${pet.name}와 놀아 주는 중`,playText[pet.species]||`${pet.name}의 반응을 살피며 ${species}에게 익숙한 방식으로 함께 시간을 보내고 있어요.`,roomKey,`pet:${pet.id}`,{petId:pet.id}]);
+  });
   const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{},hearing=body.hearing||{},vision=body.vision||{};
   Object.entries(state.homes[c.homeId]?.rooms||{}).forEach(([roomKey,room])=>{
     (room.furniture||[]).forEach(rawName=>{
@@ -1861,7 +1877,7 @@ function build(c,date=new Date()){
     if(c.neatness==="결벽에 가까움")homeScripts.push(["욕실과 손잡이를 소독하는 중","자주 손이 닿는 곳을 순서대로 닦고 마른 자국이 남지 않았는지 빛에 비춰 다시 확인하고 있어요.","bath"]);
     if(c.fashionSense==="옷을 매우 잘 입음"||c.fashionSense==="감각적으로 잘 입음")homeScripts.push(["침실에서 내일 코디를 맞추는 중","옷의 색과 소재를 번갈아 대 보며 신발과 소품까지 자연스럽게 이어지는 조합을 만들고 있어요.","bedroom"]);
     const script=homeScripts[hash(`${c.id}:${dayKey(date)}:home-evening`)%homeScripts.length];
-    list.push(homeEntry(c,eveningMinute,script[0],personalityFlavor(c,script[1],"evening",date),script[2]));
+    list.push(homeEntry(c,eveningMinute,script[0],personalityFlavor(c,script[1],"evening",date),script[2],script[4]||{}));
   }
   const scheduled=(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay());
   scheduled.forEach(item=>{
@@ -1883,7 +1899,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260807n";
+const ENGINE_VERSION="20260807o";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,Object.keys(home?.rooms||{}),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2063,7 +2079,7 @@ function liveGapEvent(c,last,n,date){
   const freshScripts=scripts.filter(script=>!recentTitles.has(script[0]));
   const pool=freshScripts.length?freshScripts:scripts;
   const script=pool[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%pool.length];
-  return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2]);
+  return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2],script[4]||{});
 }
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
