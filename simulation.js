@@ -2008,6 +2008,19 @@ function companionWasActuallyThere(c,item,date){
     Math.abs(otherEntry.minute-item.minute)<=90
   );
 }
+function dateGroupParticipantIds(event){
+  if(!event?.dateGroup)return[];
+  const marker=String(event.dateGroup);
+  return state.order.filter(id=>marker.includes(id));
+}
+function dateEntryBelongsTo(c,item){
+  if(!item?.dateGroup)return true;
+  const participantIds=dateGroupParticipantIds(item);
+  // 현재 엔진이 만드는 데이트 키에는 두 사람의 ID가 모두 들어간다.
+  // 다른 캐릭터의 오래된 데이트 로그가 withId만 잘못 가진 경우에는
+  // 선택된 캐릭터의 현재 장면이나 생활 로그로 채택하지 않는다.
+  return participantIds.length>=2&&participantIds.includes(c.id);
+}
 
 export function timeline(c,date=new Date()){
   if(!c||typeof c!=="object")return[];
@@ -2043,7 +2056,7 @@ export function timeline(c,date=new Date()){
   }
   return Array.isArray(c.days[key]?.entries)?c.days[key].entries:[];
 }
-export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x&&Number(x.minute)<=nowMin(date))}
+export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))}
 
 function commitLiveEntry(c,date,item){
   const key=dayKey(date),day=c.days?.[key];
@@ -2130,7 +2143,7 @@ function liveGapEvent(c,last,n,date){
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
   if(sleepingNow(c,date))return withResidenceLocation(c,entry(n,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0}),date);
-  const list=timeline(c,date), past=list.filter(x=>x.minute<=n);
+  const list=timeline(c,date), past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n);
   const last=past.at(-1);
   const nextGap=last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30;
   if(last&&n-last.minute>=nextGap)return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,n,date),date));
@@ -2918,11 +2931,14 @@ function sharedParticipantOrder(characters,relation){
   return [...new Set([...configured.filter(id=>available.has(id)),...characters.map(character=>character.id)])];
 }
 function sharedPlaceScene(c,current,date,sharedContext=null){
-  const dateGroupParticipantIds=event=>event?.dateGroup
-    ?state.order.filter(id=>String(event.dateGroup).includes(id))
-    :[];
   current=baseSceneFrom(current);
-  if(sharedContext?.dateGroup)current={...current,dateGroup:sharedContext.dateGroup,datePurpose:sharedContext.datePurpose||current.datePurpose,withId:sharedContext.forcedPartnerId||current.withId};
+  if(sharedContext?.dateGroup){
+    const sharedIds=dateGroupParticipantIds(sharedContext);
+    const forcedPartnerId=sharedContext.forcedPartnerId;
+    if(sharedIds.includes(c.id)&&sharedIds.includes(forcedPartnerId)){
+      current={...current,dateGroup:sharedContext.dateGroup,datePurpose:sharedContext.datePurpose||current.datePurpose,withId:forcedPartnerId||current.withId};
+    }
+  }
   if(!current?.dateGroup){
     const incomingDate=state.order.map(id=>{
       const owner=state.characters[id];
@@ -2930,7 +2946,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       const ownerEvent=baseEventFor(owner,date);
       const groupIds=dateGroupParticipantIds(ownerEvent);
       const includesTarget=groupIds.includes(c.id);
-      const targetsCharacter=groupIds.length>=2?includesTarget:ownerEvent?.withId===c.id;
+      const targetsCharacter=groupIds.length>=2&&includesTarget;
       return ownerEvent?.dateGroup&&ownerEvent?.datePurpose&&targetsCharacter?{owner,event:ownerEvent}:null;
     }).find(Boolean);
     if(incomingDate){
@@ -2958,7 +2974,11 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const groupedDatePartner=current.dateGroup&&current.datePurpose
     ?state.order.map(id=>state.characters[id]).find(other=>other&&other.id!==c.id&&String(current.dateGroup).includes(other.id))
     :null;
-  const explicitDatePartner=forcedPartner||groupedDatePartner||(current.dateGroup&&current.datePurpose&&current.withId?state.characters[current.withId]:null);
+  const currentDateIds=dateGroupParticipantIds(current);
+  const validForcedPartner=forcedPartner&&current.dateGroup&&current.datePurpose&&currentDateIds.includes(c.id)&&currentDateIds.includes(forcedPartner.id)
+    ?forcedPartner
+    :null;
+  const explicitDatePartner=validForcedPartner||groupedDatePartner;
   if(explicitDatePartner&&current.dateGroup&&current.withId!==explicitDatePartner.id)current={...current,withId:explicitDatePartner.id,withIds:[explicitDatePartner.id]};
   // 날짜와 상대가 정해진 데이트에는 같은 장소에 우연히 있던 제3자를 끼우지 않는다.
   // 일반 장면에서만 현재 방/장소가 같은 인물을 공동 장면 후보로 삼는다.
@@ -2977,7 +2997,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
         if(!owner||owner.id===other.id||owner.id===c.id)return false;
         const ownerEvent=baseEventFor(owner,date);
         const groupIds=dateGroupParticipantIds(ownerEvent);
-        const reservesCharacter=groupIds.length>=2?groupIds.includes(other.id):ownerEvent?.withId===other.id;
+        const reservesCharacter=groupIds.length>=2&&groupIds.includes(other.id);
         return Boolean(ownerEvent?.dateGroup&&ownerEvent?.datePurpose&&reservesCharacter);
       });
       if(reservedByAnotherDate)return false;
@@ -3040,7 +3060,21 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,combinedDesc))),withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 export function eventFor(c,date=new Date()){
-  const current=adaptAccessibilityWording(c,sharedPlaceScene(c,baseEventFor(c,date),date));
+  let current=adaptAccessibilityWording(c,sharedPlaceScene(c,baseEventFor(c,date),date));
+  if(current?.dateGroup&&current?.datePurpose){
+    const dateIds=dateGroupParticipantIds(current);
+    const partnerId=dateIds.find(id=>id!==c.id);
+    if(!dateIds.includes(c.id)||!partnerId){
+      current={...current,dateGroup:"",datePurpose:"",mood:current.mood==="데이트"?"일상":current.mood,groupInteraction:false,withId:undefined,withIds:[],participantOrder:[]};
+    }else{
+      current={
+        ...current,
+        withId:partnerId,
+        withIds:[partnerId],
+        participantOrder:[...(current.participantOrder||[]).filter(id=>id===c.id||id===partnerId),c.id,partnerId].filter((id,index,list)=>list.indexOf(id)===index)
+      };
+    }
+  }
   if(current?.groupInteraction){
     const sharedMinute=nowMin(date);
     current.minute=sharedMinute;
