@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807g";
-import {eventFor} from "./simulation.js?v=20260807g";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807g";
-import {recordCharacterInteraction} from "./state.js?v=20260807g";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807i";
+import {eventFor} from "./simulation.js?v=20260807i";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807i";
+import {recordCharacterInteraction} from "./state.js?v=20260807i";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -460,8 +460,8 @@ function openRoomEditor(homeId,roomKey){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
   const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
   const drawFurniture=()=>{const list=ROOM_EDITOR_FURNITURE[room.type]||ROOM_EDITOR_FURNITURE.other;return list.map(item=>`<button type="button" data-room-furniture="${item}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")};
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
-  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방"});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>크기에 맞춰 다른 방과 겹치지 않게 자동 배치돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
+  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",size:dialog.querySelector('[name="size"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
   dialog.querySelectorAll("[data-room-furniture]").forEach(button=>button.onclick=()=>{toggleFurniture(homeId,roomKey,button.dataset.roomFurniture);button.classList.toggle("on")});
@@ -529,9 +529,8 @@ function render(){
       grid.insertBefore(card,grid.lastElementChild);
     }
     bind();
-    bindRelationshipRoulette();
     applyTheme();
-    requestAnimationFrame(centerRelationshipSelectors);
+    requestAnimationFrame(bindRelationshipRoulette);
     requestAnimationFrame(restoreMobileCharacterDialogs);
     requestAnimationFrame(showOnboarding);
     requestAnimationFrame(showSetupCoach);
@@ -708,12 +707,48 @@ function bind(){
   $("[data-add-room]")?.addEventListener("click",()=>{addRoom(state.activeHomeId);render()});
   $$("[data-open-room-editor]").forEach(el=>{
     el.onclick=event=>{
-      if(event.target.closest("[data-home-person],.room-pet"))return;
+      if(event.target.closest("[data-home-person],.room-pet,.room-drag-handle"))return;
       event.stopPropagation();
       openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor);
     };
     el.onkeydown=event=>{if(["Enter"," "].includes(event.key)){event.preventDefault();openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor)}};
   });
+  $$("[data-room-drag]").forEach(handle=>{
+    let startX=0,startY=0,moved=false,targetRoom=null;
+    handle.onclick=event=>event.stopPropagation();
+    handle.onpointerdown=event=>{
+      event.preventDefault();event.stopPropagation();
+      handle.setPointerCapture(event.pointerId);
+      startX=event.clientX;startY=event.clientY;moved=false;targetRoom=null;
+      handle.closest(".room")?.classList.add("room-dragging");
+    };
+    handle.onpointermove=event=>{
+      if(!handle.hasPointerCapture(event.pointerId))return;
+      if(Math.hypot(event.clientX-startX,event.clientY-startY)>8)moved=true;
+      if(!moved)return;
+      document.querySelectorAll(".room-drop-target").forEach(room=>room.classList.remove("room-drop-target"));
+      const candidate=document.elementFromPoint(event.clientX,event.clientY)?.closest?.("[data-room-key]");
+      if(candidate&&candidate.dataset.roomKey!==handle.dataset.roomDrag){
+        targetRoom=candidate;
+        targetRoom.classList.add("room-drop-target");
+      }
+    };
+    handle.onpointerup=event=>{
+      if(handle.hasPointerCapture(event.pointerId))handle.releasePointerCapture(event.pointerId);
+      handle.closest(".room")?.classList.remove("room-dragging");
+      document.querySelectorAll(".room-drop-target").forEach(room=>room.classList.remove("room-drop-target"));
+      if(moved&&targetRoom&&reorderRoom(handle.dataset.homeId,handle.dataset.roomDrag,targetRoom.dataset.roomKey)){
+        render();showToast("방 위치를 자석처럼 다시 맞췄어요");
+      }
+    };
+  });
+  $$("[data-open-home-feature]").forEach(button=>button.onclick=()=>{
+    const card=button.closest("[data-home-card]"),panel=card?.querySelector(`[data-home-feature="${CSS.escape(button.dataset.openHomeFeature)}"]`);
+    if(!panel)return;
+    card.querySelectorAll("[data-home-feature].open").forEach(item=>item.classList.remove("open"));
+    panel.classList.add("open");
+  });
+  $$("[data-close-home-feature]").forEach(button=>button.onclick=()=>button.closest("[data-home-feature]")?.classList.remove("open"));
   $$("[data-open-room-image-menu]").forEach(el=>el.onclick=event=>{event.stopPropagation();openRoomImageMenu(el.dataset.homeId,el.dataset.openRoomImageMenu)});
   $("[data-add-pet]")?.addEventListener("click",()=>{addPet(state.activeHomeId);render()});
   $("[data-add-car]")?.addEventListener("click",()=>{addCar(state.activeHomeId);render()});
@@ -1093,8 +1128,12 @@ function bind(){
   }));
   const addPlaceButton=$("[data-add-place]");
   $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
-  $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
+  $$("[data-edit-rel]").forEach(el=>el.onclick=()=>{
+    el.closest("[data-official-relation-dialog]")?.close();
+    openRelationDialog(el.dataset.editRel);
+  });
   $$("[data-view-source]").forEach(button=>button.onclick=()=>{
+    if(button.closest(".relationship-character-rail")?.dataset.rouletteScrolling==="1")return;
     state.characterViewSource=button.dataset.viewSource;
     setActive(state.characterViewSource);
     if(state.characterViewTarget===state.characterViewSource||!state.characters[state.characterViewTarget]){
@@ -1104,6 +1143,7 @@ function bind(){
     render();
   });
   $$("[data-view-target]").forEach(button=>button.onclick=()=>{
+    if(button.closest(".relationship-character-rail")?.dataset.rouletteScrolling==="1")return;
     if(button.dataset.viewTarget===state.characterViewSource)return;
     state.characterViewTarget=button.dataset.viewTarget;
     save(true);
@@ -1121,6 +1161,10 @@ function bind(){
     dialog?.showModal();
   });
   $("[data-open-relationship-map]")?.addEventListener("click",openRelationshipMap);
+  $("[data-open-official-relations]")?.addEventListener("click",()=>{
+    const dialog=$("[data-official-relation-dialog]");
+    if(dialog&&!dialog.open)dialog.showModal();
+  });
   $("[data-refresh-relationship-map]")?.addEventListener("click",()=>{
     render();
     requestAnimationFrame(openRelationshipMap);
@@ -1237,7 +1281,6 @@ function navigateToTab(tab){
   save();
   render();
   if(tab==="town")centerMobileTownMap();
-  if(tab==="relationship")centerRelationshipSelectors();
   window.scrollTo({top:0,behavior:"auto"});
 }
 
@@ -1268,49 +1311,66 @@ function centerRelationshipSelectors(){
 function bindRelationshipRoulette(){
   if(state.activeTab!=="relationship"||!document.documentElement.classList.contains("native-app"))return;
   document.querySelectorAll(".relationship-character-rail").forEach(rail=>{
-    let frame=0,commitTimer=0;
-    const update=()=>{
+    let frame=0,commitTimer=0,scrollFlagTimer=0,ready=false;
+    const sourceRail=rail.classList.contains("source-rail");
+    const selectedId=sourceRail?state.characterViewSource:state.characterViewTarget;
+    const selectedMiddle=[...rail.querySelectorAll('button[data-roulette-cycle="1"]')].find(button=>(sourceRail?button.dataset.viewSource:button.dataset.viewTarget)===selectedId);
+    const centerButton=button=>{
+      if(!button)return;
+      rail.scrollTop=Math.max(0,button.offsetTop-(rail.clientHeight-button.offsetHeight)/2);
+    };
+    const update=(commit=false)=>{
       frame=0;
       const buttons=[...rail.querySelectorAll("button")];if(!buttons.length)return;
-      const center=rail.scrollTop+rail.clientHeight/2;
+      const railRect=rail.getBoundingClientRect(),center=railRect.top+railRect.height/2;
       let selectedIndex=0,bestDistance=Infinity;
       buttons.forEach((button,index)=>{
-        const distance=Math.abs(button.offsetTop+button.offsetHeight/2-center);
+        const rect=button.getBoundingClientRect(),distance=Math.abs(rect.top+rect.height/2-center);
         if(distance<bestDistance){bestDistance=distance;selectedIndex=index}
       });
-      const sourceRail=rail.classList.contains("source-rail");
       buttons.forEach((button,index)=>{
-        const distance=index-selectedIndex;
+        const rect=button.getBoundingClientRect();
+        const distance=(rect.top+rect.height/2-center)/Math.max(1,button.offsetHeight);
         button.classList.toggle("roulette-preview",index===selectedIndex);
         button.classList.toggle("on",index===selectedIndex);
         button.style.setProperty("--roulette-distance",distance);
-        button.style.setProperty("--fan-angle",`${Math.max(-17,Math.min(17,distance*5))*(sourceRail?-1:1)}deg`);
-        button.style.setProperty("--fan-shift",`${Math.min(22,Math.abs(distance)*5)*(sourceRail?1:-1)}px`);
+        button.style.setProperty("--fan-angle",`${Math.max(-24,Math.min(24,distance*7))*(sourceRail?-1:1)}deg`);
+        const inward=Math.max(0,20-Math.min(20,Math.abs(distance)*6));
+        button.style.setProperty("--fan-shift",`${inward*(sourceRail?1:-1)}px`);
       });
+      if(!commit||!ready)return;
       clearTimeout(commitTimer);
       commitTimer=window.setTimeout(()=>{
         const button=buttons[selectedIndex],id=sourceRail?button?.dataset.viewSource:button?.dataset.viewTarget;
         if(!id)return;
         if(sourceRail){
-          if(id===state.characterViewSource)return;
           state.characterViewSource=id;
           state.activeId=id;
           if(state.characterViewTarget===id||!state.characters[state.characterViewTarget]){
             state.characterViewTarget=state.order.find(characterId=>characterId!==id)||"";
           }
         }else{
-          if(id===state.characterViewTarget||id===state.characterViewSource)return;
+          if(id===state.characterViewSource)return;
           state.characterViewTarget=id;
         }
         save(true);
         render();
-      },150);
+      },180);
     };
     rail.addEventListener("scroll",()=>{
+      if(!ready)return;
+      rail.dataset.rouletteScrolling="1";
+      clearTimeout(scrollFlagTimer);
+      scrollFlagTimer=window.setTimeout(()=>{rail.dataset.rouletteScrolling=""},260);
       if(frame)return;
-      frame=requestAnimationFrame(update);
+      frame=requestAnimationFrame(()=>update(true));
     },{passive:true});
-    update();
+    centerButton(selectedMiddle);
+    requestAnimationFrame(()=>{
+      centerButton(selectedMiddle);
+      update(false);
+      ready=true;
+    });
   });
 }
 
@@ -1455,7 +1515,28 @@ $("#image-picker").onchange=async e=>{
   }
 };
 
+function prepareCatalogIllustration(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("image-load-failed"))};
+    img.onload=()=>{
+      const maxSide=1200,scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+      const canvas=document.createElement("canvas");
+      canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+      canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+      const context=canvas.getContext("2d");
+      context.clearRect(0,0,canvas.width,canvas.height);
+      context.drawImage(img,0,0,canvas.width,canvas.height);
+      const data=canvas.toDataURL("image/webp",.84);
+      URL.revokeObjectURL(url);
+      resolve(data);
+    };
+    img.src=url;
+  });
+}
+
 function cropImage(file,type){
+  if(type==="catalogImage")return prepareCatalogIllustration(file);
   const ratios={photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,home:16/9,place:1,placeInterior:16/9};
   const ratio=ratios[type]||16/9;
   const output=ratio<1?600:ratio===1?500:800;
@@ -1805,13 +1886,13 @@ if(!maintenanceEnabled()&&state.order.length&&localStorage.getItem("drawer-villa
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807g").catch(error=>{
+  import("./auth.js?v=20260807i").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807g",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260807i",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

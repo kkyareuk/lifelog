@@ -13,13 +13,14 @@ const renameBrand=value=>{
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const rooms=()=>({
-  living:{name:"거실",type:"living",image:"",furniture:["소파","TV","책장"]},
-  kitchen:{name:"주방",type:"kitchen",image:"",furniture:["냉장고","조리대","식탁"]},
-  entry:{name:"현관",type:"entry",image:"",furniture:["신발장","전신거울"]},
-  bath:{name:"욕실",type:"bath",image:"",furniture:["샤워부스","세면대"]},
-  bedroom:{name:"침실",type:"bedroom",image:"",furniture:["침대","옷장"]},
-  study:{name:"서재·취미방",type:"study",image:"",furniture:["책상","컴퓨터"]}
+  living:{name:"거실",type:"living",size:"큰 방",order:0,image:"",furniture:["소파","TV","책장"]},
+  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,image:"",furniture:["냉장고","조리대","식탁"]},
+  entry:{name:"현관",type:"entry",size:"작은 방",order:2,image:"",furniture:["신발장","전신거울"]},
+  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,image:"",furniture:["샤워부스","세면대"]},
+  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,image:"",furniture:["침대","옷장"]},
+  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,image:"",furniture:["책상","컴퓨터"]}
 });
+const ROOM_SIZES=["작은 방","보통 방","큰 방","넓고 긴 방"];
 const defaultBodyProfile=()=>({
   bodySize:"설정하지 않음",
   physicalTraits:[],
@@ -394,9 +395,12 @@ function normalizeHomes(x){
     h.rooms=h.rooms&&typeof h.rooms==="object"&&!Array.isArray(h.rooms)?h.rooms:{};
     h.deletedRoomKeys=Array.isArray(h.deletedRoomKeys)?[...new Set(h.deletedRoomKeys.map(String))]:[];
     h.deletedRoomKeys.forEach(key=>delete h.rooms[key]);
-    h.rooms=Object.fromEntries(Object.entries(h.rooms).filter(([,room])=>room&&typeof room==="object"&&!Array.isArray(room)).map(([key,room])=>{
+    h.rooms=Object.fromEntries(Object.entries(h.rooms).filter(([,room])=>room&&typeof room==="object"&&!Array.isArray(room)).map(([key,room],index)=>{
       room.name=String(room.name||"이름 없는 방");room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
       room.image=String(room.image||"");room.furniture=Array.isArray(room.furniture)?room.furniture.map(String):[];
+      const defaultSize=room.type==="living"?"큰 방":["entry","bath","storage"].includes(room.type)?"작은 방":"보통 방";
+      room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
+      room.order=Number.isFinite(Number(room.order))?Number(room.order):index;
       return[String(key),room];
     }));
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
@@ -700,9 +704,22 @@ export function addRoom(homeId){
   h.rooms=h.rooms||rooms();
   const key=`room-${uid()}`;
   h.deletedRoomKeys=(h.deletedRoomKeys||[]).filter(value=>value!==key);
-  h.rooms[key]={name:"새 방",type:"other",image:"",furniture:[...ROOM_FURNITURE.other]};
+  const nextOrder=Math.max(-1,...Object.values(h.rooms).map(room=>Number(room.order)||0))+1;
+  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,image:"",furniture:[...ROOM_FURNITURE.other]};
   save(true);
   return key;
+}
+export function reorderRoom(homeId,sourceKey,targetKey){
+  const roomsForHome=state.homes[homeId]?.rooms;
+  if(!roomsForHome?.[sourceKey]||!roomsForHome?.[targetKey]||sourceKey===targetKey)return false;
+  const ordered=Object.entries(roomsForHome).sort((a,b)=>(Number(a[1].order)||0)-(Number(b[1].order)||0));
+  const sourceIndex=ordered.findIndex(([key])=>key===sourceKey),targetIndex=ordered.findIndex(([key])=>key===targetKey);
+  if(sourceIndex<0||targetIndex<0)return false;
+  const [moved]=ordered.splice(sourceIndex,1);
+  ordered.splice(targetIndex,0,moved);
+  ordered.forEach(([key],index)=>{roomsForHome[key].order=index});
+  save(true);
+  return true;
 }
 export function setRoomType(homeId,roomKey,type){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room||!ROOM_FURNITURE[type])return;

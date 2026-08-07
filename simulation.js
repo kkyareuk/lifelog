@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807g";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807i";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -513,6 +513,33 @@ function adaptAccessibilityWording(c,item){
 function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에 앉아 조용히 쉬고 있어요.",room="living",extra={}){
   const resolvedRoom=room==="bedroom"?(c.sleepRoomId||"bedroom"):room;
   return adaptAccessibilityWording(c,entry(time,title,desc,{home:true,room:resolvedRoom,...extra}));
+}
+function mobilityAidMorningEntry(c,time,date=new Date()){
+  const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{};
+  const usesWheelchair=wheelchair.type&&wheelchair.type!=="사용하지 않음";
+  const usesArm=arm.side&&arm.side!=="사용하지 않음";
+  const usesLeg=leg.side&&leg.side!=="사용하지 않음";
+  if(!usesWheelchair&&!usesArm&&!usesLeg)return null;
+  const labels=[],details=[];
+  if(usesWheelchair){
+    labels.push(wheelchair.type);
+    details.push(wheelchair.type==="전동 휠체어"
+      ?"배터리 잔량과 조작부, 타이어와 브레이크 상태를 확인하고 오늘 이동에 편한 설정으로 맞췄어요."
+      :"타이어 공기압과 브레이크, 쿠션과 발판 위치를 확인하고 몸에 편안한 상태로 맞췄어요.");
+  }
+  if(usesArm){
+    const label=`${arm.side==="양쪽"?"양쪽":arm.side} ${arm.custom||arm.type||"의수"}`.trim();
+    labels.push(label);
+    details.push(`${label}의 소켓과 연결부, 피부에 닿는 부분을 살피고 오늘 할 일에 맞는 동작을 확인했어요.`);
+  }
+  if(usesLeg){
+    const label=`${leg.side==="양쪽"?"양쪽":leg.side} ${leg.custom||leg.type||"의족"}`.trim();
+    labels.push(label);
+    details.push(`${label}의 소켓과 정렬, 착용감을 살피고 오늘 몸 상태에 맞게 조절했어요.`);
+  }
+  const title=labels.length===1?`${object(labels[0])} 아침에 점검하는 중`:"아침 보조기기 상태를 점검하는 중";
+  const description=details.length<=2?details.join(" "):`${details[0]} ${details.slice(1).join(" ")}`;
+  return homeEntry(c,time,title,description,"bedroom",{careRoutine:"mobility-aid",careDevices:labels});
 }
 function withResidenceLocation(c,item,date=new Date()){
   if(!item?.home)return item;
@@ -1508,9 +1535,12 @@ const homeActivityPoolFor=(c,date=new Date())=>{
     `손가락을 어디에 놓아야 소리가 나는지도 몰라 괜히 건드렸다 망가뜨릴까 봐 가까이에서 생김새만 살펴보고 있어요.`,
     "study"
   ]);
+  const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{},hearing=body.hearing||{},vision=body.vision||{};
   Object.entries(state.homes[c.homeId]?.rooms||{}).forEach(([roomKey,room])=>{
     (room.furniture||[]).forEach(rawName=>{
-      const spec=FURNITURE_BEHAVIOR[normalizedFurnitureName(rawName)];
+      const normalizedName=normalizedFurnitureName(rawName);
+      if(normalizedName==="러닝머신"&&wheelchair.type&&wheelchair.type!=="사용하지 않음")return;
+      const spec=FURNITURE_BEHAVIOR[normalizedName];
       if(!spec)return;
       const familiar=spec.interest.test(characterInterests(c));
       const variants=familiar?spec.skilled:spec.novice;
@@ -1522,8 +1552,7 @@ const homeActivityPoolFor=(c,date=new Date())=>{
       ]));
     });
   });
-  const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{},hearing=body.hearing||{},vision=body.vision||{};
-  if(wheelchair.type&&wheelchair.type!=="사용하지 않음"&&hash(`${c.id}:${dayKey(date)}:wheelchair-home-focus`)%12===0){
+  if(wheelchair.type&&wheelchair.type!=="사용하지 않음"&&hash(`${c.id}:${dayKey(date)}:wheelchair-home-focus`)%6===0){
     pool.push(
       ["현관에서 이동 준비를 점검하는 중",wheelchair.type==="전동 휠체어"?"배터리 잔량과 조작부, 타이어 상태를 확인하고 오늘 이동할 동선을 살펴봤어요.":"타이어와 브레이크, 쿠션 위치를 확인하고 자기 몸에 편안한 상태로 맞췄어요.","entry"]
     );
@@ -1663,6 +1692,8 @@ function build(c,date=new Date()){
   const list=[entry(wake,"기상",wakeScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"평온",stress:5})];
   list.push(...recordedInteractionEntries(c,date));
   list.push(homeEntry(c,wake+20,"욕실에서 씻는 중","세면대 앞에서 세수하고 이를 닦으며 잠을 깨고 있어요.","bath"));
+  const mobilityMorning=mobilityAidMorningEntry(c,wake+31,date);
+  if(mobilityMorning)list.push(mobilityMorning);
   const morningAppearance=appearanceMorningEntry(c,wake+38,date);
   if(morningAppearance)list.push(morningAppearance);
   const makeupLevel=appearanceProfile(c).makeupLevel||"하지 않음";
@@ -1825,7 +1856,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260807g";
+const ENGINE_VERSION="20260807i";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,Object.keys(home?.rooms||{}),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
