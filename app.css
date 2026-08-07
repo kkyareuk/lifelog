@@ -2106,3 +2106,298 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     font-size:24px;
   }
 }
+
+/* 2026-08-07 모바일 앱 셸: 바깥 문서는 기기 크기에 고정하고 각 화면만 내부에서 동작한다. */
+@media(max-width:720px){
+  html.native-app,
+  html.native-app body{
+    width:100%!important;
+    height:100dvh!important;
+    min-height:0!important;
+    max-width:none!important;
+    margin:0!important;
+    overflow:hidden!important;
+    overscroll-behavior:none;
+  }
+  html.native-app #app{
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    height:100dvh;
+    min-width:0;
+    min-height:0;
+    overflow:hidden;
+  }
+  html.native-app .native-sub-header{
+    position:relative;
+    top:auto;
+    flex:0 0 60px;
+    width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+  html.native-app main,
+  html.native-app:not([data-active-tab="observe"]):not([data-active-tab="town"]) main{
+    flex:1 1 auto;
+    width:100%!important;
+    height:auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    margin:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box;
+  }
+  html.native-app main>*{min-width:0;box-sizing:border-box}
+  html.native-app:not([data-active-tab="observe"]):not([data-active-tab="town"]):not([data-active-tab="home"]):not([data-active-tab="character"]):not([data-active-tab="relationship"]) main>*{
+    width:100%;
+    height:100%;
+    max-height:100%;
+    overflow:auto;
+    overscroll-behavior:contain;
+  }
+
+  /* 캐릭터: 100vw 중첩을 없애 오른쪽/왼쪽 어느 쪽도 잘리지 않는다. */
+  html.native-app[data-active-tab="character"] main{padding:0!important}
+  html.native-app[data-active-tab="character"] .character-editor,
+  html.native-app[data-active-tab="character"] .character-editor>.form,
+  html.native-app[data-active-tab="character"] .mobile-character-dashboard{
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    margin:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box;
+  }
+  html.native-app[data-active-tab="character"] .character-editor>.form{
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+  }
+  html.native-app[data-active-tab="character"] .mobile-character-dashboard{
+    grid-template-rows:auto auto auto minmax(0,1fr);
+    align-content:start;
+    gap:12px;
+    padding:12px max(10px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));
+  }
+  html.native-app[data-active-tab="character"] .mobile-character-top,
+  html.native-app[data-active-tab="character"] .mobile-character-strip,
+  html.native-app[data-active-tab="character"] .mobile-character-heading,
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+  html.native-app[data-active-tab="character"] .mobile-character-heading{padding:12px}
+  html.native-app[data-active-tab="character"] .mobile-character-heading .avatar,
+  html.native-app[data-active-tab="character"] .mobile-character-heading .sprite{width:68px;height:68px}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid{gap:8px}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid button{min-width:0;min-height:82px;padding:11px}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid button:first-child{min-height:76px}
+  html.native-app[data-active-tab="character"] .mobile-character-editor-dialog{
+    width:calc(100% - 12px)!important;
+    max-width:calc(100% - 12px)!important;
+  }
+
+  /* 집: 선택 줄 아래의 남은 면적 전체를 방의 가중치대로 빈틈없이 분할한다. */
+  html.native-app[data-active-tab="home"] #app>main{padding:0!important;background:#101822}
+  html.native-app[data-active-tab="home"] .home-page{
+    display:grid;
+    grid-template-rows:auto auto minmax(0,1fr);
+    width:100%!important;
+    height:100%!important;
+    min-height:0;
+    overflow:hidden;
+    color:#fff;
+    background:
+      radial-gradient(circle at 50% 18%,color-mix(in srgb,var(--p) 34%,transparent),transparent 35%),
+      linear-gradient(165deg,#101722,#1b2734 62%,#0e1620);
+  }
+  html.native-app[data-active-tab="home"] .home-page>.title{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    min-height:45px;
+    margin:0;
+    padding:5px max(8px,env(safe-area-inset-right)) 3px max(8px,env(safe-area-inset-left));
+  }
+  html.native-app[data-active-tab="home"] .home-page>.title>div:first-child{display:none}
+  html.native-app[data-active-tab="home"] .home-top-actions{display:flex;gap:6px;width:100%;justify-content:flex-end}
+  html.native-app[data-active-tab="home"] .home-top-actions button{min-height:36px;padding:6px 10px;border-color:#ffffff35;background:#ffffff13;color:#fff;font-size:10px}
+  html.native-app[data-active-tab="home"] .home-tabs{
+    display:flex;
+    flex-wrap:nowrap;
+    gap:6px;
+    width:100%;
+    min-width:0;
+    height:54px;
+    margin:0;
+    padding:3px max(8px,env(safe-area-inset-right)) 5px max(8px,env(safe-area-inset-left));
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:none;
+    box-sizing:border-box;
+  }
+  html.native-app[data-active-tab="home"] .home-tabs::-webkit-scrollbar{display:none}
+  html.native-app[data-active-tab="home"] .home-tabs button{
+    flex:0 0 142px;
+    min-width:142px;
+    min-height:44px;
+    padding:5px 9px;
+    border-color:#ffffff29;
+    color:#fff;
+    background-image:linear-gradient(#121b25a8,#121b25a8),var(--home-photo),var(--home-grad);
+    font-size:11px;
+  }
+  html.native-app[data-active-tab="home"] .home-tabs button.on{border-color:#fff;box-shadow:0 8px 24px #0008,inset 0 1px #ffffff55}
+  html.native-app[data-active-tab="home"] .home-grid,
+  html.native-app[data-active-tab="home"] .home{
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box;
+  }
+  html.native-app[data-active-tab="home"] .home{
+    position:relative;
+    padding:0 0 calc(61px + env(safe-area-inset-bottom))!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  html.native-app[data-active-tab="home"] .home>.title,
+  html.native-app[data-active-tab="home"] .home-identity-editor,
+  html.native-app[data-active-tab="home"] .home-photo-editor,
+  html.native-app[data-active-tab="home"] .resident-editor,
+  html.native-app[data-active-tab="home"] .sleep-room-editor,
+  html.native-app[data-active-tab="home"] .clean{display:none!important}
+  html.native-app[data-active-tab="home"] .rooms,
+  html.native-app[data-active-tab="home"] .rooms.has-extra{
+    position:relative;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-height:none!important;
+    margin:0!important;
+    padding:2px!important;
+    overflow:hidden!important;
+    border-radius:0!important;
+    background:#17212c;
+    box-sizing:border-box;
+  }
+  html.native-app[data-active-tab="home"] .rooms>.room{
+    position:absolute!important;
+    left:calc(var(--mobile-room-x) + 2px)!important;
+    top:calc(var(--mobile-room-y) + 2px)!important;
+    width:calc(var(--mobile-room-w) - 4px)!important;
+    height:calc(var(--mobile-room-h) - 4px)!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:6px!important;
+    overflow:hidden!important;
+    border:2px solid #ffffffdd!important;
+    border-radius:13px!important;
+    background-position:center!important;
+    background-size:cover!important;
+    box-shadow:inset 0 0 0 999px #0c142122,0 7px 18px #0005!important;
+    box-sizing:border-box;
+  }
+  html.native-app[data-active-tab="home"] .room-heading{max-width:calc(100% - 2px)}
+  html.native-app[data-active-tab="home"] .room-heading>span{padding:3px 5px;border-radius:8px;background:#fffdf4d9;color:#302921}
+  html.native-app[data-active-tab="home"] .room-heading b{font-size:clamp(9px,3.2vw,14px)}
+  html.native-app[data-active-tab="home"] .room-heading .room-edit-hint{font-size:7px}
+  html.native-app[data-active-tab="home"] .room-people{left:4px;right:4px;bottom:4px;max-height:calc(100% - 38px)}
+  html.native-app[data-active-tab="home"] .home-person{max-width:min(92%,160px)}
+  html.native-app[data-active-tab="home"] .home-person .avatar,
+  html.native-app[data-active-tab="home"] .home-person .sprite{width:38px;height:38px}
+  html.native-app[data-active-tab="home"] .home-person span{max-width:96px;padding:4px 6px}
+  html.native-app[data-active-tab="home"] .home-person small{display:none}
+  html.native-app[data-active-tab="home"] .room-pets{right:3px;top:50%;max-width:65%}
+  html.native-app[data-active-tab="home"] .room-pet img,
+  html.native-app[data-active-tab="home"] .room-pet-emoji{width:34px;height:34px;font-size:23px}
+  html.native-app[data-active-tab="home"] .room-pet-status{min-width:54px;max-width:82px;padding:3px 5px!important}
+  html.native-app[data-active-tab="home"] .room-pet-status small{display:none!important}
+  html.native-app[data-active-tab="home"] .home-feature-menu{
+    position:absolute!important;
+    left:6px;
+    right:6px;
+    bottom:max(5px,env(safe-area-inset-bottom));
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    z-index:680;
+  }
+  html.native-app[data-active-tab="home"] .home-feature-menu button{font-size:9px}
+  html.native-app[data-active-tab="home"] .home-feature-menu button.on{color:#101722;background:#fff;border-radius:12px}
+  html.native-app[data-active-tab="home"] .home-feature-panel.open{
+    inset:calc(60px + env(safe-area-inset-top)) 6px calc(62px + env(safe-area-inset-bottom));
+  }
+  html.native-app[data-active-tab="home"] .car-card{width:100%;min-width:0;text-align:left;color:inherit}
+  html.native-app[data-active-tab="home"] .car-card>span{display:grid;gap:3px;flex:1}
+  html.native-app[data-active-tab="home"] .car-card em{color:var(--muted);font-size:9px;font-style:normal}
+
+  /* 관계 화면도 바깥 문서는 움직이지 않고 두 룰렛만 내부에서 돈다. */
+  html.native-app[data-active-tab="relationship"] main,
+  html.native-app[data-active-tab="relationship"] main>.relationship-page,
+  html.native-app[data-active-tab="relationship"] .character-view-editor,
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{
+    width:100%!important;
+    height:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box;
+  }
+  html.native-app[data-active-tab="relationship"] main>.relationship-page{padding:0!important}
+  html.native-app[data-active-tab="relationship"] .character-view-editor{padding:0 4px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{grid-template-columns:minmax(70px,92px) minmax(120px,1fr) minmax(70px,92px)!important}
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail{height:100%!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core>strong{font-size:clamp(12px,3.7vw,17px);line-height:1.42}
+
+  /* 관찰 홈도 캐릭터별 글 길이 때문에 body가 늘어나지 않게 한다. */
+  html.native-app[data-active-tab="observe"] main,
+  html.native-app[data-active-tab="observe"] .native-observe-home{width:100%;height:100%;min-height:0;overflow:hidden!important}
+  html.native-app[data-active-tab="observe"] .native-status-card{max-height:34dvh;overflow:auto;overscroll-behavior:contain}
+}
+
+.home-occupant-sheet,
+.home-car-dialog{
+  width:min(560px,calc(100vw - 16px));
+  max-height:min(78dvh,680px);
+  padding:0;
+  overflow:hidden;
+  border:0;
+  border-radius:25px;
+  background:#fffdf9;
+  color:#2f2924;
+  box-shadow:0 28px 90px #0009;
+}
+.home-occupant-sheet::backdrop,
+.home-car-dialog::backdrop{background:#08111bcc;backdrop-filter:blur(5px)}
+.home-occupant-sheet form{display:grid;gap:15px;padding:8px 18px max(18px,env(safe-area-inset-bottom))}
+.home-sheet-grip{width:58px!important;min-height:5px!important;height:5px!important;margin:3px auto 2px;padding:0!important;border:0!important;border-radius:99px!important;background:#c9c3bc!important}
+.home-occupant-sheet-content{display:flex;align-items:center;gap:14px;min-width:0}
+.home-occupant-visual{display:grid;place-items:center;flex:0 0 80px;width:80px;height:80px;border-radius:23px;background:#eef1f4}
+.home-occupant-visual .avatar,.home-occupant-visual .sprite,.home-occupant-visual img{width:72px;height:72px;object-fit:contain}
+.home-occupant-visual .room-pet-emoji{font-size:50px}
+.home-occupant-sheet-content>span{display:grid;gap:4px;min-width:0}.home-occupant-sheet-content small{color:var(--muted)}.home-occupant-sheet-content h2,.home-occupant-sheet-content p{margin:0}.home-occupant-sheet-content b{font-size:17px}.home-occupant-sheet-content p{line-height:1.62}
+.home-car-dialog form{display:grid;gap:14px;max-height:min(78dvh,680px);overflow:auto}
+.home-car-preview{display:grid;place-items:center;min-height:150px;margin:0 18px;border-radius:20px;background:#eef1f4;font-size:64px}
+.home-car-preview img{width:100%;height:210px;object-fit:cover;border-radius:20px}
+.home-car-dialog .fields{padding:0 18px}.home-car-dialog .image-actions,.home-car-dialog .crop-actions{padding-inline:18px}.home-car-dialog .crop-actions{padding-bottom:max(18px,env(safe-area-inset-bottom))}
+@media(max-width:720px){
+  .home-occupant-sheet,
+  .home-car-dialog{
+    position:fixed;
+    inset:auto 6px max(6px,env(safe-area-inset-bottom));
+    width:calc(100% - 12px);
+    max-width:none;
+    margin:0;
+    border-radius:25px 25px 18px 18px;
+  }
+}

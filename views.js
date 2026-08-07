@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807i";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807i";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807k";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807k";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -326,6 +326,12 @@ const ROOM_SIZE_SPANS={
   "큰 방":[2,2],
   "넓고 긴 방":[3,1]
 };
+const ROOM_SIZE_WEIGHTS={
+  "작은 방":1,
+  "보통 방":2,
+  "큰 방":4,
+  "넓고 긴 방":3
+};
 function packedRoomLayout(roomKeys,roomData,columnCount=4){
   const occupied=[],result={},fits=(x,y,w,h)=>{
     if(x+w>columnCount)return false;
@@ -348,12 +354,51 @@ function packedRoomLayout(roomKeys,roomData,columnCount=4){
   });
   return {items:result,rows:Math.max(1,occupied.length)};
 }
-function roomStyle(h,key,layout){
+function mobileRoomLayout(roomKeys,roomData){
+  const result={};
+  const items=roomKeys.map(key=>({
+    key,
+    weight:ROOM_SIZE_WEIGHTS[roomData[key]?.size]||ROOM_SIZE_WEIGHTS["보통 방"]
+  }));
+  const split=(group,rect,depth=0)=>{
+    if(!group.length)return;
+    if(group.length===1){
+      result[group[0].key]=rect;
+      return;
+    }
+    const total=group.reduce((sum,item)=>sum+item.weight,0);
+    let splitIndex=1,running=group[0].weight,best=Math.abs(total/2-running);
+    for(let index=2;index<group.length;index++){
+      running+=group[index-1].weight;
+      const difference=Math.abs(total/2-running);
+      if(difference<best){best=difference;splitIndex=index}
+    }
+    const first=group.slice(0,splitIndex),second=group.slice(splitIndex);
+    const firstWeight=first.reduce((sum,item)=>sum+item.weight,0),ratio=firstWeight/total;
+    const vertical=rect.w>rect.h*1.08||(Math.abs(rect.w-rect.h)<4&&depth%2===1);
+    if(vertical){
+      const firstWidth=rect.w*ratio;
+      split(first,{x:rect.x,y:rect.y,w:firstWidth,h:rect.h},depth+1);
+      split(second,{x:rect.x+firstWidth,y:rect.y,w:rect.w-firstWidth,h:rect.h},depth+1);
+    }else{
+      const firstHeight=rect.h*ratio;
+      split(first,{x:rect.x,y:rect.y,w:rect.w,h:firstHeight},depth+1);
+      split(second,{x:rect.x,y:rect.y+firstHeight,w:rect.w,h:rect.h-firstHeight},depth+1);
+    }
+  };
+  split(items,{x:0,y:0,w:100,h:100});
+  return result;
+}
+function roomStyle(h,key,layout,mobileLayout){
   const image=h.rooms?.[key]?.image,parts=[
     `--room-x:${layout?.x||1}`,
     `--room-y:${layout?.y||1}`,
     `--room-w:${layout?.w||1}`,
-    `--room-h:${layout?.h||1}`
+    `--room-h:${layout?.h||1}`,
+    `--mobile-room-x:${(mobileLayout?.x||0).toFixed(4)}%`,
+    `--mobile-room-y:${(mobileLayout?.y||0).toFixed(4)}%`,
+    `--mobile-room-w:${(mobileLayout?.w||100).toFixed(4)}%`,
+    `--mobile-room-h:${(mobileLayout?.h||100).toFixed(4)}%`
   ];
   if(image)parts.push(`background-image:linear-gradient(#ffffff30,#ffffff30),url('${image}')`);
   return `style="${parts.join(";")}"`;
@@ -380,6 +425,7 @@ function homeCard(id,chars){
   const edit=state.homeEditMode;
   const roomKeys=Object.keys(h.rooms||{}).sort((a,b)=>(Number(h.rooms[a]?.order)||0)-(Number(h.rooms[b]?.order)||0));
   const packedRooms=packedRoomLayout(roomKeys,h.rooms||{});
+  const mobileRooms=mobileRoomLayout(roomKeys,h.rooms||{});
   const pets=h.pets||[];
   const petEmoji={강아지:"🐶",고양이:"🐱",새:"🐦",거북이:"🐢",호랑이:"🐯",인공지능:"🤖",식물:"🪴",드래곤:"🐉",기타:"✨"};
   const petSpeciesName=pet=>pet.species==="기타"?(pet.customSpecies?.trim()||"이름 없는 생명체"):pet.species;
@@ -487,11 +533,11 @@ function homeCard(id,chars){
     const shownPeople=roomPeople,shownPets=roomPets;
     const furniture=FURNITURE[room.type||key]||FURNITURE.other;
     const editAttributes=`data-open-room-editor="${key}" data-home-id="${id}" data-room-key="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`;
-    return `<div class="room room-${esc(room.type||key)} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key])} ${editAttributes}>
+    return `<div class="room room-${esc(room.type||key)} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
       <div class="room-heading"><span><b>${esc(room.name||key)}</b><small class="room-edit-hint">편집</small></span>${edit?`<button type="button" class="room-drag-handle" data-room-drag="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 위치 옮기기">✥</button>`:""}</div>
       ${edit&&!room.image?`<button type="button" class="room-empty-image" data-open-room-editor="${key}" data-home-id="${id}"><span>＋</span>사진 추가하기</button>`:""}
-      <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c);return `<button class="home-person" data-home-person="${c.id}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}</div>
-      <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}</div>
+      <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c);return `<button class="home-person" data-home-occupant="character" data-character-id="${c.id}" data-occupant-name="${esc(c.name)}" data-occupant-title="${esc(e?.title||"집에서 시간을 보내는 중")}" data-occupant-desc="${esc(e?.desc||"")}" data-occupant-room="${esc(room.name||key)}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}</div>
+      <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" data-home-occupant="pet" data-pet-id="${p.id}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}</div>
     </div>`;
   }).join("");
   const dayLabels=["일","월","화","수","목","금","토"];
@@ -500,14 +546,13 @@ function homeCard(id,chars){
     return `<article class="resident-setting ${on?"on":""}"><button data-home-resident="${cid}" data-home-id="${id}" class="${on?"on":""}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${on?"이 집 연결됨":"연결하지 않음"}</small></span></button>${on?`<div class="residence-fields"><label>이 캐릭터에게 어떤 집인가요?<select data-residence-field="role" data-character-id="${cid}" data-home-id="${id}">${["주거지","본가","별채","주말집","업무용 숙소","연인의 집","친척집","기타"].map(value=>`<option ${value===residence.role?"selected":""}>${value}</option>`).join("")}</select></label><label>머무는 때<select data-residence-field="stayPattern" data-character-id="${cid}" data-home-id="${id}">${["상시 거주","평일 중심","주말 중심","요일 지정","명절·기념일","필요할 때 방문"].map(value=>`<option ${value===residence.stayPattern?"selected":""}>${value}</option>`).join("")}</select></label><label>자는 방<select data-residence-field="sleepRoomId" data-character-id="${cid}" data-home-id="${id}">${roomKeys.map(key=>`<option value="${key}" ${key===residence.sleepRoomId?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label><label>방문 목적·설명<input data-residence-field="notes" data-character-id="${cid}" data-home-id="${id}" maxlength="200" value="${esc(residence.notes||"")}" placeholder="예: 명절에 가족과 머무는 본가"></label><label>명절·기념일 날짜<input data-residence-field="visitDates" data-character-id="${cid}" data-home-id="${id}" inputmode="numeric" value="${esc(String(residence.visitDates||"").replace(/(\d{2})-(\d{2})/g,"$1$2"))}" placeholder="예: 0101, 0815"></label><fieldset><legend>방문 요일</legend><div class="residence-days">${dayLabels.map((label,day)=>`<button type="button" data-residence-day="${day}" data-character-id="${cid}" data-home-id="${id}" class="${(residence.visitDays||[]).includes(day)?"on":""}">${label}</button>`).join("")}</div></fieldset><button type="button" data-residence-primary="${cid}" data-home-id="${id}" class="${residence.isPrimary?"on":""}">${residence.isPrimary?"✓ 기준 주거지":"기준 주거지로 지정"}</button></div>`:""}</article>`;
   }).join("")}</div><small>‘명절·기념일’은 위 날짜가 맞는 날, ‘요일 지정’은 고른 요일에 이 집의 장면을 사용해요. ‘필요할 때 방문’은 임의 이동을 만들지 않습니다.</small></section>`:"";
   const sleepEditor=edit?`<section class="sleep-room-editor"><div class="title"><h3>방 구성</h3><button data-add-room>+ 방 추가</button></div><small>자는 방은 위의 캐릭터별 집 연결 설정에서 각각 정해요.</small></section>`:"";
-  const status=chars.map(c=>{const e=eventFor(c);return `<button class="home-status" data-home-person="${c.id}" style="--own:${c.theme.primary}">${avatar(c)}<span><b>${esc(c.name)}</b><small>${esc(e.title)}</small><em>${esc(e.desc||"")}</em></span></button>`}).join("");
   const petKinds=["강아지","고양이","새","거북이","호랑이","식물","드래곤","인공지능","기타"];
   const petCards=pets.map(p=>`<article class="pet-card">
     <div class="pet-avatar">${p.icon||p.photo?`<img src="${esc(p.icon||p.photo)}" alt="">`:`<span>${petEmoji[p.species]||"🐾"}</span>`}</div>
     <div class="pet-info"><b>${esc(p.name)}</b><small>${esc(petSpeciesName(p))}${p.breed?` · ${esc(p.breed)}`:""}</small><strong>${esc(petScenes[p.id].title)}</strong><p>${esc(petScenes[p.id].desc)}</p></div>
     ${edit?`<div class="pet-edit"><label>이름<input data-pet-field="name" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.name)}"></label><label>종류<select data-pet-field="species" data-home-id="${id}" data-pet-id="${p.id}">${petKinds.map(x=>`<option ${x===p.species?"selected":""}>${x}</option>`).join("")}</select></label>${p.species==="기타"?`<label>종류 이름<input data-pet-field="customSpecies" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.customSpecies||"")}" placeholder="예: 전기쥐, 슬라임, 작은 괴수"></label><label>크기<select data-pet-field="size" data-home-id="${id}" data-pet-id="${p.id}">${["소형","중형","대형"].map(x=>`<option ${x===(p.size||"중형")?"selected":""}>${x}</option>`).join("")}</select></label><fieldset><legend>성향 · 여러 개 선택</legend><div class="chips">${["온순함","활발함","사고뭉치","진중함","호기심 많음","겁이 많음","사람을 잘 따름","독립적"].map(x=>`<button type="button" data-pet-trait-field="temperaments" data-home-id="${id}" data-pet-id="${p.id}" data-value="${x}" class="${(p.temperaments||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div></fieldset><fieldset><legend>확실히 알고 있는 신체 특징만 선택</legend><div class="chips">${["털","비늘","깃털","날개","지느러미","뿔","꼬리","발광","독성"].map(x=>`<button type="button" data-pet-trait-field="bodyTraits" data-home-id="${id}" data-pet-id="${p.id}" data-value="${x}" class="${(p.bodyTraits||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div><small>선택하지 않은 생김새나 능력은 행동에서 지어내지 않아요.</small></fieldset>`:""}<label>품종<input data-pet-field="breed" data-home-id="${id}" data-pet-id="${p.id}" value="${esc(p.breed)}" placeholder="유저가 직접 입력"></label><label>주로 있는 방<select data-pet-field="room" data-home-id="${id}" data-pet-id="${p.id}">${roomKeys.map(key=>`<option value="${key}" ${key===(p.room||"living")?"selected":""}>${esc(h.rooms[key]?.name||key)}</option>`).join("")}</select></label><label>성별<select data-pet-field="sex" data-home-id="${id}" data-pet-id="${p.id}">${["모름","수컷","암컷"].map(x=>`<option ${x===p.sex?"selected":""}>${x}</option>`).join("")}</select></label><label class="check"><input type="checkbox" data-pet-field="neutered" data-home-id="${id}" data-pet-id="${p.id}" ${p.neutered?"checked":""}> 중성화 완료</label><label class="check"><input type="checkbox" data-pet-field="needsWalk" data-home-id="${id}" data-pet-id="${p.id}" ${p.needsWalk?"checked":""}> 함께 산책이 필요함</label><label class="check"><input type="checkbox" data-pet-field="rideable" data-home-id="${id}" data-pet-id="${p.id}" ${p.rideable?"checked":""}> 등에 타고 이동할 수 있음</label><div class="pet-actions"><button data-pet-image="photo" data-home-id="${id}" data-pet-id="${p.id}">원형 사진</button><button data-image-url="petPhoto" data-id="${id}" data-room="${p.id}">사진 링크</button><button data-pet-image="icon" data-home-id="${id}" data-pet-id="${p.id}">투명 아이콘</button><button data-image-url="petIcon" data-id="${id}" data-room="${p.id}">아이콘 링크</button><button class="danger" data-delete-pet="${p.id}" data-home-id="${id}">삭제</button></div></div>`:""}
   </article>`).join("");
-  const cars=(h.cars||[]).map(car=>`<article class="car-card">${car.image?`<img class="car-photo" src="${esc(car.image)}" alt="">`:`<span class="car-icon">🚙</span>`}<div><b>${esc(car.name)}</b><small>${esc(car.type)}${car.color?` · ${esc(car.color)}`:""} · ${car.seats||5}인승</small></div>${edit?`<div class="car-edit"><label>차량 이름<input data-car-field="name" data-home-id="${id}" data-car-id="${car.id}" value="${esc(car.name)}"></label><label>종류<select data-car-field="type" data-home-id="${id}" data-car-id="${car.id}">${["경차","승용차","SUV","승합차","스포츠카","전기차","오토바이","기타"].map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>색상<input data-car-field="color" data-home-id="${id}" data-car-id="${car.id}" value="${esc(car.color||"")}"></label><label>좌석 수<input type="number" min="1" max="12" data-car-field="seats" data-home-id="${id}" data-car-id="${car.id}" value="${car.seats||5}"></label><div class="image-actions"><button data-car-image="${car.id}" data-home-id="${id}">차 사진 선택</button><button data-image-url="car" data-id="${id}" data-room="${car.id}">사진 링크</button></div><button class="danger" data-delete-car="${car.id}" data-home-id="${id}">삭제</button></div>`:""}</article>`).join("");
+  const cars=(h.cars||[]).map(car=>`<button type="button" class="car-card" data-open-car-editor="${car.id}" data-home-id="${id}">${car.image?`<img class="car-photo" src="${esc(car.image)}" alt="">`:`<span class="car-icon">🚙</span>`}<span><b>${esc(car.name)}</b><small>${esc(car.type)}${car.color?` · ${esc(car.color)}`:""} · ${car.seats||5}인승</small><em>눌러서 편집</em></span></button>`).join("");
   const residentScenes=chars.map(c=>{
     const e=eventFor(c),place=placeForEntry(e),image=sceneImage(c,e),sceneHome=state.homes[e.visitHomeId||c.homeId];
     const location=e.home?`🏠 ${sceneHome?.name||"집"} · ${sceneHome?.rooms?.[e.room]?.name||"집 안"}`:e.transit?"🚌 이동 중":place?`📍 ${place.name} · ${townForEntry(e).name}`:"📍 외출 중";
@@ -522,12 +567,11 @@ function homeCard(id,chars){
     ${edit?`<div class="home-photo-editor"><b>집 선택 버튼 배경 사진</b><span><button data-home-bg="${id}">사진</button><button data-image-url="home" data-id="${id}">링크</button>${h.image?`<button data-clear-home-bg="${id}">지우기</button>`:""}</span></div>`:""}
     ${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
     <div class="rooms ${roomKeys.length>6?"has-extra":""}" style="--room-count:${roomKeys.length};--room-cols:4;--room-rows:${packedRooms.rows}">${roomHtml}</div>
-    <section class="pets home-feature-panel" data-home-feature="pets"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>함께 사는 존재</h2>${edit?`<button data-add-pet>+ 함께 사는 존재 추가</button>`:""}</div><div class="pet-grid">${petCards||"<p>아직 함께 사는 존재가 없어요.</p>"}</div></section>
-    <section class="cars home-feature-panel" data-home-feature="cars"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>자동차</h2>${edit?`<button data-add-car>+ 자동차 추가</button>`:""}</div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
+    <section class="pets home-feature-panel" data-home-feature="pets"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>함께 사는 존재</h2><button data-add-pet>+ 함께 사는 존재 추가</button></div><div class="pet-grid">${petCards||"<p>아직 함께 사는 존재가 없어요.</p>"}</div></section>
+    <section class="cars home-feature-panel" data-home-feature="cars"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>자동차</h2><button data-add-car>+ 자동차 추가</button></div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
     <section class="resident-scenes home-feature-panel" data-home-feature="scenes"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>현재 장면</h2></div><div>${residentScenes}</div></section>
     <div class="home-feature-panel" data-home-feature="house-log"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button>${homeDailyLog(chars,h)}</div>
-    <section class="home-statuses home-feature-panel" data-home-feature="status"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><h2>로그</h2><div>${status}</div></section>
-    <nav class="home-feature-menu" aria-label="집 세부 메뉴"><button type="button" data-open-home-feature="pets">함께 사는 존재</button><button type="button" data-open-home-feature="cars">자동차</button><button type="button" data-open-home-feature="scenes">현재 장면</button><button type="button" data-open-home-feature="status">로그</button><button type="button" data-open-home-feature="house-log">집 생활 로그</button></nav>
+    <nav class="home-feature-menu" aria-label="집 세부 메뉴"><button type="button" data-open-home-feature="pets">함께 사는 존재</button><button type="button" data-open-home-feature="cars">자동차</button><button type="button" data-open-home-feature="scenes">현재 장면</button><button type="button" data-open-home-feature="house-log">로그</button></nav>
   </article>`;
 }
 function chips(title,all,selected,key){return `<section class="chips"><h3>${title}</h3>${all.map(x=>`<button data-chip="${key}" data-value="${x}" class="${selected.includes(x)?"on":""}">${x}</button>`).join("")}</section>`}
@@ -749,6 +793,33 @@ const CHARACTER_VIEW_OPTIONS={
   aggression:["정하지 않음","공격 충동 없음","거친 말을 하고 싶은 충동","몸으로 밀어내고 싶은 충동","해치고 싶은 충동","죽이고 싶을 만큼 격한 충동"],
   aggressionAction:["정하지 않음","행동으로 옮기지 않음","대부분 참지만 가끔 거친 말이 나옴","거친 말로만 표출함","물건이나 벽에 화풀이할 수 있음","상대를 때릴 수 있음","실제로 때릴 수 있음","심한 폭력을 행사할 수 있음"]
 };
+function overallViewPhrase(value){
+  const phrases={
+    "정하지 않음":"아직 어떤 사람인지 판단하지 않음",
+    "선택하지 않음":"아직 어떤 사람인지 판단하지 않음",
+    "낯선 사람으로 여김":"낯선 사람으로 여김",
+    "매우 싫어함":"매우 싫어함",
+    "미워함":"미워함",
+    "경계함":"경계함",
+    "불편해함":"불편해함",
+    "부담스러워함":"부담스러워함",
+    "경쟁심을 느낌":"상대로 경쟁심을 느낌",
+    "애증을 느낌":"향해 애정과 미움을 함께 느낌",
+    "그저 그런 사람":"그저 그런 사람으로 여김",
+    "흥미롭게 여김":"흥미로운 사람으로 여김",
+    "인간적인 호감이 있음":"인간적으로 호감 있게 여김",
+    "친구로 좋아함":"친구로서 좋아함",
+    "존경함":"존경함",
+    "동경함":"동경함",
+    "안쓰럽게 여김":"안쓰럽게 여김",
+    "소중하게 여김":"소중하게 여김",
+    "연애 감정이 싹틈":"연애 감정으로 의식하기 시작함",
+    "연애 감정으로 좋아함":"연애 감정으로 좋아함",
+    "깊이 사랑함":"깊이 사랑함",
+    "없어서는 안 될 사람":"없어서는 안 될 사람으로 여김"
+  };
+  return phrases[value]||String(value||"어떤 사람인지 판단하지 않음");
+}
 const characterViewOptions=key=>{
   if(key==="importance")return["선택하지 않음",...state.order.map((_,index)=>`${index+1}순위${index===0?" · 가장 중요한 사람":""}`)];
   return (CHARACTER_VIEW_OPTIONS[key]||[]).map(value=>value==="정하지 않음"?"선택하지 않음":value);
@@ -781,8 +852,7 @@ const characterViewEditor=()=>{
       <div class="relationship-character-rail source-rail" aria-label="감정을 느끼는 캐릭터">${rouletteButtons(state.order,"source",sourceId,sourceIndex)}</div>
       <div class="relationship-pair-core">
         <div class="relationship-pair-icons">${avatar(source)}<i>×</i>${avatar(target)}</div>
-        <small>${esc(subjectText(source.name))} ${esc(objectText(target.name))}</small>
-        <strong data-view-summary="${sourceId}:${targetId}">${esc(overall)}</strong>
+        <strong data-view-summary="${sourceId}:${targetId}" data-view-source-name="${esc(source.name)}" data-view-target-name="${esc(target.name)}">${esc(subjectText(source.name))} ${esc(objectText(target.name))} ${esc(overallViewPhrase(overall))}</strong>
         <span>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</span>
         <em>${esc(relationshipReality(sourceId,targetId,official))}</em>
         <button type="button" class="primary" data-open-view-dialog="${sourceId}:${targetId}">이 시선 편집하기</button>

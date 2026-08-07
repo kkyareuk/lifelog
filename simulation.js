@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807i";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807k";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1856,7 +1856,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260807i";
+const ENGINE_VERSION="20260807k";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,Object.keys(home?.rooms||{}),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2390,7 +2390,69 @@ const EXTRA_TENSION_LINES=[
   (a,b)=>`${topic(a.name)} ${b.name}의 행동을 믿어도 되는지 판단하지 못해 먼저 등을 보이지 않고 나란히 움직였어요.`,
   (a,b)=>`${topic(a.name)} 감정이 드러날까 하던 말을 한 번 삼켰지만, ${b.name}이 떠날 때까지 시선은 거두지 않았어요.`
 ];
-RELATION_COMBINATION_BONDS.forEach(bond=>bond.actions=[...bond.actions,...EXTRA_BOND_ACTIONS]);
+const BOND_CATHARSIS_ACTIONS={
+  devoted:[
+    (a,b)=>`${topic(a.name)} 모두가 ${b.name}을 오해해도 자신만큼은 설명을 요구하지 않고 곁에 서겠다고 조용히 못 박았어요.`,
+    (a,b)=>`${topic(a.name)} 가장 먼저 포기해야 할 것을 계산하다가 ${b.name}만은 그 목록에 넣지 않았어요.`,
+    (a,b)=>`${topic(a.name)} 돌아오겠다는 ${b.name}의 말을 의심하지 않았고, 가장 늦은 시간까지 불을 켜 둔 채 기다렸어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}이 무너지는 순간만큼은 대신 단단해지기로 하고 아무 말 없이 손을 내밀었어요.`
+  ],
+  romantic:[
+    (a,b)=>`${topic(a.name)} 수많은 사람 사이에서 한 번도 헤매지 않고 ${b.name}을 먼저 찾아냈어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}이 무심코 남긴 한마디를 오래 기억했다가 꼭 맞는 순간에 대답처럼 돌려주었어요.`,
+    (a,b)=>`${topic(a.name)} 더 가까이 가고 싶은 마음을 숨기지 않되, ${b.name}이 고를 수 있도록 마지막 한 걸음은 남겨 두었어요.`,
+    (a,b)=>`${topic(a.name)} 오늘이 끝나면 후회할 것 같아 돌아서던 ${b.name}을 불러 세우고 솔직한 진심 하나를 건넸어요.`
+  ],
+  unspoken:[
+    (a,b)=>`${topic(a.name)} ${b.name}의 이름을 부르는 것만으로 마음이 들킬까 봐 평소보다 무심한 호칭을 골랐어요.`,
+    (a,b)=>`${topic(a.name)} 떠나는 ${b.name}을 붙잡지 못한 대신, 다음에 다시 만날 이유를 누구보다 꼼꼼히 만들어 두었어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}의 손이 스칠 뻔하자 물러났지만, 조금 뒤에는 아까와 같은 거리를 스스로 다시 좁혔어요.`,
+    (a,b)=>`${topic(a.name)} 우정이라고 몇 번이나 마음속으로 정정했지만 ${b.name}이 웃는 순간만큼은 시선을 피하지 못했어요.`
+  ],
+  precious:[
+    (a,b)=>`${topic(a.name)} ${b.name}이 스스로 일어날 사람이라는 것을 알기에 대신 싸우지 않고 돌아올 자리를 지켜 주었어요.`,
+    (a,b)=>`${topic(a.name)} 아무도 기억하지 못한 ${b.name}의 오래된 소망을 기억해 두었다가 현실적인 첫걸음을 준비했어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}의 약한 순간을 보았지만 그것을 약점처럼 다루지 않고 평소와 같은 목소리로 이름을 불렀어요.`,
+    (a,b)=>`${topic(a.name)} 선택을 존중하면서도 혼자 감당하게 두지는 않겠다고 ${b.name}의 바로 옆자리를 골랐어요.`
+  ],
+  friends:[
+    (a,b)=>`${topic(a.name)} 세상이 전부 등을 돌린다는 과장된 푸념에 ${b.name}만큼은 남아 있겠다고 장난처럼 대답했어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}의 흑역사를 누구보다 많이 알면서도 결정적인 순간에는 단 한 번도 꺼내지 않았어요.`,
+    (a,b)=>`${topic(a.name)} 말로는 귀찮다고 투덜거리면서 이미 ${b.name}의 몫까지 챙겨 들고 먼저 출발했어요.`,
+    (a,b)=>`${topic(a.name)} 오래 비운 시간까지 단숨에 메우려 하지 않고, 어제도 만난 사람처럼 ${b.name}의 옆에 앉았어요.`
+  ],
+  family:[
+    (a,b)=>`${topic(a.name)} 서로 가장 아픈 말을 알고 있었지만 이번만큼은 ${b.name}을 이기기 위해 그 말을 쓰지 않았어요.`,
+    (a,b)=>`${topic(a.name)} 집에서는 늘 다투던 ${b.name}을 바깥사람이 함부로 대하자 망설임 없이 같은 편에 섰어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}이 돌아올 시간을 묻지 않으면서도 현관 불과 먹을 것은 평소처럼 남겨 두었어요.`,
+    (a,b)=>`${topic(a.name)} 미안하다는 말 대신 망가진 것을 고치고 빈자리를 채우며 ${b.name}에게 다시 말을 걸 준비를 했어요.`
+  ],
+  rivals:[
+    (a,b)=>`${topic(a.name)} 자신이 넘어야 할 사람은 ${b.name}뿐이라며 다른 누구도 함부로 깎아내리지 못하게 했어요.`,
+    (a,b)=>`${topic(a.name)} 완벽한 승리보다 전력을 다한 ${b.name}을 원했고, 숨겨 둔 비책을 마침내 꺼냈어요.`,
+    (a,b)=>`${topic(a.name)} 패배를 인정하면서도 고개를 숙이지 않고 다음에는 반드시 이기겠다고 ${b.name}의 눈을 똑바로 봤어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}이 없는 정상은 의미가 없다며 포기하려는 등을 가장 날카로운 말로 다시 세웠어요.`
+  ],
+  love_hate:[
+    (a,b)=>`${topic(a.name)} ${b.name}을 용서하지 못하면서도 다른 사람의 손에 무너지는 것만은 두고 보지 않았어요.`,
+    (a,b)=>`${topic(a.name)} 떠나라고 말한 입으로 위험을 경고했고, ${b.name}이 무사한 것을 확인한 뒤에야 등을 돌렸어요.`,
+    (a,b)=>`${topic(a.name)} 상처 준 말을 정확히 기억하면서도 ${b.name}의 상처까지 외면할 수 없는 자신에게 더 화가 났어요.`,
+    (a,b)=>`${topic(a.name)} 다시는 믿지 않겠다고 선을 그었지만, 마지막 선택만큼은 ${b.name}이 직접 하도록 길을 열어 주었어요.`
+  ],
+  hostile:[
+    (a,b)=>`${topic(a.name)} ${b.name}의 선의를 믿지 않았기에 빚지지 않을 만큼만 도움을 받고 반드시 값을 치르겠다고 했어요.`,
+    (a,b)=>`${topic(a.name)} 공동의 위험 앞에서도 등을 맡기지는 않았지만, 적어도 지금 공격할 사람은 서로가 아니라는 데 합의했어요.`,
+    (a,b)=>`${topic(a.name)} ${b.name}의 약점을 손에 넣고도 아무 데서나 쓰지 않고 가장 필요한 순간을 위해 감춰 두었어요.`,
+    (a,b)=>`${topic(a.name)} 물러난 것이 진 것이 아니라 더 큰 싸움을 고른 것이라며 ${b.name}에게서 시선을 거두지 않았어요.`
+  ],
+  distant:[
+    (a,b)=>`${topic(a.name)} 아직 ${b.name}을 믿지는 않았지만 먼저 내민 약속 하나만큼은 끝까지 지켰어요.`,
+    (a,b)=>`${topic(a.name)} 서로 모르는 것이 많다는 사실을 인정하고 ${b.name}에게 함부로 아는 척하지 않았어요.`,
+    (a,b)=>`${topic(a.name)} 불편한 침묵을 억지 친밀감으로 덮지 않고 ${b.name}이 먼저 말할 때까지 같은 자리를 지켰어요.`,
+    (a,b)=>`${topic(a.name)} 헤어지기 전 다음에 불러도 되는 이름과 지켜야 할 선을 ${b.name}과 분명히 확인했어요.`
+  ]
+};
+RELATION_COMBINATION_BONDS.forEach(bond=>bond.actions=[...bond.actions,...EXTRA_BOND_ACTIONS,...(BOND_CATHARSIS_ACTIONS[bond.key]||[])]);
 RELATION_COMBINATION_TENSIONS.forEach(tension=>tension.lines=[...tension.lines,...EXTRA_TENSION_LINES]);
 const RELATION_COMBINATION_PROFILES=RELATION_COMBINATION_BONDS.flatMap((bond,bondIndex)=>
   RELATION_COMBINATION_TENSIONS.map((tension,tensionIndex)=>({key:`${bond.key}_${tension.key}`,label:`${bond.label} · ${tension.label}`,bondIndex,tensionIndex}))
@@ -2563,9 +2625,12 @@ function relationCombinationScene(place,first,second,relation,date){
   const foundTension=RELATION_COMBINATION_TENSIONS.findIndex(item=>item.test(firstView,secondView,relation,first,second));
   const bondIndex=Math.max(0,foundBond),tensionIndex=Math.max(0,foundTension);
   const profile=RELATION_COMBINATION_PROFILES.find(item=>item.bondIndex===bondIndex&&item.tensionIndex===tensionIndex);
-  const variant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/15)}:${profile.key}`)%10;
-  const reverseVariant=(variant+5)%10;
   const bond=RELATION_COMBINATION_BONDS[bondIndex],tension=RELATION_COMBINATION_TENSIONS[tensionIndex];
+  const sceneSeed=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/15)}:${profile.key}`);
+  const variant=sceneSeed%bond.actions.length;
+  const reverseVariant=(variant+Math.ceil(bond.actions.length/2))%bond.actions.length;
+  const tensionVariant=sceneSeed%tension.lines.length;
+  const reverseTensionVariant=(tensionVariant+Math.ceil(tension.lines.length/2))%tension.lines.length;
   const placeName=place?.name||place?.type||"같은 장소";
   const beatVariant=variant%4,reverseBeatVariant=reverseVariant%4;
   const firstIntimacy=unconfirmedMutualRomance?unconfirmedMutualRomanceBeat(first,second,variant):intimacyBeat(first,second,beatVariant,bond.key);
@@ -2618,8 +2683,8 @@ function relationCombinationScene(place,first,second,relation,date){
       relationProfile:profile.key
     };
   }
-  const firstExtra=[firstIntimacy||firstDetachedIntimacy||firstConflict,tension.key==="strained"?tension.lines[variant](first,second):""].filter(Boolean).join(" ")||tension.lines[variant](first,second);
-  const secondExtra=[secondIntimacy||secondDetachedIntimacy||secondConflict,tension.key==="strained"?tension.lines[reverseVariant](second,first):""].filter(Boolean).join(" ")||tension.lines[variant](second,first);
+  const firstExtra=[firstIntimacy||firstDetachedIntimacy||firstConflict,tension.key==="strained"?tension.lines[tensionVariant](first,second):""].filter(Boolean).join(" ")||tension.lines[tensionVariant](first,second);
+  const secondExtra=[secondIntimacy||secondDetachedIntimacy||secondConflict,tension.key==="strained"?tension.lines[reverseTensionVariant](second,first):""].filter(Boolean).join(" ")||tension.lines[reverseTensionVariant](second,first);
   const affairFirst=affairAllowed?`${topic(first.name)} 이미 이어지고 있는 관계가 있다는 사실을 의식하면서도 ${togetherWith(second.name)}의 만남을 끊지 않았고, 아는 사람과 마주치지 않을 자리를 골랐어요. `:"";
   const affairSecond=affairAllowed?`${topic(second.name)} 이 만남이 다른 관계와 충돌할 수 있다는 것을 알면서도 ${togetherWith(first.name)} 정한 시간까지 자리를 지켰어요. `:"";
   return {

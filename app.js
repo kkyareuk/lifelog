@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807i";
-import {eventFor} from "./simulation.js?v=20260807i";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807i";
-import {recordCharacterInteraction} from "./state.js?v=20260807i";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807k";
+import {eventFor} from "./simulation.js?v=20260807k";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807k";
+import {recordCharacterInteraction} from "./state.js?v=20260807k";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -42,6 +42,25 @@ function showInstallButton(){
 }
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
+const htmlEsc=(value="")=>String(value).replace(/[&<>"']/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character]));
+const hasBatchim=value=>{
+  const code=[...String(value||"").trim()].at(-1)?.charCodeAt(0);
+  return Number.isFinite(code)&&code>=0xac00&&code<=0xd7a3&&(code-0xac00)%28!==0;
+};
+const subjectText=value=>`${value||""}${hasBatchim(value)?"이":"가"}`;
+const objectText=value=>`${value||""}${hasBatchim(value)?"을":"를"}`;
+const overallViewPhrase=value=>({
+  "정하지 않음":"아직 어떤 사람인지 판단하지 않음",
+  "선택하지 않음":"아직 어떤 사람인지 판단하지 않음",
+  "경쟁심을 느낌":"상대로 경쟁심을 느낌",
+  "애증을 느낌":"향해 애정과 미움을 함께 느낌",
+  "그저 그런 사람":"그저 그런 사람으로 여김",
+  "흥미롭게 여김":"흥미로운 사람으로 여김",
+  "인간적인 호감이 있음":"인간적으로 호감 있게 여김",
+  "친구로 좋아함":"친구로서 좋아함",
+  "연애 감정이 싹틈":"연애 감정으로 의식하기 시작함",
+  "없어서는 안 될 사람":"없어서는 안 될 사람으로 여김"
+}[value]||String(value||"어떤 사람인지 판단하지 않음"));
 const purchases=()=>window.ParallelCityAuth?.getInfo?.().entitlements||{};
 const characterLimit=()=>7+(Math.max(0,Number(purchases().characterSlotPacks)||0)*5);
 const townLimit=()=>2+Math.max(0,Number(purchases().townSlotPacks)||0);
@@ -407,9 +426,6 @@ const addRoutine=characterId=>{
 };
 const updateRoutine=(characterId,id,patch)=>{const item=state.routines[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);save(true)}};
 const deleteRoutine=(characterId,id)=>{state.routines[characterId]=(state.routines[characterId]||[]).filter(r=>r.id!==id);save(true)};
-const addCar=homeId=>{const home=state.homes[homeId];if(!home)return;home.cars=Array.isArray(home.cars)?home.cars:[];home.cars.push({id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,name:"우리 집 자동차",type:"승용차",color:"",seats:5,image:""});save(true)};
-const updateCar=(homeId,id,patch)=>{const car=state.homes[homeId]?.cars?.find(item=>item.id===id);if(car){Object.assign(car,patch);save(true)}};
-const deleteCar=(homeId,id)=>{const home=state.homes[homeId];if(home){home.cars=(home.cars||[]).filter(item=>item.id!==id);save(true)}};
 const maintenanceConfig=()=>window.PARALLEL_CITY_CONFIG?.maintenance||{};
 const maintenanceEnabled=()=>Boolean(maintenanceConfig().enabled);
 const ONBOARDING_KEY="drawer-village-onboarding-v1";
@@ -593,6 +609,64 @@ function showToast(message){
   showToast.timer=setTimeout(()=>toast.classList.remove("show"),1800);
 }
 
+function openHomeOccupantSheet(button){
+  if(!button)return;
+  document.querySelector("[data-home-occupant-sheet]")?.remove();
+  const dialog=document.createElement("dialog");
+  dialog.className="home-occupant-sheet";
+  dialog.dataset.homeOccupantSheet="";
+  dialog.innerHTML=`<form method="dialog"><button class="home-sheet-grip" value="close" aria-label="닫기"></button><div class="home-occupant-sheet-content"><div class="home-occupant-visual"></div><span><small>${button.dataset.homeOccupant==="pet"?"함께 사는 존재":"지금 이 방에 있는 캐릭터"} · ${htmlEsc(button.dataset.occupantRoom||"집 안")}</small><h2></h2><b></b><p></p></span></div><button class="primary" value="close">닫기</button></form>`;
+  const sourceVisual=button.querySelector(".avatar,.sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji");
+  if(sourceVisual)dialog.querySelector(".home-occupant-visual").append(sourceVisual.cloneNode(true));
+  dialog.querySelector("h2").textContent=button.dataset.occupantName||"이름 없음";
+  dialog.querySelector("b").textContent=button.dataset.occupantTitle||"집에서 시간을 보내는 중";
+  dialog.querySelector("p").textContent=button.dataset.occupantDesc||"조용히 자기 시간을 보내고 있어요.";
+  dialog.onclose=()=>dialog.remove();
+  document.body.append(dialog);
+  dialog.showModal();
+}
+
+function openCarEditor(homeId,carId){
+  const car=state.homes[homeId]?.cars?.find(item=>item.id===carId);
+  if(!car)return;
+  document.querySelector("[data-home-car-dialog]")?.remove();
+  const types=["경차","승용차","SUV","승합차","스포츠카","전기차","오토바이","기타"];
+  const dialog=document.createElement("dialog");
+  dialog.className="home-car-dialog";
+  dialog.dataset.homeCarDialog="";
+  dialog.innerHTML=`<form method="dialog"><div class="mobile-editor-head"><span><small>CAR SETTING</small><b>${htmlEsc(car.name)}</b></span><button value="cancel" aria-label="닫기">×</button></div><div class="home-car-preview">${car.image?`<img src="${htmlEsc(car.image)}" alt="">`:"<span>🚙</span>"}</div><div class="fields"><label>차량 이름<input name="name" value="${htmlEsc(car.name)}"></label><label>종류<select name="type">${types.map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>색상<input name="color" value="${htmlEsc(car.color||"")}"></label><label>좌석 수<input name="seats" type="number" min="1" max="12" value="${Number(car.seats)||5}"></label></div><div class="image-actions"><button type="button" data-dialog-car-image>차 사진 선택</button><button type="button" data-dialog-car-url>사진 링크</button></div><div class="crop-actions"><button type="button" class="danger" data-dialog-delete-car>자동차 삭제</button><button value="cancel">취소</button><button class="primary" value="save">편집 완료</button></div></form>`;
+  dialog.querySelector("[data-dialog-car-image]").onclick=()=>{
+    dialog.close("cancel");
+    pickImage("car",homeId,carId);
+  };
+  dialog.querySelector("[data-dialog-car-url]").onclick=()=>{
+    dialog.close("cancel");
+    useImageUrl("car",homeId,carId);
+  };
+  dialog.querySelector("[data-dialog-delete-car]").onclick=()=>{
+    if(!confirm(`${objectText(car.name)} 삭제하시겠습니까?\n삭제한 자동차는 되돌릴 수 없습니다.`))return;
+    deleteCar(homeId,carId);
+    dialog.close("deleted");
+    render();
+  };
+  dialog.onclose=()=>{
+    if(dialog.returnValue==="save"){
+      const form=dialog.querySelector("form");
+      updateCar(homeId,carId,{
+        name:form.name.value.trim()||"이름 없는 자동차",
+        type:form.type.value,
+        color:form.color.value.trim(),
+        seats:Math.max(1,Math.min(12,Number(form.seats.value)||5))
+      });
+      render();
+      showToast("자동차 설정을 저장했습니다");
+    }
+    dialog.remove();
+  };
+  document.body.append(dialog);
+  dialog.showModal();
+}
+
 function applyTheme(){
   const c=active();
   const primary=c?.theme?.primary||"#176b60";
@@ -707,7 +781,7 @@ function bind(){
   $("[data-add-room]")?.addEventListener("click",()=>{addRoom(state.activeHomeId);render()});
   $$("[data-open-room-editor]").forEach(el=>{
     el.onclick=event=>{
-      if(event.target.closest("[data-home-person],.room-pet,.room-drag-handle"))return;
+      if(event.target.closest("[data-home-person],[data-home-occupant],.room-pet,.room-drag-handle"))return;
       event.stopPropagation();
       openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor);
     };
@@ -745,13 +819,38 @@ function bind(){
   $$("[data-open-home-feature]").forEach(button=>button.onclick=()=>{
     const card=button.closest("[data-home-card]"),panel=card?.querySelector(`[data-home-feature="${CSS.escape(button.dataset.openHomeFeature)}"]`);
     if(!panel)return;
+    const wasOpen=panel.classList.contains("open");
     card.querySelectorAll("[data-home-feature].open").forEach(item=>item.classList.remove("open"));
-    panel.classList.add("open");
+    card.querySelectorAll("[data-open-home-feature].on").forEach(item=>item.classList.remove("on"));
+    if(!wasOpen){
+      panel.classList.add("open");
+      button.classList.add("on");
+    }
   });
-  $$("[data-close-home-feature]").forEach(button=>button.onclick=()=>button.closest("[data-home-feature]")?.classList.remove("open"));
+  $$("[data-close-home-feature]").forEach(button=>button.onclick=()=>{
+    const card=button.closest("[data-home-card]");
+    button.closest("[data-home-feature]")?.classList.remove("open");
+    card?.querySelectorAll("[data-open-home-feature].on").forEach(item=>item.classList.remove("on"));
+  });
+  $$("[data-home-occupant]").forEach(button=>button.onclick=event=>{
+    event.stopPropagation();
+    openHomeOccupantSheet(button);
+  });
   $$("[data-open-room-image-menu]").forEach(el=>el.onclick=event=>{event.stopPropagation();openRoomImageMenu(el.dataset.homeId,el.dataset.openRoomImageMenu)});
-  $("[data-add-pet]")?.addEventListener("click",()=>{addPet(state.activeHomeId);render()});
-  $("[data-add-car]")?.addEventListener("click",()=>{addCar(state.activeHomeId);render()});
+  $("[data-add-pet]")?.addEventListener("click",()=>{
+    addPet(state.activeHomeId);
+    render();
+    requestAnimationFrame(()=>document.querySelector('[data-open-home-feature="pets"]')?.click());
+  });
+  $("[data-add-car]")?.addEventListener("click",()=>{
+    const homeId=state.activeHomeId,carId=addCar(homeId);
+    render();
+    requestAnimationFrame(()=>openCarEditor(homeId,carId));
+  });
+  $$("[data-open-car-editor]").forEach(button=>button.onclick=event=>{
+    event.stopPropagation();
+    openCarEditor(button.dataset.homeId,button.dataset.openCarEditor);
+  });
   $$("[data-car-field]").forEach(el=>el.oninput=()=>updateCar(el.dataset.homeId,el.dataset.carId,{[el.dataset.carField]:el.type==="number"?Number(el.value):el.value}));
   $$("[data-car-image]").forEach(el=>el.onclick=()=>pickImage("car",el.dataset.homeId,el.dataset.carImage));
   $$("[data-delete-car]").forEach(el=>el.onclick=()=>{deleteCar(el.dataset.homeId,el.dataset.deleteCar);render()});
@@ -1185,7 +1284,11 @@ function bind(){
     else state.characterViews[source][target][field]=select.value;
     if(field==="overall"){
       const summary=$$("[data-view-summary]").find(item=>item.dataset.viewSummary===`${source}:${target}`);
-      if(summary)summary.textContent=select.value;
+      if(summary){
+        const sourceName=summary.dataset.viewSourceName||state.characters[source]?.name||"이 캐릭터";
+        const targetName=summary.dataset.viewTargetName||state.characters[target]?.name||"상대";
+        summary.textContent=`${subjectText(sourceName)} ${objectText(targetName)} ${overallViewPhrase(select.value)}`;
+      }
     }
     const dialog=select.closest("[data-view-dialog]");
     if(dialog)dialog.dataset.dirty="1";
@@ -1886,13 +1989,13 @@ if(!maintenanceEnabled()&&state.order.length&&localStorage.getItem("drawer-villa
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807i").catch(error=>{
+  import("./auth.js?v=20260807k").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807i",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260807k",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
