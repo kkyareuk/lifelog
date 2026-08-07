@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807v";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807v";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807w";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807w";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -243,7 +243,20 @@ function nativeScenePresentation(c,entry){
   const failedDate=Boolean(dating&&!fighting&&(/망한|실패|거절|불편|어색|서먹|냉랭|잘라 말|비효율|말을 아끼|거리.{0,8}두|기분.{0,8}상/.test(text)||(!ownRomance&&overwhelmed)));
   const sad=/우울|슬픔|상실|침울|낙담|기운이 없|울적|눈물|마음이 무거/.test(text);
   const coldFight=fighting&&/냉랭|차갑|침묵|무시|거리.{0,8}두|서먹|얼음/.test(text);
-  const tone=fighting?(coldFight?"fight-ice":"fight-fire"):overwhelmed?"date-overwhelmed":failedDate?"date-broken":dating&&ownRomance?"date-romantic":dating?"date-neutral":sad?"sad":"neutral";
+  const playfulInteraction=Boolean(partner&&!dating&&!fighting&&/티격태격|장난|농담|놀리|웃음|웃었|게임|내기|재잘/.test(text));
+  const tenseInteraction=Boolean(partner&&!dating&&!fighting&&!playfulInteraction&&/경계|불편|신경전|성가시|못마땅|퉁명|날 선|거리.{0,8}두/.test(`${text} ${viewText}`));
+  const warmInteraction=Boolean(partner&&!dating&&!fighting&&!tenseInteraction&&/함께|대화|이야기|도와|챙기|나누|맞춰|건넸|안부|곁/.test(text));
+  const tone=fighting
+    ?(coldFight?"fight-ice":"fight-fire")
+    :overwhelmed?"date-overwhelmed"
+      :failedDate?"date-broken"
+        :dating&&ownRomance?"date-romantic"
+          :dating?"date-neutral"
+            :sad?"sad"
+              :playfulInteraction?"interaction-playful"
+                :tenseInteraction?"interaction-tense"
+                  :warmInteraction?"interaction-warm"
+                    :partner&&entry?.groupInteraction?"interaction-neutral":"neutral";
   const homeId=entry?.visitHomeId||c.homeId;
   const coResidentConversation=Boolean(
     partner
@@ -256,10 +269,17 @@ function nativeScenePresentation(c,entry){
       ||(person.residences||[]).some(residence=>residence.homeId===homeId)
     )
   );
-  const companions=partner&&(dating||fighting||partners.length>1||coResidentConversation)?partners:[];
+  const companions=partner&&(entry?.groupInteraction||dating||fighting||partners.length>1||coResidentConversation)?partners:[];
   const pet=nativePetForScene(c,entry);
   const petVisual=pet?(pet.icon?`<img src="${esc(pet.icon)}" alt="${esc(pet.name)}">`:pet.photo?`<img class="photo" src="${esc(pet.photo)}" alt="${esc(pet.name)}">`:`<span>${PET_SCENE_EMOJI[pet.species]||PET_SCENE_EMOJI.기타}</span>`):"";
-  const effectSymbol=tone==="date-romantic"||tone==="date-overwhelmed"?"♥":tone==="date-broken"?"💔":tone==="sad"?"•":tone.startsWith("fight-")?"✦":"";
+  const effectSymbol=tone==="date-romantic"||tone==="date-overwhelmed"
+    ?"♥"
+    :tone==="date-broken"?"💔"
+      :tone==="sad"?"•"
+        :tone==="interaction-playful"?"♪"
+          :tone==="interaction-warm"?"✦"
+            :tone==="interaction-tense"?"!"
+              :tone.startsWith("fight-")?"✦":"";
   const effectCount=tone==="sad"?12:10;
   const effectSeed=nativeVisualSeed(`${entry?.interactionId||entry?.dateGroup||entry?.title}:${entry?.minute||""}:${c.id}`);
   const effects=effectSymbol?`<span class="native-scene-effects" aria-hidden="true">${Array.from({length:effectCount},(_,index)=>{
@@ -288,8 +308,13 @@ function nativeScenePresentation(c,entry){
   ])];
   const sceneParticipants=sceneParticipantIds.map(id=>state.characters?.[id]).filter(Boolean);
   const lineupHtml=companions.length?`<span class="native-scene-lineup ${coResidentConversation?"is-conversation":""}" style="--scene-count:${sceneParticipants.length}" aria-label="${esc(sceneParticipants.map(person=>person.name).join(", "))}">${sceneParticipants.map((person,index)=>`<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index}">${avatar(person,"native-scene-lineup-avatar")}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`).join("")}</span>`:"";
-  const conversationHtml=coResidentConversation
-    ?`<span class="native-conversation-bubbles" aria-hidden="true"><i>…</i><i>!</i><i>…</i></span>`
+  const conversationalInteraction=Boolean(
+    companions.length
+    &&!fighting
+    &&/대화|이야기|말을 건|말을 나누|묻|대답|수다|상의|안부|농담|재잘|주고받|티격태격/.test(text)
+  );
+  const conversationHtml=conversationalInteraction
+    ?`<span class="native-conversation-bubbles ${tone==="interaction-playful"?"is-playful":tone==="interaction-tense"?"is-tense":""}" aria-hidden="true"><i>${tone==="interaction-playful"?"♪":"…"}</i><i>${tone==="interaction-tense"?"…":"!"}</i><i>${tone==="interaction-playful"?"!":"…"}</i></span>`
     :"";
   return {
     tone,

@@ -376,6 +376,196 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   }
 }
 
+/* 생활 상호작용은 연애 장면이 아니어도 두 인물의 분위기를 화면에 보여 준다. */
+.native-app .scene-tone-interaction-warm .native-scene-atmosphere{
+  background:radial-gradient(circle at 50% 56%,#8fe8cd38,transparent 38%);
+}
+.native-app .scene-tone-interaction-playful .native-scene-atmosphere{
+  background:
+    radial-gradient(circle at 30% 45%,#ffe88c35,transparent 24%),
+    radial-gradient(circle at 72% 38%,#8ddcff2b,transparent 27%);
+}
+.native-app .scene-tone-interaction-tense .native-scene-atmosphere{
+  background:linear-gradient(145deg,#23374b33,#7a4c2645 65%,#15202d66);
+}
+.native-app .scene-tone-interaction-warm .native-scene-effects i,
+.native-app .scene-tone-interaction-playful .native-scene-effects i,
+.native-app .scene-tone-interaction-tense .native-scene-effects i{
+  animation:native-social-spark 2.1s ease-in-out infinite;
+}
+.native-app .scene-tone-interaction-warm .native-scene-lineup-person{
+  animation:native-social-bob 2.8s ease-in-out infinite;
+}
+.native-app .scene-tone-interaction-playful .native-scene-lineup-person:nth-child(odd){
+  animation:native-social-nudge-left 1.55s ease-in-out infinite;
+}
+.native-app .scene-tone-interaction-playful .native-scene-lineup-person:nth-child(even){
+  animation:native-social-nudge-right 1.55s -.78s ease-in-out infinite;
+}
+.native-app .scene-tone-interaction-tense .native-scene-lineup-person:nth-child(odd){
+  animation:native-pull-away-left 2.7s ease-in-out infinite;
+}
+.native-app .scene-tone-interaction-tense .native-scene-lineup-person:nth-child(even){
+  animation:native-pull-away-right 2.7s ease-in-out infinite;
+}
+@keyframes native-social-spark{
+  0%,100%{opacity:0;transform:translate(-50%,10px) scale(.62) rotate(-8deg)}
+  35%,65%{opacity:.92}
+  78%{transform:translate(-50%,-22px) scale(1.04) rotate(8deg)}
+}
+@keyframes native-social-bob{0%,100%{translate:0 2px}50%{translate:0 -7px}}
+@keyframes native-social-nudge-left{0%,100%{translate:-2px 2px;rotate:-1deg}48%{translate:7px -5px;rotate:2deg}}
+@keyframes native-social-nudge-right{0%,100%{translate:2px 0;rotate:1deg}48%{translate:-7px -4px;rotate:-2deg}}
+
+/* 말풍선은 배경 사진 위에서도 흐려지지 않도록 완전 불투명하게 유지한다. */
+.native-app .native-conversation-bubbles{
+  z-index:12!important;
+  opacity:1!important;
+  filter:none!important;
+}
+.native-app .native-conversation-bubbles i{
+  border-color:#132031!important;
+  background:#fff!important;
+  color:#132031!important;
+  box-shadow:0 8px 20px #0009,0 0 0 2px #ffffff80!important;
+  filter:none!important;
+}
+.native-app .native-conversation-bubbles i::after{
+  border-color:#132031!important;
+  background:#fff!important;
+}
+.native-app .native-conversation-bubbles.is-playful i{background:#fff8cb!important;color:#513a00!important}
+.native-app .native-conversation-bubbles.is-playful i::after{background:#fff8cb!important}
+.native-app .native-conversation-bubbles.is-tense i{background:#eaf2f8!important;color:#253848!important}
+.native-app .native-conversation-bubbles.is-tense i::after{background:#eaf2f8!important}
+
+/* 화이트 모드는 앱형 화면과 팝업까지 밝은 면/어두운 글자로 통일한다. */
+html[data-color-mode="light"] .relationship-map-dialog,
+html[data-color-mode="light"] .relationship-map-dialog form,
+html[data-color-mode="light"] .official-relation-dialog,
+html[data-color-mode="light"] .official-relation-dialog form{
+  border-color:#d9d0c7!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"] .relationship-map-dialog::backdrop,
+html[data-color-mode="light"] .official-relation-dialog::backdrop{background:#2e292466!important}
+html[data-color-mode="light"] .relationship-map-dialog-head{
+  border-color:#ddd3c9!important;
+  background:#fffdf9f2!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"] .relationship-map-dialog :is(h1,h2,h3,p,b,small,button),
+html[data-color-mode="light"] .official-relation-dialog :is(h1,h2,h3,p,b,small,button){
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html[data-color-mode="light"] .relationship-map-dialog button,
+html[data-color-mode="light"] .official-relation-dialog button{
+  border-color:#d8cec5!important;
+  background:#fff!important;
+}
+html[data-color-mode="light"] .relationship-map-canvas{
+  border:1px solid #e1d8cf!important;
+  background:radial-gradient(circle at center,#fff 0 34%,#f4efe7 100%)!important;
+}
+
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button{
+  border-color:#cfc7be!important;
+  background:#fffdf0e8!important;
+  color:#302a25!important;
+  box-shadow:0 8px 20px #392e2428,inset 0 1px 0 #fff!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button{
+  border-color:#d8cec5!important;
+  background:#fffdf0dc!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button.on{
+  border-color:color-mix(in srgb,var(--native-own) 68%,#302a25)!important;
+  background:color-mix(in srgb,var(--native-own) 28%,#fff)!important;
+  color:#221f1c!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
+  border-color:#d7cec5!important;
+  background:#fffdf0e8!important;
+  color:#302a25!important;
+  box-shadow:0 16px 34px #392e2433!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card) :is(h1,b){
+  color:#2e2924!important;
+  -webkit-text-fill-color:#2e2924!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-status-card>small,
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-status-card p,
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-log-card :is(time,small){
+  color:#6f6258!important;
+  -webkit-text-fill-color:#6f6258!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-log-card li{border-color:#dfd6cd!important}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-log-card button{
+  border-color:#d6ccc3!important;
+  background:#fff!important;
+  color:#302a25!important;
+}
+
+html[data-color-mode="light"].native-app[data-active-tab="character"] .mobile-character-dashboard{
+  background:linear-gradient(155deg,#f8f3ec,#eee5db)!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] :is(.mobile-character-heading,.mobile-character-pane-grid button,.mobile-character-strip button){
+  border-color:#d9d0c7!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] :is(.mobile-character-heading,.mobile-character-pane-grid button,.mobile-character-strip button) :is(b,small){
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] .mobile-character-pane-grid button.on,
+html[data-color-mode="light"].native-app[data-active-tab="character"] .mobile-character-strip button.on{
+  border-color:color-mix(in srgb,var(--p) 70%,#302a25)!important;
+  background:color-mix(in srgb,var(--p) 24%,#fff)!important;
+}
+
+html[data-color-mode="light"][data-active-tab="shop"] .shop-store{
+  background:transparent!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="shop"] :is(.premium-product,.shop-cart,.shop-coming,.preview-notice){
+  border-color:#d9d0c7!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+  box-shadow:0 12px 28px #392e241a!important;
+}
+html[data-color-mode="light"][data-active-tab="shop"] .premium-product-heading>span{
+  border-color:#d8cec5!important;
+  background:#eee6dd!important;
+  color:#49392f!important;
+  -webkit-text-fill-color:#49392f!important;
+}
+html[data-color-mode="light"][data-active-tab="shop"] .shop-store :is(h1,h2,h3,b,strong,p,small,span,label){
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="shop"] :is(.premium-current,.cart-line,.cart-total){
+  border-color:#ded5cc!important;
+  background:#f3ede6!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="shop"] :is(.premium-buy,.cart-quantity button,.cart-remove){
+  border-color:#cfc5bb!important;
+  background:#f4ece4!important;
+  color:#3b3029!important;
+  -webkit-text-fill-color:#3b3029!important;
+}
+html[data-color-mode="light"][data-active-tab="shop"] .premium-buy.primary{
+  border-color:transparent!important;
+  background:linear-gradient(135deg,var(--p),var(--s))!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
 /* 2026-08-07: 관찰 화면 폭, 관계도 내보내기와 화면 모드 */
 .relationship-map-actions{
   display:flex;
@@ -4002,4 +4192,39 @@ html[data-color-mode="light"][data-active-tab="routine"] .routine-day h3{backgro
     margin-right:-60px!important;
     box-sizing:border-box;
   }
+}
+
+/* 파일 끝에서 앱 공통 다크 규칙보다 화이트 모드가 반드시 우선하도록 한다. */
+html[data-color-mode="light"].native-app[data-active-tab="shop"] :is(.premium-product,.shop-cart,.shop-coming,.preview-notice){
+  border-color:#d9d0c7!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+  box-shadow:0 12px 28px #392e241a!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="shop"] .shop-store :is(h1,h2,h3,b,strong,p,small,span,label){
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-product-heading>span{
+  border-color:#d8cec5!important;
+  background:#eee6dd!important;
+  color:#49392f!important;
+  -webkit-text-fill-color:#49392f!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="shop"] :is(.premium-current,.cart-line,.cart-total){
+  border-color:#ded5cc!important;
+  background:#f3ede6!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="shop"] :is(.premium-buy,.cart-quantity button,.cart-remove){
+  border-color:#cfc5bb!important;
+  background:#f4ece4!important;
+  color:#3b3029!important;
+  -webkit-text-fill-color:#3b3029!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-buy.primary{
+  border-color:transparent!important;
+  background:linear-gradient(135deg,var(--p),var(--s))!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
 }

@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807v";
-import {eventFor} from "./simulation.js?v=20260807v";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807v";
-import {recordCharacterInteraction} from "./state.js?v=20260807v";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807w";
+import {eventFor} from "./simulation.js?v=20260807w";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807w";
+import {recordCharacterInteraction} from "./state.js?v=20260807w";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -10,6 +10,7 @@ let mobileCharacterReorderOpen=false;
 let mobileCharacterDraftDirty=false;
 let homeCharacterPickerScroll=0;
 let mobileCharacterStripScroll=0;
+let mobileCharacterEditorScroll=0;
 const guidePending=new Set();
 const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
@@ -309,8 +310,13 @@ async function exportProfilePngV2(character,download=true){
   const contentW=width-pad*2,labelW=170,cellW=contentW/2,valueW=cellW-labelW-28;
   const layouts=sections.map(([title,items])=>{
     const rows=[];for(let index=0;index<items.length;index+=2){
-      const pair=items.slice(index,index+2).map(([label,value])=>({label,value,lines:wrap(value,valueW)}));
-      rows.push({pair,height:Math.max(58,...pair.map(item=>34+item.lines.length*32))});
+      const pair=items.slice(index,index+2).map(([label,value])=>({
+        label,
+        value,
+        labelLines:wrap(label,labelW-26,`700 17px ${bodyStack}`),
+        lines:wrap(value,valueW)
+      }));
+      rows.push({pair,height:Math.max(58,...pair.map(item=>Math.max(30+item.labelLines.length*25,34+item.lines.length*32)))});
     }
     return {title,rows,height:52+rows.reduce((sum,row)=>sum+row.height,0)};
   });
@@ -347,7 +353,7 @@ async function exportProfilePngV2(character,download=true){
         ctx.fillStyle="#efeee9";ctx.fillRect(x,y,labelW,row.height);
         ctx.strokeStyle="#454545";ctx.strokeRect(x,y,cellW,row.height);
         ctx.beginPath();ctx.moveTo(x+labelW,y);ctx.lineTo(x+labelW,y+row.height);ctx.stroke();
-        ctx.fillStyle="#222";ctx.font=`700 17px ${bodyStack}`;ctx.fillText(item.label,x+13,y+31);
+        ctx.fillStyle="#222";ctx.font=`700 17px ${bodyStack}`;item.labelLines.forEach((line,lineIndex)=>ctx.fillText(line,x+13,y+29+lineIndex*25));
         ctx.font=`20px ${bodyStack}`;item.lines.forEach((line,lineIndex)=>ctx.fillText(line,x+labelW+14,y+31+lineIndex*32));
         x+=cellW;
       });
@@ -624,6 +630,17 @@ function markMobileCharacterDraft(element){
   if(isMobileCharacterDraftControl(element))mobileCharacterDraftDirty=true;
   return isMobileCharacterDraftControl(element);
 }
+function renderPreservingCharacterEditorScroll(element){
+  const shell=element?.closest?.("[data-mobile-character-editor-dialog]")?.querySelector(".mobile-character-editor-shell");
+  if(shell)mobileCharacterEditorScroll=shell.scrollTop;
+  const pageX=window.scrollX,pageY=window.scrollY;
+  render();
+  requestAnimationFrame(()=>{
+    const nextShell=document.querySelector("[data-mobile-character-editor-dialog] .mobile-character-editor-shell");
+    if(nextShell)nextShell.scrollTop=mobileCharacterEditorScroll;
+    window.scrollTo(pageX,pageY);
+  });
+}
 function flushMobileCharacterDraft({closeEditor=true}={}){
   if(mobileCharacterDraftDirty)save(true);
   mobileCharacterDraftDirty=false;
@@ -633,7 +650,11 @@ function restoreMobileCharacterDialogs(){
   if(!document.documentElement.classList.contains("native-app")||state.activeTab!=="character")return;
   if(mobileCharacterEditorPane){
     const dialog=document.querySelector("[data-mobile-character-editor-dialog]");
-    if(dialog&&!dialog.open&&!document.querySelector("dialog[open]"))dialog.showModal();
+    if(dialog&&!dialog.open&&!document.querySelector("dialog[open]")){
+      dialog.showModal();
+      const shell=dialog.querySelector(".mobile-character-editor-shell");
+      if(shell)shell.scrollTop=mobileCharacterEditorScroll;
+    }
   }else if(mobileCharacterReorderOpen){
     const dialog=document.querySelector("[data-mobile-character-reorder-dialog]");
     if(dialog&&!dialog.open&&!document.querySelector("dialog[open]"))dialog.showModal();
@@ -758,7 +779,8 @@ function bind(){
   });
   $$("[data-home-character]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
-    homeCharacterPickerScroll=el.closest(".native-character-picker")?.scrollLeft||homeCharacterPickerScroll;
+    const picker=el.closest(".native-character-picker");
+    if(picker)homeCharacterPickerScroll=picker.scrollLeft;
     setActive(el.dataset.homeCharacter);
     render();
     requestAnimationFrame(()=>{const picker=document.querySelector(".native-character-picker");if(picker)picker.scrollLeft=homeCharacterPickerScroll});
@@ -1182,15 +1204,18 @@ function bind(){
   }));
   $$("[data-chip]").forEach(el=>el.onclick=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    toggleChip(active().id,el.dataset.chip,el.dataset.value,!mobileDraft);render();
+    toggleChip(active().id,el.dataset.chip,el.dataset.value,!mobileDraft);
+    renderPreservingCharacterEditorScroll(el);
   });
   $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    toggleFavorite(active().id,el.dataset.favoriteKind,el.dataset.favoriteId,!mobileDraft);render();
+    toggleFavorite(active().id,el.dataset.favoriteKind,el.dataset.favoriteId,!mobileDraft);
+    renderPreservingCharacterEditorScroll(el);
   });
   $$("[data-owned-kind]").forEach(el=>el.onclick=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    toggleOwned(active().id,el.dataset.ownedKind,el.dataset.ownedId,!mobileDraft);render();
+    toggleOwned(active().id,el.dataset.ownedKind,el.dataset.ownedId,!mobileDraft);
+    renderPreservingCharacterEditorScroll(el);
   });
   $$("[data-character-interaction]").forEach(el=>el.onclick=()=>{
     const item=String($("[data-character-interaction-item]")?.value||"").split(":");
@@ -2189,13 +2214,13 @@ function showPhotoBackupNotice(){
 }
 requestAnimationFrame(showPhotoBackupNotice);
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807v").catch(error=>{
+  import("./auth.js?v=20260807w").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807v",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260807w",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
