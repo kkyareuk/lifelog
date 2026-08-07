@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807f";
-import {eventFor} from "./simulation.js?v=20260807f";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807f";
-import {recordCharacterInteraction} from "./state.js?v=20260807f";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807g";
+import {eventFor} from "./simulation.js?v=20260807g";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807g";
+import {recordCharacterInteraction} from "./state.js?v=20260807g";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -529,6 +529,7 @@ function render(){
       grid.insertBefore(card,grid.lastElementChild);
     }
     bind();
+    bindRelationshipRoulette();
     applyTheme();
     requestAnimationFrame(centerRelationshipSelectors);
     requestAnimationFrame(restoreMobileCharacterDialogs);
@@ -1095,6 +1096,7 @@ function bind(){
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>openRelationDialog(el.dataset.editRel));
   $$("[data-view-source]").forEach(button=>button.onclick=()=>{
     state.characterViewSource=button.dataset.viewSource;
+    setActive(state.characterViewSource);
     if(state.characterViewTarget===state.characterViewSource||!state.characters[state.characterViewTarget]){
       state.characterViewTarget=state.order.find(id=>id!==state.characterViewSource)||"";
     }
@@ -1132,6 +1134,9 @@ function bind(){
     state.characterViews=state.characterViews&&typeof state.characterViews==="object"?state.characterViews:{};
     state.characterViews[source]=state.characterViews[source]&&typeof state.characterViews[source]==="object"?state.characterViews[source]:{};
     state.characterViews[source][target]=state.characterViews[source][target]&&typeof state.characterViews[source][target]==="object"?state.characterViews[source][target]:{};
+    const editedFields=new Set(Array.isArray(state.characterViews[source][target]._editedFields)?state.characterViews[source][target]._editedFields:[]);
+    editedFields.add(field);
+    state.characterViews[source][target]._editedFields=[...editedFields];
     if(["정하지 않음","선택하지 않음"].includes(select.value))delete state.characterViews[source][target][field];
     else state.characterViews[source][target][field]=select.value;
     if(field==="overall"){
@@ -1144,6 +1149,16 @@ function bind(){
     showToast(physicalWarning
       ?"주의: 이 단계부터는 충동·갈등·성격 조건이 함께 맞을 때 물리적 행동 장면이 나올 수 있어요"
       :`${state.characters[source]?.name||"캐릭터"}의 생각을 반영했어요 · 편집 완료 시 저장돼요`);
+  });
+  $$("[data-reset-character-view]").forEach(button=>button.onclick=()=>{
+    const [source,target]=String(button.dataset.resetCharacterView||"").split(":");
+    if(!source||!target||!confirm("이 두 사람 사이에서 현재 캐릭터가 느끼는 감정 설정을 초기화할까요?\n공식 관계가 있으면 그 관계의 기본값만 다시 표시됩니다."))return;
+    if(state.characterViews?.[source])delete state.characterViews[source][target];
+    const dialog=button.closest("[data-view-dialog]");
+    if(dialog?.open)dialog.close();
+    save(true);
+    render();
+    showToast("이 캐릭터의 시선 설정을 초기화했습니다");
   });
   $$("[data-delete-rel]").forEach(el=>el.onclick=()=>{
     if(confirm("이 관계를 삭제할까요?")){deleteRelationship(el.dataset.deleteRel);render();explicitSave("관계 삭제")}
@@ -1212,6 +1227,12 @@ function navigateToTab(tab){
     const currentHomeId=current?.home?(current.visitHomeId||character?.homeId):character?.homeId;
     if(currentHomeId&&state.homes[currentHomeId])setActiveHome(currentHomeId);
   }
+  if(tab==="relationship"&&state.characters[state.activeId]){
+    state.characterViewSource=state.activeId;
+    if(state.characterViewTarget===state.activeId||!state.characters[state.characterViewTarget]){
+      state.characterViewTarget=state.order.find(id=>id!==state.activeId)||"";
+    }
+  }
   state.activeTab=tab;
   save();
   render();
@@ -1241,6 +1262,55 @@ function centerRelationshipSelectors(){
       if(!selected)return;
       rail.scrollTo({top:Math.max(0,selected.offsetTop-(rail.clientHeight-selected.offsetHeight)/2),behavior:"auto"});
     });
+  });
+}
+
+function bindRelationshipRoulette(){
+  if(state.activeTab!=="relationship"||!document.documentElement.classList.contains("native-app"))return;
+  document.querySelectorAll(".relationship-character-rail").forEach(rail=>{
+    let frame=0,commitTimer=0;
+    const update=()=>{
+      frame=0;
+      const buttons=[...rail.querySelectorAll("button")];if(!buttons.length)return;
+      const center=rail.scrollTop+rail.clientHeight/2;
+      let selectedIndex=0,bestDistance=Infinity;
+      buttons.forEach((button,index)=>{
+        const distance=Math.abs(button.offsetTop+button.offsetHeight/2-center);
+        if(distance<bestDistance){bestDistance=distance;selectedIndex=index}
+      });
+      const sourceRail=rail.classList.contains("source-rail");
+      buttons.forEach((button,index)=>{
+        const distance=index-selectedIndex;
+        button.classList.toggle("roulette-preview",index===selectedIndex);
+        button.classList.toggle("on",index===selectedIndex);
+        button.style.setProperty("--roulette-distance",distance);
+        button.style.setProperty("--fan-angle",`${Math.max(-17,Math.min(17,distance*5))*(sourceRail?-1:1)}deg`);
+        button.style.setProperty("--fan-shift",`${Math.min(22,Math.abs(distance)*5)*(sourceRail?1:-1)}px`);
+      });
+      clearTimeout(commitTimer);
+      commitTimer=window.setTimeout(()=>{
+        const button=buttons[selectedIndex],id=sourceRail?button?.dataset.viewSource:button?.dataset.viewTarget;
+        if(!id)return;
+        if(sourceRail){
+          if(id===state.characterViewSource)return;
+          state.characterViewSource=id;
+          state.activeId=id;
+          if(state.characterViewTarget===id||!state.characters[state.characterViewTarget]){
+            state.characterViewTarget=state.order.find(characterId=>characterId!==id)||"";
+          }
+        }else{
+          if(id===state.characterViewTarget||id===state.characterViewSource)return;
+          state.characterViewTarget=id;
+        }
+        save(true);
+        render();
+      },150);
+    };
+    rail.addEventListener("scroll",()=>{
+      if(frame)return;
+      frame=requestAnimationFrame(update);
+    },{passive:true});
+    update();
   });
 }
 
@@ -1500,14 +1570,6 @@ const PAST_RELATION_STAGES={
 };
 const stagesFor=(type,temporalStatus="current")=>temporalStatus==="past"?(PAST_RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","친구 모임","산악회"].includes(type)?PAST_RELATION_STAGES.친구:PAST_RELATION_STAGES.default)):(RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","친구 모임","산악회"].includes(type)?RELATION_STAGES.친구:RELATION_STAGES.default));
 const FAULT_REASONS=["정하지 않음","누구의 잘못도 아님","성격 차이","신뢰를 깨뜨림","거짓말과 은폐","금전 문제","빚·과소비","재산·수입 갈등","약속·책임을 지키지 않음","일방적인 연락 단절","지나친 통제와 간섭","반복된 갈등","가족·주변인의 개입","생활 방식·미래 계획 차이","거리·이사·환경 변화","직장·학교 등 여건 변화","서로 자연스럽게 멀어짐","기타"];
-const relationViewDefaults=(type,temporalStatus="current")=>{
-  if(temporalStatus==="past")return {overall:"그저 그런 사람",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",closeness:"거리감 있음",comfort:"어색하지만 필요한 대화는 무난함",annoyance:"가끔 성가심",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(["연인","부부"].includes(type))return {overall:"연애 감정으로 좋아함",importance:"1순위 · 가장 중요한 사람",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"자주 살핌",jealousy:"가끔 신경 쓰임",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(["부모·자녀","형제·자매"].includes(type))return {overall:"소중하게 여김",importance:type==="부모·자녀"?"1순위 · 가장 중요한 사람":"2순위",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"가끔 성가심",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"평생 이어질 관계라고 믿음",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(["친구","소꿉친구","학창 시절 친구들","친구 모임"].includes(type))return {overall:"친구로 좋아함",importance:"3순위",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",closeness:"편한 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"인사·부축 같은 의례적 접촉만",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(type==="혐관")return {overall:"매우 싫어함",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"자주 충돌함",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"거친 말을 하고 싶은 충동",aggressionAction:"대부분 참지만 가끔 거친 말이 나옴"};
-  return {overall:"그저 그런 사람",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"보통",closeness:"보통",comfort:"어색하지만 필요한 대화는 무난함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"필요할 때만 봄",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-};
 function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
   const old=id?state.relationships[id]:null,dialog=document.createElement("dialog");dialog.className="relation-dialog relation-editor-dialog";
@@ -1637,21 +1699,6 @@ function openRelationDialog(id=""){
           const groupId=`group-${members.slice().sort().join("-")}-${Date.now()}`;
           for(let i=0;i<members.length;i++)for(let j=i+1;j<members.length;j++)addRelationship({...base,a:members[i],b:members[j],groupId,groupMembers:members});
         }
-        const affectedPairs=f.type.value==="부모·자녀"?parentPairs.map(([a,b])=>[a,b]):members.flatMap((a,index)=>members.slice(index+1).map(b=>[a,b]));
-        const defaults=relationViewDefaults(f.type.value,temporal);
-        affectedPairs.forEach(([a,b])=>[a,b].forEach((source,index)=>{
-          const target=index===0?b:a;
-          state.characterViews=state.characterViews||{};
-          state.characterViews[source]=state.characterViews[source]||{};
-          const view=state.characterViews[source][target]=state.characterViews[source][target]||{};
-          Object.entries(defaults).forEach(([key,value])=>{
-            if(view[key]!==undefined)return;
-            if(key==="importance"&&/^\d+순위/.test(value)){
-              const wanted=Number(value.match(/^\d+/)?.[0])||1,rank=Math.min(Math.max(1,state.order.length-1),wanted);
-              view[key]=`${rank}순위${rank===1?" · 가장 중요한 사람":""}`;
-            }else if(value!=="선택하지 않음"&&value!=="정하지 않음")view[key]=value;
-          });
-        }));
         render();explicitSave("관계 저장");
       }
     }
@@ -1758,13 +1805,13 @@ if(!maintenanceEnabled()&&state.order.length&&localStorage.getItem("drawer-villa
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807f").catch(error=>{
+  import("./auth.js?v=20260807g").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807f",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260807g",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

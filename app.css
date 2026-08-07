@@ -195,6 +195,240 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   .log-dialog{padding:18px}.log-dialog img{max-height:48dvh}
 }
 
+/* 모바일 관계 화면은 카드 안의 위젯이 아니라 화면 전체를 쓰는 캐릭터 룰렛이다. */
+@media(max-width:720px){
+  html.native-app[data-active-tab="relationship"],
+  html.native-app[data-active-tab="relationship"] body{
+    width:100%;
+    min-height:100%;
+    background:#0f1722!important;
+  }
+  .native-app[data-active-tab="relationship"] main{
+    width:100%;
+    max-width:none;
+    min-height:calc(100dvh - 60px);
+    margin:0;
+    padding:0!important;
+    overflow:visible;
+  }
+  .native-app[data-active-tab="relationship"] main>.relationship-page{
+    width:100%;
+    margin:0;
+    padding:0 0 max(28px,env(safe-area-inset-bottom));
+    overflow:visible;
+    border:0!important;
+    border-radius:0!important;
+    color:#fff;
+    background:
+      radial-gradient(circle at 50% 18%,color-mix(in srgb,var(--p) 32%,transparent),transparent 34%),
+      linear-gradient(180deg,#111a27,#182433 62%,#101722);
+    box-shadow:none!important;
+  }
+  .native-app[data-active-tab="relationship"] .relationship-page>.title,
+  .native-app[data-active-tab="relationship"] .relationship-page>p{display:none}
+  .native-app[data-active-tab="relationship"] .character-view-editor{
+    width:100%;
+    min-height:calc(100dvh - 60px);
+    margin:0;
+    padding:0 5px;
+    overflow:visible;
+    border:0;
+    border-radius:0;
+    color:#fff;
+    background:
+      radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--relationship-own) 54%,transparent),transparent 31%),
+      radial-gradient(circle at 50% 80%,color-mix(in srgb,var(--relationship-own-secondary) 27%,transparent),transparent 38%),
+      linear-gradient(165deg,#0d1520,#1b2735 62%,#0d151f);
+    box-shadow:none;
+    transition:background .38s ease;
+  }
+  .native-app[data-active-tab="relationship"] .character-view-editor>.title{display:none}
+  .native-app[data-active-tab="relationship"] .relationship-pair-magnet{
+    grid-template-columns:minmax(76px,94px) minmax(126px,1fr) minmax(76px,94px);
+    width:100%;
+    height:calc(100dvh - 60px);
+    min-height:590px;
+    max-height:none;
+    gap:0;
+    margin:0;
+    padding:0;
+    overflow:visible;
+    border:0;
+    border-radius:0;
+    background:transparent;
+    box-shadow:none;
+  }
+  .native-app[data-active-tab="relationship"] .relationship-character-rail{
+    width:100%;
+    height:100%;
+    max-height:none;
+    gap:0;
+    padding:calc((100dvh - 142px)/2) 4px;
+    overflow-y:auto;
+    scroll-padding-block:calc((100dvh - 142px)/2);
+    scroll-snap-type:y mandatory;
+    background:transparent;
+    -webkit-mask-image:none;
+    mask-image:none;
+  }
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button{
+    position:relative;
+    flex:0 0 82px;
+    width:82px;
+    min-height:82px;
+    margin:0;
+    padding:6px;
+    overflow:visible;
+    border:0;
+    border-radius:0;
+    color:#fff;
+    background:transparent;
+    opacity:.58;
+    transform:translateX(var(--fan-shift)) scale(.78);
+    transform-origin:center;
+    scroll-snap-align:center;
+    transition:transform .24s cubic-bezier(.18,.84,.2,1),opacity .2s,filter .24s;
+    animation:relationship-roulette-deal .46s cubic-bezier(.18,.84,.2,1) both;
+    animation-delay:var(--fan-delay);
+    box-shadow:none;
+  }
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button::before{
+    content:"";
+    position:absolute;
+    inset:12px;
+    z-index:-1;
+    border-radius:50%;
+    background:radial-gradient(circle,color-mix(in srgb,var(--view-primary) 44%,#fff) 0%,color-mix(in srgb,var(--view-primary) 20%,transparent) 52%,transparent 72%);
+    opacity:0;
+    filter:blur(5px);
+    transition:.24s ease;
+  }
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on,
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview{
+    z-index:4;
+    opacity:1;
+    background:transparent;
+    box-shadow:none;
+    animation:relationship-roulette-selected 2.4s ease-in-out infinite;
+  }
+  .native-app[data-active-tab="relationship"] .source-rail button.on,
+  .native-app[data-active-tab="relationship"] .source-rail button.roulette-preview{transform:translateX(14px) scale(1.3)}
+  .native-app[data-active-tab="relationship"] .target-rail button.on,
+  .native-app[data-active-tab="relationship"] .target-rail button.roulette-preview{transform:translateX(-14px) scale(1.3)}
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on::before,
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview::before{opacity:1}
+  .native-app[data-active-tab="relationship"] .relationship-character-rail .avatar,
+  .native-app[data-active-tab="relationship"] .relationship-character-rail .sprite{
+    width:62px;
+    height:62px;
+    transform:rotate(var(--fan-angle));
+    transform-origin:center;
+    filter:drop-shadow(0 10px 10px #0009);
+    transition:width .24s,height .24s,transform .24s cubic-bezier(.18,.84,.2,1),filter .24s;
+  }
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on .avatar,
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on .sprite,
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .avatar,
+  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .sprite{
+    width:68px;
+    height:68px;
+    transform:rotate(0);
+    filter:drop-shadow(0 14px 13px #000b);
+  }
+  .native-app[data-active-tab="relationship"] .relationship-character-rail small{display:none}
+  .native-app[data-active-tab="relationship"] .source-rail,
+  .native-app[data-active-tab="relationship"] .target-rail{border-radius:0;background:transparent}
+  .native-app[data-active-tab="relationship"] .relationship-pair-core{
+    align-self:center;
+    z-index:3;
+    gap:8px;
+    min-width:0;
+    padding:18px 3px;
+    color:#fff;
+    text-align:center;
+  }
+  .native-app[data-active-tab="relationship"] .relationship-pair-icons .avatar,
+  .native-app[data-active-tab="relationship"] .relationship-pair-icons .sprite{width:57px;height:57px;filter:drop-shadow(0 10px 10px #000a)}
+  .native-app[data-active-tab="relationship"] .relationship-pair-core>small,
+  .native-app[data-active-tab="relationship"] .relationship-pair-core>span{color:#ffffffa6}
+  .native-app[data-active-tab="relationship"] .relationship-pair-core>strong{color:#fff;font-size:16px;line-height:1.4}
+  .native-app[data-active-tab="relationship"] .relationship-pair-core>em{max-width:100%;padding:7px 9px;border:1px solid #ffffff16;background:#ffffff12;color:#fff;font-size:9px}
+  .native-app[data-active-tab="relationship"] .relationship-pair-core>button{
+    width:100%;
+    min-height:42px;
+    padding:8px 5px;
+    border-color:#ffffff29;
+    background:#ffffff0d;
+    color:#fff;
+    font-size:10px;
+    backdrop-filter:blur(7px);
+  }
+  .native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{
+    border-color:transparent;
+    background:linear-gradient(135deg,var(--relationship-own),var(--relationship-own-secondary));
+  }
+  .native-app[data-active-tab="relationship"] .official-relation-heading{margin:0;padding:24px 14px 8px;color:#fff}
+  .native-app[data-active-tab="relationship"] .relationship-card-grid{padding:0 10px 20px}
+  .native-app[data-active-tab="relationship"] .relationship-card-grid .relation{
+    border-color:#ffffff27;
+    background:#ffffffef;
+    color:#2d251f;
+  }
+}
+@keyframes relationship-roulette-deal{
+  from{opacity:0;transform:translateX(calc(var(--fan-shift) * 2)) scale(.55)}
+  to{opacity:.72;transform:translateX(var(--fan-shift)) scale(.78)}
+}
+@keyframes relationship-roulette-selected{
+  0%,100%{filter:brightness(1);translate:0 0}
+  50%{filter:brightness(1.13);translate:0 -3px}
+}
+
+/* 현재 장면 전문과 취향 사전 썸네일을 모바일 홈에서 숨기지 않는다. */
+.native-app .native-status-card p{
+  display:block;
+  overflow:visible;
+  white-space:normal;
+  word-break:keep-all;
+  -webkit-line-clamp:unset;
+  line-clamp:unset;
+}
+.native-app .native-active-item-orbits{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  display:block;
+  overflow:visible;
+  pointer-events:none;
+}
+.native-app .native-active-item-orbit{
+  position:absolute;
+  left:50%;
+  top:48%;
+  width:50px;
+  height:50px;
+  margin:-25px;
+  transform-origin:center;
+  animation:native-item-orbit 8.4s linear infinite;
+  animation-delay:var(--orbit-delay);
+}
+.native-app .native-active-item-orbit img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border:2px solid #fff;
+  border-radius:50%;
+  background:#fff;
+  box-shadow:0 10px 22px #0008;
+  animation:native-item-bob 1.55s ease-in-out infinite;
+  animation-delay:var(--orbit-delay);
+}
+@keyframes native-item-orbit{
+  from{transform:rotate(var(--orbit-angle)) translateX(clamp(82px,24vw,126px))}
+  to{transform:rotate(calc(var(--orbit-angle) + 360deg)) translateX(clamp(82px,24vw,126px))}
+}
+@keyframes native-item-bob{0%,100%{translate:0 3px;scale:.94}50%{translate:0 -7px;scale:1.04}}
+
 /* 모바일 캐릭터·관계 화면: 홈과 같은 어두운 게임 UI */
 @keyframes relationship-card-deal{
   from{opacity:0;transform:translateX(var(--fan-shift)) rotate(var(--fan-angle)) scale(.5)}
@@ -1526,3 +1760,106 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   .native-app[data-active-tab="town"] .town-general-editor{display:grid;gap:12px}
   .native-app[data-active-tab="town"] .town-general-editor>label{display:grid;gap:6px}
 }
+
+/* 최종 모바일 관계 화면 오버라이드: 뒤쪽의 공통 모바일 카드 규칙보다 우선한다. */
+@media(max-width:720px){
+  html.native-app[data-active-tab="relationship"] main{
+    width:100vw!important;
+    max-width:none!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    background:#0f1722;
+  }
+  html.native-app[data-active-tab="relationship"] main>.relationship-page{
+    width:100vw!important;
+    margin:0!important;
+    padding:0 0 max(28px,env(safe-area-inset-bottom))!important;
+    overflow:visible!important;
+    border:0!important;
+    border-radius:0!important;
+    background:linear-gradient(180deg,#111a27,#182433 62%,#101722)!important;
+    box-shadow:none!important;
+  }
+  html.native-app[data-active-tab="relationship"] .relationship-page>.title,
+  html.native-app[data-active-tab="relationship"] .relationship-page>p,
+  html.native-app[data-active-tab="relationship"] .character-view-editor>.title{display:none!important}
+  html.native-app[data-active-tab="relationship"] .character-view-editor{
+    width:100vw!important;
+    min-height:calc(100dvh - 60px)!important;
+    margin:0!important;
+    padding:0 5px!important;
+    overflow:visible!important;
+    border:0!important;
+    border-radius:0!important;
+    background:
+      radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--relationship-own) 54%,transparent),transparent 31%),
+      radial-gradient(circle at 50% 80%,color-mix(in srgb,var(--relationship-own-secondary) 27%,transparent),transparent 38%),
+      linear-gradient(165deg,#0d1520,#1b2735 62%,#0d151f)!important;
+    box-shadow:none!important;
+  }
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{
+    grid-template-columns:minmax(76px,94px) minmax(126px,1fr) minmax(76px,94px)!important;
+    width:100%!important;
+    height:calc(100dvh - 60px)!important;
+    min-height:590px!important;
+    max-height:none!important;
+    gap:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+  }
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail{
+    width:100%!important;
+    height:100%!important;
+    max-height:none!important;
+    gap:0!important;
+    padding:calc((100dvh - 142px)/2) 4px!important;
+    overflow-y:auto!important;
+    background:transparent!important;
+    -webkit-mask-image:none!important;
+    mask-image:none!important;
+  }
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail button{
+    flex:0 0 82px!important;
+    width:82px!important;
+    min-height:82px!important;
+    margin:0!important;
+    padding:6px!important;
+    overflow:visible!important;
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    opacity:.58;
+    transform:translateX(var(--fan-shift)) scale(.78)!important;
+    box-shadow:none!important;
+  }
+  html.native-app[data-active-tab="relationship"] .source-rail button.on,
+  html.native-app[data-active-tab="relationship"] .source-rail button.roulette-preview{opacity:1;transform:translateX(14px) scale(1.3)!important}
+  html.native-app[data-active-tab="relationship"] .target-rail button.on,
+  html.native-app[data-active-tab="relationship"] .target-rail button.roulette-preview{opacity:1;transform:translateX(-14px) scale(1.3)!important}
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail .avatar,
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail .sprite{width:62px!important;height:62px!important;transform:rotate(var(--fan-angle))}
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.on .avatar,
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.on .sprite,
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .avatar,
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .sprite{width:68px!important;height:68px!important;transform:rotate(0)}
+  html.native-app[data-active-tab="relationship"] .relationship-character-rail small{display:none!important}
+  html.native-app[data-active-tab="relationship"] .source-rail,
+  html.native-app[data-active-tab="relationship"] .target-rail{border-radius:0!important;background:transparent!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core{align-self:center!important;gap:8px!important;padding:18px 3px!important;color:#fff!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{width:100%;min-height:42px;padding:8px 5px;border-color:#ffffff29;background:#ffffff0d;color:#fff}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{background:linear-gradient(135deg,var(--relationship-own),var(--relationship-own-secondary))!important}
+}
+.native-app .native-status-card p{
+  display:block!important;
+  overflow:visible!important;
+  white-space:normal!important;
+  -webkit-line-clamp:unset!important;
+  line-clamp:unset!important;
+}
+.native-app[data-active-tab="observe"] .native-observe-home{overflow-x:hidden;overflow-y:auto}

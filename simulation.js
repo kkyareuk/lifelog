@@ -1,4 +1,4 @@
-import {state,save,characterViewFor} from "./state.js?v=20260807f";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807g";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -510,9 +510,9 @@ function adaptAccessibilityWording(c,item){
   }
   return {...item,title,desc};
 }
-function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에 앉아 조용히 쉬고 있어요.",room="living"){
+function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에 앉아 조용히 쉬고 있어요.",room="living",extra={}){
   const resolvedRoom=room==="bedroom"?(c.sleepRoomId||"bedroom"):room;
-  return adaptAccessibilityWording(c,entry(time,title,desc,{home:true,room:resolvedRoom}));
+  return adaptAccessibilityWording(c,entry(time,title,desc,{home:true,room:resolvedRoom,...extra}));
 }
 function withResidenceLocation(c,item,date=new Date()){
   if(!item?.home)return item;
@@ -1643,14 +1643,14 @@ function recordedInteractionEntries(c,date){
     const stamp=new Date(action.createdAt),minute=stamp.getHours()*60+stamp.getMinutes();
     if(action.type==="buy"){
       const liked=(c.favorites?.[action.itemKind]||[]).includes(action.itemId);
-      return homeEntry(c,minute,`${item?.name||"새 물건"}을 구매해 살펴보는 중`,liked?"마음에 두고 있던 물건을 손에 넣어 바로 즐겨 보고 있어요.":"새로 산 물건이 자기 취향에 맞는지 직접 사용하며 천천히 판단하고 있어요.","living");
+      return homeEntry(c,minute,`${item?.name||"새 물건"}을 구매해 살펴보는 중`,liked?"마음에 두고 있던 물건을 손에 넣어 바로 즐겨 보고 있어요.":"새로 산 물건이 자기 취향에 맞는지 직접 사용하며 천천히 판단하고 있어요.","living",{itemId:action.itemId,itemKind:action.itemKind,interactionId:action.id});
     }
     if(action.type==="gift"){
       const liked=(target?.favorites?.[action.itemKind]||[]).includes(action.itemId);
       const title=c.id===action.actorId?`${other?.name}에게 ${item?.name||"선물"}을 건네는 중`:`${other?.name}에게 ${item?.name||"선물"}을 받는 중`;
       const itemName=item?.name||"선물";
       const desc=c.id===action.actorId?`${other?.name}의 반응을 살피며 직접 고른 ${itemName}을(를) 건넸어요.`:liked?`평소 좋아하던 ${itemName}이라 표정이 밝아지고 바로 가까이 두었어요.`:`예상하지 못한 ${itemName}을(를) 받아 고맙다고 말하고 자기 취향에 어떻게 맞을지 살펴보고 있어요.`;
-      return entry(minute,title,desc,{home:true,room:"living",withId:other?.id,interactionId:action.id});
+      return entry(minute,title,desc,{home:true,room:"living",withId:other?.id,itemId:action.itemId,itemKind:action.itemKind,interactionId:action.id});
     }
     if(action.type==="exercise")return entry(minute,`${other?.name}와 함께 운동하는 중`,(c.hobbies||[]).includes("운동")?"익숙한 동작과 호흡을 맞추며 서로의 속도에 맞춰 즐겁게 몸을 움직이고 있어요.":"익숙하지 않은 동작은 조심스럽게 따라 하며 왜 이걸 즐기는지 조금씩 알아가고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원"],`${action.id}:exercise`,c,date)?.id,withId:other?.id,interactionId:action.id});
     return entry(minute,`${other?.name}와 함께 나들이하는 중`,"둘이 가고 싶던 장소를 골라 주변을 천천히 둘러보고 눈에 띄는 풍경 앞에서 이야기를 나누고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원","카페"],`${action.id}:outing`,c,date)?.id,withId:other?.id,interactionId:action.id});
@@ -1730,7 +1730,7 @@ function build(c,date=new Date()){
   }
   const romanticConnection=related(c).some(({other,r})=>{
     if(!other)return false;
-    const view=state.characterViews?.[c.id]?.[other.id]||{};
+    const view=characterViewFor(c.id,other.id);
     return r?.temporalStatus!=="past"&&(
       /연인|부부/.test(String(r?.type||""))
       || /연애 감정|사랑/.test(String(view.overall||""))
@@ -1825,7 +1825,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260807f";
+const ENGINE_VERSION="20260807g";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,Object.keys(home?.rooms||{}),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2035,8 +2035,8 @@ function dateLikePair(first,second,relation){
   return ["연인","부부"].includes(relation?.type);
 }
 function viewDrivenInteraction(place,first,second,date){
-  const firstView=state.characterViews?.[first.id]?.[second.id]||{};
-  const secondView=state.characterViews?.[second.id]?.[first.id]||{};
+  const firstView=explicitCharacterViewFor(first.id,second.id);
+  const secondView=explicitCharacterViewFor(second.id,first.id);
   if(!Object.keys(firstView).length&&!Object.keys(secondView).length)return null;
   const combined=[...Object.values(firstView),...Object.values(secondView)].join(" ");
   const firstCombined=Object.values(firstView).join(" ");
@@ -2366,8 +2366,8 @@ const RELATION_COMBINATION_PROFILES=RELATION_COMBINATION_BONDS.flatMap((bond,bon
 );
 const TOUCH_INTIMACY_LEVELS=["신체 접촉 없음","인사·부축 같은 의례적 접촉만","손잡기·팔짱까지","포옹·기대기까지","가벼운 입맞춤까지","깊은 입맞춤까지","성인 간 친밀한 접촉까지"];
 function sharedIntimacyLevel(first,second){
-  const firstTouch=state.characterViews?.[first.id]?.[second.id]?.touchIntensity||"신체 접촉 없음";
-  const secondTouch=state.characterViews?.[second.id]?.[first.id]?.touchIntensity||"신체 접촉 없음";
+  const firstTouch=characterViewFor(first.id,second.id).touchIntensity||"신체 접촉 없음";
+  const secondTouch=characterViewFor(second.id,first.id).touchIntensity||"신체 접촉 없음";
   const firstLevel=Math.max(0,TOUCH_INTIMACY_LEVELS.indexOf(firstTouch));
   const secondLevel=Math.max(0,TOUCH_INTIMACY_LEVELS.indexOf(secondTouch));
   return Math.min(firstLevel,secondLevel);
@@ -2498,8 +2498,8 @@ function pairedConflictScene(first,second,tensionKey,variant,firstView,secondVie
   return actions[variant];
 }
 function relationCombinationScene(place,first,second,relation,date){
-  const firstExplicit=state.characterViews?.[first.id]?.[second.id]||{};
-  const secondExplicit=state.characterViews?.[second.id]?.[first.id]||{};
+  const firstExplicit=explicitCharacterViewFor(first.id,second.id);
+  const secondExplicit=explicitCharacterViewFor(second.id,first.id);
   const firstView=characterViewFor(first.id,second.id);
   const secondView=characterViewFor(second.id,first.id);
   if(!relation&&Object.keys(firstExplicit).length+Object.keys(secondExplicit).length<2)return null;
@@ -2607,8 +2607,8 @@ function concreteInteraction(place,first,second,relation,date=new Date()){
   const combinationScene=relationCombinationScene(place,first,second,relation,date);
   if(combinationScene)return combinationScene;
   if(!relation){
-    const firstExplicit=state.characterViews?.[first.id]?.[second.id]||{};
-    const secondExplicit=state.characterViews?.[second.id]?.[first.id]||{};
+    const firstExplicit=explicitCharacterViewFor(first.id,second.id);
+    const secondExplicit=explicitCharacterViewFor(second.id,first.id);
     const likes=value=>/연애 감정|깊이 사랑|없어서는/.test(value?.overall||"");
     const firstLikes=likes(firstExplicit),secondLikes=likes(secondExplicit);
     const admirer=firstLikes&&!secondLikes?first:secondLikes&&!firstLikes?second:null;

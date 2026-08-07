@@ -1,5 +1,5 @@
-import {state,active,characterViewFor} from "./state.js?v=20260807f";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807f";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807g";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807g";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -192,6 +192,11 @@ function sceneImage(c,entry){
   const place=placeForEntry(entry);
   return catalogItem(entry.itemId)?.image||place?.interiorImage||place?.image||"";
 }
+function activeCatalogItems(entry){
+  const ids=new Set([entry?.itemId,...(Array.isArray(entry?.itemIds)?entry.itemIds:[])].filter(Boolean));
+  const sceneText=`${entry?.title||""} ${entry?.desc||""}`;
+  return catalogItems().filter(item=>item.image&&(ids.has(item.id)||(item.name&&sceneText.includes(item.name)))).slice(0,5);
+}
 function importantEntry(entry){return /출근|수업|직장|데이트|병원|다툼|기상|공무|훈련/.test(entry.title)}
 const loggableEntry=entry=>entry?.title!=="자는 중"&&!/에서 자는 중$/.test(entry?.title||"");
 function dailyLogItems(entries,c){
@@ -310,7 +315,9 @@ function observe(){
   const nativeEntries=displayTimeline(c,e);
   const nativeLog=nativeEntries.slice(-4).reverse().map(item=>`<li><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
   const nativeFullLog=`<dialog class="native-log-dialog" data-native-log-dialog><form method="dialog"><div class="native-log-dialog-head"><span><small>오늘의 기록</small><h2>${esc(c.name)}의 생활 로그</h2></span><button value="close" aria-label="닫기">×</button></div><ol>${dailyLogItems(nativeEntries,c)||"<li>아직 기록이 없어요.</li>"}</ol><button class="primary native-log-dialog-close" value="close">닫기</button></form></dialog>`;
-  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time></div><button type="button" class="native-character-stage" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}<i></i></button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card"><div><b>오늘의 기록</b><span><button type="button" data-open-native-log>전체 로그</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
+  const activeItems=activeCatalogItems(e);
+  const itemOrbit=activeItems.length?`<span class="native-active-item-orbits" aria-label="지금 사용 중인 취향 사전 항목">${activeItems.map((item,index)=>`<span class="native-active-item-orbit" style="--orbit-angle:${index*360/activeItems.length}deg;--orbit-delay:${index*-.72}s" title="${esc(item.name)}"><img src="${esc(item.image)}" alt="${esc(item.name)}"></span>`).join("")}</span>`:"";
+  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time></div><button type="button" class="native-character-stage" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}<i></i>${itemOrbit}</button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card"><div><b>오늘의 기록</b><span><button type="button" data-open-native-log>전체 로그</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
   return `${nativeHome}<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${currentImage?`<img class="place-photo" src="${esc(currentImage)}" alt="">`:""}</div></div>${dailyLog(c)}</aside></div></div>`;
 }
 function roomStyle(h,key){
@@ -716,8 +723,8 @@ const characterViewEditor=()=>{
   const targetId=targetIds.includes(state.characterViewTarget)?state.characterViewTarget:targetIds[0];
   const source=state.characters[sourceId],target=state.characters[targetId];
   const field=(sourceId,targetId,key,label,help)=>{
-    const explicit=state.characterViews?.[sourceId]?.[targetId]||{};
-    const current=explicit[key]==="정하지 않음"?"선택하지 않음":(explicit[key]||"선택하지 않음");
+    const effective=characterViewFor(sourceId,targetId);
+    const current=effective[key]==="정하지 않음"?"선택하지 않음":(effective[key]||"선택하지 않음");
     const options=characterViewOptions(key),legacy=current!=="선택하지 않음"&&!options.includes(current)?[current]:[];
     return `<label class="${key==="aggressionAction"?"view-aggression-action":""}"><span><b>${label}</b><small>${help}</small></span><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${[...legacy,...options].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>${key==="aggressionAction"?`<small class="field-warning">‘상대를 때릴 수 있음’ 이상을 고르면 설정한 충동·갈등·성격에 따라 낮은 수위의 폭행 장면이 나올 수 있어요. 충동만 있고 실행하지 않는 캐릭터는 반드시 ‘행동으로 옮기지 않음’을 골라 주세요.</small>`:""}</label>`;
   };
@@ -729,10 +736,10 @@ const characterViewEditor=()=>{
   const railButton=(id,kind,selected,index,selectedIndex)=>{
     const character=state.characters[id],primary=character.theme?.primary||"#176b60";
     const distance=index-selectedIndex,angle=Math.max(-13,Math.min(13,distance*4))*(kind==="source"?-1:1),shift=Math.min(18,Math.abs(distance)*4)*(kind==="source"?1:-1);
-    return `<button type="button" data-view-${kind}="${id}" class="${selected?"on":""}" style="--view-primary:${esc(primary)};--fan-angle:${angle}deg;--fan-shift:${shift}px;--fan-delay:${Math.min(index,8)*28}ms" aria-label="${esc(character.name)} ${kind==="source"?"선택":"대상 선택"}">${avatar(character)}<small>${esc(character.name)}</small></button>`;
+    return `<button type="button" data-view-${kind}="${id}" class="${selected?"on":""}" style="--view-primary:${esc(primary)};--roulette-distance:${distance};--fan-angle:${angle}deg;--fan-shift:${shift}px;--fan-delay:${Math.min(index,8)*28}ms" aria-label="${esc(character.name)} ${kind==="source"?"선택":"대상 선택"}">${avatar(character)}</button>`;
   };
   const sourceIndex=Math.max(0,state.order.indexOf(sourceId)),targetIndex=Math.max(0,targetIds.indexOf(targetId));
-  return `<section class="character-view-editor"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p>왼쪽에서 마음의 주체를, 오른쪽에서 그 감정을 받는 상대를 고르세요. 가운데 선택 자리에 아이콘이 붙으면 두 사람의 시선을 편집할 수 있어요.</p></div><button data-add-rel>+ 공식 관계 설정</button></div>
+  return `<section class="character-view-editor" style="--relationship-own:${esc(source.theme?.primary||"#176b60")};--relationship-own-secondary:${esc(source.theme?.secondary||source.theme?.primary||"#176b60")}"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p>왼쪽과 오른쪽 룰렛을 움직여 두 사람을 고르세요. 왼쪽에서 고른 캐릭터가 이 화면의 주인공이 됩니다.</p></div></div>
     <div class="relationship-pair-magnet">
       <div class="relationship-character-rail source-rail" aria-label="감정을 느끼는 캐릭터">${state.order.map((id,index)=>railButton(id,"source",id===sourceId,index,sourceIndex)).join("")}</div>
       <div class="relationship-pair-core">
@@ -742,11 +749,12 @@ const characterViewEditor=()=>{
         <span>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</span>
         <em>${esc(relationshipReality(sourceId,targetId,official))}</em>
         <button type="button" class="primary" data-open-view-dialog="${sourceId}:${targetId}">이 시선 편집하기</button>
+        <button type="button" data-add-rel>+ 공식 관계 설정</button>
         <button type="button" data-open-relationship-map>관계도 보기</button>
       </div>
       <div class="relationship-character-rail target-rail" aria-label="감정의 대상 캐릭터">${targetIds.map((id,index)=>railButton(id,"target",id===targetId,index,targetIndex)).join("")}</div>
     </div>
-    <dialog class="character-view-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><div class="title character-view-dialog-title"><div class="character-view-dialog-direction">${avatar(source)}<i>→</i>${avatar(target)}<span><h2>${esc(source.name)} → ${esc(target.name)}</h2><small>${esc(subjectText(source.name))} ${esc(objectText(target.name))} 바라보는 감정과 행동 기준</small></span></div><button value="close" aria-label="닫기">×</button></div><div class="character-view-dialog-context"><b>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</b><span>${esc(overall)}</span></div><div class="character-view-fields">${fields}</div><div class="crop-actions"><button class="primary" value="close">편집 완료</button></div></form></dialog>
+    <dialog class="character-view-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><div class="title character-view-dialog-title"><div class="character-view-dialog-direction">${avatar(source)}<i>→</i>${avatar(target)}<span><h2>${esc(source.name)} → ${esc(target.name)}</h2><small>${esc(subjectText(source.name))} ${esc(objectText(target.name))} 바라보는 감정과 행동 기준</small></span></div><button value="close" aria-label="닫기">×</button></div><div class="character-view-dialog-context"><b>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</b><span>${esc(overall)}</span></div><div class="character-view-fields">${fields}</div><div class="crop-actions"><button type="button" data-reset-character-view="${sourceId}:${targetId}">이 시선 초기화</button><button class="primary" value="close">편집 완료</button></div></form></dialog>
   </section>`;
 };
 const relationPairKey=(a,b)=>[a,b].sort().join("~");
@@ -827,7 +835,7 @@ function relationshipMap(relations){
   for(let i=0;i<characters.length;i++)for(let j=i+1;j<characters.length;j++){
     const a=characters[i].id,b=characters[j].id;
     const official=relations.filter(relation=>(relation.a===a&&relation.b===b)||(relation.a===b&&relation.b===a));
-    const hasExplicit=Object.keys(state.characterViews?.[a]?.[b]||{}).length>0||Object.keys(state.characterViews?.[b]?.[a]||{}).length>0;
+    const hasExplicit=Object.keys(explicitCharacterViewFor(a,b)).length>0||Object.keys(explicitCharacterViewFor(b,a)).length>0;
     if(official.length||hasExplicit)edges.push({a,b,official});
   }
   if(!edges.length)return"";
@@ -895,7 +903,7 @@ function relationship(){
     return a&&b?`<article class="relation"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${heading}</h2><p>${esc(displayType(r))} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${r.temporalStatus==="past"?"과거 관계 · ":""}${esc(r.stage||"편안한 사이")}</p><p class="relation-reality">관계 실체 · ${esc(relationshipReality(r.a,r.b,[r]))}</p>${r.temporalStatus==="past"&&r.faultReason&&r.faultReason!=="정하지 않음"?`<p class="relation-fault">관계가 끝난 이유 · ${esc(r.faultReason)}</p>`:""}${relationActivities(r)}<div class="relation-actions"><button data-edit-rel="${r.id}">편집</button><button class="danger" data-delete-rel="${r.id}">삭제</button></div></article>`:"";
   }).join("");
   const map=relationshipMap(all);
-  return `<section class="panel form"><div class="title"><h1>관계</h1></div><p>공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.</p>${characterViewEditor()}<dialog class="relationship-map-dialog" data-relationship-map-dialog><form method="dialog"><div class="relationship-map-dialog-head"><span><small>RELATIONSHIP MAP</small><h2>인물 관계도</h2></span><button value="close" aria-label="닫기">×</button></div><p>화살표 색은 각 캐릭터가 상대를 보는 감정 방향을 나타냅니다. 사랑하는 감정의 화살표에는 하트가 표시돼요.</p><div class="relationship-color-legend"><span class="friendly">친구·우호</span><span class="romantic">약한 사랑</span><span class="love">강한 사랑</span></div><button type="button" data-refresh-relationship-map>현재 설정으로 관계도 새로고침</button>${map||"<div class='empty-mini'>표시할 관계가 아직 없어요.</div>"}</form></dialog><h2 class="official-relation-heading">공식 관계 목록</h2><div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 공식 관계가 없어요.</b><p>공식 관계가 없는 캐릭터끼리는 서로 낯선 사람으로 행동해요.</p></div>'}</div></section>`;
+  return `<section class="panel form relationship-page"><div class="title"><h1>관계</h1></div><p>공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.</p>${characterViewEditor()}<dialog class="relationship-map-dialog" data-relationship-map-dialog><form method="dialog"><div class="relationship-map-dialog-head"><span><small>RELATIONSHIP MAP</small><h2>인물 관계도</h2></span><button value="close" aria-label="닫기">×</button></div><p>화살표 색은 각 캐릭터가 상대를 보는 감정 방향을 나타냅니다. 사랑하는 감정의 화살표에는 하트가 표시돼요.</p><div class="relationship-color-legend"><span class="friendly">친구·우호</span><span class="romantic">약한 사랑</span><span class="love">강한 사랑</span></div><button type="button" data-refresh-relationship-map>현재 설정으로 관계도 새로고침</button>${map||"<div class='empty-mini'>표시할 관계가 아직 없어요.</div>"}</form></dialog><h2 class="official-relation-heading">공식 관계 목록</h2><div class="relationship-card-grid">${cards||'<div class="empty-mini"><b>아직 설정한 공식 관계가 없어요.</b><p>공식 관계가 없는 캐릭터끼리는 서로 낯선 사람으로 행동해요.</p></div>'}</div></section>`;
 }
 function routine(){
   const c=active(),days=["일","월","화","수","목","금","토"],items=(state.routines[c.id]||[]).slice().sort((a,b)=>a.day-b.day||a.start.localeCompare(b.start));
