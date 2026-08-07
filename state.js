@@ -302,15 +302,18 @@ function normalizeHomes(x){
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
     relation.legalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus||"관계를 따로 명명하지 않음";
     delete relation.protectionRole;delete relation.caregiverIds;delete relation.careReceiverIds;
-    relation.stage=relation.stage||({
-      연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구",혐관:"신경전 중"
-    }[relation.type]||"편안함");
+    // 정규화는 비어 있는 공식 관계 단계를 임의의 친밀한 단계로 채우지 않는다.
+    // 사용자가 고른 적 없는 “편안한 연인/친구”가 다시 생기는 일을 막는다.
+    relation.stage=relation.stage||"관계 단계 미설정";
     if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b){
       const directional=relation.type==="부모·자녀"||relation.directional;
       const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
       const key=`${relation.type}|${pair}|${relation.parentRole||""}`;
-      const displayOrder=Array.isArray(relation.displayOrder)&&relation.displayOrder.length===2&&relation.displayOrder.every(characterId=>characterId===relation.a||characterId===relation.b)
-        ?relation.displayOrder:[relation.a,relation.b];
+      const relationMembers=[...new Set((relation.groupMembers?.length?relation.groupMembers:[relation.a,relation.b]).filter(characterId=>x.characters[characterId]))];
+      const displayOrder=Array.isArray(relation.displayOrder)
+        &&relation.displayOrder.length===relationMembers.length
+        &&relation.displayOrder.every(characterId=>relationMembers.includes(characterId))
+        ?relation.displayOrder:[...relationMembers];
       const candidate={...relation,id,displayOrder};
       const previousId=relationIdsByKey.get(key);
       if(!previousId){

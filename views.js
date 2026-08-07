@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807p";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807p";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807s";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260807s";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -211,45 +211,96 @@ function nativePetForScene(c,entry){
 }
 function nativeScenePresentation(c,entry){
   const text=`${entry?.title||""} ${entry?.desc||""} ${entry?.mood||""}`;
-  const partner=entry?.withId&&entry.withId!==c.id?state.characters?.[entry.withId]:null;
+  const orderedPartnerIds=[...new Set([...(entry?.participantOrder||[]),...(entry?.withIds||[]),entry?.withId].filter(id=>id&&id!==c.id))];
+  const partners=orderedPartnerIds.map(id=>state.characters?.[id]).filter(Boolean);
+  const partner=partners[0]||null;
   const dating=Boolean(partner&&(entry?.dateGroup||entry?.mood==="데이트"||/데이트/.test(text)));
   const fighting=Boolean(partner&&/싸움|싸우|말다툼|신경전|격렬|충돌|맞받아|목소리.{0,8}높|날카롭게|분노|화가 나|화를 냈/.test(text));
-  const failedDate=Boolean(dating&&!fighting&&/망한|실패|거절|불편|어색|서먹|냉랭|잘라 말|비효율|말을 아끼|거리.{0,8}두|기분.{0,8}상/.test(text));
+  const ownView=partner?characterViewFor(c.id,partner.id):{};
+  const viewText=`${ownView.overall||""} ${ownView.comfort||""} ${ownView.trust||""} ${ownView.annoyance||""} ${ownView.conflictIntensity||""}`;
+  const overwhelmed=Boolean(dating&&/부담|불편|경계|싫|피곤|숨 막|믿지|의심|거리감|어색|조심/.test(viewText));
+  const ownRomance=Boolean(dating&&/연애 감정|깊이 사랑|없어서는 안 될|좋아함|소중하게/.test(ownView.overall||""));
+  const failedDate=Boolean(dating&&!fighting&&(/망한|실패|거절|불편|어색|서먹|냉랭|잘라 말|비효율|말을 아끼|거리.{0,8}두|기분.{0,8}상/.test(text)||(!ownRomance&&overwhelmed)));
   const sad=/우울|슬픔|상실|침울|낙담|기운이 없|울적|눈물|마음이 무거/.test(text);
   const coldFight=fighting&&/냉랭|차갑|침묵|무시|거리.{0,8}두|서먹|얼음/.test(text);
-  const tone=fighting?(coldFight?"fight-ice":"fight-fire"):failedDate?"date-broken":dating?"date-romantic":sad?"sad":"neutral";
-  const companion=partner&&(dating||fighting)?partner:null;
+  const tone=fighting?(coldFight?"fight-ice":"fight-fire"):overwhelmed?"date-overwhelmed":failedDate?"date-broken":dating&&ownRomance?"date-romantic":dating?"date-neutral":sad?"sad":"neutral";
+  const companions=partner&&(dating||fighting||partners.length>1)?partners:[];
   const pet=nativePetForScene(c,entry);
   const petVisual=pet?(pet.icon?`<img src="${esc(pet.icon)}" alt="${esc(pet.name)}">`:pet.photo?`<img class="photo" src="${esc(pet.photo)}" alt="${esc(pet.name)}">`:`<span>${PET_SCENE_EMOJI[pet.species]||PET_SCENE_EMOJI.기타}</span>`):"";
-  const effectSymbol=tone==="date-romantic"?"♥":tone==="date-broken"?"💔":tone==="sad"?"•":tone.startsWith("fight-")?"✦":"";
-  const effects=effectSymbol?`<span class="native-scene-effects" aria-hidden="true">${Array.from({length:tone==="sad"?12:8},(_,index)=>`<i style="--fx-index:${index};--fx-x:${10+(index*37)%82}%;--fx-delay:${(index%5)*-.34}s">${effectSymbol}</i>`).join("")}</span>`:"";
+  const effectSymbol=tone==="date-romantic"||tone==="date-overwhelmed"?"♥":tone==="date-broken"?"💔":tone==="sad"?"•":tone.startsWith("fight-")?"✦":"";
+  const effectCount=tone==="sad"?12:10;
+  const effects=effectSymbol?`<span class="native-scene-effects ${tone==="date-overwhelmed"?"has-sweat":""}" aria-hidden="true">${Array.from({length:effectCount},(_,index)=>`<i style="--fx-index:${index};--fx-x:${8+(index%5)*21}%;--fx-y:${22+Math.floor(index/5)*27}%;--fx-delay:${(index%5)*-.24}s">${effectSymbol}</i>`).join("")}${tone==="date-overwhelmed"?'<b class="native-sweat-effect">💧</b>':""}</span>`:"";
+  const sceneIds=new Set([c.id,...partners.map(person=>person.id)]);
+  const configuredRelation=partner?Object.values(state.relationships||{}).find(relation=>
+    Array.isArray(relation.displayOrder)
+    &&relation.displayOrder.includes(c.id)
+    &&relation.displayOrder.includes(partner.id)
+  ):null;
+  const configuredOrder=Array.isArray(entry?.participantOrder)&&entry.participantOrder.length
+    ?entry.participantOrder
+    :Array.isArray(configuredRelation?.displayOrder)?configuredRelation.displayOrder:[];
+  const sceneParticipantIds=[...new Set([
+    ...configuredOrder.filter(id=>sceneIds.has(id)),
+    c.id,
+    ...partners.map(person=>person.id)
+  ])];
+  const sceneParticipants=sceneParticipantIds.map(id=>state.characters?.[id]).filter(Boolean);
+  const lineupHtml=companions.length?`<span class="native-scene-lineup" style="--scene-count:${sceneParticipants.length}" aria-label="${esc(sceneParticipants.map(person=>person.name).join(", "))}">${sceneParticipants.map((person,index)=>`<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index}">${avatar(person,"native-scene-lineup-avatar")}<small>${esc(person.name)}</small></span>`).join("")}</span>`:"";
   return {
     tone,
-    partner:companion,
+    partner:companions[0]||null,
+    partners:companions,
     pet,
-    companionHtml:companion?`<span class="native-scene-companion" aria-label="함께 있는 ${esc(companion.name)}">${avatar(companion,"native-scene-companion-avatar")}<small>${esc(companion.name)}</small></span>`:"",
+    lineupHtml,
+    companionHtml:"",
     petHtml:pet?`<span class="native-pet-orbit" aria-label="함께 노는 ${esc(pet.name)}"><span class="native-scene-pet">${petVisual}<small>${esc(pet.name)}</small></span></span>`:"",
     effects
   };
 }
 function importantEntry(entry){return /출근|수업|직장|데이트|병원|다툼|기상|공무|훈련/.test(entry.title)}
 const loggableEntry=entry=>entry?.title!=="자는 중"&&!/에서 자는 중$/.test(entry?.title||"");
+function preferredMomentEntry(previous,next){
+  if(!previous)return next;
+  const score=item=>{
+    const purpose=String(item?.datePurpose||"").trim();
+    const title=String(item?.title||"");
+    let value=0;
+    if(item?.dateGroup)value+=8;
+    if(item?.groupInteraction)value+=3;
+    if(purpose&&title.includes(purpose))value+=7;
+    if(/^.+?[과와] 데이트\s*·/.test(title))value+=4;
+    // 예전 공동 장면에서 기본 행동 뒤에 다른 제목을 계속 붙인 항목은
+    // 같은 분의 목적이 분명한 장면보다 우선하지 않는다.
+    value-=Math.max(0,title.split(" · ").length-2)*4;
+    return value;
+  };
+  return score(next)>=score(previous)?next:previous;
+}
+function uniqueDisplayedMoments(entries){
+  const byMinute=new Map();
+  [...entries].sort((a,b)=>Number(a.minute)-Number(b.minute)).forEach(item=>{
+    const minute=Number(item?.minute);
+    if(!Number.isFinite(minute))return;
+    byMinute.set(minute,preferredMomentEntry(byMinute.get(minute),item));
+  });
+  return [...byMinute.values()].sort((a,b)=>Number(a.minute)-Number(b.minute));
+}
 function dailyLogItems(entries,c){
   const seen=new Set();
   const canonicalDateGroup=x=>x?.dateGroup?String(x.dateGroup):"";
-  return entries.map(x=>{
+  return uniqueDisplayedMoments(entries).map(x=>{
     if(x.dateGroup){
       const groupKey=canonicalDateGroup(x);
       if(seen.has(groupKey))return"";seen.add(groupKey);
       const stepMap=new Map();
       entries.filter(step=>canonicalDateGroup(step)===groupKey).sort((a,b)=>a.minute-b.minute).forEach(step=>{
-        const key=`${step.minute}|${step.title}|${step.desc}`;
-        if(!stepMap.has(key))stepMap.set(key,step);
+        const key=Number(step.minute);
+        stepMap.set(key,preferredMomentEntry(stepMap.get(key),step));
       });
       const steps=[...stepMap.values()];
       const partner=state.characters[x.withId],title=partner?`${togetherText(partner.name)} 데이트`:`데이트 일정`;
       const purpose=x.datePurpose?` · ${x.datePurpose}`:"";
-      return `<li class="date-schedule" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><div class="date-schedule-title"><b>${esc(title+purpose)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^.+?와 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
+      return `<li class="date-schedule" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><div class="date-schedule-title"><b>${esc(title+purpose)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
     }
     return `<li class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
   }).join("");
@@ -273,12 +324,7 @@ function displayTimeline(c,current=eventFor(c)){
     const withoutSameMinute=entries.filter(item=>Number(item.minute)!==Number(current.minute));
     entries.splice(0,entries.length,...withoutSameMinute,current);
   }
-  const byMoment=new Map();
-  entries.sort((a,b)=>Number(a.minute)-Number(b.minute)).forEach(item=>{
-    const key=item.dateGroup?`date:${item.dateGroup}:${item.minute}`:`minute:${item.minute}`;
-    byMoment.set(key,item);
-  });
-  return compactDisplayedTimeline([...byMoment.values()]);
+  return compactDisplayedTimeline(uniqueDisplayedMoments(entries));
 }
 function dailyLog(c){
   const entries=displayTimeline(c);
@@ -366,7 +412,7 @@ function observe(){
   const activeItems=activeCatalogItems(e);
   const itemOrbit=activeItems.length?`<span class="native-active-item-orbits" aria-label="지금 사용 중인 취향 사전 항목">${activeItems.map((item,index)=>`<span class="native-active-item-orbit" style="--orbit-angle:${index*360/activeItems.length}deg;--orbit-delay:${index*-.72}s" title="${esc(item.name)}"><img src="${esc(item.image)}" alt="${esc(item.name)}"></span>`).join("")}</span>`:"";
   const presentation=nativeScenePresentation(c,e);
-  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone}" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time></div><button type="button" class="native-character-stage ${presentation.partner?"has-scene-companion":""} ${presentation.pet?"has-scene-pet":""}" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}</button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card"><div><b>오늘의 기록</b><span><button type="button" data-open-native-log>전체 로그</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
+  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone}" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time></div><button type="button" class="native-character-stage ${presentation.partner?"has-scene-companion":""} ${presentation.lineupHtml?"has-scene-lineup":""} ${presentation.pet?"has-scene-pet":""}" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}${presentation.lineupHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}</button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card"><div><b>오늘의 기록</b><span><button type="button" data-open-native-log>전체 로그</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
   return `${nativeHome}<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${currentImage?`<img class="place-photo" src="${esc(currentImage)}" alt="">`:""}</div></div>${dailyLog(c)}</aside></div></div>`;
 }
 const ROOM_SIZE_SPANS={
@@ -795,17 +841,17 @@ function character(){
   const reorderRows=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="mobile-character-reorder-row">${avatar(x)}<b>${esc(x.name)}</b><span><button type="button" data-sort="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""}>→</button></span></div>`}).join("");
   const themePalette=["#7C4DFF","#5B6FEF","#2F80ED","#2A9D8F","#176B60","#4F772D","#8A9A5B","#D4AF37","#E6B94A","#F2994A","#E07A5F","#C96B7B","#EA69A4","#FF97C7","#A855A8","#7A5C61","#8B6F47","#6B7280","#334155","#111827"];
   const palette=(field,label)=>`<div class="character-theme-palette"><b>${label}</b><div>${themePalette.map(color=>`<button type="button" data-theme-swatch="${field}" data-color-value="${color}" class="theme-swatch ${String(c.theme?.[field]||"").toUpperCase()===color?"on":""}" style="--swatch:${color}" aria-label="${label} ${color}"></button>`).join("")}</div><label class="theme-custom-color"><span>사용자 설정</span><input type="color" data-color="${field}" value="${esc(c.theme?.[field]||"#176b60")}"><input type="text" data-theme-hex="${field}" value="${esc(c.theme?.[field]||"#176b60")}" maxlength="7" spellcheck="false" aria-label="${label} HEX 값" placeholder="#010101"></label></div>`;
-  const managePane=`<section class="character-manage-pane" style="--own:${esc(c.theme?.primary||"#176b60")};--own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="traits-pane-heading"><h2>${esc(c.name)}의 사진·아이콘·테마·파일</h2><p>바꾸려는 항목을 눌러 사진, 지도용 아이콘, 화면 색과 내보내기 파일을 관리해요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img src="${esc(c.photo)}" alt="">`:avatar(c)}</span><div><h3>프로필 사진 설정</h3><p>프로필과 캐릭터 카드에 보일 사진이에요.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button></div></div></section><section><span>${avatar(c)}</span><div><h3>지도 아이콘 설정</h3><p>홈·마을·관계도에서 보일 투명 아이콘이에요.</p><div class="image-actions"><button type="button" data-image="icon">아이콘 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">아이콘 링크</button></div></div></section><section class="character-manage-theme"><h3>테마색 설정</h3><p>버튼 색을 고르거나 색상 선택기와 HEX 값으로 직접 입력할 수 있어요.</p>${palette("primary","대표 테마색")}${palette("secondary","그라데이션 보조색")}<label class="check"><input type="checkbox" data-gradient ${c.theme?.gradient?"checked":""}> 보조색으로 그라데이션 사용</label></section><section class="character-manage-files"><h3>파일 관리</h3><p>이 캐릭터만 내보내거나 삭제할 수 있어요.</p><button type="button" data-export-profile>프로필 내보내기</button><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
+  const managePane=`<section class="character-manage-pane" style="--own:${esc(c.theme?.primary||"#176b60")};--own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="traits-pane-heading"><h2>${esc(c.name)}의 사진·아이콘·테마·파일</h2><p>바꾸려는 항목을 눌러 사진, 지도용 아이콘과 화면 색을 관리해요. 프로필 내보내기는 캐릭터 메인 화면에서 바로 할 수 있어요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img src="${esc(c.photo)}" alt="">`:avatar(c)}</span><div><h3>프로필 사진 설정</h3><p>프로필과 캐릭터 카드에 보일 사진이에요.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button></div></div></section><section><span>${avatar(c)}</span><div><h3>지도 아이콘 설정</h3><p>홈·마을·관계도에서 보일 투명 아이콘이에요.</p><div class="image-actions"><button type="button" data-image="icon">아이콘 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">아이콘 링크</button></div></div></section><section class="character-manage-theme"><h3>테마색 설정</h3><p>버튼 색을 고르거나 색상 선택기와 HEX 값으로 직접 입력할 수 있어요.</p>${palette("primary","대표 테마색")}${palette("secondary","그라데이션 보조색")}<label class="check"><input type="checkbox" data-gradient ${c.theme?.gradient?"checked":""}> 보조색으로 그라데이션 사용</label></section><section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
   return `<div class="editor character-editor">
     <aside class="panel desktop-character-list"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside>
     <section class="panel form">
       <section class="mobile-character-dashboard">
         <div class="mobile-character-top"><div class="mobile-character-strip">${mobileStrip}</div><div><button type="button" data-new ${state.order.length>=limit?"disabled":""}>＋</button><button type="button" data-open-character-reorder>위치 바꾸기</button></div></div>
-        <div class="mobile-character-heading">${avatar(c)}<span><small>CHARACTER SETTING</small><h1>${esc(c.name)}</h1><p>편집할 항목을 선택하세요.</p></span></div>
+        <div class="mobile-character-heading">${avatar(c)}<span><small>CHARACTER SETTING</small><h1>${esc(c.name)}</h1><p>편집할 항목을 선택하세요.</p></span><button type="button" class="mobile-character-export" data-export-profile>프로필 내보내기</button></div>
         <div class="mobile-character-pane-grid">${paneButtons}</div>
       </section>
-      <section class="desktop-character-editor"><div class="character-menu">${Object.entries(paneMeta).map(([key,[label]])=>`<button data-character-pane="${key}" class="${state.characterPane===key?"on":""}">${label}</button>`).join("")}</div>${pane}<div class="form-actions"><button class="primary" data-save>캐릭터 저장</button></div></section>
+      <section class="desktop-character-editor"><div class="character-menu">${Object.entries(paneMeta).map(([key,[label]])=>`<button data-character-pane="${key}" class="${state.characterPane===key?"on":""}">${label}</button>`).join("")}<button type="button" data-export-profile>프로필 내보내기</button></div>${pane}<div class="form-actions"><button class="primary" data-save>캐릭터 저장</button></div></section>
       <dialog class="mobile-character-editor-dialog" data-mobile-character-editor-dialog="${state.characterPane}"><div class="mobile-character-editor-shell"><div class="mobile-editor-head"><span>${avatar(c)}<small>${paneMeta[state.characterPane]?.[0]||"프로필"}</small><b>${esc(c.name)}</b></span><button type="button" data-close-mobile-character-editor aria-label="편집을 저장하고 닫기">×</button></div><div class="mobile-character-editor-body">${pane}</div><div class="mobile-character-editor-actions"><button type="button" class="primary" data-save-mobile-character-editor>편집 완료·저장</button></div></div></dialog>
       <dialog class="mobile-character-reorder-dialog" data-mobile-character-reorder-dialog><form method="dialog"><div class="mobile-editor-head"><span><small>CHARACTER ORDER</small><b>캐릭터 위치 바꾸기</b></span><button value="close">×</button></div><p>화살표를 눌러 홈과 캐릭터 목록의 순서를 바꿔요.</p><div>${reorderRows}</div><button class="primary" value="close">완료</button></form></dialog>
     </section>
@@ -825,7 +871,8 @@ function catalog(){
       const custom=item.category&&!categories.includes(item.category)?[item.category]:[];
       const subgenres=kind==="movie"?(VIDEO_GENRES[item.category]||[]):kind==="perfume"?PERFUME_NOTES:kind==="weapon"?(WEAPON_SUBTYPES[item.category]||[]):(DETAIL_OPTIONS[kind]||[]);
       const detailEditor=kind==="perfume"?`<div class="chips"><b>향 계열 키워드 · 여러 개 선택 가능</b>${PERFUME_NOTES.map(x=>`<button data-catalog-keyword="${item.id}" data-kind="${kind}" data-value="${x}" class="${(item.keywords||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div>`:`<label>세부 항목<select data-catalog-field="subtype" data-kind="${kind}" data-item="${item.id}"><option value="">세부 항목 선택</option>${subgenres.map(x=>`<option ${x===item.subtype?"selected":""}>${esc(x)}</option>`).join("")}</select></label>`;
-      return `<details class="catalog-dex-card"><summary>${item.image?`<img class="catalog-app-icon" src="${esc(item.image)}" alt="">`:`<span class="catalog-app-icon">${CATALOG_ICONS[kind]||"📦"}</span>`}<b>${esc(item.name)}</b><small>${esc(item.category||label)}${item.subtype?` · ${esc(item.subtype)}`:""}</small></summary><div class="catalog-detail"><label>이름<input data-catalog-field="name" data-kind="${kind}" data-item="${item.id}" value="${esc(item.name)}"></label><label>분류<select data-catalog-field="category" data-kind="${kind}" data-item="${item.id}"><option value="">분류 선택</option>${[...custom,...categories].map(x=>`<option ${x===item.category?"selected":""}>${esc(x)}</option>`).join("")}</select></label>${detailEditor}<label class="catalog-illustration-field">이미지 링크<input data-catalog-field="image" data-kind="${kind}" data-item="${item.id}" value="${esc(item.image||"")}" placeholder="https://..."><button type="button" class="catalog-illustration-picker" data-catalog-image="${item.id}" data-kind="${kind}">${item.image?`<img src="${esc(item.image)}" alt=""><span>일러스트 바꾸기</span>`:`<span class="catalog-illustration-placeholder">＋</span><span>일러스트 고르기</span>`}<small>원본 비율과 투명 배경을 유지해요</small></button></label>${kind==="food"?`<label>맵기<select data-catalog-field="spicy" data-kind="${kind}" data-item="${item.id}">${levelOptions(SPICE_LEVELS,item.spicy??0)}</select></label><label>달기<select data-catalog-field="sweet" data-kind="${kind}" data-item="${item.id}">${levelOptions(SWEET_LEVELS,item.sweet??0)}</select></label>`:""}${["music","idol","book","movie","game"].includes(kind)?`<label>아티스트·제작자<input data-catalog-field="creator" data-kind="${kind}" data-item="${item.id}" value="${esc(item.creator||"")}"></label>`:""}<button class="danger" data-delete-catalog="${item.id}" data-kind="${kind}">항목 삭제</button></div></details>`;
+      const imageClass=/^(?:data:|blob:|https?:)/i.test(item.image||"")?"catalog-user-photo":"catalog-app-art";
+      return `<details class="catalog-dex-card"><summary>${item.image?`<img class="catalog-app-icon ${imageClass}" src="${esc(item.image)}" alt="">`:`<span class="catalog-app-icon">${CATALOG_ICONS[kind]||"📦"}</span>`}<b>${esc(item.name)}</b><small>${esc(item.category||label)}${item.subtype?` · ${esc(item.subtype)}`:""}</small></summary><div class="catalog-detail"><label>이름<input data-catalog-field="name" data-kind="${kind}" data-item="${item.id}" value="${esc(item.name)}"></label><label>분류<select data-catalog-field="category" data-kind="${kind}" data-item="${item.id}"><option value="">분류 선택</option>${[...custom,...categories].map(x=>`<option ${x===item.category?"selected":""}>${esc(x)}</option>`).join("")}</select></label>${detailEditor}<label class="catalog-illustration-field">이미지 링크<input data-catalog-field="image" data-kind="${kind}" data-item="${item.id}" value="${esc(item.image||"")}" placeholder="https://..."><button type="button" class="catalog-illustration-picker" data-catalog-image="${item.id}" data-kind="${kind}">${item.image?`<img src="${esc(item.image)}" alt=""><span>일러스트 바꾸기</span>`:`<span class="catalog-illustration-placeholder">＋</span><span>일러스트 고르기</span>`}<small>원본 비율과 투명 배경을 유지해요</small></button></label>${kind==="food"?`<label>맵기<select data-catalog-field="spicy" data-kind="${kind}" data-item="${item.id}">${levelOptions(SPICE_LEVELS,item.spicy??0)}</select></label><label>달기<select data-catalog-field="sweet" data-kind="${kind}" data-item="${item.id}">${levelOptions(SWEET_LEVELS,item.sweet??0)}</select></label>`:""}${["music","idol","book","movie","game"].includes(kind)?`<label>아티스트·제작자<input data-catalog-field="creator" data-kind="${kind}" data-item="${item.id}" value="${esc(item.creator||"")}"></label>`:""}<button class="danger" data-delete-catalog="${item.id}" data-kind="${kind}">항목 삭제</button></div></details>`;
     }).join("")||"<p>아직 등록된 항목이 없어요.</p>";
     return `<section class="catalog-kind catalog-section"><div class="title"><h2>${label}</h2><button data-add-catalog="${kind}">+ 추가</button></div><div class="catalog-dex-grid">${cards}</div></section>`;
   }).join("");
@@ -970,9 +1017,17 @@ function relationshipReality(a,b,official=[]){
   return official.length?"관계에 맞춰 지내는 사이":"서로를 알아가는 중";
 }
 function relationshipMap(relations){
-  const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
+  let characters=state.order.map(id=>state.characters[id]).filter(Boolean);
   if(characters.length<2)return"";
+  if(characters.length===2){
+    const ids=characters.map(character=>character.id);
+    const orderedRelation=relations.find(relation=>Array.isArray(relation.displayOrder)
+      &&relation.displayOrder.length===2
+      &&relation.displayOrder.every(id=>ids.includes(id)));
+    if(orderedRelation)characters=orderedRelation.displayOrder.map(id=>state.characters[id]).filter(Boolean);
+  }
   const positions=new Map(characters.map((character,index)=>{
+    if(characters.length===2)return [character.id,{x:index===0?235:765,y:500}];
     const angle=(Math.PI*2*index/characters.length)-Math.PI/2;
     return [character.id,{x:500+400*Math.cos(angle),y:500+400*Math.sin(angle)}];
   }));
@@ -980,7 +1035,7 @@ function relationshipMap(relations){
     const text=String(value||"");
     if(/없어서는 안 될|깊이 사랑|사랑함|애틋|강한 사랑/.test(text))return"#EA69A4";
     if(/연애 감정|연심|끌림|싹틈|약한 사랑/.test(text))return"#FF97C7";
-    if(/친구로 좋아|인간적인 호감|소중하게|친근|우호/.test(text))return"#3f83c7";
+    if(/친구로 좋아|인간적인 호감|소중하게|친근|우호/.test(text))return"#4AA3DF";
     if(/싫|혐오|원수|증오/.test(text))return"#a83f3f";
     if(/경계|의심|불편|귀찮/.test(text))return"#c27a2c";
     if(/두려|무서|겁/.test(text))return"#7b5bb5";
@@ -1020,7 +1075,7 @@ function relationshipMap(relations){
     const a=positions.get(edge.a),b=positions.get(edge.b);
     const forwardLabel=viewLabel(edge.a,edge.b),backwardLabel=viewLabel(edge.b,edge.a);
     const forwardColor=emotionColor(forwardLabel),backwardColor=emotionColor(backwardLabel);
-    const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),unitX=dx/length,unitY=dy/length,normalX=-unitY,normalY=unitX,nodeRadius=64,lane=12;
+    const dx=b.x-a.x,dy=b.y-a.y,length=Math.max(1,Math.hypot(dx,dy)),unitX=dx/length,unitY=dy/length,normalX=-unitY,normalY=unitX,nodeRadius=characters.length===2?86:64,lane=12;
     const startA={x:a.x+unitX*nodeRadius+normalX*lane,y:a.y+unitY*nodeRadius+normalY*lane},endB={x:b.x-unitX*nodeRadius+normalX*lane,y:b.y-unitY*nodeRadius+normalY*lane};
     const startB={x:b.x-unitX*nodeRadius-normalX*lane,y:b.y-unitY*nodeRadius-normalY*lane},endA={x:a.x+unitX*nodeRadius-normalX*lane,y:a.y+unitY*nodeRadius-normalY*lane};
     const arrowLength=11,arrowHalfWidth=5,minimumArrowLength=185,availableLength=Math.max(0,length-(nodeRadius*2)),curved=availableLength<minimumArrowLength;
@@ -1047,7 +1102,8 @@ function relationshipMap(relations){
     const officialMarkup=`<g class="map-official"><rect x="${officialPoint.x-boxWidth/2}" y="${officialPoint.y-24}" width="${boxWidth}" height="48" rx="12"/><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-5}" text-anchor="middle">${esc(relationText||"이방인")}</text><text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+14}" text-anchor="middle">${esc(stageText)}</text></g>`;
     return `<g class="relationship-edge"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/>${hearts}${officialMarkup}</g>`;
   }).join("");
-  const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-55}" y="${pos.y-55}" width="110" height="110"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
+  const mapNodeSize=characters.length===2?170:110;
+  const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-mapNodeSize/2}" y="${pos.y-mapNodeSize/2}" width="${mapNodeSize}" height="${mapNodeSize}"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node ${characters.length===2?"map-node-pair":""}">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
   return `<section class="relationship-map"><div class="relationship-map-scroll"><div class="relationship-map-canvas"><svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div></div></section>`;
 }
 function relationship(){
@@ -1056,7 +1112,10 @@ function relationship(){
   const cards=all.map(r=>{
     if(r.groupId){
       if(shownGroups.has(r.groupId))return"";shownGroups.add(r.groupId);
-      const group=all.filter(x=>x.groupId===r.groupId),members=[...new Set(group.flatMap(x=>[x.a,x.b]))].map(id=>state.characters[id]).filter(Boolean);
+      const group=all.filter(x=>x.groupId===r.groupId);
+      const memberIds=[...new Set(group.flatMap(x=>[x.a,x.b]))];
+      const orderedIds=Array.isArray(r.displayOrder)&&r.displayOrder.length===memberIds.length&&r.displayOrder.every(id=>memberIds.includes(id))?r.displayOrder:memberIds;
+      const members=orderedIds.map(id=>state.characters[id]).filter(Boolean);
       const direction=r.type==="짝사랑"?`${[...new Set(group.map(x=>state.characters[x.admirerId||x.a]?.name).filter(Boolean))].map(esc).join(" · ")} → ${[...new Set(group.map(x=>state.characters[x.targetId||x.b]?.name).filter(Boolean))].map(esc).join(" · ")}`:r.type==="부모·자녀"?`${[...new Set(group.map(x=>`${state.characters[x.parentId||x.a]?.name||"부모"}(${x.parentRole||"부모"})`))].map(esc).join(" · ")} → ${[...new Set(group.map(x=>state.characters[x.childId||x.b]?.name).filter(Boolean))].map(esc).join(" · ")}`:members.map(member=>esc(member.name)).join(" · ");
       return `<article class="relation group-relation"><div class="relation-avatars">${members.map(member=>avatar(member)).join("")}</div><h2>${direction}</h2><p>${esc(displayType(r))} · ${members.length}명이 함께 맺은 관계</p><p class="relation-stage">${r.temporalStatus==="past"?"과거 관계 · ":""}${esc(r.stage||"편안한 사이")}</p>${r.temporalStatus==="past"&&r.faultReason&&r.faultReason!=="정하지 않음"?`<p class="relation-fault">관계가 끝난 이유 · ${esc(r.faultReason)}</p>`:""}${relationActivities(r)}<div class="relation-actions"><button data-edit-rel="${r.id}">구성원·관계 편집</button><button class="danger" data-delete-group="${r.groupId}">그룹 관계 삭제</button></div></article>`;
     }
@@ -1082,7 +1141,11 @@ function fontSettings(){
   const options=[["system","기기 기본 글꼴 · 가장 익숙하고 선명함"],["noto","Noto Sans KR · 단정한 고딕"],["kopub","KoPub 돋움 · 출판물처럼 또렷함"],["cafe24slim","Cafe24 PRO SLIM · 날렵한 고딕"],["changwonround","창원단감둥근체 · 부드럽고 편안함"],["konkon","온글잎 콘콘체 · 동글동글한 손글씨"],["gowun","고운돋움 · 부드러운 고딕"],["myeongjo","나눔명조 · 책처럼 차분함"],["dohyeon","배민 도현체 · 기존 디자인"]];
   return `<section class="setting-card font-setting-card"><h2>화면 글꼴</h2><p>본문, 버튼과 생활 로그에 적용됩니다. 읽기 편한 글꼴을 골라 보세요.</p><label>사용할 글꼴<select data-setting="uiFont">${options.map(([value,label])=>`<option value="${value}" ${state.uiFont===value?"selected":""}>${label}</option>`).join("")}</select></label><div class="font-preview"><b>서랍마을의 오늘</b><span>캐릭터들이 각자의 하루를 보내고 있어요. 긴 생활 로그도 편안하게 읽어 보세요.</span></div></section>`;
 }
-function settings(){return `<section class="panel form settings-shell"><h1>설정</h1>${fontSettings()}<section class="setting-card"><h2>마을 지도 표시</h2><label>건물 표기 방식<select data-setting="buildingLabelMode"><option value="full" ${state.buildingLabelMode==="full"?"selected":""}>이름과 건물 유형 표시</option><option value="name" ${state.buildingLabelMode==="name"?"selected":""}>이름만 표시</option><option value="none" ${state.buildingLabelMode==="none"?"selected":""}>아무 글자도 표시하지 않기</option></select></label><label>지도 위 캐릭터 표기<select data-setting="mapCharacterLabelMode"><option value="none" ${state.mapCharacterLabelMode==="none"?"selected":""}>캐릭터 아이콘만 표시</option><option value="name" ${state.mapCharacterLabelMode==="name"?"selected":""}>아이콘 아래 이름 표시</option></select></label><small>같은 건물에 있는 캐릭터는 지도에서 한 묶음으로 표시됩니다.</small></section><section class="sync-panel"><h2>Google 계정과 데이터</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div><small>동기화와 불러오기는 필요할 때만 설정에서 사용해요.</small></section><section class="setting-card"><h2>브라우저 백업 파일</h2><p>Firebase가 막혀도 현재 데이터와 사진을 파일 하나로 보관할 수 있어요.</p><div class="sync-actions"><button data-export-file>백업 파일 내보내기</button><button data-import-file>백업 파일 불러오기</button></div></section><section class="setting-card feedback-card"><h2>개발자에게 피드백 보내기</h2><p>사이트 안에서 작성해 보내면 개발자 이메일로 전달돼요.</p><form data-feedback-form><fieldset><legend>어떤 내용인가요?</legend><div class="feedback-category-grid">${["기능 제안","오류 신고","좋았던 점","생활 장면 제안","기타"].map((value,index)=>`<label><input type="radio" name="category" value="${value}" ${index===0?"checked":""}><span>${value}</span></label>`).join("")}</div></fieldset><label>내용<textarea name="message" maxlength="3000" rows="7" required placeholder="어떤 화면에서 무엇이 좋았거나 불편했는지 적어 주세요."></textarea></label><button class="primary" type="submit">피드백 보내기</button><small class="feedback-status" aria-live="polite"></small></form></section><section class="setting-card"><h2>페이지 안내</h2><p>각 페이지를 처음 열었을 때 나오는 안내를 다시 볼 수 있어요.</p><button data-guide-reset>모든 페이지 안내 다시 보기</button></section><button data-reset>모든 데이터 초기화</button></section>`}
+function settingsContent(){return `<section class="panel form settings-shell"><h1>설정</h1>${fontSettings()}<section class="setting-card"><h2>마을 지도 표시</h2><label>건물 표기 방식<select data-setting="buildingLabelMode"><option value="full" ${state.buildingLabelMode==="full"?"selected":""}>이름과 건물 유형 표시</option><option value="name" ${state.buildingLabelMode==="name"?"selected":""}>이름만 표시</option><option value="none" ${state.buildingLabelMode==="none"?"selected":""}>아무 글자도 표시하지 않기</option></select></label><label>지도 위 캐릭터 표기<select data-setting="mapCharacterLabelMode"><option value="none" ${state.mapCharacterLabelMode==="none"?"selected":""}>캐릭터 아이콘만 표시</option><option value="name" ${state.mapCharacterLabelMode==="name"?"selected":""}>아이콘 아래 이름 표시</option></select></label><small>같은 건물에 있는 캐릭터는 지도에서 한 묶음으로 표시됩니다.</small></section><section class="sync-panel"><h2>Google 계정과 데이터</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div><small>동기화와 불러오기는 필요할 때만 설정에서 사용해요.</small></section><section class="setting-card"><h2>브라우저 백업 파일</h2><p>Firebase가 막혀도 현재 데이터와 사진을 파일 하나로 보관할 수 있어요.</p><div class="sync-actions"><button data-export-file>백업 파일 내보내기</button><button data-import-file>백업 파일 불러오기</button></div></section><section class="setting-card feedback-card"><h2>개발자에게 피드백 보내기</h2><p>사이트 안에서 작성해 보내면 개발자 이메일로 전달돼요.</p><form data-feedback-form><fieldset><legend>어떤 내용인가요?</legend><div class="feedback-category-grid">${["기능 제안","오류 신고","좋았던 점","생활 장면 제안","기타"].map((value,index)=>`<label><input type="radio" name="category" value="${value}" ${index===0?"checked":""}><span>${value}</span></label>`).join("")}</div></fieldset><label>내용<textarea name="message" maxlength="3000" rows="7" required placeholder="어떤 화면에서 무엇이 좋았거나 불편했는지 적어 주세요."></textarea></label><button class="primary" type="submit">피드백 보내기</button><small class="feedback-status" aria-live="polite"></small></form></section><section class="setting-card"><h2>페이지 안내</h2><p>각 페이지를 처음 열었을 때 나오는 안내를 다시 볼 수 있어요.</p><button data-guide-reset>모든 페이지 안내 다시 보기</button></section><button data-reset>모든 데이터 초기화</button></section>`}
+function businessInformationFooter(){
+  return `<footer class="settings-business-footer" aria-label="사업자 및 정책 정보"><b>까륵</b><p>사업자등록번호 : 540-17-02654 <i></i> 대표 : 김세은<br>호스팅서비스 : Cloudflare, Inc. <i></i> 통신판매업 신고번호 : 신고 진행 중 <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=5401702654" target="_blank" rel="noopener">사업자정보확인</a><br>고객센터 : <a href="tel:01076630610">010-7663-0610</a> <i></i> 이메일 : <a href="mailto:kkyaareuk@gmail.com">kkyaareuk@gmail.com</a><br>사업장 주소 : 서울특별시 양천구 신정중앙로 68, 403-133호</p><nav aria-label="정책 문서"><a href="./privacy.html">개인정보처리방침</a><a href="./terms.html">서비스 이용약관</a><a href="https://pages.tosspayments.com/terms/user" target="_blank" rel="noopener">토스페이먼츠 이용약관</a></nav></footer>`;
+}
+function settings(){return settingsContent().replace(/<\/section>$/,`${businessInformationFooter()}</section>`)}
 function townPlaceEditor(p,items,audiences,selected){
   return `<details class="${selected?"mobile-selected":""}" ${selected?"open":""}><summary><b>${esc(p.emoji)} ${esc(p.name)}</b></summary><div class="place-edit-heading"><span><b>${esc(p.name)} 편집</b><small>유형을 먼저 고르면 어울리는 건물 모양을 추천해요.</small></span><button class="danger" data-delete-place="${p.id}">이 건물 삭제</button></div><div class="place-config"><label>건물 이름<input data-place-field="name" data-place-id="${p.id}" value="${esc(p.name)}"></label><label>건물 유형<select data-place-field="type" data-place-id="${p.id}">${placeTypeOptions(p)}</select></label><label>세부 유형<select data-place-field="subtype" data-place-id="${p.id}">${placeSubtypeOptions(p)}</select></label><label>가격대<select data-place-field="priceRange" data-place-id="${p.id}">${["저렴","보통","고급","명품"].map(x=>`<option ${p.priceRange===x?"selected":""}>${x}</option>`).join("")}</select></label><label>마을 속 건물 크기<input type="range" min=".45" max="1.5" step=".05" data-place-field="imageScale" data-place-id="${p.id}" value="${p.imageScale||1}"></label><label>매운맛 정도<select data-place-field="spicy" data-place-id="${p.id}">${levelOptions(SPICE_LEVELS,p.spicy||0)}</select></label><label>단맛 정도<select data-place-field="sweet" data-place-id="${p.id}">${levelOptions(SWEET_LEVELS,p.sweet||0)}</select></label></div><div class="place-photo-tools"><b>지도에 표시할 건물 모양</b><span><button data-building-shape-open="${p.id}">건물 모양 선택</button></span><b>생활 로그·현재 장면용 내부 사진</b><span><button data-place-interior-image="${p.id}">내부 사진 업로드</button><button data-image-url="placeInterior" data-id="${p.id}">링크</button>${p.interiorImage?`<button data-clear-place-interior-image="${p.id}">지우기</button>`:""}</span></div><h4>주요 이용층</h4><div class="stock-picker">${audiences.map(x=>`<button data-place-audience="${p.id}" data-value="${x}" class="${(p.audiences||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div><h4>이곳에서 파는 것·이용할 수 있는 것</h4><div class="stock-list stock-picker">${items.map(item=>`<button data-place-stock="${p.id}" data-item-id="${item.id}" class="${(p.stock||[]).includes(item.id)?"on":""}">${CATALOG_LABELS[item.kind]} · ${esc(item.name)}</button>`).join("")}</div></details>`;
 }
