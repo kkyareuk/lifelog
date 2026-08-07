@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807w";
-import {eventFor} from "./simulation.js?v=20260807w";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807w";
-import {recordCharacterInteraction} from "./state.js?v=20260807w";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808a";
+import {eventFor} from "./simulation.js?v=20260808a";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808a";
+import {recordCharacterInteraction} from "./state.js?v=20260808a";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -771,7 +771,17 @@ async function explicitSave(label="저장 완료"){
 
 function bind(){
   $$("[data-tab]").forEach(el=>el.onclick=()=>navigateToTab(el.dataset.tab));
-  $("[data-open-native-log]")?.addEventListener("click",()=>document.querySelector("[data-native-log-dialog]")?.showModal());
+  const openNativeLog=()=>document.querySelector("[data-native-log-dialog]")?.showModal();
+  $("[data-open-native-log-card]")?.addEventListener("click",event=>{
+    if(event.target.closest("[data-tab]"))return;
+    openNativeLog();
+  });
+  $("[data-open-native-log-card]")?.addEventListener("keydown",event=>{
+    if(event.key!=="Enter"&&event.key!==" ")return;
+    if(event.target.closest("button")&&event.target!==event.currentTarget)return;
+    event.preventDefault();
+    openNativeLog();
+  });
   $("[data-refresh-observe]")?.addEventListener("click",event=>{
     event.stopPropagation();
     render();
@@ -2214,13 +2224,13 @@ function showPhotoBackupNotice(){
 }
 requestAnimationFrame(showPhotoBackupNotice);
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807w").catch(error=>{
+  import("./auth.js?v=20260808a").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807w",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260808a",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

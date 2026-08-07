@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807w";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808a";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1924,7 +1924,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260807w";
+const ENGINE_VERSION="20260808a";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1964,6 +1964,25 @@ function cleanSameMinuteEntries(entries){
     if(!previous||item.groupInteraction||!previous.groupInteraction)byMinute.set(moment,{...item,time:clock(minute)});
   });
   return [...byMinute.values()].sort((a,b)=>a.minute-b.minute);
+}
+function cleanShadowedBaseEntries(entries){
+  const kept=[];
+  const sameLocation=(a,b)=>Boolean(a&&b&&
+    (a.visitHomeId||a.homeId||"")===(b.visitHomeId||b.homeId||"")&&
+    (a.placeId||"")===(b.placeId||"")&&
+    (a.room||"")===(b.room||""));
+  [...entries].sort((a,b)=>Number(a.minute)-Number(b.minute)).forEach(item=>{
+    const previous=kept.at(-1);
+    const shadowsPrevious=Boolean(previous&&item?.groupInteraction&&
+      Number(item.minute)>=Number(previous.minute)&&
+      Number(item.minute)-Number(previous.minute)<=10&&
+      sameLocation(previous,item)&&
+      (String(item.baseTitle||"")===String(previous.title||"")||
+        String(item.title||"").split(" · ").includes(String(previous.title||""))));
+    if(shadowsPrevious)kept.pop();
+    kept.push(item);
+  });
+  return kept;
 }
 function cleanInvalidRoomAndHobbyEntries(c,entries){
   const interests=[...(c.hobbies||[]),...(c.interests||[])].map(String);
@@ -2035,7 +2054,7 @@ export function timeline(c,date=new Date()){
   const old=c.days[key];
   if(old&&Array.isArray(old.entries)){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    const cleaned=cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanSameMinuteEntries(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))));
+    const cleaned=cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries)))))));
     if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
   }
   const today=key===dayKey(new Date());
@@ -2072,7 +2091,17 @@ function commitLiveEntry(c,date,item){
   // 한 사건이 일반 로그와 공동 로그로 두 번 보인다. 한 캐릭터에게 한 시각의 현재
   // 사건은 하나뿐이므로 공동 장면이 그 시각의 기존 항목을 완전히 치환한다.
   if(item.groupInteraction){
-    const withoutSameMoment=entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item));
+    const withoutSameMoment=entries.filter(entry=>{
+      if(entryMomentKey(entry)===entryMomentKey(item))return false;
+      const sameLocation=(entry.visitHomeId||entry.homeId||"")===(item.visitHomeId||item.homeId||"")&&
+        (entry.placeId||"")===(item.placeId||"")&&
+        (entry.room||"")===(item.room||"");
+      const shadowedBase=Number(item.minute)>=Number(entry.minute)&&
+        Number(item.minute)-Number(entry.minute)<=10&&sameLocation&&
+        (String(item.baseTitle||"")===String(entry.title||"")||
+          String(item.title||"").split(" · ").includes(String(entry.title||"")));
+      return !shadowedBase;
+    });
     day.entries=mergeImmutableEntries(withoutSameMoment,[item]);
     save(false,false);
     return item;
@@ -2267,19 +2296,35 @@ function viewDrivenInteraction(place,first,second,date){
     ],1)
   };}
   if(annoyed){
-    const firstTitle=`${togetherWith(second.name)} 티격태격하면서도 함께 있는 중`;
-    const secondTitle=`${togetherWith(first.name)} 티격태격하면서도 함께 있는 중`;
+    const placeType=String(place?.type||place?.name||"");
+    const scenePool=/주방/.test(placeType)?[
+      {title:"찻잔을 둘 자리를 놓고 툭툭 받아치는 중",first:"찻잔을 조리대 끝에 두지 말라고 짚은 뒤 자리를 직접 비웠어요.",second:"그 정도는 바로 치울 수 있다며 받아치고 찻잔을 물기 없는 쪽으로 옮겼어요."},
+      {title:"간식 접시를 누가 치울지 짧게 말씨름하는 중",first:"방금 먹은 사람이 치우는 게 맞다고 말하며 빈 포장부터 한데 모았어요.",second:"준비한 사람이 따로 있지 않냐고 맞받아치면서도 접시는 싱크대로 가져갔어요."}
+    ]:/카페|음식점/.test(placeType)?[
+      {title:"메뉴 고르는 순서를 두고 툭툭 받아치는 중",first:"계속 페이지를 되돌리지 말고 후보부터 줄이자고 말하며 메뉴 두 개를 짚었어요.",second:"서두르면 꼭 후회한다며 받아치고, 대신 그중 하나는 바로 제외했어요."},
+      {title:"마지막 한입을 누가 먹을지 실랑이하는 중",first:"처음부터 먹고 싶었다면 진작 말했어야 한다며 접시를 가운데로 밀었어요.",second:"혼자 다 먹을 생각은 아니었다고 받아치며 정확히 반으로 나눴어요."}
+    ]:/공원|산책/.test(placeType)?[
+      {title:"산책 방향을 두고 짧게 말씨름하는 중",first:"방금 지나온 길로 되돌아가기는 싫다며 표지판의 다른 길을 가리켰어요.",second:"그 길이 더 멀다고 바로 받아쳤지만, 지도를 다시 보고 우회로를 하나 골랐어요."},
+      {title:"벤치 자리를 고르며 서로 한마디씩 보태는 중",first:"햇빛이 정면으로 드는 자리는 피하자며 그늘 쪽 빈자리를 먼저 확인했어요.",second:"바람은 반대쪽이 낫다고 맞받아치고 둘 다 덜 불편한 가운데 자리에 앉았어요."}
+    ]:[
+      {title:"물건을 둘 자리를 놓고 툭툭 받아치는 중",first:"사용한 물건은 찾기 쉬운 자리에 돌려놓자고 말하며 빈 공간을 가리켰어요.",second:"자기 방식도 나름의 순서가 있다고 받아치면서도 통로를 막던 물건은 옮겼어요."},
+      {title:"다음 순서를 정하며 짧게 의견을 주고받는 중",first:"한꺼번에 바꾸지 말고 급한 일부터 하자며 순서를 세 가지로 줄였어요.",second:"자기 차례를 마음대로 정하지 말라고 받아친 뒤 두 번째 순서에는 동의했어요."},
+      {title:"설명에서 빠진 부분을 두고 한마디씩 보태는 중",first:"중간 과정이 빠졌다며 정확히 어느 부분부터 다시 말해야 하는지 짚었어요.",second:"그 정도는 알아들을 줄 알았다고 받아치고 빠진 설명을 짧게 덧붙였어요."}
+    ];
+    const chosen=pick(scenePool,3);
+    const firstTitle=`${togetherWith(second.name)} ${chosen.title}`;
+    const secondTitle=`${togetherWith(first.name)} ${chosen.title}`;
     return {
     title:firstTitle,firstTitle,secondTitle,
     first:pick([
-      `${second.name}의 말에 짧게 받아치고 한숨을 쉬었어요.${/연애 감정|사랑|좋아함/.test(firstCombined)?" 그래도 필요한 것은 슬쩍 챙겨 두었어요.":""}`,
-      `${second.name}이 성가시다는 표정을 숨기지 않았지만 대화가 끝날 때까지 자리를 지켰어요.`,
-      `${second.name}에게 툴툴거리면서도 해야 할 일은 정확히 알려 줬어요.`
+      `${subject(second.name)} 먼저 말을 꺼내자 ${chosen.first}${/연애 감정|사랑|좋아함/.test(firstCombined)?" 말투는 퉁명스러웠지만 상대가 곤란해질 부분은 따로 챙겼어요.":""}`,
+      `${chosen.first} ${second.name}의 대답이 마음에 들지는 않았지만 무엇을 바꾸길 원하는지는 분명히 말했어요.`,
+      `${subject(second.name)} 자기 방식을 고집하자 한숨을 삼키고 ${chosen.first}`
     ]),
     second:pick([
-      `${first.name}의 퉁명스러운 반응에 농담으로 맞받아쳤어요.${/연애 감정|사랑|좋아함/.test(secondCombined)?" 싫어서가 아니라는 것을 알아 자리를 피하지 않았어요.":""}`,
-      `${first.name}이 귀찮아하는 기색을 보고 한발 물러났지만 필요한 말은 끝까지 전했어요.`,
-      `${first.name}의 짧은 대답에 눈을 굴린 뒤 다른 방식으로 말을 걸었어요.`
+      `${subject(first.name)} 퉁명스럽게 짚자 ${chosen.second}${/연애 감정|사랑|좋아함/.test(secondCombined)?" 투덜거리면서도 상대가 신경 쓰던 부분은 그대로 두지 않았어요.":""}`,
+      `${chosen.second} 말끝은 날카로웠지만 할 일을 미루거나 자리를 떠나지는 않았어요.`,
+      `${first.name}의 짧은 지적에 눈을 굴린 뒤 ${chosen.second}`
     ],1)
   };}
   return null;

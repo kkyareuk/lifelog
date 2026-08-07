@@ -17,6 +17,11 @@ html[data-ui-font="konkon"]{--ui-font:"OngleipKonkon","Noto Sans KR","Malgun Got
 html[data-ui-font="gowun"]{--ui-font:"Gowun Dodum","Noto Sans KR","Malgun Gothic",sans-serif}
 html[data-ui-font="myeongjo"]{--ui-font:"Nanum Myeongjo","Batang",serif}
 html[data-ui-font="dohyeon"]{--ui-font:"Do Hyeon","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="jua"]{--ui-font:"Jua","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="gaegu"]{--ui-font:"Gaegu","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="gamja"]{--ui-font:"Gamja Flower","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="poor"]{--ui-font:"Poor Story","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="nanumpen"]{--ui-font:"Nanum Pen Script","Noto Sans KR","Malgun Gothic",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui-font)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 17px}button.primary,header nav .on{color:#fff;background:var(--grad);border-color:transparent}.panel{background:#fff;border:1px solid var(--line);border-radius:27px;box-shadow:0 18px 45px #27334b10}
 .font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
 .place-people-faces{justify-content:center!important;flex-wrap:wrap!important;max-width:200px!important;gap:clamp(0px,calc(8px - var(--people-count)*1px),3px)!important}
@@ -4227,4 +4232,146 @@ html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-buy.pr
   background:linear-gradient(135deg,var(--p),var(--s))!important;
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
+}
+
+/* 2026-08-08: 관찰 화면 밀도, 클릭 단서, 수면 장면 */
+.native-app .native-observe-clock{display:flex!important;grid-template-columns:none!important;align-items:center;justify-content:flex-end;gap:7px;white-space:nowrap}
+.native-app .native-scene-refresh{
+  position:static!important;
+  display:grid;
+  place-items:center;
+  width:31px;
+  height:31px;
+  min-height:31px;
+  padding:0;
+  border-color:#ffffff26;
+  border-radius:50%;
+  background:#10172278;
+  color:#ffffffd9;
+  font-size:18px;
+  line-height:1;
+  box-shadow:0 5px 14px #0003;
+  transform:none!important;
+  backdrop-filter:blur(9px);
+}
+.native-app .native-scene-refresh:hover,.native-app .native-scene-refresh:focus-visible{border-color:#ffffff80;background:#101722c9;color:#fff}
+.native-app .native-status-card{overflow:hidden!important}
+.native-app .native-status-card h1,
+.native-app .native-status-card p{
+  scrollbar-width:thin;
+  overscroll-behavior:contain;
+}
+.native-app .native-status-card h1{max-height:4.15em;overflow-y:auto}
+.native-app .native-status-card p{
+  max-height:6.25em;
+  overflow-y:auto!important;
+  padding-right:5px;
+}
+.native-app .native-log-card{position:relative;cursor:pointer;transition:border-color .18s ease,transform .18s ease,background .18s ease}
+.native-app .native-log-card:hover,.native-app .native-log-card:focus-visible{border-color:#ffffff68;background:#111b28e8;outline:none;transform:translateY(-1px)}
+.native-app .native-log-open-hint{display:inline;margin-left:5px;color:#ffffff91;font-size:9px;font-weight:500}
+.native-app .native-log-card>div>span{display:flex;gap:5px}
+.native-app .scene-tone-sleep .native-character-stage{animation:native-sleep-breathe 4.6s ease-in-out infinite}
+.native-app .scene-tone-sleep .native-character-stage .native-main-character{transform-origin:50% 82%;animation:native-sleep-head 4.6s ease-in-out infinite}
+.native-app .scene-tone-sleep .native-character-stage>i{animation:native-sleep-shadow 4.6s ease-in-out infinite}
+.native-app .scene-tone-sleep .native-scene-effects i{color:#d8d4ff;text-shadow:0 4px 15px #7c73dccc;animation-name:native-sleep-z!important}
+.home-person.is-sleeping{animation:room-sleep-breathe 4.8s ease-in-out infinite}
+.home-person .room-sleep-mark{position:absolute;right:-5px;top:-12px;z-index:8;color:#e8e2ff;font-size:13px;font-style:normal;font-weight:900;text-shadow:0 2px 7px #312c60;animation:room-sleep-z 2.8s ease-in-out infinite}
+@keyframes native-sleep-breathe{0%,100%{transform:translateY(3px) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
+@keyframes native-sleep-head{0%,100%{scale:1;rotate:-1deg}50%{scale:1.018;rotate:1deg}}
+@keyframes native-sleep-shadow{0%,100%{opacity:.58;transform:scaleX(.92)}50%{opacity:.38;transform:scaleX(.82)}}
+@keyframes native-sleep-z{0%{opacity:0;translate:0 10px;scale:.72}28%,70%{opacity:.9}100%{opacity:0;translate:8px -24px;scale:1.1}}
+@keyframes room-sleep-breathe{0%,100%{translate:0 1px}50%{translate:0 -3px}}
+@keyframes room-sleep-z{0%,100%{opacity:.25;translate:0 3px}50%{opacity:1;translate:4px -5px}}
+
+/* 다크 모드 팝업은 제목과 같은 어두운 면, 화이트 모드는 밝은 면을 사용한다. */
+html[data-color-mode="dark"] dialog,
+html[data-color-mode="dark"] dialog>form{
+  border-color:#ffffff20!important;
+  background:#101a28!important;
+  color:#f4f7fb!important;
+}
+html[data-color-mode="dark"] dialog::backdrop{background:#050a12c9!important;backdrop-filter:blur(5px)}
+html[data-color-mode="dark"] dialog :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ffffff1f!important;background:#101a28f2!important;color:#f4f7fb!important}
+html[data-color-mode="dark"] dialog :is(h1,h2,h3,h4,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
+html[data-color-mode="dark"] dialog :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
+html[data-color-mode="dark"] dialog :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] dialog button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--p),var(--s))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="dark"] dialog :is(.relation,.empty-mini,.room-editor-photo,.room-image-choice button,.relationship-color-legend span){border-color:#ffffff1b!important;background:#172536!important;color:#f4f7fb!important}
+html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas{border:1px solid #ffffff1d!important;background:radial-gradient(circle at center,#25374a 0 32%,#101a28 100%)!important}
+html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas svg text{paint-order:stroke;fill:#f8fafc!important;stroke:#101a28!important}
+html[data-color-mode="dark"] .official-relation-dialog .relation{background:linear-gradient(145deg,#172536,#203449)!important}
+html[data-color-mode="light"] dialog,
+html[data-color-mode="light"] dialog>form{border-color:#d9d0c7!important;background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"] dialog :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ddd3c9!important;background:#fffdf9f2!important;color:#302a25!important}
+html[data-color-mode="light"] dialog :is(h1,h2,h3,h4,b,strong,label,legend){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] dialog :is(p,small){color:#6f6258!important;-webkit-text-fill-color:#6f6258!important}
+html[data-color-mode="light"] dialog :is(input,select,textarea,button){border-color:#d8cec5!important;background:#fff!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+
+/* 넓은 화면에서도 선택한 화면 모드가 헤더·패널·입력창까지 끊기지 않게 한다. */
+@media(min-width:721px){
+  html[data-color-mode="dark"],html[data-color-mode="dark"] body,html[data-color-mode="dark"] main{background:#0d1723!important;color:#f4f7fb!important}
+  html[data-color-mode="dark"] header{border-color:#ffffff1d!important;background:#101b29f2!important;color:#f4f7fb!important}
+  html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell){border-color:#ffffff1c!important;background:#142131!important;color:#f4f7fb!important}
+  html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important}
+  html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell) :is(p,small,time){color:#b9c5d1!important;-webkit-text-fill-color:#b9c5d1!important}
+  html[data-color-mode="dark"] :is(input,select,textarea,button){border-color:#ffffff22;background:#1b2a3c;color:#f4f7fb}
+  html[data-color-mode="light"],html[data-color-mode="light"] body,html[data-color-mode="light"] main{background:#f5f1ea!important;color:#302a25!important}
+  html[data-color-mode="light"] header{border-color:#d9d0c7!important;background:#fffdf9f2!important;color:#302a25!important}
+  html[data-color-mode="light"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell){border-color:#ddd3c9!important;background:#fffdf9!important;color:#302a25!important}
+  html[data-color-mode="light"] :is(input,select,textarea){border-color:#d9d0c7;background:#f8f6f2;color:#302a25}
+  html[data-color-mode="dark"] :is(.world-hud>div,.detail .scene){
+    border-color:#ffffff20!important;
+    background:#1a2a3d!important;
+    color:#f5f8fb!important;
+  }
+  html[data-color-mode="dark"] .detail .scene :is(h3,b){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+  html[data-color-mode="dark"] .detail .scene :is(p,small){color:#bdc9d5!important;-webkit-text-fill-color:#bdc9d5!important}
+  html[data-color-mode="light"] :is(.world-hud>div,.detail .scene){
+    border-color:#ddd3c9!important;
+    background:#fffdf9!important;
+    color:#302a25!important;
+  }
+  html[data-color-mode="light"] header nav button{
+    border-color:#ddd3c9!important;
+    background:#fffdf9!important;
+    color:#40372f!important;
+    -webkit-text-fill-color:#40372f!important;
+  }
+  html[data-color-mode="light"] header nav button.on{
+    border-color:transparent!important;
+    background:linear-gradient(135deg,var(--p),var(--s))!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+}
+
+@media(max-width:720px){
+  html.native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
+    width:calc(100% + 80px)!important;
+    max-width:680px!important;
+    margin-left:-40px!important;
+    margin-right:-40px!important;
+  }
+  html.native-app[data-active-tab="observe"] .native-status-card{max-height:none!important}
+  .native-app .native-status-card h1{max-height:4.1em}
+  .native-app .native-status-card p{max-height:6.2em}
+}
+
+/* 밝은 화면에서는 설정 미리보기와 저장 공간도 실제 종이색 카드로 읽힌다. */
+html[data-color-mode="light"][data-active-tab="settings"] :is(.font-preview,.storage-meter){
+  border-color:#ddd3c9!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .font-preview :is(b,span),
+html[data-color-mode="light"][data-active-tab="settings"] .storage-meter :is(h3,b,small){
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .native-app .scene-tone-sleep .native-character-stage,
+  .native-app .scene-tone-sleep .native-character-stage .native-main-character,
+  .home-person.is-sleeping,.home-person .room-sleep-mark{animation:none!important}
 }

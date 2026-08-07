@@ -193,7 +193,7 @@ function normalizeHomes(x){
   x.activeTab=["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(x.activeTab)?x.activeTab:"character";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
-  x.uiFont=["system","noto","kopub","cafe24slim","changwonround","konkon","gowun","myeongjo","dohyeon"].includes(x.uiFont)?x.uiFont:"system";
+  x.uiFont=["system","noto","kopub","cafe24slim","changwonround","konkon","gowun","myeongjo","dohyeon","jua","gaegu","gamja","poor","nanumpen"].includes(x.uiFont)?x.uiFont:"system";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"dark";
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
