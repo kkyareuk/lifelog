@@ -2436,6 +2436,17 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 .theme-swatch{width:24px!important;min-width:24px!important;height:24px!important;min-height:24px!important;padding:0!important;border:2px solid #fff!important;border-radius:50%!important;background:var(--swatch)!important;box-shadow:0 0 0 1px #8d8a86}
 .theme-swatch.on{box-shadow:0 0 0 3px color-mix(in srgb,var(--swatch) 55%,#202630)}
 .character-main-file-actions{display:grid;align-content:end;gap:8px}
+.character-manage-pane{display:grid;gap:16px}
+.character-manage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.character-manage-grid>section{display:flex;align-items:center;gap:13px;padding:16px;border:1px solid var(--line);border-radius:18px;background:color-mix(in srgb,var(--own) 6%,#fff)}
+.character-manage-grid>section>span{display:grid;place-items:center;flex:0 0 82px;width:82px;height:82px;border-radius:18px;background:#edf1f4;overflow:hidden}
+.character-manage-grid>section>span img,.character-manage-grid>section>span .avatar,.character-manage-grid>section>span .sprite{width:100%;height:100%;object-fit:contain}
+.character-manage-grid>section>div{display:grid;gap:7px}.character-manage-grid h3,.character-manage-grid p{margin:0}
+.character-manage-theme,.character-manage-files{display:grid!important;align-content:start!important}
+.character-manage-theme{grid-column:1/-1}
+.theme-custom-color{display:grid;grid-template-columns:auto 48px minmax(110px,180px);align-items:center;gap:9px;margin-top:8px}
+.theme-custom-color input[type="color"]{width:48px;height:38px;padding:2px;border-radius:10px}
+.theme-custom-color input[type="text"]{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-transform:uppercase}
 .home-edit-toolbar{display:none}
 
 @media(max-width:720px){
@@ -2470,6 +2481,32 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .home-edit-feature-panel.open.home-settings-panel{
     display:grid!important;
   }
+  html.native-app[data-active-tab="home"] .home-edit-feature-panel.open.home-settings-panel{
+    position:fixed;
+    grid-template-rows:auto auto;
+    align-content:start;
+    gap:10px;
+    padding:54px 12px 18px!important;
+    overflow:auto!important;
+  }
+  html.native-app[data-active-tab="home"] .home-edit-feature-panel.open.home-settings-panel>.home-feature-close{
+    position:absolute;
+    top:12px;
+    right:12px;
+    z-index:2;
+  }
+  html.native-app[data-active-tab="home"] .home-edit-feature-panel.open.home-settings-panel .home-identity-editor{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    align-content:start;
+    gap:9px;
+    margin:0;
+    padding:0;
+    border:0;
+    background:transparent;
+  }
+  html.native-app[data-active-tab="home"] .home-settings-panel .home-notes-field,
+  html.native-app[data-active-tab="home"] .home-settings-panel .danger{grid-column:1/-1}
+  html.native-app[data-active-tab="home"] .home-settings-panel .home-photo-editor{display:flex!important;margin:0}
   html.native-app[data-active-tab="home"] .home-edit-feature-panel.open.resident-editor,
   html.native-app[data-active-tab="home"] .home-edit-feature-panel.open.sleep-room-editor{
     display:grid!important;
@@ -2517,6 +2554,18 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     min-height:0;
   }
   html.native-app[data-active-tab="character"] .mobile-character-dashboard{order:1}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid button:first-child{grid-column:auto;min-height:82px}
+  html.native-app[data-active-tab="character"] .character-manage-grid{grid-template-columns:1fr}
+  html.native-app[data-active-tab="character"] [data-mobile-character-editor-dialog="manage"] .mobile-character-editor-body{background:linear-gradient(155deg,#0f1a28,#182637)!important;color:#fff!important}
+  html.native-app[data-active-tab="character"] .character-manage-grid>section{background:#ffffff0b;border-color:#ffffff22;color:#fff}
+  html.native-app[data-active-tab="character"] .character-manage-grid>section>span{background:#ffffff12}
+  html.native-app[data-active-tab="character"] .character-manage-theme{grid-column:auto}
+  html.native-app[data-active-tab="character"] .character-theme-palette>div{grid-template-columns:repeat(10,minmax(20px,1fr))}
+  html.native-app[data-active-tab="character"] .theme-custom-color{grid-template-columns:minmax(0,1fr) 48px minmax(100px,1.4fr)}
+  html.native-app[data-active-tab="character"] .theme-custom-color input{color:#fff;background:#ffffff0d;border-color:#ffffff2a}
+  html.native-app[data-active-tab="character"] .character-manage-pane .image-actions button,
+  html.native-app[data-active-tab="character"] .character-manage-files button{border-color:#ffffff28;background:#ffffff12;color:#fff}
+  html.native-app[data-active-tab="character"] .character-manage-files button.danger{color:#ffb7c7}
   html.native-app[data-active-tab="character"] .character-main-tools{
     order:2;
     width:calc(100% - 28px);
@@ -2659,6 +2708,15 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="routine"] .routine-block small{display:none}
   html.native-app[data-active-tab="routine"] .routine-block .routine-actions{display:grid;grid-template-columns:1fr;gap:2px}
   html.native-app[data-active-tab="routine"] .routine-block button{min-width:0;padding:2px 0;font-size:7px}
+  html.native-app[data-active-tab="routine"] .routine-shell,
+  html.native-app[data-active-tab="routine"] .weekly-scroll,
+  html.native-app[data-active-tab="routine"] .weekly-table{background:#101b29!important;color:#fff!important}
+  html.native-app[data-active-tab="routine"] .routine-block button{
+    border:1px solid #ffffff26!important;
+    background:#ffffff12!important;
+    color:#fff!important;
+  }
+  html.native-app[data-active-tab="routine"] .routine-block button.danger{color:#ffb7c7!important}
 
   html.native-app[data-active-tab="shop"] .shop-store{gap:12px}
   html.native-app[data-active-tab="shop"] .shop-store>.title p{display:none}

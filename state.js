@@ -13,12 +13,12 @@ const renameBrand=value=>{
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const rooms=()=>({
-  living:{name:"거실",type:"living",size:"큰 방",order:0,image:"",furniture:["소파","TV","책장"]},
-  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,image:"",furniture:["냉장고","조리대","식탁"]},
-  entry:{name:"현관",type:"entry",size:"작은 방",order:2,image:"",furniture:["신발장","전신거울"]},
-  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,image:"",furniture:["샤워부스","세면대"]},
-  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,image:"",furniture:["침대","옷장"]},
-  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,image:"",furniture:["책상","컴퓨터"]}
+  living:{name:"거실",type:"living",size:"큰 방",order:0,image:"",interiorStyle:"설정하지 않음",furniture:["소파","TV","책장"]},
+  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,image:"",interiorStyle:"설정하지 않음",furniture:["냉장고","조리대","식탁"]},
+  entry:{name:"현관",type:"entry",size:"작은 방",order:2,image:"",interiorStyle:"설정하지 않음",furniture:["신발장","전신거울"]},
+  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,image:"",interiorStyle:"설정하지 않음",furniture:["샤워부스","세면대"]},
+  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,image:"",interiorStyle:"설정하지 않음",furniture:["침대","옷장"]},
+  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,image:"",interiorStyle:"설정하지 않음",furniture:["책상","컴퓨터"]}
 });
 const ROOM_SIZES=["작은 방","보통 방","큰 방","넓고 긴 방"];
 const defaultBodyProfile=()=>({
@@ -197,7 +197,7 @@ function normalizeHomes(x){
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
   if(x.characterPane==="traits")x.characterPane="personality";
-  x.characterPane=["profile","body","personality","taste","worldTaste"].includes(x.characterPane)?x.characterPane:"profile";
+  x.characterPane=["profile","body","personality","taste","worldTaste","manage"].includes(x.characterPane)?x.characterPane:"profile";
   if(Array.isArray(x.characters)){
     const list=x.characters.filter(c=>c&&typeof c==="object"&&!Array.isArray(c));
     x.characters=Object.fromEntries(list.map(c=>{const id=String(c.id||uid());c.id=id;return[id,c]}));
@@ -374,7 +374,13 @@ function normalizeHomes(x){
   Object.values(x.homes||{}).forEach(h=>{
     h.image=h.image||"";
     h.name=String(h.name||"이름 없는 집");
-    h.kind=["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기타"].includes(h.kind)?h.kind:"일반 주거";
+    h.kind=["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"].includes(h.kind)?h.kind:"일반 주거";
+    h.exteriorStyle=String(h.exteriorStyle||"설정하지 않음");
+    h.beautyLevel=String(h.beautyLevel||"평범함");
+    h.ownershipType=String(h.ownershipType||"설정하지 않음");
+    h.ownerKind=String(h.ownerKind||"설정하지 않음");
+    h.ownerCharacterId=x.characters[h.ownerCharacterId]?String(h.ownerCharacterId):"";
+    h.ownerName=String(h.ownerName||"").slice(0,120);
     h.townId=x.towns.some(t=>t.id===h.townId)?h.townId:"";
     h.notes=String(h.notes||"").slice(0,300);
     h.cars=Array.isArray(h.cars)?h.cars.filter(car=>car&&typeof car==="object"&&!Array.isArray(car)).map(car=>({
@@ -397,7 +403,7 @@ function normalizeHomes(x){
     h.deletedRoomKeys.forEach(key=>delete h.rooms[key]);
     h.rooms=Object.fromEntries(Object.entries(h.rooms).filter(([,room])=>room&&typeof room==="object"&&!Array.isArray(room)).map(([key,room],index)=>{
       room.name=String(room.name||"이름 없는 방");room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
-      room.image=String(room.image||"");room.furniture=Array.isArray(room.furniture)?room.furniture.map(String):[];
+      room.image=String(room.image||"");room.interiorStyle=String(room.interiorStyle||"설정하지 않음");room.furniture=Array.isArray(room.furniture)?room.furniture.map(String):[];
       const defaultSize=room.type==="living"?"큰 방":["entry","bath","storage"].includes(room.type)?"작은 방":"보통 방";
       room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
       room.order=Number.isFinite(Number(room.order))?Number(room.order):index;
@@ -575,7 +581,7 @@ export function createCharacter(limit=5){
   state.activeId=id;state.activeTab="character";save(true);return id;
 }
 export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
-export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":(["profile","body","personality","taste","worldTaste"].includes(value)?value:"profile");save()}
+export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":(["profile","body","personality","taste","worldTaste","manage"].includes(value)?value:"profile");save()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;
@@ -658,7 +664,7 @@ export function updateRoom(homeId,roomKey,patch){
 export function createHome(){
   const id=`home-${uid()}`;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
+  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorStyle:"설정하지 않음",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
   state.activeHomeId=id;
   state.activeTab="home";
   state.homeEditMode=true;
@@ -705,7 +711,7 @@ export function addRoom(homeId){
   const key=`room-${uid()}`;
   h.deletedRoomKeys=(h.deletedRoomKeys||[]).filter(value=>value!==key);
   const nextOrder=Math.max(-1,...Object.values(h.rooms).map(room=>Number(room.order)||0))+1;
-  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,image:"",furniture:[...ROOM_FURNITURE.other]};
+  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,image:"",interiorStyle:"설정하지 않음",furniture:[...ROOM_FURNITURE.other]};
   save(true);
   return key;
 }

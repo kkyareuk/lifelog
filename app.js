@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807o";
-import {eventFor} from "./simulation.js?v=20260807o";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807o";
-import {recordCharacterInteraction} from "./state.js?v=20260807o";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807p";
+import {eventFor} from "./simulation.js?v=20260807p";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807p";
+import {recordCharacterInteraction} from "./state.js?v=20260807p";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -12,7 +12,7 @@ const guidePending=new Set();
 const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
   home:["집","위에서 집을 고르고 ‘집 편집’을 켜세요. 한 줄 도구의 ‘방 추가·구성’에서 방을 늘리고, 방 자체를 누르면 이름·크기·사진·가구를 바꿀 수 있어요."],
-  character:["캐릭터","위쪽 캐릭터를 고른 뒤 프로필·신체·성격·취향을 팝업으로 편집해요. 사진·지도 아이콘·테마색·내보내기·삭제는 캐릭터 화면의 공통 관리 도구에 모아 두었습니다."],
+  character:["캐릭터","위쪽에서 캐릭터를 고른 뒤 아래 여섯 항목 중 바꾸려는 설정을 누르세요. ‘사진·아이콘·테마’에서는 프로필 사진, 지도 아이콘, 미리 고른 색과 직접 입력한 HEX 색, 내보내기·삭제를 각각 관리할 수 있어요."],
   catalog:["취향 사전","음식, 작품, 음악, 향과 소지품을 등록하는 도감이에요. 등록한 일러스트와 물건은 캐릭터 취향과 실제 생활 장면에 연결됩니다."],
   relationship:["관계","왼쪽 룰렛에서 마음의 주체를, 오른쪽 룰렛에서 상대를 고르면 두 사람의 시선을 편집할 수 있어요. 공식 관계와 각자의 속마음은 따로 저장됩니다."],
   routine:["주간 루틴","일요일부터 토요일까지 한 화면에서 보고, 일정을 눌러 편집해요. 출근·데이트·약속처럼 시간이 정해진 행동은 무작위 생활 장면보다 먼저 적용됩니다."],
@@ -477,8 +477,9 @@ function openRoomEditor(homeId,roomKey){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
   const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
   const drawFurniture=()=>{const list=ROOM_EDITOR_FURNITURE[room.type]||ROOM_EDITOR_FURNITURE.other;return list.map(item=>`<button type="button" data-room-furniture="${item}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")};
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>크기에 맞춰 다른 방과 겹치지 않게 자동 배치돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
-  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",size:dialog.querySelector('[name="size"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
+  const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>크기에 맞춰 다른 방과 겹치지 않게 자동 배치돼요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
+  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",size:dialog.querySelector('[name="size"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
   dialog.querySelectorAll("[data-room-furniture]").forEach(button=>button.onclick=()=>{toggleFurniture(homeId,roomKey,button.dataset.roomFurniture);button.classList.toggle("on")});
@@ -687,8 +688,12 @@ function applyTheme(){
 
 async function explicitSave(label="저장 완료"){
   save(true);
-  showToast("저장되었습니다");
   render();
+  const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
+  if(info?.user){
+    const synced=await auth.upload({reason:label});
+    if(!synced)showToast("기기에는 저장했지만 계정 동기화는 완료하지 못했어요");
+  }else showToast("기기에 저장되었습니다");
 }
 
 function bind(){
@@ -742,9 +747,11 @@ function bind(){
     flushMobileCharacterDraft();
     render();
   };
-  $$("[data-close-mobile-character-editor],[data-save-mobile-character-editor]").forEach(el=>el.onclick=()=>{
+  $$("[data-close-mobile-character-editor],[data-save-mobile-character-editor]").forEach(el=>el.onclick=async()=>{
+    const shouldSync=el.hasAttribute("data-save-mobile-character-editor");
     flushMobileCharacterDraft({closeEditor:false});
-    mobileCharacterDialog?.close(el.hasAttribute("data-save-mobile-character-editor")?"save":"close");
+    mobileCharacterDialog?.close(shouldSync?"save":"close");
+    if(shouldSync)await explicitSave("캐릭터 저장");
   });
   const mobileReorderDialog=$("[data-mobile-character-reorder-dialog]");
   if(mobileReorderDialog)mobileReorderDialog.onclose=()=>{mobileCharacterReorderOpen=false;render()};
@@ -1082,6 +1089,22 @@ function bind(){
     updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);
     if(!mobileDraft)save();
     applyTheme();
+  });
+  $$("[data-theme-hex]").forEach(el=>{
+    const apply=()=>{
+      const value=String(el.value||"").trim();
+      if(!/^#[0-9a-f]{6}$/i.test(value)){el.setCustomValidity("예: #176B60처럼 6자리 HEX 색상을 입력해 주세요.");return}
+      el.setCustomValidity("");
+      const field=el.dataset.themeHex;
+      const mobileDraft=markMobileCharacterDraft(el);
+      updateCharacter(active().id,{theme:{...active().theme,[field]:value.toUpperCase()}},false);
+      if(!mobileDraft)save();
+      applyTheme();
+      const colorInput=document.querySelector(`[data-color="${CSS.escape(field)}"]`);
+      if(colorInput)colorInput.value=value;
+    };
+    el.onchange=apply;
+    el.onkeydown=event=>{if(event.key==="Enter"){event.preventDefault();apply()}};
   });
   $$("[data-theme-swatch]").forEach(el=>el.onclick=()=>{
     const field=el.dataset.themeSwatch,value=el.dataset.colorValue;
@@ -2006,13 +2029,13 @@ if(!maintenanceEnabled()&&state.order.length&&localStorage.getItem("drawer-villa
   document.body.append(notice);notice.showModal();
 }
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807o").catch(error=>{
+  import("./auth.js?v=20260807p").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807o",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260807p",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
