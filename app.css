@@ -376,6 +376,198 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
   }
 }
 
+/* 2026-08-07: 관찰 화면 폭, 관계도 내보내기와 화면 모드 */
+.relationship-map-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:10px 0;
+}
+.relationship-map-actions button{flex:1 1 210px}
+.color-mode-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.color-mode-options button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:58px;
+}
+.color-mode-options button span{font-size:22px}
+.color-mode-options button.on{
+  border-color:color-mix(in srgb,var(--p) 76%,#fff);
+  background:linear-gradient(135deg,var(--p),var(--s));
+  color:#fff;
+  box-shadow:0 10px 25px color-mix(in srgb,var(--p) 30%,transparent);
+}
+.native-scene-refresh{
+  position:absolute;
+  z-index:86;
+  top:max(56px,calc(env(safe-area-inset-top) + 48px));
+  left:50%;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  min-height:32px;
+  padding:5px 9px;
+  border:1px solid #ffffff35;
+  border-radius:999px;
+  background:#1017229e;
+  color:#fff;
+  box-shadow:0 7px 20px #0004;
+  backdrop-filter:blur(10px);
+  transform:translateX(-50%);
+}
+.native-scene-refresh span{font-size:18px;line-height:1}
+.native-scene-refresh small{font-size:9px}
+
+html[data-color-mode="dark"]{color-scheme:dark}
+html[data-color-mode="light"]{color-scheme:light}
+html[data-color-mode="dark"][data-active-tab="settings"],
+html[data-color-mode="dark"][data-active-tab="settings"] body,
+html[data-color-mode="dark"][data-active-tab="settings"] main{
+  background:
+    radial-gradient(circle at 82% 6%,color-mix(in srgb,var(--p) 25%,transparent),transparent 34%),
+    linear-gradient(155deg,#0d1825,#172638 58%,#0d1723)!important;
+  color:#f5f8fb!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell{
+  border-color:#ffffff1c!important;
+  background:transparent!important;
+  color:#f5f8fb!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] :is(.setting-card,.sync-panel,.feedback-card){
+  border:1px solid #ffffff20!important;
+  background:linear-gradient(145deg,#18283a,#22374b)!important;
+  color:#f7fafc!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(h1,h2,h3,b,strong,label,legend){
+  color:#f7fafc!important;
+  -webkit-text-fill-color:#f7fafc!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(p,small){
+  color:#bdc9d5!important;
+  -webkit-text-fill-color:#bdc9d5!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(input,select,textarea){
+  border-color:#d7e0e8!important;
+  background:#f7f9fc!important;
+  color:#172231!important;
+  -webkit-text-fill-color:#172231!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] .font-preview,
+html[data-color-mode="dark"][data-active-tab="settings"] .storage-meter{
+  border-color:#ffffff22!important;
+  background:#101c2a!important;
+  color:#f7fafc!important;
+}
+
+html[data-color-mode="light"],
+html[data-color-mode="light"] body{
+  background:#f5f1ea!important;
+  color:#302a25;
+}
+html[data-color-mode="light"] header,
+html[data-color-mode="light"].native-app .native-sub-header{
+  border-color:#d9d0c7!important;
+  background:color-mix(in srgb,var(--p) 18%,#fff)!important;
+  color:#2f2924!important;
+}
+html[data-color-mode="light"].native-app:is(
+  [data-active-tab="catalog"],
+  [data-active-tab="routine"],
+  [data-active-tab="shop"],
+  [data-active-tab="settings"],
+  [data-active-tab="character"],
+  [data-active-tab="relationship"]
+),
+html[data-color-mode="light"].native-app:is(
+  [data-active-tab="catalog"],
+  [data-active-tab="routine"],
+  [data-active-tab="shop"],
+  [data-active-tab="settings"],
+  [data-active-tab="character"],
+  [data-active-tab="relationship"]
+) body,
+html[data-color-mode="light"].native-app:is(
+  [data-active-tab="catalog"],
+  [data-active-tab="routine"],
+  [data-active-tab="shop"],
+  [data-active-tab="settings"],
+  [data-active-tab="character"],
+  [data-active-tab="relationship"]
+) main{
+  background:
+    radial-gradient(circle at 84% 6%,color-mix(in srgb,var(--p) 13%,transparent),transparent 32%),
+    #f5f1ea!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell,
+html[data-color-mode="light"][data-active-tab="catalog"] .catalog-shell,
+html[data-color-mode="light"][data-active-tab="routine"] .routine-shell,
+html[data-color-mode="light"][data-active-tab="shop"] .shop-store{
+  background:transparent!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] :is(.setting-card,.sync-panel,.feedback-card),
+html[data-color-mode="light"][data-active-tab="catalog"] :is(.catalog-kind,.catalog-dex-card),
+html[data-color-mode="light"][data-active-tab="shop"] :is(.premium-product,.shop-cart,.shop-coming,.preview-notice){
+  border-color:#ddd3c9!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+  box-shadow:0 12px 30px #38271612!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(h1,h2,h3,b,strong,label,legend,p,small),
+html[data-color-mode="light"][data-active-tab="catalog"] .catalog-shell :is(h1,h2,h3,b,label,p,small),
+html[data-color-mode="light"][data-active-tab="shop"] .shop-store :is(h1,h2,h3,b,strong,label,p,small){
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard,
+html[data-color-mode="light"][data-active-tab="relationship"] .character-view-editor,
+html[data-color-mode="light"][data-active-tab="relationship"] .relationship-pair-magnet{
+  background:linear-gradient(155deg,#f8f4ee,#eee6dd)!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="routine"] :is(.weekly-scroll,.weekly-table,.routine-day){
+  border-color:#ddd3c9!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-day h3{
+  background:#ece3da!important;
+  color:#302a25!important;
+}
+
+@media(max-width:720px){
+  .relationship-map-dialog .relationship-map-canvas svg text{
+    font-size:11px!important;
+    stroke-width:4px!important;
+  }
+  .relationship-map-dialog .relationship-map-canvas svg .map-relation{font-size:11px!important}
+  .relationship-map-dialog .relationship-map-canvas svg .map-stage{font-size:8px!important}
+  .relationship-map-dialog .relationship-map-canvas svg .map-heart{font-size:18px!important;stroke-width:3px!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker,
+  html.native-app[data-active-tab="observe"] .native-status-card,
+  html.native-app[data-active-tab="observe"] .native-log-card{
+    width:calc(100% + 120px)!important;
+    max-width:none!important;
+    margin-left:-60px!important;
+    margin-right:-60px!important;
+    box-sizing:border-box;
+  }
+  html.native-app[data-active-tab="observe"] .native-character-picker{
+    padding-inline:2px;
+  }
+  html[data-color-mode="light"].native-app[data-active-tab="settings"] .settings-shell{
+    background:transparent!important;
+    color:#302a25!important;
+  }
+}
+
 @media(min-width:721px){
   html:is(
     [data-active-tab="catalog"],
@@ -3750,5 +3942,64 @@ html[data-active-tab="settings"] body>.site-footer{display:none}
   html.native-app[data-active-tab="settings"] .settings-business-footer>b,
   html.native-app[data-active-tab="settings"] .settings-business-footer nav a:first-child{
     color:#fff!important;
+  }
+}
+
+/* 화면 모드와 모바일 관찰 폭은 파일 뒤에서 최종 적용한다. */
+html[data-color-mode="dark"][data-active-tab="settings"],
+html[data-color-mode="dark"][data-active-tab="settings"] body,
+html[data-color-mode="dark"][data-active-tab="settings"] main{
+  background:linear-gradient(155deg,#0d1825,#172638 58%,#0d1723)!important;
+  color:#f5f8fb!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell{background:transparent!important;color:#f5f8fb!important}
+html[data-color-mode="dark"][data-active-tab="settings"] :is(.setting-card,.sync-panel,.feedback-card){
+  border:1px solid #ffffff20!important;
+  background:linear-gradient(145deg,#18283a,#22374b)!important;
+  color:#f7fafc!important;
+}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(h1,h2,h3,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(p,small){color:#bdc9d5!important;-webkit-text-fill-color:#bdc9d5!important}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(input,select,textarea){background:#f7f9fc!important;color:#172231!important;-webkit-text-fill-color:#172231!important}
+html[data-color-mode="light"],
+html[data-color-mode="light"] body{background:#f5f1ea!important;color:#302a25!important}
+html[data-color-mode="light"] header,
+html[data-color-mode="light"].native-app .native-sub-header{border-color:#d9d0c7!important;background:color-mix(in srgb,var(--p) 18%,#fff)!important;color:#2f2924!important}
+html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="routine"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]),
+html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="routine"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]) body,
+html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="routine"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]) main{
+  background:#f5f1ea!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell,
+html[data-color-mode="light"][data-active-tab="catalog"] .catalog-shell,
+html[data-color-mode="light"][data-active-tab="routine"] .routine-shell,
+html[data-color-mode="light"][data-active-tab="shop"] .shop-store{background:transparent!important;color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="settings"] :is(.setting-card,.sync-panel,.feedback-card),
+html[data-color-mode="light"][data-active-tab="catalog"] :is(.catalog-kind,.catalog-dex-card),
+html[data-color-mode="light"][data-active-tab="shop"] :is(.premium-product,.shop-cart,.shop-coming,.preview-notice){
+  border-color:#ddd3c9!important;
+  background:#fffdf9!important;
+  color:#302a25!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(h1,h2,h3,b,strong,label,legend,p,small),
+html[data-color-mode="light"][data-active-tab="catalog"] .catalog-shell :is(h1,h2,h3,b,label,p,small),
+html[data-color-mode="light"][data-active-tab="shop"] .shop-store :is(h1,h2,h3,b,strong,label,p,small){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] :is(.weekly-scroll,.weekly-table,.routine-day){background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-day h3{background:#ece3da!important;color:#302a25!important}
+
+@media(max-width:720px){
+  .relationship-map-dialog .relationship-map-canvas svg text{font-size:11px!important;stroke-width:4px!important}
+  .relationship-map-dialog .relationship-map-canvas svg .map-relation{font-size:11px!important}
+  .relationship-map-dialog .relationship-map-canvas svg .map-stage{font-size:8px!important}
+  .relationship-map-dialog .relationship-map-canvas svg .map-heart{font-size:18px!important;stroke-width:3px!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker,
+  html.native-app[data-active-tab="observe"] .native-status-card,
+  html.native-app[data-active-tab="observe"] .native-log-card{
+    width:calc(100% + 120px)!important;
+    max-width:none!important;
+    margin-left:-60px!important;
+    margin-right:-60px!important;
+    box-sizing:border-box;
   }
 }

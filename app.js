@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807s";
-import {eventFor} from "./simulation.js?v=20260807s";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807s";
-import {recordCharacterInteraction} from "./state.js?v=20260807s";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260807v";
+import {eventFor} from "./simulation.js?v=20260807v";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260807v";
+import {recordCharacterInteraction} from "./state.js?v=20260807v";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -732,9 +732,10 @@ function applyTheme(){
   const c=active();
   const primary=c?.theme?.primary||"#176b60";
   const secondary=c?.theme?.gradient?(c.theme.secondary||primary):primary;
+  document.documentElement.dataset.colorMode=state.colorMode==="light"?"light":"dark";
   document.documentElement.style.setProperty("--p",primary);
   document.documentElement.style.setProperty("--s",secondary);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content",primary);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content",state.colorMode==="light"?"#f5f1ea":"#101925");
 }
 
 async function explicitSave(label="저장 완료"){
@@ -750,6 +751,11 @@ async function explicitSave(label="저장 완료"){
 function bind(){
   $$("[data-tab]").forEach(el=>el.onclick=()=>navigateToTab(el.dataset.tab));
   $("[data-open-native-log]")?.addEventListener("click",()=>document.querySelector("[data-native-log-dialog]")?.showModal());
+  $("[data-refresh-observe]")?.addEventListener("click",event=>{
+    event.stopPropagation();
+    render();
+    showToast("현재 장면을 새로고침했습니다");
+  });
   $$("[data-home-character]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
     homeCharacterPickerScroll=el.closest(".native-character-picker")?.scrollLeft||homeCharacterPickerScroll;
@@ -1257,6 +1263,12 @@ function bind(){
   $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
   $$("[data-setting]").forEach(el=>el.onchange=()=>{state[el.dataset.setting]=el.value;save(true);render()});
+  $$("button[data-color-mode]").forEach(button=>button.onclick=event=>{
+    event.stopPropagation();
+    state.colorMode=button.dataset.colorMode==="light"?"light":"dark";
+    save(true);
+    render();
+  });
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
   $("[data-auth]")?.addEventListener("click",async()=>{
@@ -1362,6 +1374,7 @@ function bind(){
     render();
     requestAnimationFrame(openRelationshipMap);
   });
+  $("[data-export-relationship-map]")?.addEventListener("click",exportRelationshipMapPng);
   $$("[data-character-view]").forEach(select=>select.onchange=()=>{
     const source=select.dataset.source,target=select.dataset.target,field=select.dataset.viewField;
     if(field==="touchIntensity"&&select.value==="성인 간 친밀한 접촉까지"&&[source,target].some(id=>["영아","유아","어린이","청소년"].includes(state.characters[id]?.ageGroup))){
@@ -1580,6 +1593,75 @@ function openRelationshipMap(){
     const scroller=dialog.querySelector(".relationship-map-scroll");
     if(scroller)scroller.scrollLeft=Math.max(0,(scroller.scrollWidth-scroller.clientWidth)/2);
   });
+}
+
+async function exportRelationshipMapPng(){
+  const source=document.querySelector("[data-relationship-map-dialog] .relationship-map-canvas svg");
+  if(!source){showToast("저장할 관계도가 없어요");return}
+  const clone=source.cloneNode(true),svgNs="http://www.w3.org/2000/svg";
+  clone.setAttribute("xmlns",svgNs);
+  clone.setAttribute("width","1800");
+  clone.setAttribute("height","1800");
+  const defs=document.createElementNS(svgNs,"defs");
+  clone.prepend(defs);
+  [...clone.querySelectorAll("foreignObject")].forEach((foreign,index)=>{
+    const x=Number(foreign.getAttribute("x"))||0,y=Number(foreign.getAttribute("y"))||0;
+    const width=Number(foreign.getAttribute("width"))||110,height=Number(foreign.getAttribute("height"))||110;
+    const img=foreign.querySelector("img"),name=foreign.querySelector("b")?.textContent||"";
+    const group=document.createElementNS(svgNs,"g");
+    const visualSize=Math.min(width,height)*.58,cx=x+width/2,cy=y+height*.39;
+    const circle=document.createElementNS(svgNs,"circle");
+    circle.setAttribute("cx",String(cx));circle.setAttribute("cy",String(cy));
+    circle.setAttribute("r",String(visualSize/2+3));circle.setAttribute("fill","#fff");
+    circle.setAttribute("stroke","#d8cec4");circle.setAttribute("stroke-width","3");
+    group.append(circle);
+    if(img?.getAttribute("src")){
+      const clipId=`relationship-avatar-${index}`;
+      const clip=document.createElementNS(svgNs,"clipPath"),clipCircle=document.createElementNS(svgNs,"circle");
+      clip.setAttribute("id",clipId);clipCircle.setAttribute("cx",String(cx));clipCircle.setAttribute("cy",String(cy));clipCircle.setAttribute("r",String(visualSize/2));
+      clip.append(clipCircle);defs.append(clip);
+      const image=document.createElementNS(svgNs,"image");
+      image.setAttribute("href",img.getAttribute("src"));
+      image.setAttribute("x",String(cx-visualSize/2));image.setAttribute("y",String(cy-visualSize/2));
+      image.setAttribute("width",String(visualSize));image.setAttribute("height",String(visualSize));
+      image.setAttribute("preserveAspectRatio","xMidYMid meet");image.setAttribute("clip-path",`url(#${clipId})`);
+      group.append(image);
+    }else{
+      const symbol=document.createElementNS(svgNs,"text");
+      symbol.setAttribute("x",String(cx));symbol.setAttribute("y",String(cy+10));symbol.setAttribute("text-anchor","middle");
+      symbol.setAttribute("font-size",String(visualSize*.55));symbol.textContent=foreign.textContent?.trim()?.slice(0,1)||"•";
+      group.append(symbol);
+    }
+    const label=document.createElementNS(svgNs,"text");
+    label.setAttribute("x",String(cx));label.setAttribute("y",String(y+height*.83));label.setAttribute("text-anchor","middle");
+    label.setAttribute("font-size",width>130?"24":"18");label.setAttribute("font-weight","800");
+    label.setAttribute("fill","#2f2924");label.setAttribute("stroke","#fff");label.setAttribute("stroke-width","5");
+    label.setAttribute("paint-order","stroke");label.textContent=name;
+    group.append(label);
+    foreign.replaceWith(group);
+  });
+  const style=document.createElementNS(svgNs,"style");
+  style.textContent=`.map-official rect{fill:#fffdf9;stroke:#d8cec4;stroke-width:2}.map-relation{font:800 15px sans-serif;fill:#33261f}.map-stage{font:600 11px sans-serif;fill:#6f625a}.map-heart{font:900 24px sans-serif;stroke:#fff;stroke-width:4;paint-order:stroke}`;
+  defs.after(style);
+  const serialized=new XMLSerializer().serializeToString(clone);
+  const blob=new Blob([serialized],{type:"image/svg+xml;charset=utf-8"});
+  const url=URL.createObjectURL(blob),image=new Image();
+  try{
+    await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src=url});
+    const canvas=document.createElement("canvas");canvas.width=1800;canvas.height=1800;
+    const context=canvas.getContext("2d");
+    context.fillStyle="#f7f2eb";context.fillRect(0,0,canvas.width,canvas.height);
+    context.drawImage(image,0,0,canvas.width,canvas.height);
+    const png=await new Promise(resolve=>canvas.toBlob(resolve,"image/png",1));
+    if(!png)throw new Error("png-encode-failed");
+    const link=document.createElement("a"),pngUrl=URL.createObjectURL(png);
+    link.href=pngUrl;link.download=`서랍마을-인물관계도-${new Date().toISOString().slice(0,10)}.png`;link.click();
+    setTimeout(()=>URL.revokeObjectURL(pngUrl),1000);
+    showToast("인물 관계도를 PNG로 저장했습니다");
+  }catch(error){
+    console.error("관계도 PNG 저장 실패",error);
+    showToast("이미지 보안 제한으로 관계도 PNG를 만들지 못했어요");
+  }finally{URL.revokeObjectURL(url)}
 }
 
 async function useImageUrl(type,id,room){
@@ -2107,13 +2189,13 @@ function showPhotoBackupNotice(){
 }
 requestAnimationFrame(showPhotoBackupNotice);
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260807s").catch(error=>{
+  import("./auth.js?v=20260807v").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260807s",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260807v",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

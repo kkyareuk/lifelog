@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807s";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260807v";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1924,15 +1924,19 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260807s";
+const ENGINE_VERSION="20260807v";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
+const entryMomentKey=item=>{
+  const minute=Number(item?.minute);
+  return String(item?.time||(Number.isFinite(minute)?clock(minute):""));
+};
 function mergeImmutableEntries(kept,generated){
-  const merged=[...kept],seen=new Set(kept.map(item=>`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`));
+  const merged=[...kept],seen=new Set(kept.map(item=>`${entryMomentKey(item)}|${item.title}|${item.placeId||""}|${item.room||""}`));
   generated.forEach(item=>{
-    const id=`${item.minute}|${item.title}|${item.placeId||""}|${item.room||""}`;
+    const id=`${entryMomentKey(item)}|${item.title}|${item.placeId||""}|${item.room||""}`;
     if(!seen.has(id)){seen.add(id);merged.push(item)}
   });
   return merged.sort((a,b)=>a.minute-b.minute);
@@ -1955,8 +1959,9 @@ function cleanSameMinuteEntries(entries){
   [...entries].sort((a,b)=>a.minute-b.minute).forEach(item=>{
     const minute=Number(item.minute);
     if(!Number.isFinite(minute))return;
-    const previous=byMinute.get(minute);
-    if(!previous||item.groupInteraction||!previous.groupInteraction)byMinute.set(minute,item);
+    const moment=entryMomentKey(item);
+    const previous=byMinute.get(moment);
+    if(!previous||item.groupInteraction||!previous.groupInteraction)byMinute.set(moment,{...item,time:clock(minute)});
   });
   return [...byMinute.values()].sort((a,b)=>a.minute-b.minute);
 }
@@ -2061,7 +2066,17 @@ export function visibleTimeline(c,date=new Date()){return timeline(c,date).filte
 function commitLiveEntry(c,date,item){
   const key=dayKey(date),day=c.days?.[key];
   if(!day||!item)return item;
+  item={...item,time:clock(Number(item.minute))};
   const entries=Array.isArray(day.entries)?day.entries:[];
+  // 공동 장면 직전에 baseEventFor가 만든 일반 장면이 같은 표시 시각에 남아 있으면
+  // 한 사건이 일반 로그와 공동 로그로 두 번 보인다. 한 캐릭터에게 한 시각의 현재
+  // 사건은 하나뿐이므로 공동 장면이 그 시각의 기존 항목을 완전히 치환한다.
+  if(item.groupInteraction){
+    const withoutSameMoment=entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item));
+    day.entries=mergeImmutableEntries(withoutSameMoment,[item]);
+    save(false,false);
+    return item;
+  }
   const interactionIndex=item.interactionId?entries.findIndex(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute)):-1;
   if(interactionIndex>=0){
     day.entries=entries.map((entry,index)=>index===interactionIndex?{...entry,...item}:entry);
@@ -2073,6 +2088,7 @@ function commitLiveEntry(c,date,item){
   const lastDateEntry=sameDateEntries.slice().sort((a,b)=>Number(a.minute)-Number(b.minute)).at(-1);
   const dateGap=lastDateEntry?30+(hash(`${item.dateGroup}:${lastDateEntry.minute}:date-gap`)%31):0;
   const duplicate=entries.some(entry=>
+    entryMomentKey(entry)===entryMomentKey(item)||
     (entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room)||
     (!item.dateGroup&&sceneKey(entry.title)===sceneKey(item.title)&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
   )||Boolean(lastDateEntry&&Number(item.minute)-Number(lastDateEntry.minute)<dateGap);
@@ -2932,6 +2948,9 @@ function sharedParticipantOrder(characters,relation){
 }
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
+  // 같은 사건을 상대 시점으로 다시 만들 때 상대의 이전 장면 위치를 사용하지 않는다.
+  // 사건을 처음 만든 캐릭터가 실제로 있는 집·방·외출 장소를 공동 위치로 고정한다.
+  if(sharedContext?.location)current={...current,...sharedContext.location};
   if(sharedContext?.dateGroup){
     const sharedIds=dateGroupParticipantIds(sharedContext);
     const forcedPartnerId=sharedContext.forcedPartnerId;
@@ -3078,7 +3097,16 @@ export function eventFor(c,date=new Date()){
   if(current?.groupInteraction){
     const sharedMinute=nowMin(date);
     current.minute=sharedMinute;
+    current.time=clock(sharedMinute);
     commitLiveEntry(c,date,current);
+    const sharedLocation={
+      home:Boolean(current.home),
+      room:current.home?current.room:undefined,
+      visitHomeId:current.home?(current.visitHomeId||c.homeId):undefined,
+      placeId:current.home?undefined:current.placeId,
+      townId:current.townId||c.townId,
+      transit:false
+    };
     (current.withIds||[]).forEach(otherId=>{
       const other=state.characters[otherId];
       if(!other)return;
@@ -3090,10 +3118,12 @@ export function eventFor(c,date=new Date()){
         participantOrder:current.participantOrder,
         forcedPartnerId:c.id,
         dateGroup:current.dateGroup,
-        datePurpose:current.datePurpose
+        datePurpose:current.datePurpose,
+        location:sharedLocation
       }));
       if(!counterpart?.groupInteraction)return;
       counterpart.minute=sharedMinute;
+      counterpart.time=clock(sharedMinute);
       commitLiveEntry(other,date,counterpart);
     });
   }
