@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808b";
-import {eventFor} from "./simulation.js?v=20260808b";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808b";
-import {recordCharacterInteraction} from "./state.js?v=20260808b";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808c";
+import {eventFor} from "./simulation.js?v=20260808c";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808c";
+import {recordCharacterInteraction} from "./state.js?v=20260808c";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -495,6 +495,30 @@ const roomIllustration=(type="other",index=0)=>{
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
+const CATALOG_APP_ART={
+  food:["🍲","🍱","🍰","🍜"],drink:["☕","🫖","🥤","🍹"],fashion:["👗","🧥","👟","👜"],
+  music:["🎧","🎹","🎸","🎼"],idol:["🎤","✨","💿","🎙️"],book:["📖","📚","✒️","🗞️"],
+  movie:["🎬","📺","🎞️","🍿"],game:["🎮","🕹️","🎲","♟️"],perfume:["🧴","🌸","🌿","✨"],
+  hobby:["🎨","🧶","📷","🧩"],electronics:["💻","📱","📷","🎧"],weapon:["⚔️","🏹","🛡️","🗡️"]
+};
+const catalogIllustration=(kind="hobby",index=0)=>{
+  const symbols=CATALOG_APP_ART[kind]||CATALOG_APP_ART.hobby,symbol=symbols[index%symbols.length];
+  const accents=["#ffd36f","#88d7ca","#f4a6c1","#aeb8ff"],accent=accents[index%accents.length];
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320"><defs><filter id="s"><feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#07111f" flood-opacity=".24"/></filter></defs><path d="M79 230c-19-39-11-99 20-133 30-34 84-50 134-36 49 14 102 58 104 108 3 51-44 91-94 106-49 15-137-1-164-45Z" fill="${accent}" opacity=".36"/><text x="210" y="220" text-anchor="middle" font-size="156" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif" filter="url(#s)">${symbol}</text></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+function openCatalogIllustrationPicker(itemId,kind){
+  const item=state.catalog?.[kind]?.find(entry=>entry.id===itemId);if(!item)return;
+  const dialog=document.createElement("dialog");dialog.className="catalog-illustration-dialog";
+  const symbols=CATALOG_APP_ART[kind]||CATALOG_APP_ART.hobby;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>앱 기본 그림</small><h2>${htmlEsc(item.name||"항목")} 일러스트</h2></div><button value="close" aria-label="닫기">×</button></div><p>사진 첨부와 별개인 서랍마을 기본 일러스트예요. 투명 배경과 원본 비율로 표시됩니다.</p><div class="catalog-illustration-grid">${symbols.map((symbol,index)=>`<button type="button" data-catalog-app-art="${index}"><img src="${catalogIllustration(kind,index)}" alt=""><span>${symbol} 일러스트 ${index+1}</span></button>`).join("")}</div></form>`;
+  dialog.querySelectorAll("[data-catalog-app-art]").forEach(button=>button.onclick=()=>{
+    updateCatalogItem(kind,itemId,{image:catalogIllustration(kind,Number(button.dataset.catalogAppArt)),imageSource:"app"});
+    dialog.close();render();
+  });
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+}
+
 function openRoomImageMenu(homeId,roomKey,{returnToEditor=true}={}){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
   const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||{};
@@ -781,6 +805,15 @@ function bind(){
     });
     menuNavigationListenerBound=true;
   }
+  // iOS Safari에서 장면 합성 레이어가 click target을 바꾸는 경우에도
+  // 고정 메뉴 버튼 자체가 항상 화면 이동을 처리하도록 직접 연결한다.
+  $$(".native-game-menu [data-tab], .native-sub-header [data-tab]").forEach(button=>{
+    button.onclick=event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      navigateToTab(button.dataset.tab);
+    };
+  });
   const openNativeLog=()=>document.querySelector("[data-native-log-dialog]")?.showModal();
   $("[data-open-native-log-card]")?.addEventListener("click",event=>{
     if(event.target.closest("[data-tab]"))return;
@@ -1272,14 +1305,8 @@ function bind(){
   $("[data-save]")?.addEventListener("click",()=>explicitSave("캐릭터 저장"));
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
-  $$('[data-catalog-field="image"]').forEach(input=>{
-    if(input.parentElement?.querySelector("[data-catalog-image]"))return;
-    const button=document.createElement("button");
-    button.type="button";button.textContent="사진 첨부·자동 압축";
-    button.dataset.catalogImage=input.dataset.item;button.dataset.kind=input.dataset.kind;
-    input.insertAdjacentElement("afterend",button);
-  });
-  $$("[data-catalog-image]").forEach(el=>el.onclick=()=>pickImage("catalogImage",el.dataset.catalogImage,el.dataset.kind));
+  $$("[data-catalog-image]").forEach(el=>el.onclick=()=>openCatalogIllustrationPicker(el.dataset.catalogImage,el.dataset.kind));
+  $$("[data-catalog-photo]").forEach(el=>el.onclick=()=>pickImage("catalogImage",el.dataset.catalogPhoto,el.dataset.kind));
   $$(".place-editor details").forEach(details=>{
     const audienceTitle=[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
     const oldPicker=audienceTitle?.nextElementSibling,placeId=oldPicker?.querySelector("[data-place-audience]")?.dataset.placeAudience;
@@ -1437,9 +1464,7 @@ function bind(){
     if(field==="overall"){
       const summary=$$("[data-view-summary]").find(item=>item.dataset.viewSummary===`${source}:${target}`);
       if(summary){
-        const sourceName=summary.dataset.viewSourceName||state.characters[source]?.name||"이 캐릭터";
-        const targetName=summary.dataset.viewTargetName||state.characters[target]?.name||"상대";
-        summary.textContent=`${subjectText(sourceName)} ${objectText(targetName)} ${overallViewPhrase(select.value)}`;
+        summary.textContent=overallViewPhrase(select.value);
       }
     }
     const dialog=select.closest("[data-view-dialog]");
@@ -1511,7 +1536,7 @@ function applyImage(type,id,room,data){
   else if(type==="petPhoto")setPetImage(id,room,"photo",data);
   else if(type==="petIcon")setPetImage(id,room,"icon",data);
   else if(type==="car")updateCar(id,room,{image:data});
-  else if(type==="catalogImage")updateCatalogItem(room,id,{image:data});
+  else if(type==="catalogImage")updateCatalogItem(room,id,{image:data,imageSource:"user"});
   else setCharacterImage(id,type,data);
 }
 
@@ -2055,7 +2080,7 @@ function openRelationDialog(id=""){
     [...f.type.options].forEach(option=>option.textContent=past?(pastTypeLabels[option.value]||`과거의 ${option.value}`):option.value);
     f.querySelector("[data-stage-label]").textContent=past?"과거 관계 단계":"현재 관계 단계";
   };
-  const refreshStages=()=>{refreshTemporalLabels();const values=stagesFor(f.type.value,temporalStatus()),selected=old?.stage&&values.includes(old.stage)?old.stage:values[Math.floor(values.length/2)];f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("")};
+  const refreshStages=()=>{refreshTemporalLabels();const values=stagesFor(f.type.value,temporalStatus()),selected=old?.stage&&values.includes(old.stage)?old.stage:values[0];f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("")};
   const relationTypeHelp={
     "부모·자녀":"누가 부모이고 누가 자녀인지 역할이 있는 관계예요. 혈연·입양·법적 등록 여부는 아래 공개·공적 기록 항목으로 따로 정합니다.",
     "형제·자매":"선택한 구성원마다 첫째·둘째 순서와 혈연·이복·이부·비혈연 여부를 따로 정하는 관계예요.",
@@ -2071,11 +2096,16 @@ function openRelationDialog(id=""){
     f.querySelector("[data-officiality-help]").textContent=["부모·자녀","형제·자매"].includes(f.type.value)?"마지막 ‘법적으로 관계가 등록됨’은 가족관계·입양처럼 이 가족 역할이 공적 서류에 기록된 경우예요. 혈연 여부와는 별개입니다.":"맨 위는 밖에서 관계 이름을 쓰지 않는 상태이고, 아래로 갈수록 공개 범위가 넓어집니다. 마지막은 이 관계와 관련된 공적 서류가 있는 경우예요.";
     if(f.type.value==="동거인")f.cohabit.checked=true;
     f.cohabit.disabled=f.type.value==="동거인";
+    const married=f.type.value==="부부";
+    if(married)f.legalStatus.value="법적으로 관계가 등록됨";
+    f.legalStatus.disabled=married;
     syncPairOrder();
     refreshFaultParties();
   };
   const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
-  f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);f.legalStatus.value=officialityMigration[old?.legalStatus]||old?.legalStatus||"가까운 사람에게만 알림";
+  f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";
+  f.legalStatus.value=f.type.value==="부부"?"법적으로 관계가 등록됨":officialityMigration[old?.legalStatus]||old?.legalStatus||"가까운 사람에게만 알림";
+  updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);
   f.querySelectorAll('[name="member"]').forEach(input=>input.onchange=syncPairOrder);
   f.querySelectorAll('[name="temporalStatus"]').forEach(input=>input.onchange=()=>{refreshStages();refreshFaultParties()});
   f.querySelectorAll('[name="mother"],[name="father"],[name="child"]').forEach(input=>input.onchange=refreshParentKinship);
@@ -2101,7 +2131,7 @@ function openRelationDialog(id=""){
       else if(f.type.value!=="부모·자녀"&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
       else{
         const temporal=temporalStatus(),levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1);
-        const hostile=f.type.value==="혐관",base={type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:temporal==="past"?f.faultParty.value:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.legalStatus.value,kinshipByPair,siblingOrder,siblingKinshipByPair,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
+        const hostile=f.type.value==="혐관",base={type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:temporal==="past"?f.faultParty.value:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,kinshipByPair,siblingOrder,siblingKinshipByPair,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
         if(old?.groupId)Object.values(state.relationships).filter(r=>r.groupId===old.groupId).forEach(r=>deleteRelationship(r.id));
         else if(old&&(f.type.value==="부모·자녀"||members.length!==2))deleteRelationship(id);
         if(f.type.value==="부모·자녀"){
@@ -2217,13 +2247,13 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260808b").catch(error=>{
+  import("./auth.js?v=20260808c").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260808b",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260808c",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

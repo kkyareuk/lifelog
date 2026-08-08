@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808b";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808b";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808c";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808c";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -291,8 +291,8 @@ function nativeScenePresentation(c,entry){
     const seed=nativeVisualSeed(`${effectSeed}:${index}`);
     const x=4+(seed%91);
     const y=8+((seed>>>7)%65);
-    const delay=-(((seed>>>15)%240)/100);
-    const duration=2.25+((seed>>>23)%135)/100;
+    const delay=((seed>>>15)%520)/100;
+    const duration=2.8+((seed>>>23)%230)/100;
     const scale=.72+((seed>>>4)%56)/100;
     const tilt=-18+((seed>>>12)%37);
     return `<i style="--fx-index:${index};--fx-x:${x}%;--fx-y:${y}%;--fx-delay:${delay}s;--fx-duration:${duration}s;--fx-scale:${scale};--fx-tilt:${tilt}deg">${effectSymbol}</i>`;
@@ -312,14 +312,23 @@ function nativeScenePresentation(c,entry){
     ...partners.map(person=>person.id)
   ])];
   const sceneParticipants=sceneParticipantIds.map(id=>state.characters?.[id]).filter(Boolean);
-  const lineupHtml=companions.length?`<span class="native-scene-lineup ${coResidentConversation?"is-conversation":""}" style="--scene-count:${sceneParticipants.length}" aria-label="${esc(sceneParticipants.map(person=>person.name).join(", "))}">${sceneParticipants.map((person,index)=>`<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index}">${avatar(person,"native-scene-lineup-avatar")}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`).join("")}</span>`:"";
+  const lineupHtml=companions.length?`<span class="native-scene-lineup ${coResidentConversation?"is-conversation":""}" style="--scene-count:${sceneParticipants.length}" aria-label="${esc(sceneParticipants.map(person=>person.name).join(", "))}">${sceneParticipants.map((person,index)=>{
+    const personSeed=nativeVisualSeed(`${entry?.interactionId||entry?.dateGroup||entry?.title}:${entry?.minute||""}:${person.id}:${index}`);
+    const driftX=-8+(personSeed%17),driftY=-2+((personSeed>>>5)%13),tilt=-3+((personSeed>>>10)%7);
+    const delay=((personSeed>>>15)%190)/100,duration=2.9+((personSeed>>>22)%210)/100;
+    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index};--scene-x:${driftX}px;--scene-y:${driftY}px;--scene-tilt:${tilt}deg;--scene-delay:${delay}s;--scene-duration:${duration}s">${avatar(person,"native-scene-lineup-avatar")}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
+  }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
     companions.length
     &&!fighting
     &&/대화|이야기|말을 건|말을 나누|묻|대답|수다|상의|안부|농담|재잘|주고받|티격태격/.test(text)
   );
+  const bubbleWords=tone==="interaction-playful"
+    ?["장난이야","또 그러네","받아쳤어"]
+    :tone==="interaction-tense"?["잠깐","그건 아니야","…"]
+      :tone==="interaction-warm"?["응","그랬구나","계속 말해 줘"]:["응","그래","…"];
   const conversationHtml=conversationalInteraction
-    ?`<span class="native-conversation-bubbles ${tone==="interaction-playful"?"is-playful":tone==="interaction-tense"?"is-tense":""}" aria-hidden="true"><i>${tone==="interaction-playful"?"♪":"…"}</i><i>${tone==="interaction-tense"?"…":"!"}</i><i>${tone==="interaction-playful"?"!":"…"}</i></span>`
+    ?`<span class="native-conversation-bubbles ${tone==="interaction-playful"?"is-playful":tone==="interaction-tense"?"is-tense":""}" aria-label="두 캐릭터가 대화를 주고받는 중">${bubbleWords.map(word=>`<i>${word}</i>`).join("")}</span>`
     :"";
   return {
     tone,
@@ -397,6 +406,17 @@ function compactDisplayedTimeline(entries,minGap=30){
       (String(item.baseTitle||"")===String(previous.title||"")||
         String(item.title||"").split(" · ").includes(String(previous.title||""))));
     if(shadowsPrevious){compact.pop();previous=compact.at(-1)}
+    const normalized=value=>String(value||"").replace(/\s+/g," ").trim();
+    const titleParts=value=>[...new Set(normalized(value).split(" · ").filter(Boolean))];
+    const nearDuplicate=Boolean(previous&&Math.abs(Number(item.minute)-Number(previous.minute))<=15&&sameLocation(previous,item)&&(
+      (item.interactionId&&item.interactionId===previous.interactionId)||
+      (titleParts(item.title).some(part=>titleParts(previous.title).includes(part))&&(
+        normalized(item.desc)===normalized(previous.desc)||
+        normalized(item.desc).includes(normalized(previous.desc))||
+        normalized(previous.desc).includes(normalized(item.desc))
+      ))
+    ));
+    if(nearDuplicate){compact[compact.length-1]=preferredMomentEntry(previous,item);return}
     const protectedEntry=Boolean(item?.dateGroup||item?.interactionId||item?.groupInteraction||item?.careRoutine||/휠체어|의수|의족|보조기기/.test(`${item?.title||""} ${item?.desc||""}`));
     const previousProtected=Boolean(previous?.dateGroup||previous?.interactionId||previous?.groupInteraction||previous?.careRoutine||/휠체어|의수|의족|보조기기/.test(`${previous?.title||""} ${previous?.desc||""}`));
     if(!previous||protectedEntry||previousProtected||Number(item.minute)-Number(previous.minute)>=minGap)compact.push(item);
@@ -959,8 +979,8 @@ function catalog(){
       const custom=item.category&&!categories.includes(item.category)?[item.category]:[];
       const subgenres=kind==="movie"?(VIDEO_GENRES[item.category]||[]):kind==="perfume"?PERFUME_NOTES:kind==="weapon"?(WEAPON_SUBTYPES[item.category]||[]):(DETAIL_OPTIONS[kind]||[]);
       const detailEditor=kind==="perfume"?`<div class="chips"><b>향 계열 키워드 · 여러 개 선택 가능</b>${PERFUME_NOTES.map(x=>`<button data-catalog-keyword="${item.id}" data-kind="${kind}" data-value="${x}" class="${(item.keywords||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div>`:`<label>세부 항목<select data-catalog-field="subtype" data-kind="${kind}" data-item="${item.id}"><option value="">세부 항목 선택</option>${subgenres.map(x=>`<option ${x===item.subtype?"selected":""}>${esc(x)}</option>`).join("")}</select></label>`;
-      const imageClass=/^(?:data:|blob:|https?:)/i.test(item.image||"")?"catalog-user-photo":"catalog-app-art";
-      return `<details class="catalog-dex-card"><summary>${item.image?`<img class="catalog-app-icon ${imageClass}" src="${esc(item.image)}" alt="">`:`<span class="catalog-app-icon">${CATALOG_ICONS[kind]||"📦"}</span>`}<b>${esc(item.name)}</b><small>${esc(item.category||label)}${item.subtype?` · ${esc(item.subtype)}`:""}</small></summary><div class="catalog-detail"><label>이름<input data-catalog-field="name" data-kind="${kind}" data-item="${item.id}" value="${esc(item.name)}"></label><label>분류<select data-catalog-field="category" data-kind="${kind}" data-item="${item.id}"><option value="">분류 선택</option>${[...custom,...categories].map(x=>`<option ${x===item.category?"selected":""}>${esc(x)}</option>`).join("")}</select></label>${detailEditor}<label class="catalog-illustration-field">이미지 링크<input data-catalog-field="image" data-kind="${kind}" data-item="${item.id}" value="${esc(item.image||"")}" placeholder="https://..."><button type="button" class="catalog-illustration-picker" data-catalog-image="${item.id}" data-kind="${kind}">${item.image?`<img src="${esc(item.image)}" alt=""><span>일러스트 바꾸기</span>`:`<span class="catalog-illustration-placeholder">＋</span><span>일러스트 고르기</span>`}<small>원본 비율과 투명 배경을 유지해요</small></button></label>${kind==="food"?`<label>맵기<select data-catalog-field="spicy" data-kind="${kind}" data-item="${item.id}">${levelOptions(SPICE_LEVELS,item.spicy??0)}</select></label><label>달기<select data-catalog-field="sweet" data-kind="${kind}" data-item="${item.id}">${levelOptions(SWEET_LEVELS,item.sweet??0)}</select></label>`:""}${["music","idol","book","movie","game"].includes(kind)?`<label>아티스트·제작자<input data-catalog-field="creator" data-kind="${kind}" data-item="${item.id}" value="${esc(item.creator||"")}"></label>`:""}<button class="danger" data-delete-catalog="${item.id}" data-kind="${kind}">항목 삭제</button></div></details>`;
+      const imageClass=item.imageSource==="app"?"catalog-app-art":"catalog-user-photo";
+      return `<details class="catalog-dex-card"><summary>${item.image?`<img class="catalog-app-icon ${imageClass}" src="${esc(item.image)}" alt="">`:`<span class="catalog-app-icon">${CATALOG_ICONS[kind]||"📦"}</span>`}<b>${esc(item.name)}</b><small>${esc(item.category||label)}${item.subtype?` · ${esc(item.subtype)}`:""}</small></summary><div class="catalog-detail"><label>이름<input data-catalog-field="name" data-kind="${kind}" data-item="${item.id}" value="${esc(item.name)}"></label><label>분류<select data-catalog-field="category" data-kind="${kind}" data-item="${item.id}"><option value="">분류 선택</option>${[...custom,...categories].map(x=>`<option ${x===item.category?"selected":""}>${esc(x)}</option>`).join("")}</select></label>${detailEditor}<label class="catalog-illustration-field">이미지 링크<input data-catalog-field="image" data-kind="${kind}" data-item="${item.id}" value="${esc(item.image||"")}" placeholder="https://..."></label><div class="catalog-image-actions"><button type="button" class="catalog-illustration-picker" data-catalog-image="${item.id}" data-kind="${kind}">${item.imageSource==="app"&&item.image?`<img src="${esc(item.image)}" alt=""><span>앱 일러스트 바꾸기</span>`:`<span class="catalog-illustration-placeholder">✦</span><span>앱 일러스트 고르기</span>`}<small>게임에서 제공하는 투명 일러스트</small></button><button type="button" class="catalog-photo-picker" data-catalog-photo="${item.id}" data-kind="${kind}">${item.imageSource!=="app"&&item.image?`<img src="${esc(item.image)}" alt=""><span>첨부 사진 바꾸기</span>`:`<span class="catalog-illustration-placeholder">＋</span><span>사진 첨부하기</span>`}<small>내 사진은 둥근 썸네일로 표시돼요</small></button></div>${kind==="food"?`<label>맵기<select data-catalog-field="spicy" data-kind="${kind}" data-item="${item.id}">${levelOptions(SPICE_LEVELS,item.spicy??0)}</select></label><label>달기<select data-catalog-field="sweet" data-kind="${kind}" data-item="${item.id}">${levelOptions(SWEET_LEVELS,item.sweet??0)}</select></label>`:""}${["music","idol","book","movie","game"].includes(kind)?`<label>아티스트·제작자<input data-catalog-field="creator" data-kind="${kind}" data-item="${item.id}" value="${esc(item.creator||"")}"></label>`:""}<button class="danger" data-delete-catalog="${item.id}" data-kind="${kind}">항목 삭제</button></div></details>`;
     }).join("")||"<p>아직 등록된 항목이 없어요.</p>";
     return `<section class="catalog-kind catalog-section"><div class="title"><h2>${label}</h2><button data-add-catalog="${kind}">+ 추가</button></div><div class="catalog-dex-grid">${cards}</div></section>`;
   }).join("");
@@ -1041,8 +1061,9 @@ const characterViewEditor=()=>{
     <div class="relationship-pair-magnet">
       <div class="relationship-character-rail source-rail" aria-label="감정을 느끼는 캐릭터">${rouletteButtons(state.order,"source",sourceId,sourceIndex)}</div>
       <div class="relationship-pair-core">
-        <div class="relationship-pair-icons">${avatar(source)}<i>×</i>${avatar(target)}</div>
-        <strong data-view-summary="${sourceId}:${targetId}" data-view-source-name="${esc(source.name)}" data-view-target-name="${esc(target.name)}">${esc(subjectText(source.name))} ${esc(objectText(target.name))} ${esc(overallViewPhrase(overall))}</strong>
+        <div class="relationship-pair-icons"><span><small>마음을 보는 사람</small>${avatar(source)}<b>${esc(source.name)}</b></span><i>→</i><span><small>마음의 대상</small>${avatar(target)}<b>${esc(target.name)}</b></span></div>
+        <small class="relationship-direction-help">왼쪽 캐릭터의 마음</small>
+        <strong data-view-summary="${sourceId}:${targetId}" data-view-source-name="${esc(source.name)}" data-view-target-name="${esc(target.name)}">${esc(overallViewPhrase(overall))}</strong>
         <span>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</span>
         <em>${esc(relationshipReality(sourceId,targetId,official))}</em>
         <button type="button" class="primary" data-open-view-dialog="${sourceId}:${targetId}">이 시선 편집하기</button>

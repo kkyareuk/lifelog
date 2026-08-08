@@ -150,7 +150,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:11,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",colorMode:"dark",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:12,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",colorMode:"dark",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -160,6 +160,7 @@ const fresh=()=>({schema:11,activeTab:"character",characterPane:"profile",active
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===12)return normalizeHomes(x);
   if(x.schema===11)return normalizeHomes(x);
   if(x.schema===10)return normalizeHomes(x);
   if(x.schema===9)return normalizeHomes(x);
@@ -189,7 +190,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=11;
+  x.schema=12;
   x.activeTab=["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(x.activeTab)?x.activeTab:"character";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
@@ -210,6 +211,7 @@ function normalizeHomes(x){
   }));
   x.deletedCharacterIds=Array.isArray(x.deletedCharacterIds)?[...new Set(x.deletedCharacterIds.map(String))]:[];
   x.deletedRelationshipIds=Array.isArray(x.deletedRelationshipIds)?[...new Set(x.deletedRelationshipIds.map(String))]:[];
+  x.deletedRelationshipKeys=Array.isArray(x.deletedRelationshipKeys)?[...new Set(x.deletedRelationshipKeys.map(String).filter(Boolean))]:[];
   x.deletedHomeIds=Array.isArray(x.deletedHomeIds)?[...new Set(x.deletedHomeIds.map(String))]:[];
   x.deletedCharacterIds.forEach(id=>delete x.characters[id]);
   const characterIds=Object.keys(x.characters);
@@ -301,12 +303,15 @@ function normalizeHomes(x){
     delete relation.touchIntensity;
     delete relation.romanceStatus;
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
-    relation.legalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus||"관계를 따로 명명하지 않음";
+    relation.legalStatus=relation.type==="부부"
+      ?"법적으로 관계가 등록됨"
+      :(officialityMigration[relation.legalStatus]||relation.legalStatus||"가까운 사람에게만 알림");
     delete relation.protectionRole;delete relation.caregiverIds;delete relation.careReceiverIds;
     // 정규화는 비어 있는 공식 관계 단계를 임의의 친밀한 단계로 채우지 않는다.
     // 사용자가 고른 적 없는 “편안한 연인/친구”가 다시 생기는 일을 막는다.
     relation.stage=relation.stage||"관계 단계 미설정";
     if(x.characters[relation.a]&&x.characters[relation.b]&&relation.a!==relation.b){
+      if(x.deletedRelationshipKeys.includes(relationshipIdentity(relation)))return;
       const directional=relation.type==="부모·자녀"||relation.directional;
       const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
       const key=`${relation.type}|${pair}|${relation.parentRole||""}`;
@@ -603,6 +608,9 @@ export function deleteCharacter(id){
     if(relation.a===id||relation.b===id){
       state.deletedRelationshipIds=Array.isArray(state.deletedRelationshipIds)?state.deletedRelationshipIds:[];
       if(!state.deletedRelationshipIds.includes(relationId))state.deletedRelationshipIds.push(relationId);
+      state.deletedRelationshipKeys=Array.isArray(state.deletedRelationshipKeys)?state.deletedRelationshipKeys:[];
+      const relationKey=relationshipIdentity(relation);
+      if(relationKey&&!state.deletedRelationshipKeys.includes(relationKey))state.deletedRelationshipKeys.push(relationKey);
       delete state.relationships[relationId];
     }
   });
@@ -956,17 +964,28 @@ export function characterViewFor(sourceId,targetId){
   const {rapport:_oldRapport,spaceComfort:_oldSpaceComfort,_editedFields:_editedFields,...cleanExplicit}=explicit;
   return {...defaults,...cleanExplicit,comfort:migratedComfort||defaults.comfort};
 }
+function canonicalRelationshipType(type){
+  return ({"폴리 관계":"연인","절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구","유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"})[type]||String(type||"친구");
+}
 function relationshipIdentity(data){
   if(!data?.a||!data?.b||data.a===data.b)return"";
-  const directional=data.type==="부모·자녀"||Boolean(data.directional);
+  const type=canonicalRelationshipType(data.type);
+  const directional=type==="부모·자녀"||Boolean(data.directional);
   const pair=directional?`${data.a}>${data.b}`:[data.a,data.b].sort().join("~");
-  return`${String(data.type||"친구")}|${pair}|${String(data.parentRole||"")}`;
+  return`${type}|${pair}|${String(data.parentRole||"")}`;
 }
 function matchingRelationship(data,excludeId=""){
   const identity=relationshipIdentity(data);
   return identity?Object.values(state.relationships||{}).find(relation=>relation.id!==excludeId&&relationshipIdentity(relation)===identity):null;
 }
 export function addRelationship(data){
+  data={
+    ...data,
+    stage:data?.stage||"관계 단계 미설정",
+    legalStatus:data?.type==="부부"?"법적으로 관계가 등록됨":(data?.legalStatus||"가까운 사람에게만 알림")
+  };
+  const identity=relationshipIdentity(data);
+  state.deletedRelationshipKeys=(state.deletedRelationshipKeys||[]).filter(value=>value!==identity);
   const existing=matchingRelationship(data);
   if(existing){
     updateRelationship(existing.id,data);
@@ -979,8 +998,14 @@ export function addRelationship(data){
 }
 export function updateRelationship(id,data){
   const relation=state.relationships[id];if(!relation)return;
+  const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);
   Object.assign(relation,data);
+  relation.legalStatus=relation.type==="부부"?"법적으로 관계가 등록됨":(relation.legalStatus||"가까운 사람에게만 알림");
+  const nextIdentity=relationshipIdentity(relation);
+  state.deletedRelationshipKeys=Array.isArray(state.deletedRelationshipKeys)?state.deletedRelationshipKeys:[];
+  if(previousIdentity&&previousIdentity!==nextIdentity&&!state.deletedRelationshipKeys.includes(previousIdentity))state.deletedRelationshipKeys.push(previousIdentity);
+  state.deletedRelationshipKeys=state.deletedRelationshipKeys.filter(value=>value!==nextIdentity);
   const duplicate=matchingRelationship(relation,id);
   if(duplicate){
     Object.assign(duplicate,relation,{id:duplicate.id});
@@ -1014,9 +1039,12 @@ export function toggleOwned(characterId,kind,itemId,persist=true){
   c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);
 }
 export function deleteRelationship(id){
-  if(!state.relationships[id])return;
+  const relation=state.relationships[id];if(!relation)return;
   state.deletedRelationshipIds=Array.isArray(state.deletedRelationshipIds)?state.deletedRelationshipIds:[];
   if(!state.deletedRelationshipIds.includes(id))state.deletedRelationshipIds.push(id);
+  state.deletedRelationshipKeys=Array.isArray(state.deletedRelationshipKeys)?state.deletedRelationshipKeys:[];
+  const relationKey=relationshipIdentity(relation);
+  if(relationKey&&!state.deletedRelationshipKeys.includes(relationKey))state.deletedRelationshipKeys.push(relationKey);
   delete state.relationships[id];
   save(true);
 }

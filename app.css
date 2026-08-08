@@ -4370,6 +4370,118 @@ html[data-color-mode="light"][data-active-tab="settings"] .storage-meter :is(h3,
   -webkit-text-fill-color:#302a25!important;
 }
 
+/* 2026-08-08c: Safari 터치, 장면 비동기 움직임, 모드별 편집면 보강 */
+.native-app .native-game-menu{pointer-events:none!important}
+.native-app .native-game-menu button{
+  z-index:90!important;
+  pointer-events:auto!important;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.native-app .native-scene-effects,
+.native-app .native-scene-atmosphere,
+.native-app .native-conversation-bubbles{pointer-events:none!important}
+
+.native-app .native-character-stage{
+  left:50%!important;
+  margin-left:0!important;
+  transform:translate(-50%,12px)!important;
+}
+.native-app .native-scene-lineup{padding-right:5%!important;padding-left:5%!important;transform:translateY(11px)}
+.native-app .native-scene-lineup-person{
+  transform:translate(var(--scene-x,0),var(--scene-y,0)) rotate(var(--scene-tilt,0deg));
+  animation:native-scene-person-drift var(--scene-duration,3.8s) ease-in-out var(--scene-delay,0s) infinite alternate!important;
+}
+.native-app .native-scene-lineup-person.is-current{z-index:2}
+@keyframes native-scene-person-drift{
+  0%{translate:-3px 3px;scale:.985}
+  48%{translate:2px -4px;scale:1.012}
+  100%{translate:5px 1px;scale:.998}
+}
+.native-app .native-scene-effects i{
+  opacity:0;
+  animation-delay:var(--fx-delay)!important;
+  animation-duration:var(--fx-duration)!important;
+  animation-fill-mode:both!important;
+}
+.native-app .native-conversation-bubbles{inset:7% 5% auto!important;gap:12px;align-items:flex-start}
+.native-app .native-conversation-bubbles i{
+  width:auto!important;
+  max-width:42%;
+  min-height:34px;
+  padding:8px 13px!important;
+  border-radius:18px!important;
+  font-size:clamp(10px,2.8vw,14px)!important;
+  line-height:1.25!important;
+  white-space:nowrap;
+}
+.native-app .native-conversation-bubbles i:nth-child(2){margin-top:38px;animation-delay:.55s!important}
+.native-app .native-conversation-bubbles i:nth-child(3){margin-top:8px;animation-delay:1.15s!important}
+
+.relationship-pair-icons{display:flex;align-items:center;justify-content:center;gap:8px}
+.relationship-pair-icons>span{display:grid;place-items:center;gap:3px;min-width:72px}
+.relationship-pair-icons>span>small{font-size:8px;opacity:.72;white-space:nowrap}
+.relationship-pair-icons>span>b{font-size:11px;color:inherit}
+.relationship-pair-icons>i{font-size:20px;font-style:normal;opacity:.74}
+.relationship-direction-help{font-size:9px!important;letter-spacing:.06em;text-transform:uppercase}
+
+.catalog-image-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.catalog-image-actions>button{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-items:center;gap:2px 10px;min-height:92px;padding:12px;text-align:left}
+.catalog-image-actions img,.catalog-image-actions .catalog-illustration-placeholder{grid-row:1/3;width:62px;height:62px;object-fit:contain;border-radius:0;background:transparent}
+.catalog-image-actions .catalog-photo-picker img{border-radius:50%;object-fit:cover}
+.catalog-image-actions small{font-size:9px}
+
+html[data-color-mode="dark"] dialog :is(
+  .character-view-fields,.body-profile-form,.catalog-detail,.catalog-image-actions,
+  .relation-pair-fields,.room-editor-fields,.home-identity-editor,.setting-card,
+  .sync-panel,.font-preview,.storage-meter,.character-view-dialog-context,
+  .catalog-illustration-grid,.official-relation-dialog-body,.relationship-map-dialog-body,
+  fieldset,.chips
+){border-color:#ffffff1c!important;background:#142131!important;color:#f4f7fb!important}
+html[data-color-mode="dark"] dialog :is(.catalog-detail,.body-profile-form,.character-view-fields,.relation-pair-fields) label,
+html[data-color-mode="dark"] dialog :is(.catalog-detail,.body-profile-form,.character-view-fields,.relation-pair-fields) span{
+  color:#eaf0f6!important;-webkit-text-fill-color:#eaf0f6!important;
+}
+html[data-color-mode="dark"] :is(
+  .catalog-dex-card,.catalog-detail,.catalog-kind,.routine-day,.weekly-table,
+  .setting-card,.sync-panel,.font-preview,.storage-meter,.relation,
+  .character-view-fields,.body-profile-form,.home-identity-editor,.room-editor-fields
+){border-color:#ffffff1c!important;background:#142131!important;color:#f4f7fb!important}
+html[data-color-mode="dark"] :is(.catalog-dex-card,.catalog-detail,.catalog-kind,.routine-day,.setting-card,.sync-panel,.relation) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] :is(.catalog-dex-card,.catalog-detail,.catalog-kind,.routine-day,.setting-card,.sync-panel,.relation) :is(p,small,span){color:#bdc9d5!important;-webkit-text-fill-color:#bdc9d5!important}
+
+html[data-color-mode="light"] dialog :is(
+  .character-view-fields,.body-profile-form,.catalog-detail,.catalog-image-actions,
+  .relation-pair-fields,.room-editor-fields,.home-identity-editor,.setting-card,
+  .sync-panel,.font-preview,.storage-meter,.character-view-dialog-context,
+  .catalog-illustration-grid,.official-relation-dialog-body,.relationship-map-dialog-body,
+  fieldset,.chips
+){border-color:#ddd3c9!important;background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button{
+  border-color:#d9d1c8!important;
+  background:#fffdf0e8!important;
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+  box-shadow:0 10px 24px #362d241f!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button>small,
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button>span{color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+
+@media(max-width:720px){
+  html.native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
+    width:calc(100% + 28px)!important;
+    max-width:calc(100vw - 28px)!important;
+    margin-right:-14px!important;
+    margin-left:-14px!important;
+  }
+  .catalog-image-actions{grid-template-columns:1fr}
+  .native-app .native-character-stage{width:min(78vw,350px)!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .native-app .native-scene-lineup-person{animation:none!important}
+}
+
 @media(prefers-reduced-motion:reduce){
   .native-app .scene-tone-sleep .native-character-stage,
   .native-app .scene-tone-sleep .native-character-stage .native-main-character,

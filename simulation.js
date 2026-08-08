@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808b";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808c";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1468,8 +1468,7 @@ function relationshipMorningEntry(c,pick,time,date){
     ],
     연인:[
       [`${n}에게 아침 인사를 건네는 중`,"잠이 덜 깬 목소리를 듣고 웃으며 오늘 언제 다시 만날지 자연스럽게 묻고 있어요.","living"],
-      [`${n}와 아침 음료를 나누는 중`,"상대가 좋아하는 방식으로 음료를 준비해 건네고 가까이 서서 첫 모금을 기다리고 있어요.","kitchen"],
-      [`${n}의 하루를 응원하는 중`,"오늘 중요한 일이 있다는 것을 기억하고 부담스럽지 않게 잘할 수 있다고 다정히 말해 주고 있어요.","entry"]
+      [`${n}와 아침 음료를 나누는 중`,"상대가 좋아하는 방식으로 음료를 준비해 건네고 가까이 서서 첫 모금을 기다리고 있어요.","kitchen"]
     ],
     "형제·자매":[
       [`${n}와 세면 순서를 두고 실랑이하는 중`,"먼저 일어났다는 주장과 어제 양보했다는 주장이 오가다가 오늘 순서를 빠르게 정하고 있어요.","bath"],
@@ -1924,7 +1923,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260808a";
+const ENGINE_VERSION="20260808c";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1944,13 +1943,25 @@ function mergeImmutableEntries(kept,generated){
 function cleanExactRepeatedEntries(entries){
   const kept=[];
   [...entries].sort((a,b)=>a.minute-b.minute).forEach(item=>{
-    const repeated=kept.some(previous=>
-      previous.title===item.title&&
-      previous.desc===item.desc&&
-      previous.room===item.room&&
-      Math.abs(Number(previous.minute)-Number(item.minute))<240
-    );
-    if(!repeated)kept.push(item);
+    const titleParts=value=>[...new Set(String(value||"").split(" · ").map(part=>part.replace(/\s+/g," ").trim()).filter(Boolean))];
+    const itemParts=titleParts(item.title);
+    const repeatedIndex=kept.findIndex(previous=>{
+      const gap=Math.abs(Number(previous.minute)-Number(item.minute));
+      if(!Number.isFinite(gap)||gap>15)return false;
+      const previousParts=titleParts(previous.title);
+      const titleOverlap=itemParts.some(part=>previousParts.includes(part));
+      const samePlace=(previous.visitHomeId||previous.homeId||"")===(item.visitHomeId||item.homeId||"")
+        &&(previous.placeId||"")===(item.placeId||"");
+      const previousDesc=String(previous.desc||"").replace(/\s+/g," ").trim();
+      const itemDesc=String(item.desc||"").replace(/\s+/g," ").trim();
+      const sameStory=previousDesc===itemDesc||previousDesc.includes(itemDesc)||itemDesc.includes(previousDesc);
+      return samePlace&&titleOverlap&&(sameStory||previous.title===item.title);
+    });
+    if(repeatedIndex<0){kept.push(item);return}
+    const previous=kept[repeatedIndex];
+    const itemScore=(item.groupInteraction?8:0)+(item.dateGroup?4:0)+String(item.title||"").length+String(item.desc||"").length/100;
+    const previousScore=(previous.groupInteraction?8:0)+(previous.dateGroup?4:0)+String(previous.title||"").length+String(previous.desc||"").length/100;
+    if(itemScore>previousScore)kept[repeatedIndex]=item;
   });
   return kept;
 }
@@ -1975,7 +1986,7 @@ function cleanShadowedBaseEntries(entries){
     const previous=kept.at(-1);
     const shadowsPrevious=Boolean(previous&&item?.groupInteraction&&
       Number(item.minute)>=Number(previous.minute)&&
-      Number(item.minute)-Number(previous.minute)<=10&&
+      Number(item.minute)-Number(previous.minute)<=15&&
       sameLocation(previous,item)&&
       (String(item.baseTitle||"")===String(previous.title||"")||
         String(item.title||"").split(" · ").includes(String(previous.title||""))));
@@ -2021,6 +2032,11 @@ function cleanLegacyDateEntries(entries){
 function cleanSelfCompanionEntries(c,entries){
   return entries.filter(item=>item?.withId!==c.id);
 }
+function cleanCharacterBreakingCheeringEntries(entries){
+  // 초기 스크립트 팩에 있던 막연한 “하루를 응원” 문장은 상대별 시선과 무관하게
+  // 붙을 수 있었다. 구체적인 행동도 아니므로 새 로그와 기존 당일 표시 모두에서 제외한다.
+  return entries.filter(item=>!/의 하루를 응원(?:하|하는|했|해)/.test(`${item?.title||""} ${item?.desc||""}`));
+}
 function companionWasActuallyThere(c,item,date){
   if(!item?.withId)return true;
   const other=state.characters[item.withId],otherDay=other?.days?.[dayKey(date)];
@@ -2054,7 +2070,7 @@ export function timeline(c,date=new Date()){
   const old=c.days[key];
   if(old&&Array.isArray(old.entries)){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    const cleaned=cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries)))))));
+    const cleaned=cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))));
     if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
   }
   const today=key===dayKey(new Date());
@@ -2063,7 +2079,7 @@ export function timeline(c,date=new Date()){
   if(old&&today&&Array.isArray(old.entries)&&old.signature===sig)return old.entries;
   if(old&&!today)return Array.isArray(old.entries)?old.entries:[];
    if(!old||old.signature!==sig){
-     let entries=build(c,date);
+     let entries=cleanCharacterBreakingCheeringEntries(build(c,date));
     if(c.createdAt){
       const created=new Date(c.createdAt),target=new Date(date.getFullYear(),date.getMonth(),date.getDate());
       const createdDay=new Date(created.getFullYear(),created.getMonth(),created.getDate());
@@ -2097,7 +2113,7 @@ function commitLiveEntry(c,date,item){
         (entry.placeId||"")===(item.placeId||"")&&
         (entry.room||"")===(item.room||"");
       const shadowedBase=Number(item.minute)>=Number(entry.minute)&&
-        Number(item.minute)-Number(entry.minute)<=10&&sameLocation&&
+        Number(item.minute)-Number(entry.minute)<=15&&sameLocation&&
         (String(item.baseTitle||"")===String(entry.title||"")||
           String(item.title||"").split(" · ").includes(String(entry.title||"")));
       return !shadowedBase;
