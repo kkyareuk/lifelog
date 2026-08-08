@@ -1,0 +1,29 @@
+{
+  "appId": "com.drawervillage.app",
+  "appName": "서랍마을",
+  "webDir": "www",
+  "backgroundColor": "#f7f1e8",
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#f7f1e8",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#f7f1e8",
+      "overlaysWebView": false
+    },
+    "FirebaseAuthentication": {
+      "skipNativeAuth": true,
+      "providers": [
+        "google.com"
+      ]
+    }
+  }
+}

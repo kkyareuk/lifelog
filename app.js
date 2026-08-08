@@ -264,7 +264,7 @@ const readableInk=color=>{
   return luminance>175?"#241c18":"#ffffff";
 };
 async function exportProfilePng(character){
-  await document.fonts?.load?.('32px "Do Hyeon"');await document.fonts?.ready;
+  await document.fonts?.load?.('32px "Noto Sans KR"');await document.fonts?.ready;
   const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=70,rowH=58;
   const rows=sections.reduce((sum,[,items])=>sum+items.length,0);
   canvas.width=width;canvas.height=Math.max(1750,430+sections.length*72+rows*rowH);
@@ -272,29 +272,29 @@ async function exportProfilePng(character){
   ctx.fillStyle="#fffdf9";ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.strokeStyle="#24201d";ctx.lineWidth=3;ctx.strokeRect(pad,55,width-pad*2,canvas.height-110);
   ctx.fillStyle=primary;ctx.fillRect(pad,55,width-pad*2,110);
-  ctx.fillStyle=ink;ctx.textAlign="center";ctx.font='56px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText("캐 릭 터  설 정 표",width/2,128);
+  ctx.fillStyle=ink;ctx.textAlign="center";ctx.font='700 56px "Noto Sans KR","Malgun Gothic",sans-serif';ctx.fillText("캐 릭 터  설 정 표",width/2,128);
   const portrait=await exportImage(character.photo),icon=await exportImage(character.icon);
   const imageX=pad+24,imageY=190,imageW=250,imageH=250;
   ctx.fillStyle="#f4f0ea";ctx.fillRect(imageX,imageY,imageW,imageH);ctx.strokeStyle="#24201d";ctx.lineWidth=2;ctx.strokeRect(imageX,imageY,imageW,imageH);
   const drawContain=(image,x,y,w,h)=>{if(!image)return false;const scale=Math.min(w/image.width,h/image.height),dw=image.width*scale,dh=image.height*scale;ctx.drawImage(image,x+(w-dw)/2,y+(h-dh)/2,dw,dh);return true};
-  if(!drawContain(portrait,imageX,imageY,imageW,imageH)){ctx.fillStyle=primary;ctx.font='72px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(character.name.slice(0,1),imageX+imageW/2,imageY+145)}
+  if(!drawContain(portrait,imageX,imageY,imageW,imageH)){ctx.fillStyle=primary;ctx.font='700 72px "Noto Sans KR","Malgun Gothic",sans-serif';ctx.fillText(character.name.slice(0,1),imageX+imageW/2,imageY+145)}
   if(icon)drawContain(icon,imageX+178,imageY+178,66,66);
-  ctx.textAlign="left";ctx.fillStyle="#24201d";ctx.font='48px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(character.name,pad+310,260);
-  ctx.font='24px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillStyle="#665d56";ctx.fillText("서랍마을 인물 기록 · 설정된 항목만 표기",pad+310,310);
+  ctx.textAlign="left";ctx.fillStyle="#24201d";ctx.font='700 48px "Noto Sans KR","Malgun Gothic",sans-serif';ctx.fillText(character.name,pad+310,260);
+  ctx.font='500 24px "Noto Sans KR","Malgun Gothic",sans-serif';ctx.fillStyle="#665d56";ctx.fillText("서랍마을 인물 기록 · 설정된 항목만 표기",pad+310,310);
   ctx.strokeStyle="#24201d";ctx.strokeRect(pad+290,190,width-pad*2-314,250);
   let y=480;
   sections.forEach(([title,items])=>{
-    ctx.fillStyle=primary;ctx.fillRect(pad,y,210,56);ctx.fillStyle=ink;ctx.font='29px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(title,pad+22,y+39);
+    ctx.fillStyle=primary;ctx.fillRect(pad,y,210,56);ctx.fillStyle=ink;ctx.font='700 29px "Noto Sans KR","Malgun Gothic",sans-serif';ctx.fillText(title,pad+22,y+39);
     ctx.strokeStyle="#24201d";ctx.lineWidth=2;ctx.strokeRect(pad,y,width-pad*2,56);y+=56;
     items.forEach(([label,value])=>{
       ctx.strokeRect(pad,y,width-pad*2,rowH);ctx.beginPath();ctx.moveTo(pad+270,y);ctx.lineTo(pad+270,y+rowH);ctx.stroke();
       ctx.fillStyle="#f0ece6";ctx.fillRect(pad+1,y+1,269,rowH-2);
-      ctx.fillStyle="#302925";ctx.font='23px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(label,pad+18,y+38);
+      ctx.fillStyle="#302925";ctx.font='600 23px "Noto Sans KR","Malgun Gothic",sans-serif';ctx.fillText(label,pad+18,y+38);
       ctx.font='22px "Malgun Gothic",sans-serif';ctx.fillText(String(value).slice(0,72),pad+292,y+38);y+=rowH;
     });
     y+=22;
   });
-  ctx.fillStyle=primary;ctx.font='22px "Do Hyeon","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad+15,canvas.height-75);
+  ctx.fillStyle=primary;ctx.font='600 22px "Noto Sans KR","Malgun Gothic",sans-serif';ctx.fillText(`서랍마을 · ${new Date().toLocaleDateString("ko-KR")}`,pad+15,canvas.height-75);
   try{const link=document.createElement("a");link.download=`${character.name}-설정표.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
 }
 async function exportProfilePngV2(character,download=true){
@@ -372,7 +372,7 @@ async function exportProfilePngV2(character,download=true){
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
   const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary),photo=character.photo||character.icon;
-  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name} 설정표</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet"><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;color:#211d1a;background:#eee;font-family:"Malgun Gothic",sans-serif}.sheet{width:190mm;min-height:270mm;margin:12px auto;padding:8mm;background:#fff;border:1px solid #222}.title{padding:10px;color:${ink};background:${primary};text-align:center;font:34px "Do Hyeon",sans-serif;letter-spacing:8px}.identity{display:grid;grid-template-columns:42mm 1fr;margin-top:7mm;border:1px solid #222}.portrait{width:42mm;height:42mm;object-fit:contain;border-right:1px solid #222;background:#f5f2ed}.identity div{padding:8mm}.identity h1{margin:0;font:32px "Do Hyeon",sans-serif}.identity p{color:#746b64}section{margin-top:6mm;break-inside:avoid}h2{margin:0;padding:7px 10px;color:${ink};background:${primary};font:22px "Do Hyeon",sans-serif}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #333;padding:7px 9px;vertical-align:top;font-size:13px;overflow-wrap:anywhere}th{width:34%;background:#f1ede7;text-align:left;font-family:"Do Hyeon",sans-serif;font-size:15px}button{width:100%;margin-top:8mm;padding:12px;border:0;color:#fff;background:${primary};font:18px "Do Hyeon",sans-serif}@media print{body{background:#fff}.sheet{width:auto;min-height:0;margin:0;padding:0;border:0}button{display:none}}</style></head><body><main class="sheet"><div class="title">캐 릭 터 설 정 표</div><div class="identity">${photo?`<img class="portrait" src="${photo}" alt="">`:`<div class="portrait"></div>`}<div><h1>${character.name}</h1><p>서랍마을 인물 기록 · 설정된 항목만 표기</p></div></div>${sections.map(([title,rows])=>`<section><h2>${title}</h2><table>${rows.map(([label,value])=>`<tr><th>${label}</th><td>${value}</td></tr>`).join("")}</table></section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main></body></html>`);
+  win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name} 설정표</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;color:#211d1a;background:#eee;font-family:"Noto Sans KR","Malgun Gothic",sans-serif}.sheet{width:190mm;min-height:270mm;margin:12px auto;padding:8mm;background:#fff;border:1px solid #222}.title{padding:10px;color:${ink};background:${primary};text-align:center;font-size:34px;font-weight:900;letter-spacing:8px}.identity{display:grid;grid-template-columns:42mm 1fr;margin-top:7mm;border:1px solid #222}.portrait{width:42mm;height:42mm;object-fit:contain;border-right:1px solid #222;background:#f5f2ed}.identity div{padding:8mm}.identity h1{margin:0;font-size:32px;font-weight:900}.identity p{color:#746b64}section{margin-top:6mm;break-inside:avoid}h2{margin:0;padding:7px 10px;color:${ink};background:${primary};font-size:22px;font-weight:900}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #333;padding:7px 9px;vertical-align:top;font-size:13px;overflow-wrap:anywhere}th{width:34%;background:#f1ede7;text-align:left;font-size:15px;font-weight:900}button{width:100%;margin-top:8mm;padding:12px;border:0;color:#fff;background:${primary};font:700 18px "Noto Sans KR","Malgun Gothic",sans-serif}@media print{body{background:#fff}.sheet{width:auto;min-height:0;margin:0;padding:0;border:0}button{display:none}}</style></head><body><main class="sheet"><div class="title">캐 릭 터 설 정 표</div><div class="identity">${photo?`<img class="portrait" src="${photo}" alt="">`:`<div class="portrait"></div>`}<div><h1>${character.name}</h1><p>서랍마을 인물 기록 · 설정된 항목만 표기</p></div></div>${sections.map(([title,rows])=>`<section><h2>${title}</h2><table>${rows.map(([label,value])=>`<tr><th>${label}</th><td>${value}</td></tr>`).join("")}</table></section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main></body></html>`);
   win.document.close();setTimeout(()=>win.print(),900);
 }
 async function exportProfilePdfV2(character,bodyFont){
@@ -794,12 +794,28 @@ function openCarEditor(homeId,carId){
 
 function applyTheme(){
   const c=active();
-  const primary=c?.theme?.primary||"#176b60";
-  const secondary=c?.theme?.gradient?(c.theme.secondary||primary):primary;
-  document.documentElement.dataset.colorMode=state.colorMode==="light"?"light":"dark";
+  const mode=state.colorMode==="light"?"light":"dark";
+  const palettes={
+    monochrome:{light:["#25282c","#737981","#f2f3f4","#ffffff","#202326","#686e75","#d7dade"],dark:["#656b73","#b8bec6","#0e1115","#171c22","#f2f4f6","#aeb4bc","#343b44"]},
+    sage:{light:["#2f6d62","#8eaa96","#eff5f2","#fbfdfc","#1f302c","#667a73","#d3e0da"],dark:["#5d9b8f","#9ab9a7","#0d1514","#15211f","#edf7f4","#a8beb8","#30443f"]},
+    rose:{light:["#9f5265","#d39baa","#f8f0f2","#fffafb","#38252b","#816b72","#ead3d9"],dark:["#c9788b","#dda9b5","#180f12","#26171c","#fff0f4","#c3a7af","#54343d"]},
+    ocean:{light:["#296b8f","#72a9c5","#eef5f8","#fbfdfe","#1f3039","#637883","#d1e0e8"],dark:["#5e9fc1","#8fc0d8","#0c1419","#12212a","#eef8fd","#a7beca","#2d4552"]},
+    lavender:{light:["#735a9d","#ad98cc","#f4f1f8","#fcfbfe","#30283c","#746b82","#ddd5e8"],dark:["#967fc0","#bca9d8","#120f18","#1e1928","#f6f1fd","#b6abc5","#423653"]}
+  };
+  const selected=state.visualTheme||"monochrome";
+  const [primary,secondary,bg,panel,ink,muted,line]=(palettes[selected]||palettes.monochrome)[mode];
+  document.documentElement.dataset.colorMode=mode;
+  document.documentElement.dataset.visualTheme=selected;
   document.documentElement.style.setProperty("--p",primary);
   document.documentElement.style.setProperty("--s",secondary);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content",state.colorMode==="light"?"#f5f1ea":"#101925");
+  document.documentElement.style.setProperty("--bg",bg);
+  document.documentElement.style.setProperty("--panel",panel);
+  document.documentElement.style.setProperty("--ink",ink);
+  document.documentElement.style.setProperty("--muted",muted);
+  document.documentElement.style.setProperty("--line",line);
+  document.documentElement.style.setProperty("--character-p",c?.theme?.primary||"#176b60");
+  document.documentElement.style.setProperty("--character-s",c?.theme?.gradient?(c.theme.secondary||c.theme.primary||"#176b60"):(c?.theme?.primary||"#176b60"));
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content",bg);
 }
 
 async function explicitSave(label="저장 완료"){
@@ -1405,6 +1421,12 @@ function bind(){
   $$("button[data-color-mode]").forEach(button=>button.onclick=event=>{
     event.stopPropagation();
     state.colorMode=button.dataset.colorMode==="light"?"light":"dark";
+    save(true);
+    render();
+  });
+  $$("button[data-visual-theme]").forEach(button=>button.onclick=event=>{
+    event.stopPropagation();
+    state.visualTheme=button.dataset.visualTheme||"monochrome";
     save(true);
     render();
   });

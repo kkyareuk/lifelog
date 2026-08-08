@@ -61,6 +61,8 @@ C:\Users\Public\drawervillage-android-build\android\app\outputs\bundle\release\a
 
 명령으로 만든 release AAB가 서명되지 않았다면 Android Studio에서 `Build > Generate Signed App Bundle or APK > Android App Bundle`을 선택해 업로드 키로 서명합니다. 첫 출시라면 Play App Signing을 켜고 업로드 키를 안전하게 백업합니다. 기존 앱을 업데이트할 때는 같은 업로드 키와 더 높은 `versionCode`가 필요합니다.
 
+현재 앱은 `targetSdk 36`, `versionCode 2`, `versionName 1.0.0`으로 설정되어 있습니다. 웹 화면을 고친 뒤에는 반드시 `npm.cmd run app:sync`를 먼저 실행해야 최신 HTML·CSS·JavaScript와 서비스 워커 캐시 버전이 앱에 들어갑니다.
+
 ## 3. Play Console 내부 테스트
 
 1. 패키지 이름이 `com.drawervillage.app`인 앱을 Play Console에 만듭니다.
@@ -87,3 +89,33 @@ C:\Users\Public\drawervillage-android-build\android\app\outputs\bundle\release\a
 ## 로컬에서 확인할 수 없는 것
 
 로컬 컴파일은 결제 모듈 연결과 문법 오류까지만 확인할 수 있습니다. Google Play가 실제 주문을 만들고, 라이선스 테스터 결제를 승인하고, Play Developer API가 해당 주문을 반환하는 전체 과정은 Play Console 내부 테스트 트랙에서만 최종 확인할 수 있습니다.
+
+## 피드백 메일을 실제로 받기
+
+피드백 수신 주소는 `kkyaareuk@gmail.com`입니다. Firebase Functions가 Gmail로 메일을 보내려면 일반 Google 비밀번호가 아니라 Gmail **앱 비밀번호**를 Secret으로 한 번 등록해야 합니다.
+
+```powershell
+firebase functions:secrets:set FEEDBACK_GMAIL_APP_PASSWORD
+firebase deploy --only functions:api
+```
+
+첫 명령이 값을 물으면 `kkyaareuk@gmail.com` 계정에서 만든 16자리 앱 비밀번호를 붙여 넣습니다. 이 값은 저장소나 `config.js`에 적지 않습니다. Secret과 Functions 배포가 없으면 앱은 피드백을 Firestore에만 기록하거나 이메일 앱 열기 방식으로 대체하며, 개발자 메일함에 자동 수신되지 않을 수 있습니다.
+
+## Pixel_7 에뮬레이터가 종료될 때
+
+AVD 데이터 삭제 없이 다음 순서로 확인합니다.
+
+1. Android Studio의 `Tools > Device Manager`를 엽니다.
+2. `Pixel_7` 오른쪽의 점 세 개 메뉴에서 `Cold Boot Now`를 누릅니다.
+3. 그래도 종료되면 `Edit`에서 `Graphics`를 `Software - GLES 2.0`으로 바꾸고 다시 실행합니다.
+4. 동시에 떠 있는 에뮬레이터가 없는데도 `already running`이 나오면 Android Studio를 닫고 작업 관리자에서 `emulator.exe`, `qemu-system-x86_64.exe`가 없는지 확인한 뒤 다시 엽니다.
+5. `Wipe Data`는 앱·에뮬레이터 데이터를 지우므로 백업 전에는 누르지 않습니다.
+
+현재 프로젝트의 AVD는 2GB RAM, 4코어, Android 35 Play Store 이미지로 구성되어 있습니다. AVD가 계속 즉시 종료되면 Android Studio의 `Device Manager > Pixel_7 > View Details`와 `Help > Show Log in Explorer`의 마지막 오류를 확인해야 합니다.
+
+## 연령과 콘텐츠 안전 원칙
+
+- 새 캐릭터의 연령대에는 영아·유아를 제공하지 않습니다. 기존 저장 데이터에 이미 있는 값은 강제로 삭제하지 않습니다.
+- 어린이·청소년 캐릭터가 포함된 조합에서는 데이트·연애·성인 친밀 행동 후보를 만들지 않습니다.
+- `아기`는 캐릭터가 아니라 집의 반려생물/함께 사는 존재 유형에서 돌봄 대상으로 추가합니다.
+- Google Play의 `타겟층 및 콘텐츠` 설문에는 실제 게임 내용에 맞는 연령층을 선택하고, 어린이를 타겟으로 선택할 때만 Families 정책 전체를 별도로 충족해야 합니다.

@@ -1,12 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap");
-@font-face{font-family:"OngleipKonkon";src:url("./fonts/Ownglyph_Corncorn.ttf") format("truetype");font-weight:400;font-display:swap}
-@font-face{font-family:"Do Hyeon";src:url("./fonts/DoHyeon-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
-@font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumLight.woff2") format("woff2");font-weight:300;font-display:swap}
-@font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumMedium.woff2") format("woff2");font-weight:400 600;font-display:swap}
-@font-face{font-family:"KoPubWorldDotum";src:url("https://cdn.jsdelivr.net/gh/webfontworld/kopus/KoPubWorldDotumBold.woff2") format("woff2");font-weight:700 900;font-display:swap}
-@font-face{font-family:"Cafe24ProSlim";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/Cafe24PROSlim-Regular.woff2") format("woff2");font-weight:400;font-display:swap}
-@font-face{font-family:"Cafe24ProSlim";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/Cafe24PROSlim-Bold.woff2") format("woff2");font-weight:700 900;font-display:swap}
-@font-face{font-family:"ChangwonDangamRounded";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/ChangwonDangamRound-Regular.woff2") format("woff2");font-weight:400 900;font-display:swap}
+@font-face{font-family:"LeeSeoyun";src:local("이서윤체"),local("LeeSeoyun"),url("https://cdn.jsdelivr.net/gh/webfontworld/naver/LeeSeoyun.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"GangwonEduAll";src:local("강원교육모두체"),local("GangwonEduAll"),url("https://cdn.jsdelivr.net/gh/webfontworld/gangwon/GangwonEduAllLight.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"DungGeunMo";src:local("둥근모꼴+ Fixedsys"),local("DungGeunMo"),url("https://cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@latest/neodgm.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"SCoreDream";src:local("에스코어 드림"),local("S-Core Dream"),url("https://cdn.jsdelivr.net/gh/webfontworld/SCoreDream/SCoreDream4.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"Chosun100";src:local("조선100년체"),local("ChosunCentennial"),url("https://cdn.jsdelivr.net/gh/webfontworld/ChosunCentennial/ChosunCentennial.woff2") format("woff2");font-display:swap}
+@font-face{font-family:"MemomentKkukkkuk";src:local("메모먼트 꾹꾹체"),local("Memoment Kkukkkuk");font-display:swap}
+@font-face{font-family:"HaeongSans";src:local("국민대학교 해옹 산스"),local("Haeong Sans"),url("fonts/KMU80HaeongSans.woff2") format("woff2");font-display:swap}
 :root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--ui-font:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-scale="small"]{font-size:15px}
 html[data-ui-scale="normal"]{font-size:16px}
@@ -14,20 +12,16 @@ html[data-ui-scale="large"]{font-size:17.5px}
 html[data-ui-scale="xlarge"]{font-size:19px}
 html[data-ui-font="system"]{--ui-font:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="noto"]{--ui-font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-html[data-ui-font="kopub"]{--ui-font:"KoPubWorldDotum","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="cafe24slim"]{--ui-font:"Cafe24ProSlim","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="changwonround"]{--ui-font:"ChangwonDangamRounded","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="konkon"]{--ui-font:"OngleipKonkon","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="gowun"]{--ui-font:"Gowun Dodum","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="myeongjo"]{--ui-font:"Nanum Myeongjo","Batang",serif}
-html[data-ui-font="dohyeon"]{--ui-font:"Do Hyeon","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="jua"]{--ui-font:"Jua","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="gaegu"]{--ui-font:"Gaegu","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="gamja"]{--ui-font:"Gamja Flower","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="poor"]{--ui-font:"Poor Story","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="nanumpen"]{--ui-font:"Nanum Pen Script","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="memoment"]{--ui-font:"MemomentKkukkkuk","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="seoyun"]{--ui-font:"LeeSeoyun","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="gangwon"]{--ui-font:"GangwonEduAll","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="dunggeunmo"]{--ui-font:"DungGeunMo","Noto Sans KR","Malgun Gothic",monospace}
+html[data-ui-font="haeong"]{--ui-font:"HaeongSans","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="scoredream"]{--ui-font:"SCoreDream","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="chosun100"]{--ui-font:"Chosun100","Noto Sans KR","Malgun Gothic",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui-font)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 17px}button.primary,header nav .on{color:#fff;background:var(--grad);border-color:transparent}.panel{background:#fff;border:1px solid var(--line);border-radius:27px;box-shadow:0 18px 45px #27334b10}
 .font-setting-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
+.visual-theme-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.visual-theme-options button{display:flex;align-items:center;gap:10px;text-align:left}.visual-theme-options button i{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#222,#888);box-shadow:inset 0 0 0 1px #ffffff55}.visual-theme-options button[data-visual-theme="sage"] i{background:linear-gradient(135deg,#2f6d62,#8eaa96)}.visual-theme-options button[data-visual-theme="rose"] i{background:linear-gradient(135deg,#9f5265,#d39baa)}.visual-theme-options button[data-visual-theme="ocean"] i{background:linear-gradient(135deg,#296b8f,#72a9c5)}.visual-theme-options button[data-visual-theme="lavender"] i{background:linear-gradient(135deg,#735a9d,#ad98cc)}.visual-theme-options button span{display:grid}.visual-theme-options button.on{border-color:var(--p);box-shadow:0 0 0 2px color-mix(in srgb,var(--p) 45%,transparent)}
 .place-people-faces{justify-content:center!important;flex-wrap:wrap!important;max-width:200px!important;gap:clamp(0px,calc(8px - var(--people-count)*1px),3px)!important}
 .place-people-faces .avatar,.place-people-faces .sprite{width:clamp(28px,calc(66px - var(--people-count)*4px),52px)!important;height:clamp(32px,calc(72px - var(--people-count)*4px),58px)!important}
 .place-people-names{max-width:200px!important}
@@ -1587,9 +1581,6 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   .site-business-info p{line-height:1.85}
   .site-policy-links{gap:8px 18px;margin-top:20px}
 }
-@font-face{font-family:"SB Aggro";src:url("./fonts/SB_Aggro/SB%20%EC%96%B4%EA%B7%B8%EB%A1%9C%20M.ttf") format("truetype");font-display:swap}
-@font-face{font-family:"Ownglyph Corncorn";src:url("./fonts/Ownglyph_Corncorn.ttf") format("truetype");font-display:swap}
-@font-face{font-family:"Do Hyeon";src:url("./fonts/DoHyeon-Regular.ttf") format("truetype");font-display:swap}
 .maintenance-mode{min-height:100vh;background:linear-gradient(145deg,#f8f4ec,#e9f2ef)}
 .maintenance-mode .site-footer,.maintenance-mode #image-picker{display:none!important}
 .maintenance-screen{min-height:100vh;display:grid;place-items:center;padding:24px}
@@ -1887,7 +1878,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .native-app .native-log-card>div button{padding:5px 8px;border-color:#ffffff30;background:#ffffff12;color:#fff;font-size:10px}
 .native-app .native-log-card ol{display:grid;gap:6px;max-height:118px;margin:9px 0 0;padding:0;overflow-y:auto;list-style:none}
 .native-app .native-log-card li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:7px;padding-top:6px;border-top:1px solid #ffffff1f}
-.native-app .native-log-card time{color:#ffffff8c;font-size:10px}.native-app .native-log-card li span{display:grid;min-width:0}.native-app .native-log-card li b{font-size:11px}.native-app .native-log-card li small{overflow:hidden;color:#ffffffa8;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+.native-app .native-log-card time{color:#ffffffa0;font-size:.94rem}.native-app .native-log-card li span{display:grid;min-width:0}.native-app .native-log-card li b{font-size:1.02rem;line-height:1.38}.native-app .native-log-card li small{overflow:hidden;color:#ffffffbd;font-size:.9rem;line-height:1.45;text-overflow:ellipsis;white-space:nowrap}
 .native-app[data-active-tab="observe"] .native-game-menu{display:contents}
 .native-app .native-game-menu button{
   position:fixed;
@@ -1909,7 +1900,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 }
 .native-app .native-game-menu .native-menu-left{left:max(8px,env(safe-area-inset-left))}
 .native-app .native-game-menu .native-menu-right{right:max(8px,env(safe-area-inset-right))}
-.native-app .native-game-menu button>span{font-size:25px;line-height:1}.native-app .native-game-menu button>small{font-size:8px;line-height:1.1;white-space:nowrap}
+.native-app .native-game-menu button>span{font-size:27px;line-height:1}.native-app .native-game-menu button>small{font-size:11px;line-height:1.15;font-weight:800;white-space:nowrap}
 .native-app .native-observe-empty{place-items:center;text-align:center}.native-app .native-observe-empty>div{padding:24px;border-radius:24px;background:#111822d6}.native-app .native-observe-empty span{font-size:48px}
 
 /* 앱 안의 편집 화면은 작은 화면에서도 입력칸을 두 열로 유지한다. */
@@ -4548,12 +4539,13 @@ html.native-app[data-active-tab="observe"] .native-game-menu button>span{
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
   box-shadow:0 6px 16px #0005,inset 0 1px 0 #ffffff45;
-  font-size:23px;
+  font-size:1.85rem;
 }
 html.native-app[data-active-tab="observe"] .native-game-menu button>small{
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
-  font-size:8px;
+  font-size:.95rem;
+  line-height:1.15;
   font-weight:900;
 }
 
@@ -4595,8 +4587,10 @@ html[data-color-mode="light"] .catalog-section>.title button{
 .relationship-direction-sentence select{width:auto;max-width:10em;min-height:40px;padding:7px 28px 7px 10px;border-radius:12px;font:inherit;font-size:.9em}
 .relationship-direction-sentence strong{font:inherit}
 .relationship-selected-pair{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 5px}
-.relationship-selected-pair :is(.avatar,.sprite){width:104px;height:104px;filter:drop-shadow(0 8px 12px #0004)}
+.relationship-selected-pair :is(.avatar,.sprite){width:132px;height:132px;filter:drop-shadow(0 8px 12px #0004)}
 .relationship-selected-pair i{font-style:normal;font-size:23px;opacity:.72}
+.catalog-shell button[data-add-catalog]{min-width:88px;min-height:50px;padding:11px 18px!important;font-size:1rem!important;font-weight:900!important;opacity:1!important}
+.catalog-shell button[data-catalog-save]{min-width:132px;min-height:56px;padding:13px 22px!important;border-color:color-mix(in srgb,var(--catalog-theme) 72%,#fff)!important;background:linear-gradient(135deg,var(--catalog-theme),var(--catalog-theme-secondary))!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:1.05rem!important;font-weight:900!important;box-shadow:0 9px 22px color-mix(in srgb,var(--catalog-theme) 32%,transparent)!important}
 html[data-color-mode="dark"] .relationship-direction-sentence select{border-color:#ffffff29;background:#172536;color:#f6f9fc;-webkit-text-fill-color:#f6f9fc;color-scheme:dark}
 html[data-color-mode="light"] .relationship-direction-sentence select{border-color:#d8cec5;background:#fffdf9;color:#302a25;-webkit-text-fill-color:#302a25;color-scheme:light}
 .room-heading>span{padding:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
@@ -4691,6 +4685,7 @@ html[data-color-mode="light"] :is(.catalog-kind>.title,.catalog-section>.title) 
 html[data-color-mode="dark"] :is(.catalog-kind>.title,.catalog-section>.title) button,
 html[data-color-mode="dark"] button[data-add-catalog]{border-color:#ffffff38!important;background:#24364a!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 html[data-color-mode="light"] button[data-add-catalog]{border-color:#3e3731!important;background:#3e3731!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 7px 16px #3128202b!important}
+.catalog-shell button[data-add-catalog]{border-color:#2d3034!important;background:#2d3034!important;color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:none!important;opacity:1!important}
 
 html[data-color-mode="light"].native-app[data-active-tab="character"] .mobile-character-top>div:last-child button{border-color:#3e3731!important;background:#3e3731!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 7px 16px #3128202b!important}
 html[data-color-mode="dark"].native-app[data-active-tab="character"] .mobile-character-top>div:last-child button{border-color:#ffffff38!important;background:#24364a!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
@@ -4748,8 +4743,8 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
   html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:7px!important;overflow:hidden!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:7px!important;width:100%!important;min-width:0!important;max-height:100%!important;padding:8px 4px!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .relationship-selected-pair{margin-bottom:0!important;gap:8px!important}
-  html.native-app[data-active-tab="relationship"] .relationship-selected-pair :is(.avatar,.sprite){width:94px!important;height:94px!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{min-height:42px!important;padding:8px 12px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-selected-pair :is(.avatar,.sprite){width:138px!important;height:138px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{min-height:94px!important;padding:21px 23px!important;font-size:1.26rem!important;font-weight:900!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core>em{padding:6px 10px!important;font-size:12px!important}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence{gap:4px;font-size:17px}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence select{max-width:7.2em;min-height:38px;padding:6px 25px 6px 8px;font-size:16px}
@@ -4763,3 +4758,8 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
 .native-app .native-status-card{max-height:min(40dvh,390px)!important}
 .native-app .native-log-card{max-height:min(29dvh,290px)!important;overflow:hidden!important}
 .native-app .native-log-card ol{min-height:0;max-height:none!important;overflow-y:auto!important}
+.native-app .native-log-card time{font-size:1.05rem!important}
+.native-app .native-log-card li b{font-size:1.18rem!important;line-height:1.4!important}
+.native-app .native-log-card li small{font-size:1.03rem!important;line-height:1.5!important}
+.native-app .native-log-card>div>b{font-size:1.35rem!important}
+.native-app .native-log-card button{font-size:.95rem!important}
