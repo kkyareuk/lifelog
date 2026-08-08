@@ -16,7 +16,7 @@ app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
 const PRODUCTS=new Set(["character_slots_5","town_slot_1","storage_50mb","green_tea"]);
-const FEEDBACK_EMAIL="kkyareuk@gmail.com";
+const FEEDBACK_EMAIL="kkyaareuk@gmail.com";
 const FEEDBACK_GMAIL_APP_PASSWORD=defineSecret("FEEDBACK_GMAIL_APP_PASSWORD");
 
 app.use((request,response,next)=>{
