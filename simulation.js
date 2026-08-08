@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808f";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808g";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1923,7 +1923,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260808f";
+const ENGINE_VERSION="20260808g";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2109,9 +2109,13 @@ function commitLiveEntry(c,date,item){
   if(item.groupInteraction){
     const withoutSameMoment=entries.filter(entry=>{
       if(entryMomentKey(entry)===entryMomentKey(item))return false;
+      if(item.interactionId&&entry.interactionId===item.interactionId)return false;
       const sameLocation=(entry.visitHomeId||entry.homeId||"")===(item.visitHomeId||item.homeId||"")&&
         (entry.placeId||"")===(item.placeId||"")&&
         (entry.room||"")===(item.room||"");
+      const sameStory=String(entry.title||"").replace(/\s+/g," ").trim()===String(item.title||"").replace(/\s+/g," ").trim()&&
+        String(entry.desc||"").replace(/\s+/g," ").trim()===String(item.desc||"").replace(/\s+/g," ").trim();
+      if(sameLocation&&sameStory&&Math.abs(Number(item.minute)-Number(entry.minute))<=120)return false;
       const shadowedBase=Number(item.minute)>=Number(entry.minute)&&
         Number(item.minute)-Number(entry.minute)<=15&&sameLocation&&
         (String(item.baseTitle||"")===String(entry.title||"")||
@@ -2129,12 +2133,18 @@ function commitLiveEntry(c,date,item){
     return item;
   }
   const sceneKey=value=>String(value||"").split(" · ")[0].replace(/\s+/g," ").trim();
+  const storyKey=value=>String(value||"")
+    .replace(/^[^·]+와 데이트\s*·\s*/u,"")
+    .replace(/^데이트\s*·\s*/u,"")
+    .replace(/\s+/g," ")
+    .trim();
   const sameDateEntries=item.dateGroup?entries.filter(entry=>entry.dateGroup===item.dateGroup):[];
   const lastDateEntry=sameDateEntries.slice().sort((a,b)=>Number(a.minute)-Number(b.minute)).at(-1);
   const dateGap=lastDateEntry?30+(hash(`${item.dateGroup}:${lastDateEntry.minute}:date-gap`)%31):0;
   const duplicate=entries.some(entry=>
     entryMomentKey(entry)===entryMomentKey(item)||
     (entry.minute===item.minute&&entry.title===item.title&&entry.placeId===item.placeId&&entry.room===item.room)||
+    (item.dateGroup&&entry.dateGroup===item.dateGroup&&storyKey(entry.title)===storyKey(item.title)&&storyKey(entry.desc)===storyKey(item.desc))||
     (!item.dateGroup&&sceneKey(entry.title)===sceneKey(item.title)&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
   )||Boolean(lastDateEntry&&Number(item.minute)-Number(lastDateEntry.minute)<dateGap);
   if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save(false,false)}
@@ -2389,8 +2399,9 @@ function normalizedFurnitureName(name){
   return name;
 }
 function characterInterests(character){return [...(character.hobbies||[]),...(character.interests||[])].map(String).join(" ")}
-function datePurposeScene(purpose,place,first,second,date){
-  const name=second.name,seed=`${first.id}:${second.id}:${dayKey(date)}:${purpose}`;
+function datePurposeScene(purpose,place,first,second,date,phase=0){
+  const name=second.name,step=Math.max(0,Number(phase)||0),seed=`${first.id}:${second.id}:${dayKey(date)}:${purpose}:${step}`;
+  const choose=beats=>beats[hash(seed)%beats.length];
   if(/게임/.test(purpose)){
     const firstLikes=/게임|e스포츠|보드게임/.test(characterInterests(first)),secondLikes=/게임|e스포츠|보드게임/.test(characterInterests(second));
     const beats=[
@@ -2398,24 +2409,57 @@ function datePurposeScene(purpose,place,first,second,date){
       {first:`실수할 때마다 ${name}의 반응을 살피며 가볍게 놀렸지만, 어려운 구간에서는 자기 차례를 양보해 함께 판을 이어 갔어요.`,second:`${first.name}의 농담에 바로 받아치고 점수 차이를 끝까지 따라붙어 마지막 결과가 뜰 때까지 자리를 뜨지 않았어요.`},
       {first:`둘이 맡을 역할을 나눈 뒤 ${name}의 움직임에 맞춰 타이밍을 조절했어요. 한 번 실패하자 같은 구간부터 다시 시작했어요.`,second:`${first.name}이 놓친 단서를 찾아 알려 주고, 마지막 목표를 함께 달성하자 짧게 손을 마주쳤어요.`}
     ];
-    return {title:"데이트 · 게임 한 판을 같이 끝내기",...beats[hash(seed)%beats.length]};
+    return {title:"데이트 · 게임 한 판을 같이 끝내기",...choose(beats)};
   }
   if(/영화/.test(purpose)){
     const beats=[
       {first:`${name}이 고른 영화의 재생 목록을 확인하고 조명을 낮춘 뒤 간식을 손이 닿는 곳에 놓았어요.`,second:`중간에 마음에 든 장면이 나오자 ${first.name}을 한 번 바라봤지만 말을 아끼고 영화가 끝난 뒤 감상을 꺼냈어요.`},
       {first:`서로 후보를 하나씩 고른 뒤 짧게 예고편을 보고 오늘 볼 영화를 정했어요.`,second:`${first.name}이 놓친 장면을 조용히 짚어 주고 엔딩 크레딧이 끝날 때까지 소파에 함께 남았어요.`}
-    ];return {title:`데이트 · ${purpose}`,...beats[hash(seed)%beats.length]};
+    ];return {title:`데이트 · ${purpose}`,...choose(beats)};
   }
   if(/음악/.test(purpose)){
-    return {title:`데이트 · ${purpose}`,first:`${name}에게 꼭 들려주고 싶었던 곡을 골라 재생하고 좋아하는 부분이 나올 때까지 반응을 기다렸어요.`,second:`${first.name}이 고른 곡을 끝까지 들은 뒤 자기 취향의 곡도 하나 이어 재생하며 서로 다른 이유를 이야기했어요.`};
+    return {title:`데이트 · ${purpose}`,...choose([
+      {first:`${name}에게 꼭 들려주고 싶었던 곡을 골라 재생하고 좋아하는 부분이 나올 때까지 반응을 기다렸어요.`,second:`${first.name}이 고른 곡을 끝까지 들은 뒤 자기 취향의 곡도 하나 이어 재생하며 서로 다른 이유를 이야기했어요.`},
+      {first:`${name}과 재생 목록을 번갈아 채우며 지금 분위기에 어울리는 곡을 하나씩 골랐어요.`,second:`${first.name}이 고른 노래의 인상적인 구간을 짚고, 이어 들을 곡은 자기가 직접 찾아 틀었어요.`},
+      {first:`방금 들은 곡의 가사와 리듬 중 무엇이 더 좋았는지 ${name}에게 물으며 다음 곡의 방향을 정했어요.`,second:`${first.name}의 취향을 그대로 따라가기보다 자기가 좋아하는 소리를 설명하고 둘 다 듣고 싶은 곡을 골랐어요.`}
+    ])};
   }
-  if(/사진/.test(purpose))return {title:`데이트 · ${purpose}`,first:`${name}와 오늘 찍은 사진을 한 장씩 넘겨 보며 각자 가장 마음에 든 장면을 골랐어요.`,second:`${first.name}이 고른 사진과 자기가 고른 사진을 비교하고, 서로 다르게 본 순간을 이야기했어요.`};
-  if(/메뉴|식사|저녁|디저트|간식|음료|맛보기|먹기/.test(purpose))return {title:`데이트 · ${purpose}`,first:`${name}와 먹어 보고 싶은 것을 하나씩 고른 뒤 서로의 선택을 조금씩 나누어 맛봤어요.`,second:`${first.name}이 고른 것의 맛을 먼저 묻고 자기 몫도 건네며 천천히 식사를 이어 갔어요.`};
-  if(/산책|걷기|둘러보기|연못/.test(purpose))return {title:`데이트 · ${purpose}`,first:`${name}에게 어느 길이 좋은지 먼저 묻고 둘이 정한 목적지까지 보폭을 맞춰 이동했어요.`,second:`${first.name}과 같은 풍경을 보면서도 자기 눈에 들어온 것을 하나씩 가리켜 보여 줬어요.`};
-  if(/책|읽기|구절/.test(purpose))return {title:`데이트 · ${purpose}`,first:`${name}에게 읽히고 싶은 책을 한 권 골라 이유를 설명하고 마음에 든 구절을 표시했어요.`,second:`${first.name}이 고른 책을 펼쳐 본 뒤 자기도 한 권을 골라 서로 바꾸어 읽었어요.`};
-  if(/공연|무대|곡/.test(purpose))return {title:`데이트 · ${purpose}`,first:`${name}과 좌석과 시작 시각을 확인한 뒤 보고 싶었던 순서를 함께 기다렸어요.`,second:`${first.name}이 집중한 장면을 눈여겨봤다가 공연이 끝난 뒤 서로 다른 감상을 나눴어요.`};
-  if(/물건|취향/.test(purpose))return {title:`데이트 · ${purpose}`,first:`${name}에게 어울릴 만한 후보를 몇 개 골라 실제로 자주 쓸지를 물었어요.`,second:`${first.name}의 선택을 바로 받아들이지 않고 자기 취향을 설명한 뒤 함께 하나를 추렸어요.`};
-  return {title:`데이트 · ${purpose}`,first:`${name}와 ${object(purpose)} 위해 먼저 할 일과 마지막에 확인할 일을 정하고 하나씩 끝냈어요.`,second:`${first.name}과 같은 약속을 각자 다른 방식으로 챙기며 정한 목적을 끝까지 함께 마쳤어요.`};
+  if(/사진/.test(purpose))return {title:`데이트 · ${purpose}`,...choose([
+    {first:`${name}와 오늘 찍은 사진을 한 장씩 넘겨 보며 각자 가장 마음에 든 장면을 골랐어요.`,second:`${first.name}이 고른 사진과 자기가 고른 사진을 비교하고, 서로 다르게 본 순간을 이야기했어요.`},
+    {first:`빛이 달라진 곳을 발견하고 ${name}에게 잠깐만 서 달라고 한 뒤 구도를 다시 잡았어요.`,second:`${first.name}이 찍는 동안 어색하게 굳지 않으려 평소 표정을 지었고, 결과를 함께 확인했어요.`},
+    {first:`흔들리거나 눈을 감은 사진을 먼저 골라내고 ${name}에게 남길 사진을 직접 고르게 했어요.`,second:`${first.name}이 지우려던 사진 중 마음에 드는 한 장을 남기고 서로에게 보낼 것을 나누었어요.`}
+  ])};
+  if(/메뉴|식사|저녁|디저트|간식|음료|맛보기|먹기/.test(purpose))return {title:`데이트 · ${purpose}`,...choose([
+    {first:`${name}와 먹어 보고 싶은 것을 하나씩 고른 뒤 서로의 선택을 조금씩 나누어 맛봤어요.`,second:`${first.name}이 고른 것의 맛을 먼저 묻고 자기 몫도 건네며 천천히 식사를 이어 갔어요.`},
+    {first:`메뉴를 다시 훑으며 ${name}이 못 먹는 재료가 없는지 확인하고 주문할 조합을 좁혔어요.`,second:`${first.name}의 선택에 무조건 맞추지 않고 자기가 먹고 싶은 것도 분명히 말해 둘의 메뉴를 정했어요.`},
+    {first:`먼저 나온 음식을 ${name} 쪽으로 밀어 두고 각자 맛본 뒤 다음에는 무엇을 고를지 이야기했어요.`,second:`${first.name}과 같은 접시만 보지 않고 자기 몫을 천천히 먹으며 마음에 든 맛을 구체적으로 설명했어요.`},
+    {first:`식사를 마친 뒤 ${name}와 남은 음료를 나누며 오늘 가장 좋았던 메뉴 하나를 골랐어요.`,second:`${first.name}의 평을 듣고 자기가 느낀 점도 덧붙인 뒤 자리와 소지품을 정리했어요.`}
+  ])};
+  if(/산책|걷기|둘러보기|연못/.test(purpose))return {title:`데이트 · ${purpose}`,...choose([
+    {first:`${name}에게 어느 길이 좋은지 먼저 묻고 둘이 정한 목적지까지 보폭을 맞춰 이동했어요.`,second:`${first.name}과 같은 풍경을 보면서도 자기 눈에 들어온 것을 하나씩 가리켜 보여 줬어요.`},
+    {first:`갈림길에서 잠시 멈춰 ${name}와 지도를 확인하고 최근에 가지 않았던 쪽으로 방향을 바꿨어요.`,second:`${first.name}이 고른 길을 따라가며 지나치기 아쉬운 장소가 보일 때만 걸음을 늦췄어요.`},
+    {first:`목적지에 도착한 뒤 ${name}와 잠시 쉬면서 돌아갈 길과 남은 시간을 확인했어요.`,second:`${first.name} 옆에서 같은 풍경을 바라보다가 아까 지나온 곳 중 기억에 남는 곳을 이야기했어요.`}
+  ])};
+  if(/책|읽기|구절/.test(purpose))return {title:`데이트 · ${purpose}`,...choose([
+    {first:`${name}에게 읽히고 싶은 책을 한 권 골라 이유를 설명하고 마음에 든 구절을 표시했어요.`,second:`${first.name}이 고른 책을 펼쳐 본 뒤 자기도 한 권을 골라 서로 바꾸어 읽었어요.`},
+    {first:`${name}와 같은 책의 다른 부분을 읽고 서로 멈춘 문장을 짧게 적어 보여 줬어요.`,second:`${first.name}의 해석을 바로 따라가지 않고 자기가 다르게 읽은 이유를 차분히 설명했어요.`},
+    {first:`읽던 부분을 마친 뒤 ${name}에게 다음에 이어 읽을 쪽을 정하자고 했어요.`,second:`${first.name}이 고른 구절 옆에 자기가 기억하고 싶은 문장도 표시하고 책을 제자리에 두었어요.`}
+  ])};
+  if(/공연|무대|곡/.test(purpose))return {title:`데이트 · ${purpose}`,...choose([
+    {first:`${name}과 좌석과 시작 시각을 확인한 뒤 보고 싶었던 순서를 함께 기다렸어요.`,second:`${first.name}이 집중한 장면을 눈여겨봤다가 공연이 끝난 뒤 서로 다른 감상을 나눴어요.`},
+    {first:`공연이 시작되기 전 ${name}와 안내서를 나누어 보고 놓치고 싶지 않은 순서를 확인했어요.`,second:`${first.name}이 기대한 장면이 가까워지자 말 대신 안내서의 해당 부분을 가볍게 짚어 줬어요.`},
+    {first:`막이 내린 뒤 ${name}와 가장 기억에 남는 장면을 하나씩 골라 이야기했어요.`,second:`${first.name}과 같은 장면을 골랐지만 좋았던 이유는 달라, 밖으로 나가며 감상을 더 나눴어요.`}
+  ])};
+  if(/물건|취향/.test(purpose))return {title:`데이트 · ${purpose}`,...choose([
+    {first:`${name}에게 어울릴 만한 후보를 몇 개 골라 실제로 자주 쓸지를 물었어요.`,second:`${first.name}의 선택을 바로 받아들이지 않고 자기 취향을 설명한 뒤 함께 하나를 추렸어요.`},
+    {first:`가격과 쓰임을 나란히 비교하며 ${name}에게 꼭 필요한 조건부터 고르자고 했어요.`,second:`${first.name}이 추천한 것과 자기가 처음 본 것을 직접 비교하고 오래 쓸 쪽을 골랐어요.`},
+    {first:`마지막 후보를 다시 확인한 뒤 ${name}가 결정할 시간을 재촉하지 않고 기다렸어요.`,second:`${first.name}의 의견을 들은 뒤에도 최종 선택은 자기가 하고, 고른 이유를 분명히 말했어요.`}
+  ])};
+  return {title:`데이트 · ${purpose}`,...choose([
+    {first:`${name}와 ${object(purpose)} 위해 먼저 할 일과 마지막에 확인할 일을 정하고 하나씩 끝냈어요.`,second:`${first.name}과 같은 약속을 각자 다른 방식으로 챙기며 정한 목적을 끝까지 함께 마쳤어요.`},
+    {first:`${name}와 지금까지 한 일을 확인하고 남은 순서를 둘이 나누어 맡았어요.`,second:`${first.name}이 맡은 일과 겹치지 않게 자기 몫을 끝낸 뒤 결과를 함께 확인했어요.`},
+    {first:`약속한 목적을 마친 뒤 ${name}와 빠뜨린 것이 없는지 한 번 더 확인했어요.`,second:`${first.name}과 다음에 이어 할 일이 있는지 정리하고 오늘의 약속을 여기서 마무리했어요.`}
+  ])};
 }
 function placeObjectScene(place,first,second,relation,date){
   const type=place?.type||"";
@@ -3112,8 +3156,9 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   )):[];
   const dating=dateLikePair(pair.first,pair.second,pair.relation,current);
   const purpose=dating?current.datePurpose:"";
+  const datePhase=dating?Math.max(0,Math.floor((nowMin(date)-Number(current.dateStartMinute||nowMin(date)))/25)):0;
   let scene=dating
-    ?datePurposeScene(purpose,place,pair.first,pair.second,date)
+    ?datePurposeScene(purpose,place,pair.first,pair.second,date,datePhase)
     :concreteInteraction(place,pair.first,pair.second,pair.relation,date);
   if(!dating){
     const objectScene=placeObjectScene(place,pair.first,pair.second,pair.relation,date);

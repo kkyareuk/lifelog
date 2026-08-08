@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808f";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808f";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808g";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808g";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -379,7 +379,11 @@ function dailyLogItems(entries,c){
       const groupKey=canonicalDateGroup(x);
       if(seen.has(groupKey))return"";seen.add(groupKey);
       const stepMap=new Map();
+      const storySeen=new Set();
       entries.filter(step=>canonicalDateGroup(step)===groupKey).sort((a,b)=>a.minute-b.minute).forEach(step=>{
+        const storyKey=[step.title,step.desc].map(value=>String(value||"").replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,"").replace(/\s+/g," ").trim()).join("|");
+        if(storySeen.has(storyKey))return;
+        storySeen.add(storyKey);
         const key=String(step.time||step.minute);
         stepMap.set(key,preferredMomentEntry(stepMap.get(key),step));
       });
@@ -408,14 +412,22 @@ function compactDisplayedTimeline(entries,minGap=30){
     if(shadowsPrevious){compact.pop();previous=compact.at(-1)}
     const normalized=value=>String(value||"").replace(/\s+/g," ").trim();
     const titleParts=value=>[...new Set(normalized(value).split(" · ").filter(Boolean))];
-    const nearDuplicate=Boolean(previous&&Math.abs(Number(item.minute)-Number(previous.minute))<=15&&sameLocation(previous,item)&&(
-      (item.interactionId&&item.interactionId===previous.interactionId)||
+    const sameDateStory=Boolean(previous&&item?.dateGroup&&item.dateGroup===previous.dateGroup&&(
+      normalized(item.title)===normalized(previous.title)||
       (titleParts(item.title).some(part=>titleParts(previous.title).includes(part))&&(
         normalized(item.desc)===normalized(previous.desc)||
         normalized(item.desc).includes(normalized(previous.desc))||
         normalized(previous.desc).includes(normalized(item.desc))
       ))
     ));
+    const nearDuplicate=Boolean(previous&&(sameDateStory||Math.abs(Number(item.minute)-Number(previous.minute))<=15&&sameLocation(previous,item)&&(
+      (item.interactionId&&item.interactionId===previous.interactionId)||
+      (titleParts(item.title).some(part=>titleParts(previous.title).includes(part))&&(
+        normalized(item.desc)===normalized(previous.desc)||
+        normalized(item.desc).includes(normalized(previous.desc))||
+        normalized(previous.desc).includes(normalized(item.desc))
+      ))
+    )));
     if(nearDuplicate){compact[compact.length-1]=preferredMomentEntry(previous,item);return}
     const protectedEntry=Boolean(item?.dateGroup||item?.interactionId||item?.groupInteraction||item?.careRoutine||/휠체어|의수|의족|보조기기/.test(`${item?.title||""} ${item?.desc||""}`));
     const previousProtected=Boolean(previous?.dateGroup||previous?.interactionId||previous?.groupInteraction||previous?.careRoutine||/휠체어|의수|의족|보조기기/.test(`${previous?.title||""} ${previous?.desc||""}`));
@@ -490,7 +502,7 @@ function homeDailyLog(chars,h){
   entries.splice(0,entries.length,...deduped);
   const face=x=>x.character?avatar(x.character,"log-face"):x.pet?(x.pet.icon||x.pet.photo?`<img class="avatar log-face" src="${esc(x.pet.icon||x.pet.photo)}" alt="">`:`<span class="avatar log-face">🐾</span>`):`<span class="avatar log-face house-event-icon">${x.houseIcon||"🏠"}</span>`;
   const owner=x=>x.character?`${x.character.name} · `:x.pet?`${x.pet.name} · `:"";
-  return `<section class="panel life-log home-family-log"><div class="title"><h2>집 생활 로그</h2><small>구성원의 외출·귀가와 함께 사는 존재·청소·배송 등 집 전체의 기록</small></div><ol>${entries.map(x=>`<li class="${importantEntry(x)||x.important?"important":""}" style="--log-theme:${esc(x.character?.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span class="log-person">${face(x)}<span><b>${esc(owner(x))}${esc(x.title)}</b><small>${esc(h.rooms?.[x.room]?.name||"집 안")} · ${esc(x.desc)}</small></span></span></li>`).join("")||"<li>아직 집 기록이 없어요.</li>"}</ol></section>`;
+  return `<section class="panel life-log home-family-log"><div class="title"><h2>집 생활 로그</h2><small>구성원의 외출·귀가와 반려생물·청소·배송 등 집 전체의 기록</small></div><ol>${entries.map(x=>`<li class="${importantEntry(x)||x.important?"important":""}" style="--log-theme:${esc(x.character?.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span class="log-person">${face(x)}<span><b>${esc(owner(x))}${esc(x.title)}</b><small>${esc(h.rooms?.[x.room]?.name||"집 안")} · ${esc(x.desc)}</small></span></span></li>`).join("")||"<li>아직 집 기록이 없어요.</li>"}</ol></section>`;
 }
 function peopleAtPlaceCard(p){
   const group=charactersAtPlace(p.id,state.activeTownId);if(!group.length)return"";
@@ -773,11 +785,11 @@ function homeCard(id,chars){
     <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.length?`${chars.map(c=>c.name).join(" · ")} 연결됨`:"아직 연결된 캐릭터가 없는 집"}</small></div><b>${inside.length}명 머무는 중</b></div>
     ${editToolbar}${homeSettings}${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
     <div class="rooms ${roomKeys.length>6?"has-extra":""}" style="--room-count:${roomKeys.length};--room-cols:4;--room-rows:${packedRooms.rows}">${roomHtml}</div>
-    <section class="pets home-feature-panel" data-home-feature="pets"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>함께 사는 존재</h2><button data-add-pet>+ 함께 사는 존재 추가</button></div><div class="pet-grid">${petCards||"<p>아직 함께 사는 존재가 없어요.</p>"}</div></section>
+    <section class="pets home-feature-panel" data-home-feature="pets"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>반려생물</h2><button data-add-pet>+ 반려생물 추가</button></div><div class="pet-grid">${petCards||"<p>아직 등록된 반려생물이 없어요.</p>"}</div></section>
     <section class="cars home-feature-panel" data-home-feature="cars"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>자동차</h2><button data-add-car>+ 자동차 추가</button></div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
-    <section class="resident-scenes home-feature-panel" data-home-feature="scenes"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>현재 장면</h2></div><div>${residentScenes}</div></section>
+    <section class="resident-scenes home-feature-panel" data-home-feature="scenes"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>구성원</h2></div><div>${residentScenes}</div></section>
     <div class="home-feature-panel" data-home-feature="house-log"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button>${homeDailyLog(chars,h)}</div>
-    <nav class="home-feature-menu" aria-label="집 세부 메뉴"><button type="button" data-open-home-feature="pets">함께 사는 존재</button><button type="button" data-open-home-feature="cars">자동차</button><button type="button" data-open-home-feature="scenes">현재 장면</button><button type="button" data-open-home-feature="house-log">로그</button></nav>
+    <nav class="home-feature-menu" aria-label="집 세부 메뉴"><button type="button" data-open-home-feature="pets">반려생물</button><button type="button" data-open-home-feature="cars">자동차</button><button type="button" data-open-home-feature="scenes">구성원</button><button type="button" data-open-home-feature="house-log">로그</button></nav>
   </article>`;
 }
 function chips(title,all,selected,key){return `<section class="chips"><h3>${title}</h3>${all.map(x=>`<button data-chip="${key}" data-value="${x}" class="${selected.includes(x)?"on":""}">${x}</button>`).join("")}</section>`}
@@ -1057,6 +1069,7 @@ const characterViewEditor=()=>{
     <div class="relationship-pair-magnet">
       <div class="relationship-pair-core">
         <small class="relationship-direction-help">선택한 방향의 마음</small>
+        <div class="relationship-selected-pair" aria-hidden="true">${avatar(source)}<i>→</i>${avatar(target)}</div>
         <div class="relationship-direction-sentence" data-view-summary="${sourceId}:${targetId}">
           <label><span class="sr-only">마음을 보는 사람</span><select data-view-source aria-label="마음을 보는 사람">${personOptions(state.order,sourceId)}</select><b>${esc(sourceParticle)}</b></label>
           <label><span class="sr-only">마음의 대상</span><select data-view-target aria-label="마음의 대상">${personOptions(targetIds,targetId)}</select><b>${esc(targetParticle)}</b></label>

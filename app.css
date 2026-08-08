@@ -4525,6 +4525,9 @@ html[data-color-mode="light"] .catalog-section>.title button{
 .relationship-direction-sentence label{display:inline-flex;align-items:center;gap:2px}
 .relationship-direction-sentence select{width:auto;max-width:10em;min-height:40px;padding:7px 28px 7px 10px;border-radius:12px;font:inherit;font-size:.9em}
 .relationship-direction-sentence strong{font:inherit}
+.relationship-selected-pair{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 5px}
+.relationship-selected-pair :is(.avatar,.sprite){width:58px;height:58px;filter:drop-shadow(0 7px 9px #0003)}
+.relationship-selected-pair i{font-style:normal;font-size:23px;opacity:.72}
 html[data-color-mode="dark"] .relationship-direction-sentence select{border-color:#ffffff29;background:#172536;color:#f6f9fc;-webkit-text-fill-color:#f6f9fc;color-scheme:dark}
 html[data-color-mode="light"] .relationship-direction-sentence select{border-color:#d8cec5;background:#fffdf9;color:#302a25;-webkit-text-fill-color:#302a25;color-scheme:light}
 .room-heading>span{padding:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
@@ -4562,20 +4565,70 @@ html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relati
 html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>button{border-color:#d8cec5!important;background:#fffdf9!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--relationship-own),var(--relationship-own-secondary))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 
+/* 밝은 화면에서도 관찰 메뉴는 배경 없는 흰 아이콘을 유지한다. */
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button{
+  border-color:transparent!important;background:transparent!important;box-shadow:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button :is(span,small){color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 5px #000,0 1px 2px #000!important}
+html.native-app .native-sub-header button{color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="light"].native-app .native-sub-header button{border-color:#8d837a66!important;background:#ffffff66!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important;text-shadow:none!important}
+
+html[data-color-mode="light"] .mobile-editor-head{border-bottom:1px solid #d8cec5!important;background:linear-gradient(135deg,#fffdf9,#e9ded3)!important;color:#302a25!important;box-shadow:0 8px 24px #49392b22!important}
+html[data-color-mode="light"] .mobile-editor-head :is(b,small){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] .mobile-editor-head>button{border-color:#cfc4ba!important;background:#fffaf4!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] :is(.catalog-kind>.title,.catalog-section>.title) button{border-color:#c7baae!important;background:#3e3731!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell{background:#f5f1ea!important;color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(.setting-card,.sync-panel,.feedback-card,fieldset){border-color:#d8cec5!important;background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(h1,h2,h3,b,strong,label,legend,p,small,a){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(button,input,select,textarea){border-color:#d2c6ba!important;background:#f1e9e0!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell button.primary{border-color:transparent!important;background:#176b60!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell textarea::placeholder{color:#75695f!important;-webkit-text-fill-color:#75695f!important}
+html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-shell .sync-actions button:not(.primary),
+html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-shell [data-guide-reset],
+html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-shell [data-reset]{
+  border-color:#d2c6ba!important;
+  background:#f1e9e0!important;
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-business-footer,
+html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-business-footer :is(b,p,a){
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-business-footer nav a:first-child{
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+}
+html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-business-footer{border-color:#d8cec5!important}
+
 @media(max-width:720px){
   html.native-app[data-active-tab="observe"] .native-observe-home{padding-right:10px!important;padding-left:10px!important}
-  html.native-app[data-active-tab="observe"] :is(.native-character-picker,.native-status-card,.native-log-card){justify-self:center!important;width:100%!important;max-width:660px!important;margin-inline:auto!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){justify-self:center!important;width:calc(100% - 36px)!important;max-width:620px!important;margin-inline:auto!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker{justify-self:center!important;width:calc(100% - 36px)!important;max-width:620px!important;margin-inline:auto!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="observe"] .native-character-stage{margin-top:12px!important;width:min(34vw,142px)!important;height:min(22dvh,178px)!important}
   html.native-app[data-active-tab="observe"] .native-character-stage.has-scene-companion,
   html.native-app[data-active-tab="observe"] .native-character-stage.has-scene-lineup{width:min(58vw,232px)!important;height:min(23dvh,186px)!important}
   html.native-app[data-active-tab="observe"] .native-character-picker{gap:7px!important;padding:5px 1px!important}
-  html.native-app[data-active-tab="observe"] .native-character-picker button{flex:0 0 48px!important;width:48px!important;min-width:48px!important;height:48px!important;min-height:48px!important;padding:3px!important;border-radius:50%!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker button{flex:0 0 48px!important;width:48px!important;min-width:48px!important;height:48px!important;min-height:48px!important;padding:3px!important;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker button.on{outline:2px solid #fff!important;outline-offset:-2px!important;background:#ffffff1a!important}
+  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button{border-color:transparent!important;background:transparent!important;box-shadow:none!important}
+  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button.on{border-color:transparent!important;background:#ffffff1a!important;box-shadow:none!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker button small{display:none!important}
   html.native-app[data-active-tab="observe"] .native-character-picker :is(.avatar,.sprite){width:42px!important;height:42px!important}
 
   html.native-app[data-active-tab="relationship"] main{height:calc(100dvh - 60px)!important;min-height:0!important;overflow:hidden!important}
-  html.native-app[data-active-tab="relationship"] :is(.relationship-page,.character-view-editor){width:100%!important;max-width:100vw!important;height:100%!important;min-height:0!important;margin:0!important;padding:10px!important;overflow-y:auto!important;box-sizing:border-box!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:block!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:10px!important;overflow:visible!important;box-sizing:border-box!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core{width:100%!important;min-width:0!important;padding:12px 4px 20px!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] :is(.relationship-page,.character-view-editor){width:100%!important;max-width:100vw!important;height:100%!important;min-height:0!important;margin:0!important;padding:8px!important;overflow:hidden!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .character-view-editor>.title{display:none!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:7px!important;overflow:hidden!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:7px!important;width:100%!important;min-width:0!important;max-height:100%!important;padding:8px 4px!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-selected-pair{margin-bottom:0!important;gap:8px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-selected-pair :is(.avatar,.sprite){width:50px!important;height:50px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{min-height:42px!important;padding:8px 12px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core>em{padding:6px 10px!important;font-size:12px!important}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence{gap:4px;font-size:17px}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence select{max-width:7.2em;min-height:38px;padding:6px 25px 6px 8px;font-size:16px}
+
+  html.native-app[data-active-tab="home"] .home-feature-menu button{font-size:14px!important;font-weight:800!important}
 }
