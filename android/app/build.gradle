@@ -45,6 +45,25 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+// OneDrive may expose copied web assets as reparse-point files, which Gradle's
+// snapshotter rejects as "not a regular file". Hydrate byte-for-byte copies in
+// a generated directory outside OneDrive and package that directory instead.
+def externalAssetsDir = file('C:/Users/Public/drawervillage-android-assets/main')
+android.sourceSets.main.assets.srcDirs = [externalAssetsDir]
+
+def prepareExternalWebAssets = tasks.register('prepareExternalWebAssets', Exec) {
+    commandLine 'powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
+            '-File', file('../copy-assets-for-gradle.ps1').absolutePath,
+            '-Source', file('src/main/assets').absolutePath,
+            '-Destination', externalAssetsDir.absolutePath
+}
+
+tasks.configureEach { task ->
+    if (task.name.toLowerCase().contains('merge') && task.name.toLowerCase().contains('assets')) {
+        task.dependsOn prepareExternalWebAssets
+    }
+}
+
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {

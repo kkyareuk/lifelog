@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808q";
-import {eventFor} from "./simulation.js?v=20260808q";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808q";
-import {recordCharacterInteraction} from "./state.js?v=20260808q";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260809a";
+import {eventFor} from "./simulation.js?v=20260809a";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260809a";
+import {recordCharacterInteraction} from "./state.js?v=20260809a";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -326,10 +326,10 @@ async function exportProfilePngV2(character,download=true){
   ctx.fillStyle="#fbfaf6";ctx.fillRect(0,0,width,canvas.height);
   ctx.strokeStyle="#1f2428";ctx.lineWidth=4;ctx.strokeRect(38,38,width-76,canvas.height-76);
   ctx.lineWidth=1;ctx.strokeRect(50,50,width-100,canvas.height-100);
-  ctx.fillStyle="#111";ctx.textAlign="center";ctx.font=`700 50px ${bodyStack}`;ctx.fillText("서랍도시 캐릭터 등록사항 증명서",width/2,118);
+  ctx.fillStyle="#111";ctx.textAlign="center";ctx.font=`700 50px ${bodyStack}`;ctx.fillText("서랍마을 캐릭터 등록사항 증명서",width/2,118);
   ctx.font=`18px ${bodyStack}`;ctx.fillText("DRAWER CITY · CHARACTER REGISTRATION RECORD",width/2,154);
   const documentSeed=String(character.id||character.name||"drawer-city");
-  ctx.textAlign="left";ctx.font=`17px ${bodyStack}`;ctx.fillText(`문서번호  서랍도시-${new Date().getFullYear()}-${String(Math.abs([...documentSeed].reduce((sum,char)=>sum+char.charCodeAt(0),0))).padStart(6,"0").slice(-6)}`,pad,196);
+  ctx.textAlign="left";ctx.font=`17px ${bodyStack}`;ctx.fillText(`문서번호  서랍마을-${new Date().getFullYear()}-${String(Math.abs([...documentSeed].reduce((sum,char)=>sum+char.charCodeAt(0),0))).padStart(6,"0").slice(-6)}`,pad,196);
   ctx.textAlign="right";ctx.fillText(`발급일  ${new Date().toLocaleDateString("ko-KR")}`,width-pad,196);
   const identityY=218,identityH=130,portraitSize=104;
   ctx.strokeStyle="#222";ctx.strokeRect(pad,identityY,contentW,identityH);
@@ -364,9 +364,9 @@ async function exportProfilePngV2(character,download=true){
   });
   const stampX=width-176,stampY=canvas.height-125;
   ctx.save();ctx.translate(stampX,stampY);ctx.rotate(-.12);ctx.strokeStyle="#b31f24";ctx.fillStyle="#b31f24";ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,0,57,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,46,0,Math.PI*2);ctx.stroke();ctx.textAlign="center";ctx.font=`700 20px ${bodyStack}`;ctx.fillText("서 랍 도 시",0,-5);ctx.font=`700 16px ${bodyStack}`;ctx.fillText("기 록 인",0,22);ctx.restore();
-  ctx.fillStyle="#333";ctx.textAlign="left";ctx.font=`17px ${bodyStack}`;ctx.fillText("위 인물의 등록사항을 서랍도시 기록 기준에 따라 증명합니다.",pad,canvas.height-122);
+  ctx.fillStyle="#333";ctx.textAlign="left";ctx.font=`17px ${bodyStack}`;ctx.fillText("위 인물의 등록사항을 서랍마을 기록 기준에 따라 증명합니다.",pad,canvas.height-122);
   ctx.fillText("※ 사용자가 직접 설정한 항목만 기록하며, 미설정 항목은 임의로 추정하지 않습니다.",pad,canvas.height-86);
-  if(download)try{const link=document.createElement("a");link.download=`${character.name}-서랍도시-등록사항증명서.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
+  if(download)try{const link=document.createElement("a");link.download=`${character.name}-서랍마을-등록사항증명서.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
   return canvas;
 }
 function exportProfilePdf(character){
@@ -385,7 +385,7 @@ async function exportProfilePdfV2(character,bodyFont){
 }
 function openProfileExportDialog(){
   const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>한글이 깨지지 않는 기본 글꼴로 관공서 제출 서류처럼 만들고, 아래에 서랍도시 기록 도장을 찍어요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-export-format="png"><b>PNG 증명서</b><small>이미지 파일로 바로 저장</small></button><button type="button" data-export-format="pdf"><b>PDF 증명서</b><small>같은 문서를 PDF로 저장·인쇄</small></button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>한글이 깨지지 않는 기본 글꼴로 관공서 제출 서류처럼 만들고, 아래에 서랍마을 기록 도장을 찍어요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-export-format="png"><b>PNG 증명서</b><small>이미지 파일로 바로 저장</small></button><button type="button" data-export-format="pdf"><b>PDF 증명서</b><small>같은 문서를 PDF로 저장·인쇄</small></button></div></form>`;
   dialog.querySelector('[data-export-format="png"]').onclick=()=>{exportProfilePngV2(character,true);dialog.close()};
   dialog.querySelector('[data-export-format="pdf"]').onclick=()=>{exportProfilePdfV2(character);dialog.close()};
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
@@ -571,7 +571,7 @@ function showOnboarding(){
   let step=0,userName=localStorage.getItem("drawer-village-user-name")||"";
   const dialog=document.createElement("dialog");dialog.className="onboarding-dialog";
   const pages=[
-    ()=>`<div class="onboarding-hero-icon">서랍도시</div><small>WELCOME TO DRAWER VILLAGE</small><h1>당신의 캐릭터가<br>자기 하루를 살아가는 곳</h1><p>캐릭터의 집과 취향, 관계와 일정이 서로 이어지며 하루의 장면을 만들어요.</p><button class="primary" type="button" data-onboarding-next>내 마을 시작하기</button>`,
+    ()=>`<div class="onboarding-hero-icon"><img src="./icons/drawer-village-logo.png" alt="서랍마을 로고"></div><small>서랍마을 · DRAWER VILLAGE</small><h1>당신의 캐릭터가<br>자기 하루를 살아가는 곳</h1><p>캐릭터의 집과 취향, 관계와 일정이 서로 이어지며 하루의 장면을 만들어요.</p><button class="primary" type="button" data-onboarding-next>내 마을 시작하기</button>`,
     ()=>`<div class="onboarding-hero-icon">✦</div><small>STEP 1 · 마을의 주인</small><h1>어떻게 불러드릴까요?</h1><p>게임 안내에서만 사용할 이름이에요. 캐릭터 이름과는 별개이고 나중에도 바꿀 수 있어요.</p><label class="onboarding-name">내 이름 또는 별명<input name="userName" value="${userName.replace(/"/g,"&quot;")}" maxlength="20" autocomplete="nickname" placeholder="예: 꺄륵"></label><button class="primary" type="button" data-onboarding-next>다음</button>`,
     ()=>`<div class="onboarding-hero-icon">◇</div><small>STEP 2 · 저장 방식</small><h1>${userName||"마을 주인"}님의 기록은<br>먼저 이 기기에 저장돼요</h1><p>계정을 연결해도 드롭다운 하나를 바꿀 때마다 자동 업로드하지 않아요. 설정에서 <b>동기화</b>를 눌렀을 때만 올리고, <b>불러오기</b>를 눌렀을 때만 다른 기기의 기록을 가져와요.</p><div class="onboarding-safe-note"><b>캐릭터·관계·집을 자동으로 만들지 않습니다.</b><span>백업 파일은 설정에서 언제든 내보낼 수 있어요.</span></div><div class="onboarding-actions"><button type="button" data-onboarding-login>Google 계정 연결</button><button class="primary" type="button" data-onboarding-next>지금은 기기에만 저장</button></div>`,
     ()=>`<div class="onboarding-hero-icon">＋</div><small>STEP 3 · 첫 주민</small><h1>첫 캐릭터부터<br>직접 만들어 볼까요?</h1><p>캐릭터를 만든 뒤에는 설정 화면에서 이름과 사진을 정하고, 이어서 집과 마을을 차례로 편집해요.</p><div class="onboarding-route"><span><b>1</b>캐릭터 만들기</span><i>→</i><span><b>2</b>캐릭터 설정</span><i>→</i><span><b>3</b>집 편집</span><i>→</i><span><b>4</b>마을 편집</span></div><button class="primary" type="button" data-onboarding-create>첫 캐릭터 만들기</button>`
@@ -580,7 +580,7 @@ function showOnboarding(){
     dialog.innerHTML=`<form method="dialog"><div class="onboarding-progress" aria-label="${step+1} / ${pages.length} 단계">${pages.map((_,index)=>`<i class="${index<=step?"on":""}"></i>`).join("")}</div><section>${pages[step]()}</section>${step?`<button type="button" class="onboarding-back" data-onboarding-back>← 이전</button>`:""}</form>`;
     dialog.querySelector("[data-onboarding-back]")?.addEventListener("click",()=>{step=Math.max(0,step-1);paint()});
     dialog.querySelector("[data-onboarding-next]")?.addEventListener("click",()=>{
-      const input=dialog.querySelector('[name="userName"]');if(input){if(!input.value.trim()){input.focus();return}userName=input.value.trim();localStorage.setItem("drawer-village-user-name",userName)}
+      const input=dialog.querySelector('[name="userName"]');if(input){if(!input.value.trim()){input.focus();return}userName=input.value.trim();localStorage.setItem("drawer-village-user-name",userName);state.ownerName=userName;save(true)}
       step=Math.min(pages.length-1,step+1);paint();
     });
     dialog.querySelector("[data-onboarding-login]")?.addEventListener("click",async()=>{const auth=window.ParallelCityAuth;if(!auth)return showToast("로그인 기능을 불러오는 중이에요");await auth.login();step=3;paint()});
@@ -640,6 +640,7 @@ function render(){
     const mobileSite=window.matchMedia?.("(max-width:720px)")?.matches??window.innerWidth<=720;
     document.documentElement.classList.toggle("native-app",Boolean(window.DRAWER_VILLAGE_NATIVE)||mobileSite);
     document.documentElement.dataset.uiFont=state.uiFont||"system";
+    document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
     renderApp(state);
@@ -1394,7 +1395,13 @@ function bind(){
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
   $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
-  $$("[data-setting]").forEach(el=>el.onchange=()=>{state[el.dataset.setting]=el.value;save(true);render()});
+  $$("[data-setting]").forEach(el=>el.onchange=()=>{
+    const key=el.dataset.setting;
+    state[key]=el.value;
+    if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
+    save(true);
+    render();
+  });
   $$("button[data-color-mode]").forEach(button=>button.onclick=event=>{
     event.stopPropagation();
     state.colorMode=button.dataset.colorMode==="light"?"light":"dark";
@@ -1723,6 +1730,25 @@ function openRelationshipMap(){
   });
 }
 
+async function relationshipExportImage(src){
+  if(!src)return "";
+  if(/^data:image\//i.test(src))return src;
+  try{
+    const response=await fetch(new URL(src,location.href).href,{cache:"force-cache"});
+    if(!response.ok)throw new Error(`image-${response.status}`);
+    const blob=await response.blob();
+    return await new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(String(reader.result||""));
+      reader.onerror=reject;
+      reader.readAsDataURL(blob);
+    });
+  }catch(error){
+    console.warn("관계도 이미지 포함 실패",src,error);
+    return "";
+  }
+}
+
 async function exportRelationshipMapPng(){
   const source=document.querySelector("[data-relationship-map-dialog] .relationship-map-canvas svg");
   if(!source){showToast("저장할 관계도가 없어요");return}
@@ -1732,7 +1758,8 @@ async function exportRelationshipMapPng(){
   clone.setAttribute("height","1800");
   const defs=document.createElementNS(svgNs,"defs");
   clone.prepend(defs);
-  [...clone.querySelectorAll("foreignObject")].forEach((foreign,index)=>{
+  const foreignNodes=[...clone.querySelectorAll("foreignObject")];
+  for(const [index,foreign] of foreignNodes.entries()){
     const x=Number(foreign.getAttribute("x"))||0,y=Number(foreign.getAttribute("y"))||0;
     const width=Number(foreign.getAttribute("width"))||110,height=Number(foreign.getAttribute("height"))||110;
     const img=foreign.querySelector("img"),name=foreign.querySelector("b")?.textContent||"";
@@ -1743,13 +1770,15 @@ async function exportRelationshipMapPng(){
     circle.setAttribute("r",String(visualSize/2+3));circle.setAttribute("fill","#fff");
     circle.setAttribute("stroke","#d8cec4");circle.setAttribute("stroke-width","3");
     group.append(circle);
-    if(img?.getAttribute("src")){
+    const embeddedSource=await relationshipExportImage(img?.getAttribute("src")||"");
+    if(embeddedSource){
       const clipId=`relationship-avatar-${index}`;
       const clip=document.createElementNS(svgNs,"clipPath"),clipCircle=document.createElementNS(svgNs,"circle");
       clip.setAttribute("id",clipId);clipCircle.setAttribute("cx",String(cx));clipCircle.setAttribute("cy",String(cy));clipCircle.setAttribute("r",String(visualSize/2));
       clip.append(clipCircle);defs.append(clip);
       const image=document.createElementNS(svgNs,"image");
-      image.setAttribute("href",img.getAttribute("src"));
+      image.setAttribute("href",embeddedSource);
+      image.setAttributeNS("http://www.w3.org/1999/xlink","xlink:href",embeddedSource);
       image.setAttribute("x",String(cx-visualSize/2));image.setAttribute("y",String(cy-visualSize/2));
       image.setAttribute("width",String(visualSize));image.setAttribute("height",String(visualSize));
       image.setAttribute("preserveAspectRatio","xMidYMid meet");image.setAttribute("clip-path",`url(#${clipId})`);
@@ -1767,7 +1796,7 @@ async function exportRelationshipMapPng(){
     label.setAttribute("paint-order","stroke");label.textContent=name;
     group.append(label);
     foreign.replaceWith(group);
-  });
+  }
   const style=document.createElementNS(svgNs,"style");
   style.textContent=`.map-official rect{fill:#fffdf9;stroke:#d8cec4;stroke-width:2}.map-relation{font:800 15px sans-serif;fill:#33261f}.map-stage{font:600 11px sans-serif;fill:#6f625a}.map-heart{font:900 24px sans-serif;stroke:#fff;stroke-width:4;paint-order:stroke}`;
   defs.after(style);
@@ -2305,13 +2334,13 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260808q").catch(error=>{
+  import("./auth.js?v=20260809a").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260808q",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260809a",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

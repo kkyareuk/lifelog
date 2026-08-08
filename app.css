@@ -8,6 +8,10 @@
 @font-face{font-family:"Cafe24ProSlim";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/Cafe24PROSlim-Bold.woff2") format("woff2");font-weight:700 900;font-display:swap}
 @font-face{font-family:"ChangwonDangamRounded";src:url("https://cdn.jsdelivr.net/gh/projectnoonnu/2511-1@1.0/ChangwonDangamRound-Regular.woff2") format("woff2");font-weight:400 900;font-display:swap}
 :root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--ui-font:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+html[data-ui-scale="small"]{font-size:15px}
+html[data-ui-scale="normal"]{font-size:16px}
+html[data-ui-scale="large"]{font-size:17.5px}
+html[data-ui-scale="xlarge"]{font-size:19px}
 html[data-ui-font="system"]{--ui-font:system-ui,-apple-system,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="noto"]{--ui-font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="kopub"]{--ui-font:"KoPubWorldDotum","Noto Sans KR","Malgun Gothic",sans-serif}
@@ -23,7 +27,7 @@ html[data-ui-font="gamja"]{--ui-font:"Gamja Flower","Noto Sans KR","Malgun Gothi
 html[data-ui-font="poor"]{--ui-font:"Poor Story","Noto Sans KR","Malgun Gothic",sans-serif}
 html[data-ui-font="nanumpen"]{--ui-font:"Nanum Pen Script","Noto Sans KR","Malgun Gothic",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui-font)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 17px}button.primary,header nav .on{color:#fff;background:var(--grad);border-color:transparent}.panel{background:#fff;border:1px solid var(--line);border-radius:27px;box-shadow:0 18px 45px #27334b10}
-.font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
+.font-setting-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
 .place-people-faces{justify-content:center!important;flex-wrap:wrap!important;max-width:200px!important;gap:clamp(0px,calc(8px - var(--people-count)*1px),3px)!important}
 .place-people-faces .avatar,.place-people-faces .sprite{width:clamp(28px,calc(66px - var(--people-count)*4px),52px)!important;height:clamp(32px,calc(72px - var(--people-count)*4px),58px)!important}
 .place-people-names{max-width:200px!important}
@@ -492,8 +496,8 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-char
   color:#221f1c!important;
 }
 html[data-color-mode="light"].native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
-  border-color:#d7cec5!important;
-  background:rgba(255,255,255,.86)!important;
+  border-color:color-mix(in srgb,var(--native-own) 30%,#d7cec5)!important;
+  background:color-mix(in srgb,rgba(255,255,255,.9) 94%,var(--native-own))!important;
   color:#302a25!important;
   box-shadow:0 16px 34px #392e2433!important;
   backdrop-filter:blur(18px) saturate(1.06)!important;
@@ -516,7 +520,9 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-log-
 }
 
 html[data-color-mode="light"].native-app[data-active-tab="character"] .mobile-character-dashboard{
-  background:linear-gradient(155deg,#f8f3ec,#eee5db)!important;
+  background:
+    radial-gradient(circle at 24% 10%,color-mix(in srgb,var(--character-own) 24%,transparent),transparent 42%),
+    linear-gradient(155deg,color-mix(in srgb,var(--character-own) 10%,#fff),color-mix(in srgb,var(--character-secondary) 12%,#f3eee8))!important;
   color:#302a25!important;
 }
 html[data-color-mode="light"].native-app[data-active-tab="character"] :is(.mobile-character-heading,.mobile-character-pane-grid button,.mobile-character-strip button){
@@ -1274,7 +1280,8 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .cars{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.car-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}.car-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#f7f9fc}.car-card>div{display:grid;gap:4px;flex:1}.car-card small{color:var(--muted)}.car-icon{font-size:38px}.car-photo{width:88px;height:66px;border-radius:13px;object-fit:cover;background:#fff}.car-edit{grid-template-columns:repeat(2,minmax(0,1fr))!important}.car-edit .danger{align-self:end}.room-more{position:static;display:grid;place-items:center;flex:0 0 auto;min-width:38px;width:38px;height:38px;padding:0;border:2px solid #fff;border-radius:50%;background:#273248;color:#fff;font-size:13px;font-weight:900;box-shadow:0 5px 12px #17203344}.room-pets .room-more{align-self:center}
 .fields>label:has([data-image="photo"]){order:-20;grid-column:1/-1;padding:16px;border:2px solid color-mix(in srgb,var(--p) 28%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--p) 5%,white)}
 .profile-license .fields>label:has(>input[data-field="socialEnergy"]),.profile-license .fields>label:has(>input[data-field="sensingIntuition"]),.profile-license .fields>label:has(>input[data-field="thinkingFeeling"]),.profile-license .fields>label:has(>input[data-field="perceivingJudging"]){display:none}
-.profile-license>.check{display:flex;margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fafc}
+.profile-license>.check{display:flex;align-items:center;gap:10px;margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fafc}
+.profile-license>.check input[type="checkbox"]{flex:0 0 20px!important;width:20px!important;height:20px!important;min-width:20px!important;min-height:20px!important;margin:0!important;padding:0!important;border-radius:5px!important}
 .personality-choice{padding:15px;border:1px solid var(--line);border-radius:18px;background:#f8fafc}.personality-choice>div{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}.personality-choice>small{display:block;color:var(--muted);line-height:1.55}.personality-choice button.on{background:var(--grad);color:#fff;border-color:transparent}
 .resident-setting{display:contents}.resident-setting label{display:grid;gap:3px;font-size:12px;color:var(--muted)}.resident-setting select{padding:8px}
 .group-members{display:flex;flex-wrap:wrap;gap:8px;border:1px solid var(--line);border-radius:15px;padding:12px}.group-members[hidden]{display:none}.group-members label{display:flex;align-items:center;gap:6px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#f8fafc}.group-members input{width:auto}
@@ -1344,12 +1351,12 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relationship-map-canvas svg .map-relation{font-size:18px}
 .relationship-map-canvas svg .map-stage{font-size:14px;font-weight:600;fill:#74665d}
 .relationship-map-canvas svg .map-heart{stroke:#fff;stroke-width:4px;font-size:24px;font-weight:900;paint-order:stroke}
-.relationship-map-node{display:grid;place-content:center;justify-items:center;gap:4px;width:110px;height:110px;box-sizing:border-box;text-align:center}
-.relationship-map-node .avatar,.relationship-map-node .sprite{width:64px;height:64px;filter:drop-shadow(0 6px 8px #3b2d2044)}
-.relationship-map-node b{max-width:86px;padding:3px 7px;border-radius:999px;background:#fff;box-shadow:0 3px 12px #2f241b1c}
-.relationship-map-node.map-node-pair{width:170px;height:170px}
-.relationship-map-node.map-node-pair .avatar,.relationship-map-node.map-node-pair .sprite{width:108px;height:108px}
-.relationship-map-node.map-node-pair b{max-width:142px;font-size:25px}
+.relationship-map-node{display:grid;place-content:center;justify-items:center;gap:5px;width:136px;height:136px;box-sizing:border-box;text-align:center}
+.relationship-map-node .avatar,.relationship-map-node .sprite{width:82px;height:82px;filter:drop-shadow(0 7px 10px #3b2d204d)}
+.relationship-map-node b{max-width:110px;padding:4px 9px;border-radius:999px;background:#fff;box-shadow:0 3px 12px #2f241b1c;font-size:17px}
+.relationship-map-node.map-node-pair{width:180px;height:180px}
+.relationship-map-node.map-node-pair .avatar,.relationship-map-node.map-node-pair .sprite{width:116px;height:116px}
+.relationship-map-node.map-node-pair b{max-width:150px;font-size:26px}
 .relationship-map-canvas .map-official rect{fill:rgba(255,255,255,.94);stroke:#ded2c7;stroke-width:1.5px}
 .relationship-map-canvas .map-official text{stroke:none;paint-order:normal}
 .relation-temporal{display:inline-flex!important;align-items:center;gap:10px;width:auto!important;max-width:none;margin:4px 0!important;padding:10px 13px!important;border:1px solid var(--line);border-radius:14px;background:#f7f8fb}
@@ -1610,12 +1617,12 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .character-traits-pane{display:grid;gap:22px}
 .traits-pane-heading{display:grid;gap:7px}.traits-pane-heading h2,.traits-pane-heading p{margin:0}
 .traits-pane-heading p,.physical-appearance-settings>p,.physical-appearance-settings>small,.profile-attraction-settings>p,.profile-attraction-settings>small{color:var(--muted);line-height:1.6}
-.physical-appearance-settings{display:grid;gap:14px;border:2px solid color-mix(in srgb,var(--p) 18%,var(--line));background:color-mix(in srgb,var(--p) 3%,#fff)}
+.physical-appearance-settings{display:grid;gap:14px;border:2px solid color-mix(in srgb,var(--p) 18%,var(--line));background:color-mix(in srgb,var(--p) 3%,var(--panel))}
 .profile-attraction-settings{display:grid;gap:14px;margin-top:24px;padding:22px 0 0!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 .physical-appearance-settings>h2,.physical-appearance-settings>p,.profile-attraction-settings>h2,.profile-attraction-settings>p{margin:0}
-.physical-appearance-settings .profile-tag-actions{background:#fff}
+.physical-appearance-settings .profile-tag-actions{background:var(--panel)}
 .profile-attraction-settings .profile-tag-actions{background:#fbf8f3}
-.physical-appearance-settings fieldset{margin:0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.physical-appearance-settings fieldset{margin:0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
 .physical-appearance-settings legend{padding:0 7px;font-weight:900}
 .physical-appearance-settings fieldset .chips{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;border:0}
 .physical-appearance-settings fieldset button.on{color:#fff;border-color:transparent;background:var(--grad)}
@@ -3403,8 +3410,8 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 .native-app :is(.scene-tone-crush-mutual,.scene-tone-crush-one-sided) .native-scene-effects i{
   animation:native-heart-rise var(--fx-duration,4s) ease-in var(--fx-delay,0s) infinite;
 }
-.native-app .scene-tone-crush-mutual .native-scene-lineup-person:nth-child(odd){animation:native-crush-left 3.8s ease-in-out infinite}
-.native-app .scene-tone-crush-mutual .native-scene-lineup-person:nth-child(even){animation:native-crush-right 3.8s -.9s ease-in-out infinite}
+.native-app .scene-tone-crush-mutual .native-scene-lineup-person:nth-child(odd){animation:native-crush-left 4.8s cubic-bezier(.4,0,.2,1) infinite;animation-delay:0s!important}
+.native-app .scene-tone-crush-mutual .native-scene-lineup-person:nth-child(even){animation:native-crush-right 4.8s cubic-bezier(.4,0,.2,1) infinite;animation-delay:0s!important}
 .native-app .scene-tone-crush-one-sided .native-scene-lineup-person.is-current{animation:native-crush-hesitate 4.2s ease-in-out infinite}
 .native-app .scene-tone-crush-one-sided .native-scene-lineup-person:not(.is-current){animation:native-social-bob 4.6s -.7s ease-in-out infinite}
 .native-app .scene-action-fear .native-scene-lineup-person.is-current,
@@ -3455,8 +3462,8 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 .native-app .scene-action-eating .native-scene-action-prop{left:57%;top:58%;animation:native-prop-eat 1.7s ease-in-out infinite}
 .native-app .scene-action-eating .native-person-action-prop{animation:native-prop-eat 1.7s ease-in-out infinite}
 .native-app .scene-action-eating .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-eating-pause 3.4s ease-in-out infinite}
-@keyframes native-crush-left{0%,100%{translate:-5px 2px;rotate:-1deg}42%{translate:2px -5px;rotate:1deg}58%{translate:0 -4px;rotate:0}}
-@keyframes native-crush-right{0%,100%{translate:5px 1px;rotate:1deg}42%{translate:-2px -4px;rotate:-1deg}58%{translate:1px -3px;rotate:0}}
+@keyframes native-crush-left{0%,18%,100%{translate:-7px 2px;rotate:-1deg}34%{translate:2px -4px;rotate:1deg}41%{translate:4px -5px;rotate:1deg}45%{translate:-13px -9px;rotate:-5deg;scale:1.04}54%{translate:-9px -2px;rotate:-2deg;scale:1}72%{translate:-3px -3px;rotate:0}}
+@keyframes native-crush-right{0%,18%,100%{translate:7px 1px;rotate:1deg}34%{translate:-2px -4px;rotate:-1deg}41%{translate:-4px -5px;rotate:-1deg}45%{translate:13px -9px;rotate:5deg;scale:1.04}54%{translate:9px -2px;rotate:2deg;scale:1}72%{translate:3px -3px;rotate:0}}
 @keyframes native-crush-hesitate{0%,100%{translate:-8px 2px}38%{translate:1px -4px}52%{translate:-3px -2px}70%{translate:2px -3px}}
 @keyframes native-fear-tremble{0%,100%{translate:-5px 2px;rotate:-1deg}25%{translate:-8px 0;rotate:1deg}50%{translate:-4px -2px;rotate:-1deg}75%{translate:-9px 1px;rotate:1deg}}
 @keyframes native-prop-sweep{0%,100%{translate:-14px 5px;rotate:-22deg}50%{translate:14px -2px;rotate:24deg}}
@@ -4383,7 +4390,7 @@ html[data-color-mode="light"] dialog :is(input,select,textarea,button){border-co
 @media(max-width:720px){
   html.native-app[data-active-tab="observe"] .native-status-card{max-height:none!important}
   .native-app .native-status-card h1{max-height:4.1em}
-  .native-app .native-status-card p{max-height:6.2em}
+  .native-app .native-status-card p{max-height:6.4em;font-size:.96rem!important;line-height:1.6!important}
 }
 
 /* 밝은 화면에서는 설정 미리보기와 저장 공간도 실제 종이색 카드로 읽힌다. */
@@ -4575,7 +4582,7 @@ html[data-color-mode="light"] .catalog-section>.title button{
 .relationship-direction-sentence select{width:auto;max-width:10em;min-height:40px;padding:7px 28px 7px 10px;border-radius:12px;font:inherit;font-size:.9em}
 .relationship-direction-sentence strong{font:inherit}
 .relationship-selected-pair{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 5px}
-.relationship-selected-pair :is(.avatar,.sprite){width:58px;height:58px;filter:drop-shadow(0 7px 9px #0003)}
+.relationship-selected-pair :is(.avatar,.sprite){width:104px;height:104px;filter:drop-shadow(0 8px 12px #0004)}
 .relationship-selected-pair i{font-style:normal;font-size:23px;opacity:.72}
 html[data-color-mode="dark"] .relationship-direction-sentence select{border-color:#ffffff29;background:#172536;color:#f6f9fc;-webkit-text-fill-color:#f6f9fc;color-scheme:dark}
 html[data-color-mode="light"] .relationship-direction-sentence select{border-color:#d8cec5;background:#fffdf9;color:#302a25;-webkit-text-fill-color:#302a25;color-scheme:light}
@@ -4613,6 +4620,48 @@ html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relati
 html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>em{border:1px solid #ddd3c9!important;background:#fffdf9!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>button{border-color:#d8cec5!important;background:#fffdf9!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--relationship-own),var(--relationship-own-secondary))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+
+html[data-color-mode="dark"] :is(.physical-appearance-settings,.physical-appearance-settings fieldset,.physical-appearance-settings .profile-tag-actions,.profile-attraction-settings,.profile-attraction-settings .profile-tag-actions,.health-accessibility-settings,.personality-detail-grid>.personality-choice){
+  border-color:#ffffff20!important;
+  background:#172536!important;
+  color:#f5f8fb!important;
+}
+html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings,.personality-detail-grid>.personality-choice) :is(h2,h3,h4,b,strong,label,legend){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings,.personality-detail-grid>.personality-choice) :is(p,small,span){color:#bdc9d5!important;-webkit-text-fill-color:#bdc9d5!important}
+html[data-color-mode="dark"] .physical-appearance-settings button:not(.on){border-color:#ffffff24!important;background:#223348!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+
+html[data-color-mode="dark"] .relationship-map-dialog :is(form,.relationship-map-dialog-body,.relationship-map-scroll){border-color:#ffffff20!important;background:#101a28!important;color:#f5f8fb!important}
+html[data-color-mode="dark"] .relationship-map-dialog :is(.relationship-map,.relationship-map-canvas){border-color:#ffffff24!important;background:radial-gradient(circle at center,#26384c 0 32%,#101a28 100%)!important}
+html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-node b{background:#172536!important;color:#f5f8fb!important;box-shadow:0 4px 14px #0007!important}
+html[data-color-mode="dark"] .relationship-map-dialog .relationship-color-legend span{border-color:#ffffff1f!important;background:#172536!important;color:#f5f8fb!important}
+html[data-color-mode="dark"] .relationship-map-dialog svg .map-official rect{fill:#172536!important;stroke:#ffffff35!important}
+html[data-color-mode="dark"] .relationship-map-dialog svg .map-official text{fill:#f5f8fb!important;stroke:#101a28!important}
+
+/* 프로필 편집 안의 선택 묶음도 현재 화면 모드를 그대로 따른다. */
+html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) :is(fieldset,.profile-multi-choice,.physical-trait-group,.representation-warning,.profile-tag-actions,.eye-color-pair){
+  border-color:#ffffff20!important;background:#172536!important;color:#f5f8fb!important
+}
+html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) :is(input,select,textarea){
+  border-color:#ffffff2e!important;background:#223348!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important;color-scheme:dark
+}
+html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) :is(fieldset,.profile-multi-choice,.physical-trait-group,.representation-warning) :is(p,small,span,legend,label){
+  color:#d3dce6!important;-webkit-text-fill-color:#d3dce6!important
+}
+html[data-color-mode="dark"] .profile-license>.check{
+  border-color:#ffffff20!important;background:#172536!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important
+}
+
+/* 선택한 인물의 두 테마색이 밝은 화면에서도 카드와 선택선에 남도록 한다. */
+html[data-color-mode="light"].native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
+  border-color:color-mix(in srgb,var(--native-own) 45%,#d8cec5)!important;
+  box-shadow:0 16px 34px color-mix(in srgb,var(--native-own) 14%,transparent)!important
+}
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button.on{
+  outline-color:var(--native-own)!important;background:color-mix(in srgb,var(--native-own) 16%,transparent)!important
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] .mobile-character-dashboard{
+  background:radial-gradient(circle at 75% 12%,color-mix(in srgb,var(--character-secondary) 28%,transparent),transparent 38%),linear-gradient(150deg,color-mix(in srgb,var(--character-own) 22%,#f8fafc),#f8fafc 58%)!important
+}
 
 /* 밝은 화면에서도 관찰 메뉴는 배경 없는 흰 아이콘을 유지한다. */
 html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button{
@@ -4686,11 +4735,18 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
   html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:7px!important;overflow:hidden!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:7px!important;width:100%!important;min-width:0!important;max-height:100%!important;padding:8px 4px!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .relationship-selected-pair{margin-bottom:0!important;gap:8px!important}
-  html.native-app[data-active-tab="relationship"] .relationship-selected-pair :is(.avatar,.sprite){width:50px!important;height:50px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-selected-pair :is(.avatar,.sprite){width:94px!important;height:94px!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{min-height:42px!important;padding:8px 12px!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core>em{padding:6px 10px!important;font-size:12px!important}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence{gap:4px;font-size:17px}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence select{max-width:7.2em;min-height:38px;padding:6px 25px 6px 8px;font-size:16px}
 
   html.native-app[data-active-tab="home"] .home-feature-menu button{font-size:14px!important;font-weight:800!important}
+  .font-setting-grid{grid-template-columns:1fr}
 }
+
+.native-app .native-status-card p{display:block!important;max-height:8.4em!important;overflow-y:auto!important;font-size:clamp(1.05rem,2.1vw,1.2rem)!important;line-height:1.6!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
+.native-app .native-status-card h1{max-height:3.9em!important;overflow-y:auto!important}
+.native-app .native-status-card{max-height:min(40dvh,390px)!important}
+.native-app .native-log-card{max-height:min(29dvh,290px)!important;overflow:hidden!important}
+.native-app .native-log-card ol{min-height:0;max-height:none!important;overflow-y:auto!important}

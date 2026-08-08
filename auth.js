@@ -62,6 +62,12 @@ const applyLocalTombstones=(remote,local)=>{
 };
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false;
+const accountName=()=>String(
+  window.ParallelCity?.getState?.()?.ownerName||
+  localStorage.getItem("drawer-village-user-name")||
+  user?.displayName||
+  "계정"
+).trim().slice(0,20)||"계정";
 let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false,teaSupportMonth:""};
 let guideState={loaded:!ready,seen:[]};
 let autoLoadStarted=false;
@@ -126,7 +132,7 @@ async function registerSignedInUser(){
   const reference=cloudDoc();
   const snapshot=await getDoc(reference);
   const profile={
-    name:user.displayName||"",
+    name:accountName(),
     email:user.email||"",
     photoURL:user.photoURL||"",
     provider:user.providerData?.[0]?.providerId||"google.com"
@@ -220,7 +226,7 @@ async function prepareState(local,manifest){
   };
   walk(next,["game"]);
   for(let i=0;i<jobs.length;i++){
-    status(`${user.displayName||"계정"} · 사진 ${i+1}/${jobs.length} 올리는 중`);
+    status(`${accountName()} · 사진 ${i+1}/${jobs.length} 올리는 중`);
     jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest);
   }
   const usedUrls=storedPhotoUrls(next);
@@ -254,7 +260,7 @@ async function upload({silent=false,reason=""}={}){
   }
   busy=true;
   try{
-    status(`${user.displayName||"계정"} · 올리는 중`);
+    status(`${accountName()} · 올리는 중`);
     const localState=window.ParallelCity.getState();
     const allowedCharacters=7+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5);
     const localCharacterCount=Array.isArray(localState?.order)
@@ -275,9 +281,9 @@ async function upload({silent=false,reason=""}={}){
       :localState;
     const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previous?.gameState));
     const {gameState,mediaManifest,uploadedCount}=prepared;
-    await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
+    await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
     publishStorageUsage(mediaManifest,gameState);
-    status(`${user.displayName||"계정"} · ${reason||"계정 저장"} 완료`);
+    status(`${accountName()} · ${reason||"계정 저장"} 완료`);
     toast(uploadedCount?`동기화되었습니다 · 새 사진 ${uploadedCount}장 저장`:"동기화되었습니다");
     return true;
   }catch(error){
@@ -291,7 +297,7 @@ async function download({automatic=false}={}){
   if(!user){if(!automatic)toast("Google 로그인이 필요합니다");return}
   if(busy)return;busy=true;
   try{
-    status(`${user.displayName||"계정"} · 불러오는 중`);
+    status(`${accountName()} · 불러오는 중`);
     const snapshot=await getDoc(cloudDoc());
     const documentData=snapshot.exists()?snapshot.data():null;
     const remoteGuides=Array.isArray(documentData?.uiPreferences?.pageGuides)?documentData.uiPreferences.pageGuides:[];
@@ -301,11 +307,11 @@ async function download({automatic=false}={}){
     publishStorageUsage(documentData?.mediaManifest,documentData?.gameState);
     publishEntitlements(documentData?.entitlements);
     const remote=documentData?.gameState||null;
-    if(!remote){status(`${user.displayName||"계정"} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
+    if(!remote){status(`${accountName()} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
     const countCharacters=value=>Array.isArray(value?.characters)?value.characters.length:Object.keys(value?.characters||{}).length;
     const remoteCount=countCharacters(remote),localCount=countCharacters(window.ParallelCity.getState());
     if(automatic&&remoteCount===0&&localCount>0){
-      status(`${user.displayName||"계정"} · 기기 데이터 유지`);
+      status(`${accountName()} · 기기 데이터 유지`);
       toast("기기의 캐릭터 데이터를 유지했습니다");
       return;
     }
@@ -315,24 +321,24 @@ async function download({automatic=false}={}){
     const differentCharacters=localIds.size>0&&remoteIds.size>0&&(localIds.size!==remoteIds.size||[...localIds].some(id=>!remoteIds.has(id)));
     if(differentCharacters){
       if(automatic){
-        status(`${user.displayName||"계정"} · 기기와 클라우드 인물 구성이 달라 자동 불러오기 중지`);
+        status(`${accountName()} · 기기와 클라우드 인물 구성이 달라 자동 불러오기 중지`);
         toast("인물 구성이 달라 자동 동기화를 멈췄어요 · 설정에서 어느 데이터를 쓸지 선택해 주세요");
         return false;
       }
       if(!confirm(`현재 기기에는 ${localCount}명, 클라우드에는 ${remoteCount}명이 있어요.\n\n클라우드 데이터로 기기의 마을 전체를 교체할까요?\n취소하면 현재 기기 데이터를 그대로 유지합니다.`)){
-        status(`${user.displayName||"계정"} · 기기 데이터 유지`);
+        status(`${accountName()} · 기기 데이터 유지`);
         toast("기기의 캐릭터 데이터를 유지했습니다");
         return false;
       }
     }
     if(automatic&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
-      status(`${user.displayName||"계정"} · 더 최신인 기기 데이터 유지`);
+      status(`${accountName()} · 더 최신인 기기 데이터 유지`);
       toast("기기의 최신 변경사항을 유지했습니다");
       return false;
     }
     window.ParallelCity.replaceState(applyLocalTombstones(remote,localState));
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
-    status(`${user.displayName||"계정"} · ${accessLabel()} · 불러오기 완료`);
+    status(`${accountName()} · ${accessLabel()} · 불러오기 완료`);
     toast(automatic?"자동으로 불러왔습니다":"불러왔습니다");
     return true;
   }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false}
@@ -364,10 +370,10 @@ if(ready){
     onAuthStateChanged(auth,async next=>{
       user=next;
       if(!user){publishEntitlements(null);publishGuideState(localGuideKeys())}
-      status(user?`${user.displayName||"Google 계정"} · ${cfg.projectId} 연결됨 · 저장 시 동기화`:"Google 로그인 안 됨");
+      status(user?`${accountName()} · ${cfg.projectId} 연결됨 · 저장 시 동기화`:"Google 로그인 안 됨");
       if(user){
         try{await registerSignedInUser()}
-        catch(error){console.error(error);status(`${user.displayName||"Google 계정"} · 사용자 등록 실패 · ${shortError(error)}`)}
+        catch(error){console.error(error);status(`${accountName()} · 사용자 등록 실패 · ${shortError(error)}`)}
         const loadKey=`drawer-village-auto-load-${user.uid}`;
         if(!autoLoadStarted&&Date.now()-sessionStamp(loadKey)>=REFRESH_GUARD_MS){
           autoLoadStarted=true;
