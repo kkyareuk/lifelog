@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808g";
-import {eventFor} from "./simulation.js?v=20260808g";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808g";
-import {recordCharacterInteraction} from "./state.js?v=20260808g";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808p";
+import {eventFor} from "./simulation.js?v=20260808p";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808p";
+import {recordCharacterInteraction} from "./state.js?v=20260808p";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -571,10 +571,10 @@ function showOnboarding(){
   let step=0,userName=localStorage.getItem("drawer-village-user-name")||"";
   const dialog=document.createElement("dialog");dialog.className="onboarding-dialog";
   const pages=[
-    ()=>`<div class="onboarding-hero-icon">▣</div><small>WELCOME TO DRAWER VILLAGE</small><h1>당신의 캐릭터가<br>자기 하루를 살아가는 곳</h1><p>서랍마을은 캐릭터의 집·취향·관계·일정을 바탕으로 생활 장면이 이어지는 관찰 게임이에요.</p><div class="onboarding-feature-grid"><span><b>◉ 관찰</b><small>지금 하는 일과 생활로그</small></span><span><b>⌂ 집</b><small>방·가족·반려존재·자동차</small></span><span><b>↝ 관계</b><small>공식 관계와 서로 다른 속마음</small></span></div><button class="primary" type="button" data-onboarding-next>내 마을 시작하기</button>`,
+    ()=>`<div class="onboarding-hero-icon">서랍도시</div><small>WELCOME TO DRAWER VILLAGE</small><h1>당신의 캐릭터가<br>자기 하루를 살아가는 곳</h1><p>캐릭터의 집과 취향, 관계와 일정이 서로 이어지며 하루의 장면을 만들어요.</p><button class="primary" type="button" data-onboarding-next>내 마을 시작하기</button>`,
     ()=>`<div class="onboarding-hero-icon">✦</div><small>STEP 1 · 마을의 주인</small><h1>어떻게 불러드릴까요?</h1><p>게임 안내에서만 사용할 이름이에요. 캐릭터 이름과는 별개이고 나중에도 바꿀 수 있어요.</p><label class="onboarding-name">내 이름 또는 별명<input name="userName" value="${userName.replace(/"/g,"&quot;")}" maxlength="20" autocomplete="nickname" placeholder="예: 꺄륵"></label><button class="primary" type="button" data-onboarding-next>다음</button>`,
     ()=>`<div class="onboarding-hero-icon">◇</div><small>STEP 2 · 저장 방식</small><h1>${userName||"마을 주인"}님의 기록은<br>먼저 이 기기에 저장돼요</h1><p>계정을 연결해도 드롭다운 하나를 바꿀 때마다 자동 업로드하지 않아요. 설정에서 <b>동기화</b>를 눌렀을 때만 올리고, <b>불러오기</b>를 눌렀을 때만 다른 기기의 기록을 가져와요.</p><div class="onboarding-safe-note"><b>캐릭터·관계·집을 자동으로 만들지 않습니다.</b><span>백업 파일은 설정에서 언제든 내보낼 수 있어요.</span></div><div class="onboarding-actions"><button type="button" data-onboarding-login>Google 계정 연결</button><button class="primary" type="button" data-onboarding-next>지금은 기기에만 저장</button></div>`,
-    ()=>`<div class="onboarding-hero-icon">＋</div><small>STEP 3 · 첫 주민</small><h1>첫 캐릭터부터<br>직접 만들어 볼까요?</h1><p>생성 버튼을 누른 뒤 캐릭터 화면에서 이름과 사진, 프로필을 정해요. 집은 함께 만들어지지만 방과 거주지는 나중에 자유롭게 바꿀 수 있어요.</p><div class="onboarding-route"><span><b>1</b>캐릭터 만들기</span><i>→</i><span><b>2</b>프로필 설정</span><i>→</i><span><b>3</b>집 꾸미기</span></div><button class="primary" type="button" data-onboarding-create>첫 캐릭터 만들기</button>`
+    ()=>`<div class="onboarding-hero-icon">＋</div><small>STEP 3 · 첫 주민</small><h1>첫 캐릭터부터<br>직접 만들어 볼까요?</h1><p>캐릭터를 만든 뒤에는 설정 화면에서 이름과 사진을 정하고, 이어서 집과 마을을 차례로 편집해요.</p><div class="onboarding-route"><span><b>1</b>캐릭터 만들기</span><i>→</i><span><b>2</b>캐릭터 설정</span><i>→</i><span><b>3</b>집 편집</span><i>→</i><span><b>4</b>마을 편집</span></div><button class="primary" type="button" data-onboarding-create>첫 캐릭터 만들기</button>`
   ];
   const paint=()=>{
     dialog.innerHTML=`<form method="dialog"><div class="onboarding-progress" aria-label="${step+1} / ${pages.length} 단계">${pages.map((_,index)=>`<i class="${index<=step?"on":""}"></i>`).join("")}</div><section>${pages[step]()}</section>${step?`<button type="button" class="onboarding-back" data-onboarding-back>← 이전</button>`:""}</form>`;
@@ -584,7 +584,7 @@ function showOnboarding(){
       step=Math.min(pages.length-1,step+1);paint();
     });
     dialog.querySelector("[data-onboarding-login]")?.addEventListener("click",async()=>{const auth=window.ParallelCityAuth;if(!auth)return showToast("로그인 기능을 불러오는 중이에요");await auth.login();step=3;paint()});
-    dialog.querySelector("[data-onboarding-create]")?.addEventListener("click",()=>{if(createCharacter(characterLimit())){localStorage.setItem(ONBOARDING_KEY,"done");localStorage.setItem(SETUP_COACH_KEY,"home");dialog.close();state.activeTab="character";setCharacterPane("profile");save();render();showToast("첫 캐릭터의 이름부터 정해 볼까요?")}});
+    dialog.querySelector("[data-onboarding-create]")?.addEventListener("click",()=>{if(createCharacter(characterLimit())){localStorage.setItem(ONBOARDING_KEY,"done");localStorage.setItem(SETUP_COACH_KEY,"character");dialog.close();state.activeTab="character";setCharacterPane("profile");save();render();showToast("첫 캐릭터의 이름부터 정해 볼까요?")}});
   };
   dialog.onclose=()=>dialog.remove();
   dialog.setAttribute("aria-label","첫 시작 안내");
@@ -601,9 +601,12 @@ function showOnboarding(){
 }
 function showSetupCoach(){
   const step=localStorage.getItem(SETUP_COACH_KEY);
-  if(!state.order.length||!["home","town"].includes(step)||document.querySelector("dialog[open]"))return;
+  if(!state.order.length||!["character","home","town"].includes(step)||document.querySelector("dialog[open]"))return;
   const dialog=document.createElement("dialog");dialog.className="setup-coach-dialog";
-  if(step==="home"){
+  if(step==="character"){
+    dialog.innerHTML=`<form method="dialog"><span class="setup-coach-icon">♙</span><small>첫 번째 설정 · 캐릭터</small><h2>먼저 이 캐릭터를 알려 주세요</h2><p>이름과 사진처럼 꼭 필요한 항목만 정해도 바로 생활을 시작할 수 있어요. 성격과 취향을 자세히 적을수록 장면이 더 구체적으로 달라집니다.</p><ol><li>프로필에서 이름과 기본 정보를 정해요.</li><li>원하면 신체·성격·취향을 더 자세히 설정해요.</li><li><b>캐릭터 저장</b>을 누르면 집 편집으로 이어져요.</li></ol><div><button value="later">나중에</button><button type="button" class="primary" data-start-character-setup>캐릭터 설정 열기</button></div></form>`;
+    dialog.querySelector("[data-start-character-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"character-editing");state.activeTab="character";setCharacterPane("profile");dialog.close();render()};
+  }else if(step==="home"){
     dialog.innerHTML=`<form method="dialog"><span class="setup-coach-icon">⌂</span><small>첫 번째 꾸미기 · 집</small><h2>방을 눌러 생활 공간을 만들어 보세요</h2><p>집 편집을 켜면 위쪽 한 줄의 <b>방 추가·구성</b>에서 방을 늘릴 수 있어요. 방 자체를 누르면 이름, 크기, 사진과 실제 가구를 바꿀 수 있습니다.</p><ol><li>‘방 추가·구성’에서 필요한 방을 추가해요.</li><li>각 방을 눌러 크기와 사진을 정해요.</li><li>구성원에서 이 집을 본가·별채·주말집으로 연결해요.</li></ol><div><button value="later">나중에</button><button type="button" class="primary" data-start-home-setup>집 편집 시작</button></div></form>`;
     dialog.querySelector("[data-start-home-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"home-editing");state.activeTab="home";setActiveHome(active()?.homeId||state.activeHomeId);setHomeEditMode(true);dialog.close();render()};
   }else{
@@ -612,6 +615,18 @@ function showSetupCoach(){
   }
   dialog.onclose=()=>{if(dialog.returnValue==="later")localStorage.setItem(SETUP_COACH_KEY,"done");dialog.remove()};
   document.body.append(dialog);dialog.showModal();
+}
+
+function advanceFirstSetupAfterCharacter(){
+  const step=localStorage.getItem(SETUP_COACH_KEY);
+  if(!["character","character-editing"].includes(step))return false;
+  localStorage.setItem(SETUP_COACH_KEY,"home-editing");
+  state.activeTab="home";
+  setActiveHome(active()?.homeId||state.activeHomeId);
+  setHomeEditMode(true);
+  render();
+  showToast("이제 첫 집의 방을 편집해 보세요.");
+  return true;
 }
 function renderMaintenance(){
   const config=maintenanceConfig();
@@ -924,7 +939,7 @@ function bind(){
     const shouldSync=el.hasAttribute("data-save-mobile-character-editor");
     flushMobileCharacterDraft({closeEditor:false});
     mobileCharacterDialog?.close(shouldSync?"save":"close");
-    if(shouldSync)await explicitSave("캐릭터 저장");
+    if(shouldSync){await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}
   });
   const mobileReorderDialog=$("[data-mobile-character-reorder-dialog]");
   if(mobileReorderDialog)mobileReorderDialog.onclose=()=>{mobileCharacterReorderOpen=false;render()};
@@ -958,9 +973,17 @@ function bind(){
     if(residents.length&&!residents.includes(state.activeId))setActive(residents[0]);
     const was=state.homeEditMode;
     setHomeEditMode(!was);
-    if(was&&localStorage.getItem(SETUP_COACH_KEY)==="home-editing")localStorage.setItem(SETUP_COACH_KEY,"town");
+    const continueFirstSetup=was&&localStorage.getItem(SETUP_COACH_KEY)==="home-editing";
+    if(continueFirstSetup){
+      localStorage.setItem(SETUP_COACH_KEY,"done");
+      state.activeTab="town";
+      setMobileTownEditing(true);
+    }
     render();
-    if(was)await explicitSave("집 편집 저장");
+    if(was){
+      await explicitSave("집 편집 저장");
+      if(continueFirstSetup)showToast("마지막으로 마을의 건물과 배치를 정해 보세요.");
+    }
   }));
   $$("[data-email-compose]").forEach(link=>link.addEventListener("click",event=>{
     event.preventDefault();
@@ -1339,7 +1362,7 @@ function bind(){
   $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });
-  $("[data-save]")?.addEventListener("click",()=>explicitSave("캐릭터 저장"));
+  $("[data-save]")?.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()});
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
   $$("[data-catalog-image]").forEach(el=>el.onclick=()=>openCatalogIllustrationPicker(el.dataset.catalogImage,el.dataset.kind));
@@ -2282,13 +2305,13 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260808g").catch(error=>{
+  import("./auth.js?v=20260808p").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260808g",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260808p",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

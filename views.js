@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808g";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808g";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808p";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808p";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -238,15 +238,44 @@ function nativeScenePresentation(c,entry){
   const dating=Boolean(partner&&validDate);
   const fighting=Boolean(partner&&/싸움|싸우|말다툼|신경전|격렬|충돌|맞받아|목소리.{0,8}높|날카롭게|분노|화가 나|화를 냈/.test(text));
   const ownView=partner?characterViewFor(c.id,partner.id):{};
+  const reverseView=partner?characterViewFor(partner.id,c.id):{};
   const viewText=`${ownView.overall||""} ${ownView.comfort||""} ${ownView.trust||""} ${ownView.annoyance||""} ${ownView.conflictIntensity||""}`;
-  const overwhelmed=Boolean(dating&&/부담|불편|경계|싫|피곤|숨 막|믿지|의심|거리감|어색|조심/.test(viewText));
-  const ownRomance=Boolean(dating&&/연애 감정|깊이 사랑|없어서는 안 될|좋아함|소중하게/.test(ownView.overall||""));
+  const relationshipPressure=(()=>{
+    let score=0;
+    const overall=String(ownView.overall||"");
+    const comfort=String(ownView.comfort||"");
+    const trust=String(ownView.trust||"");
+    const annoyance=String(ownView.annoyance||"");
+    const conflict=String(ownView.conflictIntensity||"");
+    if(/경계|싫어|미워|두려|적대|불신|부담/.test(overall))score+=2;
+    if(/불편|긴장|숨 막|거리를 두|편하지 않/.test(comfort))score+=1;
+    if(/믿지 않|불신|의심|신뢰하지 않/.test(trust))score+=1;
+    if(/성가시|귀찮/.test(annoyance)&&!/않|아니|전혀|없/.test(annoyance))score+=1;
+    if(/강한|격렬|잦|자주|심함/.test(conflict))score+=1;
+    if(/편안|안심/.test(comfort))score-=1;
+    if(/깊이 믿|매우 신뢰|완전히 믿/.test(trust))score-=1;
+    return score;
+  })();
+  const overwhelmed=Boolean(dating&&relationshipPressure>=2);
+  // 인간적인 호감이나 소중함은 연애 감정이 아니다. 하트·짝사랑 연출은
+  // 캐릭터가 명시적으로 연애 감정을 설정한 경우에만 사용한다.
+  const romancePattern=/연애 감정|깊이 사랑|없어서는 안 될 사람|연인으로 좋아|로맨틱/;
+  const ownRomanceInterest=Boolean(partner&&romancePattern.test(ownView.overall||""));
+  const reverseRomanceInterest=Boolean(partner&&romancePattern.test(reverseView.overall||""));
+  const ownRomance=Boolean(dating&&ownRomanceInterest);
   const failedDate=Boolean(dating&&!fighting&&(/망한|실패|거절|불편|어색|서먹|냉랭|잘라 말|비효율|말을 아끼|거리.{0,8}두|기분.{0,8}상/.test(text)||(!ownRomance&&overwhelmed)));
   const sad=/우울|슬픔|상실|침울|낙담|기운이 없|울적|눈물|마음이 무거/.test(text);
   const coldFight=fighting&&/냉랭|차갑|침묵|무시|거리.{0,8}두|서먹|얼음/.test(text);
   const playfulInteraction=Boolean(partner&&!dating&&!fighting&&/티격태격|장난|농담|놀리|웃음|웃었|게임|내기|재잘/.test(text));
   const tenseInteraction=Boolean(partner&&!dating&&!fighting&&!playfulInteraction&&/경계|불편|신경전|성가시|못마땅|퉁명|날 선|거리.{0,8}두/.test(`${text} ${viewText}`));
   const warmInteraction=Boolean(partner&&!dating&&!fighting&&!tenseInteraction&&/함께|대화|이야기|도와|챙기|나누|맞춰|건넸|안부|곁/.test(text));
+  const actionKind=sleeping?"sleep"
+    :/청소|정리|쓸고|쓸어|닦|설거지|세탁|먼지/.test(text)?"cleaning"
+      :/게임|한 판|콘솔|컨트롤러|플레이|보드게임/.test(text)?"gaming"
+        :/먹|식사|디저트|간식|차를 마|음료를 마|커피를 마|초밥|메뉴/.test(text)?"eating"
+          :/두려|무서|겁이|공포|위협|피하고 싶/.test(`${text} ${viewText}`)?"fear"
+            :fighting?"fighting"
+              :"idle";
   const tone=sleeping
     ?"sleep"
     :fighting
@@ -258,7 +287,9 @@ function nativeScenePresentation(c,entry){
             :sad?"sad"
               :playfulInteraction?"interaction-playful"
                 :tenseInteraction?"interaction-tense"
-                  :warmInteraction?"interaction-warm"
+                  :ownRomanceInterest&&reverseRomanceInterest?"crush-mutual"
+                    :ownRomanceInterest?"crush-one-sided"
+                      :warmInteraction?"interaction-warm"
                     :partner&&entry?.groupInteraction?"interaction-neutral":"neutral";
   const homeId=entry?.visitHomeId||c.homeId;
   const coResidentConversation=Boolean(
@@ -277,7 +308,7 @@ function nativeScenePresentation(c,entry){
   const petVisual=pet?(pet.icon?`<img src="${esc(pet.icon)}" alt="${esc(pet.name)}">`:pet.photo?`<img class="photo" src="${esc(pet.photo)}" alt="${esc(pet.name)}">`:`<span>${PET_SCENE_EMOJI[pet.species]||PET_SCENE_EMOJI.기타}</span>`):"";
   const effectSymbol=tone==="sleep"
     ?"Z"
-    :tone==="date-romantic"||tone==="date-overwhelmed"
+    :tone==="date-romantic"||tone==="date-overwhelmed"||tone==="crush-mutual"||tone==="crush-one-sided"
     ?"♥"
     :tone==="date-broken"?"💔"
       :tone==="sad"?"•"
@@ -314,9 +345,8 @@ function nativeScenePresentation(c,entry){
   const sceneParticipants=sceneParticipantIds.map(id=>state.characters?.[id]).filter(Boolean);
   const lineupHtml=companions.length?`<span class="native-scene-lineup ${coResidentConversation?"is-conversation":""}" style="--scene-count:${sceneParticipants.length}" aria-label="${esc(sceneParticipants.map(person=>person.name).join(", "))}">${sceneParticipants.map((person,index)=>{
     const personSeed=nativeVisualSeed(`${entry?.interactionId||entry?.dateGroup||entry?.title}:${entry?.minute||""}:${person.id}:${index}`);
-    const driftX=-8+(personSeed%17),driftY=-2+((personSeed>>>5)%13),tilt=-3+((personSeed>>>10)%7);
-    const delay=((personSeed>>>15)%190)/100,duration=2.9+((personSeed>>>22)%210)/100;
-    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index};--scene-x:${driftX}px;--scene-y:${driftY}px;--scene-tilt:${tilt}deg;--scene-delay:${delay}s;--scene-duration:${duration}s">${avatar(person,"native-scene-lineup-avatar")}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
+    const delay=((personSeed>>>15)%120)/100,duration=3.4+((personSeed>>>22)%120)/100;
+    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${avatar(person,"native-scene-lineup-avatar")}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
   }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
     companions.length
@@ -330,13 +360,16 @@ function nativeScenePresentation(c,entry){
   const conversationHtml=conversationalInteraction
     ?`<span class="native-conversation-bubbles ${tone==="interaction-playful"?"is-playful":tone==="interaction-tense"?"is-tense":""}" aria-label="두 캐릭터가 대화를 주고받는 중">${bubbleWords.map(word=>`<i>${word}</i>`).join("")}</span>`
     :"";
+  const actionSymbol=actionKind==="cleaning"?"🧹":actionKind==="gaming"?"🎮":actionKind==="eating"?"🥄":"";
   return {
     tone,
+    actionKind,
     partner:companions[0]||null,
     partners:companions,
     pet,
     lineupHtml,
     conversationHtml,
+    actionHtml:actionSymbol?`<span class="native-scene-action-prop" aria-hidden="true">${actionSymbol}</span>`:"",
     companionHtml:"",
     petHtml:pet?`<span class="native-pet-orbit" aria-label="함께 노는 ${esc(pet.name)}"><span class="native-scene-pet">${petVisual}<small>${esc(pet.name)}</small></span></span>`:"",
     effects
@@ -532,7 +565,7 @@ function observe(){
   const activeItems=activeCatalogItems(e);
   const itemOrbit=activeItems.length?`<span class="native-active-item-orbits" aria-label="지금 사용 중인 취향 사전 항목">${activeItems.map((item,index)=>`<span class="native-active-item-orbit" style="--orbit-angle:${index*360/activeItems.length}deg;--orbit-delay:${index*-.72}s" title="${esc(item.name)}"><img src="${esc(item.image)}" alt="${esc(item.name)}"></span>`).join("")}</span>`:"";
   const presentation=nativeScenePresentation(c,e);
-  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone}" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><span class="native-observe-clock"><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time><button type="button" class="native-scene-refresh" data-refresh-observe aria-label="현재 장면 새로고침" title="현재 장면 새로고침">↻</button></span></div><button type="button" class="native-character-stage ${presentation.partner?"has-scene-companion":""} ${presentation.lineupHtml?"has-scene-lineup":""} ${presentation.pet?"has-scene-pet":""}" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}</button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${avatar(person)}</button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p tabindex="0">${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card" data-open-native-log-card role="button" tabindex="0" aria-label="오늘의 기록 전체 보기"><div><b>오늘의 기록 <small class="native-log-open-hint">눌러서 펼쳐 보기 ↗</small></b><span><button type="button" data-open-native-log>전체 보기</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
+  const nativeHome=`${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><span class="native-observe-clock"><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time><button type="button" class="native-scene-refresh" data-refresh-observe aria-label="현재 장면 새로고침" title="현재 장면 새로고침">↻</button></span></div><button type="button" class="native-character-stage ${presentation.partner?"has-scene-companion":""} ${presentation.lineupHtml?"has-scene-lineup":""} ${presentation.pet?"has-scene-pet":""}" data-home-character="${c.id}" aria-label="${esc(c.name)} 선택">${avatar(c,"native-main-character")}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}</button><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${avatar(person)}</button>`}).join("")}</div><article class="native-status-card"><small>지금 이 순간</small><h1>${esc(e.title)}</h1><p tabindex="0">${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card" data-open-native-log-card role="button" tabindex="0" aria-label="오늘의 기록 전체 보기"><div><b>오늘의 기록 <small class="native-log-open-hint">눌러서 펼쳐 보기 ↗</small></b><span><button type="button" data-open-native-log>전체 보기</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
   return `${nativeHome}<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${currentImage?`<img class="place-photo" src="${esc(currentImage)}" alt="">`:""}</div></div>${dailyLog(c)}</aside></div></div>`;
 }
 const ROOM_SIZE_SPANS={

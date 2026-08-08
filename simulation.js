@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808g";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808p";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1531,7 +1531,23 @@ const HOME_ACTIVITY_POOL=[
   ["집에서 홈트레이닝 중","매트 위에서 자세가 흐트러지지 않게 거울을 보며 정해 둔 동작을 반복하고 있어요.","living"],
   ["집에서 악기를 연습하는 중","어려운 구간을 느린 속도로 나누어 반복하고 소리가 안정되면 조금씩 속도를 올리고 있어요.","study"],
   ["집에서 손뜨개를 하는 중","실의 장력을 맞추고 도안을 확인하며 같은 무늬를 한 코씩 이어 가고 있어요.","living"],
-  ["집에서 그림을 그리는 중","빛과 색을 비교하며 큰 형태부터 잡고 마음에 걸리는 세부를 여러 번 고쳐 그리고 있어요.","study"]
+  ["집에서 그림을 그리는 중","빛과 색을 비교하며 큰 형태부터 잡고 마음에 걸리는 세부를 여러 번 고쳐 그리고 있어요.","study"],
+  ["주방에서 수프를 끓이는 중","냄비 바닥이 눌어붙지 않게 천천히 저으며 향과 농도를 확인하고 있어요.","kitchen"],
+  ["주방에서 과일을 손질하는 중","먹기 좋은 크기로 자른 과일을 접시에 나누어 담고 남은 것은 밀폐 용기에 넣고 있어요.","kitchen"],
+  ["주방에서 남은 음식을 보관하는 중","남은 양을 확인해 한 번 먹을 분량으로 나누고 날짜를 적어 냉장고에 넣고 있어요.","kitchen"],
+  ["주방에서 차갑게 식힌 디저트를 꺼내는 중","굳은 정도를 살펴본 뒤 가장자리를 조심스럽게 떼어 작은 접시에 옮기고 있어요.","kitchen"],
+  ["거실에서 게임 한 판을 끝내는 중","마지막 결과를 확인하고 저장한 뒤 손에서 조작기를 내려놓고 있어요.","living"],
+  ["거실에서 게임 기록을 정리하는 중","방금 플레이한 구간에서 놓친 선택지와 다음에 시도할 방법을 짧게 메모하고 있어요.","living"],
+  ["거실 선반의 먼지를 닦는 중","작은 물건을 하나씩 들어 올려 밑을 닦고 원래 순서를 기억해 다시 놓고 있어요.","living"],
+  ["거실에서 간단한 간식을 먹는 중","손에 묻지 않는 간식을 조금씩 집어 먹으며 마실 것도 곁에 두고 있어요.","living"],
+  ["서재에서 읽던 책에 메모하는 중","눈에 걸린 문장 옆에 짧은 생각을 적고 다시 찾을 페이지에 표시를 남기고 있어요.","study"],
+  ["서재에서 사진을 선별하는 중","비슷하게 찍힌 사진을 차례로 비교하고 남길 장면에만 표시를 붙이고 있어요.","study"],
+  ["서재에서 다음 취미 재료를 준비하는 중","필요한 재료의 수량을 세고 손이 바로 닿도록 작업 순서에 맞춰 늘어놓고 있어요.","study"],
+  ["침실에서 내일 입을 옷을 고르는 중","예상 날씨와 일정을 확인한 뒤 어울리는 옷을 한 벌 골라 꺼내 두고 있어요.","bedroom"],
+  ["욕실 환기를 시키는 중","젖은 곳의 물기를 닦고 문을 열어 습기가 빠질 때까지 주변을 정돈하고 있어요.","bath"],
+  ["현관에서 가방 속을 정리하는 중","영수증과 작은 물건을 꺼내 분류하고 다음 외출에 필요한 것만 다시 넣고 있어요.","entry"],
+  ["베란다에서 빨래를 걷는 중","마른 옷을 옷걸이에서 하나씩 빼며 구김이 생기지 않게 팔 위에 차곡차곡 올리고 있어요.","living"],
+  ["집 안의 손잡이를 닦는 중","자주 손이 닿는 문과 서랍 손잡이를 차례로 닦고 끈적임이 남지 않았는지 확인하고 있어요.","living"]
 ];
 const homeActivityPoolFor=(c,date=new Date())=>{
   const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
@@ -1547,6 +1563,7 @@ const homeActivityPoolFor=(c,date=new Date())=>{
     if(title.includes("빵을 굽는"))return likes(/베이킹|요리|빵/);
     if(title.includes("새로운 음료를 만드는"))return likes(/커피|차 |차 우리기|칵테일|음료/);
     if(title.includes("식물을 돌보는"))return likes(/식물|원예|자연/);
+    if(title.includes("게임 한 판")||title.includes("게임 기록"))return likes(/게임|e스포츠|보드게임/);
     return true;
   });
   const housemates=state.order.map(id=>state.characters[id]).filter(other=>other&&other.id!==c.id&&other.homeId===c.homeId);
@@ -1923,7 +1940,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260808g";
+const ENGINE_VERSION="20260808h";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -1947,7 +1964,7 @@ function cleanExactRepeatedEntries(entries){
     const itemParts=titleParts(item.title);
     const repeatedIndex=kept.findIndex(previous=>{
       const gap=Math.abs(Number(previous.minute)-Number(item.minute));
-      if(!Number.isFinite(gap)||gap>15)return false;
+      if(!Number.isFinite(gap))return false;
       const previousParts=titleParts(previous.title);
       const titleOverlap=itemParts.some(part=>previousParts.includes(part));
       const samePlace=(previous.visitHomeId||previous.homeId||"")===(item.visitHomeId||item.homeId||"")
@@ -1955,7 +1972,13 @@ function cleanExactRepeatedEntries(entries){
       const previousDesc=String(previous.desc||"").replace(/\s+/g," ").trim();
       const itemDesc=String(item.desc||"").replace(/\s+/g," ").trim();
       const sameStory=previousDesc===itemDesc||previousDesc.includes(itemDesc)||itemDesc.includes(previousDesc);
-      return samePlace&&titleOverlap&&(sameStory||previous.title===item.title);
+      const exactTitle=String(previous.title||"").replace(/\s+/g," ").trim()===String(item.title||"").replace(/\s+/g," ").trim();
+      const exactStory=previousDesc===itemDesc;
+      const sameDateGroup=Boolean(previous.dateGroup&&item.dateGroup&&previous.dateGroup===item.dateGroup);
+      if(samePlace&&exactTitle&&exactStory&&gap<=180)return true;
+      if(sameDateGroup&&exactTitle&&exactStory&&gap<=240)return true;
+      if(gap>15)return false;
+      return samePlace&&titleOverlap&&(sameStory||exactTitle);
     });
     if(repeatedIndex<0){kept.push(item);return}
     const previous=kept[repeatedIndex];
@@ -2195,7 +2218,12 @@ function liveGapEvent(c,last,n,date){
     [/요리하는|아침 준비|빵을 굽|식사를 준비|간식을 챙기/,["만든 것을 천천히 먹는 중","조금 전 준비한 것을 식탁에 놓고 서두르지 않게 먹으며 사용한 도구도 함께 정리하고 있어요.","kitchen"]],
     [/운동하는|운동 중|스트레칭|러닝머신/,["호흡을 고르며 운동을 마무리하는 중","운동 강도를 천천히 낮추고 물을 마시며 호흡과 몸 상태를 확인하고 있어요.",last?.room||"living"]],
     [/빨래|세탁/,["마른 빨래를 접어 정리하는 중","세탁을 마친 옷을 종류별로 접어 각자의 자리에 차분히 넣고 있어요.",last?.room||"bedroom"]],
-    [/씻는 중|샤워/,["물기를 닦고 다음 준비를 하는 중","씻은 뒤 물기를 닦고 욕실을 간단히 정돈한 다음 오늘 필요한 옷과 물건을 챙기고 있어요.","bath"]]
+    [/씻는 중|샤워/,["물기를 닦고 다음 준비를 하는 중","씻은 뒤 물기를 닦고 욕실을 간단히 정돈한 다음 오늘 필요한 옷과 물건을 챙기고 있어요.","bath"]],
+    [/게임 한 판|게임 기록|게임기를/,["게임을 마치고 기록을 확인하는 중","한 판의 결과를 저장하고 놓친 선택지를 확인한 뒤 다음에 이어 할 지점에서 멈췄어요.",last?.room||"living"]],
+    [/책을 읽|책에 메모|책장을 넘|온라인 강의/,["읽던 곳을 표시하고 생각을 정리하는 중","방금 본 내용에서 기억하고 싶은 부분을 짧게 적고 다시 찾을 곳에 표시를 남겼어요.",last?.room||"study"]],
+    [/글을 쓰|편지를 쓰|메모를|기록하는/,["방금 쓴 내용을 다시 읽는 중","처음부터 천천히 읽으며 겹치는 표현을 덜어 내고 빠진 내용이 없는지 확인하고 있어요.",last?.room||"study"]],
+    [/식물을 돌보|화분/,["물뿌리개를 씻어 정리하는 중","필요한 화분만 돌본 뒤 물이 고인 받침을 비우고 도구를 원래 자리에 두었어요.",last?.room||"living"]],
+    [/수리하는|고치는/,["사용한 도구를 정리하는 중","작업한 부분이 단단히 고정됐는지 확인하고 사용한 도구를 닦아 종류별로 돌려놓았어요.",last?.room||"study"]]
   ];
   const followup=followups.find(([pattern])=>pattern.test(previousTitle))?.[1];
   if(followup)return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2]);

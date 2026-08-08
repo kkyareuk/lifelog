@@ -7,9 +7,20 @@ const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
 const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
+const canonicalRelationshipType=type=>({
+  "폴리 관계":"연인","유사 연인":"연인","비공식 연인":"연인","연애 관계":"연인","커플":"연인",
+  "절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구",
+  "유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"
+})[type]||String(type||"친구");
+const normalizeRelationshipTombstoneKey=value=>{
+  const parts=String(value||"").split("|");
+  if(parts.length<2)return String(value||"");
+  parts[0]=canonicalRelationshipType(parts[0]);
+  return parts.join("|");
+};
 const relationshipIdentity=relation=>{
   if(!relation?.a||!relation?.b||relation.a===relation.b)return"";
-  const type=({"폴리 관계":"연인","절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구","유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"})[relation.type]||String(relation.type||"친구");
+  const type=canonicalRelationshipType(relation.type);
   const directional=type==="부모·자녀"||Boolean(relation.directional);
   const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
   return`${type}|${pair}|${String(relation.parentRole||"")}`;
@@ -18,7 +29,7 @@ const applyLocalTombstones=(remote,local)=>{
   const next=clone(remote||{});
   const deletedCharacters=new Set([...(local?.deletedCharacterIds||[]),...(next.deletedCharacterIds||[])].map(String));
   const deletedRelationships=new Set([...(local?.deletedRelationshipIds||[]),...(next.deletedRelationshipIds||[])].map(String));
-  const deletedRelationshipKeys=new Set([...(local?.deletedRelationshipKeys||[]),...(next.deletedRelationshipKeys||[])].map(String).filter(Boolean));
+  const deletedRelationshipKeys=new Set([...(local?.deletedRelationshipKeys||[]),...(next.deletedRelationshipKeys||[])].map(normalizeRelationshipTombstoneKey).filter(Boolean));
   const deletedHomes=new Set([...(local?.deletedHomeIds||[]),...(next.deletedHomeIds||[])].map(String));
   next.deletedCharacterIds=[...deletedCharacters];
   next.deletedRelationshipIds=[...deletedRelationships];
@@ -256,7 +267,13 @@ async function upload({silent=false,reason=""}={}){
       });
     }
     const previousSnapshot=await getDoc(cloudDoc()),previous=previousSnapshot.exists()?previousSnapshot.data():null;
-    const prepared=await prepareState(localState,normalizeManifest(previous?.mediaManifest,previous?.gameState));
+    // 오래된 기기가 전체 상태를 다시 올리더라도 클라우드에 이미 남은 삭제 기록이
+    // 캐릭터·관계·집·방보다 우선한다. 이 병합이 없으면 다른 기기의 낡은 배열이
+    // 삭제한 관계를 같은 ID 또는 다른 ID로 되살릴 수 있다.
+    const tombstoneSafeState=previous?.gameState
+      ?applyLocalTombstones(localState,previous.gameState)
+      :localState;
+    const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previous?.gameState));
     const {gameState,mediaManifest,uploadedCount}=prepared;
     await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:user.displayName||"",email:user.email||""}},{merge:true});
     publishStorageUsage(mediaManifest,gameState);

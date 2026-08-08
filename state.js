@@ -211,7 +211,7 @@ function normalizeHomes(x){
   }));
   x.deletedCharacterIds=Array.isArray(x.deletedCharacterIds)?[...new Set(x.deletedCharacterIds.map(String))]:[];
   x.deletedRelationshipIds=Array.isArray(x.deletedRelationshipIds)?[...new Set(x.deletedRelationshipIds.map(String))]:[];
-  x.deletedRelationshipKeys=Array.isArray(x.deletedRelationshipKeys)?[...new Set(x.deletedRelationshipKeys.map(String).filter(Boolean))]:[];
+  x.deletedRelationshipKeys=Array.isArray(x.deletedRelationshipKeys)?[...new Set(x.deletedRelationshipKeys.map(normalizeRelationshipTombstoneKey).filter(Boolean))]:[];
   x.deletedHomeIds=Array.isArray(x.deletedHomeIds)?[...new Set(x.deletedHomeIds.map(String))]:[];
   x.deletedCharacterIds.forEach(id=>delete x.characters[id]);
   const characterIds=Object.keys(x.characters);
@@ -259,12 +259,12 @@ function normalizeHomes(x){
       const source=relation.admirerId||relation.a,target=relation.targetId||relation.b;
       if(x.characters[source]&&x.characters[target]){
         x.characterViews[source]=x.characterViews[source]||{};
-        x.characterViews[source][target]={overall:"좋아함",awareness:"자기 감정을 분명히 자각함",...(x.characterViews[source][target]||{})};
+        x.characterViews[source][target]={overall:"연애 감정으로 좋아함",awareness:"자기 감정을 분명히 자각함",...(x.characterViews[source][target]||{})};
       }
       return;
     }
-    const originalType=relation.type,typeMap={"폴리 관계":"연인","절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구","유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"};
-    relation.type=typeMap[originalType]||originalType||"친구";
+    const originalType=relation.type;
+    relation.type=canonicalRelationshipType(originalType);
     if(relation.type==="동거인"){
       relation.cohabit=true;
       if(["유사가족","가족","보호·피보호"].includes(originalType))relation.stage="유사가족 같은 동거인";
@@ -965,7 +965,17 @@ export function characterViewFor(sourceId,targetId){
   return {...defaults,...cleanExplicit,comfort:migratedComfort||defaults.comfort};
 }
 function canonicalRelationshipType(type){
-  return ({"폴리 관계":"연인","절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구","유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"})[type]||String(type||"친구");
+  return ({
+    "폴리 관계":"연인","유사 연인":"연인","비공식 연인":"연인","연애 관계":"연인","커플":"연인",
+    "절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구",
+    "유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"
+  })[type]||String(type||"친구");
+}
+function normalizeRelationshipTombstoneKey(value){
+  const parts=String(value||"").split("|");
+  if(parts.length<2)return String(value||"");
+  parts[0]=canonicalRelationshipType(parts[0]);
+  return parts.join("|");
 }
 function relationshipIdentity(data){
   if(!data?.a||!data?.b||data.a===data.b)return"";
