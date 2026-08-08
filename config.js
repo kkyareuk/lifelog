@@ -17,7 +17,7 @@
   };
   window.PARALLEL_CITY_CONFIG.paymentsEnabled=false;
   window.PARALLEL_CITY_CONFIG.playBilling=window.PARALLEL_CITY_CONFIG.playBilling||{
-    enabled:false,
+    enabled:true,
     backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api",
     packageName:"com.drawervillage.app",
     products:{

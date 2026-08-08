@@ -4315,7 +4315,20 @@ html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-buy.pr
 .native-app .scene-tone-sleep .native-character-stage{animation:native-sleep-breathe 4.6s ease-in-out infinite}
 .native-app .scene-tone-sleep .native-character-stage .native-main-character{transform-origin:50% 82%;animation:native-sleep-head 4.6s ease-in-out infinite}
 .native-app .scene-tone-sleep .native-character-stage>i{animation:native-sleep-shadow 4.6s ease-in-out infinite}
-.native-app .scene-tone-sleep .native-scene-effects i{color:#d8d4ff;text-shadow:0 4px 15px #7c73dccc;animation-name:native-sleep-z!important}
+.native-character-sleep-mark{
+  position:absolute;
+  right:-4px;
+  top:-12px;
+  z-index:9;
+  color:#e8e2ff;
+  font-size:13px;
+  font-weight:900;
+  line-height:1;
+  letter-spacing:-1px;
+  text-shadow:0 2px 7px #312c60;
+  animation:room-sleep-z 2.8s ease-in-out infinite;
+}
+.native-character-sleep-mark.is-main{right:4%;top:5%;font-size:16px}
 .home-person.is-sleeping{animation:room-sleep-breathe 4.8s ease-in-out infinite}
 .home-person .room-sleep-mark{position:absolute;right:-5px;top:-12px;z-index:8;color:#e8e2ff;font-size:13px;font-style:normal;font-weight:900;text-shadow:0 2px 7px #312c60;animation:room-sleep-z 2.8s ease-in-out infinite}
 @keyframes native-sleep-breathe{0%,100%{transform:translateY(3px) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
@@ -4504,7 +4517,7 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game
 @media(prefers-reduced-motion:reduce){
   .native-app .scene-tone-sleep .native-character-stage,
   .native-app .scene-tone-sleep .native-character-stage .native-main-character,
-  .home-person.is-sleeping,.home-person .room-sleep-mark{animation:none!important}
+  .home-person.is-sleeping,.home-person .room-sleep-mark,.native-character-sleep-mark{animation:none!important}
 }
 
 /* 2026-08-08d: 관계 선택은 본문 문장 안의 두 이름으로만 조작한다. */

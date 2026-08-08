@@ -1,10 +1,13 @@
 const crypto=require("node:crypto");
 const express=require("express");
 const {onRequest}=require("firebase-functions/v2/https");
+const {onDocumentCreated}=require("firebase-functions/v2/firestore");
+const {defineSecret}=require("firebase-functions/params");
 const {initializeApp}=require("firebase-admin/app");
 const {getAuth}=require("firebase-admin/auth");
 const {FieldValue,getFirestore}=require("firebase-admin/firestore");
 const {google}=require("googleapis");
+const nodemailer=require("nodemailer");
 
 initializeApp();
 const db=getFirestore();
@@ -13,6 +16,8 @@ app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
 const PRODUCTS=new Set(["character_slots_5","town_slot_1","storage_50mb","green_tea"]);
+const FEEDBACK_EMAIL="kkyareuk@gmail.com";
+const FEEDBACK_GMAIL_APP_PASSWORD=defineSecret("FEEDBACK_GMAIL_APP_PASSWORD");
 
 app.use((request,response,next)=>{
   response.set("Access-Control-Allow-Origin",request.get("Origin")||"*");
@@ -112,3 +117,58 @@ app.post("/play-billing/verify",async(request,response)=>{
 });
 
 exports.api=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB"},app);
+
+function cleanMailLine(value,maximum=3000){
+  return String(value||"")
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g,"")
+    .trim()
+    .slice(0,maximum);
+}
+
+exports.feedbackEmail=onDocumentCreated({
+  document:"feedback/{feedbackId}",
+  region:"asia-northeast3",
+  timeoutSeconds:30,
+  memory:"256MiB",
+  secrets:[FEEDBACK_GMAIL_APP_PASSWORD],
+  retry:true
+},async event=>{
+  const snapshot=event.data;
+  if(!snapshot)return;
+  const data=snapshot.data()||{};
+  if(data.mailSentAt)return;
+
+  const category=cleanMailLine(data.category,40)||"기타";
+  const message=cleanMailLine(data.message,3000);
+  const replyEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(data.replyEmail||""))
+    ?String(data.replyEmail)
+    :"";
+  if(!message){
+    await snapshot.ref.set({status:"mail-skipped",mailError:"내용 없음"},{merge:true});
+    return;
+  }
+
+  const transporter=nodemailer.createTransport({
+    host:"smtp.gmail.com",
+    port:465,
+    secure:true,
+    auth:{user:FEEDBACK_EMAIL,pass:FEEDBACK_GMAIL_APP_PASSWORD.value()}
+  });
+  const lines=[
+    `[분류] ${category}`,
+    `[계정 UID] ${cleanMailLine(data.uid,160)}`,
+    `[페이지] ${cleanMailLine(data.page,500)}`,
+    `[브라우저] ${cleanMailLine(data.userAgent,500)}`,
+    replyEmail?`[답장 주소] ${replyEmail}`:"[답장 주소] 받지 않음",
+    "",
+    message
+  ];
+  await transporter.sendMail({
+    from:`서랍마을 피드백 <${FEEDBACK_EMAIL}>`,
+    to:FEEDBACK_EMAIL,
+    replyTo:replyEmail||undefined,
+    subject:`[서랍마을 피드백] ${category}`,
+    text:lines.join("\n")
+  });
+  await snapshot.ref.set({status:"mail-sent",mailSentAt:FieldValue.serverTimestamp()},{merge:true});
+});
