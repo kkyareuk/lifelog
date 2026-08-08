@@ -1,0 +1,27 @@
+{
+  "name": "drawer-village-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "서랍마을 Android 앱 패키지",
+  "scripts": {
+    "app:prepare": "node scripts/prepare-app.mjs",
+    "app:sync": "npm run app:prepare && cap sync android",
+    "app:open": "npm run app:sync && cap open android",
+    "app:build:debug": "npm run app:sync && cd android && gradlew.bat assembleDebug",
+    "app:build:bundle": "npm run app:sync && cd android && gradlew.bat bundleRelease"
+  },
+  "dependencies": {
+    "@capacitor-firebase/authentication": "^7.5.0",
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/app": "^7.1.0",
+    "@capacitor/browser": "^7.0.2",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/network": "^7.0.2",
+    "@capacitor/splash-screen": "^7.0.3",
+    "@capacitor/status-bar": "^7.0.3",
+    "firebase": "^11.10.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.4.3"
+  }
+}

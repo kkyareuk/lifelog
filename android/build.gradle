@@ -1,0 +1,41 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.7.2'
+        classpath 'com.google.gms:google-services:4.4.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+apply from: "variables.gradle"
+
+allprojects {
+    // Keep generated Gradle outputs out of the OneDrive-synchronised source tree.
+    // OneDrive can lock transient merge folders while Android Gradle Plugin writes them.
+    buildDir = file("C:/Users/Public/drawervillage-android-build/${rootProject.name}/${project.name}")
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+}
+
+project(':capacitor-cordova-android-plugins') {
+    afterEvaluate {
+        // This generated Cordova module has no resources. OneDrive exposes its
+        // .gitkeep as a reparse point, so point the empty source set elsewhere.
+        android.sourceSets.main.res.srcDirs = ['src/main/res-local']
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

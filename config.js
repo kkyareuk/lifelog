@@ -16,6 +16,17 @@
     message:"현재 사전 체험 기간입니다. 기능과 저장 안정성을 점검하고 있으며 실제 결제는 진행되지 않아요."
   };
   window.PARALLEL_CITY_CONFIG.paymentsEnabled=false;
+  window.PARALLEL_CITY_CONFIG.playBilling=window.PARALLEL_CITY_CONFIG.playBilling||{
+    enabled:false,
+    backendUrl:"",
+    packageName:"com.drawervillage.app",
+    products:{
+      character_slots_5:"character_slots_5",
+      town_slot_1:"town_slot_1",
+      storage_50mb:"storage_50mb",
+      green_tea:"green_tea"
+    }
+  };
   window.PARALLEL_CITY_CONFIG.maintenance=window.PARALLEL_CITY_CONFIG.maintenance||{
     enabled:false,
     title:"서랍마을을 잠시 점검하고 있어요",

@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260808c";
+const CACHE_VERSION="drawer-village-v20260808f";
 const CORE=[
   "./",
   "./index.html",

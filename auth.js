@@ -363,4 +363,9 @@ if(ready){
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
-window.ParallelCityAuth={login,upload,download,submitFeedback,markGuideSeen,resetGuides,logout:async()=>user&&signOut(auth),getInfo:()=>({ready,user,busy,entitlements,storageUsage,guideState})};
+window.ParallelCityAuth={
+  login,upload,download,submitFeedback,markGuideSeen,resetGuides,
+  logout:async()=>user&&signOut(auth),
+  getIdToken:async()=>user?user.getIdToken():null,
+  getInfo:()=>({ready,user,busy,entitlements,storageUsage,guideState})
+};

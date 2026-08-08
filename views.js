@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808c";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808c";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260808f";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260808f";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -1310,7 +1310,16 @@ const SHOP_PRODUCTS={
   green_tea:{label:"개발 응원",title:"개발자에게 녹차 사주기 🍵",description:"잘 먹겠습니다 🥹",price:1500}
 };
 const readCart=()=>{try{const value=JSON.parse(localStorage.getItem(CART_KEY)||"{}");return value&&typeof value==="object"?value:{}}catch{return {}}};
+function nativePlayShop(){
+  const products=Object.entries(SHOP_PRODUCTS).map(([id,item])=>{
+    const owned=id==="character_slots_5"?Number(accountEntitlements.characterSlotPacks)||0:id==="town_slot_1"?Number(accountEntitlements.townSlotPacks)||0:id==="storage_50mb"&&accountEntitlements.storage50?1:0;
+    const unavailable=id==="storage_50mb"&&owned;
+    return `<article class="premium-product one-time-product" data-product-id="${id}"><div class="premium-product-heading"><span>${id==="green_tea"?"응원":"Google Play"}</span><div><small>${item.label}</small><h2>${item.title}</h2></div><b data-play-price="${id}">Play 결제창에서 확인</b></div><p>${item.description}</p>${owned?`<div class="premium-current"><b>${id==="storage_50mb"?"50MB 적용 중":`${owned}회 구매 · 현재 적용 중`}</b></div>`:""}<button class="primary premium-buy" data-play-purchase="${id}" ${unavailable?"disabled":""}>${unavailable?"이미 적용 중":"Google Play에서 구매"}</button></article>`;
+  }).join("");
+  return `<section class="panel form dlc-store shop-store native-play-store"><div class="title"><div><h1>상점</h1><p>Android 앱의 디지털 상품은 Google Play 결제로 구매합니다. 가격은 Play Console에 등록한 국가별 가격으로 표시돼요.</p></div></div><section class="preview-notice play-billing-notice"><b>Google Play 안전 결제</b><p>구매는 Play 결제창에서 진행되며, 서버에서 구매 토큰을 확인한 뒤에만 슬롯과 저장 공간을 지급합니다.</p></section><div class="shop-product-grid">${products}</div><section class="shop-coming"><h2>구매 복원</h2><p>같은 Google 계정의 미처리 구매는 앱 시작과 계정 동기화 때 다시 확인할 수 있어요.</p><button data-play-restore>Google Play 구매 내역 확인</button></section></section>`;
+}
 function shop(){
+  if(window.PARALLEL_CITY_CONFIG?.nativeApp)return nativePlayShop();
   const cart=readCart();
   const product=(id,item,ownedCount=0)=>`<article class="premium-product one-time-product" data-product-id="${id}"><div class="premium-product-heading"><span>${id==="green_tea"?"응원":"평생 소장"}</span><div><small>${item.label}</small><h2>${item.title}</h2></div><b>${item.price==null?"책정 중":`${item.price.toLocaleString("ko-KR")}원`}</b></div><p>${item.description}</p>${ownedCount?`<div class="premium-current"><b>${id==="storage_50mb"?"50MB 적용 중":`${ownedCount}회 구매 · 현재 적용 중`}</b><small>${id==="storage_50mb"?"이미 적용된 계정에서는 다시 구매하지 않아요.":"구매 수량만큼 계정에 계속 더해집니다."}</small></div>`:""}${previewMode()?`<button class="premium-buy" disabled>사전 체험 중 구매 불가</button>`:id==="storage_50mb"&&ownedCount?`<button class="premium-buy" disabled>이미 적용 중</button>`:item.disabled?`<button class="premium-buy" disabled>용량·가격 확정 후 구매 가능</button>`:`<button class="primary premium-buy" data-cart-add="${id}">장바구니에 담기</button>`}</article>`;
   const lines=Object.entries(cart).filter(([id,qty])=>SHOP_PRODUCTS[id]&&!SHOP_PRODUCTS[id].disabled&&Number(qty)>0);

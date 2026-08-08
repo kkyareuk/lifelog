@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808c";
-import {eventFor} from "./simulation.js?v=20260808c";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808c";
-import {recordCharacterInteraction} from "./state.js?v=20260808c";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260808f";
+import {eventFor} from "./simulation.js?v=20260808f";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260808f";
+import {recordCharacterInteraction} from "./state.js?v=20260808f";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -850,6 +850,40 @@ function bind(){
   const cartKey="drawer-village-cart";
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};
+  const playButtons=$$("[data-play-purchase]");
+  playButtons.forEach(button=>button.onclick=async()=>{
+    const productId=button.dataset.playPurchase;
+    button.disabled=true;
+    const original=button.textContent;
+    button.textContent="Google Play 결제 준비 중…";
+    try{
+      await window.DrawerVillagePlayBilling?.purchase?.(productId);
+      showToast("Google Play 구매와 상품 지급을 확인했습니다");
+      render();
+    }catch(error){
+      console.error(error);
+      showToast(error?.message||"Google Play 결제를 완료하지 못했습니다");
+      button.disabled=false;
+      button.textContent=original;
+    }
+  });
+  if(playButtons.length&&window.DrawerVillagePlayBilling?.enabled?.()){
+    window.DrawerVillagePlayBilling.loadProducts().then(products=>{
+      for(const product of products||[]){
+        const price=document.querySelector(`[data-play-price="${CSS.escape(product.productId)}"]`);
+        if(price&&product.formattedPrice)price.textContent=product.formattedPrice;
+      }
+    }).catch(error=>console.warn("Google Play 상품 조회 실패",error));
+  }
+  $("[data-play-restore]")?.addEventListener("click",async event=>{
+    const button=event.currentTarget;
+    button.disabled=true;
+    try{
+      const result=await window.DrawerVillagePlayBilling?.restorePurchases?.();
+      showToast(`${result?.restored||0}개의 Google Play 구매를 검증하고 복원했습니다`);
+    }catch(error){showToast(error?.message||"구매 내역을 확인하지 못했습니다")}
+    finally{button.disabled=false}
+  });
   $$("[data-cart-add]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartAdd;cart[id]=id==="storage_50mb"?1:(Number(cart[id])||0)+1;writeCart(cart);showToast(id==="green_tea"?`녹차 ${cart[id]}잔을 장바구니에 담았어요`:"장바구니에 담았어요")});
   $$("[data-cart-plus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartPlus;cart[id]=id==="storage_50mb"?1:(Number(cart[id])||0)+1;writeCart(cart)});
   $$("[data-cart-minus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartMinus,next=(Number(cart[id])||0)-1;if(next>0)cart[id]=next;else delete cart[id];writeCart(cart)});
@@ -2247,13 +2281,13 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260808c").catch(error=>{
+  import("./auth.js?v=20260808f").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260808c",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260808f",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
