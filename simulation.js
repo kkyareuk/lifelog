@@ -3057,11 +3057,15 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     ?forcedPartner
     :null;
   const explicitDatePartner=validForcedPartner||groupedDatePartner;
+  // 같은 공동 사건을 상대 시점으로 다시 만들 때에는 데이트가 아니어도
+  // 최초 사건의 상대를 고정한다. 그렇지 않으면 같은 방에 세 명 이상 있을 때
+  // 상대 화면만 다른 사람과의 장면으로 갈라질 수 있다.
+  const explicitSharedPartner=sharedContext?.interactionId&&forcedPartner&&!current.dateGroup?forcedPartner:null;
   if(explicitDatePartner&&current.dateGroup&&current.withId!==explicitDatePartner.id)current={...current,withId:explicitDatePartner.id,withIds:[explicitDatePartner.id]};
   // 날짜와 상대가 정해진 데이트에는 같은 장소에 우연히 있던 제3자를 끼우지 않는다.
   // 일반 장면에서만 현재 방/장소가 같은 인물을 공동 장면 후보로 삼는다.
-  const together=explicitDatePartner
-    ?[explicitDatePartner]
+  const together=explicitDatePartner||explicitSharedPartner
+    ?[explicitDatePartner||explicitSharedPartner]
     :state.order.map(id=>state.characters[id]).filter(other=>{
       if(!other||other.id===c.id)return false;
       const otherEvent=baseEventFor(other,date);
@@ -3090,8 +3094,9 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const place=isHomeScene
     ?{id:`home:${currentHomeId}:${current.room}`,type:homeRoom?.type||current.room||"집",name:homeRoom?.name||"집 안"}
     :interactionPlace(current.placeId,current.townId||c.townId);
-  const group=[c,...together],preferred=explicitDatePartner
-    ?{first:c,second:explicitDatePartner,relation:relationList().find(r=>(r.a===c.id&&r.b===explicitDatePartner.id)||(r.b===c.id&&r.a===explicitDatePartner.id))}
+  const lockedPartner=explicitDatePartner||explicitSharedPartner;
+  const group=[c,...together],preferred=lockedPartner
+    ?{first:c,second:lockedPartner,relation:relationList().find(r=>(r.a===c.id&&r.b===lockedPartner.id)||(r.b===c.id&&r.a===lockedPartner.id))}
     :interactionPairFor(c,together);
   if(!preferred)return current;
   const ordered=[preferred.first,preferred.second].sort((a,b)=>String(a.id).localeCompare(String(b.id)));

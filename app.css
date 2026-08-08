@@ -4383,9 +4383,8 @@ html[data-color-mode="light"][data-active-tab="settings"] .storage-meter :is(h3,
 .native-app .native-conversation-bubbles{pointer-events:none!important}
 
 .native-app .native-character-stage{
-  left:50%!important;
+  left:auto!important;
   margin-left:0!important;
-  transform:translate(-50%,12px)!important;
 }
 .native-app .native-scene-lineup{padding-right:5%!important;padding-left:5%!important;transform:translateY(11px)}
 .native-app .native-scene-lineup-person{
@@ -4468,14 +4467,7 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game
 html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button>span{color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 
 @media(max-width:720px){
-  html.native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
-    width:calc(100% + 28px)!important;
-    max-width:calc(100vw - 28px)!important;
-    margin-right:-14px!important;
-    margin-left:-14px!important;
-  }
   .catalog-image-actions{grid-template-columns:1fr}
-  .native-app .native-character-stage{width:min(78vw,350px)!important}
 }
 
 @media(prefers-reduced-motion:reduce){
@@ -4486,4 +4478,216 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game
   .native-app .scene-tone-sleep .native-character-stage,
   .native-app .scene-tone-sleep .native-character-stage .native-main-character,
   .home-person.is-sleeping,.home-person .room-sleep-mark{animation:none!important}
+}
+
+/* 2026-08-08d: 홈 정렬·장면 크기·관계 인물 선택을 하나의 최종 규칙으로 통일 */
+.relationship-person-pickers{display:grid;gap:12px;min-width:0}
+.relationship-person-picker{
+  display:grid;
+  gap:10px;
+  min-width:0;
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:color-mix(in srgb,var(--card) 92%,transparent);
+}
+.relationship-person-picker>div:first-child{display:flex;align-items:center;gap:9px}
+.relationship-person-picker>div:first-child>small{
+  display:grid;
+  flex:0 0 28px;
+  place-items:center;
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:var(--relationship-own,#176b60);
+  color:#fff;
+  font-weight:900;
+}
+.relationship-person-picker>div:first-child>span{display:grid;gap:1px}
+.relationship-person-picker>div:first-child b{font-size:15px}
+.relationship-person-picker>div:first-child em{color:var(--muted);font-size:10px;font-style:normal}
+.relationship-person-choice-list{
+  display:flex;
+  gap:8px;
+  min-width:0;
+  padding:3px 2px 8px;
+  overflow-x:auto;
+  scroll-snap-type:x proximity;
+  overscroll-behavior-inline:contain;
+  scrollbar-width:thin;
+}
+.relationship-person-choice{
+  display:grid;
+  flex:0 0 72px;
+  place-items:center;
+  gap:3px;
+  min-width:72px;
+  min-height:78px;
+  padding:7px 5px;
+  scroll-snap-align:center;
+  border:1px solid color-mix(in srgb,var(--line) 82%,transparent);
+  border-radius:17px;
+  background:color-mix(in srgb,var(--card) 75%,transparent);
+  color:inherit;
+  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
+}
+.relationship-person-choice .avatar,.relationship-person-choice .sprite{width:48px;height:48px}
+.relationship-person-choice>span{max-width:62px;overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.relationship-person-choice.on{
+  border-color:color-mix(in srgb,var(--view-primary) 74%,#fff);
+  background:color-mix(in srgb,var(--view-primary) 24%,var(--card));
+  box-shadow:0 8px 18px color-mix(in srgb,var(--view-primary) 25%,transparent);
+  transform:translateY(-2px);
+}
+.relationship-picker-arrow{display:grid;place-items:center;color:var(--relationship-own,#176b60);font-size:24px;font-style:normal;font-weight:900}
+.relationship-pair-magnet{
+  grid-template-columns:minmax(280px,1.2fr) minmax(230px,.8fr);
+  align-items:center;
+  height:auto;
+  min-height:0;
+  max-height:none;
+}
+
+html[data-color-mode="dark"] .relationship-person-picker,
+html[data-color-mode="dark"] .relationship-person-choice{
+  border-color:#ffffff24;
+  background:#142131d9;
+  color:#f4f7fb;
+}
+html[data-color-mode="dark"] .relationship-person-choice.on{background:color-mix(in srgb,var(--view-primary) 34%,#142131)}
+
+/* 홈 메뉴는 테마와 무관하게 배경판 없이 흰 아이콘으로 보이되 터치 영역은 유지한다. */
+html.native-app[data-active-tab="observe"] .native-game-menu button{
+  width:58px!important;
+  min-width:58px!important;
+  height:58px!important;
+  padding:3px!important;
+  border:0!important;
+  border-radius:18px!important;
+  background:transparent!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  text-shadow:0 2px 8px #000,0 1px 2px #000;
+}
+html.native-app[data-active-tab="observe"] .native-game-menu button>span{
+  display:grid;
+  place-items:center;
+  width:39px;
+  height:39px;
+  border:1px solid #ffffff8f;
+  border-radius:50%;
+  background:#0d162128;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 6px 16px #0005,inset 0 1px 0 #ffffff45;
+  font-size:23px;
+}
+html.native-app[data-active-tab="observe"] .native-game-menu button>small{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  font-size:8px;
+  font-weight:900;
+}
+
+/* 대화 기호는 서로 다른 높이와 좌우에 고정해 겹치지 않게 한다. */
+.native-app .native-conversation-bubbles{
+  inset:4% 2% auto!important;
+  display:block!important;
+  width:96%!important;
+  height:92px!important;
+}
+.native-app .native-conversation-bubbles i{
+  width:52px!important;
+  min-width:52px!important;
+  max-width:52px!important;
+  height:34px!important;
+  min-height:34px!important;
+  margin:0!important;
+  padding:0!important;
+  font-size:20px!important;
+  line-height:1!important;
+}
+.native-app .native-conversation-bubbles i:nth-child(1){left:0!important;right:auto!important;top:0!important;animation-delay:0s!important}
+.native-app .native-conversation-bubbles i:nth-child(2){left:auto!important;right:0!important;top:47px!important;animation-delay:.8s!important}
+
+/* PC 라이트 모드에서도 취향 사전의 추가 동작이 배경에 묻히지 않는다. */
+html[data-color-mode="light"] .catalog-kind>.title button,
+html[data-color-mode="light"] .catalog-section>.title button{
+  border-color:#b9aa9c!important;
+  background:#ede2d5!important;
+  color:#302a25!important;
+  -webkit-text-fill-color:#302a25!important;
+  font-weight:900!important;
+}
+
+@media(max-width:720px){
+  html.native-app[data-active-tab="observe"] .native-observe-home{
+    padding-right:16px!important;
+    padding-left:16px!important;
+  }
+  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button,
+  html[data-color-mode="dark"].native-app[data-active-tab="observe"] .native-game-menu button{
+    border:0!important;
+    background:transparent!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    text-shadow:0 2px 8px #000,0 1px 2px #000;
+  }
+  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button>span,
+  html[data-color-mode="dark"].native-app[data-active-tab="observe"] .native-game-menu button>span{
+    border-color:#ffffff8f!important;
+    background:#0d162128!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button>small,
+  html[data-color-mode="dark"].native-app[data-active-tab="observe"] .native-game-menu button>small{
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+  html.native-app[data-active-tab="observe"] :is(.native-character-picker,.native-status-card,.native-log-card){
+    justify-self:center!important;
+    width:calc(100vw - 32px)!important;
+    max-width:720px!important;
+    margin-right:0!important;
+    margin-left:0!important;
+    box-sizing:border-box!important;
+  }
+  .native-app .native-character-stage{
+    width:min(46vw,210px)!important;
+    height:min(28dvh,245px)!important;
+  }
+  .native-app .native-character-stage.has-scene-companion,
+  .native-app .native-character-stage.has-scene-lineup{
+    width:min(68vw,300px)!important;
+    height:min(29dvh,250px)!important;
+  }
+  html.native-app[data-active-tab="relationship"] main,
+  html.native-app[data-active-tab="relationship"] main>.relationship-page,
+  html.native-app[data-active-tab="relationship"] .character-view-editor{
+    height:auto!important;
+    min-height:calc(100dvh - 60px)!important;
+    overflow-y:auto!important;
+  }
+  html.native-app[data-active-tab="relationship"] .character-view-editor{padding:12px!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{
+    grid-template-columns:minmax(0,1fr)!important;
+    align-content:start!important;
+    gap:14px!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:visible!important;
+  }
+  html.native-app[data-active-tab="relationship"] .relationship-person-pickers,
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core{width:100%;min-width:0;box-sizing:border-box}
+  html.native-app[data-active-tab="relationship"] .relationship-person-picker{background:#142131d9;color:#f4f7fb}
+  html.native-app[data-active-tab="relationship"] .relationship-person-picker em{color:#aebccb}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core{padding:14px 8px 28px!important}
 }

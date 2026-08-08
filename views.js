@@ -324,9 +324,9 @@ function nativeScenePresentation(c,entry){
     &&/대화|이야기|말을 건|말을 나누|묻|대답|수다|상의|안부|농담|재잘|주고받|티격태격/.test(text)
   );
   const bubbleWords=tone==="interaction-playful"
-    ?["장난이야","또 그러네","받아쳤어"]
-    :tone==="interaction-tense"?["잠깐","그건 아니야","…"]
-      :tone==="interaction-warm"?["응","그랬구나","계속 말해 줘"]:["응","그래","…"];
+    ?["♪","!"]
+    :tone==="interaction-tense"?["!","?"]
+      :tone==="interaction-warm"?["♪","?"]:["?","!"];
   const conversationHtml=conversationalInteraction
     ?`<span class="native-conversation-bubbles ${tone==="interaction-playful"?"is-playful":tone==="interaction-tense"?"is-tense":""}" aria-label="두 캐릭터가 대화를 주고받는 중">${bubbleWords.map(word=>`<i>${word}</i>`).join("")}</span>`
     :"";
@@ -1050,20 +1050,21 @@ const characterViewEditor=()=>{
   const officialText=[...new Set(official.map(relation=>currentOfficialLabel(relation)))].join(" · ");
   const overall=characterViewFor(sourceId,targetId).overall;
   const fields=`${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"importance","중요도","이 캐릭터의 삶에서 상대가 몇 번째로 중요한 사람인지 정해요.")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 감정이 호감인지 반감인지 단정하지 않고, 얼마나 파악하고 있는지만 정해요.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함과 대화 호흡","공간을 함께 쓸 때의 편안함과 둘 사이의 말·농담 호흡을 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살필지")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개로 정해요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개인 실제 충돌 강도예요.")}${field(sourceId,targetId,"expectation","관계에 대한 기대","이 관계가 얼마나 이어질 거라 생각하는지 정해요.")}${field(sourceId,targetId,"touchIntensity","허용하고 표현하는 스킨십 범위","두 캐릭터의 범위가 다르면 더 낮은 쪽까지만 반영돼요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","충동만으로 실제 공격하지 않아요.")}${field(sourceId,targetId,"aggressionAction","충동을 실제로 표현하는 단계","충동 단계보다 센 행동은 절대 나오지 않아요.")}`;
-  const railButton=(id,kind,selected,index,selectedIndex,cycle=1)=>{
-    const character=state.characters[id],primary=character.theme?.primary||"#176b60";
-    const distance=index-selectedIndex,angle=Math.max(-13,Math.min(13,distance*4))*(kind==="source"?-1:1),shift=Math.min(18,Math.abs(distance)*4)*(kind==="source"?1:-1);
-    return `<button type="button" data-view-${kind}="${id}" data-roulette-cycle="${cycle}" class="${selected?"on":""}" style="--view-primary:${esc(primary)};--roulette-distance:${distance};--fan-angle:${angle}deg;--fan-shift:${shift}px;--fan-delay:${Math.min(index,8)*28}ms" aria-label="${esc(character.name)} ${kind==="source"?"선택":"대상 선택"}" ${cycle===1?"":'tabindex="-1"'}>${avatar(character)}</button>`;
-  };
-  const sourceIndex=Math.max(0,state.order.indexOf(sourceId)),targetIndex=Math.max(0,targetIds.indexOf(targetId));
-  const rouletteButtons=(ids,kind,selectedId,selectedIndex)=>[0,1,2].flatMap(cycle=>ids.map((id,index)=>railButton(id,kind,cycle===1&&id===selectedId,index,selectedIndex,cycle))).join("");
-  return `<section class="character-view-editor" style="--relationship-own:${esc(source.theme?.primary||"#176b60")};--relationship-own-secondary:${esc(source.theme?.secondary||source.theme?.primary||"#176b60")}"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p>왼쪽과 오른쪽 룰렛을 움직여 두 사람을 고르세요. 왼쪽에서 고른 캐릭터가 이 화면의 주인공이 됩니다.</p></div></div>
+  const pickerButtons=(ids,kind,selectedId)=>ids.map(id=>{
+    const character=state.characters[id],selected=id===selectedId,primary=character.theme?.primary||"#176b60";
+    return `<button type="button" data-view-${kind}="${id}" class="relationship-person-choice ${selected?"on":""}" style="--view-primary:${esc(primary)}" aria-pressed="${selected}" aria-label="${esc(character.name)} ${kind==="source"?"마음을 보는 사람으로 선택":"마음의 대상으로 선택"}">${avatar(character)}<span>${esc(character.name)}</span></button>`;
+  }).join("");
+  return `<section class="character-view-editor" style="--relationship-own:${esc(source.theme?.primary||"#176b60")};--relationship-own-secondary:${esc(source.theme?.secondary||source.theme?.primary||"#176b60")}"><div class="title"><div><h2>관계와 캐릭터별 시선</h2><p>먼저 마음을 보는 사람을 고르고, 그 아래에서 그 마음의 대상을 고르세요. 선택한 두 사람의 방향은 문장으로 바로 확인할 수 있어요.</p></div></div>
     <div class="relationship-pair-magnet">
-      <div class="relationship-character-rail source-rail" aria-label="감정을 느끼는 캐릭터">${rouletteButtons(state.order,"source",sourceId,sourceIndex)}</div>
+      <div class="relationship-person-pickers">
+        <section class="relationship-person-picker source-picker"><div><small>1</small><span><b>마음을 보는 사람</b><em>누구의 속마음인지 고르기</em></span></div><div class="relationship-person-choice-list" role="group" aria-label="마음을 보는 사람 선택">${pickerButtons(state.order,"source",sourceId)}</div></section>
+        <i class="relationship-picker-arrow" aria-hidden="true">↓</i>
+        <section class="relationship-person-picker target-picker"><div><small>2</small><span><b>마음의 대상</b><em>그 마음이 향하는 사람 고르기</em></span></div><div class="relationship-person-choice-list" role="group" aria-label="마음의 대상 선택">${pickerButtons(targetIds,"target",targetId)}</div></section>
+      </div>
       <div class="relationship-pair-core">
         <div class="relationship-pair-icons"><span><small>마음을 보는 사람</small>${avatar(source)}<b>${esc(source.name)}</b></span><i>→</i><span><small>마음의 대상</small>${avatar(target)}<b>${esc(target.name)}</b></span></div>
-        <small class="relationship-direction-help">왼쪽 캐릭터의 마음</small>
-        <strong data-view-summary="${sourceId}:${targetId}" data-view-source-name="${esc(source.name)}" data-view-target-name="${esc(target.name)}">${esc(overallViewPhrase(overall))}</strong>
+        <small class="relationship-direction-help">선택한 방향의 마음</small>
+        <strong data-view-summary="${sourceId}:${targetId}" data-view-source-name="${esc(source.name)}" data-view-target-name="${esc(target.name)}">${esc(`${subjectText(source.name)} ${objectText(target.name)} ${overallViewPhrase(overall)}`)}</strong>
         <span>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</span>
         <em>${esc(relationshipReality(sourceId,targetId,official))}</em>
         <button type="button" class="primary" data-open-view-dialog="${sourceId}:${targetId}">이 시선 편집하기</button>
@@ -1071,7 +1072,6 @@ const characterViewEditor=()=>{
         <button type="button" data-open-official-relations>공식 관계 목록</button>
         <button type="button" data-open-relationship-map>관계도 보기</button>
       </div>
-      <div class="relationship-character-rail target-rail" aria-label="감정의 대상 캐릭터">${rouletteButtons(targetIds,"target",targetId,targetIndex)}</div>
     </div>
     <dialog class="character-view-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><div class="title character-view-dialog-title"><div class="character-view-dialog-direction">${avatar(source)}<i>→</i>${avatar(target)}<span><h2>${esc(source.name)} → ${esc(target.name)}</h2><small>${esc(subjectText(source.name))} ${esc(objectText(target.name))} 바라보는 감정과 행동 기준</small></span></div><button value="close" aria-label="닫기">×</button></div><div class="character-view-dialog-context"><b>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</b><span>${esc(overall)}</span></div><div class="character-view-fields">${fields}</div><div class="crop-actions"><button type="button" data-reset-character-view="${sourceId}:${targetId}">이 시선 초기화</button><button class="primary" value="close">편집 완료</button></div></form></dialog>
   </section>`;
