@@ -1168,7 +1168,7 @@ html[data-active-tab="settings"] .storage-meter :is(h3,b,small){
   .native-app[data-active-tab="home"] .home-person .sprite{width:46px;height:46px}
   .native-app[data-active-tab="home"] .home-person span{max-width:82px;padding:4px 6px;font-size:10px}
   .native-app[data-active-tab="home"] .home-person span small{display:none}
-  .native-app[data-active-tab="home"] .room-pet-status small{display:none}
+  .native-app[data-active-tab="home"] .room-pet-status small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
 
   .relationship-pair-magnet{grid-template-columns:minmax(68px,82px) minmax(126px,1fr) minmax(68px,82px);gap:4px;min-height:330px;margin-inline:-6px;padding:7px}
   .relationship-character-rail{max-height:330px;padding:127px 3px;gap:8px}
@@ -2805,7 +2805,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .room-pet img,
   html.native-app[data-active-tab="home"] .room-pet-emoji{width:34px;height:34px;font-size:23px}
   html.native-app[data-active-tab="home"] .room-pet-status{min-width:54px;max-width:82px;padding:3px 5px!important}
-  html.native-app[data-active-tab="home"] .room-pet-status small{display:none!important}
+  html.native-app[data-active-tab="home"] .room-pet-status small{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important;overflow:hidden!important}
   html.native-app[data-active-tab="home"] .home-feature-menu{
     position:absolute!important;
     left:6px;
@@ -3423,11 +3423,37 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   pointer-events:none;
   transform-origin:50% 85%;
 }
-.native-app .scene-action-cleaning .native-scene-action-prop{animation:native-prop-sweep 1.8s ease-in-out infinite}
-.native-app .scene-action-cleaning .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-cleaning-step 1.8s ease-in-out infinite}
+.native-app :is(.native-scene-action-prop,.native-person-action-prop) img{
+  width:100%;
+  height:100%;
+  border:0;
+  border-radius:12px;
+  object-fit:cover;
+  background:#fff;
+}
+.native-app .native-person-action-prop{
+  position:absolute;
+  left:57%;
+  top:47%;
+  z-index:8;
+  display:grid;
+  place-items:center;
+  width:clamp(30px,8vw,48px);
+  height:clamp(30px,8vw,48px);
+  font-size:clamp(24px,7vw,42px);
+  filter:drop-shadow(0 7px 7px #0009);
+  pointer-events:none;
+  transform-origin:50% 85%;
+}
+.native-app .scene-action-sweeping .native-scene-action-prop,
+.native-app .scene-action-sweeping .native-person-action-prop{animation:native-prop-sweep 1.8s ease-in-out infinite}
+.native-app .scene-action-sweeping .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-cleaning-step 1.8s ease-in-out infinite}
+.native-app :is(.scene-action-dishwashing,.scene-action-wiping,.scene-action-organizing,.scene-action-spice-organizing,.scene-action-accessory-organizing) :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-work 2.1s ease-in-out infinite}
 .native-app .scene-action-gaming .native-scene-action-prop{left:51%;top:61%;animation:native-prop-game 1.25s ease-in-out infinite}
+.native-app .scene-action-gaming .native-person-action-prop{animation:native-prop-game 1.25s ease-in-out infinite}
 .native-app .scene-action-gaming .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-game-focus 2.5s ease-in-out infinite}
 .native-app .scene-action-eating .native-scene-action-prop{left:57%;top:58%;animation:native-prop-eat 1.7s ease-in-out infinite}
+.native-app .scene-action-eating .native-person-action-prop{animation:native-prop-eat 1.7s ease-in-out infinite}
 .native-app .scene-action-eating .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-eating-pause 3.4s ease-in-out infinite}
 @keyframes native-crush-left{0%,100%{translate:-5px 2px;rotate:-1deg}42%{translate:2px -5px;rotate:1deg}58%{translate:0 -4px;rotate:0}}
 @keyframes native-crush-right{0%,100%{translate:5px 1px;rotate:1deg}42%{translate:-2px -4px;rotate:-1deg}58%{translate:1px -3px;rotate:0}}
@@ -3435,6 +3461,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 @keyframes native-fear-tremble{0%,100%{translate:-5px 2px;rotate:-1deg}25%{translate:-8px 0;rotate:1deg}50%{translate:-4px -2px;rotate:-1deg}75%{translate:-9px 1px;rotate:1deg}}
 @keyframes native-prop-sweep{0%,100%{translate:-14px 5px;rotate:-22deg}50%{translate:14px -2px;rotate:24deg}}
 @keyframes native-cleaning-step{0%,100%{translate:-4px 1px}50%{translate:5px -3px}}
+@keyframes native-prop-work{0%,100%{translate:-3px 3px;rotate:-4deg}50%{translate:4px -5px;rotate:5deg}}
 @keyframes native-prop-game{0%,100%{translate:-4px 1px;rotate:-3deg}50%{translate:3px -2px;rotate:3deg}}
 @keyframes native-game-focus{0%,100%{translate:0 2px}50%{translate:0 -4px;scale:1.015}}
 @keyframes native-prop-eat{0%,25%,100%{translate:5px 8px;rotate:10deg}55%,72%{translate:-8px -14px;rotate:-12deg}}
@@ -4599,6 +4626,12 @@ html[data-color-mode="light"] .mobile-editor-head{border-bottom:1px solid #d8cec
 html[data-color-mode="light"] .mobile-editor-head :is(b,small){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"] .mobile-editor-head>button{border-color:#cfc4ba!important;background:#fffaf4!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"] :is(.catalog-kind>.title,.catalog-section>.title) button{border-color:#c7baae!important;background:#3e3731!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="dark"] :is(.catalog-kind>.title,.catalog-section>.title) button,
+html[data-color-mode="dark"] button[data-add-catalog]{border-color:#ffffff38!important;background:#24364a!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="light"] button[data-add-catalog]{border-color:#3e3731!important;background:#3e3731!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 7px 16px #3128202b!important}
+
+html[data-color-mode="light"].native-app[data-active-tab="character"] .mobile-character-top>div:last-child button{border-color:#3e3731!important;background:#3e3731!important;color:#fff!important;-webkit-text-fill-color:#fff!important;box-shadow:0 7px 16px #3128202b!important}
+html[data-color-mode="dark"].native-app[data-active-tab="character"] .mobile-character-top>div:last-child button{border-color:#ffffff38!important;background:#24364a!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 
 html[data-color-mode="light"][data-active-tab="settings"] .settings-shell{background:#f5f1ea!important;color:#302a25!important}
 html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(.setting-card,.sync-panel,.feedback-card,fieldset){border-color:#d8cec5!important;background:#fffdf9!important;color:#302a25!important}
@@ -4606,6 +4639,13 @@ html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(h1
 html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(button,input,select,textarea){border-color:#d2c6ba!important;background:#f1e9e0!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"][data-active-tab="settings"] .settings-shell button.primary{border-color:transparent!important;background:#176b60!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 html[data-color-mode="light"][data-active-tab="settings"] .settings-shell textarea::placeholder{color:#75695f!important;-webkit-text-fill-color:#75695f!important}
+html[data-color-mode="light"][data-active-tab="settings"] .color-mode-options button:not(.on){border-color:#d2c6ba!important;background:#f1e9e0!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="settings"] .color-mode-options button.on{border-color:#176b60!important;background:linear-gradient(135deg,#176b60,#4c8179)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(.setting-card,.sync-panel,.feedback-card,fieldset){border-color:#ffffff24!important;background:#172536!important;color:#f5f8fb!important}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(h1,h2,h3,b,strong,label,legend,p,small,a){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell :is(button,input,select,textarea){border-color:#ffffff2e!important;background:#223348!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important;color-scheme:dark}
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell button.primary,
+html[data-color-mode="dark"][data-active-tab="settings"] .color-mode-options button.on{border-color:transparent!important;background:linear-gradient(135deg,#176b60,#3b8175)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-shell .sync-actions button:not(.primary),
 html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-shell [data-guide-reset],
 html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-shell [data-reset]{

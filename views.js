@@ -217,6 +217,83 @@ function nativeVisualSeed(value){
   }
   return seed>>>0;
 }
+function nativeSceneItemScore(person,item,entry){
+  if(!person||!item)return -9999;
+  const favoriteIds=[
+    ...(person.favorites?.[item.kind]||[]),
+    ...(person.favorites?.[`${item.kind}s`]||[])
+  ];
+  const preferenceText=[
+    ...(person.foodPreferences||person.foodTypes||[]),
+    ...(person.drinks||person.drinkTypes||[]),
+    ...(person.interests||[])
+  ].join(" ");
+  const itemText=`${item.name||""} ${item.category||""} ${item.subtype||""} ${item.details||""}`;
+  let score=nativeVisualSeed(`${person.id}:${item.id}:${entry?.minute||entry?.title||"scene"}`)%13;
+  if(favoriteIds.includes(item.id))score+=90;
+  for(const preference of preferenceText.split(/[,·\s]+/).filter(Boolean)){
+    if(itemText.includes(preference)||preference.includes(item.category||"__"))score+=18;
+  }
+  if(item.kind==="food"){
+    score-=Math.max(0,Number(item.spicy||0)-Number(person.spiceTolerance??2))*10;
+    score-=Math.abs(Number(item.sweet||0)-Number(person.sweetPreference??2))*3;
+  }
+  const entryItem=catalogItem(entry?.itemId);
+  if(entryItem?.id===item.id)score+=favoriteIds.includes(item.id)?36:12;
+  if(entryItem?.category&&entryItem.category===item.category)score+=9;
+  return score;
+}
+function nativeSceneFoodItem(person,entry,text){
+  const available=catalogItems().filter(item=>item.kind==="food"||item.kind==="drink");
+  if(!available.length)return null;
+  const drinkScene=/차를 마|음료|커피|주스|탄산|술|칵테일|마실/.test(text);
+  const mealScene=/먹|식사|메뉴|디저트|간식|초밥|아침|점심|저녁/.test(text);
+  const matching=available.filter(item=>drinkScene&&!mealScene?item.kind==="drink":mealScene&&!drinkScene?item.kind==="food":true);
+  return (matching.length?matching:available).slice().sort((a,b)=>nativeSceneItemScore(person,b,entry)-nativeSceneItemScore(person,a,entry))[0]||null;
+}
+function nativeFoodSymbol(item,text){
+  const value=`${item?.name||""} ${item?.category||""} ${item?.subtype||""} ${text}`;
+  if(/초밥|스시|회/.test(value))return "🍣";
+  if(/라면|국수|파스타|면/.test(value))return "🍜";
+  if(/빵|베이커리|크루아상/.test(value))return "🥐";
+  if(/샐러드|채식|야채/.test(value))return "🥗";
+  if(/케이크|디저트|쿠키/.test(value))return "🍰";
+  if(/고기|스테이크|구이/.test(value))return "🥩";
+  if(/과일|사과/.test(value))return "🍎";
+  if(/커피/.test(value))return "☕";
+  if(/차|홍차|녹차/.test(value))return "🍵";
+  if(/주스/.test(value))return "🧃";
+  if(/탄산|콜라/.test(value))return "🥤";
+  if(/술|와인|칵테일/.test(value))return "🍷";
+  return "🥄";
+}
+function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
+  let symbol="";
+  let item=null;
+  if(actionKind==="eating"){
+    item=nativeSceneFoodItem(person,entry,text);
+    symbol=nativeFoodSymbol(item,text);
+  }else if(actionKind==="sweeping")symbol="🧹";
+  else if(actionKind==="dishwashing"||actionKind==="wiping")symbol="🧽";
+  else if(actionKind==="laundry")symbol="🧺";
+  else if(actionKind==="spice-organizing")symbol="🧂";
+  else if(actionKind==="accessory-organizing")symbol="💍";
+  else if(actionKind==="organizing")symbol="📦";
+  else if(actionKind==="gaming")symbol="🎮";
+  else if(actionKind==="cooking")symbol="🍳";
+  else if(actionKind==="reading")symbol="📖";
+  else if(actionKind==="writing")symbol="✍️";
+  else if(actionKind==="music")symbol="🎵";
+  else if(actionKind==="exercise")symbol="🏋️";
+  else if(actionKind==="grooming")symbol=/향수|향을 고르/.test(text)?"🧴":"💄";
+  else if(actionKind==="repair")symbol="🛠️";
+  else if(actionKind==="gardening")symbol="🪴";
+  else if(actionKind==="mail")symbol="✉️";
+  if(!symbol)return "";
+  const image=item?.image?`<img src="${esc(item.image)}" alt="">`:esc(symbol);
+  const title=item?.name?`${person?.name||"캐릭터"} · ${item.name}`:`${person?.name||"캐릭터"} · ${symbol}`;
+  return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
+}
 function nativeScenePresentation(c,entry){
   const text=`${entry?.title||""} ${entry?.desc||""} ${entry?.mood||""}`;
   const sleeping=/자는 중|잠든|수면/.test(text);
@@ -270,12 +347,26 @@ function nativeScenePresentation(c,entry){
   const tenseInteraction=Boolean(partner&&!dating&&!fighting&&!playfulInteraction&&/경계|불편|신경전|성가시|못마땅|퉁명|날 선|거리.{0,8}두/.test(`${text} ${viewText}`));
   const warmInteraction=Boolean(partner&&!dating&&!fighting&&!tenseInteraction&&/함께|대화|이야기|도와|챙기|나누|맞춰|건넸|안부|곁/.test(text));
   const actionKind=sleeping?"sleep"
-    :/청소|정리|쓸고|쓸어|닦|설거지|세탁|먼지/.test(text)?"cleaning"
-      :/게임|한 판|콘솔|컨트롤러|플레이|보드게임/.test(text)?"gaming"
-        :/먹|식사|디저트|간식|차를 마|음료를 마|커피를 마|초밥|메뉴/.test(text)?"eating"
-          :/두려|무서|겁이|공포|위협|피하고 싶/.test(`${text} ${viewText}`)?"fear"
-            :fighting?"fighting"
-              :"idle";
+    :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
+      :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)/.test(text)?"dishwashing"
+        :/세탁|빨래/.test(text)?"laundry"
+          :/향신료.{0,18}(정리|분류|고르|배치)|(?:정리|분류|고르|배치).{0,18}향신료/.test(text)?"spice-organizing"
+            :/(?:액세서리|악세서리|장신구).{0,18}(정리|분류|고르|배치)|(?:정리|분류|고르|배치).{0,18}(?:액세서리|악세서리|장신구)/.test(text)?"accessory-organizing"
+              :/정리|정돈|분류|배치|제자리/.test(text)?"organizing"
+                :/청소|먼지|닦/.test(text)?"wiping"
+                  :/요리|굽|끓이|볶|레시피|조리/.test(text)?"cooking"
+                    :/먹|식사|디저트|간식|차를 마|음료를 마|커피를 마|초밥|메뉴/.test(text)?"eating"
+                      :/게임|한 판|콘솔|컨트롤러|플레이|보드게임/.test(text)?"gaming"
+                        :/책을 읽|독서|읽는 중/.test(text)?"reading"
+                          :/글을 쓰|초안|메모|기록하는 중/.test(text)?"writing"
+                            :/음악|노래|연주|턴테이블/.test(text)?"music"
+                              :/운동|훈련|스트레칭/.test(text)?"exercise"
+                                :/화장|향수|향을 고르|머리를 정돈/.test(text)?"grooming"
+                                  :/수리|고치|정비/.test(text)?"repair"
+                                    :/식물|화분|원예/.test(text)?"gardening"
+                                      :/우편|편지/.test(text)?"mail"
+                                        :/두려|무서|겁이|공포|위협|피하고 싶/.test(`${text} ${viewText}`)?"fear"
+                                          :fighting?"fighting":"idle";
   const tone=sleeping
     ?"sleep"
     :fighting
@@ -346,7 +437,8 @@ function nativeScenePresentation(c,entry){
   const lineupHtml=companions.length?`<span class="native-scene-lineup ${coResidentConversation?"is-conversation":""}" style="--scene-count:${sceneParticipants.length}" aria-label="${esc(sceneParticipants.map(person=>person.name).join(", "))}">${sceneParticipants.map((person,index)=>{
     const personSeed=nativeVisualSeed(`${entry?.interactionId||entry?.dateGroup||entry?.title}:${entry?.minute||""}:${person.id}:${index}`);
     const delay=((personSeed>>>15)%120)/100,duration=3.4+((personSeed>>>22)%120)/100;
-    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${avatar(person,"native-scene-lineup-avatar")}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
+    const actionProp=nativeSceneActionProp(person,entry,actionKind,text,true);
+    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${avatar(person,"native-scene-lineup-avatar")}${actionProp}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
   }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
     companions.length
@@ -360,7 +452,7 @@ function nativeScenePresentation(c,entry){
   const conversationHtml=conversationalInteraction
     ?`<span class="native-conversation-bubbles ${tone==="interaction-playful"?"is-playful":tone==="interaction-tense"?"is-tense":""}" aria-label="두 캐릭터가 대화를 주고받는 중">${bubbleWords.map(word=>`<i>${word}</i>`).join("")}</span>`
     :"";
-  const actionSymbol=actionKind==="cleaning"?"🧹":actionKind==="gaming"?"🎮":actionKind==="eating"?"🥄":"";
+  const actionHtml=companions.length?"":nativeSceneActionProp(c,entry,actionKind,text);
   return {
     tone,
     actionKind,
@@ -369,7 +461,7 @@ function nativeScenePresentation(c,entry){
     pet,
     lineupHtml,
     conversationHtml,
-    actionHtml:actionSymbol?`<span class="native-scene-action-prop" aria-hidden="true">${actionSymbol}</span>`:"",
+    actionHtml,
     companionHtml:"",
     petHtml:pet?`<span class="native-pet-orbit" aria-label="함께 노는 ${esc(pet.name)}"><span class="native-scene-pet">${petVisual}<small>${esc(pet.name)}</small></span></span>`:"",
     effects
