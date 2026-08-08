@@ -10,11 +10,7 @@
   window.PARALLEL_CITY_FIREBASE=firebase;
   window.PARALLEL_CITY_CONFIG=window.PARALLEL_CITY_CONFIG||{};
   window.PARALLEL_CITY_CONFIG.firebase=firebase;
-  window.PARALLEL_CITY_CONFIG.beta=window.PARALLEL_CITY_CONFIG.beta||{
-    enabled:true,
-    label:"사전 체험",
-    message:"현재 사전 체험 기간입니다. 기능과 저장 안정성을 점검하고 있으며 실제 결제는 진행되지 않아요."
-  };
+  window.PARALLEL_CITY_CONFIG.beta={enabled:false,label:"",message:""};
   window.PARALLEL_CITY_CONFIG.paymentsEnabled=false;
   window.PARALLEL_CITY_CONFIG.playBilling=window.PARALLEL_CITY_CONFIG.playBilling||{
     enabled:true,

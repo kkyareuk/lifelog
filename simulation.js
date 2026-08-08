@@ -47,6 +47,9 @@ const sleepingNow=(c,d)=>{
   const n=nowMin(d), wake=wakeAt(c,d), sleep=sleepAt(c,d);
   return sleep<=wake ? n>=sleep&&n<wake : n>=sleep||n<wake;
 };
+const MINOR_AGE_GROUPS=new Set(["영아","유아","어린이","청소년"]);
+const isMinorCharacter=character=>MINOR_AGE_GROUPS.has(String(character?.ageGroup||""));
+const mixedAdultMinor=(first,second)=>Boolean(first&&second)&&isMinorCharacter(first)!==isMinorCharacter(second);
 const sleepScene=(c,d=new Date())=>{
   const habit=c.sleepHabit||"이불을 단정히 덮고 잠";
   const scenes={
@@ -945,6 +948,10 @@ function workEvent(c,time,date){
 function socialEvent(c,time,date){
   let pick=preferredRelation(c);
   if(pick&&activityTown(pick.other,date)?.id!==activityTown(c,date)?.id)pick=null;
+  if(pick&&mixedAdultMinor(c,pick.other)){
+    const types=pick.r?.types||[pick.r?.type];
+    if(types.some(type=>["연인","부부","짝사랑","유사 연인"].includes(type)))pick=null;
+  }
   const pair=pick?[c.id,pick.other.id].sort().join(":"):c.id;
   const socialTypes=/산책|운동|등산|자전거/.test((c.hobbies||[]).join(" "))||hash(`${pair}:${dayKey(date)}:park-interest`)%4===0
     ?["카페","음식점","공원","영화관","도서관","쇼핑몰","공연장"]
@@ -1168,6 +1175,7 @@ function relationshipHomeEntry(c,pick,time,date){
   const directedView=characterViewFor(c.id,other.id);
   const {overall="",awareness="",mutualAwareness="",trust="",closeness="",comfort="",annoyance="",attention="",jealousy="",conflictIntensity="",expectation="",aggression=""}=directedView;
   const otherView=characterViewFor(other.id,c.id);
+  const mixedAgePair=mixedAdultMinor(c,other);
   const combinedTypes=r.types||[r.type];
   const combinedTone=combinedTypes.length>1?combinedTypes.includes("연인")&&combinedTypes.includes("직장 동료")?" 직장에서는 동료의 선을 지키고, 사적인 자리에서만 연인의 말투로 돌아오고 있어요.":combinedTypes.includes("연인")&&combinedTypes.includes("소꿉친구")?" 오래 알고 지낸 습관과 연인으로서의 애정이 자연스럽게 함께 묻어나요.":` 두 사람 사이의 ${combinedTypes.join("·")} 관계가 한 장면 안에서 함께 드러나고 있어요.`:"";
   const thought=[overall,mutualAwareness,trust,comfort,annoyance,attention,conflictIntensity,expectation,aggression].filter(Boolean).join(" ");
@@ -1179,7 +1187,7 @@ function relationshipHomeEntry(c,pick,time,date){
   const otherTouchAverse=/극도로 꺼림|닿는 것을 싫어/.test(other.touchReaction||"");
   const touchLevels=["신체 접촉 없음","인사·부축 같은 의례적 접촉만","손잡기·팔짱까지","포옹·기대기까지","가벼운 입맞춤까지","깊은 입맞춤까지","성인 간 친밀한 접촉까지"];
   const ownTouch=directedView.touchIntensity||"신체 접촉 없음",otherTouch=otherView.touchIntensity||"신체 접촉 없음";
-  const ownTouchIndex=Math.max(0,touchLevels.indexOf(ownTouch)),otherTouchIndex=Math.max(0,touchLevels.indexOf(otherTouch));
+  const ownTouchIndex=Math.min(mixedAgePair?1:touchLevels.length-1,Math.max(0,touchLevels.indexOf(ownTouch))),otherTouchIndex=Math.min(mixedAgePair?1:touchLevels.length-1,Math.max(0,touchLevels.indexOf(otherTouch)));
   const touchIntensity=touchLevels[Math.min(ownTouchIndex,otherTouchIndex)];
   const avoidsTouch=ownTouchIndex===0||otherTouchIndex===0;
   const welcomesTouch=!avoidsTouch&&Math.min(ownTouchIndex,otherTouchIndex)>=2;
@@ -1195,15 +1203,15 @@ function relationshipHomeEntry(c,pick,time,date){
   const aggressive=!/없음|전혀 느끼지|행동하지 않|스스로 멈춤/.test(aggression)&&/몸으로 밀어내고 싶은 충동|해치고 싶은 충동|죽이고 싶을 만큼 격한 충동/.test(aggression);
   const highConflict=/자주 충돌함|격렬하게 충돌함|파국적인 충돌을 반복함/.test(conflictIntensity);
   const siblingRelation=combinedTypes.includes("형제·자매")||r.type==="형제·자매";
-  const romanticFeeling=/연애 감정|깊이 사랑|없어서는/.test(overall);
-  const otherLoving=/연애 감정|깊이 사랑|없어서는/.test(otherView.overall||"");
-  const officialRomance=combinedTypes.some(type=>["연인","부부"].includes(type));
+  const romanticFeeling=!mixedAgePair&&/연애 감정|깊이 사랑|없어서는/.test(overall);
+  const otherLoving=!mixedAgePair&&/연애 감정|깊이 사랑|없어서는/.test(otherView.overall||"");
+  const officialRomance=!mixedAgePair&&combinedTypes.some(type=>["연인","부부"].includes(type));
   const familyRelation=combinedTypes.some(type=>["부모·자녀","형제·자매"].includes(type));
   const confirmedFeelings=/서로의 마음을 확인함/.test(mutualAwareness)&&/서로의 마음을 확인함/.test(otherView.mutualAwareness||"");
   const mutualLonging=!officialRomance&&!familyRelation&&romanticFeeling&&otherLoving&&!confirmedFeelings;
   const nearlyDating=!officialRomance&&!familyRelation&&romanticFeeling&&otherLoving&&confirmedFeelings;
   const nominalDating=officialRomance&&(!romanticFeeling||!otherLoving||avoidsTouch||distant);
-  const bothAdults=![c,other].some(character=>["영아","유아","어린이","청소년"].includes(character.ageGroup));
+  const bothAdults=![c,other].some(isMinorCharacter);
   const unlabeledIntimacy=!officialRomance&&!familyRelation&&bothAdults&&confirmedFeelings&&welcomesTouch&&!endingSoon&&(/가까운 사이|가장 가까운/.test(closeness)||/가까운 사이|가장 가까운/.test(otherView.closeness||""));
   const hasPartner=relationList().some(relation=>relation.temporalStatus!=="past"&&["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
   const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
@@ -1835,7 +1843,7 @@ function build(c,date=new Date()){
       :entry(1140,title,desc,{...shared,home:true,visitHomeId:host.homeId,room:"living"}));
   }
   const romanticConnection=related(c).some(({other,r})=>{
-    if(!other)return false;
+    if(!other||mixedAdultMinor(c,other))return false;
     const view=characterViewFor(c.id,other.id);
     return r?.temporalStatus!=="past"&&(
       /연인|부부/.test(String(r?.type||""))
@@ -1847,7 +1855,8 @@ function build(c,date=new Date()){
   const socialMinute=1080+(hash(`${c.id}:${dayKey(date)}:social-minute`)%181);
   const social=socialDay?socialEvent(c,socialMinute,date):null; if(social)list.push(social);
   if(social?.withId){
-    const romanticRelation=relationList().find(r=>((r.a===c.id&&r.b===social.withId)||(r.b===c.id&&r.a===social.withId))&&["연인","부부"].includes(r.type));
+    const socialPartner=state.characters[social.withId];
+    const romanticRelation=!mixedAdultMinor(c,socialPartner)&&relationList().find(r=>((r.a===c.id&&r.b===social.withId)||(r.b===c.id&&r.a===social.withId))&&["연인","부부"].includes(r.type));
     if(romanticRelation){
       const partner=state.characters[social.withId],dateStart=social.minute-25;
       const datePlace=interactionPlace(social.placeId,social.townId||c.townId);
@@ -2282,7 +2291,7 @@ function relationImportance(first,second,relation){
     +directedImportance(second.id,first.id)*.8;
 }
 function dateLikePair(first,second,relation,current={}){
-  if(relation?.temporalStatus==="past"||["부모·자녀","형제·자매"].includes(relation?.type))return false;
+  if(mixedAdultMinor(first,second)||relation?.temporalStatus==="past"||["부모·자녀","형제·자매"].includes(relation?.type))return false;
   return Boolean(current.dateGroup&&current.datePurpose&&current.mood==="데이트"&&[first.id,second.id].includes(current.withId));
 }
 function viewDrivenInteraction(place,first,second,date){
@@ -2735,7 +2744,7 @@ function sharedIntimacyLevel(first,second){
   return Math.min(firstLevel,secondLevel);
 }
 function intimacyBeat(first,second,variant,bondKey){
-  if(!["devoted","romantic","love_hate"].includes(bondKey))return "";
+  if(mixedAdultMinor(first,second)||!["devoted","romantic","love_hate"].includes(bondKey))return "";
   const officialRomance=relationList().some(relation=>relation.temporalStatus!=="past"&&["연인","부부"].includes(relation.type)&&((relation.a===first.id&&relation.b===second.id)||(relation.a===second.id&&relation.b===first.id)));
   if(!officialRomance)return "";
   const level=sharedIntimacyLevel(first,second);
@@ -2865,9 +2874,10 @@ function relationCombinationScene(place,first,second,relation,date){
   const firstView=characterViewFor(first.id,second.id);
   const secondView=characterViewFor(second.id,first.id);
   if(!relation&&Object.keys(firstExplicit).length+Object.keys(secondExplicit).length<2)return null;
-  const romanticView=view=>/연애 감정|깊이 사랑|없어서는 안 될/.test(view.overall||"");
+  const mixedAgePair=mixedAdultMinor(first,second);
+  const romanticView=view=>!mixedAgePair&&/연애 감정|깊이 사랑|없어서는 안 될/.test(view.overall||"");
   const firstRomantic=romanticView(firstView),secondRomantic=romanticView(secondView);
-  const officialRomance=relation?.temporalStatus!=="past"&&["연인","부부"].includes(relation?.type);
+  const officialRomance=!mixedAgePair&&relation?.temporalStatus!=="past"&&["연인","부부"].includes(relation?.type);
   const feelingsConfirmed=/서로의 마음을 확인/.test(`${firstView.mutualAwareness} ${secondView.mutualAwareness}`);
   const unconfirmedMutualRomance=firstRomantic&&secondRomantic&&!officialRomance&&!feelingsConfirmed;
   const activeRomanticPartners=person=>relationList()
@@ -3174,7 +3184,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const ordered=[preferred.first,preferred.second].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
   const pair={...preferred,first:ordered[0],second:ordered[1]};
   const isFirst=c.id===pair.first.id;
-  const officialRomance=pair.relation?.temporalStatus!=="past"&&["연인","부부"].includes(pair.relation?.type);
+  const officialRomance=!mixedAdultMinor(pair.first,pair.second)&&pair.relation?.temporalStatus!=="past"&&["연인","부부"].includes(pair.relation?.type);
   const childParticipants=officialRomance?together.filter(person=>relationList().some(relation=>
     relation.temporalStatus!=="past"
     &&relation.type==="부모·자녀"
