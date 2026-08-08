@@ -13,12 +13,12 @@ const renameBrand=value=>{
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const rooms=()=>({
-  living:{name:"거실",type:"living",size:"큰 방",order:0,image:"",interiorStyle:"설정하지 않음",furniture:["소파","TV","책장"]},
-  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,image:"",interiorStyle:"설정하지 않음",furniture:["냉장고","조리대","식탁"]},
-  entry:{name:"현관",type:"entry",size:"작은 방",order:2,image:"",interiorStyle:"설정하지 않음",furniture:["신발장","전신거울"]},
-  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,image:"",interiorStyle:"설정하지 않음",furniture:["샤워부스","세면대"]},
-  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,image:"",interiorStyle:"설정하지 않음",furniture:["침대","옷장"]},
-  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,image:"",interiorStyle:"설정하지 않음",furniture:["책상","컴퓨터"]}
+  living:{name:"거실",type:"living",size:"큰 방",order:0,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["소파","TV","책장"]},
+  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["냉장고","조리대","식탁"]},
+  entry:{name:"현관",type:"entry",size:"작은 방",order:2,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["신발장","전신거울"]},
+  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["샤워부스","세면대"]},
+  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["침대","옷장"]},
+  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["책상","컴퓨터"]}
 });
 const ROOM_SIZES=["작은 방","보통 방","큰 방","넓고 긴 방"];
 const defaultBodyProfile=()=>({
@@ -412,7 +412,7 @@ function normalizeHomes(x){
     h.deletedRoomKeys.forEach(key=>delete h.rooms[key]);
     h.rooms=Object.fromEntries(Object.entries(h.rooms).filter(([,room])=>room&&typeof room==="object"&&!Array.isArray(room)).map(([key,room],index)=>{
       room.name=String(room.name||"이름 없는 방");room.type=String(room.type||(["living","kitchen","entry","bath","bedroom","study"].includes(key)?key:"other"));
-      room.image=String(room.image||"");room.interiorStyle=String(room.interiorStyle||"설정하지 않음");room.furniture=Array.isArray(room.furniture)?room.furniture.map(String):[];
+      room.image=String(room.image||"");room.interiorStyle=String(room.interiorStyle||"설정하지 않음");room.titleTone=room.titleTone==="dark"?"dark":"light";room.furniture=Array.isArray(room.furniture)?room.furniture.map(String):[];
       const defaultSize=room.type==="living"?"큰 방":["entry","bath","storage"].includes(room.type)?"작은 방":"보통 방";
       room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
       room.order=Number.isFinite(Number(room.order))?Number(room.order):index;
@@ -723,7 +723,7 @@ export function addRoom(homeId){
   const key=`room-${uid()}`;
   h.deletedRoomKeys=(h.deletedRoomKeys||[]).filter(value=>value!==key);
   const nextOrder=Math.max(-1,...Object.values(h.rooms).map(room=>Number(room.order)||0))+1;
-  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,image:"",interiorStyle:"설정하지 않음",furniture:[...ROOM_FURNITURE.other]};
+  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:[...ROOM_FURNITURE.other]};
   save(true);
   return key;
 }

@@ -4451,81 +4451,7 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game
   .home-person.is-sleeping,.home-person .room-sleep-mark{animation:none!important}
 }
 
-/* 2026-08-08d: 홈 정렬·장면 크기·관계 인물 선택을 하나의 최종 규칙으로 통일 */
-.relationship-person-pickers{display:grid;gap:12px;min-width:0}
-.relationship-person-picker{
-  display:grid;
-  gap:10px;
-  min-width:0;
-  padding:14px;
-  border:1px solid var(--line);
-  border-radius:20px;
-  background:color-mix(in srgb,var(--card) 92%,transparent);
-}
-.relationship-person-picker>div:first-child{display:flex;align-items:center;gap:9px}
-.relationship-person-picker>div:first-child>small{
-  display:grid;
-  flex:0 0 28px;
-  place-items:center;
-  width:28px;
-  height:28px;
-  border-radius:50%;
-  background:var(--relationship-own,#176b60);
-  color:#fff;
-  font-weight:900;
-}
-.relationship-person-picker>div:first-child>span{display:grid;gap:1px}
-.relationship-person-picker>div:first-child b{font-size:15px}
-.relationship-person-picker>div:first-child em{color:var(--muted);font-size:10px;font-style:normal}
-.relationship-person-choice-list{
-  display:flex;
-  gap:8px;
-  min-width:0;
-  padding:3px 2px 8px;
-  overflow-x:auto;
-  scroll-snap-type:x proximity;
-  overscroll-behavior-inline:contain;
-  scrollbar-width:thin;
-}
-.relationship-person-choice{
-  display:grid;
-  flex:0 0 72px;
-  place-items:center;
-  gap:3px;
-  min-width:72px;
-  min-height:78px;
-  padding:7px 5px;
-  scroll-snap-align:center;
-  border:1px solid color-mix(in srgb,var(--line) 82%,transparent);
-  border-radius:17px;
-  background:color-mix(in srgb,var(--card) 75%,transparent);
-  color:inherit;
-  transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease;
-}
-.relationship-person-choice .avatar,.relationship-person-choice .sprite{width:48px;height:48px}
-.relationship-person-choice>span{max-width:62px;overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
-.relationship-person-choice.on{
-  border-color:color-mix(in srgb,var(--view-primary) 74%,#fff);
-  background:color-mix(in srgb,var(--view-primary) 24%,var(--card));
-  box-shadow:0 8px 18px color-mix(in srgb,var(--view-primary) 25%,transparent);
-  transform:translateY(-2px);
-}
-.relationship-picker-arrow{display:grid;place-items:center;color:var(--relationship-own,#176b60);font-size:24px;font-style:normal;font-weight:900}
-.relationship-pair-magnet{
-  grid-template-columns:minmax(280px,1.2fr) minmax(230px,.8fr);
-  align-items:center;
-  height:auto;
-  min-height:0;
-  max-height:none;
-}
-
-html[data-color-mode="dark"] .relationship-person-picker,
-html[data-color-mode="dark"] .relationship-person-choice{
-  border-color:#ffffff24;
-  background:#142131d9;
-  color:#f4f7fb;
-}
-html[data-color-mode="dark"] .relationship-person-choice.on{background:color-mix(in srgb,var(--view-primary) 34%,#142131)}
+/* 2026-08-08d: 관계 선택은 본문 문장 안의 두 이름으로만 조작한다. */
 
 /* 홈 메뉴는 테마와 무관하게 배경판 없이 흰 아이콘으로 보이되 터치 영역은 유지한다. */
 html.native-app[data-active-tab="observe"] .native-game-menu button{
@@ -4593,72 +4519,63 @@ html[data-color-mode="light"] .catalog-section>.title button{
   font-weight:900!important;
 }
 
+/* 최종 화면 규칙: 이 아래는 화면별로 한 번씩만 정의한다. */
+.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+.relationship-direction-sentence{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:5px;font-size:clamp(17px,3vw,24px);font-weight:900;text-align:center}
+.relationship-direction-sentence label{display:inline-flex;align-items:center;gap:2px}
+.relationship-direction-sentence select{width:auto;max-width:10em;min-height:40px;padding:7px 28px 7px 10px;border-radius:12px;font:inherit;font-size:.9em}
+.relationship-direction-sentence strong{font:inherit}
+html[data-color-mode="dark"] .relationship-direction-sentence select{border-color:#ffffff29;background:#172536;color:#f6f9fc;-webkit-text-fill-color:#f6f9fc;color-scheme:dark}
+html[data-color-mode="light"] .relationship-direction-sentence select{border-color:#d8cec5;background:#fffdf9;color:#302a25;-webkit-text-fill-color:#302a25;color-scheme:light}
+.room-heading>span{padding:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
+.room-heading b,.room-heading .room-edit-hint{color:#fff!important;text-shadow:0 2px 6px #000,0 1px 2px #000}
+.room-heading.room-title-dark b,.room-heading.room-title-dark .room-edit-hint{color:#211d19!important;text-shadow:0 1px 3px #fff,0 0 6px #fff}
+
+html[data-color-mode="light"][data-active-tab="routine"] .routine-shell,
+html[data-color-mode="light"][data-active-tab="routine"] :is(.weekly-scroll,.weekly-table,.routine-day){background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-shell>.title :is(h1,p),
+html[data-color-mode="light"][data-active-tab="routine"] .routine-shell :is(h1,h2,h3,b,strong,label){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-toolbar button{border-color:#d5cbc1!important;background:#f0e8df!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-day h3{background:#e8dfd5!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-day>small{color:#75695f!important;-webkit-text-fill-color:#75695f!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-block{border-color:var(--p)!important;background:#fff!important;color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-block :is(b,strong,small){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"][data-active-tab="routine"] .routine-block button{border-color:#d8cec5!important;background:#f4eee7!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+
+html[data-color-mode="light"].native-app[data-active-tab="home"] :is(body,main,.home-page,.home-grid,.home){background:#f5f1ea!important;color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-top-actions button,
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-edit-toolbar button{border-color:#d7cdc3!important;background:#fffdf9!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-tabs button{border-color:#ffffff8a!important;background-image:linear-gradient(#121b25a8,#121b25a8),var(--home-photo),var(--home-grad)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-tabs button.on{border-color:#fff!important;box-shadow:0 7px 18px #3f332a52,inset 0 1px #ffffff66!important}
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-menu{border-color:#d7cdc3!important;background:#fffdf9f2!important;box-shadow:0 10px 28px #45372c2b!important}
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-menu button{color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-menu button.on{background:#e8ded4!important;color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-panel.open{border-color:#d8cec5!important;background:#fffdf9f7!important;color:#302a25!important}
+html[data-color-mode="light"] .home-occupant-popover{border-color:#d8cec5!important;background:#fffdf9f5!important;color:#302a25!important;box-shadow:0 18px 44px #3b2d242d!important}
+html[data-color-mode="light"] .home-occupant-popover :is(h2,b,p,small){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] .home-occupant-popover-close{border-color:#d8cec5!important;background:#f0e8df!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+
+html[data-color-mode="light"].native-app[data-active-tab="relationship"] :is(body,main,.relationship-page,.character-view-editor,.relationship-pair-magnet,.relationship-pair-core){background:#f5f1ea!important;color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-magnet{border-color:#ddd3c9!important}
+html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core :is(small,span,strong,label){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>em{border:1px solid #ddd3c9!important;background:#fffdf9!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>button{border-color:#d8cec5!important;background:#fffdf9!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"].native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--relationship-own),var(--relationship-own-secondary))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+
 @media(max-width:720px){
-  html.native-app[data-active-tab="observe"] .native-observe-home{
-    padding-right:16px!important;
-    padding-left:16px!important;
-  }
-  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button,
-  html[data-color-mode="dark"].native-app[data-active-tab="observe"] .native-game-menu button{
-    border:0!important;
-    background:transparent!important;
-    color:#fff!important;
-    -webkit-text-fill-color:#fff!important;
-    box-shadow:none!important;
-    backdrop-filter:none!important;
-    text-shadow:0 2px 8px #000,0 1px 2px #000;
-  }
-  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button>span,
-  html[data-color-mode="dark"].native-app[data-active-tab="observe"] .native-game-menu button>span{
-    border-color:#ffffff8f!important;
-    background:#0d162128!important;
-    color:#fff!important;
-    -webkit-text-fill-color:#fff!important;
-  }
-  html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game-menu button>small,
-  html[data-color-mode="dark"].native-app[data-active-tab="observe"] .native-game-menu button>small{
-    color:#fff!important;
-    -webkit-text-fill-color:#fff!important;
-  }
-  html.native-app[data-active-tab="observe"] :is(.native-character-picker,.native-status-card,.native-log-card){
-    justify-self:center!important;
-    width:100%!important;
-    max-width:620px!important;
-    margin-right:0!important;
-    margin-left:0!important;
-    box-sizing:border-box!important;
-  }
-  .native-app .native-character-stage{
-    width:min(38vw,156px)!important;
-    height:min(24dvh,194px)!important;
-  }
-  .native-app .native-character-stage.has-scene-companion,
-  .native-app .native-character-stage.has-scene-lineup{
-    width:min(62vw,250px)!important;
-    height:min(25dvh,200px)!important;
-  }
-  html.native-app[data-active-tab="relationship"] main,
-  html.native-app[data-active-tab="relationship"] main>.relationship-page,
-  html.native-app[data-active-tab="relationship"] .character-view-editor{
-    height:auto!important;
-    min-height:calc(100dvh - 60px)!important;
-    overflow-y:auto!important;
-  }
-  html.native-app[data-active-tab="relationship"] .character-view-editor{padding:12px!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{
-    grid-template-columns:minmax(0,1fr)!important;
-    align-content:start!important;
-    gap:14px!important;
-    width:100%!important;
-    height:auto!important;
-    min-height:0!important;
-    margin:0!important;
-    padding:0!important;
-    overflow:visible!important;
-  }
-  html.native-app[data-active-tab="relationship"] .relationship-person-pickers,
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core{width:100%;min-width:0;box-sizing:border-box}
-  html.native-app[data-active-tab="relationship"] .relationship-person-picker{background:#142131d9;color:#f4f7fb}
-  html.native-app[data-active-tab="relationship"] .relationship-person-picker em{color:#aebccb}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core{padding:14px 8px 28px!important}
+  html.native-app[data-active-tab="observe"] .native-observe-home{padding-right:10px!important;padding-left:10px!important}
+  html.native-app[data-active-tab="observe"] :is(.native-character-picker,.native-status-card,.native-log-card){justify-self:center!important;width:100%!important;max-width:660px!important;margin-inline:auto!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="observe"] .native-character-stage{margin-top:12px!important;width:min(34vw,142px)!important;height:min(22dvh,178px)!important}
+  html.native-app[data-active-tab="observe"] .native-character-stage.has-scene-companion,
+  html.native-app[data-active-tab="observe"] .native-character-stage.has-scene-lineup{width:min(58vw,232px)!important;height:min(23dvh,186px)!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker{gap:7px!important;padding:5px 1px!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker button{flex:0 0 48px!important;width:48px!important;min-width:48px!important;height:48px!important;min-height:48px!important;padding:3px!important;border-radius:50%!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker :is(.avatar,.sprite){width:42px!important;height:42px!important}
+
+  html.native-app[data-active-tab="relationship"] main{height:calc(100dvh - 60px)!important;min-height:0!important;overflow:hidden!important}
+  html.native-app[data-active-tab="relationship"] :is(.relationship-page,.character-view-editor){width:100%!important;max-width:100vw!important;height:100%!important;min-height:0!important;margin:0!important;padding:10px!important;overflow-y:auto!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:block!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:10px!important;overflow:visible!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core{width:100%!important;min-width:0!important;padding:12px 4px 20px!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-direction-sentence{gap:4px;font-size:17px}
+  html.native-app[data-active-tab="relationship"] .relationship-direction-sentence select{max-width:7.2em;min-height:38px;padding:6px 25px 6px 8px;font-size:16px}
 }
