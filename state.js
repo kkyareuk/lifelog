@@ -196,8 +196,9 @@ function normalizeHomes(x){
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   if(x.uiFont==="memoment")x.uiFont="corncorn";
+  if(["gangwon","seoyun","dunggeunmo","scoredream","chosun100"].includes(x.uiFont))x.uiFont="dangam";
   if(previousSchema<13&&x.uiFont==="system")x.uiFont="dangam";
-  x.uiFont=["dangam","system","noto","gangwon","seoyun","dunggeunmo","haeong","scoredream","chosun100","corncorn"].includes(x.uiFont)?x.uiFont:"dangam";
+  x.uiFont=["dangam","system","noto","dohyeon","haeong","aggro","corncorn"].includes(x.uiFont)?x.uiFont:"dangam";
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"dark";
   x.visualTheme=["monochrome","sage","rose","ocean","lavender"].includes(x.visualTheme)?x.visualTheme:"monochrome";

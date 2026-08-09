@@ -1,1 +1,24 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>결제 확인 · 서랍마을</title><script src="./config.js"></script><style>body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:"Malgun Gothic",sans-serif;background:#f3eee7;color:#29231f}.box{width:min(500px,calc(100% - 32px));background:#fff;border:1px solid #e4d8cc;border-radius:28px;padding:30px;text-align:center}.spin{width:54px;height:54px;margin:auto auto 18px;border-radius:50%;border:6px solid #eadfd4;border-top-color:#7a5036;animation:r 1s linear infinite}@keyframes r{to{transform:rotate(360deg)}}a{display:inline-block;margin-top:16px;color:#7a5036;font-weight:900}</style></head><body><div class="box"><div class="spin" id="spin"></div><h1 id="title">결제를 확인하고 있어요</h1><p id="message">서버에서 주문번호와 금액을 검증한 뒤 DLC를 계정에 지급합니다.</p><a href="./index.html">서랍마을로 돌아가기</a></div><script>(async()=>{const p=new URLSearchParams(location.search),cfg=window.PARALLEL_CITY_CONFIG||{},backend=String(cfg.paymentBackendUrl||"").replace(/\/$/,"");try{if(!cfg.paymentsEnabled)throw Error("현재 결제 기능은 준비 중입니다.");if(!backend)throw Error("결제 승인 서버가 설정되지 않았습니다.");const r=await fetch(backend+"/payments/confirm",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({paymentKey:p.get("paymentKey"),orderId:p.get("orderId"),amount:Number(p.get("amount"))})});const data=await r.json();if(!r.ok)throw Error(data.message||"결제 승인에 실패했습니다.");document.querySelector("#title").textContent="구매가 완료됐어요!";document.querySelector("#message").textContent=data.message||`${data.productName||"DLC"}가 계정에 추가됐습니다.`}catch(e){document.querySelector("#title").textContent="결제를 완료하지 못했어요";document.querySelector("#message").textContent=e.message}document.querySelector("#spin").style.display="none"})();</script></body></html>
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>결제 확인 · 서랍마을</title>
+  <link rel="stylesheet" href="./font-preferences.css?v=20260809e">
+  <script src="./font-preferences.js?v=20260809e"></script>
+  <script src="./config.js"></script>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;font-family:var(--ui-font);background:#f3eee7;color:#29231f}
+    .box{width:min(500px,calc(100% - 32px));background:#fff;border:1px solid #e4d8cc;border-radius:28px;padding:30px;text-align:center}
+    .spin{width:54px;height:54px;margin:auto auto 18px;border-radius:50%;border:6px solid #eadfd4;border-top-color:#7a5036;animation:r 1s linear infinite}
+    @keyframes r{to{transform:rotate(360deg)}}
+    a{display:inline-block;margin-top:16px;color:#7a5036;font-weight:900}
+  </style>
+</head>
+<body>
+  <div class="box"><div class="spin" id="spin"></div><h1 id="title">결제를 확인하고 있어요</h1><p id="message">서버에서 주문번호와 금액을 검증한 뒤 DLC를 계정에 지급합니다.</p><a href="./index.html">서랍마을로 돌아가기</a></div>
+  <script>
+  (async()=>{const p=new URLSearchParams(location.search),cfg=window.PARALLEL_CITY_CONFIG||{},backend=String(cfg.paymentBackendUrl||"").replace(/\/$/,"");try{if(!cfg.paymentsEnabled)throw Error("현재 결제 기능은 준비 중입니다.");if(!backend)throw Error("결제 승인 서버가 설정되지 않았습니다.");const r=await fetch(backend+"/payments/confirm",{method:"POST",credentials:"include",headers:{"Content-Type":"application/json"},body:JSON.stringify({paymentKey:p.get("paymentKey"),orderId:p.get("orderId"),amount:Number(p.get("amount"))})});const data=await r.json();if(!r.ok)throw Error(data.message||"결제 승인에 실패했습니다.");document.querySelector("#title").textContent="구매가 완료됐어요!";document.querySelector("#message").textContent=data.message||`${data.productName||"DLC"}가 계정에 추가됐습니다.`}catch(e){document.querySelector("#title").textContent="결제를 완료하지 못했어요";document.querySelector("#message").textContent=e.message}document.querySelector("#spin").style.display="none"})();
+  </script>
+</body>
+</html>

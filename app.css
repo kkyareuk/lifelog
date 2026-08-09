@@ -3,18 +3,24 @@
 @font-face{font-family:"DungGeunMo";src:local("둥근모꼴+ Fixedsys"),local("DungGeunMo"),url("https://cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@latest/neodgm.woff2") format("woff2");font-display:swap}
 @font-face{font-family:"SCoreDream";src:local("에스코어 드림"),local("S-Core Dream"),url("https://cdn.jsdelivr.net/gh/webfontworld/SCoreDream/SCoreDream4.woff2") format("woff2");font-display:swap}
 @font-face{font-family:"Chosun100";src:local("조선100년체"),local("ChosunCentennial"),url("https://cdn.jsdelivr.net/gh/webfontworld/ChosunCentennial/ChosunCentennial.woff2") format("woff2");font-display:swap}
-@font-face{font-family:"OwnglyphCorncorn";src:url("fonts/Ownglyph_Corncorn.ttf") format("truetype");font-display:swap}
-@font-face{font-family:"HaeongSans";src:local("국민대학교 해옹 산스"),local("Haeong Sans"),url("fonts/KMU80HaeongSans.woff2") format("woff2");font-display:swap}
-@font-face{font-family:"ChangwonDangamRound";src:url("fonts/ChangwonDangamRound-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"OwnglyphCorncorn";src:url("fonts/Ownglyph_Corncorn.ttf") format("truetype");font-weight:100 900;font-display:swap}
+@font-face{font-family:"HaeongSans";src:local("국민대학교 해옹 산스"),local("Haeong Sans"),url("fonts/KMU80HaeongSans.woff2") format("woff2");font-weight:100 900;font-display:swap}
+@font-face{font-family:"ChangwonDangamRound";src:url("fonts/ChangwonDangamRound-Regular.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"DoHyeonLocal";src:url("fonts/DoHyeon-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
+@font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 L.ttf") format("truetype");font-weight:300;font-display:swap}
+@font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 M.ttf") format("truetype");font-weight:400 600;font-display:swap}
+@font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 B.ttf") format("truetype");font-weight:700 900;font-display:swap}
 :root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--ui-font:"ChangwonDangamRound","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-scale="small"]{font-size:15px}
 html[data-ui-scale="normal"]{font-size:16px}
 html[data-ui-scale="large"]{font-size:17.5px}
 html[data-ui-scale="xlarge"]{font-size:19px}
-html[data-ui-font="system"]{--ui-font:"ChangwonDangamRound","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+html[data-ui-font="system"]{--ui-font:Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="noto"]{--ui-font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
 html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="aggro"]{--ui-font:"SBAggro","Noto Sans KR","Malgun Gothic",sans-serif}
 html[data-ui-font="seoyun"]{--ui-font:"LeeSeoyun","Noto Sans KR","Malgun Gothic",sans-serif}
 html[data-ui-font="gangwon"]{--ui-font:"GangwonEduAll","Noto Sans KR","Malgun Gothic",sans-serif}
 html[data-ui-font="dunggeunmo"]{--ui-font:"DungGeunMo","Noto Sans KR","Malgun Gothic",monospace}
@@ -4803,17 +4809,61 @@ label:has(>select[data-world-bg])::after{content:"제공받은 기본 마을 손
 /* Light-mode character editor: selected choices must remain unmistakable. */
 html[data-color-mode="light"] .mobile-character-editor-dialog :is(.chips,.personality-choice,.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) button.on,
 html[data-color-mode="light"] .character-editor :is(.chips,.personality-choice,.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) button.on{
-  border-color:#176b60!important;
-  outline:3px solid color-mix(in srgb,#176b60 24%,transparent)!important;
+  border-color:var(--character-own,var(--p))!important;
+  outline:3px solid color-mix(in srgb,var(--character-own,var(--p)) 24%,transparent)!important;
   outline-offset:1px!important;
-  background:linear-gradient(135deg,#176b60,#4c8179)!important;
+  background:linear-gradient(135deg,var(--character-own,var(--p)),var(--character-secondary,var(--character-own,var(--s))))!important;
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
-  box-shadow:0 7px 18px #176b6038!important;
+  box-shadow:0 7px 18px color-mix(in srgb,var(--character-own,var(--p)) 30%,transparent)!important;
 }
 html[data-color-mode="light"] .mobile-character-editor-dialog :is(input,select,textarea):focus,
 html[data-color-mode="light"] .character-editor :is(input,select,textarea):focus{
-  border-color:#176b60!important;
-  outline:3px solid color-mix(in srgb,#176b60 22%,transparent)!important;
+  border-color:var(--character-own,var(--p))!important;
+  outline:3px solid color-mix(in srgb,var(--character-own,var(--p)) 22%,transparent)!important;
   outline-offset:1px!important;
 }
+
+/* Mobile/web-app viewport stays fixed; long pages scroll inside main and
+   dialogs instead of exposing an empty body below the game screen. */
+html.native-app,html.native-app body{
+  width:100%;height:100%;min-height:0!important;overflow:hidden!important;
+}
+html.native-app body{padding:0!important}
+html.native-app main{width:100%;height:100%;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain}
+html.native-app[data-active-tab="observe"] main{height:100%!important;min-height:0!important;overflow:hidden!important}
+html.native-app[data-active-tab="observe"] .native-observe-home{height:100%!important;min-height:0!important;overflow:hidden!important}
+
+/* Character settings use that character's own palette, including the save
+   action in the modal. */
+.mobile-character-editor-dialog .mobile-character-editor-actions .primary{
+  border-color:transparent!important;
+  background:linear-gradient(135deg,var(--character-own,var(--p)),var(--character-secondary,var(--character-own,var(--s))))!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+}
+.mobile-character-editor-dialog :is(.chips,.personality-choice,.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) button.on,
+.character-editor .desktop-character-editor :is(.chips,.personality-choice,.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) button.on{
+  border-color:var(--character-own,var(--p))!important;
+  outline:3px solid color-mix(in srgb,var(--character-own,var(--p)) 24%,transparent)!important;
+  outline-offset:1px!important;
+  background:linear-gradient(135deg,var(--character-own,var(--p)),var(--character-secondary,var(--character-own,var(--s))))!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+  box-shadow:0 7px 18px color-mix(in srgb,var(--character-own,var(--p)) 30%,transparent)!important;
+}
+
+/* Current scene and daily record pick up the selected overall color theme. */
+html[data-color-mode="light"].native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
+  border-color:color-mix(in srgb,var(--p) 44%,#d8cec5)!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--p) 14%,#fff),color-mix(in srgb,var(--s) 10%,#fff))!important;
+  box-shadow:0 16px 34px color-mix(in srgb,var(--p) 18%,transparent)!important;
+}
+html[data-color-mode="dark"].native-app[data-active-tab="observe"] :is(.native-status-card,.native-log-card){
+  border-color:color-mix(in srgb,var(--p) 60%,#ffffff35)!important;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--p) 26%,#101722e8),color-mix(in srgb,var(--s) 18%,#101722e8))!important;
+}
+html.native-app[data-active-tab="observe"] .native-log-card button{
+  border-color:color-mix(in srgb,var(--p) 48%,var(--line))!important;
+  background:color-mix(in srgb,var(--p) 12%,var(--panel))!important;
+  color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important;
+}
+.home-name-setting{grid-column:1/-1}
