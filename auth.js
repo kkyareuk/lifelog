@@ -142,6 +142,7 @@ const digestBlob=async blob=>{
 function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
   if(code.includes("character-slot-limit"))return `캐릭터 슬롯 초과 (${error?.detail||""}) · 초과 인원을 정리한 뒤 다시 저장해 주세요`;
+  if(code.includes("legacy-document-too-large"))return "동기화 규칙 업데이트 필요 · 안내된 Firebase 배포 명령을 실행해 주세요";
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("resource-exhausted"))return "저장 데이터가 너무 큼 · 인물별 분할 저장을 다시 시도해 주세요";
   if(code.includes("failed-precondition"))return "Firebase 데이터베이스 설정 확인 필요";
@@ -166,7 +167,17 @@ const cloudDays=id=>collection(db,"users",user.uid,"characters",safeDocumentId(i
 const cloudDayDoc=(id,dateKey)=>doc(db,"users",user.uid,"characters",safeDocumentId(id),"days",safeDocumentId(dateKey));
 
 async function readCloudGameState(rootData){
-  const coreSnapshot=await getDoc(cloudCoreDoc());
+  // 호환 형식으로 저장된 완전한 루트 상태가 있으면, 중간에 끊긴 v2
+  // 하위 문서보다 이것을 우선한다.
+  if(rootData?.syncFormat===1&&rootData?.gameState)return decodeFirestoreState(rootData.gameState);
+  let coreSnapshot;
+  try{coreSnapshot=await getDoc(cloudCoreDoc())}
+  catch(error){
+    // 아직 하위 문서 규칙을 배포하지 않은 기존 Firebase 프로젝트도
+    // 루트 문서 백업은 계속 읽고 쓸 수 있어야 한다.
+    if(canUseLegacySync(error))return decodeFirestoreState(rootData?.gameState||null);
+    throw error;
+  }
   if(!coreSnapshot.exists())return decodeFirestoreState(rootData?.gameState||null);
   const coreData=decodeFirestoreState(coreSnapshot.data()?.state||{});
   const characters={};
@@ -191,8 +202,6 @@ async function writeCloudGameState(gameState){
   const next=clone(gameState||{});
   const characters=next.characters&&typeof next.characters==="object"?next.characters:{};
   delete next.characters;
-  await setDoc(cloudCoreDoc(),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
-
   const wantedCharacterIds=new Set(Object.keys(characters).map(String));
   const existingCharacters=await getDocs(cloudCharacters());
   for(const existing of existingCharacters.docs){
@@ -219,6 +228,28 @@ async function writeCloudGameState(gameState){
       dateKey:String(dateKey),day:encodeFirestoreState(day),updatedAt:serverTimestamp()
     })));
   }
+  // core 문서는 모든 하위 문서 저장이 끝났다는 완료 표식이기도 하다.
+  // 마지막에 기록해야 다운로드가 부분 저장본을 완성본으로 오인하지 않는다.
+  await setDoc(cloudCoreDoc(),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
+}
+
+const canUseLegacySync=error=>{
+  const code=String(error?.code||error?.message||"").toLowerCase();
+  return code.includes("permission-denied")||code.includes("failed-precondition")||code.includes("not-found");
+};
+async function writeLegacyCloudGameState(gameState,mediaManifest){
+  const encoded=encodeFirestoreState(gameState);
+  const encodedText=JSON.stringify(encoded);
+  if(new TextEncoder().encode(encodedText).byteLength>820000){
+    throw Object.assign(new Error("legacy-document-too-large"),{code:"sync/legacy-document-too-large"});
+  }
+  await setDoc(cloudDoc(),{
+    gameState:encoded,
+    syncFormat:1,
+    mediaManifest,
+    updatedAt:serverTimestamp(),
+    profile:{name:accountName(),email:user.email||""}
+  },{merge:true});
 }
 async function registerSignedInUser(){
   if(!user)return;
@@ -384,11 +415,18 @@ async function upload({silent=false,reason=""}={}){
       :localState;
     const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState),previousGameState);
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
-    await writeCloudGameState(gameState);
-    await setDoc(cloudDoc(),{gameState:deleteField(),syncFormat:2,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
+    let compatibilityMode=false;
+    try{
+      await writeCloudGameState(gameState);
+      await setDoc(cloudDoc(),{gameState:deleteField(),syncFormat:2,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
+    }catch(error){
+      if(!canUseLegacySync(error))throw error;
+      await writeLegacyCloudGameState(gameState,mediaManifest);
+      compatibilityMode=true;
+    }
     publishStorageUsage(mediaManifest,gameState);
     status(`${accountName()} · ${reason||"계정 저장"} 완료`);
-    toast(photoFailures?`텍스트 동기화 완료 · 사진 ${photoFailures}장은 이 기기에 유지`:uploadedCount?`동기화되었습니다 · 새 사진 ${uploadedCount}장 저장`:"동기화되었습니다");
+    toast(photoFailures?`텍스트 동기화 완료 · 사진 ${photoFailures}장은 이 기기에 유지`:compatibilityMode?"동기화되었습니다 · 호환 저장 사용 중":uploadedCount?`동기화되었습니다 · 새 사진 ${uploadedCount}장 저장`:"동기화되었습니다");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);

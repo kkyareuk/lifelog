@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810a";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810a";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810d";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810d";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -138,14 +138,15 @@ const characterLimit=()=>7+(Math.max(0,Number(accountEntitlements.characterSlotP
 const townLimit=()=>2+Math.max(0,Number(accountEntitlements.townSlotPacks)||0);
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const hasDlc=id=>(accountEntitlements.dlcPacks||[]).includes(id);
-const backgroundOptions=()=>`<option value="world-assets/cozy-town.png" selected>기본 마을 손그림</option>`;
+const backgroundOptions=()=>`<option value="world-assets/cozy-town.png?v=20260810d" selected>기본 마을 손그림</option>`;
+const TOWN_BACKGROUND="world-assets/cozy-town.png?v=20260810d";
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
 const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${id}" ${p.iconPreset===id?"selected":""}>${label}</option>`).join("");
 const visibleTownId=c=>eventFor(c)?.townId||c.townId;
 
 function avatar(c,cls=""){
   if(c.icon)return `<img class="sprite ${cls}" src="${c.icon}" alt="">`;
-  if(c.photo)return `<img class="avatar ${cls}" src="${c.photo}" alt="">`;
+  if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${c.photo}" alt="">`;
   return `<span class="avatar ${cls}" style="--own:${c.theme.primary}">${esc((c.name||"새").slice(0,1))}</span>`;
 }
 function header(){
@@ -319,6 +320,7 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
 function nativeScenePresentation(c,entry){
   const text=`${entry?.title||""} ${entry?.desc||""} ${entry?.mood||""}`;
   const sleeping=/자는 중|잠든|수면/.test(text);
+  const drowsy=!sleeping&&/졸리|졸린|졸음|조는 중|꾸벅|눈꺼풀이|잠깐 눈을 감|하품/.test(text);
   const rawPartnerIds=[...new Set([...(entry?.participantOrder||[]),...(entry?.withIds||[]),entry?.withId].filter(id=>id&&id!==c.id&&state.characters?.[id]))];
   const dateParticipantIds=entry?.dateGroup
     ?state.order.filter(id=>String(entry.dateGroup).includes(id))
@@ -375,6 +377,7 @@ function nativeScenePresentation(c,entry){
   const tenseInteraction=Boolean(partner&&!dating&&!fighting&&!playfulInteraction&&/경계|불편|신경전|성가시|못마땅|퉁명|날 선|거리.{0,8}두/.test(`${text} ${viewText}`));
   const warmInteraction=Boolean(partner&&!dating&&!fighting&&!tenseInteraction&&/함께|대화|이야기|도와|챙기|나누|맞춰|건넸|안부|곁/.test(text));
   const actionKind=sleeping?"sleep"
+    :drowsy?"drowsy"
     :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
       :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)/.test(text)?"dishwashing"
         :/세탁|빨래/.test(text)?"laundry"
@@ -402,6 +405,8 @@ function nativeScenePresentation(c,entry){
                                           :fighting?"fighting":"idle";
   const tone=sleeping
     ?"sleep"
+    :drowsy
+      ?"drowsy"
     :fighting
       ?(coldFight?"fight-ice":"fight-fire")
     :overwhelmed?"date-overwhelmed"
@@ -471,7 +476,7 @@ function nativeScenePresentation(c,entry){
     const personSeed=nativeVisualSeed(`${entry?.interactionId||entry?.dateGroup||entry?.title}:${entry?.minute||""}:${person.id}:${index}`);
     const delay=((personSeed>>>15)%120)/100,duration=3.4+((personSeed>>>22)%120)/100;
     const actionProp=nativeSceneActionProp(person,entry,actionKind,text,true);
-    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${avatar(person,"native-scene-lineup-avatar")}${actionProp}${tone==="sleep"?'<b class="native-character-sleep-mark" aria-hidden="true">ZZ</b>':""}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
+    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${avatar(person,"native-scene-lineup-avatar")}${actionProp}${tone==="sleep"?'<b class="native-character-sleep-mark" aria-hidden="true">ZZ</b>':tone==="drowsy"?'<b class="native-character-drowsy-mark" aria-hidden="true">z</b>':""}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
   }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
     companions.length
@@ -493,7 +498,7 @@ function nativeScenePresentation(c,entry){
     partners:companions,
     pet,
     lineupHtml,
-    sleepMarkHtml:tone==="sleep"&&!companions.length?'<b class="native-character-sleep-mark is-main" aria-hidden="true">ZZ</b>':"",
+    sleepMarkHtml:tone==="sleep"&&!companions.length?'<b class="native-character-sleep-mark is-main" aria-hidden="true">ZZ</b>':tone==="drowsy"&&!companions.length?'<b class="native-character-drowsy-mark is-main" aria-hidden="true">z</b>':"",
     conversationHtml,
     actionHtml,
     companionHtml:"",
@@ -675,7 +680,7 @@ function observe(){
   const mobileHome=Boolean(document.documentElement?.classList?.contains?.("native-app"));
   const localId=mobileHome&&state.characters[state.activeId]?state.activeId:(localIds.includes(state.activeId)?state.activeId:localIds[0]);
   const townSwitcher=state.towns.length>1?`<div class="observe-town-switcher"><b>관찰할 마을</b>${state.towns.map(t=>`<button data-observe-town="${t.id}" class="${t.id===state.activeTownId?"on":""}">🏙️ ${esc(t.name)}</button>`).join("")}</div>`:"";
-  if(!localId)return `${nativeGameMenu()}<section class="native-observe-home native-observe-empty"><div><span>🏙️</span><h1>이 마을에 사는 캐릭터가 없어요</h1><p>캐릭터 화면에서 생활하는 마을을 지정해 주세요.</p><button class="primary" data-tab="character">캐릭터 설정 열기</button></div></section><div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="viewport"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}</div></div></section><aside class="panel empty"><h2>이 마을에 사는 캐릭터가 없어요</h2><p>캐릭터 프로필에서 생활하는 마을을 지정할 수 있어요.</p></aside></div></div>`;
+  if(!localId)return `${nativeGameMenu()}<section class="native-observe-home native-observe-empty"><div><span>🏙️</span><h1>이 마을에 사는 캐릭터가 없어요</h1><p>캐릭터 화면에서 생활하는 마을을 지정해 주세요.</p><button class="primary" data-tab="character">캐릭터 설정 열기</button></div></section><div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="viewport"><div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}</div></div></section><aside class="panel empty"><h2>이 마을에 사는 캐릭터가 없어요</h2><p>캐릭터 프로필에서 생활하는 마을을 지정할 수 있어요.</p></aside></div></div>`;
   const c=state.characters[localId],e=eventFor(c),place=placeForEntry(e);
   const everyoneSleeping=state.order.length>0&&state.order.every(id=>eventFor(state.characters[id]).title==="자는 중");
   const sleepGate=everyoneSleeping?`<div class="sleep-gate"><span>🌙</span><div><h2>모든 인물이 자고 있습니다</h2><p>마을은 조용해졌어요. 집에서 인물들의 수면 상태를 볼 수 있어요.</p></div><button class="primary" data-all-sleep-home>집 보기</button></div>`:"";
@@ -684,7 +689,7 @@ function observe(){
   const locationBackground=e.home
     ?state.homes[e.visitHomeId||c.homeId]?.rooms?.[e.room]?.image||""
     :(place?.interiorImage||place?.image||"");
-  const nativeBackground=locationBackground||c.photo||state.world.bg;
+  const nativeBackground=locationBackground||c.photo||TOWN_BACKGROUND;
   const nativeEntries=displayTimeline(c,e);
   const nativeLog=nativeEntries.slice(-2).reverse().map(item=>`<li><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
   const nativeFullLog=`<dialog class="native-log-dialog" data-native-log-dialog><form method="dialog"><div class="native-log-dialog-head"><span><small>오늘의 기록</small><h2>${esc(c.name)}의 생활 로그</h2></span><button value="close" aria-label="닫기">×</button></div><ol>${dailyLogItems(nativeEntries,c)||"<li>아직 기록이 없어요.</li>"}</ol><button class="primary native-log-dialog-close" value="close">닫기</button></form></dialog>`;
@@ -692,7 +697,7 @@ function observe(){
   const itemOrbit=activeItems.length?`<span class="native-active-item-orbits" aria-label="지금 사용 중인 취향 사전 항목">${activeItems.map((item,index)=>`<span class="native-active-item-orbit" style="--orbit-angle:${index*360/activeItems.length}deg;--orbit-delay:${index*-.72}s" title="${esc(item.name)}"><img src="${esc(item.image)}" alt="${esc(item.name)}"></span>`).join("")}</span>`:"";
   const presentation=nativeScenePresentation(c,e);
   const nativeHome=`${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><span class="native-observe-clock"><time>${new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"})}</time><button type="button" class="native-scene-refresh" data-refresh-observe aria-label="현재 장면 새로고침" title="현재 장면 새로고침">↻</button></span></div><div class="native-character-stage ${presentation.partner?"has-scene-companion":""} ${presentation.lineupHtml?"has-scene-lineup":""} ${presentation.pet?"has-scene-pet":""}" aria-label="${esc(c.name)} 현재 장면">${avatar(c,"native-main-character")}${presentation.sleepMarkHtml}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}</div><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${avatar(person)}</button>`}).join("")}</div><article class="native-status-card"><div class="native-status-card-head"><small>지금 이 순간</small><button type="button" data-toggle-native-moment aria-expanded="false">펼치기</button></div><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article><section class="native-log-card" data-open-native-log-card role="button" tabindex="0" aria-label="오늘의 기록 전체 보기"><div><b>오늘의 기록 <small class="native-log-open-hint">눌러서 펼쳐 보기 ↗</small></b><span><button type="button" data-open-native-log>전체 보기</button><button type="button" data-tab="home">집 보기</button></span></div><ol>${nativeLog||"<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>"}</ol></section>${nativeFullLog}</section>`;
-  return `${nativeHome}<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${currentImage?`<img class="place-photo" src="${esc(currentImage)}" alt="">`:""}</div></div>${dailyLog(c)}</aside></div></div>`;
+  return `${nativeHome}<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section><aside class="detail-column"><div class="detail panel"><div class="hero">${c.photo?`<img src="${c.photo}" alt="">`:avatar(c)}</div><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job)}</p><div class="scene"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${currentImage?`<img class="place-photo" src="${esc(currentImage)}" alt="">`:""}</div></div>${dailyLog(c)}</aside></div></div>`;
 }
 const ROOM_SIZE_SPANS={
   "작은 방":[1,1],
@@ -1162,9 +1167,6 @@ function wardrobe(){
   return `<section class="wardrobe-shell"><div class="wardrobe-character-strip panel">${state.order.map(id=>`<button data-wardrobe-character="${id}" class="${id===c.id?"on":""}">${avatar(state.characters[id])}<b>${esc(state.characters[id].name)}</b></button>`).join("")}</div><section class="panel closet-main"><div class="title"><div><h1>${esc(c.name)}의 옷장</h1><p>옷을 등록하고, 자주 입는 조합을 코디로 저장해요.</p></div><div><button data-new-clothing>+ 옷 등록</button><button class="primary" data-new-outfit>+ 코디 만들기</button></div></div><h2>보유한 옷</h2><div class="closet-items">${items.map(itemCard).join("")||"<div class='empty-mini'><b>아직 등록한 옷이 없어요.</b><p>옷은 이제 취향 사전이 아니라 이 옷장에서 직접 만들어요.</p></div>"}</div><div class="title outfit-section-title"><div><h2>저장한 코디</h2><p>레이아웃은 보기 방식이고, 실제 자동 코디는 상황·색·격식·패션 감각을 따져요.</p></div></div><div class="saved-outfits">${(c.savedOutfits||[]).map(outfitCard).join("")||"<div class='empty-mini'><b>저장한 코디가 없어요.</b><p>자주 입히고 싶은 옷 조합을 만들어 주세요.</p></div>"}</div></section></section>`;
 }
 function catalog(){
-  const character=active();
-  const primary=/^#[0-9a-f]{6}$/i.test(character?.theme?.primary||"")?character.theme.primary:"#303030";
-  const secondary=/^#[0-9a-f]{6}$/i.test(character?.theme?.secondary||"")?character.theme.secondary:"#777777";
   const sections=Object.entries(CATALOG_LABELS).map(([kind,label])=>{
     const cards=(state.catalog?.[kind]||[]).map(item=>{
       const categories=kind==="movie"?Object.keys(VIDEO_GENRES):(CATALOG_CATEGORIES[kind]||[]);
@@ -1176,7 +1178,7 @@ function catalog(){
     }).join("")||"<p>아직 등록된 항목이 없어요.</p>";
     return `<section class="catalog-kind catalog-section"><div class="title"><h2>${label}</h2><button data-add-catalog="${kind}">+ 추가</button></div><div class="catalog-dex-grid">${cards}</div></section>`;
   }).join("");
-  return `<section class="panel form catalog-shell" style="--catalog-theme:${esc(primary)};--catalog-theme-secondary:${esc(secondary)}"><div class="title"><div><h1>세계관 취향 도감</h1><p>아이콘을 누르면 세부 정보와 편집 항목이 열려요.</p></div><button class="primary" data-catalog-save>도감 저장</button></div>${sections}</section>`;
+  return `<section class="panel form catalog-shell"><div class="title"><div><h1>세계관 취향 도감</h1><p>아이콘을 누르면 세부 정보와 편집 항목이 열려요.</p></div><button class="primary" data-catalog-save>도감 저장</button></div>${sections}</section>`;
 }
 const relationActivities=()=> "";
 const CHARACTER_VIEW_OPTIONS={

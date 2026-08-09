@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810a";
-import {eventFor} from "./simulation.js?v=20260810a";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810a";
-import {recordCharacterInteraction} from "./state.js?v=20260810a";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810d";
+import {eventFor} from "./simulation.js?v=20260810d";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810d";
+import {recordCharacterInteraction} from "./state.js?v=20260810d";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -819,11 +819,11 @@ function applyTheme(){
   const c=active();
   const mode=state.colorMode==="light"?"light":"dark";
   const palettes={
-    monochrome:{light:["#25282c","#737981","#f2f3f4","#ffffff","#202326","#686e75","#d7dade"],dark:["#656b73","#b8bec6","#0e1115","#171c22","#f2f4f6","#aeb4bc","#343b44"]},
-    sage:{light:["#2f6d62","#8eaa96","#eff5f2","#fbfdfc","#1f302c","#667a73","#d3e0da"],dark:["#5d9b8f","#9ab9a7","#0d1514","#15211f","#edf7f4","#a8beb8","#30443f"]},
-    rose:{light:["#9f5265","#d39baa","#f8f0f2","#fffafb","#38252b","#816b72","#ead3d9"],dark:["#c9788b","#dda9b5","#180f12","#26171c","#fff0f4","#c3a7af","#54343d"]},
-    ocean:{light:["#296b8f","#72a9c5","#eef5f8","#fbfdfe","#1f3039","#637883","#d1e0e8"],dark:["#5e9fc1","#8fc0d8","#0c1419","#12212a","#eef8fd","#a7beca","#2d4552"]},
-    lavender:{light:["#735a9d","#ad98cc","#f4f1f8","#fcfbfe","#30283c","#746b82","#ddd5e8"],dark:["#967fc0","#bca9d8","#120f18","#1e1928","#f6f1fd","#b6abc5","#423653"]}
+    monochrome:{light:["#20242a","#6d747d","#e8eaed","#ffffff","#1d2126","#626a73","#cbd0d5"],dark:["#7f8791","#c0c6ce","#090c10","#151a20","#f4f6f8","#b5bbc3","#343b44"]},
+    sage:{light:["#28664d","#78a267","#e2efe5","#fbfffc","#183226","#587163","#bfd5c5"],dark:["#65aa82","#a6c67f","#07130d","#12241a","#effbf3","#a9c5b3","#2d513c"]},
+    rose:{light:["#a23d62","#dc7891","#f8e3ea","#fffafd","#3b1d29","#825d6b","#e3bdca"],dark:["#dc7898","#f0a1b4","#17080e","#2b121c","#fff1f5","#d1a6b3","#633044"]},
+    ocean:{light:["#176b99","#42a8c7","#dff0f8","#fbfeff","#173140","#526f7e","#b7d7e7"],dark:["#4aa5d0","#78cee2","#06131a","#0e2733","#eefaff","#a6c9d8","#27536a"]},
+    lavender:{light:["#704bb0","#b779d0","#eee4f8","#fefbff","#30203f","#705f7c","#d5bee6"],dark:["#a482df","#d29ae9","#100819","#23132f","#f9f1ff","#c5acd2","#523765"]}
   };
   const selected=state.visualTheme||"monochrome";
   const [primary,secondary,bg,panel,ink,muted,line]=(palettes[selected]||palettes.monochrome)[mode];
@@ -2387,7 +2387,7 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810a").catch(error=>{
+  import("./auth.js?v=20260810d").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2402,7 +2402,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810a",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810d",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

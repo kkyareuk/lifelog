@@ -4834,3 +4834,166 @@ html.native-app[data-active-tab="observe"] .native-log-card button{
 }
 .home-name-setting{grid-column:1/-1}
 .world-bg{object-fit:cover}
+
+/* 2026-08-10b: mode and theme rules are centralized here so older page-level
+   declarations cannot turn light controls white-on-white again. */
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-status-card-head>small{
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+  opacity:.84!important;
+}
+html.native-app[data-active-tab="observe"] .native-status-card-head>button{
+  border-color:color-mix(in srgb,var(--p) 55%,#fff)!important;
+  background:var(--grad)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 6px 16px color-mix(in srgb,var(--p) 28%,transparent)!important;
+}
+
+.catalog-shell button[data-add-catalog],
+.catalog-shell button[data-catalog-save]{
+  border-color:transparent!important;
+  background:var(--grad)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 8px 20px color-mix(in srgb,var(--p) 28%,transparent)!important;
+}
+html[data-color-mode="light"] .catalog-shell button[data-add-catalog]{
+  border-color:transparent!important;
+  background:var(--grad)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+html.native-app[data-active-tab="catalog"] .catalog-shell button[data-add-catalog],
+html.native-app[data-active-tab="catalog"] .catalog-shell>.title button[data-catalog-save]{
+  border-color:transparent!important;
+  background:var(--grad)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 8px 20px color-mix(in srgb,var(--p) 28%,transparent)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="catalog"] .catalog-shell{
+  background:linear-gradient(155deg,color-mix(in srgb,var(--p) 9%,var(--panel)),var(--panel) 48%)!important;
+  color:var(--ink)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="catalog"] .catalog-shell :is(h1,h2,h3,b,label,p,small){
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="catalog"] :is(.catalog-kind,.catalog-dex-card){
+  border-color:color-mix(in srgb,var(--p) 24%,var(--line))!important;
+  background:color-mix(in srgb,var(--p) 5%,var(--panel))!important;
+}
+
+html[data-color-mode="light"] .mobile-character-editor-dialog{
+  border:1px solid color-mix(in srgb,var(--p) 24%,#d4cbc2)!important;
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] [data-mobile-character-editor-dialog="manage"] .mobile-character-editor-body{
+  background:linear-gradient(155deg,color-mix(in srgb,var(--p) 10%,#fff),var(--panel) 58%)!important;
+  color:var(--ink)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] .character-manage-pane :is(h2,h3,p,label,b,small),
+html[data-color-mode="light"].native-app[data-active-tab="character"] .character-manage-grid>section{
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] .character-manage-grid>section{
+  border-color:color-mix(in srgb,var(--p) 24%,var(--line))!important;
+  background:color-mix(in srgb,var(--p) 6%,#fff)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] .character-manage-grid>section>span{
+  background:color-mix(in srgb,var(--p) 10%,#fff)!important;
+}
+html[data-color-mode="light"].native-app[data-active-tab="character"] .character-manage-pane :is(.image-actions button,.character-manage-files button,.theme-custom-color input){
+  border-color:color-mix(in srgb,var(--p) 30%,var(--line))!important;
+  background:var(--panel)!important;
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+
+/* A profile photo may substitute for a missing map icon, but it always stays
+   a circular edge-to-edge crop. The icon field itself is never overwritten. */
+img.profile-photo-fallback{
+  padding:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  overflow:hidden!important;
+  filter:none;
+}
+.place-people-faces img.profile-photo-fallback,
+.home-person img.profile-photo-fallback,
+.native-scene-lineup-person img.profile-photo-fallback,
+.character-manage-grid>section>span img.profile-photo-fallback{
+  border-radius:50%!important;
+  object-fit:cover!important;
+  background:transparent!important;
+}
+
+/* Drowsy is different from fully asleep: the head slowly drops, then perks
+   back up with a small startled reset. */
+.native-app .scene-action-drowsy .native-character-stage:not(.has-scene-lineup) .native-main-character,
+.native-app .scene-action-drowsy .native-scene-lineup-person{
+  transform-origin:50% 82%;
+  animation:native-drowsy-nod 2.7s cubic-bezier(.45,0,.35,1) infinite!important;
+}
+.native-app .native-character-drowsy-mark{
+  position:absolute;z-index:9;right:4%;top:0;color:#fff;font-size:18px;font-weight:900;
+  text-shadow:0 2px 6px #000;animation:native-drowsy-z 2.7s ease-in-out infinite;
+}
+.native-app .native-character-drowsy-mark.is-main{right:7%;top:8%}
+@keyframes native-drowsy-nod{
+  0%,18%,100%{translate:0 0;rotate:0deg}
+  48%{translate:0 9px;rotate:6deg}
+  63%{translate:0 11px;rotate:8deg}
+  69%{translate:0 -3px;rotate:-2deg}
+  78%{translate:0 0;rotate:0deg}
+}
+@keyframes native-drowsy-z{0%,18%,100%{opacity:0;translate:0 5px}38%,63%{opacity:1;translate:4px -5px}72%{opacity:0;translate:9px -11px}}
+
+/* Overall color themes tint the major editable surfaces as well as buttons. */
+html[data-color-mode="light"] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page){
+  background:linear-gradient(155deg,color-mix(in srgb,var(--p) 9%,var(--panel)),var(--panel) 45%)!important;
+}
+html[data-color-mode="light"] :is(.setting-card,.catalog-kind,.routine-day,.sync-panel){
+  border-color:color-mix(in srgb,var(--p) 24%,var(--line))!important;
+  background:color-mix(in srgb,var(--p) 5%,var(--panel))!important;
+}
+html.native-app .native-sub-header{
+  border-color:color-mix(in srgb,var(--p) 28%,var(--line))!important;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--p) 18%,var(--panel)),var(--panel))!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell{
+  background:linear-gradient(155deg,color-mix(in srgb,var(--p) 13%,var(--panel)),var(--bg))!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell :is(.setting-card,.sync-panel,.feedback-card,fieldset){
+  border-color:color-mix(in srgb,var(--p) 28%,var(--line))!important;
+  background:color-mix(in srgb,var(--p) 7%,var(--panel))!important;
+}
+html[data-color-mode="light"][data-active-tab="settings"] .settings-shell button.primary,
+html[data-color-mode="light"][data-active-tab="settings"] .color-mode-options button.on,
+html[data-color-mode="dark"][data-active-tab="settings"] .settings-shell button.primary,
+html[data-color-mode="dark"][data-active-tab="settings"] .color-mode-options button.on{
+  border-color:transparent!important;
+  background:var(--grad)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+/* Keep both four-item menu columns inside narrow Android viewports. */
+html.native-app[data-active-tab="observe"] .native-game-menu button{
+  width:74px!important;min-width:74px!important;height:62px!important;padding:2px 0!important;
+}
+html.native-app[data-active-tab="observe"] .native-game-menu .native-menu-left{left:max(2px,env(safe-area-inset-left))!important}
+html.native-app[data-active-tab="observe"] .native-game-menu .native-menu-right{right:max(2px,env(safe-area-inset-right))!important}
+html.native-app[data-active-tab="observe"] .native-game-menu button>small{
+  display:block;width:74px;max-width:74px;font-size:clamp(.72rem,3.4vw,.9rem)!important;
+  line-height:1.05!important;white-space:normal!important;text-align:center;word-break:keep-all;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .native-app .scene-action-drowsy :is(.native-main-character,.native-scene-lineup-person,.native-character-drowsy-mark){animation:none!important}
+}
