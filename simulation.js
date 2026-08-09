@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260809h";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810a";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1560,6 +1560,7 @@ const homeActivityPoolFor=(c,date=new Date())=>{
   const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
   const pool=HOME_ACTIVITY_POOL.filter(([title])=>{
+    if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
     if(title.includes("잃어버린 물건")&&((c.personalityTypes||[]).includes("철두철미함")||["계획적","강박적으로 계획함"].includes(c.planningStyle)||["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness)))return false;
     if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
     if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
@@ -1948,7 +1949,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260808h";
+const ENGINE_VERSION="20260810a";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2029,7 +2030,14 @@ function cleanShadowedBaseEntries(entries){
 function cleanInvalidRoomAndHobbyEntries(c,entries){
   const interests=[...(c.hobbies||[]),...(c.interests||[])].map(String);
   const likesScent=interests.some(value=>/향수|향수 시향|조향|향기/.test(value));
-  return entries.filter(item=>!(item.title?.includes("침실에서 향을 고르는")&&!likesScent)).map(item=>{
+  return entries.filter(item=>{
+    if(item.title?.includes("침실에서 향을 고르는")&&!likesScent)return false;
+    if(item.title?.includes("낮잠 준비")){
+      const minute=Number(item.minute);
+      return Number.isFinite(minute)&&minute>=11*60&&minute<18*60;
+    }
+    return true;
+  }).map(item=>{
     const residence=(c.residences||[]).find(value=>value.homeId===(item.visitHomeId||c.homeId));
     const sleepRoom=residence?.sleepRoomId||c.sleepRoomId||"bedroom";
     if(item.home&&item.title?.startsWith("침실에서")&&item.room!==sleepRoom){
@@ -2099,6 +2107,7 @@ export function timeline(c,date=new Date()){
   if(!c.days||typeof c.days!=="object"||Array.isArray(c.days))c.days={};
   if(c.days[key]&&(!c.days[key]||typeof c.days[key]!=="object"||Array.isArray(c.days[key])))delete c.days[key];
   const old=c.days[key];
+  const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
   if(old&&Array.isArray(old.entries)){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
     const cleaned=cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))));
@@ -2107,9 +2116,9 @@ export function timeline(c,date=new Date()){
   const today=key===dayKey(new Date());
   // 한 번 만든 하루의 기록은 앱 업데이트나 스크립트 팩 변경으로 다시 쓰지 않는다.
   // 현재 시각 이후에 생기는 실시간 기록은 commitLiveEntry가 기존 배열 뒤에만 추가한다.
-  if(old&&today&&Array.isArray(old.entries)&&old.signature===sig)return old.entries;
+  if(old&&today&&Array.isArray(old.entries)&&old.signature===sig&&!engineChanged)return old.entries;
   if(old&&!today)return Array.isArray(old.entries)?old.entries:[];
-   if(!old||old.signature!==sig){
+   if(!old||old.signature!==sig||engineChanged){
      let entries=cleanCharacterBreakingCheeringEntries(build(c,date));
     if(c.createdAt){
       const created=new Date(c.createdAt),target=new Date(date.getFullYear(),date.getMonth(),date.getDate());
@@ -2119,7 +2128,7 @@ export function timeline(c,date=new Date()){
     }
     const settingsChanged=old&&today&&Number(c.timelineResetAt||0)>Number(old.settingsAppliedAt||0);
     if(old&&today&&!settingsChanged){
-      const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>item.minute<=cutoff));
+      const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>engineChanged?item.minute<cutoff:item.minute<=cutoff));
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
     c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};

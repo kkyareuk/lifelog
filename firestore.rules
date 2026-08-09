@@ -21,6 +21,12 @@ service cloud.firestore {
         if request.auth != null && request.auth.uid == userId;
     }
 
+    // 게임 본문은 1MB 문서 한도를 피하기 위해 인물·날짜별 하위 문서에 나눠 저장한다.
+    match /users/{userId}/{document=**} {
+      allow read, create, update, delete:
+        if request.auth != null && request.auth.uid == userId;
+    }
+
     match /feedback/{feedbackId} {
       allow create:
         if request.auth != null

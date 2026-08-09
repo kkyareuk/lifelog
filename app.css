@@ -1,36 +1,8 @@
-@font-face{font-family:"OwnglyphCorncorn";src:url("fonts/Ownglyph_Corncorn.ttf") format("truetype");font-weight:100 900;font-display:swap}
-@font-face{font-family:"HaeongSans";src:local("국민대학교 해옹 산스"),local("Haeong Sans"),url("fonts/KMU80HaeongSans.woff2") format("woff2");font-weight:100 900;font-display:swap}
-@font-face{font-family:"ChangwonDangamRound";src:url("fonts/ChangwonDangamRound-Regular.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
-@font-face{font-family:"DoHyeonLocal";src:url("fonts/DoHyeon-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
-@font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 L.ttf") format("truetype");font-weight:300;font-display:swap}
-@font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 M.ttf") format("truetype");font-weight:400 600;font-display:swap}
-@font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 B.ttf") format("truetype");font-weight:700 900;font-display:swap}
-@font-face{font-family:"NotoSansKRLocal";src:url("fonts/readable/NotoSansKR-Variable.ttf") format("truetype");font-weight:100 900;font-style:normal;font-display:swap}
-@font-face{font-family:"NanumGothicLocal";src:url("fonts/readable/NanumGothic-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
-@font-face{font-family:"NanumGothicLocal";src:url("fonts/readable/NanumGothic-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
-@font-face{font-family:"GothicA1Local";src:url("fonts/readable/GothicA1-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
-@font-face{font-family:"GothicA1Local";src:url("fonts/readable/GothicA1-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
-@font-face{font-family:"GowunDodumLocal";src:url("fonts/readable/GowunDodum-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
-@font-face{font-family:"GowunBatangLocal";src:url("fonts/readable/GowunBatang-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
-@font-face{font-family:"GowunBatangLocal";src:url("fonts/readable/GowunBatang-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
-@font-face{font-family:"JuaLocal";src:url("fonts/readable/Jua-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
-:root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--ui-font:sans-serif}
+:root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s))}
 html[data-ui-scale="small"]{font-size:15px}
 html[data-ui-scale="normal"]{font-size:16px}
 html[data-ui-scale="large"]{font-size:17.5px}
 html[data-ui-scale="xlarge"]{font-size:19px}
-html[data-ui-font="system"]{--ui-font:sans-serif}
-html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","NotoSansKRLocal",sans-serif}
-html[data-ui-font="noto"]{--ui-font:"NotoSansKRLocal",sans-serif}
-html[data-ui-font="nanum"]{--ui-font:"NanumGothicLocal","NotoSansKRLocal",sans-serif}
-html[data-ui-font="gothica1"]{--ui-font:"GothicA1Local","NotoSansKRLocal",sans-serif}
-html[data-ui-font="gowundodum"]{--ui-font:"GowunDodumLocal","NotoSansKRLocal",sans-serif}
-html[data-ui-font="gowunbatang"]{--ui-font:"GowunBatangLocal",serif}
-html[data-ui-font="jua"]{--ui-font:"JuaLocal","NotoSansKRLocal",sans-serif}
-html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn","NotoSansKRLocal",sans-serif}
-html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","NotoSansKRLocal",sans-serif}
-html[data-ui-font="aggro"]{--ui-font:"SBAggro","NotoSansKRLocal",sans-serif}
-html[data-ui-font="haeong"]{--ui-font:"HaeongSans","NotoSansKRLocal",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui-font)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 17px}button.primary,header nav .on{color:#fff;background:var(--grad);border-color:transparent}.panel{background:#fff;border:1px solid var(--line);border-radius:27px;box-shadow:0 18px 45px #27334b10}
 .font-setting-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
 .visual-theme-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.visual-theme-options button{display:flex;align-items:center;gap:10px;text-align:left}.visual-theme-options button i{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#222,#888);box-shadow:inset 0 0 0 1px #ffffff55}.visual-theme-options button[data-visual-theme="sage"] i{background:linear-gradient(135deg,#2f6d62,#8eaa96)}.visual-theme-options button[data-visual-theme="rose"] i{background:linear-gradient(135deg,#9f5265,#d39baa)}.visual-theme-options button[data-visual-theme="ocean"] i{background:linear-gradient(135deg,#296b8f,#72a9c5)}.visual-theme-options button[data-visual-theme="lavender"] i{background:linear-gradient(135deg,#735a9d,#ad98cc)}.visual-theme-options button span{display:grid}.visual-theme-options button.on{border-color:var(--p);box-shadow:0 0 0 2px color-mix(in srgb,var(--p) 45%,transparent)}
@@ -3485,11 +3457,13 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 .native-app .scene-action-coffee-brewing :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-coffee-brew 1.8s ease-in-out infinite}
 .native-app .scene-action-beans-organizing :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-beans-sort 1.45s ease-in-out infinite}
 .native-app .scene-action-gaming :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-game-buttons .48s steps(2,end) infinite}
+.native-app .scene-action-assistive-check :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-gear-check 2.1s ease-in-out infinite}
 .native-app .scene-action-coffee-drinking .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-eating-pause 3.4s ease-in-out infinite}
 @keyframes native-prop-coffee-sip{0%,24%,100%{translate:7px 9px;rotate:7deg}48%,68%{translate:-9px -15px;rotate:-9deg}76%{translate:-5px -11px;rotate:-4deg}}
 @keyframes native-prop-coffee-brew{0%,100%{translate:-6px 4px;rotate:-7deg}45%{translate:5px -4px;rotate:6deg}62%{translate:2px -7px;rotate:2deg}}
 @keyframes native-prop-beans-sort{0%,100%{translate:-10px 3px;rotate:-5deg}50%{translate:10px -3px;rotate:5deg}}
 @keyframes native-prop-game-buttons{0%{translate:-4px 1px;rotate:-3deg;scale:1}50%{translate:4px -2px;rotate:3deg;scale:1.07}100%{translate:-2px 0;rotate:-1deg;scale:1}}
+@keyframes native-prop-gear-check{0%,100%{translate:-5px 4px;rotate:-18deg;scale:1}50%{translate:5px -5px;rotate:72deg;scale:1.08}}
 .native-app .native-pet-orbit{
   --pet-radius:clamp(78px,24vw,126px);
   position:absolute;
@@ -4417,12 +4391,6 @@ html[data-color-mode="light"] dialog :is(input,select,textarea,button){border-co
   }
 }
 
-@media(max-width:720px){
-  html.native-app[data-active-tab="observe"] .native-status-card{max-height:none!important}
-  .native-app .native-status-card h1{max-height:4.1em}
-  .native-app .native-status-card p{max-height:6.4em;font-size:.96rem!important;line-height:1.6!important}
-}
-
 /* 밝은 화면에서는 설정 미리보기와 저장 공간도 실제 종이색 카드로 읽힌다. */
 html[data-color-mode="light"][data-active-tab="settings"] :is(.font-preview,.storage-meter){
   border-color:#ddd3c9!important;
@@ -4779,30 +4747,23 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
   .font-setting-grid{grid-template-columns:1fr}
 }
 
-.native-app .native-status-card p{display:block!important;max-height:4.8em!important;overflow-y:auto!important;font-size:clamp(1.05rem,2.1vw,1.2rem)!important;line-height:1.6!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
-.native-app .native-status-card h1{max-height:2.8em!important;overflow-y:auto!important}
-.native-app .native-status-card{max-height:min(31dvh,300px)!important}
-.native-app .native-log-card{max-height:min(20dvh,190px)!important;overflow:hidden!important}
-.native-app .native-log-card ol{min-height:0;max-height:104px!important;overflow-y:auto!important}
-.native-app .native-log-card time{font-size:1.05rem!important}
-.native-app .native-log-card li b{font-size:1.18rem!important;line-height:1.4!important}
-.native-app .native-log-card li small{font-size:1.03rem!important;line-height:1.5!important}
-.native-app .native-log-card>div>b{font-size:1.35rem!important}
-.native-app .native-log-card button{font-size:.95rem!important}
-
-/* 2026-08-09 mobile scene/readability fixes */
-html.native-app,html.native-app body{min-height:100%;height:auto;overflow-x:hidden;overflow-y:auto!important}
-html.native-app body{padding-bottom:max(84px,calc(68px + env(safe-area-inset-bottom)))!important;-webkit-overflow-scrolling:touch}
-html.native-app[data-active-tab="observe"] main{height:auto!important;min-height:calc(100dvh - 64px)!important;overflow:visible!important}
-.native-app .native-status-card{max-height:190px!important;padding:10px 14px!important}
-.native-app .native-status-card h1{max-height:2.7em!important;margin:2px 0 4px!important;font-size:clamp(1rem,4.5vw,1.22rem)!important;line-height:1.35!important}
-.native-app .native-status-card p{max-height:3.1em!important;font-size:.92rem!important;line-height:1.55!important}
-.native-app .native-log-card{max-height:150px!important;padding:9px 13px!important}
+/* Observe cards have one canonical compact layout. */
+.native-app .native-status-card{max-height:190px!important;padding:10px 14px!important;overflow:hidden!important;transition:max-height .2s ease}
+.native-app .native-status-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.native-app .native-status-card-head>small{color:#ffffffb5;font-size:.78rem;font-weight:900;letter-spacing:.06em}
+.native-app .native-status-card-head>button{min-height:30px;padding:4px 10px;border:1px solid #ffffff42;border-radius:999px;background:#0d1624a8;color:#fff;font-size:.76rem;font-weight:900}
+.native-app .native-status-card h1{display:-webkit-box;max-height:2.7em!important;margin:2px 0 4px!important;overflow:hidden!important;font-size:clamp(1rem,4.5vw,1.22rem)!important;line-height:1.35!important;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+.native-app .native-status-card p{display:-webkit-box!important;max-height:3.1em!important;margin:0 0 8px;overflow:hidden!important;font-size:.9rem!important;line-height:1.55!important;-webkit-box-orient:vertical;-webkit-line-clamp:2!important;line-clamp:2!important}
+.native-app .native-status-card.expanded{max-height:min(48dvh,520px)!important;overflow-y:auto!important;overscroll-behavior:contain}
+.native-app .native-status-card.expanded :is(h1,p){display:block!important;max-height:none!important;overflow:visible!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
+.native-app .native-log-card{max-height:150px!important;padding:9px 13px!important;overflow:hidden!important}
 .native-app .native-log-card ol{max-height:none!important;overflow:hidden!important}
 .native-app .native-log-card li:nth-child(n+3){display:none!important}
-.native-app .native-log-card li b{font-size:1rem!important}
-.native-app .native-log-card li small{font-size:.88rem!important}
-.native-app .native-log-card>div>b{font-size:1.08rem!important}
+.native-app .native-log-card>div>b{font-size:1rem!important;line-height:1.25}
+.native-app .native-log-card button{font-size:.78rem!important}
+.native-app .native-log-card time{font-size:.7rem!important;line-height:1.4!important;opacity:.76}
+.native-app .native-log-card li b{font-size:.92rem!important;line-height:1.35!important}
+.native-app .native-log-card li small{font-size:.78rem!important;line-height:1.4!important}
 .relationship-map-canvas .map-arrows{z-index:1}
 .relationship-map-canvas .map-official{position:relative;z-index:4;pointer-events:none}
 .relationship-map-canvas .map-official text{paint-order:stroke!important;stroke:var(--surface)!important;stroke-width:10px!important;stroke-linejoin:round!important}
