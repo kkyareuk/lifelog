@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260809e";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260809h";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -3066,6 +3066,25 @@ function cleanRepeatedSceneText(value){
   const parts=String(value||"").split(/(?<=[.!?])\s+/).map(part=>part.trim()).filter(Boolean);
   return [...new Set(parts)].join(" ");
 }
+function namedSharedPartner(event,owner){
+  if(!event||!owner)return null;
+  const text=`${event.title||""} ${event.desc||""}`;
+  const ids=[event.withId,...(event.withIds||[])].filter(id=>id&&id!==owner.id);
+  return ids.map(id=>state.characters[id]).find(partner=>partner&&text.includes(partner.name))||null;
+}
+function counterpartSourceEvent(source,sourceOwner,viewer){
+  const base=baseSceneFrom(source);
+  const swap=value=>String(value||"").split(viewer.name).join(sourceOwner.name);
+  return {
+    ...base,
+    title:swap(base.title),
+    desc:swap(base.desc),
+    withId:sourceOwner.id,
+    withIds:[sourceOwner.id],
+    participantOrder:[sourceOwner.id,viewer.id],
+    groupInteraction:false
+  };
+}
 function baseSceneFrom(value){
   if(!value?.groupInteraction)return value;
   return {
@@ -3088,6 +3107,10 @@ function sharedParticipantOrder(characters,relation){
 }
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
+  const sharedSourceOwner=sharedContext?.sourceOwnerId?state.characters[sharedContext.sourceOwnerId]:null;
+  if(sharedContext?.sourceEvent&&sharedSourceOwner&&sharedSourceOwner.id!==c.id){
+    current=counterpartSourceEvent(sharedContext.sourceEvent,sharedSourceOwner,c);
+  }
   // 같은 사건을 상대 시점으로 다시 만들 때 상대의 이전 장면 위치를 사용하지 않는다.
   // 사건을 처음 만든 캐릭터가 실제로 있는 집·방·외출 장소를 공동 위치로 고정한다.
   if(sharedContext?.location)current={...current,...sharedContext.location};
@@ -3125,6 +3148,17 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       };
     }
   }
+  if(!current?.dateGroup&&!namedSharedPartner(current,c)){
+    const incomingShared=state.order.map(id=>{
+      const owner=state.characters[id];
+      if(!owner||owner.id===c.id)return null;
+      const ownerEvent=baseEventFor(owner,date);
+      return namedSharedPartner(ownerEvent,owner)?.id===c.id?{owner,event:ownerEvent}:null;
+    }).find(Boolean);
+    if(incomingShared){
+      current=counterpartSourceEvent(incomingShared.event,incomingShared.owner,c);
+    }
+  }
   if(!current||current.transit||/자는 중/.test(current.title||""))return current;
   const currentHomeId=current.visitHomeId||c.homeId;
   const isHomeScene=Boolean(current.home);
@@ -3142,11 +3176,12 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   // 최초 사건의 상대를 고정한다. 그렇지 않으면 같은 방에 세 명 이상 있을 때
   // 상대 화면만 다른 사람과의 장면으로 갈라질 수 있다.
   const explicitSharedPartner=sharedContext?.interactionId&&forcedPartner&&!current.dateGroup?forcedPartner:null;
+  const explicitCurrentPartner=!current.dateGroup?namedSharedPartner(current,c):null;
   if(explicitDatePartner&&current.dateGroup&&current.withId!==explicitDatePartner.id)current={...current,withId:explicitDatePartner.id,withIds:[explicitDatePartner.id]};
   // 날짜와 상대가 정해진 데이트에는 같은 장소에 우연히 있던 제3자를 끼우지 않는다.
   // 일반 장면에서만 현재 방/장소가 같은 인물을 공동 장면 후보로 삼는다.
-  const together=explicitDatePartner||explicitSharedPartner
-    ?[explicitDatePartner||explicitSharedPartner]
+  const together=explicitDatePartner||explicitSharedPartner||explicitCurrentPartner
+    ?[explicitDatePartner||explicitSharedPartner||explicitCurrentPartner]
     :state.order.map(id=>state.characters[id]).filter(other=>{
       if(!other||other.id===c.id)return false;
       const otherEvent=baseEventFor(other,date);
@@ -3175,7 +3210,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const place=isHomeScene
     ?{id:`home:${currentHomeId}:${current.room}`,type:homeRoom?.type||current.room||"집",name:homeRoom?.name||"집 안"}
     :interactionPlace(current.placeId,current.townId||c.townId);
-  const lockedPartner=explicitDatePartner||explicitSharedPartner;
+  const lockedPartner=explicitDatePartner||explicitSharedPartner||explicitCurrentPartner;
   const group=[c,...together],preferred=lockedPartner
     ?{first:c,second:lockedPartner,relation:relationList().find(r=>(r.a===c.id&&r.b===lockedPartner.id)||(r.b===c.id&&r.a===lockedPartner.id))}
     :interactionPairFor(c,together);
@@ -3280,7 +3315,9 @@ export function eventFor(c,date=new Date()){
         forcedPartnerId:c.id,
         dateGroup:current.dateGroup,
         datePurpose:current.datePurpose,
-        location:sharedLocation
+        location:sharedLocation,
+        sourceEvent:current,
+        sourceOwnerId:c.id
       }));
       if(!counterpart?.groupInteraction)return;
       counterpart.minute=sharedMinute;

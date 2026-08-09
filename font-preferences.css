@@ -5,12 +5,26 @@
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 L.ttf") format("truetype");font-weight:300;font-display:swap}
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 M.ttf") format("truetype");font-weight:400 600;font-display:swap}
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 B.ttf") format("truetype");font-weight:700 900;font-display:swap}
-:root{--ui-font:"ChangwonDangamRound","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="haeong"]{--ui-font:"HaeongSans","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="aggro"]{--ui-font:"SBAggro","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="system"]{--ui-font:Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-html[data-ui-font="noto"]{--ui-font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+@font-face{font-family:"NotoSansKRLocal";src:url("fonts/readable/NotoSansKR-Variable.ttf") format("truetype");font-weight:100 900;font-display:swap}
+@font-face{font-family:"NanumGothicLocal";src:url("fonts/readable/NanumGothic-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"NanumGothicLocal";src:url("fonts/readable/NanumGothic-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
+@font-face{font-family:"GothicA1Local";src:url("fonts/readable/GothicA1-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"GothicA1Local";src:url("fonts/readable/GothicA1-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
+@font-face{font-family:"GowunDodumLocal";src:url("fonts/readable/GowunDodum-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
+@font-face{font-family:"GowunBatangLocal";src:url("fonts/readable/GowunBatang-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"GowunBatangLocal";src:url("fonts/readable/GowunBatang-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
+@font-face{font-family:"JuaLocal";src:url("fonts/readable/Jua-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
+:root{--ui-font:sans-serif}
+html[data-ui-font="system"]{--ui-font:sans-serif}
+html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","NotoSansKRLocal",sans-serif}
+html[data-ui-font="noto"]{--ui-font:"NotoSansKRLocal",sans-serif}
+html[data-ui-font="nanum"]{--ui-font:"NanumGothicLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="gothica1"]{--ui-font:"GothicA1Local","NotoSansKRLocal",sans-serif}
+html[data-ui-font="gowundodum"]{--ui-font:"GowunDodumLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="gowunbatang"]{--ui-font:"GowunBatangLocal",serif}
+html[data-ui-font="jua"]{--ui-font:"JuaLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn","NotoSansKRLocal",sans-serif}
+html[data-ui-font="haeong"]{--ui-font:"HaeongSans","NotoSansKRLocal",sans-serif}
+html[data-ui-font="aggro"]{--ui-font:"SBAggro","NotoSansKRLocal",sans-serif}
 body,button,input,select,textarea{font-family:var(--ui-font)!important}

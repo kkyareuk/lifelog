@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260809e";
-import {eventFor} from "./simulation.js?v=20260809e";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260809e";
-import {recordCharacterInteraction} from "./state.js?v=20260809e";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260809h";
+import {eventFor} from "./simulation.js?v=20260809h";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260809h";
+import {recordCharacterInteraction} from "./state.js?v=20260809h";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -392,8 +392,6 @@ function openProfileExportDialog(){
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 function enhanceDynamicForms(){
-  const feedbackIntro=document.querySelector(".feedback-card>p");
-  if(feedbackIntro)feedbackIntro.textContent="Google 로그인 후 Firestore 피드백함에 먼저 저장하고 이메일 전달을 추가로 시도해요. 성공·실패 결과는 버튼 아래에 표시되며 게임 데이터 동기화는 실행하지 않습니다.";
   const profile=document.querySelector(".profile-license");
   if(profile){
     profile.querySelectorAll('[data-personality-field="interference"]').forEach(button=>{
@@ -636,9 +634,20 @@ function renderMaintenance(){
   document.querySelector("#maintenance-reload")?.addEventListener("click",()=>location.reload());
 }
 
+function replaceFeedbackFormWithEmailLink(){
+  const card=document.querySelector(".feedback-card");
+  if(!card)return;
+  const character=active();
+  const subject=encodeURIComponent("[서랍마을] 사용자 피드백");
+  const body=encodeURIComponent(`피드백 내용을 여기에 적어 주세요.\n\n현재 화면: ${PAGE_GUIDES[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}`);
+  card.innerHTML=`<h2>개발자에게 피드백 보내기</h2><p>버튼을 누르면 기기의 메일 앱에서 개발자 이메일로 바로 작성할 수 있어요. 사이트의 별도 피드백함에는 저장하지 않습니다.</p><a class="primary feedback-email-button" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">이메일로 피드백 보내기</a><small>받는 주소 · kkyaareuk@gmail.com</small>`;
+}
+
 function render(){
   const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
+  const openCharacterEditor=document.querySelector("[data-mobile-character-editor-dialog][open] .mobile-character-editor-shell");
+  if(openCharacterEditor)mobileCharacterEditorScroll=openCharacterEditor.scrollTop;
   resetScrollAfterRender=false;
   try{
     const mobileSite=window.matchMedia?.("(max-width:720px)")?.matches??window.innerWidth<=720;
@@ -648,6 +657,7 @@ function render(){
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
     renderApp(state);
+    replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
     // enclosing form. Accidental form submissions were jumping mobile pages
     // back to the top before the actual click handler finished.
@@ -1142,7 +1152,7 @@ function bind(){
         const response=await Promise.race([
           fetch("https://formsubmit.co/ajax/kkyaareuk@gmail.com",{
             method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},
-            body:JSON.stringify({_subject:`[서랍마을 ${category}] 사용자 피드백`,_template:"table",_captcha:"false",_replyto:info.user.email||"",분류:category,내용:message,현재_화면:TAB_META[state.activeTab]?.[0]||state.activeTab,선택_캐릭터:character?.name||"없음",보낸_시각:new Date().toLocaleString("ko-KR")})
+            body:JSON.stringify({_subject:`[서랍마을 ${category}] 사용자 피드백`,_template:"table",_captcha:"false",_replyto:info.user.email||"",분류:category,내용:message,현재_화면:PAGE_GUIDES[state.activeTab]?.[0]||state.activeTab,선택_캐릭터:character?.name||"없음",보낸_시각:new Date().toLocaleString("ko-KR")})
           }),
           new Promise((_,reject)=>setTimeout(()=>reject(new Error("메일 응답 시간 초과")),8000))
         ]);
@@ -1156,7 +1166,7 @@ function bind(){
     }catch(error){
       console.error("Firestore 피드백 저장 실패",error);
       const subject=encodeURIComponent(`[서랍마을 ${category}] 사용자 피드백`);
-      const body=encodeURIComponent(`${message}\n\n현재 화면: ${TAB_META[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}\n보낸 시각: ${new Date().toLocaleString("ko-KR")}`);
+      const body=encodeURIComponent(`${message}\n\n현재 화면: ${PAGE_GUIDES[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}\n보낸 시각: ${new Date().toLocaleString("ko-KR")}`);
       const gmailUrl=`https://mail.google.com/mail/?view=cm&fs=1&to=kkyaareuk%40gmail.com&su=${subject}&body=${body}`;
       const code=String(error?.code||error?.message||"알 수 없는 오류").replace("firebase/","");
       status.innerHTML=`피드백함 저장 실패 (${esc(code)}). Firebase 보안 규칙을 게시했는지 확인해 주세요. <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer">Gmail 작성창으로 대신 보내기</a>`;
@@ -2370,13 +2380,23 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260809e").catch(error=>{
+  import("./auth.js?v=20260809h").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260809e",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  const nativeRuntime=Boolean(window.DRAWER_VILLAGE_NATIVE||window.Capacitor?.isNativePlatform?.());
+  if(nativeRuntime){
+    // The Android package already carries every web asset. A service worker can
+    // otherwise keep serving an index.html from an older APK after an update.
+    Promise.all([
+      navigator.serviceWorker.getRegistrations().then(registrations=>Promise.all(registrations.map(registration=>registration.unregister()))),
+      globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
+    ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
+  }else{
+    navigator.serviceWorker.register("./sw.js?v=20260809h",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

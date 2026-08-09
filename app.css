@@ -1,8 +1,3 @@
-@font-face{font-family:"LeeSeoyun";src:local("이서윤체"),local("LeeSeoyun"),url("https://cdn.jsdelivr.net/gh/webfontworld/naver/LeeSeoyun.woff2") format("woff2");font-display:swap}
-@font-face{font-family:"GangwonEduAll";src:local("강원교육모두체"),local("GangwonEduAll"),url("https://cdn.jsdelivr.net/gh/webfontworld/gangwon/GangwonEduAllLight.woff2") format("woff2");font-display:swap}
-@font-face{font-family:"DungGeunMo";src:local("둥근모꼴+ Fixedsys"),local("DungGeunMo"),url("https://cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@latest/neodgm.woff2") format("woff2");font-display:swap}
-@font-face{font-family:"SCoreDream";src:local("에스코어 드림"),local("S-Core Dream"),url("https://cdn.jsdelivr.net/gh/webfontworld/SCoreDream/SCoreDream4.woff2") format("woff2");font-display:swap}
-@font-face{font-family:"Chosun100";src:local("조선100년체"),local("ChosunCentennial"),url("https://cdn.jsdelivr.net/gh/webfontworld/ChosunCentennial/ChosunCentennial.woff2") format("woff2");font-display:swap}
 @font-face{font-family:"OwnglyphCorncorn";src:url("fonts/Ownglyph_Corncorn.ttf") format("truetype");font-weight:100 900;font-display:swap}
 @font-face{font-family:"HaeongSans";src:local("국민대학교 해옹 산스"),local("Haeong Sans"),url("fonts/KMU80HaeongSans.woff2") format("woff2");font-weight:100 900;font-display:swap}
 @font-face{font-family:"ChangwonDangamRound";src:url("fonts/ChangwonDangamRound-Regular.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
@@ -10,23 +5,32 @@
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 L.ttf") format("truetype");font-weight:300;font-display:swap}
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 M.ttf") format("truetype");font-weight:400 600;font-display:swap}
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 B.ttf") format("truetype");font-weight:700 900;font-display:swap}
-:root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--ui-font:"ChangwonDangamRound","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
+@font-face{font-family:"NotoSansKRLocal";src:url("fonts/readable/NotoSansKR-Variable.ttf") format("truetype");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"NanumGothicLocal";src:url("fonts/readable/NanumGothic-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"NanumGothicLocal";src:url("fonts/readable/NanumGothic-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
+@font-face{font-family:"GothicA1Local";src:url("fonts/readable/GothicA1-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"GothicA1Local";src:url("fonts/readable/GothicA1-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
+@font-face{font-family:"GowunDodumLocal";src:url("fonts/readable/GowunDodum-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
+@font-face{font-family:"GowunBatangLocal";src:url("fonts/readable/GowunBatang-Regular.ttf") format("truetype");font-weight:400;font-display:swap}
+@font-face{font-family:"GowunBatangLocal";src:url("fonts/readable/GowunBatang-Bold.ttf") format("truetype");font-weight:700 900;font-display:swap}
+@font-face{font-family:"JuaLocal";src:url("fonts/readable/Jua-Regular.ttf") format("truetype");font-weight:100 900;font-display:swap}
+:root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--ui-font:sans-serif}
 html[data-ui-scale="small"]{font-size:15px}
 html[data-ui-scale="normal"]{font-size:16px}
 html[data-ui-scale="large"]{font-size:17.5px}
 html[data-ui-scale="xlarge"]{font-size:19px}
-html[data-ui-font="system"]{--ui-font:Roboto,"Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-html[data-ui-font="noto"]{--ui-font:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif}
-html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="aggro"]{--ui-font:"SBAggro","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="seoyun"]{--ui-font:"LeeSeoyun","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="gangwon"]{--ui-font:"GangwonEduAll","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="dunggeunmo"]{--ui-font:"DungGeunMo","Noto Sans KR","Malgun Gothic",monospace}
-html[data-ui-font="haeong"]{--ui-font:"HaeongSans","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="scoredream"]{--ui-font:"SCoreDream","Noto Sans KR","Malgun Gothic",sans-serif}
-html[data-ui-font="chosun100"]{--ui-font:"Chosun100","Noto Sans KR","Malgun Gothic",sans-serif}
+html[data-ui-font="system"]{--ui-font:sans-serif}
+html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","NotoSansKRLocal",sans-serif}
+html[data-ui-font="noto"]{--ui-font:"NotoSansKRLocal",sans-serif}
+html[data-ui-font="nanum"]{--ui-font:"NanumGothicLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="gothica1"]{--ui-font:"GothicA1Local","NotoSansKRLocal",sans-serif}
+html[data-ui-font="gowundodum"]{--ui-font:"GowunDodumLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="gowunbatang"]{--ui-font:"GowunBatangLocal",serif}
+html[data-ui-font="jua"]{--ui-font:"JuaLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn","NotoSansKRLocal",sans-serif}
+html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","NotoSansKRLocal",sans-serif}
+html[data-ui-font="aggro"]{--ui-font:"SBAggro","NotoSansKRLocal",sans-serif}
+html[data-ui-font="haeong"]{--ui-font:"HaeongSans","NotoSansKRLocal",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--ui-font)}button,input,select,textarea{font:inherit;color:inherit}button{cursor:pointer;border:1px solid var(--line);background:#fff;border-radius:15px;padding:12px 17px}button.primary,header nav .on{color:#fff;background:var(--grad);border-color:transparent}.panel{background:#fff;border:1px solid var(--line);border-radius:27px;box-shadow:0 18px 45px #27334b10}
 .font-setting-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.font-setting-card label{display:grid;gap:8px}.font-preview{display:grid;gap:6px;margin-top:14px;padding:17px 19px;border:1px solid var(--line);border-radius:17px;background:#fff}.font-preview b{font-size:1.2em}.font-preview span{line-height:1.75;color:var(--muted)}
 .visual-theme-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px}.visual-theme-options button{display:flex;align-items:center;gap:10px;text-align:left}.visual-theme-options button i{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#222,#888);box-shadow:inset 0 0 0 1px #ffffff55}.visual-theme-options button[data-visual-theme="sage"] i{background:linear-gradient(135deg,#2f6d62,#8eaa96)}.visual-theme-options button[data-visual-theme="rose"] i{background:linear-gradient(135deg,#9f5265,#d39baa)}.visual-theme-options button[data-visual-theme="ocean"] i{background:linear-gradient(135deg,#296b8f,#72a9c5)}.visual-theme-options button[data-visual-theme="lavender"] i{background:linear-gradient(135deg,#735a9d,#ad98cc)}.visual-theme-options button span{display:grid}.visual-theme-options button.on{border-color:var(--p);box-shadow:0 0 0 2px color-mix(in srgb,var(--p) 45%,transparent)}
@@ -1528,6 +1532,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relation-activity-details summary{cursor:pointer;font-weight:800;color:var(--p)}
 .relation-activity-details .relation-tags{margin:10px 0 0}
 .feedback-card a{display:block;width:max-content;max-width:100%;text-decoration:none}
+.feedback-card .feedback-email-button{margin:14px 0 10px;padding:14px 19px;border-radius:15px;background:var(--grad);color:#fff;font-weight:850;text-align:center;box-shadow:0 9px 22px color-mix(in srgb,var(--p) 24%,transparent)}
 .feedback-status a{display:inline!important;width:auto!important;text-decoration:underline!important}
 .relation-type-help{display:block;min-height:2.8em;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--p) 7%,#fff);color:var(--muted);line-height:1.55}
 @media(max-width:600px){.sleep-gate{top:8px;grid-template-columns:minmax(0,1fr) auto;gap:8px;width:calc(100% - 16px);padding:9px 10px;border-radius:14px}.sleep-gate>span,.sleep-gate p{display:none}.sleep-gate h2{font-size:14px;line-height:1.25;white-space:normal}.sleep-gate button{padding:7px 9px;font-size:12px;white-space:nowrap}}
@@ -4867,3 +4872,4 @@ html.native-app[data-active-tab="observe"] .native-log-card button{
   color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important;
 }
 .home-name-setting{grid-column:1/-1}
+.world-bg{object-fit:cover}

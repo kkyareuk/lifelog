@@ -150,7 +150,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:13,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"dangam",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
+const fresh=()=>({schema:14,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -160,6 +160,7 @@ const fresh=()=>({schema:13,activeTab:"character",characterPane:"profile",active
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===14)return normalizeHomes(x);
   if(x.schema===13)return normalizeHomes(x);
   if(x.schema===12)return normalizeHomes(x);
   if(x.schema===11)return normalizeHomes(x);
@@ -191,14 +192,14 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=13;
+  x.schema=14;
   x.activeTab=["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(x.activeTab)?x.activeTab:"character";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   if(x.uiFont==="memoment")x.uiFont="corncorn";
-  if(["gangwon","seoyun","dunggeunmo","scoredream","chosun100"].includes(x.uiFont))x.uiFont="dangam";
-  if(previousSchema<13&&x.uiFont==="system")x.uiFont="dangam";
-  x.uiFont=["dangam","system","noto","dohyeon","haeong","aggro","corncorn"].includes(x.uiFont)?x.uiFont:"dangam";
+  if(["gangwon","seoyun","dunggeunmo","scoredream","chosun100"].includes(x.uiFont))x.uiFont="system";
+  if(previousSchema<14&&x.uiFont==="dangam")x.uiFont="system";
+  x.uiFont=["system","noto","nanum","gothica1","gowundodum","gowunbatang","jua","dangam","dohyeon","haeong","aggro","corncorn"].includes(x.uiFont)?x.uiFont:"system";
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"dark";
   x.visualTheme=["monochrome","sage","rose","ocean","lavender"].includes(x.visualTheme)?x.visualTheme:"monochrome";
@@ -350,7 +351,7 @@ function normalizeHomes(x){
   x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
   x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
   if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:String(t.bg||defaultWorld.bg),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town.png",era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
     p.iconPreset=p.iconPreset||({
