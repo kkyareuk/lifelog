@@ -61,7 +61,7 @@ C:\Users\Public\drawervillage-android-build\android\app\outputs\bundle\release\a
 
 명령으로 만든 release AAB가 서명되지 않았다면 Android Studio에서 `Build > Generate Signed App Bundle or APK > Android App Bundle`을 선택해 업로드 키로 서명합니다. 첫 출시라면 Play App Signing을 켜고 업로드 키를 안전하게 백업합니다. 기존 앱을 업데이트할 때는 같은 업로드 키와 더 높은 `versionCode`가 필요합니다.
 
-현재 앱은 `targetSdk 36`, `versionCode 2`, `versionName 1.0.0`으로 설정되어 있습니다. 웹 화면을 고친 뒤에는 반드시 `npm.cmd run app:sync`를 먼저 실행해야 최신 HTML·CSS·JavaScript와 서비스 워커 캐시 버전이 앱에 들어갑니다.
+현재 앱은 `targetSdk 36`, `versionCode 3`, `versionName 1.0.1`로 설정되어 있습니다. 웹 화면을 고친 뒤에는 반드시 `npm.cmd run app:sync`를 먼저 실행해야 최신 HTML·CSS·JavaScript와 서비스 워커 캐시 버전이 앱에 들어갑니다.
 
 ## 3. Play Console 내부 테스트
 

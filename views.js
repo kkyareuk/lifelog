@@ -138,11 +138,7 @@ const characterLimit=()=>7+(Math.max(0,Number(accountEntitlements.characterSlotP
 const townLimit=()=>2+Math.max(0,Number(accountEntitlements.townSlotPacks)||0);
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const hasDlc=id=>(accountEntitlements.dlcPacks||[]).includes(id);
-const backgroundOptions=()=>[
-  ["world-assets/cozy-town.png","마을",true],
-  ["world-assets/downtown.png","도시",true],
-  ["world-assets/department-store-premium.png","백화점 아트리움 · 구매 배경",hasBackground("department-store")]
-].map(([value,label,owned])=>`<option value="${value}" ${state.world.bg===value?"selected":""} ${owned?"":"disabled"}>${owned?label:`🔒 ${label}`}</option>`).join("");
+const backgroundOptions=()=>`<option value="world-assets/cozy-town.png" selected>기본 마을 손그림</option>`;
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
 const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${id}" ${p.iconPreset===id?"selected":""}>${label}</option>`).join("");
 const visibleTownId=c=>eventFor(c)?.townId||c.townId;
@@ -253,8 +249,11 @@ function nativeSceneFoodItem(person,entry,text){
   const drinkScene=/(?:차|음료|커피|주스|탄산|술|칵테일|물)(?:을|를)?\s*(?:마시|마셔|따르|우리|내리)|한\s*잔|마실\s*(?:것|거리)/.test(text);
   const mealScene=/(?:음식|밥|식사|메뉴|디저트|간식|초밥|아침|점심|저녁)(?:을|를)?\s*(?:먹|맛보|고르|주문|나누)|먹는\s*중|먹고\s*있는|식사하는/.test(text);
   if(!drinkScene&&!mealScene)return null;
-  const matching=available.filter(item=>drinkScene&&!mealScene?item.kind==="drink":mealScene&&!drinkScene?item.kind==="food":true);
-  return (matching.length?matching:available).slice().sort((a,b)=>nativeSceneItemScore(person,b,entry)-nativeSceneItemScore(person,a,entry))[0]||null;
+  // 장면에 실제로 적힌 음식이나 itemId만 보여 준다. 취향 점수만으로 전혀 다른
+  // 초밥·파스타를 손에 들려 주면 행동 설명과 그림이 서로 어긋난다.
+  const explicit=catalogItem(entry?.itemId)||available.find(item=>item.name&&text.includes(item.name));
+  if(explicit)return explicit;
+  return null;
 }
 function nativeFoodSymbol(item,text){
   const value=`${item?.name||""} ${item?.category||""} ${item?.subtype||""} ${text}`;
@@ -277,10 +276,9 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   let item=null;
   if(actionKind==="eating"){
     item=nativeSceneFoodItem(person,entry,text);
-    if(!item)return "";
     symbol=nativeFoodSymbol(item,text);
   }else if(actionKind==="pet-care")symbol="🧶";
-  }else if(actionKind==="sweeping")symbol="🧹";
+  else if(actionKind==="sweeping")symbol="🧹";
   else if(actionKind==="dishwashing"||actionKind==="wiping")symbol="🧽";
   else if(actionKind==="laundry")symbol="🧺";
   else if(actionKind==="spice-organizing")symbol="🧂";
@@ -291,7 +289,7 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="reading")symbol="📖";
   else if(actionKind==="writing")symbol="📝";
   else if(actionKind==="music")symbol="🎵";
-  else if(actionKind==="exercise")symbol="●━●";
+  else if(actionKind==="exercise")symbol="🏋️";
   else if(actionKind==="grooming")symbol=/향수|향을 고르/.test(text)?"🧴":"💄";
   else if(actionKind==="repair")symbol="🛠️";
   else if(actionKind==="gardening")symbol="🪴";
@@ -1377,8 +1375,8 @@ function relationshipMap(relations){
     const labelOffset=curved?Math.min(128,bend*.58):58;
     const officialPoint=placeLabel(midX+normalX*labelOffset,midY+normalY*labelOffset,normalX,normalY);
     const boxWidth=Math.min(220,Math.max(100,(Math.max(relationText.length,stageText.length)*13)+24));
-    const officialMarkup=`<g class="map-official"><rect x="${officialPoint.x-boxWidth/2}" y="${officialPoint.y-24}" width="${boxWidth}" height="48" rx="12"/><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-5}" text-anchor="middle">${esc(relationText||"이방인")}</text><text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+14}" text-anchor="middle">${esc(stageText)}</text></g>`;
-    return `<g class="relationship-edge"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/>${hearts}${officialMarkup}</g>`;
+    const officialMarkup=`<g class="map-official"><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-5}" text-anchor="middle">${esc(relationText||"이방인")}</text><text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+14}" text-anchor="middle">${esc(stageText)}</text></g>`;
+    return `<g class="relationship-edge"><g class="map-arrows"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/>${hearts}</g>${officialMarkup}</g>`;
   }).join("");
   const mapNodeSize=characters.length===2?180:136;
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-mapNodeSize/2}" y="${pos.y-mapNodeSize/2}" width="${mapNodeSize}" height="${mapNodeSize}"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node ${characters.length===2?"map-node-pair":""}">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
@@ -1416,7 +1414,7 @@ function routine(){
 function town(){const items=catalogItems(),audiences=["아재 입맛","어린이 입맛","가족","연인·데이트","학생","고소득","오타쿠"];return `<div class="town-tabs">${state.towns.map(t=>`<button data-town-select="${t.id}" class="${t.id===state.activeTownId?"on":""}">🏙️ ${esc(t.name)}</button>`).join("")}<button data-add-town>+ 마을 추가</button>${state.towns.length>1?`<button class="danger" data-delete-town="${state.activeTownId}">현재 마을 삭제</button>`:""}</div><div class="town-edit"><div class="town-map-scroll"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}</div></div><aside class="panel form"><div class="title"><h2>마을 편집</h2><button class="primary" data-town-save>마을 저장</button></div><section class="inline-guide"><b>마을을 만드는 순서</b><ol><li>마을 이름과 배경을 고르세요.</li><li>건물을 추가하고 유형을 고르세요.</li><li>‘건물 모양 선택’에서 추천 그림을 적용하세요.</li><li>지도 위 건물을 직접 끌어 위치를 정하세요.</li></ol></section><label>마을 이름<input data-world-name value="${esc(state.world.name)}"></label><label>마을 시대<select data-world-era><option value="modern" ${state.world.era!=="medieval"?"selected":""}>현대</option><option value="medieval" ${state.world.era==="medieval"?"selected":""}>중세</option></select><small>중세를 고르면 현대적인 표현만 시대에 맞게 바뀌고, 요리·청소·산책 같은 행동은 그대로 이어져요.</small></label><label>기본 배경<select data-world-bg><option value="world-assets/cozy-town.png" ${state.world.bg.includes("cozy")?"selected":""}>마을</option><option value="world-assets/downtown.png" ${state.world.bg.includes("downtown")?"selected":""}>도시</option><option value=world-assets/department-store-premium.png>구매 배경 · 백화점 아트리움</option></select></label><p>건물은 PC와 모바일 모두 이 화면에서 끌어 옮길 수 있어요.</p><button data-add-place>+ 건물 추가</button><div class="place-editor">${state.world.places.map(p=>`<details><summary><b>${esc(p.emoji)} ${esc(p.name)}</b></summary><div class="place-edit-heading"><span><b>${esc(p.name)} 편집</b><small>유형을 먼저 고르면 어울리는 건물 모양을 추천해요.</small></span><button class="danger" data-delete-place="${p.id}">이 건물 삭제</button></div><div class="place-config"><label>건물 이름<input data-place-field="name" data-place-id="${p.id}" value="${esc(p.name)}"></label><label>건물 유형<select data-place-field="type" data-place-id="${p.id}">${placeTypeOptions(p)}</select></label><label>세부 유형<select data-place-field="subtype" data-place-id="${p.id}">${placeSubtypeOptions(p)}</select></label><label>가격대<select data-place-field="priceRange" data-place-id="${p.id}">${["저렴","보통","고급","명품"].map(x=>`<option ${p.priceRange===x?"selected":""}>${x}</option>`).join("")}</select></label><label>마을 속 건물 크기<input type="range" min=".45" max="1.5" step=".05" data-place-field="imageScale" data-place-id="${p.id}" value="${p.imageScale||1}"></label><label>매운맛 정도<select data-place-field="spicy" data-place-id="${p.id}">${levelOptions(SPICE_LEVELS,p.spicy||0)}</select></label><label>단맛 정도<select data-place-field="sweet" data-place-id="${p.id}">${levelOptions(SWEET_LEVELS,p.sweet||0)}</select></label></div><div class="place-photo-tools"><b>지도에 표시할 건물 모양</b><span><button data-building-shape-open="${p.id}">건물 모양 선택</button></span><b>생활 로그·현재 장면용 내부 사진</b><span><button data-place-interior-image="${p.id}">내부 사진 업로드</button><button data-image-url="placeInterior" data-id="${p.id}">링크</button>${p.interiorImage?`<button data-clear-place-interior-image="${p.id}">지우기</button>`:""}</span></div><h4>주요 이용층</h4><div class="stock-picker">${audiences.map(x=>`<button data-place-audience="${p.id}" data-value="${x}" class="${(p.audiences||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div><h4>이곳에서 파는 것·이용할 수 있는 것</h4><div class="stock-list stock-picker">${items.map(item=>`<button data-place-stock="${p.id}" data-item-id="${item.id}" class="${(p.stock||[]).includes(item.id)?"on":""}">${CATALOG_LABELS[item.kind]} · ${esc(item.name)}</button>`).join("")}</div></details>`).join("")}</div></aside></div>`}
 function dlc(){return `<article class="dlc-product"><div class="dlc-product-art">🏰</div><div><small>시대 스크립트 팩</small><h2>중세의 하루</h2><p>촛불을 켜고 장부를 쓰고, 시장과 여관을 오가는 하루를 담았어요.</p><div class="dlc-buy-row"><b>1,850원</b><a class="primary dlc-buy" href="./payment.html?product=medieval">토스로 구매하기</a></div></div></article>`;}
 function fontSettings(){
-  const options=[["system","기기 기본 글꼴 · 가장 선명함"],["noto","Noto Sans KR · 단정한 고딕"],["memoment","메모먼트 꾹꾹체 · 설치된 기기에서만"],["seoyun","이서윤체 · 편안한 손글씨"],["gangwon","강원교육모두체 · 둥글고 읽기 편함"],["dunggeunmo","둥근모꼴+Fixedsys · 레트로 고정폭"],["haeong","국민대학교 해옹 산스 · 부드러운 고딕"],["scoredream","에스코어 드림 · 깔끔한 본문체"],["chosun100","조선100년체 · 차분한 제목체"]];
+  const options=[["dangam","창원단감둥근체 · 기본 글꼴"],["system","기기 기본 글꼴 · 가장 선명함"],["noto","Noto Sans KR · 단정한 고딕"],["corncorn","온글잎 콘콘체 · 편안한 손글씨"],["seoyun","이서윤체 · 편안한 손글씨"],["gangwon","강원교육모두체 · 둥글고 읽기 편함"],["dunggeunmo","둥근모꼴+Fixedsys · 레트로 고정폭"],["haeong","국민대학교 해옹 산스 · 부드러운 고딕"],["scoredream","에스코어 드림 · 깔끔한 본문체"],["chosun100","조선100년체 · 차분한 제목체"]];
   const sizes=[["small","작게"],["normal","보통"],["large","크게"],["xlarge","아주 크게"]];
   const ownerName=esc(state.ownerName||"");
   return `<section class="setting-card font-setting-card"><h2>글자와 화면 크기</h2><p>본문, 버튼과 생활 로그에 적용됩니다. 읽기 편한 크기와 글꼴을 골라 보세요.</p><div class="font-setting-grid"><label>글자 크기<select data-setting="uiScale">${sizes.map(([value,label])=>`<option value="${value}" ${state.uiScale===value?"selected":""}>${label}</option>`).join("")}</select></label><label>사용할 글꼴<select data-setting="uiFont">${options.map(([value,label])=>`<option value="${value}" ${state.uiFont===value?"selected":""}>${label}</option>`).join("")}</select></label></div><div class="font-preview"><b>서랍마을의 오늘</b><span>캐릭터들이 각자의 하루를 보내고 있어요. 긴 생활 로그도 편안하게 읽어 보세요.</span></div></section><section class="setting-card owner-name-card"><h2>동기화 표시 이름</h2><p>Google 계정 이름 대신 백업과 동기화 화면에 표시할 이름이에요.</p><label>어떻게 불러드릴까요?<input data-setting="ownerName" maxlength="20" value="${ownerName}" placeholder="예: 꺄륵"></label></section>`;

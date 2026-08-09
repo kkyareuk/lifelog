@@ -2,6 +2,7 @@ const isNative=Boolean(window.Capacitor?.isNativePlatform?.());
 
 if(isNative){
   document.documentElement.classList.add("native-app");
+  document.documentElement.classList.add("native-platform");
   window.DRAWER_VILLAGE_NATIVE=true;
 
   const {App,Browser,Network,PlayBilling}=window.Capacitor.Plugins;
