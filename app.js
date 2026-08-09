@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260809a";
-import {eventFor} from "./simulation.js?v=20260809a";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260809a";
-import {recordCharacterInteraction} from "./state.js?v=20260809a";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260809d";
+import {eventFor} from "./simulation.js?v=20260809d";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260809d";
+import {recordCharacterInteraction} from "./state.js?v=20260809d";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -11,6 +11,7 @@ let mobileCharacterDraftDirty=false;
 let homeCharacterPickerScroll=0;
 let mobileCharacterStripScroll=0;
 let mobileCharacterEditorScroll=0;
+let resetScrollAfterRender=false;
 const guidePending=new Set();
 const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
@@ -636,6 +637,9 @@ function renderMaintenance(){
 }
 
 function render(){
+  const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender;
+  const previousPageX=window.scrollX,previousPageY=window.scrollY;
+  resetScrollAfterRender=false;
   try{
     const mobileSite=window.matchMedia?.("(max-width:720px)")?.matches??window.innerWidth<=720;
     document.documentElement.classList.toggle("native-app",Boolean(window.DRAWER_VILLAGE_NATIVE)||mobileSite);
@@ -644,6 +648,13 @@ function render(){
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
     renderApp(state);
+    // A data-action button without an explicit type must never submit an
+    // enclosing form. Accidental form submissions were jumping mobile pages
+    // back to the top before the actual click handler finished.
+    document.querySelectorAll("button:not([type])").forEach(button=>{
+      if(button.closest('form[method="dialog"]')&&button.hasAttribute("value"))return;
+      button.type="button";
+    });
     const grid=document.querySelector(".shop-product-grid");
     if(grid&&!grid.querySelector('[data-product-id="green_tea"]')){
       const card=document.createElement("article");
@@ -659,6 +670,8 @@ function render(){
     requestAnimationFrame(showSetupCoach);
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
     requestAnimationFrame(maybeShowPageGuide);
+    document.documentElement.dataset.drawerRendered="1";
+    if(preservePageScroll)requestAnimationFrame(()=>window.scrollTo({left:previousPageX,top:previousPageY,behavior:"auto"}));
   }catch(error){
     console.error("화면 복구 필요",error);
     document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
@@ -1647,6 +1660,7 @@ function navigateToTab(tab){
   }
   state.activeTab=tab;
   save();
+  resetScrollAfterRender=true;
   render();
   if(tab==="town")centerMobileTownMap();
   window.scrollTo({top:0,behavior:"auto"});
@@ -2356,13 +2370,13 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260809a").catch(error=>{
+  import("./auth.js?v=20260809d").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
 }
 if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js?v=20260809a",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+  navigator.serviceWorker.register("./sw.js?v=20260809d",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();

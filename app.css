@@ -3466,6 +3466,19 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 @keyframes native-game-focus{0%,100%{translate:0 2px}50%{translate:0 -4px;scale:1.015}}
 @keyframes native-prop-eat{0%,25%,100%{translate:5px 8px;rotate:10deg}55%,72%{translate:-8px -14px;rotate:-12deg}}
 @keyframes native-eating-pause{0%,100%{translate:0 2px}45%,65%{translate:0 -3px}}
+
+/* Action props describe the actual object being handled, not the generic act
+   of tidying. Coffee, beans, and controllers each have their own motion. */
+.native-app :is(.scene-action-coffee-drinking,.scene-action-coffee-brewing,.scene-action-beans-organizing) :is(.native-scene-action-prop,.native-person-action-prop){filter:drop-shadow(0 7px 7px #0009)}
+.native-app .scene-action-coffee-drinking :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-coffee-sip 2.25s ease-in-out infinite}
+.native-app .scene-action-coffee-brewing :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-coffee-brew 1.8s ease-in-out infinite}
+.native-app .scene-action-beans-organizing :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-beans-sort 1.45s ease-in-out infinite}
+.native-app .scene-action-gaming :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-game-buttons .48s steps(2,end) infinite}
+.native-app .scene-action-coffee-drinking .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-eating-pause 3.4s ease-in-out infinite}
+@keyframes native-prop-coffee-sip{0%,24%,100%{translate:7px 9px;rotate:7deg}48%,68%{translate:-9px -15px;rotate:-9deg}76%{translate:-5px -11px;rotate:-4deg}}
+@keyframes native-prop-coffee-brew{0%,100%{translate:-6px 4px;rotate:-7deg}45%{translate:5px -4px;rotate:6deg}62%{translate:2px -7px;rotate:2deg}}
+@keyframes native-prop-beans-sort{0%,100%{translate:-10px 3px;rotate:-5deg}50%{translate:10px -3px;rotate:5deg}}
+@keyframes native-prop-game-buttons{0%{translate:-4px 1px;rotate:-3deg;scale:1}50%{translate:4px -2px;rotate:3deg;scale:1.07}100%{translate:-2px 0;rotate:-1deg;scale:1}}
 .native-app .native-pet-orbit{
   --pet-radius:clamp(78px,24vw,126px);
   position:absolute;
@@ -4786,3 +4799,21 @@ html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{d
 html.native-platform .site-footer{display:none!important}
 select[data-world-bg]{display:none!important}
 label:has(>select[data-world-bg])::after{content:"제공받은 기본 마을 손그림";display:block;padding:11px 13px;border:1px solid var(--line);border-radius:13px;background:var(--panel);font-weight:800}
+
+/* Light-mode character editor: selected choices must remain unmistakable. */
+html[data-color-mode="light"] .mobile-character-editor-dialog :is(.chips,.personality-choice,.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) button.on,
+html[data-color-mode="light"] .character-editor :is(.chips,.personality-choice,.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) button.on{
+  border-color:#176b60!important;
+  outline:3px solid color-mix(in srgb,#176b60 24%,transparent)!important;
+  outline-offset:1px!important;
+  background:linear-gradient(135deg,#176b60,#4c8179)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 7px 18px #176b6038!important;
+}
+html[data-color-mode="light"] .mobile-character-editor-dialog :is(input,select,textarea):focus,
+html[data-color-mode="light"] .character-editor :is(input,select,textarea):focus{
+  border-color:#176b60!important;
+  outline:3px solid color-mix(in srgb,#176b60 22%,transparent)!important;
+  outline-offset:1px!important;
+}

@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260809a";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260809a";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260809d";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260809d";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -271,19 +271,35 @@ function nativeFoodSymbol(item,text){
   if(/술|와인|칵테일/.test(value))return "🍷";
   return "🥄";
 }
+function nativeOrganizingSymbol(text){
+  if(/원두|커피콩/.test(text))return "🫘";
+  if(/책|책장|서가|잡지/.test(text))return "📚";
+  if(/옷|의류|옷장|서랍장/.test(text))return "👕";
+  if(/수건|침구|이불|담요/.test(text))return "🧺";
+  if(/화장품|스킨케어|세면도구/.test(text))return "🧴";
+  if(/냉장고|식재료|채소|과일/.test(text))return "🥕";
+  if(/메모|기록|문서|영수증|가계부|일정/.test(text))return "📝";
+  if(/가방|백팩/.test(text))return "🎒";
+  if(/카드|보드게임/.test(text))return "🎲";
+  if(/택배|소포|포장|상자/.test(text))return "📦";
+  if(/쿠션|소파/.test(text))return "🛋️";
+  return "";
+}
 function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   let symbol="";
   let item=null;
   if(actionKind==="eating"){
     item=nativeSceneFoodItem(person,entry,text);
     symbol=nativeFoodSymbol(item,text);
-  }else if(actionKind==="pet-care")symbol="🧶";
+  }else if(actionKind==="coffee-drinking"||actionKind==="coffee-brewing")symbol="☕";
+  else if(actionKind==="beans-organizing")symbol="🫘";
+  else if(actionKind==="pet-care")symbol="🧶";
   else if(actionKind==="sweeping")symbol="🧹";
   else if(actionKind==="dishwashing"||actionKind==="wiping")symbol="🧽";
   else if(actionKind==="laundry")symbol="🧺";
   else if(actionKind==="spice-organizing")symbol="🧂";
   else if(actionKind==="accessory-organizing")symbol="💍";
-  else if(actionKind==="organizing")symbol="🗃️";
+  else if(actionKind==="organizing")symbol=nativeOrganizingSymbol(text);
   else if(actionKind==="gaming")symbol="🎮";
   else if(actionKind==="cooking")symbol="🍳";
   else if(actionKind==="reading")symbol="📖";
@@ -355,14 +371,17 @@ function nativeScenePresentation(c,entry){
     :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
       :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)/.test(text)?"dishwashing"
         :/세탁|빨래/.test(text)?"laundry"
-          :/향신료.{0,18}(정리|분류|고르|배치)|(?:정리|분류|고르|배치).{0,18}향신료/.test(text)?"spice-organizing"
+          :/커피.{0,16}(마시|한 모금|맛보)|(?:마시|한 모금|맛보).{0,16}커피/.test(text)?"coffee-drinking"
+            :/커피.{0,18}(내리|추출|드립|머신)|(?:내리|추출|드립).{0,18}커피|원두.{0,12}(갈|분쇄|추출)/.test(text)?"coffee-brewing"
+              :/원두.{0,18}(정리|정돈|분류|고르|배치|밀봉|옮기|담)|(?:정리|정돈|분류|고르|배치|밀봉|옮기|담).{0,18}원두/.test(text)?"beans-organizing"
+                :/게임|한 판|콘솔|컨트롤러|플레이|보드게임/.test(text)&&!/게임.{0,10}(기록|메모).{0,10}(정리|분류)/.test(text)?"gaming"
+                  :/향신료.{0,18}(정리|분류|고르|배치)|(?:정리|분류|고르|배치).{0,18}향신료/.test(text)?"spice-organizing"
             :/(?:액세서리|악세서리|장신구).{0,18}(정리|분류|고르|배치)|(?:정리|분류|고르|배치).{0,18}(?:액세서리|악세서리|장신구)/.test(text)?"accessory-organizing"
               :/정리|정돈|분류|배치|제자리/.test(text)?"organizing"
                 :/청소|먼지|닦/.test(text)?"wiping"
                   :/요리|굽|끓이|볶|레시피|조리/.test(text)?"cooking"
                     :/반려동물|함께 사는 존재|캣타워|고양이|강아지|반려견|놀아 주는|놀아주는|먹이/.test(text)?"pet-care"
-                      :/먹는 중|먹고|먹으며|식사|디저트|간식|차를 마|음료를 마|커피를 마|초밥을 먹|메뉴.{0,12}(먹|맛보|고르)/.test(text)?"eating"
-                        :/게임|한 판|콘솔|컨트롤러|플레이|보드게임/.test(text)?"gaming"
+                      :/먹는 중|먹고|먹으며|식사|디저트|간식|차를 마|음료를 마|초밥을 먹|메뉴.{0,12}(먹|맛보|고르)/.test(text)?"eating"
                         :/책을 읽|독서|읽는 중/.test(text)?"reading"
                           :/글을 쓰|초안|메모|기록하는 중/.test(text)?"writing"
                             :/음악|노래|연주|턴테이블/.test(text)?"music"
