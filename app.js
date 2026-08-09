@@ -1820,7 +1820,7 @@ async function exportRelationshipMapPng(){
     foreign.replaceWith(group);
   }
   const style=document.createElementNS(svgNs,"style");
-  style.textContent=`.map-official rect{fill:#fffdf9;stroke:#d8cec4;stroke-width:2}.map-relation{font:800 15px sans-serif;fill:#33261f}.map-stage{font:600 11px sans-serif;fill:#6f625a}.map-heart{font:900 24px sans-serif;stroke:#fff;stroke-width:4;paint-order:stroke}`;
+  style.textContent=`.map-official rect{display:none}.map-relation{font:800 15px sans-serif;fill:#33261f;paint-order:stroke;stroke:#fffdf9;stroke-width:5px;stroke-linejoin:round}.map-stage{font:600 11px sans-serif;fill:#6f625a;paint-order:stroke;stroke:#fffdf9;stroke-width:4px;stroke-linejoin:round}.map-heart{font:900 24px sans-serif;stroke:#fff;stroke-width:4;paint-order:stroke}`;
   defs.after(style);
   const serialized=new XMLSerializer().serializeToString(clone);
   const blob=new Blob([serialized],{type:"image/svg+xml;charset=utf-8"});

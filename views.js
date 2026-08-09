@@ -199,7 +199,11 @@ function activeCatalogItems(entry){
 }
 const PET_SCENE_EMOJI={강아지:"🐶",고양이:"🐱",새:"🐦",거북이:"🐢",호랑이:"🐯",인공지능:"🤖",식물:"🪴",드래곤:"🐉",기타:"✨"};
 function nativePetForScene(c,entry){
-  const home=state.homes?.[entry?.visitHomeId||c?.homeId],pets=home?.pets||[];
+  const preferredHome=state.homes?.[entry?.visitHomeId||c?.homeId];
+  const pets=[...(preferredHome?.pets||[])];
+  Object.values(state.homes||{}).forEach(home=>(home?.pets||[]).forEach(pet=>{
+    if(!pets.some(item=>item.id===pet.id))pets.push(pet);
+  }));
   if(!pets.length)return null;
   const text=`${entry?.title||""} ${entry?.desc||""}`;
   let pet=entry?.petId?pets.find(item=>item.id===entry.petId):pets.find(item=>item.name&&text.includes(item.name));
@@ -246,8 +250,9 @@ function nativeSceneItemScore(person,item,entry){
 function nativeSceneFoodItem(person,entry,text){
   const available=catalogItems().filter(item=>item.kind==="food"||item.kind==="drink");
   if(!available.length)return null;
-  const drinkScene=/차를 마|음료|커피|주스|탄산|술|칵테일|마실/.test(text);
-  const mealScene=/먹|식사|메뉴|디저트|간식|초밥|아침|점심|저녁/.test(text);
+  const drinkScene=/(?:차|음료|커피|주스|탄산|술|칵테일|물)(?:을|를)?\s*(?:마시|마셔|따르|우리|내리)|한\s*잔|마실\s*(?:것|거리)/.test(text);
+  const mealScene=/(?:음식|밥|식사|메뉴|디저트|간식|초밥|아침|점심|저녁)(?:을|를)?\s*(?:먹|맛보|고르|주문|나누)|먹는\s*중|먹고\s*있는|식사하는/.test(text);
+  if(!drinkScene&&!mealScene)return null;
   const matching=available.filter(item=>drinkScene&&!mealScene?item.kind==="drink":mealScene&&!drinkScene?item.kind==="food":true);
   return (matching.length?matching:available).slice().sort((a,b)=>nativeSceneItemScore(person,b,entry)-nativeSceneItemScore(person,a,entry))[0]||null;
 }
@@ -272,19 +277,21 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   let item=null;
   if(actionKind==="eating"){
     item=nativeSceneFoodItem(person,entry,text);
+    if(!item)return "";
     symbol=nativeFoodSymbol(item,text);
+  }else if(actionKind==="pet-care")symbol="🧶";
   }else if(actionKind==="sweeping")symbol="🧹";
   else if(actionKind==="dishwashing"||actionKind==="wiping")symbol="🧽";
   else if(actionKind==="laundry")symbol="🧺";
   else if(actionKind==="spice-organizing")symbol="🧂";
   else if(actionKind==="accessory-organizing")symbol="💍";
-  else if(actionKind==="organizing")symbol="📦";
+  else if(actionKind==="organizing")symbol="🗃️";
   else if(actionKind==="gaming")symbol="🎮";
   else if(actionKind==="cooking")symbol="🍳";
   else if(actionKind==="reading")symbol="📖";
-  else if(actionKind==="writing")symbol="✍️";
+  else if(actionKind==="writing")symbol="📝";
   else if(actionKind==="music")symbol="🎵";
-  else if(actionKind==="exercise")symbol="🏋️";
+  else if(actionKind==="exercise")symbol="●━●";
   else if(actionKind==="grooming")symbol=/향수|향을 고르/.test(text)?"🧴":"💄";
   else if(actionKind==="repair")symbol="🛠️";
   else if(actionKind==="gardening")symbol="🪴";
@@ -355,8 +362,9 @@ function nativeScenePresentation(c,entry){
               :/정리|정돈|분류|배치|제자리/.test(text)?"organizing"
                 :/청소|먼지|닦/.test(text)?"wiping"
                   :/요리|굽|끓이|볶|레시피|조리/.test(text)?"cooking"
-                    :/먹|식사|디저트|간식|차를 마|음료를 마|커피를 마|초밥|메뉴/.test(text)?"eating"
-                      :/게임|한 판|콘솔|컨트롤러|플레이|보드게임/.test(text)?"gaming"
+                    :/반려동물|함께 사는 존재|캣타워|고양이|강아지|반려견|놀아 주는|놀아주는|먹이/.test(text)?"pet-care"
+                      :/먹는 중|먹고|먹으며|식사|디저트|간식|차를 마|음료를 마|커피를 마|초밥을 먹|메뉴.{0,12}(먹|맛보|고르)/.test(text)?"eating"
+                        :/게임|한 판|콘솔|컨트롤러|플레이|보드게임/.test(text)?"gaming"
                         :/책을 읽|독서|읽는 중/.test(text)?"reading"
                           :/글을 쓰|초안|메모|기록하는 중/.test(text)?"writing"
                             :/음악|노래|연주|턴테이블/.test(text)?"music"
@@ -653,7 +661,7 @@ function observe(){
     :(place?.interiorImage||place?.image||"");
   const nativeBackground=locationBackground||c.photo||state.world.bg;
   const nativeEntries=displayTimeline(c,e);
-  const nativeLog=nativeEntries.slice(-4).reverse().map(item=>`<li><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
+  const nativeLog=nativeEntries.slice(-2).reverse().map(item=>`<li><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
   const nativeFullLog=`<dialog class="native-log-dialog" data-native-log-dialog><form method="dialog"><div class="native-log-dialog-head"><span><small>오늘의 기록</small><h2>${esc(c.name)}의 생활 로그</h2></span><button value="close" aria-label="닫기">×</button></div><ol>${dailyLogItems(nativeEntries,c)||"<li>아직 기록이 없어요.</li>"}</ol><button class="primary native-log-dialog-close" value="close">닫기</button></form></dialog>`;
   const activeItems=activeCatalogItems(e);
   const itemOrbit=activeItems.length?`<span class="native-active-item-orbits" aria-label="지금 사용 중인 취향 사전 항목">${activeItems.map((item,index)=>`<span class="native-active-item-orbit" style="--orbit-angle:${index*360/activeItems.length}deg;--orbit-delay:${index*-.72}s" title="${esc(item.name)}"><img src="${esc(item.image)}" alt="${esc(item.name)}"></span>`).join("")}</span>`:"";

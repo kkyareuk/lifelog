@@ -794,8 +794,7 @@ function morningScripts(c,date){
     ["주방에서 새로운 레시피를 시험하는 중","재료의 양과 향을 비교하며 다음에는 어떻게 바꿀지 기록하고 있어요.","kitchen"],
     ["좋아하는 음료를 준비하는 중","온도와 시간을 세심하게 맞춰 향을 확인한 뒤 천천히 한 잔을 완성하고 있어요.","kitchen"]
   );
-  if(likes.some(x=>/반려동물|식물|원예|자연|환경/.test(x)))choices.push(
-    ["집 안의 생물을 돌보는 중","물과 먹이를 확인하고 상태가 달라진 곳은 없는지 자세히 살펴보고 있어요.","living"],
+  if(likes.some(x=>/식물|원예|자연|환경/.test(x)))choices.push(
     ["식물 잎을 정리하는 중","마른 잎을 떼어 내고 화분의 흙과 햇빛이 충분한지 확인하고 있어요.","living"]
   );
   if(likes.some(x=>/사진|영상 편집|미술|공예|뜨개|재봉|목공|도예/.test(x)))choices.push(
@@ -1615,7 +1614,7 @@ const homeActivityPoolFor=(c,date=new Date())=>{
       드래곤:`${pet.name}이 쫓기 좋아하는 장난감을 움직여 주자 꼬리와 날개를 들썩이며 주위를 신나게 돌고 있어요.`,
       기타:`${pet.name}이 좋아하는 방식과 싫어하는 자극을 살피며 무리하지 않는 범위에서 함께 놀고 있어요.`
     };
-    pool.push([`${pet.name}와 놀아 주는 중`,playText[pet.species]||`${pet.name}의 반응을 살피며 ${species}에게 익숙한 방식으로 함께 시간을 보내고 있어요.`,roomKey,`pet:${pet.id}`,{petId:pet.id}]);
+    pool.push([`${pet.name} 놀아 주는 중`,playText[pet.species]||`${pet.name}의 반응을 살피며 ${species}에게 익숙한 방식으로 함께 시간을 보내고 있어요.`,roomKey,`pet:${pet.id}`,{petId:pet.id}]);
   });
   const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{},hearing=body.hearing||{},vision=body.vision||{};
   Object.entries(state.homes[c.homeId]?.rooms||{}).forEach(([roomKey,room])=>{

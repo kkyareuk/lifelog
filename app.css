@@ -1351,8 +1351,8 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .relationship-map-node.map-node-pair{width:180px;height:180px}
 .relationship-map-node.map-node-pair .avatar,.relationship-map-node.map-node-pair .sprite{width:116px;height:116px}
 .relationship-map-node.map-node-pair b{max-width:150px;font-size:26px}
-.relationship-map-canvas .map-official rect{fill:rgba(255,255,255,.94);stroke:#ded2c7;stroke-width:1.5px}
-.relationship-map-canvas .map-official text{stroke:none;paint-order:normal}
+.relationship-map-canvas .map-official rect{fill:transparent;stroke:none}
+.relationship-map-canvas .map-official text{paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
 .relation-temporal{display:inline-flex!important;align-items:center;gap:10px;width:auto!important;max-width:none;margin:4px 0!important;padding:10px 13px!important;border:1px solid var(--line);border-radius:14px;background:#f7f8fb}
 .relation-temporal input{width:20px;height:20px;flex:0 0 auto}.relation-temporal span{display:grid;gap:2px}.relation-temporal small{font-weight:500;color:var(--muted)}
 .past-fault{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -4641,8 +4641,8 @@ html[data-color-mode="dark"] .relationship-map-dialog :is(form,.relationship-map
 html[data-color-mode="dark"] .relationship-map-dialog :is(.relationship-map,.relationship-map-canvas){border-color:#ffffff24!important;background:radial-gradient(circle at center,#26384c 0 32%,#101a28 100%)!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-node b{background:#172536!important;color:#f5f8fb!important;box-shadow:0 4px 14px #0007!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-color-legend span{border-color:#ffffff1f!important;background:#172536!important;color:#f5f8fb!important}
-html[data-color-mode="dark"] .relationship-map-dialog svg .map-official rect{fill:#172536!important;stroke:#ffffff35!important}
-html[data-color-mode="dark"] .relationship-map-dialog svg .map-official text{fill:#f5f8fb!important;stroke:#101a28!important}
+html[data-color-mode="dark"] .relationship-map-dialog svg .map-official rect{fill:transparent!important;stroke:none!important}
+html[data-color-mode="dark"] .relationship-map-dialog svg .map-official text{fill:#f5f8fb!important;paint-order:stroke;stroke:#101a28!important;stroke-width:5px;stroke-linejoin:round}
 
 /* 프로필 편집 안의 선택 묶음도 현재 화면 모드를 그대로 따른다. */
 html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) :is(fieldset,.profile-multi-choice,.physical-trait-group,.representation-warning,.profile-tag-actions,.eye-color-pair){
@@ -4753,11 +4753,11 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
   .font-setting-grid{grid-template-columns:1fr}
 }
 
-.native-app .native-status-card p{display:block!important;max-height:8.4em!important;overflow-y:auto!important;font-size:clamp(1.05rem,2.1vw,1.2rem)!important;line-height:1.6!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
-.native-app .native-status-card h1{max-height:3.9em!important;overflow-y:auto!important}
-.native-app .native-status-card{max-height:min(40dvh,390px)!important}
-.native-app .native-log-card{max-height:min(29dvh,290px)!important;overflow:hidden!important}
-.native-app .native-log-card ol{min-height:0;max-height:none!important;overflow-y:auto!important}
+.native-app .native-status-card p{display:block!important;max-height:4.8em!important;overflow-y:auto!important;font-size:clamp(1.05rem,2.1vw,1.2rem)!important;line-height:1.6!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
+.native-app .native-status-card h1{max-height:2.8em!important;overflow-y:auto!important}
+.native-app .native-status-card{max-height:min(31dvh,300px)!important}
+.native-app .native-log-card{max-height:min(20dvh,190px)!important;overflow:hidden!important}
+.native-app .native-log-card ol{min-height:0;max-height:104px!important;overflow-y:auto!important}
 .native-app .native-log-card time{font-size:1.05rem!important}
 .native-app .native-log-card li b{font-size:1.18rem!important;line-height:1.4!important}
 .native-app .native-log-card li small{font-size:1.03rem!important;line-height:1.5!important}

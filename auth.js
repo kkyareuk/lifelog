@@ -7,6 +7,36 @@ const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
 const status=text=>window.ParallelCity?.setAccountStatus(text);
 const clone=value=>JSON.parse(JSON.stringify(value));
+// Firestore는 배열 안에 배열이 들어간 값을 저장하지 못한다. 게임 상태에는
+// 방 배치·일정처럼 중첩 배열이 정상적으로 존재하므로 클라우드 문서에서만
+// 배열을 표시 객체로 감싸고, 기기에서 사용할 때 원래 배열로 되돌린다.
+const FIRESTORE_ARRAY_MARKER="__drawerVillageArrayV1";
+const encodeFirestoreState=value=>{
+  if(Array.isArray(value))return{[FIRESTORE_ARRAY_MARKER]:value.map(encodeFirestoreState)};
+  if(value&&typeof value==="object"){
+    const encoded={};
+    Object.entries(value).forEach(([key,item])=>{
+      if(item===undefined||typeof item==="function"||typeof item==="symbol")return;
+      encoded[key]=encodeFirestoreState(item);
+    });
+    return encoded;
+  }
+  if(typeof value==="number"&&!Number.isFinite(value))return null;
+  return value;
+};
+const decodeFirestoreState=value=>{
+  if(Array.isArray(value))return value.map(decodeFirestoreState);
+  if(value&&typeof value==="object"){
+    const keys=Object.keys(value);
+    if(keys.length===1&&Array.isArray(value[FIRESTORE_ARRAY_MARKER])){
+      return value[FIRESTORE_ARRAY_MARKER].map(decodeFirestoreState);
+    }
+    const decoded={};
+    Object.entries(value).forEach(([key,item])=>{decoded[key]=decodeFirestoreState(item)});
+    return decoded;
+  }
+  return value;
+};
 const canonicalRelationshipType=type=>({
   "폴리 관계":"연인","유사 연인":"연인","비공식 연인":"연인","연애 관계":"연인","커플":"연인",
   "절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구",
@@ -273,15 +303,16 @@ async function upload({silent=false,reason=""}={}){
       });
     }
     const previousSnapshot=await getDoc(cloudDoc()),previous=previousSnapshot.exists()?previousSnapshot.data():null;
+    const previousGameState=decodeFirestoreState(previous?.gameState||null);
     // 오래된 기기가 전체 상태를 다시 올리더라도 클라우드에 이미 남은 삭제 기록이
     // 캐릭터·관계·집·방보다 우선한다. 이 병합이 없으면 다른 기기의 낡은 배열이
     // 삭제한 관계를 같은 ID 또는 다른 ID로 되살릴 수 있다.
-    const tombstoneSafeState=previous?.gameState
-      ?applyLocalTombstones(localState,previous.gameState)
+    const tombstoneSafeState=previousGameState
+      ?applyLocalTombstones(localState,previousGameState)
       :localState;
-    const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previous?.gameState));
+    const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState));
     const {gameState,mediaManifest,uploadedCount}=prepared;
-    await setDoc(cloudDoc(),{gameState,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
+    await setDoc(cloudDoc(),{gameState:encodeFirestoreState(gameState),mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
     publishStorageUsage(mediaManifest,gameState);
     status(`${accountName()} · ${reason||"계정 저장"} 완료`);
     toast(uploadedCount?`동기화되었습니다 · 새 사진 ${uploadedCount}장 저장`:"동기화되었습니다");
@@ -304,9 +335,9 @@ async function download({automatic=false}={}){
     const mergedGuides=[...new Set([...remoteGuides,...localGuideKeys()])];
     publishGuideState(mergedGuides);
     if(user&&mergedGuides.length!==remoteGuides.length)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:mergedGuides}},{merge:true});
-    publishStorageUsage(documentData?.mediaManifest,documentData?.gameState);
+    const remote=decodeFirestoreState(documentData?.gameState||null);
+    publishStorageUsage(documentData?.mediaManifest,remote);
     publishEntitlements(documentData?.entitlements);
-    const remote=documentData?.gameState||null;
     if(!remote){status(`${accountName()} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
     const countCharacters=value=>Array.isArray(value?.characters)?value.characters.length:Object.keys(value?.characters||{}).length;
     const remoteCount=countCharacters(remote),localCount=countCharacters(window.ParallelCity.getState());
