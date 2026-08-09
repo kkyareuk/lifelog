@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810d";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810e";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -703,7 +703,10 @@ function hairStyleSocialDetail(c,seed=""){
 }
 
 function appearanceMorningEntry(c,time,date){
-  const a=appearanceProfile(c),makeup=configuredAppearanceValue(a.makeupLevel),hair=hairLookPhrase(c),styles=a.makeupStyles||[],hairStyles=a.hairStyles||[];
+  const a=appearanceProfile(c),configuredMakeup=configuredAppearanceValue(a.makeupLevel),hair=hairLookPhrase(c),styles=a.makeupStyles||[],hairStyles=a.hairStyles||[];
+  // 사용자가 고른 단계만 따른다. 색조 스타일이 남아 있거나 예전 저장값이
+  // 섞여 있어도 '하지 않음' 캐릭터에게 화장 행동을 추측해 붙이지 않는다.
+  const makeup=["스킨케어만","선크림·기초만","가벼운 메이크업","포인트 메이크업","풀 메이크업"].includes(configuredMakeup)?configuredMakeup:"";
   const parts=[];
   let title="";
   if(makeup&&makeup!=="스킨케어만"){
@@ -1704,6 +1707,120 @@ function medievalize(c,item,date){
   const convert=text=>swaps.reduce((value,[pattern,replacement])=>value.replace(pattern,replacement),String(text||""));
   return {...item,title:convert(item.title),desc:convert(item.desc)};
 }
+const PERSONALITY_DAILY_SCENES={
+  "철두철미함":[
+    ["완료한 일을 다시 검수하는 중","체크 표시만 믿지 않고 결과와 원래 기준을 한 항목씩 대조해 빠진 부분을 찾아냈어요.","study"],
+    ["내일 쓸 물건을 순서대로 놓는 중","아침 동선을 머릿속으로 따라가며 먼저 쓸 물건부터 손이 닿는 위치에 정렬했어요.","entry"],
+    ["파일 이름과 날짜를 통일하는 중","나중에 검색할 때 헷갈리지 않도록 제각각인 기록의 이름과 날짜 형식을 같은 규칙으로 바꿨어요.","study"],
+    ["예비 계획을 한 줄씩 적는 중","예상 밖의 일이 생길 때 무엇부터 바꿀지 두 번째와 세 번째 선택까지 짧게 남겼어요.","study"],
+    ["사용한 도구의 수를 확인하는 중","꺼낸 것과 돌아온 것을 맞춰 보고 하나라도 빠진 곳이 없는지 주변을 다시 훑었어요.","study"]
+  ],
+  "차분하고 신중함":[
+    ["답장을 보내기 전 다시 읽는 중","말이 너무 단정적으로 들리지 않는지 천천히 읽고 뜻이 분명한 문장만 남겼어요.","study"],
+    ["작은 시험부터 해 보는 중","한꺼번에 바꾸지 않고 되돌릴 수 있는 범위에서 먼저 시도해 결과를 지켜봤어요.","study"],
+    ["선택을 잠시 보류한 중","바로 결정하라는 분위기에도 필요한 정보가 모일 때까지 기다리기로 했어요.","living"],
+    ["익숙하지 않은 물건의 설명을 읽는 중","버튼을 누르기 전에 사용 순서와 주의할 점을 끝까지 확인했어요.","study"],
+    ["오늘의 속도를 다시 고르는 중","주변이 바빠도 휩쓸리지 않고 자기 컨디션에 맞는 순서로 할 일을 줄였어요.","living"]
+  ],
+  "냉정하고 논리적":[
+    ["비용과 시간을 나란히 계산하는 중","좋고 싫은 감상은 잠시 미뤄 두고 선택마다 필요한 돈과 시간을 같은 기준으로 비교했어요.","study"],
+    ["문제의 원인을 분리하는 중","동시에 벌어진 일을 하나씩 떼어 놓고 어느 조건에서 문제가 반복되는지 확인했어요.","study"],
+    ["불필요한 단계를 줄이는 중","결과에 영향을 주지 않는 절차를 찾아 빼고 가장 짧은 동선으로 다시 정리했어요.","study"],
+    ["주장의 근거를 확인하는 중","확실한 사실과 아직 추측인 부분을 따로 표시한 뒤 결론을 고쳐 적었어요.","study"],
+    ["우선순위를 수치로 정하는 중","긴급도와 영향도를 점수로 나눠 지금 손댈 일 하나를 골랐어요.","study"]
+  ],
+  "다정하고 세심함":[
+    ["누군가 좋아하는 것을 기억해 두는 중","지나가듯 들었던 취향을 짧게 적어 두고 다음에 부담 없이 챙길 방법을 생각했어요.","study"],
+    ["공용 공간을 조용히 손보는 중","다음 사람이 바로 쓸 수 있도록 필요한 물건만 보기 좋은 자리에 두었어요.","living"],
+    ["안부를 어떻게 물을지 고민하는 중","대답을 강요하지 않으면서도 곁에 있다는 뜻이 전해질 짧은 문장을 골랐어요.","living"],
+    ["남은 간식을 나누어 두는 중","좋아하는 맛이 겹치지 않도록 사람마다 먹기 편한 몫을 따로 챙겼어요.","kitchen"],
+    ["작은 불편을 먼저 고치는 중","누가 부탁하기 전에 자주 걸리던 물건의 위치를 방해되지 않는 곳으로 옮겼어요.","living"]
+  ],
+  "수줍고 내향적":[
+    ["보낼 말을 메모장에 먼저 쓰는 중","바로 대화창을 열기보다 하고 싶은 말을 혼자 읽어 보며 짧게 다듬었어요.","study"],
+    ["집 안의 조용한 자리를 찾는 중","사람 소리와 알림에서 잠시 떨어져 혼자 생각을 가라앉힐 곳에 앉았어요.","living"],
+    ["모임 뒤 혼자 기운을 채우는 중","즐거웠던 장면을 떠올리면서도 아무 말 하지 않아도 되는 시간을 충분히 가졌어요.","bedroom"],
+    ["작게 말할 타이밍을 기다리는 중","여럿의 말이 잦아들 때까지 듣다가 꼭 필요한 한마디만 조심스럽게 준비했어요.","living"],
+    ["혼자 즐길 거리를 꺼내는 중","누구의 반응도 확인하지 않고 좋아하는 활동에 천천히 몰입했어요.","study"]
+  ],
+  "활발하고 사교적":[
+    ["단체 대화에 새 화제를 꺼내는 중","조용해진 분위기에 모두가 가볍게 답할 수 있는 질문을 먼저 던졌어요.","living"],
+    ["다음 만남 날짜를 묻는 중","사람마다 가능한 시간을 빠르게 모아 가장 많이 겹치는 날을 찾아봤어요.","study"],
+    ["재미있는 소식을 바로 나누는 중","혼자 보기 아까운 것을 발견하자 떠오른 사람들에게 짧은 설명과 함께 보냈어요.","living"],
+    ["새로운 사람에게 먼저 인사하는 중","상대가 대답하기 편한 가벼운 말로 대화를 열고 표정을 살폈어요.","living"],
+    ["처진 분위기를 바꾸는 중","잠깐 몸을 움직이거나 바람을 쐬자는 제안으로 흐름을 활기차게 돌렸어요.","living"]
+  ],
+  "즉흥적이고 자유로움":[
+    ["예정에 없던 산책을 준비하는 중","창밖의 날씨가 마음에 들어 원래 순서를 바꾸고 가볍게 나갈 물건을 챙겼어요.","entry"],
+    ["갑자기 방의 배치를 바꾸는 중","지금 더 편해 보이는 방향을 발견해 작은 가구부터 새로운 위치로 옮겨 봤어요.","living"],
+    ["눈에 들어온 재료로 간식을 만드는 중","정해 둔 레시피 없이 지금 있는 재료를 조합해 맛을 보며 방향을 정했어요.","kitchen"],
+    ["하던 일을 재미있는 쪽으로 틀은 중","처음 목표에 매이지 않고 새로 생긴 흥미를 따라 결과를 바꾸었어요.","study"],
+    ["빈 시간을 즉석에서 채우는 중","미리 정한 일정 대신 지금 가장 끌리는 짧은 활동을 골라 바로 시작했어요.","living"]
+  ],
+  "호기심 많고 창의적":[
+    ["익숙한 도구의 다른 쓰임을 시험하는 중","원래 용도를 해치지 않는 범위에서 새로운 조합을 만들어 결과를 비교했어요.","study"],
+    ["궁금한 질문을 따라 조사하는 중","처음 찾던 답에서 새 질문이 생겨 관련된 자료까지 차례로 펼쳐 봤어요.","study"],
+    ["떠오른 모양을 빠르게 그리는 중","완성도를 고민하기 전에 생각이 사라지지 않도록 선과 짧은 메모로 남겼어요.","study"],
+    ["실패한 시도에서 단서를 찾는 중","버리지 않고 무엇이 달랐는지 표시해 다음 실험에 쓸 조건으로 바꿨어요.","study"],
+    ["서로 다른 아이디어를 연결하는 중","상관없어 보이던 두 메모를 나란히 놓고 새로운 사용법을 떠올렸어요.","study"]
+  ],
+  "완고하고 통제적":[
+    ["공용 일정의 순서를 다시 정하려는 중","자기 계획과 다르게 흘러가자 다른 사람의 의사를 묻기 전에 세부 시간을 먼저 바꾸려 했어요.","study"],
+    ["공용 물건의 위치를 자기 기준대로 바꾸는 중","모두가 쓰는 물건도 정한 자리에 있어야 한다며 다른 사람이 둔 순서를 다시 맞췄어요.","living"],
+    ["답이 올 때까지 재차 확인하는 중","상대가 바로 답하지 않자 같은 질문을 표현만 바꾸어 다시 보내려 했어요.","study"],
+    ["예외를 인정하지 않으려는 중","한 번 허용하면 규칙이 흐트러진다고 생각해 기존 기준을 그대로 적용하려 했어요.","living"],
+    ["결정권을 다시 쥐려는 중","다른 제안이 나왔지만 선택지를 좁혀 자기가 정한 방향으로 결론을 끌고 가려 했어요.","living"],
+    ["선을 넘었다는 말을 듣고 멈춰 선 중","상대가 자기 일은 직접 정하겠다고 분명히 말하자 더 밀어붙이지 않고 왜 갈등이 생겼는지 돌아봤어요.","living"]
+  ],
+  "무심하고 독립적":[
+    ["필요한 일을 혼자 끝내는 중","도움을 기다리거나 과정을 설명하지 않고 자기 방식으로 필요한 만큼 마무리했어요.","study"],
+    ["연락을 내려놓고 자기 일정에 집중하는 중","답이 늦는 데 의미를 붙이지 않고 그동안 할 수 있는 일을 먼저 처리했어요.","study"],
+    ["각자의 몫을 분리하는 중","공용으로 할 일과 혼자 책임질 일을 나눠 불필요하게 간섭하지 않았어요.","living"],
+    ["혼자 해결할 방법을 찾는 중","바로 사람을 부르기보다 설명과 도구를 살펴 스스로 가능한 범위를 확인했어요.","study"],
+    ["말없는 휴식을 보내는 중","누군가 알아주길 기다리지 않고 자기에게 편한 방식으로 조용히 쉬었어요.","bedroom"]
+  ],
+  "감정적이고 충동적":[
+    ["마음이 끌린 일을 바로 시작한 중","생각이 식기 전에 필요한 것부터 꺼내 빠르게 손을 움직였어요.","living"],
+    ["보낼 말을 쓰고 다시 멈춘 중","감정대로 적은 문장을 곧장 보내려다 잠깐 숨을 고르고 뜻이 같은지 다시 읽었어요.","study"],
+    ["예상 밖의 결과에 표정이 굳은 중","실망이 곧바로 드러났지만 조금 떨어져 마음이 가라앉을 시간을 가졌어요.","living"],
+    ["갑자기 마음에 든 물건을 살펴보는 중","바로 고르려다가 필요한지 한 번 더 확인하려고 장바구니에만 담아 두었어요.","living"],
+    ["기쁜 소식을 참지 못하고 나누는 중","떠오른 사람에게 곧장 소식을 보내고 반응을 기다리며 들뜬 표정을 감추지 못했어요.","living"]
+  ],
+  "장난기 많음":[
+    ["평범한 물건에 우스운 별명을 붙이는 중","혼자 알아볼 이름을 적어 두고 볼 때마다 작게 웃었어요.","study"],
+    ["사소한 일을 게임처럼 바꾸는 중","시간 안에 끝내기 같은 무해한 규칙을 만들어 지루한 순서를 놀이로 바꿨어요.","living"],
+    ["재치 있는 답장을 고르는 중","상대가 불편하지 않을 선에서 평범한 대답을 살짝 비틀어 보냈어요.","study"],
+    ["작은 장난을 준비하다 선을 확인하는 중","상대가 싫어할 만한 요소는 빼고 바로 되돌릴 수 있는 장난만 남겼어요.","living"],
+    ["혼자만의 엉뚱한 규칙을 만드는 중","반복되는 행동에 재미있는 순서를 붙여 결과보다 과정을 즐겼어요.","living"]
+  ]
+};
+const BODY_DETAIL_DAILY_SCENES={
+  "근육이 발달함":["옷의 움직임을 확인하는 중","어깨와 팔을 천천히 움직여 오늘 입은 옷이 당기거나 동작을 막는 곳이 없는지 살폈어요."],
+  "잔근육이 발달함":["가볍게 몸의 균형을 잡는 중","큰 동작보다 작은 힘 조절에 집중하며 몸의 좌우 균형을 차분히 느껴 봤어요."],
+  "근육선이 선명함":["편한 옷차림을 고르는 중","몸을 조이지 않고 움직임이 자연스러운 옷을 골라 오늘 일정에 맞게 입었어요."],
+  "유연한 편":["짧게 관절을 풀어 주는 중","무리해서 범위를 넓히지 않고 편안한 각도에서 몸을 부드럽게 움직였어요."],
+  "상체가 발달함":["상의의 맞음새를 살피는 중","어깨와 가슴 부분이 당기지 않는지 팔을 움직여 보고 편한 옷을 골랐어요."],
+  "하체가 발달함":["바지의 움직임을 확인하는 중","앉고 일어날 때 허벅지와 무릎이 불편하지 않은 옷을 골랐어요."],
+  "팔다리가 긴 편":["소매와 기장을 맞춰 보는 중","움직일 때 손목과 발목이 지나치게 드러나지 않는지 거울 앞에서 기장을 확인했어요."],
+  "팔다리가 짧은 편":["옷의 기장을 접어 맞추는 중","남는 소매와 바짓단을 움직이기 편한 길이로 정돈했어요."],
+  "자세가 반듯함":["앉는 자세를 편하게 고치는 중","곧게 세운 몸에 힘이 과하게 들어가지 않도록 어깨를 내리고 편한 위치를 찾았어요."],
+  "구부정한 자세":["굳은 어깨를 천천히 푸는 중","자세를 억지로 세우지 않고 뭉친 곳이 편해질 만큼만 부드럽게 움직였어요."],
+  "글래머":["몸에 맞는 실루엣을 고르는 중","특정 부위를 숨기거나 과하게 강조할 필요 없이 오늘 자기 마음에 드는 옷차림을 골랐어요."],
+  "허리가 잘록함":["허리선이 편한 옷을 맞춰 보는 중","모양뿐 아니라 오래 앉아 있어도 조이지 않는 위치로 허리선을 맞췄어요."],
+  "허리선이 곧은 편":["상의와 하의의 균형을 보는 중","자기 체형에 자연스럽게 이어지는 길이와 색 조합을 골랐어요."],
+  "골반이 넓음":["앉고 걷기 편한 하의를 고르는 중","모양에 몸을 억지로 맞추지 않고 골반과 허벅지가 편안한 옷을 골랐어요."],
+  "골반이 좁음":["하의의 허리 위치를 맞추는 중","흘러내리거나 조이지 않도록 지금 몸에 맞는 위치로 옷을 정돈했어요."],
+  "가슴이 큰 편":["상의의 착용감을 확인하는 중","가슴과 어깨를 조이지 않고 움직일 때 뜨는 곳이 없는 옷을 골랐어요."],
+  "가슴이 작은 편":["편한 상의를 골라 입는 중","체형을 보정해야 한다고 생각하지 않고 오늘 움직임과 취향에 맞는 옷을 골랐어요."],
+  "복부가 부드러운 편":["배를 조이지 않는 옷을 고르는 중","앉거나 식사할 때도 편안하도록 복부에 여유가 있는 옷을 골랐어요."],
+  "체지방이 적은 편":["온도에 맞는 겉옷을 챙기는 중","몸의 인상보다 오늘 느끼는 온도를 기준으로 얇은 겉옷을 하나 더 준비했어요."],
+  "걸음이 가벼움":["가벼운 걸음으로 집 안을 오가는 중","발소리를 크게 내지 않고 필요한 물건을 빠르게 챙겨 자리를 옮겼어요."],
+  "걸음이 묵직함":["발밑을 확인하며 걷는 중","익숙한 보폭으로 안정감 있게 움직이며 바닥에 걸릴 것이 없는지 살폈어요."],
+  "붓기가 잘 생김":["몸이 편한 착용감을 고르는 중","오늘 몸 상태를 살펴 조이는 장신구와 옷은 피하고 편한 것을 골랐어요."],
+  "체중 변화가 잦음":["지금 몸에 맞는 옷을 고르는 중","예전 치수에 맞추려 하지 않고 오늘 편안하게 움직일 수 있는 옷을 골랐어요."],
+  "전체적으로 둥근 인상":["부드러운 실루엣의 옷을 맞춰 보는 중","자기 몸의 선을 숨기거나 평가하지 않고 지금 마음에 드는 조합을 골랐어요."],
+  "각지고 단단한 인상":["옷깃과 어깨선을 맞추는 중","몸의 선과 자연스럽게 어울리면서 움직임을 막지 않는 위치로 옷매무새를 정리했어요."]
+};
 function contextualDailyEvent(c,time,date){
   const age=String(c.ageGroup||"성인"),pool=[];
   if(["영아","유아","어린이"].includes(age))pool.push(
@@ -1729,6 +1846,12 @@ function contextualDailyEvent(c,time,date){
     ["갑자기 생각난 일을 시작한 중","원래 하려던 일을 잠시 미뤄 두고 지금 가장 마음이 가는 일에 손을 뻗었어요.","living"]);
   if(/계획적|강박적으로 계획함/.test(c.planningStyle||""))pool.push(
     ["남은 시간을 다시 배분하는 중","예상보다 늦어진 일을 확인하고 쉬는 시간까지 포함해 오늘 계획을 촘촘하게 다시 맞추고 있어요.","study"]);
+  (c.personalityTypes||[]).forEach(type=>pool.push(...(PERSONALITY_DAILY_SCENES[type]||[])));
+  if(c.interference==="통제광"||c.interference==="강하게 간섭함")pool.push(...PERSONALITY_DAILY_SCENES["완고하고 통제적"]);
+  (c.bodyProfile?.physicalTraits||[]).forEach(trait=>{
+    const scene=BODY_DETAIL_DAILY_SCENES[trait];
+    if(scene)pool.push([scene[0],scene[1],"bedroom"]);
+  });
   if((c.hobbies||[]).length)pool.push(
     [`${c.hobbies[hash(`${c.id}:${dayKey(date)}:context-hobby`)%c.hobbies.length]}에 몰두하는 중`,"좋아하는 활동에 필요한 도구를 차분히 꺼내고 자기 방식대로 집중할 환경을 만들었어요.","study"]);
   if(!pool.length)pool.push(["잠깐 숨을 고르는 중","하던 일을 멈추고 물을 한 모금 마시며 다음에 무엇을 할지 천천히 생각하고 있어요.","living"]);
@@ -1949,7 +2072,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260810d";
+const ENGINE_VERSION="20260810e";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

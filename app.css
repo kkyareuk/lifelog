@@ -3459,11 +3459,27 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 .native-app .scene-action-gaming :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-game-buttons .48s steps(2,end) infinite}
 .native-app .scene-action-assistive-check :is(.native-scene-action-prop,.native-person-action-prop){animation:native-prop-gear-check 2.1s ease-in-out infinite}
 .native-app .scene-action-coffee-drinking .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-eating-pause 3.4s ease-in-out infinite}
+.native-app .scene-action-washing-up :is(.native-scene-action-prop,.native-person-action-prop){
+  color:#dffaff;
+  text-shadow:-15px 12px 0 #bdefff,14px -10px 0 #fff,22px 13px 0 #9de4f5;
+  animation:native-soap-bubbles 1.85s ease-in-out infinite;
+}
+.native-app .scene-action-washing-up :is(.native-scene-action-prop,.native-person-action-prop)::before,
+.native-app .scene-action-washing-up :is(.native-scene-action-prop,.native-person-action-prop)::after{
+  content:"○";position:absolute;color:#eaffff;font-size:.68em;font-weight:900;opacity:.85;
+  text-shadow:0 2px 5px #46a8bc80;
+}
+.native-app .scene-action-washing-up :is(.native-scene-action-prop,.native-person-action-prop)::before{left:-18px;top:21px;animation:native-soap-orbit 1.35s ease-in-out infinite}
+.native-app .scene-action-washing-up :is(.native-scene-action-prop,.native-person-action-prop)::after{right:-15px;top:-7px;animation:native-soap-orbit 1.6s -.7s ease-in-out infinite reverse}
+.native-app .scene-action-washing-up .native-character-stage:not(.has-scene-lineup) .native-main-character{animation:native-wash-bob 1.85s ease-in-out infinite}
 @keyframes native-prop-coffee-sip{0%,24%,100%{translate:7px 9px;rotate:7deg}48%,68%{translate:-9px -15px;rotate:-9deg}76%{translate:-5px -11px;rotate:-4deg}}
 @keyframes native-prop-coffee-brew{0%,100%{translate:-6px 4px;rotate:-7deg}45%{translate:5px -4px;rotate:6deg}62%{translate:2px -7px;rotate:2deg}}
 @keyframes native-prop-beans-sort{0%,100%{translate:-10px 3px;rotate:-5deg}50%{translate:10px -3px;rotate:5deg}}
 @keyframes native-prop-game-buttons{0%{translate:-4px 1px;rotate:-3deg;scale:1}50%{translate:4px -2px;rotate:3deg;scale:1.07}100%{translate:-2px 0;rotate:-1deg;scale:1}}
 @keyframes native-prop-gear-check{0%,100%{translate:-5px 4px;rotate:-18deg;scale:1}50%{translate:5px -5px;rotate:72deg;scale:1.08}}
+@keyframes native-soap-bubbles{0%,100%{translate:-7px 8px;rotate:-7deg;scale:.92}48%{translate:7px -10px;rotate:7deg;scale:1.08}72%{translate:-2px -15px;rotate:-2deg;scale:1}}
+@keyframes native-soap-orbit{0%,100%{translate:0 8px;scale:.72;opacity:.35}55%{translate:5px -15px;scale:1.08;opacity:1}}
+@keyframes native-wash-bob{0%,100%{translate:-2px 3px;rotate:-1deg}50%{translate:3px -3px;rotate:1deg}}
 .native-app .native-pet-orbit{
   --pet-radius:clamp(78px,24vw,126px);
   position:absolute;
@@ -4995,5 +5011,6 @@ html.native-app[data-active-tab="observe"] .native-game-menu button>small{
 }
 
 @media(prefers-reduced-motion:reduce){
-  .native-app .scene-action-drowsy :is(.native-main-character,.native-scene-lineup-person,.native-character-drowsy-mark){animation:none!important}
+  .native-app .scene-action-drowsy :is(.native-main-character,.native-scene-lineup-person,.native-character-drowsy-mark),
+  .native-app .scene-action-washing-up :is(.native-main-character,.native-scene-action-prop,.native-person-action-prop,.native-scene-lineup-person){animation:none!important}
 }

@@ -2,6 +2,7 @@
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,setDoc,collection,getDocs,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -142,7 +143,7 @@ const digestBlob=async blob=>{
 function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
   if(code.includes("character-slot-limit"))return `캐릭터 슬롯 초과 (${error?.detail||""}) · 초과 인원을 정리한 뒤 다시 저장해 주세요`;
-  if(code.includes("legacy-document-too-large"))return "동기화 규칙 업데이트 필요 · 안내된 Firebase 배포 명령을 실행해 주세요";
+  if(code.includes("legacy-document-too-large"))return "동기화 데이터가 너무 큼 · 사진을 줄이거나 Firebase 프로젝트 권한을 확인해 주세요";
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
   if(code.includes("resource-exhausted"))return "저장 데이터가 너무 큼 · 인물별 분할 저장을 다시 시도해 주세요";
   if(code.includes("failed-precondition"))return "Firebase 데이터베이스 설정 확인 필요";
@@ -169,16 +170,21 @@ const cloudDayDoc=(id,dateKey)=>doc(db,"users",user.uid,"characters",safeDocumen
 async function readCloudGameState(rootData){
   // 호환 형식으로 저장된 완전한 루트 상태가 있으면, 중간에 끊긴 v2
   // 하위 문서보다 이것을 우선한다.
+  if(rootData?.syncFormat===1&&rootData?.gameStateGzip)return decodeCompressedLegacyState(rootData.gameStateGzip);
   if(rootData?.syncFormat===1&&rootData?.gameState)return decodeFirestoreState(rootData.gameState);
   let coreSnapshot;
   try{coreSnapshot=await getDoc(cloudCoreDoc())}
   catch(error){
     // 아직 하위 문서 규칙을 배포하지 않은 기존 Firebase 프로젝트도
     // 루트 문서 백업은 계속 읽고 쓸 수 있어야 한다.
-    if(canUseLegacySync(error))return decodeFirestoreState(rootData?.gameState||null);
+    if(canUseLegacySync(error))return rootData?.gameStateGzip
+      ?decodeCompressedLegacyState(rootData.gameStateGzip)
+      :decodeFirestoreState(rootData?.gameState||null);
     throw error;
   }
-  if(!coreSnapshot.exists())return decodeFirestoreState(rootData?.gameState||null);
+  if(!coreSnapshot.exists())return rootData?.gameStateGzip
+    ?decodeCompressedLegacyState(rootData.gameStateGzip)
+    :decodeFirestoreState(rootData?.gameState||null);
   const coreData=decodeFirestoreState(coreSnapshot.data()?.state||{});
   const characters={};
   const characterSnapshots=await getDocs(cloudCharacters());
@@ -237,14 +243,51 @@ const canUseLegacySync=error=>{
   const code=String(error?.code||error?.message||"").toLowerCase();
   return code.includes("permission-denied")||code.includes("failed-precondition")||code.includes("not-found");
 };
+const bytesToBase64=bytes=>{
+  let binary="";
+  for(let offset=0;offset<bytes.length;offset+=32768){
+    binary+=String.fromCharCode(...bytes.subarray(offset,offset+32768));
+  }
+  return btoa(binary);
+};
+const base64ToBytes=value=>Uint8Array.from(atob(String(value||"")),character=>character.charCodeAt(0));
+async function encodeCompressedLegacyState(gameState){
+  const json=JSON.stringify(encodeFirestoreState(gameState));
+  if(typeof CompressionStream==="function"){
+    const stream=new Blob([json],{type:"application/json"}).stream().pipeThrough(new CompressionStream("gzip"));
+    return bytesToBase64(new Uint8Array(await new Response(stream).arrayBuffer()));
+  }
+  return bytesToBase64(gzipBytes(json));
+}
+async function decodeCompressedLegacyState(value){
+  const bytes=base64ToBytes(value);
+  const json=typeof DecompressionStream==="function"
+    ?await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).text()
+    :ungzipBytes(bytes,{to:"string"});
+  return decodeFirestoreState(JSON.parse(json));
+}
 async function writeLegacyCloudGameState(gameState,mediaManifest){
   const encoded=encodeFirestoreState(gameState);
   const encodedText=JSON.stringify(encoded);
-  if(new TextEncoder().encode(encodedText).byteLength>820000){
-    throw Object.assign(new Error("legacy-document-too-large"),{code:"sync/legacy-document-too-large"});
+  const byteLength=new TextEncoder().encode(encodedText).byteLength;
+  if(byteLength<=700000){
+    await setDoc(cloudDoc(),{
+      gameState:encoded,
+      gameStateGzip:deleteField(),
+      gameStateCompression:deleteField(),
+      syncFormat:1,
+      mediaManifest,
+      updatedAt:serverTimestamp(),
+      profile:{name:accountName(),email:user.email||""}
+    },{merge:true});
+    return;
   }
+  const compressed=await encodeCompressedLegacyState(gameState);
+  if(!compressed||new TextEncoder().encode(compressed).byteLength>780000)throw Object.assign(new Error("legacy-document-too-large"),{code:"sync/legacy-document-too-large"});
   await setDoc(cloudDoc(),{
-    gameState:encoded,
+    gameState:deleteField(),
+    gameStateGzip:compressed,
+    gameStateCompression:"gzip-base64-v1",
     syncFormat:1,
     mediaManifest,
     updatedAt:serverTimestamp(),
@@ -395,7 +438,7 @@ async function upload({silent=false,reason=""}={}){
   try{
     status(`${accountName()} · 올리는 중`);
     const localState=window.ParallelCity.getState();
-    const allowedCharacters=7+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5);
+    const allowedCharacters=5+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5);
     const localCharacterCount=Array.isArray(localState?.order)
       ?new Set(localState.order.filter(id=>localState.characters?.[id])).size
       :Object.keys(localState?.characters||{}).length;

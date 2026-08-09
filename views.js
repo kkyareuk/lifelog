@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810d";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810d";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810e";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810e";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const hasBatchim=value=>{
@@ -134,12 +134,12 @@ let accountText="Google 로그인 안 됨";
 let accountEntitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false};
 const previewConfig=()=>window.PARALLEL_CITY_CONFIG?.beta||{};
 const previewMode=()=>Boolean(previewConfig().enabled);
-const characterLimit=()=>7+(Math.max(0,Number(accountEntitlements.characterSlotPacks)||0)*5);
+const characterLimit=()=>5+(Math.max(0,Number(accountEntitlements.characterSlotPacks)||0)*5);
 const townLimit=()=>2+Math.max(0,Number(accountEntitlements.townSlotPacks)||0);
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const hasDlc=id=>(accountEntitlements.dlcPacks||[]).includes(id);
-const backgroundOptions=()=>`<option value="world-assets/cozy-town.png?v=20260810d" selected>기본 마을 손그림</option>`;
-const TOWN_BACKGROUND="world-assets/cozy-town.png?v=20260810d";
+const backgroundOptions=()=>`<option value="world-assets/cozy-town.png?v=20260810e" selected>기본 마을 손그림</option>`;
+const TOWN_BACKGROUND="world-assets/cozy-town.png?v=20260810e";
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
 const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${id}" ${p.iconPreset===id?"selected":""}>${label}</option>`).join("");
 const visibleTownId=c=>eventFor(c)?.townId||c.townId;
@@ -293,6 +293,7 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
     item=nativeSceneFoodItem(person,entry,text);
     symbol=nativeFoodSymbol(item,text);
   }else if(actionKind==="coffee-drinking"||actionKind==="coffee-brewing")symbol="☕";
+  else if(actionKind==="washing-up")symbol="🫧";
   else if(actionKind==="beans-organizing")symbol="🫘";
   else if(actionKind==="pet-care")symbol="🧶";
   else if(actionKind==="sweeping")symbol="🧹";
@@ -379,6 +380,7 @@ function nativeScenePresentation(c,entry){
   const actionKind=sleeping?"sleep"
     :drowsy?"drowsy"
     :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
+      :/세수|세안|이를 닦|양치|칫솔|치약/.test(text)?"washing-up"
       :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)/.test(text)?"dishwashing"
         :/세탁|빨래/.test(text)?"laundry"
           :/커피.{0,16}(마시|한 모금|맛보)|(?:마시|한 모금|맛보).{0,16}커피/.test(text)?"coffee-drinking"
@@ -1001,7 +1003,7 @@ const HEALTH_CONDITIONS=["당뇨병","고혈압","고지혈증","심혈관 질�
 const BODY_SIZES=["설정하지 않음","매우 마른 체형","마른 체형","슬림한 체형","보통 체형","통통한 체형","비만 체형","근육질 체형","탄탄한 체형","골격이 큰 체형","골격이 작은 체형"];
 const PHYSICAL_TRAIT_GROUPS={
   "키·골격":["키가 매우 큼","키가 큼","키가 작음","키가 매우 작음","팔다리가 긴 편","어깨가 넓음","어깨가 좁음","손이 큼","손이 작음"],
-  "체형의 세부 인상":["글래머","근육이 발달함","유연한 편"],
+  "체형의 세부 인상":["글래머","근육이 발달함","잔근육이 발달함","근육선이 선명함","유연한 편","상체가 발달함","하체가 발달함","허리가 잘록함","허리선이 곧은 편","골반이 넓음","골반이 좁음","가슴이 큰 편","가슴이 작은 편","복부가 부드러운 편","체지방이 적은 편","팔다리가 긴 편","팔다리가 짧은 편","전체적으로 둥근 인상","각지고 단단한 인상","자세가 반듯함","구부정한 자세","걸음이 가벼움","걸음이 묵직함","붓기가 잘 생김","체중 변화가 잦음"],
   "피부·고유 특징":["피부가 밝은 편","중간 피부톤","피부가 어두운 편","구릿빛 피부","창백한 편","흉터가 있음","문신이 있음","주근깨가 있음","점이 있음","보조개가 있음","피어싱을 함"],
   "얼굴·눈의 인상":["안경을 씀","안대","특이동공","세로동공","삼백안","날카로운 눈매","처진 눈매","속눈썹이 김","두꺼운 눈썹"],
   "전체적인 분위기":["중성적인 인상","부드러운 인상","날카로운 인상","아름다움","잘생김","귀여움","우아함","위압적인 분위기","단정한 분위기","퇴폐적인 분위기","신비로운 분위기","소년미","성숙미"]
