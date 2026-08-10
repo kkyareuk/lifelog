@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810p";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810p";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810q";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810q";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -123,6 +123,18 @@ Object.assign(UI_TEXT.ja,{
   "현재 장면 새로고침":"現在のシーンを更新","홈 캐릭터 표현 전환":"ホームのキャラクター表示を切り替える","지금 사용 중인 취향 사전 항목":"現在使用中の好み図鑑アイテム"
 });
 Object.assign(UI_TEXT.en,{
+  "크림":"Cream","포근하고 환한 아이보리빛":"Warm, bright ivory","피치":"Peach","생기 있는 복숭앗빛":"Lively peach","민트":"Mint","산뜻하고 밝은 민트빛":"Fresh, bright mint","선샤인":"Sunshine","따뜻하고 명랑한 노랑빛":"Warm, cheerful yellow",
+  "수면 습관":"Sleep style","자는 중":"Sleeping","자는 중 현재 장면에 반영돼요. 수면 중인 내용은 생활 로그에 기록하지 않아요.":"Used for the current sleeping scene. Sleep-only details are not added to the life log.",
+  "이불을 단정히 덮고 잠":"Sleeps with the blanket neatly arranged","이불을 걷어차며 잠":"Kicks off the blanket","옆으로 웅크려 잠":"Sleeps curled up on their side","팔다리를 뻗고 잠":"Sleeps sprawled out","베개를 끌어안고 잠":"Hugs a pillow while sleeping","잠꼬대를 자주 함":"Often talks in their sleep","뒤척임이 많음":"Tosses and turns often","아주 얌전히 잠":"Sleeps very still","새벽에 자주 깸":"Wakes often before dawn","코를 골며 깊이 잠":"Sleeps deeply and snores",
+  "동기화와 불러오기는 필요할 때만 설정에서 사용해요.":"Use sync and download from Settings whenever you need them.","Firebase가 막혀도 현재 데이터와 사진을 파일 하나로 보관할 수 있어요.":"Keep your current data and images in one file even when Firebase is unavailable.","같은 건물에 있는 캐릭터는 지도에서 한 묶음으로 표시됩니다.":"Characters in the same building are grouped together on the map."
+});
+Object.assign(UI_TEXT.ja,{
+  "크림":"クリーム","포근하고 환한 아이보리빛":"あたたかく明るいアイボリー","피치":"ピーチ","생기 있는 복숭앗빛":"明るく華やかなピーチ","민트":"ミント","산뜻하고 밝은 민트빛":"爽やかで明るいミント","선샤인":"サンシャイン","따뜻하고 명랑한 노랑빛":"あたたかく楽しいイエロー",
+  "수면 습관":"睡眠の癖","자는 중":"睡眠中","자는 중 현재 장면에 반영돼요. 수면 중인 내용은 생활 로그에 기록하지 않아요.":"睡眠中の現在シーンに反映されます。睡眠中だけの内容は生活ログには記録されません。",
+  "이불을 단정히 덮고 잠":"布団をきちんとかけて眠る","이불을 걷어차며 잠":"布団を蹴って眠る","옆으로 웅크려 잠":"横向きに丸まって眠る","팔다리를 뻗고 잠":"手足を伸ばして眠る","베개를 끌어안고 잠":"枕を抱いて眠る","잠꼬대를 자주 함":"寝言が多い","뒤척임이 많음":"寝返りが多い","아주 얌전히 잠":"ほとんど動かず眠る","새벽에 자주 깸":"明け方によく目を覚ます","코를 골며 깊이 잠":"いびきをかいて深く眠る",
+  "동기화와 불러오기는 필요할 때만 설정에서 사용해요.":"必要な時に設定から同期と読み込みを使用できます。","Firebase가 막혀도 현재 데이터와 사진을 파일 하나로 보관할 수 있어요.":"Firebaseが利用できない時も、現在のデータと画像を1つのファイルに保存できます。","같은 건물에 있는 캐릭터는 지도에서 한 묶음으로 표시됩니다.":"同じ建物にいるキャラクターはマップ上でまとめて表示されます。"
+});
+Object.assign(UI_TEXT.en,{
   "사진":"Photo","미등록":"Not added","SD 미등록":"SD not added","사용자 설정":"Custom","HEX 값":"HEX value","대표 테마색 HEX 값":"Primary theme color HEX value","그라데이션 보조색 HEX 값":"Secondary gradient color HEX value",
   "삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.":"Review the warning before deleting this character and their linked records.",
   "프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.":"The profile photo, transparent SD icon, and LD illustration are three separate files. Empty slots keep the existing display.",
@@ -170,7 +182,9 @@ const UI_DYNAMIC_TEXT={
     [/^(\d+)명 저장됨 · 한도 (\d+)명$/,(saved,limit)=>`${saved} saved · limit ${limit}`],
     [/^([\d.]+)MB 사용 · ([\d.]+)MB 남음$/,(used,left)=>`${used}MB used · ${left}MB remaining`],
     [/^현재 총 ([\d.]+)MB · 캐릭터 (\d+)명 · 마을 (\d+)개 · 이미지 링크는 이 용량을 사용하지 않아요\.$/,(total,characters,towns)=>`${total}MB total · ${characters} characters · ${towns} towns · Linked images do not use this storage.`],
-    [/^(.+)의 지금 이 순간$/,(name)=>`${name}'s current moment`]
+    [/^(.+)의 지금 이 순간$/,(name)=>`${name}'s current moment`],
+    [/^(.+) · 자는 중$/,(name)=>`${name} · Sleeping`],
+    [/^(.+)에서 자는 중$/,(place)=>`Sleeping in ${place}`]
   ],
   ja:[
     [/^(.+)의 프로필·SD·LD·테마$/,(name)=>`${name}のプロフィール・SD・LD・テーマ`],
@@ -178,7 +192,9 @@ const UI_DYNAMIC_TEXT={
     [/^(\d+)명 저장됨 · 한도 (\d+)명$/,(saved,limit)=>`${saved}人保存済み・上限${limit}人`],
     [/^([\d.]+)MB 사용 · ([\d.]+)MB 남음$/,(used,left)=>`${used}MB使用・残り${left}MB`],
     [/^현재 총 ([\d.]+)MB · 캐릭터 (\d+)명 · 마을 (\d+)개 · 이미지 링크는 이 용량을 사용하지 않아요\.$/,(total,characters,towns)=>`合計${total}MB・キャラクター${characters}人・村${towns}個・画像リンクはこの容量を使用しません。`],
-    [/^(.+)의 지금 이 순간$/,(name)=>`${name}の今この瞬間`]
+    [/^(.+)의 지금 이 순간$/,(name)=>`${name}の今この瞬間`],
+    [/^(.+) · 자는 중$/,(name)=>`${name}・睡眠中`],
+    [/^(.+)에서 자는 중$/,(place)=>`${place}で睡眠中`]
   ]
 };
 function translatedUiText(value){
@@ -1803,7 +1819,7 @@ function fontSettings(){
   return `<section class="setting-card font-setting-card"><h2>글자와 화면 크기</h2><p>글꼴 정의는 모든 화면이 같은 파일 하나를 사용합니다. 선택한 글꼴은 아래 미리보기에 즉시 반영돼요.</p><div class="font-setting-grid"><label>글자 크기<select data-setting="uiScale">${sizes.map(([value,label])=>`<option value="${value}" ${state.uiScale===value?"selected":""}>${label}</option>`).join("")}</select></label><label>사용할 글꼴<select data-setting="uiFont">${options.map(([value,label])=>`<option value="${value}" ${state.uiFont===value?"selected":""}>${label}</option>`).join("")}</select></label></div><div class="font-preview"><b>서랍마을의 오늘</b><span>캐릭터들이 각자의 하루를 보내고 있어요. 긴 생활 로그도 편안하게 읽어 보세요.</span></div></section><section class="setting-card owner-name-card"><h2>동기화 표시 이름</h2><p>Google 계정 이름 대신 백업과 동기화 화면에 표시할 이름이에요.</p><label>어떻게 불러드릴까요?<input data-setting="ownerName" maxlength="20" value="${ownerName}" placeholder="예: 꺄륵"></label></section>`;
 }
 function visualThemeSettings(){
-  const themes=[["monochrome","흑백","가장 또렷한 기본 테마"],["sage","세이지","차분한 초록빛"],["rose","로즈","부드러운 장밋빛"],["ocean","오션","맑은 푸른빛"],["lavender","라벤더","은은한 보랏빛"]];
+  const themes=[["monochrome","흑백","가장 또렷한 기본 테마"],["cream","크림","포근하고 환한 아이보리빛"],["peach","피치","생기 있는 복숭앗빛"],["mint","민트","산뜻하고 밝은 민트빛"],["sunshine","선샤인","따뜻하고 명랑한 노랑빛"],["sage","세이지","차분한 초록빛"],["rose","로즈","부드러운 장밋빛"],["ocean","오션","맑은 푸른빛"],["lavender","라벤더","은은한 보랏빛"]];
   return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>화이트·다크 모드는 밝기를, 색상 테마는 버튼과 강조색을 정해요.</p><div class="visual-theme-options">${themes.map(([value,label,description])=>`<button type="button" data-visual-theme="${value}" class="${state.visualTheme===value?"on":""}"><i aria-hidden="true"></i><span><b>${label}</b><small>${description}</small></span></button>`).join("")}</div></section>`;
 }
 const baseFontSettings=fontSettings;

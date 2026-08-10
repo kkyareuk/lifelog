@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810p";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810q";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -52,20 +52,82 @@ const isMinorCharacter=character=>MINOR_AGE_GROUPS.has(String(character?.ageGrou
 const mixedAdultMinor=(first,second)=>Boolean(first&&second)&&isMinorCharacter(first)!==isMinorCharacter(second);
 const sleepScene=(c,d=new Date())=>{
   const habit=c.sleepHabit||"이불을 단정히 덮고 잠";
+  const line=(ko,en,ja)=>({ko,en,ja});
   const scenes={
-    "이불을 단정히 덮고 잠":["이불 끝을 가지런히 맞춘 채 편안하게 숨을 고르며 깊이 잠들어 있어요.","베개와 이불을 흐트러뜨리지 않은 채 고요하게 자고 있어요."],
-    "이불을 걷어차며 잠":["자다가 더웠는지 이불을 발끝으로 밀어내고 깊이 잠들어 있어요.","이불이 침대 한쪽으로 밀려난 것도 모른 채 편안하게 자고 있어요."],
-    "옆으로 웅크려 잠":["몸을 옆으로 작게 웅크리고 이불 속에서 따뜻하게 잠들어 있어요."],
-    "팔다리를 뻗고 잠":["침대를 넓게 차지하고 팔다리를 쭉 뻗은 채 느긋하게 자고 있어요."],
-    "베개를 끌어안고 잠":["베개를 품에 꼭 끌어안고 얼굴을 살짝 묻은 채 잠들어 있어요."],
-    "잠꼬대를 자주 함":["알아듣기 어려운 말을 작게 중얼거리다가 다시 조용히 잠들었어요.","꿈속 누군가에게 대답하듯 짧게 잠꼬대를 하고 있어요."],
-    "뒤척임이 많음":["몇 번이나 자세를 바꾸며 뒤척이다가 다시 잠에 빠져들고 있어요."],
-    "아주 얌전히 잠":["처음 누운 모습 그대로 거의 움직이지 않고 아주 얌전히 자고 있어요."],
-    "새벽에 자주 깸":["잠깐 눈을 떴다가 시간을 확인하지 않고 다시 이불 속으로 파고들었어요."],
-    "코를 골며 깊이 잠":["규칙적인 숨소리와 옅은 코골이 소리를 내며 깊이 잠들어 있어요."]
+    "이불을 단정히 덮고 잠":[
+      line("이불 끝을 가지런히 맞춘 채 편안하게 숨을 고르며 깊이 잠들어 있어요.","They are sleeping deeply, breathing evenly beneath a neatly arranged blanket.","布団の端をきれいに揃え、穏やかな寝息を立てて深く眠っています。"),
+      line("베개와 이불을 흐트러뜨리지 않은 채 고요하게 자고 있어요.","They are sleeping quietly without disturbing the pillow or blanket.","枕も布団もほとんど乱さず、静かに眠っています。"),
+      line("이불을 어깨까지 반듯하게 끌어올리고 안정된 숨을 내쉬고 있어요.","The blanket is pulled neatly to their shoulders as their breathing settles into a calm rhythm.","布団を肩まできちんとかけ、落ち着いた呼吸を続けています。"),
+      line("잠들기 전 정리한 침구 모양을 그대로 유지한 채 편안히 쉬고 있어요.","They remain comfortably asleep, the bedding still just as tidy as when they settled in.","眠る前に整えた寝具をほとんど崩さず、心地よく休んでいます。"),
+      line("두 손을 이불 위에 가볍게 모은 채 아주 규칙적으로 숨 쉬며 자고 있어요.","Their hands rest lightly over the blanket while they sleep with slow, even breaths.","布団の上に両手を軽く置き、ゆっくり規則正しい寝息を立てています。")
+    ],
+    "이불을 걷어차며 잠":[
+      line("자다가 더웠는지 이불을 발끝으로 밀어내고 깊이 잠들어 있어요.","Perhaps feeling warm, they have pushed the blanket away with their feet and fallen deeply asleep.","暑かったのか、足先で布団を押しのけたまま深く眠っています。"),
+      line("이불이 침대 한쪽으로 밀려난 것도 모른 채 편안하게 자고 있어요.","They sleep comfortably, unaware that the blanket has slipped to one side of the bed.","布団がベッドの端に寄っていることにも気づかず、気持ちよさそうに眠っています。"),
+      line("한쪽 다리만 이불 밖으로 내놓았다가 결국 이불을 거의 다 걷어찼어요.","One leg escaped first, and now most of the blanket has been kicked aside.","片足を布団の外に出したあと、いつの間にか布団をほとんど蹴ってしまいました。"),
+      line("뒤척이는 사이 이불이 허리 아래로 내려갔지만 그대로 곤히 자고 있어요.","The blanket slipped below their waist while they moved, but they are still sound asleep.","寝返りの間に布団が腰の下までずれましたが、そのままぐっすり眠っています。"),
+      line("구겨진 이불을 발치에 몰아둔 채 시원하다는 듯 느긋하게 잠들어 있어요.","The crumpled blanket has gathered at their feet while they sleep as if enjoying the cool air.","丸まった布団を足元に寄せ、涼しそうにのびのびと眠っています。")
+    ],
+    "옆으로 웅크려 잠":[
+      line("몸을 옆으로 작게 웅크리고 이불 속에서 따뜻하게 잠들어 있어요.","They are curled on their side, sleeping warmly beneath the blanket.","身体を横向きに小さく丸め、布団の中であたたかく眠っています。"),
+      line("무릎을 가슴 가까이 당기고 몸을 둥글게 말아 편안히 자고 있어요.","Their knees are drawn close as they sleep curled into a comfortable ball.","膝を胸の近くまで引き寄せ、身体を丸めて心地よく眠っています。"),
+      line("벽 쪽을 바라본 채 이불 가장자리를 손에 쥐고 조용히 잠들어 있어요.","Facing the wall, they hold the edge of the blanket and sleep quietly.","壁の方を向き、布団の端を手に握ったまま静かに眠っています。"),
+      line("옆으로 누워 베개에 뺨을 묻고 숨소리를 작게 내며 자고 있어요.","Lying on their side with one cheek against the pillow, they sleep with soft breaths.","横向きに寝て枕に頬を埋め、小さな寝息を立てています。"),
+      line("이불 안에서 새우처럼 몸을 말고 가장 편한 자세를 찾은 듯 잠들었어요.","Curled up beneath the blanket, they seem to have found exactly the position they wanted.","布団の中でえびのように丸まり、いちばん落ち着く姿勢で眠っています。")
+    ],
+    "팔다리를 뻗고 잠":[
+      line("침대를 넓게 차지하고 팔다리를 쭉 뻗은 채 느긋하게 자고 있어요.","They are stretched across the bed, sleeping with their arms and legs fully relaxed.","ベッドを広く使い、手足を伸ばしてのびのび眠っています。"),
+      line("두 팔을 머리 위로 올리고 다리를 편 채 아주 편안하게 잠들어 있어요.","Both arms are above their head and their legs are stretched out in complete comfort.","両腕を頭の上に伸ばし、脚もまっすぐにして気持ちよさそうに眠っています。"),
+      line("침대 한가운데에서 대자로 누워 이불을 넓게 덮고 자고 있어요.","They are sprawled in the middle of the bed beneath a blanket spread wide.","ベッドの真ん中で大の字になり、広げた布団をかけて眠っています。"),
+      line("발끝까지 힘을 뺀 채 길게 늘어져 깊고 느린 숨을 쉬고 있어요.","Completely loose from shoulders to toes, they breathe slowly in deep sleep.","肩からつま先まで力を抜き、長く身体を伸ばしてゆっくり呼吸しています。"),
+      line("잠결에 한 팔을 침대 밖으로 내놓았지만 자세를 바꾸지 않고 자고 있어요.","One arm has slipped over the edge of the bed, but they continue sleeping without moving.","眠っている間に片腕がベッドの外へ落ちましたが、姿勢を変えず眠り続けています。")
+    ],
+    "베개를 끌어안고 잠":[
+      line("베개를 품에 꼭 끌어안고 얼굴을 살짝 묻은 채 잠들어 있어요.","They are asleep with a pillow held tightly against their chest and their face partly buried in it.","枕を胸にぎゅっと抱き、顔を少し埋めたまま眠っています。"),
+      line("베개 모서리를 두 팔로 감싼 채 놓치지 않으려는 듯 꼭 안고 자고 있어요.","Both arms are wrapped around the corner of the pillow as though they refuse to let it go.","枕の角を両腕で包み、離さないようにしっかり抱いて眠っています。"),
+      line("품에 안은 베개에 턱을 올리고 작고 고른 숨을 내쉬고 있어요.","Their chin rests on the pillow in their arms while they breathe softly and evenly.","抱いた枕に顎を乗せ、静かで規則正しい寝息を立てています。"),
+      line("잠결에 베개를 더 가까이 끌어당겨 포근하게 몸을 기대고 있어요.","Still asleep, they pull the pillow closer and settle warmly against it.","眠ったまま枕をさらに引き寄せ、あたたかそうに身体を預けています。"),
+      line("원래 베개와 끌어안은 베개 사이에 얼굴을 묻고 푹 잠들었어요.","Their face is nestled between two pillows as they sleep soundly.","頭の枕と抱き枕の間に顔を埋め、ぐっすり眠っています。")
+    ],
+    "잠꼬대를 자주 함":[
+      line("알아듣기 어려운 말을 작게 중얼거리다가 다시 조용히 잠들었어요.","They murmur something impossible to make out, then become quiet again.","聞き取れない言葉を小さくつぶやいたあと、また静かに眠りました。"),
+      line("꿈속 누군가에게 대답하듯 짧게 잠꼬대를 하고 있어요.","They speak briefly as though answering someone in a dream.","夢の中の誰かに返事をするように、短い寝言を言っています。"),
+      line("이름 하나를 희미하게 부른 뒤 입술을 달싹이다 다시 깊이 잠들었어요.","They faintly call a name, move their lips once more, and sink back into deep sleep.","誰かの名前をかすかに呼び、唇を少し動かしたあと再び深く眠りました。"),
+      line("꿈이 꽤 생생한지 한두 마디를 또렷하게 말하고는 이내 조용해졌어요.","The dream seems vivid; they say a clear phrase or two before falling silent.","夢が鮮明なのか、一言二言はっきり話したあと、すぐ静かになりました。"),
+      line("작게 웃는 소리와 함께 의미를 알 수 없는 잠꼬대가 잠깐 이어졌어요.","A quiet laugh is followed by a few moments of unintelligible sleep talk.","小さな笑い声とともに、意味のわからない寝言がしばらく続きました。")
+    ],
+    "뒤척임이 많음":[
+      line("몇 번이나 자세를 바꾸며 뒤척이다가 다시 잠에 빠져들고 있어요.","They change position several times before drifting back into sleep.","何度も姿勢を変えて寝返りを打ち、また眠りに落ちています。"),
+      line("베개 위치를 고치고 이불을 당기며 한참 뒤척인 끝에 겨우 편해졌어요.","After adjusting the pillow and tugging at the blanket, they finally settle into a comfortable position.","枕の位置を直し布団を引き寄せ、しばらく寝返りを打った末にようやく落ち着きました。"),
+      line("왼쪽과 오른쪽을 번갈아 돌아눕느라 침구가 조금씩 흐트러지고 있어요.","They keep turning from one side to the other, gradually rumpling the bedding.","左右へ何度も寝返りを打ち、寝具が少しずつ乱れています。"),
+      line("잠깐 몸을 일으킬 듯 움찔했다가 다시 베개에 얼굴을 묻고 잠들었어요.","They stir as if about to sit up, then bury their face in the pillow and fall asleep again.","起き上がりそうに身体を動かしたあと、また枕に顔を埋めて眠りました。"),
+      line("편한 자리를 찾지 못한 듯 발끝을 움직이고 이불 속에서 자세를 고치고 있어요.","Their feet shift beneath the blanket as they continue searching for a comfortable position.","なかなか落ち着かないのか、布団の中で足先を動かし姿勢を直しています。")
+    ],
+    "아주 얌전히 잠":[
+      line("처음 누운 모습 그대로 거의 움직이지 않고 아주 얌전히 자고 있어요.","They are sleeping almost exactly as they first lay down, barely moving at all.","横になった時の姿勢のまま、ほとんど動かず静かに眠っています。"),
+      line("가슴이 천천히 오르내리는 것 외에는 움직임 없이 고요히 잠들어 있어요.","Only the slow rise and fall of their chest shows that they are sleeping.","胸がゆっくり上下する以外は動かず、静かに眠っています。"),
+      line("손끝 하나 움직이지 않은 채 작은 숨소리만 내며 편안히 쉬고 있어요.","They rest without so much as moving a fingertip, making only the faintest sound of breathing.","指先ひとつ動かさず、かすかな寝息だけを立てて休んでいます。"),
+      line("베개 중앙에 머리를 둔 채 반듯한 자세로 깊이 잠들어 있어요.","Their head remains centered on the pillow as they sleep deeply in a straight, still posture.","枕の中央に頭を置き、まっすぐな姿勢のまま深く眠っています。"),
+      line("침구가 거의 흐트러지지 않을 만큼 조용하고 얌전하게 자고 있어요.","They are sleeping so quietly that the bedding has hardly shifted at all.","寝具がほとんど乱れないほど、静かでおとなしく眠っています。")
+    ],
+    "새벽에 자주 깸":[
+      line("잠깐 눈을 떴다가 시간을 확인하지 않고 다시 이불 속으로 파고들었어요.","They open their eyes for a moment, then burrow back under the blanket without checking the time.","一度目を開けましたが、時間を確認せずまた布団の中へ潜り込みました。"),
+      line("희미한 새벽빛에 잠에서 깼다가 눈을 감고 다시 잠을 청하고 있어요.","The faint dawn light wakes them, but they close their eyes and try to drift off again.","かすかな明け方の光で目を覚まし、もう一度目を閉じて眠ろうとしています。"),
+      line("목이 말라 잠깐 몸을 일으킨 뒤 물을 한 모금 마시고 다시 누웠어요.","They sit up briefly for a sip of water, then lie down again.","喉が渇いて一度起き上がり、水を一口飲んでからまた横になりました。"),
+      line("주변을 잠깐 살핀 뒤 베개를 고쳐 놓고 다시 천천히 잠들고 있어요.","After looking around the room, they adjust the pillow and slowly fall asleep again.","周囲を少し見回し、枕を直してからゆっくり眠りに戻っています。"),
+      line("한동안 천장을 바라보다가 이불을 턱 밑까지 당기고 다시 눈을 감았어요.","They stare at the ceiling for a while, pull the blanket to their chin, and close their eyes again.","しばらく天井を見つめたあと、布団を顎まで引き上げて再び目を閉じました。")
+    ],
+    "코를 골며 깊이 잠":[
+      line("규칙적인 숨소리와 옅은 코골이 소리를 내며 깊이 잠들어 있어요.","They are sleeping deeply with steady breathing and a soft snore.","規則正しい寝息と小さないびきを立てながら、深く眠っています。"),
+      line("낮고 일정한 코골이가 방 안에 이어질 만큼 푹 잠들었어요.","They are so deeply asleep that a low, steady snore fills the room.","低く一定のいびきが部屋に響くほど、ぐっすり眠っています。"),
+      line("숨을 길게 내쉴 때마다 작은 코골이가 섞이지만 전혀 깨지 않고 자고 있어요.","A small snore slips into every long breath, but they never stir.","長く息を吐くたび小さないびきが混じりますが、目を覚ます気配はありません。"),
+      line("베개에 얼굴을 비스듬히 기대고 깊고 편안한 코골이를 내고 있어요.","With their face angled into the pillow, they snore in deep, comfortable sleep.","枕に顔を斜めに預け、深く心地よさそうないびきを立てています。"),
+      line("잠깐 코골이가 멈췄다가 자세를 고친 뒤 다시 고른 숨소리가 이어졌어요.","The snoring pauses briefly, then returns to an even rhythm after they shift position.","いびきが一度止まりましたが、姿勢を変えるとまた規則正しい寝息が続きました。")
+    ]
   };
   const options=scenes[habit]||scenes["이불을 단정히 덮고 잠"];
-  return options[hash(`${c.id}:${dayKey(d)}:${Math.floor(nowMin(d)/60)}:sleep`)%options.length];
+  const selected=options[hash(`${c.id}:${dayKey(d)}:${Math.floor(nowMin(d)/60)}:sleep`)%options.length];
+  return selected[state.uiLanguage]||selected.ko;
 };
 const wakeScene=(c,d=new Date())=>{
   const habit=c.wakeHabit||"알람을 듣고 천천히 일어남";
@@ -2165,7 +2227,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260810p";
+const ENGINE_VERSION="20260810q";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
