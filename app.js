@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810h";
-import {eventFor} from "./simulation.js?v=20260810h";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810h";
-import {recordCharacterInteraction} from "./state.js?v=20260810h";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810i";
+import {eventFor} from "./simulation.js?v=20260810i";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810j";
+import {recordCharacterInteraction} from "./state.js?v=20260810i";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -458,8 +458,12 @@ function enhanceDynamicForms(){
   const sync=document.querySelector(".sync-panel");
   if(sync&&!sync.querySelector(".storage-meter")){
     const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||JSON.parse(localStorage.getItem("drawer-village-storage-usage")||'{"count":0,"bytes":0,"maxCount":120,"maxBytes":20971520}');
-    const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||20971520)*100)),used=((usage.bytes||0)/1048576).toFixed(1),limit=((usage.maxBytes||20971520)/1048576).toFixed(0),left=`${Math.max(0,((usage.maxBytes||20971520)-(usage.bytes||0))/1048576).toFixed(1)}MB 남음`;
-    const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>사진 저장 공간</h3><div><i style="width:${percent}%"></i></div><b>${used}MB 사용 · ${left}</b><small>현재 총 ${limit}MB · 캐릭터 ${characterLimit()}명 · 마을 ${townLimit()}개 · 이미지 링크는 이 용량을 사용하지 않아요.</small>`;sync.append(meter);
+    const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||20971520)*100)),used=((usage.bytes||0)/1048576).toFixed(1),limit=((usage.maxBytes||20971520)/1048576).toFixed(0),remaining=Math.max(0,((usage.maxBytes||20971520)-(usage.bytes||0))/1048576).toFixed(1),left=`${remaining}MB 남음`;
+    const storageCopy={
+      en:{title:"Image storage",usage:`${used}MB used · ${remaining}MB remaining`,summary:`${limit}MB total · ${characterLimit()} characters · ${townLimit()} towns · Linked images do not use this storage.`},
+      ja:{title:"画像ストレージ",usage:`${used}MB使用・残り${remaining}MB`,summary:`合計${limit}MB・キャラクター${characterLimit()}人・村${townLimit()}個・画像リンクはこの容量を使用しません。`}
+    }[state.uiLanguage]||{title:"사진 저장 공간",usage:`${used}MB 사용 · ${left}`,summary:`현재 총 ${limit}MB · 캐릭터 ${characterLimit()}명 · 마을 ${townLimit()}개 · 이미지 링크는 이 용량을 사용하지 않아요.`};
+    const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>${storageCopy.title}</h3><div><i style="width:${percent}%"></i></div><b>${storageCopy.usage}</b><small>${storageCopy.summary}</small>`;sync.append(meter);
   }
 }
 const addRoutine=characterId=>{
@@ -638,9 +642,15 @@ function replaceFeedbackFormWithEmailLink(){
   const card=document.querySelector(".feedback-card");
   if(!card)return;
   const character=active();
-  const subject=encodeURIComponent("[서랍마을] 사용자 피드백");
-  const body=encodeURIComponent(`피드백 내용을 여기에 적어 주세요.\n\n현재 화면: ${PAGE_GUIDES[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}`);
-  card.innerHTML=`<h2>개발자에게 피드백 보내기</h2><p>버튼을 누르면 기기의 메일 앱에서 개발자 이메일로 바로 작성할 수 있어요. 사이트의 별도 피드백함에는 저장하지 않습니다.</p><a class="primary feedback-email-button" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">이메일로 피드백 보내기</a><small>받는 주소 · kkyaareuk@gmail.com</small>`;
+  const copy={
+    ko:{title:"개발자에게 피드백 보내기",description:"버튼을 누르면 기기의 메일 앱에서 개발자 이메일로 바로 작성할 수 있어요. 사이트의 별도 피드백함에는 저장하지 않습니다.",button:"이메일로 피드백 보내기",recipient:"받는 주소",subject:"[서랍마을] 사용자 피드백",prompt:"피드백 내용을 여기에 적어 주세요.",screen:"현재 화면",selected:"선택 캐릭터",none:"없음"},
+    en:{title:"Send feedback to the developer",description:"Open your device's mail app and write directly to the developer. Nothing is stored in a separate site inbox.",button:"Send feedback by email",recipient:"Recipient",subject:"[Drawer Village] User feedback",prompt:"Write your feedback here.",screen:"Current screen",selected:"Selected character",none:"None"},
+    ja:{title:"開発者へフィードバック",description:"端末のメールアプリから開発者へ直接送信できます。サイト内の別の受信箱には保存されません。",button:"メールでフィードバック",recipient:"宛先",subject:"[ひきだし村] ユーザーフィードバック",prompt:"フィードバックをここに入力してください。",screen:"現在の画面",selected:"選択中のキャラクター",none:"なし"}
+  }[state.uiLanguage]||null;
+  const text=copy||{title:"개발자에게 피드백 보내기",description:"버튼을 누르면 기기의 메일 앱에서 개발자 이메일로 바로 작성할 수 있어요. 사이트의 별도 피드백함에는 저장하지 않습니다.",button:"이메일로 피드백 보내기",recipient:"받는 주소",subject:"[서랍마을] 사용자 피드백",prompt:"피드백 내용을 여기에 적어 주세요.",screen:"현재 화면",selected:"선택 캐릭터",none:"없음"};
+  const subject=encodeURIComponent(text.subject);
+  const body=encodeURIComponent(`${text.prompt}\n\n${text.screen}: ${PAGE_GUIDES[state.activeTab]?.[0]||state.activeTab}\n${text.selected}: ${character?.name||text.none}`);
+  card.innerHTML=`<h2>${text.title}</h2><p>${text.description}</p><a class="primary feedback-email-button" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">${text.button}</a><small>${text.recipient} · kkyaareuk@gmail.com</small>`;
 }
 
 function render(){
@@ -652,7 +662,8 @@ function render(){
   try{
     const mobileSite=window.matchMedia?.("(max-width:720px)")?.matches??window.innerWidth<=720;
     document.documentElement.classList.toggle("native-app",Boolean(window.DRAWER_VILLAGE_NATIVE)||mobileSite);
-    document.documentElement.lang=state.uiLanguage==="en"?"en":"ko";
+    document.documentElement.lang=({en:"en",ja:"ja"}[state.uiLanguage]||"ko");
+    document.title=({en:"Drawer Village",ja:"ひきだし村"}[state.uiLanguage]||"서랍마을");
     document.documentElement.dataset.uiFont=state.uiFont||"system";
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(maintenanceEnabled()){renderMaintenance();return}
@@ -670,7 +681,8 @@ function render(){
     if(grid&&!grid.querySelector('[data-product-id="green_tea"]')){
       const card=document.createElement("article");
       card.className="premium-product one-time-product";
-      card.innerHTML=`<div class="premium-product-heading"><span>응원</span><div><small>개발 응원</small><h2>개발자에게 녹차 사주기 🍵</h2></div><b>1,500원</b></div><p>잘 먹겠습니다 🥹</p><button class="primary premium-buy" data-cart-add="green_tea">장바구니에 담기</button>`;
+      const teaCopy={en:{tag:"Support",small:"Support development",title:"Buy the developer green tea 🍵",thanks:"Thank you 🥹",cart:"Add to cart"},ja:{tag:"応援",small:"開発を応援",title:"開発者に緑茶をおごる 🍵",thanks:"ありがとうございます 🥹",cart:"カートに追加"}}[state.uiLanguage]||{tag:"응원",small:"개발 응원",title:"개발자에게 녹차 사주기 🍵",thanks:"잘 먹겠습니다 🥹",cart:"장바구니에 담기"};
+      card.innerHTML=`<div class="premium-product-heading"><span>${teaCopy.tag}</span><div><small>${teaCopy.small}</small><h2>${teaCopy.title}</h2></div><b>1,500원</b></div><p>${teaCopy.thanks}</p><button class="primary premium-buy" data-cart-add="green_tea">${teaCopy.cart}</button>`;
       grid.insertBefore(card,grid.lastElementChild);
     }
     bind();
@@ -2453,7 +2465,7 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810h").catch(error=>{
+  import("./auth.js?v=20260810i").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2468,7 +2480,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810h",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810j",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
