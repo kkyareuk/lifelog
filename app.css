@@ -5298,3 +5298,121 @@ html[data-color-mode="dark"] .character-photo-quick-card{border-color:color-mix(
   .native-app .native-scene-atmosphere.atmosphere-shock::after{animation:none!important}
   .native-app .native-scene-atmosphere.atmosphere-shock::after{opacity:.72}
 }
+
+/* 2026-08-10m: one LD image, readable Japanese settings, and a lighter
+   mobile-like desktop observation flow. */
+.character-ld-single-grid{grid-template-columns:minmax(220px,380px)!important;justify-content:start}
+.character-ld-card.character-ld-single{width:100%;grid-template-rows:minmax(210px,32vh) auto auto auto}
+.character-ld-card.character-ld-single>div{height:auto;min-height:210px}
+.native-app .native-status-card[data-toggle-native-moment-card]{cursor:pointer}
+.native-app .native-status-card[data-toggle-native-moment-card]:focus-visible{
+  outline:3px solid color-mix(in srgb,var(--native-own,#176b60) 70%,#fff);
+  outline-offset:3px;
+}
+
+/* Cooking is an actual stirring/pan motion with rising steam. */
+.native-app .scene-action-cooking :is(.native-scene-action-prop,.native-person-action-prop){
+  position:absolute;
+  animation:native-cooking-pan 1.35s ease-in-out infinite;
+  transform-origin:50% 80%;
+  filter:drop-shadow(0 7px 8px #0008);
+}
+.native-app .scene-action-cooking :is(.native-scene-action-prop,.native-person-action-prop)::before,
+.native-app .scene-action-cooking :is(.native-scene-action-prop,.native-person-action-prop)::after{
+  content:"~";
+  position:absolute;
+  left:45%;
+  top:-20px;
+  color:#fff;
+  font-size:.52em;
+  font-weight:900;
+  opacity:0;
+  text-shadow:0 2px 8px #7d8b99;
+  animation:native-cooking-steam 1.8s ease-out infinite;
+}
+.native-app .scene-action-cooking :is(.native-scene-action-prop,.native-person-action-prop)::after{
+  left:68%;top:-10px;animation-delay:-.9s;
+}
+.native-app .scene-action-cooking .native-character-stage:not(.has-scene-lineup) .native-main-character{
+  animation:native-cooking-stir 1.35s ease-in-out infinite;
+  transform-origin:50% 80%;
+}
+@keyframes native-cooking-pan{
+  0%,100%{translate:-7px 3px;rotate:-6deg}
+  50%{translate:8px -2px;rotate:7deg}
+}
+@keyframes native-cooking-stir{
+  0%,100%{translate:-3px 1px;rotate:-1.5deg}
+  50%{translate:4px -3px;rotate:1.8deg}
+}
+@keyframes native-cooking-steam{
+  0%{translate:0 8px;scale:.65;opacity:0}
+  25%{opacity:.9}
+  100%{translate:-6px -28px;scale:1.2;opacity:0}
+}
+
+html:not(.native-app) .standard-observe-view{width:min(1480px,100%);margin-inline:auto}
+html:not(.native-app) .standard-observe-view>.roster{
+  gap:10px;padding:4px 2px 12px;scroll-snap-type:x proximity;
+}
+html:not(.native-app) .standard-observe-view>.roster .roster-card{
+  min-width:218px;min-height:86px;padding:12px 14px;border-radius:20px;scroll-snap-align:start;
+}
+html:not(.native-app) .standard-observe-view>.roster .roster-card :is(.avatar,.sprite){width:58px;height:58px}
+html:not(.native-app) .standard-observe-view>.roster .roster-card b{font-size:18px}
+html:not(.native-app) .standard-observe-view>.roster .roster-card small{
+  max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.desktop-observe-log{margin:0 0 18px}
+.desktop-observe-log .native-log-card{
+  display:grid;gap:12px;width:100%;padding:18px 20px;border:1px solid var(--line);
+  border-radius:24px;background:var(--panel);box-shadow:0 12px 34px #17202d16;cursor:pointer;
+}
+.desktop-observe-log .native-log-card>div{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.desktop-observe-log .native-log-card>div>b{font-size:22px}
+.desktop-observe-log .native-log-card>div>span{display:flex;gap:8px}
+.desktop-observe-log .native-log-card ol{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0;padding:0;list-style:none;
+}
+.desktop-observe-log .native-log-card li{
+  display:grid;grid-template-columns:55px minmax(0,1fr);gap:10px;padding:10px 12px;
+  border:1px solid var(--line);border-radius:15px;background:color-mix(in srgb,var(--p) 6%,var(--panel));
+}
+.desktop-observe-log .native-log-card li>span{display:grid;min-width:0}
+.desktop-observe-log .native-log-card li small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.desktop-observe-map-only{display:block!important}
+.desktop-observe-map-only>section{width:min(1100px,100%);margin-inline:auto}
+.desktop-observe-map-only .world-hud{position:sticky;top:8px}
+html.page-switching main{pointer-events:none}
+
+@media(max-width:720px){
+  .character-ld-single-grid{grid-template-columns:minmax(0,1fr)!important}
+  .character-ld-card.character-ld-single{grid-template-rows:minmax(180px,34vh) auto auto auto}
+  html.native-app[data-active-tab="settings"] .settings-shell,
+  html.native-app[data-active-tab="settings"] .settings-shell *,
+  html.native-app[data-active-tab="settings"] .setting-card,
+  html.native-app[data-active-tab="settings"] .sync-panel{
+    min-width:0!important;max-width:100%!important;box-sizing:border-box!important;
+  }
+  html.native-app[data-active-tab="settings"] .settings-shell{
+    overflow-x:clip!important;overflow-wrap:anywhere;word-break:normal;
+  }
+  html.native-app[data-active-tab="settings"] .settings-shell :is(h1,h2,h3,p,small,label,legend,b,span,a,button){
+    max-width:100%;overflow-wrap:anywhere;
+  }
+  html.native-app[data-active-tab="settings"] .settings-shell :is(button,select,input,textarea){
+    width:100%;white-space:normal;
+  }
+  html.native-app[data-active-tab="settings"] :is(.color-mode-options,.sync-actions,.feedback-category-grid){
+    display:grid!important;grid-template-columns:minmax(0,1fr)!important;
+  }
+  html.native-app[data-active-tab="settings"] .color-mode-options button{min-height:62px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .native-app .scene-action-cooking :is(.native-main-character,.native-scene-action-prop,.native-person-action-prop,.native-scene-lineup-person)::before,
+  .native-app .scene-action-cooking :is(.native-main-character,.native-scene-action-prop,.native-person-action-prop,.native-scene-lineup-person)::after,
+  .native-app .scene-action-cooking :is(.native-main-character,.native-scene-action-prop,.native-person-action-prop,.native-scene-lineup-person){
+    animation:none!important;
+  }
+}

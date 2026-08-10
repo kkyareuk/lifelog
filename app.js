@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810k";
-import {eventFor} from "./simulation.js?v=20260810k";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810k";
-import {recordCharacterInteraction} from "./state.js?v=20260810k";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810m";
+import {eventFor} from "./simulation.js?v=20260810m";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810m";
+import {recordCharacterInteraction} from "./state.js?v=20260810m";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -9,6 +9,7 @@ let mobileCharacterEditorPane="";
 let mobileCharacterReorderOpen=false;
 let mobileCharacterDraftDirty=false;
 let homeCharacterPickerScroll=0;
+let observeRosterScroll=0;
 let mobileCharacterStripScroll=0;
 let mobileCharacterEditorScroll=0;
 let resetScrollAfterRender=false;
@@ -919,22 +920,40 @@ function bind(){
     };
   });
   const openNativeLog=()=>document.querySelector("[data-native-log-dialog]")?.showModal();
-  $("[data-toggle-native-moment]")?.addEventListener("click",event=>{
-    event.stopPropagation();
-    const card=event.currentTarget.closest(".native-status-card");
-    const expanded=card?.classList.toggle("expanded")||false;
-    event.currentTarget.setAttribute("aria-expanded",String(expanded));
-    event.currentTarget.textContent=expanded?"접기":"펼치기";
+  const toggleNativeMoment=card=>{
+    if(!card)return;
+    const expanded=card.classList.toggle("expanded");
+    card.setAttribute("aria-expanded",String(expanded));
+    const button=card.querySelector("[data-toggle-native-moment]");
+    if(button){
+      button.setAttribute("aria-expanded",String(expanded));
+      button.textContent=expanded?(button.dataset.labelCollapse||"접기"):(button.dataset.labelExpand||"펼치기");
+    }
+  };
+  $$("[data-toggle-native-moment-card]").forEach(card=>{
+    card.addEventListener("click",event=>{
+      if(event.target.closest("a"))return;
+      event.stopPropagation();
+      toggleNativeMoment(card);
+    });
+    card.addEventListener("keydown",event=>{
+      if(event.key!=="Enter"&&event.key!==" ")return;
+      if(event.target.closest("button")&&event.target!==card)return;
+      event.preventDefault();
+      toggleNativeMoment(card);
+    });
   });
-  $("[data-open-native-log-card]")?.addEventListener("click",event=>{
-    if(event.target.closest("[data-tab]"))return;
-    openNativeLog();
-  });
-  $("[data-open-native-log-card]")?.addEventListener("keydown",event=>{
-    if(event.key!=="Enter"&&event.key!==" ")return;
-    if(event.target.closest("button")&&event.target!==event.currentTarget)return;
-    event.preventDefault();
-    openNativeLog();
+  $$("[data-open-native-log-card]").forEach(card=>{
+    card.addEventListener("click",event=>{
+      if(event.target.closest("[data-tab]"))return;
+      openNativeLog();
+    });
+    card.addEventListener("keydown",event=>{
+      if(event.key!=="Enter"&&event.key!==" ")return;
+      if(event.target.closest("button")&&event.target!==event.currentTarget)return;
+      event.preventDefault();
+      openNativeLog();
+    });
   });
   $("[data-refresh-observe]")?.addEventListener("click",event=>{
     event.stopPropagation();
@@ -1043,7 +1062,19 @@ function bind(){
     render();
   });
   $$("[data-delete-character]").forEach(el=>el.onclick=()=>openCharacterDeleteDialog(el.dataset.deleteCharacter));
-  $$("[data-roster],[data-person]").forEach(el=>el.onclick=event=>{event.stopPropagation();focusCharacter(el.dataset.roster||el.dataset.person)});
+  $$("[data-roster]").forEach(el=>el.onclick=event=>{
+    event.stopPropagation();
+    const strip=el.closest(".roster");
+    if(strip)observeRosterScroll=strip.scrollLeft;
+    setActive(el.dataset.roster);
+    render();
+    requestAnimationFrame(()=>{const next=document.querySelector(".standard-observe-view .roster");if(next)next.scrollLeft=observeRosterScroll});
+  });
+  $$("[data-person]").forEach(el=>el.onclick=event=>{
+    event.stopPropagation();
+    setActive(el.dataset.person);
+    render();
+  });
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
   $$("[data-observe-town]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.observeTown);render()});
@@ -1725,9 +1756,10 @@ function navigateToTab(tab){
     }
   }
   state.activeTab=tab;
-  save();
   resetScrollAfterRender=true;
+  document.documentElement.classList.add("page-switching");
   render();
+  requestAnimationFrame(()=>document.documentElement.classList.remove("page-switching"));
   if(tab==="town")centerMobileTownMap();
   window.scrollTo({top:0,behavior:"auto"});
 }
@@ -2476,7 +2508,7 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810k").catch(error=>{
+  import("./auth.js?v=20260810m").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2491,7 +2523,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810k",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810m",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
