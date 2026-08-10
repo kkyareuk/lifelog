@@ -1,6 +1,6 @@
 import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810e";
-import {eventFor} from "./simulation.js?v=20260810e";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810f";
+import {eventFor} from "./simulation.js?v=20260810g";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810g";
 import {recordCharacterInteraction} from "./state.js?v=20260810e";
 
 let pendingImage=null;
@@ -2041,8 +2041,29 @@ function prepareCatalogIllustration(file){
   });
 }
 
+function prepareTransparentIcon(file){
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("image-load-failed"))};
+    img.onload=()=>{
+      const size=512,padding=20,available=size-padding*2;
+      const scale=Math.min(available/img.naturalWidth,available/img.naturalHeight);
+      const width=Math.max(1,Math.round(img.naturalWidth*scale)),height=Math.max(1,Math.round(img.naturalHeight*scale));
+      const canvas=document.createElement("canvas"),context=canvas.getContext("2d");
+      canvas.width=size;canvas.height=size;
+      context.clearRect(0,0,size,size);
+      context.drawImage(img,Math.round((size-width)/2),Math.round((size-height)/2),width,height);
+      const data=canvas.toDataURL("image/png");
+      URL.revokeObjectURL(url);
+      resolve(data);
+    };
+    img.src=url;
+  });
+}
+
 function cropImage(file,type){
   if(type==="catalogImage")return prepareCatalogIllustration(file);
+  if(type==="icon"||type==="petIcon")return prepareTransparentIcon(file);
   const ratios={photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,home:16/9,place:1,placeInterior:16/9};
   const ratio=ratios[type]||16/9;
   const output=ratio<1?600:ratio===1?500:800;
@@ -2073,8 +2094,7 @@ function cropImage(file,type){
       stage.onpointerup=e=>{stage.releasePointerCapture(e.pointerId);stage.classList.remove("dragging")};
       dialog.onclose=()=>{
         const applied=dialog.returnValue==="apply";
-        const transparent=["icon","petIcon"].includes(type);
-        const data=applied?canvas.toDataURL("image/webp",transparent ? .78 : .66):null;
+        const data=applied?canvas.toDataURL("image/webp",.66):null;
         URL.revokeObjectURL(url);dialog.remove();resolve(data);
       };
       draw();dialog.showModal();
@@ -2418,7 +2438,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810f",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810g",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

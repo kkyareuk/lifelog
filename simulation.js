@@ -917,7 +917,7 @@ function roommateHomeEntry(c,other,time,date){
 function workEvent(c,time,date){
   if(c.job==="무직")return null;
   const weekday=date.getDay()>=1&&date.getDay()<=5;
-  const weekendJobs=["해적","군인","범죄자","환경미화원","여관주인","의사","간호사","요리사","자영업"];
+  const weekendJobs=["해적","군인","범죄자","환경미화원","여관주인","의사","간호사","요리사","가수","아이돌","자영업"];
   if(!weekday&&!weekendJobs.some(job=>String(c.job).includes(job)))return null;
   const variants={
     "회사원":[["업무 우선순위를 정리하는 중","메일과 요청 사항을 확인하고 오늘 처리할 일을 중요도와 마감 순서로 나누고 있어요."],["회의 자료를 다듬는 중","공유할 수치와 진행 상황을 다시 확인해 핵심만 알아보기 쉽게 정리하고 있어요."]],
@@ -930,6 +930,8 @@ function workEvent(c,time,date){
     "프로그래머":[["기능을 구현하는 중","요구 사항을 작은 단위로 나누어 코드를 작성하고 예상한 대로 작동하는지 하나씩 시험하고 있어요."],["오류를 추적하는 중","문제가 생긴 조건을 다시 만들고 기록을 따라가며 원인이 시작된 부분을 찾고 있어요."]],
     "기자":[["취재 내용을 정리하는 중","서로 다른 증언과 자료를 대조하고 확인되지 않은 표현을 기사에서 걷어 내고 있어요."],["기사 초안을 쓰는 중","독자가 흐름을 놓치지 않도록 사실의 순서를 정리하고 제목과 첫 문장을 다듬고 있어요."]],
     "요리사":[["주문 음식을 준비하는 중","들어온 주문 순서를 확인하고 재료의 익는 시간을 맞춰 여러 조리를 동시에 진행하고 있어요."],["주방 재료를 점검하는 중","남은 식재료의 상태와 수량을 살피고 영업에 필요한 손질과 준비를 이어가고 있어요."]],
+    "가수":[["보컬 연습을 하는 중","호흡과 음정을 가다듬으며 어려운 구간을 여러 번 불러 자기 목소리에 맞는 표현을 찾고 있어요."],["녹음을 준비하는 중","가사와 곡의 흐름을 다시 확인하고 마이크 앞에서 목 상태와 모니터 음량을 차분히 점검하고 있어요."],["무대 리허설 중","반주와 조명 신호에 맞춰 동선을 확인하고 관객에게 들려줄 곡의 감정을 무대 위에서 조율하고 있어요."]],
+    "아이돌":[["안무 연습을 하는 중","거울에 비친 대형과 손끝 각도를 확인하며 멤버들과 동작의 속도와 타이밍을 맞추고 있어요."],["무대 리허설 중","카메라 위치와 조명 전환을 확인하며 노래와 안무가 끊기지 않도록 전체 무대를 반복하고 있어요."],["콘텐츠 촬영을 준비하는 중","촬영 순서와 질문을 확인하고 의상과 마이크를 점검하며 자기 차례를 기다리고 있어요."],["팬들에게 전할 메시지를 쓰는 중","오늘 있었던 일을 짧게 정리하고 응원해 준 사람들에게 전할 말을 자기답게 다듬고 있어요."]],
     "예술가":[["작품 작업을 이어가는 중","전체 균형을 살피며 마음에 걸리는 부분을 여러 방식으로 고쳐 보고 있어요."],["작업 자료를 정리하는 중","떠오른 이미지를 놓치지 않도록 스케치와 참고 자료를 펼쳐 다음 표현을 구상하고 있어요."]],
     "환경미화원":[["담당 구역을 정돈하는 중","거리의 쓰레기를 종류별로 수거하고 사람들이 지나는 길을 안전하게 정리하고 있어요."],["청소 장비를 점검하는 중","도구와 수거함 상태를 확인하고 다음 구역으로 이동할 준비를 하고 있어요."]],
     "학생":[["수업을 듣는 중","오늘 시간표에 맞춰 설명을 듣고 중요한 내용을 자기 말로 다시 적어 보고 있어요."],["과제를 하는 중","제출 조건을 확인하고 참고 자료를 살펴보며 해야 할 부분을 차례로 해결하고 있어요."]],
@@ -943,7 +945,8 @@ function workEvent(c,time,date){
   const pool=matches?.[1]||[["직업 업무를 처리하는 중",`${c.jobTitle||c.job}에게 필요한 실무를 일정과 우선순위에 맞춰 진행하고 있어요.`]];
   const text=pool[hash(`${c.id}:${dayKey(date)}:job-scene`)%pool.length];
   if(!c.workplaceId||c.workplaceId==="home")return homeEntry(c,time,c.workplaceId==="home"?"자택에서 "+text[0]:text[0],text[1],"study");
-  const p=(townFor(c,date)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(["사무실","회사","학교"],`${c.id}:work`,c);
+  const workTypes=c.job==="가수"||c.job==="아이돌"?["공연장","극장","스튜디오","방송국","사무실"]:["사무실","회사","학교"];
+  const p=(townFor(c,date)?.places||[]).find(x=>x.id===c.workplaceId)||placeFor(workTypes,`${c.id}:work`,c);
   return entry(time,text[0],text[1],away(c,{placeId:p?.id,mood:"집중",stress:Math.min(100,25+(hash(`${c.id}:${dayKey(date)}:work`)%35))}));
 }
 
@@ -2072,7 +2075,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260810e";
+const ENGINE_VERSION="20260810g";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
