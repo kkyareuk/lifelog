@@ -1,10 +1,10 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810s";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810s";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811a";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811a";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
-  en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English now covers the main menus, character editor, shop, settings, and observation UI. Generated story scenes remain in Korean for now.",languageNote:"English Beta · Core interface translated; generated story text is coming later."},
-  ja:{brandName:"ひきだし村",observe:"観察",home:"家",character:"キャラクター",catalog:"好み図鑑",relationship:"関係",routine:"週間ルーティン",town:"村",shop:"ショップ",settings:"設定",saved:"端末に保存済み",brandTagline:"引き出しの中のキャラクター生活観察ゲーム",currentMoment:"今この瞬間",todayLog:"今日の記録",expand:"開く",collapse:"閉じる",viewAll:"すべて見る",viewHome:"家を見る",language:"言語",languageHelp:"日本語ベータではメインメニュー、キャラクター編集、ショップ、設定、観察画面に対応しています。自動生成される生活シーンは現在韓国語です。",languageNote:"日本語ベータ · 基本画面に対応。生活シーンの翻訳は今後追加予定です。"}
+  en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
+  ja:{brandName:"ひきだし村",observe:"観察",home:"家",character:"キャラクター",catalog:"好み図鑑",relationship:"関係",routine:"週間ルーティン",town:"村",shop:"ショップ",settings:"設定",saved:"端末に保存済み",brandTagline:"引き出しの中のキャラクター生活観察ゲーム",currentMoment:"今この瞬間",todayLog:"今日の記録",expand:"開く",collapse:"閉じる",viewAll:"すべて見る",viewHome:"家を見る",language:"言語",languageHelp:"日本語は基本画面に対応し、生活シーンや関係文もアップデートごとに翻訳を増やしています。",languageNote:"日本語ベータ・基本画面と一部の生活シーンに対応。翻訳範囲を継続して拡大します。"}
 };
 const t=(key,fallback)=>I18N[state.uiLanguage]?.[key]||fallback;
 const uiLocale=()=>({en:"en-US",ja:"ja-JP"}[state.uiLanguage]||"ko-KR");
@@ -81,19 +81,21 @@ const UI_TEXT_MORE={
 };
 Object.entries(UI_TEXT_MORE).forEach(([locale,copy])=>Object.assign(UI_TEXT[locale],copy));
 Object.assign(UI_TEXT.en,{
+  "이미지·표현·파일":"Images · Visuals · Files",
   "어린이":"Child","청소년":"Teen","성인":"Adult","노년":"Older adult","설정하지 않음":"Not set","무직":"Unemployed","학생":"Student","회사원":"Office worker","의사":"Doctor","간호사":"Nurse","교사":"Teacher","교수":"Professor","정치인":"Politician","기자":"Journalist","요리사":"Cook / chef","프로그래머":"Programmer","연구원":"Researcher","가수":"Singer","아이돌":"Idol","예술가":"Artist","해적":"Pirate","군인":"Soldier","범죄자":"Criminal","환경미화원":"Sanitation worker","여관주인":"Innkeeper","자영업·직접 입력":"Self-employed / custom",
   "정하지 않음":"Not set","낯선 사람으로 여김":"Sees them as a stranger","매우 싫어함":"Strongly dislikes them","미워함":"Hates them","경계함":"Is wary of them","불편해함":"Feels uncomfortable around them","부담스러워함":"Feels pressured by them","경쟁심을 느낌":"Feels competitive","애증을 느낌":"Feels love and hate","그저 그런 사람":"Feels neutral about them","흥미롭게 여김":"Finds them intriguing","인간적인 호감이 있음":"Likes them as a person","친구로 좋아함":"Likes them as a friend","존경함":"Respects them","동경함":"Admires them","안쓰럽게 여김":"Feels protective of them","소중하게 여김":"Treasures them","연애 감정이 싹틈":"Romantic feelings are beginning","연애 감정으로 좋아함":"Likes them romantically","깊이 사랑함":"Loves them deeply","없어서는 안 될 사람":"Cannot imagine life without them",
   "연인":"Partners","부부":"Married couple","친구":"Friends","소꿉친구":"Childhood friends","부모·자녀":"Parent and child","형제·자매":"Siblings","동거인":"Housemates","혐관":"Hostile relationship","짝사랑":"One-sided love","현재":"Current","과거":"Past",
   "사진·SD·LD":"Images · SD · LD","사진·기본 정보·생활 습관":"Photo · Profile · Lifestyle","이미지·표현·테마·파일":"Images · Visuals · Theme · Files","프로필 사진 첨부":"Add profile photo","사진 파일 선택":"Choose photo file","사진 지우기":"Remove photo","운전·흡연·주량":"Driving · Smoking · Alcohol","운전면허·운전 경험":"Driver's license and experience","흡연 여부":"Smoking status","주량":"Alcohol tolerance","면허 없음":"No license","면허만 있음 · 운전하지 않음":"Licensed · Does not drive","초보운전":"Beginner driver","가끔 운전함":"Drives occasionally","운전에 익숙함":"Experienced driver","장거리·야간 운전도 익숙함":"Experienced with long-distance and night driving","비흡연":"Non-smoker","금연 중":"Quit smoking","가끔 흡연":"Occasional smoker","전자담배 사용":"Uses e-cigarettes","흡연":"Smoker","마시지 않음":"Does not drink","한두 모금":"A sip or two","매우 약함":"Very low tolerance","약한 편":"Low tolerance","강한 편":"High tolerance","매우 강함":"Very high tolerance"
 });
 Object.assign(UI_TEXT.ja,{
+  "이미지·표현·파일":"画像・表示・ファイル",
   "어린이":"子ども","청소년":"青少年","성인":"成人","노년":"高齢","설정하지 않음":"未設定","무직":"無職","학생":"学生","회사원":"会社員","의사":"医師","간호사":"看護師","교사":"教師","교수":"教授","정치인":"政治家","기자":"記者","요리사":"料理人","프로그래머":"プログラマー","연구원":"研究員","가수":"歌手","아이돌":"アイドル","예술가":"芸術家","해적":"海賊","군인":"軍人","범죄자":"犯罪者","환경미화원":"清掃員","여관주인":"宿屋の主人","자영업·직접 입력":"自営業・自由入力",
   "정하지 않음":"未設定","낯선 사람으로 여김":"他人だと思う","매우 싫어함":"とても嫌っている","미워함":"憎んでいる","경계함":"警戒している","불편해함":"居心地が悪い","부담스러워함":"重荷に感じる","경쟁심을 느낌":"競争心を感じる","애증을 느낌":"愛憎を抱く","그저 그런 사람":"特に何も感じない","흥미롭게 여김":"興味深く思う","인간적인 호감이 있음":"人として好感を持つ","친구로 좋아함":"友人として好き","존경함":"尊敬している","동경함":"憧れている","안쓰럽게 여김":"気の毒に思う","소중하게 여김":"大切に思う","연애 감정이 싹틈":"恋愛感情が芽生える","연애 감정으로 좋아함":"恋愛対象として好き","깊이 사랑함":"深く愛している","없어서는 안 될 사람":"かけがえのない人",
   "연인":"恋人","부부":"夫婦","친구":"友人","소꿉친구":"幼なじみ","부모·자녀":"親子","형제·자매":"きょうだい","동거인":"同居人","혐관":"険悪な関係","짝사랑":"片思い","현재":"現在","과거":"過去",
   "사진·SD·LD":"画像・SD・LD","사진·기본 정보·생활 습관":"写真・基本情報・生活習慣","이미지·표현·테마·파일":"画像・表示・テーマ・ファイル","프로필 사진 첨부":"プロフィール写真を追加","사진 파일 선택":"写真ファイルを選択","사진 지우기":"写真を削除","운전·흡연·주량":"運転・喫煙・酒量","운전면허·운전 경험":"運転免許・運転経験","흡연 여부":"喫煙状況","주량":"お酒の強さ","면허 없음":"免許なし","면허만 있음 · 운전하지 않음":"免許あり・運転しない","초보운전":"初心者ドライバー","가끔 운전함":"時々運転する","운전에 익숙함":"運転に慣れている","장거리·야간 운전도 익숙함":"長距離・夜間運転にも慣れている","비흡연":"非喫煙","금연 중":"禁煙中","가끔 흡연":"時々喫煙","전자담배 사용":"電子タバコを使用","흡연":"喫煙","마시지 않음":"飲まない","한두 모금":"一口か二口","매우 약함":"とても弱い","약한 편":"弱い","강한 편":"強い","매우 강함":"とても強い"
 });
 Object.assign(UI_TEXT.en,{
-  "흑백":"Monochrome","가장 또렷한 기본 테마":"The clearest default theme","세이지":"Sage","차분한 초록빛":"Calm green","로즈":"Rose","부드러운 장밋빛":"Soft rose","오션":"Ocean","맑은 푸른빛":"Clear blue","라벤더":"Lavender","은은한 보랏빛":"Gentle violet",
+  "흑백":"Monochrome","가장 또렷한 기본 테마":"The clearest default theme","세이지":"Sage","편안하지만 탁하지 않은 초록빛":"A comfortable green that stays clear","오션":"Ocean","맑고 깊은 바다의 푸른빛":"Clear, deep ocean blue","라벤더":"Lavender","선명하면서 부드러운 보랏빛":"A vivid yet gentle violet",
   "글꼴 정의는 모든 화면이 같은 파일 하나를 사용합니다. 선택한 글꼴은 아래 미리보기에 즉시 반영돼요.":"Every screen uses the same font definition. Your choice appears in the preview immediately.",
   "서랍마을의 오늘":"Today in Drawer Village","캐릭터들이 각자의 하루를 보내고 있어요. 긴 생활 로그도 편안하게 읽어 보세요.":"Your characters are living their own days. Long life logs should stay comfortable to read.",
   "동기화 표시 이름":"Sync display name","Google 계정 이름 대신 백업과 동기화 화면에 표시할 이름이에요.":"This name appears in backup and sync screens instead of your Google account name.","어떻게 불러드릴까요?":"What should we call you?",
@@ -101,7 +103,7 @@ Object.assign(UI_TEXT.en,{
   "이미지 링크는 이 용량을 사용하지 않아요.":"Linked images do not use this storage."
 });
 Object.assign(UI_TEXT.ja,{
-  "흑백":"モノクロ","가장 또렷한 기본 테마":"最も見やすい基本テーマ","세이지":"セージ","차분한 초록빛":"落ち着いた緑","로즈":"ローズ","부드러운 장밋빛":"柔らかなローズ","오션":"オーシャン","맑은 푸른빛":"澄んだ青","라벤더":"ラベンダー","은은한 보랏빛":"穏やかな紫",
+  "흑백":"モノクロ","가장 또렷한 기본 테마":"最も見やすい基本テーマ","세이지":"セージ","편안하지만 탁하지 않은 초록빛":"落ち着きがありながら濁らない緑","오션":"オーシャン","맑고 깊은 바다의 푸른빛":"澄んだ深い海の青","라벤더":"ラベンダー","선명하면서 부드러운 보랏빛":"鮮やかでやわらかな紫",
   "글꼴 정의는 모든 화면이 같은 파일 하나를 사용합니다. 선택한 글꼴은 아래 미리보기에 즉시 반영돼요.":"すべての画面で同じフォント定義を使用します。選んだフォントは下のプレビューにすぐ反映されます。",
   "서랍마을의 오늘":"ひきだし村の今日","캐릭터들이 각자의 하루를 보내고 있어요. 긴 생활 로그도 편안하게 읽어 보세요.":"キャラクターたちはそれぞれの一日を過ごしています。長い生活ログも読みやすく表示します。",
   "동기화 표시 이름":"同期表示名","Google 계정 이름 대신 백업과 동기화 화면에 표시할 이름이에요.":"Googleアカウント名の代わりにバックアップと同期画面へ表示する名前です。","어떻게 불러드릴까요?":"何とお呼びしましょうか？",
@@ -177,7 +179,7 @@ Object.assign(UI_TEXT.ja,{
 });
 const UI_DYNAMIC_TEXT={
   en:[
-    [/^(.+)의 프로필·SD·LD·테마$/,(name)=>`${name}'s profile · SD · LD · theme`],
+    [/^(.+)의 프로필·SD·LD$/,(name)=>`${name}'s profile · SD · LD`],
     [/^(.+)의 생활 로그$/,(name)=>`${name}'s life log`],
     [/^(\d+)명 저장됨 · 한도 (\d+)명$/,(saved,limit)=>`${saved} saved · limit ${limit}`],
     [/^([\d.]+)MB 사용 · ([\d.]+)MB 남음$/,(used,left)=>`${used}MB used · ${left}MB remaining`],
@@ -187,7 +189,7 @@ const UI_DYNAMIC_TEXT={
     [/^(.+)에서 자는 중$/,(place)=>`Sleeping in ${place}`]
   ],
   ja:[
-    [/^(.+)의 프로필·SD·LD·테마$/,(name)=>`${name}のプロフィール・SD・LD・テーマ`],
+    [/^(.+)의 프로필·SD·LD$/,(name)=>`${name}のプロフィール・SD・LD`],
     [/^(.+)의 생활 로그$/,(name)=>`${name}の生活ログ`],
     [/^(\d+)명 저장됨 · 한도 (\d+)명$/,(saved,limit)=>`${saved}人保存済み・上限${limit}人`],
     [/^([\d.]+)MB 사용 · ([\d.]+)MB 남음$/,(used,left)=>`${used}MB使用・残り${left}MB`],
@@ -381,7 +383,7 @@ const visibleTownId=c=>eventFor(c)?.townId||c.townId;
 function avatar(c,cls=""){
   if(c.icon)return `<img class="sprite ${cls}" src="${c.icon}" alt="">`;
   if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${c.photo}" alt="">`;
-  return `<span class="avatar ${cls}" style="--own:${c.theme.primary}">${esc((c.name||"새").slice(0,1))}</span>`;
+  return `<span class="avatar ${cls}">${esc((c.name||"새").slice(0,1))}</span>`;
 }
 // Old emotion-specific LD fields are migrated once in state.js. The renderer
 // deliberately knows about only one LD image, so the retired UI cannot return.
@@ -418,7 +420,7 @@ function rosterSummary(entry){
   return title.length>24?`${title.slice(0,23)}…`:title;
 }
 function roster(){
-  return `<div class="roster">${state.order.map(id=>{const c=state.characters[id],e=eventFor(c),away=visibleTownId(c)!==state.activeTownId,summary=rosterSummary(e);return `<button class="roster-card ${id===state.activeId?"on":""} ${away?"away":""}" data-roster="${id}" title="${esc(c.name)} · ${esc(e.title)}" style="--own:${c.theme.primary}">${avatar(c)}<span class="roster-info"><b>${esc(c.name)}</b><small>${esc(summary)}</small></span></button>`}).join("")}</div>`;
+  return `<div class="roster">${state.order.map(id=>{const c=state.characters[id],e=eventFor(c),away=visibleTownId(c)!==state.activeTownId,summary=rosterSummary(e);return `<button class="roster-card ${id===state.activeId?"on":""} ${away?"away":""}" data-roster="${id}" title="${esc(c.name)} · ${esc(e.title)}">${avatar(c)}<span class="roster-info"><b>${esc(c.name)}</b><small>${esc(summary)}</small></span></button>`}).join("")}</div>`;
 }
 function placeCard(p){
   const mode=state.buildingLabelMode||"full";
@@ -931,9 +933,9 @@ function dailyLogItems(entries,c){
       const steps=[...stepMap.values()];
       const partner=state.characters[x.withId],title=partner?`${togetherText(partner.name)} 데이트`:`데이트 일정`;
       const purpose=x.datePurpose?` · ${x.datePurpose}`:"";
-      return `<li class="date-schedule" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><div class="date-schedule-title"><b>${esc(title+purpose)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
+      return `<li class="date-schedule" style="--log-theme:var(--p)"><div class="date-schedule-title"><b>${esc(title+purpose)}</b><small>${esc(steps[0].time)}–${esc(steps.at(-1).time)}</small></div><ol>${steps.map(step=>`<li><time>${esc(step.time)}</time><span><b>${esc(step.title.replace(/^.+?[과와] 데이트\s*·\s*/,"").replace(/^데이트\s*·\s*/,""))}</b><small>${esc(step.desc)}</small></span></li>`).join("")}</ol></li>`;
     }
-    return `<li class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:${esc(c.theme?.primary||"#176b60")}"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
+    return `<li class="${importantEntry(x)?"important":""} ${x===entries.at(-1)?"now":""}" style="--log-theme:var(--p)"><time>${esc(x.time)}</time><span><b>${esc(x.title)}</b><small>${esc(x.desc)}</small></span></li>`;
   }).join("");
 }
 function compactDisplayedTimeline(entries,minGap=30){
@@ -1535,15 +1537,13 @@ function character(){
   const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>체형, 머리, 눈, 화장 같은 외형과 건강·접근성을 나누어 정해요. 고르지 않은 특성은 장면에서 지어내지 않습니다.</p></div>${physicalAppearanceSettings(c)}${healthAccessibilitySettings(c)}</section>`;
   const limit=characterLimit();
   const slotLabel=state.order.length>limit?`${state.order.length}명 저장됨 · 한도 ${limit}명`:`+ 생성 · ${state.order.length}/${limit}`;
-  const paneMeta={profile:["프로필","사진·기본 정보·생활 습관","👤"],body:["신체","외형·건강·접근성","✦"],personality:["성격","성향·서사·인지","◈"],taste:["취향 선택","취미·음식·콘텐츠","♡"],worldTaste:["세계관 선호","최애·소지품","⌂"],manage:["사진·SD·LD","이미지·표현·테마·파일","📷"]};
+  const paneMeta={profile:["프로필","사진·기본 정보·생활 습관","👤"],body:["신체","외형·건강·접근성","✦"],personality:["성격","성향·서사·인지","◈"],taste:["취향 선택","취미·음식·콘텐츠","♡"],worldTaste:["세계관 선호","최애·소지품","⌂"],manage:["사진·SD·LD","이미지·표현·파일","📷"]};
   const paneButtons=Object.entries(paneMeta).map(([key,[label,help,icon]])=>`<button type="button" data-open-character-pane="${key}" class="${state.characterPane===key?"on":""}"><span>${icon}</span><b>${label}</b><small>${help}</small></button>`).join("");
   const mobileStrip=state.order.map(id=>{const x=state.characters[id];return `<button type="button" data-mobile-character-select="${id}" class="${id===c.id?"on":""}" style="--own:${x.theme.primary}">${avatar(x)}<small>${esc(x.name)}</small></button>`}).join("");
   const reorderRows=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="mobile-character-reorder-row">${avatar(x)}<b>${esc(x.name)}</b><span><button type="button" data-sort="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""}>→</button></span></div>`}).join("");
-  const themePalette=["#7C4DFF","#5B6FEF","#2F80ED","#2A9D8F","#176B60","#4F772D","#8A9A5B","#D4AF37","#E6B94A","#F2994A","#E07A5F","#C96B7B","#EA69A4","#FF97C7","#A855A8","#7A5C61","#8B6F47","#6B7280","#334155","#111827"];
-  const palette=(field,label)=>`<div class="character-theme-palette"><b>${label}</b><div>${themePalette.map(color=>`<button type="button" data-theme-swatch="${field}" data-color-value="${color}" class="theme-swatch ${String(c.theme?.[field]||"").toUpperCase()===color?"on":""}" style="--swatch:${color}" aria-label="${label} ${color}"></button>`).join("")}</div><label class="theme-custom-color"><span>사용자 설정</span><input type="color" data-color="${field}" value="${esc(c.theme?.[field]||"#176b60")}"><input type="text" data-theme-hex="${field}" value="${esc(c.theme?.[field]||"#176b60")}" maxlength="7" spellcheck="false" aria-label="${label} HEX 값" placeholder="#010101"></label></div>`;
   const ldSource=ldArtSource(c);
   const ldCard=`<article class="character-ld-card character-ld-single"><div>${ldSource?`<img class="scene-ld-art" src="${esc(ldSource)}" alt="${esc(c.name)} LD 일러스트">`:`<span class="character-image-empty-preview ld"><i>LD</i><small>LD 미등록</small></span>`}</div><h4>LD 일러스트</h4><small>전신 또는 무릎 위 이미지 한 장</small><span class="image-actions"><button type="button" data-image="ldImage">LD 파일</button><button type="button" data-image-url="ldImage" data-id="${c.id}">LD 링크</button>${ldSource?`<button type="button" data-clear-character-image="ldImage">지우기</button>`:""}</span></article>`;
-  const managePane=`<section class="character-manage-pane" style="--own:${esc(c.theme?.primary||"#176b60")};--own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="traits-pane-heading"><h2>${esc(c.name)}의 프로필·SD·LD·테마</h2><p>프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div><div class="home-visual-options"><label>홈화면 기본 표현<select data-field="homeVisualMode"><option value="sd" ${c.homeVisualMode!=="ld"?"selected":""}>SD · 아이콘</option><option value="ld" ${c.homeVisualMode==="ld"?"selected":""} ${hasLdArt(c)?"":"disabled"}>LD · 전신 일러스트</option></select><small>SD와 LD가 모두 있으면 홈화면에서도 바로 전환할 수 있어요.</small></label><label>홈화면 캐릭터 크기 <b data-home-visual-scale-value>${Math.round(Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeVisualScale)||100)}" data-field="homeVisualScale"></label></div></section><section class="character-manage-theme"><h3>테마색 설정</h3><p>버튼 색을 고르거나 색상 선택기와 HEX 값으로 직접 입력할 수 있어요.</p>${palette("primary","대표 테마색")}${palette("secondary","그라데이션 보조색")}<label class="check"><input type="checkbox" data-gradient ${c.theme?.gradient?"checked":""}> 보조색으로 그라데이션 사용</label></section><section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
+  const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 프로필·SD·LD</h2><p>프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div><div class="home-visual-options"><label>홈화면 기본 표현<select data-field="homeVisualMode"><option value="sd" ${c.homeVisualMode!=="ld"?"selected":""}>SD · 아이콘</option><option value="ld" ${c.homeVisualMode==="ld"?"selected":""} ${hasLdArt(c)?"":"disabled"}>LD · 전신 일러스트</option></select><small>SD와 LD가 모두 있으면 홈화면에서도 바로 전환할 수 있어요.</small></label><label>홈화면 캐릭터 크기 <b data-home-visual-scale-value>${Math.round(Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeVisualScale)||100)}" data-field="homeVisualScale"></label></div></section><section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
   return `<div class="editor character-editor" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
     <aside class="panel desktop-character-list"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside>
@@ -1850,10 +1850,11 @@ function fontSettings(){
 }
 const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>동기화 이름 표시</h2><p>Google 계정 이름 대신 백업과 동기화 화면에 표시할 이름이에요.</p><label>어떻게 불러드릴까요?<input data-setting="ownerName" maxlength="20" value="${esc(state.ownerName||"")}" placeholder="예: 꺄륵"></label></section>`;
 function visualThemeSettings(){
-  const bright=[["cream","크림 라떼","포근하고 환한 아이보리와 캐러멜빛"],["peach","복숭아 소다","생기 있고 부드러운 복숭앗빛"],["mint","민트 정원","산뜻하고 맑은 민트와 잎사귀빛"],["sunshine","햇살 레몬","따뜻하고 명랑한 레몬과 금빛"]];
-  const classic=[["monochrome","흑백","가장 또렷한 기본 테마"],["sage","세이지","차분한 초록빛"],["rose","로즈","부드러운 장밋빛"],["ocean","오션","맑은 푸른빛"],["lavender","라벤더","은은한 보랏빛"]];
+  const vivid=[["rose","프린세스 핑크","사탕처럼 선명하고 사랑스러운 공주 핑크","#ff3f9f","#ff8dcc"],["berry","베리 팝","보라와 핫핑크가 통통 튀는 베리빛","#be2cff","#ff45b5"],["sky","하늘 소다","맑은 하늘과 탄산처럼 시원한 파랑","#078cff","#55c8ff"],["cobalt","코발트 네온","화면을 또렷하게 잡는 선명한 청보라","#3f50ff","#7d87ff"],["aqua","아쿠아 팝","청록과 민트가 반짝이는 물빛","#00a9b5","#21dfc5"],["lime","라임 캔디","싱그러운 초록과 라임빛","#52a900","#b4d900"],["coral","코랄 펀치","산뜻한 빨강과 오렌지 코랄","#ff4f62","#ff9770"]];
+  const bright=[["cream","크림 라떼","포근하고 환한 아이보리와 캐러멜빛","#b06a00","#f2a93b"],["peach","복숭아 소다","생기 있고 부드러운 복숭앗빛","#ef536f","#ff986e"],["mint","민트 정원","산뜻하고 맑은 민트와 잎사귀빛","#00a982","#4bd8aa"],["sunshine","햇살 레몬","따뜻하고 명랑한 레몬과 금빛","#d98b00","#ffd23f"]];
+  const classic=[["monochrome","흑백","가장 또렷한 기본 테마","#20242a","#6d747d"],["sage","세이지","편안하지만 탁하지 않은 초록빛","#2f855a","#76c36a"],["ocean","오션","맑고 깊은 바다의 푸른빛","#007fc2","#36c0e8"],["lavender","라벤더","선명하면서 부드러운 보랏빛","#7547e8","#c26de8"]];
   const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span></button>`).join("");
-  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>화이트·다크 모드는 밝기를, 색상 테마는 버튼과 강조색을 정해요.</p><h3>밝은 테마 4종</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>기본 색상 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></section>`;
+  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><h3>밝고 선명한 테마</h3><div class="visual-theme-options vivid-theme-options">${buttons(vivid)}</div><h3>밝은 파스텔 테마</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>차분한 기본 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></section>`;
 }
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;
@@ -1866,14 +1867,20 @@ function settingsContent(){
   return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${map}${language}${backup}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
 }
 Object.assign(UI_TEXT.en,{
-  "밝은 테마 4종":"Four light themes","기본 색상 테마":"Classic color themes",
+  "밝고 선명한 테마":"Bright & vivid themes","밝은 파스텔 테마":"Light pastel themes","차분한 기본 테마":"Calm classic themes",
+  "이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.":"This color applies to every character and to buttons and accents across the app. Button text automatically adapts to the background brightness.",
+  "프린세스 핑크":"Princess Pink","사탕처럼 선명하고 사랑스러운 공주 핑크":"A vivid, candy-bright princess pink","베리 팝":"Berry Pop","보라와 핫핑크가 통통 튀는 베리빛":"Playful berry shades of purple and hot pink","하늘 소다":"Sky Soda","맑은 하늘과 탄산처럼 시원한 파랑":"A crisp blue as refreshing as sky and soda","코발트 네온":"Cobalt Neon","화면을 또렷하게 잡는 선명한 청보라":"A clear, vivid blue-violet","아쿠아 팝":"Aqua Pop","청록과 민트가 반짝이는 물빛":"Sparkling aqua with teal and mint","라임 캔디":"Lime Candy","싱그러운 초록과 라임빛":"Fresh green and lime","코랄 펀치":"Coral Punch","산뜻한 빨강과 오렌지 코랄":"A lively red-orange coral",
+  "편안하지만 탁하지 않은 초록빛":"A comfortable green that stays clear","맑고 깊은 바다의 푸른빛":"Clear, deep ocean blue","선명하면서 부드러운 보랏빛":"A vivid yet gentle violet",
   "크림 라떼":"Cream Latte","포근하고 환한 아이보리와 캐러멜빛":"Warm, bright ivory with caramel accents","복숭아 소다":"Peach Soda","생기 있고 부드러운 복숭앗빛":"A lively, soft peach palette","민트 정원":"Mint Garden","산뜻하고 맑은 민트와 잎사귀빛":"Fresh mint with clear leafy accents","햇살 레몬":"Sunlit Lemon","따뜻하고 명랑한 레몬과 금빛":"Warm, cheerful lemon and gold",
   "저장과 동기화":"Save & sync","동기화 이름 표시":"Sync display name","언어 · Language · 言語":"Language","영어와 일본어 번역 범위를 계속 넓히고 있어요.":"English and Japanese coverage is being expanded continuously.","영어·일본어 베타 · 생활 장면 번역도 계속 추가됩니다.":"English & Japanese beta · More life-scene translations are on the way.",
   "확장팩":"Expansion packs","확장팩 · 출시 준비 중":"Expansion pack · Coming soon","이력서를 제출해요":"Submit Your Résumé","기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.":"A major career expansion adding deeper hierarchy and ranks, workplace relationships, real work locations, and detailed duties to existing occupations. Roles and workflows between managers, coworkers, and direct reports carry into life scenes and weekly schedules.","직업별 위계·직급과 승진 흐름":"Career hierarchy, ranks, and promotions","상사·동료·부하 직원의 직장 내 관계":"Workplace relationships with managers, coworkers, and direct reports","근무 장소·부서·담당 업무와 전용 생활 장면":"Workplaces, departments, duties, and dedicated life scenes","이 이미지는 ":"Replace only "," 파일만 바꾸면 교체돼요.":" to change this image."
   ,"원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.":"Add the products and quantities you want to the cart and pay in one checkout.","캐릭터 슬롯":"Character slots","캐릭터 5명 추가":"Add 5 character slots","구매할 때마다 캐릭터 슬롯 5개가 계정에 영구 추가됩니다.":"Each purchase permanently adds five character slots to your account.","마을 슬롯":"Town slots","마을 1개 추가":"Add 1 town slot","구매할 때마다 새로운 마을 슬롯 1개가 계정에 영구 추가됩니다.":"Each purchase permanently adds one town slot to your account.","사진 저장 공간":"Image storage","사진 저장 공간 50MB 추가":"Add 50MB image storage","구매하면 계정의 사진 저장 공간이 50MB로 늘어납니다.":"This increases your account image storage to 50MB.","평생 소장":"Permanent","개발 응원":"Support development","개발자에게 녹차 사주기 🍵":"Buy the developer green tea 🍵","잘 먹겠습니다 🥹":"Thank you 🥹","같은 상품도 여러 개 담을 수 있어요.":"You can add multiple quantities of the same product.","아직 장바구니가 비어 있어요.":"Your cart is empty.","총 결제금액":"Total","장바구니 결제하기":"Checkout cart"
 });
 Object.assign(UI_TEXT.ja,{
-  "밝은 테마 4종":"明るいテーマ4種","기본 색상 테마":"基本カラーテーマ",
+  "밝고 선명한 테마":"明るく鮮やかなテーマ","밝은 파스텔 테마":"明るいパステルテーマ","차분한 기본 테마":"落ち着いた基本テーマ",
+  "이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.":"この色はすべてのキャラクターと画面のボタン・アクセントに適用されます。ボタンの文字色は背景の明るさに合わせて自動で変わります。",
+  "프린세스 핑크":"プリンセスピンク","사탕처럼 선명하고 사랑스러운 공주 핑크":"キャンディのように鮮やかで可愛いプリンセスピンク","베리 팝":"ベリーポップ","보라와 핫핑크가 통통 튀는 베리빛":"紫とホットピンクが弾けるベリーカラー","하늘 소다":"スカイソーダ","맑은 하늘과 탄산처럼 시원한 파랑":"澄んだ空とソーダのように爽やかな青","코발트 네온":"コバルトネオン","화면을 또렷하게 잡는 선명한 청보라":"画面をくっきり見せる鮮やかな青紫","아쿠아 팝":"アクアポップ","청록과 민트가 반짝이는 물빛":"青緑とミントがきらめく水色","라임 캔디":"ライムキャンディ","싱그러운 초록과 라임빛":"みずみずしい緑とライム色","코랄 펀치":"コーラルパンチ","산뜻한 빨강과 오렌지 코랄":"爽やかな赤とオレンジのコーラル",
+  "편안하지만 탁하지 않은 초록빛":"落ち着きがありながら濁らない緑","맑고 깊은 바다의 푸른빛":"澄んだ深い海の青","선명하면서 부드러운 보랏빛":"鮮やかでやわらかな紫",
   "크림 라떼":"クリームラテ","포근하고 환한 아이보리와 캐러멜빛":"あたたかく明るいアイボリーとキャラメル","복숭아 소다":"ピーチソーダ","생기 있고 부드러운 복숭앗빛":"明るくやわらかな桃色","민트 정원":"ミントガーデン","산뜻なミントと葉の色":"爽やかなミントと葉の色","산뜻하고 맑은 민트와 잎사귀빛":"爽やかで澄んだミントと葉の色","햇살 레몬":"陽だまりレモン","따뜻하고 명랑한 레몬과 금빛":"あたたかく明るいレモンと金色",
   "저장과 동기화":"保存と同期","동기화 이름 표시":"同期時の表示名","언어 · Language · 言語":"言語","영어와 일본어 번역 범위를 계속 넓히고 있어요.":"英語・日本語の翻訳範囲を引き続き拡大しています。","영어·일본어 베타 · 생활 장면 번역도 계속 추가됩니다.":"英語・日本語ベータ・生活シーンの翻訳も順次追加します。",
   "확장팩":"拡張パック","확장팩 · 출시 준비 중":"拡張パック・リリース準備中","이력서를 제출해요":"履歴書を提出します","기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.":"既存の職業に、より細かな階層・役職、職場の人間関係、実際の勤務場所と具体的な業務内容を追加します。上司・同僚・部下の役割や仕事の流れが生活シーンと週間予定に反映される大型職業拡張パックです。","직업별 위계·직급과 승진 흐름":"職業ごとの階層・役職・昇進","상사·동료·부하 직원의 직장 내 관계":"上司・同僚・部下との職場関係","근무 장소·부서·담당 업무와 전용 생활 장면":"勤務場所・部署・担当業務と専用生活シーン","이 이미지는 ":"この画像は "," 파일만 바꾸면 교체돼요.":" ファイルだけを差し替えると変更できます。"
@@ -1881,6 +1888,8 @@ Object.assign(UI_TEXT.ja,{
 });
 Object.assign(UI_TEXT.en,{
   "저장과 동기화":"Save & sync","이 캐릭터가 끌리는 특성 정하기":"Choose preferred traits","이 캐릭터가 비선호하는 특성 정하기":"Choose disliked traits","비선호하는 특징 정하기":"Choose disliked traits",
+  "주변에서는 두 사람을 연인으로 알고 있지만, 지금은 서로의 시간을 존중하며 각자 하던 일에 집중하고 있어요. 가까이 있어도 늘 같은 행동을 해야 한다고 생각하지 않아요.":"People around them know they are a couple, but right now they are respecting each other's time and focusing on their own activities. Being close does not mean they always need to do the same thing.",
+  "상대가 곁에 있어도 필요한 일은 먼저 스스로 해낸 뒤, 도움이 필요할 때만 자연스럽게 손을 내밀었어요.":"Even with the other person nearby, they handled what they could on their own and reached out naturally only when help was needed.",
   "끌림과 외모 인식":"Attraction and appearance","상대의 외모를 보는 정도":"Attention to appearance","정하지 않음":"Not set",
   "두려움 정도":"Fear level","상대를 얼마나 우습게 보거나 두려워하는지 강도를 정해요.":"Choose how dismissive or afraid this character feels toward the other person.",
   "가소로움":"Finds them laughable","전혀 두렵지 않음":"Not afraid at all","거의 두렵지 않음":"Hardly afraid","조금 두려움":"Slightly afraid","경계하며 두려워함":"Wary and afraid","많이 두려움":"Very afraid","공포를 느낌":"Terrified","극도로 두려워함":"Extremely terrified",
@@ -1891,6 +1900,8 @@ Object.assign(UI_TEXT.en,{
 });
 Object.assign(UI_TEXT.ja,{
   "저장과 동기화":"保存と同期","이 캐릭터가 끌리는 특성 정하기":"惹かれる特徴を選ぶ","이 캐릭터가 비선호하는 특성 정하기":"苦手な特徴を選ぶ","비선호하는 특징 정하기":"苦手な特徴を選ぶ",
+  "주변에서는 두 사람을 연인으로 알고 있지만, 지금은 서로의 시간을 존중하며 각자 하던 일에 집중하고 있어요. 가까이 있어도 늘 같은 행동을 해야 한다고 생각하지 않아요.":"周囲には恋人同士として知られていますが、今は互いの時間を尊重し、それぞれのことに集中しています。そばにいるからといって、いつも同じことをする必要はないと考えています。",
+  "상대가 곁에 있어도 필요한 일은 먼저 스스로 해낸 뒤, 도움이 필요할 때만 자연스럽게 손을 내밀었어요.":"相手がそばにいても、できることはまず自分で済ませ、助けが必要な時だけ自然に手を伸ばしました。",
   "끌림과 외모 인식":"惹かれ方と外見の認識","상대의 외모를 보는 정도":"外見を重視する度合い","정하지 않음":"未設定",
   "두려움 정도":"恐れの度合い","상대를 얼마나 우습게 보거나 두려워하는지 강도를 정해요.":"相手をどれほど軽く見ているか、または恐れているか、その強さを設定します。",
   "가소로움":"取るに足らないと思う","전혀 두렵지 않음":"まったく怖くない","거의 두렵지 않음":"ほとんど怖くない","조금 두려움":"少し怖い","경계하며 두려워함":"警戒しながら怖がる","많이 두려움":"かなり怖い","공포를 느낌":"恐怖を感じる","극도로 두려워함":"極度に恐れている",

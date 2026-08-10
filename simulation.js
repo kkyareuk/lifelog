@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810s";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811a";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -358,7 +358,7 @@ function personalityFlavor(c,desc,seed="",date=new Date()){
       "즉흥적이고 자유로움":["처음 정한 순서에 얽매이지 않고 그 순간 가장 끌리는 방식으로 즐겼어요.","계획에 없던 변화도 망설이지 않고 자기 방식으로 받아들였어요.","완벽한 준비보다 지금 생긴 흥미를 따라 바로 시작했어요.","중간에 더 재미있는 방향을 발견하자 부담 없이 흐름을 바꾸었어요.","정답을 정해 두지 않고 손이 가는 선택을 이어 붙여 결과를 만들었어요.","끝을 미리 정하지 않은 채 순간의 감각에 맞춰 속도를 조절했어요."],
       "호기심 많고 창의적":["익숙한 방식에서 조금 벗어나 새로운 조합과 가능성을 직접 시험했어요.","당연하게 보이던 부분을 다르게 바꾸어 자기만의 방법을 찾아봤어요.","작은 차이에서 새로운 아이디어를 떠올리고 바로 적용해 보았어요.","왜 이런 결과가 나오는지 궁금해 조건을 하나씩 바꾸어 보았어요.","평범한 재료의 예상 밖 쓰임을 찾아 색다른 결과로 연결했어요.","완성보다 탐색 자체를 즐기며 여러 가능성을 가볍게 시험했어요."],
       "완고하고 통제적":socialScene?["자기가 옳다고 여긴 순서를 쉽게 양보하지 않고 상대에게도 분명히 요구했어요.","상대가 다른 방식을 고르자 이유를 따져 묻고 자기 기준을 고수했어요.","결정권을 넘기지 않은 채 세부 순서까지 직접 정하려 했어요.","예상과 다른 반응이 돌아오자 타협보다 자기 주장을 다시 강조했어요.","흐름이 자기 계획에서 벗어나지 않도록 상대의 행동까지 살폈어요."]:["한번 정한 방식에서 벗어나지 않고 끝까지 자기 기준대로 진행했어요.","예상과 다른 결과가 나오자 처음 세운 기준에 맞을 때까지 다시 손보았어요.","작은 변수도 그대로 두지 않고 통제 가능한 상태로 되돌렸어요.","자기가 세운 규칙을 예외 없이 적용하며 흐름을 붙들었어요.","완성된 뒤에도 자기 기준에 어긋난 곳을 찾아 다시 바로잡았어요."],
-      "무심하고 독립적":socialScene?["필요한 말만 주고받고 상대의 선택에는 더 깊이 관여하지 않았어요.","상대가 곁에 있어도 각자의 몫은 각자 해결하는 편을 택했어요.","도움을 주고받기보다 서로 방해하지 않는 거리를 편하게 여겼어요.","상대의 반응을 재촉하지 않고 자기 할 일로 시선을 돌렸어요.","분위기를 맞추기 위한 말은 생략하고 필요한 내용만 정확히 전했어요."]:["남의 평가를 의식하지 않고 자기에게 편한 방식으로 시간을 보냈어요.","도움이나 반응을 기다리지 않고 혼자 필요한 일을 끝냈어요.","누가 알아주지 않아도 개의치 않고 자기 기준대로 마무리했어요.","외부의 소음과 유행에는 관심을 두지 않고 하던 일에 머물렀어요.","혼자 해결할 수 있는 일에 굳이 다른 사람을 끌어들이지 않았어요."],
+      "무심하고 독립적":socialScene?["필요한 말만 주고받고 상대의 선택에는 더 깊이 관여하지 않았어요.","상대가 곁에 있어도 필요한 일은 먼저 스스로 해낸 뒤, 도움이 필요할 때만 자연스럽게 손을 내밀었어요.","도움을 주고받기보다 서로 방해하지 않는 거리를 편하게 여겼어요.","상대의 반응을 재촉하지 않고 자기 할 일로 시선을 돌렸어요.","분위기를 맞추기 위한 말은 생략하고 필요한 내용만 정확히 전했어요."]:["남의 평가를 의식하지 않고 자기에게 편한 방식으로 시간을 보냈어요.","도움이나 반응을 기다리지 않고 혼자 필요한 일을 끝냈어요.","누가 알아주지 않아도 개의치 않고 자기 기준대로 마무리했어요.","외부의 소음과 유행에는 관심을 두지 않고 하던 일에 머물렀어요.","혼자 해결할 수 있는 일에 굳이 다른 사람을 끌어들이지 않았어요."],
       "감정적이고 충동적":["마음이 움직이자 오래 재지 않고 바로 행동으로 옮겼어요.","순간 올라온 감정이 표정과 동작에 곧바로 드러났어요.","흥미가 생긴 순간 속도를 늦추지 않고 깊이 빠져들었어요.","기대했던 것과 달라지자 실망이 숨겨지지 않고 손끝에 묻어났어요.","마음에 든 지점을 발견하자 다른 순서를 건너뛰고 거기에 먼저 몰두했어요.","감정이 가라앉기 전에 떠오른 선택을 곧바로 시험해 보았어요."],
       "장난기 많음":socialScene?["진지한 흐름을 해치지 않는 선에서 짧은 장난으로 반응을 끌어냈어요.","상대가 받아들일 수 있는 농담을 골라 분위기를 가볍게 바꾸었어요.","상대의 말끝을 재치 있게 받아치며 둘만 알아들을 웃음을 만들었어요.","평범한 대답 대신 뜻밖의 표현을 골라 상대의 표정을 살폈어요.","분위기가 굳어지기 전에 작은 장난을 던져 긴장을 풀었어요."]:["혼자서도 사소한 규칙을 만들어 놀이처럼 즐겼어요.","평범한 과정에 작은 장난을 섞어 자기 방식으로 재미를 만들었어요.","반복되는 순서에 엉뚱한 목표를 하나 끼워 넣어 스스로 즐겼어요.","별것 아닌 결과에도 재미있는 이름을 붙이며 혼자 흡족해했어요.","정해진 방법을 살짝 비틀어 예상하지 못한 재미를 찾아냈어요."]
     }[type]||[];
@@ -1338,7 +1338,7 @@ function relationshipHomeEntry(c,pick,time,date){
     [`${other.name}와 연인처럼 굴고도 친구라고 부르는 중`,`서로의 몫을 먼저 챙기고 자연스럽게 하루를 함께했지만 밖에서는 여전히 친구라고 말했어요. 사귀지 않는다는 사실과 쌍방의 연심이 동시에 선명해지고 있어요.`,"living"]
   ];
   else if(nominalDating)scripts=[
-    [`${other.name}와 공개적으로 연인이지만 각자의 시간을 보내는 중`,`밖에서는 분명 연인으로 알려져 있지만 둘 사이에서는 연인다운 행동을 일부러 만들지 않았어요. 호칭보다 각자 편한 거리와 생활 방식을 우선하고 있어요.`,"living"],
+    [`${other.name}와 공개적으로 연인이지만 각자의 시간을 보내는 중`,`주변에서는 두 사람을 연인으로 알고 있지만, 지금은 서로의 시간을 존중하며 각자 하던 일에 집중하고 있어요. 가까이 있어도 늘 같은 행동을 해야 한다고 생각하지 않아요.`,"living"],
     [`${other.name}와 사귀는 사이를 연기하지 않는 중`,`관계의 이름은 연인이지만 다정한 접촉이나 데이트를 의무처럼 여기지 않았어요. 필요한 말만 나누고 각자의 자리에서 편안한 방식으로 관계를 유지하고 있어요.`,"living"],
     [`${other.name}와 명목상의 연인 관계를 확인하는 중`,`남들이 기대하는 연인다운 모습과 실제 둘의 모습이 다르다는 것을 알고 있어요. 억지로 맞추기보다 지금 이 관계에서 서로 원하는 것과 원하지 않는 것을 다시 확인했어요.`,"living"]
   ];
@@ -2227,7 +2227,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260810s";
+const ENGINE_VERSION="20260811a";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

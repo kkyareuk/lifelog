@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810s";
-import {eventFor} from "./simulation.js?v=20260810s";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810s";
-import {recordCharacterInteraction} from "./state.js?v=20260810s";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260811a";
+import {eventFor} from "./simulation.js?v=20260811a";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260811a";
+import {recordCharacterInteraction} from "./state.js?v=20260811a";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -263,15 +263,26 @@ const exportImage=src=>new Promise(resolve=>{
 });
 const readableInk=color=>{
   const hex=String(color||"#765036").replace("#",""),full=hex.length===3?hex.split("").map(x=>x+x).join(""):hex;
-  const rgb=[0,2,4].map(i=>parseInt(full.slice(i,i+2),16)||0),luminance=(.299*rgb[0]+.587*rgb[1]+.114*rgb[2]);
-  return luminance>175?"#241c18":"#ffffff";
+  const channels=[0,2,4].map(i=>(parseInt(full.slice(i,i+2),16)||0)/255).map(value=>value<=.03928?value/12.92:Math.pow((value+.055)/1.055,2.4));
+  const luminance=.2126*channels[0]+.7152*channels[1]+.0722*channels[2];
+  const darkLuminance=.012,whiteContrast=1.05/(luminance+.05),darkContrast=(luminance+.05)/(darkLuminance+.05);
+  return darkContrast>=whiteContrast?"#241c18":"#ffffff";
 };
+const mixThemeColors=(first,second)=>{
+  const rgb=value=>{
+    const hex=String(value||"").trim().replace("#",""),full=hex.length===3?hex.split("").map(x=>x+x).join(""):hex;
+    return /^[0-9a-f]{6}$/i.test(full)?[0,2,4].map(i=>parseInt(full.slice(i,i+2),16)):[32,36,42];
+  };
+  const a=rgb(first),b=rgb(second);
+  return `#${a.map((value,index)=>Math.round((value+b[index])/2).toString(16).padStart(2,"0")).join("")}`;
+};
+const globalThemeValue=(name,fallback)=>getComputedStyle(document.documentElement).getPropertyValue(name).trim()||fallback;
 async function exportProfilePng(character){
   await document.fonts?.load?.('32px "Noto Sans KR"');await document.fonts?.ready;
   const sections=profileExportLines(character),canvas=document.createElement("canvas"),ctx=canvas.getContext("2d"),width=1400,pad=70,rowH=58;
   const rows=sections.reduce((sum,[,items])=>sum+items.length,0);
   canvas.width=width;canvas.height=Math.max(1750,430+sections.length*72+rows*rowH);
-  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary);
+  const primary=globalThemeValue("--p","#765036"),secondary=globalThemeValue("--s",primary),ink=readableInk(primary);
   ctx.fillStyle="#fffdf9";ctx.fillRect(0,0,canvas.width,canvas.height);
   ctx.strokeStyle="#24201d";ctx.lineWidth=3;ctx.strokeRect(pad,55,width-pad*2,canvas.height-110);
   ctx.fillStyle=primary;ctx.fillRect(pad,55,width-pad*2,110);
@@ -374,7 +385,7 @@ async function exportProfilePngV2(character,download=true){
 }
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
-  const primary=character.theme?.primary||"#765036",secondary=character.theme?.secondary||primary,ink=readableInk(primary),photo=character.photo||character.icon;
+  const primary=globalThemeValue("--p","#765036"),secondary=globalThemeValue("--s",primary),ink=readableInk(primary),photo=character.photo||character.icon;
   win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name} 설정표</title><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet"><style>@page{size:A4;margin:12mm}*{box-sizing:border-box}body{margin:0;color:#211d1a;background:#eee;font-family:"Noto Sans KR","Malgun Gothic",sans-serif}.sheet{width:190mm;min-height:270mm;margin:12px auto;padding:8mm;background:#fff;border:1px solid #222}.title{padding:10px;color:${ink};background:${primary};text-align:center;font-size:34px;font-weight:900;letter-spacing:8px}.identity{display:grid;grid-template-columns:42mm 1fr;margin-top:7mm;border:1px solid #222}.portrait{width:42mm;height:42mm;object-fit:contain;border-right:1px solid #222;background:#f5f2ed}.identity div{padding:8mm}.identity h1{margin:0;font-size:32px;font-weight:900}.identity p{color:#746b64}section{margin-top:6mm;break-inside:avoid}h2{margin:0;padding:7px 10px;color:${ink};background:${primary};font-size:22px;font-weight:900}table{width:100%;border-collapse:collapse;table-layout:fixed}th,td{border:1px solid #333;padding:7px 9px;vertical-align:top;font-size:13px;overflow-wrap:anywhere}th{width:34%;background:#f1ede7;text-align:left;font-size:15px;font-weight:900}button{width:100%;margin-top:8mm;padding:12px;border:0;color:#fff;background:${primary};font:700 18px "Noto Sans KR","Malgun Gothic",sans-serif}@media print{body{background:#fff}.sheet{width:auto;min-height:0;margin:0;padding:0;border:0}button{display:none}}</style></head><body><main class="sheet"><div class="title">캐 릭 터 설 정 표</div><div class="identity">${photo?`<img class="portrait" src="${photo}" alt="">`:`<div class="portrait"></div>`}<div><h1>${character.name}</h1><p>서랍마을 인물 기록 · 설정된 항목만 표기</p></div></div>${sections.map(([title,rows])=>`<section><h2>${title}</h2><table>${rows.map(([label,value])=>`<tr><th>${label}</th><td>${value}</td></tr>`).join("")}</table></section>`).join("")}<button onclick="print()">PDF로 저장 / 인쇄</button></main></body></html>`);
   win.document.close();setTimeout(()=>win.print(),900);
 }
@@ -649,7 +660,7 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260810s");
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811a");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
@@ -858,18 +869,23 @@ function openCarEditor(homeId,carId){
 }
 
 function applyTheme(){
-  const c=active();
   const mode=state.colorMode==="light"?"light":"dark";
   const palettes={
     monochrome:{light:["#20242a","#6d747d","#e8eaed","#ffffff","#1d2126","#626a73","#cbd0d5"],dark:["#7f8791","#c0c6ce","#090c10","#151a20","#f4f6f8","#b5bbc3","#343b44"]},
-    cream:{light:["#9a642d","#d59a53","#fff3d9","#fffdf8","#362619","#78634f","#ead7b8"],dark:["#e5ad68","#f3cf8d","#171008","#2a1d10","#fff6e7","#d7bea0","#5a4128"]},
-    peach:{light:["#b84f53","#f0916f","#ffe8df","#fffaf7","#472325","#865e58","#efc6b8"],dark:["#ef8580","#ffb083","#190a0b","#321718","#fff2ed","#ddb0a5","#693536"]},
-    mint:{light:["#187664","#54bca1","#ddf7ed","#fbfffd","#17372f","#52786e","#b9e1d3"],dark:["#55c5a3","#8fe3c7","#061512","#102c25","#edfff8","#a3d5c5","#285e50"]},
-    sunshine:{light:["#8b6412","#e9aa22","#fff1b8","#fffdf5","#352a13","#756642","#ead48e"],dark:["#f0bd3f","#f7d66f","#171205","#30260d","#fff9df","#d9c88a","#66521d"]},
-    sage:{light:["#28664d","#78a267","#e2efe5","#fbfffc","#183226","#587163","#bfd5c5"],dark:["#65aa82","#a6c67f","#07130d","#12241a","#effbf3","#a9c5b3","#2d513c"]},
-    rose:{light:["#a23d62","#dc7891","#f8e3ea","#fffafd","#3b1d29","#825d6b","#e3bdca"],dark:["#dc7898","#f0a1b4","#17080e","#2b121c","#fff1f5","#d1a6b3","#633044"]},
-    ocean:{light:["#176b99","#42a8c7","#dff0f8","#fbfeff","#173140","#526f7e","#b7d7e7"],dark:["#4aa5d0","#78cee2","#06131a","#0e2733","#eefaff","#a6c9d8","#27536a"]},
-    lavender:{light:["#704bb0","#b779d0","#eee4f8","#fefbff","#30203f","#705f7c","#d5bee6"],dark:["#a482df","#d29ae9","#100819","#23132f","#f9f1ff","#c5acd2","#523765"]}
+    cream:{light:["#b06a00","#f2a93b","#fff4d8","#fffdf8","#3a2508","#80613a","#f2d39b"],dark:["#f0a83a","#ffd073","#190f02","#30200b","#fff8e9","#e2c18d","#684617"]},
+    peach:{light:["#ef536f","#ff986e","#fff0e9","#fffaf8","#481923","#955d5d","#ffc6ba"],dark:["#ff7185","#ffad82","#1d080d","#381318","#fff2ef","#efb6ae","#7b3340"]},
+    mint:{light:["#00a982","#4bd8aa","#e9fff6","#fbfffd","#073e32","#4f8878","#b4efd9"],dark:["#21cea3","#6af0c0","#031913","#073128","#effff9","#9ce3cd","#1e7560"]},
+    sunshine:{light:["#d98b00","#ffd23f","#fff8d2","#fffef7","#3e2b00","#836b27","#f4dc82"],dark:["#ffb51f","#ffe05f","#1c1300","#352703","#fffbe8","#e9d184","#735513"]},
+    sage:{light:["#2f855a","#76c36a","#ecf8ed","#fbfffc","#143823","#5a7f66","#bfe1c4"],dark:["#55bc79","#99db76","#06150c","#0f2b19","#effcf3","#a8d4b4","#28643e"]},
+    rose:{light:["#ff3f9f","#ff8dcc","#fff0f8","#ffffff","#3c1230","#8e4d70","#ffc0df"],dark:["#ff5faf","#ff9bd3","#1b0614","#321027","#fff2fa","#efafd2","#72304f"]},
+    ocean:{light:["#007fc2","#36c0e8","#e9f9ff","#fbfeff","#073952","#4f7f93","#b6e8f7"],dark:["#29a9e8","#5cdaf0","#031720","#082f41","#effbff","#9ed7e6","#1e607b"]},
+    lavender:{light:["#7547e8","#c26de8","#f5edff","#fffaff","#2e1652","#76588d","#ddc2fa"],dark:["#956cff","#db86f4","#10051d","#27103b","#faf2ff","#d1afe4","#593180"]},
+    berry:{light:["#be2cff","#ff45b5","#f9ecff","#ffffff","#321044","#7d4a8c","#e5b6f8"],dark:["#d65cff","#ff69c5","#16051d","#2c0c38","#fff2ff","#d9a8e8","#663077"]},
+    sky:{light:["#078cff","#55c8ff","#eaf7ff","#ffffff","#082f50","#4b7895","#b5e2ff"],dark:["#31a8ff","#68ddff","#031522","#092c43","#eefaff","#9ed5ee","#245b79"]},
+    cobalt:{light:["#3f50ff","#7d87ff","#eef0ff","#ffffff","#151a52","#59608e","#c9ceff"],dark:["#6674ff","#9da5ff","#070a22","#151a45","#f3f4ff","#b6bbec","#3a438f"]},
+    aqua:{light:["#00a9b5","#21dfc5","#e7fffb","#ffffff","#073d3d","#4e8580","#aff1e7"],dark:["#13cbd1","#40f0cd","#031817","#092f2d","#edfffb","#9ce0d6","#1d7069"]},
+    lime:{light:["#52a900","#b4d900","#f3ffe3","#ffffff","#203600","#687f3c","#d3efa8"],dark:["#76ce22","#c9ef43","#0b1602","#1b3309","#f7ffe9","#c0dd99","#466f21"]},
+    coral:{light:["#ff4f62","#ff9770","#fff0ec","#ffffff","#49151b","#955b58","#ffc6ba"],dark:["#ff6674","#ffad82","#1d080b","#381316","#fff3f0","#efb6ae","#7d3439"]}
   };
   const selected=state.visualTheme||"monochrome";
   const [primary,secondary,bg,panel,ink,muted,line]=(palettes[selected]||palettes.monochrome)[mode];
@@ -882,8 +898,11 @@ function applyTheme(){
   document.documentElement.style.setProperty("--ink",ink);
   document.documentElement.style.setProperty("--muted",muted);
   document.documentElement.style.setProperty("--line",line);
-  document.documentElement.style.setProperty("--character-p",c?.theme?.primary||"#176b60");
-  document.documentElement.style.setProperty("--character-s",c?.theme?.gradient?(c.theme.secondary||c.theme.primary||"#176b60"):(c?.theme?.primary||"#176b60"));
+  document.documentElement.style.setProperty("--on-p",readableInk(primary));
+  document.documentElement.style.setProperty("--on-s",readableInk(secondary));
+  document.documentElement.style.setProperty("--on-grad",readableInk(mixThemeColors(primary,secondary)));
+  document.documentElement.style.setProperty("--character-p",primary);
+  document.documentElement.style.setProperty("--character-s",secondary);
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content",bg);
 }
 
@@ -1772,8 +1791,17 @@ function applyImage(type,id,room,data){
   else setCharacterImage(id,type,data);
 }
 
-function navigateToTab(tab){
-  if(!["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(tab))return;
+const APP_TABS=["observe","home","character","catalog","relationship","routine","town","shop","settings"];
+function recordTabHistory(tab,replace=false){
+  if(!APP_TABS.includes(tab))return;
+  const url=new URL(location.href);
+  url.hash=`tab=${tab}`;
+  const next={...(history.state||{}),drawerVillageTab:tab};
+  if(replace)history.replaceState(next,"",url);
+  else if(history.state?.drawerVillageTab!==tab)history.pushState(next,"",url);
+}
+function navigateToTab(tab,{recordHistory=true}={}){
+  if(!APP_TABS.includes(tab))return;
   document.querySelector(".page-guide[open]")?.close("navigate");
   if(tab!=="character"){
     flushMobileCharacterDraft();
@@ -1791,6 +1819,7 @@ function navigateToTab(tab){
     }
   }
   state.activeTab=tab;
+  if(recordHistory)recordTabHistory(tab);
   resetScrollAfterRender=true;
   document.documentElement.classList.add("page-switching");
   render();
@@ -2512,6 +2541,10 @@ window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==
 window.addEventListener("parallel-city-cloud-loaded",render);
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});
+window.addEventListener("popstate",event=>{
+  const tab=event.state?.drawerVillageTab;
+  if(APP_TABS.includes(tab))navigateToTab(tab,{recordHistory:false});
+});
 function scheduleLiveSceneRefresh(){
   const delay=(15+Math.floor(Math.random()*16))*60*1000;
   setTimeout(()=>{
@@ -2540,10 +2573,13 @@ document.addEventListener("change",event=>{
 });
 const mobileSiteQuery=window.matchMedia?.("(max-width:720px)");
 mobileSiteQuery?.addEventListener?.("change",()=>render());
+const hashTab=location.hash.match(/^#tab=(.+)$/)?.[1];
+if(APP_TABS.includes(hashTab))state.activeTab=hashTab;
+recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810s").catch(error=>{
+  import("./auth.js?v=20260811a").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2558,7 +2594,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810s",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260811a",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

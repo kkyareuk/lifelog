@@ -1,4 +1,4 @@
-:root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s))}
+:root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--on-p:#fff;--on-s:#fff;--on-grad:#fff}
 html[data-ui-scale="small"]{font-size:15px}
 html[data-ui-scale="normal"]{font-size:16px}
 html[data-ui-scale="large"]{font-size:17.5px}
@@ -366,6 +366,42 @@ header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;b
     color:#2d251f;
   }
 }
+
+/* 2026-08-11: one vivid global palette controls every screen and character. */
+.visual-theme-options button i{
+  background:linear-gradient(135deg,var(--theme-a,#20242a),var(--theme-b,#6d747d))!important;
+}
+.visual-theme-options button.on{
+  background:color-mix(in srgb,var(--p) 10%,var(--panel))!important;
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+:is(
+  button.primary,header nav .on,.furniture button.on,.character-menu button.on,.town-tabs button.on,
+  .favorite-group button.on,.stock-picker button.on,.observe-town-switcher button.on,
+  .color-mode-options button.on,.personality-choice button.on,.routine-toolbar .on,
+  .audience-dialog-list button.on,.fashion-extra-fields button.on,.closet-chip-grid button.on,
+  .layout-picker button.on,.outfit-item-picker button.on,.native-sub-tabs button.on,
+  .mobile-character-pane-grid button.on,.mobile-character-strip button.on
+){
+  color:var(--on-grad)!important;
+  -webkit-text-fill-color:var(--on-grad)!important;
+}
+html[data-color-mode][data-active-tab="settings"] .settings-shell button.primary,
+html[data-color-mode][data-active-tab="settings"] .color-mode-options button.on{
+  color:var(--on-grad)!important;
+  -webkit-text-fill-color:var(--on-grad)!important;
+}
+
+/* Older saves may still contain personal colors. They remain readable data, but no longer tint UI. */
+[style*="--own:"]{--own:var(--p)!important;--own-secondary:var(--s)!important}
+[style*="--log-theme:"]{--log-theme:var(--p)!important}
+[style*="--character-own:"]{--character-own:var(--p)!important;--character-secondary:var(--s)!important}
+[style*="--relationship-own:"]{--relationship-own:var(--p)!important;--relationship-own-secondary:var(--s)!important}
+[style*="--native-own:"]{--native-own:var(--p)!important;--native-own-secondary:var(--s)!important}
+[style*="--resident-theme:"]{--resident-theme:var(--p)!important}
+[style*="--home-grad:"]{--home-grad:var(--grad)!important}
+.character-manage-theme{display:none!important}
 
 /* 생활 상호작용은 연애 장면이 아니어도 두 인물의 분위기를 화면에 보여 준다. */
 .native-app .scene-tone-interaction-warm .native-scene-atmosphere{
@@ -5560,3 +5596,26 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog .character-view-dialog-direction>span{min-width:0!important;overflow-wrap:anywhere}
   dialog.character-view-dialog .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* Final contrast and global-color authority; keep this after legacy compatibility rules. */
+html[data-color-mode][data-active-tab="settings"] .settings-shell button.primary,
+html[data-color-mode][data-active-tab="settings"] .color-mode-options button.on,
+:is(
+  button.primary,header nav .on,.furniture button.on,.character-menu button.on,.town-tabs button.on,
+  .favorite-group button.on,.stock-picker button.on,.observe-town-switcher button.on,
+  .personality-choice button.on,.routine-toolbar .on,.audience-dialog-list button.on,
+  .fashion-extra-fields button.on,.closet-chip-grid button.on,.layout-picker button.on,
+  .outfit-item-picker button.on,.native-sub-tabs button.on,.mobile-character-pane-grid button.on,
+  .mobile-character-strip button.on
+){
+  color:var(--on-grad)!important;
+  -webkit-text-fill-color:var(--on-grad)!important;
+}
+.visual-theme-options button i{background:linear-gradient(135deg,var(--theme-a,#20242a),var(--theme-b,#6d747d))!important}
+[style*="--own:"]{--own:var(--p)!important;--own-secondary:var(--s)!important}
+[style*="--log-theme:"]{--log-theme:var(--p)!important}
+[style*="--character-own:"]{--character-own:var(--p)!important;--character-secondary:var(--s)!important}
+[style*="--relationship-own:"]{--relationship-own:var(--p)!important;--relationship-own-secondary:var(--s)!important}
+[style*="--native-own:"]{--native-own:var(--p)!important;--native-own-secondary:var(--s)!important}
+[style*="--resident-theme:"]{--resident-theme:var(--p)!important}
+[style*="--home-grad:"]{--home-grad:var(--grad)!important}
