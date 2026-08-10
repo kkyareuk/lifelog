@@ -5061,3 +5061,96 @@ html.native-app[data-active-tab="observe"] .native-game-menu button>small{
   .desktop-observe-scene .native-character-stage{order:1}
   .desktop-observe-scene .desktop-scene-copy b{justify-content:center}
 }
+
+/* 2026-08-10f: desktop action stage, complete town map, character file actions,
+   and one consistent dark surface system. */
+.desktop-observe-scene.native-app .native-character-stage{
+  animation:desktop-observe-float 2.25s ease-in-out infinite!important;
+  will-change:transform;
+}
+.desktop-observe-scene.native-app .native-character-stage>i{
+  animation:desktop-observe-shadow 2.25s ease-in-out infinite!important;
+}
+@keyframes desktop-observe-float{
+  0%,100%{transform:translateY(10px) rotate(-1deg)}
+  50%{transform:translateY(-13px) rotate(1.2deg)}
+}
+@keyframes desktop-observe-shadow{
+  0%,100%{opacity:.62;transform:scaleX(1)}
+  50%{opacity:.28;transform:scaleX(.72)}
+}
+
+/* The supplied map is 3000 × 3300. Desktop now keeps that whole portrait
+   canvas instead of forcing it into the old landscape crop. */
+@media(min-width:721px){
+  html:not(.native-app) .standard-observe-view .viewport{
+    width:100%;height:auto!important;min-height:0;aspect-ratio:auto!important;overflow:hidden;touch-action:auto;
+  }
+  html:not(.native-app) .standard-observe-view .viewport>.world,
+  html:not(.native-app) .town-map-scroll>.world{
+    width:100%!important;height:auto!important;min-width:0!important;aspect-ratio:10/11!important;
+  }
+  html:not(.native-app) :is(.standard-observe-view .viewport,.town-map-scroll) .world-bg{
+    object-fit:contain!important;
+  }
+}
+
+.character-file-actions{display:flex;align-items:center;gap:7px;margin-left:auto;flex:0 0 auto}
+.desktop-character-editor .character-menu{flex-wrap:wrap;overflow-x:visible}
+.character-file-actions button{min-height:38px;padding:8px 11px;white-space:nowrap}
+.character-file-actions .primary{
+  border-color:transparent!important;
+  background:linear-gradient(135deg,var(--character-own,var(--p)),var(--character-secondary,var(--character-own,var(--s))))!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+}
+.character-file-actions .danger{border-color:#d24d5e!important;background:#9f2637!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.character-delete-dialog{width:min(470px,calc(100vw - 24px));padding:0;border-radius:26px}
+.character-delete-dialog>form{display:grid;justify-items:center;gap:10px;padding:28px;text-align:center}
+.character-delete-dialog-icon{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#9f2637;color:#fff;font-size:32px;font-weight:900}
+.character-delete-dialog h2,.character-delete-dialog p{margin:0}.character-delete-dialog p{max-width:36em;line-height:1.65}
+.character-delete-dialog-summary{display:flex;align-items:center;justify-content:space-between;gap:20px;width:100%;margin-top:7px;padding:13px 15px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,#9f2637 8%,var(--panel))}
+.character-delete-dialog-actions{display:grid;grid-template-columns:1fr 1.45fr;gap:9px;width:100%;margin-top:7px}
+.character-delete-dialog-actions button{min-height:48px}
+.character-delete-dialog-actions .danger{border-color:#d24d5e!important;background:#9f2637!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+
+html[data-color-mode="dark"] :is(.character-editor>.form,.desktop-character-editor,.character-menu,.character-manage-pane,.character-manage-grid>section,.home-page .home,.home-identity-editor,.town-editor-panel,.town-general-editor,.place-editor details,.character-view-editor,.relationship-pair-magnet,.relationship-pair-core){
+  border-color:#33465b!important;background:#142337!important;color:#f5f8fb!important;
+}
+html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(p,small,em){color:#c1cfdd!important;-webkit-text-fill-color:#c1cfdd!important}
+html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(input,select,textarea,button){border-color:#3a5068!important;background:#1c3047!important;color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important;color-scheme:dark}
+html[data-color-mode="dark"] .character-menu button.on,
+html[data-color-mode="dark"] .character-file-actions .primary,
+html[data-color-mode="dark"] .relationship-pair-core>button.primary,
+html[data-color-mode="dark"] .town-editor-panel button.primary{border-color:transparent!important;background:var(--grad)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+html[data-color-mode="dark"] .character-file-actions .danger{border-color:#d24d5e!important;background:#9f2637!important}
+
+html[data-color-mode="dark"] .home-page .clean{border:1px solid #3a5068!important;background:#1c3047!important;color:#f5f8fb!important}
+html[data-color-mode="dark"] .home-page .rooms{background:#26394d!important}
+html[data-color-mode="dark"] .home-page .room{border-color:#41566d!important;background-color:#24374b!important}
+html[data-color-mode="dark"] .home-page :is(.home-person span,.room-pet-status){border:1px solid #50657a!important;background:#16283bf2!important;color:#f5f8fb!important}
+html[data-color-mode="dark"] .home-page :is(.home-person span,.home-person span b,.room-pet-status,.room-pet-status b){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] .home-page :is(.home-person small,.room-pet-status small){color:#c1cfdd!important;-webkit-text-fill-color:#c1cfdd!important}
+
+html[data-color-mode="dark"] .relationship-pair-magnet{box-shadow:inset 0 0 0 1px #ffffff18!important}
+html[data-color-mode="dark"] .relationship-character-rail button.on{background:color-mix(in srgb,var(--view-primary) 38%,#142337)!important;box-shadow:0 9px 20px #0007!important}
+html[data-color-mode="dark"] .relationship-pair-core :is(small,span,strong,label,em){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] .relationship-pair-core>em{border:1px solid #3a5068!important;background:#1c3047!important}
+
+html[data-color-mode="dark"] .town-editor-panel :is(.inline-guide,.town-general-editor>label,.place-photo-tools,.audience-open-button){border-color:#3a5068!important;background:#1a2d42!important;color:#f5f8fb!important}
+html[data-color-mode="dark"] .town-editor-panel .place-editor details[open]{background:#182b40!important}
+
+@media(max-width:720px){
+  .mobile-character-heading{flex-wrap:wrap!important}
+  .mobile-character-heading>span{flex:1 1 calc(100% - 96px)}
+  .mobile-character-file-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;margin-left:0}
+  .mobile-character-file-actions button{min-width:0;min-height:42px;padding:7px 5px;font-size:10px;white-space:normal;line-height:1.2}
+}
+@media(min-width:721px) and (max-width:1380px){
+  .desktop-character-editor .character-file-actions{width:100%;margin-left:0;justify-content:flex-end}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .desktop-observe-scene.native-app .native-character-stage,
+  .desktop-observe-scene.native-app .native-character-stage>i{animation:none!important}
+}

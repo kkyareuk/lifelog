@@ -1,6 +1,6 @@
 import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810e";
 import {eventFor} from "./simulation.js?v=20260810e";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810e";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810f";
 import {recordCharacterInteraction} from "./state.js?v=20260810e";
 
 let pendingImage=null;
@@ -851,6 +851,28 @@ async function explicitSave(label="저장 완료"){
   }else showToast("기기에 저장되었습니다");
 }
 
+function openCharacterDeleteDialog(characterId){
+  const character=state.characters[characterId];
+  if(!character)return;
+  document.querySelector("[data-character-delete-dialog]")?.remove();
+  const dialog=document.createElement("dialog");
+  dialog.className="character-delete-dialog";
+  dialog.dataset.characterDeleteDialog=characterId;
+  dialog.innerHTML=`<form method="dialog"><div class="character-delete-dialog-icon" aria-hidden="true">!</div><small>CHARACTER DELETE</small><h2>${htmlEsc(objectText(character.name||"이름 없는 캐릭터"))} 삭제할까요?</h2><p>이 캐릭터의 주간 루틴, 생활 기록과 연결된 공식 관계도 함께 정리됩니다. 삭제한 뒤에는 되돌릴 수 없어요.</p><div class="character-delete-dialog-summary"><b>삭제되는 캐릭터</b><span>${htmlEsc(character.name||"이름 없음")}</span></div><div class="character-delete-dialog-actions"><button value="cancel">취소</button><button value="delete" class="danger">캐릭터 영구 삭제</button></div></form>`;
+  dialog.addEventListener("close",()=>{
+    if(dialog.returnValue==="delete"){
+      mobileCharacterEditorPane="";
+      mobileCharacterDraftDirty=false;
+      deleteCharacter(characterId);
+      render();
+      showToast("캐릭터를 삭제했습니다");
+    }
+    dialog.remove();
+  });
+  document.body.append(dialog);
+  dialog.showModal();
+}
+
 let menuNavigationListenerBound=false;
 
 function bind(){
@@ -996,13 +1018,7 @@ function bind(){
     moveCharacter(el.dataset.sort,Number(el.dataset.direction||0));
     render();
   });
-  $$("[data-delete-character]").forEach(el=>el.onclick=()=>{
-    const character=state.characters[el.dataset.deleteCharacter];
-    if(confirm(`이 캐릭터를 삭제하시겠습니까?\n\n이름: ${character?.name||"이름 없음"}\n주간 루틴과 연결된 공식 관계도 함께 삭제되며 되돌릴 수 없습니다.`)){
-      if(el.closest("[data-mobile-character-editor-dialog]")){mobileCharacterEditorPane="";mobileCharacterDraftDirty=false}
-      deleteCharacter(el.dataset.deleteCharacter);render();
-    }
-  });
+  $$("[data-delete-character]").forEach(el=>el.onclick=()=>openCharacterDeleteDialog(el.dataset.deleteCharacter));
   $$("[data-roster],[data-person]").forEach(el=>el.onclick=event=>{event.stopPropagation();focusCharacter(el.dataset.roster||el.dataset.person)});
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
@@ -1409,7 +1425,7 @@ function bind(){
   $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });
-  $("[data-save]")?.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()});
+  $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}));
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
   $$("[data-catalog-image]").forEach(el=>el.onclick=()=>openCatalogIllustrationPicker(el.dataset.catalogImage,el.dataset.kind));
@@ -2402,7 +2418,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810e",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810f",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
