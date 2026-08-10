@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810n";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810p";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1178,12 +1178,12 @@ function relationSpecificEntry(c,other,r,time,date,role){
 function relationshipHomeEntry(c,pick,time,date){
   const {r,other}=pick,pair=[c.id,other.id].sort(),role=r.type==="짝사랑"&&r.directional?(c.id===r.admirerId?0:1):pair.indexOf(c.id);
   const directedView=characterViewFor(c.id,other.id);
-  const {overall="",awareness="",mutualAwareness="",trust="",closeness="",comfort="",annoyance="",attention="",jealousy="",conflictIntensity="",expectation="",aggression=""}=directedView;
+  const {overall="",awareness="",mutualAwareness="",trust="",fear="",closeness="",comfort="",annoyance="",attention="",jealousy="",conflictIntensity="",expectation="",aggression=""}=directedView;
   const otherView=characterViewFor(other.id,c.id);
   const mixedAgePair=mixedAdultMinor(c,other);
   const combinedTypes=r.types||[r.type];
   const combinedTone=combinedTypes.length>1?combinedTypes.includes("연인")&&combinedTypes.includes("직장 동료")?" 직장에서는 동료의 선을 지키고, 사적인 자리에서만 연인의 말투로 돌아오고 있어요.":combinedTypes.includes("연인")&&combinedTypes.includes("소꿉친구")?" 오래 알고 지낸 습관과 연인으로서의 애정이 자연스럽게 함께 묻어나요.":` 두 사람 사이의 ${combinedTypes.join("·")} 관계가 한 장면 안에서 함께 드러나고 있어요.`:"";
-  const thought=[overall,mutualAwareness,trust,comfort,annoyance,attention,conflictIntensity,expectation,aggression].filter(Boolean).join(" ");
+  const thought=[overall,mutualAwareness,trust,fear,comfort,annoyance,attention,conflictIntensity,expectation,aggression].filter(Boolean).join(" ");
   const loving=/좋아|사랑|소중|없어서는/.test(overall);
   const hating=/싫어|경계|불편/.test(overall);
   const unaware=/어렴풋|착각|전혀 모름|부정/.test(awareness);
@@ -1197,6 +1197,10 @@ function relationshipHomeEntry(c,pick,time,date){
   const avoidsTouch=ownTouchIndex===0||otherTouchIndex===0;
   const welcomesTouch=!avoidsTouch&&Math.min(ownTouchIndex,otherTouchIndex)>=2;
   const distrust=/전혀 믿지|의심|조심스럽게 지켜봄/.test(trust);
+  const fearLevel={"정하지 않음":0,"가소로움":-1,"가소롭게 여김":-1,"전혀 두렵지 않음":0,"거의 두렵지 않음":1,"조금 두려움":2,"경계하며 두려워함":3,"많이 두려움":4,"공포를 느낌":5,"극도로 두려워함":6}[fear]??0;
+  const dismissiveFear=fearLevel<0;
+  const afraid=fearLevel>=2;
+  const stronglyAfraid=fearLevel>=4;
   const distant=/남보다도 멂|낯선|거리감/.test(closeness);
   const uncomfortable=/매우 불편|긴장|조심스러움|숨 막힘|공간 공유는 불편/.test(comfort);
   const attentive=/자주 살핌|늘 최우선/.test(attention);
@@ -1224,8 +1228,9 @@ function relationshipHomeEntry(c,pick,time,date){
   const attractionAllowed=opennessAllows&&!(c.attractedGenders||[]).includes("없음")&&(c.attractedGenders||[]).includes(other.gender);
   const otherTraits=[...(other.appearanceTags||[]),...(other.bodyProfile?.physicalTraits||[]),...appearanceTraitTags(other),other.bodyProfile?.bodySize,other.job,other.jobTitle,other.wealth,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
   const matchedLooks=(c.attractionTraits||[]).filter(tag=>otherTraits.includes(tag));
+  const dislikedLooks=(c.dislikedAttractionTraits||[]).filter(tag=>otherTraits.includes(tag));
   const noticesLooks=/꽤 중요하게 봄|외모에 크게 끌림/.test(c.appearanceInterest||"");
-  const visuallyDrawn=attractionAllowed&&noticesLooks&&(matchedLooks.length||/매력적임|매우 아름답거나 잘생김|시선을 사로잡음/.test(other.appearanceLevel||""));
+  const visuallyDrawn=attractionAllowed&&noticesLooks&&!dislikedLooks.length&&(matchedLooks.length||/매력적임|매우 아름답거나 잘생김|시선을 사로잡음/.test(other.appearanceLevel||""));
   const otherEyes=eyeLookPhrase(other),otherHair=hairLookPhrase(other),selfHair=hairLookPhrase(c);
   const otherAnnoyed=/종종 귀찮|많이 귀찮|보기만 해도 피곤|자주 성가|부담/.test(otherView.annoyance||"");
   const reactsAngrily=/바로 따짐|끝까지 결론/.test(c.conflictStyle||"")&&/쉽게 욱함|거의 참지 않음/.test(c.impulseControl||"");
@@ -1307,6 +1312,24 @@ function relationshipHomeEntry(c,pick,time,date){
   else if(highConflict&&goodRapport)scripts=[
     [`${other.name}와 싸우다 같은 농담에 웃어버린 중`,`날 선 말이 오가다가도 서로만 알아듣는 농담 한마디에 동시에 웃었어요. 갈등이 사라진 것은 아니지만 대화의 주파수는 이상할 만큼 잘 맞았어요.`,"living"],
     [`${other.name}와 격하게 부딪히면서도 말은 잘 통하는 중`,`주장하는 방향은 정반대였지만 무슨 뜻으로 말하는지는 누구보다 빨리 알아들었어요. 이해와 동의가 다르다는 것을 인정한 채 언성을 낮추고 논점을 다시 나눴어요.`,"study"]
+  ];
+  else if(dismissiveFear)scripts=[
+    [`${other.name}을 전혀 위협적으로 여기지 않는 중`,`${other.name}을 가소롭게 여겨 경계할 가치조차 없다고 생각했어요. 얕보는 판단과 실제 능력은 다를 수 있어, 무례하게 자극하기보다 상황을 한 번 더 확인했어요.`,"living"],
+    [`${other.name}의 위협을 대수롭지 않게 넘기는 중`,`${other.name}의 말과 행동을 두려워하지 않았고 오히려 우습게 보았어요. 방심해서 중요한 신호를 놓치지 않도록 표정은 풀어도 주변 상황은 차분히 살폈어요.`,"study"]
+  ];
+  else if(afraid&&!stronglyAfraid)scripts=[
+    [`${other.name}을 조금 두려워하며 반응을 살피는 중`,`${fear}이라는 시선 때문에 평소보다 말과 거리를 조심스럽게 골랐어요. 막연한 불안과 실제 행동을 구분하며, 확인되지 않은 위협을 사실로 단정하지 않았어요.`,"living"],
+    [`${other.name} 앞에서 긴장을 알아차린 중`,`${other.name}을 마주하자 몸이 먼저 굳었어요. 두려움의 정도를 스스로 확인한 뒤 필요 이상으로 다가가지 않고, 언제든 자리를 옮길 수 있는 거리를 지켰어요.`,"entry"]
+  ];
+  else if(stronglyAfraid)scripts=[
+    [`${other.name}을 크게 두려워하며 안전한 거리를 확보하는 중`,`${fear}이라는 시선이 몸의 긴장으로 선명하게 나타났어요. 혼자 견디거나 상대를 자극하지 않고, 빠져나갈 길과 도움을 청할 사람을 확인한 뒤 필요한 말만 짧게 전했어요.`,"entry"],
+    [`${other.name}과 마주치기 전에 안전을 먼저 확인하는 중`,`${other.name}을 향한 강한 두려움을 억지로 무시하지 않았어요. 실제 위험 신호와 불안에서 나온 예상을 구분하면서도, 위험할 가능성이 있으면 곧바로 거리를 벌릴 수 있게 준비했어요.`,"study"]
+  ];
+  else if(dislikedLooks.length&&loving)scripts=[
+    [`${other.name}에게서 비선호하는 특징을 보고도 마음을 구분하는 중`,`${dislikedLooks.join("·")}을 평소 선호하지 않지만, 그 특징 하나가 ${other.name}을 사랑하는 마음 전체를 지우지는 않았어요. 바꾸라고 요구하지 않고 자기 취향과 상대의 선택을 따로 존중했어요.`,"living"]
+  ];
+  else if(dislikedLooks.length&&!loving)scripts=[
+    [`${other.name}에게서 비선호하는 특징을 알아차린 중`,`${dislikedLooks.join("·")}은 이 캐릭터가 강하게 선호하지 않는 특징이에요. 그렇다고 무례하게 평가하거나 바꾸라고 요구하지 않고 시선을 거둔 뒤 원래 대화를 이어 갔어요.`,"living"]
   ];
   else if(unaware&&loving)scripts=[
     [`${other.name}에게 자꾸 시선이 가는 이유를 모르는 중`,`${other.name}의 작은 표정 변화까지 먼저 알아차리고도 특별한 감정 때문이라고는 생각하지 못했어요. ${c.socialStyle==="낯을 가림"?"말을 걸 타이밍을 놓친 채 필요한 물건만 조용히 가까이에 두었어요.":"별일 아니라는 듯 자연스럽게 다가가 방금 본 것을 먼저 알려 주었어요."}`,"living"],
@@ -1730,6 +1753,17 @@ const homeActivityPoolFor=(c,date=new Date())=>{
     ["오늘 몸 상태에 맞게 일정을 조절하는 중","몸의 신호를 살핀 뒤 무리하지 않도록 활동과 휴식 순서를 자기 기준에 맞게 바꿨어요.","study"],
     ["잠깐 쉬며 컨디션을 살피는 중","해야 할 일을 포기한 것이 아니라 오래 이어 가기 위해 필요한 만큼 쉬고 다시 시작할 시점을 정했어요.","living"]
   );
+  const importantPeople=state.order.map(id=>state.characters[id]).filter(other=>other&&other.id!==c.id).map(other=>{
+    const view=characterViewFor(c.id,other.id),rank=Number(String(view.importance||"").match(/^\d+/)?.[0])||999;
+    const emotion=/없어서는|깊이 사랑/.test(view.overall||"")?0:/소중|좋아|호감/.test(view.overall||"")?1:2;
+    return {other,view,rank,emotion};
+  }).filter(item=>item.rank<=3||item.emotion<=1).sort((a,b)=>a.rank-b.rank||a.emotion-b.emotion);
+  const important=importantPeople[0];
+  if(important&&hash(`${c.id}:${dayKey(date)}:important-thought`)%4===0)pool.push([
+    `${important.other.name}을 문득 떠올리는 중`,
+    `하던 일을 잠깐 멈추고 자기 삶에서 중요한 ${important.other.name}의 표정과 최근 나눈 말을 떠올렸어요. 연락을 재촉하지 않고 전하고 싶은 말을 마음속으로 한 번 정리했어요.`,
+    "living",`important-thought:${important.other.id}`,{thoughtOfId:important.other.id}
+  ]);
   return pool;
 };
 
@@ -2131,7 +2165,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260810n";
+const ENGINE_VERSION="20260810p";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2389,16 +2423,19 @@ function liveGapEvent(c,last,n,date){
     const place=(currentTown?.places||[]).find(p=>p.id===last.placeId);
     const shortStay=["카페","음식점","옷가게","쇼핑몰"].includes(place?.type);
     if(shortStay){
+      const priorText=`${last?.title||""} ${last?.desc||""}`;
+      const catalogItem=Object.values(state.catalog||{}).flat().find(item=>item?.id===last?.itemId);
+      const foodName=catalogItem?.name||([[/피자/,"피자"],[/치킨|닭튀김|후라이드/,"치킨"],[/빵|베이글|크루아상|식빵/,"빵"],[/국|수프|스프|찌개|탕/,"국"],[/파스타|스파게티/,"파스타"],[/케이크/,"케이크"],[/초밥|스시/,"초밥"]].find(([pattern])=>pattern.test(priorText))?.[1]||"");
       const recentAtPlace=(c.days?.[dayKey(date)]?.entries||[]).filter(item=>item.placeId===place.id&&Number(item.minute)<=Number(last.minute)&&Number(last.minute)-Number(item.minute)<=180);
       if(recentAtPlace.length<2){
         const stayScenes={
           카페:["주문한 음료를 천천히 마시는 중","방금 준비한 음료의 온도와 향을 느끼며 자리에 머물러 천천히 마시고 있어요."],
-          음식점:["식사를 천천히 마무리하는 중","고른 음식을 서두르지 않고 먹은 뒤 식탁을 정돈하며 잠시 쉬고 있어요."],
+          음식점:foodName?[`${foodName}을 천천히 먹는 중`,`주문한 ${foodName}을 서두르지 않고 맛보며 남은 양과 속도를 자기에게 맞추고 있어요.`]:["식사를 천천히 마무리하는 중","고른 음식을 서두르지 않고 먹은 뒤 식탁을 정돈하며 잠시 쉬고 있어요."],
           옷가게:["고른 옷을 다시 비교하는 중","방금 살펴본 옷의 소재와 쓰임을 비교하고 실제로 자주 입을지를 차분히 생각하고 있어요."],
           쇼핑몰:["필요한 물건을 한 번 더 확인하는 중","목록과 장바구니를 맞춰 보고 충동적으로 더 사지 않도록 필요한 것만 남기고 있어요."]
         };
         const stay=stayScenes[place.type];
-        return entry(minute,stay[0],personalityFlavor(c,stay[1],"short-stay-continuation",date),{townId:currentTown.id,placeId:place.id,mood:last.mood||"보통"});
+        return entry(minute,stay[0],personalityFlavor(c,stay[1],"short-stay-continuation",date),{townId:currentTown.id,placeId:place.id,itemId:last?.itemId,mood:last.mood||"보통"});
       }
       return entry(minute,"집에 돌아온 참",`${place.name}에서의 일정을 마치고 집으로 돌아와 신발과 겉옷을 정리하고 있어요.`,{townId:c.townId,home:true,room:"entry",mood:"귀가"});
     }
@@ -2421,10 +2458,12 @@ function liveGapEvent(c,last,n,date){
   }
   const previousTitle=String(last?.title||"");
   const previousContext=`${previousTitle} ${String(last?.desc||"")}`;
+  const previousCatalogItem=Object.values(state.catalog||{}).flat().find(item=>item?.id===last?.itemId);
+  const preparedFood=previousCatalogItem?.name||([[/피자/,"피자"],[/치킨|닭튀김|후라이드/,"치킨"],[/빵|베이글|크루아상|식빵/,"빵"],[/국|수프|스프|찌개|탕/,"국"],[/파스타|스파게티/,"파스타"],[/케이크/,"케이크"],[/초밥|스시/,"초밥"]].find(([pattern])=>pattern.test(previousContext))?.[1]||"만든 음식");
   const followups=[
     [/차를 우|차를 준비|차를 내리|음료를 준비/,["준비한 차를 천천히 마시는 중","조금 전 우린 차를 자리로 가져와 온도와 향을 느끼며 천천히 마시고 있어요.",last?.room||"kitchen"]],
     [MAJOR_CLEANUP_PATTERN,["정리를 마치고 잠깐 쉬는 중","큰 정리를 마친 자리를 한 번 둘러본 뒤 물을 마시고 몸의 긴장을 풀며 잠깐 쉬고 있어요.",last?.room||"living"]],
-    [/요리하는|아침 준비|빵을 굽|식사를 준비|간식을 챙기/,["만든 것을 천천히 먹는 중","조금 전 준비한 것을 식탁에 놓고 서두르지 않게 먹으며 사용한 도구도 함께 정리하고 있어요.","kitchen"]],
+    [/요리하는|아침 준비|빵을 굽|빵을 만들|식사를 준비|간식을 챙기|끓이|굽는 중|볶는 중/,[`${preparedFood}을 천천히 먹는 중`,`조금 전 준비한 ${preparedFood}을 식탁에 놓고 서두르지 않게 먹으며 맛과 온도를 천천히 확인하고 있어요.`,"kitchen"]],
     [/운동하는|운동 중|스트레칭|러닝머신/,["호흡을 고르며 운동을 마무리하는 중","운동 강도를 천천히 낮추고 물을 마시며 호흡과 몸 상태를 확인하고 있어요.",last?.room||"living"]],
     [/빨래|세탁/,["마른 빨래를 접어 정리하는 중","세탁을 마친 옷을 종류별로 접어 각자의 자리에 차분히 넣고 있어요.",last?.room||"bedroom"]],
     [/씻는 중|샤워/,["물기를 닦고 다음 준비를 하는 중","씻은 뒤 물기를 닦고 욕실을 간단히 정돈한 다음 오늘 필요한 옷과 물건을 챙기고 있어요.","bath"]],
@@ -2435,7 +2474,7 @@ function liveGapEvent(c,last,n,date){
     [/수리하는|고치는/,["사용한 도구를 정리하는 중","작업한 부분이 단단히 고정됐는지 확인하고 사용한 도구를 닦아 종류별로 돌려놓았어요.",last?.room||"study"]]
   ];
   const followup=followups.find(([pattern])=>pattern.test(previousContext))?.[1];
-  if(followup)return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2]);
+  if(followup)return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2],{itemId:last?.itemId});
   const scripts=[...homeActivityPoolFor(c,date),
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
     ["서재에서 개인적인 일을 하는 중","책상에 앉아 관심 있는 자료를 살펴보거나 미뤄 둔 작은 일을 처리하고 있어요.","study"],

@@ -11,7 +11,14 @@
   window.PARALLEL_CITY_CONFIG=window.PARALLEL_CITY_CONFIG||{};
   window.PARALLEL_CITY_CONFIG.firebase=firebase;
   window.PARALLEL_CITY_CONFIG.beta={enabled:false,label:"",message:""};
-  window.PARALLEL_CITY_CONFIG.paymentsEnabled=false;
+  // 브라우저에 공개되는 테스트 클라이언트 키만 여기에 넣습니다.
+  // test_sk/live_sk 시크릿 키는 절대로 이 파일이나 GitHub에 넣지 마세요.
+  const tossPaymentsClientKey="";
+  window.PARALLEL_CITY_CONFIG.tossPaymentsClientKey=tossPaymentsClientKey;
+  window.PARALLEL_CITY_CONFIG.paymentBackendUrl="https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api";
+  window.PARALLEL_CITY_CONFIG.paymentMid="drawerg8ht";
+  window.PARALLEL_CITY_CONFIG.paymentEnvironment=tossPaymentsClientKey.startsWith("test_ck_")?"test":tossPaymentsClientKey.startsWith("live_ck_")?"live":"disabled";
+  window.PARALLEL_CITY_CONFIG.paymentsEnabled=Boolean(tossPaymentsClientKey);
   window.PARALLEL_CITY_CONFIG.playBilling=window.PARALLEL_CITY_CONFIG.playBilling||{
     enabled:true,
     backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api",

@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810n";
-import {eventFor} from "./simulation.js?v=20260810n";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810n";
-import {recordCharacterInteraction} from "./state.js?v=20260810n";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810p";
+import {eventFor} from "./simulation.js?v=20260810p";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810p";
+import {recordCharacterInteraction} from "./state.js?v=20260810p";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -203,10 +203,11 @@ const PROFILE_TAG_OPTIONS={
   appearanceTags:APPEARANCE_TAGS,
   attractionTraits:[...new Set([...STRUCTURED_APPEARANCE_TAGS,...HAIR_STYLE_ATTRACTION_TAGS,...APPEARANCE_TAGS,"단정한 사람","자기 관리를 잘함","전문직","예술가 기질","제복이 어울림","지적인 분위기","말투가 다정함","목소리가 좋음","능력 있는 사람","성실한 사람","책임감이 강함","리더십이 있음","침착한 사람","유머 감각이 있음","자신감이 있음","수줍은 사람","상냥한 사람","강단 있는 사람","신비로운 사람","위험한 분위기","연상","연하","동갑",...WEALTH_OPTIONS])]
 };
+PROFILE_TAG_OPTIONS.dislikedAttractionTraits=PROFILE_TAG_OPTIONS.attractionTraits;
 function openProfileTagsDialog(field){
   const character=active(),options=PROFILE_TAG_OPTIONS[field];if(!character||!options)return;
   let selected=[...(character[field]||[])].filter(value=>field!=="appearanceTags"||options.includes(value));
-  const titles={attractedGenders:"성지향 설정",appearanceTags:"외모 태그 정하기",attractionTraits:"끌리는 특징 정하기"};
+  const titles={attractedGenders:"성지향 설정",appearanceTags:"외모 태그 정하기",attractionTraits:"끌리는 특징 정하기",dislikedAttractionTraits:"비선호하는 특징 정하기"};
   const dialog=document.createElement("dialog");dialog.className="profile-tags-dialog";
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${titles[field]}</h2><small>여러 개를 선택할 수 있어요.${field==="attractedGenders"?" ‘없음’을 고르면 다른 선택은 해제돼요.":""}</small></div><button value="cancel">×</button></div><div class="profile-tag-grid">${options.map(value=>`<button type="button" data-profile-tag="${value}" class="${selected.includes(value)?"on":""}">${value}</button>`).join("")}</div><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
   dialog.querySelectorAll("[data-profile-tag]").forEach(button=>button.onclick=()=>{
@@ -442,7 +443,7 @@ function enhanceDynamicForms(){
   }
   document.querySelectorAll("[data-profile-tags-summary]").forEach(summary=>{
     const values=active()[summary.dataset.profileTagsSummary]||[];
-    summary.textContent=values.length?values.join(" · "):"정하지 않음";
+    summary.textContent=values.length?values.join(" · "):({en:"Not set",ja:"未設定"}[state.uiLanguage]||"정하지 않음");
   });
   document.querySelectorAll('.catalog-dex-card [data-kind="fashion"][data-catalog-field="image"]').forEach(input=>{
     const detail=input.closest(".catalog-detail");if(!detail||detail.querySelector('[data-catalog-field="material"]'))return;
@@ -642,16 +643,32 @@ function renderMaintenance(){
 function replaceFeedbackFormWithEmailLink(){
   const card=document.querySelector(".feedback-card");
   if(!card)return;
-  const character=active();
   const copy={
-    ko:{title:"개발자에게 피드백 보내기",description:"버튼을 누르면 기기의 메일 앱에서 개발자 이메일로 바로 작성할 수 있어요. 사이트의 별도 피드백함에는 저장하지 않습니다.",button:"이메일로 피드백 보내기",recipient:"받는 주소",subject:"[서랍마을] 사용자 피드백",prompt:"피드백 내용을 여기에 적어 주세요.",screen:"현재 화면",selected:"선택 캐릭터",none:"없음"},
-    en:{title:"Send feedback to the developer",description:"Open your device's mail app and write directly to the developer. Nothing is stored in a separate site inbox.",button:"Send feedback by email",recipient:"Recipient",subject:"[Drawer Village] User feedback",prompt:"Write your feedback here.",screen:"Current screen",selected:"Selected character",none:"None"},
-    ja:{title:"開発者へフィードバック",description:"端末のメールアプリから開発者へ直接送信できます。サイト内の別の受信箱には保存されません。",button:"メールでフィードバック",recipient:"宛先",subject:"[ひきだし村] ユーザーフィードバック",prompt:"フィードバックをここに入力してください。",screen:"現在の画面",selected:"選択中のキャラクター",none:"なし"}
+    ko:{title:"개발자에게 피드백 보내기",description:"보내려는 내용의 유형을 고르면 기기의 메일 앱이 열려요. 아래 진단 정보가 함께 들어가 문제를 확인하는 데 도움을 줍니다.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","어떤 동작을 했을 때 무엇이 잘못되었는지, 다시 발생하는 순서를 적어 주세요."],["기능 제안","제안","원하는 기능과 사용 상황을 적어 주세요."],["생활 장면·관계","장면/관계","어떤 캐릭터 설정에서 어떤 장면이 어색했는지 적어 주세요. 캐릭터 이름은 필요한 경우에만 직접 적어 주세요."],["번역·문구","번역","언어와 어색하거나 잘못된 문구를 적어 주세요."],["결제·계정·동기화","결제/동기화","표시된 오류 문구와 시도한 순서를 적어 주세요. 비밀번호나 API 비밀키는 적지 마세요."],["디자인·사용성","UI","보기 어렵거나 누르기 불편한 위치와 원하는 모습을 적어 주세요."]]},
+    en:{title:"Send feedback to the developer",description:"Choose a category to open your email app. Helpful device diagnostics are included automatically.",recipient:"Recipient",diagnostics:"Automatically included diagnostics",prompt:"Please describe the details below.",types:[["Report a bug","Bug","Describe what you did, what went wrong, and how to reproduce it."],["Suggest a feature","Feature","Describe the feature and when you would use it."],["Life scenes & relationships","Scene/Relationship","Describe which settings produced an awkward scene. Add character names only if needed."],["Translation & wording","Translation","Tell us the language and the incorrect or awkward text."],["Payments, account & sync","Payment/Sync","Include the error message and steps you tried. Never include passwords or secret API keys."],["Design & usability","UI","Describe what was hard to read or use and what you expected instead."]]},
+    ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
-  const text=copy||{title:"개발자에게 피드백 보내기",description:"버튼을 누르면 기기의 메일 앱에서 개발자 이메일로 바로 작성할 수 있어요. 사이트의 별도 피드백함에는 저장하지 않습니다.",button:"이메일로 피드백 보내기",recipient:"받는 주소",subject:"[서랍마을] 사용자 피드백",prompt:"피드백 내용을 여기에 적어 주세요.",screen:"현재 화면",selected:"선택 캐릭터",none:"없음"};
-  const subject=encodeURIComponent(text.subject);
-  const body=encodeURIComponent(`${text.prompt}\n\n${text.screen}: ${PAGE_GUIDES[state.activeTab]?.[0]||state.activeTab}\n${text.selected}: ${character?.name||text.none}`);
-  card.innerHTML=`<h2>${text.title}</h2><p>${text.description}</p><a class="primary feedback-email-button" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">${text.button}</a><small>${text.recipient} · kkyaareuk@gmail.com</small>`;
+  const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260810p");
+  const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
+  const diagnostics=[
+    `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
+    `Device/model: ${deviceModel}`,
+    `User agent: ${navigator.userAgent||"unknown"}`,
+    `Platform: ${navigator.userAgentData?.platform||navigator.platform||"unknown"}`,
+    `Screen: ${screen.width}x${screen.height} / viewport ${window.innerWidth}x${window.innerHeight} / DPR ${window.devicePixelRatio||1}`,
+    `Language: ${navigator.language||"unknown"} / UI ${state.uiLanguage||"ko"}`,
+    `Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone||"unknown"}`,
+    `Online: ${navigator.onLine?"yes":"no"}`,
+    `Theme: ${state.colorMode||"light"} / ${state.visualTheme||"monochrome"}`,
+    `Data counts: characters ${state.order?.length||0}, towns ${state.towns?.length||0}`
+  ].join("\n");
+  const links=text.types.map(([label,prefix,hint])=>{
+    const subject=encodeURIComponent(`[${state.uiLanguage==="ja"?"ひきだし村":state.uiLanguage==="en"?"Drawer Village":"서랍마을"}][${prefix}]`);
+    const body=encodeURIComponent(`${text.prompt}\n${hint}\n\n--- ${text.diagnostics} ---\n${diagnostics}`);
+    return `<a class="primary feedback-email-button feedback-email-type" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">${label}</a>`;
+  }).join("");
+  card.innerHTML=`<h2>${text.title}</h2><p>${text.description}</p><div class="feedback-email-types">${links}</div><small>${text.recipient} · kkyaareuk@gmail.com</small>`;
 }
 
 function restoreWindowScroll(x,y){
@@ -2522,7 +2539,7 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810n").catch(error=>{
+  import("./auth.js?v=20260810p").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2537,7 +2554,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810n",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810p",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
