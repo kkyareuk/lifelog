@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811a";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811a";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811c";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811c";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -224,6 +224,12 @@ function translateInterface(root){
       if(element.hasAttribute(attribute))element.setAttribute(attribute,translatedUiText(element.getAttribute(attribute)));
     }
   });
+}
+// app.js adds a few profile controls after the main view has rendered.
+// Run the same translator once more for those late-added controls so a
+// language change never leaves the gender/speech fields in Korean.
+export function translateDynamicInterface(root=document){
+  translateInterface(root);
 }
 function localizeLanguageSelector(root){
   const select=root?.querySelector('[data-setting="uiLanguage"]');
@@ -620,10 +626,8 @@ function relationshipForPair(firstId,secondId){
   )||null;
 }
 function pairHasRomanticFeeling(firstId,secondId){
-  const relation=relationshipForPair(firstId,secondId);
-  if(["연인","부부"].includes(relation?.type))return true;
-  return isRomanticCharacterView(characterViewFor(firstId,secondId))
-    ||isRomanticCharacterView(characterViewFor(secondId,firstId));
+  return isRomanticCharacterView(explicitCharacterViewFor(firstId,secondId))
+    ||isRomanticCharacterView(explicitCharacterViewFor(secondId,firstId));
 }
 function sceneEmotionScores(value){
   const text=String(value||"");
@@ -657,6 +661,9 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     if(id===c.id||!state.characters?.[id])return false;
     const other=state.characters[id];
     const otherEntry=eventFor(other);
+    const otherText=`${otherEntry?.title||""} ${otherEntry?.desc||""} ${otherEntry?.mood||""}`;
+    const otherSleeping=/자는 중|잠든|수면/.test(otherText);
+    if(sleeping!==otherSleeping)return false;
     const otherIds=[...(otherEntry?.participantOrder||[]),...(otherEntry?.withIds||[]),otherEntry?.withId].filter(Boolean);
     const sameMinute=Number.isFinite(Number(entry?.minute))&&Number(entry.minute)===Number(otherEntry?.minute);
     const sameInteraction=Boolean(entry?.interactionId&&entry.interactionId===otherEntry?.interactionId);
@@ -672,7 +679,12 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     return sameMinute&&(sameInteraction||sameDate||(samePlace&&(reciprocal||namesEachOther||romanticConnection)));
   });
   const namedPartnerIds=state.order.filter(id=>id!==c.id&&id!==entry?.thoughtOfId&&state.characters?.[id]?.name&&text.includes(state.characters[id].name));
-  const rawPartnerIds=[...new Set([...(entry?.participantOrder||[]),...(entry?.withIds||[]),entry?.withId,...namedPartnerIds,...mirroredPartnerIds].filter(id=>id&&id!==c.id&&state.characters?.[id]))];
+  const rawPartnerIds=[...new Set([...(entry?.participantOrder||[]),...(entry?.withIds||[]),entry?.withId,...namedPartnerIds,...mirroredPartnerIds].filter(id=>{
+    if(!id||id===c.id||!state.characters?.[id])return false;
+    const otherEntry=eventFor(state.characters[id]);
+    const otherSleeping=/자는 중|잠든|수면/.test(`${otherEntry?.title||""} ${otherEntry?.desc||""} ${otherEntry?.mood||""}`);
+    return sleeping===otherSleeping;
+  }))];
   const dateParticipantIds=entry?.dateGroup
     ?state.order.filter(id=>String(entry.dateGroup).includes(id))
     :[];
@@ -718,10 +730,8 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const overwhelmed=Boolean(dating&&relationshipPressure>=2);
   // 인간적인 호감이나 소중함은 연애 감정이 아니다. 하트·짝사랑 연출은
   // 캐릭터가 명시적으로 연애 감정을 설정한 경우에만 사용한다.
-  const officialRelationship=partner?relationshipForPair(c.id,partner.id):null;
-  const bilateralOfficialRomance=Boolean(["연인","부부"].includes(officialRelationship?.type));
-  const ownRomanceInterest=Boolean(partner&&(bilateralOfficialRomance||isRomanticCharacterView(ownView)));
-  const reverseRomanceInterest=Boolean(partner&&(bilateralOfficialRomance||isRomanticCharacterView(reverseView)));
+  const ownRomanceInterest=Boolean(partner&&isRomanticCharacterView(explicitCharacterViewFor(c.id,partner.id)));
+  const reverseRomanceInterest=Boolean(partner&&isRomanticCharacterView(explicitCharacterViewFor(partner.id,c.id)));
   // 데이트 일정뿐 아니라, 함께 있는 상대를 이 캐릭터가 실제로 사랑한다고
   // 설정했다면 어느 캐릭터 탭에서 보더라도 그 방향의 분홍빛 연출을 사용한다.
   const ownRomance=Boolean(partner&&ownRomanceInterest&&!fighting);
@@ -769,8 +779,9 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const explicitNegative=["shock","anger","sad","fear"].includes(explicitEmotion)&&explicitScore>=2;
   const socialAction=Boolean(partner&&/함께|서로|둘이|대화|이야기|데이트|산책|식사|마시|놀|게임|도와|챙기|나누|건네|곁|포옹|손을 잡/.test(text));
   if(!explicitNegative&&socialAction){
-    if(ownRomanceInterest&&reverseRomanceInterest)emotionScores.romance+=2;
-    else if(ownRomanceInterest||reverseRomanceInterest)emotionScores.romance+=1;
+    // 분홍빛은 현재 보고 있는 캐릭터가 상대에게 느끼는 감정을 기준으로 한다.
+    // 상대만 사랑하는 경우에는 상대 탭에서만 분홍빛이 보인다.
+    if(ownRomanceInterest)emotionScores.romance+=2;
     if(relationshipPressure>=2)emotionScores.fear+=2;
   }
   if(playfulInteraction)emotionScores.playful+=2;
@@ -801,7 +812,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
       ||(person.residences||[]).some(residence=>residence.homeId===homeId)
     )
   );
-  const companions=partner&&(entry?.groupInteraction||dating||fighting||ownRomanceInterest||reverseRomanceInterest||mirroredPartnerIds.length||partners.length>1||coResidentConversation)?partners:[];
+  const companions=partner&&(entry?.groupInteraction||dating||fighting||ownRomanceInterest||mirroredPartnerIds.length||partners.length>1||coResidentConversation)?partners:[];
   const pet=nativePetForScene(c,entry);
   const petVisual=pet?(pet.icon?`<img src="${esc(pet.icon)}" alt="${esc(pet.name)}">`:pet.photo?`<img class="photo" src="${esc(pet.photo)}" alt="${esc(pet.name)}">`:`<span>${PET_SCENE_EMOJI[pet.species]||PET_SCENE_EMOJI.기타}</span>`):"";
   const effectSymbol=tone==="sleep"
@@ -846,7 +857,12 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     const personSeed=nativeVisualSeed(`${entry?.interactionId||entry?.dateGroup||entry?.title}:${entry?.minute||""}:${person.id}:${index}`);
     const delay=((personSeed>>>15)%120)/100,duration=3.4+((personSeed>>>22)%120)/100;
     const actionProp=nativeSceneActionProp(person,entry,actionKind,text,true);
-    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""} ${visualMode==="ld"&&hasLdArt(person)?"is-ld":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${sceneAvatar(person,"native-scene-lineup-avatar",tone,visualMode)}${actionProp}${tone==="sleep"?'<b class="native-character-sleep-mark" aria-hidden="true">ZZ</b>':tone==="drowsy"?'<b class="native-character-drowsy-mark" aria-hidden="true">z</b>':""}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
+    const personEntry=person.id===c.id?entry:eventFor(person);
+    const personText=`${personEntry?.title||""} ${personEntry?.desc||""} ${personEntry?.mood||""}`;
+    const personSleeping=/자는 중|잠든|수면/.test(personText);
+    const personDrowsy=!personSleeping&&/졸리|졸린|졸음|조는 중|꾸벅|눈꺼풀이|잠깐 눈을 감|하품/.test(personText);
+    const sleepBadge=personSleeping?'<b class="native-character-sleep-mark" aria-hidden="true">ZZ</b>':personDrowsy?'<b class="native-character-drowsy-mark" aria-hidden="true">z</b>':"";
+    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""} ${visualMode==="ld"&&hasLdArt(person)?"is-ld":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${sceneAvatar(person,"native-scene-lineup-avatar",tone,visualMode)}${actionProp}${sleepBadge}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
   }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
     companions.length
@@ -1848,7 +1864,7 @@ function fontSettings(){
   const sizes=[["small","작게"],["normal","보통"],["large","크게"],["xlarge","아주 크게"]];
   return `<section class="setting-card font-setting-card"><h2>글자와 화면 크기</h2><p>글꼴 정의는 모든 화면이 같은 파일 하나를 사용합니다. 선택한 글꼴은 아래 미리보기에 즉시 반영돼요.</p><div class="font-setting-grid"><label>글자 크기<select data-setting="uiScale">${sizes.map(([value,label])=>`<option value="${value}" ${state.uiScale===value?"selected":""}>${label}</option>`).join("")}</select></label><label>사용할 글꼴<select data-setting="uiFont">${options.map(([value,label])=>`<option value="${value}" ${state.uiFont===value?"selected":""}>${label}</option>`).join("")}</select></label></div><div class="font-preview"><b>서랍마을의 오늘</b><span>캐릭터들이 각자의 하루를 보내고 있어요. 긴 생활 로그도 편안하게 읽어 보세요.</span></div></section>`;
 }
-const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>동기화 이름 표시</h2><p>Google 계정 이름 대신 백업과 동기화 화면에 표시할 이름이에요.</p><label>어떻게 불러드릴까요?<input data-setting="ownerName" maxlength="20" value="${esc(state.ownerName||"")}" placeholder="예: 꺄륵"></label></section>`;
+const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>사용자 닉네임</h2><p>Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.</p><label>캐릭터들이 뭐라고 부를까요?<input data-setting="ownerName" maxlength="20" value="${esc(state.ownerName||"")}" placeholder="예: 꺄륵"></label></section>`;
 function visualThemeSettings(){
   const vivid=[["rose","프린세스 핑크","사탕처럼 선명하고 사랑스러운 공주 핑크","#ff3f9f","#ff8dcc"],["berry","베리 팝","보라와 핫핑크가 통통 튀는 베리빛","#be2cff","#ff45b5"],["sky","하늘 소다","맑은 하늘과 탄산처럼 시원한 파랑","#078cff","#55c8ff"],["cobalt","코발트 네온","화면을 또렷하게 잡는 선명한 청보라","#3f50ff","#7d87ff"],["aqua","아쿠아 팝","청록과 민트가 반짝이는 물빛","#00a9b5","#21dfc5"],["lime","라임 캔디","싱그러운 초록과 라임빛","#52a900","#b4d900"],["coral","코랄 펀치","산뜻한 빨강과 오렌지 코랄","#ff4f62","#ff9770"]];
   const bright=[["cream","크림 라떼","포근하고 환한 아이보리와 캐러멜빛","#b06a00","#f2a93b"],["peach","복숭아 소다","생기 있고 부드러운 복숭앗빛","#ef536f","#ff986e"],["mint","민트 정원","산뜻하고 맑은 민트와 잎사귀빛","#00a982","#4bd8aa"],["sunshine","햇살 레몬","따뜻하고 명랑한 레몬과 금빛","#d98b00","#ffd23f"]];
@@ -1909,6 +1925,18 @@ Object.assign(UI_TEXT.ja,{
   "이 캐릭터가 상대의 외모를 얼마나 보는지와, 어떤 외형·성격·말투·삶의 태도에 끌리는지를 정해요. 이 설정만으로 관계나 호감은 자동 생성되지 않습니다.":"相手の外見をどの程度見るか、どんな見た目・性格・話し方・生き方に惹かれるかを設定します。この設定だけで関係や好意が自動生成されることはありません。",
   "상대별 시선과 관계 단계가 먼저이며, 끌리는 특성은 그 관계 안에서 시선이 머무는 이유와 표현 후보에만 반영됩니다.":"相手への視点と関係段階が優先されます。好み・苦手な特徴は、その関係の中で視線や表現にだけ反映されます。",
   "거의 보지 않음":"ほとんど見ない","조금 봄":"少し見る","꽤 중요하게 봄":"かなり重視する","외모에 크게 끌림":"外見に強く惹かれる"
+});
+Object.assign(UI_TEXT.en,{
+  "성별":"Gender","설정하지 않음":"Not set","남성":"Male","여성":"Female","그외":"Another gender",
+  "사용자 닉네임":"User nickname","Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.":"Shown on sync screens instead of your Google account name, and used when characters talk about your requests.","캐릭터들이 뭐라고 부를까요?":"What should the characters call you?",
+  "캐릭터 말투":"Character speech style","자동 · 성격에 맞춤":"Auto · Match personality","반말":"Casual speech","존댓말 · 해요체":"Polite speech · Haeyo style","격식 있는 존댓말 · 하십시오체":"Formal polite speech · Hasipsio style","극존칭":"Highly honorific speech","무뚝뚝한 단답":"Curt, brief replies","다정하고 부드러운 말투":"Warm and gentle speech","고풍스러운 말투":"Archaic or classical speech",
+  "캐릭터가 직접 말하거나 마을 주인의 부탁을 받아들일지 판단할 때 사용하는 말투예요.":"Used when the character speaks directly or decides how to respond to the village owner's request."
+});
+Object.assign(UI_TEXT.ja,{
+  "성별":"性別","설정하지 않음":"未設定","남성":"男性","여성":"女性","그외":"その他の性別",
+  "사용자 닉네임":"ユーザーのニックネーム","Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.":"Googleアカウント名の代わりに同期画面へ表示し、キャラクターがユーザーのお願いについて話す時にもこの名前を使います。","캐릭터들이 뭐라고 부를까요?":"キャラクターたちに何と呼ばれたいですか？",
+  "캐릭터 말투":"キャラクターの話し方","자동 · 성격에 맞춤":"自動・性格に合わせる","반말":"ため口","존댓말 · 해요체":"丁寧語・ヘヨ体","격식 있는 존댓말 · 하십시오체":"改まった敬語・ハシプシオ体","극존칭":"最上級の敬語","무뚝뚝한 단답":"ぶっきらぼうな短答","다정하고 부드러운 말투":"優しく穏やかな話し方","고풍스러운 말투":"古風な話し方",
+  "캐릭터가 직접 말하거나 마을 주인의 부탁을 받아들일지 판단할 때 사용하는 말투예요.":"キャラクターが直接話す時や、村の持ち主からのお願いにどう応じるか判断する時の話し方です。"
 });
 const unorderedSettingsContent=settingsContent;
 settingsContent=()=>{
