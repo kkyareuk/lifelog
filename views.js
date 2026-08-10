@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810i";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810i";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810k";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810k";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -85,12 +85,14 @@ Object.entries(UI_TEXT_MORE).forEach(([locale,copy])=>Object.assign(UI_TEXT[loca
 Object.assign(UI_TEXT.en,{
   "어린이":"Child","청소년":"Teen","성인":"Adult","노년":"Older adult","설정하지 않음":"Not set","무직":"Unemployed","학생":"Student","회사원":"Office worker","의사":"Doctor","간호사":"Nurse","교사":"Teacher","교수":"Professor","정치인":"Politician","기자":"Journalist","요리사":"Cook / chef","프로그래머":"Programmer","연구원":"Researcher","가수":"Singer","아이돌":"Idol","예술가":"Artist","해적":"Pirate","군인":"Soldier","범죄자":"Criminal","환경미화원":"Sanitation worker","여관주인":"Innkeeper","자영업·직접 입력":"Self-employed / custom",
   "정하지 않음":"Not set","낯선 사람으로 여김":"Sees them as a stranger","매우 싫어함":"Strongly dislikes them","미워함":"Hates them","경계함":"Is wary of them","불편해함":"Feels uncomfortable around them","부담스러워함":"Feels pressured by them","경쟁심을 느낌":"Feels competitive","애증을 느낌":"Feels love and hate","그저 그런 사람":"Feels neutral about them","흥미롭게 여김":"Finds them intriguing","인간적인 호감이 있음":"Likes them as a person","친구로 좋아함":"Likes them as a friend","존경함":"Respects them","동경함":"Admires them","안쓰럽게 여김":"Feels protective of them","소중하게 여김":"Treasures them","연애 감정이 싹틈":"Romantic feelings are beginning","연애 감정으로 좋아함":"Likes them romantically","깊이 사랑함":"Loves them deeply","없어서는 안 될 사람":"Cannot imagine life without them",
-  "연인":"Partners","부부":"Married couple","친구":"Friends","소꿉친구":"Childhood friends","부모·자녀":"Parent and child","형제·자매":"Siblings","동거인":"Housemates","혐관":"Hostile relationship","짝사랑":"One-sided love","현재":"Current","과거":"Past"
+  "연인":"Partners","부부":"Married couple","친구":"Friends","소꿉친구":"Childhood friends","부모·자녀":"Parent and child","형제·자매":"Siblings","동거인":"Housemates","혐관":"Hostile relationship","짝사랑":"One-sided love","현재":"Current","과거":"Past",
+  "사진·SD·LD":"Images · SD · LD","사진·기본 정보·생활 습관":"Photo · Profile · Lifestyle","이미지·표현·테마·파일":"Images · Visuals · Theme · Files","프로필 사진 첨부":"Add profile photo","사진 파일 선택":"Choose photo file","사진 지우기":"Remove photo","운전·흡연·주량":"Driving · Smoking · Alcohol","운전면허·운전 경험":"Driver's license and experience","흡연 여부":"Smoking status","주량":"Alcohol tolerance","면허 없음":"No license","면허만 있음 · 운전하지 않음":"Licensed · Does not drive","초보운전":"Beginner driver","가끔 운전함":"Drives occasionally","운전에 익숙함":"Experienced driver","장거리·야간 운전도 익숙함":"Experienced with long-distance and night driving","비흡연":"Non-smoker","금연 중":"Quit smoking","가끔 흡연":"Occasional smoker","전자담배 사용":"Uses e-cigarettes","흡연":"Smoker","마시지 않음":"Does not drink","한두 모금":"A sip or two","매우 약함":"Very low tolerance","약한 편":"Low tolerance","강한 편":"High tolerance","매우 강함":"Very high tolerance"
 });
 Object.assign(UI_TEXT.ja,{
   "어린이":"子ども","청소년":"青少年","성인":"成人","노년":"高齢","설정하지 않음":"未設定","무직":"無職","학생":"学生","회사원":"会社員","의사":"医師","간호사":"看護師","교사":"教師","교수":"教授","정치인":"政治家","기자":"記者","요리사":"料理人","프로그래머":"プログラマー","연구원":"研究員","가수":"歌手","아이돌":"アイドル","예술가":"芸術家","해적":"海賊","군인":"軍人","범죄자":"犯罪者","환경미화원":"清掃員","여관주인":"宿屋の主人","자영업·직접 입력":"自営業・自由入力",
   "정하지 않음":"未設定","낯선 사람으로 여김":"他人だと思う","매우 싫어함":"とても嫌っている","미워함":"憎んでいる","경계함":"警戒している","불편해함":"居心地が悪い","부담스러워함":"重荷に感じる","경쟁심을 느낌":"競争心を感じる","애증을 느낌":"愛憎を抱く","그저 그런 사람":"特に何も感じない","흥미롭게 여김":"興味深く思う","인간적인 호감이 있음":"人として好感を持つ","친구로 좋아함":"友人として好き","존경함":"尊敬している","동경함":"憧れている","안쓰럽게 여김":"気の毒に思う","소중하게 여김":"大切に思う","연애 감정이 싹틈":"恋愛感情が芽生える","연애 감정으로 좋아함":"恋愛対象として好き","깊이 사랑함":"深く愛している","없어서는 안 될 사람":"かけがえのない人",
-  "연인":"恋人","부부":"夫婦","친구":"友人","소꿉친구":"幼なじみ","부모·자녀":"親子","형제·자매":"きょうだい","동거인":"同居人","혐관":"険悪な関係","짝사랑":"片思い","현재":"現在","과거":"過去"
+  "연인":"恋人","부부":"夫婦","친구":"友人","소꿉친구":"幼なじみ","부모·자녀":"親子","형제·자매":"きょうだい","동거인":"同居人","혐관":"険悪な関係","짝사랑":"片思い","현재":"現在","과거":"過去",
+  "사진·SD·LD":"画像・SD・LD","사진·기본 정보·생활 습관":"写真・基本情報・生活習慣","이미지·표현·테마·파일":"画像・表示・テーマ・ファイル","프로필 사진 첨부":"プロフィール写真を追加","사진 파일 선택":"写真ファイルを選択","사진 지우기":"写真を削除","운전·흡연·주량":"運転・喫煙・酒量","운전면허·운전 경험":"運転免許・運転経験","흡연 여부":"喫煙状況","주량":"お酒の強さ","면허 없음":"免許なし","면허만 있음 · 운전하지 않음":"免許あり・運転しない","초보운전":"初心者ドライバー","가끔 운전함":"時々運転する","운전에 익숙함":"運転に慣れている","장거리·야간 운전도 익숙함":"長距離・夜間運転にも慣れている","비흡연":"非喫煙","금연 중":"禁煙中","가끔 흡연":"時々喫煙","전자담배 사용":"電子タバコを使用","흡연":"喫煙","마시지 않음":"飲まない","한두 모금":"一口か二口","매우 약함":"とても弱い","약한 편":"弱い","강한 편":"強い","매우 강함":"とても強い"
 });
 Object.assign(UI_TEXT.en,{
   "흑백":"Monochrome","가장 또렷한 기본 테마":"The clearest default theme","세이지":"Sage","차분한 초록빛":"Calm green","로즈":"Rose","부드러운 장밋빛":"Soft rose","오션":"Ocean","맑은 푸른빛":"Clear blue","라벤더":"Lavender","은은한 보랏빛":"Gentle violet",
@@ -441,21 +443,45 @@ function nativeSceneFoodItem(person,entry,text){
 function nativeFoodSymbol(item,text){
   const value=`${item?.name||""} ${item?.category||""} ${item?.subtype||""} ${text}`;
   if(/초밥|스시|회/.test(value))return "🍣";
-  if(/라면|국수|파스타|면/.test(value))return "🍜";
+  if(/파스타|스파게티|까르보나라/.test(value))return "🍝";
+  if(/찌개|국물|수프|스프|전골|마라탕|훠궈/.test(value))return "🍲";
+  if(/라면|국수|우동|소바|냉면/.test(value))return "🍜";
   if(/빵|베이커리|크루아상/.test(value))return "🥐";
   if(/샐러드|채식|야채/.test(value))return "🥗";
-  if(/케이크|디저트|쿠키/.test(value))return "🍰";
+  if(/컵케이크|머핀/.test(value))return "🧁";
+  if(/도넛|도너츠/.test(value))return "🍩";
+  if(/쿠키|비스킷/.test(value))return "🍪";
+  if(/케이크|디저트/.test(value))return "🍰";
+  if(/초콜릿|초코/.test(value))return "🍫";
+  if(/사탕|캔디/.test(value))return "🍬";
   if(/고기|스테이크|구이/.test(value))return "🥩";
   if(/과일|사과/.test(value))return "🍎";
+  if(/버블티|밀크티|타피오카/.test(value))return "🧋";
+  if(/맥주|에일|라거/.test(value))return "🍺";
+  if(/샴페인|스파클링 와인/.test(value))return "🍾";
+  if(/와인/.test(value))return "🍷";
+  if(/마티니|위스키|브랜디/.test(value))return "🍸";
+  if(/칵테일|하이볼/.test(value))return "🍹";
+  if(/우유|라테|라떼/.test(value))return "🥛";
+  if(/분유|젖병/.test(value))return "🍼";
   if(/커피/.test(value))return "☕";
-  if(/차|홍차|녹차/.test(value))return "🍵";
+  if(/차|티백|홍차|녹차/.test(value))return "🍵";
   if(/주스/.test(value))return "🧃";
   if(/탄산|콜라/.test(value))return "🥤";
-  if(/술|와인|칵테일/.test(value))return "🍷";
+  if(/음료|에이드|스무디/.test(value))return "🥤";
+  if(/젓가락/.test(value))return "🥢";
+  if(/포크/.test(value))return "🍴";
+  if(/접시|식탁|식사/.test(value))return "🍽️";
   return "🥄";
 }
 function nativeOrganizingSymbol(text){
   if(/원두|커피콩/.test(text))return "🫘";
+  if(/꽃|꽃다발|화병/.test(text))return "💐";
+  if(/식물|화분|허브|찻잎|나뭇잎/.test(text))return "🍃";
+  if(/자|치수|길이|재단|도면/.test(text))return "📏";
+  if(/보관함|수납함|아카이브|서류함|카드함|자료함|파일함/.test(text))return "🗃️";
+  if(/통계|그래프|차트|매출|성과|분석|보고서/.test(text))return "📈";
+  if(/업무|회사|출근|사무|사업|회의 자료/.test(text))return "💼";
   if(/책|책장|서가|잡지/.test(text))return "📚";
   if(/옷|의류|옷장|서랍장/.test(text))return "👕";
   if(/수건|침구|이불|담요/.test(text))return "🧺";
@@ -475,7 +501,9 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
     item=nativeSceneFoodItem(person,entry,text);
     symbol=nativeFoodSymbol(item,text);
   }else if(actionKind==="coffee-drinking"||actionKind==="coffee-brewing")symbol="☕";
-  else if(actionKind==="washing-up")symbol="🫧";
+  else if(actionKind==="washing-up"){
+    symbol=/양치|이를 닦|칫솔|치약/.test(text)?"🪥":/면도/.test(text)?"🪒":/샴푸|머리를 감|스킨케어|로션|기초화장/.test(text)?"🧴":/비누|손을 씻|몸을 씻|샤워|목욕|세수|세안/.test(text)?"🧼":"🫧";
+  }
   else if(actionKind==="beans-organizing")symbol="🫘";
   else if(actionKind==="pet-care")symbol="🧶";
   else if(actionKind==="sweeping")symbol="🧹";
@@ -604,8 +632,8 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const actionKind=sleeping?"sleep"
     :drowsy?"drowsy"
     :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
-      :/세수|세안|이를 닦|양치|칫솔|치약/.test(text)?"washing-up"
-      :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)/.test(text)?"dishwashing"
+      :/세수|세안|이를 닦|양치|칫솔|치약|샤워|목욕|머리를 감|몸을 씻|손을 씻|면도/.test(text)?"washing-up"
+      :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)|접시.{0,12}(씻|닦)|컵.{0,12}(씻|닦)|도구.{0,12}(씻|닦)|물뿌리개.{0,12}(씻|닦)|세척/.test(text)?"dishwashing"
         :/세탁|빨래/.test(text)?"laundry"
           :/커피.{0,16}(마시|한 모금|맛보)|(?:마시|한 모금|맛보).{0,16}커피/.test(text)?"coffee-drinking"
             :/커피.{0,18}(내리|추출|드립|머신)|(?:내리|추출|드립).{0,18}커피|원두.{0,12}(갈|분쇄|추출)/.test(text)?"coffee-brewing"
@@ -1374,11 +1402,13 @@ function character(){
     personalityChoice(c,"충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],"공격 충동이 있어도 이 성향과 실제 행동 단계가 허용해야 행동으로 나와요.")
   ].join("");
   const personality=`<h2>${esc(c.name)}의 성격</h2><p>전체 유형을 먼저 고르고, 아래에서 세부 성향과 서사·인지 특성을 조절해 주세요.</p>${personalityTypeChoice(c)}<section class="personality-detail-grid">${personalityDetails}</section>`;
-  const profileWithLicense=`<section class="profile-license">${townAssignment(c)}${profile}<label class="check"><input type="checkbox" data-character-check="${c.id}" data-field="driverLicense" ${c.driverLicense?"checked":""}> 운전면허 있음</label>${profileAttractionSettings(c)}</section>`;
+  const lifestyleSelect=(label,field,options,current)=>`<label>${label}<select data-field="${field}">${options.map(value=>`<option value="${esc(value)}" ${current===value?"selected":""}>${esc(value)}</option>`).join("")}</select></label>`;
+  const photoQuickCard=`<section class="character-photo-quick-card"><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진 첨부</h3><p>여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.</p><div class="image-actions"><button type="button" class="primary" data-image="photo">사진 파일 선택</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">사진 지우기</button>`:""}</div><small>투명 SD 아이콘과 감정별 LD 일러스트는 ‘사진·SD·LD’ 탭에서 따로 등록해요.</small></div></section>`;
+  const profileWithLicense=`<section class="profile-license">${photoQuickCard}${townAssignment(c)}${profile}<section class="setting-card character-lifestyle-settings"><h2>운전·흡연·주량</h2><p>체크 한 칸 대신 캐릭터의 실제 생활 습관에 가까운 상태를 골라 주세요.</p><div class="fields lifestyle-profile-fields">${lifestyleSelect("운전면허·운전 경험","driverLicense",["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"],c.driverLicense||"면허 없음")}${lifestyleSelect("흡연 여부","smokingStatus",["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"],c.smokingStatus||"설정하지 않음")}${lifestyleSelect("주량","alcoholTolerance",["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"],c.alcoholTolerance||"설정하지 않음")}</div></section>${profileAttractionSettings(c)}</section>`;
   const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>체형, 머리, 눈, 화장 같은 외형과 건강·접근성을 나누어 정해요. 고르지 않은 특성은 장면에서 지어내지 않습니다.</p></div>${physicalAppearanceSettings(c)}${healthAccessibilitySettings(c)}</section>`;
   const limit=characterLimit();
   const slotLabel=state.order.length>limit?`${state.order.length}명 저장됨 · 한도 ${limit}명`:`+ 생성 · ${state.order.length}/${limit}`;
-  const paneMeta={profile:["프로필","기본 정보·끌림","👤"],body:["신체","외형·건강·접근성","✦"],personality:["성격","성향·서사·인지","◈"],taste:["취향 선택","취미·음식·콘텐츠","♡"],worldTaste:["세계관 선호","최애·소지품","⌂"],manage:["사진·SD·LD·테마","이미지·표현·색상·파일","✎"]};
+  const paneMeta={profile:["프로필","사진·기본 정보·생활 습관","👤"],body:["신체","외형·건강·접근성","✦"],personality:["성격","성향·서사·인지","◈"],taste:["취향 선택","취미·음식·콘텐츠","♡"],worldTaste:["세계관 선호","최애·소지품","⌂"],manage:["사진·SD·LD","이미지·표현·테마·파일","📷"]};
   const paneButtons=Object.entries(paneMeta).map(([key,[label,help,icon]])=>`<button type="button" data-open-character-pane="${key}" class="${state.characterPane===key?"on":""}"><span>${icon}</span><b>${label}</b><small>${help}</small></button>`).join("");
   const mobileStrip=state.order.map(id=>{const x=state.characters[id];return `<button type="button" data-mobile-character-select="${id}" class="${id===c.id?"on":""}" style="--own:${x.theme.primary}">${avatar(x)}<small>${esc(x.name)}</small></button>`}).join("");
   const reorderRows=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="mobile-character-reorder-row">${avatar(x)}<b>${esc(x.name)}</b><span><button type="button" data-sort="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""}>→</button></span></div>`}).join("");

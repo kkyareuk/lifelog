@@ -200,7 +200,7 @@ function normalizeHomes(x){
   if(["gangwon","seoyun","dunggeunmo","scoredream","chosun100"].includes(x.uiFont))x.uiFont="system";
   x.uiFont=["system","dangam","dohyeon","haeong","aggro","corncorn"].includes(x.uiFont)?x.uiFont:"system";
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
-  x.uiLanguage=x.uiLanguage==="en"?"en":"ko";
+  x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"dark";
   x.visualTheme=["monochrome","sage","rose","ocean","lavender"].includes(x.visualTheme)?x.visualTheme:"monochrome";
   x.ownerName=String(x.ownerName||"").trim().slice(0,20);
@@ -451,7 +451,12 @@ function normalizeHomes(x){
       title:r.title||"새 일정",placeId:r.placeId||"",withIds:Array.isArray(r.withIds)?r.withIds:[],
       notes:r.notes||""
     })):[];
-    c.driverLicense=Boolean(c.driverLicense);
+    const drivingOptions=["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"];
+    c.driverLicense=typeof c.driverLicense==="boolean"?(c.driverLicense?"운전에 익숙함":"면허 없음"):(drivingOptions.includes(c.driverLicense)?c.driverLicense:"면허 없음");
+    const smokingOptions=["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"];
+    c.smokingStatus=smokingOptions.includes(c.smokingStatus)?c.smokingStatus:"설정하지 않음";
+    const alcoholOptions=["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"];
+    c.alcoholTolerance=alcoholOptions.includes(c.alcoholTolerance)?c.alcoholTolerance:"설정하지 않음";
     c.wakeHabit=c.wakeHabit||"알람을 듣고 천천히 일어남";
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.ageGroup=c.ageGroup||"성인";
@@ -593,7 +598,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",photo:"",icon:"",ldNeutral:"",ldJoy:"",ldSad:"",ldAngry:"",ldTired:"",homeVisualMode:"sd",homeVisualScale:100,wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldNeutral:"",ldJoy:"",ldSad:"",ldAngry:"",ldTired:"",homeVisualMode:"sd",homeVisualScale:100,wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);

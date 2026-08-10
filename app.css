@@ -5164,6 +5164,17 @@ html[data-color-mode="dark"] .town-editor-panel .place-editor details[open]{back
 .character-image-empty-preview.icon i{border-radius:12px;background:#ffffff7d}
 html[data-color-mode="dark"] .character-image-empty-preview.icon i{background:#ffffff12}
 
+/* Profile essentials stay discoverable without opening the advanced image pane. */
+.character-photo-quick-card{display:grid;grid-template-columns:112px minmax(0,1fr);gap:18px;align-items:center;margin:0 0 18px;padding:18px;border:2px solid color-mix(in srgb,var(--character-own,var(--p)) 42%,var(--line));border-radius:24px;background:linear-gradient(135deg,color-mix(in srgb,var(--character-own,var(--p)) 13%,var(--panel)),var(--panel));box-shadow:0 12px 28px color-mix(in srgb,var(--character-own,var(--p)) 14%,transparent)}
+.character-photo-quick-card>span{display:grid;place-items:center;width:104px;height:104px;overflow:hidden;border-radius:50%;background:color-mix(in srgb,var(--character-own,var(--p)) 12%,var(--panel))}
+.character-photo-quick-card>span :is(.profile-photo-fallback,.character-image-empty-preview){width:100%;height:100%;border-radius:50%}
+.character-photo-quick-card>span .profile-photo-fallback{display:block;object-fit:cover}
+.character-photo-quick-card>div>h3{margin:0 0 6px;font-size:20px}.character-photo-quick-card>div>p{margin:0 0 12px;line-height:1.55}.character-photo-quick-card>div>small{display:block;margin-top:9px;opacity:.76}
+.character-photo-quick-card .image-actions{display:flex;flex-wrap:wrap;gap:8px}.character-photo-quick-card .image-actions button{min-height:42px}
+.character-lifestyle-settings{margin-top:18px}.character-lifestyle-settings>h2{margin-bottom:6px}.character-lifestyle-settings>p{margin-top:0}.lifestyle-profile-fields{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.lifestyle-profile-fields label{display:grid;gap:7px;font-weight:850}.lifestyle-profile-fields select{width:100%;min-height:48px}
+html[data-color-mode="dark"] .character-photo-quick-card{border-color:color-mix(in srgb,var(--character-own,var(--p)) 58%,#3a5068);background:linear-gradient(135deg,color-mix(in srgb,var(--character-own,var(--p)) 24%,#142337),#142337)}
+@media(max-width:720px){.character-photo-quick-card{grid-template-columns:82px minmax(0,1fr);gap:12px;padding:14px;border-radius:20px}.character-photo-quick-card>span{width:78px;height:78px}.character-photo-quick-card>div>h3{font-size:17px}.lifestyle-profile-fields{grid-template-columns:1fr}}
+
 /* 2026-08-10h: independent profile/SD/LD art, scene display controls, and beta language UI. */
 .character-manage-grid>section.character-ld-settings{
   grid-column:1/-1;display:grid;align-items:stretch;gap:16px;

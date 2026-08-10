@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810i";
-import {eventFor} from "./simulation.js?v=20260810i";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810j";
-import {recordCharacterInteraction} from "./state.js?v=20260810i";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810k";
+import {eventFor} from "./simulation.js?v=20260810k";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810k";
+import {recordCharacterInteraction} from "./state.js?v=20260810k";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -433,7 +433,7 @@ function enhanceDynamicForms(){
         birthday.innerHTML=`생일 · 월일<input type="text" inputmode="numeric" maxlength="4" pattern="(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])" data-field="birthday" value="${active().birthday||""}" placeholder="예: 0804"><small>연도 없이 네 자리로 입력해요. 생일파티는 당일 오후 7시에 생성돼요.</small>`;
         workplace.after(birthday);
       }
-      const license=profile.querySelector('[data-field="driverLicense"]')?.closest("label");
+      const license=profile.querySelector('input[data-character-check][data-field="driverLicense"]')?.closest("label");
       if(license)fields.append(license);
       const exportButton=profile.querySelector("[data-export-profile]");
       if(exportButton)profile.append(exportButton);
@@ -653,6 +653,11 @@ function replaceFeedbackFormWithEmailLink(){
   card.innerHTML=`<h2>${text.title}</h2><p>${text.description}</p><a class="primary feedback-email-button" href="mailto:kkyaareuk@gmail.com?subject=${subject}&body=${body}">${text.button}</a><small>${text.recipient} · kkyaareuk@gmail.com</small>`;
 }
 
+function restoreWindowScroll(x,y){
+  const restore=()=>window.scrollTo({left:x,top:y,behavior:"auto"});
+  requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
+  setTimeout(restore,40);
+}
 function render(){
   const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
@@ -694,7 +699,7 @@ function render(){
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
     requestAnimationFrame(maybeShowPageGuide);
     document.documentElement.dataset.drawerRendered="1";
-    if(preservePageScroll)requestAnimationFrame(()=>window.scrollTo({left:previousPageX,top:previousPageY,behavior:"auto"}));
+    if(preservePageScroll)restoreWindowScroll(previousPageX,previousPageY);
   }catch(error){
     console.error("화면 복구 필요",error);
     document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
@@ -717,8 +722,14 @@ function renderPreservingCharacterEditorScroll(element){
   requestAnimationFrame(()=>{
     const nextShell=document.querySelector("[data-mobile-character-editor-dialog] .mobile-character-editor-shell");
     if(nextShell)nextShell.scrollTop=mobileCharacterEditorScroll;
-    window.scrollTo(pageX,pageY);
+    restoreWindowScroll(pageX,pageY);
   });
+}
+function renderPreservingPageScroll(element){
+  const pageX=window.scrollX,pageY=window.scrollY;
+  element?.blur?.();
+  render();
+  restoreWindowScroll(pageX,pageY);
 }
 function flushMobileCharacterDraft({closeEditor=true}={}){
   if(mobileCharacterDraftDirty)save(true);
@@ -1269,7 +1280,7 @@ function bind(){
   $$("[data-personality-field]").forEach(el=>el.onchange=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(active().id,{[el.dataset.personalityField]:el.value},!mobileDraft);
-    render();
+    renderPreservingCharacterEditorScroll(el);
   });
   $$("[data-personality-type]").forEach(el=>el.onclick=()=>{
     const character=active(),value=el.dataset.personalityType,current=Array.isArray(character.personalityTypes)?character.personalityTypes:[];
@@ -1278,7 +1289,7 @@ function bind(){
     else if(current.length<4)next=[...current,value];
     else return showToast("전체 성격 유형은 최대 4개까지 고를 수 있어요");
     const mobileDraft=markMobileCharacterDraft(el);
-    updateCharacter(character.id,{personalityTypes:next},!mobileDraft);render();
+    updateCharacter(character.id,{personalityTypes:next},!mobileDraft);renderPreservingCharacterEditorScroll(el);
   });
   const toggleTraitSetting=(key,value,element)=>{
     const character=active(),current=Array.isArray(character[key])?character[key]:[];
@@ -1287,7 +1298,7 @@ function bind(){
     else if(current.length<8)next=[...current,value];
     else return showToast("서사·인지 특성은 각 영역에서 최대 8개까지 고를 수 있어요");
     const mobileDraft=markMobileCharacterDraft(element);
-    updateCharacter(character.id,{[key]:next},!mobileDraft);render();
+    updateCharacter(character.id,{[key]:next},!mobileDraft);renderPreservingCharacterEditorScroll(element);
   };
   $$("[data-character-trait]").forEach(el=>el.onclick=()=>toggleTraitSetting("characterTraits",el.dataset.characterTrait,el));
   $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting("traitExpressions",el.dataset.traitExpression,el));
@@ -1297,7 +1308,7 @@ function bind(){
   });
   $$("[data-trait-notes-in-scripts]").forEach(el=>el.addEventListener("change",e=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    updateCharacter(active().id,{traitNotesInScripts:e.target.checked},!mobileDraft);render();
+    updateCharacter(active().id,{traitNotesInScripts:e.target.checked},!mobileDraft);renderPreservingCharacterEditorScroll(el);
   }));
   const setNestedValue=(target,path,value)=>{
     const parts=String(path||"").split("."),last=parts.pop();
@@ -1318,7 +1329,7 @@ function bind(){
       const mobileDraft=markMobileCharacterDraft(el);
       updateCharacter(character.id,{bodyProfile},false);
       if(!mobileDraft)save(el.tagName==="SELECT");
-      if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField))render();
+      if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField))renderPreservingCharacterEditorScroll(el);
     });
   });
   $$("[data-body-list]").forEach(el=>el.onclick=()=>{
@@ -1332,7 +1343,7 @@ function bind(){
     const patch={bodyProfile};
     if(el.dataset.bodyList==="physicalTraits"&&legacyAppearance.includes(value))patch.appearanceTags=legacyAppearance.filter(item=>item!==value);
     const mobileDraft=markMobileCharacterDraft(el);
-    updateCharacter(character.id,patch,!mobileDraft);render();
+    updateCharacter(character.id,patch,!mobileDraft);renderPreservingCharacterEditorScroll(el);
   });
   $$("[data-field]").forEach(el=>el.oninput=()=>{
     const numeric=["spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging","homeVisualScale"].includes(el.dataset.field);
@@ -1384,7 +1395,7 @@ function bind(){
     if(!["primary","secondary"].includes(field)||!/^#[0-9a-f]{6}$/i.test(value||""))return;
     updateCharacter(active().id,{theme:{...active().theme,[field]:value}},true);
     applyTheme();
-    render();
+    renderPreservingCharacterEditorScroll(el);
   });
   $$("[data-gradient]").forEach(el=>el.addEventListener("change",e=>{
     const mobileDraft=markMobileCharacterDraft(el);
@@ -1476,7 +1487,7 @@ function bind(){
   $$("[data-clear-room-bg]").forEach(el=>el.onclick=()=>{setHomeImage(el.dataset.homeId,el.dataset.room,"");render()});
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
-  $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);render()});
+  $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);renderPreservingPageScroll(el)});
   $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
   $$("[data-setting]").forEach(el=>el.onchange=()=>{
@@ -1484,19 +1495,19 @@ function bind(){
     state[key]=el.value;
     if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
     save(true);
-    render();
+    renderPreservingPageScroll(el);
   });
   $$("button[data-color-mode]").forEach(button=>button.onclick=event=>{
     event.stopPropagation();
     state.colorMode=button.dataset.colorMode==="light"?"light":"dark";
     save(true);
-    render();
+    renderPreservingPageScroll(button);
   });
   $$("button[data-visual-theme]").forEach(button=>button.onclick=event=>{
     event.stopPropagation();
     state.visualTheme=button.dataset.visualTheme||"monochrome";
     save(true);
-    render();
+    renderPreservingPageScroll(button);
   });
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
@@ -2465,7 +2476,7 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810i").catch(error=>{
+  import("./auth.js?v=20260810k").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2480,7 +2491,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810j",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810k",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

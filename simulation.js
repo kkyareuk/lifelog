@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810h";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810k";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1893,6 +1893,11 @@ function recordedInteractionEntries(c,date){
     return entry(minute,`${other?.name}와 함께 나들이하는 중`,"둘이 가고 싶던 장소를 골라 주변을 천천히 둘러보고 눈에 띄는 풍경 앞에서 이야기를 나누고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원","카페"],`${action.id}:outing`,c,date)?.id,withId:other?.id,interactionId:action.id});
   });
 }
+function canDrive(c){
+  const status=c?.driverLicense;
+  if(status===true)return true;
+  return ["초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"].includes(String(status||""));
+}
 function build(c,date=new Date()){
   const currentHomeId=homeIdForDate(c,date);
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
@@ -1919,8 +1924,8 @@ function build(c,date=new Date()){
   const useMount=rideablePet&&(hash(`${c.id}:${dayKey(date)}:mount`)%2===0);
   const relation=preferredRelation(c),romantic=relation&&["부부","연인"].includes(relation.r.type)?relation.other:null;
   const partnerCars=romantic?state.homes[homeIdForDate(romantic,date)]?.cars||[]:[];
-  const partnerCanDrive=romantic?.driverLicense&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
-  const selfCanDrive=c.driverLicense&&homeCars.length;
+  const partnerCanDrive=canDrive(romantic)&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
+  const selfCanDrive=canDrive(c)&&homeCars.length;
   if(destinationPurpose&&destination.id!==homeTown.id){
     const travelMinute=Math.max(wake+75,(work?.minute||720)-45);
     const mode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"transit";
@@ -2075,10 +2080,10 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260810h";
+const ENGINE_VERSION="20260810k";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 const entryMomentKey=item=>{
   const minute=Number(item?.minute);
@@ -2122,6 +2127,15 @@ function cleanExactRepeatedEntries(entries){
     if(itemScore>previousScore)kept[repeatedIndex]=item;
   });
   return kept;
+}
+const MAJOR_CLEANUP_PATTERN=/대청소|집 전체.{0,12}(?:청소|정리)|방 전체.{0,12}(?:청소|정리)|창고.{0,12}(?:청소|정리)|다락.{0,12}(?:청소|정리)|지하실.{0,12}(?:청소|정리)|이사 짐|짐을 대대적으로 정리|옷장 전체|서재 전체|묵은 (?:물건|짐)|계절.{0,8}(?:정리|옷)/;
+function cleanRoutineCleanupRest(entries){
+  const sorted=[...entries].sort((a,b)=>Number(a.minute)-Number(b.minute));
+  return sorted.filter((item,index)=>{
+    if(String(item?.title||"")!=="정리를 마치고 잠깐 쉬는 중")return true;
+    const previous=sorted.slice(0,index).reverse().find(candidate=>Number(item.minute)-Number(candidate.minute)<=150);
+    return Boolean(previous&&MAJOR_CLEANUP_PATTERN.test(`${previous.title||""} ${previous.desc||""}`));
+  });
 }
 function cleanSameMinuteEntries(entries){
   const byMinute=new Map();
@@ -2236,7 +2250,7 @@ export function timeline(c,date=new Date()){
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
   if(old&&Array.isArray(old.entries)){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    const cleaned=cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))));
+    const cleaned=cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries)))))))));
     if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
   }
   const today=key===dayKey(new Date());
@@ -2355,9 +2369,10 @@ function liveGapEvent(c,last,n,date){
     return entry(minute,text[0],personalityFlavor(c,text[1],"live-away",date),{townId:last.townId||c.townId,placeId:last.placeId,mood:last.mood||"보통"});
   }
   const previousTitle=String(last?.title||"");
+  const previousContext=`${previousTitle} ${String(last?.desc||"")}`;
   const followups=[
     [/차를 우|차를 준비|차를 내리|음료를 준비/,["준비한 차를 천천히 마시는 중","조금 전 우린 차를 자리로 가져와 온도와 향을 느끼며 천천히 마시고 있어요.",last?.room||"kitchen"]],
-    [/청소하는|청소 중|정돈하는|정리하는 중/,["정리를 마치고 잠깐 쉬는 중","정리한 자리를 한 번 둘러본 뒤 물을 마시고 몸의 긴장을 풀며 잠깐 쉬고 있어요.",last?.room||"living"]],
+    [MAJOR_CLEANUP_PATTERN,["정리를 마치고 잠깐 쉬는 중","큰 정리를 마친 자리를 한 번 둘러본 뒤 물을 마시고 몸의 긴장을 풀며 잠깐 쉬고 있어요.",last?.room||"living"]],
     [/요리하는|아침 준비|빵을 굽|식사를 준비|간식을 챙기/,["만든 것을 천천히 먹는 중","조금 전 준비한 것을 식탁에 놓고 서두르지 않게 먹으며 사용한 도구도 함께 정리하고 있어요.","kitchen"]],
     [/운동하는|운동 중|스트레칭|러닝머신/,["호흡을 고르며 운동을 마무리하는 중","운동 강도를 천천히 낮추고 물을 마시며 호흡과 몸 상태를 확인하고 있어요.",last?.room||"living"]],
     [/빨래|세탁/,["마른 빨래를 접어 정리하는 중","세탁을 마친 옷을 종류별로 접어 각자의 자리에 차분히 넣고 있어요.",last?.room||"bedroom"]],
@@ -2368,7 +2383,7 @@ function liveGapEvent(c,last,n,date){
     [/식물을 돌보|화분/,["물뿌리개를 씻어 정리하는 중","필요한 화분만 돌본 뒤 물이 고인 받침을 비우고 도구를 원래 자리에 두었어요.",last?.room||"living"]],
     [/수리하는|고치는/,["사용한 도구를 정리하는 중","작업한 부분이 단단히 고정됐는지 확인하고 사용한 도구를 닦아 종류별로 돌려놓았어요.",last?.room||"study"]]
   ];
-  const followup=followups.find(([pattern])=>pattern.test(previousTitle))?.[1];
+  const followup=followups.find(([pattern])=>pattern.test(previousContext))?.[1];
   if(followup)return homeEntry(c,minute,followup[0],personalityFlavor(c,followup[1],"home-followup",date),followup[2]);
   const scripts=[...homeActivityPoolFor(c,date),
     ["거실에서 잠깐 쉬는 중","마실 것을 곁에 두고 소파에 앉아 다음 일정 전까지 숨을 돌리고 있어요.","living"],
