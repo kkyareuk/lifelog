@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810m";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810m";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810n";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810n";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -31,7 +31,6 @@ const UI_TEXT_MORE={
     "프로필 사진":"Profile photo","사진 파일":"Photo file","사진 링크":"Photo link","SD PNG 파일":"SD PNG file","SD 링크":"SD link",
     "프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.":"Shown as a full-bleed circle only in profile slots. It is never copied to the SD icon.",
     "별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.":"Used only when uploaded separately. Transparent PNGs keep their full aspect ratio without cropping.",
-    "전신·무릎 위 일러스트를 감정별로 따로 등록할 수 있어요. 현재 장면의 감정에 따라 자동으로 바뀌며, 없는 감정은 기본 LD로 대신합니다.":"Upload separate full-body or knee-up art for each emotion. The home screen switches automatically, and falls back to Neutral when an emotion is missing.",
     "SD와 LD가 모두 있으면 홈화면에서도 바로 전환할 수 있어요.":"When both SD and LD are available, you can switch between them on the home screen.",
     "버튼 색을 고르거나 색상 선택기와 HEX 값으로 직접 입력할 수 있어요.":"Choose a preset or enter a color directly with the picker or HEX value.",
     "대표 테마색":"Primary theme color","그라데이션 보조색":"Gradient secondary color","보조색으로 그라데이션 사용":"Use a gradient with the secondary color",
@@ -65,7 +64,6 @@ const UI_TEXT_MORE={
     "프로필 사진":"プロフィール写真","사진 파일":"写真ファイル","사진 링크":"写真リンク","SD PNG 파일":"SD PNGファイル","SD 링크":"SDリンク",
     "프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.":"プロフィール欄だけで余白のない円形表示になります。SDアイコンにはコピーされません。",
     "별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.":"別途登録した場合のみ使用します。透過PNGは切れないよう元の比率を保ちます。",
-    "전신·무릎 위 일러스트를 감정별로 따로 등록할 수 있어요. 현재 장면의 감정에 따라 자동으로 바뀌며, 없는 감정은 기본 LD로 대신합니다.":"全身・膝上イラストを感情ごとに登録できます。現在の感情に合わせて自動で切り替わり、未登録の感情は通常LDで代用します。",
     "SD와 LD가 모두 있으면 홈화면에서도 바로 전환할 수 있어요.":"SDとLDの両方がある場合、ホーム画面ですぐに切り替えられます。",
     "버튼 색을 고르거나 색상 선택기와 HEX 값으로 직접 입력할 수 있어요.":"プリセットを選ぶか、カラーピッカーやHEX値で直接入力できます。",
     "대표 테마색":"メインテーマカラー","그라데이션 보조색":"グラデーション補助色","보조색으로 그라데이션 사용":"補助色でグラデーションを使用",
@@ -124,6 +122,47 @@ Object.assign(UI_TEXT.ja,{
   "프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.":"プロフィール写真・透過SDアイコン・LDイラストはすべて別ファイルです。未登録の欄は既存の表示を使用します。",
   "현재 장면 새로고침":"現在のシーンを更新","홈 캐릭터 표현 전환":"ホームのキャラクター表示を切り替える","지금 사용 중인 취향 사전 항목":"現在使用中の好み図鑑アイテム"
 });
+Object.assign(UI_TEXT.en,{
+  "사진":"Photo","미등록":"Not added","SD 미등록":"SD not added","사용자 설정":"Custom","HEX 값":"HEX value","대표 테마색 HEX 값":"Primary theme color HEX value","그라데이션 보조색 HEX 값":"Secondary gradient color HEX value",
+  "삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.":"Review the warning before deleting this character and their linked records.",
+  "프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.":"The profile photo, transparent SD icon, and LD illustration are three separate files. Empty slots keep the existing display.",
+  "프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"Profile photos are displayed as circles and remain separate from SD icons.",
+  "여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"Add a photo here. It appears as a circle and is kept separate from the SD icon.",
+  "홈화면 기본 표현":"Default home visual","홈화면 캐릭터 크기":"Home character size","대표 테마색":"Primary theme color","그라데이션 보조색":"Secondary gradient color",
+  "관계와 캐릭터별 시선":"Relationships and points of view","마음을 보는 사람":"Point-of-view character","마음의 대상":"Target character","선택한 방향의 마음":"Feelings in the selected direction",
+  "공식 관계 없음 · 이방인":"No official relationship · Strangers","공식 관계 없음":"No official relationship","이방인":"Strangers","이 시선 편집하기":"Edit this point of view","이 시선 초기화":"Reset this point of view",
+  "선택하지 않음":"Not selected","자기 감정을 분명히 자각함":"Clearly recognizes their own feelings","감정을 어렴풋이 느낌":"Vaguely senses their feelings","감정을 우정으로 착각함":"Mistakes the feeling for friendship","감정을 경쟁심으로 착각함":"Mistakes the feeling for rivalry","감정을 불편함으로 착각함":"Mistakes the feeling for discomfort","자기 감정을 전혀 모름":"Does not recognize their own feelings","느끼는 감정을 부정함":"Denies the feelings",
+  "상대의 마음을 전혀 모름":"Does not know the other's feelings","상대의 마음을 어렴풋이 눈치챔":"Vaguely notices the other's feelings","상대가 느끼는 감정을 알고 있음":"Knows how the other person feels","서로의 마음을 확인함":"They have confirmed each other's feelings","상대의 마음을 오해하고 있음":"Misunderstands the other's feelings",
+  "전혀 믿지 않음":"Does not trust them at all","의심함":"Suspicious","조심스럽게 지켜봄":"Watches cautiously","어느 정도 믿음":"Trusts them somewhat","깊이 신뢰함":"Trusts them deeply","전적으로 의지함":"Relies on them completely",
+  "남보다도 멂":"More distant than strangers","낯선 사이":"Strangers","거리감 있음":"Feels distant","편한 사이":"Comfortable relationship","가까운 사이":"Close relationship","가장 가까운 사람":"Closest person",
+  "함께 있으면 매우 불편하고 대화도 전혀 통하지 않음":"Very uncomfortable together; conversation does not flow at all","같은 공간에서는 숨 막히지만 농담과 장난은 잘 통함":"Sharing a space feels stifling, but their jokes click","공간 공유는 불편하지만 대화는 편안함":"Sharing a space is uncomfortable, but conversation is easy","긴장하고 대화도 조심스러움":"Tense and careful in conversation","어색하지만 필요한 대화는 무난함":"Awkward, but practical conversation is manageable","함께 있는 건 편하지만 대화 호흡은 평범함":"Comfortable together with ordinary conversational chemistry","편안하고 농담과 장난이 잘 통함":"Comfortable, with great playful chemistry","말없이 함께 있어도 편안함":"Comfortable even in silence","공간도 대화도 완벽하게 편안함":"Completely at ease in both space and conversation",
+  "전혀 귀찮거나 성가시지 않음":"Not bothersome at all","전혀 귀찮거나 성가시지 않지만 성가시다고 말함":"Not actually bothered, but says they are","가끔 성가심":"Occasionally bothersome","종종 귀찮음":"Often bothersome","많이 귀찮고 성가심":"Very bothersome","보기만 해도 피곤함":"Tired just seeing them",
+  "관심 없음":"No interest","필요할 때만 봄":"Only pays attention when needed","종종 신경 씀":"Sometimes checks on them","자주 살핌":"Often checks on them","늘 최우선으로 챙김":"Always puts them first",
+  "질투하지 않음":"Not jealous","가끔 신경 쓰임":"Occasionally bothered","은근히 질투함":"Quietly jealous","질투가 심함":"Very jealous","독점하고 싶어 함":"Wants them all to themselves",
+  "갈등이 거의 없음":"Almost no conflict","가끔 부딪힘":"Occasional clashes","자주 충돌함":"Frequent conflict","격렬하게 충돌함":"Intense conflict","파국적인 충돌을 반복함":"Repeated destructive conflict",
+  "언제든 끝날 수 있다고 생각함":"Thinks it could end anytime","곧 헤어질 거라고 예상함":"Expects the relationship to end soon","당분간 이어질 거라 생각함":"Expects it to continue for a while","오래 함께할 거라 기대함":"Expects to stay together for a long time","평생 이어질 관계라고 믿음":"Believes it will last a lifetime",
+  "신체 접촉 없음":"No physical contact","인사·부축 같은 의례적 접촉만":"Only formal contact such as greetings or assistance","손잡기·팔짱까지":"Up to holding hands or linking arms","포옹·기대기까지":"Up to hugging or leaning together","가벼운 입맞춤까지":"Up to light kisses","깊은 입맞춤까지":"Up to deep kisses","성인 간 친밀한 접촉까지":"Up to intimate contact between adults",
+  "공격 충동 없음":"No aggressive impulses","거친 말을 하고 싶은 충동":"Urge to use harsh words","몸으로 밀어내고 싶은 충동":"Urge to push them away","해치고 싶은 충동":"Urge to hurt them","죽이고 싶을 만큼 격한 충동":"Extremely violent impulse",
+  "행동으로 옮기지 않음":"Does not act on the impulse","대부분 참지만 가끔 거친 말이 나옴":"Usually holds back, but sometimes speaks harshly","거친 말로만 표출함":"Expresses it only through harsh words","물건이나 벽에 화풀이할 수 있음":"May take it out on objects or walls","상대를 때릴 수 있음":"May hit the other person","실제로 때릴 수 있음":"Can actually hit the other person","심한 폭력을 행사할 수 있음":"May commit severe violence"
+});
+Object.assign(UI_TEXT.ja,{
+  "사진":"写真","미등록":"未登録","SD 미등록":"SD未登録","사용자 설정":"カスタム","HEX 값":"HEX値","대표 테마색 HEX 값":"メインテーマカラーのHEX値","그라데이션 보조색 HEX 값":"補助色のHEX値",
+  "삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.":"警告を確認してから、このキャラクターと関連する記録を整理して削除します。",
+  "프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"プロフィール写真は円形で表示され、SDアイコンとは別に保存されます。",
+  "여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"ここから写真を登録できます。円形で表示され、SDアイコンとは別に保存されます。",
+  "마음을 보는 사람":"気持ちを見る人","마음의 대상":"気持ちの相手","관계와 캐릭터별 시선":"関係とキャラクター別の視点",
+  "선택하지 않음":"未選択","자기 감정을 분명히 자각함":"自分の感情をはっきり自覚している","감정을 어렴풋이 느낌":"感情をなんとなく感じている","감정을 우정으로 착각함":"友情だと勘違いしている","감정을 경쟁심으로 착각함":"競争心だと勘違いしている","감정을 불편함으로 착각함":"居心地の悪さだと勘違いしている","자기 감정을 전혀 모름":"自分の感情にまったく気づいていない","느끼는 감정을 부정함":"感じている気持ちを否定している",
+  "상대의 마음을 전혀 모름":"相手の気持ちをまったく知らない","상대의 마음을 어렴풋이 눈치챔":"相手の気持ちにうっすら気づいている","상대가 느끼는 감정을 알고 있음":"相手の気持ちを知っている","서로의 마음을 확인함":"お互いの気持ちを確認している","상대의 마음을 오해하고 있음":"相手の気持ちを誤解している",
+  "전혀 믿지 않음":"まったく信じていない","의심함":"疑っている","조심스럽게 지켜봄":"慎重に見守っている","어느 정도 믿음":"ある程度信じている","깊이 신뢰함":"深く信頼している","전적으로 의지함":"全面的に頼っている",
+  "남보다도 멂":"他人よりも遠い","낯선 사이":"見知らぬ間柄","거리감 있음":"距離を感じる","편한 사이":"気楽な間柄","가까운 사이":"親しい間柄","가장 가까운 사람":"最も近い人",
+  "관심 없음":"関心がない","필요할 때만 봄":"必要な時だけ気にする","종종 신경 씀":"時々気にかける","자주 살핌":"よく気にかける","늘 최우선으로 챙김":"いつも最優先にする",
+  "질투하지 않음":"嫉妬しない","가끔 신경 쓰임":"時々気になる","은근히 질투함":"ひそかに嫉妬する","질투가 심함":"嫉妬が強い","독점하고 싶어 함":"独占したがる",
+  "갈등이 거의 없음":"対立はほとんどない","가끔 부딪힘":"時々ぶつかる","자주 충돌함":"よく衝突する","격렬하게 충돌함":"激しく衝突する","파국적인 충돌을 반복함":"破滅的な衝突を繰り返す",
+  "언제든 끝날 수 있다고 생각함":"いつ終わってもおかしくないと思う","곧 헤어질 거라고 예상함":"もうすぐ別れると思っている","당분간 이어질 거라 생각함":"しばらく続くと思っている","오래 함께할 거라 기대함":"長く一緒にいると期待している","평생 이어질 관계라고 믿음":"一生続く関係だと信じている",
+  "신체 접촉 없음":"身体的接触なし","인사·부축 같은 의례적 접촉만":"挨拶・介助など儀礼的な接触のみ","손잡기·팔짱까지":"手つなぎ・腕組みまで","포옹·기대기까지":"ハグ・寄りかかりまで","가벼운 입맞춤까지":"軽いキスまで","깊은 입맞춤까지":"深いキスまで","성인 간 친밀한 접촉까지":"成人同士の親密な接触まで",
+  "공격 충동 없음":"攻撃衝動なし","거친 말을 하고 싶은 충동":"きつい言葉を言いたい衝動","몸으로 밀어내고 싶은 충동":"身体で押しのけたい衝動","해치고 싶은 충동":"傷つけたい衝動","죽이고 싶을 만큼 격한 충동":"非常に激しい加害衝動",
+  "행동으로 옮기지 않음":"行動には移さない","대부분 참지만 가끔 거친 말이 나옴":"ほとんど我慢するが時々きつい言葉が出る","거친 말로만 표출함":"きつい言葉だけで表す","물건이나 벽에 화풀이할 수 있음":"物や壁に八つ当たりすることがある","상대를 때릴 수 있음":"相手を叩くことがある","실제로 때릴 수 있음":"実際に叩くことがある","심한 폭력을 행사할 수 있음":"激しい暴力に及ぶことがある"
+});
 const UI_DYNAMIC_TEXT={
   en:[
     [/^(.+)의 프로필·SD·LD·테마$/,(name)=>`${name}'s profile · SD · LD · theme`],
@@ -155,7 +194,7 @@ function translatedUiText(value){
 function translateInterface(root){
   const copy=UI_TEXT[state.uiLanguage];
   if(!root||!copy)return;
-  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,span,a").forEach(element=>{
+  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,span,a,i").forEach(element=>{
     [...element.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).forEach(node=>{
       const raw=node.nodeValue||"";
       const trimmed=raw.trim();
@@ -328,8 +367,9 @@ function avatar(c,cls=""){
   if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${c.photo}" alt="">`;
   return `<span class="avatar ${cls}" style="--own:${c.theme.primary}">${esc((c.name||"새").slice(0,1))}</span>`;
 }
-const LEGACY_LD_FIELDS=["ldNeutral","ldJoy","ldSad","ldAngry","ldTired"];
-const ldArtSource=c=>c?.ldImage||LEGACY_LD_FIELDS.map(field=>c?.[field]).find(Boolean)||"";
+// Old emotion-specific LD fields are migrated once in state.js. The renderer
+// deliberately knows about only one LD image, so the retired UI cannot return.
+const ldArtSource=c=>c?.ldImage||"";
 const hasLdArt=c=>Boolean(ldArtSource(c));
 const hasSdArt=c=>Boolean(c?.icon||c?.photo);
 function sceneAvatar(c,cls="",tone="neutral",mode="sd"){
@@ -481,16 +521,29 @@ function nativeFoodSymbol(item,text){
   if(/접시|식탁|식사/.test(value))return "🍽️";
   return "🥄";
 }
-function nativeOrganizingSymbol(text){
+function stableSceneChoice(person,text,values){
+  const list=Array.isArray(values)&&values.length?values:[""];
+  return list[nativeVisualSeed(`${person?.id||person?.name||"character"}:${text}`)%list.length];
+}
+function clothingOrganizingSymbol(person,text){
+  const gender=String(person?.gender||"");
+  const choices=gender==="남성"
+    ?["👖","👕","🩳","👔","🧥","🥼"]
+    :gender==="여성"
+      ?["👖","👕","🩳","🧥","🥼","👗","👚"]
+      :["👖","👕","🩳","👔","🧥","🥼","👗","👚"];
+  return stableSceneChoice(person,text,choices);
+}
+function nativeOrganizingSymbol(person,text){
   if(/원두|커피콩/.test(text))return "🫘";
   if(/꽃|꽃다발|화병/.test(text))return "💐";
   if(/식물|화분|허브|찻잎|나뭇잎/.test(text))return "🍃";
-  if(/자|치수|길이|재단|도면/.test(text))return "📏";
+  if(/옷|의류|옷장|서랍장|빨래|상의|하의|바지|셔츠|재킷|코트|가운|원피스|블라우스/.test(text))return clothingOrganizingSymbol(person,text);
+  if(/줄자|자를 (?:대|꺼내)|자로 (?:재|확인)|치수|길이|재단|도면/.test(text))return "📏";
   if(/보관함|수납함|아카이브|서류함|카드함|자료함|파일함/.test(text))return "🗃️";
   if(/통계|그래프|차트|매출|성과|분석|보고서/.test(text))return "📈";
   if(/업무|회사|출근|사무|사업|회의 자료/.test(text))return "💼";
   if(/책|책장|서가|잡지/.test(text))return "📚";
-  if(/옷|의류|옷장|서랍장/.test(text))return "👕";
   if(/수건|침구|이불|담요/.test(text))return "🧺";
   if(/화장품|스킨케어|세면도구/.test(text))return "🧴";
   if(/냉장고|식재료|채소|과일/.test(text))return "🥕";
@@ -519,7 +572,7 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="spice-organizing")symbol="🧂";
   else if(actionKind==="accessory-organizing")symbol="💍";
   else if(actionKind==="assistive-check")symbol="⚙️";
-  else if(actionKind==="organizing")symbol=nativeOrganizingSymbol(text);
+  else if(actionKind==="organizing")symbol=nativeOrganizingSymbol(person,text);
   else if(actionKind==="gaming")symbol="🎮";
   else if(actionKind==="cooking")symbol=/탕|찌개|국|수프|끓/.test(text)?"🍲":/파스타|스파게티|면 요리/.test(text)?"🍝":"🍳";
   else if(actionKind==="reading")symbol="📖";
@@ -641,7 +694,8 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
       :/세수|세안|이를 닦|양치|칫솔|치약|샤워|목욕|머리를 감|몸을 씻|손을 씻|면도/.test(text)?"washing-up"
       :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)|접시.{0,12}(씻|닦)|컵.{0,12}(씻|닦)|도구.{0,12}(씻|닦)|물뿌리개.{0,12}(씻|닦)|세척/.test(text)?"dishwashing"
-        :/세탁|빨래/.test(text)?"laundry"
+        :/(?:빨래|옷|의류).{0,20}(?:정리|정돈|접|개|분류|옷장|서랍)/.test(text)?"organizing"
+          :/세탁|빨래/.test(text)?"laundry"
           :/커피.{0,16}(마시|한 모금|맛보)|(?:마시|한 모금|맛보).{0,16}커피/.test(text)?"coffee-drinking"
             :/커피.{0,18}(내리|추출|드립|머신)|(?:내리|추출|드립).{0,18}커피|원두.{0,12}(갈|분쇄|추출)/.test(text)?"coffee-brewing"
               :/원두.{0,18}(정리|정돈|분류|고르|배치|밀봉|옮기|담)|(?:정리|정돈|분류|고르|배치|밀봉|옮기|담).{0,18}원두/.test(text)?"beans-organizing"

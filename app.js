@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810m";
-import {eventFor} from "./simulation.js?v=20260810m";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810m";
-import {recordCharacterInteraction} from "./state.js?v=20260810m";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810n";
+import {eventFor} from "./simulation.js?v=20260810n";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810n";
+import {recordCharacterInteraction} from "./state.js?v=20260810n";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -931,8 +931,22 @@ function bind(){
     }
   };
   $$("[data-toggle-native-moment-card]").forEach(card=>{
+    let touchStart=null;
+    card.addEventListener("pointerdown",event=>{
+      touchStart={x:event.clientX,y:event.clientY,pointerId:event.pointerId};
+    },{passive:true});
+    card.addEventListener("pointerup",event=>{
+      if(!touchStart||touchStart.pointerId!==event.pointerId)return;
+      const moved=Math.hypot(event.clientX-touchStart.x,event.clientY-touchStart.y);
+      touchStart=null;
+      if(moved>12||event.target.closest("a"))return;
+      card.dataset.lastPointerToggle=String(Date.now());
+      toggleNativeMoment(card);
+    },{passive:true});
+    card.addEventListener("pointercancel",()=>{touchStart=null},{passive:true});
     card.addEventListener("click",event=>{
       if(event.target.closest("a"))return;
+      if(Date.now()-Number(card.dataset.lastPointerToggle||0)<650)return;
       event.stopPropagation();
       toggleNativeMoment(card);
     });
@@ -2508,7 +2522,7 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810m").catch(error=>{
+  import("./auth.js?v=20260810n").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2523,7 +2537,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810m",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810n",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810m";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810n";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1562,11 +1562,62 @@ const HOME_ACTIVITY_POOL=[
   ["베란다에서 빨래를 걷는 중","마른 옷을 옷걸이에서 하나씩 빼며 구김이 생기지 않게 팔 위에 차곡차곡 올리고 있어요.","living"],
   ["집 안의 손잡이를 닦는 중","자주 손이 닿는 문과 서랍 손잡이를 차례로 닦고 끈적임이 남지 않았는지 확인하고 있어요.","living"]
 ];
+const EXPANDED_LIFE_ACTIVITY_POOL=[
+  ["침실에서 마른 옷을 분류하는 중","상의와 하의를 나누고 자주 입는 옷부터 손이 닿기 쉬운 서랍에 차곡차곡 넣고 있어요.","bedroom"],
+  ["침실에서 계절 옷을 정리하는 중","지금 날씨에 맞지 않는 옷은 상태를 확인해 보관하고 곧 입을 겉옷은 앞쪽으로 옮겼어요.","bedroom"],
+  ["침실에서 내일 입을 셔츠를 고르는 중","일정과 날씨를 확인한 뒤 움직이기 편한 셔츠와 어울리는 하의를 나란히 꺼내 두었어요.","bedroom"],
+  ["침실에서 외투를 정리하는 중","주머니 속 물건을 비우고 먼지를 가볍게 턴 뒤 옷걸이에 형태가 무너지지 않게 걸었어요.","bedroom"],
+  ["침실에서 잠옷을 갈아입는 중","몸을 조이지 않는 편한 옷으로 갈아입고 벗은 옷은 다시 입을 것과 세탁할 것으로 나눴어요.","bedroom"],
+  ["침실에서 액세서리를 고르는 중","오늘 옷차림에 어울리는 것만 하나 골라 착용하고 나머지는 작은 보관함에 되돌려 놓았어요.","bedroom"],
+  ["침실에서 이불 온도를 맞추는 중","몸이 덥거나 춥지 않도록 얇은 담요와 이불의 겹을 바꾸고 베개 위치도 편하게 조정했어요.","bedroom"],
+  ["침실에서 알람 소리를 고르는 중","잠에서 너무 놀라지 않으면서도 놓치지 않을 소리를 몇 번 들어 보고 음량을 맞췄어요.","bedroom"],
+  ["주방에서 아침 재료를 손질하는 중","바쁜 시간에도 바로 조리할 수 있게 필요한 재료를 씻고 한 끼 분량으로 나누어 두었어요.","kitchen"],
+  ["주방에서 따뜻한 수프를 끓이는 중","재료가 바닥에 붙지 않게 천천히 저으며 향과 농도를 보고 불의 세기를 조절했어요.","kitchen"],
+  ["주방에서 면 요리를 만드는 중","면이 퍼지지 않도록 시간을 확인하고 소스와 건더기가 고르게 섞이게 빠르게 저었어요.","kitchen"],
+  ["주방에서 간단한 볶음 요리를 만드는 중","센 불과 약한 불을 번갈아 조절하며 재료가 타지 않게 팬을 가볍게 흔들었어요.","kitchen"],
+  ["주방에서 샌드위치를 만드는 중","빵 사이에 재료가 한쪽으로 몰리지 않게 차례대로 얹고 먹기 좋은 크기로 잘랐어요.","kitchen"],
+  ["주방에서 차를 우리는 중","찻잎에 맞는 물 온도를 기다렸다가 향이 너무 진해지기 전에 잔으로 천천히 옮겼어요.","kitchen"],
+  ["주방에서 커피를 내리는 중","원두 양과 물의 속도를 맞추며 향이 고르게 올라오도록 천천히 추출하고 있어요.","kitchen"],
+  ["주방에서 음료에 얼음을 채우는 중","잔 크기에 맞춰 얼음을 넣고 맛이 너무 묽어지기 전에 마실 만큼만 음료를 따랐어요.","kitchen"],
+  ["주방에서 식탁을 차리는 중","먹을 사람 수에 맞춰 접시와 수저를 놓고 뜨거운 그릇이 닿지 않게 자리를 비워 두었어요.","kitchen"],
+  ["주방에서 냉장고 재료를 확인하는 중","먼저 먹어야 할 재료와 오래 둘 수 있는 재료를 나누고 오늘 만들 메뉴를 생각했어요.","kitchen"],
+  ["거실에서 창밖 날씨를 살피는 중","사람들의 옷차림과 나뭇가지 움직임을 보고 밖에 나갈 때 무엇을 챙길지 가늠했어요.","living"],
+  ["거실에서 짧은 영상을 보는 중","다음 영상으로 계속 넘기지 않고 보고 싶었던 것 하나를 골라 끝까지 집중해서 봤어요.","living"],
+  ["거실에서 이어폰 음량을 맞추는 중","주변 소리를 완전히 막지 않는 선에서 말과 음악이 또렷하게 들리는 크기로 조절했어요.","living"],
+  ["거실에서 보드게임 규칙을 읽는 중","첫 판에 자주 놓치는 조건을 표시하고 예시 턴을 따라 하며 진행 순서를 익혔어요.","living"],
+  ["거실에서 게임 버튼을 연습하는 중","조작 설명을 열어 자주 쓰는 버튼부터 눌러 보고 손에 편한 배치로 설정을 바꿨어요.","living"],
+  ["거실에서 좋아하는 음악을 고르는 중","지금 기분과 어울리는 곡을 몇 개 이어 붙이고 흐름이 끊기는 곡은 다음으로 미뤘어요.","living"],
+  ["거실에서 간식을 작은 접시에 담는 중","먹을 만큼만 덜어 두고 남은 간식은 눅눅해지지 않도록 봉투를 단단히 닫았어요.","living"],
+  ["거실에서 몸을 가볍게 푸는 중","굳은 어깨와 손목을 무리하지 않는 범위에서 움직이며 호흡을 천천히 골랐어요.","living"],
+  ["서재에서 오늘 할 일을 세 가지로 줄이는 중","모든 일을 한꺼번에 잡지 않고 오늘 꼭 끝낼 것만 골라 눈에 보이는 순서로 적었어요.","study"],
+  ["서재에서 읽을 책을 고르는 중","지금 집중할 수 있는 길이와 주제를 생각해 몇 권의 첫 페이지를 읽고 한 권을 골랐어요.","study"],
+  ["서재에서 문장 하나를 다듬는 중","뜻은 그대로 두고 너무 길거나 모호한 부분을 줄여 읽는 사람이 한 번에 이해하도록 고쳤어요.","study"],
+  ["서재에서 참고 자료를 비교하는 중","서로 다른 설명에서 공통되는 내용과 근거가 약한 부분을 표시하며 차이를 확인했어요.","study"],
+  ["서재에서 사진 파일 이름을 붙이는 중","나중에도 장면을 찾을 수 있게 날짜와 장소를 짧게 적고 비슷한 사진은 폴더로 나눴어요.","study"],
+  ["서재에서 지출 기록을 확인하는 중","영수증과 알림을 맞춰 보고 빠진 금액을 채운 뒤 이번 주 남은 예산을 계산했어요.","study"],
+  ["서재에서 손편지를 쓰는 중","상대가 부담스럽지 않도록 안부와 전하고 싶은 말을 천천히 골라 자기 글씨로 적었어요.","study"],
+  ["서재에서 취미 도구를 시험하는 중","본 작업을 시작하기 전에 작은 재료로 힘과 속도를 바꿔 보며 손에 맞는 방법을 찾았어요.","study"],
+  ["욕실에서 세수하는 중","미지근한 물로 얼굴을 적시고 눈가를 세게 문지르지 않도록 손끝으로 부드럽게 씻었어요.","bath"],
+  ["욕실에서 이를 닦는 중","너무 힘을 주지 않고 안쪽과 바깥쪽을 차례로 닦은 뒤 입안을 깨끗하게 헹궜어요.","bath"],
+  ["욕실에서 면도하는 중","피부가 당기지 않게 충분히 적신 뒤 털이 난 방향을 살피며 천천히 정돈했어요.","bath"],
+  ["욕실에서 머리를 말리는 중","한곳에 뜨거운 바람이 오래 닿지 않게 거리를 두고 두피부터 차례로 말렸어요.","bath"],
+  ["욕실에서 기초 화장품을 바르는 중","자기 피부에 평소 사용하던 제품만 필요한 만큼 덜어 순서대로 가볍게 발랐어요.","bath"],
+  ["욕실에서 손톱을 정돈하는 중","걸리는 부분만 짧게 다듬고 날카로운 모서리가 남지 않도록 파일로 부드럽게 갈았어요.","bath"],
+  ["현관에서 우산 상태를 확인하는 중","살이 휘거나 젖은 곳이 없는지 펼쳐 보고 비 소식이 있을 때 바로 챙길 자리에 두었어요.","entry"],
+  ["현관에서 외출용 가방을 챙기는 중","오늘 필요한 카드와 열쇠, 충전 도구만 넣고 불필요하게 무거운 물건은 꺼냈어요.","entry"],
+  ["현관에서 신발끈을 다시 묶는 중","걸을 때 풀리지 않으면서 발등을 조이지 않도록 좌우 끈의 길이를 맞춰 묶었어요.","entry"],
+  ["현관에서 돌아온 물건을 제자리에 두는 중","열쇠와 가방, 겉옷을 정해 둔 위치에 놓고 주머니에 남은 작은 물건을 꺼냈어요.","entry"],
+  ["현관에서 배송 알림을 확인하는 중","도착 예정 시간과 보관 장소를 확인하고 바로 받아야 하는 물건인지 살펴봤어요.","entry"],
+  ["집에서 창문을 조금 여는 중","실내외 온도 차를 확인하고 바람이 너무 세게 들지 않을 만큼만 열어 공기를 바꿨어요.","living"],
+  ["집에서 물 한 잔을 천천히 마시는 중","목이 마르기 전에 잔을 채워 두고 하던 일을 잠시 멈춘 채 몇 번 나누어 마셨어요.","living"],
+  ["집에서 조용한 시간을 보내는 중","아무것도 급히 시작하지 않고 주변 소리를 들으며 생각이 자연스럽게 가라앉기를 기다렸어요.","living"]
+];
 const homeActivityPoolFor=(c,date=new Date())=>{
   const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
-  const pool=HOME_ACTIVITY_POOL.filter(([title])=>{
+  const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL].filter(([title])=>{
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
+    if(title.includes("기초 화장품을 바르는"))return appearanceProfile(c).makeupLevel!=="하지 않음";
     if(title.includes("잃어버린 물건")&&((c.personalityTypes||[]).includes("철두철미함")||["계획적","강박적으로 계획함"].includes(c.planningStyle)||["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness)))return false;
     if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
     if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
@@ -2080,7 +2131,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260810m";
+const ENGINE_VERSION="20260810n";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

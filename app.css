@@ -5310,6 +5310,29 @@ html[data-color-mode="dark"] .character-photo-quick-card{border-color:color-mix(
   outline-offset:3px;
 }
 
+/* 2026-08-10n: readable room labels, centered relationship selectors and
+   palette colors that cannot be overwritten by the mobile button theme. */
+.home-page .home-person>span,
+.home-page .home-person>span :is(b,small){
+  width:100%;
+  text-align:left!important;
+  justify-items:start!important;
+}
+.relationship-direction-sentence select{
+  text-align:center!important;
+  text-align-last:center!important;
+}
+.relationship-direction-sentence select option{text-align:center}
+html.native-app[data-active-tab="character"] button.theme-swatch,
+html[data-color-mode="light"].native-app[data-active-tab="character"] button.theme-swatch,
+html[data-color-mode="dark"].native-app[data-active-tab="character"] button.theme-swatch{
+  background-color:var(--swatch)!important;
+  background-image:none!important;
+  color:transparent!important;
+  -webkit-text-fill-color:transparent!important;
+  forced-color-adjust:none;
+}
+
 /* Cooking is an actual stirring/pan motion with rising steam. */
 .native-app .scene-action-cooking :is(.native-scene-action-prop,.native-person-action-prop){
   position:absolute;
