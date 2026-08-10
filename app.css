@@ -5512,16 +5512,6 @@ html.native-app[data-active-tab="settings"] .settings-shell .feedback-card a.fee
    foreign-language relationship dialogs that stay inside the phone. */
 .visual-theme-card>h3{margin:20px 0 9px;font-size:1rem;color:var(--ink)}
 .visual-theme-options button i{flex:0 0 34px;background:linear-gradient(135deg,var(--theme-a,#222),var(--theme-b,#888))}
-.user-mod-list{display:grid;gap:10px;margin:16px 0}
-.user-mod-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px;border:1px solid var(--line);border-radius:17px;background:var(--panel)}
-.user-mod-row>div:first-child{display:grid;gap:4px;min-width:0}
-.user-mod-row small,.user-mod-row em{color:var(--muted);font-size:.86em;font-style:normal}
-.user-mod-row p{margin:5px 0;line-height:1.55}
-.user-mod-row>div:last-child{display:flex;align-items:center;gap:8px;flex:0 0 auto}
-.user-mod-row label{display:flex;align-items:center;gap:7px;white-space:nowrap}
-.user-mod-row input{width:auto;min-height:0}
-.user-mod-empty{padding:18px;border:1px dashed var(--line);border-radius:15px;text-align:center;color:var(--muted)}
-
 .shop-expansion-heading{display:flex;align-items:end;justify-content:space-between;margin:34px 0 12px;padding:0 4px}
 .shop-expansion-heading small{letter-spacing:.22em;color:var(--p);font-weight:900}
 .shop-expansion-heading h2{margin:0;font-size:clamp(29px,4vw,48px)}
@@ -5550,7 +5540,6 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>span{color
 html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{color:#ffe09a!important;-webkit-text-fill-color:#ffe09a!important}
 
 @media(max-width:720px){
-  .user-mod-row{align-items:stretch;flex-direction:column}.user-mod-row>div:last-child{justify-content:space-between}.user-mod-row>div:last-child button{width:auto!important}
   .shop-expansion-showcase{grid-template-columns:minmax(0,1fr);padding:18px!important}.expansion-art{min-height:230px}.expansion-art img{min-height:230px;padding:18px}.expansion-copy h2{font-size:38px}.expansion-copy>div{width:100%;justify-content:space-between}
   dialog.relation-editor-dialog,
   dialog.character-view-dialog{

@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810r";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810r";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260810s";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260810s";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -200,8 +200,6 @@ const UI_DYNAMIC_TEXT={
 function translatedUiText(value){
   const raw=String(value||""),trimmed=raw.trim(),copy=UI_TEXT[state.uiLanguage];
   if(!copy)return raw;
-  const modCopy=(state.userMods||[]).filter(mod=>mod.enabled!==false).map(mod=>mod.translations?.[state.uiLanguage]).find(dictionary=>dictionary?.[trimmed]);
-  if(modCopy?.[trimmed])return raw.replace(trimmed,modCopy[trimmed]);
   if(copy[trimmed])return raw.replace(trimmed,copy[trimmed]);
   for(const [pattern,format] of UI_DYNAMIC_TEXT[state.uiLanguage]||[]){
     const match=trimmed.match(pattern);
@@ -625,6 +623,27 @@ function pairHasRomanticFeeling(firstId,secondId){
   return isRomanticCharacterView(characterViewFor(firstId,secondId))
     ||isRomanticCharacterView(characterViewFor(secondId,firstId));
 }
+function sceneEmotionScores(value){
+  const text=String(value||"");
+  const scores={shock:0,anger:0,sad:0,fear:0,romance:0,playful:0,warm:0};
+  const add=(emotion,pattern,weight=1)=>{if(pattern.test(text))scores[emotion]+=weight};
+  add("shock",/큰 충격|충격을 받|충격적|경악|믿기지 않|머리가 하얘|말문이 막|얼어붙었|청천벽력|아연실색|깜짝 놀라|예상하지 못|사고가 나|깨져 버|떨어뜨렸|들켜 버|폭로|비명/,4);
+  add("anger",/분노|격분|화가 나|화를 냈|싸움|싸우|말다툼|언성을 높|신경전|맞받아|짜증|성질을 내|비난|항의/,3);
+  add("sad",/우울|슬픔|상실|이별|헤어지|침울|낙담|기운이 없|울적|눈물|울음을|마음이 무거|속상|서럽|비참|외로|실망|후회|그리움|기분(?:이|은)?\s*안\s*좋|마음이 가라앉/,3);
+  add("fear",/두려|무서|겁이|공포|위협|불안|긴장|경계|피하고 싶|숨이 막|손이 떨|초조|눈치를 보/,2);
+  add("romance",/사랑|연애|데이트|입맞춤|키스|고백|연인|포옹|껴안|손을 잡|설렘|두근|애정|다정|낭만|좋아하는 상대|보고 싶었|깊이 아끼/,3);
+  add("playful",/장난|농담|놀리|웃음|웃었|깔깔|게임|내기|재잘|신나|즐거|축하|춤을 추|노래를 부|티격태격/,2);
+  add("warm",/편안|안심|여유|휴식|쉬는 중|산책|햇볕|차를 마|함께 식사|대화|이야기|도와주|챙기|나누|건네|안부|곁을 지|보살피/,1);
+  return scores;
+}
+function strongestSceneEmotion(scores){
+  // 같은 점수면 화면을 더 강하게 바꾸는 감정을 먼저 고른다.
+  let best="neutral",bestScore=0;
+  for(const key of ["shock","anger","sad","fear","romance","playful","warm"]){
+    if((scores[key]||0)>bestScore){best=key;bestScore=scores[key]||0}
+  }
+  return best;
+}
 function nativeScenePresentation(c,entry,visualMode="sd"){
   const text=`${entry?.title||""} ${entry?.desc||""} ${entry?.mood||""}`;
   const sleeping=/자는 중|잠든|수면/.test(text);
@@ -674,7 +693,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const partners=orderedPartnerIds.map(id=>state.characters?.[id]).filter(Boolean);
   const partner=partners[0]||null;
   const dating=Boolean(partner&&validDate);
-  const fighting=Boolean(partner&&/싸움|싸우|말다툼|신경전|격렬|충돌|맞받아|목소리.{0,8}높|날카롭게|분노|화가 나|화를 냈/.test(text));
+  const fighting=Boolean(/싸움|싸우|말다툼|신경전|격렬|충돌|맞받아|목소리.{0,8}높|날카롭게|분노|화가 나|화를 냈/.test(text));
   const ownView=partner?characterViewFor(c.id,partner.id):{};
   const reverseView=partner?characterViewFor(partner.id,c.id):{};
   const viewText=`${ownView.overall||""} ${ownView.comfort||""} ${ownView.trust||""} ${ownView.fear||""} ${ownView.annoyance||""} ${ownView.conflictIntensity||""}`;
@@ -705,8 +724,6 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   // 설정했다면 어느 캐릭터 탭에서 보더라도 그 방향의 분홍빛 연출을 사용한다.
   const ownRomance=Boolean(partner&&ownRomanceInterest&&!fighting);
   const failedDate=Boolean(dating&&!fighting&&(/망한|실패|거절|불편|어색|서먹|냉랭|잘라 말|비효율|말을 아끼|거리.{0,8}두|기분.{0,8}상/.test(text)||(!ownRomance&&overwhelmed)));
-  const sad=/우울|슬픔|상실|침울|낙담|기운이 없|울적|눈물|마음이 무거|속상|서럽|비참|기분(?:이|은)?\s*안\s*좋|마음이 가라앉/.test(text);
-  const shocked=!sleeping&&/큰 충격|충격을 받|충격적|경악|경계할 수 없|믿기지 않|머리가 하얘|말문이 막|얼어붙었|청천벽력|아연실색|깜짝 놀라/.test(text);
   const coldFight=fighting&&/냉랭|차갑|침묵|무시|거리.{0,8}두|서먹|얼음/.test(text);
   const playfulInteraction=Boolean(partner&&!dating&&!fighting&&/티격태격|장난|농담|놀리|웃음|웃었|게임|내기|재잘/.test(text));
   const tenseInteraction=Boolean(partner&&!dating&&!fighting&&!playfulInteraction&&/경계|불편|신경전|성가시|못마땅|퉁명|날 선|거리.{0,8}두/.test(`${text} ${viewText}`));
@@ -740,24 +757,36 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
                                       :/우편|편지/.test(text)?"mail"
                                         :/두려|무서|겁이|공포|위협|피하고 싶/.test(`${text} ${viewText}`)?"fear"
                                           :fighting?"fighting":"idle";
-  const tone=sleeping
-    ?"sleep"
-    :drowsy
-      ?"drowsy"
-    :fighting
-      ?(coldFight?"fight-ice":"fight-fire")
-    :shocked?"shock"
-    :sad?"sad"
-      :overwhelmed?"date-overwhelmed"
-        :failedDate?"date-broken"
-          :ownRomance?"date-romantic"
-            :dating?"date-neutral"
-              :playfulInteraction?"interaction-playful"
-                :tenseInteraction?"interaction-tense"
-                  :ownRomanceInterest&&reverseRomanceInterest?"crush-mutual"
-                    :ownRomanceInterest||reverseRomanceInterest?"crush-one-sided"
-                      :warmInteraction?"interaction-warm"
-                    :partner&&entry?.groupInteraction?"interaction-neutral":"neutral";
+  // 화면효과는 관계 설정이 아니라 현재 행동의 내용에서 먼저 감정을 읽는다.
+  // 관계 시선은 함께 있는 사회적 장면의 동점·약한 신호만 보정한다.
+  const emotionScores=sceneEmotionScores(text);
+  if(fighting)emotionScores.anger+=5;
+  if(failedDate){emotionScores.sad+=3;emotionScores.fear+=1}
+  const explicitEmotion=strongestSceneEmotion(emotionScores);
+  const explicitScore=emotionScores[explicitEmotion]||0;
+  const explicitNegative=["shock","anger","sad","fear"].includes(explicitEmotion)&&explicitScore>=2;
+  const socialAction=Boolean(partner&&/함께|서로|둘이|대화|이야기|데이트|산책|식사|마시|놀|게임|도와|챙기|나누|건네|곁|포옹|손을 잡/.test(text));
+  if(!explicitNegative&&socialAction){
+    if(ownRomanceInterest&&reverseRomanceInterest)emotionScores.romance+=2;
+    else if(ownRomanceInterest||reverseRomanceInterest)emotionScores.romance+=1;
+    if(relationshipPressure>=2)emotionScores.fear+=2;
+  }
+  if(playfulInteraction)emotionScores.playful+=2;
+  if(warmInteraction)emotionScores.warm+=1;
+  if(tenseInteraction)emotionScores.fear+=2;
+  const sceneEmotion=explicitNegative?explicitEmotion:strongestSceneEmotion(emotionScores);
+  const sceneEmotionScore=emotionScores[sceneEmotion]||0;
+  const tone=sleeping?"sleep"
+    :drowsy?"drowsy"
+      :sceneEmotion==="shock"&&sceneEmotionScore>=2?"shock"
+        :sceneEmotion==="anger"&&sceneEmotionScore>=2?(coldFight?"fight-ice":"fight-fire")
+          :sceneEmotion==="sad"&&sceneEmotionScore>=2?"sad"
+            :sceneEmotion==="fear"&&sceneEmotionScore>=2?"interaction-tense"
+              :sceneEmotion==="romance"&&sceneEmotionScore>=2
+                ?(dating?"date-romantic":ownRomanceInterest&&reverseRomanceInterest?"crush-mutual":ownRomanceInterest||reverseRomanceInterest?"crush-one-sided":"date-romantic")
+                :sceneEmotion==="playful"&&sceneEmotionScore>=2?"interaction-playful"
+                  :sceneEmotion==="warm"&&sceneEmotionScore>=1?"interaction-warm"
+                    :dating?"date-neutral":partner&&entry?.groupInteraction?"interaction-neutral":"neutral";
   const homeId=entry?.visitHomeId||c.homeId;
   const coResidentConversation=Boolean(
     partner
@@ -1823,13 +1852,8 @@ const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>�
 function visualThemeSettings(){
   const bright=[["cream","크림 라떼","포근하고 환한 아이보리와 캐러멜빛"],["peach","복숭아 소다","생기 있고 부드러운 복숭앗빛"],["mint","민트 정원","산뜻하고 맑은 민트와 잎사귀빛"],["sunshine","햇살 레몬","따뜻하고 명랑한 레몬과 금빛"]];
   const classic=[["monochrome","흑백","가장 또렷한 기본 테마"],["sage","세이지","차분한 초록빛"],["rose","로즈","부드러운 장밋빛"],["ocean","오션","맑은 푸른빛"],["lavender","라벤더","은은한 보랏빛"]];
-  const custom=(state.userMods||[]).filter(mod=>mod.enabled!==false).flatMap(mod=>(mod.themes||[]).map(theme=>[`mod:${mod.id}:${theme.id}`,theme.name,theme.description,theme.light?.[0],theme.light?.[1],mod.name]));
-  const buttons=themes=>themes.map(([value,label,description,a,b,modName])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}${modName?` · ${esc(modName)}`:""}</small></span></button>`).join("");
-  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>화이트·다크 모드는 밝기를, 색상 테마는 버튼과 강조색을 정해요.</p><h3>밝은 테마 4종</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>기본 색상 테마</h3><div class="visual-theme-options">${buttons(classic)}</div>${custom.length?`<h3>사용자 모드 테마</h3><div class="visual-theme-options">${buttons(custom)}</div>`:""}</section>`;
-}
-function userModSettings(){
-  const mods=(state.userMods||[]).map(mod=>`<article class="user-mod-row"><div><b>${esc(mod.name)}</b><small>${esc(mod.author||"제작자 미표기")} · v${esc(mod.version||"1.0.0")}</small><p>${esc(mod.description||"설명이 없는 사용자 모드")}</p><em>${mod.themes?.length||0}개 색상 테마 · ${Object.values(mod.translations||{}).reduce((sum,value)=>sum+Object.keys(value||{}).length,0)}개 번역</em></div><div><label><input type="checkbox" data-mod-enabled="${esc(mod.id)}" ${mod.enabled!==false?"checked":""}> 사용</label><button type="button" data-mod-delete="${esc(mod.id)}">삭제</button></div></article>`).join("");
-  return `<section class="setting-card user-mod-card"><h2>모드</h2><p>JSON으로 만든 사용자 모드를 불러옵니다. 색상 테마와 영어·일본어 문구를 바꿀 수 있으며, JavaScript 코드는 실행하지 않아요.</p><div class="sync-actions"><button class="primary" type="button" data-mod-import>모드 파일 불러오기</button><button type="button" data-mod-example>예시 모드 받기</button></div><input type="file" accept=".json,application/json" data-mod-file hidden><div class="user-mod-list">${mods||`<p class="user-mod-empty">불러온 사용자 모드가 없어요.</p>`}</div><small>안전한 데이터 전용 모드입니다. 모드를 켜거나 끈 뒤에는 화면이 바로 다시 그려집니다.</small></section>`;
+  const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span></button>`).join("");
+  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>화이트·다크 모드는 밝기를, 색상 테마는 버튼과 강조색을 정해요.</p><h3>밝은 테마 4종</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>기본 색상 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></section>`;
 }
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;
@@ -1839,21 +1863,19 @@ function settingsContent(){
   const backup=`<section class="setting-card backup-file-card"><h2>브라우저 백업 파일</h2><p>Firebase가 막혀도 현재 데이터와 사진을 파일 하나로 보관할 수 있어요.</p><div class="sync-actions"><button data-export-file>백업 파일 내보내기</button><button data-import-file>백업 파일 불러오기</button></div></section>`;
   const feedback=`<section class="setting-card feedback-card"><h2>개발자에게 피드백 보내기</h2><p>유형을 고르면 기기의 메일 앱이 열려요.</p></section>`;
   const guide=`<section class="setting-card page-guide-card"><h2>페이지 안내</h2><p>각 페이지를 처음 열었을 때 나오는 안내를 다시 볼 수 있어요.</p><button data-guide-reset>모든 페이지 안내 다시 보기</button></section>`;
-  return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${colorMode}${visualThemeSettings()}${fontSettings()}${sync}${ownerNameSettings()}${map}${language}${backup}${userModSettings()}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
+  return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${map}${language}${backup}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
 }
 Object.assign(UI_TEXT.en,{
-  "밝은 테마 4종":"Four light themes","기본 색상 테마":"Classic color themes","사용자 모드 테마":"User mod themes",
+  "밝은 테마 4종":"Four light themes","기본 색상 테마":"Classic color themes",
   "크림 라떼":"Cream Latte","포근하고 환한 아이보리와 캐러멜빛":"Warm, bright ivory with caramel accents","복숭아 소다":"Peach Soda","생기 있고 부드러운 복숭앗빛":"A lively, soft peach palette","민트 정원":"Mint Garden","산뜻하고 맑은 민트와 잎사귀빛":"Fresh mint with clear leafy accents","햇살 레몬":"Sunlit Lemon","따뜻하고 명랑한 레몬과 금빛":"Warm, cheerful lemon and gold",
   "저장과 동기화":"Save & sync","동기화 이름 표시":"Sync display name","언어 · Language · 言語":"Language","영어와 일본어 번역 범위를 계속 넓히고 있어요.":"English and Japanese coverage is being expanded continuously.","영어·일본어 베타 · 생활 장면 번역도 계속 추가됩니다.":"English & Japanese beta · More life-scene translations are on the way.",
-  "모드":"Mods","JSON으로 만든 사용자 모드를 불러옵니다. 색상 테마와 영어·일본어 문구를 바꿀 수 있으며, JavaScript 코드는 실행하지 않아요.":"Import user mods made as JSON. Mods can add color themes and override English or Japanese text; JavaScript is never executed.","모드 파일 불러오기":"Import mod file","예시 모드 받기":"Download example mod","불러온 사용자 모드가 없어요.":"No user mods imported.","안전한 데이터 전용 모드입니다. 모드를 켜거나 끈 뒤에는 화면이 바로 다시 그려집니다.":"These are safe, data-only mods. The interface refreshes immediately when a mod is enabled or disabled.","사용":"Enabled","제작자 미표기":"Unknown author","설명이 없는 사용자 모드":"No description","개 색상 테마":" color themes","개 번역":" translations",
   "확장팩":"Expansion packs","확장팩 · 출시 준비 중":"Expansion pack · Coming soon","이력서를 제출해요":"Submit Your Résumé","기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.":"A major career expansion adding deeper hierarchy and ranks, workplace relationships, real work locations, and detailed duties to existing occupations. Roles and workflows between managers, coworkers, and direct reports carry into life scenes and weekly schedules.","직업별 위계·직급과 승진 흐름":"Career hierarchy, ranks, and promotions","상사·동료·부하 직원의 직장 내 관계":"Workplace relationships with managers, coworkers, and direct reports","근무 장소·부서·담당 업무와 전용 생활 장면":"Workplaces, departments, duties, and dedicated life scenes","이 이미지는 ":"Replace only "," 파일만 바꾸면 교체돼요.":" to change this image."
   ,"원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.":"Add the products and quantities you want to the cart and pay in one checkout.","캐릭터 슬롯":"Character slots","캐릭터 5명 추가":"Add 5 character slots","구매할 때마다 캐릭터 슬롯 5개가 계정에 영구 추가됩니다.":"Each purchase permanently adds five character slots to your account.","마을 슬롯":"Town slots","마을 1개 추가":"Add 1 town slot","구매할 때마다 새로운 마을 슬롯 1개가 계정에 영구 추가됩니다.":"Each purchase permanently adds one town slot to your account.","사진 저장 공간":"Image storage","사진 저장 공간 50MB 추가":"Add 50MB image storage","구매하면 계정의 사진 저장 공간이 50MB로 늘어납니다.":"This increases your account image storage to 50MB.","평생 소장":"Permanent","개발 응원":"Support development","개발자에게 녹차 사주기 🍵":"Buy the developer green tea 🍵","잘 먹겠습니다 🥹":"Thank you 🥹","같은 상품도 여러 개 담을 수 있어요.":"You can add multiple quantities of the same product.","아직 장바구니가 비어 있어요.":"Your cart is empty.","총 결제금액":"Total","장바구니 결제하기":"Checkout cart"
 });
 Object.assign(UI_TEXT.ja,{
-  "밝은 테마 4종":"明るいテーマ4種","기본 색상 테마":"基本カラーテーマ","사용자 모드 테마":"ユーザーMODのテーマ",
+  "밝은 테마 4종":"明るいテーマ4種","기본 색상 테마":"基本カラーテーマ",
   "크림 라떼":"クリームラテ","포근하고 환한 아이보리와 캐러멜빛":"あたたかく明るいアイボリーとキャラメル","복숭아 소다":"ピーチソーダ","생기 있고 부드러운 복숭앗빛":"明るくやわらかな桃色","민트 정원":"ミントガーデン","산뜻なミントと葉の色":"爽やかなミントと葉の色","산뜻하고 맑은 민트와 잎사귀빛":"爽やかで澄んだミントと葉の色","햇살 레몬":"陽だまりレモン","따뜻하고 명랑한 레몬과 금빛":"あたたかく明るいレモンと金色",
   "저장과 동기화":"保存と同期","동기화 이름 표시":"同期時の表示名","언어 · Language · 言語":"言語","영어와 일본어 번역 범위를 계속 넓히고 있어요.":"英語・日本語の翻訳範囲を引き続き拡大しています。","영어·일본어 베타 · 생활 장면 번역도 계속 추가됩니다.":"英語・日本語ベータ・生活シーンの翻訳も順次追加します。",
-  "모드":"MOD","JSON으로 만든 사용자 모드를 불러옵니다. 색상 테마와 영어·일본어 문구를 바꿀 수 있으며, JavaScript 코드는 실행하지 않아요.":"JSON形式のユーザーMODを読み込みます。カラーテーマや英語・日本語の文言を変更でき、JavaScriptは実行されません。","모드 파일 불러오기":"MODファイルを読み込む","예시 모드 받기":"サンプルMODをダウンロード","불러온 사용자 모드가 없어요.":"読み込まれたユーザーMODはありません。","안전한 데이터 전용 모드입니다. 모드를 켜거나 끈 뒤에는 화면이 바로 다시 그려집니다.":"安全なデータ専用MODです。有効・無効を切り替えると画面がすぐ更新されます。","사용":"有効","제작자 미표기":"作者未記載","설명이 없는 사용자 모드":"説明なし","개 색상 테마":"個のカラーテーマ","개 번역":"個の翻訳",
   "확장팩":"拡張パック","확장팩 · 출시 준비 중":"拡張パック・リリース準備中","이력서를 제출해요":"履歴書を提出します","기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.":"既存の職業に、より細かな階層・役職、職場の人間関係、実際の勤務場所と具体的な業務内容を追加します。上司・同僚・部下の役割や仕事の流れが生活シーンと週間予定に反映される大型職業拡張パックです。","직업별 위계·직급과 승진 흐름":"職業ごとの階層・役職・昇進","상사·동료·부하 직원의 직장 내 관계":"上司・同僚・部下との職場関係","근무 장소·부서·담당 업무와 전용 생활 장면":"勤務場所・部署・担当業務と専用生活シーン","이 이미지는 ":"この画像は "," 파일만 바꾸면 교체돼요.":" ファイルだけを差し替えると変更できます。"
   ,"원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.":"ほしい商品と数量をカートに入れて、まとめて決済できます。","캐릭터 슬롯":"キャラクタースロット","캐릭터 5명 추가":"キャラクター枠を5人追加","구매할 때마다 캐릭터 슬롯 5개가 계정에 영구 추가됩니다.":"購入するたび、キャラクター枠が5人分アカウントに永久追加されます。","마을 슬롯":"村スロット","마을 1개 추가":"村スロットを1つ追加","구매할 때마다 새로운 마을 슬롯 1개가 계정에 영구 추가됩니다.":"購入するたび、新しい村スロットが1つアカウントに永久追加されます。","사진 저장 공간":"画像ストレージ","사진 저장 공간 50MB 추가":"画像ストレージを50MB追加","구매하면 계정의 사진 저장 공간이 50MB로 늘어납니다.":"購入するとアカウントの画像保存容量が50MBになります。","평생 소장":"永久所有","개발 응원":"開発を応援","개발자에게 녹차 사주기 🍵":"開発者に緑茶をおごる 🍵","잘 먹겠습니다 🥹":"ありがとうございます 🥹","같은 상품도 여러 개 담을 수 있어요.":"同じ商品を複数入れることもできます。","아직 장바구니가 비어 있어요.":"カートは空です。","총 결제금액":"合計金額","장바구니 결제하기":"カートを決済"
 });
