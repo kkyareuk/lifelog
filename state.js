@@ -150,7 +150,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:14,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260810e",places:[
+const fresh=()=>({schema:15,activeTab:"character",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",userMods:[],lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260810e",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -160,6 +160,7 @@ const fresh=()=>({schema:14,activeTab:"character",characterPane:"profile",active
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===15)return normalizeHomes(x);
   if(x.schema===14)return normalizeHomes(x);
   if(x.schema===13)return normalizeHomes(x);
   if(x.schema===12)return normalizeHomes(x);
@@ -188,11 +189,32 @@ function migrate(x){
   }
   return normalizeHomes(fresh());
 }
+function normalizeUserMods(value){
+  const hex=value=>/^#[0-9a-f]{6}$/i.test(String(value||""))?String(value).toLowerCase():"";
+  const cleanText=(value,max=120)=>String(value||"").trim().slice(0,max);
+  return (Array.isArray(value)?value:[]).slice(0,30).map((mod,index)=>{
+    const id=cleanText(mod?.id||`mod-${index+1}`,50).replace(/[^a-z0-9_-]/gi,"-")||`mod-${index+1}`;
+    const themes=(Array.isArray(mod?.themes)?mod.themes:[]).slice(0,12).map((theme,themeIndex)=>{
+      const themeId=cleanText(theme?.id||`theme-${themeIndex+1}`,40).replace(/[^a-z0-9_-]/gi,"-")||`theme-${themeIndex+1}`;
+      const light=(Array.isArray(theme?.light)?theme.light:[]).map(hex).filter(Boolean);
+      const dark=(Array.isArray(theme?.dark)?theme.dark:[]).map(hex).filter(Boolean);
+      if(light.length!==7||dark.length!==7)return null;
+      return {id:themeId,name:cleanText(theme?.name||themeId,40),description:cleanText(theme?.description||"사용자 색상 테마",100),light,dark};
+    }).filter(Boolean);
+    const translations={};
+    ["en","ja"].forEach(language=>{
+      const source=mod?.translations?.[language];
+      if(!source||typeof source!=="object"||Array.isArray(source))return;
+      translations[language]=Object.fromEntries(Object.entries(source).slice(0,500).map(([key,text])=>[cleanText(key,160),cleanText(text,500)]).filter(([key,text])=>key&&text));
+    });
+    return {id,name:cleanText(mod?.name||"이름 없는 모드",60),author:cleanText(mod?.author||"",60),version:cleanText(mod?.version||"1.0.0",24),description:cleanText(mod?.description||"",240),enabled:mod?.enabled!==false,importedAt:cleanText(mod?.importedAt||new Date().toISOString(),40),themes,translations};
+  });
+}
 function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=14;
+  x.schema=15;
   x.activeTab=["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(x.activeTab)?x.activeTab:"character";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
@@ -202,7 +224,9 @@ function normalizeHomes(x){
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"dark";
-  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine"].includes(x.visualTheme)?x.visualTheme:"monochrome";
+  x.userMods=normalizeUserMods(x.userMods);
+  const userThemeIds=x.userMods.flatMap(mod=>mod.themes.map(theme=>`mod:${mod.id}:${theme.id}`));
+  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine",...userThemeIds].includes(x.visualTheme)?x.visualTheme:"monochrome";
   x.ownerName=String(x.ownerName||"").trim().slice(0,20);
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;

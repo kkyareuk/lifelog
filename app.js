@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810q";
-import {eventFor} from "./simulation.js?v=20260810q";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810q";
-import {recordCharacterInteraction} from "./state.js?v=20260810q";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260810r";
+import {eventFor} from "./simulation.js?v=20260810r";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel} from "./views.js?v=20260810r";
+import {recordCharacterInteraction} from "./state.js?v=20260810r";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -649,7 +649,7 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260810q");
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260810r");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
@@ -871,6 +871,9 @@ function applyTheme(){
     ocean:{light:["#176b99","#42a8c7","#dff0f8","#fbfeff","#173140","#526f7e","#b7d7e7"],dark:["#4aa5d0","#78cee2","#06131a","#0e2733","#eefaff","#a6c9d8","#27536a"]},
     lavender:{light:["#704bb0","#b779d0","#eee4f8","#fefbff","#30203f","#705f7c","#d5bee6"],dark:["#a482df","#d29ae9","#100819","#23132f","#f9f1ff","#c5acd2","#523765"]}
   };
+  (state.userMods||[]).filter(mod=>mod.enabled!==false).forEach(mod=>(mod.themes||[]).forEach(theme=>{
+    if(Array.isArray(theme.light)&&theme.light.length===7&&Array.isArray(theme.dark)&&theme.dark.length===7)palettes[`mod:${mod.id}:${theme.id}`]={light:theme.light,dark:theme.dark};
+  }));
   const selected=state.visualTheme||"monochrome";
   const [primary,secondary,bg,panel,ink,muted,line]=(palettes[selected]||palettes.monochrome)[mode];
   document.documentElement.dataset.colorMode=mode;
@@ -1574,6 +1577,36 @@ function bind(){
     state.visualTheme=button.dataset.visualTheme||"monochrome";
     save(true);
     renderPreservingPageScroll(button);
+  });
+  const downloadJson=(name,value)=>{
+    const blob=new Blob([JSON.stringify(value,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),link=document.createElement("a");
+    link.href=url;link.download=name;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  };
+  $("[data-mod-example]")?.addEventListener("click",()=>downloadJson("서랍마을-사용자모드-예시.json",{
+    format:"drawer-village-mod",version:1,id:"my-color-and-translation",name:"나만의 서랍 색",author:"사용자",description:"색상 테마와 번역 문구를 바꾸는 안전한 JSON 모드 예시입니다.",
+    themes:[{id:"berry-milk",name:"베리 밀크",description:"우윳빛 배경에 진한 베리 포인트",light:["#9b3f68","#d27b9b","#faeaf0","#fffafd","#3b2230","#80606e","#e6c4d1"],dark:["#e284aa","#f0afc6","#170b11","#2c1720","#fff1f6","#d4acbb","#623047"]}],
+    translations:{en:{"모드":"Mods","확장팩":"Expansion packs"},ja:{"모드":"MOD","확장팩":"拡張パック"}}
+  }));
+  $("[data-mod-import]")?.addEventListener("click",()=>$("[data-mod-file]")?.click());
+  $("[data-mod-file]")?.addEventListener("change",async event=>{
+    const file=event.currentTarget.files?.[0];if(!file)return;
+    try{
+      const parsed=JSON.parse(await file.text());
+      if(parsed?.format!=="drawer-village-mod"||!parsed?.id||!parsed?.name)throw new Error("invalid-mod");
+      const next=cloneState(),incoming={...parsed,enabled:true,importedAt:new Date().toISOString()};
+      next.userMods=[...(next.userMods||[]).filter(mod=>mod.id!==parsed.id),incoming];
+      replaceState(next);showToast(`${parsed.name} 모드를 불러왔습니다`);render();
+    }catch(error){console.error(error);showToast("서랍마을 사용자 모드 JSON 파일을 확인해 주세요")}
+  });
+  $$('[data-mod-enabled]').forEach(input=>input.onchange=()=>{
+    const mod=(state.userMods||[]).find(item=>item.id===input.dataset.modEnabled);if(!mod)return;
+    mod.enabled=input.checked;save(true);renderPreservingPageScroll(input);
+  });
+  $$('[data-mod-delete]').forEach(button=>button.onclick=()=>{
+    const mod=(state.userMods||[]).find(item=>item.id===button.dataset.modDelete);if(!mod||!confirm(`${mod.name} 모드를 삭제할까요?`))return;
+    state.userMods=state.userMods.filter(item=>item.id!==mod.id);
+    if(String(state.visualTheme||"").startsWith(`mod:${mod.id}:`))state.visualTheme="monochrome";
+    save(true);renderPreservingPageScroll(button);
   });
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
@@ -2543,7 +2576,7 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260810q").catch(error=>{
+  import("./auth.js?v=20260810r").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2558,7 +2591,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260810q",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260810r",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

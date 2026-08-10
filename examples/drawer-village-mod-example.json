@@ -1,0 +1,27 @@
+{
+  "format": "drawer-village-mod",
+  "version": 1,
+  "id": "my-color-and-translation",
+  "name": "나만의 서랍 색",
+  "author": "사용자",
+  "description": "색상 테마와 번역 문구를 바꾸는 안전한 JSON 모드 예시입니다.",
+  "themes": [
+    {
+      "id": "berry-milk",
+      "name": "베리 밀크",
+      "description": "우윳빛 배경에 진한 베리 포인트",
+      "light": ["#9b3f68", "#d27b9b", "#faeaf0", "#fffafd", "#3b2230", "#80606e", "#e6c4d1"],
+      "dark": ["#e284aa", "#f0afc6", "#170b11", "#2c1720", "#fff1f6", "#d4acbb", "#623047"]
+    }
+  ],
+  "translations": {
+    "en": {
+      "모드": "Mods",
+      "확장팩": "Expansion packs"
+    },
+    "ja": {
+      "모드": "MOD",
+      "확장팩": "拡張パック"
+    }
+  }
+}
