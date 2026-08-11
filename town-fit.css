@@ -1,8 +1,8 @@
-/* The source artwork is 3000 × 3300. It is rendered at 80% so the map feels
-   less zoomed-in while remaining freely scrollable in both directions. */
+/* The source artwork is 3000 × 3300. Mobile renders it at 55% so more of the
+   town is visible at once while the canvas can still be panned freely. */
 :root{
-  --town-canvas-width:2400px;
-  --town-canvas-height:2640px;
+  --town-canvas-width:1650px;
+  --town-canvas-height:1815px;
   --town-building-width:320px;
   --town-building-height:354px;
 }
@@ -74,37 +74,52 @@
 @media(min-width:721px){
   html:not(.native-app) .standard-observe-view .viewport{
     width:100%!important;
-    height:clamp(560px,72dvh,860px)!important;
+    height:auto!important;
     min-height:0!important;
-    aspect-ratio:auto!important;
+    aspect-ratio:10/11!important;
+    overflow:hidden!important;
     border-radius:24px!important;
   }
   html:not(.native-app) body main .standard-observe-view .viewport>.world,
   html:not(.native-app) body main .town-map-scroll>.world{
-    width:var(--town-canvas-width)!important;
-    min-width:var(--town-canvas-width)!important;
-    max-width:none!important;
-    height:var(--town-canvas-height)!important;
-    min-height:var(--town-canvas-height)!important;
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    height:auto!important;
+    min-height:0!important;
     max-height:none!important;
-    aspect-ratio:auto!important;
+    aspect-ratio:10/11!important;
   }
   html:not(.native-app) body main :is(.standard-observe-view .viewport,.town-map-scroll) .world-bg{
-    width:var(--town-canvas-width)!important;
-    height:var(--town-canvas-height)!important;
-    object-fit:fill!important;
+    width:100%!important;
+    height:100%!important;
+    object-fit:contain!important;
+  }
+  html:not(.native-app) body main :is(.standard-observe-view .viewport,.town-map-scroll) .place.has-art{
+    width:16%!important;
+    height:14.55%!important;
+    min-width:0!important;
+    min-height:0!important;
+  }
+  html:not(.native-app) body main :is(.standard-observe-view .viewport,.town-map-scroll) .map-place-label{
+    min-width:110px!important;
+    max-width:210px!important;
+    transform:translate(-50%,calc(-100% - clamp(54px,8vw,118px)))!important;
+    font-size:clamp(15px,1.6vw,24px)!important;
   }
   html:not(.native-app)[data-active-tab="town"] .mobile-town-shell{min-height:calc(100dvh - 126px)}
   html:not(.native-app)[data-active-tab="town"] .town-edit{
     display:grid!important;
     grid-template-columns:minmax(0,1fr) 360px!important;
-    height:calc(100dvh - 210px)!important;
+    height:auto!important;
     min-height:560px!important;
-    overflow:hidden!important;
+    overflow:visible!important;
   }
   html:not(.native-app)[data-active-tab="town"] .town-map-scroll{
     width:100%!important;
-    height:100%!important;
+    height:auto!important;
+    aspect-ratio:10/11!important;
+    overflow:hidden!important;
     border-radius:24px!important;
   }
   html:not(.native-app)[data-active-tab="town"] .town-editor-panel{

@@ -9,7 +9,7 @@ const includedFiles=new Set([
   "index.html","app.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","font-preferences.js","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
-  "privacy.html","terms.html","simulation.js","state.js","sw.js","views.js",
+  "privacy.html","terms.html","simulation.js","state.js","local-media.js","sw.js","views.js",
   "town-fit.css","ui-theme-sample.css"
 ]);
 
@@ -69,7 +69,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260811u";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260811y";
     if("serviceWorker" in navigator){
       navigator.serviceWorker.getRegistrations().then(items=>Promise.all(items.map(item=>item.unregister()))).catch(()=>{});
     }

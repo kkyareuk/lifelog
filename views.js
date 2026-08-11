@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811u";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811u";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811y";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811y";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -273,10 +273,82 @@ const UI_DYNAMIC_TEXT={
     [/^(.+)의 SD와 LD 크기는 서로 따로 저장돼요\.$/,(name)=>`${name}のSDとLDサイズは別々に保存されます。`]
   ]
 };
+Object.assign(UI_TEXT.en,{
+  "이 기기에만 보관하는 사진":"Photo storage and sync",
+  "기기 사용량 확인 중…":"Checking this device…",
+  "사진 원본은 이 브라우저에 남고 Google 동기화와 백업 파일에는 정보만 들어가요.":"Photos are synced to your Google-linked account. Browser backup files contain information only.",
+  "사진":"Photo","장":"items","이 기기에서":"on this device","사용":"used",
+  "정보를 불러왔습니다 · 이 기기의 기존 사진은 유지했습니다":"Data and cloud photos loaded",
+  "사진 없이 정보만 내보냅니다":"Export information without photos",
+  "LD 일러스트는 자르지 않고 원본 비율 전체를 사용해요.":"LD illustrations keep their full original aspect ratio without cropping.",
+  "동기화에는 캐릭터·관계·생활 정보만 저장돼요. 사진은 이 기기의 브라우저 저장소에 남습니다.":"Sync stores character, relationship, life data, and photos in your Google-linked account.",
+  "브라우저 데이터나 앱 데이터를 지우면 기기에 보관한 사진도 삭제됩니다.":"Cloud-synced photos can be loaded again after browser or app data is cleared.",
+  "오늘의 기록":"Today's log","눌러서 펼쳐 보기 ↗":"Click to expand ↗","전체 보기":"View all","집 보기":"View home",
+  "달빛 서랍 극장":"Moonlit Drawer Theater","남색 벨벳과 크림 종이, 금빛 프레임으로 만든 게임 UI 샘플":"A game UI of navy velvet, cream paper, and golden frames"
+  ,"사진 없이 정보만 내보냅니다. 불러올 때도 이 기기의 기존 사진은 그대로 유지해요.":"Browser backup files export information only. Google Sync separately stores photos.",
+  "사진 원본은 이 브라우저에 남고 Google 동기화와 백업 파일에는 정보만 들어가요.":"Photos are synced to your Google-linked account. Browser backup files contain information only."
+});
+Object.assign(UI_TEXT.ja,{
+  "이 기기에만 보관하는 사진":"写真の保存と同期",
+  "기기 사용량 확인 중…":"端末の使用量を確認中…",
+  "사진 원본은 이 브라우저에 남고 Google 동기화와 백업 파일에는 정보만 들어가요.":"写真はGoogle連携アカウントへ同期されます。ブラウザのバックアップファイルには情報だけが入ります。",
+  "사진":"写真","장":"枚","이 기기에서":"この端末で","사용":"使用",
+  "정보를 불러왔습니다 · 이 기기의 기존 사진은 유지했습니다":"データとクラウド写真を読み込みました",
+  "사진 없이 정보만 내보냅니다":"写真を除き、情報だけを書き出します",
+  "LD 일러스트는 자르지 않고 원본 비율 전체를 사용해요.":"LDイラストは切り抜かず、元の縦横比のまま全体を使用します。",
+  "동기화에는 캐릭터·관계·생활 정보만 저장돼요. 사진은 이 기기의 브라우저 저장소에 남습니다.":"キャラクター・関係・生活情報と写真をGoogle連携アカウントへ同期します。",
+  "브라우저 데이터나 앱 데이터를 지우면 기기에 보관한 사진도 삭제됩니다.":"ブラウザやアプリのデータを消去しても、同期済みの写真は再読み込みできます。",
+  "오늘의 기록":"今日の記録","눌러서 펼쳐 보기 ↗":"タップして開く ↗","전체 보기":"すべて表示","집 보기":"家を見る",
+  "달빛 서랍 극장":"月明かりの引き出し劇場","남색 벨벳과 크림 종이, 금빛 프레임으로 만든 게임 UI 샘플":"紺のベルベット、クリーム色の紙、金色の枠で仕立てたゲームUI"
+  ,"사진 없이 정보만 내보냅니다. 불러올 때도 이 기기의 기존 사진은 그대로 유지해요.":"ブラウザのバックアップは情報だけを書き出し、写真はGoogle同期で別に保存します。",
+  "사진 원본은 이 브라우저에 남고 Google 동기화와 백업 파일에는 정보만 들어가요.":"写真はGoogle連携アカウントへ同期されます。ブラウザのバックアップファイルには情報だけが入ります。"
+});
+// 생활 장면 번역을 한 묶음 더 확장한다. 캐릭터 이름처럼 사용자가 만든
+// 고유명사는 그대로 두고, 반복해서 노출되는 행동과 설명만 번역한다.
+Object.assign(UI_TEXT.en,{
+  "주방에서 식탁을 차리는 중":"Setting the table in the kitchen",
+  "먹을 사람 수에 맞춰 접시와 수저를 놓고 뜨거운 그릇이 닿지 않게 자리를 비워 두었어요. 정돈된 상태를 유지하며 시작과 마무리의 경계를 분명하게 지켰어요.":"They set out plates and cutlery for everyone, leaving safe space for hot dishes. They kept the table orderly and clearly marked the beginning and end of the task.",
+  "침실에서 외투를 정리하는 중":"Putting away outerwear in the bedroom",
+  "주머니 속 물건을 비우고 먼지를 가볍게 턴 뒤 옷걸이에 형태가 무너지지 않게 걸었어요. 정돈된 상태를 유지하며 시작과 마무리의 경계를 분명하게 지켰어요.":"They emptied the pockets, brushed away dust, and hung each coat carefully so it would keep its shape.",
+  "욕실에서 화장품을 정리하는 중":"Organizing cosmetics in the bathroom",
+  "주방에서 차갑게 식힌 디저트를 꺼내는 중":"Taking a chilled dessert out in the kitchen",
+  "정보만 Google에 동기화":"Sync information to Google only",
+  "원본 사진은 이 기기에 유지":"Keep original photos on this device"
+  ,"캐릭터 정보와 사진을 함께 Google 계정에 동기화합니다.":"Sync character data and photos together with your Google account."
+  ,"LD는 자르지 않고 원본 비율을 유지하며, 큰 사진은 저장용 사본만 비율대로 축소해요.":"LD art is never cropped. Large images are proportionally reduced only for the cloud copy."
+  ,"마을을 만드는 순서":"How to build a town","마을 이름과 배경을 고르세요.":"Choose the town name and background.","건물을 추가하고 유형을 고르세요.":"Add buildings and choose their types.","지도에서 건물을 끌어 위치를 정하세요.":"Drag buildings on the map to position them."
+  ,"화면 편집":"Display editor","통계":"Statistics","홈 화면 도구":"Home display tools","홈 화면 편집":"Edit home display","완료":"Done","현재 장면":"Current scene","관찰 중":"Observing"
+});
+Object.assign(UI_TEXT.ja,{
+  "주방에서 식탁을 차리는 중":"キッチンで食卓を整えている",
+  "먹을 사람 수에 맞춰 접시와 수저를 놓고 뜨거운 그릇이 닿지 않게 자리를 비워 두었어요. 정돈된 상태를 유지하며 시작과 마무리의 경계를 분명하게 지켰어요.":"食べる人数に合わせて皿とカトラリーを並べ、熱い器を置く場所も空けました。整った状態を保ち、作業の始まりと終わりをはっきり区切りました。",
+  "침실에서 외투를 정리하는 중":"寝室で上着を片付けている",
+  "주머니 속 물건을 비우고 먼지를 가볍게 턴 뒤 옷걸이에 형태가 무너지지 않게 걸었어요. 정돈된 상태를 유지하며 시작과 마무리의 경계를 분명하게 지켰어요.":"ポケットの中身を出してほこりを軽く払い、形が崩れないよう丁寧にハンガーへ掛けました。",
+  "욕실에서 화장품을 정리하는 중":"浴室で化粧品を整理している",
+  "주방에서 차갑게 식힌 디저트를 꺼내는 중":"キッチンで冷やしたデザートを取り出している",
+  "정보만 Google에 동기화":"情報だけをGoogleに同期",
+  "원본 사진은 이 기기에 유지":"写真の原本はこの端末に保持"
+  ,"캐릭터 정보와 사진을 함께 Google 계정에 동기화합니다.":"キャラクター情報と写真をGoogleアカウントにまとめて同期します。"
+  ,"LD는 자르지 않고 원본 비율을 유지하며, 큰 사진은 저장용 사본만 비율대로 축소해요.":"LDは切り抜かず元の比率を保ち、大きな画像は保存用コピーだけを比率どおり縮小します。"
+  ,"마을을 만드는 순서":"村を作る手順","마을 이름과 배경을 고르세요.":"村の名前と背景を選びます。","건물을 추가하고 유형을 고르세요.":"建物を追加し、種類を選びます。","지도에서 건물을 끌어 위치를 정하세요.":"地図上で建物をドラッグして配置します。"
+  ,"화면 편집":"画面編集","통계":"統計","홈 화면 도구":"ホーム画面ツール","홈 화면 편집":"ホーム画面を編集","완료":"完了","현재 장면":"現在のシーン","관찰 중":"観察中"
+});
+UI_DYNAMIC_TEXT.en.push(
+  [/^(.+) · 주방에서 식탁을 차리는 중$/,(name)=>`${name} · Setting the table in the kitchen`],
+  [/^(.+) · 침실에서 외투를 정리하는 중$/,(name)=>`${name} · Putting away outerwear in the bedroom`],
+  [/^(.+) · 욕실에서 화장품을 정리하는 중$/,(name)=>`${name} · Organizing cosmetics in the bathroom`]
+);
+UI_DYNAMIC_TEXT.ja.push(
+  [/^(.+) · 주방에서 식탁을 차리는 중$/,(name)=>`${name}・キッチンで食卓を整えている`],
+  [/^(.+) · 침실에서 외투를 정리하는 중$/,(name)=>`${name}・寝室で上着を片付けている`],
+  [/^(.+) · 욕실에서 화장품을 정리하는 중$/,(name)=>`${name}・浴室で化粧品を整理している`]
+);
+
 function translatedUiText(value){
-  const raw=String(value||""),trimmed=raw.trim(),copy=UI_TEXT[state.uiLanguage];
+  const raw=String(value||""),trimmed=raw.trim(),compact=trimmed.replace(/\s+/g," "),copy=UI_TEXT[state.uiLanguage];
   if(!copy)return raw;
   if(copy[trimmed])return raw.replace(trimmed,copy[trimmed]);
+  if(copy[compact])return raw.replace(trimmed,copy[compact]);
   for(const [pattern,format] of UI_DYNAMIC_TEXT[state.uiLanguage]||[]){
     const match=trimmed.match(pattern);
     if(match)return raw.replace(trimmed,format(...match.slice(1)));
@@ -291,7 +363,7 @@ function translateInterface(root){
   // keys into English/Japanese text, which the state normalizer then treated
   // as unknown and reset to "설정하지 않음". Freeze the data value first.
   root.querySelectorAll("option:not([value])").forEach(option=>option.setAttribute("value",option.textContent.trim()));
-  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,strong,em,span,a,i,li,dt,dd").forEach(element=>{
+  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,strong,em,span,a,i,li,dt,dd,div,time").forEach(element=>{
     [...element.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).forEach(node=>{
       const raw=node.nodeValue||"";
       const trimmed=raw.trim();
@@ -459,8 +531,8 @@ const characterLimit=()=>5+(Math.max(0,Number(accountEntitlements.characterSlotP
 const townLimit=()=>2+Math.max(0,Number(accountEntitlements.townSlotPacks)||0);
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const hasDlc=id=>(accountEntitlements.dlcPacks||[]).includes(id);
-const backgroundOptions=()=>`<option value="world-assets/cozy-town.png?v=20260810e" selected>기본 마을 손그림</option>`;
-const TOWN_BACKGROUND="world-assets/cozy-town.png?v=20260810e";
+const backgroundOptions=()=>`<option value="world-assets/cozy-town.png?v=20260811y" selected>기본 마을 손그림</option>`;
+const TOWN_BACKGROUND="world-assets/cozy-town.png?v=20260811y";
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
 const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${id}" ${p.iconPreset===id?"selected":""}>${label}</option>`).join("");
 const visibleTownId=c=>eventFor(c)?.townId||c.townId;
@@ -968,8 +1040,8 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     const personDrowsy=!personSleeping&&/졸리|졸린|졸음|조는 중|꾸벅|눈꺼풀이|잠깐 눈을 감|하품/.test(personText);
     const sleepBadge=personSleeping?'<b class="native-character-sleep-mark" aria-hidden="true">ZZ</b>':personDrowsy?'<b class="native-character-drowsy-mark" aria-hidden="true">z</b>':"";
     const personVisualScale=Math.max(70,Math.min(150,Number(visualMode==="ld"?person.homeLdScale:person.homeSdScale)||Number(person.homeVisualScale)||100))/100;
-    const pairPosition=sceneParticipants.length===2?(index===0?"clamp(-72px,-14vw,-52px)":"clamp(52px,14vw,72px)"):"0px";
-    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""} ${visualMode==="ld"&&hasLdArt(person)?"is-ld":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s;--person-visual-scale:${personVisualScale};--pair-x:${pairPosition}">${sceneAvatar(person,"native-scene-lineup-avatar",tone,visualMode)}${actionProp}${sleepBadge}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
+    const pairSlot=sceneParticipants.length===2?(index===0?"pair-slot-left":"pair-slot-right"):"";
+    return `<span class="native-scene-lineup-person ${pairSlot} ${person.id===c.id?"is-current":""} ${visualMode==="ld"&&hasLdArt(person)?"is-ld":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s;--person-visual-scale:${personVisualScale}">${sceneAvatar(person,"native-scene-lineup-avatar",tone,visualMode)}${actionProp}${sleepBadge}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
   }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
     companions.length
@@ -1317,11 +1389,20 @@ function observe(){
   const activeItems=activeCatalogItems(e);
   const itemOrbit=activeItems.length?`<span class="native-active-item-orbits" aria-label="지금 사용 중인 취향 사전 항목">${activeItems.map((item,index)=>`<span class="native-active-item-orbit" style="--orbit-angle:${index*360/activeItems.length}deg;--orbit-delay:${index*-.72}s" title="${esc(item.name)}"><img src="${esc(item.image)}" alt="${esc(item.name)}"></span>`).join("")}</span>`:"";
   const hasLd=hasLdArt(c),hasSd=hasSdArt(c);
-  const visualMode=hasLd&&(c.homeVisualMode==="ld"||!hasSd)?"ld":"sd";
-  const presentation=nativeScenePresentation(c,e,visualMode);
+  let visualMode=hasLd&&(c.homeVisualMode==="ld"||!hasSd)?"ld":"sd";
+  let presentation=nativeScenePresentation(c,e,visualMode);
+  // 함께 있는 인물 중 한 명이 LD를 홈 표현으로 선택했다면 어느 인물 탭에서
+  // 보더라도 동일한 혼합 LD 장면을 보여 준다. LD가 없는 인물은 작은 SD로
+  // 보완되며, 등록한 LD 원본의 높이와 비율은 한 명일 때와 동일하다.
+  if(visualMode!=="ld"&&presentation.partners.some(person=>hasLdArt(person)&&person.homeVisualMode==="ld")){
+    visualMode="ld";
+    presentation=nativeScenePresentation(c,e,visualMode);
+  }
   const visualScale=Math.max(70,Math.min(150,Number(visualMode==="ld"?c.homeLdScale:c.homeSdScale)||Number(c.homeVisualScale)||100))/100;
   const stageClasses=`${presentation.partner?"has-scene-companion":""} ${presentation.lineupHtml?"has-scene-lineup":""} ${presentation.participantCount===2?"has-two-scene-actors":""} ${presentation.pet?"has-scene-pet":""} visual-mode-${visualMode}`;
-  const sceneActors=`${sceneAvatar(c,"native-main-character",presentation.tone,visualMode)}${presentation.sleepMarkHtml}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.thoughtHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}`;
+  // 2인 장면은 lineup이 두 인물을 모두 렌더링한다. 메인 이미지를 중복으로
+  // 넣지 않아 예전 CSS가 남아 있어도 거대한 얼굴이 다시 나타나지 않는다.
+  const sceneActors=`${presentation.lineupHtml?"":sceneAvatar(c,"native-main-character",presentation.tone,visualMode)}${presentation.sleepMarkHtml}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.thoughtHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}`;
   const visualToggle=hasLd&&hasSd?`<div class="home-visual-toggle" aria-label="홈 캐릭터 표현 전환"><button type="button" data-home-visual-mode="sd" class="${visualMode==="sd"?"on":""}">SD</button><button type="button" data-home-visual-mode="ld" class="${visualMode==="ld"?"on":""}">LD</button></div>`:"";
   const homeTools=`<div class="home-observe-tools" aria-label="홈 화면 도구"><button type="button" data-open-home-display-editor>화면 편집</button><button type="button" data-open-character-stats>통계</button></div>`;
   const homeDisplayEditor=`<dialog class="home-display-editor-dialog" data-home-display-editor-dialog><form method="dialog"><div class="home-dialog-head"><span><small>HOME DISPLAY</small><h2>홈 화면 편집</h2></span><button value="close" aria-label="닫기">×</button></div><p>${esc(c.name)}의 SD와 LD 크기는 서로 따로 저장돼요.</p><label>홈화면 기본 표현<select data-home-display-field="homeVisualMode" data-character-id="${c.id}"><option value="sd" ${c.homeVisualMode!=="ld"?"selected":""}>SD · 아이콘</option><option value="ld" ${c.homeVisualMode==="ld"?"selected":""} ${hasLd?"":"disabled"}>LD · 전신 일러스트</option></select></label><label>SD 이미지 크기 <b data-home-display-value="homeSdScale">${Math.round(Number(c.homeSdScale)||Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeSdScale)||Number(c.homeVisualScale)||100)}" data-home-display-field="homeSdScale" data-character-id="${c.id}"></label><label>LD 이미지 크기 <b data-home-display-value="homeLdScale">${Math.round(Number(c.homeLdScale)||Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeLdScale)||Number(c.homeVisualScale)||100)}" data-home-display-field="homeLdScale" data-character-id="${c.id}" ${hasLd?"":"disabled"}></label><small>두 명이 함께 나올 때도 각 LD의 높이와 크기는 한 명일 때와 같고, 위치만 왼쪽과 오른쪽으로 나뉩니다.</small><button class="primary" value="close">완료</button></form></dialog>`;
@@ -1786,7 +1867,7 @@ function character(){
   const reorderRows=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="mobile-character-reorder-row">${avatar(x)}<b>${esc(x.name)}</b><span><button type="button" data-sort="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""}>→</button></span></div>`}).join("");
   const ldSource=ldArtSource(c);
   const ldCard=`<article class="character-ld-card character-ld-single"><div>${ldSource?`<img class="scene-ld-art" src="${esc(ldSource)}" alt="${esc(c.name)} LD 일러스트">`:`<span class="character-image-empty-preview ld"><i>LD</i><small>LD 미등록</small></span>`}</div><h4>LD 일러스트</h4><small>전신 또는 무릎 위 이미지 한 장</small><span class="image-actions"><button type="button" data-image="ldImage">LD 파일</button><button type="button" data-image-url="ldImage" data-id="${c.id}">LD 링크</button>${ldSource?`<button type="button" data-clear-character-image="ldImage">지우기</button>`:""}</span></article>`;
-  const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 프로필·SD·LD</h2><p>프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요. 표시 크기는 홈 화면의 ‘화면 편집’에서 조절합니다.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div></section><section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
+  const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 프로필·SD·LD</h2><p>프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요. LD 일러스트는 자르지 않고 원본 비율 전체를 사용해요. 표시 크기는 홈 화면의 ‘화면 편집’에서 조절합니다.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div></section><section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
   return `<div class="editor character-editor" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
     <aside class="panel desktop-character-list"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside>
@@ -2174,10 +2255,10 @@ Object.assign(UI_TEXT.ja,{
 });
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;
-  const sync=`<section class="sync-panel setting-card"><h2>저장과 동기화</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div><small>동기화와 불러오기는 필요할 때만 설정에서 사용해요.</small></section>`;
+  const sync=`<section class="sync-panel setting-card"><h2>저장과 동기화</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div><small>캐릭터 정보와 사진을 함께 Google 계정에 동기화합니다.</small><small>LD는 자르지 않고 원본 비율을 유지하며, 큰 사진은 저장용 사본만 비율대로 축소해요.</small></section>`;
   const map=`<section class="setting-card map-display-card"><h2>마을 지도 표시</h2><label>건물 표기 방식<select data-setting="buildingLabelMode"><option value="full" ${state.buildingLabelMode==="full"?"selected":""}>이름과 건물 유형 표시</option><option value="name" ${state.buildingLabelMode==="name"?"selected":""}>이름만 표시</option><option value="none" ${state.buildingLabelMode==="none"?"selected":""}>아무 글자도 표시하지 않기</option></select></label><label>지도 위 캐릭터 표기<select data-setting="mapCharacterLabelMode"><option value="none" ${state.mapCharacterLabelMode==="none"?"selected":""}>캐릭터 아이콘만 표시</option><option value="name" ${state.mapCharacterLabelMode==="name"?"selected":""}>아이콘 아래 이름 표시</option></select></label><small>같은 건물에 있는 캐릭터는 지도에서 한 묶음으로 표시됩니다.</small></section>`;
   const language=`<section class="setting-card language-setting-card"><h2>${t("language","언어 · Language · 言語")}</h2><p>${t("languageHelp","영어와 일본어 번역 범위를 계속 넓히고 있어요.")}</p><label>Language<select data-setting="uiLanguage"><option value="ko">한국어</option><option value="en">English (Beta)</option><option value="ja">日本語（ベータ）</option></select></label><small>${t("languageNote","영어·일본어 베타 · 생활 장면 번역도 계속 추가됩니다.")}</small></section>`;
-  const backup=`<section class="setting-card backup-file-card"><h2>브라우저 백업 파일</h2><p>Firebase가 막혀도 현재 데이터와 사진을 파일 하나로 보관할 수 있어요.</p><div class="sync-actions"><button data-export-file>백업 파일 내보내기</button><button data-import-file>백업 파일 불러오기</button></div></section>`;
+  const backup=`<section class="setting-card backup-file-card"><h2>브라우저 백업 파일</h2><p>사진 없이 정보만 내보냅니다. 불러올 때도 이 기기의 기존 사진은 그대로 유지해요.</p><div class="sync-actions"><button data-export-file>백업 파일 내보내기</button><button data-import-file>백업 파일 불러오기</button></div></section>`;
   const feedback=`<section class="setting-card feedback-card"><h2>개발자에게 피드백 보내기</h2><p>유형을 고르면 기기의 메일 앱이 열려요.</p></section>`;
   const guide=`<section class="setting-card page-guide-card"><h2>페이지 안내</h2><p>각 페이지를 처음 열었을 때 나오는 안내를 다시 볼 수 있어요.</p><button data-guide-reset>모든 페이지 안내 다시 보기</button></section>`;
   return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${map}${language}${backup}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
@@ -2377,16 +2458,14 @@ const CART_KEY="drawer-village-cart";
 const SHOP_PRODUCTS={
   character_slots_5:{label:"캐릭터 슬롯",title:"캐릭터 5명 추가",description:"구매할 때마다 캐릭터 슬롯 5개가 계정에 영구 추가됩니다.",price:1200},
   town_slot_1:{label:"마을 슬롯",title:"마을 1개 추가",description:"구매할 때마다 새로운 마을 슬롯 1개가 계정에 영구 추가됩니다.",price:1900},
-  storage_50mb:{label:"사진 저장 공간",title:"사진 저장 공간 50MB 추가",description:"구매하면 계정의 사진 저장 공간이 50MB로 늘어납니다.",price:2900},
   green_tea:{label:"개발 응원",title:"개발자에게 녹차 사주기 🍵",description:"잘 먹겠습니다 🥹",price:1500}
 };
 const jobExpansionCard=()=>`<section class="shop-coming shop-expansion-showcase" data-product-id="job_expansion"><div class="expansion-art"><img src="./shop-assets/resume-expansion.png" alt="이력서를 제출해요 확장팩 이미지"><span>이 이미지는 <b>shop-assets/resume-expansion.png</b> 파일만 바꾸면 교체돼요.</span></div><div class="expansion-copy"><span>확장팩 · 출시 준비 중</span><small>직업 확장팩</small><h2>이력서를 제출해요</h2><p>기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.</p><ul><li>직업별 위계·직급과 승진 흐름</li><li>상사·동료·부하 직원의 직장 내 관계</li><li>근무 장소·부서·담당 업무와 전용 생활 장면</li></ul><div><b>가격 미정</b><button type="button" disabled>출시 준비 중</button></div></div></section>`;
 const readCart=()=>{try{const value=JSON.parse(localStorage.getItem(CART_KEY)||"{}");return value&&typeof value==="object"?value:{}}catch{return {}}};
 function nativePlayShop(){
   const products=Object.entries(SHOP_PRODUCTS).map(([id,item])=>{
-    const owned=id==="character_slots_5"?Number(accountEntitlements.characterSlotPacks)||0:id==="town_slot_1"?Number(accountEntitlements.townSlotPacks)||0:id==="storage_50mb"&&accountEntitlements.storage50?1:0;
-    const unavailable=id==="storage_50mb"&&owned;
-    return `<article class="premium-product one-time-product" data-product-id="${id}"><div class="premium-product-heading"><span>${id==="green_tea"?"응원":"Google Play"}</span><div><small>${item.label}</small><h2>${item.title}</h2></div><b data-play-price="${id}">Play 결제창에서 확인</b></div><p>${item.description}</p>${owned?`<div class="premium-current"><b>${id==="storage_50mb"?"50MB 적용 중":`${owned}회 구매 · 현재 적용 중`}</b></div>`:""}<button class="primary premium-buy" data-play-purchase="${id}" ${unavailable?"disabled":""}>${unavailable?"이미 적용 중":"Google Play에서 구매"}</button></article>`;
+    const owned=id==="character_slots_5"?Number(accountEntitlements.characterSlotPacks)||0:id==="town_slot_1"?Number(accountEntitlements.townSlotPacks)||0:0;
+    return `<article class="premium-product one-time-product" data-product-id="${id}"><div class="premium-product-heading"><span>${id==="green_tea"?"응원":"Google Play"}</span><div><small>${item.label}</small><h2>${item.title}</h2></div><b data-play-price="${id}">Play 결제창에서 확인</b></div><p>${item.description}</p>${owned?`<div class="premium-current"><b>${owned}회 구매 · 현재 적용 중</b></div>`:""}<button class="primary premium-buy" data-play-purchase="${id}">Google Play에서 구매</button></article>`;
   }).join("");
   return `<section class="panel form dlc-store shop-store native-play-store"><div class="title"><div><h1>상점</h1><p>Android 앱의 디지털 상품은 Google Play 결제로 구매합니다. 가격은 Play Console에 등록한 국가별 가격으로 표시돼요.</p></div></div><section class="preview-notice play-billing-notice"><b>Google Play 안전 결제</b><p>구매는 Play 결제창에서 진행되며, 서버에서 구매 토큰을 확인한 뒤에만 슬롯과 저장 공간을 지급합니다.</p></section><div class="shop-product-grid">${products}</div><div class="shop-expansion-heading"><small>COMING NEXT</small><h2>확장팩</h2></div>${jobExpansionCard()}<section class="shop-coming"><h2>구매 복원</h2><p>같은 Google 계정의 미처리 구매는 앱 시작과 계정 동기화 때 다시 확인할 수 있어요.</p><button data-play-restore>Google Play 구매 내역 확인</button></section></section>`;
 }
@@ -2398,5 +2477,5 @@ function shop(){
   const total=lines.reduce((sum,[id,qty])=>sum+SHOP_PRODUCTS[id].price*Number(qty),0);
   const cartHtml=lines.length?lines.map(([id,qty])=>{const item=SHOP_PRODUCTS[id],totalTitle=id==="character_slots_5"?`캐릭터 ${qty*5}명 추가`:id==="town_slot_1"?`마을 ${qty}개 추가`:id==="green_tea"?`녹차 ${qty}잔 사주기`:item.title;return `<article class="cart-line"><div><b>${totalTitle}</b><small>${item.title} · ${item.price.toLocaleString("ko-KR")}원 × ${qty}</small></div><div class="cart-quantity"><button data-cart-minus="${id}" aria-label="${item.title} 수량 줄이기">−</button><b>${qty}</b><button data-cart-plus="${id}" aria-label="${item.title} 수량 늘리기" ${id==="storage_50mb"?"disabled":""}>+</button></div><b>${(item.price*qty).toLocaleString("ko-KR")}원</b><button class="cart-remove" data-cart-remove="${id}">빼기</button></article>`}).join(""):`<p class="cart-empty">아직 장바구니가 비어 있어요.</p>`;
   const count=lines.reduce((sum,[,qty])=>sum+Number(qty),0);
-  return `<section class="panel form dlc-store shop-store"><div class="title"><div><h1>상점</h1><p>원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.</p></div></div>${previewMode()?`<section class="preview-notice"><b>${esc(previewConfig().label||"사전 체험")} 기간이에요</b><p>${esc(previewConfig().message||"현재 기능을 점검하고 있어 실제 결제는 진행되지 않아요.")}</p></section>`:""}<div class="shop-product-grid">${product("character_slots_5",SHOP_PRODUCTS.character_slots_5,Number(accountEntitlements.characterSlotPacks)||0)}${product("town_slot_1",SHOP_PRODUCTS.town_slot_1,Number(accountEntitlements.townSlotPacks)||0)}${product("storage_50mb",SHOP_PRODUCTS.storage_50mb,accountEntitlements.storage50?1:0)}${product("green_tea",SHOP_PRODUCTS.green_tea,0)}</div><div class="shop-expansion-heading"><small>COMING NEXT</small><h2>확장팩</h2></div>${jobExpansionCard()}<section class="shop-cart"><div class="title"><div><h2>장바구니</h2><p>${previewMode()?"사전 체험이 끝난 뒤 이용할 수 있어요.":"같은 상품도 여러 개 담을 수 있어요."}</p></div><b>${count}개</b></div><div class="cart-lines">${cartHtml}</div><div class="cart-total"><span>총 결제금액</span><b>${total.toLocaleString("ko-KR")}원</b></div>${previewMode()?`<span class="premium-buy disabled" aria-disabled="true">사전 체험 중에는 결제하지 않아요</span>`:`<a class="primary premium-buy ${lines.length?"":"disabled"}" ${lines.length?'href="./payment.html?cart=1" aria-disabled="false"':'aria-disabled="true"'}>장바구니 결제하기</a>`}</section><div class="dlc-hidden" hidden>${dlc()}</div></section>`;
+  return `<section class="panel form dlc-store shop-store"><div class="title"><div><h1>상점</h1><p>원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.</p></div></div>${previewMode()?`<section class="preview-notice"><b>${esc(previewConfig().label||"사전 체험")} 기간이에요</b><p>${esc(previewConfig().message||"현재 기능을 점검하고 있어 실제 결제는 진행되지 않아요.")}</p></section>`:""}<div class="shop-product-grid">${product("character_slots_5",SHOP_PRODUCTS.character_slots_5,Number(accountEntitlements.characterSlotPacks)||0)}${product("town_slot_1",SHOP_PRODUCTS.town_slot_1,Number(accountEntitlements.townSlotPacks)||0)}${product("green_tea",SHOP_PRODUCTS.green_tea,0)}</div><div class="shop-expansion-heading"><small>COMING NEXT</small><h2>확장팩</h2></div>${jobExpansionCard()}<section class="shop-cart"><div class="title"><div><h2>장바구니</h2><p>${previewMode()?"사전 체험이 끝난 뒤 이용할 수 있어요.":"같은 상품도 여러 개 담을 수 있어요."}</p></div><b>${count}개</b></div><div class="cart-lines">${cartHtml}</div><div class="cart-total"><span>총 결제금액</span><b>${total.toLocaleString("ko-KR")}원</b></div>${previewMode()?`<span class="premium-buy disabled" aria-disabled="true">사전 체험 중에는 결제하지 않아요</span>`:`<a class="primary premium-buy ${lines.length?"":"disabled"}" ${lines.length?'href="./payment.html?cart=1" aria-disabled="false"':'aria-disabled="true"'}>장바구니 결제하기</a>`}</section><div class="dlc-hidden" hidden>${dlc()}</div></section>`;
 }

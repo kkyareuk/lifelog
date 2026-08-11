@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260811u";
+const CACHE_VERSION="drawer-village-v20260811y";
 const CORE=[
   "./",
   "./index.html",
@@ -14,6 +14,7 @@ const CORE=[
   "./simulation.js",
   "./views.js",
   "./auth.js",
+  "./local-media.js",
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",
   "./fonts/DoHyeon-Regular.ttf",

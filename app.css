@@ -5908,7 +5908,9 @@ html:not(.native-app) .standard-observe-view>.roster .roster-card small{
 .desktop-observe-log .native-log-card>div>span{display:flex;gap:8px}
 .desktop-observe-log .native-log-card ol{
   display:grid;grid-template-columns:1fr;gap:10px;margin:0;padding:0;list-style:none;
+  max-height:190px;overflow:hidden;
 }
+.desktop-observe-log .native-log-card li:nth-child(n+3){display:none}
 .desktop-observe-log .native-log-card li{
   display:grid;grid-template-columns:55px minmax(0,1fr);gap:10px;padding:10px 12px;
   border:1px solid var(--line);border-radius:15px;background:color-mix(in srgb,var(--p) 6%,var(--panel));
@@ -6233,3 +6235,98 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld) :is(.avatar,.sprite){
   width:118px!important;height:118px!important
 }
+
+/* 2026-08-11x LD PAIR LAYOUT
+   The solo LD box is the immutable sizing reference. A pair only changes each
+   actor's horizontal slot. This deliberately avoids grid/flex sizing so an LD
+   can never be reduced just because a second actor entered the scene. */
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors{
+  width:min(52vw,235px)!important;
+  height:min(38dvh,380px)!important;
+  max-width:235px!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-main-character{
+  display:none!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  overflow:visible!important;
+  transform:none!important;
+  translate:0 0!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  position:absolute!important;
+  left:50%!important;
+  bottom:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:235px!important;
+  margin:0!important;
+  transform:none!important;
+  transform-origin:50% 100%!important;
+  animation:none!important;
+  translate:calc(-50% + var(--pair-offset,0px)) 0!important;
+  scale:var(--person-visual-scale,1)!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{--pair-offset:clamp(-78px,-17vw,-58px)}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{--pair-offset:clamp(58px,17vw,78px)}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
+  position:absolute!important;
+  inset:auto 0 0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:235px!important;
+  max-height:380px!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  border-radius:0!important;
+  transform:none!important;
+  animation:native-ld-body 4.8s cubic-bezier(.42,0,.28,1) infinite!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>.native-scene-lineup-avatar{
+  position:absolute!important;
+  left:50%!important;
+  bottom:22%!important;
+  display:block!important;
+  width:min(27vw,108px)!important;
+  height:min(27vw,108px)!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:108px!important;
+  max-height:108px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+  transform:none!important;
+  translate:-50% 0!important;
+  animation:native-social-bob 4.4s ease-in-out infinite!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person>small{
+  left:50%!important;
+  right:auto!important;
+  bottom:0!important;
+  translate:-50% 0!important;
+  z-index:20!important;
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{
+  width:310px!important;
+  max-width:310px!important;
+  height:345px!important;
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person,
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
+  width:310px!important;
+  max-width:310px!important;
+  height:345px!important;
+  max-height:345px!important;
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{--pair-offset:-92px}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{--pair-offset:92px}

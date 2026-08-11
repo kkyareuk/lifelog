@@ -1,3 +1,5 @@
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260811y";
+
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
 const renameBrand=value=>{
@@ -156,7 +158,7 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:15,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260810e",places:[
+const fresh=()=>({schema:15,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -355,11 +357,11 @@ function normalizeHomes(x){
   x.world.name=x.world.name||defaultWorld.name;
   // 제공받은 손그림 한 장만 마을 배경으로 사용한다. 이전 AI 배경을 고른
   // 저장 데이터도 다음 로드부터 새 배경으로 통일한다.
-  x.world.bg="world-assets/cozy-town.png?v=20260810e";
+  x.world.bg="world-assets/cozy-town.png?v=20260811y";
   x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
   x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
   if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town.png?v=20260810e",era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town.png?v=20260811y",era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
     p.iconPreset=p.iconPreset||({
@@ -604,7 +606,7 @@ export function save(immediate=false,notify=true){
     syncTown();
     state.lastSaved=Date.now();
     try{
-      localStorage.setItem(KEY,JSON.stringify(state));
+      localStorage.setItem(KEY,JSON.stringify(serializeLocalMediaState(state)));
     }catch(error){
       console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
     }
@@ -1131,7 +1133,7 @@ function applyCohabit(r){
   b.sleepRoomId=residence.sleepRoomId||"";
   b.townId=state.homes[target].townId||a.townId;
 }
-export function setWorldBackground(){state.world.bg="world-assets/cozy-town.png?v=20260810e";save(true)}
+export function setWorldBackground(){state.world.bg="world-assets/cozy-town.png?v=20260811y";save(true)}
 function syncTown(){
   if(!state.activeTownId)return;
   const index=state.towns.findIndex(t=>t.id===state.activeTownId);
@@ -1171,7 +1173,10 @@ export function moveHomeOnTown(id,x,y,persist=true){
   home.mapY=Math.max(5,Math.min(95,Number(y)||50));
   if(persist)save();
 }
-export function replaceState(next){state=migrate(clone(next));localStorage.setItem(KEY,JSON.stringify(state))}
+export function replaceState(next){
+  state=migrate(preserveDevicePhotos(state,clone(next)));
+  localStorage.setItem(KEY,JSON.stringify(serializeLocalMediaState(state)));
+}
 export function resetAll(){
   state=fresh();
   localStorage.removeItem(KEY);

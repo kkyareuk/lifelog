@@ -1,6 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811u";
-import {eventFor} from "./simulation.js?v=20260811u";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811u";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811y";
+import {eventFor} from "./simulation.js?v=20260811y";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811y";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811y";
+
+await initializeLocalMediaState(state);
+save(true,false);
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -469,13 +473,16 @@ function enhanceDynamicForms(){
   });
   const sync=document.querySelector(".sync-panel");
   if(sync&&!sync.querySelector(".storage-meter")){
-    const usage=window.ParallelCityAuth?.getInfo?.().storageUsage||JSON.parse(localStorage.getItem("drawer-village-storage-usage")||'{"count":0,"bytes":0,"maxCount":120,"maxBytes":20971520}');
-    const percent=Math.min(100,Math.round((usage.bytes||0)/(usage.maxBytes||20971520)*100)),used=((usage.bytes||0)/1048576).toFixed(1),limit=((usage.maxBytes||20971520)/1048576).toFixed(0),remaining=Math.max(0,((usage.maxBytes||20971520)-(usage.bytes||0))/1048576).toFixed(1),left=`${remaining}MB 남음`;
     const storageCopy={
-      en:{title:"Image storage",usage:`${used}MB used · ${remaining}MB remaining`,summary:`${limit}MB total · ${characterLimit()} characters · ${townLimit()} towns · Linked images do not use this storage.`},
-      ja:{title:"画像ストレージ",usage:`${used}MB使用・残り${remaining}MB`,summary:`合計${limit}MB・キャラクター${characterLimit()}人・村${townLimit()}個・画像リンクはこの容量を使用しません。`}
-    }[state.uiLanguage]||{title:"사진 저장 공간",usage:`${used}MB 사용 · ${left}`,summary:`현재 총 ${limit}MB · 캐릭터 ${characterLimit()}명 · 마을 ${townLimit()}개 · 이미지 링크는 이 용량을 사용하지 않아요.`};
-    const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>${storageCopy.title}</h3><div><i style="width:${percent}%"></i></div><b>${storageCopy.usage}</b><small>${storageCopy.summary}</small>`;sync.append(meter);
+      en:{title:"Photo storage",usage:"Checking this device…",summary:"Originals stay on this device, while optimized uncropped copies sync with your Google account."},
+      ja:{title:"写真ストレージ",usage:"端末の使用量を確認中…",summary:"原本はこの端末に残し、切り抜かない保存用コピーをGoogleアカウントと同期します。"}
+    }[state.uiLanguage]||{title:"사진 저장 공간",usage:"기기 사용량 확인 중…",summary:"원본은 이 기기에 유지하고, 자르지 않은 저장용 사본을 Google 계정과 동기화해요."};
+    const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>${storageCopy.title}</h3><div><i style="width:0"></i></div><b>${storageCopy.usage}</b><small>${storageCopy.summary}</small>`;sync.append(meter);
+    localMediaUsage().then(usage=>{
+      if(!meter.isConnected)return;
+      const amount=usage.bytes===0?"0B":usage.bytes<1048576?`${Math.max(0.1,usage.bytes/1024).toFixed(1)}KB`:`${(usage.bytes/1048576).toFixed(1)}MB`;
+      meter.querySelector("b").textContent=state.uiLanguage==="en"?`${usage.count} photos · ${amount} on this device`:state.uiLanguage==="ja"?`${usage.count}枚・この端末で${amount}`:`사진 ${usage.count}장 · 이 기기에서 ${amount} 사용`;
+    });
   }
 }
 const addRoutine=characterId=>{
@@ -659,7 +666,7 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811u");
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811y");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
@@ -1839,7 +1846,7 @@ function bind(){
     deleteRoutine(active().id,el.dataset.deleteRoutine);render();
   });
   $("[data-export-file]")?.addEventListener("click",()=>{
-    const blob=new Blob([JSON.stringify({format:"drawer-village-backup",version:1,exportedAt:new Date().toISOString(),gameState:cloneState()})],{type:"application/json"});
+    const blob=new Blob([JSON.stringify({format:"drawer-village-backup",version:2,mediaPolicy:"device-only",exportedAt:new Date().toISOString(),gameState:informationOnlyState(cloneState())})],{type:"application/json"});
     const url=URL.createObjectURL(blob),link=document.createElement("a");
     link.href=url;link.download=`서랍마을-백업-${new Date().toISOString().slice(0,10)}.json`;
     document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -1852,7 +1859,7 @@ function bind(){
       try{
         const parsed=JSON.parse(await file.text()),next=["drawer-village-backup","parallel-city-backup"].includes(parsed?.format)?parsed.gameState:parsed;
         if(!next||typeof next!=="object"||!next.characters)throw new Error("invalid-backup");
-        window.ParallelCity.replaceState(next);showToast("백업 파일을 불러왔습니다");
+        window.ParallelCity.replaceState(informationOnlyState(next));showToast("정보를 불러왔습니다 · 이 기기의 기존 사진은 유지했습니다");
       }catch(error){console.error(error);showToast("서랍마을 백업 파일을 확인해 주세요")}
     };
     input.click();
@@ -1867,7 +1874,8 @@ function bind(){
   if(state.activeTab==="town")bindPlaceDrag();
 }
 
-function applyImage(type,id,room,data){
+async function applyImage(type,id,room,data){
+  data=await persistLocalImage(data);
   if(type==="room")setHomeImage(id,room,data);
   else if(type==="home")setHomeBackground(id,data);
   else if(type==="placeInterior")setPlaceInteriorImage(id,data);
@@ -1915,14 +1923,22 @@ function navigateToTab(tab,{recordHistory=true}={}){
   window.scrollTo({top:0,behavior:"auto"});
 }
 
-function centerMobileTownMap(characterId=state.activeId){
+function centerMobileTownMap(characterId){
   requestAnimationFrame(()=>{
     const scroller=document.querySelector(".town-map-scroll")||document.querySelector(".standard-observe-view .viewport"),world=scroller?.querySelector(".world");
     if(!scroller||!world)return;
-    const character=state.characters[characterId],entry=character?eventFor(character):null;
+    // 모바일 마을 화면은 현재 마을에 실제로 표시 중인 캐릭터 카드를 우선한다.
+    // 마을 전환 직후 다른 마을의 activeId 좌표로 움직이거나 지도 한가운데로
+    // 이동하지 않고, 사용자가 보고 있는 캐릭터의 건물·집 위치로 바로 간다.
+    const visibleCharacterId=characterId||document.querySelector("[data-mobile-town-character]")?.dataset.mobileTownCharacter||state.activeId;
+    const character=state.characters[visibleCharacterId],entry=character?eventFor(character):null;
     const place=entry?.placeId?state.world.places.find(item=>item.id===entry.placeId):null;
-    const ratioX=place?Math.max(0,Math.min(1,Number(place.x||50)/100)):.5;
-    const ratioY=place?Math.max(0,Math.min(1,Number(place.y||50)/100)):.5;
+    const home=entry?.home?state.homes[entry.visitHomeId||character?.homeId]:null;
+    const target=place||home;
+    // 위치 정보가 없는 캐릭터를 선택했을 때 임의로 지도 한가운데로 보내지 않는다.
+    if(!target)return;
+    const ratioX=Math.max(0,Math.min(1,Number(place?target.x:target.mapX)/100));
+    const ratioY=Math.max(0,Math.min(1,Number(place?target.y:target.mapY)/100));
     const left=Math.max(0,world.scrollWidth*ratioX-scroller.clientWidth/2);
     const top=Math.max(0,world.scrollHeight*ratioY-scroller.clientHeight/2);
     scroller.scrollTo({left,top,behavior:"smooth"});
@@ -2119,7 +2135,7 @@ async function useImageUrl(type,id,room){
     if(!response.ok)throw new Error("image-download-failed");
     const blob=await response.blob();
     if(!blob.type.startsWith("image/"))throw new Error("not-an-image");
-    applyImage(type,id,room,url.href);
+    await applyImage(type,id,room,url.href);
     render();
     showToast("이미지 링크를 저장했습니다 · 사진 저장 용량을 사용하지 않아요");
   }catch(error){
@@ -2131,7 +2147,7 @@ async function useImageUrl(type,id,room){
     }
     if(/(^|\.)pinterest\.[a-z.]+$|(^|\.)pin\.it$/i.test(url.hostname)){
       if(resolved!==value){
-        applyImage(type,id,room,resolved);
+        await applyImage(type,id,room,resolved);
         render();
         showToast("이미지 주소로 사진을 추가했습니다");
         return;
@@ -2140,7 +2156,7 @@ async function useImageUrl(type,id,room){
       return;
     }
     if(["http:","https:"].includes(url.protocol)){
-      applyImage(type,id,room,url.href);
+      await applyImage(type,id,room,url.href);
       render();
       showToast("원본 링크로 추가했습니다 · 이 주소는 자르기를 지원하지 않아요");
       return;
@@ -2230,7 +2246,7 @@ $("#image-picker").onchange=async e=>{
   try{
     const data=await cropImage(file,task.type);
     if(!data)return;
-    applyImage(task.type,task.id,task.room,data);
+    await applyImage(task.type,task.id,task.room,data);
     render();
   }catch(err){
     console.error(err);
@@ -2278,29 +2294,19 @@ function prepareTransparentIcon(file){
   });
 }
 
-function prepareContainedCharacterArt(file){
+function readOriginalImage(file){
   return new Promise((resolve,reject)=>{
-    const url=URL.createObjectURL(file),img=new Image();
-    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("image-load-failed"))};
-    img.onload=()=>{
-      const maxWidth=1000,maxHeight=1600,scale=Math.min(1,maxWidth/img.naturalWidth,maxHeight/img.naturalHeight);
-      const canvas=document.createElement("canvas"),context=canvas.getContext("2d");
-      canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
-      canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
-      context.clearRect(0,0,canvas.width,canvas.height);
-      context.drawImage(img,0,0,canvas.width,canvas.height);
-      const data=canvas.toDataURL("image/webp",.86);
-      URL.revokeObjectURL(url);
-      resolve(data);
-    };
-    img.src=url;
+    const reader=new FileReader();
+    reader.onerror=()=>reject(reader.error||new Error("image-load-failed"));
+    reader.onload=()=>resolve(String(reader.result||""));
+    reader.readAsDataURL(file);
   });
 }
 
 function cropImage(file,type){
   if(type==="catalogImage")return prepareCatalogIllustration(file);
   if(type==="icon"||type==="petIcon")return prepareTransparentIcon(file);
-  if(/^ld(?:Neutral|Joy|Sad|Angry|Tired)$/.test(type))return prepareContainedCharacterArt(file);
+  if(type==="ldImage"||/^ld(?:Neutral|Joy|Sad|Angry|Tired)$/.test(type))return readOriginalImage(file);
   const ratios={photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,home:16/9,place:1,placeInterior:16/9};
   const ratio=ratios[type]||16/9;
   const output=ratio<1?600:ratio===1?500:800;
@@ -2676,7 +2682,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260811u").catch(error=>{
+  import("./auth.js?v=20260811y").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2691,7 +2697,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260811u",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260811y",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

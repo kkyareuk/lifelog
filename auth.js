@@ -343,7 +343,6 @@ const publishEntitlements=value=>{
 const accessLabel=()=>[
   entitlements.characterSlotPacks?`캐릭터 슬롯 +${entitlements.characterSlotPacks*5}`:"",
   entitlements.townSlotPacks?`마을 슬롯 +${entitlements.townSlotPacks}`:"",
-  entitlements.storage50?"사진 50MB":"",
   entitlements.backgroundPacks.length?`배경 팩 ${entitlements.backgroundPacks.length}개`:"",
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:"",
   entitlements.dlcPacks.length?`DLC ${entitlements.dlcPacks.length}개`:""
@@ -365,10 +364,45 @@ async function resetGuides(){
   if(user)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:[]}},{merge:true});
 }
 
+const canvasBlob=(canvas,type,quality)=>new Promise(resolve=>canvas.toBlob(resolve,type,quality));
+async function imageBitmapForCloud(blob){
+  if(typeof createImageBitmap==="function")return createImageBitmap(blob);
+  return new Promise((resolve,reject)=>{
+    const url=URL.createObjectURL(blob),image=new Image();
+    image.onload=()=>{URL.revokeObjectURL(url);resolve(image)};
+    image.onerror=error=>{URL.revokeObjectURL(url);reject(error)};
+    image.src=url;
+  });
+}
+async function optimizeCloudImage(original){
+  if(original.size<=MAX_IMAGE_BYTES)return original;
+  const image=await imageBitmapForCloud(original);
+  const sourceWidth=Number(image.width)||1,sourceHeight=Number(image.height)||1;
+  let scale=Math.min(1,2200/sourceWidth,2200/sourceHeight),quality=.9;
+  try{
+    for(let attempt=0;attempt<7;attempt+=1){
+      const canvas=document.createElement("canvas");
+      canvas.width=Math.max(1,Math.round(sourceWidth*scale));
+      canvas.height=Math.max(1,Math.round(sourceHeight*scale));
+      const context=canvas.getContext("2d",{alpha:true});
+      context.imageSmoothingEnabled=true;
+      context.imageSmoothingQuality="high";
+      // drawImage의 전체 원본 영역을 전체 캔버스에 비례 축소한다. cover나
+      // 잘라내기는 사용하지 않으므로 세로 LD도 머리와 발끝이 모두 보존된다.
+      context.drawImage(image,0,0,sourceWidth,sourceHeight,0,0,canvas.width,canvas.height);
+      const optimized=await canvasBlob(canvas,"image/webp",quality);
+      if(optimized&&optimized.size<=MAX_IMAGE_BYTES)return optimized;
+      scale*=.82;
+      quality=Math.max(.68,quality-.04);
+    }
+  }finally{if(typeof image.close==="function")image.close()}
+  throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
+}
+
 async function uploadDataUrl(dataUrl,manifest){
   if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
-  const blob=await (await fetch(dataUrl)).blob();
-  if(blob.size>MAX_IMAGE_BYTES)throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
+  const sourceBlob=await (await fetch(dataUrl)).blob();
+  const blob=await optimizeCloudImage(sourceBlob);
   const hash=await digestBlob(blob),known=manifest.items.find(item=>item.hash===hash);
   if(known){uploadedCache.set(dataUrl,known.url);return known.url}
   if(manifest.items.length+manifest.legacyCount>=maxPhotos())throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
@@ -376,8 +410,14 @@ async function uploadDataUrl(dataUrl,manifest){
   if(usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
   const ext=blob.type==="image/png"?"png":"webp";
   const target=ref(storage,`users/${user.uid}/media/${hash}.${ext}`);
-  await Promise.race([uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000,immutable"}),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),25000))]);
-  const url=await Promise.race([getDownloadURL(target),new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),8000))]);
+  await Promise.race([
+    uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000,immutable"}),
+    new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),30000))
+  ]);
+  const url=await Promise.race([
+    getDownloadURL(target),
+    new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),10000))
+  ]);
   manifest.items.push({hash,size:blob.size,url});
   uploadedCache.set(dataUrl,url);
   return url;
@@ -393,13 +433,13 @@ async function prepareState(local,manifest,previousState){
       else if(value&&typeof value==="object")walk(value,nextPath);
     });
   };
-  walk(next,["game"]);
+  walk(next,[]);
   let photoFailures=0;
-  for(let i=0;i<jobs.length;i++){
+  for(let i=0;i<jobs.length;i+=1){
     status(`${accountName()} · 사진 ${i+1}/${jobs.length} 올리는 중`);
     try{jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest)}
     catch(error){
-      console.warn("사진은 기기에 유지하고 텍스트 동기화를 계속합니다",error);
+      console.warn("사진 업로드에 실패했지만 기존 클라우드 사진과 정보 동기화를 유지합니다",error);
       photoFailures+=1;
       const previousValue=jobs[i].path.reduce((value,key)=>value&&typeof value==="object"?value[key]:undefined,previousState);
       jobs[i].node[jobs[i].key]=typeof previousValue==="string"&&!isData(previousValue)?previousValue:"";
@@ -469,7 +509,11 @@ async function upload({silent=false,reason=""}={}){
     }
     publishStorageUsage(mediaManifest,gameState);
     status(`${accountName()} · ${reason||"계정 저장"} 완료`);
-    toast(photoFailures?`텍스트 동기화 완료 · 사진 ${photoFailures}장은 이 기기에 유지`:compatibilityMode?"동기화되었습니다 · 호환 저장 사용 중":uploadedCount?`동기화되었습니다 · 새 사진 ${uploadedCount}장 저장`:"동기화되었습니다");
+    toast(photoFailures
+      ?`정보 동기화 완료 · 사진 ${photoFailures}장은 기존 클라우드 사진을 유지`
+      :compatibilityMode?"사진과 정보가 동기화되었습니다 · 호환 저장 사용 중"
+        :uploadedCount?`사진과 정보가 동기화되었습니다 · 새 사진 ${uploadedCount}장 저장`
+          :"사진과 정보가 동기화되었습니다");
     return true;
   }catch(error){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
