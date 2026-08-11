@@ -1,0 +1,135 @@
+/* 2026-08-11i — complete town canvas, without map panning or cropping. */
+.town-map-scroll{
+  overflow:hidden!important;
+  overscroll-behavior:none!important;
+  scrollbar-width:none!important;
+}
+.town-map-scroll::-webkit-scrollbar{display:none!important}
+.town-map-scroll>.world{overflow:hidden!important}
+
+/* Buildings, labels, and resident groups shrink together with the full map. */
+.town-map-scroll .place.has-art,
+.standard-observe-view .viewport .place.has-art{
+  width:10%!important;
+  height:14.5%!important;
+}
+.town-map-scroll .map-place-label,
+.standard-observe-view .viewport .map-place-label{
+  min-width:0!important;
+  max-width:110px!important;
+  transform:translate(-50%,calc(-100% - 14px))!important;
+  font-size:clamp(9px,.75vw,12px)!important;
+  line-height:1.12!important;
+}
+.town-map-scroll .map-place-label small,
+.standard-observe-view .viewport .map-place-label small{font-size:clamp(7px,.6vw,9px)!important}
+.town-map-scroll .place-people,
+.standard-observe-view .viewport .place-people{
+  transform:translate(-50%,-50%) scale(.72)!important;
+  transform-origin:center bottom!important;
+}
+
+@media(min-width:721px){
+  /* PC: preserve the whole current 3000 x 3300 map in the map panel. */
+  html:not(.native-app) .town-map-scroll,
+  html:not(.native-app) .standard-observe-view .viewport{
+    display:grid!important;
+    place-items:center!important;
+    width:100%!important;
+    height:clamp(540px,calc(100dvh - 190px),820px)!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    touch-action:auto!important;
+    background:color-mix(in srgb,#d9e9df 86%,var(--bg))!important;
+  }
+  html:not(.native-app) .town-map-scroll>.world,
+  html:not(.native-app) .standard-observe-view .viewport>.world{
+    width:min(100%,calc((100dvh - 190px) * 10 / 11),745px)!important;
+    height:auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:100%!important;
+    max-height:100%!important;
+    aspect-ratio:10/11!important;
+    touch-action:auto!important;
+  }
+  html:not(.native-app) :is(.town-map-scroll,.standard-observe-view .viewport) .world-bg{
+    object-fit:contain!important;
+  }
+}
+
+@media(min-width:901px){
+  /* The desktop town workspace itself also stays inside one browser screen;
+     the settings column scrolls independently only when it contains many fields. */
+  html:not(.native-app)[data-active-tab="town"],
+  html:not(.native-app)[data-active-tab="town"] body{
+    width:100%;
+    height:100%;
+    overflow:hidden!important;
+  }
+  html:not(.native-app)[data-active-tab="town"] main{
+    height:calc(100dvh - 106px)!important;
+    overflow:hidden!important;
+  }
+  html:not(.native-app)[data-active-tab="town"] .mobile-town-shell{height:100%}
+  html:not(.native-app)[data-active-tab="town"] .town-edit{
+    height:calc(100% - 74px)!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  html:not(.native-app)[data-active-tab="town"] .town-map-scroll{
+    height:100%!important;
+  }
+  html:not(.native-app)[data-active-tab="town"] .town-map-scroll>.world{
+    width:min(100%,calc((100dvh - 234px) * 10 / 11),745px)!important;
+  }
+  html:not(.native-app)[data-active-tab="town"] .town-editor-panel{
+    height:100%!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    overscroll-behavior:contain;
+  }
+  html:not(.native-app)[data-active-tab="town"] .site-footer{display:none!important}
+}
+
+@media(max-width:720px){
+  /* Mobile/PWA: remove the old wide 16:9 world and horizontal swipe. */
+  html.native-app[data-active-tab="town"] .town-map-scroll{
+    display:grid!important;
+    place-items:center!important;
+    overflow:hidden!important;
+    touch-action:none!important;
+    background:color-mix(in srgb,#d9e9df 82%,#17212b)!important;
+  }
+  html.native-app[data-active-tab="town"] .town-map-scroll>.world{
+    width:100vw!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    max-width:100vw!important;
+    max-height:100dvh!important;
+    aspect-ratio:10/11!important;
+    touch-action:none!important;
+  }
+  html.native-app[data-active-tab="town"] .town-map-scroll .world-bg{object-fit:contain!important}
+  html.native-app[data-active-tab="town"] .town-map-scroll .place.has-art{
+    width:9%!important;
+    height:13%!important;
+  }
+  html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label{
+    max-width:76px!important;
+    transform:translate(-50%,calc(-100% - 9px))!important;
+    font-size:8px!important;
+    line-height:1.08!important;
+  }
+  html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{font-size:6.5px!important}
+  html.native-app[data-active-tab="town"] .town-map-scroll .place-people{
+    transform:translate(-50%,-50%) scale(.56)!important;
+  }
+  html.native-app[data-active-tab="town"] .mobile-town-shell:not(.editing) .town-map-scroll .place{
+    touch-action:manipulation!important;
+  }
+  html.native-app[data-active-tab="town"] .mobile-town-shell.editing .town-map-scroll .place{
+    touch-action:none!important;
+  }
+}
