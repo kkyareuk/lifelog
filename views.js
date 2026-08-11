@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811g";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811g";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811h";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811h";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -1899,7 +1899,7 @@ function visualThemeSettings(){
   const all=[...heritage,...vivid,...bright,...classic];
   const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span>${state.visualTheme===value?`<em>현재 선택</em>`:""}</button>`).join("");
   const current=all.find(([value])=>value===state.visualTheme)||classic[0];
-  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><div class="current-visual-theme" style="--theme-a:${esc(current[3])};--theme-b:${esc(current[4])}"><i aria-hidden="true"></i><span><small>현재 선택한 테마</small><b>${esc(current[1])}</b><em>${esc(current[2])}</em></span></div><button type="button" class="primary open-visual-theme-picker" data-open-visual-theme-dialog>테마 선택하기</button><dialog class="visual-theme-dialog" data-visual-theme-dialog><form method="dialog"><div class="visual-theme-dialog-head"><span><small>COLOR THEME</small><h2>테마 선택하기</h2><p>미리보기에서 원하는 색을 고르면 바로 적용돼요.</p></span><button value="close" aria-label="닫기">×</button></div><div class="visual-theme-dialog-body"><h3>고전과 장식 테마</h3><div class="visual-theme-options heritage-theme-options">${buttons(heritage)}</div><h3>밝고 선명한 테마</h3><div class="visual-theme-options vivid-theme-options">${buttons(vivid)}</div><h3>밝은 파스텔 테마</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>차분한 기본 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></div><div class="visual-theme-dialog-actions"><button value="close">닫기</button></div></form></dialog></section>`;
+  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><div class="current-visual-theme" style="--theme-a:${esc(current[3])};--theme-b:${esc(current[4])}"><i aria-hidden="true"></i><span><small>현재 선택한 테마</small><b>${esc(current[1])}</b><em>${esc(current[2])}</em></span></div><button type="button" class="primary open-visual-theme-picker" data-open-visual-theme-dialog>테마 선택하기</button><dialog class="visual-theme-dialog" data-visual-theme-dialog><form method="dialog"><div class="visual-theme-dialog-head"><span><small>COLOR THEME</small><h2>테마 선택하기</h2><p>미리보기에서 원하는 색을 고르면 바로 적용돼요.</p></span><button value="close" aria-label="닫기">×</button></div><div class="visual-theme-dialog-body"><div class="visual-theme-options visual-theme-options-all">${buttons(all)}</div></div><div class="visual-theme-dialog-actions"><button value="close">닫기</button></div></form></dialog></section>`;
 }
 Object.assign(UI_TEXT.en,{
   "진주빛 로즈 부두아르":"Pearl-Rose Boudoir","블러시 실크와 오래된 진주 장식이 머무는 공주님의 작은 방":"A princess's private room of blush silk and antique pearls",
@@ -1936,6 +1936,34 @@ Object.assign(UI_TEXT.ja,{
   "유리 바다의 아침":"ガラスの海の朝","햇빛이 투과하는 깊고 맑은 바다의 푸른빛":"日差しが透き通る深く澄んだ海の青",
   "라일락 꿈결":"ライラックの夢心地","잠들기 전 창가에 번지는 부드러운 보랏빛":"眠る前の窓辺に広がるやわらかな紫",
   "베르사유의 황금 오후":"ヴェルサイユの黄金の午後","샹들리에와 금박 장식 사이로 쏟아지는 오래된 오후의 빛":"シャンデリアと金箔装飾の間に降り注ぐ古い午後の光"
+});
+Object.assign(UI_TEXT.en,{
+  "전체 색상 테마":"Color theme","현재 선택한 테마":"Current theme","현재 선택":"Selected",
+  "마을 편집":"Edit town","마을 저장":"Save town","마을을 만드는 순서":"How to build a town",
+  "마을 이름과 배경을 고르세요.":"Choose a town name and background.","건물을 추가하고 유형을 고르세요.":"Add buildings and choose their types.","‘건물 모양 선택’에서 추천 그림을 적용하세요.":"Apply a suggested design under ‘Choose building design.’","지도 위 건물을 직접 끌어 위치를 정하세요.":"Drag buildings on the map to place them.",
+  "마을 이름":"Town name","마을 시대":"Town era","현대":"Modern","중세":"Medieval","기본 배경":"Default background","제공한 손그림 마을":"Provided hand-drawn town","기본 마을 손그림":"Default hand-drawn town","제공받은 기본 마을 손그림":"Provided default hand-drawn town",
+  "건물은 PC와 모바일 모두 이 화면에서 끌어 옮길 수 있어요.":"You can drag buildings on this screen on both PC and mobile.","+ 건물 추가":"+ Add building","유형을 먼저 고르면 어울리는 건물 모양을 추천해요.":"Choose a type first to see matching building designs.","이 건물 삭제":"Delete this building",
+  "건물 이름":"Building name","건물 유형":"Building type","세부 유형":"Subtype","가격대":"Price range","저렴":"Budget","보통":"Standard","고급":"Premium","명품":"Luxury","마을 속 건물 크기":"Building size on map","매운맛 정도":"Spice level","단맛 정도":"Sweetness level",
+  "지도에 표시할 건물 모양":"Building design shown on the map","건물 모양 선택":"Choose building design","생활 로그·현재 장면용 내부 사진":"Interior art for life logs and current scenes","내부 사진 업로드":"Upload interior art","링크":"Link","지우기":"Remove","주요 이용층":"Main audience","이곳에서 파는 것·이용할 수 있는 것":"Items and services available here",
+  "카페":"Cafe","음식점":"Restaurant","병원":"Hospital","공연장":"Venue","옷가게":"Clothing shop","사무실":"Office","학교":"School","공원":"Park","도서관":"Library","쇼핑몰":"Shopping center","숙박":"Lodging","관공서":"Public office","기타":"Other","기본 건물":"Basic building","작은 집":"Small house","지정 안 함 · 해당 유형 전체 취급":"No subtype · General use",
+  "로스터리 카페":"Roastery cafe","디저트 카페":"Dessert cafe","테마 카페":"Theme cafe","찻집":"Tea house","한식당":"Korean restaurant","중식당":"Chinese restaurant","일식당":"Japanese restaurant","이탈리아 식당":"Italian restaurant","분식집":"Korean snack bar","패스트푸드점":"Fast-food restaurant","디저트 가게":"Dessert shop",
+  "종합병원":"General hospital","내과":"Internal medicine","외과":"Surgery","이비인후과":"ENT clinic","정형외과":"Orthopedics","피부과":"Dermatology","치과":"Dental clinic","안과":"Eye clinic","한의원":"Korean medicine clinic","콘서트홀":"Concert hall","라이브 클럽":"Live club","뮤지컬 극장":"Musical theater","연극 극장":"Playhouse","야외 공연장":"Outdoor venue",
+  "스포츠 브랜드":"Sportswear shop","캐주얼 브랜드":"Casualwear shop","정장 브랜드":"Formalwear shop","빈티지 숍":"Vintage shop","디자이너 브랜드":"Designer boutique","신발 가게":"Shoe shop","액세서리 숍":"Accessories shop","일반 회사":"Company office","IT 회사":"IT company","연구소":"Research institute","방송국":"Broadcasting station","출판사":"Publisher","디자인 스튜디오":"Design studio",
+  "초등학교":"Elementary school","중학교":"Middle school","고등학교":"High school","대학교":"University","학원":"Academy","근린공원":"Neighborhood park","수목원":"Botanical garden","놀이공원":"Amusement park","반려동물 공원":"Pet park","공공도서관":"Public library","대학도서관":"University library","전문도서관":"Special library","백화점":"Department store","아울렛":"Outlet mall","복합 쇼핑몰":"Shopping complex","호텔":"Hotel","여관":"Inn","리조트":"Resort","게스트하우스":"Guesthouse","시청":"City hall","주민센터":"Community center","경찰서":"Police station","소방서":"Fire station"
+});
+Object.assign(UI_TEXT.ja,{
+  "전체 색상 테마":"全体カラーテーマ","현재 선택한 테마":"現在のテーマ","현재 선택":"選択中",
+  "마을 편집":"村を編集","마을 저장":"村を保存","마을을 만드는 순서":"村の作り方",
+  "마을 이름과 배경을 고르세요.":"村の名前と背景を選びます。","건물을 추가하고 유형을 고르세요.":"建物を追加して種類を選びます。","‘건물 모양 선택’에서 추천 그림을 적용하세요.":"「建物デザインを選ぶ」からおすすめの絵を適用します。","지도 위 건물을 직접 끌어 위치를 정하세요.":"地図上で建物をドラッグして配置します。",
+  "마을 이름":"村の名前","마을 시대":"村の時代","현대":"現代","중세":"中世","기본 배경":"基本背景","제공한 손그림 마을":"提供された手描きの村","기본 마을 손그림":"基本の手描き村","제공받은 기본 마을 손그림":"提供された基本の手描き村",
+  "건물은 PC와 모바일 모두 이 화면에서 끌어 옮길 수 있어요.":"PCでもモバイルでも、この画面で建物をドラッグできます。","+ 건물 추가":"＋建物を追加","유형을 먼저 고르면 어울리는 건물 모양을 추천해요.":"先に種類を選ぶと、合う建物デザインをおすすめします。","이 건물 삭제":"この建物を削除",
+  "건물 이름":"建物名","건물 유형":"建物の種類","세부 유형":"詳細タイプ","가격대":"価格帯","저렴":"手頃","보통":"標準","고급":"高級","명품":"ラグジュアリー","마을 속 건물 크기":"地図上の建物サイズ","매운맛 정도":"辛さ","단맛 정도":"甘さ",
+  "지도에 표시할 건물 모양":"地図に表示する建物デザイン","건물 모양 선택":"建物デザインを選ぶ","생활 로그·현재 장면용 내부 사진":"生活ログ・現在シーン用の内装画像","내부 사진 업로드":"内装画像をアップロード","링크":"リンク","지우기":"削除","주요 이용층":"主な利用者","이곳에서 파는 것·이용할 수 있는 것":"ここで販売・利用できるもの",
+  "카페":"カフェ","음식점":"飲食店","병원":"病院","공연장":"公演会場","옷가게":"服屋","사무실":"オフィス","학교":"学校","공원":"公園","도서관":"図書館","쇼핑몰":"ショッピングモール","숙박":"宿泊施設","관공서":"公共機関","기타":"その他","기본 건물":"基本の建物","작은 집":"小さな家","지정 안 함 · 해당 유형 전체 취급":"指定なし・種類全般",
+  "로스터리 카페":"ロースタリーカフェ","디저트 카페":"デザートカフェ","테마 카페":"テーマカフェ","찻집":"茶屋","한식당":"韓国料理店","중식당":"中華料理店","일식당":"日本料理店","이탈리아 식당":"イタリア料理店","분식집":"軽食店","패스트푸드점":"ファストフード店","디저트 가게":"デザートショップ",
+  "종합병원":"総合病院","내과":"内科","외과":"外科","이비인후과":"耳鼻咽喉科","정형외과":"整形外科","피부과":"皮膚科","치과":"歯科","안과":"眼科","한의원":"韓医院","콘서트홀":"コンサートホール","라이브 클럽":"ライブクラブ","뮤지컬 극장":"ミュージカル劇場","연극 극장":"演劇場","야외 공연장":"野外公演場",
+  "스포츠 브랜드":"スポーツブランド店","캐주얼 브랜드":"カジュアルブランド店","정장 브랜드":"フォーマル店","빈티지 숍":"ヴィンテージショップ","디자이너 브랜드":"デザイナーブランド店","신발 가게":"靴屋","액세서리 숍":"アクセサリーショップ","일반 회사":"一般企業","IT 회사":"IT企業","연구소":"研究所","방송국":"放送局","출판사":"出版社","디자인 스튜디오":"デザインスタジオ",
+  "초등학교":"小学校","중학교":"中学校","고등학교":"高校","대학교":"大学","학원":"学習塾","근린공원":"近隣公園","수목원":"植物園","놀이공원":"遊園地","반려동물 공원":"ペット公園","공공도서관":"公共図書館","대학도서관":"大学図書館","전문도서관":"専門図書館","백화점":"百貨店","아울렛":"アウトレット","복합 쇼핑몰":"複合ショッピングモール","호텔":"ホテル","여관":"旅館","리조트":"リゾート","게스트하우스":"ゲストハウス","시청":"市役所","주민센터":"住民センター","경찰서":"警察署","소방서":"消防署"
 });
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;

@@ -147,6 +147,52 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
 html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[data-visual-theme="baroque"] span{background:#fff9e8e8!important}
 html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[data-visual-theme="baroque"] :is(b,small){color:#441004!important;-webkit-text-fill-color:#441004!important}
 
+/* The picker is one continuous collection. The selected badge owns its own
+   row so it never covers a long Korean, English, or Japanese theme name. */
+.visual-theme-dialog .visual-theme-options-all{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  padding-top:16px;
+}
+.visual-theme-dialog .visual-theme-options-all>button{
+  display:grid!important;
+  grid-template-columns:42px minmax(0,1fr)!important;
+  align-items:center;
+  column-gap:12px;
+  row-gap:6px;
+  min-width:0;
+}
+.visual-theme-dialog .visual-theme-options-all>button>i{
+  grid-column:1;
+  grid-row:1;
+}
+.visual-theme-dialog .visual-theme-options-all>button>span{
+  grid-column:2;
+  grid-row:1;
+  min-width:0;
+}
+.visual-theme-dialog .visual-theme-options-all>button>em{
+  position:static!important;
+  grid-column:2;
+  grid-row:2;
+  justify-self:start;
+  max-width:100%;
+  margin:0!important;
+  padding:4px 9px!important;
+  border-radius:999px;
+  background:var(--p)!important;
+  color:var(--on-p)!important;
+  -webkit-text-fill-color:var(--on-p)!important;
+  font-size:.72rem;
+  font-style:normal;
+  font-weight:800;
+  line-height:1.25;
+  white-space:nowrap;
+  opacity:1!important;
+  z-index:4;
+}
+
 @media(max-width:720px){
   html[data-color-mode][data-visual-theme] :is(.panel,.form,.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card){box-shadow:0 9px 24px var(--theme-shadow)!important}
+  .visual-theme-dialog .visual-theme-options-all{grid-template-columns:minmax(0,1fr)}
+  .visual-theme-dialog .visual-theme-options-all>button{padding:13px 14px!important}
 }
