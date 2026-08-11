@@ -69,14 +69,16 @@ function webCart(rawItems){
   return rawItems.map(raw=>{
     const packageId=String(raw?.packageId||"");
     const quantity=Number(raw?.quantity);
-    if(!WEB_PRODUCTS[packageId]||seen.has(packageId)||!Number.isInteger(quantity)||quantity<1||quantity>20){
-      throw Object.assign(new Error("장바구니 상품 또는 수량이 올바르지 않습니다."),{status:400});
-    }
+    const product=WEB_PRODUCTS[packageId];
+    if(!product||seen.has(packageId))throw Object.assign(new Error("장바구니 상품을 확인해 주세요."),{status:400});
+    if(!Number.isInteger(quantity)||quantity<1)throw Object.assign(new Error("장바구니 상품 수량을 확인해 주세요."),{status:400});
+    const maxQuantity=Math.floor((WEB_GAME_PAYMENT_LIMIT-1)/product.amount);
+    if(quantity>maxQuantity)throw Object.assign(new Error("한 번에 결제할 수 있는 5만원 미만 범위를 넘는 수량입니다."),{status:400});
     if(packageId==="storage_50mb"&&quantity!==1){
       throw Object.assign(new Error("사진 저장 공간 상품은 한 번에 하나만 구매할 수 있습니다."),{status:400});
     }
     seen.add(packageId);
-    return {packageId,quantity,name:WEB_PRODUCTS[packageId].name,unitAmount:WEB_PRODUCTS[packageId].amount};
+    return {packageId,quantity,name:product.name,unitAmount:product.amount};
   });
 }
 

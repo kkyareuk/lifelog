@@ -2304,6 +2304,14 @@ Object.assign(UI_TEXT.ja,{
   ,"원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.":"ほしい商品と数量をカートに入れて、まとめて決済できます。","캐릭터 슬롯":"キャラクタースロット","캐릭터 5명 추가":"キャラクター枠を5人追加","캐릭터 슬롯 5개가 결제 즉시 계정에 영구 적용되며, 서랍마을 서비스 운영 기간 동안 유지됩니다.":"キャラクター枠5人分が決済直後にアカウントへ永続的に適用され、ひきだし村のサービス運営期間中は維持されます。","마을 슬롯":"村スロット","마을 1개 추가":"村スロットを1つ追加","마을 슬롯 1개가 결제 즉시 계정에 영구 적용되며, 서랍마을 서비스 운영 기간 동안 유지됩니다.":"村スロット1つが決済直後にアカウントへ永続的に適用され、ひきだし村のサービス運営期間中は維持されます。","사진 저장 공간":"画像ストレージ","사진 저장 공간 50MB 추가":"画像ストレージを50MB追加","구매하면 계정의 사진 저장 공간이 50MB로 늘어납니다.":"購入するとアカウントの画像保存容量が50MBになります。","일회성 구매":"買い切り","개발 응원":"開発を応援","개발자에게 녹차 사주기 🍵":"開発者に緑茶をおごる 🍵","잘 먹겠습니다 🥹":"ありがとうございます 🥹","같은 상품도 여러 개 담을 수 있어요.":"同じ商品を複数入れることもできます。","한 번 결제 금액은 5만원 미만이어야 해요.":"1回の決済金額は5万ウォン未満にしてください。","한도에 닿는 상품은 더 담을 수 없어요.":"上限に達する商品は追加できません。","이 상품을 더 담으면 5만원 이상이에요":"この商品を追加すると5万ウォン以上になります","수량을 줄여 주세요":"数量を減らしてください","아직 장바구니가 비어 있어요.":"カートは空です。","총 결제금액":"合計金額","장바구니 결제하기":"カートを決済"
 });
 Object.assign(UI_TEXT.en,{
+  "캐릭터 슬롯 5개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.":"Five character slots are permanently applied to the account immediately after payment. Access is guaranteed for at least six months from the payment date and continues while the service remains in operation.",
+  "마을 슬롯 1개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.":"One town slot is permanently applied to the account immediately after payment. Access is guaranteed for at least six months from the payment date and continues while the service remains in operation."
+});
+Object.assign(UI_TEXT.ja,{
+  "캐릭터 슬롯 5개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.":"キャラクター枠5人分が決済直後にアカウントへ永続的に適用されます。決済日から最低6か月間の利用を保証し、その後もサービス運営期間中は維持されます。",
+  "마을 슬롯 1개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.":"村スロット1つが決済直後にアカウントへ永続的に適用されます。決済日から最低6か月間の利用を保証し、その後もサービス運営期間中は維持されます。"
+});
+Object.assign(UI_TEXT.en,{
   "저장과 동기화":"Save & sync","이 캐릭터가 끌리는 특성 정하기":"Choose preferred traits","이 캐릭터가 비선호하는 특성 정하기":"Choose disliked traits","비선호하는 특징 정하기":"Choose disliked traits",
   "주변에서는 두 사람을 연인으로 알고 있지만, 지금은 서로의 시간을 존중하며 각자 하던 일에 집중하고 있어요. 가까이 있어도 늘 같은 행동을 해야 한다고 생각하지 않아요.":"People around them know they are a couple, but right now they are respecting each other's time and focusing on their own activities. Being close does not mean they always need to do the same thing.",
   "상대가 곁에 있어도 필요한 일은 먼저 스스로 해낸 뒤, 도움이 필요할 때만 자연스럽게 손을 내밀었어요.":"Even with the other person nearby, they handled what they could on their own and reached out naturally only when help was needed.",
@@ -2488,8 +2496,8 @@ export function setAccountEntitlements(value){accountEntitlements={backgroundPac
 
 const CART_KEY="drawer-village-cart";
 const SHOP_PRODUCTS={
-  character_slots_5:{label:"캐릭터 슬롯",title:"캐릭터 5명 추가",description:"캐릭터 슬롯 5개가 결제 즉시 계정에 영구 적용되며, 서랍마을 서비스 운영 기간 동안 유지됩니다.",price:1200},
-  town_slot_1:{label:"마을 슬롯",title:"마을 1개 추가",description:"마을 슬롯 1개가 결제 즉시 계정에 영구 적용되며, 서랍마을 서비스 운영 기간 동안 유지됩니다.",price:1900},
+  character_slots_5:{label:"캐릭터 슬롯",title:"캐릭터 5명 추가",description:"캐릭터 슬롯 5개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.",price:1200},
+  town_slot_1:{label:"마을 슬롯",title:"마을 1개 추가",description:"마을 슬롯 1개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.",price:1900},
   green_tea:{label:"개발 응원",title:"개발자에게 녹차 사주기 🍵",description:"잘 먹겠습니다 🥹",price:1500}
 };
 const jobExpansionCard=()=>`<section class="shop-coming shop-expansion-showcase" data-product-id="job_expansion"><div class="expansion-art"><img src="./shop-assets/resume-expansion.png" alt="이력서를 제출해요 확장팩 이미지"><span>이 이미지는 <b>shop-assets/resume-expansion.png</b> 파일만 바꾸면 교체돼요.</span></div><div class="expansion-copy"><span>확장팩 · 출시 준비 중</span><small>직업 확장팩</small><h2>이력서를 제출해요</h2><p>기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.</p><ul><li>직업별 위계·직급과 승진 흐름</li><li>상사·동료·부하 직원의 직장 내 관계</li><li>근무 장소·부서·담당 업무와 전용 생활 장면</li></ul><div><b>가격 미정</b><button type="button" disabled>출시 준비 중</button></div></div></section>`;
