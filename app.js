@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811s";
-import {eventFor} from "./simulation.js?v=20260811s";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811s";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811t";
+import {eventFor} from "./simulation.js?v=20260811t";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811t";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -659,7 +659,7 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811s");
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811t");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
@@ -805,6 +805,28 @@ function showToast(message){
   toast.classList.add("show");
   clearTimeout(showToast.timer);
   showToast.timer=setTimeout(()=>toast.classList.remove("show"),1800);
+}
+
+function downloadCharacterStatisticsReport(dialog){
+  if(!dialog)return;
+  const clean=value=>String(value||"").replace(/\s+/g," ").trim();
+  const escapeHtml=value=>clean(value).replace(/[&<>"']/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[character]);
+  const total=clean(dialog.querySelector(".character-stat-summary b")?.textContent)||"0";
+  const highlights=[...dialog.querySelectorAll(".character-stat-highlights article")].map(card=>({
+    label:clean(card.querySelector("small")?.textContent),value:clean(card.querySelector("b")?.textContent)
+  }));
+  const sections=[...dialog.querySelectorAll(".character-stat-grid section")].map(section=>({
+    title:clean(section.querySelector("h3")?.textContent),
+    rows:[...section.querySelectorAll("li")].map(row=>({
+      label:clean(row.querySelector("b")?.textContent||row.textContent),value:clean(row.querySelector("small")?.textContent)
+    }))
+  }));
+  const created=new Date(),dateLabel=created.toLocaleString();
+  const report=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>서랍마을 캐릭터 통계 보고서</title><style>body{margin:0;background:#f4f0ea;color:#27231f;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:980px;margin:auto;padding:42px 24px 70px}header{padding:28px;border-radius:24px;background:linear-gradient(135deg,#273449,#6b7a91);color:#fff}h1{margin:6px 0 10px}header p{margin:0;opacity:.82}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:22px 0}.summary article,.group{padding:18px;border:1px solid #d8d0c6;border-radius:18px;background:#fff}.summary small{display:block;color:#746c64}.summary b{display:block;margin-top:8px;font-size:26px}.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}.group h2{margin:0 0 12px;font-size:18px}.group ul{display:grid;gap:9px;margin:0;padding:0;list-style:none}.group li{display:flex;justify-content:space-between;gap:14px;padding-bottom:8px;border-bottom:1px solid #eee7df}.group em{color:#756d66;font-style:normal;white-space:nowrap}footer{margin-top:24px;color:#786f67;font-size:13px}</style></head><body><main><header><small>DRAWER VILLAGE · CHARACTER REPORT</small><h1>캐릭터 통계 보고서</h1><p>${escapeHtml(dateLabel)} · 저장된 캐릭터 ${escapeHtml(total)}명</p></header><section class="summary">${highlights.map(item=>`<article><small>${escapeHtml(item.label)}</small><b>${escapeHtml(item.value)}</b></article>`).join("")}</section><section class="groups">${sections.map(section=>`<article class="group"><h2>${escapeHtml(section.title)}</h2><ul>${section.rows.map(row=>`<li><span>${escapeHtml(row.label)}</span><em>${escapeHtml(row.value)}</em></li>`).join("")}</ul></article>`).join("")}</section><footer>이 보고서는 기기에 저장된 캐릭터 설정을 집계해 만들었습니다.</footer></main></body></html>`;
+  const blob=new Blob([report],{type:"text/html;charset=utf-8"}),url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.href=url;link.download=`서랍마을-캐릭터-통계-${created.toISOString().slice(0,10)}.html`;
+  document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+  showToast("캐릭터 통계 보고서를 저장했습니다");
 }
 
 function openHomeOccupantSheet(button){
@@ -1021,15 +1043,14 @@ function bind(){
     const dialog=$("[data-home-display-editor-dialog]");
     if(dialog&&!dialog.open)dialog.showModal();
   });
-  $("[data-open-character-request]")?.addEventListener("click",event=>{
-    event.stopPropagation();
-    const dialog=$("[data-character-request-dialog]");
-    if(dialog&&!dialog.open){dialog.showModal();requestAnimationFrame(()=>dialog.querySelector('[name="requestTitle"]')?.focus())}
-  });
   $("[data-open-character-stats]")?.addEventListener("click",event=>{
     event.stopPropagation();
     const dialog=$("[data-character-stats-dialog]");
     if(dialog&&!dialog.open)dialog.showModal();
+  });
+  $("[data-download-character-stats]")?.addEventListener("click",event=>{
+    event.stopPropagation();
+    downloadCharacterStatisticsReport(event.currentTarget.closest("[data-character-stats-dialog]"));
   });
   $$('[data-home-display-field]').forEach(field=>{
     const apply=(persist=false)=>{
@@ -1052,19 +1073,6 @@ function bind(){
       apply(true);
       if(field.dataset.homeDisplayField==="homeVisualMode")render();
     });
-  });
-  $("[data-submit-character-request]")?.addEventListener("click",event=>{
-    event.stopPropagation();
-    const dialog=event.currentTarget.closest("[data-character-request-dialog]"),form=dialog?.querySelector("form");
-    if(!form?.reportValidity())return;
-    const actorId=form.elements.requestCharacter.value,requestTitle=form.elements.requestTitle.value.trim(),requestCategory=form.elements.requestCategory.value;
-    if(!requestTitle)return;
-    if(recordCharacterInteraction({type:"request",actorId,requestTitle,requestCategory})){
-      dialog.close();
-      setActive(actorId);
-      render();
-      showToast("부탁을 생활 장면에 반영했습니다");
-    }
   });
   $$("[data-home-character]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
@@ -2663,7 +2671,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260811s").catch(error=>{
+  import("./auth.js?v=20260811t").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2678,7 +2686,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260811s",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260811t",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

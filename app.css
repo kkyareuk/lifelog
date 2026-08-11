@@ -461,20 +461,22 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
 .native-observe-home>.home-observe-tools{top:max(111px,calc(env(safe-area-inset-top) + 103px));left:50%;translate:-50% 0;white-space:nowrap}
 .desktop-observe-scene .home-observe-tools{top:62px;right:20px}
 
-:is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog){width:min(620px,calc(100vw - 24px));max-height:min(820px,calc(100dvh - 24px));padding:0;border:1px solid var(--line);border-radius:26px;background:var(--panel);color:var(--ink);box-shadow:0 24px 80px #0008;overflow:hidden}
-:is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog)::backdrop{background:#07101bb8;backdrop-filter:blur(5px)}
-:is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog)>form{display:grid;gap:15px;max-height:inherit;padding:22px;overflow:auto;box-sizing:border-box}
+:is(.home-display-editor-dialog,.character-stats-dialog){width:min(760px,calc(100vw - 24px));max-height:min(820px,calc(100dvh - 24px));padding:0;border:1px solid var(--line);border-radius:26px;background:var(--panel);color:var(--ink);box-shadow:0 24px 80px #0008;overflow:hidden}
+:is(.home-display-editor-dialog,.character-stats-dialog)::backdrop{background:#07101bb8;backdrop-filter:blur(5px)}
+:is(.home-display-editor-dialog,.character-stats-dialog)>form{display:grid;gap:15px;max-height:inherit;padding:22px;overflow:auto;box-sizing:border-box}
 .home-dialog-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
 .home-dialog-head small{letter-spacing:.15em;color:var(--muted)}
 .home-dialog-head h2{margin:3px 0 0}
 .home-dialog-head>button{width:45px;height:45px;padding:0;border:1px solid var(--line);border-radius:15px;background:var(--soft);color:var(--ink);font-size:28px;line-height:1}
-:is(.home-display-editor-dialog,.character-request-dialog)>form>label{display:grid;gap:8px;font-weight:850}
-:is(.home-display-editor-dialog,.character-request-dialog) :is(select,input[type="text"],input:not([type])){width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:var(--soft);color:var(--ink);box-sizing:border-box}
+.home-display-editor-dialog>form>label{display:grid;gap:8px;font-weight:850}
+.home-display-editor-dialog :is(select,input[type="text"],input:not([type])){width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:var(--soft);color:var(--ink);box-sizing:border-box}
 .home-display-editor-dialog input[type="range"]{width:100%;accent-color:var(--p)}
 .home-display-editor-dialog label>b{justify-self:end;margin-top:-28px;color:var(--p)}
-.character-request-dialog [data-submit-character-request]{min-height:48px}
 .character-stat-summary{display:flex;align-items:baseline;gap:10px;padding:15px 18px;border-radius:18px;background:linear-gradient(135deg,var(--p),var(--s));color:var(--on-grad)}
 .character-stat-summary b{font-size:38px;line-height:1}.character-stat-summary span{font-weight:900}
+.character-stat-highlights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.character-stat-highlights article{display:grid;gap:7px;min-width:0;padding:13px;border:1px solid var(--line);border-radius:15px;background:var(--soft)}
+.character-stat-highlights small{color:var(--muted);font-weight:800}.character-stat-highlights b{font-size:20px;color:var(--p)}
 .character-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .character-stat-grid section{min-width:0;padding:14px;border:1px solid var(--line);border-radius:17px;background:var(--soft)}
 .character-stat-grid h3{margin:0 0 10px;font-size:16px}
@@ -484,15 +486,8 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
 .character-stat-grid li b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.character-stat-grid li small{flex:none;color:var(--muted)}
 .character-stat-grid li>i{display:block;height:7px;border-radius:99px;background:color-mix(in srgb,var(--p) 13%,var(--panel));overflow:hidden}
 .character-stat-grid li>i>u{display:block;width:var(--stat-value);height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--p),var(--s));text-decoration:none}
-
-/* Two LD figures keep the one-person dimensions; only their horizontal slots change. */
-.native-app .native-character-stage.visual-mode-ld.has-scene-lineup{width:min(104vw,470px)!important;height:min(38dvh,380px)!important;scale:1!important}
-.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup{display:grid!important;grid-template-columns:repeat(2,minmax(0,235px))!important;align-items:end!important;justify-content:center!important;padding:0!important;translate:0 8px}
-.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person{width:min(52vw,235px)!important;height:100%!important;margin:0!important;scale:var(--person-visual-scale,1);justify-self:center}
-.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person:first-child{margin:0!important}
-.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup{width:620px!important;height:345px!important}
-.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup{grid-template-columns:repeat(2,310px)!important}
-.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person{width:310px!important;height:345px!important;margin:0!important}
+.character-stat-actions{position:sticky;bottom:-22px;display:grid;grid-template-columns:1fr auto;gap:10px;margin:0 -22px -22px;padding:14px 22px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(12px)}
+.character-stat-actions button{min-height:44px}
 
 /* The active portrait is indicated by a theme-coloured aura, not a ring. */
 html.native-app[data-active-tab="observe"] .native-character-picker button.on,
@@ -506,7 +501,9 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 @keyframes native-picker-aura{from{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px var(--picker-theme,var(--p))) drop-shadow(0 0 12px var(--picker-theme,var(--p)))}to{filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 11px var(--picker-theme,var(--p))) drop-shadow(0 0 21px var(--picker-theme,var(--p)))}}
 @media(max-width:720px){
   .character-stat-grid{grid-template-columns:minmax(0,1fr)}
-  :is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog)>form{padding:17px}
+  .character-stat-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}
+  :is(.home-display-editor-dialog,.character-stats-dialog)>form{padding:17px}
+  .character-stat-actions{bottom:-17px;margin:0 -17px -17px;padding-inline:17px}
 }
 @media(prefers-reduced-motion:reduce){html.native-app[data-active-tab="observe"] .native-character-picker button.on :is(.avatar,.sprite){animation:none!important}}
 
@@ -6164,3 +6161,67 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup{width:620px!important;height:345px!important}
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup{grid-template-columns:repeat(2,310px)!important}
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person{width:310px!important;height:345px!important;margin:0!important}
+
+/* 2026-08-11t FINAL LD PAIR AUTHORITY
+   A pair uses the exact same stage box as one LD. Only the two actor centers
+   move sideways, so adding a companion never lifts or shrinks the LD art. */
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors{
+  width:min(52vw,235px)!important;
+  height:min(38dvh,380px)!important;
+  scale:var(--home-visual-scale,1)!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup.is-pair{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  overflow:visible!important;
+  translate:none!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  --pair-x:0px;
+  position:absolute!important;
+  left:calc(50% + var(--pair-x))!important;
+  bottom:0!important;
+  width:min(52vw,235px)!important;
+  height:100%!important;
+  margin:0!important;
+  transform:translateX(-50%)!important;
+  transform-origin:50% 100%!important;
+  scale:var(--person-visual-scale,1)!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(1){--pair-x:clamp(-92px,-19vw,-64px)}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(2){--pair-x:clamp(64px,19vw,92px)}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld .scene-ld-art{
+  width:100%!important;height:100%!important;max-height:380px!important;object-position:center bottom!important
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld) :is(.avatar,.sprite){
+  position:absolute!important;left:50%!important;bottom:24%!important;translate:-50% 0!important;
+  width:min(29vw,118px)!important;height:min(29vw,118px)!important;max-width:118px!important;max-height:118px!important;
+  object-fit:contain!important
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>small{bottom:20%!important}
+.native-app .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop){display:grid!important}
+.native-app .native-character-stage.visual-mode-ld .native-scene-lineup-person.is-ld .native-person-action-prop{
+  left:56%!important;top:44%!important;width:50px!important;height:50px!important;font-size:42px!important;z-index:14!important
+}
+.native-app .native-character-stage.visual-mode-ld .native-scene-lineup-person:not(.is-ld) .native-person-action-prop{
+  left:55%!important;top:53%!important;z-index:14!important
+}
+.native-app :is(.scene-action-organizing) :is(.native-scene-action-prop,.native-person-action-prop){animation:native-folder-sort 1.9s ease-in-out infinite!important}
+@keyframes native-folder-sort{0%,100%{translate:-5px 4px;rotate:-6deg}45%{translate:6px -6px;rotate:5deg}65%{translate:2px -2px;rotate:1deg}}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{
+  width:310px!important;height:345px!important
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  width:310px!important;height:345px!important
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(1){--pair-x:-118px}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(2){--pair-x:118px}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld) :is(.avatar,.sprite){
+  width:118px!important;height:118px!important
+}
