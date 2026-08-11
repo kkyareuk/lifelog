@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811r";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811r";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811s";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811s";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -80,6 +80,16 @@ const UI_TEXT_MORE={
   }
 };
 Object.entries(UI_TEXT_MORE).forEach(([locale,copy])=>Object.assign(UI_TEXT[locale],copy));
+Object.assign(UI_TEXT.en,{
+  "건물 정보 보기":"View building details","유형 미설정":"Type not set","내부 이미지가 아직 없어요":"No interior image yet","마을 편집에서 내부 사진을 등록할 수 있어요.":"Add an interior image from Town editing.",
+  "건물 유형":"Building type","가격대":"Price range","주요 이용층":"Main visitors","지금 안에 있는 인물":"Characters inside now","이곳에서 이용할 수 있는 것":"Available here",
+  "현재 이 건물 안에 있는 캐릭터가 없어요.":"No characters are inside this building right now.","등록된 판매 상품이나 이용 항목이 없어요.":"No products or services have been added yet.","유형 미설정":"Type not set","설정하지 않음":"Not set"
+});
+Object.assign(UI_TEXT.ja,{
+  "건물 정보 보기":"建物情報を見る","유형 미설정":"種類未設定","내부 이미지가 아직 없어요":"内観画像はまだありません","마을 편집에서 내부 사진을 등록할 수 있어요.":"村の編集画面から内観画像を登録できます。",
+  "건물 유형":"建物の種類","가격대":"価格帯","주요 이용층":"主な利用者","지금 안에 있는 인물":"現在中にいるキャラクター","이곳에서 이용할 수 있는 것":"ここで利用できるもの",
+  "현재 이 건물 안에 있는 캐릭터가 없어요.":"現在この建物の中にいるキャラクターはいません。","등록된 판매 상품이나 이용 항목이 없어요.":"販売商品や利用項目はまだ登録されていません。","유형 미설정":"種類未設定","설정하지 않음":"未設定"
+});
 Object.assign(UI_TEXT.en,{
   "이미지·표현·파일":"Images · Visuals · Files",
   "어린이":"Child","청소년":"Teen","성인":"Adult","노년":"Older adult","설정하지 않음":"Not set","무직":"Unemployed","학생":"Student","회사원":"Office worker","의사":"Doctor","간호사":"Nurse","교사":"Teacher","교수":"Professor","정치인":"Politician","기자":"Journalist","요리사":"Cook / chef","프로그래머":"Programmer","연구원":"Researcher","가수":"Singer","아이돌":"Idol","예술가":"Artist","해적":"Pirate","군인":"Soldier","범죄자":"Criminal","환경미화원":"Sanitation worker","여관주인":"Innkeeper","자영업·직접 입력":"Self-employed / custom",
@@ -228,6 +238,7 @@ const UI_DYNAMIC_TEXT={
     [/^(.+) · 자는 중$/,(name)=>`${name} · Sleeping`],
     [/^(.+)에서 자는 중$/,(place)=>`Sleeping in ${place}`],
     [/^현재 저장된 (\d+)명의 설정을 항목별로 모아 보여줘요\.$/,(count)=>`A breakdown of the settings for ${count} saved characters.`],
+    [/^(\d+)명$/,(count)=>`${count}`],
     [/^(\d+)명 · (\d+)%$/,(count,percent)=>`${count} · ${percent}%`],
     [/^(.+)의 SD와 LD 크기는 서로 따로 저장돼요\.$/,(name)=>`${name}'s SD and LD sizes are saved separately.`]
   ],
@@ -241,6 +252,7 @@ const UI_DYNAMIC_TEXT={
     [/^(.+) · 자는 중$/,(name)=>`${name}・睡眠中`],
     [/^(.+)에서 자는 중$/,(place)=>`${place}で睡眠中`],
     [/^현재 저장된 (\d+)명의 설정을 항목별로 모아 보여줘요\.$/,(count)=>`保存された${count}人の設定を項目別に集計します。`],
+    [/^(\d+)명$/,(count)=>`${count}人`],
     [/^(\d+)명 · (\d+)%$/,(count,percent)=>`${count}人・${percent}%`],
     [/^(.+)의 SD와 LD 크기는 서로 따로 저장돼요\.$/,(name)=>`${name}のSDとLDサイズは別々に保存されます。`]
   ]
@@ -263,7 +275,7 @@ function translateInterface(root){
   // keys into English/Japanese text, which the state normalizer then treated
   // as unknown and reset to "설정하지 않음". Freeze the data value first.
   root.querySelectorAll("option:not([value])").forEach(option=>option.setAttribute("value",option.textContent.trim()));
-  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,strong,em,span,a,i,li").forEach(element=>{
+  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,strong,em,span,a,i,li,dt,dd").forEach(element=>{
     [...element.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).forEach(node=>{
       const raw=node.nodeValue||"";
       const trimmed=raw.trim();
@@ -485,7 +497,7 @@ function placeCard(p){
   const label=mode==="none"?"":`<span class="map-place-label" style="left:${labelX}%;top:${labelY}%"><b>${esc(p.name)}</b>${mode==="full"?`<small>${esc(p.subtype?`${p.type} · ${p.subtype}`:p.type)}</small>`:""}</span>`;
   const presetSources={"type-generic":"world-assets/building-types/generic.png","type-cafe":"world-assets/building-types/cafe.png","type-restaurant":"world-assets/building-types/restaurant.png","type-hospital":"world-assets/building-types/hospital.png","type-office":"world-assets/building-types/office.png","type-shop":"world-assets/building-types/shop.png","type-school":"world-assets/building-types/school.png","type-lodging":"world-assets/building-types/lodging.png","type-library":"world-assets/building-types/library.png","type-theater":"world-assets/building-types/theater.png","type-park":"world-assets/building-types/park.png","type-home":"world-assets/building-types/home.png","drawer-building":"world-assets/drawer-building.png","drawer-home":"world-assets/drawer-home.png","medieval-castle":"world-assets/medieval-castle.svg","medieval-tavern":"world-assets/medieval-tavern.svg","medieval-market":"world-assets/medieval-market.svg"};
   const preset=presetSources[p.iconPreset]||presetSources["drawer-building"];
-  return `<button class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}"><img class="building-preset-image" src="${preset}" alt=""></button>${label}`;
+  return `<button type="button" class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}" data-building-detail-open="${p.id}" aria-label="${esc(p.name)} 건물 정보 보기"><img class="building-preset-image" src="${preset}" alt=""></button>${label}`;
 }
 function catalogItem(id){return catalogItems().find(item=>item.id===id)}
 function townForEntry(entry){return state.towns.find(t=>t.id===entry.townId)||state.towns.find(t=>t.places?.some(p=>p.id===entry.placeId))||state.world}
@@ -1130,6 +1142,21 @@ function peopleAtPlaceCard(p){
   const x=Math.max(9,Math.min(91,p.x)),y=Math.max(15,Math.min(88,p.y+9));
   return `<div class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<button type="button" class="place-person-face" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</button>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
 }
+function buildingDetailDialogs(){
+  return state.world.places.map(place=>{
+    const residents=charactersAtPlace(place.id,state.activeTownId);
+    const stock=(place.stock||[]).map(catalogItem).filter(Boolean);
+    const type=[place.type,place.subtype].filter(Boolean).join(" · ")||"유형 미설정";
+    const audiences=(place.audiences||[]).length?place.audiences.join(" · "):"설정하지 않음";
+    const residentCards=residents.map(character=>{
+      const entry=eventFor(character);
+      return `<article class="building-resident-card">${avatar(character)}<span><b>${esc(character.name)}</b><small>${esc(entry.title)}</small><em>${esc(entry.desc)}</em></span></article>`;
+    }).join("")||`<p class="building-detail-empty">현재 이 건물 안에 있는 캐릭터가 없어요.</p>`;
+    const stockList=stock.length?`<ul class="building-stock-list">${stock.map(item=>`<li>${item.image?`<img src="${esc(item.image)}" alt="">`:`<span>${esc(({food:"🍽️",fashion:"👕",music:"🎵",game:"🎮",media:"🎬",book:"📚"})[item.kind]||"✨")}</span>`}<b>${esc(item.name)}</b></li>`).join("")}</ul>`:`<p class="building-detail-empty">등록된 판매 상품이나 이용 항목이 없어요.</p>`;
+    const interior=place.interiorImage?`<img src="${esc(place.interiorImage)}" alt="${esc(place.name)} 내부">`:`<div class="building-interior-placeholder"><span>${esc(place.emoji||"🏢")}</span><b>내부 이미지가 아직 없어요</b><small>마을 편집에서 내부 사진을 등록할 수 있어요.</small></div>`;
+    return `<dialog class="building-detail-dialog" data-building-detail-dialog="${place.id}"><form method="dialog"><header><span><small>BUILDING</small><h2>${esc(place.name)}</h2></span><button value="close" aria-label="닫기">×</button></header><div class="building-detail-layout"><section class="building-interior-view">${interior}</section><section class="building-detail-info"><dl><div><dt>건물 유형</dt><dd>${esc(type)}</dd></div><div><dt>가격대</dt><dd>${esc(place.priceRange||"보통")}</dd></div><div><dt>주요 이용층</dt><dd>${esc(audiences)}</dd></div></dl><div><h3>지금 안에 있는 인물 <small>${residents.length}명</small></h3><div class="building-resident-list">${residentCards}</div></div><div><h3>이곳에서 이용할 수 있는 것</h3>${stockList}</div></section></div><button class="primary building-detail-close" value="close">닫기</button></form></dialog>`;
+  }).join("");
+}
 function characterStatisticsDialog(){
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean),total=characters.length;
   const distribution=(values,limit=8)=>{
@@ -1160,7 +1187,7 @@ function observe(){
   if(!localId){
     const empty=`<section class="native-observe-home native-observe-empty"><div><span>🏙️</span><h1>이 마을에 사는 캐릭터가 없어요</h1><p>캐릭터 화면에서 생활하는 마을을 지정해 주세요.</p><button class="primary" data-tab="character">캐릭터 설정 열기</button></div></section>`;
     if(mobileHome)return `${nativeGameMenu()}${empty}`;
-    return `<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe desktop-observe-map-only"><section><div class="viewport"><div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}</div></div></section></div></div>`;
+    return `<div class="standard-observe-view">${roster()}${townSwitcher}<div class="observe desktop-observe-map-only"><section><div class="viewport"><div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}</div></div></section></div>${buildingDetailDialogs()}</div>`;
   }
   const c=state.characters[localId],e=eventFor(c),place=placeForEntry(e);
   const everyoneSleeping=state.order.length>0&&state.order.every(id=>eventFor(state.characters[id]).title==="자는 중");
@@ -1192,7 +1219,7 @@ function observe(){
     return `${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><span class="native-observe-clock"><time>${new Date().toLocaleTimeString(uiLocale(),{hour:"2-digit",minute:"2-digit"})}</time></span></div>${visualToggle}${homeTools}<div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" style="--picker-theme:${esc(person.theme?.primary||"#176b60")}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${avatar(person)}</button>`}).join("")}</div>${statusCard}${logCard}</section>${nativeFullLog}${homeDialogs}`;
   }
   const desktopLog=`<section class="desktop-observe-log">${logCard}</section>`;
-  return `<div class="standard-observe-view">${roster()}${townSwitcher}${desktopScene}<div class="desktop-observe-lower"><div class="observe desktop-observe-map-only"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString(uiLocale(),{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section></div>${desktopLog}</div>${nativeFullLog}${homeDialogs}</div>`;
+  return `<div class="standard-observe-view">${roster()}${townSwitcher}${desktopScene}<div class="desktop-observe-lower"><div class="observe desktop-observe-map-only"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString(uiLocale(),{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section></div>${desktopLog}</div>${nativeFullLog}${homeDialogs}${buildingDetailDialogs()}</div>`;
 }
 const ROOM_SIZE_SPANS={
   "작은 방":[1,1],
@@ -2166,7 +2193,7 @@ function townMobile(){
   const mobileSwitcher=`<div class="mobile-town-switcher">${state.towns.map(t=>`<button data-town-select="${t.id}" class="${t.id===state.activeTownId?"on":""}" aria-label="${esc(t.name)}">${esc(t.name)}</button>`).join("")}</div>`;
   const generalEditor=`<div class="town-general-editor"><div class="title"><h2>마을 편집</h2><button class="primary" data-town-save>저장</button></div><section class="inline-guide"><b>마을을 만드는 순서</b><ol><li>마을 이름과 배경을 고르세요.</li><li>건물을 추가하고 유형을 고르세요.</li><li>지도에서 건물을 끌어 위치를 정하세요.</li></ol></section><label>마을 이름<input data-world-name value="${esc(state.world.name)}"></label><label>마을 시대<select data-world-era><option value="modern" ${state.world.era!=="medieval"?"selected":""}>현대</option><option value="medieval" ${state.world.era==="medieval"?"selected":""}>중세</option></select><small>시대에 맞는 생활 표현을 적용합니다.</small></label><label>기본 배경<select data-world-bg><option value="world-assets/cozy-town.png" selected>제공한 손그림 마을</option></select></label><button data-add-place>+ 건물 추가</button></div>`;
   const placeEditors=state.world.places.map(place=>townPlaceEditor(place,items,audiences,place.id===mobileTownPanel)).join("");
-  return `<section class="mobile-town-shell ${mobileTownEditing?"editing":""} ${panelType?`sheet-open ${panelType}-panel`:""}">${desktopTabs}<div class="mobile-town-hud"><span><small>현재 마을</small><b>${esc(state.world.name)}</b></span><button type="button" data-mobile-town-edit-toggle class="${mobileTownEditing?"on":""}">${mobileTownEditing?"편집 종료":"편집 모드"}</button></div>${mobileTownEditing?`<div class="mobile-town-tools"><button type="button" data-mobile-town-settings>마을 설정</button><button type="button" data-add-place>+ 건물</button></div>`:""}<div class="town-edit"><div class="town-map-scroll"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div><aside class="panel form town-editor-panel"><div class="mobile-town-sheet-head"><span><small>${panelType==="world"?"TOWN SETTINGS":"BUILDING SETTINGS"}</small><b>${panelType==="world"?esc(state.world.name):esc(selectedPlace?.name||"건물 편집")}</b></span><button type="button" data-mobile-town-close aria-label="편집 창 닫기">×</button></div>${generalEditor}<div class="place-editor">${placeEditors}</div></aside></div>${characterCard}${mobileSwitcher}</section>`;
+  return `<section class="mobile-town-shell ${mobileTownEditing?"editing":""} ${panelType?`sheet-open ${panelType}-panel`:""}">${desktopTabs}<div class="mobile-town-hud"><span><small>현재 마을</small><b>${esc(state.world.name)}</b></span><button type="button" data-mobile-town-edit-toggle class="${mobileTownEditing?"on":""}">${mobileTownEditing?"편집 종료":"편집 모드"}</button></div>${mobileTownEditing?`<div class="mobile-town-tools"><button type="button" data-mobile-town-settings>마을 설정</button><button type="button" data-add-place>+ 건물</button></div>`:""}<div class="town-edit"><div class="town-map-scroll"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div><aside class="panel form town-editor-panel"><div class="mobile-town-sheet-head"><span><small>${panelType==="world"?"TOWN SETTINGS":"BUILDING SETTINGS"}</small><b>${panelType==="world"?esc(state.world.name):esc(selectedPlace?.name||"건물 편집")}</b></span><button type="button" data-mobile-town-close aria-label="편집 창 닫기">×</button></div>${generalEditor}<div class="place-editor">${placeEditors}</div></aside></div>${characterCard}${mobileSwitcher}${buildingDetailDialogs()}</section>`;
 }
 function view(){
   if(!state.order.length)return `<section class="panel empty"><h1>첫 캐릭터를 만들어 주세요</h1><p>로그인 전에는 예시 캐릭터나 실제 지역이 표시되지 않아요.</p><button class="primary" data-new>+ 캐릭터 만들기</button></section>`;

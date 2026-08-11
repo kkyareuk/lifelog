@@ -5924,6 +5924,48 @@ html:not(.native-app) .standard-observe-view>.roster .roster-card small{
 @media(max-width:680px){.desktop-observe-log .native-log-card ol{grid-template-columns:1fr}}
 html.page-switching main{pointer-events:none}
 
+/* Village building information */
+.building-detail-dialog{
+  width:min(980px,calc(100vw - 28px));max-height:min(860px,calc(100dvh - 28px));padding:0;
+  border:1px solid color-mix(in srgb,var(--p) 28%,var(--line));border-radius:28px;
+  background:var(--panel);color:var(--text);box-shadow:0 30px 90px #09111d70;overflow:hidden;
+}
+.building-detail-dialog::backdrop{background:#0d1529a8;backdrop-filter:blur(5px)}
+.building-detail-dialog form{display:grid;max-height:min(860px,calc(100dvh - 28px));overflow:auto}
+.building-detail-dialog header{
+  position:sticky;top:0;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:20px 24px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--panel) 93%,transparent);backdrop-filter:blur(14px);
+}
+.building-detail-dialog header span{display:grid}.building-detail-dialog header small{letter-spacing:.18em;color:var(--muted)}
+.building-detail-dialog header h2{margin:2px 0 0;font-size:clamp(27px,4vw,40px)}
+.building-detail-dialog header button{display:grid;place-items:center;width:50px;height:50px;padding:0;border-radius:17px;font-size:30px}
+.building-detail-layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(340px,.95fr);gap:22px;padding:22px}
+.building-interior-view{position:sticky;top:98px;align-self:start;min-height:520px;border-radius:23px;background:color-mix(in srgb,var(--p) 10%,var(--bg));overflow:hidden}
+.building-interior-view>img{display:block;width:100%;height:520px;object-fit:cover}
+.building-interior-placeholder{display:grid;place-items:center;align-content:center;gap:8px;min-height:520px;padding:28px;text-align:center}
+.building-interior-placeholder>span{font-size:88px;filter:drop-shadow(0 12px 12px #1113)}
+.building-interior-placeholder>b{font-size:22px}.building-interior-placeholder small{color:var(--muted)}
+.building-detail-info{display:grid;align-content:start;gap:20px;min-width:0}
+.building-detail-info dl{display:grid;gap:9px;margin:0;padding:15px;border:1px solid var(--line);border-radius:18px;background:color-mix(in srgb,var(--p) 5%,var(--panel))}
+.building-detail-info dl>div{display:grid;grid-template-columns:105px minmax(0,1fr);gap:12px;padding:7px 3px;border-bottom:1px solid var(--line)}
+.building-detail-info dl>div:last-child{border-bottom:0}.building-detail-info dt{color:var(--muted);font-weight:750}.building-detail-info dd{margin:0;font-weight:850}
+.building-detail-info h3{display:flex;align-items:center;gap:7px;margin:0 0 10px}.building-detail-info h3 small{color:var(--p)}
+.building-resident-list{display:grid;gap:9px}.building-resident-card{display:grid;grid-template-columns:64px minmax(0,1fr);align-items:center;gap:11px;padding:10px;border:1px solid var(--line);border-radius:17px;background:color-mix(in srgb,var(--p) 6%,var(--panel))}
+.building-resident-card :is(.avatar,.sprite){width:60px;height:60px}.building-resident-card>span{display:grid;min-width:0}.building-resident-card b{font-size:17px}.building-resident-card small{font-weight:800}.building-resident-card em{overflow:hidden;color:var(--muted);font-size:12px;font-style:normal;text-overflow:ellipsis;white-space:nowrap}
+.building-stock-list{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}.building-stock-list li{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}.building-stock-list img{width:30px;height:30px;border-radius:50%;object-fit:cover}.building-stock-list span{font-size:20px}
+.building-detail-empty{margin:0;padding:14px;border:1px dashed var(--line);border-radius:15px;color:var(--muted);text-align:center}
+.building-detail-close{margin:0 22px 22px;min-height:50px}
+html[data-color-mode="dark"] .building-detail-dialog{background:#122236;color:#f6f9fc}html[data-color-mode="dark"] .building-detail-dialog header{background:#122236ee}html[data-color-mode="dark"] .building-detail-dialog :is(h2,h3,b,dt,dd){color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important}html[data-color-mode="dark"] .building-detail-dialog :is(small,em,p){color:#c2d0de!important;-webkit-text-fill-color:#c2d0de!important}
+@media(max-width:720px){
+  .building-detail-dialog{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);border-radius:25px}
+  .building-detail-dialog form{max-height:calc(100dvh - 16px)}
+  .building-detail-dialog header{padding:15px 17px}.building-detail-dialog header button{width:46px;height:46px}
+  .building-detail-layout{grid-template-columns:1fr;gap:16px;padding:14px}
+  .building-interior-view{position:static;min-height:235px}.building-interior-view>img{height:260px}.building-interior-placeholder{min-height:235px}.building-interior-placeholder>span{font-size:62px}
+  .building-detail-info dl>div{grid-template-columns:92px minmax(0,1fr)}
+  .building-detail-close{margin:0 14px 14px}
+}
+
 @media(max-width:720px){
   .character-ld-single-grid{grid-template-columns:minmax(0,1fr)!important}
   .character-ld-card.character-ld-single{grid-template-rows:minmax(180px,34vh) auto auto auto}

@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811r";
-import {eventFor} from "./simulation.js?v=20260811r";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811r";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811s";
+import {eventFor} from "./simulation.js?v=20260811s";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811s";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -659,7 +659,7 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811r");
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811s");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
@@ -726,6 +726,7 @@ function render(){
     requestAnimationFrame(showSetupCoach);
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
     requestAnimationFrame(maybeShowPageGuide);
+    if(state.activeTab==="town"||(state.activeTab==="observe"&&!document.documentElement.classList.contains("native-app")))centerMobileTownMap();
     document.documentElement.dataset.drawerRendered="1";
     if(preservePageScroll)restoreWindowScroll(previousPageX,previousPageY);
   }catch(error){
@@ -1616,6 +1617,13 @@ function bind(){
   });
   $$('[data-edit-audiences]').forEach(button=>button.onclick=()=>openAudienceDialog(button.dataset.editAudiences));
   $$('[data-building-shape-open]').forEach(button=>button.onclick=()=>openBuildingShapeDialog(button.dataset.buildingShapeOpen));
+  $$('[data-building-detail-open]').forEach(button=>button.onclick=event=>{
+    if(button.closest('.mobile-town-shell')?.classList.contains('editing'))return;
+    event.preventDefault();
+    event.stopPropagation();
+    const dialog=document.querySelector(`[data-building-detail-dialog="${CSS.escape(button.dataset.buildingDetailOpen)}"]`);
+    if(dialog&&!dialog.open)dialog.showModal();
+  });
   $$('[data-fashion-attr]').forEach(button=>button.onclick=()=>{
     const item=state.catalog.fashion.find(value=>value.id===button.dataset.item);if(!item)return;const field=button.dataset.fashionAttr,value=button.dataset.value,list=Array.isArray(item[field])?[...item[field]]:[];
     updateCatalogItem("fashion",item.id,{[field]:list.includes(value)?list.filter(entry=>entry!==value):[...list,value]});render();
@@ -1897,15 +1905,16 @@ function navigateToTab(tab,{recordHistory=true}={}){
 }
 
 function centerMobileTownMap(characterId=state.activeId){
-  if(!document.documentElement.classList.contains("native-app"))return;
   requestAnimationFrame(()=>{
-    const scroller=document.querySelector(".town-map-scroll"),world=scroller?.querySelector(".world");
+    const scroller=document.querySelector(".town-map-scroll")||document.querySelector(".standard-observe-view .viewport"),world=scroller?.querySelector(".world");
     if(!scroller||!world)return;
     const character=state.characters[characterId],entry=character?eventFor(character):null;
     const place=entry?.placeId?state.world.places.find(item=>item.id===entry.placeId):null;
-    const ratio=place?Math.max(0,Math.min(1,Number(place.x||50)/100)):.5;
-    const target=world.scrollWidth*ratio-scroller.clientWidth/2;
-    scroller.scrollTo({left:Math.max(0,target),behavior:"smooth"});
+    const ratioX=place?Math.max(0,Math.min(1,Number(place.x||50)/100)):.5;
+    const ratioY=place?Math.max(0,Math.min(1,Number(place.y||50)/100)):.5;
+    const left=Math.max(0,world.scrollWidth*ratioX-scroller.clientWidth/2);
+    const top=Math.max(0,world.scrollHeight*ratioY-scroller.clientHeight/2);
+    scroller.scrollTo({left,top,behavior:"smooth"});
   });
 }
 
@@ -2575,9 +2584,14 @@ function bindPlaceDrag(){
       el.onpointermove=null;
       el.classList.remove("dragging");
       save();
-      if(mobile&&!moved){
-        setMobileTownPanel(el.dataset.place);
-        render();
+      if(!moved){
+        if(mobile){
+          setMobileTownPanel(el.dataset.place);
+          render();
+        }else{
+          const dialog=document.querySelector(`[data-building-detail-dialog="${CSS.escape(el.dataset.place)}"]`);
+          if(dialog&&!dialog.open)dialog.showModal();
+        }
       }
     };
     el.onpointerup=finish;el.onpointercancel=finish;
@@ -2649,7 +2663,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260811r").catch(error=>{
+  import("./auth.js?v=20260811s").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2664,7 +2678,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260811r",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260811s",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
