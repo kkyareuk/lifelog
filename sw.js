@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260811o";
+const CACHE_VERSION="drawer-village-v20260811p";
 const CORE=[
   "./",
   "./index.html",
@@ -9,6 +9,12 @@ const CORE=[
   "./app.css",
   "./town-fit.css",
   "./ui-theme-sample.css",
+  "./theme-assets/moonlit-drawer-png/panel-frame.png",
+  "./theme-assets/moonlit-drawer-png/card-frame.png",
+  "./theme-assets/moonlit-drawer-png/button-default.png",
+  "./theme-assets/moonlit-drawer-png/button-selected.png",
+  "./theme-assets/moonlit-drawer-png/tab-default.png",
+  "./theme-assets/moonlit-drawer-png/tab-selected.png",
   "./app.js",
   "./state.js",
   "./simulation.js",

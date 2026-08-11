@@ -24,7 +24,7 @@ html[data-color-mode][data-visual-theme="moonlit-drawer"] main{
 }
 
 /* 큰 화면과 가변 높이 박스: 늘어나는 한 장 그림 대신 안정적인 3단 색면을 사용한다. */
-html[data-visual-theme="moonlit-drawer"] :is(
+html[data-visual-theme="moonlit-drawer"] #app :is(
   .panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,
   .relationship-page,.home-page,.town-edit,.mobile-character-dashboard,
   .desktop-character-editor,.character-manage-pane
@@ -39,7 +39,7 @@ html[data-visual-theme="moonlit-drawer"] :is(
   box-shadow:0 14px 34px #02091952!important;
 }
 
-html[data-visual-theme="moonlit-drawer"] :is(
+html[data-visual-theme="moonlit-drawer"] #app :is(
   .setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,
   .catalog-card,.catalog-dex-card,.favorite-group,.routine-day,.shop-cart,
   .premium-product,.relation,.character-menu,.town-tabs,.place-editor details,
@@ -102,7 +102,7 @@ html[data-visual-theme="moonlit-drawer"] .mobile-editor-head{
 }
 
 /* 닫기·뒤로가기: 장식 이미지의 네 모서리가 튀어나오지 않도록 고정형 버튼으로 둔다. */
-html[data-visual-theme="moonlit-drawer"] :is(
+html[data-visual-theme="moonlit-drawer"] #app :is(
   .visual-theme-dialog-head>button,.native-sub-header>button,.mobile-editor-head>button,
   .icon-button,.round-button
 ){
@@ -375,4 +375,194 @@ html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visua
   html[data-visual-theme="moonlit-drawer"] :is(.panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.home-page,.town-edit,.mobile-character-dashboard){border-radius:18px!important}
   html[data-visual-theme="moonlit-drawer"] :is(.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,.catalog-card,.catalog-dex-card,.routine-day,.premium-product,.mobile-character-heading,.mobile-character-pane-grid button){border-radius:15px!important}
   html[data-visual-theme="moonlit-drawer"] .mobile-character-editor-body{background:#fffdf8!important}
+}
+
+/* PNG 9-slice skin -------------------------------------------------------
+   The actual theme artwork lives in PNG files.  Corners are never scaled
+   with the component; only the centre/edge slices stretch. */
+html[data-visual-theme="moonlit-drawer"]{
+  --moon-png-panel:url("./theme-assets/moonlit-drawer-png/panel-frame.png");
+  --moon-png-card:url("./theme-assets/moonlit-drawer-png/card-frame.png");
+  --moon-png-button:url("./theme-assets/moonlit-drawer-png/button-default.png");
+  --moon-png-button-on:url("./theme-assets/moonlit-drawer-png/button-selected.png");
+  --moon-png-tab:url("./theme-assets/moonlit-drawer-png/tab-default.png");
+  --moon-png-tab-on:url("./theme-assets/moonlit-drawer-png/tab-selected.png");
+}
+
+html[data-visual-theme="moonlit-drawer"] #app :is(
+  .panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,
+  .relationship-page,.home-page,.town-edit,.mobile-character-dashboard,
+  .desktop-character-editor,.character-manage-pane
+){
+  box-sizing:border-box!important;
+  border:16px solid transparent!important;
+  border-image-source:var(--moon-png-panel)!important;
+  border-image-slice:56 fill!important;
+  border-image-width:16px!important;
+  border-image-outset:0!important;
+  border-image-repeat:stretch!important;
+  border-radius:0!important;
+  background:#fffaf0!important;
+  color:var(--moon-ink)!important;
+}
+
+html[data-visual-theme="moonlit-drawer"] #app :is(
+  .setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,
+  .catalog-card,.catalog-dex-card,.favorite-group,.routine-day,.shop-cart,
+  .premium-product,.relation,.character-menu,.place-editor details,.font-preview,
+  .mobile-character-heading,.physical-appearance-settings,
+  .profile-attraction-settings,.health-accessibility-settings
+){
+  box-sizing:border-box!important;
+  border:10px solid transparent!important;
+  border-image-source:var(--moon-png-card)!important;
+  border-image-slice:38 fill!important;
+  border-image-width:10px!important;
+  border-image-outset:0!important;
+  border-image-repeat:stretch!important;
+  border-radius:0!important;
+  background:#fffaf0!important;
+  color:var(--moon-ink)!important;
+}
+
+html[data-visual-theme="moonlit-drawer"] #app :is(
+  .sync-actions,.character-manage-actions,.native-status-card-head,
+  .native-log-card>div>span,.visual-theme-dialog-footer,.mobile-editor-head
+) button,
+html[data-visual-theme="moonlit-drawer"] #app .feedback-card a.feedback-email-type{
+  box-sizing:border-box!important;
+  border:7px solid transparent!important;
+  border-image-source:var(--moon-png-button)!important;
+  border-image-slice:28 52 fill!important;
+  border-image-width:7px 13px!important;
+  border-image-outset:0!important;
+  border-image-repeat:stretch!important;
+  border-radius:0!important;
+  background:#fffaf0!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+  box-shadow:none!important;
+}
+
+html[data-visual-theme="moonlit-drawer"] #app :is(
+  .sync-actions,.character-manage-actions,.native-status-card-head,
+  .native-log-card>div>span,.visual-theme-dialog-footer,.mobile-editor-head
+) button:is(.on,.primary,[aria-pressed="true"]){
+  border-image-source:var(--moon-png-button-on)!important;
+  background:#1c356c!important;
+  color:#fff8e5!important;
+  -webkit-text-fill-color:#fff8e5!important;
+}
+
+html[data-visual-theme="moonlit-drawer"] #app :is(header nav,.character-tabs,.editor-tabs,.town-tabs) button{
+  box-sizing:border-box!important;
+  border:6px solid transparent!important;
+  border-image-source:var(--moon-png-tab)!important;
+  border-image-slice:22 52 fill!important;
+  border-image-width:6px 14px!important;
+  border-image-outset:0!important;
+  border-image-repeat:stretch!important;
+  border-radius:0!important;
+  background:#fffaf0!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+  box-shadow:none!important;
+}
+
+html[data-visual-theme="moonlit-drawer"] #app :is(header nav,.character-tabs,.editor-tabs,.town-tabs) button:is(.on,[aria-pressed="true"]){
+  border-image-source:var(--moon-png-tab-on)!important;
+  background:#1c356c!important;
+  color:#fff8e5!important;
+  -webkit-text-fill-color:#fff8e5!important;
+}
+
+/* Dashboard choices use the light card PNG, never a solid navy block. */
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] #app .mobile-character-pane-grid>button{
+  box-sizing:border-box!important;
+  border:9px solid transparent!important;
+  border-image-source:var(--moon-png-card)!important;
+  border-image-slice:38 fill!important;
+  border-image-width:9px!important;
+  border-image-outset:0!important;
+  border-image-repeat:stretch!important;
+  border-radius:0!important;
+  background:#fffaf0!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+  box-shadow:none!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] #app .mobile-character-pane-grid>button.on{
+  outline:2px solid var(--moon-gold)!important;
+  outline-offset:-9px!important;
+  background:#fff6d8!important;
+}
+
+/* Character portraits and the observation side menu must remain unframed. */
+html[data-visual-theme="moonlit-drawer"] #app :is(
+  .native-character-strip,.home-character-strip,.observe-character-strip,
+  .mobile-character-strip,.native-game-menu
+) button{
+  border:0!important;
+  border-image:none!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+/* Native page title: later generic light-mode rules must not wash the title out. */
+html[data-color-mode][data-visual-theme="moonlit-drawer"].native-app #app .native-sub-header{
+  border:0!important;
+  border-bottom:2px solid var(--moon-gold)!important;
+  background:linear-gradient(180deg,#203c76,#101e43)!important;
+  color:#fff8e5!important;
+  box-shadow:0 6px 18px #02091f66!important;
+}
+html[data-color-mode][data-visual-theme="moonlit-drawer"].native-app #app .native-sub-header :is(b,span,small){
+  color:#fff8e5!important;
+  -webkit-text-fill-color:#fff8e5!important;
+  text-shadow:0 1px 2px #0008!important;
+}
+html[data-color-mode][data-visual-theme="moonlit-drawer"].native-app #app .native-sub-header>button{
+  border:1px solid #f4df9d8f!important;
+  background:#0d1b3c!important;
+  color:#fff8e5!important;
+  -webkit-text-fill-color:#fff8e5!important;
+}
+
+/* The strip stays a portrait picker, not a row of stretched themed cards. */
+html[data-color-mode][data-visual-theme="moonlit-drawer"].native-app #app .mobile-character-strip button{
+  width:74px!important;
+  min-width:74px!important;
+  min-height:82px!important;
+  border:0!important;
+  border-image:none!important;
+  border-radius:18px!important;
+  outline:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+html[data-color-mode][data-visual-theme="moonlit-drawer"].native-app #app .mobile-character-strip button.on{
+  outline:2px solid var(--moon-gold)!important;
+  outline-offset:-4px!important;
+  background:#fffaf0e8!important;
+}
+
+@media(max-width:720px){
+  html[data-visual-theme="moonlit-drawer"] #app :is(
+    .panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,
+    .relationship-page,.home-page,.town-edit,.mobile-character-dashboard,
+    .desktop-character-editor,.character-manage-pane
+  ){
+    border-width:11px!important;
+    border-image-width:11px!important;
+  }
+  html[data-visual-theme="moonlit-drawer"] #app :is(
+    .setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,
+    .catalog-card,.catalog-dex-card,.favorite-group,.routine-day,.shop-cart,
+    .premium-product,.relation,.character-menu,.place-editor details,.font-preview,
+    .mobile-character-heading,.physical-appearance-settings,
+    .profile-attraction-settings,.health-accessibility-settings
+  ){
+    border-width:8px!important;
+    border-image-width:8px!important;
+  }
 }
