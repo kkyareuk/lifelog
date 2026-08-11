@@ -22,6 +22,7 @@ const WEB_PRODUCTS=Object.freeze({
 });
 const TOSS_MID="drawerg8ht";
 const TOSS_SECRET_KEY=defineSecret("TOSS_SECRET_KEY");
+const WEB_GAME_PAYMENT_LIMIT=50000;
 
 app.use((request,response,next)=>{
   response.set("Access-Control-Allow-Origin",request.get("Origin")||"*");
@@ -91,7 +92,7 @@ app.post("/payments/orders",async(request,response)=>{
     const identity=await signedInUser(request);
     const items=webCart(request.body?.items);
     const {amount,count,orderName}=orderSummary(items);
-    if(amount<100||amount>1000000)throw Object.assign(new Error("결제금액 범위를 확인해 주세요."),{status:400});
+    if(amount<100||amount>=WEB_GAME_PAYMENT_LIMIT)throw Object.assign(new Error("게임 상품은 한 번에 5만원 미만으로만 결제할 수 있습니다."),{status:400});
     const orderId=`dv_${Date.now()}_${crypto.randomBytes(8).toString("hex")}`;
     const customerKey=`DV_${crypto.createHash("sha256").update(identity.uid).digest("hex").slice(0,40)}`;
     const order={
