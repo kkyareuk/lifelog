@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811z";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811z";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811aa";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811aa";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -2180,12 +2180,17 @@ function visualThemeSettings(){
   const bright=[["cream","오후 네 시의 크렘","햇빛 든 찻잔처럼 포근한 아이보리와 캐러멜","#b06a00","#f2a93b"],["peach","복숭아빛 첫 편지","부드러운 복숭아와 설레는 첫 인사를 닮은 색","#ef536f","#ff986e"],["mint","유리 온실의 아침","이슬 맺힌 민트 잎과 아침 유리창의 맑은 빛","#00a982","#4bd8aa"],["sunshine","레몬 타르트의 오후","노란 햇살과 금빛 설탕이 반짝이는 명랑한 오후","#d98b00","#ffd23f"]];
   const classic=[["monochrome","새벽의 잉크병","고요한 새벽 종이 위에 번지는 또렷한 먹빛","#20242a","#6d747d"],["sage","비 갠 뒤의 정원","비가 멎은 뒤 잎사귀에 남은 차분하고 맑은 초록","#2f855a","#76c36a"],["ocean","유리 바다의 아침","햇빛이 투과하는 깊고 맑은 바다의 푸른빛","#007fc2","#36c0e8"],["lavender","라일락 꿈결","잠들기 전 창가에 번지는 부드러운 보랏빛","#7547e8","#c26de8"]];
   const heritage=[["baroque","베르사유의 황금 오후","샹들리에와 금박 장식 사이로 쏟아지는 오래된 오후의 빛","#ad6d15","#efbb55"],["moonlit-drawer","달빛 서랍 극장","남색 벨벳과 크림 종이, 금빛 프레임으로 만든 게임 UI 샘플","#172a58","#d4a84f"]];
-  const all=[...heritage,...vivid,...bright,...classic];
+  const story=[["ruined-rose","재가 된 장미의 방","빛바랜 흑연과 마른 장미, 금이 간 은빛 장식이 남은 피폐한 방","#681f2a","#9a877f"],["healing-glasshouse","숨을 고르는 유리 온실","이슬 맺힌 세이지 잎과 우윳빛 햇살이 천천히 마음을 감싸는 정원","#3e755e","#9bb88a"],["reverie-ward","꿈결 너머의 유리 병동","라일락 잔상과 청록빛 환영 사이로 현실의 가장자리가 흐려지는 몽환","#6551a5","#36a9a0"],["noir-rain","자정에 젖은 필름","비 내린 골목의 흑백 필름 위로 붉은 네온과 옅은 연기가 스치는 밤","#a21f2d","#3e454d"]];
+  const all=[...story,...heritage,...vivid,...bright,...classic];
   const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span>${state.visualTheme===value?`<em>현재 선택</em>`:""}</button>`).join("");
   const current=all.find(([value])=>value===state.visualTheme)||classic[0];
   return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><div class="current-visual-theme" style="--theme-a:${esc(current[3])};--theme-b:${esc(current[4])}"><i aria-hidden="true"></i><span><small>현재 선택한 테마</small><b>${esc(current[1])}</b><em>${esc(current[2])}</em></span></div><button type="button" class="primary open-visual-theme-picker" data-open-visual-theme-dialog>테마 선택하기</button><dialog class="visual-theme-dialog" data-visual-theme-dialog><form method="dialog"><div class="visual-theme-dialog-head"><span><small>COLOR THEME</small><h2>테마 선택하기</h2><p>미리보기에서 원하는 색을 고르면 바로 적용돼요.</p></span><button value="close" aria-label="닫기">×</button></div><div class="visual-theme-dialog-body"><div class="visual-theme-options visual-theme-options-all">${buttons(all)}</div></div><div class="visual-theme-dialog-actions"><button value="close">닫기</button></div></form></dialog></section>`;
 }
 Object.assign(UI_TEXT.en,{
+  "재가 된 장미의 방":"The Room of Ashen Roses","빛바랜 흑연과 마른 장미, 금이 간 은빛 장식이 남은 피폐한 방":"A ruined room of faded graphite, dried roses, and cracked silver ornament",
+  "숨을 고르는 유리 온실":"The Glasshouse That Breathes","이슬 맺힌 세이지 잎과 우윳빛 햇살이 천천히 마음을 감싸는 정원":"A quiet garden where dewy sage and milky sunlight gently hold the heart",
+  "꿈결 너머의 유리 병동":"The Glass Ward Beyond Reverie","라일락 잔상과 청록빛 환영 사이로 현실의 가장자리가 흐려지는 몽환":"A dreamscape where reality softens between lilac afterimages and teal visions",
+  "자정에 젖은 필름":"Film Soaked at Midnight","비 내린 골목의 흑백 필름 위로 붉은 네온과 옅은 연기가 스치는 밤":"A monochrome night of wet alleys, red neon, and drifting smoke",
   "달빛 서랍 극장":"Moonlit Drawer Theatre","남색 벨벳과 크림 종이, 금빛 프레임으로 만든 게임 UI 샘플":"A game UI sample made of navy velvet, cream paper, and golden frames",
   "진주빛 로즈 부두아르":"Pearl-Rose Boudoir","블러시 실크와 오래된 진주 장식이 머무는 공주님의 작은 방":"A princess's private room of blush silk and antique pearls",
   "한밤의 베리 정원":"Midnight Berry Garden","보랏빛 밤에 장미와 잘 익은 베리가 반짝이는 색":"Roses and ripe berries shimmering in a violet night",
@@ -2205,6 +2210,10 @@ Object.assign(UI_TEXT.en,{
   "베르사유의 황금 오후":"A Golden Afternoon at Versailles","샹들리에와 금박 장식 사이로 쏟아지는 오래된 오후의 빛":"Old afternoon light pouring between chandeliers and gilded ornament"
 });
 Object.assign(UI_TEXT.ja,{
+  "재가 된 장미의 방":"灰になった薔薇の部屋","빛바랜 흑연과 마른 장미, 금이 간 은빛 장식이 남은 피폐한 방":"色あせた黒鉛、枯れた薔薇、ひび割れた銀飾りが残る荒廃した部屋",
+  "숨을 고르는 유리 온실":"息を整えるガラス温室","이슬 맺힌 세이지 잎과 우윳빛 햇살이 천천히 마음을 감싸는 정원":"露をまとったセージと乳白色の陽光が心をそっと包む庭",
+  "꿈결 너머의 유리 병동":"夢の向こうのガラス病棟","라일락 잔상과 청록빛 환영 사이로 현실의 가장자리가 흐려지는 몽환":"ライラックの残像と青緑の幻のあいだで現実の輪郭がほどける夢景色",
+  "자정에 젖은 필름":"真夜中に濡れたフィルム","비 내린 골목의 흑백 필름 위로 붉은 네온과 옅은 연기가 스치는 밤":"雨の路地を映す白黒フィルムに赤いネオンと淡い煙がよぎる夜",
   "달빛 서랍 극장":"月明かりの引き出し劇場","남색 벨벳과 크림 종이, 금빛 프레임으로 만든 게임 UI 샘플":"紺のベルベット、クリーム色の紙、金色のフレームで作ったゲームUIサンプル"
 });
 Object.assign(UI_TEXT.ja,{

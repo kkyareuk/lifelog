@@ -1,4 +1,4 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260811z";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260811aa";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -212,7 +212,7 @@ function normalizeHomes(x){
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"dark";
   delete x.userMods;
-  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine","berry","sky","cobalt","aqua","lime","coral","baroque","moonlit-drawer"].includes(x.visualTheme)?x.visualTheme:"monochrome";
+  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine","berry","sky","cobalt","aqua","lime","coral","baroque","moonlit-drawer","ruined-rose","healing-glasshouse","reverie-ward","noir-rain"].includes(x.visualTheme)?x.visualTheme:"monochrome";
   x.ownerName=String(x.ownerName||"").trim().slice(0,20);
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
