@@ -1,4 +1,4 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260811aa";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260811ab";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -202,7 +202,7 @@ function normalizeHomes(x){
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
   x.schema=15;
-  x.activeTab=["observe","home","character","catalog","relationship","routine","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
+  x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   if(x.uiFont==="memoment")x.uiFont="corncorn";

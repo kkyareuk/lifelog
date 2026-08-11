@@ -1,0 +1,203 @@
+/* Drawer Village interface authority.
+   This is the only runtime theme layer. It intentionally loads last so old
+   page-specific paint rules cannot split a theme into unrelated colors. */
+
+html[data-color-mode][data-visual-theme]{
+  --ui-radius:20px;
+  --ui-shadow:0 14px 38px var(--theme-shadow);
+  color-scheme:light;
+}
+html[data-color-mode="dark"][data-visual-theme]{color-scheme:dark}
+html[data-color-mode][data-visual-theme],
+html[data-color-mode][data-visual-theme] body,
+html[data-color-mode][data-visual-theme] main{
+  color:var(--ink)!important;
+  background:
+    radial-gradient(circle at 8% -8%,color-mix(in srgb,var(--s) 18%,transparent),transparent 34%),
+    radial-gradient(circle at 92% 9%,color-mix(in srgb,var(--p) 13%,transparent),transparent 30%),
+    var(--bg)!important;
+}
+
+html[data-color-mode][data-visual-theme] body>header,
+html[data-color-mode][data-visual-theme] #app>header,
+html[data-color-mode][data-visual-theme] .native-sub-header{
+  border-color:var(--theme-border)!important;
+  background:linear-gradient(135deg,var(--theme-surface-strong),var(--panel))!important;
+  color:var(--ink)!important;
+  box-shadow:0 9px 28px var(--theme-shadow)!important;
+}
+html[data-color-mode][data-visual-theme] header :is(h1,h2,h3,b,small,#save-state),
+html[data-color-mode][data-visual-theme] .native-sub-header :is(b,span){
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html[data-color-mode][data-visual-theme] header nav button{
+  border-color:var(--theme-border)!important;
+  background:var(--theme-surface)!important;
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html[data-color-mode][data-visual-theme] header nav button:is(.on,:hover,:focus-visible),
+html[data-color-mode][data-visual-theme] button.primary,
+html[data-color-mode][data-visual-theme] button.on:not(.roster-card):not(.place-person-face),
+html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
+  border-color:color-mix(in srgb,var(--p) 72%,var(--line))!important;
+  background:linear-gradient(135deg,var(--p),var(--s))!important;
+  color:var(--on-grad)!important;
+  -webkit-text-fill-color:var(--on-grad)!important;
+}
+
+html[data-color-mode][data-visual-theme] :is(
+  .panel,.form,.setting-card,.sync-panel,.feedback-card,.font-preview,
+  .catalog-shell,.catalog-kind,.catalog-dex-card,.catalog-card,.favorite-group,
+  .routine-shell,.routine-day,.weekly-scroll,.shop-store,.shop-cart,.premium-product,
+  .relationship-page,.relation,.character-menu,.desktop-character-editor,
+  .mobile-character-dashboard,.mobile-character-heading,.mobile-character-pane-grid>button,
+  .town-tabs,.town-editor-panel,.resident-editor,.sleep-room-editor,
+  .character-statistics-page,.character-statistics-page article,.character-statistics-page section
+){
+  border-color:var(--theme-border)!important;
+  background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
+  color:var(--ink)!important;
+  box-shadow:var(--ui-shadow)!important;
+}
+html[data-color-mode][data-visual-theme] :is(
+  .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
+  .character-statistics-page,.character-editor,.home-page
+){
+  border-color:var(--theme-border)!important;
+  background:
+    radial-gradient(circle at 4% 0,color-mix(in srgb,var(--s) 13%,transparent),transparent 29%),
+    linear-gradient(155deg,var(--theme-wash),var(--bg))!important;
+  color:var(--ink)!important;
+}
+html[data-color-mode][data-visual-theme] :is(
+  .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
+  .character-statistics-page,.character-editor,.home-page,.panel,.form,
+  dialog,.visual-theme-dialog
+) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li){
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html[data-color-mode][data-visual-theme] :is(
+  .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
+  .character-statistics-page,.character-editor,.home-page,.panel,.form,
+  dialog,.visual-theme-dialog
+) :is(p,small,time,em,.muted,.hint){
+  color:var(--muted)!important;
+  -webkit-text-fill-color:var(--muted)!important;
+}
+html[data-color-mode][data-visual-theme] :is(input,select,textarea),
+html[data-color-mode][data-visual-theme] main button:not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not([data-home-character]){
+  border-color:var(--theme-border)!important;
+  background:var(--theme-surface)!important;
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog),
+html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog)>form{
+  border-color:var(--theme-border)!important;
+  background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
+  color:var(--ink)!important;
+}
+
+/* Theme personalities stay visible across the entire app, not only Settings. */
+html[data-visual-theme="baroque"]{--ui-radius:12px}
+html[data-visual-theme="moonlit-drawer"]{--ui-radius:8px}
+html[data-visual-theme="ruined-rose"]{--ui-radius:5px}
+html[data-visual-theme="healing-glasshouse"]{--ui-radius:26px}
+html[data-visual-theme="reverie-ward"]{--ui-radius:18px}
+html[data-visual-theme="noir-rain"]{--ui-radius:3px}
+html:is([data-visual-theme="baroque"],[data-visual-theme="moonlit-drawer"],[data-visual-theme="ruined-rose"],[data-visual-theme="healing-glasshouse"],[data-visual-theme="reverie-ward"],[data-visual-theme="noir-rain"]) #app :is(h1,h2,h3,.brand h1){
+  font-family:Georgia,"Times New Roman","Noto Serif KR",serif;
+  letter-spacing:.018em;
+}
+html:is([data-visual-theme="baroque"],[data-visual-theme="moonlit-drawer"],[data-visual-theme="ruined-rose"],[data-visual-theme="healing-glasshouse"],[data-visual-theme="reverie-ward"],[data-visual-theme="noir-rain"]) #app :is(.panel,.form,.setting-card,.sync-panel,.feedback-card,.catalog-card,.relation,.character-statistics-page){
+  border-radius:var(--ui-radius)!important;
+}
+html[data-visual-theme="baroque"] body{background-image:radial-gradient(circle at 14% 0,#fee39f55,transparent 28%),linear-gradient(145deg,var(--bg),color-mix(in srgb,#ad6d15 14%,var(--bg)))!important}
+html[data-visual-theme="moonlit-drawer"] body{background-image:radial-gradient(circle at 82% 2%,#d4a84f30,transparent 22%),linear-gradient(150deg,var(--bg),color-mix(in srgb,#172a58 22%,var(--bg)))!important}
+html[data-visual-theme="ruined-rose"] body{background-image:linear-gradient(118deg,transparent 0 48%,color-mix(in srgb,var(--line) 16%,transparent) 48.2% 48.5%,transparent 48.7%),radial-gradient(circle at 88% 3%,#681f2a38,transparent 28%),var(--bg)!important}
+html[data-visual-theme="healing-glasshouse"] body{background-image:radial-gradient(ellipse at 18% 0,#9bb88a44,transparent 34%),radial-gradient(ellipse at 87% 15%,#ffffff35,transparent 26%),var(--bg)!important}
+html[data-visual-theme="reverie-ward"] body{background-image:radial-gradient(circle at 16% 8%,#6551a545,transparent 26%),radial-gradient(circle at 84% 2%,#36a9a038,transparent 30%),var(--bg)!important}
+html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradient(104deg,transparent 0 24px,#ffffff08 25px,#ffffff08 26px,transparent 27px 49px),radial-gradient(circle at 92% 0,#a21f2d38,transparent 24%),var(--bg)!important}
+
+/* Theme picker: selected badge gets its own row and never covers the label. */
+.visual-theme-dialog .visual-theme-options-all{grid-template-columns:repeat(2,minmax(0,1fr))!important;padding-top:14px!important}
+.visual-theme-dialog .visual-theme-options-all>button{display:grid!important;grid-template-columns:42px minmax(0,1fr)!important;align-items:center!important;gap:6px 12px!important;min-width:0!important}
+.visual-theme-dialog .visual-theme-options-all>button>i{grid-column:1;grid-row:1/3}
+.visual-theme-dialog .visual-theme-options-all>button>span{grid-column:2;grid-row:1;min-width:0}
+.visual-theme-dialog .visual-theme-options-all>button>em{position:static!important;grid-column:2;grid-row:2;justify-self:start;margin:0!important;padding:3px 9px!important;border-radius:99px;background:var(--p)!important;color:var(--on-p)!important;-webkit-text-fill-color:var(--on-p)!important;font-size:.7rem!important;line-height:1.25!important}
+
+/* Home tools: only a discreet edit control remains, clear of cards and menu. */
+.native-observe-home>.home-observe-tools{top:auto!important;left:auto!important;right:max(14px,env(safe-area-inset-right))!important;bottom:calc(314px + env(safe-area-inset-bottom))!important;translate:0 0!important}
+.desktop-observe-scene .home-observe-tools{top:auto!important;right:16px!important;bottom:16px!important}
+.home-observe-tools button{min-height:28px!important;padding:5px 9px!important;border:1px solid #ffffff4a!important;background:#101722b0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:10px!important;box-shadow:0 5px 14px #0005!important}
+
+/* Town characters never inherit the generic white button/card surface. */
+.town-map-scroll :is(.place-people-faces,.place-person-face),
+.standard-observe-view :is(.place-people-faces,.place-person-face),
+.observe :is(.place-people-faces,.place-person-face){
+  border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;padding:0!important;
+}
+.town-map-scroll .place-person-face :is(.avatar,.sprite),
+.standard-observe-view .place-person-face :is(.avatar,.sprite),
+.observe .place-person-face :is(.avatar,.sprite){
+  border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important;
+}
+.town-map-scroll .place-person-face img.profile-photo-fallback,
+.standard-observe-view .place-person-face img.profile-photo-fallback{border-radius:50%!important;object-fit:cover!important}
+
+/* One LD and each member of a two-person LD scene use the same immutable box.
+   A pair only widens the stage and moves those full-size boxes sideways. */
+.native-app .native-character-stage.visual-mode-ld{
+  --ld-box-width:min(52vw,235px);
+  --ld-box-height:min(38dvh,380px);
+  width:var(--ld-box-width)!important;
+  height:var(--ld-box-height)!important;
+  max-width:none!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors{
+  width:min(100vw,470px)!important;
+  height:var(--ld-box-height)!important;
+  max-width:none!important;
+  scale:1!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
+  position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;padding:0!important;overflow:visible!important;transform:none!important;translate:0 0!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  position:absolute!important;bottom:0!important;display:block!important;width:var(--ld-box-width)!important;height:var(--ld-box-height)!important;max-width:none!important;margin:0!important;transform:none!important;translate:0 0!important;scale:var(--person-visual-scale,1)!important;transform-origin:50% 100%!important;overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{left:0!important;right:auto!important}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{left:auto!important;right:0!important}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
+  position:absolute!important;inset:auto 0 0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center bottom!important;border:0!important;border-radius:0!important;background:transparent!important;transform:none!important;
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld{--ld-box-width:310px;--ld-box-height:345px}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:620px!important;height:345px!important}
+
+/* Dedicated statistics page. */
+.character-statistics-page{display:grid!important;gap:18px!important;width:min(1180px,100%)!important;margin:0 auto!important;padding:clamp(18px,3vw,34px)!important;box-sizing:border-box!important}
+.character-statistics-page>.home-dialog-head{position:static!important}
+.character-stat-gender{display:grid!important;grid-template-columns:auto minmax(0,1fr)!important;align-items:center!important;gap:22px!important;padding:20px!important}
+.character-stat-gender-pie{display:grid;place-content:center;width:148px;height:148px;border-radius:50%;background:var(--gender-pie);position:relative;isolation:isolate}
+.character-stat-gender-pie::after{content:"";position:absolute;inset:24px;border-radius:50%;background:var(--panel);z-index:-1}
+.character-stat-gender-pie b{font-size:30px;line-height:1;text-align:center}.character-stat-gender-pie small{text-align:center}
+.character-stat-gender h3{margin:0 0 10px}.character-stat-gender ul{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.character-stat-gender li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;align-items:center;gap:8px}
+.character-stat-gender li>i{width:10px;height:10px;border-radius:50%;background:var(--gender-color)}
+.character-stat-rankings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.character-stat-rankings section{min-width:0;padding:15px!important}.character-stat-rankings h3{margin:0 0 12px;font-size:15px}
+.character-stat-rankings ol{display:grid;gap:8px;margin:0;padding:0;list-style:none}.character-stat-rankings li{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:8px}
+.character-stat-rankings em{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--s));color:var(--on-grad)!important;-webkit-text-fill-color:var(--on-grad)!important;font-style:normal;font-weight:900}.character-stat-rankings li>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.character-stat-rankings li>span{font-size:.82rem;color:var(--muted)!important}
+.character-statistics-page .character-stat-actions{position:static!important;margin:0!important;padding:14px 0 0!important;border-top:1px solid var(--theme-border)!important;background:transparent!important;grid-template-columns:minmax(180px,360px)!important}
+
+@media(max-width:720px){
+  .visual-theme-dialog .visual-theme-options-all{grid-template-columns:minmax(0,1fr)!important}
+  .character-statistics-page{padding:16px 12px calc(24px + env(safe-area-inset-bottom))!important}
+  .character-stat-gender{grid-template-columns:1fr!important;justify-items:center!important}.character-stat-gender>div:last-child{width:100%}
+  .character-stat-rankings{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){html[data-visual-theme] *,html[data-visual-theme] *::before,html[data-visual-theme] *::after{scroll-behavior:auto!important}}

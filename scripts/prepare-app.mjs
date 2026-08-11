@@ -6,11 +6,11 @@ const root=new URL("../",import.meta.url);
 const output=new URL("../www/",import.meta.url);
 const includedDirectories=new Set(["fonts","icons","world-assets","vendor","shop-assets","theme-assets"]);
 const includedFiles=new Set([
-  "index.html","app.css","theme.css","app.js","auth.js","config.js",
+  "index.html","app.css","interface-system.css","app.js","auth.js","config.js",
   "font-preferences.css","font-preferences.js","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","sw.js","views.js",
-  "town-fit.css","ui-theme-sample.css"
+  "town-fit.css"
 ]);
 
 // OneDrive placeholder/reparse-point files can make fs.cp fail with EPERM on
