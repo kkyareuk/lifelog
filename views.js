@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811k";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811k";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811o";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811o";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -422,8 +422,8 @@ function sceneAvatar(c,cls="",tone="neutral",mode="sd"){
 function header(){
   const tabs=[["observe",t("observe","관찰"),"◉"],["home",t("home","집"),"⌂"],["character",t("character","캐릭터"),"♙"],["catalog",t("catalog","취향 사전"),"◇"],["relationship",t("relationship","관계"),"∞"],["routine",t("routine","주간 루틴"),"▦"],["town",t("town","마을"),"▧"],["shop",t("shop","상점"),"♢"],["settings",t("settings","설정"),"⚙"]];
   const current=tabs.find(([key])=>key===state.activeTab)||tabs[0];
-  const nativeBar=state.activeTab==="observe"?"":`<div class="native-sub-header"><button type="button" data-tab="observe" aria-label="메인 화면으로 돌아가기">‹</button><b>${current[1]}</b><span>서랍마을</span></div>`;
-  return `<header><div class="brand"><span class="logo"><img src="./icons/drawer-village-logo.png" alt="${esc(t("brandName","서랍마을"))}"></span><div><h1>${t("brandName","서랍마을")}</h1><small>${t("brandTagline","서랍 속 캐릭터 생활 관찰 게임")}</small></div>${previewMode()?`<span class="preview-badge">${esc(previewConfig().label||"사전 체험")}</span>`:""}</div><nav>${tabs.map(([k,n,icon])=>`<button data-tab="${k}" class="${state.activeTab===k?"on":""}"><span class="tab-icon" aria-hidden="true">${icon}</span><span>${n}</span></button>`).join("")}</nav><span id="save-state">${t("saved","기기에 저장됨")}</span></header>${nativeBar}`;
+  const nativeBar=state.activeTab==="observe"?"":`<div class="native-sub-header"><button type="button" data-tab="observe" aria-label="${esc(t("메인 화면으로 돌아가기","메인 화면으로 돌아가기"))}">‹</button><b>${current[1]}</b><span>${esc(t("brandName","서랍마을"))}</span></div>`;
+  return `<header><div class="brand"><span class="logo"><img src="./icons/drawer-village-logo.png" alt="${esc(t("brandName","서랍마을"))}"></span><div><h1>${t("brandName","서랍마을")}</h1><small>${t("brandTagline","서랍 속 캐릭터 생활 관찰 게임")}</small></div>${previewMode()?`<span class="preview-badge">${esc(previewConfig().label||"사전 체험")}</span>`:""}</div><nav>${tabs.map(([k,n,icon])=>`<button data-tab="${k}" class="${state.activeTab===k?"on":""}"><span class="tab-icon tab-icon-${k}" data-menu-icon="${k}" aria-hidden="true">${icon}</span><span>${n}</span></button>`).join("")}</nav><span id="save-state">${t("saved","기기에 저장됨")}</span></header>${nativeBar}`;
 }
 const NATIVE_MENU_TABS=[["home","home","집","⌂"],["character","character","캐릭터","♙"],["catalog","catalog","취향 사전","◇"],["relationship","relationship","관계","∞"],["routine","routine","주간 루틴","▦"],["town","town","마을","▧"],["shop","shop","상점","♢"],["settings","settings","설정","⚙"]];
 let mobileTownEditing=false;
@@ -434,7 +434,7 @@ export function setMobileTownEditing(value){
 }
 export function setMobileTownPanel(value=""){mobileTownPanel=String(value||"")}
 function nativeGameMenu(){
-  return `<nav class="native-game-menu" aria-label="앱 메뉴">${NATIVE_MENU_TABS.map(([key,labelKey,label,icon],index)=>`<button type="button" data-tab="${key}" class="${index<4?"native-menu-left":"native-menu-right"}" style="--native-menu-row:${index%4}"><span aria-hidden="true">${icon}</span><small>${t(labelKey,label)}</small></button>`).join("")}</nav>`;
+  return `<nav class="native-game-menu" aria-label="앱 메뉴">${NATIVE_MENU_TABS.map(([key,labelKey,label,icon],index)=>`<button type="button" data-tab="${key}" class="${index<4?"native-menu-left":"native-menu-right"}" style="--native-menu-row:${index%4}"><span class="native-menu-icon native-menu-icon-${key}" data-menu-icon="${key}" aria-hidden="true">${icon}</span><small>${t(labelKey,label)}</small></button>`).join("")}</nav>`;
 }
 function rosterSummary(entry){
   const title=String(entry?.title||"생활 중").split(" · ")[0].trim();
@@ -2036,6 +2036,44 @@ Object.assign(UI_TEXT.ja,{
   "사용자 닉네임":"ユーザーのニックネーム","Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.":"Googleアカウント名の代わりに同期画面へ表示し、キャラクターがユーザーのお願いについて話す時にもこの名前を使います。","캐릭터들이 뭐라고 부를까요?":"キャラクターたちに何と呼ばれたいですか？",
   "캐릭터 말투":"キャラクターの話し方","자동 · 성격에 맞춤":"自動・性格に合わせる","반말":"ため口","존댓말 · 해요체":"丁寧語・ヘヨ体","격식 있는 존댓말 · 하십시오체":"改まった敬語・ハシプシオ体","극존칭":"最上級の敬語","무뚝뚝한 단답":"ぶっきらぼうな短答","다정하고 부드러운 말투":"優しく穏やかな話し方","고풍스러운 말투":"古風な話し方",
   "캐릭터가 직접 말하거나 마을 주인의 부탁을 받아들일지 판단할 때 사용하는 말투예요.":"キャラクターが直接話す時や、村の持ち主からのお願いにどう応じるか判断する時の話し方です。"
+});
+Object.assign(UI_TEXT.en,{
+  "편집할 항목을 선택하세요.":"Choose what you want to edit.","위치 바꾸기":"Reorder","편집을 저장하고 닫기":"Save edits and close","편집 완료·저장":"Finish editing & save",
+  "사진·기본 정보·생활 습관":"Photo · basics · daily habits","외형·건강·접근성":"Appearance · health · accessibility","성향·서사·인지":"Personality · narrative · cognition","취미·음식·콘텐츠":"Hobbies · food · media","최애·소지품":"Favorites · belongings","이미지·표현·파일":"Images · display · files",
+  "프로필 사진 첨부":"Add a profile photo","여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"Add a photo here. Profile photos appear as full-bleed circles and stay separate from SD icons.","사진 파일 선택":"Choose photo file","사진 지우기":"Remove photo","미등록":"Not added","투명 SD 아이콘과 단일 LD 일러스트는 ‘사진·SD·LD’ 탭에서 따로 등록해요.":"Add a transparent SD icon and one LD illustration separately under Images · SD · LD.",
+  "운전·흡연·주량":"Driving · smoking · alcohol","체크 한 칸 대신 캐릭터의 실제 생활 습관에 가까운 상태를 골라 주세요.":"Choose the option closest to the character's actual habits.","운전면허·운전 경험":"Driver's license & experience","흡연 여부":"Smoking","주량":"Alcohol tolerance",
+  "끌림과 외모 인식":"Attraction & appearance","상대의 외모를 보는 정도":"How much appearance matters","이 캐릭터가 끌리는 특성 정하기":"Choose traits this character likes","이 캐릭터가 비선호하는 특성 정하기":"Choose traits this character dislikes",
+  "이 캐릭터가 상대의 외모를 얼마나 보는지와, 어떤 외형·성격·말투·삶의 태도에 끌리는지를 정해요. 이 설정만으로 관계나 호감은 자동 생성되지 않습니다.":"Choose how much this character notices appearance and which looks, personalities, voices, or attitudes attract them. These choices do not create a relationship or affection on their own.",
+  "상대별 시선과 관계 단계가 먼저이며, 끌리는 특성은 그 관계 안에서 시선이 머무는 이유와 표현 후보에만 반영됩니다.":"The directed point of view and relationship stage come first. Preferred and disliked traits only shape how that existing point of view is expressed.",
+  "신체와 외형":"Body & appearance","직접 고른 항목만 묘사에 사용합니다. 머리·눈·화장 설정은 아침 준비, 미용실, 가까운 관계의 시선 같은 생활 장면에 드물게 반영돼요.":"Only selected traits are used in descriptions. Hair, eyes, and makeup occasionally affect morning routines, salon visits, and the gaze of close relationships.","외모가 눈에 띄는 정도":"How noticeable their appearance is","체형":"Body type","현재 머리색":"Current hair color","머리색 설정":"Hair color source","본래 머리색 · 염색모일 때":"Natural hair color · if dyed","머리 기장":"Hair length","머리 결":"Hair texture","왼쪽 눈 색":"Left eye color","오른쪽 눈 색":"Right eye color","화장 정도":"Makeup level","미용실 방문 빈도":"Salon frequency","성형·외형 의료 시술 여부":"Cosmetic or appearance-related procedures","머리 스타일 · 여러 개 선택 가능":"Hairstyles · choose multiple","화장 스타일 · 화장할 때 반영":"Makeup styles · used when wearing makeup",
+  "프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.":"Profile photo, transparent SD icon, and full-body LD illustration are separate files. Empty slots keep the current fallback.","LD 일러스트":"LD illustration","전신 또는 무릎 위 이미지 한 장":"One full-body or knee-up image","LD 파일":"LD file","LD 링크":"LD link","홈화면 LD 일러스트":"Home-screen LD illustration","LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요.":"Each character can have one LD illustration. Emotions are shown through scene background effects.","캐릭터 삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.":"Review the warning before deleting this character and linked records."
+});
+Object.assign(UI_TEXT.ja,{
+  "편집할 항목을 선택하세요.":"編集する項目を選んでください。","위치 바꾸기":"並べ替え","편집을 저장하고 닫기":"編集を保存して閉じる","편집 완료·저장":"編集完了・保存",
+  "사진·기본 정보·생활 습관":"写真・基本情報・生活習慣","외형·건강·접근성":"外見・健康・アクセシビリティ","성향·서사·인지":"性格・物語・認知","취미·음식·콘텐츠":"趣味・食べ物・コンテンツ","최애·소지품":"お気に入り・持ち物","이미지·표현·파일":"画像・表示・ファイル",
+  "프로필 사진 첨부":"プロフィール写真を追加","여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"ここで写真を登録できます。プロフィール写真は余白のない円形で表示され、SDアイコンとは別に保存されます。","사진 파일 선택":"写真ファイルを選ぶ","사진 지우기":"写真を削除","미등록":"未登録","투명 SD 아이콘과 단일 LD 일러스트는 ‘사진·SD·LD’ 탭에서 따로 등록해요.":"透過SDアイコンと1枚のLDイラストは「画像・SD・LD」で別々に登録します。",
+  "운전·흡연·주량":"運転・喫煙・飲酒","체크 한 칸 대신 캐릭터의 실제 생활 습관에 가까운 상태를 골라 주세요.":"キャラクターの実際の生活習慣に近い状態を選んでください。","운전면허·운전 경험":"運転免許・運転経験","흡연 여부":"喫煙","주량":"お酒の強さ",
+  "끌림과 외모 인식":"惹かれ方と外見の認識","상대의 외모를 보는 정도":"外見を重視する度合い","이 캐릭터가 끌리는 특성 정하기":"惹かれる特徴を選ぶ","이 캐릭터가 비선호하는 특성 정하기":"苦手な特徴を選ぶ",
+  "이 캐릭터가 상대의 외모를 얼마나 보는지와, 어떤 외형·성격·말투·삶의 태도에 끌리는지를 정해요. 이 설정만으로 관계나 호감은 자동 생성되지 않습니다.":"相手の外見をどの程度見るか、どんな見た目・性格・話し方・生き方に惹かれるかを設定します。この設定だけで関係や好意が自動生成されることはありません。",
+  "상대별 시선과 관계 단계가 먼저이며, 끌리는 특성은 그 관계 안에서 시선이 머무는 이유와 표현 후보에만 반영됩니다.":"相手への視点と関係段階が優先されます。好み・苦手な特徴は、その関係の中で視線や表現にだけ反映されます。",
+  "신체와 외형":"身体と外見","직접 고른 항목만 묘사에 사용합니다. 머리·눈·화장 설정은 아침 준비, 미용실, 가까운 관계의 시선 같은 생활 장면에 드물게 반영돼요.":"選んだ項目だけを描写に使います。髪・目・メイクは、朝の支度や美容室、親しい相手の視線などに時々反映されます。","외모가 눈에 띄는 정도":"外見の目立ちやすさ","체형":"体型","현재 머리색":"現在の髪色","머리색 설정":"髪色の設定","본래 머리색 · 염색모일 때":"本来の髪色・染めている場合","머리 기장":"髪の長さ","머리 결":"髪質","왼쪽 눈 색":"左目の色","오른쪽 눈 색":"右目の色","화장 정도":"メイクの程度","미용실 방문 빈도":"美容室に行く頻度","성형·외형 의료 시술 여부":"美容・外見に関する医療施術","머리 스타일 · 여러 개 선택 가능":"ヘアスタイル・複数選択可","화장 스타일 · 화장할 때 반영":"メイクスタイル・メイク時に反映",
+  "프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.":"プロフィール写真、透過SDアイコン、全身LDイラストは別々のファイルです。未登録の欄は現在の表示を使います。","LD 일러스트":"LDイラスト","전신 또는 무릎 위 이미지 한 장":"全身または膝上の画像1枚","LD 파일":"LDファイル","LD 링크":"LDリンク","홈화면 LD 일러스트":"ホーム画面のLDイラスト","LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요.":"LDイラストはキャラクターごとに1枚だけ登録します。感情はシーンの背景効果で表現します。","캐릭터 삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.":"警告を確認してから、このキャラクターと関連する記録を整理します。"
+});
+Object.assign(UI_TEXT.en,{
+  "앱 메뉴":"App menu","메인 화면으로 돌아가기":"Return to the main screen","사진·SD·LD":"Images · SD · LD",
+  "프로필 내보내기":"Export profile","캐릭터 저장":"Save character","캐릭터 삭제":"Delete character","새 캐릭터의 신체":"New character's body",
+  "체형, 머리, 눈, 화장 같은 외형과 건강·접근성을 나누어 정해요.":"Set body type, hair, eyes, makeup, health, and accessibility in separate groups.","고르지 않은 특성은 장면에서 지어내지 않습니다.":"Traits you leave unset will not be invented in scenes.",
+  "프로필 사진 첨부":"Add profile photo","여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"Add a photo here. Profile photos appear as full-bleed circles and are stored separately from SD icons.","사진 링크":"Photo link","기본 생활 마을":"Default home town","집마다 다른 마을을 지정했다면 실제로 머무는 집의 마을이 우선합니다.":"If a home belongs to another town, the town of the home where the character is staying takes priority.",
+  "캐릭터 이름":"Character name","나이대":"Age group","끌리는 대상":"Attracted to","직업 종류":"Occupation","표기할 직업명":"Displayed job title","출근할 건물":"Workplace","자동 선택 / 없음":"Automatic / none","자택근무":"Work from home",
+  "하지 않음":"None","자동 · 설정에 맞춤":"Auto · Match settings","왼쪽 눈 색":"Left eye color","오른쪽 눈 색":"Right eye color","눈 색":"Eye color","상처·흉터 표현 주의":"Scar and injury portrayal note"
+});
+Object.assign(UI_TEXT.ja,{
+  "앱 메뉴":"アプリメニュー","메인 화면으로 돌아가기":"メイン画面に戻る","사진·SD·LD":"画像・SD・LD",
+  "프로필 내보내기":"プロフィールを書き出す","캐릭터 저장":"キャラクターを保存","캐릭터 삭제":"キャラクターを削除","새 캐릭터의 신체":"新しいキャラクターの身体",
+  "체형, 머리, 눈, 화장 같은 외형과 건강·접근성을 나누어 정해요.":"体型・髪・目・メイクなどの外見と、健康・アクセシビリティを分けて設定します。","고르지 않은 특성은 장면에서 지어내지 않습니다.":"未設定の特徴をシーンで勝手に作ることはありません。",
+  "프로필 사진 첨부":"プロフィール写真を追加","여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"ここで写真を登録できます。プロフィール写真は余白のない円形で表示され、SDアイコンとは別に保存されます。","사진 링크":"写真リンク","기본 생활 마을":"基本生活の村","집마다 다른 마을을 지정했다면 실제로 머무는 집의 마을이 우선합니다.":"家ごとに別の村を指定した場合、実際に滞在している家の村が優先されます。",
+  "캐릭터 이름":"キャラクター名","나이대":"年齢層","끌리는 대상":"惹かれる相手","직업 종류":"職業","표기할 직업명":"表示する職業名","출근할 건물":"勤務先","자동 선택 / 없음":"自動選択・なし","자택근무":"在宅勤務",
+  "하지 않음":"なし","자동 · 설정에 맞춤":"自動・設定に合わせる","왼쪽 눈 색":"左目の色","오른쪽 눈 색":"右目の色","눈 색":"目の色","상처·흉터 표현 주의":"傷・傷跡の表現について"
 });
 const unorderedSettingsContent=settingsContent;
 settingsContent=()=>{

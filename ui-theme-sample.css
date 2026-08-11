@@ -1,138 +1,378 @@
-/* "달빛 서랍 극장" — UI atlas application sample.
-   The master source is theme-assets/moonlit-drawer/ui-atlas.svg. */
+/* 달빛 서랍 극장
+   안정화 버전: 가변 크기 요소에 SVG border-image를 늘리지 않는다.
+   이후 PNG 스킨은 top / repeatable-middle / bottom 세 조각으로 연결한다. */
 html[data-visual-theme="moonlit-drawer"]{
-  --ui-theme-root:url("theme-assets/moonlit-drawer/");
+  --moon-night:#0c1730;
+  --moon-navy:#182d5d;
+  --moon-navy-2:#254276;
+  --moon-paper:#fffaf0;
+  --moon-paper-2:#f4ead3;
+  --moon-gold:#c9a75a;
+  --moon-gold-soft:#e5cf93;
+  --moon-ink:#16213d;
+  --moon-muted:#6c6b73;
+  --moon-line:#c7b98f;
 }
+
 html[data-color-mode][data-visual-theme="moonlit-drawer"],
 html[data-color-mode][data-visual-theme="moonlit-drawer"] body,
 html[data-color-mode][data-visual-theme="moonlit-drawer"] main{
+  color:var(--moon-ink)!important;
   background:
-    radial-gradient(circle at 8% 5%,#d4a84f38,transparent 24%),
-    radial-gradient(circle at 92% 12%,#6f85bb33,transparent 28%),
-    linear-gradient(145deg,#09152f,#152a56 58%,#071127)!important;
-  color:#17213b!important;
+    radial-gradient(circle at 12% 0,#d9bd6c20,transparent 28%),
+    linear-gradient(145deg,#071126,#152750 62%,#09142d)!important;
 }
 
-/* PANEL_MAIN: the large page shells. */
-html[data-visual-theme="moonlit-drawer"] :is(.panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.home-page,.town-edit){
-  border:18px solid transparent!important;
-  border-image:url("theme-assets/moonlit-drawer/panel-main.svg") 48 fill / 18px / 0 stretch!important;
-  background:#fff7e6!important;
-  color:#17213b!important;
-  box-shadow:0 18px 45px #030a1c66!important;
+/* 큰 화면과 가변 높이 박스: 늘어나는 한 장 그림 대신 안정적인 3단 색면을 사용한다. */
+html[data-visual-theme="moonlit-drawer"] :is(
+  .panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,
+  .relationship-page,.home-page,.town-edit,.mobile-character-dashboard,
+  .desktop-character-editor,.character-manage-pane
+){
+  border:1px solid var(--moon-line)!important;
+  border-radius:24px!important;
+  background:
+    linear-gradient(var(--moon-gold),var(--moon-gold)) top 18px left 24px/64px 2px no-repeat,
+    linear-gradient(var(--moon-gold),var(--moon-gold)) bottom 18px right 24px/64px 2px no-repeat,
+    linear-gradient(180deg,#fffdf7,var(--moon-paper) 56%,#f9f0dd)!important;
+  color:var(--moon-ink)!important;
+  box-shadow:0 14px 34px #02091952!important;
 }
 
-/* CARD: repeated information units inside a page. */
-html[data-visual-theme="moonlit-drawer"] :is(.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,.catalog-card,.catalog-dex-card,.favorite-group,.routine-day,.shop-cart,.premium-product,.relation,.character-menu,.town-tabs,.place-editor details,.font-preview){
-  border:12px solid transparent!important;
-  border-image:url("theme-assets/moonlit-drawer/card.svg") 36 fill / 12px / 0 stretch!important;
-  background:#fffaf0!important;
-  color:#17213b!important;
-  box-shadow:0 10px 24px #0a17384a!important;
-}
-
-/* PANEL_DIALOG: modals and picker sheets. */
-html[data-visual-theme="moonlit-drawer"] :is(dialog,.visual-theme-dialog)>form{
-  border:18px solid transparent!important;
-  border-image:url("theme-assets/moonlit-drawer/panel-dialog.svg") 52 fill / 18px / 0 stretch!important;
-  background:#152957!important;
-  color:#fff5d8!important;
-}
-html[data-visual-theme="moonlit-drawer"] dialog::backdrop{background:#020716c9!important;backdrop-filter:blur(6px)}
-html[data-visual-theme="moonlit-drawer"] .visual-theme-dialog :is(h2,p,small){color:#fff5d8!important;-webkit-text-fill-color:#fff5d8!important}
-
-/* TOAST: short save/error notices. */
-html[data-visual-theme="moonlit-drawer"] #mini-toast{
-  border:3px solid #d4a84f!important;
+html[data-visual-theme="moonlit-drawer"] :is(
+  .setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,
+  .catalog-card,.catalog-dex-card,.favorite-group,.routine-day,.shop-cart,
+  .premium-product,.relation,.character-menu,.town-tabs,.place-editor details,
+  .font-preview,.mobile-character-heading,.mobile-character-pane-grid button,
+  .physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings
+){
+  border:1px solid var(--moon-line)!important;
   border-radius:18px!important;
-  background:linear-gradient(135deg,#243967,#0c1938)!important;
-  color:#fff4d3!important;
-  box-shadow:0 10px 28px #02091f88!important;
+  background:linear-gradient(155deg,#fffdf8,var(--moon-paper))!important;
+  color:var(--moon-ink)!important;
+  box-shadow:0 8px 20px #07132d24!important;
 }
 
-/* LARGE/MEDIUM BUTTON states. */
+/* 일반 버튼은 종이색, 선택·주요 버튼만 남색으로 구분한다. */
 html[data-visual-theme="moonlit-drawer"] button:not(.person):not(.home-person):not(.place),
 html[data-visual-theme="moonlit-drawer"] a.primary{
-  border:8px solid transparent!important;
-  border-image:url("theme-assets/moonlit-drawer/button-default.svg") 28 fill / 8px / 0 stretch!important;
-  background:#172a58!important;
-  color:#fff4d3!important;
-  -webkit-text-fill-color:#fff4d3!important;
-  box-shadow:0 7px 16px #07132d3d!important;
+  border:1px solid #9b8e68!important;
+  border-radius:12px!important;
+  background:linear-gradient(180deg,#fffdf9,#eee4d0)!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+  box-shadow:0 4px 10px #06112a20!important;
 }
 html[data-visual-theme="moonlit-drawer"] button:is(.on,.primary,[aria-pressed="true"]),
 html[data-visual-theme="moonlit-drawer"] a.primary{
-  border-image-source:url("theme-assets/moonlit-drawer/button-selected.svg")!important;
-  background:#efd589!important;
-  color:#10204a!important;
-  -webkit-text-fill-color:#10204a!important;
+  border-color:var(--moon-gold)!important;
+  background:linear-gradient(180deg,var(--moon-navy-2),var(--moon-navy))!important;
+  color:#fff8e5!important;
+  -webkit-text-fill-color:#fff8e5!important;
+  box-shadow:0 6px 14px #06122d42!important;
 }
-html[data-visual-theme="moonlit-drawer"] button:active{transform:translateY(2px);filter:brightness(.88)}
-html[data-visual-theme="moonlit-drawer"] button:disabled{filter:grayscale(.7);opacity:.58}
+html[data-visual-theme="moonlit-drawer"] button:active{transform:translateY(1px)}
+html[data-visual-theme="moonlit-drawer"] button:disabled{filter:grayscale(.55);opacity:.58}
 
-/* TAB: global navigation and editor tabs. */
-html[data-visual-theme="moonlit-drawer"] header nav button,
-html[data-visual-theme="moonlit-drawer"] :is(.character-tabs,.editor-tabs,.town-tabs) button{
-  border-image-source:url("theme-assets/moonlit-drawer/tab-default.svg")!important;
-  border-image-slice:26 fill!important;
-  background:#f8edcf!important;
-  color:#17213b!important;
-  -webkit-text-fill-color:#17213b!important;
+html[data-visual-theme="moonlit-drawer"] :is(input,select,textarea){
+  border:1px solid #9e9579!important;
+  border-radius:12px!important;
+  background:#fffdf8!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
 }
-html[data-visual-theme="moonlit-drawer"] header nav button.on,
-html[data-visual-theme="moonlit-drawer"] :is(.character-tabs,.editor-tabs,.town-tabs) button.on{
-  border-image-source:url("theme-assets/moonlit-drawer/tab-selected.svg")!important;
-  background:#172a58!important;
-  color:#fff4d3!important;
-  -webkit-text-fill-color:#fff4d3!important;
+html[data-visual-theme="moonlit-drawer"] :is(input[type="checkbox"],input[type="radio"],input[type="range"]){accent-color:var(--moon-navy-2)}
+
+/* 대화상자: 안쪽 콘텐츠까지 어둡게 덮지 않는다. */
+html[data-visual-theme="moonlit-drawer"] dialog,
+html[data-visual-theme="moonlit-drawer"] dialog>form,
+html[data-visual-theme="moonlit-drawer"] .mobile-character-editor-shell{
+  border:1px solid var(--moon-line)!important;
+  border-radius:24px!important;
+  background:linear-gradient(180deg,#fffdf8,var(--moon-paper))!important;
+  color:var(--moon-ink)!important;
+  box-shadow:0 24px 70px #02071682!important;
 }
-html[data-color-mode][data-visual-theme="moonlit-drawer"][data-active-tab] header nav button.on{
-  border-image-source:url("theme-assets/moonlit-drawer/tab-selected.svg")!important;
-  background:#172a58!important;
-  color:#fff4d3!important;
-  -webkit-text-fill-color:#fff4d3!important;
+html[data-visual-theme="moonlit-drawer"] dialog::backdrop{background:#020716b8!important;backdrop-filter:blur(5px)}
+html[data-visual-theme="moonlit-drawer"] dialog :is(h1,h2,h3,h4,b,label,p,small,span){color:inherit;-webkit-text-fill-color:currentColor}
+html[data-visual-theme="moonlit-drawer"] .mobile-editor-head{
+  border-bottom:1px solid var(--moon-line)!important;
+  background:linear-gradient(180deg,#fffdf9,#f3ead8)!important;
+  color:var(--moon-ink)!important;
 }
 
-/* ICON BUTTON: close/back/compact round controls. */
-html[data-visual-theme="moonlit-drawer"] :is(.visual-theme-dialog-head>button,.native-back,.icon-button,.round-button){
-  border:8px solid transparent!important;
-  border-image:none!important;
+/* 닫기·뒤로가기: 장식 이미지의 네 모서리가 튀어나오지 않도록 고정형 버튼으로 둔다. */
+html[data-visual-theme="moonlit-drawer"] :is(
+  .visual-theme-dialog-head>button,.native-sub-header>button,.mobile-editor-head>button,
+  .icon-button,.round-button
+){
+  border:1px solid #ffffff45!important;
   border-radius:50%!important;
-  background:#172a58 url("theme-assets/moonlit-drawer/icon-button.svg") center/100% 100% no-repeat!important;
-  color:#fff4d3!important;
-  -webkit-text-fill-color:#fff4d3!important;
+  background:#152a57e8!important;
+  color:#fff8e5!important;
+  -webkit-text-fill-color:#fff8e5!important;
+  box-shadow:0 5px 14px #030a1c4d!important;
 }
 
-/* CHECK / RADIO / TOGGLE / PROGRESS / SLIDER slots. */
-html[data-visual-theme="moonlit-drawer"] :is(input,select,textarea){border:2px solid #b98a32!important;background:#fffaf0!important;color:#17213b!important;-webkit-text-fill-color:#17213b!important}
-html[data-visual-theme="moonlit-drawer"] :is(input[type="checkbox"],input[type="radio"]){accent-color:#d4a84f}
-html[data-visual-theme="moonlit-drawer"] input[type="range"]{accent-color:#d4a84f}
-html[data-visual-theme="moonlit-drawer"] progress{accent-color:#d4a84f}
-
-/* ORNAMENT_DIVIDER: repeated section title separator. */
-html[data-visual-theme="moonlit-drawer"] :is(.settings-shell>h1,.setting-card>h2,.panel>.title h1,.panel>.title h2)::after{
-  content:"";display:block;width:min(100%,800px);height:30px;margin:8px 0 2px;
-  background:url("theme-assets/moonlit-drawer/divider.svg") center/100% 100% no-repeat;
-}
-
+/* 머리글과 탭 */
 html[data-visual-theme="moonlit-drawer"] body>header,
 html[data-visual-theme="moonlit-drawer"] header,
 html[data-visual-theme="moonlit-drawer"].native-app .native-sub-header{
-  border-bottom:4px solid #d4a84f!important;
-  background:linear-gradient(180deg,#172d60,#091630)!important;
-  color:#fff4d3!important;
-  box-shadow:0 12px 30px #02091f88!important;
+  border-bottom:1px solid var(--moon-gold)!important;
+  background:linear-gradient(180deg,#152b5b,#0b1731)!important;
+  color:#fff8e5!important;
+  box-shadow:0 9px 25px #02091f66!important;
 }
-html[data-visual-theme="moonlit-drawer"] header :is(h1,h2,h3,b,small,#save-state){color:#fff4d3!important;-webkit-text-fill-color:#fff4d3!important}
-html[data-visual-theme="moonlit-drawer"] :is(.panel,.form,.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card) :is(p,small,time){color:#5d6170!important;-webkit-text-fill-color:#5d6170!important}
-html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visual-theme="moonlit-drawer"]{background:linear-gradient(120deg,#10204a 0 36%,#f8edcf 36% 76%,#d4a84f 76%)!important;border-color:#d4a84f!important}
+html[data-visual-theme="moonlit-drawer"] header :is(h1,h2,h3,b,small,#save-state),
+html[data-visual-theme="moonlit-drawer"].native-app .native-sub-header :is(b,span){color:#fff8e5!important;-webkit-text-fill-color:#fff8e5!important}
+html[data-visual-theme="moonlit-drawer"] header nav button,
+html[data-visual-theme="moonlit-drawer"] :is(.character-tabs,.editor-tabs,.town-tabs) button{
+  background:#fff9ec!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-visual-theme="moonlit-drawer"] header nav button.on,
+html[data-visual-theme="moonlit-drawer"] :is(.character-tabs,.editor-tabs,.town-tabs) button.on{
+  background:linear-gradient(180deg,var(--moon-navy-2),var(--moon-navy))!important;
+  color:#fff8e5!important;
+  -webkit-text-fill-color:#fff8e5!important;
+}
+
+/* 관찰 화면의 좌우 메뉴는 카드가 아니라 원형 아이콘 + 이름으로 유지한다. */
+html[data-visual-theme="moonlit-drawer"].native-app[data-active-tab="observe"] .native-game-menu button{
+  width:64px!important;
+  min-width:64px!important;
+  height:auto!important;
+  min-height:76px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+html[data-visual-theme="moonlit-drawer"].native-app[data-active-tab="observe"] .native-game-menu button>span{
+  display:grid!important;
+  place-items:center!important;
+  width:48px!important;
+  height:48px!important;
+  margin:auto!important;
+  border:1px solid #e6d7aaad!important;
+  border-radius:50%!important;
+  background:#0b1731a8!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 5px 16px #0007!important;
+}
+html[data-visual-theme="moonlit-drawer"].native-app[data-active-tab="observe"] .native-game-menu button>small{
+  display:block!important;
+  margin-top:3px!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 2px 5px #000,0 1px 2px #000!important;
+}
+
+/* 홈 캐릭터 선택 원형에는 별도 박스 장식을 씌우지 않는다. */
+html[data-visual-theme="moonlit-drawer"] :is(.native-character-strip,.home-character-strip,.observe-character-strip) button,
+html[data-visual-theme="moonlit-drawer"] .mobile-character-strip button{
+  border:0!important;
+  border-radius:16px!important;
+  background:transparent!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+  box-shadow:none!important;
+}
+html[data-visual-theme="moonlit-drawer"] .mobile-character-strip button.on{
+  outline:2px solid var(--moon-gold)!important;
+  outline-offset:-2px!important;
+  background:#fffaf0cc!important;
+}
+
+/* 캐릭터 대시보드는 읽기 쉬운 종이 카드로 유지한다. */
+html[data-visual-theme="moonlit-drawer"].native-app[data-active-tab="character"] .mobile-character-dashboard{
+  background:linear-gradient(180deg,#f6f0e4,#fffdf8 42%,#eef1f7)!important;
+}
+html[data-visual-theme="moonlit-drawer"] .mobile-character-pane-grid button{
+  min-height:88px!important;
+  background:linear-gradient(155deg,#fffdf9,#ece5d7)!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-visual-theme="moonlit-drawer"] .mobile-character-pane-grid button :is(b,small,span){color:inherit!important;-webkit-text-fill-color:currentColor!important}
+html[data-visual-theme="moonlit-drawer"] .mobile-character-pane-grid button.on{
+  background:linear-gradient(155deg,#e8d69c,#fff9e8)!important;
+  color:var(--moon-ink)!important;
+  outline:2px solid var(--moon-gold)!important;
+}
+
+/* 관찰 카드와 본문 글자 대비 */
+html[data-visual-theme="moonlit-drawer"] :is(.native-status-card,.native-log-card){color:var(--moon-ink)!important}
+html[data-visual-theme="moonlit-drawer"] :is(.native-status-card,.native-log-card) :is(h1,h2,h3,b){color:var(--moon-ink)!important;-webkit-text-fill-color:var(--moon-ink)!important}
+html[data-visual-theme="moonlit-drawer"] :is(.panel,.form,.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card) :is(p,small,time){color:var(--moon-muted)!important;-webkit-text-fill-color:var(--moon-muted)!important}
+html[data-visual-theme="moonlit-drawer"] .native-status-card-head>button,
+html[data-visual-theme="moonlit-drawer"] .native-log-card button{
+  background:#fffdf8!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+
+/* 앱의 화면별·다크모드 규칙보다 우선해 종이 카드 대비를 보장한다. */
+html[data-color-mode].native-app[data-active-tab="observe"][data-visual-theme="moonlit-drawer"] :is(.native-status-card,.native-log-card){
+  border:1px solid var(--moon-line)!important;
+  background:linear-gradient(155deg,#fffdf8,var(--moon-paper))!important;
+  color:var(--moon-ink)!important;
+  box-shadow:0 8px 20px #07132d36!important;
+}
+html[data-color-mode].native-app[data-active-tab="observe"][data-visual-theme="moonlit-drawer"] :is(.native-status-card,.native-log-card) :is(h1,h2,h3,b,strong,span){
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="observe"][data-visual-theme="moonlit-drawer"] :is(.native-status-card,.native-log-card) :is(p,small,time){
+  color:var(--moon-muted)!important;
+  -webkit-text-fill-color:var(--moon-muted)!important;
+}
+
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-dashboard{
+  background:linear-gradient(180deg,#f6f0e4,#fffdf8 42%,#eef1f7)!important;
+  color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] :is(.mobile-character-heading,.mobile-character-pane-grid button){
+  border-color:var(--moon-line)!important;
+  background-color:#fffdf9!important;
+  background-image:linear-gradient(155deg,#fffdf9,#ece5d7)!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] :is(.mobile-character-heading,.mobile-character-pane-grid button) :is(h1,h2,h3,b,small,p,span){
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-pane-grid button.on{
+  border-color:var(--moon-gold)!important;
+  background-color:#fff9e8!important;
+  background-image:linear-gradient(155deg,#e8d69c,#fff9e8)!important;
+  outline:2px solid var(--moon-gold)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-heading>.avatar,
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-heading>.sprite{
+  flex:0 0 68px!important;
+  width:68px!important;
+  height:68px!important;
+  border-radius:50%!important;
+  background:#e3c46e!important;
+  color:var(--moon-ink)!important;
+}
+
+/* 모바일 편집창은 바깥 껍데기와 내용 카드를 분리한다. 가변 높이 내용에 프레임 그림을 늘리지 않는다. */
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-dialog,
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-shell,
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-body{
+  background-color:var(--moon-paper)!important;
+  background-image:linear-gradient(180deg,#fffdf8,var(--moon-paper))!important;
+  color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-editor-head{
+  background-color:#f7edda!important;
+  background-image:linear-gradient(180deg,#fffdf9,#f3ead8)!important;
+  color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-editor-head :is(b,small,span){
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-body>.profile-license{
+  border:0!important;
+  background:transparent!important;
+  color:var(--moon-ink)!important;
+  box-shadow:none!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-body :is(
+  .character-photo-quick-card,.setting-card,fieldset,.personality-choice,.profile-attraction-picker,
+  .physical-trait-group,.character-image-slot,.character-manage-grid>section
+){
+  border-color:var(--moon-line)!important;
+  background-color:#fffdf8!important;
+  background-image:linear-gradient(155deg,#fffdf8,var(--moon-paper))!important;
+  color:var(--moon-ink)!important;
+  box-shadow:0 6px 16px #07132d1d!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-body :is(h1,h2,h3,h4,b,strong,label,legend,span){
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-body :is(p,small){
+  color:var(--moon-muted)!important;
+  -webkit-text-fill-color:var(--moon-muted)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-body :is(input,select,textarea){
+  border-color:#9e9579!important;
+  background-color:#fffdf8!important;
+  background-image:none!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-color-mode].native-app[data-active-tab="character"][data-visual-theme="moonlit-drawer"] .mobile-character-editor-body button:not(.primary):not(.on){
+  background-color:#fffdf8!important;
+  background-image:linear-gradient(180deg,#fffdf9,#eee4d0)!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+
+/* #app 범위는 기존 다크모드의 편집기 전용 !important보다 확실히 우선한다. */
+html[data-visual-theme="moonlit-drawer"] #app .character-editor .mobile-character-dashboard .mobile-character-pane-grid>button{
+  border-color:var(--moon-line)!important;
+  background-color:#fffdf9!important;
+  background-image:linear-gradient(155deg,#fffdf9,#ece5d7)!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-visual-theme="moonlit-drawer"] #app .character-editor .mobile-character-dashboard .mobile-character-pane-grid>button.on{
+  border-color:var(--moon-gold)!important;
+  background-color:#fff9e8!important;
+  background-image:linear-gradient(155deg,#e8d69c,#fff9e8)!important;
+}
+html[data-visual-theme="moonlit-drawer"] #app .mobile-character-editor-dialog .mobile-character-editor-body :is(
+  .character-photo-quick-card,.setting-card,fieldset,.personality-choice,.profile-attraction-picker,
+  .physical-trait-group,.character-image-slot,.character-manage-grid>section
+){
+  border-color:var(--moon-line)!important;
+  background-color:#fffdf8!important;
+  background-image:linear-gradient(155deg,#fffdf8,var(--moon-paper))!important;
+  color:var(--moon-ink)!important;
+}
+html[data-visual-theme="moonlit-drawer"] #app .mobile-character-editor-dialog .mobile-character-editor-body :is(input,select,textarea){
+  border-color:#9e9579!important;
+  background-color:#fffdf8!important;
+  background-image:none!important;
+  color:var(--moon-ink)!important;
+  -webkit-text-fill-color:var(--moon-ink)!important;
+}
+html[data-visual-theme="moonlit-drawer"] #app .mobile-character-editor-dialog .mobile-character-editor-body :is(.eye-color-pair,.chips,.representation-warning){
+  border-color:var(--moon-line)!important;
+  background-color:#fffaf0!important;
+  background-image:none!important;
+  color:var(--moon-ink)!important;
+}
+
+html[data-visual-theme="moonlit-drawer"] #mini-toast{
+  border:1px solid var(--moon-gold)!important;
+  border-radius:14px!important;
+  background:linear-gradient(135deg,#20396e,#0c1938)!important;
+  color:#fff8e5!important;
+  box-shadow:0 9px 24px #02091f75!important;
+}
+
+/* 선택 카드의 미리보기만 테마 팔레트를 보여준다. */
+html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visual-theme="moonlit-drawer"]{
+  background:linear-gradient(120deg,#10204a 0 36%,#f8edcf 36% 76%,#d4a84f 76%)!important;
+  border-color:#d4a84f!important;
+}
 html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visual-theme="moonlit-drawer"] span{padding:6px 8px;border-radius:10px;background:#fffaf0e8}
-html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visual-theme="moonlit-drawer"] :is(b,small){color:#17213b!important;-webkit-text-fill-color:#17213b!important}
-html[data-visual-theme="moonlit-drawer"] .current-visual-theme{border-color:#d4a84f!important;background:linear-gradient(125deg,#fffaf0,#e9d7ad)!important;color:#17213b!important}
-html[data-visual-theme="moonlit-drawer"] .current-visual-theme :is(b,small,em){color:#17213b!important;-webkit-text-fill-color:#17213b!important}
+html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visual-theme="moonlit-drawer"] :is(b,small){color:var(--moon-ink)!important;-webkit-text-fill-color:var(--moon-ink)!important}
 
 @media(max-width:720px){
-  html[data-visual-theme="moonlit-drawer"] :is(.panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.home-page,.town-edit){border-width:11px!important;border-image-width:11px!important}
-  html[data-visual-theme="moonlit-drawer"] :is(.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,.catalog-card,.catalog-dex-card,.favorite-group,.routine-day,.shop-cart,.premium-product,.relation,.character-menu,.town-tabs,.place-editor details,.font-preview){border-width:8px!important;border-image-width:8px!important}
-  html[data-visual-theme="moonlit-drawer"] button:not(.person):not(.home-person):not(.place),html[data-visual-theme="moonlit-drawer"] a.primary{border-width:6px!important;border-image-width:6px!important}
+  html[data-visual-theme="moonlit-drawer"] :is(.panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.home-page,.town-edit,.mobile-character-dashboard){border-radius:18px!important}
+  html[data-visual-theme="moonlit-drawer"] :is(.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,.catalog-card,.catalog-dex-card,.routine-day,.premium-product,.mobile-character-heading,.mobile-character-pane-grid button){border-radius:15px!important}
+  html[data-visual-theme="moonlit-drawer"] .mobile-character-editor-body{background:#fffdf8!important}
 }

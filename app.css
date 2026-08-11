@@ -5584,7 +5584,7 @@ html[data-color-mode="dark"] .town-editor-panel .place-editor details[open]{back
 
 @media(max-width:720px){
   .mobile-character-heading{flex-wrap:wrap!important}
-  .mobile-character-heading>span{flex:1 1 calc(100% - 96px)}
+  .mobile-character-heading>span:not(.avatar):not(.sprite){flex:1 1 calc(100% - 96px)}
   .mobile-character-file-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;margin-left:0}
   .mobile-character-file-actions button{min-width:0;min-height:42px;padding:7px 5px;font-size:10px;white-space:normal;line-height:1.2}
 }
