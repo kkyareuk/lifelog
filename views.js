@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811c";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811c";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811e";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811e";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -619,6 +619,10 @@ function isRomanticCharacterView(view){
   if(!overall||/친구로|가족|인간적인 호감|소중하게|존경|동경|안쓰럽/.test(overall))return false;
   return /연애|사랑|연심|없어서는 안 될|로맨틱/.test(overall);
 }
+function recognizesRomanticFeeling(view){
+  if(!isRomanticCharacterView(view))return false;
+  return !/우정으로 착각|경쟁심으로 착각|불편함으로 착각|자기 감정을 전혀 모름|느끼는 감정을 부정/.test(String(view?.awareness||""));
+}
 function relationshipForPair(firstId,secondId){
   return Object.values(state.relationships||{}).find(relation=>
     relation?.temporalStatus!=="past"
@@ -730,8 +734,12 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const overwhelmed=Boolean(dating&&relationshipPressure>=2);
   // 인간적인 호감이나 소중함은 연애 감정이 아니다. 하트·짝사랑 연출은
   // 캐릭터가 명시적으로 연애 감정을 설정한 경우에만 사용한다.
-  const ownRomanceInterest=Boolean(partner&&isRomanticCharacterView(explicitCharacterViewFor(c.id,partner.id)));
-  const reverseRomanceInterest=Boolean(partner&&isRomanticCharacterView(explicitCharacterViewFor(partner.id,c.id)));
+  const ownExplicitView=partner?explicitCharacterViewFor(c.id,partner.id):{};
+  const reverseExplicitView=partner?explicitCharacterViewFor(partner.id,c.id):{};
+  const ownRomanticFeeling=Boolean(partner&&isRomanticCharacterView(ownExplicitView));
+  const reverseRomanticFeeling=Boolean(partner&&isRomanticCharacterView(reverseExplicitView));
+  const ownRomanceInterest=Boolean(partner&&recognizesRomanticFeeling(ownExplicitView));
+  const reverseRomanceInterest=Boolean(partner&&recognizesRomanticFeeling(reverseExplicitView));
   // 데이트 일정뿐 아니라, 함께 있는 상대를 이 캐릭터가 실제로 사랑한다고
   // 설정했다면 어느 캐릭터 탭에서 보더라도 그 방향의 분홍빛 연출을 사용한다.
   const ownRomance=Boolean(partner&&ownRomanceInterest&&!fighting);
@@ -795,8 +803,8 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
         :sceneEmotion==="anger"&&sceneEmotionScore>=2?(coldFight?"fight-ice":"fight-fire")
           :sceneEmotion==="sad"&&sceneEmotionScore>=2?"sad"
             :sceneEmotion==="fear"&&sceneEmotionScore>=2?"interaction-tense"
-              :sceneEmotion==="romance"&&sceneEmotionScore>=2
-                ?(dating?"date-romantic":ownRomanceInterest&&reverseRomanceInterest?"crush-mutual":ownRomanceInterest||reverseRomanceInterest?"crush-one-sided":"date-romantic")
+              :sceneEmotion==="romance"&&sceneEmotionScore>=2&&ownRomanceInterest
+                ?(dating?"date-romantic":ownRomanceInterest&&reverseRomanceInterest?"crush-mutual":"crush-one-sided")
                 :sceneEmotion==="playful"&&sceneEmotionScore>=2?"interaction-playful"
                   :sceneEmotion==="warm"&&sceneEmotionScore>=1?"interaction-warm"
                     :dating?"date-neutral":partner&&entry?.groupInteraction?"interaction-neutral":"neutral";
@@ -812,7 +820,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
       ||(person.residences||[]).some(residence=>residence.homeId===homeId)
     )
   );
-  const companions=partner&&(entry?.groupInteraction||dating||fighting||ownRomanceInterest||mirroredPartnerIds.length||partners.length>1||coResidentConversation)?partners:[];
+  const companions=partner&&(entry?.groupInteraction||dating||fighting||ownRomanticFeeling||reverseRomanticFeeling||mirroredPartnerIds.length||partners.length>1||coResidentConversation)?partners:[];
   const pet=nativePetForScene(c,entry);
   const petVisual=pet?(pet.icon?`<img src="${esc(pet.icon)}" alt="${esc(pet.name)}">`:pet.photo?`<img class="photo" src="${esc(pet.photo)}" alt="${esc(pet.name)}">`:`<span>${PET_SCENE_EMOJI[pet.species]||PET_SCENE_EMOJI.기타}</span>`):"";
   const effectSymbol=tone==="sleep"
@@ -862,7 +870,8 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     const personSleeping=/자는 중|잠든|수면/.test(personText);
     const personDrowsy=!personSleeping&&/졸리|졸린|졸음|조는 중|꾸벅|눈꺼풀이|잠깐 눈을 감|하품/.test(personText);
     const sleepBadge=personSleeping?'<b class="native-character-sleep-mark" aria-hidden="true">ZZ</b>':personDrowsy?'<b class="native-character-drowsy-mark" aria-hidden="true">z</b>':"";
-    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""} ${visualMode==="ld"&&hasLdArt(person)?"is-ld":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s">${sceneAvatar(person,"native-scene-lineup-avatar",tone,visualMode)}${actionProp}${sleepBadge}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
+    const personVisualScale=Math.max(70,Math.min(150,Number(person.homeVisualScale)||100))/100;
+    return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""} ${visualMode==="ld"&&hasLdArt(person)?"is-ld":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s;--person-visual-scale:${personVisualScale}">${sceneAvatar(person,"native-scene-lineup-avatar",tone,visualMode)}${actionProp}${sleepBadge}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
   }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
     companions.length
@@ -1602,7 +1611,7 @@ const CHARACTER_VIEW_OPTIONS={
   awareness:["정하지 않음","자기 감정을 분명히 자각함","감정을 어렴풋이 느낌","감정을 우정으로 착각함","감정을 경쟁심으로 착각함","감정을 불편함으로 착각함","자기 감정을 전혀 모름","느끼는 감정을 부정함"],
   mutualAwareness:["정하지 않음","상대의 마음을 전혀 모름","상대의 마음을 어렴풋이 눈치챔","상대가 느끼는 감정을 알고 있음","서로의 마음을 확인함","상대의 마음을 오해하고 있음"],
   trust:["정하지 않음","전혀 믿지 않음","의심함","조심스럽게 지켜봄","보통","어느 정도 믿음","깊이 신뢰함","전적으로 의지함"],
-  fear:["정하지 않음","가소로움","전혀 두렵지 않음","거의 두렵지 않음","조금 두려움","경계하며 두려워함","많이 두려움","공포를 느낌","극도로 두려워함"],
+  fear:["설정하지 않음","가소로움","전혀 두렵지 않음","거의 두렵지 않음","조금 두려움","경계하며 두려워함","많이 두려움","공포를 느낌","극도로 두려워함"],
   closeness:["정하지 않음","남보다도 멂","낯선 사이","거리감 있음","보통","편한 사이","가까운 사이","가장 가까운 사람"],
   comfort:["정하지 않음","함께 있으면 매우 불편하고 대화도 전혀 통하지 않음","같은 공간에서는 숨 막히지만 농담과 장난은 잘 통함","공간 공유는 불편하지만 대화는 편안함","긴장하고 대화도 조심스러움","어색하지만 필요한 대화는 무난함","함께 있는 건 편하지만 대화 호흡은 평범함","편안하고 농담과 장난이 잘 통함","말없이 함께 있어도 편안함","공간도 대화도 완벽하게 편안함"],
   annoyance:["정하지 않음","전혀 귀찮거나 성가시지 않음","전혀 귀찮거나 성가시지 않지만 성가시다고 말함","가끔 성가심","종종 귀찮음","많이 귀찮고 성가심","보기만 해도 피곤함"],
@@ -1652,7 +1661,9 @@ const characterViewEditor=()=>{
   const source=state.characters[sourceId],target=state.characters[targetId];
   const field=(sourceId,targetId,key,label,help)=>{
     const effective=characterViewFor(sourceId,targetId);
-    const current=effective[key]==="정하지 않음"?"선택하지 않음":(effective[key]||"선택하지 않음");
+    const current=key==="fear"
+      ?(["", "정하지 않음", "선택하지 않음"].includes(effective[key]||"")?"설정하지 않음":effective[key])
+      :(effective[key]==="정하지 않음"?"선택하지 않음":(effective[key]||"선택하지 않음"));
     let options=characterViewOptions(key);
     const minorPair=[sourceId,targetId].some(id=>["영아","유아","어린이","청소년"].includes(state.characters[id]?.ageGroup));
     if(key==="touchIntensity"&&minorPair)options=options.filter(value=>value!=="성인 간 친밀한 접촉까지");
@@ -1866,11 +1877,12 @@ function fontSettings(){
 }
 const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>사용자 닉네임</h2><p>Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.</p><label>캐릭터들이 뭐라고 부를까요?<input data-setting="ownerName" maxlength="20" value="${esc(state.ownerName||"")}" placeholder="예: 꺄륵"></label></section>`;
 function visualThemeSettings(){
-  const vivid=[["rose","프린세스 핑크","사탕처럼 선명하고 사랑스러운 공주 핑크","#ff3f9f","#ff8dcc"],["berry","베리 팝","보라와 핫핑크가 통통 튀는 베리빛","#be2cff","#ff45b5"],["sky","하늘 소다","맑은 하늘과 탄산처럼 시원한 파랑","#078cff","#55c8ff"],["cobalt","코발트 네온","화면을 또렷하게 잡는 선명한 청보라","#3f50ff","#7d87ff"],["aqua","아쿠아 팝","청록과 민트가 반짝이는 물빛","#00a9b5","#21dfc5"],["lime","라임 캔디","싱그러운 초록과 라임빛","#52a900","#b4d900"],["coral","코랄 펀치","산뜻한 빨강과 오렌지 코랄","#ff4f62","#ff9770"]];
+  const vivid=[["rose","프린세스 핑크","사탕처럼 선명하고 사랑스러운 공주 핑크","#ff4b9c","#ffadd8"],["berry","베리 팝","보라와 핫핑크가 통통 튀는 베리빛","#be2cff","#ff45b5"],["sky","하늘 소다","맑은 하늘과 탄산처럼 시원한 파랑","#078cff","#55c8ff"],["cobalt","코발트 네온","화면을 또렷하게 잡는 선명한 청보라","#3f50ff","#7d87ff"],["aqua","아쿠아 팝","청록과 민트가 반짝이는 물빛","#00a9b5","#21dfc5"],["lime","라임 캔디","싱그러운 초록과 라임빛","#52a900","#b4d900"],["coral","코랄 펀치","산뜻한 빨강과 오렌지 코랄","#ff4f62","#ff9770"]];
   const bright=[["cream","크림 라떼","포근하고 환한 아이보리와 캐러멜빛","#b06a00","#f2a93b"],["peach","복숭아 소다","생기 있고 부드러운 복숭앗빛","#ef536f","#ff986e"],["mint","민트 정원","산뜻하고 맑은 민트와 잎사귀빛","#00a982","#4bd8aa"],["sunshine","햇살 레몬","따뜻하고 명랑한 레몬과 금빛","#d98b00","#ffd23f"]];
   const classic=[["monochrome","흑백","가장 또렷한 기본 테마","#20242a","#6d747d"],["sage","세이지","편안하지만 탁하지 않은 초록빛","#2f855a","#76c36a"],["ocean","오션","맑고 깊은 바다의 푸른빛","#007fc2","#36c0e8"],["lavender","라벤더","선명하면서 부드러운 보랏빛","#7547e8","#c26de8"]];
+  const heritage=[["baroque","바로크 살롱","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식","#762f43","#b98552"]];
   const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span></button>`).join("");
-  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><h3>밝고 선명한 테마</h3><div class="visual-theme-options vivid-theme-options">${buttons(vivid)}</div><h3>밝은 파스텔 테마</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>차분한 기본 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></section>`;
+  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><h3>고전과 장식 테마</h3><div class="visual-theme-options heritage-theme-options">${buttons(heritage)}</div><h3>밝고 선명한 테마</h3><div class="visual-theme-options vivid-theme-options">${buttons(vivid)}</div><h3>밝은 파스텔 테마</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>차분한 기본 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></section>`;
 }
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;
@@ -1883,6 +1895,7 @@ function settingsContent(){
   return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${map}${language}${backup}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
 }
 Object.assign(UI_TEXT.en,{
+  "고전과 장식 테마":"Heritage & ornamental themes","바로크 살롱":"Baroque Salon","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식":"Black lacquer frames, aged parchment, wine red, and bronze ornament",
   "밝고 선명한 테마":"Bright & vivid themes","밝은 파스텔 테마":"Light pastel themes","차분한 기본 테마":"Calm classic themes",
   "이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.":"This color applies to every character and to buttons and accents across the app. Button text automatically adapts to the background brightness.",
   "프린세스 핑크":"Princess Pink","사탕처럼 선명하고 사랑스러운 공주 핑크":"A vivid, candy-bright princess pink","베리 팝":"Berry Pop","보라와 핫핑크가 통통 튀는 베리빛":"Playful berry shades of purple and hot pink","하늘 소다":"Sky Soda","맑은 하늘과 탄산처럼 시원한 파랑":"A crisp blue as refreshing as sky and soda","코발트 네온":"Cobalt Neon","화면을 또렷하게 잡는 선명한 청보라":"A clear, vivid blue-violet","아쿠아 팝":"Aqua Pop","청록과 민트가 반짝이는 물빛":"Sparkling aqua with teal and mint","라임 캔디":"Lime Candy","싱그러운 초록과 라임빛":"Fresh green and lime","코랄 펀치":"Coral Punch","산뜻한 빨강과 오렌지 코랄":"A lively red-orange coral",
@@ -1893,6 +1906,7 @@ Object.assign(UI_TEXT.en,{
   ,"원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.":"Add the products and quantities you want to the cart and pay in one checkout.","캐릭터 슬롯":"Character slots","캐릭터 5명 추가":"Add 5 character slots","구매할 때마다 캐릭터 슬롯 5개가 계정에 영구 추가됩니다.":"Each purchase permanently adds five character slots to your account.","마을 슬롯":"Town slots","마을 1개 추가":"Add 1 town slot","구매할 때마다 새로운 마을 슬롯 1개가 계정에 영구 추가됩니다.":"Each purchase permanently adds one town slot to your account.","사진 저장 공간":"Image storage","사진 저장 공간 50MB 추가":"Add 50MB image storage","구매하면 계정의 사진 저장 공간이 50MB로 늘어납니다.":"This increases your account image storage to 50MB.","평생 소장":"Permanent","개발 응원":"Support development","개발자에게 녹차 사주기 🍵":"Buy the developer green tea 🍵","잘 먹겠습니다 🥹":"Thank you 🥹","같은 상품도 여러 개 담을 수 있어요.":"You can add multiple quantities of the same product.","아직 장바구니가 비어 있어요.":"Your cart is empty.","총 결제금액":"Total","장바구니 결제하기":"Checkout cart"
 });
 Object.assign(UI_TEXT.ja,{
+  "고전과 장식 테마":"古典・装飾テーマ","바로크 살롱":"バロックサロン","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식":"黒漆の額縁、古びた羊皮紙、ワインレッドと青銅の装飾",
   "밝고 선명한 테마":"明るく鮮やかなテーマ","밝은 파스텔 테마":"明るいパステルテーマ","차분한 기본 테마":"落ち着いた基本テーマ",
   "이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.":"この色はすべてのキャラクターと画面のボタン・アクセントに適用されます。ボタンの文字色は背景の明るさに合わせて自動で変わります。",
   "프린세스 핑크":"プリンセスピンク","사탕처럼 선명하고 사랑스러운 공주 핑크":"キャンディのように鮮やかで可愛いプリンセスピンク","베리 팝":"ベリーポップ","보라와 핫핑크가 통통 튀는 베리빛":"紫とホットピンクが弾けるベリーカラー","하늘 소다":"スカイソーダ","맑은 하늘과 탄산처럼 시원한 파랑":"澄んだ空とソーダのように爽やかな青","코발트 네온":"コバルトネオン","화면을 또렷하게 잡는 선명한 청보라":"画面をくっきり見せる鮮やかな青紫","아쿠아 팝":"アクアポップ","청록과 민트가 반짝이는 물빛":"青緑とミントがきらめく水色","라임 캔디":"ライムキャンディ","싱그러운 초록과 라임빛":"みずみずしい緑とライム色","코랄 펀치":"コーラルパンチ","산뜻한 빨강과 오렌지 코랄":"爽やかな赤とオレンジのコーラル",
