@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260811f";
-import {eventFor} from "./simulation.js?v=20260811f";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811f";
-import {recordCharacterInteraction} from "./state.js?v=20260811f";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown} from "./state.js?v=20260811g";
+import {eventFor} from "./simulation.js?v=20260811g";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811g";
+import {recordCharacterInteraction} from "./state.js?v=20260811g";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -660,7 +660,7 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811f");
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811g");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
@@ -877,16 +877,16 @@ function applyTheme(){
     mint:{light:["#00a982","#4bd8aa","#e9fff6","#fbfffd","#073e32","#4f8878","#b4efd9"],dark:["#21cea3","#6af0c0","#031913","#073128","#effff9","#9ce3cd","#1e7560"]},
     sunshine:{light:["#d98b00","#ffd23f","#fff8d2","#fffef7","#3e2b00","#836b27","#f4dc82"],dark:["#ffb51f","#ffe05f","#1c1300","#352703","#fffbe8","#e9d184","#735513"]},
     sage:{light:["#2f855a","#76c36a","#ecf8ed","#fbfffc","#143823","#5a7f66","#bfe1c4"],dark:["#55bc79","#99db76","#06150c","#0f2b19","#effcf3","#a8d4b4","#28643e"]},
-    rose:{light:["#b57873","#cfb4ab","#eee9e4","#fffaf6","#413330","#756a66","#c0af99"],dark:["#d49a95","#cfb4ab","#1d1818","#302525","#fff4ee","#d1bdb4","#725d58"]},
+    rose:{light:["#b57873","#cfb4ab","#eee7e0","#fff8f4","#413330","#756a66","#c0af99"],dark:["#d49a95","#cfb4ab","#1d1818","#302525","#fff4ee","#d1bdb4","#725d58"]},
     ocean:{light:["#007fc2","#36c0e8","#e9f9ff","#fbfeff","#073952","#4f7f93","#b6e8f7"],dark:["#29a9e8","#5cdaf0","#031720","#082f41","#effbff","#9ed7e6","#1e607b"]},
     lavender:{light:["#7547e8","#c26de8","#f5edff","#fffaff","#2e1652","#76588d","#ddc2fa"],dark:["#956cff","#db86f4","#10051d","#27103b","#faf2ff","#d1afe4","#593180"]},
     berry:{light:["#be2cff","#ff45b5","#f9ecff","#ffffff","#321044","#7d4a8c","#e5b6f8"],dark:["#d65cff","#ff69c5","#16051d","#2c0c38","#fff2ff","#d9a8e8","#663077"]},
     sky:{light:["#078cff","#55c8ff","#eaf7ff","#ffffff","#082f50","#4b7895","#b5e2ff"],dark:["#31a8ff","#68ddff","#031522","#092c43","#eefaff","#9ed5ee","#245b79"]},
-    cobalt:{light:["#3f50ff","#7d87ff","#eef0ff","#ffffff","#151a52","#59608e","#c9ceff"],dark:["#6674ff","#9da5ff","#070a22","#151a45","#f3f4ff","#b6bbec","#3a438f"]},
+    cobalt:{light:["#112250","#3c507d","#f3f0e9","#fffaf4","#112250","#65708a","#d9cbc2"],dark:["#e0c58f","#3c507d","#071124","#101e3b","#f3f0e9","#bac3d7","#3c507d"]},
     aqua:{light:["#00a9b5","#21dfc5","#e7fffb","#ffffff","#073d3d","#4e8580","#aff1e7"],dark:["#13cbd1","#40f0cd","#031817","#092f2d","#edfffb","#9ce0d6","#1d7069"]},
     lime:{light:["#52a900","#b4d900","#f3ffe3","#ffffff","#203600","#687f3c","#d3efa8"],dark:["#76ce22","#c9ef43","#0b1602","#1b3309","#f7ffe9","#c0dd99","#466f21"]},
     coral:{light:["#ff4f62","#ff9770","#fff0ec","#ffffff","#49151b","#955b58","#ffc6ba"],dark:["#ff6674","#ffad82","#1d080b","#381316","#fff3f0","#efb6ae","#7d3439"]},
-    baroque:{light:["#762f43","#b98552","#ead9bd","#f8ecd8","#2c1a17","#735846","#b98b60"],dark:["#d0a066","#8e344b","#101216","#21191a","#f3e4cd","#c5aa8a","#684936"]}
+    baroque:{light:["#ad6d15","#efbb55","#fbf5d2","#fff9e8","#441004","#79380b","#e2bf6d"],dark:["#efbb55","#ad6d15","#180b03","#2a1306","#fff2cf","#d7ad71","#79380b"]}
   };
   const selected=state.visualTheme||"monochrome";
   const [primary,secondary,bg,panel,ink,muted,line]=(palettes[selected]||palettes.monochrome)[mode];
@@ -899,6 +899,11 @@ function applyTheme(){
   document.documentElement.style.setProperty("--ink",ink);
   document.documentElement.style.setProperty("--muted",muted);
   document.documentElement.style.setProperty("--line",line);
+  document.documentElement.style.setProperty("--theme-wash",`color-mix(in srgb, ${primary} 13%, ${bg})`);
+  document.documentElement.style.setProperty("--theme-surface",`color-mix(in srgb, ${primary} 6%, ${panel})`);
+  document.documentElement.style.setProperty("--theme-surface-strong",`color-mix(in srgb, ${secondary} 12%, ${panel})`);
+  document.documentElement.style.setProperty("--theme-border",`color-mix(in srgb, ${primary} 34%, ${line})`);
+  document.documentElement.style.setProperty("--theme-shadow",`color-mix(in srgb, ${primary} 20%, transparent)`);
   document.documentElement.style.setProperty("--on-p",readableInk(primary));
   document.documentElement.style.setProperty("--on-s",readableInk(secondary));
   document.documentElement.style.setProperty("--on-grad",readableInk(mixThemeColors(primary,secondary)));
@@ -2591,13 +2596,15 @@ document.addEventListener("change",event=>{
 });
 const mobileSiteQuery=window.matchMedia?.("(max-width:720px)");
 mobileSiteQuery?.addEventListener?.("change",()=>render());
-const hashTab=location.hash.match(/^#tab=(.+)$/)?.[1];
-if(APP_TABS.includes(hashTab))state.activeTab=hashTab;
-recordTabHistory(state.activeTab,true);
+// A saved URL such as #tab=settings is useful while navigating inside the
+// running app, but it must not turn the next launch into a settings screen.
+// Every cold start and refresh begins at the observation home.
+state.activeTab="observe";
+recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260811f").catch(error=>{
+  import("./auth.js?v=20260811g").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2612,7 +2619,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260811f",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260811g",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

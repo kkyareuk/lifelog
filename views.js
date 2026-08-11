@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811f";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811f";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811g";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811g";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -227,7 +227,7 @@ function translateInterface(root){
   // keys into English/Japanese text, which the state normalizer then treated
   // as unknown and reset to "설정하지 않음". Freeze the data value first.
   root.querySelectorAll("option:not([value])").forEach(option=>option.setAttribute("value",option.textContent.trim()));
-  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,span,a,i,li").forEach(element=>{
+  root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,strong,em,span,a,i,li").forEach(element=>{
     [...element.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).forEach(node=>{
       const raw=node.nodeValue||"";
       const trimmed=raw.trim();
@@ -1892,15 +1892,51 @@ function fontSettings(){
 }
 const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>사용자 닉네임</h2><p>Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.</p><label>캐릭터들이 뭐라고 부를까요?<input data-setting="ownerName" maxlength="20" value="${esc(state.ownerName||"")}" placeholder="예: 꺄륵"></label></section>`;
 function visualThemeSettings(){
-  const vivid=[["rose","프린세스 핑크","진주 장식과 앤티크 실크를 닮은 로코코 블러시 핑크","#b57873","#cfb4ab"],["berry","베리 팝","보라와 핫핑크가 통통 튀는 베리빛","#be2cff","#ff45b5"],["sky","하늘 소다","맑은 하늘과 탄산처럼 시원한 파랑","#078cff","#55c8ff"],["cobalt","코발트 네온","화면을 또렷하게 잡는 선명한 청보라","#3f50ff","#7d87ff"],["aqua","아쿠아 팝","청록과 민트가 반짝이는 물빛","#00a9b5","#21dfc5"],["lime","라임 캔디","싱그러운 초록과 라임빛","#52a900","#b4d900"],["coral","코랄 펀치","산뜻한 빨강과 오렌지 코랄","#ff4f62","#ff9770"]];
-  const bright=[["cream","크림 라떼","포근하고 환한 아이보리와 캐러멜빛","#b06a00","#f2a93b"],["peach","복숭아 소다","생기 있고 부드러운 복숭앗빛","#ef536f","#ff986e"],["mint","민트 정원","산뜻하고 맑은 민트와 잎사귀빛","#00a982","#4bd8aa"],["sunshine","햇살 레몬","따뜻하고 명랑한 레몬과 금빛","#d98b00","#ffd23f"]];
-  const classic=[["monochrome","흑백","가장 또렷한 기본 테마","#20242a","#6d747d"],["sage","세이지","편안하지만 탁하지 않은 초록빛","#2f855a","#76c36a"],["ocean","오션","맑고 깊은 바다의 푸른빛","#007fc2","#36c0e8"],["lavender","라벤더","선명하면서 부드러운 보랏빛","#7547e8","#c26de8"]];
-  const heritage=[["baroque","바로크 살롱","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식","#762f43","#b98552"]];
+  const vivid=[["rose","진주빛 로즈 부두아르","블러시 실크와 오래된 진주 장식이 머무는 공주님의 작은 방","#b57873","#cfb4ab"],["berry","한밤의 베리 정원","보랏빛 밤에 장미와 잘 익은 베리가 반짝이는 색","#be2cff","#ff45b5"],["sky","구름 위 소다수","맑은 하늘을 한 모금 머금은 듯 시원한 파랑","#078cff","#55c8ff"],["cobalt","사파이어 자정","짙은 왕실 남색과 샴페인 골드가 빛나는 밤","#112250","#3c507d"],["aqua","인어의 유리병","청록빛 파도와 민트 거품을 담은 투명한 물빛","#00a9b5","#21dfc5"],["lime","초록 사탕 온실","라임 사탕과 어린 잎이 자라는 싱그러운 온실","#52a900","#b4d900"],["coral","산호빛 저녁 편지","해 질 녘 산호와 살구빛을 담아 보낸 따뜻한 편지","#ff4f62","#ff9770"]];
+  const bright=[["cream","오후 네 시의 크렘","햇빛 든 찻잔처럼 포근한 아이보리와 캐러멜","#b06a00","#f2a93b"],["peach","복숭아빛 첫 편지","부드러운 복숭아와 설레는 첫 인사를 닮은 색","#ef536f","#ff986e"],["mint","유리 온실의 아침","이슬 맺힌 민트 잎과 아침 유리창의 맑은 빛","#00a982","#4bd8aa"],["sunshine","레몬 타르트의 오후","노란 햇살과 금빛 설탕이 반짝이는 명랑한 오후","#d98b00","#ffd23f"]];
+  const classic=[["monochrome","새벽의 잉크병","고요한 새벽 종이 위에 번지는 또렷한 먹빛","#20242a","#6d747d"],["sage","비 갠 뒤의 정원","비가 멎은 뒤 잎사귀에 남은 차분하고 맑은 초록","#2f855a","#76c36a"],["ocean","유리 바다의 아침","햇빛이 투과하는 깊고 맑은 바다의 푸른빛","#007fc2","#36c0e8"],["lavender","라일락 꿈결","잠들기 전 창가에 번지는 부드러운 보랏빛","#7547e8","#c26de8"]];
+  const heritage=[["baroque","베르사유의 황금 오후","샹들리에와 금박 장식 사이로 쏟아지는 오래된 오후의 빛","#ad6d15","#efbb55"]];
   const all=[...heritage,...vivid,...bright,...classic];
   const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span>${state.visualTheme===value?`<em>현재 선택</em>`:""}</button>`).join("");
   const current=all.find(([value])=>value===state.visualTheme)||classic[0];
   return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><div class="current-visual-theme" style="--theme-a:${esc(current[3])};--theme-b:${esc(current[4])}"><i aria-hidden="true"></i><span><small>현재 선택한 테마</small><b>${esc(current[1])}</b><em>${esc(current[2])}</em></span></div><button type="button" class="primary open-visual-theme-picker" data-open-visual-theme-dialog>테마 선택하기</button><dialog class="visual-theme-dialog" data-visual-theme-dialog><form method="dialog"><div class="visual-theme-dialog-head"><span><small>COLOR THEME</small><h2>테마 선택하기</h2><p>미리보기에서 원하는 색을 고르면 바로 적용돼요.</p></span><button value="close" aria-label="닫기">×</button></div><div class="visual-theme-dialog-body"><h3>고전과 장식 테마</h3><div class="visual-theme-options heritage-theme-options">${buttons(heritage)}</div><h3>밝고 선명한 테마</h3><div class="visual-theme-options vivid-theme-options">${buttons(vivid)}</div><h3>밝은 파스텔 테마</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>차분한 기본 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></div><div class="visual-theme-dialog-actions"><button value="close">닫기</button></div></form></dialog></section>`;
 }
+Object.assign(UI_TEXT.en,{
+  "진주빛 로즈 부두아르":"Pearl-Rose Boudoir","블러시 실크와 오래된 진주 장식이 머무는 공주님의 작은 방":"A princess's private room of blush silk and antique pearls",
+  "한밤의 베리 정원":"Midnight Berry Garden","보랏빛 밤에 장미와 잘 익은 베리가 반짝이는 색":"Roses and ripe berries shimmering in a violet night",
+  "구름 위 소다수":"Soda Above the Clouds","맑은 하늘을 한 모금 머금은 듯 시원한 파랑":"A crisp blue like a sip of clear sky",
+  "사파이어 자정":"Sapphire Midnight","짙은 왕실 남색과 샴페인 골드가 빛나는 밤":"A night of royal navy and gleaming champagne gold",
+  "인어의 유리병":"The Mermaid's Glass Bottle","청록빛 파도와 민트 거품을 담은 투명한 물빛":"Clear water holding teal waves and mint foam",
+  "초록 사탕 온실":"Green-Candy Conservatory","라임 사탕과 어린 잎이 자라는 싱그러운 온실":"A fresh conservatory of lime candy and young leaves",
+  "산호빛 저녁 편지":"A Coral Evening Letter","해 질 녘 산호와 살구빛을 담아 보낸 따뜻한 편지":"A warm letter carrying sunset coral and apricot",
+  "오후 네 시의 크렘":"Crème at Four","햇빛 든 찻잔처럼 포근한 아이보리와 캐러멜":"Ivory and caramel as warm as a sunlit teacup",
+  "복숭아빛 첫 편지":"The First Peach-Tinted Letter","부드러운 복숭아와 설레는 첫 인사를 닮은 색":"Soft peach like a fluttering first hello",
+  "유리 온실의 아침":"Morning in the Glasshouse","이슬 맺힌 민트 잎과 아침 유리창의 맑은 빛":"Dewy mint leaves and clear morning glass",
+  "레몬 타르트의 오후":"A Lemon-Tart Afternoon","노란 햇살과 금빛 설탕이 반짝이는 명랑한 오후":"A cheerful afternoon of yellow sun and golden sugar",
+  "새벽의 잉크병":"The Dawn Inkwell","고요한 새벽 종이 위에 번지는 또렷한 먹빛":"Clear ink spreading across quiet dawn paper",
+  "비 갠 뒤의 정원":"The Garden After Rain","비가 멎은 뒤 잎사귀에 남은 차분하고 맑은 초록":"Calm, clear green left on leaves after rain",
+  "유리 바다의 아침":"Morning on the Glass Sea","햇빛이 투과하는 깊고 맑은 바다의 푸른빛":"Deep, clear blue with sunlight passing through",
+  "라일락 꿈결":"A Lilac Reverie","잠들기 전 창가에 번지는 부드러운 보랏빛":"Soft violet drifting across the window before sleep",
+  "베르사유의 황금 오후":"A Golden Afternoon at Versailles","샹들리에와 금박 장식 사이로 쏟아지는 오래된 오후의 빛":"Old afternoon light pouring between chandeliers and gilded ornament"
+});
+Object.assign(UI_TEXT.ja,{
+  "진주빛 로즈 부두아르":"真珠色のローズ・ブドワール","블러시 실크와 오래된 진주 장식이 머무는 공주님의 작은 방":"ブラッシュシルクとアンティークパールに包まれた姫君の小部屋",
+  "한밤의 베리 정원":"真夜中のベリーガーデン","보랏빛 밤에 장미와 잘 익은 베리가 반짝이는 색":"紫の夜に薔薇と熟したベリーがきらめく色",
+  "구름 위 소다수":"雲の上のソーダ水","맑은 하늘을 한 모금 머금은 듯 시원한 파랑":"澄んだ空を一口含んだような爽やかな青",
+  "사파이어 자정":"サファイアの真夜中","짙은 왕실 남색과 샴페인 골드가 빛나는 밤":"深いロイヤルネイビーとシャンパンゴールドが輝く夜",
+  "인어의 유리병":"人魚のガラス瓶","청록빛 파도와 민트 거품을 담은 투명한 물빛":"青緑の波とミントの泡を閉じ込めた透明な水色",
+  "초록 사탕 온실":"緑のキャンディ温室","라임 사탕과 어린 잎이 자라는 싱그러운 온실":"ライムキャンディと若葉が育つみずみずしい温室",
+  "산호빛 저녁 편지":"珊瑚色の夕暮れの手紙","해 질 녘 산호와 살구빛을 담아 보낸 따뜻한 편지":"夕暮れの珊瑚色と杏色を込めたあたたかな手紙",
+  "오후 네 시의 크렘":"午後四時のクレーム","햇빛 든 찻잔처럼 포근한 아이보리와 캐러멜":"陽だまりのティーカップのようなアイボリーとキャラメル",
+  "복숭아빛 첫 편지":"桃色の最初の手紙","부드러운 복숭아와 설레는 첫 인사를 닮은 색":"やわらかな桃と胸が高鳴る最初の挨拶の色",
+  "유리 온실의 아침":"ガラス温室の朝","이슬 맺힌 민트 잎과 아침 유리창의 맑은 빛":"露をまとったミントの葉と朝のガラスの澄んだ光",
+  "레몬 타르트의 오후":"レモンタルトの午後","노란 햇살과 금빛 설탕이 반짝이는 명랑한 오후":"黄色い日差しと金色の砂糖がきらめく朗らかな午後",
+  "새벽의 잉크병":"夜明けのインク壺","고요한 새벽 종이 위에 번지는 또렷한 먹빛":"静かな夜明けの紙に広がる鮮明な墨色",
+  "비 갠 뒤의 정원":"雨上がりの庭","비가 멎은 뒤 잎사귀에 남은 차분하고 맑은 초록":"雨上がりの葉に残る穏やかで澄んだ緑",
+  "유리 바다의 아침":"ガラスの海の朝","햇빛이 투과하는 깊고 맑은 바다의 푸른빛":"日差しが透き通る深く澄んだ海の青",
+  "라일락 꿈결":"ライラックの夢心地","잠들기 전 창가에 번지는 부드러운 보랏빛":"眠る前の窓辺に広がるやわらかな紫",
+  "베르사유의 황금 오후":"ヴェルサイユの黄金の午後","샹들리에와 금박 장식 사이로 쏟아지는 오래된 오후의 빛":"シャンデリアと金箔装飾の間に降り注ぐ古い午後の光"
+});
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;
   const sync=`<section class="sync-panel setting-card"><h2>저장과 동기화</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div><small>동기화와 불러오기는 필요할 때만 설정에서 사용해요.</small></section>`;
