@@ -477,6 +477,11 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
 .character-stat-highlights{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
 .character-stat-highlights article{display:grid;gap:7px;min-width:0;padding:13px;border:1px solid var(--line);border-radius:15px;background:var(--soft)}
 .character-stat-highlights small{color:var(--muted);font-weight:800}.character-stat-highlights b{font-size:20px;color:var(--p)}
+.character-stat-donuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.character-stat-donuts article{display:grid;place-items:center;align-content:center;gap:8px;min-width:0;padding:13px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.character-stat-donuts article>i{display:grid;place-items:center;width:82px;height:82px;border-radius:50%;background:conic-gradient(from -90deg,color-mix(in srgb,var(--p) calc(72% + var(--chart-index)*5%),var(--s)) calc(var(--chart-percent)*1%),color-mix(in srgb,var(--line) 68%,transparent) 0);font-style:normal;position:relative}
+.character-stat-donuts article>i::after{content:"";position:absolute;inset:9px;border-radius:inherit;background:var(--panel)}
+.character-stat-donuts article b{position:relative;z-index:1;color:var(--ink);font-size:18px}.character-stat-donuts article>span{text-align:center;color:var(--muted);font-weight:800;font-size:13px}
 .character-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .character-stat-grid section{min-width:0;padding:14px;border:1px solid var(--line);border-radius:17px;background:var(--soft)}
 .character-stat-grid h3{margin:0 0 10px;font-size:16px}
@@ -488,6 +493,7 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
 .character-stat-grid li>i>u{display:block;width:var(--stat-value);height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--p),var(--s));text-decoration:none}
 .character-stat-actions{position:sticky;bottom:-22px;display:grid;grid-template-columns:1fr auto;gap:10px;margin:0 -22px -22px;padding:14px 22px calc(14px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(12px)}
 .character-stat-actions button{min-height:44px}
+.character-stat-actions button.primary{background:linear-gradient(135deg,var(--p),var(--s))!important;color:var(--on-grad,#fff)!important;border-color:color-mix(in srgb,var(--p) 72%,var(--line))!important}
 
 /* The active portrait is indicated by a theme-coloured aura, not a ring. */
 html.native-app[data-active-tab="observe"] .native-character-picker button.on,
@@ -502,6 +508,7 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 @media(max-width:720px){
   .character-stat-grid{grid-template-columns:minmax(0,1fr)}
   .character-stat-highlights{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .character-stat-donuts{grid-template-columns:repeat(2,minmax(0,1fr))}
   :is(.home-display-editor-dialog,.character-stats-dialog)>form{padding:17px}
   .character-stat-actions{bottom:-17px;margin:0 -17px -17px;padding-inline:17px}
 }
@@ -6168,7 +6175,7 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors{
   width:min(52vw,235px)!important;
   height:min(38dvh,380px)!important;
-  scale:var(--home-visual-scale,1)!important;
+  scale:1!important;
   overflow:visible!important;
 }
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup.is-pair{
@@ -6196,6 +6203,7 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 }
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(1){--pair-x:clamp(-92px,-19vw,-64px)}
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(2){--pair-x:clamp(64px,19vw,92px)}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld){scale:1!important}
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld .scene-ld-art{
   width:100%!important;height:100%!important;max-height:380px!important;object-position:center bottom!important
 }
@@ -6220,8 +6228,8 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
   width:310px!important;height:345px!important
 }
-.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(1){--pair-x:-118px}
-.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(2){--pair-x:118px}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(1){--pair-x:-82px}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:nth-child(2){--pair-x:82px}
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld) :is(.avatar,.sprite){
   width:118px!important;height:118px!important
 }

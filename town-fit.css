@@ -1,9 +1,10 @@
-/* 2026-08-11s — 3000 × 3300 scrollable village canvas. */
+/* The source artwork is 3000 × 3300. It is rendered at 80% so the map feels
+   less zoomed-in while remaining freely scrollable in both directions. */
 :root{
-  --town-canvas-width:3000px;
-  --town-canvas-height:3300px;
-  --town-building-width:272px;
-  --town-building-height:300px;
+  --town-canvas-width:2400px;
+  --town-canvas-height:2640px;
+  --town-building-width:320px;
+  --town-building-height:354px;
 }
 
 /* Both the observation map and the town editor use the same authored canvas.
@@ -43,7 +44,7 @@
   pointer-events:none!important;
 }
 
-/* 272px is exactly twice the original 136px building footprint. */
+/* Buildings stay a little larger even though the map itself is zoomed out. */
 :is(.town-map-scroll,.standard-observe-view .viewport) .place.has-art{
   width:var(--town-building-width)!important;
   height:var(--town-building-height)!important;
@@ -60,13 +61,13 @@
 :is(.town-map-scroll,.standard-observe-view .viewport) .map-place-label{
   min-width:160px!important;
   max-width:280px!important;
-  transform:translate(-50%,calc(-100% - 118px))!important;
+  transform:translate(-50%,calc(-100% - 136px))!important;
   font-size:27px!important;
   line-height:1.12!important;
 }
 :is(.town-map-scroll,.standard-observe-view .viewport) .map-place-label small{font-size:18px!important}
 :is(.town-map-scroll,.standard-observe-view .viewport) .place-people{
-  transform:translate(-50%,-50%) scale(1.45)!important;
+  transform:translate(-50%,-50%) scale(1.18)!important;
   transform-origin:center bottom!important;
 }
 

@@ -12,6 +12,12 @@ const renameBrand=value=>{
 };
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
+const HOME_MAP_SLOTS=[[28,18],[70,18],[24,46],[72,48],[18,76],[48,78],[80,76],[50,33],[36,62],[64,64]];
+const homeMapPosition=index=>{
+  const slot=HOME_MAP_SLOTS[Math.max(0,Number(index)||0)%HOME_MAP_SLOTS.length];
+  const round=Math.floor(Math.max(0,Number(index)||0)/HOME_MAP_SLOTS.length);
+  return {mapX:Math.max(6,Math.min(94,slot[0]+(round%3-1)*4)),mapY:Math.max(7,Math.min(92,slot[1]+(round%2?3:-2))),mapScale:1.08};
+};
 const rooms=()=>({
   living:{name:"거실",type:"living",size:"큰 방",order:0,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["소파","TV","책장"]},
   kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["냉장고","조리대","식탁"]},
@@ -392,7 +398,7 @@ function normalizeHomes(x){
     p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
   });
   const defaults=rooms();
-  Object.values(x.homes||{}).forEach(h=>{
+  Object.values(x.homes||{}).forEach((h,homeIndex)=>{
     h.image=h.image||"";
     h.name=String(h.name||"이름 없는 집");
     h.kind=["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"].includes(h.kind)?h.kind:"일반 주거";
@@ -403,6 +409,10 @@ function normalizeHomes(x){
     h.ownerCharacterId=x.characters[h.ownerCharacterId]?String(h.ownerCharacterId):"";
     h.ownerName=String(h.ownerName||"").slice(0,120);
     h.townId=x.towns.some(t=>t.id===h.townId)?h.townId:"";
+    const fallbackMap=homeMapPosition(homeIndex);
+    h.mapX=Number.isFinite(+h.mapX)?Math.max(4,Math.min(96,+h.mapX)):fallbackMap.mapX;
+    h.mapY=Number.isFinite(+h.mapY)?Math.max(5,Math.min(95,+h.mapY)):fallbackMap.mapY;
+    h.mapScale=Number.isFinite(+h.mapScale)?Math.max(.7,Math.min(1.7,+h.mapScale)):fallbackMap.mapScale;
     h.notes=String(h.notes||"").slice(0,300);
     h.cars=Array.isArray(h.cars)?h.cars.filter(car=>car&&typeof car==="object"&&!Array.isArray(car)).map(car=>({
       id:car.id||uid(),name:car.name||"우리 집 자동차",type:car.type||"승용차",
@@ -611,7 +621,7 @@ export function createCharacter(limit=5){
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",rooms:rooms(),pets:[],cleanliness:100};
+  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),rooms:rooms(),pets:[],cleanliness:100};
   state.activeHomeId=id;
   state.routines[id]=[];
   state.activeId=id;state.activeTab="character";save(true);return id;
@@ -703,7 +713,7 @@ export function updateRoom(homeId,roomKey,patch){
 export function createHome(){
   const id=`home-${uid()}`;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorStyle:"설정하지 않음",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
+  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
   state.activeHomeId=id;
   state.activeTab="home";
   state.homeEditMode=true;
@@ -1155,6 +1165,12 @@ export function addPlace(){
   state.world.places.push({id:uid(),name,type:"기타",subtype:"",emoji:"🏬",image:"",interiorImage:"",imageScale:1,stock:[],priceRange:"보통",audiences:[],spicy:0,sweet:0,x:50,y:50,color:"#8ecbc0"});save(true);
 }
 export function movePlace(id,x,y,persist=true){const p=state.world.places.find(p=>p.id===id);if(p){p.x=x;p.y=y;if(persist)save()}}
+export function moveHomeOnTown(id,x,y,persist=true){
+  const home=state.homes[id];if(!home)return;
+  home.mapX=Math.max(4,Math.min(96,Number(x)||50));
+  home.mapY=Math.max(5,Math.min(95,Number(y)||50));
+  if(persist)save();
+}
 export function replaceState(next){state=migrate(clone(next));localStorage.setItem(KEY,JSON.stringify(state))}
 export function resetAll(){
   state=fresh();
