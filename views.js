@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811e";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811e";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811f";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811f";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -93,6 +93,16 @@ Object.assign(UI_TEXT.ja,{
   "정하지 않음":"未設定","낯선 사람으로 여김":"他人だと思う","매우 싫어함":"とても嫌っている","미워함":"憎んでいる","경계함":"警戒している","불편해함":"居心地が悪い","부담스러워함":"重荷に感じる","경쟁심을 느낌":"競争心を感じる","애증을 느낌":"愛憎を抱く","그저 그런 사람":"特に何も感じない","흥미롭게 여김":"興味深く思う","인간적인 호감이 있음":"人として好感を持つ","친구로 좋아함":"友人として好き","존경함":"尊敬している","동경함":"憧れている","안쓰럽게 여김":"気の毒に思う","소중하게 여김":"大切に思う","연애 감정이 싹틈":"恋愛感情が芽生える","연애 감정으로 좋아함":"恋愛対象として好き","깊이 사랑함":"深く愛している","없어서는 안 될 사람":"かけがえのない人",
   "연인":"恋人","부부":"夫婦","친구":"友人","소꿉친구":"幼なじみ","부모·자녀":"親子","형제·자매":"きょうだい","동거인":"同居人","혐관":"険悪な関係","짝사랑":"片思い","현재":"現在","과거":"過去",
   "사진·SD·LD":"画像・SD・LD","사진·기본 정보·생활 습관":"写真・基本情報・生活習慣","이미지·표현·테마·파일":"画像・表示・テーマ・ファイル","프로필 사진 첨부":"プロフィール写真を追加","사진 파일 선택":"写真ファイルを選択","사진 지우기":"写真を削除","운전·흡연·주량":"運転・喫煙・酒量","운전면허·운전 경험":"運転免許・運転経験","흡연 여부":"喫煙状況","주량":"お酒の強さ","면허 없음":"免許なし","면허만 있음 · 운전하지 않음":"免許あり・運転しない","초보운전":"初心者ドライバー","가끔 운전함":"時々運転する","운전에 익숙함":"運転に慣れている","장거리·야간 운전도 익숙함":"長距離・夜間運転にも慣れている","비흡연":"非喫煙","금연 중":"禁煙中","가끔 흡연":"時々喫煙","전자담배 사용":"電子タバコを使用","흡연":"喫煙","마시지 않음":"飲まない","한두 모금":"一口か二口","매우 약함":"とても弱い","약한 편":"弱い","강한 편":"強い","매우 강함":"とても強い"
+});
+Object.assign(UI_TEXT.en,{
+  "진주 장식과 앤티크 실크를 닮은 로코코 블러시 핑크":"A rococo blush pink inspired by pearls and antique silk",
+  "현재 선택한 테마":"Current theme","현재 선택":"Selected","테마 선택하기":"Choose a theme",
+  "미리보기에서 원하는 색을 고르면 바로 적용돼요.":"Choose a color preview to apply it instantly."
+});
+Object.assign(UI_TEXT.ja,{
+  "진주 장식과 앤티크 실크를 닮은 로코코 블러시 핑크":"真珠の装飾とアンティークシルクを思わせるロココ調のブラッシュピンク",
+  "현재 선택한 테마":"現在のテーマ","현재 선택":"選択中","테마 선택하기":"テーマを選ぶ",
+  "미리보기에서 원하는 색을 고르면 바로 적용돼요.":"プレビューから色を選ぶとすぐに適用されます。"
 });
 Object.assign(UI_TEXT.en,{
   "흑백":"Monochrome","가장 또렷한 기본 테마":"The clearest default theme","세이지":"Sage","편안하지만 탁하지 않은 초록빛":"A comfortable green that stays clear","오션":"Ocean","맑고 깊은 바다의 푸른빛":"Clear, deep ocean blue","라벤더":"Lavender","선명하면서 부드러운 보랏빛":"A vivid yet gentle violet",
@@ -212,6 +222,11 @@ function translatedUiText(value){
 function translateInterface(root){
   const copy=UI_TEXT[state.uiLanguage];
   if(!root||!copy)return;
+  // Options without an explicit value normally use their visible label as the
+  // submitted value. Translating that label used to turn saved Korean enum
+  // keys into English/Japanese text, which the state normalizer then treated
+  // as unknown and reset to "설정하지 않음". Freeze the data value first.
+  root.querySelectorAll("option:not([value])").forEach(option=>option.setAttribute("value",option.textContent.trim()));
   root.querySelectorAll("button,h1,h2,h3,h4,label,legend,option,small,p,b,span,a,i,li").forEach(element=>{
     [...element.childNodes].filter(node=>node.nodeType===Node.TEXT_NODE).forEach(node=>{
       const raw=node.nodeValue||"";
@@ -1877,12 +1892,14 @@ function fontSettings(){
 }
 const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>사용자 닉네임</h2><p>Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.</p><label>캐릭터들이 뭐라고 부를까요?<input data-setting="ownerName" maxlength="20" value="${esc(state.ownerName||"")}" placeholder="예: 꺄륵"></label></section>`;
 function visualThemeSettings(){
-  const vivid=[["rose","프린세스 핑크","사탕처럼 선명하고 사랑스러운 공주 핑크","#ff4b9c","#ffadd8"],["berry","베리 팝","보라와 핫핑크가 통통 튀는 베리빛","#be2cff","#ff45b5"],["sky","하늘 소다","맑은 하늘과 탄산처럼 시원한 파랑","#078cff","#55c8ff"],["cobalt","코발트 네온","화면을 또렷하게 잡는 선명한 청보라","#3f50ff","#7d87ff"],["aqua","아쿠아 팝","청록과 민트가 반짝이는 물빛","#00a9b5","#21dfc5"],["lime","라임 캔디","싱그러운 초록과 라임빛","#52a900","#b4d900"],["coral","코랄 펀치","산뜻한 빨강과 오렌지 코랄","#ff4f62","#ff9770"]];
+  const vivid=[["rose","프린세스 핑크","진주 장식과 앤티크 실크를 닮은 로코코 블러시 핑크","#b57873","#cfb4ab"],["berry","베리 팝","보라와 핫핑크가 통통 튀는 베리빛","#be2cff","#ff45b5"],["sky","하늘 소다","맑은 하늘과 탄산처럼 시원한 파랑","#078cff","#55c8ff"],["cobalt","코발트 네온","화면을 또렷하게 잡는 선명한 청보라","#3f50ff","#7d87ff"],["aqua","아쿠아 팝","청록과 민트가 반짝이는 물빛","#00a9b5","#21dfc5"],["lime","라임 캔디","싱그러운 초록과 라임빛","#52a900","#b4d900"],["coral","코랄 펀치","산뜻한 빨강과 오렌지 코랄","#ff4f62","#ff9770"]];
   const bright=[["cream","크림 라떼","포근하고 환한 아이보리와 캐러멜빛","#b06a00","#f2a93b"],["peach","복숭아 소다","생기 있고 부드러운 복숭앗빛","#ef536f","#ff986e"],["mint","민트 정원","산뜻하고 맑은 민트와 잎사귀빛","#00a982","#4bd8aa"],["sunshine","햇살 레몬","따뜻하고 명랑한 레몬과 금빛","#d98b00","#ffd23f"]];
   const classic=[["monochrome","흑백","가장 또렷한 기본 테마","#20242a","#6d747d"],["sage","세이지","편안하지만 탁하지 않은 초록빛","#2f855a","#76c36a"],["ocean","오션","맑고 깊은 바다의 푸른빛","#007fc2","#36c0e8"],["lavender","라벤더","선명하면서 부드러운 보랏빛","#7547e8","#c26de8"]];
   const heritage=[["baroque","바로크 살롱","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식","#762f43","#b98552"]];
-  const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span></button>`).join("");
-  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><h3>고전과 장식 테마</h3><div class="visual-theme-options heritage-theme-options">${buttons(heritage)}</div><h3>밝고 선명한 테마</h3><div class="visual-theme-options vivid-theme-options">${buttons(vivid)}</div><h3>밝은 파스텔 테마</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>차분한 기본 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></section>`;
+  const all=[...heritage,...vivid,...bright,...classic];
+  const buttons=themes=>themes.map(([value,label,description,a,b])=>`<button type="button" data-visual-theme="${esc(value)}" class="${state.visualTheme===value?"on":""}" style="--theme-a:${esc(a||"")};--theme-b:${esc(b||"")}"><i aria-hidden="true"></i><span><b>${esc(label)}</b><small>${esc(description)}</small></span>${state.visualTheme===value?`<em>현재 선택</em>`:""}</button>`).join("");
+  const current=all.find(([value])=>value===state.visualTheme)||classic[0];
+  return `<section class="setting-card visual-theme-card"><h2>전체 색상 테마</h2><p>이 색은 모든 캐릭터와 화면의 버튼·강조색에 함께 적용돼요. 버튼 글자는 배경 밝기에 맞춰 자동으로 바뀝니다.</p><div class="current-visual-theme" style="--theme-a:${esc(current[3])};--theme-b:${esc(current[4])}"><i aria-hidden="true"></i><span><small>현재 선택한 테마</small><b>${esc(current[1])}</b><em>${esc(current[2])}</em></span></div><button type="button" class="primary open-visual-theme-picker" data-open-visual-theme-dialog>테마 선택하기</button><dialog class="visual-theme-dialog" data-visual-theme-dialog><form method="dialog"><div class="visual-theme-dialog-head"><span><small>COLOR THEME</small><h2>테마 선택하기</h2><p>미리보기에서 원하는 색을 고르면 바로 적용돼요.</p></span><button value="close" aria-label="닫기">×</button></div><div class="visual-theme-dialog-body"><h3>고전과 장식 테마</h3><div class="visual-theme-options heritage-theme-options">${buttons(heritage)}</div><h3>밝고 선명한 테마</h3><div class="visual-theme-options vivid-theme-options">${buttons(vivid)}</div><h3>밝은 파스텔 테마</h3><div class="visual-theme-options bright-theme-options">${buttons(bright)}</div><h3>차분한 기본 테마</h3><div class="visual-theme-options">${buttons(classic)}</div></div><div class="visual-theme-dialog-actions"><button value="close">닫기</button></div></form></dialog></section>`;
 }
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;

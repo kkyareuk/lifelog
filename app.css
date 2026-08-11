@@ -455,6 +455,45 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
   content:"❦";position:absolute;z-index:2;right:18px;top:50%;translate:0 -50%;color:#f0c78f;font:700 28px Georgia,serif;text-shadow:0 1px #351724;
 }
 
+/* Theme selection stays compact in Settings and opens as its own responsive picker. */
+.current-visual-theme{
+  display:flex;align-items:center;gap:14px;margin:18px 0 12px;padding:15px 16px;
+  border:1px solid var(--line);border-radius:18px;
+  background:linear-gradient(135deg,color-mix(in srgb,var(--theme-a) 12%,var(--panel)),color-mix(in srgb,var(--theme-b) 18%,var(--panel)));
+}
+.current-visual-theme>i{flex:0 0 52px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--theme-a),var(--theme-b));box-shadow:inset 0 0 0 2px #ffffff88,0 5px 15px #0002}
+.current-visual-theme>span{display:grid;min-width:0;gap:2px}.current-visual-theme small{color:var(--muted)}.current-visual-theme b{font-size:1.08rem}.current-visual-theme em{font-style:normal;color:var(--muted);overflow-wrap:anywhere}
+.open-visual-theme-picker{width:100%;min-height:50px}
+dialog.visual-theme-dialog{width:min(920px,calc(100vw - 28px));max-width:none;margin:auto;padding:0;border:1px solid var(--line);border-radius:24px;background:var(--panel);color:var(--ink);box-shadow:0 24px 80px #0006;overflow:hidden}
+dialog.visual-theme-dialog::backdrop{background:#121418aa;backdrop-filter:blur(5px)}
+.visual-theme-dialog>form{display:grid;grid-template-rows:auto minmax(0,1fr) auto;max-height:min(86dvh,820px);margin:0}
+.visual-theme-dialog-head{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:14px;align-items:start;padding:20px 22px 15px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,color-mix(in srgb,var(--p) 9%,var(--panel)),var(--panel))}
+.visual-theme-dialog-head span{min-width:0}.visual-theme-dialog-head :is(h2,p){margin:2px 0}.visual-theme-dialog-head small{letter-spacing:.14em;color:var(--muted)}.visual-theme-dialog-head>button{width:48px;height:48px;padding:0;font-size:1.5rem}
+.visual-theme-dialog-body{overflow:auto;padding:6px 22px 24px}.visual-theme-dialog-body>h3{margin:20px 0 9px;color:var(--ink)}
+.visual-theme-dialog .visual-theme-options{grid-template-columns:repeat(2,minmax(0,1fr))}
+.visual-theme-dialog .visual-theme-options button{position:relative;min-height:76px;padding:12px 14px}.visual-theme-dialog .visual-theme-options button>em{position:absolute;right:10px;top:8px;padding:3px 7px;border-radius:999px;background:var(--p);color:var(--on-p);font-size:.72rem;font-style:normal}
+.visual-theme-dialog-actions{display:flex;justify-content:flex-end;padding:12px 22px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--bg) 65%,var(--panel))}
+
+/* Princess Pink: antique blush silk, pearl cream, powder blue-grey and warm gilt. */
+html[data-color-mode="light"][data-visual-theme="rose"] body{background:radial-gradient(circle at 12% 2%,#fffaf6 0 4%,transparent 30%),linear-gradient(145deg,#eee9e4,#d7ccae 155%)}
+html[data-color-mode="light"][data-visual-theme="rose"] header{background:linear-gradient(180deg,#fffaf7f5,#f3e9e5f2);border-bottom-color:#c0af99;box-shadow:0 8px 28px #8a625018}
+html[data-color-mode="light"][data-visual-theme="rose"] :is(.panel,.setting-card,.sync-panel){border-color:#c0af99;background:linear-gradient(145deg,#fffaf7,#f4ece8)}
+html[data-color-mode="light"][data-visual-theme="rose"] :is(button.primary,header nav button.on,.color-mode-options button.on){background:linear-gradient(135deg,#b57873,#cfb4ab)!important;border-color:#a56b67!important;color:#fffaf6!important;-webkit-text-fill-color:#fffaf6!important}
+html[data-color-mode][data-visual-theme="rose"] .visual-theme-options button[data-visual-theme="rose"]{overflow:hidden;border-color:#b57873;background:linear-gradient(120deg,#fff8f4 0 34%,#d7ccae 34% 57%,#b2babc 57% 72%,#cfb4ab 72% 100%)}
+html[data-color-mode][data-visual-theme="rose"] .visual-theme-options button[data-visual-theme="rose"] span{position:relative;z-index:1;padding:7px 9px;border-radius:10px;background:#fffaf0e8}
+html[data-color-mode][data-visual-theme="rose"] .visual-theme-options button[data-visual-theme="rose"] :is(b,small){color:#413330!important;-webkit-text-fill-color:#413330!important}
+html[data-color-mode][data-visual-theme="rose"] .current-visual-theme{border-color:#b57873;background:linear-gradient(125deg,#fffaf6,#d7ccae 48%,#b2babc 115%)}
+html[data-color-mode][data-visual-theme="rose"] .current-visual-theme :is(b,small,em){color:#413330!important;-webkit-text-fill-color:#413330!important}
+
+@media(max-width:720px){
+  dialog.visual-theme-dialog{width:calc(100vw - 16px);border-radius:20px}
+  .visual-theme-dialog>form{max-height:92dvh}
+  .visual-theme-dialog-head{padding:16px 14px 12px}.visual-theme-dialog-body{padding:4px 14px 20px}
+  .visual-theme-dialog .visual-theme-options{grid-template-columns:minmax(0,1fr)}
+  .visual-theme-dialog-actions{padding:10px 14px}
+  .current-visual-theme{align-items:flex-start}.current-visual-theme>i{width:46px;height:46px;flex-basis:46px}
+}
+
 /* Baroque Salon: lacquered framing, aged paper, wine-red textile and bronze.
    The ornament stays on structural surfaces so logs and forms remain calm. */
 html[data-visual-theme="baroque"] body{
