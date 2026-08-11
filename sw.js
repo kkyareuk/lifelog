@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260811i";
+const CACHE_VERSION="drawer-village-v20260811j";
 const CORE=[
   "./",
   "./index.html",
@@ -8,6 +8,7 @@ const CORE=[
   "./privacy.html",
   "./app.css",
   "./town-fit.css",
+  "./ui-theme-sample.css",
   "./app.js",
   "./state.js",
   "./simulation.js",
@@ -35,6 +36,16 @@ const CORE=[
   "./world-assets/building-types/park.png",
   "./world-assets/building-types/home.png",
   "./icons/drawer-village-logo.png",
+  "./theme-assets/moonlit-drawer/panel-main.svg",
+  "./theme-assets/moonlit-drawer/panel-dialog.svg",
+  "./theme-assets/moonlit-drawer/card.svg",
+  "./theme-assets/moonlit-drawer/button-default.svg",
+  "./theme-assets/moonlit-drawer/button-selected.svg",
+  "./theme-assets/moonlit-drawer/tab-default.svg",
+  "./theme-assets/moonlit-drawer/tab-selected.svg",
+  "./theme-assets/moonlit-drawer/icon-button.svg",
+  "./theme-assets/moonlit-drawer/divider.svg",
+  "./theme-assets/moonlit-drawer/ui-atlas.svg",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
 ];
