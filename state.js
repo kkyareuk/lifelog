@@ -515,6 +515,8 @@ function normalizeHomes(x){
     ["ldNeutral","ldJoy","ldSad","ldAngry","ldTired"].forEach(field=>delete c[field]);
     c.homeVisualMode=c.homeVisualMode==="ld"?"ld":"sd";
     c.homeVisualScale=Number.isFinite(+c.homeVisualScale)?Math.max(70,Math.min(150,+c.homeVisualScale)):100;
+    c.homeSdScale=Number.isFinite(+c.homeSdScale)?Math.max(70,Math.min(150,+c.homeSdScale)):c.homeVisualScale;
+    c.homeLdScale=Number.isFinite(+c.homeLdScale)?Math.max(70,Math.min(150,+c.homeLdScale)):c.homeVisualScale;
     const compactBirthday=String(c.birthday||"").replace(/\D/g,"");
     c.birthday=/^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/.test(compactBirthday)?compactBirthday:"";
     c.spiceTolerance=Number.isFinite(+c.spiceTolerance)?Math.max(0,Math.min(5,+c.spiceTolerance)):2;
@@ -605,7 +607,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeVisualMode:"sd",homeVisualScale:100,wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
@@ -738,6 +740,10 @@ export function recordCharacterInteraction({type,actorId,targetId="",itemKind=""
   state.interactions=Array.isArray(state.interactions)?state.interactions:[];
   state.interactions.push({id:uid(),type,actorId,targetId,itemKind,itemId,requestTitle:String(requestTitle||"").trim().slice(0,120),requestCategory:String(requestCategory||"").trim().slice(0,40),requestedBy:String(state.ownerName||"마을 주인").trim()||"마을 주인",createdAt:Date.now()});
   state.interactions=state.interactions.slice(-120);
+  // 오늘의 타임라인은 캐릭터별로 캐시된다. 사용자가 방금 부탁한 장면도
+  // 즉시 현재 장면에 들어오도록 시뮬레이션 서명을 갱신한다.
+  actor.timelineResetAt=Date.now();
+  if(target)target.timelineResetAt=Date.now();
   delete state.dailyPlans?.[actorId];
   if(targetId)delete state.dailyPlans?.[targetId];
   save(true);return true;

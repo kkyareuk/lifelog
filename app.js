@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811o";
-import {eventFor} from "./simulation.js?v=20260811o";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811o";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260811r";
+import {eventFor} from "./simulation.js?v=20260811r";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260811r";
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -659,7 +659,7 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811o");
+const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260811r");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
@@ -1015,10 +1015,55 @@ function bind(){
       openNativeLog();
     });
   });
-  $("[data-refresh-observe]")?.addEventListener("click",event=>{
+  $("[data-open-home-display-editor]")?.addEventListener("click",event=>{
     event.stopPropagation();
-    render();
-    showToast("현재 장면을 새로고침했습니다");
+    const dialog=$("[data-home-display-editor-dialog]");
+    if(dialog&&!dialog.open)dialog.showModal();
+  });
+  $("[data-open-character-request]")?.addEventListener("click",event=>{
+    event.stopPropagation();
+    const dialog=$("[data-character-request-dialog]");
+    if(dialog&&!dialog.open){dialog.showModal();requestAnimationFrame(()=>dialog.querySelector('[name="requestTitle"]')?.focus())}
+  });
+  $("[data-open-character-stats]")?.addEventListener("click",event=>{
+    event.stopPropagation();
+    const dialog=$("[data-character-stats-dialog]");
+    if(dialog&&!dialog.open)dialog.showModal();
+  });
+  $$('[data-home-display-field]').forEach(field=>{
+    const apply=(persist=false)=>{
+      const characterId=field.dataset.characterId,property=field.dataset.homeDisplayField;
+      if(!characterId||!property)return;
+      const numeric=property==="homeSdScale"||property==="homeLdScale";
+      const value=numeric?Math.max(70,Math.min(150,Number(field.value)||100)):field.value;
+      updateCharacter(characterId,{[property]:value},persist);
+      if(numeric){
+        const output=document.querySelector(`[data-home-display-value="${property}"]`);
+        if(output)output.textContent=`${Math.round(value)}%`;
+        const currentMode=active()?.homeVisualMode==="ld"?"ld":"sd";
+        if((property==="homeLdScale"&&currentMode==="ld")||(property==="homeSdScale"&&currentMode==="sd")){
+          document.querySelectorAll(".native-character-stage").forEach(stage=>stage.style.setProperty("--home-visual-scale",String(value/100)));
+        }
+      }
+    };
+    field.addEventListener("input",()=>apply(false));
+    field.addEventListener("change",()=>{
+      apply(true);
+      if(field.dataset.homeDisplayField==="homeVisualMode")render();
+    });
+  });
+  $("[data-submit-character-request]")?.addEventListener("click",event=>{
+    event.stopPropagation();
+    const dialog=event.currentTarget.closest("[data-character-request-dialog]"),form=dialog?.querySelector("form");
+    if(!form?.reportValidity())return;
+    const actorId=form.elements.requestCharacter.value,requestTitle=form.elements.requestTitle.value.trim(),requestCategory=form.elements.requestCategory.value;
+    if(!requestTitle)return;
+    if(recordCharacterInteraction({type:"request",actorId,requestTitle,requestCategory})){
+      dialog.close();
+      setActive(actorId);
+      render();
+      showToast("부탁을 생활 장면에 반영했습니다");
+    }
   });
   $$("[data-home-character]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
@@ -2604,7 +2649,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260811o").catch(error=>{
+  import("./auth.js?v=20260811r").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -2619,7 +2664,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260811o",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260811r",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

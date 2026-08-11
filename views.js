@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811o";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811o";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811r";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260811r";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -187,6 +187,36 @@ Object.assign(UI_TEXT.ja,{
   "공격 충동 없음":"攻撃衝動なし","거친 말을 하고 싶은 충동":"きつい言葉を言いたい衝動","몸으로 밀어내고 싶은 충동":"身体で押しのけたい衝動","해치고 싶은 충동":"傷つけたい衝動","죽이고 싶을 만큼 격한 충동":"非常に激しい加害衝動",
   "행동으로 옮기지 않음":"行動には移さない","대부분 참지만 가끔 거친 말이 나옴":"ほとんど我慢するが時々きつい言葉が出る","거친 말로만 표출함":"きつい言葉だけで表す","물건이나 벽에 화풀이할 수 있음":"物や壁に八つ当たりすることがある","상대를 때릴 수 있음":"相手を叩くことがある","실제로 때릴 수 있음":"実際に叩くことがある","심한 폭력을 행사할 수 있음":"激しい暴力に及ぶことがある"
 });
+Object.assign(UI_TEXT.en,{
+  "홈 화면 도구":"Home screen tools","화면 편집":"Edit display","부탁하기":"Make a request","통계":"Statistics",
+  "홈 화면 편집":"Edit home display","SD와 LD 크기는 서로 따로 저장돼요.":"SD and LD sizes are saved separately.",
+  "SD 이미지 크기":"SD image size","LD 이미지 크기":"LD image size",
+  "두 명이 함께 나올 때도 각 LD의 높이와 크기는 한 명일 때와 같고, 위치만 왼쪽과 오른쪽으로 나뉩니다.":"When two characters appear together, each LD keeps the same height and size as the one-character view; only the positions split left and right.",
+  "캐릭터에게 부탁하기":"Ask a character to do something","부탁은 바로 생활 장면과 오늘의 기록에 반영돼요. 캐릭터는 성격과 말투에 맞춰 자기 방식으로 행동합니다.":"Requests appear immediately in the life scene and today's log. Each character handles them in a way that fits their personality and speech style.",
+  "부탁할 캐릭터":"Character","부탁 유형":"Request type","무엇을 부탁할까요?":"What would you like them to do?",
+  "예: 커피 내리기, 산책하기":"For example: make coffee or take a walk","부탁의 내용과 방문 빈도는 나중에 캐릭터가 사용자를 어떻게 생각하는지 판단하는 데 활용됩니다.":"The request type and your visit frequency will later help shape what the character thinks about you.",
+  "부탁 보내기":"Send request","생활":"Daily life","정리":"Tidying","요리":"Cooking","외출":"Going out","운동":"Exercise","휴식":"Rest","대화":"Conversation","기타":"Other",
+  "내 캐릭터 분포":"My character distribution","저장된 캐릭터":"Saved characters","성별":"Gender","직업":"Occupation","성격 유형":"Personality types","생활 마을":"Home town","홈 기본 표현":"Default home visual","기타 성별":"Another gender",
+  "철두철미함":"Meticulous","차분하고 신중함":"Calm and cautious","냉정하고 논리적":"Cool and logical","다정하고 세심함":"Kind and attentive","수줍고 내향적":"Shy and introverted","활발하고 사교적":"Lively and sociable","즉흥적이고 자유로움":"Spontaneous and free-spirited","호기심 많고 창의적":"Curious and creative","완고하고 통제적":"Stubborn and controlling","무심하고 독립적":"Detached and independent","감정적이고 충동적":"Emotional and impulsive","장난기 많음":"Playful",
+  "아직 표시할 캐릭터가 없어요.":"There are no characters to chart yet.","마을 미지정":"No town selected","설정하지 않음":"Not set","무직":"Unemployed",
+  "LD 일러스트":"LD illustration","SD 아이콘":"SD icon","표시 크기는 홈 화면의 ‘화면 편집’에서 조절합니다.":"Adjust display size from Edit display on the home screen.",
+  "홈 캐릭터 표현 전환":"Switch home character display","완료":"Done"
+});
+Object.assign(UI_TEXT.ja,{
+  "홈 화면 도구":"ホーム画面ツール","화면 편집":"表示編集","부탁하기":"お願い","통계":"統計",
+  "홈 화면 편집":"ホーム画面の表示編集","SD와 LD 크기는 서로 따로 저장돼요.":"SDとLDのサイズは別々に保存されます。",
+  "SD 이미지 크기":"SD画像サイズ","LD 이미지 크기":"LD画像サイズ",
+  "두 명이 함께 나올 때도 각 LD의 높이와 크기는 한 명일 때와 같고, 위치만 왼쪽과 오른쪽으로 나뉩니다.":"2人で表示する場合も、各LDの高さと大きさは1人表示と同じまま、位置だけ左右に分かれます。",
+  "캐릭터에게 부탁하기":"キャラクターにお願いする","부탁은 바로 생활 장면과 오늘의 기록에 반영돼요. 캐릭터는 성격과 말투에 맞춰 자기 방식으로 행동합니다.":"お願いはすぐ生活シーンと今日の記録に反映されます。キャラクターは性格と話し方に合う自分なりの方法で行動します。",
+  "부탁할 캐릭터":"お願いするキャラクター","부탁 유형":"お願いの種類","무엇을 부탁할까요?":"何をお願いしますか？",
+  "예: 커피 내리기, 산책하기":"例：コーヒーを淹れる、散歩する","부탁의 내용과 방문 빈도는 나중에 캐릭터가 사용자를 어떻게 생각하는지 판단하는 데 활용됩니다.":"お願いの内容と訪問頻度は、後でキャラクターがユーザーをどう思うか判断する材料になります。",
+  "부탁 보내기":"お願いを送る","생활":"日常","정리":"片付け","요리":"料理","외출":"外出","운동":"運動","휴식":"休憩","대화":"会話","기타":"その他",
+  "내 캐릭터 분포":"キャラクター分布","저장된 캐릭터":"保存済みキャラクター","성별":"性別","직업":"職業","성격 유형":"性格タイプ","생활 마을":"生活する村","홈 기본 표현":"ホームの基本表示","기타 성별":"その他の性別",
+  "철두철미함":"几帳面","차분하고 신중함":"落ち着いて慎重","냉정하고 논리적":"冷静で論理的","다정하고 세심함":"優しく気配り上手","수줍고 내향적":"内気で内向的","활발하고 사교적":"活発で社交的","즉흥적이고 자유로움":"即興的で自由","호기심 많고 창의적":"好奇心旺盛で創造的","완고하고 통제적":"頑固で支配的","무심하고 독립적":"淡々として自立的","감정적이고 충동적":"感情的で衝動的","장난기 많음":"いたずら好き",
+  "아직 표시할 캐릭터가 없어요.":"集計できるキャラクターがまだいません。","마을 미지정":"村未設定","설정하지 않음":"未設定","무직":"無職",
+  "LD 일러스트":"LDイラスト","SD 아이콘":"SDアイコン","표시 크기는 홈 화면의 ‘화면 편집’에서 조절합니다.":"表示サイズはホーム画面の「表示編集」で調整します。",
+  "홈 캐릭터 표현 전환":"ホームのキャラクター表示切替","완료":"完了"
+});
 const UI_DYNAMIC_TEXT={
   en:[
     [/^(.+)의 프로필·SD·LD$/,(name)=>`${name}'s profile · SD · LD`],
@@ -196,7 +226,10 @@ const UI_DYNAMIC_TEXT={
     [/^현재 총 ([\d.]+)MB · 캐릭터 (\d+)명 · 마을 (\d+)개 · 이미지 링크는 이 용량을 사용하지 않아요\.$/,(total,characters,towns)=>`${total}MB total · ${characters} characters · ${towns} towns · Linked images do not use this storage.`],
     [/^(.+)의 지금 이 순간$/,(name)=>`${name}'s current moment`],
     [/^(.+) · 자는 중$/,(name)=>`${name} · Sleeping`],
-    [/^(.+)에서 자는 중$/,(place)=>`Sleeping in ${place}`]
+    [/^(.+)에서 자는 중$/,(place)=>`Sleeping in ${place}`],
+    [/^현재 저장된 (\d+)명의 설정을 항목별로 모아 보여줘요\.$/,(count)=>`A breakdown of the settings for ${count} saved characters.`],
+    [/^(\d+)명 · (\d+)%$/,(count,percent)=>`${count} · ${percent}%`],
+    [/^(.+)의 SD와 LD 크기는 서로 따로 저장돼요\.$/,(name)=>`${name}'s SD and LD sizes are saved separately.`]
   ],
   ja:[
     [/^(.+)의 프로필·SD·LD$/,(name)=>`${name}のプロフィール・SD・LD`],
@@ -206,7 +239,10 @@ const UI_DYNAMIC_TEXT={
     [/^현재 총 ([\d.]+)MB · 캐릭터 (\d+)명 · 마을 (\d+)개 · 이미지 링크는 이 용량을 사용하지 않아요\.$/,(total,characters,towns)=>`合計${total}MB・キャラクター${characters}人・村${towns}個・画像リンクはこの容量を使用しません。`],
     [/^(.+)의 지금 이 순간$/,(name)=>`${name}の今この瞬間`],
     [/^(.+) · 자는 중$/,(name)=>`${name}・睡眠中`],
-    [/^(.+)에서 자는 중$/,(place)=>`${place}で睡眠中`]
+    [/^(.+)에서 자는 중$/,(place)=>`${place}で睡眠中`],
+    [/^현재 저장된 (\d+)명의 설정을 항목별로 모아 보여줘요\.$/,(count)=>`保存された${count}人の設定を項目別に集計します。`],
+    [/^(\d+)명 · (\d+)%$/,(count,percent)=>`${count}人・${percent}%`],
+    [/^(.+)의 SD와 LD 크기는 서로 따로 저장돼요\.$/,(name)=>`${name}のSDとLDサイズは別々に保存されます。`]
   ]
 };
 function translatedUiText(value){
@@ -885,7 +921,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     const personSleeping=/자는 중|잠든|수면/.test(personText);
     const personDrowsy=!personSleeping&&/졸리|졸린|졸음|조는 중|꾸벅|눈꺼풀이|잠깐 눈을 감|하품/.test(personText);
     const sleepBadge=personSleeping?'<b class="native-character-sleep-mark" aria-hidden="true">ZZ</b>':personDrowsy?'<b class="native-character-drowsy-mark" aria-hidden="true">z</b>':"";
-    const personVisualScale=Math.max(70,Math.min(150,Number(person.homeVisualScale)||100))/100;
+    const personVisualScale=Math.max(70,Math.min(150,Number(visualMode==="ld"?person.homeLdScale:person.homeSdScale)||Number(person.homeVisualScale)||100))/100;
     return `<span class="native-scene-lineup-person ${person.id===c.id?"is-current":""} ${visualMode==="ld"&&hasLdArt(person)?"is-ld":""}" style="--scene-index:${index};--scene-delay:${delay}s;--scene-duration:${duration}s;--person-visual-scale:${personVisualScale}">${sceneAvatar(person,"native-scene-lineup-avatar",tone,visualMode)}${actionProp}${sleepBadge}${tone==="date-overwhelmed"&&person.id===c.id?'<b class="native-character-sweat" aria-hidden="true">💧</b>':""}<small>${esc(person.name)}</small></span>`;
   }).join("")}</span>`:"";
   const conversationalInteraction=Boolean(
@@ -1094,6 +1130,28 @@ function peopleAtPlaceCard(p){
   const x=Math.max(9,Math.min(91,p.x)),y=Math.max(15,Math.min(88,p.y+9));
   return `<div class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<button type="button" class="place-person-face" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</button>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
 }
+function characterStatisticsDialog(){
+  const characters=state.order.map(id=>state.characters[id]).filter(Boolean),total=characters.length;
+  const distribution=(values,limit=8)=>{
+    const counts=new Map();
+    values.flat().filter(Boolean).forEach(value=>counts.set(String(value),1+(counts.get(String(value))||0)));
+    return [...counts.entries()].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"ko")).slice(0,limit);
+  };
+  const rows=items=>items.map(([label,count])=>{
+    const percent=total?Math.round(count/total*100):0;
+    return `<li><span><b>${esc(label)}</b><small>${count}명 · ${percent}%</small></span><i style="--stat-value:${percent}%"><u></u></i></li>`;
+  }).join("")||`<li class="empty">아직 표시할 캐릭터가 없어요.</li>`;
+  const townName=character=>state.towns.find(town=>town.id===visibleTownId(character))?.name||"마을 미지정";
+  const groups=[
+    ["성별",distribution(characters.map(character=>character.gender||"설정하지 않음"))],
+    ["나이대",distribution(characters.map(character=>character.ageGroup||"설정하지 않음"))],
+    ["직업",distribution(characters.map(character=>character.jobTitle||character.job||"무직"))],
+    ["성격 유형",distribution(characters.map(character=>character.personalityTypes?.length?character.personalityTypes:["설정하지 않음"]),10)],
+    ["생활 마을",distribution(characters.map(townName))],
+    ["홈 기본 표현",distribution(characters.map(character=>character.homeVisualMode==="ld"&&hasLdArt(character)?"LD 일러스트":"SD 아이콘"))]
+  ];
+  return `<dialog class="character-stats-dialog" data-character-stats-dialog><form method="dialog"><div class="home-dialog-head"><span><small>CHARACTER STATISTICS</small><h2>내 캐릭터 분포</h2></span><button value="close" aria-label="닫기">×</button></div><p>현재 저장된 ${total}명의 설정을 항목별로 모아 보여줘요.</p><div class="character-stat-summary"><b>${total}</b><span>저장된 캐릭터</span></div><div class="character-stat-grid">${groups.map(([title,items])=>`<section><h3>${title}</h3><ol>${rows(items)}</ol></section>`).join("")}</div><button class="primary" value="close">닫기</button></form></dialog>`;
+}
 function observe(){
   const localIds=state.order.filter(id=>visibleTownId(state.characters[id])===state.activeTownId);
   const mobileHome=Boolean(document.documentElement?.classList?.contains?.("native-app"));
@@ -1119,18 +1177,22 @@ function observe(){
   const hasLd=hasLdArt(c),hasSd=hasSdArt(c);
   const visualMode=hasLd&&(c.homeVisualMode==="ld"||!hasSd)?"ld":"sd";
   const presentation=nativeScenePresentation(c,e,visualMode);
-  const visualScale=Math.max(70,Math.min(150,Number(c.homeVisualScale)||100))/100;
+  const visualScale=Math.max(70,Math.min(150,Number(visualMode==="ld"?c.homeLdScale:c.homeSdScale)||Number(c.homeVisualScale)||100))/100;
   const stageClasses=`${presentation.partner?"has-scene-companion":""} ${presentation.lineupHtml?"has-scene-lineup":""} ${presentation.pet?"has-scene-pet":""} visual-mode-${visualMode}`;
   const sceneActors=`${sceneAvatar(c,"native-main-character",presentation.tone,visualMode)}${presentation.sleepMarkHtml}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.thoughtHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}`;
   const visualToggle=hasLd&&hasSd?`<div class="home-visual-toggle" aria-label="홈 캐릭터 표현 전환"><button type="button" data-home-visual-mode="sd" class="${visualMode==="sd"?"on":""}">SD</button><button type="button" data-home-visual-mode="ld" class="${visualMode==="ld"?"on":""}">LD</button></div>`:"";
-  const desktopScene=`<section class="desktop-observe-scene native-app" aria-label="${esc(c.name)}의 지금 이 순간"><div class="desktop-scene-canvas scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}${visualToggle}<div class="desktop-scene-copy"><small>${t("currentMoment","지금 이 순간")}</small><h1>${esc(c.name)} · ${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></div><div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div></div></section>`;
+  const homeTools=`<div class="home-observe-tools" aria-label="홈 화면 도구"><button type="button" data-open-home-display-editor>화면 편집</button><button type="button" data-open-character-request>부탁하기</button><button type="button" data-open-character-stats>통계</button></div>`;
+  const homeDisplayEditor=`<dialog class="home-display-editor-dialog" data-home-display-editor-dialog><form method="dialog"><div class="home-dialog-head"><span><small>HOME DISPLAY</small><h2>홈 화면 편집</h2></span><button value="close" aria-label="닫기">×</button></div><p>${esc(c.name)}의 SD와 LD 크기는 서로 따로 저장돼요.</p><label>홈화면 기본 표현<select data-home-display-field="homeVisualMode" data-character-id="${c.id}"><option value="sd" ${c.homeVisualMode!=="ld"?"selected":""}>SD · 아이콘</option><option value="ld" ${c.homeVisualMode==="ld"?"selected":""} ${hasLd?"":"disabled"}>LD · 전신 일러스트</option></select></label><label>SD 이미지 크기 <b data-home-display-value="homeSdScale">${Math.round(Number(c.homeSdScale)||Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeSdScale)||Number(c.homeVisualScale)||100)}" data-home-display-field="homeSdScale" data-character-id="${c.id}"></label><label>LD 이미지 크기 <b data-home-display-value="homeLdScale">${Math.round(Number(c.homeLdScale)||Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeLdScale)||Number(c.homeVisualScale)||100)}" data-home-display-field="homeLdScale" data-character-id="${c.id}" ${hasLd?"":"disabled"}></label><small>두 명이 함께 나올 때도 각 LD의 높이와 크기는 한 명일 때와 같고, 위치만 왼쪽과 오른쪽으로 나뉩니다.</small><button class="primary" value="close">완료</button></form></dialog>`;
+  const requestDialog=`<dialog class="character-request-dialog" data-character-request-dialog><form method="dialog"><div class="home-dialog-head"><span><small>MAKE A REQUEST</small><h2>캐릭터에게 부탁하기</h2></span><button value="close" aria-label="닫기">×</button></div><p>부탁은 바로 생활 장면과 오늘의 기록에 반영돼요. 캐릭터는 성격과 말투에 맞춰 자기 방식으로 행동합니다.</p><label>부탁할 캐릭터<select name="requestCharacter">${state.order.map(id=>`<option value="${id}" ${id===c.id?"selected":""}>${esc(state.characters[id]?.name||"")}</option>`).join("")}</select></label><label>부탁 유형<select name="requestCategory">${["생활","정리","요리","외출","운동","휴식","대화","기타"].map(value=>`<option value="${value}">${value}</option>`).join("")}</select></label><label>무엇을 부탁할까요?<input name="requestTitle" maxlength="80" required placeholder="예: 커피 내리기, 산책하기"></label><small>부탁의 내용과 방문 빈도는 나중에 캐릭터가 사용자를 어떻게 생각하는지 판단하는 데 활용됩니다.</small><button type="button" class="primary" data-submit-character-request>부탁 보내기</button></form></dialog>`;
+  const homeDialogs=`${homeDisplayEditor}${requestDialog}${characterStatisticsDialog()}`;
+  const desktopScene=`<section class="desktop-observe-scene native-app" aria-label="${esc(c.name)}의 지금 이 순간"><div class="desktop-scene-canvas scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}${visualToggle}${homeTools}<div class="desktop-scene-copy"><small>${t("currentMoment","지금 이 순간")}</small><h1>${esc(c.name)} · ${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></div><div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div></div></section>`;
   const statusCard=`<article class="native-status-card" data-toggle-native-moment-card role="button" tabindex="0" aria-expanded="false"><div class="native-status-card-head"><small>${t("currentMoment","지금 이 순간")}</small><button type="button" data-toggle-native-moment aria-expanded="false" data-label-expand="${t("expand","펼치기")}" data-label-collapse="${t("collapse","접기")}">${t("expand","펼치기")}</button></div><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article>`;
   const logCard=`<section class="native-log-card" data-open-native-log-card role="button" tabindex="0" aria-label="오늘의 기록 전체 보기"><div><b>${t("todayLog","오늘의 기록")} <small class="native-log-open-hint">눌러서 펼쳐 보기 ↗</small></b><span><button type="button" data-open-native-log>${t("viewAll","전체 보기")}</button><button type="button" data-tab="home">${t("viewHome","집 보기")}</button></span></div><ol>${nativeLog||emptyLog}</ol></section>`;
   if(mobileHome){
-    return `${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><span class="native-observe-clock"><time>${new Date().toLocaleTimeString(uiLocale(),{hour:"2-digit",minute:"2-digit"})}</time><button type="button" class="native-scene-refresh" data-refresh-observe aria-label="현재 장면 새로고침" title="현재 장면 새로고침">↻</button></span></div>${visualToggle}<div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${avatar(person)}</button>`}).join("")}</div>${statusCard}${logCard}</section>${nativeFullLog}`;
+    return `${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><span class="native-observe-clock"><time>${new Date().toLocaleTimeString(uiLocale(),{hour:"2-digit",minute:"2-digit"})}</time></span></div>${visualToggle}${homeTools}<div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" style="--picker-theme:${esc(person.theme?.primary||"#176b60")}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${avatar(person)}</button>`}).join("")}</div>${statusCard}${logCard}</section>${nativeFullLog}${homeDialogs}`;
   }
   const desktopLog=`<section class="desktop-observe-log">${logCard}</section>`;
-  return `<div class="standard-observe-view">${roster()}${townSwitcher}${desktopScene}<div class="desktop-observe-lower"><div class="observe desktop-observe-map-only"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString(uiLocale(),{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section></div>${desktopLog}</div>${nativeFullLog}</div>`;
+  return `<div class="standard-observe-view">${roster()}${townSwitcher}${desktopScene}<div class="desktop-observe-lower"><div class="observe desktop-observe-map-only"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString(uiLocale(),{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}</div></div></section></div>${desktopLog}</div>${nativeFullLog}${homeDialogs}</div>`;
 }
 const ROOM_SIZE_SPANS={
   "작은 방":[1,1],
@@ -1583,7 +1645,7 @@ function character(){
   const reorderRows=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="mobile-character-reorder-row">${avatar(x)}<b>${esc(x.name)}</b><span><button type="button" data-sort="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""}>→</button></span></div>`}).join("");
   const ldSource=ldArtSource(c);
   const ldCard=`<article class="character-ld-card character-ld-single"><div>${ldSource?`<img class="scene-ld-art" src="${esc(ldSource)}" alt="${esc(c.name)} LD 일러스트">`:`<span class="character-image-empty-preview ld"><i>LD</i><small>LD 미등록</small></span>`}</div><h4>LD 일러스트</h4><small>전신 또는 무릎 위 이미지 한 장</small><span class="image-actions"><button type="button" data-image="ldImage">LD 파일</button><button type="button" data-image-url="ldImage" data-id="${c.id}">LD 링크</button>${ldSource?`<button type="button" data-clear-character-image="ldImage">지우기</button>`:""}</span></article>`;
-  const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 프로필·SD·LD</h2><p>프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div><div class="home-visual-options"><label>홈화면 기본 표현<select data-field="homeVisualMode"><option value="sd" ${c.homeVisualMode!=="ld"?"selected":""}>SD · 아이콘</option><option value="ld" ${c.homeVisualMode==="ld"?"selected":""} ${hasLdArt(c)?"":"disabled"}>LD · 전신 일러스트</option></select><small>SD와 LD가 모두 있으면 홈화면에서도 바로 전환할 수 있어요.</small></label><label>홈화면 캐릭터 크기 <b data-home-visual-scale-value>${Math.round(Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeVisualScale)||100)}" data-field="homeVisualScale"></label></div></section><section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
+  const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 프로필·SD·LD</h2><p>프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.</p></div><div class="character-manage-grid"><section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요. 표시 크기는 홈 화면의 ‘화면 편집’에서 조절합니다.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div></section><section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
   return `<div class="editor character-editor" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
     <aside class="panel desktop-character-list"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside>

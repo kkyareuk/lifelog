@@ -455,6 +455,61 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
   content:"❦";position:absolute;z-index:2;right:18px;top:50%;translate:0 -50%;color:#f0c78f;font:700 28px Georgia,serif;text-shadow:0 1px #351724;
 }
 
+/* 2026-08-11q: home editing, requests and statistics use real HTML controls. */
+.home-observe-tools{position:absolute;z-index:22;display:flex;align-items:center;justify-content:center;gap:6px}
+.home-observe-tools button{min-height:31px;padding:6px 10px;border:1px solid #ffffff45;border-radius:999px;background:#101722b8;color:#fff;font:800 11px/1 inherit;box-shadow:0 6px 16px #0004;backdrop-filter:blur(10px)}
+.native-observe-home>.home-observe-tools{top:max(111px,calc(env(safe-area-inset-top) + 103px));left:50%;translate:-50% 0;white-space:nowrap}
+.desktop-observe-scene .home-observe-tools{top:62px;right:20px}
+
+:is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog){width:min(620px,calc(100vw - 24px));max-height:min(820px,calc(100dvh - 24px));padding:0;border:1px solid var(--line);border-radius:26px;background:var(--panel);color:var(--ink);box-shadow:0 24px 80px #0008;overflow:hidden}
+:is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog)::backdrop{background:#07101bb8;backdrop-filter:blur(5px)}
+:is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog)>form{display:grid;gap:15px;max-height:inherit;padding:22px;overflow:auto;box-sizing:border-box}
+.home-dialog-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px}
+.home-dialog-head small{letter-spacing:.15em;color:var(--muted)}
+.home-dialog-head h2{margin:3px 0 0}
+.home-dialog-head>button{width:45px;height:45px;padding:0;border:1px solid var(--line);border-radius:15px;background:var(--soft);color:var(--ink);font-size:28px;line-height:1}
+:is(.home-display-editor-dialog,.character-request-dialog)>form>label{display:grid;gap:8px;font-weight:850}
+:is(.home-display-editor-dialog,.character-request-dialog) :is(select,input[type="text"],input:not([type])){width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--line);border-radius:13px;background:var(--soft);color:var(--ink);box-sizing:border-box}
+.home-display-editor-dialog input[type="range"]{width:100%;accent-color:var(--p)}
+.home-display-editor-dialog label>b{justify-self:end;margin-top:-28px;color:var(--p)}
+.character-request-dialog [data-submit-character-request]{min-height:48px}
+.character-stat-summary{display:flex;align-items:baseline;gap:10px;padding:15px 18px;border-radius:18px;background:linear-gradient(135deg,var(--p),var(--s));color:var(--on-grad)}
+.character-stat-summary b{font-size:38px;line-height:1}.character-stat-summary span{font-weight:900}
+.character-stat-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.character-stat-grid section{min-width:0;padding:14px;border:1px solid var(--line);border-radius:17px;background:var(--soft)}
+.character-stat-grid h3{margin:0 0 10px;font-size:16px}
+.character-stat-grid ol{display:grid;gap:9px;margin:0;padding:0;list-style:none}
+.character-stat-grid li{display:grid;gap:5px}
+.character-stat-grid li>span{display:flex;justify-content:space-between;gap:8px;min-width:0}
+.character-stat-grid li b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.character-stat-grid li small{flex:none;color:var(--muted)}
+.character-stat-grid li>i{display:block;height:7px;border-radius:99px;background:color-mix(in srgb,var(--p) 13%,var(--panel));overflow:hidden}
+.character-stat-grid li>i>u{display:block;width:var(--stat-value);height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--p),var(--s));text-decoration:none}
+
+/* Two LD figures keep the one-person dimensions; only their horizontal slots change. */
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup{width:min(104vw,470px)!important;height:min(38dvh,380px)!important;scale:1!important}
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup{display:grid!important;grid-template-columns:repeat(2,minmax(0,235px))!important;align-items:end!important;justify-content:center!important;padding:0!important;translate:0 8px}
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person{width:min(52vw,235px)!important;height:100%!important;margin:0!important;scale:var(--person-visual-scale,1);justify-self:center}
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person:first-child{margin:0!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup{width:620px!important;height:345px!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup{grid-template-columns:repeat(2,310px)!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person{width:310px!important;height:345px!important;margin:0!important}
+
+/* The active portrait is indicated by a theme-coloured aura, not a ring. */
+html.native-app[data-active-tab="observe"] .native-character-picker button.on,
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button.on{
+  outline:0!important;background:transparent!important;box-shadow:none!important
+}
+html.native-app[data-active-tab="observe"] .native-character-picker button.on :is(.avatar,.sprite){
+  filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px var(--picker-theme,var(--p))) drop-shadow(0 0 16px var(--picker-theme,var(--p)))!important;
+  animation:native-picker-aura 2.2s ease-in-out infinite alternate
+}
+@keyframes native-picker-aura{from{filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 6px var(--picker-theme,var(--p))) drop-shadow(0 0 12px var(--picker-theme,var(--p)))}to{filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 11px var(--picker-theme,var(--p))) drop-shadow(0 0 21px var(--picker-theme,var(--p)))}}
+@media(max-width:720px){
+  .character-stat-grid{grid-template-columns:minmax(0,1fr)}
+  :is(.home-display-editor-dialog,.character-request-dialog,.character-stats-dialog)>form{padding:17px}
+}
+@media(prefers-reduced-motion:reduce){html.native-app[data-active-tab="observe"] .native-character-picker button.on :is(.avatar,.sprite){animation:none!important}}
+
 /* 2026-08-11g FINAL THEME AUTHORITY — this block intentionally follows every
    compatibility rule above, so fixed legacy whites/navies cannot win. */
 html[data-color-mode][data-visual-theme],
@@ -6040,3 +6095,30 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
 html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[data-visual-theme="baroque"]::after{
   content:"❦";position:absolute;z-index:2;right:18px;top:50%;translate:0 -50%;color:#f0c78f;font:700 28px Georgia,serif;text-shadow:0 1px #351724;
 }
+
+/* Final home-screen authority (keep after all legacy mobile rules). */
+html.native-app[data-active-tab="observe"] .native-character-picker button,
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button{
+  border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important
+}
+html.native-app[data-active-tab="observe"] .native-character-picker button.on,
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button.on{
+  border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important
+}
+html.native-app[data-active-tab="observe"] .native-character-picker button.on :is(.avatar,.sprite){
+  filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px var(--picker-theme,var(--p))) drop-shadow(0 0 16px var(--picker-theme,var(--p)))!important;
+  animation:native-picker-aura 2.2s ease-in-out infinite alternate!important
+}
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup{
+  width:min(104vw,470px)!important;height:min(38dvh,380px)!important;scale:1!important
+}
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup{
+  display:grid!important;grid-template-columns:repeat(2,minmax(0,235px))!important;align-items:end!important;justify-content:center!important;padding:0!important;translate:0 8px
+}
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person{
+  width:min(52vw,235px)!important;height:100%!important;margin:0!important;scale:var(--person-visual-scale,1);justify-self:center
+}
+.native-app .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person:first-child{margin:0!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup{width:620px!important;height:345px!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup{grid-template-columns:repeat(2,310px)!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-scene-lineup .native-scene-lineup-person{width:310px!important;height:345px!important;margin:0!important}

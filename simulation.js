@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811o";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260811r";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2028,7 +2028,10 @@ function recordedInteractionEntries(c,date){
     if(action.type==="request"){
       const ownerName=String(action.requestedBy||state.ownerName||"마을 주인").trim()||"마을 주인";
       const requestedTask=String(action.requestTitle||"부탁받은 일").trim()||"부탁받은 일";
-      return homeEntry(c,minute,`${requestedTask} 하는 중`,`${ownerName}의 부탁을 받아 ${requestedTask}에 손을 대고 있어요. 자기 방식대로 순서를 정한 뒤 천천히 진행하고 있어요.`,"living",{interactionId:action.id,requestCategory:action.requestCategory||"기타",requestedBy:ownerName});
+      const requestCategory=action.requestCategory||"기타";
+      const requestRoom={요리:"kitchen",정리:"living",휴식:"living",대화:"living",운동:"living",외출:"entry"}[requestCategory]||"living";
+      const requestTitle=requestedTask.endsWith("하기")?`${requestedTask.slice(0,-2)}하는 중`:requestedTask.endsWith("기")?`${requestedTask.slice(0,-1)}는 중`:`${requestedTask} 하는 중`;
+      return homeEntry(c,minute,requestTitle,`${ownerName}의 부탁을 받아 ${requestedTask}에 손을 대고 있어요. 성격과 익숙한 방식에 맞춰 순서를 정한 뒤 진행하고 있어요.`,requestRoom,{interactionId:action.id,requestCategory,requestedBy:ownerName});
     }
     if(action.type==="buy"){
       const liked=(c.favorites?.[action.itemKind]||[]).includes(action.itemId);
