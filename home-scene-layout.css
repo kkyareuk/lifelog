@@ -1,0 +1,246 @@
+/* Canonical home-scene layout.
+   All SD/LD geometry lives here; app.css and interface-system.css contain no
+   competing LD size or pair-position rules. */
+
+.native-app .native-character-stage.visual-mode-ld{
+  position:relative!important;
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  scale:1!important;
+  animation:none!important;
+  transform:none!important;
+  transform-origin:50% 100%!important;
+  pointer-events:none!important;
+}
+.native-app .native-character-stage.visual-mode-ld>i{display:none!important}
+.native-app .native-character-stage.visual-mode-ld>.scene-ld-art,
+.native-app .native-character-stage.visual-mode-ld .native-scene-lineup-person.is-ld>.scene-ld-art{
+  position:absolute!important;
+  left:calc(50% + var(--character-art-x,0%))!important;
+  top:var(--character-art-y,0%)!important;
+  bottom:auto!important;
+  display:block!important;
+  width:auto!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  translate:-50% 0!important;
+  scale:var(--character-render-scale,1)!important;
+  transform:none!important;
+  transform-origin:50% 100%!important;
+  animation:none!important;
+  filter:drop-shadow(0 18px 13px #0008)!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:visible!important;
+  translate:0 0!important;
+  transform:none!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  position:absolute!important;
+  top:0!important;
+  bottom:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  translate:-50% 0!important;
+  scale:1!important;
+  transform:none!important;
+  animation:none!important;
+  filter:none!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{
+  left:calc(50% - var(--scene-pair-shift))!important;
+  right:auto!important;
+  z-index:2!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{
+  left:calc(50% + var(--scene-pair-shift))!important;
+  right:auto!important;
+  z-index:2!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-selected{z-index:4!important}
+.native-app .native-character-stage.visual-mode-ld .native-scene-lineup-person>small{display:none!important}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>.native-scene-lineup-avatar{
+  position:absolute!important;
+  left:calc(50% + var(--character-art-x,0%))!important;
+  top:calc(45% + var(--character-art-y,0%))!important;
+  width:clamp(96px,24vw,138px)!important;
+  height:clamp(96px,24vw,138px)!important;
+  max-width:138px!important;
+  max-height:138px!important;
+  object-fit:contain!important;
+  translate:-50% -50%!important;
+  scale:var(--character-render-scale,1)!important;
+  transform:none!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>img.profile-photo-fallback{
+  border-radius:50%!important;
+  object-fit:cover!important;
+}
+
+/* Per-character SD placement uses the same saved geometry without replacing
+   the existing scene animation. */
+.native-app .native-character-stage.visual-mode-sd>.native-main-character,
+.native-app .native-character-stage.visual-mode-sd .native-scene-lineup-person>.native-scene-lineup-avatar{
+  left:var(--character-art-x,0%)!important;
+  top:var(--character-art-y,0%)!important;
+  scale:var(--character-render-scale,1)!important;
+}
+.native-app .native-scene-action-prop{
+  left:calc(55% + var(--character-action-x,0%))!important;
+  top:calc(54% + var(--character-action-y,0%))!important;
+}
+.native-app .native-person-action-prop{
+  left:calc(50% + var(--character-action-x,0%))!important;
+  top:calc(48% + var(--character-action-y,0%))!important;
+}
+.native-app .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop){display:grid!important;z-index:12!important}
+
+/* Mobile: the art owns one viewport-height frame behind the interface. A pair
+   duplicates that exact frame and changes only the two X centers. */
+@media(max-width:720px){
+  html.native-app[data-active-tab="observe"] .native-observe-home{--scene-frame-top:max(92px,calc(env(safe-area-inset-top) + 72px))}
+  html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
+    --scene-pair-shift:clamp(70px,19vw,92px);
+    position:absolute!important;
+    left:50%!important;
+    right:auto!important;
+    top:var(--scene-frame-top)!important;
+    bottom:auto!important;
+    width:100vw!important;
+    height:calc(100dvh - var(--scene-frame-top) - max(10px,env(safe-area-inset-bottom)))!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    translate:-50% 0!important;
+    z-index:10!important;
+  }
+  html.native-app[data-active-tab="observe"] :is(.native-observe-top,.native-character-picker,.native-status-card,.native-log-card){position:relative;z-index:60!important}
+  html.native-app[data-active-tab="observe"] .native-observe-top{position:absolute!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker{pointer-events:auto!important}
+  html.native-app[data-active-tab="observe"] .native-game-menu{z-index:80!important;pointer-events:none!important}
+  html.native-app[data-active-tab="observe"] .native-game-menu button{pointer-events:auto!important}
+}
+
+/* Desktop uses the same full-height art model. Both people receive the same
+   frame height, so source pixel dimensions cannot make one character huge. */
+.desktop-observe-scene .desktop-scene-canvas{grid-template-columns:minmax(360px,1fr) minmax(520px,48%)!important}
+.desktop-observe-scene .desktop-scene-copy{z-index:60!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld{
+  --scene-pair-shift:clamp(105px,10vw,190px);
+  justify-self:end!important;
+  align-self:end!important;
+  width:min(48vw,820px)!important;
+  height:min(70dvh,680px)!important;
+  min-height:430px!important;
+  max-width:none!important;
+  max-height:none!important;
+  z-index:10!important;
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:min(54vw,920px)!important}
+@media(max-width:1100px){
+  .desktop-observe-scene .desktop-scene-canvas{grid-template-columns:minmax(300px,1fr) minmax(420px,52%)!important}
+  .desktop-observe-scene .native-character-stage.visual-mode-ld{height:min(62dvh,570px)!important;min-height:380px!important}
+}
+
+/* Character-specific direct-manipulation editor. */
+.character-home-layout-editor{
+  grid-column:1/-1!important;
+  display:grid!important;
+  gap:14px!important;
+  width:100%!important;
+  padding:18px!important;
+  border:1px solid color-mix(in srgb,var(--p) 35%,var(--line))!important;
+  border-radius:22px!important;
+  background:color-mix(in srgb,var(--panel) 92%,var(--p) 8%)!important;
+  box-sizing:border-box!important;
+}
+.character-home-layout-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.character-home-layout-heading h3,.character-home-layout-heading p{margin:0}.character-home-layout-heading p{margin-top:6px;max-width:680px;color:var(--muted);line-height:1.55}
+.home-layout-mode-buttons{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:7px}
+.home-layout-mode-buttons button.on{border-color:var(--p)!important;background:var(--p)!important;color:var(--on-p)!important}
+.home-layout-preview{
+  position:relative;
+  isolation:isolate;
+  width:min(100%,430px);
+  aspect-ratio:9/16;
+  margin:auto;
+  overflow:hidden;
+  border:1px solid #ffffff55;
+  border-radius:26px;
+  background:linear-gradient(#10172255,#10172288),var(--layout-preview-bg) center/cover;
+  color:#fff;
+  box-shadow:0 18px 40px #0004;
+  touch-action:none;
+  user-select:none;
+}
+.home-layout-preview-title{position:absolute;z-index:60;top:5%;left:20%;right:20%;display:flex;justify-content:space-between;gap:10px;text-shadow:0 2px 7px #000}
+.home-layout-preview-title b{font-size:clamp(15px,4vw,22px)}
+.home-layout-preview-menu{position:absolute;z-index:60;top:19%;display:grid;gap:20px;font:900 25px/1.7 sans-serif;text-align:center;text-shadow:0 2px 6px #000}
+.home-layout-preview-menu.left{left:5%}.home-layout-preview-menu.right{right:5%}
+.home-layout-preview-picker{position:absolute;z-index:60;left:8%;right:8%;bottom:24%;display:flex;align-items:center;justify-content:center;gap:8px}
+.home-layout-preview-picker>:is(img,.avatar,.sprite,span){width:38px;height:38px;border-radius:50%;background:#ffffffb8;object-fit:contain}
+.home-layout-preview-card{position:absolute;z-index:60;left:6%;right:6%;bottom:3%;display:grid;gap:4px;padding:13px 15px;border-radius:18px;background:#f8f7f3ed;color:#292724;box-shadow:0 10px 30px #0005}
+.home-layout-preview-card small{font-weight:800}.home-layout-preview-card b{font-size:16px}
+.home-layout-layer{position:absolute;z-index:10;inset:10% 0 5%;display:none;pointer-events:none}
+.character-home-layout-editor[data-mode="sd"] [data-home-layout-layer="sd"],
+.character-home-layout-editor[data-mode="ld"] [data-home-layout-layer="ld"]{display:block}
+.home-layout-art{
+  position:absolute;
+  left:calc(50% + var(--character-art-x,0%));
+  top:calc(8% + var(--character-art-y,0%));
+  display:grid;
+  place-items:end center;
+  width:28%;
+  height:28%;
+  translate:-50% 0;
+  scale:var(--character-render-scale,1);
+  transform-origin:50% 100%;
+  cursor:grab;
+  pointer-events:auto;
+  touch-action:none;
+  filter:drop-shadow(0 9px 8px #0008);
+}
+[data-home-layout-layer="ld"] .home-layout-art{top:0;width:78%;height:88%}
+.home-layout-art:active{cursor:grabbing}
+.home-layout-art>:is(img,.home-layout-fallback){display:block;width:100%;height:100%;border:0;border-radius:0;background:transparent;object-fit:contain;object-position:center bottom}
+.home-layout-art>img.profile-photo-fallback{border-radius:50%;object-fit:cover}
+.home-layout-fallback{display:grid!important;place-items:center!important;border-radius:50%!important;background:var(--p)!important;color:#fff!important;font-size:42px;font-weight:900}
+.home-layout-fallback.is-ld{border-radius:18px!important;background:#101722c9!important;font-size:28px;text-align:center}.home-layout-fallback small{font-size:11px}
+.home-layout-resize-handle{position:absolute!important;right:-12px!important;bottom:-12px!important;z-index:5!important;display:grid!important;place-items:center!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;border:2px solid #fff!important;border-radius:50%!important;background:var(--p)!important;color:#fff!important;font-size:15px!important;line-height:1!important;box-shadow:0 4px 12px #0007!important;cursor:nwse-resize!important;touch-action:none!important}
+.home-layout-action{position:absolute!important;z-index:12!important;left:calc(55% + var(--character-action-x,0%))!important;top:calc(45% + var(--character-action-y,0%))!important;width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important;padding:0!important;border:1px solid #ffffff88!important;border-radius:14px!important;background:#101722b8!important;font-size:31px!important;line-height:1!important;translate:-50% -50%!important;box-shadow:0 6px 15px #0006!important;cursor:grab!important;pointer-events:auto!important;touch-action:none!important}
+.home-layout-action:active{cursor:grabbing!important}
+.home-layout-save-note{justify-self:center;color:var(--muted)}
+@media(max-width:720px){
+  .character-home-layout-editor{padding:12px!important;border-radius:18px!important}
+  .character-home-layout-heading{display:grid}.home-layout-mode-buttons{justify-content:stretch}.home-layout-mode-buttons button{flex:1 1 120px}
+  .home-layout-preview{width:min(100%,360px);border-radius:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  .native-app .native-character-stage.visual-mode-ld,
+  .native-app .native-character-stage.visual-mode-ld .scene-ld-art,
+  .native-app .native-character-stage.visual-mode-ld .native-scene-lineup-person{animation:none!important}
+}

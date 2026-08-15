@@ -148,144 +148,6 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
 .town-map-scroll .place-person-face img.profile-photo-fallback,
 .standard-observe-view .place-person-face img.profile-photo-fallback{border-radius:50%!important;object-fit:cover!important}
 
-/* LD is a full-height frame, never a row of thumbnails. In a two-person scene
-   each illustration keeps the exact same height as a solo LD and receives an
-   independent left/right absolute slot. */
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
-  --ld-frame-height:clamp(380px,47dvh,500px);
-  --ld-solo-width:min(78vw,350px);
-  --ld-pair-shift:clamp(56px,15vw,72px);
-  position:relative!important;
-  inset:auto!important;
-  translate:0 0!important;
-  width:var(--ld-solo-width)!important;
-  height:var(--ld-frame-height)!important;
-  min-height:var(--ld-frame-height)!important;
-  max-width:none!important;
-  max-height:none!important;
-  overflow:visible!important;
-  scale:var(--home-visual-scale,1)!important;
-  animation:none!important;
-}
-/* A solo LD is fitted from the authored canvas top to bottom. Pixel dimensions
-   never affect its displayed size, and only one uniform scale is used. */
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld:not(.has-two-scene-actors)>.scene-ld-art{
-  position:absolute!important;
-  left:50%!important;
-  top:0!important;
-  bottom:0!important;
-  display:block!important;
-  width:auto!important;
-  height:100%!important;
-  min-width:0!important;
-  max-width:none!important;
-  min-height:0!important;
-  max-height:none!important;
-  object-fit:contain!important;
-  object-position:center center!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  animation:none!important;
-  transform:none!important;
-  translate:-50% 0!important;
-  scale:1!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors{
-  width:100vw!important;
-  height:var(--ld-frame-height)!important;
-  max-width:none!important;
-  max-height:none!important;
-  overflow:visible!important;
-  scale:var(--home-visual-scale,1)!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
-  position:absolute!important;
-  inset:0!important;
-  display:block!important;
-  width:100%!important;
-  height:100%!important;
-  padding:0!important;
-  overflow:visible!important;
-  transform:none!important;
-  translate:0 0!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
-  position:absolute!important;
-  top:0!important;
-  bottom:0!important;
-  display:block!important;
-  width:var(--ld-solo-width)!important;
-  height:var(--ld-frame-height)!important;
-  max-width:none!important;
-  max-height:none!important;
-  margin:0!important;
-  transform:none!important;
-  translate:-50% 0!important;
-  scale:1!important;
-  filter:drop-shadow(0 18px 12px #0008)!important;
-  animation:none!important;
-  transform-origin:50% 100%!important;
-  overflow:visible!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{
-  left:calc(50% - var(--ld-pair-shift))!important;
-  right:auto!important;
-  z-index:2!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{
-  left:calc(50% + var(--ld-pair-shift))!important;
-  right:auto!important;
-  z-index:2!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-selected{
-  z-index:4!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
-  position:absolute!important;
-  left:50%!important;
-  top:0!important;
-  bottom:0!important;
-  display:block!important;
-  width:auto!important;
-  height:var(--ld-frame-height)!important;
-  min-width:0!important;
-  max-width:none!important;
-  min-height:0!important;
-  max-height:none!important;
-  object-fit:contain!important;
-  object-position:center bottom!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  filter:none!important;
-  animation:none!important;
-  transform:none!important;
-  translate:-50% 0!important;
-  scale:1!important;
-}
-/* A companion without LD art stays an SD-sized companion. It must never
-   stretch to the full LD slot and become a giant face. */
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>.native-scene-lineup-avatar{
-  position:absolute!important;
-  left:50%!important;
-  top:50%!important;
-  width:clamp(92px,25vw,118px)!important;
-  height:clamp(92px,25vw,118px)!important;
-  max-width:118px!important;
-  max-height:118px!important;
-  object-fit:contain!important;
-  transform:none!important;
-  translate:-50% -50%!important;
-  scale:1!important;
-}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>img.profile-photo-fallback{
-  border-radius:50%!important;
-  object-fit:cover!important;
-}
-
-/* The authored canvas is fitted by height only. Both actors share this exact
-   top/bottom frame, so pairing changes X and stacking order, never Y or aspect. */
 @media(max-width:720px){
   html.native-app[data-active-tab="observe"] .native-observe-top{
     position:absolute!important;
@@ -302,16 +164,7 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-sd + .native-character-picker{
     margin-top:-64px!important;
   }
-  html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
-    --ld-frame-height:clamp(340px,44dvh,430px);
-    margin-top:8px!important;
-    pointer-events:none!important;
-    z-index:10!important;
-  }
-  html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld .native-scene-lineup-person>small{display:none!important}
-  html.native-app[data-active-tab="observe"] :is(.native-character-picker,.native-status-card,.native-log-card){position:relative!important;z-index:60!important}
-  html.native-app[data-active-tab="observe"] .native-character-picker{pointer-events:auto!important}
-  html.native-app[data-active-tab="observe"] .native-game-menu{z-index:80!important;pointer-events:none!important}
+  html.native-app[data-active-tab="observe"] .native-game-menu{pointer-events:none!important}
   html.native-app[data-active-tab="observe"] .native-game-menu button{
     z-index:200!important;
     pointer-events:auto!important;
@@ -327,8 +180,6 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
 .home-character-display-card label:first-of-type{grid-column:1/-1}
 .home-character-display-card output{justify-self:end;font-weight:900}
 @media(max-width:560px){.home-character-display-card{grid-template-columns:1fr}}
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop){display:grid!important;z-index:12!important}
-
 /* Soap has one stable, bounded glyph per actor. The legacy bubble pseudo
    elements were large enough to overlap both SD faces on Android. */
 .native-app .scene-action-washing-up .action-prop-soap{
@@ -352,18 +203,6 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   0%,100%{translate:-4px 3px;rotate:-5deg}
   50%{translate:4px -3px;rotate:5deg}
 }
-html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld{
-  --ld-frame-height:430px;
-  position:relative!important;
-  inset:auto!important;
-  translate:0 0!important;
-  width:330px!important;
-  height:430px!important;
-  min-height:430px!important;
-}
-html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:min(760px,56vw)!important;height:430px!important}
-html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{width:50%!important}
-
 /* House occupants: artwork and status copy are separate. Transparent icon art
    never receives a card, while an actual photo is cropped to a true circle. */
 .home-page .home-person>.sprite,

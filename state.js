@@ -158,7 +158,25 @@ const defaultCatalog=()=>({
   electronics:[],
   weapon:[]
 });
-const fresh=()=>({schema:15,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
+const defaultHomeSceneLayout=()=>({
+  sd:{x:0,y:0,scale:1,actionX:0,actionY:0},
+  ld:{x:0,y:0,scale:1,actionX:0,actionY:0}
+});
+const normalizeHomeSceneLayout=value=>{
+  const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
+  const clamp=(number,min,max,fallback)=>Number.isFinite(Number(number))?Math.max(min,Math.min(max,Number(number))):fallback;
+  return Object.fromEntries(["sd","ld"].map(mode=>{
+    const layout=source[mode]&&typeof source[mode]==="object"&&!Array.isArray(source[mode])?source[mode]:{};
+    return [mode,{
+      x:clamp(layout.x,-45,45,0),
+      y:clamp(layout.y,-45,45,0),
+      scale:clamp(layout.scale,.45,2.5,1),
+      actionX:clamp(layout.actionX,-45,45,0),
+      actionY:clamp(layout.actionY,-45,45,0)
+    }];
+  }));
+};
+const fresh=()=>({schema:16,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -168,6 +186,7 @@ const fresh=()=>({schema:15,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===16)return normalizeHomes(x);
   if(x.schema===15)return normalizeHomes(x);
   if(x.schema===14)return normalizeHomes(x);
   if(x.schema===13)return normalizeHomes(x);
@@ -201,7 +220,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=15;
+  x.schema=16;
   x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   const legacyActiveCharacter=x.characters?.[x.activeId]||Object.values(x.characters||{})[0]||{};
   x.homeVisualMode=(x.homeVisualMode||legacyActiveCharacter.homeVisualMode)==="ld"?"ld":"sd";
@@ -533,6 +552,7 @@ function normalizeHomes(x){
     c.homeVisualScale=Number.isFinite(+c.homeVisualScale)?Math.max(70,Math.min(150,+c.homeVisualScale)):100;
     c.homeSdScale=Number.isFinite(+c.homeSdScale)?Math.max(70,Math.min(150,+c.homeSdScale)):c.homeVisualScale;
     c.homeLdScale=Number.isFinite(+c.homeLdScale)?Math.max(70,Math.min(150,+c.homeLdScale)):c.homeVisualScale;
+    c.homeSceneLayout=normalizeHomeSceneLayout(c.homeSceneLayout);
     const compactBirthday=String(c.birthday||"").replace(/\D/g,"");
     c.birthday=/^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/.test(compactBirthday)?compactBirthday:"";
     c.spiceTolerance=Number.isFinite(+c.spiceTolerance)?Math.max(0,Math.min(5,+c.spiceTolerance)):2;
@@ -623,7 +643,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
