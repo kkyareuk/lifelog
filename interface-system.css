@@ -242,12 +242,34 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
 /* The authored canvas is fitted by height only. Both actors share this exact
    top/bottom frame, so pairing changes X and stacking order, never Y or aspect. */
 @media(max-width:720px){
-  html.native-app[data-active-tab="observe"] .native-observe-top{position:relative!important;z-index:30!important}
+  html.native-app[data-active-tab="observe"] .native-observe-top{
+    position:absolute!important;
+    top:max(12px,env(safe-area-inset-top))!important;
+    left:88px!important;
+    right:88px!important;
+    z-index:30!important;
+    pointer-events:none!important;
+  }
+  html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-sd{
+    translate:0 -64px!important;
+    pointer-events:none!important;
+  }
+  html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-sd + .native-character-picker{
+    margin-top:-64px!important;
+  }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
     --ld-frame-height:clamp(390px,52dvh,540px);
     margin-top:12px!important;
+    pointer-events:none!important;
   }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld .native-scene-lineup-person>small{display:none!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker{position:relative!important;z-index:35!important;pointer-events:auto!important}
+  html.native-app[data-active-tab="observe"] .native-game-menu{pointer-events:none!important}
+  html.native-app[data-active-tab="observe"] .native-game-menu button{
+    z-index:200!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+  }
 }
 
 .home-character-display-card{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
