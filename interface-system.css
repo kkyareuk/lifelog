@@ -153,16 +153,18 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
    independent left/right absolute slot. */
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
   --ld-frame-height:clamp(380px,47dvh,500px);
+  --ld-solo-width:min(78vw,350px);
+  --ld-pair-shift:clamp(56px,15vw,72px);
   position:relative!important;
   inset:auto!important;
   translate:0 0!important;
-  width:min(78vw,350px)!important;
+  width:var(--ld-solo-width)!important;
   height:var(--ld-frame-height)!important;
   min-height:var(--ld-frame-height)!important;
   max-width:none!important;
   max-height:none!important;
   overflow:visible!important;
-  scale:1!important;
+  scale:var(--home-visual-scale,1)!important;
   animation:none!important;
 }
 /* A solo LD is fitted from the authored canvas top to bottom. Pixel dimensions
@@ -195,7 +197,7 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   max-width:none!important;
   max-height:none!important;
   overflow:visible!important;
-  scale:1!important;
+  scale:var(--home-visual-scale,1)!important;
 }
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
   position:absolute!important;
@@ -213,8 +215,8 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   top:0!important;
   bottom:0!important;
   display:block!important;
-  width:50vw!important;
-  height:100%!important;
+  width:var(--ld-solo-width)!important;
+  height:var(--ld-frame-height)!important;
   max-width:none!important;
   max-height:none!important;
   margin:0!important;
@@ -227,12 +229,12 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   overflow:visible!important;
 }
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{
-  left:25%!important;
+  left:calc(50% - var(--ld-pair-shift))!important;
   right:auto!important;
   z-index:2!important;
 }
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{
-  left:75%!important;
+  left:calc(50% + var(--ld-pair-shift))!important;
   right:auto!important;
   z-index:2!important;
 }
@@ -246,7 +248,7 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   bottom:0!important;
   display:block!important;
   width:auto!important;
-  height:100%!important;
+  height:var(--ld-frame-height)!important;
   min-width:0!important;
   max-width:none!important;
   min-height:0!important;
@@ -262,6 +264,25 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   translate:-50% 0!important;
   scale:1!important;
 }
+/* A companion without LD art stays an SD-sized companion. It must never
+   stretch to the full LD slot and become a giant face. */
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>.native-scene-lineup-avatar{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:clamp(92px,25vw,118px)!important;
+  height:clamp(92px,25vw,118px)!important;
+  max-width:118px!important;
+  max-height:118px!important;
+  object-fit:contain!important;
+  transform:none!important;
+  translate:-50% -50%!important;
+  scale:1!important;
+}
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-ld)>img.profile-photo-fallback{
+  border-radius:50%!important;
+  object-fit:cover!important;
+}
 
 /* The authored canvas is fitted by height only. Both actors share this exact
    top/bottom frame, so pairing changes X and stacking order, never Y or aspect. */
@@ -271,7 +292,7 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
     top:max(32px,calc(env(safe-area-inset-top) + 20px))!important;
     left:88px!important;
     right:88px!important;
-    z-index:30!important;
+    z-index:60!important;
     pointer-events:none!important;
   }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-sd{
@@ -285,10 +306,12 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
     --ld-frame-height:clamp(340px,44dvh,430px);
     margin-top:8px!important;
     pointer-events:none!important;
+    z-index:10!important;
   }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld .native-scene-lineup-person>small{display:none!important}
-  html.native-app[data-active-tab="observe"] .native-character-picker{position:relative!important;z-index:35!important;pointer-events:auto!important}
-  html.native-app[data-active-tab="observe"] .native-game-menu{pointer-events:none!important}
+  html.native-app[data-active-tab="observe"] :is(.native-character-picker,.native-status-card,.native-log-card){position:relative!important;z-index:60!important}
+  html.native-app[data-active-tab="observe"] .native-character-picker{pointer-events:auto!important}
+  html.native-app[data-active-tab="observe"] .native-game-menu{z-index:80!important;pointer-events:none!important}
   html.native-app[data-active-tab="observe"] .native-game-menu button{
     z-index:200!important;
     pointer-events:auto!important;
