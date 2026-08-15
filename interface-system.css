@@ -152,7 +152,7 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
    each illustration keeps the exact same height as a solo LD and receives an
    independent left/right absolute slot. */
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
-  --ld-frame-height:clamp(440px,58dvh,610px);
+  --ld-frame-height:clamp(380px,47dvh,500px);
   position:relative!important;
   inset:auto!important;
   translate:0 0!important;
@@ -164,6 +164,30 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   overflow:visible!important;
   scale:1!important;
   animation:none!important;
+}
+/* A solo LD is fitted from the authored canvas top to bottom. Pixel dimensions
+   never affect its displayed size, and only one uniform scale is used. */
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld:not(.has-two-scene-actors)>.scene-ld-art{
+  position:absolute!important;
+  left:50%!important;
+  top:0!important;
+  bottom:0!important;
+  display:block!important;
+  width:auto!important;
+  height:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:0!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center center!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  animation:none!important;
+  transform:none!important;
+  translate:-50% 0!important;
+  scale:1!important;
 }
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors{
   width:100vw!important;
@@ -258,8 +282,8 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
     margin-top:-64px!important;
   }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
-    --ld-frame-height:clamp(390px,52dvh,540px);
-    margin-top:12px!important;
+    --ld-frame-height:clamp(340px,44dvh,430px);
+    margin-top:8px!important;
     pointer-events:none!important;
   }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld .native-scene-lineup-person>small{display:none!important}
@@ -281,6 +305,30 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
 .home-character-display-card output{justify-self:end;font-weight:900}
 @media(max-width:560px){.home-character-display-card{grid-template-columns:1fr}}
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop){display:grid!important;z-index:12!important}
+
+/* Soap has one stable, bounded glyph per actor. The legacy bubble pseudo
+   elements were large enough to overlap both SD faces on Android. */
+.native-app .scene-action-washing-up .action-prop-soap{
+  display:grid!important;
+  place-items:center!important;
+  width:44px!important;
+  height:44px!important;
+  padding:0!important;
+  color:initial!important;
+  font-size:34px!important;
+  line-height:1!important;
+  text-shadow:none!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 5px 5px #0007)!important;
+  animation:native-soap-small-motion 1.65s ease-in-out infinite!important;
+}
+.native-app .scene-action-washing-up .action-prop-soap::before,
+.native-app .scene-action-washing-up .action-prop-soap::after{display:none!important;content:none!important}
+@keyframes native-soap-small-motion{
+  0%,100%{translate:-4px 3px;rotate:-5deg}
+  50%{translate:4px -3px;rotate:5deg}
+}
 html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld{
   --ld-frame-height:430px;
   position:relative!important;

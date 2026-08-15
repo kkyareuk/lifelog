@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260815ar";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260815ar";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260815as";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260815as";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -776,7 +776,7 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="gardening")symbol="🪴";
   else if(actionKind==="mail")symbol="✉️";
   if(!symbol)return "";
-  const propVariant=symbol==="🪥"?" action-prop-toothbrush":symbol==="👞"?" action-prop-shoe":"";
+  const propVariant=symbol==="🪥"?" action-prop-toothbrush":symbol==="🧼"?" action-prop-soap":symbol==="👞"?" action-prop-shoe":"";
   const image=item?.image?`<img src="${esc(item.image)}" alt="">`:esc(symbol);
   const title=item?.name?`${person?.name||"캐릭터"} · ${item.name}`:`${person?.name||"캐릭터"} · ${symbol}`;
   return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}${propVariant}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
@@ -2293,7 +2293,7 @@ function settingsContent(){
   const backup=`<section class="setting-card backup-file-card"><h2>브라우저 백업 파일</h2><p>사진 없이 정보만 내보냅니다. 불러올 때도 이 기기의 기존 사진은 그대로 유지해요.</p><div class="sync-actions"><button data-export-file>백업 파일 내보내기</button><button data-import-file>백업 파일 불러오기</button></div></section>`;
   const feedback=`<section class="setting-card feedback-card"><h2>개발자에게 피드백 보내기</h2><p>유형을 고르면 기기의 메일 앱이 열려요.</p></section>`;
   const guide=`<section class="setting-card page-guide-card"><h2>페이지 안내</h2><p>각 페이지를 처음 열었을 때 나오는 안내를 다시 볼 수 있어요.</p><button data-guide-reset>모든 페이지 안내 다시 보기</button></section>`;
-  return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${homeCharacterDisplay}${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${map}${language}${backup}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
+  return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${homeCharacterDisplay}${map}${language}${backup}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
 }
 Object.assign(UI_TEXT.en,{
   "고전과 장식 테마":"Heritage & ornamental themes","바로크 살롱":"Baroque Salon","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식":"Black lacquer frames, aged parchment, wine red, and bronze ornament",
