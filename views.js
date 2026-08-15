@@ -609,11 +609,6 @@ function sceneImage(c,entry){
   const place=placeForEntry(entry);
   return catalogItem(entry.itemId)?.image||place?.interiorImage||place?.image||"";
 }
-function activeCatalogItems(entry){
-  const ids=new Set([entry?.itemId,...(Array.isArray(entry?.itemIds)?entry.itemIds:[])].filter(Boolean));
-  const sceneText=`${entry?.title||""} ${entry?.desc||""}`;
-  return catalogItems().filter(item=>item.image&&(ids.has(item.id)||(item.name&&sceneText.includes(item.name)))).slice(0,5);
-}
 const PET_SCENE_EMOJI={강아지:"🐶",고양이:"🐱",새:"🐦",거북이:"🐢",호랑이:"🐯",인공지능:"🤖",식물:"🪴",드래곤:"🐉",기타:"✨"};
 function nativePetForScene(c,entry){
   const preferredHome=state.homes?.[entry?.visitHomeId||c?.homeId];
@@ -1398,8 +1393,6 @@ function observe(){
   const nativeLog=nativeEntries.slice(-2).reverse().map(item=>`<li><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
   const emptyLog="<li><span><b>아직 기록이 없어요</b><small>조금 뒤 새로운 생활 장면이 나타납니다.</small></span></li>";
   const nativeFullLog=`<dialog class="native-log-dialog" data-native-log-dialog><form method="dialog"><div class="native-log-dialog-head"><span><small>오늘의 기록</small><h2>${esc(c.name)}의 생활 로그</h2></span><button value="close" aria-label="닫기">×</button></div><ol>${dailyLogItems(nativeEntries,c)||"<li>아직 기록이 없어요.</li>"}</ol><button class="primary native-log-dialog-close" value="close">닫기</button></form></dialog>`;
-  const activeItems=activeCatalogItems(e);
-  const itemOrbit=activeItems.length?`<span class="native-active-item-orbits" aria-label="지금 사용 중인 취향 사전 항목">${activeItems.map((item,index)=>`<span class="native-active-item-orbit" style="--orbit-angle:${index*360/activeItems.length}deg;--orbit-delay:${index*-.72}s" title="${esc(item.name)}"><img src="${esc(item.image)}" alt="${esc(item.name)}"></span>`).join("")}</span>`:"";
   const hasLd=hasLdArt(c),hasSd=hasSdArt(c);
   let visualMode=hasLd&&(c.homeVisualMode==="ld"||!hasSd)?"ld":"sd";
   let presentation=nativeScenePresentation(c,e,visualMode);
@@ -1414,7 +1407,7 @@ function observe(){
   const stageClasses=`${presentation.partner?"has-scene-companion":""} ${presentation.lineupHtml?"has-scene-lineup":""} ${presentation.participantCount===2?"has-two-scene-actors":""} ${presentation.pet?"has-scene-pet":""} visual-mode-${visualMode}`;
   // 2인 장면은 lineup이 두 인물을 모두 렌더링한다. 메인 이미지를 중복으로
   // 넣지 않아 예전 CSS가 남아 있어도 거대한 얼굴이 다시 나타나지 않는다.
-  const sceneActors=`${presentation.lineupHtml?"":sceneAvatar(c,"native-main-character",presentation.tone,visualMode)}${presentation.sleepMarkHtml}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.thoughtHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}`;
+  const sceneActors=`${presentation.lineupHtml?"":sceneAvatar(c,"native-main-character",presentation.tone,visualMode)}${presentation.sleepMarkHtml}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.thoughtHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>`;
   const visualToggle=hasLd&&hasSd?`<div class="home-visual-toggle" aria-label="홈 캐릭터 표현 전환"><button type="button" data-home-visual-mode="sd" class="${visualMode==="sd"?"on":""}">SD</button><button type="button" data-home-visual-mode="ld" class="${visualMode==="ld"?"on":""}">LD</button></div>`:"";
   const homeTools="";
   const homeDialogs="";
@@ -1659,7 +1652,7 @@ function homeCard(id,chars){
     const editAttributes=`data-open-room-editor="${key}" data-home-id="${id}" data-room-key="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`;
     return `<div class="room room-${esc(room.type||key)} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
       <div class="room-heading room-title-${room.titleTone==="dark"?"dark":"light"}"><span><b>${esc(room.name||key)}</b><small class="room-edit-hint">편집</small></span>${edit?`<button type="button" class="room-drag-handle" data-room-drag="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 위치 옮기기">✥</button>`:""}</div>
-      <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c),sleeping=/자는 중|잠든|수면/.test(`${e?.title||""} ${e?.mood||""}`);return `<button class="home-person ${sleeping?"is-sleeping":""}" data-home-occupant="character" data-character-id="${c.id}" data-occupant-name="${esc(c.name)}" data-occupant-title="${esc(e?.title||"집에서 시간을 보내는 중")}" data-occupant-desc="${esc(e?.desc||"")}" data-occupant-room="${esc(room.name||key)}">${avatar(c)}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}<span><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}</div>
+      <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c),sleeping=/자는 중|잠든|수면/.test(`${e?.title||""} ${e?.mood||""}`);return `<button class="home-person ${sleeping?"is-sleeping":""}" data-home-occupant="character" data-character-id="${c.id}" data-occupant-name="${esc(c.name)}" data-occupant-title="${esc(e?.title||"집에서 시간을 보내는 중")}" data-occupant-desc="${esc(e?.desc||"")}" data-occupant-room="${esc(room.name||key)}">${avatar(c)}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}<span class="home-person-status"><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}</div>
       <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" data-home-occupant="pet" data-pet-id="${p.id}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}</div>
     </div>`;
   }).join("");

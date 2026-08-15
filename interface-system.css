@@ -88,7 +88,7 @@ html[data-color-mode][data-visual-theme] :is(
   -webkit-text-fill-color:var(--muted)!important;
 }
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] main button:not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not([data-home-character]){
+html[data-color-mode][data-visual-theme] main button:not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not([data-home-character]){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -159,7 +159,7 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
   overflow:visible!important;
 }
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors{
-  width:min(100vw,470px)!important;
+  width:min(96vw,470px)!important;
   height:var(--ld-box-height)!important;
   max-width:none!important;
   scale:1!important;
@@ -168,15 +168,87 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
   position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;padding:0!important;overflow:visible!important;transform:none!important;translate:0 0!important;
 }
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
-  position:absolute!important;bottom:0!important;display:block!important;width:var(--ld-box-width)!important;height:var(--ld-box-height)!important;max-width:none!important;margin:0!important;transform:none!important;translate:0 0!important;scale:var(--person-visual-scale,1)!important;transform-origin:50% 100%!important;overflow:visible!important;
+  position:absolute!important;left:50%!important;right:auto!important;bottom:0!important;display:block!important;width:var(--ld-box-width)!important;height:var(--ld-box-height)!important;max-width:none!important;margin:0!important;transform:none!important;scale:var(--person-visual-scale,1)!important;transform-origin:50% 100%!important;overflow:visible!important;
 }
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{left:0!important;right:auto!important}
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{left:auto!important;right:0!important}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{left:50%!important;right:auto!important;translate:-60% 0!important;z-index:2!important}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{left:50%!important;right:auto!important;translate:-40% 0!important;z-index:3!important}
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
   position:absolute!important;inset:auto 0 0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center bottom!important;border:0!important;border-radius:0!important;background:transparent!important;transform:none!important;
 }
 .desktop-observe-scene .native-character-stage.visual-mode-ld{--ld-box-width:310px;--ld-box-height:345px}
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:620px!important;height:345px!important}
+
+/* House occupants: icon art stays transparent and uncropped. Only an actual
+   profile photo is circular; status copy never paints a white plate. */
+.home-page .home-person>.sprite,
+.home-page .room-pet>.room-pet-icon,
+.home-occupant-popover .home-occupant-visual :is(.sprite,.room-pet-icon,.room-pet-emoji){
+  display:block!important;max-width:none!important;padding:0!important;border:0!important;border-radius:0!important;clip-path:none!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important;
+}
+.home-page :is(.home-person,.room-pet) :is(.sprite,.room-pet-icon,.room-pet-emoji),
+.home-occupant-popover .home-occupant-visual :is(.sprite,.room-pet-icon,.room-pet-emoji){
+  width:auto!important;max-width:100%!important;height:auto!important;max-height:100%!important;
+  padding:0!important;border:0!important;border-radius:0!important;clip-path:none!important;
+  background-color:transparent!important;background-image:none!important;box-shadow:none!important;
+  object-fit:contain!important;overflow:visible!important;
+}
+.home-page :is(.home-person,.room-pet){border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}
+.home-page :is(.home-person,.room-pet)>:is(.avatar,.sprite,.room-pet-photo,.room-pet-icon,.room-pet-emoji){margin:0!important;padding:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;overflow:visible!important}
+.home-page .home-person>.avatar,
+.home-page .room-pet>.room-pet-photo,
+.home-occupant-popover .home-occupant-visual :is(.avatar,.room-pet-photo){
+  border-radius:50%!important;object-fit:cover!important;
+}
+.home-occupant-popover .home-occupant-visual{border-radius:0!important;background:transparent!important;overflow:visible!important}
+
+@media(max-width:720px){
+  html.native-app[data-active-tab="home"] .home-person-status,
+  html.native-app[data-active-tab="home"] .room-pet-status{
+    border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;padding:3px!important;
+  }
+  html.native-app[data-active-tab="home"] :is(.home-person-status,.room-pet-status) :is(b,small){
+    color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 4px #000,0 0 2px #000!important;
+  }
+}
+
+/* Expansion showcase owns its paint and intrinsic height. Generic light-mode
+   card rules must not collapse it into a decorative strip. */
+html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase{
+  display:grid!important;height:auto!important;max-height:none!important;overflow:visible!important;
+  border-color:#e5bf68!important;
+  background:radial-gradient(circle at 12% 15%,#ffe9a033,transparent 28%),linear-gradient(135deg,#17131f,#312344 54%,#5b3427)!important;
+  color:#fff!important;-webkit-text-fill-color:#fff!important;
+}
+html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy{
+  display:flex!important;visibility:visible!important;opacity:1!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
+}
+html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy :is(h2,p,li,span){
+  visibility:visible!important;opacity:1!important;color:#f8f1ff!important;-webkit-text-fill-color:#f8f1ff!important;text-shadow:0 2px 8px #09060db8!important;
+}
+html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>small{color:#e8c98a!important;-webkit-text-fill-color:#e8c98a!important}
+html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>span,
+html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{color:#ffe6a2!important;-webkit-text-fill-color:#ffe6a2!important}
+@media(max-width:720px){
+  html.native-app[data-active-tab="shop"] .shop-expansion-heading{
+    display:flex!important;align-items:baseline!important;justify-content:flex-start!important;gap:12px!important;
+    min-width:0!important;margin:26px 0 12px!important;padding-inline:4px!important;overflow:visible!important;
+  }
+  html.native-app[data-active-tab="shop"] .shop-expansion-heading h2{
+    min-width:0!important;margin:0!important;font-size:clamp(26px,8vw,34px)!important;line-height:1!important;
+    white-space:normal!important;overflow:visible!important;text-overflow:clip!important;
+  }
+  html.native-app[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-store{height:100%!important;overflow-x:hidden!important;overflow-y:auto!important}
+  html.native-app[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase{
+    grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto auto!important;gap:18px!important;width:100%!important;min-height:650px!important;padding:16px!important;
+  }
+  html.native-app[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-art{display:grid!important;width:100%!important;min-height:250px!important}
+  html.native-app[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-art img{display:block!important;width:100%!important;height:250px!important;min-height:250px!important;object-fit:contain!important}
+  html.native-app[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy{min-height:340px!important;align-items:flex-start!important;justify-content:flex-start!important}
+  html.native-app[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy h2{
+    max-width:100%!important;font-size:clamp(28px,8.5vw,38px)!important;line-height:1.12!important;
+    white-space:normal!important;word-break:break-word!important;overflow-wrap:anywhere!important;overflow:visible!important;text-overflow:clip!important;
+  }
+}
 
 /* Dedicated statistics page. */
 .character-statistics-page{display:grid!important;gap:18px!important;width:min(1180px,100%)!important;margin:0 auto!important;padding:clamp(18px,3vw,34px)!important;box-sizing:border-box!important}
