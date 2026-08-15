@@ -760,6 +760,7 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="beans-organizing")symbol="🫘";
   else if(actionKind==="pet-care")symbol="🧶";
   else if(actionKind==="sweeping")symbol="🧹";
+  else if(actionKind==="shoe-care")symbol="👞";
   else if(actionKind==="dishwashing"||actionKind==="wiping")symbol="🧽";
   else if(actionKind==="laundry")symbol="🧺";
   else if(actionKind==="spice-organizing")symbol="🧂";
@@ -777,9 +778,10 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="gardening")symbol="🪴";
   else if(actionKind==="mail")symbol="✉️";
   if(!symbol)return "";
+  const propVariant=symbol==="🪥"?" action-prop-toothbrush":symbol==="👞"?" action-prop-shoe":"";
   const image=item?.image?`<img src="${esc(item.image)}" alt="">`:esc(symbol);
   const title=item?.name?`${person?.name||"캐릭터"} · ${item.name}`:`${person?.name||"캐릭터"} · ${symbol}`;
-  return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
+  return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}${propVariant}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
 }
 function isRomanticCharacterView(view){
   const overall=String(view?.overall||"").trim();
@@ -920,6 +922,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
     :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
       :/세수|세안|이를 닦|양치|칫솔|치약|샤워|목욕|머리를 감|몸을 씻|손을 씻|면도/.test(text)?"washing-up"
       :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)|접시.{0,12}(씻|닦)|컵.{0,12}(씻|닦)|도구.{0,12}(씻|닦)|물뿌리개.{0,12}(씻|닦)|세척/.test(text)?"dishwashing"
+        :/(?:신발|구두|운동화|부츠).{0,18}(?:손질|닦|솔질|광|먼지|얼룩)|(?:손질|닦|솔질|광).{0,18}(?:신발|구두|운동화|부츠)/.test(text)?"shoe-care"
         :/(?:사진|앨범|이미지|포토).{0,28}(?:정리|정돈|분류|고르|이름|폴더|파일|붙이)|(?:정리|정돈|분류|폴더|파일).{0,28}(?:사진|앨범|이미지|포토)/.test(text)?"organizing"
           :/(?:문서|서류|자료|원고|파일).{0,28}(?:정리|정돈|분류|고르|이름|폴더|붙이)|(?:정리|정돈|분류|폴더).{0,28}(?:문서|서류|자료|원고|파일)/.test(text)?"organizing"
           :/(?:빨래|옷|의류).{0,20}(?:정리|정돈|접|개|분류|옷장|서랍)/.test(text)?"organizing"
@@ -1413,9 +1416,8 @@ function observe(){
   // 넣지 않아 예전 CSS가 남아 있어도 거대한 얼굴이 다시 나타나지 않는다.
   const sceneActors=`${presentation.lineupHtml?"":sceneAvatar(c,"native-main-character",presentation.tone,visualMode)}${presentation.sleepMarkHtml}${presentation.lineupHtml}${presentation.conversationHtml}${presentation.thoughtHtml}${presentation.actionHtml}${presentation.companionHtml}${presentation.petHtml}<i></i>${itemOrbit}`;
   const visualToggle=hasLd&&hasSd?`<div class="home-visual-toggle" aria-label="홈 캐릭터 표현 전환"><button type="button" data-home-visual-mode="sd" class="${visualMode==="sd"?"on":""}">SD</button><button type="button" data-home-visual-mode="ld" class="${visualMode==="ld"?"on":""}">LD</button></div>`:"";
-  const homeTools=`<div class="home-observe-tools" aria-label="홈 화면 도구"><button type="button" data-open-home-display-editor>화면 편집</button></div>`;
-  const homeDisplayEditor=`<dialog class="home-display-editor-dialog" data-home-display-editor-dialog><form method="dialog"><div class="home-dialog-head"><span><small>HOME DISPLAY</small><h2>홈 화면 편집</h2></span><button value="close" aria-label="닫기">×</button></div><p>${esc(c.name)}의 SD와 LD 크기는 서로 따로 저장돼요.</p><label>홈화면 기본 표현<select data-home-display-field="homeVisualMode" data-character-id="${c.id}"><option value="sd" ${c.homeVisualMode!=="ld"?"selected":""}>SD · 아이콘</option><option value="ld" ${c.homeVisualMode==="ld"?"selected":""} ${hasLd?"":"disabled"}>LD · 전신 일러스트</option></select></label><label>SD 이미지 크기 <b data-home-display-value="homeSdScale">${Math.round(Number(c.homeSdScale)||Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeSdScale)||Number(c.homeVisualScale)||100)}" data-home-display-field="homeSdScale" data-character-id="${c.id}"></label><label>LD 이미지 크기 <b data-home-display-value="homeLdScale">${Math.round(Number(c.homeLdScale)||Number(c.homeVisualScale)||100)}%</b><input type="range" min="70" max="150" step="5" value="${Math.round(Number(c.homeLdScale)||Number(c.homeVisualScale)||100)}" data-home-display-field="homeLdScale" data-character-id="${c.id}" ${hasLd?"":"disabled"}></label><small>두 명이 함께 나올 때도 각 LD의 높이와 크기는 한 명일 때와 같고, 위치만 왼쪽과 오른쪽으로 나뉩니다.</small><button class="primary" value="close">완료</button></form></dialog>`;
-  const homeDialogs=homeDisplayEditor;
+  const homeTools="";
+  const homeDialogs="";
   const desktopScene=`<section class="desktop-observe-scene native-app" aria-label="${esc(c.name)}의 지금 이 순간"><div class="desktop-scene-canvas scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}${visualToggle}${homeTools}<div class="desktop-scene-copy"><small>${t("currentMoment","지금 이 순간")}</small><h1>${esc(c.name)} · ${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></div><div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div></div></section>`;
   const statusCard=`<article class="native-status-card" data-toggle-native-moment-card role="button" tabindex="0" aria-expanded="false"><div class="native-status-card-head"><small>${t("currentMoment","지금 이 순간")}</small><button type="button" data-toggle-native-moment aria-expanded="false" data-label-expand="${t("expand","펼치기")}" data-label-collapse="${t("collapse","접기")}">${t("expand","펼치기")}</button></div><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p><b>${location}</b></article>`;
   const logCard=`<section class="native-log-card" data-open-native-log-card role="button" tabindex="0" aria-label="오늘의 기록 전체 보기"><div><b>${t("todayLog","오늘의 기록")} <small class="native-log-open-hint">눌러서 펼쳐 보기 ↗</small></b><span><button type="button" data-open-native-log>${t("viewAll","전체 보기")}</button><button type="button" data-tab="home">${t("viewHome","집 보기")}</button></span></div><ol>${nativeLog||emptyLog}</ol></section>`;
@@ -2501,7 +2503,7 @@ const SHOP_PRODUCTS={
   town_slot_1:{label:"마을 슬롯",title:"마을 1개 추가",description:"마을 슬롯 1개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.",price:1900},
   green_tea:{label:"개발 응원",title:"개발자에게 녹차 사주기 🍵",description:"잘 먹겠습니다 🥹",price:1500}
 };
-const jobExpansionCard=()=>`<section class="shop-coming shop-expansion-showcase" data-product-id="job_expansion"><div class="expansion-art"><img src="./shop-assets/resume-expansion.png" alt="이력서를 제출해요 확장팩 이미지"><span>이 이미지는 <b>shop-assets/resume-expansion.png</b> 파일만 바꾸면 교체돼요.</span></div><div class="expansion-copy"><span>확장팩 · 출시 준비 중</span><small>직업 확장팩</small><h2>이력서를 제출해요</h2><p>기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.</p><ul><li>직업별 위계·직급과 승진 흐름</li><li>상사·동료·부하 직원의 직장 내 관계</li><li>근무 장소·부서·담당 업무와 전용 생활 장면</li></ul><div><b>가격 미정</b><button type="button" disabled>출시 준비 중</button></div></div></section>`;
+const jobExpansionCard=()=>`<section class="shop-coming shop-expansion-showcase" data-product-id="job_expansion"><div class="expansion-art"><img src="./shop-assets/resume-expansion.png" alt="이력서를 제출해요 확장팩 이미지"></div><div class="expansion-copy"><span>확장팩 · 출시 준비 중</span><small>직업 확장팩</small><h2>이력서를 제출해요</h2><p>기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.</p><ul><li>직업별 위계·직급과 승진 흐름</li><li>상사·동료·부하 직원의 직장 내 관계</li><li>근무 장소·부서·담당 업무와 전용 생활 장면</li></ul><div><b>가격 미정</b><button type="button" disabled>출시 준비 중</button></div></div></section>`;
 const readCart=()=>{try{const value=JSON.parse(localStorage.getItem(CART_KEY)||"{}");return value&&typeof value==="object"?value:{}}catch{return {}}};
 function nativePlayShop(){
   const products=Object.entries(SHOP_PRODUCTS).map(([id,item])=>{

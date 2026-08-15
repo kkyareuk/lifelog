@@ -6157,3 +6157,186 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
   filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px var(--picker-theme,var(--p))) drop-shadow(0 0 16px var(--picker-theme,var(--p)))!important;
   animation:native-picker-aura 2.2s ease-in-out infinite alternate!important
 }
+
+/* 2026-08-15: final mobile scene, action-prop, and expansion-card authority. */
+.native-app .scene-action-washing-up .action-prop-toothbrush{
+  text-shadow:none!important;
+  filter:drop-shadow(0 7px 7px #0009)!important;
+  animation:native-toothbrush-motion 1.25s ease-in-out infinite!important;
+}
+.native-app .scene-action-washing-up .action-prop-toothbrush::before,
+.native-app .scene-action-washing-up .action-prop-toothbrush::after{display:none!important;content:none!important}
+.native-app .scene-action-shoe-care :is(.native-scene-action-prop,.native-person-action-prop){
+  text-shadow:none!important;
+  animation:native-shoe-care 1.7s ease-in-out infinite!important;
+}
+@keyframes native-toothbrush-motion{
+  0%,100%{translate:-7px 3px;rotate:-10deg}
+  50%{translate:7px -3px;rotate:9deg}
+}
+@keyframes native-shoe-care{
+  0%,100%{translate:-6px 5px;rotate:-8deg}
+  50%{translate:6px -4px;rotate:7deg}
+}
+
+/* A two-person LD scene uses two full-size, absolutely positioned layers.
+   Neither layer participates in flex sizing, so it stays the same size as a
+   one-person LD and may overlap naturally in the middle. */
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors.has-scene-lineup{
+  position:relative!important;
+  width:min(96vw,470px)!important;
+  height:min(38dvh,380px)!important;
+  scale:1!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  translate:none!important;
+  overflow:visible!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  position:absolute!important;
+  bottom:0!important;
+  display:grid!important;
+  place-items:end center!important;
+  flex:none!important;
+  width:min(52vw,235px)!important;
+  height:100%!important;
+  margin:0!important;
+  translate:none!important;
+  transform-origin:50% 100%!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.pair-slot-left{
+  left:0!important;
+  right:auto!important;
+  z-index:2!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.pair-slot-right{
+  right:0!important;
+  left:auto!important;
+  z-index:3!important;
+}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person .scene-ld-art{
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors.has-scene-lineup{
+  width:620px!important;
+  height:345px!important;
+}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  width:310px!important;
+  height:345px!important;
+}
+
+/* Expansion copy must stay readable over its artwork in every theme. */
+html[data-active-tab="shop"] .shop-store .shop-expansion-showcase,
+html.native-app[data-active-tab="shop"] .shop-store .shop-expansion-showcase{
+  border-color:#e5bf68!important;
+  background:radial-gradient(circle at 12% 15%,#ffe9a033,transparent 28%),linear-gradient(135deg,#17131f,#312344 54%,#5b3427)!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy :is(h2,p,li,small,span),
+html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy :is(h2,p,li,small,span){
+  opacity:1!important;
+  color:#f8f1ff!important;
+  -webkit-text-fill-color:#f8f1ff!important;
+  text-shadow:0 2px 8px #09060db8!important;
+}
+html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>span,
+html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>span{
+  color:#ffe6a2!important;
+  -webkit-text-fill-color:#ffe6a2!important;
+}
+html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>small,
+html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>small{
+  color:#e8c98a!important;
+  -webkit-text-fill-color:#e8c98a!important;
+}
+html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b,
+html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{
+  color:#ffe09a!important;
+  -webkit-text-fill-color:#ffe09a!important;
+}
+
+@media(max-width:720px){
+  html.native-app[data-active-tab="observe"] .native-game-menu button,
+  html.native-app[data-active-tab="observe"] .native-game-menu button>span{
+    border-color:transparent!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+  }
+  html.native-app[data-active-tab="home"] .home-feature-menu button,
+  html.native-app[data-active-tab="home"] .home-feature-menu button.on{
+    border:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    color:#fff!important;
+    -webkit-text-fill-color:#fff!important;
+  }
+  html.native-app[data-active-tab="shop"] .shop-expansion-showcase{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:18px!important;
+    width:100%!important;
+    min-width:0!important;
+    padding:16px!important;
+    overflow:hidden!important;
+  }
+  html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-art{
+    width:100%!important;
+    min-width:0!important;
+    min-height:210px!important;
+  }
+  html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-art img{
+    width:100%!important;
+    height:210px!important;
+    min-height:0!important;
+    padding:12px!important;
+    object-fit:contain!important;
+  }
+  html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy{
+    width:100%!important;
+    min-width:0!important;
+    align-items:flex-start!important;
+  }
+  html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy h2{
+    max-width:100%!important;
+    margin:8px 0 12px!important;
+    font-size:clamp(32px,10vw,44px)!important;
+    line-height:1.08!important;
+    word-break:keep-all!important;
+    overflow-wrap:anywhere!important;
+  }
+  html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy p,
+  html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy li{
+    font-size:14px!important;
+    line-height:1.65!important;
+  }
+}
+
+/* Mobile home menu: preserve only the tappable icon/text, never a white or
+   theme-colored button plate.  This selector intentionally outranks legacy
+   theme rules that are still needed on the other pages. */
+@media(max-width:720px){
+  html.native-app[data-active-tab="observe"][data-color-mode] body #app main .native-game-menu button,
+  html.native-app[data-active-tab="observe"][data-color-mode] body #app main .native-game-menu button>span{
+    appearance:none!important;
+    -webkit-appearance:none!important;
+    border-color:transparent!important;
+    outline:0!important;
+    background-color:transparent!important;
+    background-image:none!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+  }
+}
