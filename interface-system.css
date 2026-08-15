@@ -244,14 +244,14 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
 @media(max-width:720px){
   html.native-app[data-active-tab="observe"] .native-observe-top{
     position:absolute!important;
-    top:max(12px,env(safe-area-inset-top))!important;
+    top:max(32px,calc(env(safe-area-inset-top) + 20px))!important;
     left:88px!important;
     right:88px!important;
     z-index:30!important;
     pointer-events:none!important;
   }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-sd{
-    translate:0 -64px!important;
+    translate:0 -32px!important;
     pointer-events:none!important;
   }
   html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-sd + .native-character-picker{
@@ -270,6 +270,8 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
     pointer-events:auto!important;
     touch-action:manipulation!important;
   }
+  html.native-app[data-active-tab="observe"] .native-game-menu .native-menu-left{left:max(10px,env(safe-area-inset-left))!important}
+  html.native-app[data-active-tab="observe"] .native-game-menu .native-menu-right{right:max(10px,env(safe-area-inset-right))!important}
 }
 
 .home-character-display-card{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
