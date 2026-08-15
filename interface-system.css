@@ -153,12 +153,9 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
    independent left/right absolute slot. */
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
   --ld-frame-height:clamp(440px,58dvh,610px);
-  position:absolute!important;
-  top:0!important;
-  right:auto!important;
-  bottom:auto!important;
-  left:50%!important;
-  translate:-50% 0!important;
+  position:relative!important;
+  inset:auto!important;
+  translate:0 0!important;
   width:min(78vw,350px)!important;
   height:var(--ld-frame-height)!important;
   min-height:var(--ld-frame-height)!important;
@@ -215,8 +212,7 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   right:auto!important;
   z-index:3!important;
 }
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art,
-html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld:not(.has-two-scene-actors)>.scene-ld-art{
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
   position:absolute!important;
   left:50%!important;
   top:0!important;
