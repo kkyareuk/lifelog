@@ -148,35 +148,109 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
 .town-map-scroll .place-person-face img.profile-photo-fallback,
 .standard-observe-view .place-person-face img.profile-photo-fallback{border-radius:50%!important;object-fit:cover!important}
 
-/* One LD and each member of a two-person LD scene use the same immutable box.
-   A pair only widens the stage and moves those full-size boxes sideways. */
-.native-app .native-character-stage.visual-mode-ld{
-  --ld-box-width:min(68vw,320px);
-  --ld-box-height:min(48dvh,520px);
-  width:var(--ld-box-width)!important;
-  height:var(--ld-box-height)!important;
+/* LD is a full-height frame, never a row of thumbnails. In a two-person scene
+   each illustration keeps the exact same height as a solo LD and receives an
+   independent left/right absolute slot. */
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
+  --ld-frame-height:clamp(440px,58dvh,610px);
+  position:absolute!important;
+  top:0!important;
+  right:auto!important;
+  bottom:auto!important;
+  left:50%!important;
+  translate:-50% 0!important;
+  width:min(78vw,350px)!important;
+  height:var(--ld-frame-height)!important;
+  min-height:var(--ld-frame-height)!important;
   max-width:none!important;
+  max-height:none!important;
   overflow:visible!important;
+  scale:1!important;
+  animation:none!important;
 }
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors{
-  width:min(96vw,470px)!important;
-  height:var(--ld-box-height)!important;
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors{
+  width:100vw!important;
+  height:var(--ld-frame-height)!important;
   max-width:none!important;
+  max-height:none!important;
+  overflow:visible!important;
   scale:1!important;
 }
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
-  position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;padding:0!important;overflow:visible!important;transform:none!important;translate:0 0!important;
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  overflow:visible!important;
+  transform:none!important;
+  translate:0 0!important;
 }
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
-  position:absolute!important;left:50%!important;right:auto!important;bottom:0!important;display:block!important;width:var(--ld-box-width)!important;height:var(--ld-box-height)!important;max-width:none!important;margin:0!important;transform:none!important;scale:var(--person-visual-scale,1)!important;transform-origin:50% 100%!important;overflow:visible!important;
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+  position:absolute!important;
+  top:0!important;
+  bottom:0!important;
+  display:block!important;
+  width:50vw!important;
+  height:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  transform:none!important;
+  translate:-50% 0!important;
+  scale:1!important;
+  filter:drop-shadow(0 18px 12px #0008)!important;
+  animation:none!important;
+  transform-origin:50% 100%!important;
+  overflow:visible!important;
 }
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{left:calc(50% - 6px)!important;right:auto!important;translate:-100% 0!important;z-index:2!important}
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{left:calc(50% + 6px)!important;right:auto!important;translate:0 0!important;z-index:3!important}
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
-  position:absolute!important;inset:auto 0 0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center bottom!important;border:0!important;border-radius:0!important;background:transparent!important;transform:none!important;
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{
+  left:25%!important;
+  right:auto!important;
+  z-index:2!important;
 }
-.desktop-observe-scene .native-character-stage.visual-mode-ld{--ld-box-width:310px;--ld-box-height:420px}
-.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:632px!important;height:420px!important}
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{
+  left:75%!important;
+  right:auto!important;
+  z-index:3!important;
+}
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art,
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld:not(.has-two-scene-actors)>.scene-ld-art{
+  position:absolute!important;
+  left:50%!important;
+  top:0!important;
+  bottom:0!important;
+  display:block!important;
+  width:auto!important;
+  height:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:0!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center bottom!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  filter:none!important;
+  animation:none!important;
+  transform:none!important;
+  translate:-50% 0!important;
+  scale:1!important;
+}
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop){display:grid!important;z-index:12!important}
+html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld{
+  --ld-frame-height:430px;
+  position:relative!important;
+  inset:auto!important;
+  translate:0 0!important;
+  width:330px!important;
+  height:430px!important;
+  min-height:430px!important;
+}
+html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:min(760px,56vw)!important;height:430px!important}
+html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{width:50%!important}
 
 /* House occupants: artwork and status copy are separate. Transparent icon art
    never receives a card, while an actual photo is cropped to a true circle. */
@@ -298,3 +372,39 @@ html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion
   .character-stat-rankings{grid-template-columns:minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){html[data-visual-theme] *,html[data-visual-theme] *::before,html[data-visual-theme] *::after{scroll-behavior:auto!important}}
+
+/* Final scene controls and occupant surfaces. */
+.character-manage-grid>.character-home-visual-choice{grid-column:1/-1;display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important}
+.character-home-visual-choice>div:first-child{display:grid;gap:5px}.character-home-visual-choice h3,.character-home-visual-choice p{margin:0}
+.character-home-visual-buttons{display:flex!important;flex:0 0 auto!important;gap:4px!important;padding:4px!important;border:1px solid var(--theme-border)!important;border-radius:999px!important;background:color-mix(in srgb,var(--panel) 82%,var(--p) 18%)!important}
+.character-home-visual-buttons button{min-width:62px!important;min-height:40px!important;border:0!important;border-radius:999px!important;background:transparent!important;color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important;font-weight:900!important}
+.character-home-visual-buttons button.on{background:linear-gradient(135deg,var(--p),var(--s))!important;color:var(--on-grad)!important;-webkit-text-fill-color:var(--on-grad)!important;box-shadow:0 7px 18px color-mix(in srgb,var(--p) 30%,transparent)!important}
+.character-home-visual-buttons button:disabled{opacity:.38!important}
+
+html[data-color-mode][data-visual-theme] .home-page .room-pet,
+html[data-color-mode][data-visual-theme] .home-page .room-pet::before,
+html[data-color-mode][data-visual-theme] .home-page .room-pet::after{
+  border:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important;
+}
+html[data-color-mode][data-visual-theme] .home-page .room-pet{padding:0!important;overflow:visible!important}
+html[data-color-mode][data-visual-theme] .home-page .room-pet>:not(.room-pet-status){border:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important}
+html[data-color-mode][data-visual-theme] .home-page .room-pets{border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important}
+html[data-color-mode][data-visual-theme] .home-page .room-pet>:is(.room-pet-photo,.room-pet-icon,.room-pet-emoji){filter:none!important;-webkit-mask:none!important;mask:none!important}
+html[data-color-mode][data-visual-theme] .home-page .room-pet>.room-pet-photo{border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;object-fit:cover!important}
+html[data-color-mode][data-visual-theme] .home-page .room-pet>.room-pet-status{background:rgba(250,248,244,.94)!important;box-shadow:0 5px 14px #00000026!important}
+html[data-color-mode="dark"][data-visual-theme] .home-page .room-pet>.room-pet-status{background:#152334ed!important}
+
+html.native-app[data-active-tab="observe"] .scene-action-tea .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop),
+.desktop-observe-scene.scene-action-tea :is(.native-scene-action-prop,.native-person-action-prop),
+.desktop-observe-scene .desktop-scene-canvas.scene-action-tea :is(.native-scene-action-prop,.native-person-action-prop),
+.native-app .scene-action-tea :is(.native-scene-action-prop,.native-person-action-prop){
+  display:grid!important;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif!important;
+  filter:drop-shadow(0 7px 7px #0009)!important;
+  animation:native-prop-coffee-sip 2.25s ease-in-out infinite!important;
+}
+
+@media(max-width:720px){
+  .character-manage-grid>.character-home-visual-choice{align-items:stretch!important;flex-direction:column!important}
+  .character-home-visual-buttons{width:100%!important}.character-home-visual-buttons button{flex:1 1 0!important}
+}
