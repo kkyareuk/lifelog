@@ -210,7 +210,10 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{
   left:75%!important;
   right:auto!important;
-  z-index:3!important;
+  z-index:2!important;
+}
+html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-selected{
+  z-index:4!important;
 }
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
   position:absolute!important;
@@ -235,6 +238,24 @@ html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-l
   translate:-50% 0!important;
   scale:1!important;
 }
+
+/* The authored canvas is fitted by height only. Both actors share this exact
+   top/bottom frame, so pairing changes X and stacking order, never Y or aspect. */
+@media(max-width:720px){
+  html.native-app[data-active-tab="observe"] .native-observe-top{position:relative!important;z-index:30!important}
+  html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld{
+    --ld-frame-height:clamp(390px,52dvh,540px);
+    margin-top:12px!important;
+  }
+  html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld .native-scene-lineup-person>small{display:none!important}
+}
+
+.home-character-display-card{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important}
+.home-character-display-card>:is(h2,p,small){grid-column:1/-1}
+.home-character-display-card label{display:grid!important;gap:7px!important}
+.home-character-display-card label:first-of-type{grid-column:1/-1}
+.home-character-display-card output{justify-self:end;font-weight:900}
+@media(max-width:560px){.home-character-display-card{grid-template-columns:1fr}}
 html.native-app[data-active-tab="observe"] .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop){display:grid!important;z-index:12!important}
 html.native-app[data-active-tab="observe"] .desktop-observe-scene .native-character-stage.visual-mode-ld{
   --ld-frame-height:430px;
