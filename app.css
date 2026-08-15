@@ -6142,7 +6142,7 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors.has-scene-lineup{
   position:relative!important;
   width:min(96vw,470px)!important;
-  height:min(38dvh,380px)!important;
+  height:min(48dvh,520px)!important;
   scale:1!important;
   overflow:visible!important;
 }
@@ -6164,21 +6164,21 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
   display:grid!important;
   place-items:end center!important;
   flex:none!important;
-  width:min(52vw,235px)!important;
+  width:min(68vw,320px)!important;
   height:100%!important;
   margin:0!important;
   transform-origin:50% 100%!important;
 }
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.pair-slot-left{
-  left:50%!important;
+  left:calc(50% - 6px)!important;
   right:auto!important;
-  translate:-60% 0!important;
+  translate:-100% 0!important;
   z-index:2!important;
 }
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.pair-slot-right{
-  left:50%!important;
+  left:calc(50% + 6px)!important;
   right:auto!important;
-  translate:-40% 0!important;
+  translate:0 0!important;
   z-index:3!important;
 }
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person .scene-ld-art{
@@ -6189,12 +6189,12 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
   object-position:center bottom!important;
 }
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors.has-scene-lineup{
-  width:620px!important;
-  height:345px!important;
+  width:632px!important;
+  height:420px!important;
 }
 .desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
   width:310px!important;
-  height:345px!important;
+  height:420px!important;
 }
 
 /* Expansion copy must stay readable over its artwork in every theme. */

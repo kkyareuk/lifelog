@@ -151,8 +151,8 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
 /* One LD and each member of a two-person LD scene use the same immutable box.
    A pair only widens the stage and moves those full-size boxes sideways. */
 .native-app .native-character-stage.visual-mode-ld{
-  --ld-box-width:min(52vw,235px);
-  --ld-box-height:min(38dvh,380px);
+  --ld-box-width:min(68vw,320px);
+  --ld-box-height:min(48dvh,520px);
   width:var(--ld-box-width)!important;
   height:var(--ld-box-height)!important;
   max-width:none!important;
@@ -170,45 +170,70 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
   position:absolute!important;left:50%!important;right:auto!important;bottom:0!important;display:block!important;width:var(--ld-box-width)!important;height:var(--ld-box-height)!important;max-width:none!important;margin:0!important;transform:none!important;scale:var(--person-visual-scale,1)!important;transform-origin:50% 100%!important;overflow:visible!important;
 }
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{left:50%!important;right:auto!important;translate:-60% 0!important;z-index:2!important}
-.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{left:50%!important;right:auto!important;translate:-40% 0!important;z-index:3!important}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-left{left:calc(50% - 6px)!important;right:auto!important;translate:-100% 0!important;z-index:2!important}
+.native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .pair-slot-right{left:calc(50% + 6px)!important;right:auto!important;translate:0 0!important;z-index:3!important}
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-ld>.scene-ld-art{
   position:absolute!important;inset:auto 0 0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center bottom!important;border:0!important;border-radius:0!important;background:transparent!important;transform:none!important;
 }
-.desktop-observe-scene .native-character-stage.visual-mode-ld{--ld-box-width:310px;--ld-box-height:345px}
-.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:620px!important;height:345px!important}
+.desktop-observe-scene .native-character-stage.visual-mode-ld{--ld-box-width:310px;--ld-box-height:420px}
+.desktop-observe-scene .native-character-stage.visual-mode-ld.has-two-scene-actors{width:632px!important;height:420px!important}
 
-/* House occupants: icon art stays transparent and uncropped. Only an actual
-   profile photo is circular; status copy never paints a white plate. */
+/* House occupants: artwork and status copy are separate. Transparent icon art
+   never receives a card, while an actual photo is cropped to a true circle. */
 .home-page .home-person>.sprite,
 .home-page .room-pet>.room-pet-icon,
 .home-occupant-popover .home-occupant-visual :is(.sprite,.room-pet-icon,.room-pet-emoji){
   display:block!important;max-width:none!important;padding:0!important;border:0!important;border-radius:0!important;clip-path:none!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important;
 }
-.home-page :is(.home-person,.room-pet) :is(.sprite,.room-pet-icon,.room-pet-emoji),
-.home-occupant-popover .home-occupant-visual :is(.sprite,.room-pet-icon,.room-pet-emoji){
-  width:auto!important;max-width:100%!important;height:auto!important;max-height:100%!important;
-  padding:0!important;border:0!important;border-radius:0!important;clip-path:none!important;
-  background-color:transparent!important;background-image:none!important;box-shadow:none!important;
-  object-fit:contain!important;overflow:visible!important;
-}
-.home-page :is(.home-person,.room-pet){border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}
-.home-page :is(.home-person,.room-pet)>:is(.avatar,.sprite,.room-pet-photo,.room-pet-icon,.room-pet-emoji){margin:0!important;padding:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;overflow:visible!important}
+.home-page :is(.home-person,.room-pet){display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important;border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}
+.home-page :is(.home-person,.room-pet)>:is(.avatar,.sprite,.room-pet-photo,.room-pet-icon,.room-pet-emoji){flex:0 0 auto!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important}
+.home-page .home-person>.sprite{width:72px!important;min-width:72px!important;max-width:72px!important;height:72px!important;min-height:72px!important;max-height:72px!important;object-fit:contain!important;overflow:visible!important}
+.home-page .home-person>.avatar{width:64px!important;min-width:64px!important;max-width:64px!important;height:64px!important;min-height:64px!important;max-height:64px!important}
+.home-page .room-pet>.room-pet-icon{width:64px!important;min-width:64px!important;max-width:64px!important;height:64px!important;min-height:64px!important;max-height:64px!important;object-fit:contain!important;overflow:visible!important}
+.home-page .room-pet>.room-pet-photo{width:58px!important;min-width:58px!important;max-width:58px!important;height:58px!important;min-height:58px!important;max-height:58px!important;overflow:hidden!important}
+.home-page .room-pet>.room-pet-emoji{display:grid!important;place-items:center!important;width:58px!important;min-width:58px!important;max-width:58px!important;height:58px!important;min-height:58px!important;max-height:58px!important;font-size:40px!important;line-height:1!important;overflow:visible!important}
 .home-page .home-person>.avatar,
 .home-page .room-pet>.room-pet-photo,
 .home-occupant-popover .home-occupant-visual :is(.avatar,.room-pet-photo){
-  border-radius:50%!important;object-fit:cover!important;
+  border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;object-fit:cover!important;overflow:hidden!important;
 }
 .home-occupant-popover .home-occupant-visual{border-radius:0!important;background:transparent!important;overflow:visible!important}
+.home-page :is(.home-person-status,.room-pet-status){position:relative!important;display:grid!important;width:max-content!important;min-width:66px!important;max-width:132px!important;margin:0!important;padding:5px 8px!important;border:1px solid #342b251f!important;border-radius:12px!important;background:rgba(250,248,244,.94)!important;box-shadow:0 5px 14px #00000026!important;backdrop-filter:blur(8px)!important;text-align:center!important;white-space:normal!important;color:#2f2924!important;-webkit-text-fill-color:#2f2924!important}
+.home-page :is(.home-person-status,.room-pet-status) :is(b,small){display:block!important;width:100%!important;margin:0!important;color:inherit!important;-webkit-text-fill-color:inherit!important;text-shadow:none!important;white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important}
+.home-page :is(.home-person-status,.room-pet-status) small{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important;overflow:hidden!important}
+html[data-color-mode="dark"] .home-page :is(.home-person-status,.room-pet-status){border-color:#78889a66!important;background:#152334ed!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+
+/* Room photographs are deliberately darkened, so their authored title is
+   always light regardless of the active color theme. */
+html[data-color-mode][data-visual-theme] .home-page .room-heading :is(b,.room-edit-hint){color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 4px #000,0 0 3px #000!important}
 
 @media(max-width:720px){
-  html.native-app[data-active-tab="home"] .home-person-status,
-  html.native-app[data-active-tab="home"] .room-pet-status{
-    border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;padding:3px!important;
-  }
-  html.native-app[data-active-tab="home"] :is(.home-person-status,.room-pet-status) :is(b,small){
-    color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 4px #000,0 0 2px #000!important;
-  }
+  html.native-app[data-active-tab="home"] .home-person>.sprite{width:58px!important;min-width:58px!important;max-width:58px!important;height:58px!important;min-height:58px!important;max-height:58px!important}
+  html.native-app[data-active-tab="home"] .home-person>.avatar{width:52px!important;min-width:52px!important;max-width:52px!important;height:52px!important;min-height:52px!important;max-height:52px!important}
+  html.native-app[data-active-tab="home"] .room-pet>.room-pet-icon{width:54px!important;min-width:54px!important;max-width:54px!important;height:54px!important;min-height:54px!important;max-height:54px!important}
+  html.native-app[data-active-tab="home"] .room-pet>.room-pet-photo{width:50px!important;min-width:50px!important;max-width:50px!important;height:50px!important;min-height:50px!important;max-height:50px!important}
+  html.native-app[data-active-tab="home"] .room-pet>.room-pet-emoji{width:50px!important;min-width:50px!important;max-width:50px!important;height:50px!important;min-height:50px!important;max-height:50px!important;font-size:34px!important}
+  html.native-app[data-active-tab="home"] :is(.home-person-status,.room-pet-status){min-width:58px!important;max-width:108px!important;padding:4px 6px!important}
+}
+
+/* The pet library distinguishes a cropped photo from transparent icon art,
+   and exposes its own editor without requiring whole-house edit mode. */
+.home-page .pet-avatar .pet-photo-art,
+.home-page .resident-pet-photo{border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;object-fit:cover!important;overflow:hidden!important}
+.home-page .pet-avatar .pet-icon-art,
+.home-page .resident-pet-icon{border:0!important;border-radius:0!important;clip-path:none!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important;overflow:visible!important}
+.home-page .pet-edit{grid-column:1/-1;width:100%;margin-top:8px;border:1px solid var(--theme-border);border-radius:14px;background:var(--theme-surface);overflow:hidden}
+.home-page .pet-edit>summary{cursor:pointer;padding:11px 13px;font-weight:800;color:var(--ink);list-style-position:inside}
+.home-page .pet-edit[open]>summary{border-bottom:1px solid var(--theme-border)}
+.home-page .pet-edit-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px}
+.home-page .pet-edit-fields>:is(fieldset,.pet-actions){grid-column:1/-1}
+.home-page .resident-pet-scene-card .resident-profile>:is(.resident-pet-photo,.resident-pet-icon){width:72px!important;height:72px!important;flex:0 0 72px!important}
+.home-page .resident-pet-scene-card .resident-profile>.resident-pet-emoji{display:grid;place-items:center;width:72px;height:72px;font-size:46px;line-height:1}
+@media(max-width:720px){
+  .home-page .pet-edit-fields{grid-template-columns:minmax(0,1fr)}
+  .home-page .pet-edit-fields>*{grid-column:1!important;min-width:0!important}
+  .home-page .resident-pet-scene-card .resident-profile>:is(.resident-pet-photo,.resident-pet-icon){width:58px!important;height:58px!important;flex-basis:58px!important}
+  .home-page .resident-pet-scene-card .resident-profile>.resident-pet-emoji{width:58px;height:58px;font-size:38px}
 }
 
 /* Expansion showcase owns its paint and intrinsic height. Generic light-mode

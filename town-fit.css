@@ -1,10 +1,10 @@
-/* The source artwork is 3000 × 3300. Mobile renders it at 55% so more of the
+/* The source artwork is 3000 × 3300. Mobile renders it at 44% so more of the
    town is visible at once while the canvas can still be panned freely. */
 :root{
-  --town-canvas-width:1650px;
-  --town-canvas-height:1815px;
-  --town-building-width:320px;
-  --town-building-height:354px;
+  --town-canvas-width:1320px;
+  --town-canvas-height:1452px;
+  --town-building-width:280px;
+  --town-building-height:308px;
 }
 
 /* Both the observation map and the town editor use the same authored canvas.
