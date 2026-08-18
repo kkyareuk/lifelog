@@ -10,6 +10,157 @@ html[data-color-mode][data-visual-theme] main{
     var(--bg)!important;
 }
 
+/* 기본 테마: 페이지 바깥 배경과 편집 화면 여백을 깨끗한 흰색으로 통일 */
+html[data-color-mode="light"][data-visual-theme="rose"],
+html[data-color-mode="light"][data-visual-theme="rose"] body,
+html[data-color-mode="light"][data-visual-theme="rose"] #app,
+html[data-color-mode="light"][data-visual-theme="rose"] main,
+html[data-color-mode="light"][data-visual-theme="rose"] .editor,
+html[data-color-mode="light"][data-visual-theme="rose"] .character-editor,
+html[data-color-mode="light"][data-visual-theme="rose"] .desktop-character-editor,
+html[data-color-mode="light"][data-visual-theme="rose"] .character-editor>.form,
+html[data-color-mode="light"][data-visual-theme="rose"] .profile-license,
+html[data-color-mode="light"][data-visual-theme="rose"] .home-page,
+html[data-color-mode="light"][data-visual-theme="rose"] .home,
+html[data-color-mode="light"][data-visual-theme="rose"] .town-page,
+html[data-color-mode="light"][data-visual-theme="rose"] .town-editor-panel{
+  background:#fff!important;
+  background-image:none!important;
+}
+
+/* 프로필 기본/고급 설정 공통 레이아웃 */
+.profile-license{
+  display:grid;
+  gap:16px;
+  width:100%;
+  max-width:1080px;
+  min-width:0;
+  margin:0 auto;
+  padding:0;
+  box-sizing:border-box;
+}
+.profile-basic-settings,
+.relationship-basic-settings{
+  display:grid;
+  gap:15px;
+  width:100%;
+  min-width:0;
+  padding:20px;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:var(--panel);
+  box-sizing:border-box;
+}
+.profile-basic-settings>.fields{margin:0;padding:0}
+.profile-license>.character-photo-quick-card,
+.profile-license>.character-town{margin:0!important}
+.settings-section-heading{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  min-width:0;
+}
+.settings-section-heading>span{display:grid;gap:2px;min-width:0}
+.settings-section-heading small,
+.settings-advanced-group summary small{
+  color:var(--p);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.settings-section-heading :is(h2,h3),
+.settings-advanced-group summary b{margin:0;color:var(--ink);font-size:22px;line-height:1.2}
+.settings-section-heading p{max-width:480px;margin:2px 0 0;color:var(--muted);line-height:1.55}
+.settings-section-heading.compact{padding:0 2px}
+
+.settings-advanced-group{
+  display:block;
+  width:100%;
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--line);
+  border-radius:22px;
+  background:var(--panel);
+  box-sizing:border-box;
+}
+.settings-advanced-group>summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  min-height:82px;
+  padding:17px 20px;
+  cursor:pointer;
+  list-style:none;
+  user-select:none;
+  box-sizing:border-box;
+}
+.settings-advanced-group>summary::-webkit-details-marker{display:none}
+.settings-advanced-group>summary>span{display:grid;gap:2px;min-width:0}
+.settings-advanced-group>summary em{color:var(--muted);font-size:13px;font-style:normal;line-height:1.4}
+.settings-advanced-group>summary>i{
+  display:grid;
+  place-items:center;
+  flex:0 0 38px;
+  width:38px;
+  height:38px;
+  border:1px solid var(--line);
+  border-radius:50%;
+  color:var(--ink);
+  font-size:24px;
+  font-style:normal;
+  transition:transform .18s ease;
+}
+.settings-advanced-group[open]>summary{border-bottom:1px solid var(--line)}
+.settings-advanced-group[open]>summary>i{transform:rotate(45deg)}
+.settings-advanced-body{display:grid;gap:16px;padding:18px;min-width:0}
+.profile-advanced-settings .settings-advanced-body>.fields{
+  margin:0;
+  padding:18px;
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:var(--panel);
+}
+.profile-advanced-settings .settings-advanced-body>.setting-card,
+.profile-advanced-settings .settings-advanced-body>.profile-attraction-settings{margin:0;box-shadow:none}
+
+/* 관계 편집: 기본 항목은 짧게, 기존 세부 항목은 고급 설정에 그대로 보관 */
+.relationship-basic-settings{padding:17px}
+.relationship-basic-settings .character-view-fields,
+.relationship-advanced-settings .character-view-fields{padding:0}
+.relationship-basic-settings .character-view-fields{grid-template-columns:minmax(0,1fr)}
+.relationship-advanced-settings{margin-top:14px}
+.character-view-dialog .settings-advanced-body{padding:16px}
+.relation-official-basic{margin:0}
+.relation-official-advanced{margin:0}
+.relation-official-advanced .settings-advanced-body>:first-child{margin-top:0}
+.relation-official-advanced .settings-advanced-body>:last-child{margin-bottom:0}
+
+html[data-color-mode="light"][data-visual-theme="rose"] :is(
+  .profile-basic-settings,
+  .relationship-basic-settings,
+  .settings-advanced-group,
+  .profile-advanced-settings .settings-advanced-body>.fields
+){background:#fff!important}
+
+@media(min-width:721px){
+  .character-editor{grid-template-columns:minmax(250px,300px) minmax(0,1fr)}
+  .character-editor>.form{padding:20px!important}
+}
+
+@media(max-width:720px){
+  .profile-license{gap:12px;max-width:100%;margin:0}
+  .profile-basic-settings,.relationship-basic-settings{padding:15px;border-radius:18px}
+  .settings-section-heading{display:grid;gap:5px}
+  .settings-section-heading p{margin:0;font-size:13px}
+  .settings-advanced-group{border-radius:18px}
+  .settings-advanced-group>summary{min-height:72px;padding:14px 15px}
+  .settings-advanced-group>summary em{font-size:12px;word-break:keep-all}
+  .settings-advanced-body{padding:13px}
+  .profile-advanced-settings .settings-advanced-body>.fields{padding:13px}
+}
+
 html[data-color-mode][data-visual-theme] body>header,
 html[data-color-mode][data-visual-theme] header,
 html[data-color-mode][data-visual-theme].native-app .native-sub-header{
