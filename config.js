@@ -13,7 +13,7 @@
   window.PARALLEL_CITY_CONFIG.beta={enabled:false,label:"",message:""};
   // 브라우저에 공개 가능한 test_ck/live_ck 클라이언트 키만 여기에 넣습니다.
   // test_sk/live_sk 시크릿 키는 절대로 이 파일이나 GitHub에 넣지 마세요.
-  const tossPaymentsClientKey="live_ck_DnyRpQWGrNW9LNlZQzA28Kwv1M9E";
+  const tossPaymentsClientKey="test_ck_Poxy1XQL8RPWl97XnX9YV7nO5Wml";
   window.PARALLEL_CITY_CONFIG.tossPaymentsClientKey=tossPaymentsClientKey;
   window.PARALLEL_CITY_CONFIG.paymentBackendUrl="https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api";
   window.PARALLEL_CITY_CONFIG.paymentMid="drawerq8ht";
