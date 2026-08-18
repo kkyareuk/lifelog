@@ -1191,6 +1191,21 @@ function bind(){
     });
     menuNavigationListenerBound=true;
   }
+  // Cloud sync intentionally does not copy device-only photos. If an old
+  // device URL is unavailable, replace the broken image with the character's
+  // initial so the relationship screen stays readable and tappable.
+  $$("img[data-avatar-fallback]").forEach(image=>{
+    const showFallback=()=>{
+      if(!image.isConnected)return;
+      const fallback=document.createElement("span");
+      const extra=[...image.classList].filter(name=>!["sprite","avatar","profile-photo-fallback"].includes(name));
+      fallback.className=["avatar","synced-avatar-fallback",...extra].join(" ");
+      fallback.textContent=image.dataset.avatarFallback||"새";
+      image.replaceWith(fallback);
+    };
+    image.addEventListener("error",showFallback,{once:true});
+    if(image.complete&&image.naturalWidth===0)showFallback();
+  });
   // iOS Safari에서 장면 합성 레이어가 click target을 바꾸는 경우에도
   // 고정 메뉴 버튼 자체가 항상 화면 이동을 처리하도록 직접 연결한다.
   $$(".native-game-menu [data-tab], .native-sub-header [data-tab]").forEach(button=>{
@@ -2220,7 +2235,8 @@ let lastNativeMenuPress=0;
 function captureNativeMenuPress(event){
   if(event.type==="pointerdown"&&event.pointerType==="mouse")return;
   const path=typeof event.composedPath==="function"?event.composedPath():[];
-  const button=path.find(node=>node?.matches?.(".native-game-menu [data-tab]"))||event.target?.closest?.(".native-game-menu [data-tab]");
+  const selector=".native-game-menu [data-tab], .native-sub-header [data-tab]";
+  const button=path.find(node=>node?.matches?.(selector))||event.target?.closest?.(selector);
   if(!button)return;
   const tab=button.dataset.tab,now=Date.now();
   if(!APP_TABS.includes(tab)||(tab===state.activeTab&&now-lastNativeMenuPress<400))return;
@@ -2945,7 +2961,17 @@ window.ParallelCity={
   mediaChanged:()=>render()
 };
 
-window.addEventListener("drawer-village-cloud-loaded",render);
+window.addEventListener("drawer-village-cloud-loaded",()=>{
+  // The onboarding/setup dialogs live directly under <body>, so replacing the
+  // app view after a cloud download does not remove them. Close only those
+  // stale first-run dialogs and paint the downloaded village immediately.
+  document.querySelectorAll(".onboarding-dialog,.setup-coach-dialog").forEach(dialog=>{
+    try{if(dialog.open)dialog.close()}catch(error){console.warn("동기화 뒤 안내 창을 닫지 못했습니다",error)}
+    dialog.remove();
+  });
+  if(state.order.length)localStorage.setItem(ONBOARDING_KEY,"done");
+  render();
+});
 window.addEventListener("drawer-village-guide-state",()=>requestAnimationFrame(maybeShowPageGuide));
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
 window.addEventListener("parallel-city-cloud-loaded",render);

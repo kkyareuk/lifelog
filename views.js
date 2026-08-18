@@ -538,9 +538,10 @@ const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${
 const visibleTownId=c=>eventFor(c)?.townId||c.townId;
 
 function avatar(c,cls=""){
-  if(c.icon)return `<img class="sprite ${cls}" src="${c.icon}" alt="">`;
-  if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${c.photo}" alt="">`;
-  return `<span class="avatar ${cls}">${esc((c.name||"새").slice(0,1))}</span>`;
+  const fallback=esc((c.name||"새").slice(0,1));
+  if(c.icon)return `<img class="sprite ${cls}" src="${c.icon}" alt="" data-avatar-fallback="${fallback}">`;
+  if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${c.photo}" alt="" data-avatar-fallback="${fallback}">`;
+  return `<span class="avatar ${cls}">${fallback}</span>`;
 }
 // Old emotion-specific LD fields are migrated once in state.js. The renderer
 // deliberately knows about only one LD image, so the retired UI cannot return.
@@ -2044,6 +2045,7 @@ const characterViewEditor=()=>{
       </div>
     </div>
     <dialog class="character-view-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><div class="title character-view-dialog-title"><div class="character-view-dialog-direction">${avatar(source)}<i>→</i>${avatar(target)}<span><h2>${esc(source.name)} → ${esc(target.name)}</h2><small>${esc(subjectText(source.name))} ${esc(objectText(target.name))} 바라보는 감정과 행동 기준</small></span></div><button value="close" aria-label="닫기">×</button></div><div class="character-view-dialog-context"><b>${officialText?`공식 관계 · ${esc(officialText)}`:"공식 관계 없음 · 이방인"}</b><span>${esc(overall)}</span></div><div class="character-view-fields">${fields}</div><div class="crop-actions"><button type="button" data-reset-character-view="${sourceId}:${targetId}">이 시선 초기화</button><button class="primary" value="close">편집 완료</button></div></form></dialog>
+    <button type="button" class="relationship-exit-button" data-tab="observe">← 관찰 화면으로 돌아가기</button>
   </section>`;
 };
 const relationPairKey=(a,b)=>[a,b].sort().join("~");
