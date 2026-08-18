@@ -647,7 +647,7 @@ if(ready){
     onAuthStateChanged(auth,async next=>{
       user=next;
       if(!user){publishEntitlements(null);publishGuideState(localGuideKeys())}
-      status(user?`${accountName()} · ${cfg.projectId} 연결됨 · 저장 시 동기화`:"Google 로그인 안 됨");
+      status(user?`Google 계정 연결됨 · ${user.email||accountName()} · 설정에서 동기화/불러오기`:"Google 로그인 안 됨");
       if(user){
         try{await registerSignedInUser()}
         catch(error){console.error(error);status(`${accountName()} · 사용자 등록 실패 · ${shortError(error)}`)}
