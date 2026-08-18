@@ -124,11 +124,26 @@ if(isNative){
   App.addListener("backButton",({canGoBack})=>{
     const opened=document.querySelector("dialog[open]");
     if(opened){opened.close();return}
-    const backToMain=document.querySelector(".native-sub-header [data-tab='observe']");
-    if(backToMain){backToMain.click();return}
+    if(window.DrawerVillageNavigation?.back?.())return;
+    const nativeBackEvent=new CustomEvent("drawer-village-native-back",{cancelable:true});
+    window.dispatchEvent(nativeBackEvent);
+    if(nativeBackEvent.defaultPrevented)return;
     if(canGoBack)history.back();
     else App.minimizeApp();
   });
+
+  // The relationship page uses a full-height composited canvas. Handle its
+  // visible header button before that canvas can swallow or retarget a tap.
+  const handleNativeHeaderBack=event=>{
+    const path=typeof event.composedPath==="function"?event.composedPath():[];
+    const button=path.find(node=>node?.matches?.(".native-sub-header [data-tab='observe']"))||event.target?.closest?.(".native-sub-header [data-tab='observe']");
+    if(!button)return;
+    event.preventDefault();
+    event.stopPropagation();
+    window.DrawerVillageNavigation?.back?.();
+  };
+  document.addEventListener("pointerdown",handleNativeHeaderBack,true);
+  document.addEventListener("touchstart",handleNativeHeaderBack,{capture:true,passive:false});
 
   const showNetworkState=connected=>{
     let banner=document.querySelector("#native-network-banner");

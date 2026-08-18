@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819sync5";
-import {eventFor} from "./simulation.js?v=20260819profile1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819sync5";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core1";
+import {eventFor} from "./simulation.js?v=20260819core1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core1";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
 
 await initializeLocalMediaState(state);
@@ -52,6 +52,17 @@ function showInstallButton(){
 }
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
+function replaceBrokenAvatar(image){
+  if(!image?.isConnected)return;
+  const fallback=document.createElement("span");
+  const extra=[...image.classList].filter(name=>!["sprite","avatar","profile-photo-fallback"].includes(name));
+  fallback.className=["avatar","synced-avatar-fallback",...extra].join(" ");
+  fallback.textContent=image.dataset.avatarFallback||"새";
+  fallback.setAttribute("role","img");
+  fallback.setAttribute("aria-label",`${fallback.textContent} 캐릭터 이미지`);
+  image.replaceWith(fallback);
+}
+window.DrawerVillageAvatarFallback=replaceBrokenAvatar;
 const htmlEsc=(value="")=>String(value).replace(/[&<>"']/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character]));
 const hasBatchim=value=>{
   const code=[...String(value||"").trim()].at(-1)?.charCodeAt(0);
@@ -1195,14 +1206,7 @@ function bind(){
   // device URL is unavailable, replace the broken image with the character's
   // initial so the relationship screen stays readable and tappable.
   $$("img[data-avatar-fallback]").forEach(image=>{
-    const showFallback=()=>{
-      if(!image.isConnected)return;
-      const fallback=document.createElement("span");
-      const extra=[...image.classList].filter(name=>!["sprite","avatar","profile-photo-fallback"].includes(name));
-      fallback.className=["avatar","synced-avatar-fallback",...extra].join(" ");
-      fallback.textContent=image.dataset.avatarFallback||"새";
-      image.replaceWith(fallback);
-    };
+    const showFallback=()=>replaceBrokenAvatar(image);
     image.addEventListener("error",showFallback,{once:true});
     if(image.complete&&image.naturalWidth===0)showFallback();
   });
@@ -2226,6 +2230,27 @@ function navigateToTab(tab,{recordHistory=true}={}){
   if(tab==="town")centerMobileTownMap();
   window.scrollTo({top:0,behavior:"auto"});
 }
+
+function navigateBackToObserve(){
+  const opened=document.querySelector("dialog[open]");
+  if(opened){
+    try{opened.close("back")}catch{opened.removeAttribute("open")}
+    return true;
+  }
+  if(state.activeTab!=="observe"){
+    navigateToTab("observe");
+    return true;
+  }
+  return false;
+}
+window.DrawerVillageNavigation={
+  go:tab=>navigateToTab(tab),
+  back:navigateBackToObserve,
+  current:()=>state.activeTab
+};
+window.addEventListener("drawer-village-native-back",event=>{
+  if(navigateBackToObserve())event.preventDefault();
+});
 
 // Android WebView can drop the synthetic click when fixed menu buttons sit
 // above composited scene artwork. Capture the physical press before any scene

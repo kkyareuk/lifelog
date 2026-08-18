@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819profile1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819profile1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core1";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
@@ -539,8 +539,8 @@ const visibleTownId=c=>eventFor(c)?.townId||c.townId;
 
 function avatar(c,cls=""){
   const fallback=esc((c.name||"새").slice(0,1));
-  if(c.icon)return `<img class="sprite ${cls}" src="${c.icon}" alt="" data-avatar-fallback="${fallback}">`;
-  if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${c.photo}" alt="" data-avatar-fallback="${fallback}">`;
+  if(c.icon)return `<img class="sprite ${cls}" src="${esc(c.icon)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
+  if(c.photo)return `<img class="avatar profile-photo-fallback ${cls}" src="${esc(c.photo)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   return `<span class="avatar ${cls}">${fallback}</span>`;
 }
 // Old emotion-specific LD fields are migrated once in state.js. The renderer
