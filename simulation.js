@@ -2008,6 +2008,92 @@ function contextualDailyEvent(c,time,date){
   const script=pool[hash(`${c.id}:${dayKey(date)}:contextual-daily`)%pool.length];
   return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily",date),script[2]);
 }
+function profileSettingScenePool(c,date){
+  const language=state.uiLanguage||"ko";
+  const text=(ko,en,ja)=>({ko,en,ja}[language]||ko);
+  const pool=[],add=(category,titleKo,descKo,titleEn,descEn,titleJa,descJa,room="living",fields=[])=>pool.push({
+    category,room,fields,title:text(titleKo,titleEn,titleJa),desc:text(descKo,descEn,descJa)
+  });
+  if(c.speechStyle&&c.speechStyle!=="자동 · 성격에 맞춤")add("speech",
+    "말투를 고르며 짧게 대답하는 중",`“${characterVoice(c,"오늘은 이 순서대로 해 볼게")}” 하고 혼잣말하며, 평소 쓰는 말투로 다음 행동을 정했어요.`,
+    "Answering in their usual voice","They quietly chose what to do next, using the speaking style set in their profile.",
+    "いつもの話し方で答えているところ","プロフィールで設定した話し方のまま、次にすることを短く口にしました。","study",["speechStyle"]);
+  if(/한 가지씩|잠깐 쉬고/.test(c.activityTempo||""))add("tempo",
+    "한 가지 일을 끝내고 다음으로 넘어가는 중","하던 일을 마무리하고 손에 든 것을 제자리에 둔 뒤, 잠깐 숨을 고르고 다음 일을 시작했어요.",
+    "Finishing one thing before the next","They finished the current task, put everything back, and paused before moving on.",
+    "一つ終えてから次へ進むところ","今していたことを終えて片づけ、ひと息ついてから次のことを始めました。","living",["activityTempo"]);
+  else if(/생각나면|부산스럽게|허둥/.test(c.activityTempo||""))add("tempo",
+    "생각난 일을 바로 시작하는 중","무언가 떠오르자 곧바로 몸을 움직였고, 눈에 들어온 다음 일까지 자연스럽게 손을 뻗었어요.",
+    "Starting as soon as an idea appears","An idea came to mind and they moved immediately, soon reaching for the next thing that caught their eye.",
+    "思いついたことをすぐ始めるところ","何かを思いつくとすぐに動き、目に入った次のことにも自然と手を伸ばしました。","living",["activityTempo"]);
+  if(/정돈|흐트러짐|결벽/.test(c.neatness||""))add("neatness",
+    "눈에 걸린 물건을 정리하는 중","비스듬한 물건과 남은 자국을 발견하고 그냥 지나치지 못해 반듯하게 놓고 주변까지 닦았어요.",
+    "Tidying something that felt out of place","They noticed a crooked object and a small mark, straightened it, and cleaned the area before moving on.",
+    "気になった物を整えているところ","少し曲がった物と汚れに気づき、まっすぐ置き直して周りまできれいにしました。","living",["neatness"]);
+  else if(/어질러도|느슨/.test(c.neatness||""))add("neatness",
+    "손 닿는 곳에 물건을 두는 중","완벽히 정리하기보다 다시 쓰기 편한 자리에 물건을 두고 자기만의 익숙한 순서를 이어 갔어요.",
+    "Leaving things within easy reach","Instead of arranging everything perfectly, they left things where they would be easy to use again.",
+    "手の届く場所に物を置くところ","完璧に片づけるより、また使いやすい場所に物を置いて自分の流れを続けました。","living",["neatness"]);
+  if(/집에서 충전|느긋/.test(c.energyRhythm||""))add("energy",
+    "혼자 조용히 기운을 채우는 중","소리가 적고 편안한 자리를 골라 알림을 잠시 끄고 자기 속도로 쉬고 있어요.",
+    "Recharging somewhere quiet","They chose a calm spot, muted notifications, and rested at their own pace.",
+    "静かな場所で充電しているところ","落ち着ける場所を選び、通知をしばらく切って自分のペースで休んでいます。","bedroom",["energyRhythm"]);
+  else if(/활동적인|가만히 못/.test(c.energyRhythm||""))add("energy",
+    "다음 할 일을 찾아 움직이는 중","잠깐의 빈 시간이 생기자 바로 몸을 일으켜 지금 할 수 있는 작은 일을 찾아 시작했어요.",
+    "Looking for the next thing to do","As soon as a free moment appeared, they got up and found a small task to start.",
+    "次にすることを探して動くところ","少し時間が空くとすぐ立ち上がり、今できる小さなことを見つけて始めました。","living",["energyRhythm"]);
+  if(/장난을 즐김|유머로/.test(c.humorStyle||""))add("humor",
+    "평범한 말을 장난스럽게 바꾸는 중","상대가 불편하지 않을 선을 살피면서 평범한 대답에 작은 농담을 섞어 분위기를 풀었어요.",
+    "Turning an ordinary reply into a joke","They checked the other person's mood and slipped a small joke into an ordinary reply.",
+    "普通の返事に冗談を混ぜるところ","相手が嫌がらないか確かめながら、普通の返事に小さな冗談を混ぜました。","living",["humorStyle"]);
+  if(/표현이 풍부|바로 드러남/.test(c.emotionalExpression||""))add("emotion",
+    "기분이 표정에 먼저 드러난 중","마음이 움직이자 말보다 먼저 눈빛과 표정이 달라졌고, 숨기지 않고 그대로 반응했어요.",
+    "Letting their expression show first","Their eyes and expression changed before words came, openly showing how they felt.",
+    "気持ちが先に表情へ出たところ","言葉より先に目元と表情が変わり、今の気持ちがそのまま表れました。","living",["emotionalExpression"]);
+  else if(/거의 없음|잘 드러내지/.test(c.emotionalExpression||""))add("emotion",
+    "표정을 가다듬고 생각을 정리하는 중","마음속 반응을 바로 드러내지 않고 잠시 말을 고른 뒤 필요한 만큼만 차분하게 전했어요.",
+    "Composing their expression before speaking","They kept the first reaction private, chose their words, and shared only what was needed.",
+    "表情を整えてから話すところ","最初の反応をすぐには見せず、言葉を選んで必要な分だけ静かに伝えました。","study",["emotionalExpression"]);
+  if(/매우 잘 참음|대체로 참음/.test(c.impulseControl||""))add("impulse",
+    "바로 반응하지 않고 한 번 멈춘 중","순간적으로 마음이 흔들렸지만 바로 행동하지 않고 숨을 고른 뒤 결과를 생각해 선택했어요.",
+    "Pausing before reacting","An impulse surfaced, but they paused, breathed, and considered the result before choosing what to do.",
+    "すぐ反応せず一度止まったところ","衝動が浮かんでもすぐには動かず、ひと息ついて結果を考えてから選びました。","study",["impulseControl"]);
+  else if(/쉽게 욱함|거의 참지/.test(c.impulseControl||""))add("impulse",
+    "욱한 마음을 뒤늦게 가라앉히는 중","감정이 먼저 튀어나온 뒤 상황을 다시 보고, 더 커지기 전에 자리를 정리하며 숨을 골랐어요.",
+    "Cooling down after a quick reaction","Their feelings came out first, then they reassessed the situation and stepped back before it grew.",
+    "とっさの反応をあとから落ち着かせるところ","感情が先に出たあと状況を見直し、大きくなる前に距離を取って呼吸を整えました。","living",["impulseControl"]);
+  const favoriteFood=(c.foodPreferences||[])[0]||(c.foodTypes||[])[0];
+  if(favoriteFood||Number.isFinite(Number(c.spiceTolerance))||Number.isFinite(Number(c.sweetPreference)))add("taste",
+    "입맛에 맞게 간을 조절하는 중",`${favoriteFood?`${favoriteFood}을(를) 준비하며 `:""}프로필에 정해 둔 매운맛과 단맛 취향에 맞게 조금씩 맛을 보고 간을 조절했어요.`,
+    "Adjusting the flavor to their taste",`${favoriteFood?`While preparing ${favoriteFood}, t`:"T"}hey tasted the food and adjusted its heat and sweetness to match their preferences.`,
+    "好みに合わせて味を調整するところ",`${favoriteFood?`${favoriteFood}を用意しながら、`:""}設定した辛さと甘さの好みに合うよう、少しずつ味見して調整しました。`,"kitchen",["foodPreferences","spiceTolerance","sweetPreference"]);
+  const music=(c.musicGenres||[])[0];
+  if(music)add("music",
+    `${music}을(를) 골라 듣는 중`,`좋아하는 장르로 설정한 ${music} 재생 목록을 열고, 지금 기분에 맞는 곡부터 차례로 듣고 있어요.`,
+    `Listening to ${music}`,`They opened a playlist from a favorite genre, ${music}, and chose a track that matched the moment.`,
+    `${music}を選んで聴いているところ`,`好きなジャンルに設定した${music}のプレイリストを開き、今の気分に合う曲を選びました。`,`bedroom`,["musicGenres"]);
+  if(/잘 입음|감각적으로|개성/.test(c.fashionSense||""))add("fashion",
+    "옷과 소품의 균형을 맞추는 중","색과 소재를 번갈아 대 보고, 자기 취향이 드러나면서도 오늘 일정에 어울리는 조합을 골랐어요.",
+    "Balancing clothes and accessories","They compared colors and textures, choosing an outfit that showed their taste and suited the day's plans.",
+    "服と小物のバランスを整えるところ","色と素材を見比べ、自分らしさがあり今日の予定にも合う組み合わせを選びました。","bedroom",["fashionSense"]);
+  if(canDrive(c))add("driving",
+    "외출 전 운전 준비를 확인하는 중","면허와 운전 경험 설정에 맞춰 경로와 주차할 곳을 확인하고, 무리하지 않을 이동 계획을 세웠어요.",
+    "Checking the drive before leaving","Based on their driving experience, they checked the route and parking and planned a manageable trip.",
+    "外出前に運転の準備を確認するところ","運転経験に合わせて経路と駐車場所を確認し、無理のない移動計画を立てました。","entry",["driverLicense"]);
+  const relationship=preferredRelation(c);
+  if(relationship)add("relationship",
+    `${relationship.other.name}에게 마음을 표현할 방법을 고르는 중`,`갈등 대응과 애정 표현 설정을 떠올리며, ${relationship.other.name}에게 부담을 주지 않고 자기 마음을 전할 행동을 골랐어요.`,
+    `Choosing how to show care for ${relationship.other.name}`,`They considered their conflict and affection styles and chose a comfortable way to show how they felt.`,
+    `${relationship.other.name}への気持ちの伝え方を選ぶところ`,`対立への向き合い方と愛情表現の設定に合わせ、負担にならない伝え方を選びました。`,`living`,["conflictStyle","affectionStyle","interference"]);
+  return pool;
+}
+function profileSettingEvents(c,times,date){
+  const pool=profileSettingScenePool(c,date);
+  if(!pool.length)return [];
+  const firstIndex=hash(`${c.id}:${dayKey(date)}:profile-first`)%pool.length,first=pool[firstIndex];
+  const remaining=pool.filter(scene=>scene.category!==first.category),second=remaining.length?remaining[hash(`${c.id}:${dayKey(date)}:profile-second`)%remaining.length]:null;
+  return [first,second].filter(Boolean).map((scene,index)=>homeEntry(c,times[index],scene.title,scene.desc,scene.room,{profileFields:scene.fields,profileScene:true}));
+}
 function financialStressEvent(c,time,date){
   const lowWealth=["생계가 빠듯함","여유가 적음"].includes(c.wealth);
   const lavish=["취향에는 아끼지 않음","품질 우선","가격을 거의 신경 쓰지 않음"].includes(c.income);
@@ -2111,6 +2197,8 @@ function build(c,date=new Date()){
     list.push(entry(lunchMinute,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
   }
   list.push(contextualDailyEvent(c,930,date));
+  const profileTimes=[Math.max(wake+330,870),Math.max(wake+455,1035)].map(minute=>Math.min(minute,sleepMinute-105));
+  list.push(...profileSettingEvents(c,profileTimes,date));
   const hairCare=(!work||work.home)?appearanceCareEvent(c,990,date):null;if(hairCare)list.push(hairCare);
   const financialStress=financialStressEvent(c,1005,date);if(financialStress)list.push(financialStress);
   const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
@@ -2235,10 +2323,10 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260811h";
+const ENGINE_VERSION="20260819-profile1";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-function signature(c){return JSON.stringify({createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
 
 const entryMomentKey=item=>{
   const minute=Number(item?.minute);

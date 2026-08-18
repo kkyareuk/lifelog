@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819savebilling1";
-import {eventFor} from "./simulation.js?v=20260818layout2";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819savebilling1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819profile1";
+import {eventFor} from "./simulation.js?v=20260819profile1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819profile1";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
 
 await initializeLocalMediaState(state);
@@ -1788,6 +1788,25 @@ function bind(){
   });
   $$("[data-delete-catalog]").forEach(el=>el.onclick=()=>{if(confirm("이 항목을 삭제할까요?")){deleteCatalogItem(el.dataset.kind,el.dataset.deleteCatalog);render()}});
   $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
+  const layerCopy={
+    en:{label:"Building layer order",back:"Send backward",front:"Bring forward",backDone:"Moved the building one layer backward.",frontDone:"Moved the building one layer forward."},
+    ja:{label:"建物の重なり順",back:"背面へ移動",front:"前面へ移動",backDone:"建物を1段階背面へ移動しました。",frontDone:"建物を1段階前面へ移動しました。"}
+  }[state.uiLanguage]||{label:"건물 겹침 순서",back:"뒤로 보내기",front:"앞으로 보내기",backDone:"건물을 한 칸 뒤로 보냈어요.",frontDone:"건물을 한 칸 앞으로 보냈어요."};
+  $$(".place-edit-heading").forEach(heading=>{
+    const deleteButton=heading.querySelector("[data-delete-place]"),placeId=deleteButton?.dataset.deletePlace;
+    if(!placeId||heading.querySelector(".place-layer-tools"))return;
+    const index=state.world.places.findIndex(place=>place.id===placeId),tools=document.createElement("div");
+    tools.className="place-layer-tools";
+    tools.innerHTML=`<small>${layerCopy.label}</small><button type="button" data-place-layer="back" data-place-id="${placeId}" ${index<=0?"disabled":""}>${layerCopy.back}</button><button type="button" data-place-layer="front" data-place-id="${placeId}" ${index>=state.world.places.length-1?"disabled":""}>${layerCopy.front}</button>`;
+    heading.insertBefore(tools,deleteButton);
+  });
+  $$("[data-place-layer]").forEach(button=>button.onclick=()=>{
+    const direction=button.dataset.placeLayer,placeId=button.dataset.placeId;
+    if(!reorderPlace(placeId,direction))return;
+    setMobileTownPanel(placeId);
+    render();
+    showToast(direction==="front"?layerCopy.frontDone:layerCopy.backDone);
+  });
   $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });

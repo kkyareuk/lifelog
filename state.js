@@ -727,7 +727,7 @@ export function updateCharacter(id,patch,persist=true){
     const residence=(c.residences||[]).find(item=>item.homeId===c.homeId);
     if(residence)residence.sleepRoomId=patch.sleepRoomId;
   }
-  const simulationFields=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodPreferences","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl"]);
+  const simulationFields=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl"]);
   if(Object.keys(patch).some(key=>simulationFields.has(key)))c.timelineResetAt=Date.now();
   if(persist)save();
 }
@@ -957,6 +957,17 @@ export function updatePlace(placeId,patch,persist=true){
   p.stock=Array.isArray(p.stock)?[...p.stock]:[];
   p.audiences=Array.isArray(p.audiences)?[...p.audiences]:[];
   if(persist)save(true);
+}
+export function reorderPlace(placeId,direction){
+  const places=state.world.places;
+  const index=places.findIndex(place=>place.id===placeId);
+  if(index<0)return false;
+  const nextIndex=direction==="front"?Math.min(places.length-1,index+1):direction==="back"?Math.max(0,index-1):index;
+  if(nextIndex===index)return false;
+  const [place]=places.splice(index,1);
+  places.splice(nextIndex,0,place);
+  save(true);
+  return true;
 }
 export function deletePlace(placeId){
   state.world.places=state.world.places.filter(place=>place.id!==placeId);
