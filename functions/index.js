@@ -19,7 +19,7 @@ const WEB_PRODUCTS=Object.freeze({
   character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:1200},
   town_slot_1:{name:"마을 슬롯 1개 추가",amount:1900},
   storage_50mb:{name:"사진 저장 공간 50MB 추가",amount:2900},
-  green_tea:{name:"개발자에게 녹차 사주기",amount:1500}
+  green_tea:{name:"서랍마을 응원 선물",amount:3000}
 });
 const TOSS_MID="drawerq8ht";
 const TOSS_SECRET_KEY=defineSecret("TOSS_SECRET_KEY");

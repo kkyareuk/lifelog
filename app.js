@@ -721,8 +721,8 @@ function render(){
     if(grid&&!grid.querySelector('[data-product-id="green_tea"]')){
       const card=document.createElement("article");
       card.className="premium-product one-time-product";
-      const teaCopy={en:{tag:"Support",small:"Support development",title:"Buy the developer green tea 🍵",thanks:"Thank you 🥹",cart:"Add to cart"},ja:{tag:"応援",small:"開発を応援",title:"開発者に緑茶をおごる 🍵",thanks:"ありがとうございます 🥹",cart:"カートに追加"}}[state.uiLanguage]||{tag:"응원",small:"개발 응원",title:"개발자에게 녹차 사주기 🍵",thanks:"잘 먹겠습니다 🥹",cart:"장바구니에 담기"};
-      card.innerHTML=`<div class="premium-product-heading"><span>${teaCopy.tag}</span><div><small>${teaCopy.small}</small><h2>${teaCopy.title}</h2></div><b>1,500원</b></div><p>${teaCopy.thanks}</p><button class="primary premium-buy" data-cart-add="green_tea">${teaCopy.cart}</button>`;
+      const teaCopy={en:{tag:"Support",small:"Support Drawer Village",title:"Drawer Village Support Gift 🎁",thanks:"Support the next Drawer Village update.",cart:"Add to cart"},ja:{tag:"応援",small:"ひきだし村を応援",title:"ひきだし村 応援ギフト 🎁",thanks:"ひきだし村の次のアップデートを応援してください。",cart:"カートに追加"}}[state.uiLanguage]||{tag:"응원",small:"서랍마을 응원",title:"서랍마을 응원 선물 🎁",thanks:"서랍마을의 다음 업데이트를 응원해 주세요.",cart:"장바구니에 담기"};
+      card.innerHTML=`<div class="premium-product-heading"><span>${teaCopy.tag}</span><div><small>${teaCopy.small}</small><h2>${teaCopy.title}</h2></div><b>3,000원</b></div><p>${teaCopy.thanks}</p><button class="primary premium-buy" data-cart-add="green_tea">${teaCopy.cart}</button>`;
       grid.insertBefore(card,grid.lastElementChild);
     }
     bind();
@@ -1247,7 +1247,7 @@ function bind(){
   }catch(error){console.error("동적 편집 화면 연결 실패",error)}
   const cartKey="drawer-village-cart";
   const cartLimit=50000;
-  const cartPrices={character_slots_5:1200,town_slot_1:1900,green_tea:1500,storage_50mb:2900};
+  const cartPrices={character_slots_5:1200,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const cartTotal=cart=>Object.entries(cart||{}).reduce((sum,[id,qty])=>sum+(Number(cartPrices[id])||0)*Math.max(0,Number(qty)||0),0);
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};
@@ -1314,7 +1314,7 @@ function bind(){
     }catch(error){showToast(error?.message||"구매 내역을 확인하지 못했습니다")}
     finally{button.disabled=false}
   });
-  $$("[data-cart-add]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartAdd;if(addCartItem(cart,id))showToast(id==="green_tea"?`녹차 ${cart[id]}잔을 장바구니에 담았어요`:"장바구니에 담았어요")});
+  $$("[data-cart-add]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartAdd;if(addCartItem(cart,id))showToast(id==="green_tea"?`응원 선물 ${cart[id]}개를 장바구니에 담았어요`:"장바구니에 담았어요")});
   $$("[data-cart-plus]").forEach(el=>el.onclick=()=>{const cart=readCart();addCartItem(cart,el.dataset.cartPlus)});
   $$("[data-cart-minus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartMinus,next=(Number(cart[id])||0)-1;if(next>0)cart[id]=next;else delete cart[id];writeCart(cart)});
   $$("[data-cart-remove]").forEach(el=>el.onclick=()=>{const cart=readCart();delete cart[el.dataset.cartRemove];writeCart(cart)});

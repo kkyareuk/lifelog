@@ -18,7 +18,7 @@ Play Console의 `수익 창출 > 제품 > 인앱 상품`에서 아래 상품 ID�
 | `character_slots_5` | 캐릭터 슬롯 5개 | 소비형 |
 | `town_slot_1` | 마을 슬롯 1개 | 소비형 |
 | `storage_50mb` | 사진 저장 공간 50MB | 비소비형 |
-| `green_tea` | 개발자 녹차 응원 | 소비형 |
+| `green_tea` | 서랍마을 응원 선물 (3,000원) | 소비형 |
 
 가격은 Play Console에서 국가별로 정합니다. 앱은 Play Console이 돌려준 현지 통화 가격을 그대로 표시합니다.
 
