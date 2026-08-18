@@ -176,7 +176,7 @@ const normalizeHomeSceneLayout=value=>{
     }];
   }));
 };
-const fresh=()=>({schema:16,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"cream",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
+const fresh=()=>({schema:17,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -186,6 +186,7 @@ const fresh=()=>({schema:16,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===17)return normalizeHomes(x);
   if(x.schema===16)return normalizeHomes(x);
   if(x.schema===15)return normalizeHomes(x);
   if(x.schema===14)return normalizeHomes(x);
@@ -220,7 +221,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=16;
+  x.schema=17;
   x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   const legacyActiveCharacter=x.characters?.[x.activeId]||Object.values(x.characters||{})[0]||{};
   x.homeVisualMode=(x.homeVisualMode||legacyActiveCharacter.homeVisualMode)==="ld"?"ld":"sd";
@@ -235,7 +236,11 @@ function normalizeHomes(x){
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"light";
   delete x.userMods;
-  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine","berry","sky","cobalt","aqua","lime","coral","baroque","moonlit-drawer","ruined-rose","healing-glasshouse","reverie-ward","noir-rain"].includes(x.visualTheme)?x.visualTheme:"cream";
+  // 1.0.14부터 Android 첫 화면은 흰 바탕과 서랍마을 벽돌색을 사용한다.
+  // 기존 테스트 빌드의 기본 크림 테마만 한 번 새 기본값으로 옮기고,
+  // 사용자가 직접 고른 다른 테마와 다크 모드는 그대로 보존한다.
+  if(previousSchema<17&&window.DRAWER_VILLAGE_NATIVE&&(!x.visualTheme||x.visualTheme==="cream"))x.visualTheme="rose";
+  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine","berry","sky","cobalt","aqua","lime","coral","baroque","moonlit-drawer","ruined-rose","healing-glasshouse","reverie-ward","noir-rain"].includes(x.visualTheme)?x.visualTheme:"rose";
   x.ownerName=String(x.ownerName||"").trim().slice(0,20);
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;

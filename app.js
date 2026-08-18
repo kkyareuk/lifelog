@@ -909,7 +909,7 @@ function applyTheme(){
     mint:{light:["#00a982","#4bd8aa","#e9fff6","#fbfffd","#073e32","#4f8878","#b4efd9"],dark:["#21cea3","#6af0c0","#031913","#073128","#effff9","#9ce3cd","#1e7560"]},
     sunshine:{light:["#d98b00","#ffd23f","#fff8d2","#fffef7","#3e2b00","#836b27","#f4dc82"],dark:["#ffb51f","#ffe05f","#1c1300","#352703","#fffbe8","#e9d184","#735513"]},
     sage:{light:["#2f855a","#76c36a","#ecf8ed","#fbfffc","#143823","#5a7f66","#bfe1c4"],dark:["#55bc79","#99db76","#06150c","#0f2b19","#effcf3","#a8d4b4","#28643e"]},
-    rose:{light:["#b57873","#cfb4ab","#eee7e0","#fff8f4","#413330","#756a66","#c0af99"],dark:["#d49a95","#cfb4ab","#1d1818","#302525","#fff4ee","#d1bdb4","#725d58"]},
+    rose:{light:["#9c514a","#c98177","#ffffff","#ffffff","#2b2321","#72615d","#e5d5d1"],dark:["#dc8e84","#c98177","#171211","#251c1a","#fff7f5","#d8c4bf","#704640"]},
     ocean:{light:["#007fc2","#36c0e8","#e9f9ff","#fbfeff","#073952","#4f7f93","#b6e8f7"],dark:["#29a9e8","#5cdaf0","#031720","#082f41","#effbff","#9ed7e6","#1e607b"]},
     lavender:{light:["#7547e8","#c26de8","#f5edff","#fffaff","#2e1652","#76588d","#ddc2fa"],dark:["#956cff","#db86f4","#10051d","#27103b","#faf2ff","#d1afe4","#593180"]},
     berry:{light:["#be2cff","#ff45b5","#f9ecff","#ffffff","#321044","#7d4a8c","#e5b6f8"],dark:["#d65cff","#ff69c5","#16051d","#2c0c38","#fff2ff","#d9a8e8","#663077"]},

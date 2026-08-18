@@ -457,10 +457,16 @@ async function login(){
   provider.setCustomParameters({prompt:"select_account"});
   try{
     if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
-      const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
+      // Credential Manager는 일부 삼성/Play 서비스 조합에서 계정 선택창이
+      // 열리지 않은 채 끝나는 사례가 있어, 검증된 Google 계정 선택 화면을
+      // 명시적으로 사용한다. Firebase JS 세션과의 동기화 방식은 유지한다.
+      const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle({
+        skipNativeAuth:true,
+        useCredentialManager:false
+      });
       const idToken=String(result?.credential?.idToken||"").trim();
       if(!idToken)throw Object.assign(new Error("Google에서 로그인 토큰을 받지 못했습니다."),{code:"native-auth/missing-id-token"});
-      const credential=GoogleAuthProvider.credential(idToken,result?.credential?.accessToken||null);
+      const credential=GoogleAuthProvider.credential(idToken);
       await signInWithCredential(auth,credential);
       toast("Google 계정이 연결됐어요");
       return true;

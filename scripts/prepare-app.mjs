@@ -63,13 +63,13 @@ index=index.replace(
 index=index.replace("</head>",`  <meta name="drawer-village-app" content="android">
   <style>
     html.native-platform .site-footer{display:none!important}
-    .native-startup{position:fixed;inset:0;display:grid;place-content:center;gap:10px;padding:28px;background:linear-gradient(180deg,#5f3e2c,#eee8df 45%,#fff);color:#2f2925;text-align:center;font-family:sans-serif}
-    .native-startup span{color:#fff;font-size:2rem;font-weight:900;text-shadow:0 3px 12px #0008}.native-startup b{margin-top:28vh;font-size:1.15rem}.native-startup small{font-size:.9rem}
+    .native-startup{position:fixed;inset:0;display:grid;place-content:center;gap:10px;padding:28px;background:#fff;color:#2b2321;text-align:center;font-family:sans-serif}
+    .native-startup span{color:#9c514a;font-size:2rem;font-weight:900}.native-startup b{margin-top:28vh;font-size:1.15rem}.native-startup small{font-size:.9rem}
   </style>
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260818stability1";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260818white1";
     if("serviceWorker" in navigator){
       navigator.serviceWorker.getRegistrations().then(items=>Promise.all(items.map(item=>item.unregister()))).catch(()=>{});
     }
