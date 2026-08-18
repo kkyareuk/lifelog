@@ -1,4 +1,4 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260818layout2";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819savebilling1";
 import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260818layout2";
 // Cache-busted state module is imported above; this comment intentionally keeps the view bundle versioned.
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
@@ -2546,9 +2546,9 @@ const readCart=()=>{try{const value=JSON.parse(localStorage.getItem(CART_KEY)||"
 function nativePlayShop(){
   const products=Object.entries(SHOP_PRODUCTS).map(([id,item])=>{
     const owned=id==="character_slots_5"?Number(accountEntitlements.characterSlotPacks)||0:id==="town_slot_1"?Number(accountEntitlements.townSlotPacks)||0:0;
-    return `<article class="premium-product one-time-product" data-product-id="${id}"><div class="premium-product-heading"><span>${id==="green_tea"?"응원":"Google Play"}</span><div><small>${item.label}</small><h2>${item.title}</h2></div><b data-play-price="${id}">Play 결제창에서 확인</b></div><p>${item.description}</p>${owned?`<div class="premium-current"><b>${owned}회 구매 · 현재 적용 중</b></div>`:""}<button class="primary premium-buy" data-play-purchase="${id}">Google Play에서 구매</button></article>`;
+    return `<article class="premium-product one-time-product" data-product-id="${id}"><div class="premium-product-heading"><span>${id==="green_tea"?"응원":"일회성 구매"}</span><div><small>${item.label}</small><h2>${item.title}</h2></div><b data-play-price="${id}">가격 불러오는 중</b></div><p>${item.description}</p>${owned?`<div class="premium-current"><b>${owned}회 구매 · 현재 적용 중</b></div>`:""}<button class="primary premium-buy" data-play-purchase="${id}" disabled>구매 정보 확인 중</button></article>`;
   }).join("");
-  return `<section class="panel form dlc-store shop-store native-play-store"><div class="title"><div><h1>상점</h1><p>Android 앱의 디지털 상품은 Google Play 결제로 구매합니다. 가격은 Play Console에 등록한 국가별 가격으로 표시돼요.</p></div></div><section class="preview-notice play-billing-notice"><b>Google Play 안전 결제</b><p>구매는 Play 결제창에서 진행되며, 서버에서 구매 토큰을 확인한 뒤에만 슬롯과 저장 공간을 지급합니다.</p></section><div class="shop-product-grid">${products}</div><section class="shop-coming native-expansion-coming"><small>COMING NEXT</small><h2>직업 확장팩</h2><p>새 직업과 직장 생활 기능은 준비가 끝난 뒤 별도 업데이트로 안내할게요.</p><button type="button" disabled>출시 준비 중</button></section><section class="shop-coming native-purchase-restore"><h2>구매 복원</h2><p>같은 Google 계정의 미처리 구매는 앱 시작과 계정 동기화 때 다시 확인할 수 있어요.</p><button data-play-restore>Google Play 구매 내역 확인</button></section></section>`;
+  return `<section class="panel form dlc-store shop-store native-play-store"><div class="title"><div><h1>상점</h1><p>원하는 상품을 골라 구매할 수 있어요.</p></div></div><section class="preview-notice play-billing-notice"><b>안전한 결제</b><p>구매가 확인된 뒤 선택한 상품이 계정에 바로 적용됩니다.</p></section><div class="shop-product-grid">${products}</div><section class="shop-coming native-expansion-coming"><small>COMING NEXT</small><h2>직업 확장팩</h2><p>새 직업과 직장 생활 기능은 준비가 끝난 뒤 별도 업데이트로 안내할게요.</p><button type="button" disabled>출시 준비 중</button></section><section class="shop-coming native-purchase-restore"><h2>구매 내역 복원</h2><p>이미 구매했는데 상품이 보이지 않을 때 확인해 주세요.</p><button data-play-restore>구매 내역 확인</button></section></section>`;
 }
 function shop(){
   if(window.PARALLEL_CITY_CONFIG?.nativeApp)return nativePlayShop();

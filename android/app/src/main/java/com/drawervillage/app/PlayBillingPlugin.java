@@ -14,6 +14,7 @@ import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
+import com.android.billingclient.api.UnfetchedProduct;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -28,6 +29,50 @@ import java.util.List;
 public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListener {
     private BillingClient billingClient;
     private PluginCall pendingPurchaseCall;
+
+    private String billingError(String action, BillingResult result) {
+        int code = result.getResponseCode();
+        String reason;
+        switch (code) {
+            case BillingClient.BillingResponseCode.SERVICE_DISCONNECTED:
+            case BillingClient.BillingResponseCode.SERVICE_UNAVAILABLE:
+                reason = "결제 서비스가 잠시 연결되지 않았습니다.";
+                break;
+            case BillingClient.BillingResponseCode.BILLING_UNAVAILABLE:
+                reason = "이 기기 또는 계정에서는 결제를 사용할 수 없습니다.";
+                break;
+            case BillingClient.BillingResponseCode.ITEM_UNAVAILABLE:
+                reason = "이 상품은 현재 구매할 수 없습니다.";
+                break;
+            case BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED:
+                reason = "처리되지 않은 기존 구매가 있습니다.";
+                break;
+            case BillingClient.BillingResponseCode.NETWORK_ERROR:
+                reason = "인터넷 연결을 확인해 주세요.";
+                break;
+            case BillingClient.BillingResponseCode.DEVELOPER_ERROR:
+                reason = "상품 설정을 확인하는 중 문제가 생겼습니다.";
+                break;
+            default:
+                reason = "잠시 후 다시 시도해 주세요.";
+        }
+        return action + " " + reason + " (오류 " + code + ")";
+    }
+
+    private String unavailableProductMessage(List<UnfetchedProduct> products) {
+        if (products == null || products.isEmpty()) return "상품 정보를 찾지 못했습니다.";
+        int status = products.get(0).getStatusCode();
+        if (status == UnfetchedProduct.StatusCode.PRODUCT_NOT_FOUND) {
+            return "상품이 아직 판매 등록되지 않았거나 등록 내용이 반영 중입니다.";
+        }
+        if (status == UnfetchedProduct.StatusCode.NO_ELIGIBLE_OFFER) {
+            return "이 계정에서 구매할 수 있는 가격 정보가 없습니다.";
+        }
+        if (status == UnfetchedProduct.StatusCode.INVALID_PRODUCT_ID_FORMAT) {
+            return "상품 등록 정보가 올바르지 않습니다.";
+        }
+        return "상품 정보를 불러오지 못했습니다.";
+    }
 
     @Override
     public void load() {
@@ -49,7 +94,7 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             @Override
             public void onBillingSetupFinished(@NonNull BillingResult result) {
                 if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) action.run();
-                else call.reject("Google Play 결제 서비스에 연결할 수 없습니다.", String.valueOf(result.getResponseCode()));
+                else call.reject(billingError("결제 서비스에 연결하지 못했습니다.", result), String.valueOf(result.getResponseCode()));
             }
 
             @Override
@@ -118,13 +163,21 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             QueryProductDetailsParams.newBuilder().setProductList(products).build(),
             (result, queryResult) -> {
                 if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-                    call.reject("Google Play 상품을 조회하지 못했습니다.", String.valueOf(result.getResponseCode()));
+                    call.reject(billingError("상품을 불러오지 못했습니다.", result), String.valueOf(result.getResponseCode()));
                     return;
                 }
                 JSArray values = new JSArray();
                 for (ProductDetails details : queryResult.getProductDetailsList()) values.put(productJson(details));
+                JSArray unavailable = new JSArray();
+                for (UnfetchedProduct product : queryResult.getUnfetchedProductList()) {
+                    JSObject value = new JSObject();
+                    value.put("productId", product.getProductId());
+                    value.put("statusCode", product.getStatusCode());
+                    unavailable.put(value);
+                }
                 JSObject response = new JSObject();
                 response.put("products", values);
+                response.put("unavailableProducts", unavailable);
                 call.resolve(response);
             }
         ));
@@ -145,17 +198,23 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             billingClient.queryProductDetailsAsync(
                 QueryProductDetailsParams.newBuilder().setProductList(Collections.singletonList(query)).build(),
                 (result, queryResult) -> {
-                    if (result.getResponseCode() != BillingClient.BillingResponseCode.OK || queryResult.getProductDetailsList().isEmpty()) {
-                        call.reject("Google Play에서 이 상품을 찾지 못했습니다.", String.valueOf(result.getResponseCode()));
+                    if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                        call.reject(billingError("상품을 불러오지 못했습니다.", result), String.valueOf(result.getResponseCode()));
+                        return;
+                    }
+                    if (queryResult.getProductDetailsList().isEmpty()) {
+                        call.reject(unavailableProductMessage(queryResult.getUnfetchedProductList()), "PRODUCT_UNAVAILABLE");
                         return;
                     }
                     ProductDetails details = queryResult.getProductDetailsList().get(0);
                     BillingFlowParams.ProductDetailsParams.Builder detailParams = BillingFlowParams.ProductDetailsParams.newBuilder()
                         .setProductDetails(details);
                     List<ProductDetails.OneTimePurchaseOfferDetails> offers = details.getOneTimePurchaseOfferDetailsList();
-                    if (offers != null && !offers.isEmpty() && offers.get(0).getOfferToken() != null) {
-                        detailParams.setOfferToken(offers.get(0).getOfferToken());
+                    if (offers == null || offers.isEmpty()) {
+                        call.reject("이 계정에서 구매할 수 있는 가격 정보가 없습니다.", "NO_ELIGIBLE_OFFER");
+                        return;
                     }
+                    if (offers.get(0).getOfferToken() != null) detailParams.setOfferToken(offers.get(0).getOfferToken());
                     pendingPurchaseCall = call;
                     Activity activity = getActivity();
                     activity.runOnUiThread(() -> {
@@ -167,7 +226,7 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
                         );
                         if (launch.getResponseCode() != BillingClient.BillingResponseCode.OK) {
                             pendingPurchaseCall = null;
-                            call.reject("Google Play 결제창을 열지 못했습니다.", String.valueOf(launch.getResponseCode()));
+                            call.reject(billingError("결제창을 열지 못했습니다.", launch), String.valueOf(launch.getResponseCode()));
                         }
                     });
                 }
@@ -185,7 +244,7 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             return;
         }
         if (result.getResponseCode() != BillingClient.BillingResponseCode.OK || purchases == null || purchases.isEmpty()) {
-            call.reject("Google Play 결제가 완료되지 않았습니다.", String.valueOf(result.getResponseCode()));
+            call.reject(billingError("결제를 완료하지 못했습니다.", result), String.valueOf(result.getResponseCode()));
             return;
         }
         call.resolve(purchaseJson(purchases.get(0)));
@@ -197,7 +256,7 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.INAPP).build(),
             (result, purchases) -> {
                 if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
-                    call.reject("Google Play 구매 내역을 확인하지 못했습니다.", String.valueOf(result.getResponseCode()));
+                    call.reject(billingError("구매 내역을 확인하지 못했습니다.", result), String.valueOf(result.getResponseCode()));
                     return;
                 }
                 JSArray values = new JSArray();

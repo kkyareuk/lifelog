@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260818layout2";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819savebilling1";
 import {eventFor} from "./simulation.js?v=20260818layout2";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260818layout2";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819savebilling1";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
 
 await initializeLocalMediaState(state);
@@ -747,7 +747,12 @@ function isMobileCharacterDraftControl(element){
   return Boolean(element?.closest?.("[data-mobile-character-editor-dialog]"));
 }
 function markMobileCharacterDraft(element){
-  if(isMobileCharacterDraftControl(element))mobileCharacterDraftDirty=true;
+  if(isMobileCharacterDraftControl(element)){
+    mobileCharacterDraftDirty=true;
+    // 편집창을 닫기 전 앱이 백그라운드로 가도 입력한 글이 남도록
+    // 마지막 입력 뒤 한 번만 가볍게 기기 저장을 예약한다.
+    save(false,false);
+  }
   return isMobileCharacterDraftControl(element);
 }
 function renderPreservingCharacterEditorScroll(element){
@@ -1264,32 +1269,48 @@ function bind(){
     const productId=button.dataset.playPurchase;
     button.disabled=true;
     const original=button.textContent;
-    button.textContent="Google Play 결제 준비 중…";
+    button.textContent="결제창 여는 중…";
     try{
       await window.DrawerVillagePlayBilling?.purchase?.(productId);
-      showToast("Google Play 구매와 상품 지급을 확인했습니다");
+      showToast("구매가 완료되어 상품을 지급했습니다");
       render();
     }catch(error){
       console.error(error);
-      showToast(error?.message||"Google Play 결제를 완료하지 못했습니다");
+      showToast(error?.message||"결제를 완료하지 못했습니다");
       button.disabled=false;
       button.textContent=original;
     }
   });
   if(playButtons.length&&window.DrawerVillagePlayBilling?.enabled?.()){
-    window.DrawerVillagePlayBilling.loadProducts().then(products=>{
-      for(const product of products||[]){
+    window.DrawerVillagePlayBilling.loadProducts().then(result=>{
+      const products=Array.isArray(result)?result:(result?.products||[]);
+      const available=new Set(products.map(product=>product.productId));
+      for(const product of products){
         const price=document.querySelector(`[data-play-price="${CSS.escape(product.productId)}"]`);
         if(price&&product.formattedPrice)price.textContent=product.formattedPrice;
       }
-    }).catch(error=>console.warn("Google Play 상품 조회 실패",error));
+      playButtons.forEach(button=>{
+        if(available.has(button.dataset.playPurchase)){
+          button.disabled=false;
+          button.textContent="구매하기";
+          return;
+        }
+        button.disabled=true;
+        button.textContent="현재 구매할 수 없음";
+        const price=document.querySelector(`[data-play-price="${CSS.escape(button.dataset.playPurchase)}"]`);
+        if(price)price.textContent="상품 준비 중";
+      });
+    }).catch(error=>{
+      console.warn("상품 조회 실패",error);
+      playButtons.forEach(button=>{button.disabled=true;button.textContent="잠시 후 다시 시도해 주세요"});
+    });
   }
   $("[data-play-restore]")?.addEventListener("click",async event=>{
     const button=event.currentTarget;
     button.disabled=true;
     try{
       const result=await window.DrawerVillagePlayBilling?.restorePurchases?.();
-      showToast(`${result?.restored||0}개의 Google Play 구매를 검증하고 복원했습니다`);
+      showToast(result?.restored?`${result.restored}개의 구매 내역을 복원했습니다`:"복원할 구매 내역이 없습니다");
     }catch(error){showToast(error?.message||"구매 내역을 확인하지 못했습니다")}
     finally{button.disabled=false}
   });
@@ -1645,7 +1666,7 @@ function bind(){
       }
       const mobileDraft=markMobileCharacterDraft(el);
       updateCharacter(character.id,{bodyProfile},false);
-      if(!mobileDraft)save(true);
+      if(!mobileDraft)save(el.tagName==="SELECT");
       if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField))renderPreservingCharacterEditorScroll(el);
     });
   });

@@ -628,22 +628,51 @@ function load(){
 
 export let state=load();
 let timer;
+let pendingNotify=false;
+let saveRunning=false;
 export const active=()=>state.characters[state.activeId];
-export function save(immediate=false,notify=true){
-  clearTimeout(timer);
-  const run=()=>{
+function writeState(notify=true){
+  if(saveRunning)return false;
+  saveRunning=true;
+  let stored=false;
+  try{
     syncTown();
     state.lastSaved=Date.now();
-    try{
-      localStorage.setItem(KEY,JSON.stringify(serializeLocalMediaState(state)));
-    }catch(error){
-      console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
-    }
-    document.querySelector("#save-state")?.replaceChildren(document.createTextNode("기기에 저장됨"));
-    if(notify)window.dispatchEvent(new Event("parallel-city-saved"));
-  };
-  immediate?run():timer=setTimeout(run,140);
+    localStorage.setItem(KEY,JSON.stringify(serializeLocalMediaState(state)));
+    stored=true;
+  }catch(error){
+    console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
+  }finally{
+    saveRunning=false;
+  }
+  const status=document.querySelector("#save-state");
+  status?.replaceChildren(document.createTextNode(stored?"기기에 저장됨":"저장 공간을 확인해 주세요"));
+  if(stored&&notify)window.dispatchEvent(new Event("parallel-city-saved"));
+  return stored;
 }
+export function save(immediate=false,notify=true){
+  clearTimeout(timer);
+  pendingNotify=pendingNotify||notify;
+  document.querySelector("#save-state")?.replaceChildren(document.createTextNode("저장 중…"));
+  const run=()=>{
+    timer=undefined;
+    const shouldNotify=pendingNotify;
+    pendingNotify=false;
+    writeState(shouldNotify);
+  };
+  immediate?run():timer=setTimeout(run,650);
+}
+export function flushSave(notify=false){
+  if(!timer)return false;
+  clearTimeout(timer);
+  timer=undefined;
+  const shouldNotify=notify&&pendingNotify;
+  pendingNotify=false;
+  return writeState(shouldNotify);
+}
+window.addEventListener("pagehide",()=>flushSave(false));
+window.addEventListener("beforeunload",()=>flushSave(false));
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushSave(false)});
 export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
@@ -710,7 +739,7 @@ export function addRoutine(characterId){
 }
 export function updateRoutine(characterId,routineId,patch){
   const routine=state.routines[characterId]?.find(item=>item.id===routineId);if(!routine)return;
-  Object.assign(routine,patch);if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();save(true);
+  Object.assign(routine,patch);if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();save();
 }
 export function deleteRoutine(characterId,routineId){
   state.routines[characterId]=(state.routines[characterId]||[]).filter(item=>item.id!==routineId);if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();save(true);
@@ -732,14 +761,14 @@ export function setHomeBackground(homeId,data){
   h.image=data;save(true);
 }
 export function setHomeEditMode(value){state.homeEditMode=Boolean(value);save()}
-export function updateHome(homeId,patch){
+export function updateHome(homeId,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
-  Object.assign(h,patch);save(true);
+  Object.assign(h,patch);if(persist)save();
 }
-export function updateRoom(homeId,roomKey,patch){
+export function updateRoom(homeId,roomKey,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
-  h.rooms[roomKey]={...h.rooms[roomKey],...patch};save(true);
+  h.rooms[roomKey]={...h.rooms[roomKey],...patch};if(persist)save();
 }
 export function createHome(){
   const id=`home-${uid()}`;
@@ -842,9 +871,9 @@ export function addPet(homeId){
   const pet={id:uid(),name:"새 식구",species:"강아지",customSpecies:"",size:"중형",temperaments:[],bodyTraits:[],breed:"",sex:"모름",neutered:false,photo:"",icon:"",room:"living",needsWalk:true,rideable:false};
   h.pets.push(pet);save(true);return pet.id;
 }
-export function updatePet(homeId,petId,patch){
+export function updatePet(homeId,petId,patch,persist=true){
   const pet=state.homes[homeId]?.pets?.find(p=>p.id===petId);if(!pet)return;
-  Object.assign(pet,patch);save(true);
+  Object.assign(pet,patch);if(persist)save();
 }
 export function deletePet(homeId,petId){
   const h=state.homes[homeId];if(!h)return;
@@ -860,9 +889,9 @@ export function addCar(homeId){
   const car={id:uid(),name:"우리 집 자동차",type:"승용차",color:"",seats:5,image:""};
   h.cars.push(car);save(true);return car.id;
 }
-export function updateCar(homeId,carId,patch){
+export function updateCar(homeId,carId,patch,persist=true){
   const car=state.homes[homeId]?.cars?.find(item=>item.id===carId);if(!car)return;
-  Object.assign(car,patch);save(true);
+  Object.assign(car,patch);if(persist)save();
 }
 export function deleteCar(homeId,carId){
   const h=state.homes[homeId];if(!h)return;
@@ -909,14 +938,14 @@ export function removeCharacterResidence(characterId,homeId){
   c.sleepRoomId=primary?.sleepRoomId||"";
   c.timelineResetAt=Date.now();save(true);return true;
 }
-export function updateCharacterResidence(characterId,homeId,patch){
+export function updateCharacterResidence(characterId,homeId,patch,persist=true){
   const c=state.characters[characterId],residence=c?.residences?.find(item=>item.homeId===homeId);if(!c||!residence)return false;
   Object.assign(residence,patch||{});
   if(patch?.isPrimary){
     c.residences.forEach(item=>item.isPrimary=item===residence);
     c.homeId=homeId;c.sleepRoomId=residence.sleepRoomId||"";
   }else if(residence.isPrimary&&patch?.sleepRoomId)c.sleepRoomId=patch.sleepRoomId;
-  c.timelineResetAt=Date.now();save(true);return true;
+  c.timelineResetAt=Date.now();if(persist)save();return true;
 }
 export function setPlaceInteriorImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.interiorImage=data;save(true)}}
 export function updatePlace(placeId,patch,persist=true){
@@ -943,7 +972,7 @@ export function addCatalogItem(kind,data){
 }
 export function updateCatalogItem(kind,id,patch){
   const item=state.catalog[kind]?.find(x=>x.id===id);if(!item)return;
-  Object.assign(item,patch);save(true);
+  Object.assign(item,patch);save();
 }
 export function deleteCatalogItem(kind,id){
   state.catalog[kind]=(state.catalog[kind]||[]).filter(x=>x.id!==id);
