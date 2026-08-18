@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "115165634004-nso8o81ulnbucj80gmqssjch9ngeasgm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drawervillage.app",
+            "certificate_hash": "8b9c52aa32bdb084eef5985e6f625fad11d681d4"
+          }
+        },
+        {
           "client_id": "115165634004-ufl0uol97dptckdtgl44qpotmh4ej9b3.apps.googleusercontent.com",
           "client_type": 3
         }
