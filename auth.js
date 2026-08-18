@@ -1,6 +1,6 @@
 ﻿import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,setDoc,collection,getDocs,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
 
@@ -167,13 +167,15 @@ const cloudCharacterDoc=id=>doc(db,"users",user.uid,"characters",safeDocumentId(
 const cloudDays=id=>collection(db,"users",user.uid,"characters",safeDocumentId(id),"days");
 const cloudDayDoc=(id,dateKey)=>doc(db,"users",user.uid,"characters",safeDocumentId(id),"days",safeDocumentId(dateKey));
 
-async function readCloudGameState(rootData){
+async function readCloudGameState(rootData,{fresh=false}={}){
   // 호환 형식으로 저장된 완전한 루트 상태가 있으면, 중간에 끊긴 v2
   // 하위 문서보다 이것을 우선한다.
   if(rootData?.syncFormat===1&&rootData?.gameStateGzip)return decodeCompressedLegacyState(rootData.gameStateGzip);
   if(rootData?.syncFormat===1&&rootData?.gameState)return decodeFirestoreState(rootData.gameState);
   let coreSnapshot;
-  try{coreSnapshot=await getDoc(cloudCoreDoc())}
+  const readDocument=fresh?getDocFromServer:getDoc;
+  const readDocuments=fresh?getDocsFromServer:getDocs;
+  try{coreSnapshot=await readDocument(cloudCoreDoc())}
   catch(error){
     // 아직 하위 문서 규칙을 배포하지 않은 기존 Firebase 프로젝트도
     // 루트 문서 백업은 계속 읽고 쓸 수 있어야 한다.
@@ -187,13 +189,13 @@ async function readCloudGameState(rootData){
     :decodeFirestoreState(rootData?.gameState||null);
   const coreData=decodeFirestoreState(coreSnapshot.data()?.state||{});
   const characters={};
-  const characterSnapshots=await getDocs(cloudCharacters());
+  const characterSnapshots=await readDocuments(cloudCharacters());
   for(const characterSnapshot of characterSnapshots.docs){
     const documentData=characterSnapshot.data()||{};
     const character=decodeFirestoreState(documentData.character||{});
     const characterId=String(documentData.characterId||character.id||characterSnapshot.id);
     const days={};
-    const daySnapshots=await getDocs(cloudDays(characterId));
+    const daySnapshots=await readDocuments(cloudDays(characterId));
     daySnapshots.forEach(daySnapshot=>{
       const dayData=daySnapshot.data()||{};
       const dateKey=String(dayData.dateKey||daySnapshot.id);
@@ -563,13 +565,16 @@ async function download({automatic=false}={}){
   if(busy)return;busy=true;
   try{
     status(`${accountName()} · 불러오는 중`);
-    const snapshot=await getDoc(cloudDoc());
+    // 사용자가 누른 '불러오기'는 브라우저의 Firestore 로컬 캐시가 아니라
+    // 앱이 방금 올린 서버 저장본을 직접 읽는다. 자동 불러오기는 오프라인
+    // 복구를 위해 기존 Firestore 동작을 유지한다.
+    const snapshot=automatic?await getDoc(cloudDoc()):await getDocFromServer(cloudDoc());
     const documentData=snapshot.exists()?snapshot.data():null;
     const remoteGuides=Array.isArray(documentData?.uiPreferences?.pageGuides)?documentData.uiPreferences.pageGuides:[];
     const mergedGuides=[...new Set([...remoteGuides,...localGuideKeys()])];
     publishGuideState(mergedGuides);
     if(user&&mergedGuides.length!==remoteGuides.length)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:mergedGuides}},{merge:true});
-    const remote=await readCloudGameState(documentData);
+    const remote=await readCloudGameState(documentData,{fresh:!automatic});
     publishStorageUsage(documentData?.mediaManifest,remote);
     publishEntitlements(documentData?.entitlements);
     if(!remote){status(`${accountName()} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
