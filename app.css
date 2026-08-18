@@ -6323,3 +6323,97 @@ html.native-platform[data-active-tab="shop"] .native-expansion-coming small{
   html.native-platform[data-active-tab="shop"] .native-play-store{padding:14px 10px 30px!important}
   html.native-platform[data-active-tab="shop"] .native-play-store .shop-product-grid{grid-template-columns:minmax(0,1fr)!important}
 }
+
+/* 2026-08-18 first-run welcome: existing village logo, calm white card layout. */
+html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding-first){
+  background:#fff!important;
+}
+.onboarding-dialog .onboarding-first{
+  padding:22px 28px 28px!important;
+  background:
+    radial-gradient(circle at 50% -10%,color-mix(in srgb,var(--s) 28%,transparent),transparent 48%),
+    linear-gradient(180deg,#fff 0%,color-mix(in srgb,var(--s) 7%,#fff) 100%)!important;
+}
+.onboarding-dialog .onboarding-welcome{
+  align-content:center!important;
+  justify-items:center;
+  gap:13px!important;
+  max-width:520px!important;
+  padding-top:0!important;
+}
+.onboarding-welcome-art{
+  width:min(100%,340px);
+  height:210px;
+  overflow:hidden;
+  border:1px solid color-mix(in srgb,var(--p) 15%,#fff);
+  border-radius:28px;
+  background:#fff;
+  box-shadow:0 18px 44px color-mix(in srgb,var(--p) 13%,transparent);
+}
+.onboarding-welcome-art img{
+  display:block;
+  width:100%;
+  height:100%;
+  padding:8px 14px 0;
+  box-sizing:border-box;
+  object-fit:contain;
+}
+.onboarding-dialog .onboarding-welcome>small{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:0 12px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--p) 9%,#fff);
+  color:var(--p)!important;
+  -webkit-text-fill-color:var(--p)!important;
+  font-size:11px;
+  letter-spacing:.08em;
+}
+.onboarding-dialog .onboarding-welcome h1{
+  margin:0;
+  color:var(--ink)!important;
+  font-size:clamp(30px,5vw,43px)!important;
+  line-height:1.2!important;
+  letter-spacing:-.04em;
+}
+.onboarding-dialog .onboarding-welcome h1 em{
+  color:var(--p)!important;
+  -webkit-text-fill-color:var(--p)!important;
+  font-style:normal;
+}
+.onboarding-dialog .onboarding-welcome p{max-width:410px;margin:0!important}
+.onboarding-welcome-points{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:7px;
+}
+.onboarding-welcome-points span{
+  padding:8px 11px;
+  border:1px solid var(--theme-border);
+  border-radius:999px;
+  background:#fff;
+  color:var(--ink);
+  font-size:12px;
+  font-weight:800;
+}
+.onboarding-welcome-points span::before{content:"·";margin-right:6px;color:var(--p)}
+.onboarding-dialog .onboarding-start{
+  width:min(100%,390px)!important;
+  min-height:54px!important;
+  margin-top:3px;
+  border-radius:17px!important;
+  background:linear-gradient(135deg,var(--p),color-mix(in srgb,var(--p) 78%,var(--s)))!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 12px 26px color-mix(in srgb,var(--p) 23%,transparent)!important;
+}
+@media(max-width:720px){
+  .onboarding-dialog .onboarding-first{padding:13px 14px 18px!important}
+  .onboarding-dialog .onboarding-welcome{gap:10px!important}
+  .onboarding-welcome-art{width:min(100%,290px);height:174px;border-radius:23px}
+  .onboarding-dialog .onboarding-welcome h1{font-size:clamp(27px,8vw,34px)!important}
+  .onboarding-dialog .onboarding-welcome p br{display:none}
+  .onboarding-welcome-points span{padding:7px 9px;font-size:11px}
+}

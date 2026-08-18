@@ -457,13 +457,23 @@ async function login(){
   provider.setCustomParameters({prompt:"select_account"});
   try{
     if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
-      // Credential Manager는 일부 삼성/Play 서비스 조합에서 계정 선택창이
-      // 열리지 않은 채 끝나는 사례가 있어, 검증된 Google 계정 선택 화면을
-      // 명시적으로 사용한다. Firebase JS 세션과의 동기화 방식은 유지한다.
-      const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle({
-        skipNativeAuth:true,
-        useCredentialManager:false
-      });
+      // 최신 Android 계정 선택창을 먼저 사용하고, 기기별 Play 서비스 문제로
+      // 열리지 않을 때만 기존 Google 계정 선택창으로 한 번 더 시도한다.
+      let result;
+      try{
+        result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle({
+          skipNativeAuth:true,
+          useCredentialManager:true
+        });
+      }catch(primaryError){
+        const primaryDetail=`${primaryError?.code||""} ${primaryError?.message||""}`;
+        if(/12501|cancel|canceled|cancelled/i.test(primaryDetail))throw primaryError;
+        console.warn("Credential Manager Google login failed; retrying legacy selector",primaryError);
+        result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle({
+          skipNativeAuth:true,
+          useCredentialManager:false
+        });
+      }
       const idToken=String(result?.credential?.idToken||"").trim();
       if(!idToken)throw Object.assign(new Error("Google에서 로그인 토큰을 받지 못했습니다."),{code:"native-auth/missing-id-token"});
       const credential=GoogleAuthProvider.credential(idToken);

@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "115165634004-96ile8pcf79emdeprifn97u7cagtegnn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drawervillage.app",
+            "certificate_hash": "f3a8b6798979ecc67d763b75d9d7adf36869f9b7"
+          }
+        },
+        {
           "client_id": "115165634004-k3jck0ssaa4loinu9h0u09sjrhqr6497.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
