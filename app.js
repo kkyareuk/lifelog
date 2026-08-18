@@ -605,7 +605,7 @@ function showOnboarding(){
       const input=dialog.querySelector('[name="userName"]');if(input){if(!input.value.trim()){input.focus();return}userName=input.value.trim();localStorage.setItem("drawer-village-user-name",userName);state.ownerName=userName;save(true)}
       step=Math.min(pages.length-1,step+1);paint();
     });
-    dialog.querySelector("[data-onboarding-login]")?.addEventListener("click",async()=>{const auth=window.ParallelCityAuth;if(!auth)return showToast("로그인 기능을 불러오는 중이에요");await auth.login();step=3;paint()});
+    dialog.querySelector("[data-onboarding-login]")?.addEventListener("click",async event=>{const auth=window.ParallelCityAuth;if(!auth)return showToast("로그인 기능을 불러오는 중이에요");const button=event.currentTarget;button.disabled=true;button.textContent="Google 로그인 여는 중…";const connected=await auth.login();if(connected){step=3;paint()}else{button.disabled=false;button.textContent="Google 계정 연결"}});
     dialog.querySelector("[data-onboarding-create]")?.addEventListener("click",()=>{if(createCharacter(characterLimit())){localStorage.setItem(ONBOARDING_KEY,"done");localStorage.setItem(SETUP_COACH_KEY,"character");dialog.close();state.activeTab="character";setCharacterPane("profile");save();render();showToast("첫 캐릭터의 이름부터 정해 볼까요?")}});
   };
   dialog.onclose=()=>dialog.remove();

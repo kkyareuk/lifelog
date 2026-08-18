@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "115165634004",
+    "project_id": "lifelog-98fff",
+    "storage_bucket": "lifelog-98fff.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:115165634004:android:2dc2fcabcc6b289443ca41",
+        "android_client_info": {
+          "package_name": "com.drawervillage.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "115165634004-k3jck0ssaa4loinu9h0u09sjrhqr6497.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.drawervillage.app",
+            "certificate_hash": "47591e917a07aad1d8eaa405d9e2b4d380bfaf43"
+          }
+        },
+        {
+          "client_id": "115165634004-ufl0uol97dptckdtgl44qpotmh4ej9b3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgyCLoMpqnjo-reQWUbkrl6kCmZYAhtDk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "115165634004-ufl0uol97dptckdtgl44qpotmh4ej9b3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -28,7 +28,8 @@ const WEB_GAME_PAYMENT_LIMIT=50000;
 function tossCredentials(){
   const secretKey=String(TOSS_SECRET_KEY.value()||"").trim();
   const match=secretKey.match(/^(test|live)_sk_/);
-  if(!match)throw new Error("토스페이먼츠 시크릿 키가 서버에 설정되지 않았습니다.");
+  if(!secretKey)throw Object.assign(new Error("결제 서버에 토스페이먼츠 시크릿 키가 없습니다."),{status:503,code:"TOSS_SECRET_MISSING"});
+  if(!match)throw Object.assign(new Error("결제 서버 키 종류가 잘못되었습니다. live_ck가 아닌 live_sk로 시작하는 시크릿 키를 다시 등록해 주세요."),{status:503,code:"TOSS_SECRET_WRONG_TYPE"});
   return {secretKey,environment:match[1]};
 }
 

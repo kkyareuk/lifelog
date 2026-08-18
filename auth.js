@@ -452,18 +452,38 @@ async function prepareState(local,manifest,previousState){
 }
 
 async function login(){
-  if(!ready){alert("config.js의 Firebase 웹 앱 설정을 확인해 주세요.");return}
+  if(!ready){alert("Google 로그인 설정을 불러오지 못했습니다. 앱을 완전히 종료한 뒤 다시 열어 주세요.");return false}
   const provider=new GoogleAuthProvider();
   provider.setCustomParameters({prompt:"select_account"});
-  if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
-    const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
-    const credential=GoogleAuthProvider.credential(result.credential?.idToken,result.credential?.accessToken);
-    await signInWithCredential(auth,credential);
-    return;
-  }
-  try{await signInWithPopup(auth,provider)}catch(error){
-    if(["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request"].includes(error.code))await signInWithRedirect(auth,provider);
-    else alert(`로그인 실패: ${error.message||error.code}`);
+  try{
+    if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
+      const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle();
+      const idToken=String(result?.credential?.idToken||"").trim();
+      if(!idToken)throw Object.assign(new Error("Google에서 로그인 토큰을 받지 못했습니다."),{code:"native-auth/missing-id-token"});
+      const credential=GoogleAuthProvider.credential(idToken,result?.credential?.accessToken||null);
+      await signInWithCredential(auth,credential);
+      toast("Google 계정이 연결됐어요");
+      return true;
+    }
+    await signInWithPopup(auth,provider);
+    return true;
+  }catch(error){
+    if(!window.Capacitor?.isNativePlatform?.()&&["auth/popup-blocked","auth/operation-not-supported-in-this-environment","auth/cancelled-popup-request"].includes(error?.code)){
+      await signInWithRedirect(auth,provider);
+      return true;
+    }
+    const detail=`${error?.code||""} ${error?.message||""}`;
+    if(/12501|cancel|canceled|cancelled/i.test(detail))return false;
+    const message=/\b10\b|12500|DEVELOPER_ERROR|ApiException: 10/i.test(detail)
+      ?"Google 로그인 인증서가 앱 서명과 맞지 않습니다. Firebase에 Google Play 앱 서명 SHA-1을 확인해 주세요."
+      :/network|timeout|unavailable/i.test(detail)
+        ?"인터넷 연결을 확인한 뒤 Google 로그인을 다시 눌러 주세요."
+        :`Google 로그인에 실패했습니다. ${error?.message||error?.code||"잠시 후 다시 시도해 주세요."}`;
+    console.error("Google login failed",error);
+    status("Google 로그인 실패");
+    toast(message);
+    alert(message);
+    return false;
   }
 }
 
@@ -617,7 +637,12 @@ if(ready){
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
 window.ParallelCityAuth={
   login,upload,download,submitFeedback,markGuideSeen,resetGuides,
-  logout:async()=>user&&signOut(auth),
+  logout:async()=>{
+    if(user)await signOut(auth);
+    if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
+      await window.Capacitor.Plugins.FirebaseAuthentication.signOut().catch(()=>{});
+    }
+  },
   getIdToken:async()=>user?user.getIdToken():null,
   getInfo:()=>({ready,user,busy,entitlements,storageUsage,guideState})
 };

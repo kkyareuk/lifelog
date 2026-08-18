@@ -176,7 +176,7 @@ const normalizeHomeSceneLayout=value=>{
     }];
   }));
 };
-const fresh=()=>({schema:16,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"dark",visualTheme:"monochrome",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
+const fresh=()=>({schema:16,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"cream",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -233,9 +233,9 @@ function normalizeHomes(x){
   x.uiFont=["system","dangam","dohyeon","haeong","aggro","corncorn"].includes(x.uiFont)?x.uiFont:"system";
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
-  x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"dark";
+  x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"light";
   delete x.userMods;
-  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine","berry","sky","cobalt","aqua","lime","coral","baroque","moonlit-drawer","ruined-rose","healing-glasshouse","reverie-ward","noir-rain"].includes(x.visualTheme)?x.visualTheme:"monochrome";
+  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine","berry","sky","cobalt","aqua","lime","coral","baroque","moonlit-drawer","ruined-rose","healing-glasshouse","reverie-ward","noir-rain"].includes(x.visualTheme)?x.visualTheme:"cream";
   x.ownerName=String(x.ownerName||"").trim().slice(0,20);
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;

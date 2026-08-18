@@ -69,8 +69,8 @@ if(isNative){
       if(Number(purchaseResult?.purchaseState)===2)throw new Error("결제가 보류 중입니다. Google Play에서 완료한 뒤 다시 확인해 주세요.");
       throw new Error("Google Play 결제가 완료되지 않았습니다.");
     }
-    await verifyPurchase({...purchaseResult,products:[productId]});
-    await finishVerifiedPurchase(purchaseResult,productId);
+    const verification=await verifyPurchase({...purchaseResult,products:[productId]});
+    if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
     await window.ParallelCityAuth?.download?.({automatic:false});
     return purchaseResult;
   };
@@ -85,8 +85,8 @@ if(isNative){
       if(Number(purchaseResult?.purchaseState)!==1)continue;
       const storeProductId=purchaseResult.products?.[0]||"";
       const productId=logicalProductId(storeProductId);
-      await verifyPurchase({...purchaseResult,products:[productId]});
-      await finishVerifiedPurchase(purchaseResult,productId);
+      const verification=await verifyPurchase({...purchaseResult,products:[productId]});
+      if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
       restored+=1;
     }
     if(restored)await window.ParallelCityAuth?.download?.({automatic:false});

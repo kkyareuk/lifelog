@@ -6228,3 +6228,98 @@ html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy
     backdrop-filter:none!important;
   }
 }
+
+/* 2026-08-18 Android stability pass: keep first-run and utility pages light,
+   remove expensive full-screen blur, and guarantee phone-sized content. */
+.onboarding-hero-icon img{
+  display:block;
+  width:100%;
+  height:100%;
+  box-sizing:border-box;
+  padding:8px 28px;
+  object-fit:contain;
+}
+html.native-platform .native-observe-backdrop{
+  filter:saturate(.9)!important;
+  transform:none!important;
+}
+html.native-platform :is(.page-guide,.native-status-card,.native-log-card,.home-observe-tools button){
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html.native-platform[data-color-mode="light"] .onboarding-dialog{
+  border:1px solid var(--theme-border)!important;
+  background:
+    radial-gradient(circle at 50% 8%,color-mix(in srgb,var(--s) 20%,transparent),transparent 36%),
+    linear-gradient(155deg,var(--panel),var(--bg))!important;
+  color:var(--ink)!important;
+  box-shadow:0 24px 64px color-mix(in srgb,var(--p) 18%,transparent)!important;
+}
+html.native-platform[data-color-mode="light"] .onboarding-dialog :is(h1,p,p b,section>small,label){
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html.native-platform[data-color-mode="light"] .onboarding-dialog section>small,
+html.native-platform[data-color-mode="light"] .onboarding-dialog p{
+  color:var(--muted)!important;
+  -webkit-text-fill-color:var(--muted)!important;
+}
+html.native-platform[data-color-mode="light"] .onboarding-dialog :is(input,button:not(.primary)){
+  border-color:var(--theme-border)!important;
+  background:var(--theme-surface)!important;
+  color:var(--ink)!important;
+  -webkit-text-fill-color:var(--ink)!important;
+}
+html.native-platform[data-color-mode="light"] .onboarding-hero-icon{
+  border-color:var(--theme-border)!important;
+  background:linear-gradient(145deg,var(--theme-surface-strong),var(--panel))!important;
+  color:var(--p)!important;
+  box-shadow:0 14px 32px var(--theme-shadow)!important;
+}
+html.native-platform[data-color-mode="light"] .onboarding-safe-note{
+  border-color:var(--theme-border)!important;
+  background:var(--theme-surface)!important;
+}
+html.native-platform[data-color-mode="light"] .onboarding-safe-note span{color:var(--muted)!important}
+html.native-platform[data-color-mode="light"] .onboarding-route>span{
+  border-color:var(--theme-border)!important;
+  background:var(--theme-surface)!important;
+}
+html.native-platform[data-active-tab="shop"] .native-play-store{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow:hidden!important;
+}
+html.native-platform[data-active-tab="shop"] .native-play-store :is(.shop-product-grid,.premium-product,.shop-coming){
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+html.native-platform[data-active-tab="shop"] .native-play-store .premium-product-heading{
+  grid-template-columns:auto minmax(0,1fr)!important;
+}
+html.native-platform[data-active-tab="shop"] .native-play-store .premium-product-heading>b{
+  grid-column:1/-1!important;
+  justify-self:start!important;
+}
+html.native-platform[data-active-tab="shop"] .native-expansion-coming{
+  margin-top:18px!important;
+  padding:20px!important;
+}
+html.native-platform[data-active-tab="shop"] .native-expansion-coming small{
+  color:var(--p)!important;
+  font-weight:900!important;
+  letter-spacing:.14em!important;
+}
+@media(max-width:720px){
+  html.native-platform body{overflow-x:hidden!important}
+  html.native-platform .onboarding-dialog form{overflow-y:auto!important;overscroll-behavior:contain}
+  html.native-platform .onboarding-dialog section{align-content:start!important;padding-top:8px}
+  html.native-platform .onboarding-dialog h1{font-size:clamp(25px,7.8vw,34px)!important;line-height:1.22!important}
+  html.native-platform .onboarding-dialog p{font-size:13px!important}
+  html.native-platform .onboarding-actions{grid-template-columns:minmax(0,1fr)!important}
+  html.native-platform[data-active-tab="shop"] .native-play-store{padding:14px 10px 30px!important}
+  html.native-platform[data-active-tab="shop"] .native-play-store .shop-product-grid{grid-template-columns:minmax(0,1fr)!important}
+}

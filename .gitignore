@@ -1,0 +1,23 @@
+node_modules/
+www/
+
+# Android/Gradle generated files
+android/.gradle/
+android/app/src/main/assets/
+android/app/src/main/res/
+android/capacitor-cordova-android-plugins/
+android/capacitor.settings.gradle
+android/gradle/
+android/gradle.properties
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/settings.gradle
+android/app/capacitor.build.gradle
+
+# Local signing material must never be committed
+android/signing.properties
+android/upload-key.jks
+
+# Locally built Play Store bundles
+Google-Play-업로드-*/
