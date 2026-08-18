@@ -1,4 +1,4 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819cloud3";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819typing4";
 import {eventFor} from "./simulation.js?v=20260819profile1";
 import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819cloud3";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
@@ -747,6 +747,12 @@ function render(){
 function isMobileCharacterDraftControl(element){
   return Boolean(element?.closest?.("[data-mobile-character-editor-dialog]"));
 }
+function isDeferredMobileTextControl(element){
+  if(!isMobileCharacterDraftControl(element))return false;
+  if(element?.tagName==="TEXTAREA")return true;
+  if(element?.tagName!=="INPUT")return false;
+  return !["checkbox","radio","range","color","file","button","submit"].includes(String(element.type||"text").toLowerCase());
+}
 function markMobileCharacterDraft(element){
   if(isMobileCharacterDraftControl(element)){
     mobileCharacterDraftDirty=true;
@@ -755,7 +761,11 @@ function markMobileCharacterDraft(element){
     // 멈춘 뒤에만 한 번 저장하고, 저장 버튼에서는 화면 값을 다시 읽는다.
     clearTimeout(mobileCharacterAutosaveTimer);
     mobileCharacterAutosaveTimer=setTimeout(()=>{
-      if(mobileCharacterDraftDirty)save(true,false);
+      if(mobileCharacterDraftDirty){
+        syncOpenCharacterEditorDraft();
+        save(true,false);
+        mobileCharacterDraftDirty=false;
+      }
     },2500);
   }
   return isMobileCharacterDraftControl(element);
@@ -772,21 +782,38 @@ function characterPatchFromField(element){
   }[element.value]||["없음"];
   return patch;
 }
+function setNestedObjectValue(target,path,value){
+  const parts=String(path||"").split("."),last=parts.pop();
+  let cursor=target;
+  parts.forEach(part=>{
+    if(!cursor[part]||typeof cursor[part]!=="object"||Array.isArray(cursor[part]))cursor[part]={};
+    cursor=cursor[part];
+  });
+  if(last)cursor[last]=value;
+}
 function syncOpenCharacterEditorDraft(){
   const dialog=document.querySelector("[data-mobile-character-editor-dialog][open]");
   const character=active();
   if(!dialog||!character)return;
   // Android 한글 키보드는 마지막 조합 글자의 input 이벤트가 저장 버튼의
   // click보다 늦을 수 있다. 현재 DOM 값을 직접 읽어 마지막 글자도 보존한다.
+  const patch={};
   dialog.querySelectorAll("[data-field]").forEach(element=>{
-    const patch=characterPatchFromField(element);
-    if(patch)updateCharacter(character.id,patch,false);
+    const fieldPatch=characterPatchFromField(element);
+    if(fieldPatch)Object.assign(patch,fieldPatch);
   });
   dialog.querySelectorAll("[data-personality-field]").forEach(element=>{
-    updateCharacter(character.id,{[element.dataset.personalityField]:element.value},false);
+    patch[element.dataset.personalityField]=element.value;
   });
   const traitNotes=dialog.querySelector("[data-trait-notes]");
-  if(traitNotes)updateCharacter(character.id,{traitNotes:traitNotes.value.slice(0,1200)},false);
+  if(traitNotes)patch.traitNotes=traitNotes.value.slice(0,1200);
+  const bodyFields=[...dialog.querySelectorAll("[data-body-field]")];
+  if(bodyFields.length){
+    const bodyProfile=structuredClone(character.bodyProfile||{});
+    bodyFields.forEach(element=>setNestedObjectValue(bodyProfile,element.dataset.bodyField,element.value));
+    patch.bodyProfile=bodyProfile;
+  }
+  updateCharacter(character.id,patch,false);
 }
 function renderPreservingCharacterEditorScroll(element){
   const shell=element?.closest?.("[data-mobile-character-editor-dialog]")?.querySelector(".mobile-character-editor-shell");
@@ -808,7 +835,10 @@ function renderPreservingPageScroll(element){
 function flushMobileCharacterDraft({closeEditor=true}={}){
   clearTimeout(mobileCharacterAutosaveTimer);
   mobileCharacterAutosaveTimer=undefined;
-  if(mobileCharacterDraftDirty)save(true);
+  if(mobileCharacterDraftDirty){
+    syncOpenCharacterEditorDraft();
+    save(true);
+  }
   mobileCharacterDraftDirty=false;
   if(closeEditor)mobileCharacterEditorPane="";
 }
@@ -1362,7 +1392,11 @@ function bind(){
   $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);setCharacterPane("profile");render()});
   $$("[data-mobile-character-select]").forEach(el=>el.onclick=()=>{
     mobileCharacterStripScroll=el.closest(".mobile-character-strip")?.scrollLeft||0;
-    if(mobileCharacterDraftDirty){save(true);mobileCharacterDraftDirty=false}
+    if(mobileCharacterDraftDirty){
+      syncOpenCharacterEditorDraft();
+      save(true);
+      mobileCharacterDraftDirty=false;
+    }
     setActive(el.dataset.mobileCharacterSelect);
     render();
     requestAnimationFrame(()=>{const strip=document.querySelector(".mobile-character-strip");if(strip)strip.scrollLeft=mobileCharacterStripScroll});
@@ -1675,9 +1709,18 @@ function bind(){
   };
   $$("[data-character-trait]").forEach(el=>el.onclick=()=>toggleTraitSetting("characterTraits",el.dataset.characterTrait,el));
   $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting("traitExpressions",el.dataset.traitExpression,el));
-  $$("[data-trait-notes]").forEach(el=>el.oninput=()=>{
-    updateCharacter(active().id,{traitNotes:el.value.slice(0,1200)},false);
-    if(!markMobileCharacterDraft(el))save();
+  $$("[data-trait-notes]").forEach(el=>{
+    const apply=()=>updateCharacter(active().id,{traitNotes:el.value.slice(0,1200)},false);
+    el.oninput=()=>{
+      if(isDeferredMobileTextControl(el)){markMobileCharacterDraft(el);return}
+      apply();
+      save();
+    };
+    el.addEventListener("change",()=>{
+      if(!isMobileCharacterDraftControl(el))return;
+      apply();
+      save(true,false);
+    });
   });
   $$("[data-trait-notes-in-scripts]").forEach(el=>el.addEventListener("change",e=>{
     const mobileDraft=markMobileCharacterDraft(el);
@@ -1685,18 +1728,12 @@ function bind(){
     if(!mobileDraft)save(true);
     renderPreservingCharacterEditorScroll(el);
   }));
-  const setNestedValue=(target,path,value)=>{
-    const parts=String(path||"").split("."),last=parts.pop();
-    let cursor=target;
-    parts.forEach(part=>{if(!cursor[part]||typeof cursor[part]!=="object"||Array.isArray(cursor[part]))cursor[part]={};cursor=cursor[part]});
-    cursor[last]=value;
-  };
   $$("[data-body-field]").forEach(el=>{
     const eventName=el.tagName==="SELECT"?"change":"input";
-    el.addEventListener(eventName,()=>{
+    const apply=()=>{
       const character=active(),bodyProfile=structuredClone(character.bodyProfile||{});
       const previousLeft=bodyProfile.appearance?.leftEyeColor||"설정하지 않음",previousRight=bodyProfile.appearance?.rightEyeColor||"설정하지 않음";
-      setNestedValue(bodyProfile,el.dataset.bodyField,el.value);
+      setNestedObjectValue(bodyProfile,el.dataset.bodyField,el.value);
       if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField)&&previousLeft==="설정하지 않음"&&previousRight==="설정하지 않음"&&el.value!=="설정하지 않음"){
         bodyProfile.appearance.leftEyeColor=el.value;
         bodyProfile.appearance.rightEyeColor=el.value;
@@ -1705,6 +1742,15 @@ function bind(){
       updateCharacter(character.id,{bodyProfile},false);
       if(!mobileDraft)save(el.tagName==="SELECT");
       if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField))renderPreservingCharacterEditorScroll(el);
+    };
+    el.addEventListener(eventName,()=>{
+      if(eventName==="input"&&isDeferredMobileTextControl(el)){markMobileCharacterDraft(el);return}
+      apply();
+    });
+    if(eventName==="input")el.addEventListener("change",()=>{
+      if(!isMobileCharacterDraftControl(el))return;
+      apply();
+      save(true,false);
     });
   });
   $$("[data-body-list]").forEach(el=>el.onclick=()=>{
@@ -1742,9 +1788,15 @@ function bind(){
     }
     if(el.dataset.field==="homeVisualScale")el.closest("label")?.querySelector("[data-home-visual-scale-value]")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
     };
-    el.oninput=apply;
+    el.oninput=()=>{
+      if(isDeferredMobileTextControl(el)){markMobileCharacterDraft(el);return}
+      apply();
+    };
     // IME 조합 종료와 포커스 이탈 때 최종 DOM 값을 한 번 더 반영한다.
-    el.addEventListener("compositionend",apply);
+    el.addEventListener("compositionend",()=>{
+      if(isDeferredMobileTextControl(el))markMobileCharacterDraft(el);
+      else apply();
+    });
     el.addEventListener("change",()=>{
       apply();
       if(isMobileCharacterDraftControl(el))save(true,false);
@@ -2938,7 +2990,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819cloud3").catch(error=>{
+  import("./auth.js?v=20260819typing4").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });

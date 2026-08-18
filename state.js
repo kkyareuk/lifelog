@@ -736,6 +736,7 @@ export function deleteCharacter(id){
   state.activeId=state.order[0]||null;
   save(true);
 }
+const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl"]);
 export function updateCharacter(id,patch,persist=true){
   const c=state.characters[id];if(!c)return;
   Object.assign(c,patch);
@@ -748,8 +749,7 @@ export function updateCharacter(id,patch,persist=true){
     const residence=(c.residences||[]).find(item=>item.homeId===c.homeId);
     if(residence)residence.sleepRoomId=patch.sleepRoomId;
   }
-  const simulationFields=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl"]);
-  if(Object.keys(patch).some(key=>simulationFields.has(key)))c.timelineResetAt=Date.now();
+  if(Object.keys(patch).some(key=>SIMULATION_FIELDS.has(key)))c.timelineResetAt=Date.now();
   if(persist)save();
 }
 export function addRoutine(characterId){
