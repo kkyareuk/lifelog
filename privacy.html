@@ -10,7 +10,7 @@
     :root{color-scheme:light;--ink:#2d2119;--muted:#756c65;--line:#e1d5c8;--paper:#fffdf9;--accent:#6b452b}
     *{box-sizing:border-box}body{margin:0;background:#f6f1e9;color:var(--ink);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;word-break:keep-all;line-height:1.75}
     main{width:min(900px,calc(100% - 28px));margin:30px auto;padding:clamp(22px,5vw,54px);border:1px solid var(--line);border-radius:28px;background:var(--paper);box-shadow:0 18px 50px #57351d12}
-    a{color:var(--accent)}h1{margin:8px 0 4px;font-size:clamp(30px,6vw,48px)}h2{margin:34px 0 8px;font-size:21px;scroll-margin-top:20px}p,li,td,th{font-size:14px}.meta{color:var(--muted)}.back{font-weight:800;text-decoration:none}.request{padding:18px;border:1px solid var(--line);border-radius:18px;background:#f8f1e8}.request a{display:inline-block;margin-top:4px;padding:10px 14px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;text-decoration:none}
+    a{color:var(--accent)}h1{margin:8px 0 4px;font-size:clamp(30px,6vw,48px)}h2{margin:34px 0 8px;font-size:21px;scroll-margin-top:20px}h3{margin:22px 0 6px;font-size:17px;scroll-margin-top:20px}p,li,td,th{font-size:14px}.meta{color:var(--muted)}.back{font-weight:800;text-decoration:none}.request{padding:18px;border:1px solid var(--line);border-radius:18px;background:#f8f1e8}.request a{display:inline-block;margin-top:4px;padding:10px 14px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;text-decoration:none}
     table{width:100%;border-collapse:collapse;margin:12px 0;display:block;overflow:auto}th,td{min-width:150px;padding:11px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f4ede5}
   </style>
 </head>
@@ -64,8 +64,12 @@
 
   <h2 id="account-deletion">7. 계정 및 클라우드 데이터 삭제 요청</h2>
   <div class="request">
-    <p>Google 로그인으로 만든 서랍마을 계정과 연결된 클라우드 게임 데이터의 삭제를 요청할 수 있습니다. 아래 버튼으로 메일을 보내고, 본인 확인을 위해 서랍마을에 로그인한 Google 이메일 주소를 적어 주세요.</p>
-    <p>요청 확인 후 Firebase Authentication 계정, 클라우드에 동기화된 캐릭터·관계·마을·일정·생활 로그와 업로드 이미지를 삭제합니다. 기기에만 저장된 데이터는 앱의 ‘모든 데이터 초기화’ 또는 앱 데이터 삭제로 직접 지울 수 있습니다. 결제·분쟁 대응 등 법률상 보관 의무가 있는 기록은 정해진 기간 동안 분리 보관한 뒤 삭제합니다.</p>
+    <p>Google 로그인으로 만든 서랍마을 계정 전체와 연결된 클라우드 게임 데이터의 삭제를 요청할 수 있습니다. 아래 버튼으로 메일을 보내고, 본인 확인을 위해 서랍마을에 로그인한 Google 이메일 주소와 ‘계정 전체 삭제’를 적어 주세요.</p>
+    <p>요청 확인 후 Firebase Authentication 계정, 클라우드에 동기화된 캐릭터·관계·마을·일정·생활 로그와 업로드 이미지를 삭제합니다.</p>
+
+    <h3 id="data-deletion">계정은 유지하고 데이터만 삭제하기</h3>
+    <p>Google 로그인 계정은 유지하면서 클라우드에 동기화된 캐릭터, 관계, 집·마을, 일정·생활 로그, 업로드 이미지 중 일부 또는 전체의 삭제도 요청할 수 있습니다. 메일에 삭제할 데이터의 종류와 범위를 적어 주세요.</p>
+    <p>기기에만 저장된 데이터는 앱의 ‘모든 데이터 초기화’ 또는 앱 데이터 삭제로 직접 지울 수 있습니다. 결제·분쟁 대응 등 법률상 보관 의무가 있는 기록은 정해진 기간 동안 분리 보관한 뒤 삭제합니다.</p>
     <a href="mailto:kkyaareuk@gmail.com?subject=%EC%84%9C%EB%9E%8D%EB%A7%88%EC%9D%84%20%EA%B3%84%EC%A0%95%20%EB%B0%8F%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">계정·데이터 삭제 요청하기</a>
   </div>
 
