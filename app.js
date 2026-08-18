@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260815av";
-import {eventFor} from "./simulation.js?v=20260815av";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260815av";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260818layout2";
+import {eventFor} from "./simulation.js?v=20260818layout2";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260818layout2";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
 
 await initializeLocalMediaState(state);
@@ -1033,6 +1033,26 @@ function bindCharacterSceneLayoutEditors(){
       persistCharacterSceneLayout(characterId,mode,defaultCharacterSceneLayout());
       showToast(`${mode.toUpperCase()} 배치를 초기화했습니다`);
     });
+    editor.querySelectorAll('[data-home-layout-nudge]').forEach(button=>button.addEventListener("click",()=>{
+      const mode=editor.dataset.mode==="ld"?"ld":"sd";
+      const current=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode));
+      const target=button.dataset.homeLayoutTarget==="action"?"action":"art";
+      const dx=Number(button.dataset.homeLayoutDx)||0;
+      const dy=Number(button.dataset.homeLayoutDy)||0;
+      const scale=Number(button.dataset.homeLayoutScale)||0;
+      const next={...current};
+      if(target==="action"){
+        next.actionX+=dx;
+        next.actionY+=dy;
+      }else{
+        next.x+=dx;
+        next.y+=dy;
+        next.scale+=scale;
+      }
+      persistCharacterSceneLayout(characterId,mode,next);
+      const note=editor.querySelector('.home-layout-save-note');
+      if(note)note.textContent=`${mode.toUpperCase()} 배치를 저장했습니다.`;
+    }));
     editor.querySelectorAll('[data-home-layout-layer]').forEach(layer=>{
       const mode=layer.dataset.homeLayoutLayer;
       const canvas=editor.querySelector('.home-layout-preview');
@@ -1043,10 +1063,10 @@ function bindCharacterSceneLayoutEditors(){
         if(event.button!==undefined&&event.button!==0)return;
         event.preventDefault();event.stopPropagation();
         const starting=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode));
-        // SD is rendered inside a compact character stage on the real home
-        // screen, while LD uses the whole scene frame. Measure the matching
-        // preview frame so a drag produces the same percentage at home.
-        const canvasRect=(mode==="sd"?layer:canvas).getBoundingClientRect();
+        // Always measure against the whole preview. The old SD implementation
+        // measured its small art layer, making a short finger movement jump all
+        // the way to the +/-45% limit on Android.
+        const canvasRect=canvas.getBoundingClientRect();
         const artRect=art.getBoundingClientRect();
         const startDistance=Math.max(20,Math.hypot(event.clientX-(artRect.left+artRect.width/2),event.clientY-(artRect.top+artRect.height/2)));
         const pointerId=event.pointerId;
@@ -1072,9 +1092,12 @@ function bindCharacterSceneLayoutEditors(){
           window.removeEventListener("pointermove",move);
           window.removeEventListener("pointerup",finish);
           window.removeEventListener("pointercancel",finish);
+          try{event.currentTarget.releasePointerCapture?.(pointerId)}catch{}
           const pending=layer.dataset.pendingLayout?JSON.parse(layer.dataset.pendingLayout):starting;
           delete layer.dataset.pendingLayout;
           persistCharacterSceneLayout(characterId,mode,pending);
+          const note=editor.querySelector('.home-layout-save-note');
+          if(note)note.textContent=`${mode.toUpperCase()} 배치를 저장했습니다.`;
         };
         window.addEventListener("pointermove",move,{passive:false});
         window.addEventListener("pointerup",finish);
