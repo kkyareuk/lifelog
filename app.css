@@ -2518,6 +2518,13 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   }
   .native-app[data-active-tab="town"] .mobile-town-hud small{color:#ffffffa8;font-size:9px}
   .native-app[data-active-tab="town"] .mobile-town-hud b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .native-app[data-active-tab="town"] .mobile-town-hud-actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:6px;
+    pointer-events:auto;
+  }
   .native-app[data-active-tab="town"] .mobile-town-hud button{
     min-height:44px;
     padding:9px 13px;

@@ -69,7 +69,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260819core1-backfix";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260819billing2-town-add";
     if("serviceWorker" in navigator){
       navigator.serviceWorker.getRegistrations().then(items=>Promise.all(items.map(item=>item.unregister()))).catch(()=>{});
     }

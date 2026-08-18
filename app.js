@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core1";
-import {eventFor} from "./simulation.js?v=20260819core1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819billing2";
+import {eventFor} from "./simulation.js?v=20260819billing2";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819billing2";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
 
 await initializeLocalMediaState(state);
@@ -2049,7 +2049,11 @@ function bind(){
     state.world.era=e.target.value;save(true);render();showToast(e.target.value==="medieval"?"이 마을에 중세 생활 스크립트가 적용됩니다":"이 마을을 현대 시대로 바꿨습니다");
   });
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{setMobileTownPanel("");switchTown(el.dataset.townSelect);render();centerMobileTownMap()});
-  $("[data-add-town]")?.addEventListener("click",()=>{const limit=townLimit();if(!addTown(limit))showToast(`현재 마을 슬롯은 ${limit}개까지예요`);render()});
+  $$("[data-add-town]").forEach(el=>el.addEventListener("click",()=>{
+    const limit=townLimit();
+    if(!addTown(limit))showToast(`현재 마을 슬롯은 ${limit}개까지예요`);
+    render();
+  }));
   $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
   $$("[data-add-place]").forEach(el=>el.addEventListener("click",()=>{
     const before=new Set(state.world.places.map(place=>place.id));

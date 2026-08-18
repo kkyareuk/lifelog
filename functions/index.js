@@ -222,6 +222,17 @@ app.post("/payments/confirm",async(request,response)=>{
   }
 });
 
+function playVerificationMessage(error){
+  const message=String(error?.message||"");
+  if(/androidpublisher\.googleapis\.com/i.test(message)&&/not been used|disabled/i.test(message)){
+    return "Google Play 구매 확인 기능을 연결하는 중입니다. 잠시 후 상점 아래의 ‘구매 내역 확인’을 다시 눌러 주세요.";
+  }
+  if(Number(error?.status)===403||Number(error?.code)===403){
+    return "Google Play 구매 확인 권한이 아직 연결되지 않았습니다. 잠시 후 다시 시도해 주세요.";
+  }
+  return Number(error?.status)?message:"Google Play 구매를 확인하지 못했습니다. 잠시 후 ‘구매 내역 확인’을 다시 눌러 주세요.";
+}
+
 app.post("/play-billing/verify",async(request,response)=>{
   try{
     const identity=await signedInUser(request);
@@ -281,7 +292,7 @@ app.post("/play-billing/verify",async(request,response)=>{
     response.status(Number(error.status)||500).json({
       verified:false,
       entitlementApplied:false,
-      message:Number(error.status)?error.message:"Google Play 구매를 검증하지 못했습니다."
+      message:playVerificationMessage(error)
     });
   }
 });
