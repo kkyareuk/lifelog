@@ -5999,6 +5999,88 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
 }
 
+/* 관계 편집기의 체크박스를 모바일 공통 입력 너비 규칙에서 제외한다. */
+@media(max-width:720px){
+  dialog.relation-editor-dialog form{gap:13px!important}
+  dialog.relation-editor-dialog [hidden]{display:none!important}
+  dialog.relation-editor-dialog :is(input[type="checkbox"],input[type="radio"]){
+    flex:0 0 20px!important;
+    width:20px!important;
+    min-width:20px!important;
+    max-width:20px!important;
+    height:20px!important;
+    min-height:20px!important;
+    padding:0!important;
+    margin:0!important;
+  }
+  dialog.relation-editor-dialog .relation-temporal{
+    display:grid!important;
+    grid-template-columns:20px minmax(0,1fr)!important;
+    align-items:center!important;
+    gap:10px!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-height:0!important;
+    padding:13px!important;
+  }
+  dialog.relation-editor-dialog .relation-temporal>span{
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+  }
+  dialog.relation-editor-dialog .relation-temporal small{
+    display:block!important;
+    width:auto!important;
+    overflow-wrap:break-word!important;
+    word-break:keep-all!important;
+  }
+  dialog.relation-editor-dialog .relation-member-picker>div{
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  dialog.relation-editor-dialog .relation-character-chip{
+    display:grid!important;
+    grid-template-columns:20px minmax(0,1fr)!important;
+    width:100%!important;
+    min-height:48px!important;
+    padding:10px!important;
+    border-radius:14px!important;
+    overflow-wrap:break-word!important;
+    word-break:keep-all!important;
+  }
+  dialog.relation-editor-dialog .relation-order-control{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    min-height:0!important;
+    height:auto!important;
+    padding:13px!important;
+    overflow:visible!important;
+  }
+  dialog.relation-editor-dialog .relation-member-order-list{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+  }
+  dialog.relation-editor-dialog .relation-member-order-list>span{
+    display:grid!important;
+    grid-template-columns:28px minmax(0,1fr) 38px 38px!important;
+    width:100%!important;
+    padding:8px!important;
+  }
+  dialog.relation-editor-dialog .relation-member-order-list button{
+    width:38px!important;
+    min-width:38px!important;
+    padding:5px!important;
+  }
+  dialog.relation-editor-dialog .relation-order-control>[data-swap-relation-order]{width:100%!important}
+}
+@media(max-width:390px){
+  dialog.relation-editor-dialog .relation-member-picker>div{grid-template-columns:minmax(0,1fr)!important}
+}
+.account-deletion-links{display:flex!important;flex-wrap:wrap;justify-content:flex-start!important;gap:8px!important;margin-top:8px}
+.account-deletion-links a{padding:9px 11px;border:1px solid var(--line);border-radius:12px;background:var(--soft);color:var(--ink);font-size:12px;font-weight:850;text-decoration:none}
+
 /* Final contrast and global-color authority; keep this after legacy compatibility rules. */
 html[data-color-mode][data-active-tab="settings"] .settings-shell button.primary,
 html[data-color-mode][data-active-tab="settings"] .color-mode-options button.on,

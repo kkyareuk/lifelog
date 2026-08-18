@@ -10,7 +10,7 @@
     :root{color-scheme:light;--ink:#2d2119;--muted:#756c65;--line:#e1d5c8;--paper:#fffdf9;--accent:#6b452b}
     *{box-sizing:border-box}body{margin:0;background:#f6f1e9;color:var(--ink);font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;word-break:keep-all;line-height:1.75}
     main{width:min(900px,calc(100% - 28px));margin:30px auto;padding:clamp(22px,5vw,54px);border:1px solid var(--line);border-radius:28px;background:var(--paper);box-shadow:0 18px 50px #57351d12}
-    a{color:var(--accent)}h1{margin:8px 0 4px;font-size:clamp(30px,6vw,48px)}h2{margin:34px 0 8px;font-size:21px}p,li,td,th{font-size:14px}.meta{color:var(--muted)}.back{font-weight:800;text-decoration:none}
+    a{color:var(--accent)}h1{margin:8px 0 4px;font-size:clamp(30px,6vw,48px)}h2{margin:34px 0 8px;font-size:21px;scroll-margin-top:20px}p,li,td,th{font-size:14px}.meta{color:var(--muted)}.back{font-weight:800;text-decoration:none}.request{padding:18px;border:1px solid var(--line);border-radius:18px;background:#f8f1e8}.request a{display:inline-block;margin-top:4px;padding:10px 14px;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;text-decoration:none}
     table{width:100%;border-collapse:collapse;margin:12px 0;display:block;overflow:auto}th,td{min-width:150px;padding:11px;border:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f4ede5}
   </style>
 </head>
@@ -18,8 +18,8 @@
 <main>
   <a class="back" href="./">← 서랍마을로 돌아가기</a>
   <h1>개인정보처리방침</h1>
-  <p class="meta">시행일 2026년 8월 4일</p>
-  <p>꺄륵(대표자 김세은, 이하 “운영자”)은 서랍마을 이용자의 개인정보를 보호하고 관련 문의를 처리하기 위해 다음과 같이 개인정보처리방침을 공개합니다.</p>
+  <p class="meta">시행일 2026년 8월 19일</p>
+  <p>까륵(대표자 김세은, 이하 “운영자”)은 서랍마을 이용자의 개인정보를 보호하고 관련 문의를 처리하기 위해 다음과 같이 개인정보처리방침을 공개합니다.</p>
 
   <h2>1. 처리하는 개인정보와 목적</h2>
   <table>
@@ -62,17 +62,24 @@
   <h2>6. 이용자의 권리</h2>
   <p>이용자는 자신의 개인정보 열람, 정정, 삭제, 처리 정지 및 동의 철회를 요청할 수 있습니다. 본인 확인이 필요한 요청은 아래 개인정보 문의처로 보내 주세요. 법정대리인은 관련 법령에 따라 아동의 권리를 행사할 수 있습니다.</p>
 
-  <h2>7. 브라우저 저장소</h2>
+  <h2 id="account-deletion">7. 계정 및 클라우드 데이터 삭제 요청</h2>
+  <div class="request">
+    <p>Google 로그인으로 만든 서랍마을 계정과 연결된 클라우드 게임 데이터의 삭제를 요청할 수 있습니다. 아래 버튼으로 메일을 보내고, 본인 확인을 위해 서랍마을에 로그인한 Google 이메일 주소를 적어 주세요.</p>
+    <p>요청 확인 후 Firebase Authentication 계정, 클라우드에 동기화된 캐릭터·관계·마을·일정·생활 로그와 업로드 이미지를 삭제합니다. 기기에만 저장된 데이터는 앱의 ‘모든 데이터 초기화’ 또는 앱 데이터 삭제로 직접 지울 수 있습니다. 결제·분쟁 대응 등 법률상 보관 의무가 있는 기록은 정해진 기간 동안 분리 보관한 뒤 삭제합니다.</p>
+    <a href="mailto:kkyaareuk@gmail.com?subject=%EC%84%9C%EB%9E%8D%EB%A7%88%EC%9D%84%20%EA%B3%84%EC%A0%95%20%EB%B0%8F%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">계정·데이터 삭제 요청하기</a>
+  </div>
+
+  <h2>8. 브라우저 저장소</h2>
   <p>서랍마을은 로그인 상태, 게임 데이터 임시 저장, 장바구니, 안내문 확인 여부를 기억하기 위해 브라우저의 로컬 저장소와 유사 기술을 사용합니다. 브라우저 설정에서 이를 삭제할 수 있지만 일부 기능이 초기화되거나 정상 작동하지 않을 수 있습니다.</p>
 
-  <h2>8. 안전성 확보 조치</h2>
+  <h2>9. 안전성 확보 조치</h2>
   <p>운영자는 접근 권한 관리, 전송 구간 암호화, 비밀 키의 서버 환경변수 보관, 보안 규칙 적용, 중복 이미지 및 업로드 용량 제한 등 합리적인 보호조치를 적용합니다.</p>
 
-  <h2>9. 개인정보 문의처</h2>
+  <h2>10. 개인정보 문의처</h2>
   <p>개인정보 보호 및 열람·삭제 요청 담당: 김세은<br>
   이메일 <a href="mailto:kkyaareuk@gmail.com">kkyaareuk@gmail.com</a> · 고객센터 <a href="tel:01076630610">010-7663-0610</a></p>
 
-  <h2>10. 방침 변경</h2>
+  <h2>11. 방침 변경</h2>
   <p>이 방침이 변경되면 시행 전에 서비스 안의 공지 또는 첫 화면을 통해 알립니다. 이용자 권리에 중대한 변경은 충분한 기간을 두고 안내합니다.</p>
 </main>
 </body>

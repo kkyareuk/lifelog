@@ -575,10 +575,13 @@ async function download({automatic=false}={}){
     if(!remote){status(`${accountName()} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
     const countCharacters=value=>Array.isArray(value?.characters)?value.characters.length:Object.keys(value?.characters||{}).length;
     const remoteCount=countCharacters(remote),localCount=countCharacters(window.ParallelCity.getState());
-    if(automatic&&remoteCount===0&&localCount>0){
+    // 내용 없는 클라우드 문서는 계정 로그인 정보만 만들어졌을 때도 생긴다.
+    // 수동 불러오기에서도 이것을 게임 저장본으로 취급하면 기기 캐릭터가
+    // 전부 사라져 보이므로, 캐릭터 0명인 저장본은 절대 덮어쓰지 않는다.
+    if(remoteCount===0){
       status(`${accountName()} · 기기 데이터 유지`);
-      toast("기기의 캐릭터 데이터를 유지했습니다");
-      return;
+      toast(localCount>0?"클라우드에 캐릭터가 없어 기기 데이터를 보호했습니다":"클라우드에 불러올 캐릭터 데이터가 없습니다");
+      return false;
     }
     const localState=window.ParallelCity.getState();
     const characterIds=value=>new Set(Array.isArray(value?.order)?value.order:Object.keys(value?.characters||{}));
@@ -601,6 +604,10 @@ async function download({automatic=false}={}){
       toast("기기의 최신 변경사항을 유지했습니다");
       return false;
     }
+    try{
+      const raw=localStorage.getItem("drawer-village-game-v1");
+      if(raw)localStorage.setItem("drawer-village-recovery-before-cloud",raw);
+    }catch(error){console.warn("클라우드 불러오기 전 복구본을 만들지 못했습니다",error)}
     window.ParallelCity.replaceState(applyLocalTombstones(remote,localState));
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
     status(`${accountName()} · ${accessLabel()} · 불러오기 완료`);

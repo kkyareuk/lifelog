@@ -11,6 +11,7 @@ let deferredInstallPrompt=null;
 let mobileCharacterEditorPane="";
 let mobileCharacterReorderOpen=false;
 let mobileCharacterDraftDirty=false;
+let mobileCharacterAutosaveTimer;
 let homeCharacterPickerScroll=0;
 let observeRosterScroll=0;
 let mobileCharacterStripScroll=0;
@@ -749,11 +750,43 @@ function isMobileCharacterDraftControl(element){
 function markMobileCharacterDraft(element){
   if(isMobileCharacterDraftControl(element)){
     mobileCharacterDraftDirty=true;
-    // 편집창을 닫기 전 앱이 백그라운드로 가도 입력한 글이 남도록
-    // 마지막 입력 뒤 한 번만 가볍게 기기 저장을 예약한다.
-    save(false,false);
+    // 전체 게임 상태를 복제하는 저장 작업을 한글 입력 사이마다 실행하면
+    // Android WebView의 IME 조합이 눈에 띄게 느려진다. 타이핑이 완전히
+    // 멈춘 뒤에만 한 번 저장하고, 저장 버튼에서는 화면 값을 다시 읽는다.
+    clearTimeout(mobileCharacterAutosaveTimer);
+    mobileCharacterAutosaveTimer=setTimeout(()=>{
+      if(mobileCharacterDraftDirty)save(true,false);
+    },2500);
   }
   return isMobileCharacterDraftControl(element);
+}
+const numericCharacterFields=new Set(["spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging","homeVisualScale"]);
+function characterPatchFromField(element){
+  if(!element?.dataset?.field)return null;
+  const field=element.dataset.field;
+  const value=element.type==="checkbox"?element.checked:numericCharacterFields.has(field)?Number(element.value):element.value;
+  const patch={[field]:value};
+  if(field==="attractionTarget")patch.attractedGenders={
+    "여성에게 끌림":["여성"],"남성에게 끌림":["남성"],"여성과 남성에게 끌림":["여성","남성"],
+    "성별과 무관하게 끌림":["남성","여성","그외"],"그외 성별에게 끌림":["그외"]
+  }[element.value]||["없음"];
+  return patch;
+}
+function syncOpenCharacterEditorDraft(){
+  const dialog=document.querySelector("[data-mobile-character-editor-dialog][open]");
+  const character=active();
+  if(!dialog||!character)return;
+  // Android 한글 키보드는 마지막 조합 글자의 input 이벤트가 저장 버튼의
+  // click보다 늦을 수 있다. 현재 DOM 값을 직접 읽어 마지막 글자도 보존한다.
+  dialog.querySelectorAll("[data-field]").forEach(element=>{
+    const patch=characterPatchFromField(element);
+    if(patch)updateCharacter(character.id,patch,false);
+  });
+  dialog.querySelectorAll("[data-personality-field]").forEach(element=>{
+    updateCharacter(character.id,{[element.dataset.personalityField]:element.value},false);
+  });
+  const traitNotes=dialog.querySelector("[data-trait-notes]");
+  if(traitNotes)updateCharacter(character.id,{traitNotes:traitNotes.value.slice(0,1200)},false);
 }
 function renderPreservingCharacterEditorScroll(element){
   const shell=element?.closest?.("[data-mobile-character-editor-dialog]")?.querySelector(".mobile-character-editor-shell");
@@ -773,6 +806,8 @@ function renderPreservingPageScroll(element){
   restoreWindowScroll(pageX,pageY);
 }
 function flushMobileCharacterDraft({closeEditor=true}={}){
+  clearTimeout(mobileCharacterAutosaveTimer);
+  mobileCharacterAutosaveTimer=undefined;
   if(mobileCharacterDraftDirty)save(true);
   mobileCharacterDraftDirty=false;
   if(closeEditor)mobileCharacterEditorPane="";
@@ -1349,6 +1384,8 @@ function bind(){
   };
   $$("[data-close-mobile-character-editor],[data-save-mobile-character-editor]").forEach(el=>el.onclick=async()=>{
     const shouldSync=el.hasAttribute("data-save-mobile-character-editor");
+    document.activeElement?.blur?.();
+    syncOpenCharacterEditorDraft();
     flushMobileCharacterDraft({closeEditor:false});
     mobileCharacterDialog?.close(shouldSync?"save":"close");
     if(shouldSync){await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}
@@ -1685,13 +1722,10 @@ function bind(){
     if(!mobileDraft)save(true);
     renderPreservingCharacterEditorScroll(el);
   });
-  $$("[data-field]").forEach(el=>el.oninput=()=>{
-    const numeric=["spiceTolerance","sweetPreference","socialEnergy","sensingIntuition","thinkingFeeling","perceivingJudging","homeVisualScale"].includes(el.dataset.field);
-    const patch={[el.dataset.field]:numeric?Number(el.value):el.value};
-    if(el.dataset.field==="attractionTarget")patch.attractedGenders={
-      "여성에게 끌림":["여성"],"남성에게 끌림":["남성"],"여성과 남성에게 끌림":["여성","남성"],
-      "성별과 무관하게 끌림":["남성","여성","그외"],"그외 성별에게 끌림":["그외"]
-    }[el.value]||["없음"];
+  $$("[data-field]").forEach(el=>{
+    const apply=()=>{
+    const patch=characterPatchFromField(el);
+    if(!patch)return;
     updateCharacter(active().id,patch,false);
     if(!markMobileCharacterDraft(el))save(el.tagName==="SELECT");
     if(el.dataset.levels){
@@ -1707,6 +1741,14 @@ function bind(){
       el.closest("label")?.querySelector("[data-range-label]")?.replaceChildren(document.createTextNode(labels[Number(el.value)]));
     }
     if(el.dataset.field==="homeVisualScale")el.closest("label")?.querySelector("[data-home-visual-scale-value]")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
+    };
+    el.oninput=apply;
+    // IME 조합 종료와 포커스 이탈 때 최종 DOM 값을 한 번 더 반영한다.
+    el.addEventListener("compositionend",apply);
+    el.addEventListener("change",()=>{
+      apply();
+      if(isMobileCharacterDraftControl(el))save(true,false);
+    });
   });
   $$("[data-color]").forEach(el=>el.oninput=()=>{
     const mobileDraft=markMobileCharacterDraft(el);

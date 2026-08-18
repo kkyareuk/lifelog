@@ -622,8 +622,27 @@ function normalizeHomes(x){
   return renameBrand(x);
 }
 function load(){
-  try{return migrate(JSON.parse(localStorage.getItem(KEY)||localStorage.getItem("parallel-city-game-v4")||localStorage.getItem("parallel-city-game-v3")||localStorage.getItem(oldKey)||"null"))}
-  catch{return fresh()}
+  const parse=raw=>{try{return raw?migrate(JSON.parse(raw)):null}catch{return null}};
+  const count=value=>Object.keys(value?.characters||{}).length;
+  const primary=parse(localStorage.getItem(KEY));
+  if(count(primary)>0)return primary;
+  // 클라우드의 빈 계정 문서가 기기 데이터를 덮었던 구버전에서 복구한다.
+  // 사용자가 실제로 캐릭터를 삭제한 기록이 있으면 오래된 데이터를
+  // 임의로 되살리지 않는다.
+  const deliberateDeletes=Array.isArray(primary?.deletedCharacterIds)&&primary.deletedCharacterIds.length>0;
+  if(!deliberateDeletes){
+    const candidates=[
+      localStorage.getItem("drawer-village-recovery-before-cloud"),
+      localStorage.getItem("parallel-city-game-v4"),
+      localStorage.getItem("parallel-city-game-v3"),
+      localStorage.getItem(oldKey)
+    ].map(parse).filter(value=>count(value)>0).sort((a,b)=>count(b)-count(a)||Number(b.lastSaved||0)-Number(a.lastSaved||0));
+    if(candidates[0]){
+      try{localStorage.setItem("drawer-village-recovered-empty-cloud","1")}catch{}
+      return candidates[0];
+    }
+  }
+  return primary||fresh();
 }
 
 export let state=load();
@@ -660,7 +679,9 @@ export function save(immediate=false,notify=true){
     pendingNotify=false;
     writeState(shouldNotify);
   };
-  immediate?run():timer=setTimeout(run,650);
+  // 큰 캐릭터·사진 상태를 복제하는 작업이므로 타이핑 사이에는 실행하지 않는다.
+  // 명시적인 저장과 화면 종료는 여전히 즉시 저장한다.
+  immediate?run():timer=setTimeout(run,1400);
 }
 export function flushSave(notify=false){
   if(!timer)return false;
