@@ -14,15 +14,23 @@ app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
 const PRODUCTS=new Set(["character_slots_5","town_slot_1","storage_50mb","green_tea"]);
+const CONSUMABLE_PRODUCTS=new Set(["character_slots_5","town_slot_1","green_tea"]);
 const WEB_PRODUCTS=Object.freeze({
   character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:1200},
   town_slot_1:{name:"마을 슬롯 1개 추가",amount:1900},
   storage_50mb:{name:"사진 저장 공간 50MB 추가",amount:2900},
   green_tea:{name:"개발자에게 녹차 사주기",amount:1500}
 });
-const TOSS_MID="drawerg8ht";
+const TOSS_MID="drawerq8ht";
 const TOSS_SECRET_KEY=defineSecret("TOSS_SECRET_KEY");
 const WEB_GAME_PAYMENT_LIMIT=50000;
+
+function tossCredentials(){
+  const secretKey=String(TOSS_SECRET_KEY.value()||"").trim();
+  const match=secretKey.match(/^(test|live)_sk_/);
+  if(!match)throw new Error("토스페이먼츠 시크릿 키가 서버에 설정되지 않았습니다.");
+  return {secretKey,environment:match[1]};
+}
 
 app.use((request,response,next)=>{
   response.set("Access-Control-Allow-Origin",request.get("Origin")||"*");
@@ -48,6 +56,29 @@ async function playPurchase(productId,purchaseToken){
     token:purchaseToken
   });
   return result.data||{};
+}
+
+async function finishPlayPurchase(productId,purchaseToken,purchase){
+  const auth=new google.auth.GoogleAuth({scopes:["https://www.googleapis.com/auth/androidpublisher"]});
+  const publisher=google.androidpublisher({version:"v3",auth});
+  if(CONSUMABLE_PRODUCTS.has(productId)){
+    if(Number(purchase.consumptionState)!==1){
+      await publisher.purchases.products.consume({
+        packageName:PACKAGE_NAME,
+        productId,
+        token:purchaseToken
+      });
+    }
+    return;
+  }
+  if(Number(purchase.acknowledgementState)!==1){
+    await publisher.purchases.products.acknowledge({
+      packageName:PACKAGE_NAME,
+      productId,
+      token:purchaseToken,
+      requestBody:{}
+    });
+  }
 }
 
 function nextEntitlements(current,productId,quantity){
@@ -92,6 +123,7 @@ function orderSummary(items){
 app.post("/payments/orders",async(request,response)=>{
   try{
     const identity=await signedInUser(request);
+    const {environment}=tossCredentials();
     const items=webCart(request.body?.items);
     const {amount,count,orderName}=orderSummary(items);
     if(amount<100||amount>=WEB_GAME_PAYMENT_LIMIT)throw Object.assign(new Error("게임 상품은 한 번에 5만원 미만으로만 결제할 수 있습니다."),{status:400});
@@ -105,7 +137,7 @@ app.post("/payments/orders",async(request,response)=>{
       orderName:orderName.slice(0,100),
       items:items.map(({packageId,quantity,unitAmount})=>({packageId,quantity,unitAmount})),
       status:"CREATED",
-      paymentEnvironment:"test",
+      paymentEnvironment:environment,
       mid:TOSS_MID,
       createdAt:FieldValue.serverTimestamp(),
       updatedAt:FieldValue.serverTimestamp()
@@ -116,6 +148,7 @@ app.post("/payments/orders",async(request,response)=>{
       amount,
       orderName:order.orderName,
       customerKey,
+      paymentEnvironment:environment,
       customerEmail:String(identity.email||"").slice(0,100),
       customerName:String(identity.name||"서랍마을 이용자").slice(0,100)
     });
@@ -142,8 +175,10 @@ app.post("/payments/confirm",async(request,response)=>{
     if(Number(order.amount)!==amount)throw Object.assign(new Error("주문금액이 달라 결제를 중단했습니다."),{status:409});
     if(order.status==="DONE")return response.json({approved:true,alreadyApplied:true,productName:order.orderName,message:"이미 완료된 구매입니다."});
 
-    const secretKey=String(TOSS_SECRET_KEY.value()||"").trim();
-    if(!/^(test|live)_sk_/.test(secretKey))throw new Error("토스페이먼츠 시크릿 키가 서버에 설정되지 않았습니다.");
+    const {secretKey,environment}=tossCredentials();
+    if(order.paymentEnvironment!==environment){
+      throw Object.assign(new Error("주문을 만든 결제 환경과 현재 서버 키가 다릅니다. 주문을 다시 만들어 주세요."),{status:409});
+    }
     const tossResponse=await fetch("https://api.tosspayments.com/v1/payments/confirm",{
       method:"POST",
       headers:{
@@ -162,10 +197,6 @@ app.post("/payments/confirm",async(request,response)=>{
     if(payment.orderId!==orderId||Number(payment.totalAmount)!==amount||payment.status!=="DONE"){
       throw Object.assign(new Error("승인된 결제 정보가 저장된 주문과 일치하지 않습니다."),{status:409});
     }
-    if(payment.mId&&payment.mId!==TOSS_MID){
-      throw Object.assign(new Error("승인된 결제의 상점아이디가 계약 MID와 다릅니다."),{status:409});
-    }
-
     let alreadyApplied=false;
     await db.runTransaction(async transaction=>{
       const [freshOrder,user]=await Promise.all([transaction.get(orderRef),transaction.get(db.collection("users").doc(identity.uid))]);
@@ -239,7 +270,11 @@ app.post("/play-billing/verify",async(request,response)=>{
       },{merge:true});
     });
 
-    response.json({verified:true,entitlementApplied:true,alreadyApplied,productId,quantity});
+    // 상품 지급이 DB에 확정된 뒤 서버에서 즉시 소비/확인합니다. 응답이 끊겨도
+    // 같은 구매 토큰으로 재요청하면 위 트랜잭션은 중복 지급하지 않고 이 단계만 재시도합니다.
+    await finishPlayPurchase(productId,purchaseToken,purchase);
+
+    response.json({verified:true,entitlementApplied:true,purchaseFinished:true,alreadyApplied,productId,quantity});
   }catch(error){
     console.error("Play Billing verification failed",error);
     response.status(Number(error.status)||500).json({
