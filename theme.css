@@ -10,21 +10,19 @@ html[data-color-mode][data-visual-theme] main{
     var(--bg)!important;
 }
 
-/* 기본 테마: 페이지 바깥 배경과 편집 화면 여백을 깨끗한 흰색으로 통일 */
+/* 기본 테마: 따뜻한 나무색을 바탕으로 페이지와 카드의 역할을 분리한다. */
 html[data-color-mode="light"][data-visual-theme="rose"],
 html[data-color-mode="light"][data-visual-theme="rose"] body,
 html[data-color-mode="light"][data-visual-theme="rose"] #app,
-html[data-color-mode="light"][data-visual-theme="rose"] main,
-html[data-color-mode="light"][data-visual-theme="rose"] .editor,
-html[data-color-mode="light"][data-visual-theme="rose"] .character-editor,
-html[data-color-mode="light"][data-visual-theme="rose"] .desktop-character-editor,
-html[data-color-mode="light"][data-visual-theme="rose"] .character-editor>.form,
-html[data-color-mode="light"][data-visual-theme="rose"] .profile-license,
-html[data-color-mode="light"][data-visual-theme="rose"] .home-page,
-html[data-color-mode="light"][data-visual-theme="rose"] .home,
-html[data-color-mode="light"][data-visual-theme="rose"] .town-page,
-html[data-color-mode="light"][data-visual-theme="rose"] .town-editor-panel{
-  background:#fff!important;
+html[data-color-mode="light"][data-visual-theme="rose"] main{
+  background:var(--bg)!important;
+  background-image:none!important;
+}
+html[data-color-mode="light"][data-visual-theme="rose"] :is(
+  .editor,.character-editor,.desktop-character-editor,.character-editor>.form,
+  .profile-license,.home-page,.home,.town-page,.town-editor-panel
+){
+  background:transparent!important;
   background-image:none!important;
 }
 
@@ -142,7 +140,10 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(
   .relationship-basic-settings,
   .settings-advanced-group,
   .profile-advanced-settings .settings-advanced-body>.fields
-){background:#fff!important}
+){background:var(--panel)!important}
+
+.body-basic-settings,.personality-basic-settings{align-content:start}
+.body-advanced-settings,.personality-advanced-settings{margin-top:2px}
 
 @media(min-width:721px){
   .character-editor{grid-template-columns:minmax(250px,300px) minmax(0,1fr)}

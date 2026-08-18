@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819billing3";
-import {eventFor} from "./simulation.js?v=20260819billing3";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819billing3";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819warm1";
+import {eventFor} from "./simulation.js?v=20260819warm1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819warm1";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
 
 await initializeLocalMediaState(state);
@@ -707,6 +707,7 @@ function restoreWindowScroll(x,y){
   setTimeout(restore,40);
 }
 function render(){
+  document.querySelector("#app-loading")?.remove();
   const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
   const openCharacterEditor=document.querySelector("[data-mobile-character-editor-dialog][open] .mobile-character-editor-shell");
@@ -991,7 +992,7 @@ function applyTheme(){
     mint:{light:["#00a982","#4bd8aa","#e9fff6","#fbfffd","#073e32","#4f8878","#b4efd9"],dark:["#21cea3","#6af0c0","#031913","#073128","#effff9","#9ce3cd","#1e7560"]},
     sunshine:{light:["#d98b00","#ffd23f","#fff8d2","#fffef7","#3e2b00","#836b27","#f4dc82"],dark:["#ffb51f","#ffe05f","#1c1300","#352703","#fffbe8","#e9d184","#735513"]},
     sage:{light:["#2f855a","#76c36a","#ecf8ed","#fbfffc","#143823","#5a7f66","#bfe1c4"],dark:["#55bc79","#99db76","#06150c","#0f2b19","#effcf3","#a8d4b4","#28643e"]},
-    rose:{light:["#9c514a","#c98177","#ffffff","#ffffff","#2b2321","#72615d","#e5d5d1"],dark:["#dc8e84","#c98177","#171211","#251c1a","#fff7f5","#d8c4bf","#704640"]},
+    rose:{light:["#80502f","#b77a4b","#f7efe5","#fffaf4","#2f241d","#75675d","#dfcdbc"],dark:["#d9a46f","#a66e45","#16100c","#241a14","#fff7ef","#d1bfae","#6d4b34"]},
     ocean:{light:["#007fc2","#36c0e8","#e9f9ff","#fbfeff","#073952","#4f7f93","#b6e8f7"],dark:["#29a9e8","#5cdaf0","#031720","#082f41","#effbff","#9ed7e6","#1e607b"]},
     lavender:{light:["#7547e8","#c26de8","#f5edff","#fffaff","#2e1652","#76588d","#ddc2fa"],dark:["#956cff","#db86f4","#10051d","#27103b","#faf2ff","#d1afe4","#593180"]},
     berry:{light:["#be2cff","#ff45b5","#f9ecff","#ffffff","#321044","#7d4a8c","#e5b6f8"],dark:["#d65cff","#ff69c5","#16051d","#2c0c38","#fff2ff","#d9a8e8","#663077"]},

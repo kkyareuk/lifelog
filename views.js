@@ -593,13 +593,15 @@ function rosterSummary(entry){
 function roster(){
   return `<div class="roster">${state.order.map(id=>{const c=state.characters[id],e=eventFor(c),away=visibleTownId(c)!==state.activeTownId,summary=rosterSummary(e);return `<button class="roster-card ${id===state.activeId?"on":""} ${away?"away":""}" data-roster="${id}" title="${esc(c.name)} · ${esc(e.title)}">${avatar(c)}<span class="roster-info"><b>${esc(c.name)}</b><small>${esc(summary)}</small></span></button>`}).join("")}</div>`;
 }
-function placeCard(p){
+function placeCard(p,editable=false){
   const mode=state.buildingLabelMode||"full";
   const labelX=Math.max(8,Math.min(92,p.x)),labelY=Math.max(13,Math.min(92,p.y));
   const label=mode==="none"?"":`<span class="map-place-label" style="left:${labelX}%;top:${labelY}%"><b>${esc(p.name)}</b>${mode==="full"?`<small>${esc(p.subtype?`${p.type} · ${p.subtype}`:p.type)}</small>`:""}</span>`;
   const presetSources={"type-generic":"world-assets/building-types/generic.png","type-cafe":"world-assets/building-types/cafe.png","type-restaurant":"world-assets/building-types/restaurant.png","type-hospital":"world-assets/building-types/hospital.png","type-office":"world-assets/building-types/office.png","type-shop":"world-assets/building-types/shop.png","type-school":"world-assets/building-types/school.png","type-lodging":"world-assets/building-types/lodging.png","type-library":"world-assets/building-types/library.png","type-theater":"world-assets/building-types/theater.png","type-park":"world-assets/building-types/park.png","type-home":"world-assets/building-types/home.png","drawer-building":"world-assets/drawer-building.png","drawer-home":"world-assets/drawer-home.png","medieval-castle":"world-assets/medieval-castle.svg","medieval-tavern":"world-assets/medieval-tavern.svg","medieval-market":"world-assets/medieval-market.svg"};
   const preset=presetSources[p.iconPreset]||presetSources["drawer-building"];
-  return `<button type="button" class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}" data-building-detail-open="${p.id}" aria-label="${esc(p.name)} 건물 정보 보기"><img class="building-preset-image" src="${preset}" alt=""></button>${label}`;
+  const canDelete=editable===true||(state.activeTab==="town"&&(!document.documentElement.classList.contains("native-app")||mobileTownEditing));
+  const quickDelete=canDelete?`<button type="button" class="place-quick-delete" style="left:${p.x}%;top:${p.y}%" data-delete-place="${p.id}" aria-label="${esc(p.name||"건물")} 삭제" title="건물 삭제">×</button>`:"";
+  return `<button type="button" class="place has-art" style="left:${p.x}%;top:${p.y}%;--place:${p.color};--place-scale:${p.imageScale||1}" data-place="${p.id}" data-building-detail-open="${p.id}" aria-label="${esc(p.name)} 건물 정보 보기"><img class="building-preset-image" src="${preset}" alt=""></button>${label}${quickDelete}`;
 }
 function townHomes(){
   return Object.values(state.homes||{}).filter(home=>home&&home.townId===state.activeTownId);
@@ -721,6 +723,29 @@ function nativeFoodSymbol(item,text){
   if(/접시|식탁|식사/.test(value))return "🍽️";
   return "🥄";
 }
+const FOOD_PREFERENCE_EMOJI_GROUPS=[
+  {test:/한식|김치|비빔밥|불고기|떡볶이|국밥|찌개|전골/,symbols:["🍚","🥘","🍲","🥟","🍙"]},
+  {test:/일식|일본|초밥|스시|라멘|우동|소바|돈부리/,symbols:["🍣","🍜","🍙","🍱","🍥"]},
+  {test:/중식|중국|딤섬|마라|짜장|짬뽕|훠궈/,symbols:["🥟","🥡","🍜","🥮","🥠"]},
+  {test:/양식|이탈리|프랑스|파스타|스테이크|리조또/,symbols:["🍝","🍕","🥩","🥗","🥖"]},
+  {test:/패스트푸드|햄버거|감자튀김|핫도그|피자/,symbols:["🍔","🍟","🌭","🍕","🥤"]},
+  {test:/디저트|단것|케이크|초콜릿|아이스크림|사탕/,symbols:["🍰","🧁","🍮","🍩","🍨","🍫"]},
+  {test:/빵|베이커리|브런치|팬케이크|와플/,symbols:["🥐","🥯","🥖","🧇","🥞"]},
+  {test:/카페|커피|차|티|밀크티|버블티/,symbols:["☕","🫖","🍵","🧋","🧉"]},
+  {test:/채식|비건|샐러드|채소|야채/,symbols:["🥗","🥦","🥑","🥕","🍄"]},
+  {test:/해산물|생선|회|새우|조개/,symbols:["🍣","🦪","🍤","🍥","🍲"]},
+  {test:/고기|육류|바비큐|삼겹살|스테이크/,symbols:["🥩","🍖","🍗","🥓","🍔"]},
+  {test:/매운|매콤|향신료/,symbols:["🌶️","🌮","🍛","🍜","🥘"]},
+  {test:/과일|상큼|주스/,symbols:["🍓","🍇","🍉","🥭","🍑"]},
+  {test:/술|맥주|와인|칵테일|위스키/,symbols:["🍺","🍷","🍸","🍹","🥃"]}
+];
+function nativeFoodPreferenceSymbols(person,text){
+  const source=[...(person?.foodPreferences||[]),...(person?.drinks||[]),text||""].join(" ");
+  const symbols=[...new Set(FOOD_PREFERENCE_EMOJI_GROUPS.filter(group=>group.test.test(source)).flatMap(group=>group.symbols))];
+  if(!symbols.length)return [];
+  const offset=nativeVisualSeed(`${person?.id||person?.name||"character"}:${source}`)%symbols.length;
+  return [...symbols.slice(offset),...symbols.slice(0,offset)].slice(0,4);
+}
 function stableSceneChoice(person,text,values){
   const list=Array.isArray(values)&&values.length?values:[""];
   return list[nativeVisualSeed(`${person?.id||person?.name||"character"}:${text}`)%list.length];
@@ -760,11 +785,13 @@ function nativeOrganizingSymbol(person,text){
 function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   let symbol="";
   let item=null;
+  let foodSymbols=[];
   const teaAction=/차를 우리는|차를 우려|차를 내리|찻물을|차 한 잔|차를 마시|티백|홍차|녹차|보이차|말차/.test(text);
   if(actionKind==="tea"||teaAction)symbol="🍵";
   else if(actionKind==="eating"){
     item=nativeSceneFoodItem(person,entry,text);
-    symbol=nativeFoodSymbol(item,text);
+    foodSymbols=nativeFoodPreferenceSymbols(person,text);
+    symbol=item?nativeFoodSymbol(item,text):(foodSymbols[0]||nativeFoodSymbol(null,text));
   }else if(actionKind==="coffee-drinking"||actionKind==="coffee-brewing")symbol="☕";
   else if(actionKind==="washing-up"){
     symbol=/양치|이를 닦|칫솔|치약/.test(text)?"🪥":/면도/.test(text)?"🪒":/샴푸|머리를 감|스킨케어|로션|기초화장/.test(text)?"🧴":/비누|손을 씻|몸을 씻|샤워|목욕|세수|세안/.test(text)?"🧼":"🫧";
@@ -780,7 +807,10 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="assistive-check")symbol="⚙️";
   else if(actionKind==="organizing")symbol=nativeOrganizingSymbol(person,text);
   else if(actionKind==="gaming")symbol="🎮";
-  else if(actionKind==="cooking")symbol=/탕|찌개|국|수프|끓/.test(text)?"🍲":/파스타|스파게티|면 요리/.test(text)?"🍝":"🍳";
+  else if(actionKind==="cooking"){
+    foodSymbols=nativeFoodPreferenceSymbols(person,text);
+    symbol=/탕|찌개|국|수프|끓/.test(text)?"🍲":/파스타|스파게티|면 요리/.test(text)?"🍝":(foodSymbols[0]||"🍳");
+  }
   else if(actionKind==="reading")symbol="📖";
   else if(actionKind==="writing")symbol="📝";
   else if(actionKind==="music")symbol="🎵";
@@ -791,9 +821,10 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="mail")symbol="✉️";
   if(!symbol)return "";
   const propVariant=symbol==="🪥"?" action-prop-toothbrush":symbol==="🧼"?" action-prop-soap":symbol==="👞"?" action-prop-shoe":"";
-  const image=item?.image?`<img src="${esc(item.image)}" alt="">`:esc(symbol);
+  const animatedFood=!item&&foodSymbols.length>1?`<span class="food-preference-symbols">${foodSymbols.map((food,index)=>`<i style="--food-index:${index}">${esc(food)}</i>`).join("")}</span>`:"";
+  const image=item?.image?`<img src="${esc(item.image)}" alt="">`:(animatedFood||esc(symbol));
   const title=item?.name?`${person?.name||"캐릭터"} · ${item.name}`:`${person?.name||"캐릭터"} · ${symbol}`;
-  return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}${propVariant}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
+  return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}${propVariant}${animatedFood?" food-preference-animation":""}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
 }
 function isRomanticCharacterView(view){
   const overall=String(view?.overall||"").trim();
@@ -1903,11 +1934,19 @@ function character(){
     personalityChoice(c,"감정 표현의 크기","emotionalExpression",["표정 변화가 거의 없음","감정을 잘 드러내지 않음","상황에 따라 표현함","표현이 풍부함","감정이 바로 드러남"],"같은 감정이라도 표정과 몸짓으로 얼마나 드러나는지 정해요."),
     personalityChoice(c,"충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],"공격 충동이 있어도 이 성향과 실제 행동 단계가 허용해야 행동으로 나와요.")
   ].join("");
-  const personality=`<h2>${esc(c.name)}의 성격</h2><p>전체 유형을 먼저 고르고, 아래에서 세부 성향과 서사·인지 특성을 조절해 주세요.</p>${personalityTypeChoice(c)}<section class="personality-detail-grid">${personalityDetails}</section>`;
+  const personalityBasics=[
+    personalityChoice(c,"사람과 어울리는 방식","socialStyle",["혼자가 편함","낯을 가림","조용히 어울림","먼저 다가감","무리의 중심"]),
+    personalityChoice(c,"일정을 다루는 방식","planningStyle",["무계획","즉흥적","유연한 편","상황에 따라","미리 정리함","계획적","강박적으로 계획함"]),
+    personalityChoice(c,"애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"]),
+    personalityChoice(c,"생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"])
+  ].join("");
+  const personalityPane=`<section class="character-traits-pane personality-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 성격</h2><p>평소 모습에 가장 자주 드러나는 성향부터 간단히 고르고, 필요할 때만 고급 설정을 펼쳐 주세요.</p></div>${personalityTypeChoice(c)}<section class="profile-basic-settings personality-basic-settings"><div class="settings-section-heading"><span><small>QUICK SETTINGS</small><h3>간단 설정</h3></span><p>일상 장면에 가장 크게 반영되는 네 가지만 먼저 정해요.</p></div><section class="personality-detail-grid">${personalityBasics}</section></section><details class="settings-advanced-group personality-advanced-settings"><summary><span><small>ALL PERSONALITY DETAILS</small><b>고급 설정</b><em>현재 제공되는 모든 성격·서사·인지 설정</em></span><i aria-hidden="true">＋</i></summary><div class="settings-advanced-body"><section class="personality-detail-grid">${personalityDetails}</section>${characterTraitChoice(c)}</div></details></section>`;
   const lifestyleSelect=(label,field,options,current)=>`<label>${label}<select data-field="${field}">${options.map(value=>`<option value="${esc(value)}" ${current===value?"selected":""}>${esc(value)}</option>`).join("")}</select></label>`;
   const photoQuickCard=`<section class="character-photo-quick-card"><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진 첨부</h3><p>여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.</p><div class="image-actions"><button type="button" class="primary" data-image="photo">사진 파일 선택</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">사진 지우기</button>`:""}</div><small>투명 SD 아이콘과 단일 LD 일러스트는 ‘사진·SD·LD’ 탭에서 따로 등록해요.</small></div></section>`;
   const profileWithLicense=`<section class="profile-license">${photoQuickCard}${townAssignment(c)}${profile}<details class="settings-advanced-group profile-advanced-settings"><summary><span><small>DETAILS</small><b>고급 설정</b><em>직장·소비·입맛·생활 습관·끌림 설정</em></span><i aria-hidden="true">＋</i></summary><div class="settings-advanced-body">${profileAdvancedFields}<section class="setting-card character-lifestyle-settings"><h2>운전·흡연·주량</h2><p>캐릭터의 실제 생활 습관에 가까운 상태를 골라 주세요.</p><div class="fields lifestyle-profile-fields">${lifestyleSelect("운전면허·운전 경험","driverLicense",["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"],c.driverLicense||"면허 없음")}${lifestyleSelect("흡연 여부","smokingStatus",["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"],c.smokingStatus||"설정하지 않음")}${lifestyleSelect("주량","alcoholTolerance",["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"],c.alcoholTolerance||"설정하지 않음")}</div></section>${profileAttractionSettings(c)}</div></details></section>`;
-  const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>체형, 머리, 눈, 화장 같은 외형과 건강·접근성을 나누어 정해요. 고르지 않은 특성은 장면에서 지어내지 않습니다.</p></div>${physicalAppearanceSettings(c)}${healthAccessibilitySettings(c)}</section>`;
+  const bodyAppearance=c.bodyProfile?.appearance||{};
+  const bodyBasics=`<section class="profile-basic-settings body-basic-settings"><div class="settings-section-heading"><span><small>QUICK SETTINGS</small><h3>간단 설정</h3></span><p>캐릭터를 알아보는 데 중요한 외형만 먼저 골라요.</p></div><div class="health-field-grid"><label>외모가 눈에 띄는 정도<select data-field="appearanceLevel">${["매우 추함","못생김","눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"].map(value=>`<option ${value===(c.appearanceLevel||"보통")?"selected":""}>${value}</option>`).join("")}</select></label>${profileSelect("체형","bodySize",BODY_SIZES,c.bodyProfile?.bodySize||"설정하지 않음")}${profileSelect("현재 머리색","appearance.hairColor",HAIR_COLORS,bodyAppearance.hairColor||"설정하지 않음")}${profileSelect("머리 기장","appearance.hairLength",HAIR_LENGTHS,bodyAppearance.hairLength||"설정하지 않음")}${profileSelect("화장 정도","appearance.makeupLevel",MAKEUP_LEVELS,bodyAppearance.makeupLevel||"하지 않음")}</div></section>`;
+  const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>자주 보이는 외형은 간단 설정에서, 머리·눈·건강·접근성의 모든 항목은 고급 설정에서 정해요.</p></div>${bodyBasics}<details class="settings-advanced-group body-advanced-settings"><summary><span><small>ALL BODY DETAILS</small><b>고급 설정</b><em>현재 제공되는 모든 신체·외형·건강·접근성 설정</em></span><i aria-hidden="true">＋</i></summary><div class="settings-advanced-body">${physicalAppearanceSettings(c)}${healthAccessibilitySettings(c)}</div></details></section>`;
   const limit=characterLimit();
   const slotLabel=state.order.length>limit?`${state.order.length}명 저장됨 · 한도 ${limit}명`:`+ 생성 · ${state.order.length}/${limit}`;
   const paneMeta={profile:["프로필","사진·기본 정보·생활 습관","👤"],body:["신체","외형·건강·접근성","✦"],personality:["성격","성향·서사·인지","◈"],taste:["취향 선택","취미·음식·콘텐츠","♡"],worldTaste:["세계관 선호","최애·소지품","⌂"],manage:["사진·SD·LD","이미지·표현·파일","📷"]};
@@ -1918,7 +1957,7 @@ function character(){
   const ldCard=`<article class="character-ld-card character-ld-single"><div>${ldSource?`<img class="scene-ld-art" src="${esc(ldSource)}" alt="${esc(c.name)} LD 일러스트">`:`<span class="character-image-empty-preview ld"><i>LD</i><small>LD 미등록</small></span>`}</div><h4>LD 일러스트</h4><small>전신 또는 무릎 위 이미지 한 장</small><span class="image-actions"><button type="button" data-image="ldImage">LD 파일</button><button type="button" data-image-url="ldImage" data-id="${c.id}">LD 링크</button>${ldSource?`<button type="button" data-clear-character-image="ldImage">지우기</button>`:""}</span></article>`;
   const homeVisualChoice="";
   const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 프로필·SD·LD</h2><p>프로필 사진, 투명 SD 아이콘, 전신 LD 일러스트는 전부 별도 파일입니다. 등록하지 않은 칸은 기존 표현을 그대로 사용해요.</p></div><div class="character-manage-grid">${homeVisualChoice}<section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요. LD 일러스트는 자르지 않고 원본 비율 전체를 사용하며, 위에서 선택한 표현 방식으로 홈화면에 표시합니다.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div></section>${characterHomeLayoutEditor(c)}<section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
-  const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?`${personality}${characterTraitChoice(c)}`:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
+  const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?personalityPane:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
   return `<div class="editor character-editor" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
     <aside class="panel desktop-character-list"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside>
     <section class="panel form">

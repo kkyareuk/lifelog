@@ -110,11 +110,17 @@
   html:not(.native-app)[data-active-tab="town"] .mobile-town-shell{min-height:calc(100dvh - 126px)}
   html:not(.native-app)[data-active-tab="town"] .town-edit{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr) 360px!important;
+    grid-template-columns:minmax(0,1fr) minmax(300px,340px)!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    gap:14px!important;
+    box-sizing:border-box!important;
     height:auto!important;
     min-height:560px!important;
-    overflow:visible!important;
+    overflow:hidden!important;
   }
+  html:not(.native-app)[data-active-tab="town"] .town-edit>*{min-width:0!important}
   html:not(.native-app)[data-active-tab="town"] .town-map-scroll{
     width:100%!important;
     height:auto!important;
@@ -123,12 +129,47 @@
     border-radius:24px!important;
   }
   html:not(.native-app)[data-active-tab="town"] .town-editor-panel{
+    width:100%!important;
+    max-width:100%!important;
     height:100%!important;
     min-height:0!important;
+    box-sizing:border-box!important;
+    overflow-x:hidden!important;
     overflow-y:auto!important;
     overscroll-behavior:contain;
   }
+  html:not(.native-app)[data-active-tab="town"] .town-editor-panel :is(.place-config,.fields){
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  html:not(.native-app)[data-active-tab="town"] .town-editor-panel :is(.place-edit-heading,.place-editor>div){
+    flex-wrap:wrap!important;
+  }
   html:not(.native-app)[data-active-tab="town"] .site-footer{display:none!important}
+}
+
+@media(min-width:721px) and (max-width:1180px){
+  html:not(.native-app)[data-active-tab="town"] .town-edit{grid-template-columns:minmax(0,1fr)!important}
+  html:not(.native-app)[data-active-tab="town"] .town-editor-panel{height:auto!important;overflow:visible!important}
+}
+
+:is(.town-map-scroll,.town-edit>.world) .place-quick-delete{
+  position:absolute;
+  z-index:90;
+  display:grid;
+  place-items:center;
+  width:36px;
+  min-width:36px;
+  height:36px;
+  min-height:36px;
+  padding:0;
+  border:2px solid #fff;
+  border-radius:50%;
+  color:#fff;
+  background:#963f32;
+  box-shadow:0 6px 14px #30130f66;
+  font-size:25px;
+  line-height:1;
+  transform:translate(30px,-96px);
 }
 
 @media(max-width:720px){
