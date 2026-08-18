@@ -9,6 +9,45 @@ if(isNative){
   const playConfig=()=>window.PARALLEL_CITY_CONFIG?.playBilling||{};
   const productIds=()=>Object.values(playConfig().products||{}).filter(Boolean);
   const consumableProducts=new Set(["character_slots_5","town_slot_1","green_tea"]);
+  const pendingPurchaseKey="drawer-village.pending-play-purchases.v1";
+
+  // Google Play 결제 직후 서버 확인이 잠시 실패해도 영수증 토큰을 잃지
+  // 않는다. 이 값만으로는 상품을 지급하지 않고, 서버 검증 재시도에만 쓴다.
+  const readPendingPurchases=()=>{
+    try{
+      const value=JSON.parse(localStorage.getItem(pendingPurchaseKey)||"[]");
+      return Array.isArray(value)?value.filter(item=>item?.purchaseToken):[];
+    }catch{return []}
+  };
+  const writePendingPurchases=items=>{
+    try{localStorage.setItem(pendingPurchaseKey,JSON.stringify(items.slice(-20)))}catch{}
+  };
+  const rememberPurchase=(purchase,storeProductId=purchase?.products?.[0]||"")=>{
+    const purchaseToken=String(purchase?.purchaseToken||"").trim();
+    if(!purchaseToken)return;
+    const saved={
+      purchaseToken,
+      orderId:String(purchase?.orderId||""),
+      products:[String(storeProductId||"")].filter(Boolean),
+      purchaseState:Number(purchase?.purchaseState)||1,
+      quantity:Math.max(1,Number(purchase?.quantity)||1),
+      acknowledged:Boolean(purchase?.acknowledged),
+      savedAt:Date.now()
+    };
+    const others=readPendingPurchases().filter(item=>item.purchaseToken!==purchaseToken);
+    writePendingPurchases([...others,saved]);
+  };
+  const forgetPurchase=purchaseToken=>writePendingPurchases(
+    readPendingPurchases().filter(item=>item.purchaseToken!==purchaseToken)
+  );
+  const mergePurchases=(...groups)=>{
+    const values=new Map();
+    groups.flat().forEach(item=>{
+      const token=String(item?.purchaseToken||"").trim();
+      if(token)values.set(token,{...(values.get(token)||{}),...item});
+    });
+    return [...values.values()];
+  };
 
   const requireBilling=()=>{
     if(!playConfig().enabled)throw new Error("현재 앱에서는 결제를 이용할 수 없습니다.");
@@ -89,8 +128,10 @@ if(isNative){
       if(Number(purchaseResult?.purchaseState)===2)throw new Error("결제가 보류 중입니다. Google Play에서 완료한 뒤 다시 확인해 주세요.");
       throw new Error("결제가 완료되지 않았습니다.");
     }
+    rememberPurchase(purchaseResult,storeProductId);
     const verification=await verifyPurchase({...purchaseResult,products:[storeProductId]});
     if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
+    forgetPurchase(purchaseResult.purchaseToken);
     await window.ParallelCityAuth?.download?.({automatic:false});
     return purchaseResult;
   };
@@ -99,18 +140,28 @@ if(isNative){
     requireBilling();
     if(!window.ParallelCityAuth?.getInfo?.().user)throw new Error("Google 로그인 후 구매를 복원해 주세요.");
     const result=await PlayBilling.restorePurchases();
-    const purchases=Array.isArray(result?.purchases)?result.purchases:[];
+    const purchases=mergePurchases(
+      Array.isArray(result?.purchases)?result.purchases:[],
+      readPendingPurchases()
+    );
     let restored=0;
+    const failures=[];
     for(const purchaseResult of purchases){
       if(Number(purchaseResult?.purchaseState)!==1)continue;
       const storeProductId=purchaseResult.products?.[0]||"";
+      if(!storeProductId||!productIds().includes(storeProductId))continue;
       const productId=logicalProductId(storeProductId);
-      const verification=await verifyPurchase({...purchaseResult,products:[storeProductId]});
-      if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
-      restored+=1;
+      rememberPurchase(purchaseResult,storeProductId);
+      try{
+        const verification=await verifyPurchase({...purchaseResult,products:[storeProductId]});
+        if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
+        forgetPurchase(purchaseResult.purchaseToken);
+        restored+=1;
+      }catch(error){failures.push(error)}
     }
     if(restored)await window.ParallelCityAuth?.download?.({automatic:false});
-    return {purchases,restored};
+    if(!restored&&failures.length)throw failures[0];
+    return {purchases,restored,failed:failures.length};
   };
 
   window.DrawerVillagePlayBilling={
@@ -120,6 +171,15 @@ if(isNative){
     purchase,
     restorePurchases
   };
+
+  // 결제 직후 앱이 닫히거나 서버 권한 반영이 늦었던 경우, 다음 로그인
+  // 완료 시 보관 중인 영수증만 조용히 한 번 더 확인한다.
+  let pendingRetryRunning=false;
+  window.addEventListener("drawer-village-cloud-loaded",()=>{
+    if(pendingRetryRunning||!readPendingPurchases().length)return;
+    pendingRetryRunning=true;
+    setTimeout(()=>restorePurchases().catch(error=>console.warn("보류 중인 Google Play 구매 재확인 대기",error)).finally(()=>{pendingRetryRunning=false}),1200);
+  });
 
   App.addListener("backButton",({canGoBack})=>{
     const opened=document.querySelector("dialog[open]");

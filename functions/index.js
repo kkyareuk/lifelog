@@ -227,8 +227,8 @@ function playVerificationMessage(error){
   if(/androidpublisher\.googleapis\.com/i.test(message)&&/not been used|disabled/i.test(message)){
     return "Google Play 구매 확인 기능을 연결하는 중입니다. 잠시 후 상점 아래의 ‘구매 내역 확인’을 다시 눌러 주세요.";
   }
-  if(Number(error?.status)===403||Number(error?.code)===403){
-    return "Google Play 구매 확인 권한이 아직 연결되지 않았습니다. 잠시 후 다시 시도해 주세요.";
+  if(Number(error?.status)===403||Number(error?.code)===403||/insufficient permissions|permission[_ -]?denied|not authorized|forbidden/i.test(message)){
+    return "Google Play 구매 확인 권한이 아직 연결되지 않았습니다. Play Console에서 결제 확인용 서비스 계정 권한을 저장한 뒤 ‘구매 내역 확인’을 눌러 주세요. 같은 상품을 다시 결제하지 마세요.";
   }
   return Number(error?.status)?message:"Google Play 구매를 확인하지 못했습니다. 잠시 후 ‘구매 내역 확인’을 다시 눌러 주세요.";
 }

@@ -6573,3 +6573,54 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   .onboarding-dialog .onboarding-welcome p br{display:none}
   .onboarding-welcome-points span{padding:7px 9px;font-size:11px}
 }
+
+/* Android 상점 전용: 확장팩 설명이 다음 카드 밖으로 밀려 나오지 않게 한다.
+   웹 결제/웹 상점 레이아웃에는 적용하지 않는다. */
+@media(max-width:720px){
+  html.native-platform[data-active-tab="shop"] .native-play-store .shop-expansion-showcase{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-auto-rows:auto!important;
+    align-content:start!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    padding:16px 16px 22px!important;
+    overflow:hidden!important;
+  }
+  html.native-platform[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    align-content:start!important;
+    width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  html.native-platform[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy :is(p,ul,li){
+    width:100%!important;
+    min-width:0!important;
+    max-width:100%!important;
+    white-space:normal!important;
+    word-break:keep-all!important;
+    overflow-wrap:anywhere!important;
+    box-sizing:border-box!important;
+  }
+  html.native-platform[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy ul{
+    margin:0 0 20px!important;
+    padding-left:20px!important;
+  }
+  html.native-platform[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    width:100%!important;
+    gap:10px!important;
+  }
+  html.native-platform[data-active-tab="shop"] .native-purchase-restore{
+    position:relative!important;
+    z-index:3!important;
+    margin-top:0!important;
+    clear:both!important;
+  }
+}
