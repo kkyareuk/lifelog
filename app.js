@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core9";
-import {eventFor} from "./simulation.js?v=20260819core9";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core9";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819core9";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core10";
+import {eventFor} from "./simulation.js?v=20260819core10";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core10";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819core10";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -823,6 +823,15 @@ function setNestedObjectValue(target,path,value){
     cursor=cursor[part];
   });
   if(last)cursor[last]=value;
+}
+function syncCharacterControls(source,attribute){
+  const key=source?.getAttribute?.(attribute);
+  if(!key)return;
+  document.querySelectorAll(`[${attribute}="${CSS.escape(key)}"]`).forEach(target=>{
+    if(target===source)return;
+    if(target.type==="checkbox")target.checked=source.checked;
+    else if("value" in target)target.value=source.value;
+  });
 }
 function syncOpenCharacterEditorDraft(){
   const dialog=document.querySelector("[data-mobile-character-editor-dialog][open]");
@@ -1711,6 +1720,7 @@ function bind(){
   $$("[data-personality-field]").forEach(el=>el.onchange=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(active().id,{[el.dataset.personalityField]:el.value},false);
+    syncCharacterControls(el,"data-personality-field");
     if(!mobileDraft)save(true);
     renderPreservingCharacterEditorScroll(el);
   });
@@ -1769,6 +1779,7 @@ function bind(){
       }
       const mobileDraft=markMobileCharacterDraft(el);
       updateCharacter(character.id,{bodyProfile},false);
+      syncCharacterControls(el,"data-body-field");
       if(!mobileDraft)save(el.tagName==="SELECT");
       if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField))renderPreservingCharacterEditorScroll(el);
     };
@@ -1802,6 +1813,7 @@ function bind(){
     const patch=characterPatchFromField(el);
     if(!patch)return;
     updateCharacter(active().id,patch,false);
+    syncCharacterControls(el,"data-field");
     if(!markMobileCharacterDraft(el))save(el.tagName==="SELECT");
     if(el.dataset.levels){
       const labelSets={
@@ -3069,7 +3081,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819core9").catch(error=>{
+  import("./auth.js?v=20260819core10").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3084,7 +3096,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819core9",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819core10",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
