@@ -13,7 +13,8 @@ const checks=[
   [state.includes("floorCount:1,activeFloor:1")&&views.includes('data-home-floor-count')&&views.includes('data-home-floor='),"집 층수 및 층별 방 화면"],
   [state.includes("room.layout={x:")&&app.includes("captureRoomCanvasLayouts")&&app.includes("bindRoomGeometryHandle"),"방 위치·모서리 크기 직접 조절 저장"],
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],
-  [state.includes("export function updateRoutineDays")&&app.includes('name="day"')&&app.includes("여러 개 선택 가능"),"주간 일정 여러 요일 동시 적용"]
+  [state.includes('imageFit:"contain"')&&views.includes("--room-image-fit:")&&css.includes("var(--room-image-fit,contain)"),"방 사진 전체 보기와 선택적 채우기"],
+  [state.includes("export function updateRoutineDays")&&app.includes('name="day"')&&app.includes("여러 개 선택 가능")&&app.includes('data-routine-day-preset="weekdays"'),"주간 일정 여러 요일과 평일·주말·매일 빠른 선택"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);

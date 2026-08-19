@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260820-navigation-fix-s2";
+const CACHE_VERSION="drawer-village-v20260820-contact-settings-s1";
 const CORE=[
   "./",
   "./index.html",

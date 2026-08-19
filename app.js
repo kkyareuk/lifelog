@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820navigationfix2";
-import {eventFor} from "./simulation.js?v=20260820navigationfix2";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820navigationfix2";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820navigationfix2";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820navigationfix2";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820navigationfix2";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820navigationfix2";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820contactsettings1";
+import {eventFor} from "./simulation.js?v=20260820contactsettings1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820contactsettings1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820contactsettings1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820contactsettings1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820contactsettings1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820contactsettings1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -645,11 +645,11 @@ function openRoomEditor(homeId,roomKey){
   const drawFurniture=()=>{const list=ROOM_EDITOR_FURNITURE[room.type]||ROOM_EDITOR_FURNITURE.other;return list.map(item=>`<button type="button" data-room-furniture="${item}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")};
   const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
   const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>방 사진 표시<select name="imageFit"><option value="contain" ${room.imageFit!=="cover"?"selected":""}>전체 보기 · 자르지 않음</option><option value="cover" ${room.imageFit==="cover"?"selected":""}>공간 채우기 · 가장자리 잘림</option></select><small>침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
   const titleToneField=document.createElement("label");
   titleToneField.innerHTML=`방 제목 색<select name="titleTone"><option value="light" ${room.titleTone!=="dark"?"selected":""}>밝은 글자</option><option value="dark" ${room.titleTone==="dark"?"selected":""}>어두운 글자</option></select><small>사진 밝기에 맞춰 방 이름이 잘 보이는 쪽을 고르세요.</small>`;
   dialog.querySelector(".room-editor-fields").insertBefore(titleToneField,dialog.querySelector('[name="type"]').closest("label"));
-  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floor:Number(dialog.querySelector('[name="floor"]').value)||1,size:dialog.querySelector('[name="size"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,titleTone:dialog.querySelector('[name="titleTone"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
+  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floor:Number(dialog.querySelector('[name="floor"]').value)||1,size:dialog.querySelector('[name="size"]').value,imageFit:dialog.querySelector('[name="imageFit"]').value==="cover"?"cover":"contain",interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,titleTone:dialog.querySelector('[name="titleTone"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
   dialog.querySelectorAll("[data-room-furniture]").forEach(button=>button.onclick=()=>{toggleFurniture(homeId,roomKey,button.dataset.roomFurniture);button.classList.toggle("on")});
@@ -955,6 +955,7 @@ function render(){
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
+    if(state.activeTab==="character")ensureDailyQuestionSchedule();
     renderApp(state);
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
@@ -980,7 +981,6 @@ function render(){
     requestAnimationFrame(showSetupCoach);
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
     requestAnimationFrame(maybeShowPageGuide);
-    requestAnimationFrame(maybeShowDailyCharacterQuestion);
     // The desktop observation map is already positioned by CSS. Smoothly
     // scrolling its large canvas after every render made the whole site feel
     // delayed and could briefly place an invisible scroll layer over the nav.
@@ -2028,6 +2028,8 @@ function bind(){
     updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);
     if(!mobileDraft)save();
     applyTheme();
+    const hexInput=document.querySelector(`[data-theme-hex="${CSS.escape(el.dataset.color)}"]`);
+    if(hexInput)hexInput.value=String(el.value||"").toUpperCase();
   });
   $$("[data-theme-hex]").forEach(el=>{
     const apply=()=>{
@@ -2221,30 +2223,45 @@ function bind(){
     if(!selected.length){input.checked=true;input.closest("label")?.classList.add("on");showToast("연락받을 캐릭터를 한 명 이상 골라 주세요");return}
     settings.characterIds=selected;
     input.closest("label")?.classList.toggle("on",input.checked);
-    save(true);restore();if(state.characterNotificationsEnabled)await syncCharacterNotificationSchedule();restore();
+    save(true);input.blur();restore();queueCharacterNotificationSchedule();
   });
-  $$('[data-character-notification-setting]').forEach(select=>select.onchange=async()=>{
+  $$('[data-character-notification-setting]').forEach(select=>select.onchange=()=>{
     const restore=preserveSelectionScroll(select);
     const key=select.dataset.characterNotificationSetting,value=["startHour","endHour"].includes(key)?Number(select.value):select.value;
     state.characterNotificationSettings[key]=value;
     if(state.characterNotificationSettings.endHour<=state.characterNotificationSettings.startHour)state.characterNotificationSettings.endHour=Math.min(21,state.characterNotificationSettings.startHour+4);
-    save(true);restore();if(state.characterNotificationsEnabled)await syncCharacterNotificationSchedule();restore();
+    save(true);select.blur();restore();queueCharacterNotificationSchedule();
   });
-  $$('[data-character-notification-kind]').forEach(input=>input.onchange=async()=>{
+  $$('[data-character-notification-kind]').forEach(input=>input.onchange=()=>{
     const restore=preserveSelectionScroll(input);
     const settings=state.characterNotificationSettings,kind=input.dataset.characterNotificationKind,current=new Set(settings.contentKinds||[]);
     input.checked?current.add(kind):current.delete(kind);
     if(!current.size){input.checked=true;current.add(kind);showToast("연락 종류를 하나 이상 골라 주세요")}
     settings.contentKinds=[...current];input.closest("label")?.classList.toggle("on",input.checked);
-    save(true);restore();if(state.characterNotificationsEnabled)await syncCharacterNotificationSchedule();restore();
+    save(true);input.blur();restore();queueCharacterNotificationSchedule();
+  });
+  $('[data-character-update-notices]')?.addEventListener('change',event=>{
+    const restore=preserveSelectionScroll(event.currentTarget);
+    state.characterNotificationSettings.updateNotices=event.currentTarget.checked;
+    save(true);event.currentTarget.blur();restore();
+    if(event.currentTarget.checked)queueCurrentBuildUpdateNotice();
   });
   $("[data-character-notification-test]")?.addEventListener("click",sendCharacterNotificationTest);
+  $$('[data-open-daily-question]').forEach(button=>button.onclick=()=>{
+    const question=ensureDailyQuestionSchedule();
+    if(question&&!question.answered)openDailyCharacterQuestion({...question,shown:true});
+  });
   $$("[data-setting]").forEach(el=>el.onchange=()=>{
+    const restore=preserveSelectionScroll(el);
     const key=el.dataset.setting;
     state[key]=["homeSdScale","homeLdScale"].includes(key)?Math.max(70,Math.min(150,Number(el.value)||100)):el.value;
     if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
     save(true);
-    renderPreservingPageScroll(el);
+    if(key==="uiLanguage"){renderPreservingPageScroll(el);return}
+    document.documentElement.dataset.uiFont=state.uiFont||"system";
+    document.documentElement.dataset.uiScale=state.uiScale||"normal";
+    if(["homeSdScale","homeLdScale"].includes(key))el.closest("label")?.querySelector("output")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
+    el.blur();restore();
   });
   $$("button[data-color-mode]").forEach(button=>button.onclick=event=>{
     event.stopPropagation();
@@ -3021,7 +3038,7 @@ function openRoutineDialog(id){
   const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog";
   dialog.innerHTML=`<form method="dialog"><h2>주간 일정 편집</h2>
-    <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div>${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}> ${day}</label>`).join("")}</div><small>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
+    <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div class="routine-day-presets"><button type="button" data-routine-day-preset="weekdays">평일</button><button type="button" data-routine-day-preset="weekend">주말</button><button type="button" data-routine-day-preset="everyday">매일</button><button type="button" data-routine-day-preset="clear">선택 해제</button></div><div>${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}> ${day}</label>`).join("")}</div><small data-routine-day-summary>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
     <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
@@ -3030,7 +3047,10 @@ function openRoutineDialog(id){
     <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("")}</fieldset>
     <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
     <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
-  translateDynamicInterface(dialog);document.body.append(dialog);
+  const updateDaySummary=()=>{const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>weekdayLabels()[Number(input.value)]);dialog.querySelector('[data-routine-day-summary]').textContent=days.length?`선택됨: ${days.join(" · ")}`:"요일을 하나 이상 선택해 주세요."};
+  dialog.querySelectorAll('[data-routine-day-preset]').forEach(button=>button.onclick=()=>{const preset=button.dataset.routineDayPreset,values=preset==="weekdays"?[1,2,3,4,5]:preset==="weekend"?[0,6]:preset==="everyday"?[0,1,2,3,4,5,6]:[];dialog.querySelectorAll('[name="day"]').forEach(input=>input.checked=values.includes(Number(input.value)));updateDaySummary()});
+  dialog.querySelectorAll('[name="day"]').forEach(input=>input.onchange=updateDaySummary);
+  updateDaySummary();translateDynamicInterface(dialog);document.body.append(dialog);
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
       const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
@@ -3395,14 +3415,6 @@ function openDailyCharacterQuestion(question,now=new Date()){
   });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
-function maybeShowDailyCharacterQuestion(){
-  if(document.visibilityState!=="visible"||!['observe','home'].includes(state.activeTab)||document.querySelector("dialog[open]"))return;
-  const now=new Date(),minute=now.getHours()*60+now.getMinutes();
-  if(minute<600||minute>1079)return;
-  const question=ensureDailyQuestionSchedule(now);
-  if(!question||question.shown||minute<question.minute)return;
-  setDailyQuestion({...question,shown:true});openDailyCharacterQuestion({...question,shown:true},now);
-}
 const notificationText=(value,language=state.uiLanguage||"ko")=>typeof value==="string"?value:(value?.[language]||value?.ko||"");
 const notificationHash=value=>[...String(value)].reduce((total,character)=>Math.imul(total^character.charCodeAt(0),16777619)>>>0,2166136261);
 const fillNotificationText=(text,context)=>String(text).replace(/\{(\w+)\}/g,(_,key)=>context[key]||"");
@@ -3613,6 +3625,12 @@ function buildCharacterContactSchedule(now=new Date()){
   settings.recentSignatures=[...(settings.recentSignatures||[]),...newSignatures].slice(-24);settings.lastScheduledAt=Date.now();
   return generated;
 }
+let characterNotificationScheduleTimer=0;
+function queueCharacterNotificationSchedule(){
+  clearTimeout(characterNotificationScheduleTimer);
+  if(!state.characterNotificationsEnabled)return;
+  characterNotificationScheduleTimer=setTimeout(()=>syncCharacterNotificationSchedule().catch(error=>console.warn("알림 일정 갱신을 다음 변경 때 다시 시도합니다",error)),650);
+}
 async function syncCharacterNotificationSchedule(){
   if(!state.characterNotificationsEnabled||!characterNotificationsAvailable())return false;
   const permission=await characterNotificationPermission();
@@ -3624,6 +3642,28 @@ async function syncCharacterNotificationSchedule(){
     item.largeIcon=await icons.get(source);
   }));
   await replaceCharacterNotifications(items);save(true);return true;
+}
+let currentBuildUpdateNoticeTimer=0;
+function queueCurrentBuildUpdateNotice(){
+  clearTimeout(currentBuildUpdateNoticeTimer);
+  currentBuildUpdateNoticeTimer=setTimeout(()=>scheduleCurrentBuildUpdateNotice().catch(error=>console.warn("업데이트 알림 예약 실패",error)),1200);
+}
+async function scheduleCurrentBuildUpdateNotice(){
+  if(!state.characterNotificationsEnabled||state.characterNotificationSettings?.updateNotices===false||!characterNotificationsAvailable())return false;
+  if(await characterNotificationPermission()!=="granted")return false;
+  const version=String(window.DRAWER_VILLAGE_APP_VERSION||"").trim();
+  if(!version)return false;
+  const key=`drawer-village-update-notice:${version}`;
+  if(localStorage.getItem(key)==="scheduled")return false;
+  const character=notificationSelectedCharacters()[0]||active();if(!character)return false;
+  const language=state.uiLanguage||"ko",copy=({
+    ko:`설정 화면이 더 안정적으로 움직이고, 오늘의 질문은 캐릭터 화면에서 편하게 확인할 수 있게 바뀌었어요.`,
+    en:`Settings now stay in place, and today's questions can be opened calmly from the Character screen.`,
+    ja:`設定画面が安定し、今日の質問はキャラクター画面から落ち着いて確認できるようになりました。`
+  })[language]||"";
+  const largeIcon=await characterNotificationLargeIcon(character.icon||character.photo||"");
+  await scheduleCharacterNotification({id:829000000+(Number(window.DRAWER_VILLAGE_VERSION_CODE)||0),title:`${character.name} · ${language==="en"?"Update news":language==="ja"?"アップデートのお知らせ":"업데이트 소식"}`,body:copy,largeIcon,at:new Date(Date.now()+12000),extra:{mode:"update",characterId:character.id,version}});
+  localStorage.setItem(key,"scheduled");return true;
 }
 function notificationConsentCopy(){
   const language=state.uiLanguage||"ko";
@@ -3646,7 +3686,7 @@ async function enableCharacterNotificationsWithConsent(source){
   if(current!=="granted"&&!(await confirmCharacterNotificationConsent()))return false;
   const permission=current==="granted"?current:await requestCharacterNotificationPermission();
   state.characterNotificationConsent=permission==="granted"?"granted":"denied";state.characterNotificationsEnabled=permission==="granted";
-  if(permission==="granted"){await initializeCharacterNotifications();await syncCharacterNotificationSchedule();showToast("캐릭터 연락 알림을 켰어요")}
+  if(permission==="granted"){await initializeCharacterNotifications();await syncCharacterNotificationSchedule();queueCurrentBuildUpdateNotice();showToast("캐릭터 연락 알림을 켰어요")}
   else showToast("알림이 허용되지 않았어요. 휴대폰 설정에서 다시 켤 수 있어요");
   save(true);updateCharacterNotificationControls();return permission==="granted";
 }
@@ -3657,8 +3697,14 @@ async function sendCharacterNotificationTest(){
 }
 window.addEventListener("drawer-village-character-notification-open",event=>{
   const extra=event.detail||{},character=state.characters[extra.characterId];if(!character)return;
-  setActive(character.id);navigateToTab("observe");
-  if(extra.mode==="question")setTimeout(()=>openDailyCharacterQuestion({characterId:character.id,targetId:extra.targetId||"",kind:extra.questionKind||"everyday",shown:true,answered:false},new Date(extra.scheduledAt||Date.now())),180);
+  setActive(character.id);
+  if(extra.mode==="question"){
+    const now=new Date(extra.scheduledAt||Date.now());
+    setDailyQuestion({day:localDateKey(now),minute:now.getHours()*60+now.getMinutes(),characterId:character.id,targetId:extra.targetId||"",kind:extra.questionKind||"everyday",shown:true,answered:false});
+    state.characterPane="profile";navigateToTab("character");return;
+  }
+  if(extra.mode==="update"){state.characterPane="profile";navigateToTab("character");return}
+  navigateToTab("observe");
 });
 function scheduleLiveSceneRefresh(){
   const delay=(15+Math.floor(Math.random()*16))*60*1000;
@@ -3673,13 +3719,13 @@ function scheduleLiveSceneRefresh(){
   },delay);
 }
 scheduleLiveSceneRefresh();
-setTimeout(maybeShowDailyCharacterQuestion,1200);
+ensureDailyQuestionSchedule();
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
   if(Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
+  queueCurrentBuildUpdateNotice();
 });
 const restoreForegroundState=()=>{
   refreshLocalMedia();
-  setTimeout(maybeShowDailyCharacterQuestion,250);
 };
 window.addEventListener("focus",restoreForegroundState);
 window.addEventListener("pageshow",restoreForegroundState);
@@ -3713,7 +3759,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820navigationfix2").catch(error=>{
+  import("./auth.js?v=20260820contactsettings1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3728,7 +3774,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820navigationfix2",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820contactsettings1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

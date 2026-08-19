@@ -11,6 +11,9 @@ assert(!app.includes("function renderPreservingCharacterEditorScroll"),"다중 �
 assert(app.includes('openCharacterEditor?.querySelector(".mobile-character-editor-body")'),"실제 캐릭터 편집 스크롤 영역을 저장해야 합니다.");
 assert(app.includes("restoreMobileCharacterEditorContinuity")&&app.includes("mobileCharacterEditorOpenDetails"),"편집 위치와 열린 고급 설정을 함께 복원해야 합니다.");
 assert(app.includes('stabilizeInteractiveScroll(mobileCharacterDialog'),"캐릭터의 단일 선택·다중 선택 모두 화면 위치를 유지해야 합니다.");
+assert(views.includes('data-theme-hex="${field}"')&&views.includes('type="color" data-color="${field}"'),"캐릭터 테마색은 색상표와 HEX 입력을 함께 제공해야 합니다.");
+assert(views.includes('aria-label="위로 이동"')&&views.includes('aria-label="아래로 이동"'),"모바일 캐릭터 순서는 위·아래 버튼으로 조정해야 합니다.");
+assert(app.includes("queueCharacterNotificationSchedule")&&app.includes("select.blur();restore();"),"연락 설정은 네이티브 선택창을 닫은 뒤 화면 위치를 유지하며 지연 반영해야 합니다.");
 assert(app.includes('catalogShell.addEventListener("change"')&&app.includes("replaceCatalogCard"),"취향사전은 전체 화면이 아니라 해당 카드만 갱신해야 합니다.");
 
 for(const marker of ['$$("[data-chip]")','$$("[data-favorite-kind]")','$$("[data-owned-kind]")']){
