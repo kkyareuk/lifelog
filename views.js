@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core8";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core8";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core9";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core9";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -2643,6 +2643,28 @@ Object.assign(UI_TEXT.ja,{
   "논리 우선":"論理優先","이성적인 편":"理性的","균형형":"バランス型","마음을 살핌":"気持ちを考える","공감 우선":"共感優先",
   "무계획":"無計画","즉흥적":"即興的","유연하게 조정":"柔軟に調整","계획적":"計画的","강박적으로 계획함":"強迫的に計画する",
   "요청할 때만 도움":"頼まれた時だけ助ける","거의 관여하지 않음":"ほとんど関与しない","적당히 관여":"適度に関与","강하게 간섭함":"強く干渉する","통제광":"支配的"
+});
+Object.assign(UI_TEXT.en,{
+  "관찰":"Observe","집":"Home","캐릭터":"Character","관계":"Relationships","주간 루틴":"Weekly routine","마을":"Town","상점":"Shop","설정":"Settings","기기에 저장됨":"Saved on this device",
+  "거실":"Living room","현관":"Entryway","침실":"Bedroom","주방":"Kitchen","욕실":"Bathroom","식당":"Dining room","서재·취미방":"Study · hobby room","아이방":"Child's room","손님방":"Guest room","창고":"Storage room","다이닝룸":"Dining room","베란다":"Balcony","기타 방":"Other room",
+  "소파":"Sofa","침대":"Bed","책상":"Desk","책장":"Bookcase","의자":"Chair","식탁":"Dining table","옷장":"Wardrobe","신발장":"Shoe cabinet","수납장":"Storage cabinet","선반":"Shelf","협탁":"Bedside table","화장대":"Vanity","전신거울":"Full-length mirror","냉장고":"Refrigerator","세탁기":"Washing machine","건조기":"Dryer","식기세척기":"Dishwasher","오븐":"Oven","세면대":"Sink","욕조":"Bathtub","샤워부스":"Shower booth",
+  "음식":"Food","음료":"Drinks","간식":"Snacks","고기":"Meat","해산물":"Seafood","채식":"Vegetarian","면 요리":"Noodles","국물":"Soup · stew","구이":"Grilled food","튀김":"Fried food","샐러드":"Salad","디저트":"Dessert","케이크":"Cake","쿠키":"Cookies","커피":"Coffee","주스":"Juice","탄산음료":"Soda","기타 음료":"Other drinks","한식":"Korean food","중식":"Chinese food","일식":"Japanese food","이탈리아 음식":"Italian food","양식":"Western food","분식":"Korean street food","패스트푸드":"Fast food",
+  "취미":"Hobbies","취미 없음":"No hobbies","게임":"Games","독서":"Reading","음악":"Music","영화·영상":"Film · video","운동":"Exercise","공예":"Crafts","미술":"Art","요리":"Cooking","여행":"Travel","패션":"Fashion","사진 촬영":"Photography","글쓰기":"Writing","그림 그리기":"Drawing","악기 연주":"Playing an instrument","노래 부르기":"Singing","춤추기":"Dancing","식물 돌보기":"Caring for plants","인테리어 꾸미기":"Decorating interiors","외국어 공부":"Studying languages","인터넷 서핑":"Browsing the web","쇼핑":"Shopping","산책":"Walking","캠핑":"Camping","등산":"Hiking","드라이브":"Driving","봉사활동":"Volunteering",
+  "직모":"Straight","약한 반곱슬":"Slightly wavy","강한 반곱슬":"Wavy","곱슬":"Curly","강한 곱슬":"Tightly curled","삭발·매우 짧음":"Shaved · very short","숏컷":"Short","귀 위 길이":"Above the ears","단발":"Bob length","어깨 길이":"Shoulder length","허리 길이":"Waist length","허리보다 김":"Below the waist","자연모":"Natural hair","전체 염색":"Full dye","부분 염색":"Partial dye","탈색 후 염색":"Bleached and dyed","여러 색":"Multiple colors",
+  "검은색":"Black","갈색":"Brown","밝은 갈색":"Light brown","짙은 갈색":"Dark brown","연갈색":"Light brown","금발":"Blonde","백발·은발":"White · silver","회색":"Gray","빨간색":"Red","주황색":"Orange","노란색":"Yellow","초록색":"Green","청록색":"Teal","파란색":"Blue","보라색":"Purple","분홍색":"Pink","호박색":"Amber","청회색":"Blue-gray","여러 색":"Multicolored",
+  "매우 마른 체형":"Very thin build","마른 체형":"Thin build","슬림한 체형":"Slim build","보통 체형":"Average build","탄탄한 체형":"Toned build","근육질 체형":"Muscular build","통통한 체형":"Chubby build","비만 체형":"Large build","골격이 작은 체형":"Small frame","골격이 큰 체형":"Large frame",
+  "청각 접근 방식":"Hearing access","시각 접근 방식":"Vision access","음성 안내":"Audio guidance","자막":"Captions","수어":"Sign language","입모양이 보이는 대화":"Face-to-face speech with visible lips","문자 대화":"Text communication","조용한 환경":"Quiet environment","화면 읽기":"Screen reader","확대·고대비":"Magnification · high contrast","촉각 표식":"Tactile markers","말로 주변 정보 설명":"Verbal descriptions of surroundings","직접 선택하고 결정할 시간 주기":"Allow time to choose and decide","접근 가능한 동선 먼저 확인":"Check accessible routes first","보조기기 함부로 만지지 않기":"Do not touch assistive devices without permission","쉬는 시간을 충분히 두기":"Allow enough rest time"
+});
+Object.assign(UI_TEXT.ja,{
+  "관찰":"観察","집":"家","캐릭터":"キャラクター","관계":"関係","주간 루틴":"週間ルーティン","마을":"村","상점":"ショップ","설정":"設定","기기에 저장됨":"端末に保存済み",
+  "거실":"リビング","현관":"玄関","침실":"寝室","주방":"キッチン","욕실":"浴室","식당":"ダイニング","서재·취미방":"書斎・趣味部屋","아이방":"子ども部屋","손님방":"客室","창고":"物置","다이닝룸":"ダイニングルーム","베란다":"ベランダ","기타 방":"その他の部屋",
+  "소파":"ソファ","침대":"ベッド","책상":"机","책장":"本棚","의자":"椅子","식탁":"食卓","옷장":"クローゼット","신발장":"靴箱","수납장":"収納棚","선반":"棚","협탁":"ベッドサイドテーブル","화장대":"ドレッサー","전신거울":"全身鏡","냉장고":"冷蔵庫","세탁기":"洗濯機","건조기":"乾燥機","식기세척기":"食器洗い機","오븐":"オーブン","세면대":"洗面台","욕조":"浴槽","샤워부스":"シャワーブース",
+  "음식":"食べ物","음료":"飲み物","간식":"おやつ","고기":"肉料理","해산물":"魚介料理","채식":"ベジタリアン","면 요리":"麺料理","국물":"スープ・煮込み","구이":"焼き料理","튀김":"揚げ物","샐러드":"サラダ","디저트":"デザート","케이크":"ケーキ","쿠키":"クッキー","커피":"コーヒー","주스":"ジュース","탄산음료":"炭酸飲料","기타 음료":"その他の飲み物","한식":"韓国料理","중식":"中華料理","일식":"日本料理","이탈리아 음식":"イタリア料理","양식":"洋食","분식":"韓国軽食","패스트푸드":"ファストフード",
+  "취미":"趣味","취미 없음":"趣味なし","게임":"ゲーム","독서":"読書","음악":"音楽","영화·영상":"映画・動画","운동":"運動","공예":"工芸","미술":"美術","요리":"料理","여행":"旅行","패션":"ファッション","사진 촬영":"写真撮影","글쓰기":"文章を書く","그림 그리기":"絵を描く","악기 연주":"楽器演奏","노래 부르기":"歌う","춤추기":"踊る","식물 돌보기":"植物の世話","인테리어 꾸미기":"インテリアを飾る","외국어 공부":"外国語学習","인터넷 서핑":"ネット閲覧","쇼핑":"買い物","산책":"散歩","캠핑":"キャンプ","등산":"登山","드라이브":"ドライブ","봉사활동":"ボランティア活動",
+  "직모":"ストレート","약한 반곱슬":"少しウェーブ","강한 반곱슬":"ウェーブ","곱슬":"カール","강한 곱슬":"強いカール","삭발·매우 짧음":"坊主・ベリーショート","숏컷":"ショート","귀 위 길이":"耳より上","단발":"ボブ","어깨 길이":"肩まで","허리 길이":"腰まで","허리보다 김":"腰より長い","자연모":"地毛","전체 염색":"全体染め","부분 염색":"部分染め","탈색 후 염색":"ブリーチ後に染色","여러 색":"複数色",
+  "검은색":"黒","갈색":"茶色","밝은 갈색":"明るい茶色","짙은 갈색":"濃い茶色","연갈색":"薄茶色","금발":"金髪","백발·은발":"白髪・銀髪","회색":"灰色","빨간색":"赤","주황색":"オレンジ","노란색":"黄色","초록색":"緑","청록색":"青緑","파란색":"青","보라색":"紫","분홍색":"ピンク","호박색":"琥珀色","청회색":"青灰色","여러 색":"多色",
+  "매우 마른 체형":"非常に細い体型","마른 체형":"細い体型","슬림한 체형":"スリムな体型","보통 체형":"標準体型","탄탄한 체형":"引き締まった体型","근육질 체형":"筋肉質","통통한 체형":"ふっくらした体型","비만 체형":"大柄な体型","골격이 작은 체형":"骨格が小さい体型","골격이 큰 체형":"骨格が大きい体型",
+  "청각 접근 방식":"聴覚アクセシビリティ","시각 접근 방식":"視覚アクセシビリティ","음성 안내":"音声案内","자막":"字幕","수어":"手話","입모양이 보이는 대화":"口元が見える会話","문자 대화":"文字での会話","조용한 환경":"静かな環境","화면 읽기":"スクリーンリーダー","확대·고대비":"拡大・ハイコントラスト","촉각 표식":"触覚マーカー","말로 주변 정보 설명":"周囲の情報を言葉で説明","직접 선택하고 결정할 시간 주기":"自分で選び決める時間を確保","접근 가능한 동선 먼저 확인":"移動可能な経路を先に確認","보조기기 함부로 만지지 않기":"補助機器に無断で触れない","쉬는 시간을 충분히 두기":"十分な休憩時間を取る"
 });
 function businessInformationFooter(){
   const language=state.uiLanguage;

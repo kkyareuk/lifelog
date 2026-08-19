@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260819-transparent-occupants8";
+const CACHE_VERSION="drawer-village-v20260819-occupant-labels9";
 const CORE=[
   "./",
   "./index.html",

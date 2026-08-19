@@ -1,4 +1,4 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819core8";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819core9";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
