@@ -5370,7 +5370,10 @@ html.native-app,html.native-app body{
   width:100%;height:100%;min-height:0!important;overflow:hidden!important;
 }
 html.native-app body{padding:0!important}
-html.native-app main{width:100%;height:100%;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain}
+html.native-app main{width:100%;height:100%;min-height:0!important;overflow-x:hidden!important;overscroll-behavior:contain}
+html.native-app:not([data-active-tab="catalog"]) main{overflow-y:auto!important}
+html.native-app[data-active-tab="catalog"] main{overflow-y:hidden!important}
+html.native-app[data-active-tab="catalog"] .catalog-shell{width:100%;height:100%;max-height:100%;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain}
 html.native-app[data-active-tab="observe"] main{height:100%!important;min-height:0!important;overflow:hidden!important}
 html.native-app[data-active-tab="observe"] .native-observe-home{height:100%!important;min-height:0!important;overflow:hidden!important}
 

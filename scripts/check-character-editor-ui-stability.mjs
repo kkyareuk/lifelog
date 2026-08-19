@@ -11,7 +11,7 @@ assert(!app.includes("function renderPreservingCharacterEditorScroll"),"다중 �
 assert(app.includes('openCharacterEditor?.querySelector(".mobile-character-editor-body")'),"실제 캐릭터 편집 스크롤 영역을 저장해야 합니다.");
 assert(app.includes("restoreMobileCharacterEditorContinuity")&&app.includes("mobileCharacterEditorOpenDetails"),"편집 위치와 열린 고급 설정을 함께 복원해야 합니다.");
 assert(app.includes('stabilizeInteractiveScroll(mobileCharacterDialog'),"캐릭터의 단일 선택·다중 선택 모두 화면 위치를 유지해야 합니다.");
-assert(app.includes('stabilizeInteractiveScroll(document.querySelector(".catalog-shell")'),"취향사전의 모든 유형에서 선택 위치를 유지해야 합니다.");
+assert(app.includes('catalogShell.addEventListener("change"')&&app.includes("replaceCatalogCard"),"취향사전은 전체 화면이 아니라 해당 카드만 갱신해야 합니다.");
 
 for(const marker of ['$$("[data-chip]")','$$("[data-favorite-kind]")','$$("[data-owned-kind]")']){
   const start=app.indexOf(marker);

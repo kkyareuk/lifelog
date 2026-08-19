@@ -1,9 +1,9 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819scrollscene1";
-import {eventFor} from "./simulation.js?v=20260819scrollscene1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819scrollscene1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819scrollscene1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819scrollscene1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819scrollscene1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819catalogcomponent1";
+import {eventFor} from "./simulation.js?v=20260819catalogcomponent1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819catalogcomponent1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819catalogcomponent1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819catalogcomponent1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819catalogcomponent1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -32,7 +32,6 @@ let mobileCharacterEditorScroll=0;
 let mobileCharacterEditorOpenDetails=[];
 let mobileCharacterEditorDetailsCaptured=false;
 let resetScrollAfterRender=false;
-let pendingCatalogOpenKey="";
 const guidePending=new Set();
 const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
@@ -435,6 +434,42 @@ function openProfileExportDialog(){
   dialog.querySelector('[data-export-format="pdf"]').onclick=()=>{exportProfilePdfV2(character);dialog.close()};
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
+function enhanceCatalogCards(root=document){
+  const selector='[data-kind="fashion"][data-catalog-field="image"]';
+  const inputs=[...(root.matches?.(selector)?[root]:[]),...root.querySelectorAll(selector)];
+  inputs.forEach(input=>{
+    const detail=input.closest(".catalog-detail");if(!detail||detail.querySelector('.fashion-extra-fields'))return;
+    const item=state.catalog.fashion.find(value=>value.id===input.dataset.item);if(!item)return;
+    const box=document.createElement("div");box.className="fashion-extra-fields";
+    const group=(title,field,values)=>`<section class="chips"><b>${title}</b><div>${values.map(value=>`<button type="button" data-fashion-attr="${field}" data-item="${item.id}" data-value="${value}" class="${(item[field]||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div></section>`;
+    box.innerHTML=group("재질","materials",FASHION_MATERIALS)+group("색","colors",FASHION_COLORS)+group("분위기·화려함","flairs",FASHION_FLAIRS);
+    input.closest("label").insertAdjacentElement("beforebegin",box);
+  });
+}
+function catalogCardElement(kind,item){
+  const template=document.createElement("template");
+  template.innerHTML=catalogCardMarkup(kind,item).trim();
+  return template.content.firstElementChild;
+}
+function replaceCatalogCard(kind,itemId,{open=true}={}){
+  const item=state.catalog?.[kind]?.find(value=>value.id===itemId);
+  const current=document.querySelector(`.catalog-dex-card[data-kind="${CSS.escape(kind)}"][data-catalog-card="${CSS.escape(itemId)}"]`);
+  if(!item||!current)return null;
+  const next=catalogCardElement(kind,item);if(!next)return null;
+  next.open=open||current.open;
+  current.replaceWith(next);
+  enhanceCatalogCards(next);
+  translateDynamicInterface(next);
+  return next;
+}
+function appendCatalogCard(kind,itemId){
+  const item=state.catalog?.[kind]?.find(value=>value.id===itemId),grid=document.querySelector(`[data-catalog-grid="${CSS.escape(kind)}"]`);
+  if(!item||!grid)return null;
+  grid.querySelector("[data-catalog-empty]")?.remove();
+  const card=catalogCardElement(kind,item);if(!card)return null;
+  card.open=true;grid.append(card);enhanceCatalogCards(card);translateDynamicInterface(card);
+  return card;
+}
 function enhanceDynamicForms(){
   document.querySelectorAll(".profile-license").forEach(profile=>{
     profile.querySelectorAll('[data-personality-field="interference"]').forEach(button=>{
@@ -487,13 +522,7 @@ function enhanceDynamicForms(){
     const values=active()[summary.dataset.profileTagsSummary]||[];
     summary.textContent=values.length?values.join(" · "):({en:"Not set",ja:"未設定"}[state.uiLanguage]||"정하지 않음");
   });
-  document.querySelectorAll('.catalog-dex-card [data-kind="fashion"][data-catalog-field="image"]').forEach(input=>{
-    const detail=input.closest(".catalog-detail");if(!detail||detail.querySelector('[data-catalog-field="material"]'))return;
-    const item=state.catalog.fashion.find(value=>value.id===input.dataset.item),box=document.createElement("div");box.className="fashion-extra-fields";
-    const group=(title,field,values)=>`<section class="chips"><b>${title}</b><div>${values.map(value=>`<button type="button" data-fashion-attr="${field}" data-item="${item.id}" data-value="${value}" class="${(item[field]||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div></section>`;
-    box.innerHTML=group("재질","materials",FASHION_MATERIALS)+group("색","colors",FASHION_COLORS)+group("분위기·화려함","flairs",FASHION_FLAIRS);
-    input.closest("label").insertAdjacentElement("beforebegin",box);
-  });
+  enhanceCatalogCards();
   document.querySelectorAll(".place-editor details").forEach(details=>{
     const placeId=details.querySelector("[data-place-id]")?.dataset.placeId;if(!placeId||details.querySelector("[data-building-shape-open]"))return;
     const button=document.createElement("button");button.type="button";button.dataset.buildingShapeOpen=placeId;button.className="building-shape-open";button.textContent="건물 모양 선택";
@@ -564,7 +593,7 @@ function openCatalogIllustrationPicker(itemId,kind){
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>앱 기본 그림</small><h2>${htmlEsc(item.name||"항목")} 일러스트</h2></div><button value="close" aria-label="닫기">×</button></div><p>사진 첨부와 별개인 서랍마을 기본 일러스트예요. 투명 배경과 원본 비율로 표시됩니다.</p><div class="catalog-illustration-grid">${symbols.map((symbol,index)=>`<button type="button" data-catalog-app-art="${index}"><img src="${catalogIllustration(kind,index)}" alt=""><span>${symbol} 일러스트 ${index+1}</span></button>`).join("")}</div></form>`;
   dialog.querySelectorAll("[data-catalog-app-art]").forEach(button=>button.onclick=()=>{
     updateCatalogItem(kind,itemId,{image:catalogIllustration(kind,Number(button.dataset.catalogAppArt)),imageSource:"app"});
-    dialog.close();render();
+    dialog.close();replaceCatalogCard(kind,itemId,{open:true});
   });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
@@ -807,8 +836,6 @@ function render(){
     const field=card.querySelector("[data-catalog-field][data-kind][data-item]");
     return field?`${field.dataset.kind}:${field.dataset.item}`:"";
   }).filter(Boolean);
-  if(pendingCatalogOpenKey&&!openCatalogKeys.includes(pendingCatalogOpenKey))openCatalogKeys.push(pendingCatalogOpenKey);
-  pendingCatalogOpenKey="";
   const openCharacterEditor=document.querySelector("[data-mobile-character-editor-dialog][open]");
   const openCharacterEditorBody=openCharacterEditor?.querySelector(".mobile-character-editor-body");
   if(openCharacterEditorBody){
@@ -1979,30 +2006,58 @@ function bind(){
       showToast(type==="gift"?"선물을 건넸어요":type==="exercise"?"함께 운동을 시작했어요":type==="outing"?"함께 나들이를 시작했어요":"물건을 구매했어요");render();
     }else showToast("상대와 물건을 먼저 골라 주세요");
   });
-  $$("[data-add-catalog]").forEach(el=>el.onclick=()=>{
-    const kind=el.dataset.addCatalog,itemId=addCatalogItem(kind,{name:"새 항목",category:"기타"});
-    pendingCatalogOpenKey=`${kind}:${itemId}`;
-    render();
-  });
-  $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{
-    const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;
-    updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});
-    if(el.dataset.catalogField==="category"){
-      const kind=el.dataset.kind,item=el.dataset.item;
-      pendingCatalogOpenKey=`${kind}:${item}`;
-      render();
-      return;
-    }
-    const detail=el.closest("details");if(detail)detail.open=true;
-    showToast("항목에 반영되었습니다");
-  });
-  $$("[data-catalog-keyword]").forEach(el=>el.onclick=()=>{
-    const item=state.catalog?.[el.dataset.kind]?.find(x=>x.id===el.dataset.catalogKeyword),list=item?.keywords||[],value=el.dataset.value;
-    const selected=!list.includes(value);
-    updateCatalogItem(el.dataset.kind,el.dataset.catalogKeyword,{keywords:selected?[...list,value]:list.filter(x=>x!==value)});
-    el.classList.toggle("on",selected);
-  });
-  $$("[data-delete-catalog]").forEach(el=>el.onclick=()=>{if(confirm("이 항목을 삭제할까요?")){deleteCatalogItem(el.dataset.kind,el.dataset.deleteCatalog);render()}});
+  const catalogShell=document.querySelector(".catalog-shell");
+  if(catalogShell){
+    // 취향사전은 카드 단위로만 갱신한다. 선택 하나 때문에 header/main과
+    // 도감 전체를 다시 만들지 않으므로 스크롤과 열린 카드가 그대로 남는다.
+    catalogShell.addEventListener("change",event=>{
+      const field=event.target.closest?.("[data-catalog-field]");
+      if(!field||!catalogShell.contains(field))return;
+      const kind=field.dataset.kind,itemId=field.dataset.item,key=field.dataset.catalogField;
+      const value=["spicy","sweet"].includes(key)?Number(field.value):field.value,patch={[key]:value};
+      if(key==="category")patch.subtype="";
+      if(key==="image")patch.imageSource="user";
+      updateCatalogItem(kind,itemId,patch);
+      const card=field.closest(".catalog-dex-card");if(card)card.open=true;
+      if(["category","subtype","image"].includes(key))replaceCatalogCard(kind,itemId,{open:true});
+      else if(key==="name")card?.querySelector("summary b")?.replaceChildren(document.createTextNode(value||"새 항목"));
+      showToast("항목에 반영되었습니다");
+    });
+    catalogShell.addEventListener("click",event=>{
+      const button=event.target.closest?.("button");if(!button||!catalogShell.contains(button))return;
+      if(button.dataset.addCatalog){
+        event.preventDefault();
+        const kind=button.dataset.addCatalog,itemId=addCatalogItem(kind,{name:"새 항목",category:"기타"});
+        appendCatalogCard(kind,itemId);
+        return;
+      }
+      if(button.dataset.catalogKeyword){
+        event.preventDefault();
+        const kind=button.dataset.kind,item=state.catalog?.[kind]?.find(value=>value.id===button.dataset.catalogKeyword),list=item?.keywords||[],value=button.dataset.value;
+        const selected=!list.includes(value);
+        updateCatalogItem(kind,button.dataset.catalogKeyword,{keywords:selected?[...list,value]:list.filter(entry=>entry!==value)});
+        button.classList.toggle("on",selected);
+        return;
+      }
+      if(button.dataset.deleteCatalog){
+        event.preventDefault();
+        if(!confirm("이 항목을 삭제할까요?"))return;
+        const card=button.closest(".catalog-dex-card"),grid=card?.parentElement;
+        deleteCatalogItem(button.dataset.kind,button.dataset.deleteCatalog);card?.remove();
+        if(grid&&!grid.querySelector(".catalog-dex-card")){const empty=document.createElement("p");empty.dataset.catalogEmpty="";empty.textContent="아직 등록된 항목이 없어요.";grid.append(empty)}
+        return;
+      }
+      if(button.dataset.catalogImage){event.preventDefault();openCatalogIllustrationPicker(button.dataset.catalogImage,button.dataset.kind);return}
+      if(button.dataset.catalogPhoto){event.preventDefault();pickImage("catalogImage",button.dataset.catalogPhoto,button.dataset.kind);return}
+      if(button.dataset.fashionAttr){
+        event.preventDefault();
+        const item=state.catalog.fashion.find(value=>value.id===button.dataset.item);if(!item)return;
+        const field=button.dataset.fashionAttr,value=button.dataset.value,list=Array.isArray(item[field])?[...item[field]]:[],selected=!list.includes(value);
+        updateCatalogItem("fashion",item.id,{[field]:selected?[...list,value]:list.filter(entry=>entry!==value)});
+        button.classList.toggle("on",selected);
+      }
+    });
+  }
   $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
   const layerCopy={
     en:{label:"Building layer order",back:"Send backward",front:"Bring forward",backDone:"Moved the building one layer backward.",frontDone:"Moved the building one layer forward."},
@@ -2029,8 +2084,6 @@ function bind(){
   $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}));
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
-  $$("[data-catalog-image]").forEach(el=>el.onclick=()=>openCatalogIllustrationPicker(el.dataset.catalogImage,el.dataset.kind));
-  $$("[data-catalog-photo]").forEach(el=>el.onclick=()=>pickImage("catalogImage",el.dataset.catalogPhoto,el.dataset.kind));
   $$(".place-editor details").forEach(details=>{
     const audienceTitle=[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
     const oldPicker=audienceTitle?.nextElementSibling,placeId=oldPicker?.querySelector("[data-place-audience]")?.dataset.placeAudience;
@@ -2050,13 +2103,6 @@ function bind(){
     const dialog=document.querySelector(`[data-building-detail-dialog="${CSS.escape(button.dataset.buildingDetailOpen)}"]`);
     if(dialog&&!dialog.open)dialog.showModal();
   });
-  $$('[data-fashion-attr]').forEach(button=>button.onclick=()=>{
-    const item=state.catalog.fashion.find(value=>value.id===button.dataset.item);if(!item)return;const field=button.dataset.fashionAttr,value=button.dataset.value,list=Array.isArray(item[field])?[...item[field]]:[];
-    const selected=!list.includes(value);
-    updateCatalogItem("fashion",item.id,{[field]:selected?[...list,value]:list.filter(entry=>entry!==value)});
-    button.classList.toggle("on",selected);
-  });
-  stabilizeInteractiveScroll(document.querySelector(".catalog-shell"),()=>document.querySelector("#app>main"));
   $$('[data-home-visual-mode]').forEach(button=>button.onclick=()=>{
     state.homeVisualMode=button.dataset.homeVisualMode==="ld"?"ld":"sd";
     save(true);
@@ -2747,7 +2793,8 @@ $("#image-picker").onchange=async e=>{
     const data=await cropImage(file,task.type);
     if(!data)return;
     await applyImage(task.type,task.id,task.room,data);
-    render();
+    if(task.type==="catalogImage")replaceCatalogCard(task.room,task.id,{open:true});
+    else render();
   }catch(err){
     console.error(err);
     alert("사진을 저장하지 못했어요. 다른 사진으로 다시 시도해 주세요.");
@@ -3491,7 +3538,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819scrollscene1").catch(error=>{
+  import("./auth.js?v=20260819catalogcomponent1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3506,7 +3553,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819scrollscene1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819catalogcomponent1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

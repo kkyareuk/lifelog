@@ -3,12 +3,13 @@ import path from "node:path";
 
 const root=path.resolve(import.meta.dirname,"..");
 const read=file=>fs.readFileSync(path.join(root,file),"utf8");
-const app=read("app.js"),simulationSource=read("simulation.js"),views=read("views.js");
+const app=read("app.js"),css=read("app.css"),simulationSource=read("simulation.js"),views=read("views.js");
 
 const checks=[
-  [app.includes("function restoreMainScroll")&&app.includes("previousMain?.scrollTop"),"앱 main 스크롤 위치 보존"],
-  [app.includes("openCatalogKeys")&&app.includes("pendingCatalogOpenKey"),"열린 도감 카드 보존"],
-  [app.includes('button.classList.toggle("on",selected)')&&app.includes('el.classList.toggle("on",selected)'),"다중 선택은 전체 화면을 다시 그리지 않음"],
+  [css.includes('html.native-app[data-active-tab="catalog"] main{overflow-y:hidden!important}')&&css.includes('html.native-app[data-active-tab="catalog"] .catalog-shell'),"취향사전 단일 스크롤 영역"],
+  [app.includes('catalogShell.addEventListener("change"')&&app.includes('catalogShell.addEventListener("click"'),"취향사전 카드 이벤트 위임"],
+  [app.includes("function replaceCatalogCard")&&app.includes("catalogCardMarkup(kind,item)"),"전체 화면 대신 도감 카드만 갱신"],
+  [app.includes('button.classList.toggle("on",selected)')&&!app.includes('stabilizeInteractiveScroll(document.querySelector(".catalog-shell")'),"향수·옷 다중 선택은 전체 화면을 다시 그리지 않음"],
   [simulationSource.includes("routineEndMinute")&&simulationSource.includes("routineReturned:true"),"일정 종료·귀가 메타데이터"],
   [simulationSource.includes('purpose.kind!=="routine"'),"등록 일정을 밤 8시 일괄 귀가에서 제외"],
   [simulationSource.includes('ENGINE_VERSION="20260819-scene-pairing1"'),"기존 당일 타임라인 재계산"],
