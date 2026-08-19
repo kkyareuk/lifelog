@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core6";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core7";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2028,6 +2028,118 @@ function contextualDailyEvent(c,time,date){
   const script=pool[hash(`${c.id}:${dayKey(date)}:contextual-daily`)%pool.length];
   return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily",date),script[2]);
 }
+function relationshipCombinationScenePool(c,relationship,date){
+  if(!relationship?.other)return[];
+  const language=state.uiLanguage||"ko",name=relationship.other.name;
+  const local=(ko,en,ja)=>({ko,en,ja}[language]||ko);
+  const view=characterViewFor(c.id,relationship.other.id)||{};
+  const viewText=Object.values(view).filter(value=>typeof value==="string").join(" ");
+  const flags={
+    positive:/좋아|소중|사랑|호감|끌림|아끼|존경/.test(view.overall||""),
+    hostile:/싫|미워|혐오|원망|적대|탐탁지|꺼림/.test(`${view.overall||""} ${view.comfort||""}`),
+    distrust:/전혀 믿지|의심|조심스럽게 지켜봄/.test(view.trust||""),
+    close:/가장 가까|아주 가까|가까운 사이|친한 사이|가족처럼|마음의 중심/.test(view.closeness||""),
+    distant:/낯선|거리감|남보다도 멂|불편|긴장|대화도 전혀 통하지/.test(`${view.closeness||""} ${view.comfort||""}`),
+    annoyed:/종종 귀찮|많이 귀찮|보기만 해도 피곤|가끔 성가심/.test(view.annoyance||""),
+    jealous:/은근히 질투|질투가 심|독점하고 싶|가끔 신경 쓰임/.test(view.jealousy||""),
+    conflict:/자주 충돌|격렬하게 충돌|파국적인 충돌|가끔 부딪힘/.test(view.conflictIntensity||""),
+    unaware:/어렴풋이|착각함|전혀 모름|부정함/.test(view.awareness||""),
+    uncertainOther:/상대의 마음을 전혀 모름|눈치만 챔|오해하고 있음/.test(view.mutualAwareness||""),
+    ending:/끝날 수|헤어질 거라|이어질지 모름/.test(view.expectation||""),
+    attentive:/자주 살핌|항상 신경|종종 신경/.test(view.attention||""),
+    fearful:/두려|무서|겁먹|압도/.test(`${view.fear||""} ${viewText}`)
+  };
+  const modifiers=[];
+  const modifier=(ko,en,ja)=>modifiers.push(local(ko,en,ja));
+  const conflictModifier={
+    "피하는 편":["말이 커지기 전에 필요한 내용만 짧게 남기고 먼저 자리를 비웠어요.","Before the exchange escalated, they left only the necessary message and stepped away.","話が大きくなる前に必要な内容だけ短く残し、先にその場を離れました。"],
+    "시간을 두고 말함":["바로 답하지 않고 시간을 정해 둔 뒤, 감정이 가라앉은 다음 다시 말을 꺼냈어요.","They set a time to revisit it and spoke again only after cooling down.","すぐには答えず話す時間を決め、気持ちが落ち着いてから話を再開しました。"],
+    "대화로 해결":["상대의 말을 끝까지 들은 뒤 자기 요구를 한 문장씩 나누어 설명했어요.","They listened to the end, then explained their own needs one point at a time.","相手の話を最後まで聞き、自分の要望を一つずつ分けて説明しました。"],
+    "바로 따짐":["애매하게 넘기지 않고 그 자리에서 무엇을 뜻했는지 분명히 물었어요.","They did not let the ambiguity pass and directly asked what was meant.","曖昧なまま流さず、その場で何を意味したのかはっきり尋ねました。"],
+    "끝까지 결론을 냄":["쟁점을 적어 두고 다음부터 각자 어떻게 행동할지 합의할 때까지 대화를 이어 갔어요.","They wrote down each issue and kept talking until both agreed on what to do next time.","論点を書き出し、次からそれぞれどう動くか合意するまで話を続けました。"]
+  }[c.conflictStyle];
+  if(conflictModifier)modifier(...conflictModifier);
+  if(/혼자가 편함|낯을 가림|조용히/.test(c.socialStyle||""))modifier("상대의 반응을 재촉하지 않고 한 걸음 떨어진 자리에서 대답을 기다렸어요.","They waited a step away without pressing for an immediate response.","返事を急かさず、一歩離れた場所で相手の反応を待ちました。");
+  if(/먼저 다가감|무리의 중심|사교적/.test(c.socialStyle||""))modifier("주변 사람이 끼어들기 전에 먼저 상대를 불러 둘이 직접 이야기할 자리를 만들었어요.","Before anyone else stepped in, they called the other person aside to talk directly.","周りが口を挟む前に相手を呼び、二人で直接話せる場を作りました。");
+  if(/논리|이성|원칙/.test(c.decisionStyle||""))modifier("기억이 엇갈리는 부분은 시간과 메시지 기록을 확인해 사실부터 맞췄어요.","Where their memories differed, they checked times and messages before drawing conclusions.","記憶が食い違う部分は時刻とメッセージを確認し、まず事実をそろえました。");
+  if(/공감|마음|감정/.test(c.decisionStyle||""))modifier("결론을 내기 전에 상대가 어떤 대목에서 상처받았는지 자기 말로 다시 확인했어요.","Before reaching a conclusion, they repeated back which part had hurt the other person.","結論を出す前に、相手がどの部分で傷ついたのか自分の言葉で確認しました。");
+  if(/계획|정리/.test(c.planningStyle||""))modifier("다음에 확인할 일과 연락할 시각을 적어 두어 같은 문제를 미루지 않게 했어요.","They wrote down the next task and contact time so the same issue would not be postponed.","次に確認することと連絡する時刻を書き、同じ問題を先送りしないようにしました。");
+  if(/즉흥|무계획/.test(c.planningStyle||""))modifier("생각이 정리되자 미루지 않고 바로 상대에게 가서 첫마디부터 꺼냈어요.","Once the thought became clear, they went over immediately and started the conversation.","考えがまとまると先延ばしにせず、すぐ相手のところへ行って話し始めました。");
+  if(["통제광","강하게 간섭함"].includes(c.interference))modifier("상대의 선택까지 대신 정하려다 손을 멈추고, 필요한 범위를 직접 말해 달라고 물었어요.","They stopped themselves from deciding for the other person and asked what kind of help was actually wanted.","相手の選択まで決めかけて手を止め、必要な範囲を本人に尋ねました。");
+  if(["요청할 때만 도움","거의 관여하지 않음"].includes(c.interference))modifier("도와 달라는 말이 나오기 전에는 손대지 않고, 필요한 것이 있으면 불러 달라고만 전했어요.","They did not step in unasked and simply said to call if help was needed.","頼まれるまでは手を出さず、必要なら呼んでほしいとだけ伝えました。");
+  if(/장난을 즐김|유머로/.test(c.humorStyle||"")&&!flags.hostile)modifier("분위기가 굳자 상대도 알아들을 짧은 농담을 건넨 뒤 다시 본론으로 돌아왔어요.","When the mood stiffened, they used one joke the other person would understand, then returned to the issue.","空気が固くなると相手にも通じる短い冗談を一つ言い、すぐ本題に戻りました。");
+  if(/쉽게 욱함|거의 참지/.test(c.impulseControl||""))modifier("목소리가 먼저 높아진 것을 알아차리고 물을 한 모금 마신 뒤 같은 말을 낮은 목소리로 다시 했어요.","They noticed their voice rise, took a sip of water, and repeated the point more quietly.","声が先に大きくなったことに気づき、水を一口飲んで同じ内容を低い声で言い直しました。");
+  if(/매우 잘 참음|대체로 참음/.test(c.impulseControl||""))modifier("첫 반응을 삼키고 상대가 말을 마칠 때까지 손에 든 물건을 내려놓은 채 기다렸어요.","They held back the first reaction, set down what they were holding, and waited until the other person finished.","最初の反応を抑え、手にしていた物を置いて相手が話し終えるまで待ちました。");
+  if(!modifiers.length)modifier("상대가 실제로 한 말과 행동만 짚고 추측은 사실처럼 단정하지 않았어요.","They addressed only what was actually said and done, without treating guesses as facts.","実際に言われたことと行われたことだけを取り上げ、推測を事実のように決めつけませんでした。");
+
+  const raw=[],scene=(category,titleKo,descKo,titleEn,descEn,titleJa,descJa,room="living")=>raw.push({category,room,title:local(titleKo,titleEn,titleJa),desc:local(descKo,descEn,descJa)});
+  const types=new Set([relationship.r?.type,...(relationship.r?.types||[])]);
+  if(types.has("동거인"))scene("role-roommate",`${name}와 공용 공간 사용 시간을 맞추는 중`,"냉장고 칸과 욕실 시간, 손님을 부를 때 알릴 시점을 표로 적어 서로 확인했어요.",`Coordinating shared spaces with ${name}`,"They wrote down fridge space, bathroom times, and when to give notice about guests.",`${name}と共用スペースの使い方を合わせるところ`,"冷蔵庫の場所や浴室の時間、来客を知らせる時点を表にして確認しました。","kitchen");
+  if(types.has("직장 동료"))scene("role-coworker",`${name}와 업무 책임 범위를 다시 나누는 중`,"누가 어느 단계까지 맡는지 문서에 표시하고 빠진 인수인계 항목을 서로 채웠어요.",`Dividing responsibilities with ${name}`,"They marked who owned each step and filled in the missing handoff details.",`${name}と仕事の担当範囲を分け直すところ`,"誰がどの段階まで担当するか文書に示し、抜けた引き継ぎ項目を補いました。","study");
+  if(types.has("라이벌"))scene("role-rival",`${name}의 기록과 자기 기록을 비교하는 중`,"결과만 보지 않고 속도와 실수한 구간을 나란히 적어 다음 승부에서 바꿀 점을 찾았어요.",`Comparing records with ${name}`,"They compared pace and mistakes, not just the result, to find what to change next time.",`${name}の記録と自分の記録を比べるところ`,"結果だけでなく速度と失敗した区間を並べ、次の勝負で変える点を探しました。","study");
+  if(types.has("혐관"))scene("role-hostile",`${name}와 필요한 말만 주고받는 중`,"감정적인 평가를 섞지 않고 오늘 반드시 정해야 하는 조건 세 가지만 확인했어요.",`Keeping the exchange with ${name} strictly necessary`,"They avoided personal judgments and confirmed only the three conditions that had to be settled today.",`${name}と必要な言葉だけ交わすところ`,"感情的な評価を混ぜず、今日必ず決める三つの条件だけ確認しました。","study");
+  if(types.has("부모·자녀"))scene("role-family",`${name}가 스스로 할 부분을 기다리는 중`,"먼저 대신 처리하지 않고 막힌 부분을 말해 달라고 한 뒤, 요청받은 단계만 옆에서 도왔어요.",`Waiting for ${name} to handle their part`,"They did not take over, asked which step was difficult, and helped only where requested.",`${name}が自分でする部分を待つところ`,"先回りせず、難しい部分を聞いて頼まれた段階だけ隣で手伝いました。","living");
+  if(types.has("형제·자매"))scene("role-sibling",`${name}와 오래된 물건의 주인을 확인하는 중`,"서로 자기 것이라고 우기기 전에 사진과 기억을 맞춰 보고, 함께 쓰던 물건은 보관할 사람을 정했어요.",`Working out who owns an old item with ${name}`,"Before arguing over it, they checked photos and memories and decided who would keep shared items.",`${name}と昔の物の持ち主を確かめるところ`,"互いに自分の物だと言い張る前に写真と記憶を照らし合わせ、共有物を保管する人を決めました。","study");
+  if(types.has("친구")||types.has("소꿉친구"))scene("role-friend",`${name}에게 듣고 싶은 답의 종류를 묻는 중`,"해결책이 필요한지 그냥 들어 주길 바라는지 먼저 물은 뒤, 상대가 고른 방식으로 대화를 이어 갔어요.",`Asking what kind of response ${name} wants`,"They asked whether advice or simple listening was wanted and continued in the way ${name} chose.",`${name}にどんな返事がほしいか尋ねるところ`,"解決策が必要か、ただ聞いてほしいかを先に尋ね、相手が選んだ形で話を続けました。","living");
+  if(types.has("연인")||types.has("부부"))scene("role-partner",`${name}와 미뤄 둔 약속의 조건을 다시 맞추는 중`,"좋아한다는 말로 덮지 않고 시간과 비용, 각자 원하지 않는 부분을 하나씩 다시 정했어요.",`Reworking a postponed plan with ${name}`,"They did not cover the issue with affection and instead clarified time, cost, and each person's limits.",`${name}と先延ばしにした約束の条件を決め直すところ`,"好意の言葉で済ませず、時間と費用、互いに望まないことを一つずつ決め直しました。","study");
+  if(types.has("동아리 동료")||types.has("학창 시절 친구들")||types.has("친구 모임"))scene("role-group",`${name}와 모임에서 맡을 일을 조정하는 중`,"친한 정도와 상관없이 할 수 있는 시간과 익숙한 일을 기준으로 역할을 다시 나눴어요.",`Adjusting group duties with ${name}`,"They reassigned tasks by availability and experience rather than closeness.",`${name}と集まりで担当することを調整するところ`,"親しさではなく、使える時間と慣れている作業を基準に役割を分け直しました。","study");
+
+  if(flags.distrust){
+    scene("distrust-proof",`${name}의 설명과 기록을 대조하는 중`,"들은 말을 바로 믿거나 반박하지 않고 메시지와 시간 기록을 펼쳐 사실이 맞는지 확인했어요.",`Checking ${name}'s explanation against the record`,"They neither accepted nor rejected it immediately and checked messages and timestamps first.",`${name}の説明と記録を照らし合わせるところ`,"聞いた話をすぐ信じたり否定したりせず、メッセージと時刻の記録を確認しました。","study");
+    scene("distrust-boundary",`${name}에게 맡길 범위를 줄이는 중`,"공용 열쇠와 중요한 문서는 따로 두고, 오늘 필요한 일만 단계별로 나누어 맡겼어요.",`Limiting what ${name} is responsible for`,"They secured shared keys and important papers and delegated only today's necessary steps.",`${name}に任せる範囲を狭めるところ`,"共用の鍵と重要書類を分け、今日必要な作業だけ段階ごとに任せました。","study");
+    scene("distrust-confirm",`${name}와 합의한 내용을 문자로 남기는 중`,"말이 바뀌었다고 다투지 않도록 날짜와 책임 범위를 짧게 적어 서로 확인했어요.",`Putting the agreement with ${name} in writing`,"They wrote down the date and responsibilities so neither would later argue that the terms had changed.",`${name}との合意を文字で残すところ`,"あとで話が変わったと争わないよう、日付と責任範囲を短く書いて確認しました。","study");
+  }
+  if(flags.hostile){
+    scene("hostile-refuse",`${name}의 부탁을 분명히 거절하는 중`,"애매한 여지를 남기지 않고 할 수 없는 이유와 대신 가능한 범위만 짧게 말했어요.",`Clearly refusing ${name}'s request`,"They left no false opening, briefly explained the limit, and named only what was possible.",`${name}の頼みをはっきり断るところ`,"曖昧な余地を残さず、できない理由と代わりに可能な範囲だけ短く伝えました。","living");
+    scene("hostile-distance",`${name}와 같은 공간에서 거리를 확보하는 중`,"서로 부딪히지 않도록 출입 동선과 사용할 자리를 나누고 먼저 정한 선을 넘지 않았어요.",`Keeping distance from ${name} in the same space`,"They separated routes and work areas and stayed within the boundaries already agreed on.",`${name}と同じ空間で距離を確保するところ`,"ぶつからないよう動線と使う場所を分け、先に決めた線を越えませんでした。","living");
+    scene("hostile-witness",`${name}와의 대화에 제삼자를 부르는 중`,"둘만 이야기하면 다시 언성이 높아질 것 같아 내용을 아는 사람에게 함께 들어 달라고 요청했어요.",`Bringing a third person into a talk with ${name}`,"Expecting another escalation, they asked an informed third person to sit in.",`${name}との話に第三者を呼ぶところ`,"二人だけでは再び声が大きくなりそうで、事情を知る人に同席を頼みました。","study");
+  }
+  if(flags.conflict){
+    scene("conflict-example",`${name}와 부딪힌 행동을 하나씩 짚는 중`,"성격을 탓하지 않고 실제로 있었던 말과 행동, 그 뒤 생긴 결과를 순서대로 확인했어요.",`Reviewing the actions that caused conflict with ${name}`,"They avoided attacking character and reviewed the exact words, actions, and results in order.",`${name}と衝突した行動を一つずつ確認するところ`,"性格を責めず、実際の言葉と行動、その結果を順番に確かめました。","study");
+    scene("conflict-rules",`${name}와 다음 충돌 때 지킬 규칙을 정하는 중`,"목소리가 커지면 잠시 멈추고, 물건에는 손대지 않으며, 다시 말할 시각을 정하기로 했어요.",`Setting rules for the next conflict with ${name}`,"They agreed to pause when voices rose, leave objects alone, and set a time to resume.",`${name}と次の衝突で守るルールを決めるところ`,"声が大きくなったら止まり、物には触れず、話を再開する時刻を決めることにしました。","living");
+    scene("conflict-separate",`${name}와 맡은 일을 잠시 분리하는 중`,"같이 하면 같은 지점에서 계속 부딪혀 오늘은 각자 끝낼 수 있는 부분을 나누어 진행했어요.",`Temporarily separating tasks from ${name}`,"Because the same point kept causing clashes, they split the work into pieces each could finish alone.",`${name}と担当を一時的に分けるところ`,"同じ点で衝突が続くため、今日はそれぞれ一人で終えられる部分に分けました。","study");
+  }
+  if(flags.jealous){
+    scene("jealous-pause",`${name}에게 바로 끼어들지 않고 기다리는 중`,"상대가 다른 사람과 이야기하는 모습을 보고 신경이 쓰였지만 대화를 끊지 않고 자기 차례를 기다렸어요.",`Waiting instead of interrupting ${name}`,"Seeing ${name} talk with someone else bothered them, but they did not interrupt and waited their turn.",`${name}の会話に割り込まず待つところ`,"相手が別の人と話す姿が気になっても会話を遮らず、自分の番を待ちました。","living");
+    scene("jealous-ask",`${name}에게 둘의 약속을 다시 확인하는 중`,"누구를 만나지 말라고 요구하는 대신 자기가 불안했던 상황을 말하고 이미 정한 약속이 그대로인지 물었어요.",`Checking an agreement with ${name}`,"Instead of controlling who ${name} met, they explained the insecurity and asked whether their agreement still stood.",`${name}に二人の約束を確認するところ`,"会う相手を制限せず、自分が不安だった状況を伝え、決めた約束が今も同じか尋ねました。","living");
+    scene("jealous-stepback",`${name}를 붙잡기 전에 혼자 진정하는 중`,"확인되지 않은 상상을 사실처럼 말하지 않으려고 창가로 가 숨을 고르고 보고 들은 것만 정리했어요.",`Calming down before confronting ${name}`,"To avoid treating imagination as fact, they stepped away, breathed, and listed only what they had actually seen or heard.",`${name}を問い詰める前に一人で落ち着くところ`,"想像を事実のように言わないため窓辺で呼吸を整え、実際に見聞きしたことだけ整理しました。","living");
+  }
+  if(flags.annoyed){
+    scene("annoyed-request",`${name}에게 반복되는 행동을 멈춰 달라고 말하는 중`,"사람 자체가 싫다고 몰아붙이지 않고 방금 반복된 행동과 원하는 변화를 짧게 말했어요.",`Asking ${name} to stop a repeated behavior`,"They named the repeated behavior and requested a concrete change without attacking the person.",`${name}に繰り返す行動をやめてほしいと伝えるところ`,"人そのものを責めず、繰り返された行動と望む変化を短く伝えました。","living");
+    scene("annoyed-break",`${name}와의 대화를 잠깐 멈추는 중`,"같은 설명을 다시 들으면 말이 거칠어질 것 같아 십 분 뒤에 이어 말하자고 하고 물러났어요.",`Taking a break from talking with ${name}`,"Feeling their words might turn harsh, they asked to continue in ten minutes and stepped away.",`${name}との話をいったん止めるところ`,"同じ説明を聞くと口調が荒くなりそうで、十分後に続けようと伝えて離れました。","living");
+  }
+  if(flags.distant){
+    scene("distant-seat",`${name}와 필요한 거리를 두고 앉는 중`,"가까이 붙거나 친한 척하지 않고 서로 화면을 볼 수 있는 맞은편 자리를 골랐어요.",`Sitting at a comfortable distance from ${name}`,"They chose seats across from each other without forcing physical or emotional closeness.",`${name}と必要な距離を取って座るところ`,"近づきすぎたり親しいふりをせず、互いの画面が見える向かいの席を選びました。","study");
+    scene("distant-business",`${name}에게 필요한 정보만 전달하는 중`,"안부를 억지로 묻지 않고 장소와 시각, 준비할 물건만 빠짐없이 전했어요.",`Giving ${name} only the needed information`,"They did not force small talk and clearly shared the place, time, and required items.",`${name}に必要な情報だけ伝えるところ`,"無理に近況を尋ねず、場所と時刻、必要な物だけ漏れなく伝えました。","study");
+  }
+  if(flags.unaware||flags.uncertainOther){
+    scene("uncertain-rehearse",`${name}에게 할 말을 몇 번 고쳐 쓰는 중`,"왜 이렇게 문장을 오래 붙잡는지는 생각하지 못한 채 너무 차갑거나 가까워 보이지 않는 표현을 골랐어요.",`Rewriting a message to ${name}`,"Without examining why it mattered so much, they searched for wording that felt neither cold nor overly close.",`${name}への言葉を何度も書き直すところ`,"なぜこんなに悩むのかは考えず、冷たすぎず近すぎない表現を選びました。","study");
+    scene("uncertain-notice",`${name}의 반응을 자꾸 확인하는 중`,"다른 사람의 대답은 바로 넘기면서도 상대가 읽었는지, 표정이 달라졌는지는 몇 번이나 살폈어요.",`Repeatedly checking ${name}'s reaction`,"They ignored everyone else's response but kept checking whether ${name} had read it and how their expression changed.",`${name}の反応を何度も確かめるところ`,"ほかの人の返事は流すのに、相手が読んだか、表情が変わったかを何度も確認しました。","living");
+  }
+  if(flags.ending){
+    scene("ending-belongings",`${name}와 함께 둔 물건을 구분하는 중`,"누가 가져갈지 애매한 물건을 목록으로 만들고 추억보다 실제 소유와 필요를 기준으로 나눴어요.",`Sorting shared belongings with ${name}`,"They listed ambiguous items and divided them by ownership and need rather than sentiment.",`${name}と一緒に置いた物を分けるところ`,"持ち主が曖昧な物を一覧にし、思い出ではなく所有と必要性を基準に分けました。","study");
+    scene("ending-contact",`${name}와 앞으로 연락할 범위를 정하는 중`,"갑자기 끊거나 예전처럼 지내겠다고 약속하지 않고 필요한 연락과 피할 연락을 구체적으로 정했어요.",`Setting future contact boundaries with ${name}`,"They neither cut contact abruptly nor promised things would stay the same, and defined what contact was necessary.",`${name}と今後の連絡範囲を決めるところ`,"突然絶つとも以前通りとも約束せず、必要な連絡と避ける連絡を具体的に決めました。","living");
+  }
+  if(flags.attentive&&!flags.hostile){
+    scene("attention-practical",`${name}의 바뀐 일정을 먼저 확인하는 중`,"자주 확인하던 시간과 달라진 것을 알아차리고 필요한 준비물이 바뀌었는지 짧게 물었어요.",`Checking ${name}'s changed schedule`,"They noticed the time had changed and briefly asked whether the needed preparations had changed too.",`${name}の変わった予定を先に確認するところ`,"いつもの時刻と違うことに気づき、必要な準備も変わったか短く尋ねました。","study");
+    scene("attention-without-control",`${name}의 상태를 묻고 대답을 기다리는 중`,"표정만 보고 원인을 단정하거나 대신 해결하지 않고, 필요한 것이 있는지 한 번 묻고 기다렸어요.",`Asking how ${name} is and waiting`,"They did not guess the cause or take over, asked once what was needed, and waited.",`${name}の様子を尋ねて返事を待つところ`,"表情だけで原因を決めつけたり代わりに解決したりせず、必要なことがあるか一度尋ねて待ちました。","living");
+  }
+  if(flags.fearful){
+    scene("fear-distance",`${name}와 대화할 안전한 자리를 고르는 중`,"출구가 막히지 않고 다른 사람이 가까이 있는 자리를 고른 뒤, 오래 머물지 않을 내용만 준비했어요.",`Choosing a safer place to talk with ${name}`,"They chose a place with a clear exit and other people nearby, preparing only the points that had to be discussed.",`${name}と話す安全な場所を選ぶところ`,"出口が塞がれず人が近くにいる場所を選び、必要な内容だけ準備しました。","entry");
+    scene("fear-support",`${name}와 만나기 전에 동행을 부탁하는 중`,"혼자 만나기 불안한 이유를 믿는 사람에게 설명하고 대화가 끝날 때까지 근처에 있어 달라고 요청했어요.",`Asking for support before meeting ${name}`,"They explained why meeting alone felt unsafe and asked a trusted person to stay nearby.",`${name}と会う前に同行を頼むところ`,"一人で会うのが不安な理由を信頼できる人に説明し、話が終わるまで近くにいてほしいと頼みました。","entry");
+  }
+  if(flags.positive&&flags.conflict)scene("mixed-care",`${name}의 몫을 챙기면서도 문제를 다시 꺼내는 중`,"상대가 쓸 물건을 가까이 놓아 준 뒤, 돌봄으로 갈등을 덮지 않고 아까 남은 문제를 다시 말했어요.",`Caring for ${name} without dropping the issue`,"They set out something ${name} needed, then returned to the unresolved issue instead of hiding it with care.",`${name}の分を用意しながら問題を話し直すところ`,"必要な物を近くに置いたあと、気遣いで対立を隠さず、残った問題をもう一度話しました。","living");
+  if(flags.positive&&flags.distrust)scene("mixed-distrust",`${name}를 걱정하면서도 직접 확인하는 중`,"무사한지 먼저 확인했지만 설명이 맞는지는 관련된 사람과 기록을 따로 살폈어요.",`Caring about ${name} while still verifying`,"They first checked that ${name} was safe, then independently verified the explanation.",`${name}を心配しながらも自分で確認するところ`,"無事か先に確かめたあと、説明が正しいか関係者と記録を別に確認しました。","study");
+  if(flags.close&&!flags.hostile){
+    scene("close-silence",`${name}와 각자 할 일을 하며 같은 방에 있는 중`,"대화를 이어 가려 애쓰지 않고도 필요한 물건만 자연스럽게 건네며 각자 하던 일에 집중했어요.",`Sharing a room with ${name} while doing separate things`,"They focused on separate tasks and passed needed items without forcing conversation.",`${name}と同じ部屋で別々のことをするところ`,"会話を無理に続けず、必要な物だけ自然に渡しながらそれぞれの作業に集中しました。","living");
+    scene("close-honest",`${name}에게 듣기 불편한 사실도 말하는 중`,"무조건 편들기보다 잘못된 부분을 둘만 있는 자리에서 구체적으로 짚고, 다른 사람 앞에서는 이야기를 퍼뜨리지 않았어요.",`Telling ${name} an uncomfortable truth`,"Rather than agreeing blindly, they addressed the mistake privately and did not spread it to others.",`${name}に聞きづらい事実も伝えるところ`,"無条件に味方せず、二人きりで間違いを具体的に伝え、他人には広めませんでした。","living");
+  }
+  if(!raw.length){
+    scene("neutral-check",`${name}와 오늘 필요한 일을 확인하는 중`,"친한 척하거나 적대하지 않고 각자 맡을 부분과 끝낼 시각만 분명히 정했어요.",`Checking today's necessary task with ${name}`,"Without pretending closeness or hostility, they clarified each person's part and the finish time.",`${name}と今日必要なことを確認するところ`,"親しいふりも敵対もせず、それぞれの担当と終える時刻だけ明確にしました。","study");
+    scene("neutral-return",`${name}에게 빌린 물건을 돌려주는 중`,"상태가 달라진 곳이 없는지 함께 확인하고 원래 있던 자리에 직접 놓았어요.",`Returning something borrowed from ${name}`,"They checked its condition together and put it back exactly where it belonged.",`${name}に借りた物を返すところ`,"状態が変わった所がないか一緒に確かめ、元の場所に戻しました。","living");
+  }
+  return raw.map((item,index)=>({...item,desc:`${item.desc} ${modifiers[(hash(`${c.id}:${relationship.other.id}:${item.category}:${dayKey(date)}`)+index)%modifiers.length]}`}));
+}
 function profileSettingScenePool(c,date){
   const language=state.uiLanguage||"ko";
   const text=(ko,en,ja)=>({ko,en,ja}[language]||ko);
@@ -2103,6 +2215,10 @@ function profileSettingScenePool(c,date){
   const relationship=preferredRelation(c);
   if(relationship){
     const name=relationship.other.name;
+    const relationshipView=characterViewFor(c.id,relationship.other.id)||{};
+    const relationshipViewText=Object.values(relationshipView).filter(value=>typeof value==="string").join(" ");
+    const relationshipPositive=/좋아|소중|사랑|호감|끌림|아끼|존경|가까운|친한/.test(relationshipViewText)&&!/매우 싫|혐오|원망|적대/.test(relationshipViewText);
+    const relationshipConflict=/가끔 부딪|자주 충돌|격렬|파국|성가심|귀찮|피곤|전혀 믿지|의심|매우 싫|혐오|원망|적대/.test(relationshipViewText);
     const affectionScenes={
       "표현이 서툼":[`${name}의 자주 쓰는 물건을 챙기는 중`,`${name}의 물건을 손 닿기 쉬운 자리에 놓아 두고, 들키자 짧게 고개만 끄덕였어요.`,`Putting ${name}'s things within reach`,`They placed something ${name} often uses within easy reach, then only nodded when noticed.`,`${name}がよく使う物を用意するところ`,`${name}がよく使う物を手の届く場所に置き、気づかれると短くうなずきました。`],
       "조용히 곁에 있음":[`${name} 곁에 조용히 앉아 있는 중`,`${name}의 말을 재촉하지 않고 가까운 자리에 앉아, 필요할 때 바로 눈을 맞추고 들어 주고 있어요.`,`Sitting quietly beside ${name}`,`They sat nearby without rushing ${name}, ready to make eye contact and listen whenever needed.`,`${name}のそばに静かに座るところ`,`${name}を急かさず近くに座り、必要な時に目を合わせて話を聞いています。`],
@@ -2111,7 +2227,7 @@ function profileSettingScenePool(c,date){
       "적극적으로 챙김":[`${name}에게 간식과 필요한 물건을 건네는 중`,`${name}의 일정에 맞춰 간식과 자주 찾는 물건을 한데 챙겨 건네고, 빠뜨린 것은 없는지 다시 확인했어요.`,`Bringing ${name} a snack and essentials`,`They gathered a snack and the things ${name} often needs, handed them over, and checked that nothing was missing.`,`${name}におやつと必要な物を渡すところ`,`${name}の予定に合わせておやつとよく使う物をまとめて渡し、忘れ物がないかもう一度確かめました。`]
     };
     const affection=affectionScenes[c.affectionStyle];
-    if(affection)add("relationship-affection",...affection,"living",["affectionStyle","interference"]);
+    if(affection&&relationshipPositive)add("relationship-affection",...affection,"living",["affectionStyle","interference"]);
     const conflictScenes={
       "피하는 편":[`${name}에게 짧은 메모를 남기는 중`,`바로 마주 앉는 대신 불편했던 상황과 나중에 이야기하고 싶은 내용을 짧게 적어 ${name}가 볼 곳에 두었어요.`,`Leaving ${name} a short note`,`Instead of forcing a conversation, they wrote what felt uncomfortable and what they wanted to discuss later.`,`${name}に短いメモを残すところ`,`すぐに向き合う代わりに、気になったことと後で話したい内容を短く書いて置きました。`],
       "시간을 두고 말함":[`${name}와 다시 이야기하러 앉은 중`,`잠시 떨어져 숨을 고른 뒤 ${name} 앞에 앉아, 아까 어떤 말이 불편했는지 차분히 설명했어요.`,`Sitting down to talk with ${name} again`,`After taking time to cool down, they sat with ${name} and calmly explained which words had hurt.`,`${name}ともう一度話すために座るところ`,`少し離れて気持ちを整えたあと、${name}の前に座り、どの言葉がつらかったか落ち着いて伝えました。`],
@@ -2120,7 +2236,8 @@ function profileSettingScenePool(c,date){
       "끝까지 결론을 냄":[`${name}와 다음 행동을 정하는 중`,`${name}와 쟁점을 하나씩 적어 보고, 다시 같은 일이 생기면 각자 어떻게 행동할지 구체적으로 정했어요.`,`Agreeing on next steps with ${name}`,`They listed each issue with ${name} and agreed on exactly what each person would do if it happened again.`,`${name}と次の行動を決めるところ`,`${name}と論点を一つずつ書き出し、同じことが起きた時にそれぞれどう動くか具体的に決めました。`]
     };
     const conflict=conflictScenes[c.conflictStyle];
-    if(conflict)add("relationship-conflict",...conflict,"living",["conflictStyle","interference"]);
+    if(conflict&&relationshipConflict)add("relationship-conflict",...conflict,"living",["conflictStyle","interference"]);
+    relationshipCombinationScenePool(c,relationship,date).forEach(scene=>pool.push({...scene,fields:["conflictStyle","affectionStyle","interference","socialStyle","decisionStyle","planningStyle","humorStyle","impulseControl"]}));
   }
   return pool;
 }
@@ -2360,7 +2477,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260819-profile1";
+const ENGINE_VERSION="20260819-relation-combinations2";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2496,6 +2613,14 @@ function cleanCharacterBreakingCheeringEntries(entries){
   // 붙을 수 있었다. 구체적인 행동도 아니므로 새 로그와 기존 당일 표시 모두에서 제외한다.
   return entries.filter(item=>!/의 하루를 응원(?:하|하는|했|해)/.test(`${item?.title||""} ${item?.desc||""}`));
 }
+function cleanLegacyProfileMetaEntries(entries){
+  // profile1 이전에 저장된 장면에는 캐릭터가 실제로 한 행동 대신
+  // “설정을 떠올리며”, “프로필에 정해 둔” 같은 내부 생성 기준이 그대로
+  // 노출됐다. 엔진이 바뀌어도 지난 시각의 로그는 보존되므로, 해당 문장만
+  // 기존 당일 기록에서 제거해 새 행동 장면이 다시 채워질 수 있게 한다.
+  const metaCopy=/갈등 대응과 애정 표현 설정을 떠올리며|마음을 표현할 방법을 고르는 중|프로필에 정해 둔|좋아하는 장르로 설정한|운전 경험 설정에 맞춰/;
+  return entries.filter(item=>!metaCopy.test(`${item?.title||""} ${item?.desc||""}`));
+}
 function companionWasActuallyThere(c,item,date){
   if(!item?.withId)return true;
   const other=state.characters[item.withId],otherDay=other?.days?.[dayKey(date)];
@@ -2530,7 +2655,7 @@ export function timeline(c,date=new Date()){
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
   if(old&&Array.isArray(old.entries)){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    const cleaned=cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries)))))))));
+    const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
     if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
   }
   const today=key===dayKey(new Date());

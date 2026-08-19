@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core6";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core6";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core7";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core7";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -2605,6 +2605,44 @@ Object.assign(UI_TEXT.ja,{
   "소형":"小型","중형":"中型","대형":"大型","온순함":"おとなしい","활발함":"活発","사고뭉치":"いたずら好き","진중함":"落ち着いている","호기심 많음":"好奇心旺盛","겁이 많음":"怖がり","사람을 잘 따름":"人懐っこい","독립적":"独立心が強い","털":"毛","비늘":"うろこ","깃털":"羽毛","날개":"翼","지느러미":"ひれ","뿔":"角","꼬리":"しっぽ","발광":"発光","독성":"毒性",
   "모름":"不明","수컷":"オス","암컷":"メス","등에 타고 이동할 수 있음":"背中に乗って移動できる","투명 아이콘":"透過アイコン","아이콘 링크":"アイコンリンク","사진 링크":"写真リンク",
   "완료":"完了","캐릭터 통계 보고서":"キャラクター統計レポート"
+});
+Object.assign(UI_TEXT.en,{
+  "‘상대를 때릴 수 있음’ 이상을 고르면 설정한 충동·갈등·성격에 따라 낮은 수위의 폭행 장면이 나올 수 있어요. 충동만 있고 실행하지 않는 캐릭터는 반드시 ‘행동으로 옮기지 않음’을 골라 주세요.":"Choosing ‘May hit the other person’ or above can produce low-level assault scenes when impulse, conflict, and personality allow it. If the character has urges but never acts, choose ‘Does not act on it’.",
+  "‘좋아하는 장르’는 책·영화·드라마·애니메이션 등 이야기 콘텐츠 전체에 공통으로 반영돼요.":"Favorite genres apply across books, films, dramas, animation, and other story-based media.",
+  "2인 LD도 1인과 같은 높이·같은 Y좌표를 사용하고 X좌표만 좌우로 나뉩니다. 현재 선택한 캐릭터가 항상 앞에 표시됩니다.":"Two-character LD scenes keep the same height and Y position as solo scenes; only X splits left and right. The selected character always appears in front.",
+  "1~2개월에 한 번":"Every 1–2 months","2주에 한 번":"Every 2 weeks","3~4개월에 한 번":"Every 3–4 months","반년에 한 번":"Every 6 months","1년에 한 번":"Once a year","몇 년에 한 번":"Every few years",
+  "가격을 거의 신경 쓰지 않음":"Rarely considers price","가성비 중시":"Values cost effectiveness","품질 우선":"Prioritizes quality","필요한 만큼 소비":"Spends only what is needed","취향에는 아끼지 않음":"Spends freely on personal tastes","절약을 우선함":"Prioritizes saving",
+  "가끔 욱하지만 멈춤":"Sometimes flares up but stops","매우 잘 참음":"Very strong self-control","대체로 참음":"Usually holds back","쉽게 욱함":"Quick-tempered","거의 참지 않음":"Rarely holds back",
+  "가끔 장난을 즐김":"Sometimes playful","장난을 거의 하지 않음":"Rarely jokes around","건조한 농담만 함":"Dry humor only","장난을 즐김":"Enjoys teasing","유머로 분위기를 이끎":"Leads the mood with humor",
+  "가능성 중시":"Focuses on possibilities","가능성을 봄":"Notices possibilities","현실과 가능성을 함께 봄":"Balances reality and possibilities","구체적인 사실 중시":"Focuses on concrete facts","경험과 사실을 우선함":"Prioritizes experience and facts",
+  "가만히 못 있음":"Always needs to be moving","활동적인 편":"Active","상황에 따라":"Depends on the situation","느긋한 편":"Laid-back","집에서 충전함":"Recharges at home",
+  "가발·헤어피스":"Wig · hairpiece","가방":"Bag","가벼운 메이크업":"Light makeup","메이크업을 하지 않음":"No makeup","진한 메이크업":"Bold makeup","무대·촬영용 메이크업":"Stage · camera makeup",
+  "가상 아티스트":"Virtual artist","프리랜서":"Freelancer","회사원":"Office worker","공무원":"Civil servant","의료인":"Healthcare worker","교육자":"Educator","연구자":"Researcher","예술가":"Artist","자영업":"Self-employed","학생":"Student","무직":"Unemployed",
+  "피하는 편":"Avoids conflict","시간을 두고 말함":"Talks after taking time","대화로 해결":"Resolves through conversation","바로 따짐":"Confronts immediately","끝까지 결론을 냄":"Pursues a final resolution",
+  "표현이 서툼":"Struggles to express affection","조용히 곁에 있음":"Stays quietly nearby","말로 표현":"Expresses it in words","행동으로 표현":"Expresses it through actions","적극적으로 챙김":"Actively takes care of them",
+  "혼자가 편함":"Prefers being alone","낯을 가림":"Reserved with strangers","조용히 어울림":"Socializes quietly","먼저 다가감":"Approaches first","무리의 중심":"Center of the group",
+  "논리 우선":"Logic first","이성적인 편":"Rational","균형형":"Balanced","마음을 살핌":"Considers feelings","공감 우선":"Empathy first",
+  "무계획":"Unplanned","즉흥적":"Spontaneous","유연하게 조정":"Adjusts flexibly","계획적":"Planned","강박적으로 계획함":"Plans obsessively",
+  "요청할 때만 도움":"Helps only when asked","거의 관여하지 않음":"Rarely gets involved","적당히 관여":"Moderately involved","강하게 간섭함":"Highly interfering","통제광":"Controlling"
+});
+Object.assign(UI_TEXT.ja,{
+  "‘상대를 때릴 수 있음’ 이상을 고르면 설정한 충동·갈등·성격에 따라 낮은 수위의 폭행 장면이 나올 수 있어요. 충동만 있고 실행하지 않는 캐릭터는 반드시 ‘행동으로 옮기지 않음’을 골라 주세요.":"「相手を殴る可能性がある」以上を選ぶと、衝動・対立・性格に応じて軽度の暴力シーンが出る場合があります。衝動はあっても実行しないキャラクターは必ず「行動に移さない」を選んでください。",
+  "‘좋아하는 장르’는 책·영화·드라마·애니메이션 등 이야기 콘텐츠 전체에 공통으로 반영돼요.":"好きなジャンルは本・映画・ドラマ・アニメなど物語コンテンツ全体に反映されます。",
+  "2인 LD도 1인과 같은 높이·같은 Y좌표를 사용하고 X좌표만 좌우로 나뉩니다. 현재 선택한 캐릭터가 항상 앞에 표시됩니다.":"2人LDも1人の時と同じ高さ・Y座標を使い、X座標だけ左右に分かれます。選択中のキャラクターが常に手前に表示されます。",
+  "1~2개월에 한 번":"1～2か月に1回","2주에 한 번":"2週間に1回","3~4개월에 한 번":"3～4か月に1回","반년에 한 번":"半年に1回","1년에 한 번":"1年に1回","몇 년에 한 번":"数年に1回",
+  "가격을 거의 신경 쓰지 않음":"価格をほとんど気にしない","가성비 중시":"コストパフォーマンス重視","품질 우선":"品質優先","필요한 만큼 소비":"必要な分だけ使う","취향에는 아끼지 않음":"好みには惜しまない","절약을 우선함":"節約を優先",
+  "가끔 욱하지만 멈춤":"時々かっとなるが止まれる","매우 잘 참음":"非常に自制できる","대체로 참음":"たいてい我慢する","쉽게 욱함":"かっとなりやすい","거의 참지 않음":"ほとんど我慢しない",
+  "가끔 장난을 즐김":"時々いたずらを楽しむ","장난을 거의 하지 않음":"ほとんど冗談を言わない","건조한 농담만 함":"淡々とした冗談だけ","장난을 즐김":"いたずらを楽しむ","유머로 분위기를 이끎":"ユーモアで場を盛り上げる",
+  "가능성 중시":"可能性を重視","가능성을 봄":"可能性に目を向ける","현실과 가능성을 함께 봄":"現実と可能性の両方を見る","구체적인 사실 중시":"具体的な事実を重視","경험과 사실을 우선함":"経験と事実を優先",
+  "가만히 못 있음":"じっとしていられない","활동적인 편":"活動的","상황에 따라":"状況による","느긋한 편":"のんびりしている","집에서 충전함":"家で充電する",
+  "가발·헤어피스":"かつら・ヘアピース","가방":"バッグ","가벼운 메이크업":"薄いメイク","메이크업을 하지 않음":"メイクをしない","진한 메이크업":"濃いメイク","무대·촬영용 메이크업":"舞台・撮影用メイク",
+  "가상 아티스트":"バーチャルアーティスト","프리랜서":"フリーランス","회사원":"会社員","공무원":"公務員","의료인":"医療従事者","교육자":"教育者","연구자":"研究者","예술가":"芸術家","자영업":"自営業","학생":"学生","무직":"無職",
+  "피하는 편":"対立を避ける","시간을 두고 말함":"時間を置いて話す","대화로 해결":"対話で解決","바로 따짐":"すぐ問いただす","끝까지 결론을 냄":"最後まで結論を出す",
+  "표현이 서툼":"愛情表現が苦手","조용히 곁에 있음":"静かにそばにいる","말로 표현":"言葉で表現","행동으로 표현":"行動で表現","적극적으로 챙김":"積極的に世話をする",
+  "혼자가 편함":"一人が楽","낯을 가림":"人見知り","조용히 어울림":"静かに関わる","먼저 다가감":"自分から近づく","무리의 중심":"集団の中心",
+  "논리 우선":"論理優先","이성적인 편":"理性的","균형형":"バランス型","마음을 살핌":"気持ちを考える","공감 우선":"共感優先",
+  "무계획":"無計画","즉흥적":"即興的","유연하게 조정":"柔軟に調整","계획적":"計画的","강박적으로 계획함":"強迫的に計画する",
+  "요청할 때만 도움":"頼まれた時だけ助ける","거의 관여하지 않음":"ほとんど関与しない","적당히 관여":"適度に関与","강하게 간섭함":"強く干渉する","통제광":"支配的"
 });
 function businessInformationFooter(){
   const language=state.uiLanguage;
