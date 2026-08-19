@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819ime1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260819ime1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819life1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260819life1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2510,7 +2510,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260819-scheduled-choices1";
+const ENGINE_VERSION="20260819-new-character-life1";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2848,7 +2848,28 @@ function baseEventFor(c,date=new Date()){
   const nextGap=last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30;
   if(last&&n-last.minute>=nextGap)return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,n,date),date));
   if(last)return withResidenceLocation(c,last,date);
-  if(c.createdAt&&Date.now()-Number(c.createdAt)<24*60*60*1000)return withResidenceLocation(c,entry(n,"아직 생활을 시작하지 않음","프로필과 집, 일정을 설정하면 지금부터 생활이 시작돼요.",{home:true,room:"bedroom",mood:"대기",stress:0}),date);
+  // 생성 당일에는 생성 시각 이전의 일정을 타임라인에서 제외한다. 예전에는
+  // 그 결과 과거 장면이 하나도 없으면 24시간 동안 캐릭터 전체를 "대기"로
+  // 막아 버렸다. 이제 생성 직후에도 현재 시각의 실제 행동을 하나 만들어
+  // 기록하고, 처음 연결된 집을 삭제했더라도 마을 장면으로 생활을 이어 간다.
+  if(c.createdAt&&Number(c.createdAt)<=date.getTime()){
+    const homeId=homeIdForDate(c,date);
+    if(state.homes?.[homeId]){
+      return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,null,n,date),date));
+    }
+    const town=townFor(c,date),places=(town?.places||[]).filter(place=>place?.id);
+    const place=places.length?places[hash(`${c.id}:${dayKey(date)}:first-town-scene`)%places.length]:null;
+    const copy={
+      ko:{title:"새로운 생활 동선을 둘러보는 중",desc:place?`${place.name} 주변을 천천히 살피며 앞으로 자주 다닐 길과 머물 곳을 익히고 있어요.`:"마을을 천천히 걸으며 앞으로 자주 다닐 길과 머물 곳을 익히고 있어요."},
+      en:{title:"Exploring a new daily route",desc:place?`They are taking a slow look around ${place.name}, learning the routes and places they may visit often.`:"They are walking around town slowly, learning the routes and places they may visit often."},
+      ja:{title:"新しい生活の動線を見て回っているところ",desc:place?`${place.name}の周りをゆっくり見て、これからよく通る道や居場所を覚えています。`:"村をゆっくり歩き、これからよく通る道や居場所を覚えています。"}
+    }[state.uiLanguage]||null;
+    const localized=copy||{
+      title:"새로운 생활 동선을 둘러보는 중",
+      desc:place?`${place.name} 주변을 천천히 살피며 앞으로 자주 다닐 길과 머물 곳을 익히고 있어요.`:"마을을 천천히 걸으며 앞으로 자주 다닐 길과 머물 곳을 익히고 있어요."
+    };
+    return commitLiveEntry(c,date,entry(n,localized.title,localized.desc,{townId:town?.id||c.townId||"",placeId:place?.id||"",mood:"탐색",stress:2}));
+  }
   if(n<Math.min(wakeAt(c,date),240))return withResidenceLocation(c,entry(n,"잠들기 전 시간을 보내는 중","자정이 지난 늦은 밤, 오늘 일정을 시작하는 대신 조용히 하루를 마무리하고 있어요.",{home:true,room:"bedroom",mood:"차분",stress:2}),date);
   return withResidenceLocation(c,entry(n,"집에서 아침 준비 중","기상 시각이 지나 오늘 일정을 시작할 준비를 하고 있어요.",{home:true,room:"bath",mood:"평온",stress:5}),date);
 }
