@@ -1,8 +1,9 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819scroll1";
-import {eventFor} from "./simulation.js?v=20260819scroll1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819scroll1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819scroll1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819scroll1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819notify1";
+import {eventFor} from "./simulation.js?v=20260819notify1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819notify1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819notify1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819notify1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819notify1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1982,6 +1983,37 @@ function bind(){
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);renderPreservingPageScroll(el)});
   $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
+  $("[data-character-notification-toggle]")?.addEventListener("click",async event=>{
+    if(state.characterNotificationsEnabled){
+      state.characterNotificationsEnabled=false;
+      await cancelCharacterNotifications();
+      save(true);showToast("캐릭터 연락 알림을 껐어요");renderPreservingPageScroll(event.currentTarget);return;
+    }
+    await enableCharacterNotificationsWithConsent(event.currentTarget);
+  });
+  $$('[data-character-notification-character]').forEach(input=>input.onchange=async()=>{
+    const settings=state.characterNotificationSettings,all=state.order.filter(id=>state.characters[id]);
+    let selected=settings.characterIds?.length?[...settings.characterIds]:[...all];
+    selected=input.checked?[...new Set([...selected,input.dataset.characterNotificationCharacter])]:selected.filter(id=>id!==input.dataset.characterNotificationCharacter);
+    if(!selected.length){input.checked=true;input.closest("label")?.classList.add("on");showToast("연락받을 캐릭터를 한 명 이상 골라 주세요");return}
+    settings.characterIds=selected;
+    input.closest("label")?.classList.toggle("on",input.checked);
+    save(true);if(state.characterNotificationsEnabled)await syncCharacterNotificationSchedule();
+  });
+  $$('[data-character-notification-setting]').forEach(select=>select.onchange=async()=>{
+    const key=select.dataset.characterNotificationSetting,value=["startHour","endHour"].includes(key)?Number(select.value):select.value;
+    state.characterNotificationSettings[key]=value;
+    if(state.characterNotificationSettings.endHour<=state.characterNotificationSettings.startHour)state.characterNotificationSettings.endHour=Math.min(21,state.characterNotificationSettings.startHour+4);
+    save(true);if(state.characterNotificationsEnabled)await syncCharacterNotificationSchedule();
+  });
+  $$('[data-character-notification-kind]').forEach(input=>input.onchange=async()=>{
+    const settings=state.characterNotificationSettings,kind=input.dataset.characterNotificationKind,current=new Set(settings.contentKinds||[]);
+    input.checked?current.add(kind):current.delete(kind);
+    if(!current.size){input.checked=true;current.add(kind);showToast("연락 종류를 하나 이상 골라 주세요")}
+    settings.contentKinds=[...current];input.closest("label")?.classList.toggle("on",input.checked);
+    save(true);if(state.characterNotificationsEnabled)await syncCharacterNotificationSchedule();
+  });
+  $("[data-character-notification-test]")?.addEventListener("click",sendCharacterNotificationTest);
   $$("[data-setting]").forEach(el=>el.onchange=()=>{
     const key=el.dataset.setting;
     state[key]=["homeSdScale","homeLdScale"].includes(key)?Math.max(70,Math.min(150,Number(el.value)||100)):el.value;
@@ -3033,6 +3065,7 @@ window.addEventListener("drawer-village-cloud-loaded",()=>{
   });
   if(state.order.length)localStorage.setItem(ONBOARDING_KEY,"done");
   render();
+  if(state.characterNotificationsEnabled&&characterNotificationsAvailable())setTimeout(syncCharacterNotificationSchedule,1000);
 });
 window.addEventListener("drawer-village-guide-state",()=>requestAnimationFrame(maybeShowPageGuide));
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
@@ -3116,7 +3149,7 @@ function giftOptions(character,target,now){
 }
 function openDailyCharacterQuestion(question,now=new Date()){
   const character=state.characters[question.characterId];if(!character)return;
-  const language=state.uiLanguage||"ko",copy=questionCopy(language),targets=relatedTargets(character),target=targets[Math.floor(Math.random()*targets.length)];
+  const language=state.uiLanguage||"ko",copy=questionCopy(language),targets=relatedTargets(character),target=state.characters[question.targetId]||targets[Math.floor(Math.random()*targets.length)];
   let options=question.kind==="weekend"?weekendOptions(character,now):question.kind==="work"?workOptions(character,now):question.kind==="gift"&&target?giftOptions(character,target,now):everydayOptions(character,now);
   if(!options.length)options=everydayOptions(character,now);
   const kind=question.kind==="gift"&&target?"gift":question.kind==="work"?"work":question.kind==="weekend"?"weekend":"everyday";
@@ -3139,6 +3172,187 @@ function maybeShowDailyCharacterQuestion(){
   if(!question||question.shown||minute<question.minute)return;
   setDailyQuestion({...question,shown:true});openDailyCharacterQuestion({...question,shown:true},now);
 }
+const notificationText=(value,language=state.uiLanguage||"ko")=>typeof value==="string"?value:(value?.[language]||value?.ko||"");
+const notificationHash=value=>[...String(value)].reduce((total,character)=>Math.imul(total^character.charCodeAt(0),16777619)>>>0,2166136261);
+const fillNotificationText=(text,context)=>String(text).replace(/\{(\w+)\}/g,(_,key)=>context[key]||"");
+const CHARACTER_CONTACT_PHRASES={
+  moments:{
+    actions:[
+      {ko:"잠깐 숨을 고르며 다음에 할 일을 살펴보고 있어요.",en:"I'm taking a short pause and looking over what comes next.",ja:"少しひと息ついて、次にすることを確認しています。"},
+      {ko:"예상보다 일찍 끝난 일이 있어 작은 여유가 생겼어요.",en:"Something finished earlier than expected, so I have a little time to spare.",ja:"予定より早く終わったことがあり、少し余裕ができました。"},
+      {ko:"하던 일을 정리하고 주변을 천천히 둘러보는 중이에요.",en:"I'm wrapping up what I was doing and taking a quiet look around.",ja:"していたことを片づけて、周りをゆっくり見ています。"},
+      {ko:"오늘 계획에서 하나를 마치고 다음 순서를 고르는 중이에요.",en:"I finished one part of today's plan and I'm choosing what to do next.",ja:"今日の予定を一つ終えて、次の順番を選んでいます。"},
+      {ko:"잠시 자리를 옮겨 기분을 환기하고 있어요.",en:"I moved to a different spot for a small change of pace.",ja:"少し場所を変えて気分転換しています。"},
+      {ko:"필요한 물건을 챙기고 다음 일정에 나설 준비를 하고 있어요.",en:"I'm gathering what I need and getting ready for the next plan.",ja:"必要な物をそろえて、次の予定に出る準備をしています。"}
+    ],
+    endings:[
+      {ko:"별일은 아니지만 그냥 알려 주고 싶었어요.",en:"Nothing urgent—I just wanted to let you know.",ja:"急ぎではないけれど、ちょっと知らせたくなりました。"},
+      {ko:"마을은 지금 꽤 조용해요.",en:"The village is fairly quiet right now.",ja:"村は今、かなり静かです。"},
+      {ko:"조금 뒤에는 다른 일을 시작할 것 같아요.",en:"I think I'll start something else in a little while.",ja:"もう少ししたら別のことを始めそうです。"},
+      {ko:"오늘의 흐름은 아직 천천히 이어지고 있어요.",en:"The day is still moving at an easy pace.",ja:"今日の流れはまだゆっくり続いています。"}
+    ]
+  },
+  home:{
+    actions:[
+      {ko:"{home}에서 창문을 열고 방 안 공기를 바꾸고 있어요.",en:"I'm opening a window at {home} to let fresh air in.",ja:"{home}で窓を開けて、部屋の空気を入れ替えています。"},
+      {ko:"눈에 띄는 물건 몇 개를 제자리로 돌려놓고 있어요.",en:"I'm putting a few things back where they belong.",ja:"目についた物をいくつか元の場所へ戻しています。"},
+      {ko:"편한 자리를 골라 잠깐 쉬고 있어요.",en:"I found a comfortable spot and I'm resting for a moment.",ja:"落ち着く場所を選んで、少し休んでいます。"},
+      {ko:"마실 것을 챙겨 가장 익숙한 방으로 돌아왔어요.",en:"I brought something to drink back to my favorite room.",ja:"飲み物を用意して、いちばん慣れた部屋へ戻ってきました。"},
+      {ko:"조명이 너무 밝지 않게 맞추고 조용히 시간을 보내고 있어요.",en:"I lowered the lights and I'm spending some quiet time.",ja:"照明を少し落として、静かに過ごしています。"},
+      {ko:"내일 필요한 물건을 미리 한곳에 모아 두고 있어요.",en:"I'm gathering tomorrow's things in one place ahead of time.",ja:"明日必要な物を、前もって一か所にまとめています。"}
+    ],
+    endings:[
+      {ko:"집 안이 조금 더 편안해졌어요.",en:"Home feels a little more comfortable now.",ja:"家の中が少し居心地よくなりました。"},
+      {ko:"이 정도만 해도 충분할 것 같아요.",en:"I think that's enough for now.",ja:"今はこのくらいで十分そうです。"},
+      {ko:"다 끝나면 좋아하는 일을 조금 하려고요.",en:"When I'm done, I want to spend a little time on something I like.",ja:"終わったら、好きなことを少しするつもりです。"},
+      {ko:"아무도 재촉하지 않아서 천천히 하고 있어요.",en:"No one is rushing me, so I'm taking my time.",ja:"急かす人もいないので、ゆっくりしています。"}
+    ]
+  },
+  relationships:{
+    actions:[
+      {ko:"{target}에게 먼저 안부를 물어볼까 생각하고 있어요.",en:"I'm thinking about checking in with {target} first.",ja:"{target}に先に元気か聞いてみようか考えています。"},
+      {ko:"{target}와 나눴던 이야기가 문득 다시 떠올랐어요.",en:"Something from my last conversation with {target} came back to me.",ja:"{target}と話したことをふと思い出しました。"},
+      {ko:"{target}에게 부담되지 않는 선에서 작은 도움을 줄까 해요.",en:"I might offer {target} a little help without making it a burden.",ja:"{target}の負担にならない程度に、少し手伝おうかと思っています。"},
+      {ko:"{target}와 다음에 만날 때 무엇을 이야기할지 생각하고 있어요.",en:"I'm thinking about what to talk about the next time I see {target}.",ja:"次に{target}と会った時、何を話そうか考えています。"},
+      {ko:"{target}의 반응을 재촉하지 않고 조금 기다려 보기로 했어요.",en:"I decided to give {target} time instead of rushing for an answer.",ja:"{target}の返事を急かさず、少し待つことにしました。"},
+      {ko:"{target}에게 건넬 짧은 말을 몇 번 고쳐 보고 있어요.",en:"I'm revising a short message I want to send to {target}.",ja:"{target}に送る短い言葉を何度か書き直しています。"}
+    ],
+    endings:[
+      {ko:"관계에 맞는 거리를 지키면서 행동하려고요.",en:"I want to act while respecting the distance that fits our relationship.",ja:"関係に合った距離を守りながら行動するつもりです。"},
+      {ko:"지금은 거창한 표현보다 작은 행동이 나을 것 같아요.",en:"A small action feels better than a grand gesture right now.",ja:"今は大げさな表現より、小さな行動のほうがよさそうです。"},
+      {ko:"상대가 편한 쪽을 먼저 살펴보려고 해요.",en:"I want to consider what feels comfortable for them first.",ja:"まず相手が楽なほうを考えてみます。"},
+      {ko:"서두르지 않으면 자연스럽게 기회가 생기겠죠.",en:"If I don't rush, a natural opportunity will probably come.",ja:"急がなければ、自然な機会が来ると思います。"}
+    ]
+  },
+  work:{
+    actions:[
+      {ko:"{job} 일을 시작하기 전에 가장 급한 것부터 다시 나누고 있어요.",en:"Before starting my {job} work, I'm sorting out what is most urgent.",ja:"{job}の仕事を始める前に、急ぎのものから整理し直しています。"},
+      {ko:"집중이 필요한 일 하나를 먼저 끝내려고 알림을 잠시 줄였어요.",en:"I muted distractions so I can finish one task that needs focus.",ja:"集中が必要な仕事を一つ終えるため、通知を少し減らしました。"},
+      {ko:"진행 중인 일을 어디까지 했는지 짧게 기록하고 있어요.",en:"I'm making a short note of how far I've gotten with my work.",ja:"進行中の仕事がどこまで進んだか、短く記録しています。"},
+      {ko:"막힌 부분을 혼자 더 볼지 도움을 구할지 판단하는 중이에요.",en:"I'm deciding whether to keep working alone or ask for help with a blocker.",ja:"詰まった部分をもう少し一人で見るか、助けを求めるか考えています。"},
+      {ko:"오늘 안에 끝낼 일과 내일로 넘길 일을 구분하고 있어요.",en:"I'm separating what must be done today from what can wait until tomorrow.",ja:"今日中に終えることと、明日に回すことを分けています。"},
+      {ko:"잠깐 쉬었다가 다시 집중할 수 있도록 자리를 정리했어요.",en:"I tidied my space so I can focus again after a short break.",ja:"少し休んだ後に集中できるよう、周りを整えました。"}
+    ],
+    endings:[
+      {ko:"급하게 끝내기보다는 실수 없이 마치려고요.",en:"I'd rather finish carefully than rush and make a mistake.",ja:"急ぐより、間違えずに終えるつもりです。"},
+      {ko:"하나씩 끝내면 생각보다 오래 걸리지는 않을 것 같아요.",en:"It shouldn't take too long if I finish things one at a time.",ja:"一つずつ終えれば、思ったほど時間はかからなさそうです。"},
+      {ko:"끝나면 일 생각은 잠시 내려놓으려고 해요.",en:"When it's done, I plan to put work out of mind for a while.",ja:"終わったら、しばらく仕事のことは置いておくつもりです。"},
+      {ko:"오늘의 우선순위는 이제 꽤 분명해졌어요.",en:"Today's priorities are much clearer now.",ja:"今日の優先順位がかなりはっきりしました。"}
+    ]
+  },
+  tastes:{
+    actions:[
+      {ko:"문득 {item} 생각이 나서 오늘 즐길 수 있을지 보고 있어요.",en:"I suddenly thought of {item} and I'm seeing if I can enjoy it today.",ja:"ふと{item}を思い出して、今日楽しめるか考えています。"},
+      {ko:"취향 사전에 넣어 둔 {item}을 다시 들여다보고 있어요.",en:"I'm looking back at {item} from the taste collection.",ja:"好み図鑑に入れておいた{item}をもう一度見ています。"},
+      {ko:"오늘 기분에는 {item}이 잘 맞을 것 같아요.",en:"{item} feels like it would suit my mood today.",ja:"今日の気分には{item}が合いそうです。"},
+      {ko:"비슷한 것들 사이에서 결국 {item} 쪽으로 마음이 가고 있어요.",en:"Among a few similar choices, I keep leaning toward {item}.",ja:"似たものの中でも、やっぱり{item}が気になっています。"},
+      {ko:"{item}을 천천히 즐길 시간을 어디에 넣을지 생각 중이에요.",en:"I'm deciding where to make time to enjoy {item} slowly.",ja:"{item}をゆっくり楽しむ時間をどこに入れるか考えています。"},
+      {ko:"한동안 잊고 있던 {item}을 다시 꺼내 보고 싶어졌어요.",en:"I feel like returning to {item} after leaving it alone for a while.",ja:"しばらく忘れていた{item}を、また楽しみたくなりました。"}
+    ],
+    endings:[
+      {ko:"좋아하는 건 가끔 다시 확인해도 질리지 않네요.",en:"It never gets old to return to something I like once in a while.",ja:"好きなものは、時々また確かめても飽きませんね。"},
+      {ko:"시간이 맞으면 오늘 일정에 살짝 넣어 볼게요.",en:"If the timing works, I'll fit it into today's schedule.",ja:"時間が合えば、今日の予定に少し入れてみます。"},
+      {ko:"지금 당장은 아니어도 곧 즐길 수 있으면 좋겠어요.",en:"Even if not right now, I hope I can enjoy it soon.",ja:"今すぐでなくても、近いうちに楽しめたらいいですね。"},
+      {ko:"작은 취향 하나가 하루 분위기를 꽤 바꾸는 것 같아요.",en:"One small favorite can change the mood of a whole day.",ja:"小さな好み一つで、一日の雰囲気がかなり変わる気がします。"}
+    ]
+  }
+};
+function notificationContextFor(character,seed){
+  const home=state.homes[character.homeId]||Object.values(state.homes).find(item=>(item.residentIds||[]).includes(character.id));
+  const targets=relatedTargets(character),target=targets[seed%Math.max(1,targets.length)];
+  const preferredIds=Object.values(character.favorites||{}).flat(),catalogItems=Object.values(state.catalog||{}).flat().filter(Boolean);
+  const item=catalogItems.find(entry=>preferredIds.includes(entry.id))||catalogItems[seed%Math.max(1,catalogItems.length)];
+  return {home:home?.name||"집",target:target?.name||"가까운 사람",targetId:target?.id||"",item:item?.name||"좋아하는 것",job:character.jobTitle||character.job||"오늘의"};
+}
+function notificationSelectedCharacters(){
+  const chosen=state.characterNotificationSettings?.characterIds||[],ids=chosen.length?chosen:state.order;
+  return ids.map(id=>state.characters[id]).filter(Boolean);
+}
+function notificationTopicsFor(character){
+  const wanted=state.characterNotificationSettings?.contentKinds||["questions","moments"],context=notificationContextFor(character,1);
+  return wanted.filter(kind=>kind!=="relationships"||context.targetId).filter(kind=>kind!=="work"||character.job||character.jobTitle);
+}
+function buildQuestionNotification(character,at,seed){
+  const language=state.uiLanguage||"ko",copy=questionCopy(language),context=notificationContextFor(character,seed),kinds=availableDailyQuestionKinds(character);
+  const kind=kinds[seed%kinds.length],base=kind==="gift"?copy.gift(context.target):copy[kind],mode=state.characterNotificationSettings?.voiceMode||"mixed";
+  const body=mode==="character"||(mode==="mixed"&&seed%3===0)?characterQuestionPrompt(character,{kind,target:context.target,language,base}):base;
+  const titles={ko:["선택을 물어봤어요","잠깐 상의하고 싶대요","결정을 기다리고 있어요","오늘의 질문이 도착했어요"],en:["A question for you","A quick decision","Waiting for your choice","Today's question"],ja:["選んでほしいことがあります","少し相談したいようです","選択を待っています","今日の質問が届きました"]};
+  return {title:`${character.name} · ${titles[language]?.[seed%4]||titles.ko[seed%4]}`,body,signature:`question:${kind}:${seed%7}:${character.id}`,extra:{mode:"question",characterId:character.id,targetId:kind==="gift"?context.targetId:"",questionKind:kind,scheduledAt:at.toISOString()}};
+}
+function buildMomentNotification(character,topic,at,seed){
+  const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),phrases=CHARACTER_CONTACT_PHRASES[topic]||CHARACTER_CONTACT_PHRASES.moments;
+  const action=fillNotificationText(notificationText(phrases.actions[seed%phrases.actions.length],language),context),ending=fillNotificationText(notificationText(phrases.endings[Math.floor(seed/7)%phrases.endings.length],language),context);
+  const titles={ko:["생활 소식","지금 이 순간","작은 연락","오늘의 한 장면"],en:["A life update","Right now","A small message","A moment today"],ja:["暮らしの便り","今この瞬間","小さな連絡","今日の一場面"]};
+  return {title:`${character.name} · ${titles[language]?.[seed%4]||titles.ko[seed%4]}`,body:`${action} ${ending}`,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
+}
+function buildCharacterContactSchedule(now=new Date()){
+  const settings=state.characterNotificationSettings,characters=notificationSelectedCharacters();if(!settings||!characters.length)return [];
+  const recent=new Set(settings.recentSignatures||[]),generated=[],newSignatures=[],language=state.uiLanguage||"ko";
+  // 앱을 며칠 열지 않아도 연락이 끊기지 않도록 2주치를 기기에 예약한다.
+  // 정확한 시각이 필요한 알람이 아니므로 별도의 exact-alarm 권한은 요구하지 않는다.
+  for(let dayOffset=0;dayOffset<15;dayOffset+=1){
+    const date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+dayOffset),dayKey=localDateKey(date),daySeed=notificationHash(`${dayKey}:${characters.map(item=>item.id).join(":")}`);
+    if(settings.frequency==="light"&&daySeed%7>2)continue;
+    const count=settings.frequency==="lively"?2:1,start=Number(settings.startHour)||10,end=Math.max(start+1,Number(settings.endHour)||18),span=Math.max(60,(end-start)*60);
+    for(let slot=0;slot<count;slot+=1){
+      const minuteOffset=(daySeed+slot*137)%Math.max(30,Math.floor(span/count)),minute=start*60+slot*Math.floor(span/count)+minuteOffset;
+      const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(minute/60),minute%60,0,0);if(at.getTime()<now.getTime()+5*60*1000)continue;
+      let character=characters[(daySeed+slot)%characters.length];
+      if(generated.at(-1)?.extra?.characterId===character.id&&characters.length>1)character=characters[(characters.indexOf(character)+1)%characters.length];
+      const topics=notificationTopicsFor(character),fallbackTopics=topics.length?topics:["questions","moments"];
+      let topic=fallbackTopics[(daySeed+slot*5)%fallbackTopics.length],seed=daySeed+dayOffset*31+slot*17,item;
+      for(let attempt=0;attempt<12;attempt+=1){
+        topic=fallbackTopics[(daySeed+slot*5+attempt)%fallbackTopics.length];
+        item=topic==="questions"?buildQuestionNotification(character,at,seed+attempt):buildMomentNotification(character,topic,at,seed+attempt);
+        if(!recent.has(item.signature)&&!newSignatures.includes(item.signature))break;
+      }
+      generated.push({id:820000000+(Number(dayKey.replaceAll("-",""))%1000000)*10+slot,title:item.title,body:item.body,summaryText:language==="en"?"Drawer Village":language==="ja"?"ひきだし村":"서랍마을",at,extra:item.extra});newSignatures.push(item.signature);
+    }
+  }
+  settings.recentSignatures=[...(settings.recentSignatures||[]),...newSignatures].slice(-24);settings.lastScheduledAt=Date.now();
+  return generated;
+}
+async function syncCharacterNotificationSchedule(){
+  if(!state.characterNotificationsEnabled||!characterNotificationsAvailable())return false;
+  const permission=await characterNotificationPermission();
+  if(permission!=="granted"){state.characterNotificationsEnabled=false;state.characterNotificationConsent="denied";save(true);return false}
+  const items=buildCharacterContactSchedule();await replaceCharacterNotifications(items);save(true);return true;
+}
+function notificationConsentCopy(){
+  const language=state.uiLanguage||"ko";
+  return ({
+    ko:{title:"캐릭터의 연락을 받아볼까요?",body:"선택한 캐릭터가 낮 시간에 생활 소식이나 질문을 보내요. 하루 횟수와 캐릭터는 설정에서 바꿀 수 있고, 답한 선택은 실제 일정에 반영됩니다.",bullets:["오전·낮 시간에만 무작위로 도착","설정에서 언제든 끄기 가능","캐릭터 정보는 서버로 보내지 않음"],allow:"Android 허용창 보기",cancel:"나중에"},
+    en:{title:"Receive messages from your characters?",body:"Selected characters can send daytime life updates or questions. You control the characters and frequency, and your answers can continue into their schedules.",bullets:["Random delivery only during your daytime window","Turn it off in Settings at any time","Character data never leaves the device for notifications"],allow:"Continue to Android permission",cancel:"Not now"},
+    ja:{title:"キャラクターからの連絡を受け取りますか？",body:"選んだキャラクターが昼間に近況や質問を送ります。キャラクターと頻度は設定で変更でき、回答は実際の予定に反映されます。",bullets:["午前・昼間の設定時間内にランダムで届きます","設定からいつでもオフにできます","通知のためにキャラクター情報をサーバーへ送りません"],allow:"Androidの許可画面へ",cancel:"後で"}
+  })[language]||null;
+}
+function confirmCharacterNotificationConsent(){
+  return new Promise(resolve=>{
+    const copy=notificationConsentCopy(),dialog=document.createElement("dialog");dialog.className="character-notification-consent";
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>NOTIFICATIONS</small><h2>${htmlEsc(copy.title)}</h2></div><button value="cancel" aria-label="닫기">×</button></div><p>${htmlEsc(copy.body)}</p><ul>${copy.bullets.map(item=>`<li>${htmlEsc(item)}</li>`).join("")}</ul><div class="crop-actions"><button value="cancel">${htmlEsc(copy.cancel)}</button><button value="allow" class="primary">${htmlEsc(copy.allow)}</button></div></form>`;
+    dialog.onclose=()=>{resolve(dialog.returnValue==="allow");dialog.remove()};document.body.append(dialog);dialog.showModal();
+  });
+}
+async function enableCharacterNotificationsWithConsent(source){
+  if(!characterNotificationsAvailable()){showToast("캐릭터 연락 알림은 Android 앱에서 사용할 수 있어요");return false}
+  const current=await characterNotificationPermission();
+  if(current!=="granted"&&!(await confirmCharacterNotificationConsent()))return false;
+  const permission=current==="granted"?current:await requestCharacterNotificationPermission();
+  state.characterNotificationConsent=permission==="granted"?"granted":"denied";state.characterNotificationsEnabled=permission==="granted";
+  if(permission==="granted"){await initializeCharacterNotifications();await syncCharacterNotificationSchedule();showToast("캐릭터 연락 알림을 켰어요")}
+  else showToast("알림이 허용되지 않았어요. 휴대폰 설정에서 다시 켤 수 있어요");
+  save(true);renderPreservingPageScroll(source);return permission==="granted";
+}
+async function sendCharacterNotificationTest(){
+  const character=notificationSelectedCharacters()[0]||active();if(!character)return showToast("알림을 보낼 캐릭터가 없어요");
+  const at=new Date(Date.now()+5000),item=buildMomentNotification(character,"moments",at,notificationHash(String(Date.now())));
+  await scheduleCharacterNotification({id:829999999,title:item.title,body:item.body,at,extra:item.extra});showToast("5초 뒤 시험 알림이 도착해요");
+}
+window.addEventListener("drawer-village-character-notification-open",event=>{
+  const extra=event.detail||{},character=state.characters[extra.characterId];if(!character)return;
+  setActive(character.id);navigateToTab("observe");
+  if(extra.mode==="question")setTimeout(()=>openDailyCharacterQuestion({characterId:character.id,targetId:extra.targetId||"",kind:extra.questionKind||"everyday",shown:true,answered:false},new Date(extra.scheduledAt||Date.now())),180);
+});
 function scheduleLiveSceneRefresh(){
   const delay=(15+Math.floor(Math.random()*16))*60*1000;
   setTimeout(()=>{
@@ -3153,6 +3367,9 @@ function scheduleLiveSceneRefresh(){
 }
 scheduleLiveSceneRefresh();
 setTimeout(maybeShowDailyCharacterQuestion,1200);
+if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
+  if(Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
+});
 window.addEventListener("focus",()=>setTimeout(maybeShowDailyCharacterQuestion,250));
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(maybeShowDailyCharacterQuestion,250)});
 
@@ -3179,7 +3396,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819scroll1").catch(error=>{
+  import("./auth.js?v=20260819notify1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3194,7 +3411,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819scroll1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819notify1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

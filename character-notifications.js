@@ -1,4 +1,4 @@
-const CHANNEL_ID="character-life";
+const CHANNEL_ID="character-contact-v2";
 const NOTIFICATION_KIND="drawer-village-character-question";
 let listening=false;
 
@@ -29,11 +29,11 @@ export async function initializeCharacterNotifications(){
   try{
     await notifications.createChannel({
       id:CHANNEL_ID,
-      name:"캐릭터의 생활 질문",
-      description:"캐릭터가 하루 일정이나 선물 같은 선택을 물어보는 알림",
+      name:"캐릭터의 연락",
+      description:"선택한 캐릭터가 생활 소식을 보내거나 일정과 선물을 물어보는 알림",
       importance:3,
       visibility:1,
-      vibration:true,
+      vibration:false,
       lights:true,
       lightColor:"#9C514A"
     });
@@ -49,6 +49,7 @@ export async function initializeCharacterNotifications(){
 export async function replaceCharacterNotifications(items=[]){
   const notifications=plugin();
   if(!notifications)return false;
+  await initializeCharacterNotifications();
   const pending=await notifications.getPending().catch(()=>({notifications:[]}));
   const ours=(pending.notifications||[]).filter(item=>item?.extra?.kind===NOTIFICATION_KIND);
   if(ours.length)await notifications.cancel({notifications:ours.map(item=>({id:item.id}))});
@@ -68,6 +69,27 @@ export async function replaceCharacterNotifications(items=[]){
     group:"drawer-village-character-life",
     extra:{...item.extra,kind:NOTIFICATION_KIND}
   }))});
+  return true;
+}
+
+export async function scheduleCharacterNotification(item){
+  const notifications=plugin();
+  if(!notifications||!item)return false;
+  await initializeCharacterNotifications();
+  await notifications.schedule({notifications:[{
+    id:item.id,
+    title:item.title,
+    body:item.body,
+    largeBody:item.body,
+    summaryText:item.summaryText||"서랍마을",
+    schedule:{at:item.at,allowWhileIdle:true},
+    channelId:CHANNEL_ID,
+    smallIcon:"ic_stat_drawer_village",
+    iconColor:"#9C514A",
+    autoCancel:true,
+    group:"drawer-village-character-life",
+    extra:{...item.extra,kind:NOTIFICATION_KIND}
+  }]});
   return true;
 }
 
@@ -101,4 +123,3 @@ export async function characterNotificationLargeIcon(source){
     return "";
   }
 }
-
