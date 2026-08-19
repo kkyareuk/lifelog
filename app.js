@@ -1,9 +1,9 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819catalogcomponent1";
-import {eventFor} from "./simulation.js?v=20260819catalogcomponent1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819catalogcomponent1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819catalogcomponent1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819catalogcomponent1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819catalogcomponent1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819navigationtouch1";
+import {eventFor} from "./simulation.js?v=20260819navigationtouch1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819navigationtouch1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819navigationtouch1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819navigationtouch1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819navigationtouch1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -2433,11 +2433,12 @@ window.DrawerVillageNavigation={
   current:()=>state.activeTab
 };
 
-// 탭 전환은 click에서 한 번만 실행한다. 일부 Android WebView가 click을
-// 만들지 못하는 경우에만 pointerup 뒤 짧은 fallback이 같은 탭을 연다.
-// pointerup 중에는 DOM을 바꾸지 않으므로 후속 click이 새 화면의 다른
-// 버튼으로 재지정되는 문제도 생기지 않는다.
-let pendingTabFallback=0;
+// Android 터치는 pointerup을 한 번의 확정된 이동으로 취급한다. 일부 최신
+// WebView는 pointerup보다 80ms 이상 늦게 합성 click을 보내는데, 그 사이
+// 화면을 다시 그리면 같은 좌표의 새 버튼으로 click이 재지정되어 열었던
+// 화면이 즉시 사라질 수 있다. 같은 손가락에서 뒤늦게 온 click만 좌표로
+// 식별해 버리고, 마우스와 키보드 click은 기존 경로로 그대로 처리한다.
+let touchTabClickGuard={until:0,x:-1000,y:-1000};
 function tabButtonFromEvent(event){
   const path=typeof event.composedPath==="function"?event.composedPath():[];
   return path.find(node=>node?.matches?.("[data-tab]"))||event.target?.closest?.("[data-tab]");
@@ -2447,19 +2448,24 @@ function captureTabPointerUp(event){
   const button=tabButtonFromEvent(event);
   const tab=button?.dataset?.tab;
   if(!APP_TABS.includes(tab))return;
-  clearTimeout(pendingTabFallback);
-  pendingTabFallback=window.setTimeout(()=>{
-    pendingTabFallback=0;
-    navigateToTab(tab);
-  },80);
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  touchTabClickGuard={until:performance.now()+900,x:event.clientX,y:event.clientY};
+  navigateToTab(tab);
 }
 function captureTabClick(event){
+  const guarded=performance.now()<touchTabClickGuard.until&&Math.hypot(event.clientX-touchTabClickGuard.x,event.clientY-touchTabClickGuard.y)<=32;
+  if(guarded){
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    touchTabClickGuard={until:0,x:-1000,y:-1000};
+    return;
+  }
   const button=tabButtonFromEvent(event);
   const tab=button?.dataset?.tab;
   if(!APP_TABS.includes(tab))return;
   event.preventDefault();
-  clearTimeout(pendingTabFallback);
-  pendingTabFallback=0;
+  event.stopImmediatePropagation();
   navigateToTab(tab);
 }
 document.addEventListener("pointerup",captureTabPointerUp,true);
@@ -3538,7 +3544,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819catalogcomponent1").catch(error=>{
+  import("./auth.js?v=20260819navigationtouch1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3553,7 +3559,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819catalogcomponent1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819navigationtouch1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

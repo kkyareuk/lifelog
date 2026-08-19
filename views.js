@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819catalogcomponent1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819catalogcomponent1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819navigationtouch1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819navigationtouch1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -2767,6 +2767,16 @@ Object.assign(UI_TEXT.ja,{
   "선택한 캐릭터가 낮 시간에 가끔 소식을 보내거나 선택을 물어요. 답한 내용은 실제 생활 일정에 이어집니다.":"選んだキャラクターが昼間に近況を送ったり、選択を尋ねたりします。回答は実際の生活予定に反映されます。","누가, 얼마나 자주 연락할지 정하기":"誰から、どのくらい連絡を受けるか設定","연락받을 캐릭터":"連絡を受けるキャラクター","여러 명을 고르면 같은 캐릭터가 연달아 나오지 않게 번갈아 연락해요.":"複数選ぶと、同じキャラクターが続かないよう交代で連絡します。",
   "연락 빈도":"連絡頻度","가끔 · 주 3회":"ときどき・週3回","하루 1회":"1日1回","활발하게 · 하루 2회":"活発に・1日2回","알림 말투":"通知の話し方","섞어서 · 말투와 담백한 문장":"ミックス・話し方と簡潔な文","캐릭터 말투를 적극 반영":"キャラクターの話し方を多めに反映","담백하게 · 말투 연출 최소화":"簡潔・話し方の演出を最小限に","연락 시작 시간":"連絡開始時刻","연락 종료 시간":"連絡終了時刻","받고 싶은 연락":"受け取りたい連絡","질문과 선택":"質問と選択","지금 하는 일":"今していること","관계와 선물":"関係とプレゼント","집과 생활":"家と暮らし","일과 학교":"仕事と学校","취향과 음식":"好みと食べ物","5초 뒤 시험 알림 보내기":"5秒後にテスト通知を送る",
   "같은 문구와 같은 캐릭터가 짧은 기간에 반복되지 않도록 최근 연락을 기억해요. ‘섞어서’는 캐릭터 말투를 일부 알림에만 사용합니다.":"同じ文やキャラクターが短期間に繰り返されないよう、最近の連絡を記憶します。「ミックス」は一部の通知だけにキャラクターの話し方を使います。","처음 켤 때 서랍마을의 설명을 보여준 뒤 Android의 공식 알림 허용창이 한 번 나타납니다. 언제든 여기서 끄거나 휴대폰 설정에서 차단할 수 있어요.":"初めてオンにする時は説明の後にAndroid公式の許可画面が表示されます。ここや端末設定からいつでもオフにできます。"
+});
+Object.assign(UI_TEXT.en,{
+  "관심사":"Interests","공연 관람":"Watching performances","공예 도구":"Craft tools","공포":"Horror","과학":"Science","관악기":"Wind instruments","관절 질환":"Joint condition","관찰 예능":"Observational variety shows","교양":"General interest","교육":"Educational",
+  "천문학":"Astronomy","우주":"Space","의학":"Medicine","심리학":"Psychology","철학":"Philosophy","정치":"Politics","경제":"Economics","법률":"Law","언어":"Language","외국어":"Foreign languages","지도":"Maps","지리":"Geography","건축":"Architecture","영상 편집":"Video editing","소설":"Novels","시":"Poetry",
+  "베이킹":"Baking","와인":"Wine","원예":"Gardening","자연":"Nature","환경":"Environment","러닝":"Running","헬스":"Weight training","요가":"Yoga","e스포츠":"Esports","보드게임":"Board games","퍼즐":"Puzzles","마술":"Magic","뜨개질":"Knitting","재봉":"Sewing","목공":"Woodworking","도예":"Pottery","수집":"Collecting","빈티지":"Vintage","전자기기":"Electronics","프로그래밍":"Programming","로봇":"Robotics","인공지능":"Artificial intelligence","오컬트":"Occult","신화":"Mythology","종교":"Religion","범죄 사건":"Crime cases","추리":"Mystery","밀리터리":"Military","무기":"Weapons"
+});
+Object.assign(UI_TEXT.ja,{
+  "관심사":"関心分野","공연 관람":"公演鑑賞","공예 도구":"工芸道具","공포":"ホラー","과학":"科学","관악기":"管楽器","관절 질환":"関節疾患","관찰 예능":"観察バラエティ","교양":"教養","교육":"教育",
+  "천문학":"天文学","우주":"宇宙","의학":"医学","심리학":"心理学","철학":"哲学","정치":"政治","경제":"経済","법률":"法律","언어":"言語","외국어":"外国語","지도":"地図","지리":"地理","건축":"建築","영상 편집":"動画編集","소설":"小説","시":"詩",
+  "베이킹":"お菓子作り","와인":"ワイン","원예":"園芸","자연":"自然","환경":"環境","러닝":"ランニング","헬스":"筋力トレーニング","요가":"ヨガ","e스포츠":"eスポーツ","보드게임":"ボードゲーム","퍼즐":"パズル","마술":"マジック","뜨개질":"編み物","재봉":"裁縫","목공":"木工","도예":"陶芸","수집":"収集","빈티지":"ヴィンテージ","전자기기":"電子機器","프로그래밍":"プログラミング","로봇":"ロボット","인공지능":"人工知能","오컬트":"オカルト","신화":"神話","종교":"宗教","범죄 사건":"犯罪事件","추리":"ミステリー","밀리터리":"ミリタリー","무기":"武器"
 });
 function settings(){return settingsContent().replace(/<\/section>$/,`${businessInformationFooter()}</section>`)}
 function townPlaceEditor(p,items,audiences,selected){

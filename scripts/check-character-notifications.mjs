@@ -20,7 +20,7 @@ const checks=[
   [app.includes("dayOffset<15")&&app.includes("replaceCharacterNotifications(items)"),"2주 단위 기기 예약 갱신"],
   [notifications.includes('CHANNEL_ID="character-contact-v2"')&&notifications.includes("checkPermissions()")&&notifications.includes("requestPermissions()"),"Android 알림 채널과 런타임 권한"],
   [notifications.includes("localNotificationActionPerformed")&&app.includes("drawer-village-character-notification-open"),"알림 터치 후 캐릭터 화면 연결"],
-  [gradle.includes("versionCode 53")&&gradle.includes('versionName "1.0.51"'),"내부 테스트 빌드 번호"],
+  [gradle.includes("versionCode 54")&&gradle.includes('versionName "1.0.52"'),"내부 테스트 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("A life update")&&app.includes("暮らしの便り"),"영어·일본어 알림 본문 번역"]
 ];
