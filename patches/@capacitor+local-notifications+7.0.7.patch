@@ -1,0 +1,42 @@
+diff --git a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotification.java b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotification.java
+index 9744df1..0357a4a 100644
+--- a/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotification.java
++++ b/node_modules/@capacitor/local-notifications/android/src/main/java/com/capacitorjs/plugins/localnotifications/LocalNotification.java
+@@ -4,6 +4,7 @@ import android.content.ContentResolver;
+ import android.content.Context;
+ import android.graphics.Bitmap;
+ import android.graphics.BitmapFactory;
++import android.util.Base64;
+ import com.getcapacitor.JSArray;
+ import com.getcapacitor.JSObject;
+ import com.getcapacitor.Logger;
+@@ -106,7 +107,9 @@ public class LocalNotification {
+     }
+ 
+     public void setLargeIcon(String largeIcon) {
+-        this.largeIcon = AssetUtil.getResourceBaseName(largeIcon);
++        this.largeIcon = largeIcon != null && largeIcon.startsWith("data:image/")
++            ? largeIcon
++            : AssetUtil.getResourceBaseName(largeIcon);
+     }
+ 
+     public void setInboxList(List<String> inboxList) {
+@@ -346,6 +349,18 @@ public class LocalNotification {
+ 
+     public Bitmap getLargeIcon(Context context) {
+         if (largeIcon != null) {
++            if (largeIcon.startsWith("data:image/")) {
++                int comma = largeIcon.indexOf(',');
++                if (comma > -1) {
++                    try {
++                        byte[] bytes = Base64.decode(largeIcon.substring(comma + 1), Base64.DEFAULT);
++                        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
++                    } catch (IllegalArgumentException error) {
++                        Logger.warn("LocalNotifications", "Could not decode the notification large icon: " + error.getMessage());
++                    }
++                }
++                return null;
++            }
+             int resId = AssetUtil.getResourceID(context, largeIcon, "drawable");
+             return BitmapFactory.decodeResource(context.getResources(), resId);
+         }

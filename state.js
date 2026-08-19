@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819ime1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819ime1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819ime2";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819ime2";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -177,7 +177,7 @@ const normalizeHomeSceneLayout=value=>{
     }];
   }));
 };
-const fresh=()=>({schema:18,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:19,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -187,6 +187,7 @@ const fresh=()=>({schema:18,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===19)return normalizeHomes(x);
   if(x.schema===18)return normalizeHomes(x);
   if(x.schema===17)return normalizeHomes(x);
   if(x.schema===16)return normalizeHomes(x);
@@ -223,7 +224,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=18;
+  x.schema=19;
   x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   const legacyActiveCharacter=x.characters?.[x.activeId]||Object.values(x.characters||{})[0]||{};
   x.homeVisualMode=(x.homeVisualMode||legacyActiveCharacter.homeVisualMode)==="ld"?"ld":"sd";
@@ -237,6 +238,8 @@ function normalizeHomes(x){
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"light";
+  x.characterNotificationsEnabled=Boolean(x.characterNotificationsEnabled);
+  x.characterNotificationConsent=["unknown","granted","denied"].includes(x.characterNotificationConsent)?x.characterNotificationConsent:"unknown";
   delete x.userMods;
   // 1.0.14부터 Android 첫 화면은 흰 바탕과 서랍마을 벽돌색을 사용한다.
   // 기존 테스트 빌드의 기본 크림 테마만 한 번 새 기본값으로 옮기고,
@@ -277,6 +280,7 @@ function normalizeHomes(x){
   x.dailyQuestion=x.dailyQuestion&&typeof x.dailyQuestion==="object"&&!Array.isArray(x.dailyQuestion)?{
     day:String(x.dailyQuestion.day||""),minute:Math.max(600,Math.min(1079,Number(x.dailyQuestion.minute)||600)),
     characterId:x.characters?.[x.dailyQuestion.characterId]?String(x.dailyQuestion.characterId):"",
+    targetId:x.characters?.[x.dailyQuestion.targetId]?String(x.dailyQuestion.targetId):"",
     kind:String(x.dailyQuestion.kind||""),shown:Boolean(x.dailyQuestion.shown),answered:Boolean(x.dailyQuestion.answered)
   }:null;
   x.scheduledChoices=Array.isArray(x.scheduledChoices)?x.scheduledChoices.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)&&x.characters?.[item.characterId]).slice(-120).map(item=>({
@@ -661,6 +665,13 @@ export let state=load();
 let timer;
 let pendingNotify=false;
 let saveRunning=false;
+let deferredTextSaveTarget=null;
+let deferredTextSaveHandler=null;
+function clearDeferredTextSave(){
+  if(deferredTextSaveTarget&&deferredTextSaveHandler)deferredTextSaveTarget.removeEventListener("blur",deferredTextSaveHandler);
+  deferredTextSaveTarget=null;
+  deferredTextSaveHandler=null;
+}
 export const active=()=>state.characters[state.activeId];
 function writeState(notify=true){
   if(saveRunning)return false;
@@ -683,6 +694,7 @@ function writeState(notify=true){
 }
 export function save(immediate=false,notify=true){
   clearTimeout(timer);
+  if(immediate)clearDeferredTextSave();
   pendingNotify=pendingNotify||notify;
   document.querySelector("#save-state")?.replaceChildren(document.createTextNode("저장 중…"));
   const run=()=>{
@@ -693,9 +705,20 @@ export function save(immediate=false,notify=true){
     // Android IME의 조합 이벤트를 막을 수 있다. 일반 자동저장은 텍스트
     // 포커스가 빠질 때까지 미루고, pagehide/명시 저장은 기존처럼 즉시 한다.
     if(!immediate&&editingText){
-      timer=setTimeout(run,700);
+      timer=undefined;
+      if(deferredTextSaveTarget!==focused){
+        clearDeferredTextSave();
+        deferredTextSaveTarget=focused;
+        deferredTextSaveHandler=()=>{
+          deferredTextSaveTarget=null;
+          deferredTextSaveHandler=null;
+          setTimeout(run,0);
+        };
+        focused.addEventListener("blur",deferredTextSaveHandler,{once:true});
+      }
       return;
     }
+    clearDeferredTextSave();
     timer=undefined;
     const shouldNotify=pendingNotify;
     pendingNotify=false;
@@ -865,6 +888,7 @@ export function setDailyQuestion(question){
   state.dailyQuestion=question&&typeof question==="object"?{
     day:String(question.day||""),minute:Math.max(600,Math.min(1079,Number(question.minute)||600)),
     characterId:state.characters[question.characterId]?String(question.characterId):"",
+    targetId:state.characters[question.targetId]?String(question.targetId):"",
     kind:String(question.kind||"everyday"),shown:Boolean(question.shown),answered:Boolean(question.answered)
   }:null;
   save(true,false);

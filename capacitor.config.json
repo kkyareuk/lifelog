@@ -5,7 +5,7 @@
   "backgroundColor": "#ffffff",
   "android": {
     "allowMixedContent": false,
-    "captureInput": true,
+    "captureInput": false,
     "webContentsDebuggingEnabled": false
   },
   "plugins": {
@@ -18,6 +18,10 @@
       "style": "LIGHT",
       "backgroundColor": "#ffffff",
       "overlaysWebView": false
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_drawer_village",
+      "iconColor": "#9C514A"
     },
     "FirebaseAuthentication": {
       "skipNativeAuth": true,

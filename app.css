@@ -3461,16 +3461,6 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     align-content:start;
     gap:12px;
   }
-  html.native-app[data-active-tab="home"] .home-person-status,
-  html.native-app[data-active-tab="home"] .home-person-status b,
-  html.native-app[data-active-tab="home"] .room-pet-status,
-  html.native-app[data-active-tab="home"] .room-pet-status b{
-    color:#fff!important;
-    -webkit-text-fill-color:#fff!important;
-    text-shadow:0 2px 4px #000,0 0 5px #000!important;
-  }
-  html.native-app[data-active-tab="home"] .home-person-status,
-  html.native-app[data-active-tab="home"] .room-pet-status{border:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important}
   html.native-app[data-active-tab="home"] .home-feature-panel[data-home-feature="house-log"].open{
     display:flex!important;
     flex-direction:column;
@@ -5699,9 +5689,6 @@ html[data-color-mode="dark"] .character-file-actions .danger{border-color:#d24d5
 html[data-color-mode="dark"] .home-page .clean{border:1px solid #3a5068!important;background:#1c3047!important;color:#f5f8fb!important}
 html[data-color-mode="dark"] .home-page .rooms{background:#26394d!important}
 html[data-color-mode="dark"] .home-page .room{border-color:#41566d!important;background-color:#24374b!important}
-html[data-color-mode="dark"] .home-page :is(.home-person-status,.room-pet-status){border:0!important;background:transparent!important;box-shadow:none!important;color:#f5f8fb!important}
-html[data-color-mode="dark"] .home-page :is(.home-person-status,.home-person-status b,.room-pet-status,.room-pet-status b){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
-html[data-color-mode="dark"] .home-page :is(.home-person small,.room-pet-status small){color:#c1cfdd!important;-webkit-text-fill-color:#c1cfdd!important}
 
 html[data-color-mode="dark"] .relationship-pair-magnet{box-shadow:inset 0 0 0 1px #ffffff18!important}
 html[data-color-mode="dark"] .relationship-character-rail button.on{background:color-mix(in srgb,var(--view-primary) 38%,#142337)!important;box-shadow:0 9px 20px #0007!important}
@@ -5861,12 +5848,6 @@ html[data-color-mode="dark"] .character-photo-quick-card{border-color:color-mix(
 
 /* 2026-08-10n: readable room labels, centered relationship selectors and
    palette colors that cannot be overwritten by the mobile button theme. */
-.home-page .home-person-status,
-.home-page .home-person-status :is(b,small){
-  width:100%;
-  text-align:left!important;
-  justify-items:start!important;
-}
 .relationship-direction-sentence select{
   text-align:center!important;
   text-align-last:center!important;

@@ -1,8 +1,8 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819ime1";
-import {eventFor} from "./simulation.js?v=20260819ime1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819ime1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819ime1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819ime1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819ime2";
+import {eventFor} from "./simulation.js?v=20260819ime2";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819ime2";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819ime2";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819ime2";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -23,6 +23,7 @@ let deferredInstallPrompt=null;
 let mobileCharacterEditorPane="";
 let mobileCharacterReorderOpen=false;
 let mobileCharacterDraftDirty=false;
+let deferredRenderWhileMobileText=false;
 let homeCharacterPickerScroll=0;
 let observeRosterScroll=0;
 let mobileCharacterStripScroll=0;
@@ -718,6 +719,15 @@ function restoreWindowScroll(x,y){
   setTimeout(restore,40);
 }
 function render(){
+  // Samsung 천지인처럼 여러 단계로 한 글자를 조합하는 키보드는 포커스된
+  // input 노드가 교체되는 순간 직전 음절을 다시 확정할 수 있다. 사진 복원,
+  // 로그인, 시뮬레이션 타이머 등 외부 갱신도 타이핑 중에는 화면을 교체하지
+  // 않고 다음 명시적 화면 전환까지 미룬다.
+  if(document.documentElement.dataset.drawerRendered==="1"&&isDeferredMobileTextControl(document.activeElement)){
+    deferredRenderWhileMobileText=true;
+    return;
+  }
+  deferredRenderWhileMobileText=false;
   document.querySelector("#app-loading")?.remove();
   // Older Android WebViews could suspend requestAnimationFrame immediately
   // after a page transition. The old transition guard then stayed on <html>
@@ -827,7 +837,7 @@ function syncCharacterControls(source,attribute){
   });
 }
 function syncOpenCharacterEditorDraft(){
-  const dialog=document.querySelector("[data-mobile-character-editor-dialog][open]");
+  const dialog=document.querySelector("[data-mobile-character-editor-dialog]");
   const character=active();
   if(!dialog||!character)return;
   // Android 한글 키보드는 마지막 조합 글자의 input 이벤트가 저장 버튼의
@@ -1448,13 +1458,21 @@ function bind(){
     flushMobileCharacterDraft();
     render();
   };
-  $$("[data-close-mobile-character-editor],[data-save-mobile-character-editor]").forEach(el=>el.onclick=async()=>{
-    const shouldSync=el.hasAttribute("data-save-mobile-character-editor");
-    document.activeElement?.blur?.();
-    syncOpenCharacterEditorDraft();
-    flushMobileCharacterDraft({closeEditor:false});
-    mobileCharacterDialog?.close(shouldSync?"save":"close");
-    if(shouldSync){await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}
+  $$("[data-close-mobile-character-editor],[data-save-mobile-character-editor]").forEach(el=>{
+    // 버튼이 포커스를 가져가기 전에 조합 중인 글자까지 DOM에서 먼저 읽는다.
+    el.addEventListener("pointerdown",syncOpenCharacterEditorDraft,{capture:true,passive:true});
+    el.onclick=async()=>{
+      const shouldSync=el.hasAttribute("data-save-mobile-character-editor");
+      syncOpenCharacterEditorDraft();
+      document.activeElement?.blur?.();
+      // Samsung IME는 blur 직후 compositionend/input을 한 박자 늦게 보낼 수
+      // 있으므로 다음 이벤트 묶음이 끝난 뒤 최종 값을 한 번 더 읽는다.
+      await new Promise(resolve=>setTimeout(resolve,64));
+      syncOpenCharacterEditorDraft();
+      flushMobileCharacterDraft({closeEditor:false});
+      mobileCharacterDialog?.close(shouldSync?"save":"close");
+      if(shouldSync){await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}
+    };
   });
   const mobileReorderDialog=$("[data-mobile-character-reorder-dialog]");
   if(mobileReorderDialog)mobileReorderDialog.onclose=()=>{mobileCharacterReorderOpen=false;render()};
@@ -1749,17 +1767,12 @@ function bind(){
   $$("[data-character-trait]").forEach(el=>el.onclick=()=>toggleTraitSetting("characterTraits",el.dataset.characterTrait,el));
   $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting("traitExpressions",el.dataset.traitExpression,el));
   $$("[data-trait-notes]").forEach(el=>{
+    if(isDeferredMobileTextControl(el)){
+      el.oninput=()=>markMobileCharacterDraft(el);
+      return;
+    }
     const apply=()=>updateCharacter(active().id,{traitNotes:el.value.slice(0,1200)},false);
-    el.oninput=()=>{
-      if(isDeferredMobileTextControl(el)){markMobileCharacterDraft(el);return}
-      apply();
-      save();
-    };
-    el.addEventListener("change",()=>{
-      if(!isMobileCharacterDraftControl(el))return;
-      apply();
-      save(false,false);
-    });
+    el.oninput=()=>{apply();save()};
   });
   $$("[data-trait-notes-in-scripts]").forEach(el=>el.addEventListener("change",e=>{
     const mobileDraft=markMobileCharacterDraft(el);
@@ -1768,6 +1781,10 @@ function bind(){
   }));
   $$("[data-body-field]").forEach(el=>{
     const eventName=el.tagName==="SELECT"?"change":"input";
+    if(eventName==="input"&&isDeferredMobileTextControl(el)){
+      el.addEventListener("input",()=>markMobileCharacterDraft(el),{passive:true});
+      return;
+    }
     const apply=()=>{
       const character=active(),bodyProfile=structuredClone(character.bodyProfile||{});
       const previousLeft=bodyProfile.appearance?.leftEyeColor||"설정하지 않음",previousRight=bodyProfile.appearance?.rightEyeColor||"설정하지 않음";
@@ -1781,15 +1798,7 @@ function bind(){
       syncCharacterControls(el,"data-body-field");
       if(!mobileDraft)save(el.tagName==="SELECT");
     };
-    el.addEventListener(eventName,()=>{
-      if(eventName==="input"&&isDeferredMobileTextControl(el)){markMobileCharacterDraft(el);return}
-      apply();
-    });
-    if(eventName==="input")el.addEventListener("change",()=>{
-      if(!isMobileCharacterDraftControl(el))return;
-      apply();
-      save(false,false);
-    });
+    el.addEventListener(eventName,apply);
   });
   $$("[data-body-list]").forEach(el=>el.onclick=()=>{
     const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),bodyPath=el.dataset.bodyList.split(":")[0],parts=bodyPath.split("."),last=parts.pop();
@@ -1807,6 +1816,12 @@ function bind(){
     document.querySelectorAll(`[data-body-list="${CSS.escape(el.dataset.bodyList)}"][data-value="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",!selected));
   });
   $$("[data-field]").forEach(el=>{
+    if(isDeferredMobileTextControl(el)){
+      // 모바일 자유 입력은 DOM이 단 하나의 진실 공급원이다. 천지인 조합
+      // 중에는 state, 미러 입력, localStorage를 전혀 건드리지 않는다.
+      el.addEventListener("input",()=>markMobileCharacterDraft(el),{passive:true});
+      return;
+    }
     const apply=()=>{
     const patch=characterPatchFromField(el);
     if(!patch)return;
@@ -1827,15 +1842,9 @@ function bind(){
     }
     if(el.dataset.field==="homeVisualScale")el.closest("label")?.querySelector("[data-home-visual-scale-value]")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
     };
-    el.oninput=()=>{
-      if(isDeferredMobileTextControl(el)){markMobileCharacterDraft(el);return}
-      apply();
-    };
+    el.oninput=apply;
     // IME 조합 종료와 포커스 이탈 때 최종 DOM 값을 한 번 더 반영한다.
-    el.addEventListener("compositionend",()=>{
-      if(isDeferredMobileTextControl(el))markMobileCharacterDraft(el);
-      else apply();
-    });
+    el.addEventListener("compositionend",apply);
     el.addEventListener("change",()=>{
       apply();
       if(isMobileCharacterDraftControl(el))save(false,false);
@@ -3189,7 +3198,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819ime1").catch(error=>{
+  import("./auth.js?v=20260819ime2").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3204,7 +3213,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819ime1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819ime2",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
