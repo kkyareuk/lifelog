@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819startupclosure1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819startupclosure1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820navigationfix2";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260820navigationfix2";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -331,6 +331,28 @@ Object.assign(UI_TEXT.ja,{
   ,"LD는 자르지 않고 원본 비율을 유지하며, 큰 사진은 저장용 사본만 비율대로 축소해요.":"LDは切り抜かず元の比率を保ち、大きな画像は保存用コピーだけを比率どおり縮小します。"
   ,"마을을 만드는 순서":"村を作る手順","마을 이름과 배경을 고르세요.":"村の名前と背景を選びます。","건물을 추가하고 유형을 고르세요.":"建物を追加し、種類を選びます。","지도에서 건물을 끌어 위치를 정하세요.":"地図上で建物をドラッグして配置します。"
   ,"화면 편집":"画面編集","통계":"統計","홈 화면 도구":"ホーム画面ツール","홈 화면 편집":"ホーム画面を編集","완료":"完了","현재 장면":"現在のシーン","관찰 중":"観察中"
+});
+Object.assign(UI_TEXT.en,{
+  "1,850원":"KRW 1,850","건물 정보 보기\"":"View building details","기본 실루엣\"":"Default silhouette",
+  "공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.":"Set official relationships and each character's private point of view in one place. These views shape their tone, approach, physical contact, and conflicts in life scenes.",
+  "기존 ‘그 외 외모 태그’도 이곳에서 함께 확인할 수 있어요. 체형·머리색·눈색처럼 위에서 정하는 항목은 중복해서 두지 않았습니다.":"You can also review the existing Other appearance tags here. Options already covered above, such as build, hair color, and eye color, are not duplicated.",
+  "내 소지품으로 구매":"Buy for my inventory","내추럴":"Natural","넓고 긴 방":"Large long room","노다치":"Nodachi","노래":"Songs","노트북":"Laptop","놀이 매트":"Play mat","놀이 매트에서 노는 중":"Playing on the play mat","농·청각장애":"Deaf or hard of hearing","농구":"Basketball",
+  "넓게 비워 둔 동선을 따라 천천히 움직이며 자리를 잡고 있어요.":"They move slowly along the wide, clear path and settle into place.",
+  "넓은 공간의 가장자리를 천천히 돌며 냄새와 소리를 확인하고 있어요.":"They slowly circle the edge of the open space, checking its scents and sounds.",
+  "넓은 자리에 옆으로 몸을 누이고 꼬리 끝만 가끔 움직이며 쉬고 있어요.":"They lie on their side in a roomy spot, resting with only the tip of their tail moving now and then.",
+  "노즈워크 장난감 사이에 숨은 간식 냄새를 따라 코를 바쁘게 움직이고 있어요.":"Their nose works busily as they follow the scent of treats hidden in the nose-work toy.",
+  "높은 가구 위에 올라 자기 영역을 내려다보고 있어요.":"They climb onto a tall piece of furniture and look down over their territory."
+});
+Object.assign(UI_TEXT.ja,{
+  "1,850원":"1,850ウォン","건물 정보 보기\"":"建物情報を見る","기본 실루엣\"":"基本シルエット",
+  "공식 관계와 각 캐릭터의 서로 다른 속마음을 한 화면에서 설정해요. 설정한 시선은 생활 장면의 말투, 접근 방식, 접촉과 갈등에 반영돼요.":"公式の関係と、キャラクターごとに異なる本音を一つの画面で設定します。その視点は生活シーンの口調、接し方、接触、葛藤に反映されます。",
+  "기존 ‘그 외 외모 태그’도 이곳에서 함께 확인할 수 있어요. 체형·머리색·눈색처럼 위에서 정하는 항목은 중복해서 두지 않았습니다.":"既存の「その他の外見タグ」もここで確認できます。体型・髪色・瞳色など上で設定する項目は重複させていません。",
+  "내 소지품으로 구매":"自分の持ち物として購入","내추럴":"ナチュラル","넓고 긴 방":"広くて長い部屋","노다치":"野太刀","노래":"歌","노트북":"ノートパソコン","놀이 매트":"プレイマット","놀이 매트에서 노는 중":"プレイマットで遊んでいる","농·청각장애":"ろう・難聴","농구":"バスケットボール",
+  "넓게 비워 둔 동선을 따라 천천히 움직이며 자리를 잡고 있어요.":"広く空けた動線に沿ってゆっくり移動し、居場所を決めています。",
+  "넓은 공간의 가장자리를 천천히 돌며 냄새와 소리를 확인하고 있어요.":"広い空間の端をゆっくり回りながら、匂いと音を確かめています。",
+  "넓은 자리에 옆으로 몸을 누이고 꼬리 끝만 가끔 움직이며 쉬고 있어요.":"広い場所で横になり、しっぽの先だけを時々動かしながら休んでいます。",
+  "노즈워크 장난감 사이에 숨은 간식 냄새를 따라 코를 바쁘게 움직이고 있어요.":"ノーズワークのおもちゃに隠れたおやつの匂いを追い、忙しく鼻を動かしています。",
+  "높은 가구 위에 올라 자기 영역을 내려다보고 있어요.":"背の高い家具に上がり、自分の縄張りを見下ろしています。"
 });
 UI_DYNAMIC_TEXT.en.push(
   [/^(.+) · 주방에서 식탁을 차리는 중$/,(name)=>`${name} · Setting the table in the kitchen`],

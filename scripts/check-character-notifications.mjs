@@ -29,7 +29,7 @@ const checks=[
   [notifications.includes("characterNotificationLargeIcon")&&notifications.includes("largeIcon:item.largeIcon||undefined")&&app.includes("item.largeIcon=await icons.get(source)"),"캐릭터 큰 알림 아이콘"],
   [speech.includes("export function characterContactSpeech")&&speech.includes('language==="ja"'),"말투별 영어·일본어 연락 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&css.includes('.notification-kind-grid input{'),"권한 복귀 레이아웃과 숨김 체크박스 포커스 안정화"],
-  [gradle.includes("versionCode 57")&&gradle.includes('versionName "1.0.55"'),"내부 테스트 빌드 번호"],
+  [gradle.includes("versionCode 58")&&gradle.includes('versionName "1.0.56"'),"내부 테스트 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

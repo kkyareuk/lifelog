@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820notificationcare1";
-import {eventFor} from "./simulation.js?v=20260820notificationcare1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820notificationcare1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820notificationcare1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820notificationcare1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820notificationcare1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820notificationcare1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820navigationfix2";
+import {eventFor} from "./simulation.js?v=20260820navigationfix2";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820navigationfix2";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820navigationfix2";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820navigationfix2";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820navigationfix2";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820navigationfix2";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -40,6 +40,8 @@ let mobileCharacterEditorScroll=0;
 let mobileCharacterEditorOpenDetails=[];
 let mobileCharacterEditorDetailsCaptured=false;
 let resetScrollAfterRender=false;
+let navigationTabIntent="";
+const setNavigationTabIntent=tab=>{navigationTabIntent=tab;state.activeTab=tab;return tab};
 const guidePending=new Set();
 const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
@@ -744,8 +746,8 @@ function showOnboarding(){
       step=Math.min(pages.length-1,step+1);paint();
     });
     dialog.querySelector("[data-onboarding-login]")?.addEventListener("click",async event=>{const auth=window.ParallelCityAuth;if(!auth)return showToast("로그인 기능을 불러오는 중이에요");const button=event.currentTarget;button.disabled=true;button.textContent="Google 로그인 여는 중…";const connected=await auth.login();if(connected){step=3;paint()}else{button.disabled=false;button.textContent="Google 계정 연결"}});
-    dialog.querySelector("[data-onboarding-settings]")?.addEventListener("click",()=>{state.activeTab="settings";dialog.close();save();render()});
-    dialog.querySelector("[data-onboarding-create]")?.addEventListener("click",()=>{if(createCharacter(characterLimit())){localStorage.setItem(ONBOARDING_KEY,"done");localStorage.setItem(SETUP_COACH_KEY,"character");dialog.close();state.activeTab="character";setCharacterPane("profile");save();render();showToast("첫 캐릭터의 이름부터 정해 볼까요?")}});
+    dialog.querySelector("[data-onboarding-settings]")?.addEventListener("click",()=>{setNavigationTabIntent("settings");dialog.close();save();render()});
+    dialog.querySelector("[data-onboarding-create]")?.addEventListener("click",()=>{if(createCharacter(characterLimit())){localStorage.setItem(ONBOARDING_KEY,"done");localStorage.setItem(SETUP_COACH_KEY,"character");dialog.close();setNavigationTabIntent("character");setCharacterPane("profile");save();render();showToast("첫 캐릭터의 이름부터 정해 볼까요?")}});
   };
   dialog.onclose=()=>dialog.remove();
   dialog.setAttribute("aria-label","첫 시작 안내");
@@ -766,13 +768,13 @@ function showSetupCoach(){
   const dialog=document.createElement("dialog");dialog.className="setup-coach-dialog";
   if(step==="character"){
     dialog.innerHTML=`<form method="dialog"><span class="setup-coach-icon">♙</span><small>첫 번째 설정 · 캐릭터</small><h2>먼저 이 캐릭터를 알려 주세요</h2><p>이름과 사진처럼 꼭 필요한 항목만 정해도 바로 생활을 시작할 수 있어요. 성격과 취향을 자세히 적을수록 장면이 더 구체적으로 달라집니다.</p><ol><li>프로필에서 이름과 기본 정보를 정해요.</li><li>원하면 신체·성격·취향을 더 자세히 설정해요.</li><li><b>캐릭터 저장</b>을 누르면 집 편집으로 이어져요.</li></ol><div><button value="later">나중에</button><button type="button" class="primary" data-start-character-setup>캐릭터 설정 열기</button></div></form>`;
-    dialog.querySelector("[data-start-character-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"character-editing");state.activeTab="character";setCharacterPane("profile");dialog.close();render()};
+    dialog.querySelector("[data-start-character-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"character-editing");setNavigationTabIntent("character");setCharacterPane("profile");dialog.close();render()};
   }else if(step==="home"){
     dialog.innerHTML=`<form method="dialog"><span class="setup-coach-icon">⌂</span><small>첫 번째 꾸미기 · 집</small><h2>방을 눌러 생활 공간을 만들어 보세요</h2><p>집 편집을 켜면 위쪽 한 줄의 <b>방 추가·구성</b>에서 방을 늘릴 수 있어요. 방 자체를 누르면 이름, 크기, 사진과 실제 가구를 바꿀 수 있습니다.</p><ol><li>‘방 추가·구성’에서 필요한 방을 추가해요.</li><li>각 방을 눌러 크기와 사진을 정해요.</li><li>구성원에서 이 집을 본가·별채·주말집으로 연결해요.</li></ol><div><button value="later">나중에</button><button type="button" class="primary" data-start-home-setup>집 편집 시작</button></div></form>`;
-    dialog.querySelector("[data-start-home-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"home-editing");state.activeTab="home";setActiveHome(active()?.homeId||state.activeHomeId);setHomeEditMode(true);dialog.close();render()};
+    dialog.querySelector("[data-start-home-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"home-editing");setNavigationTabIntent("home");setActiveHome(active()?.homeId||state.activeHomeId);setHomeEditMode(true);dialog.close();render()};
   }else{
     dialog.innerHTML=`<form method="dialog"><span class="setup-coach-icon">⌖</span><small>두 번째 꾸미기 · 마을</small><h2>편집 모드에서만 건물이 움직여요</h2><p>평소에는 캐릭터 위치를 관찰하고, <b>편집 모드</b>를 켠 뒤 건물을 누르면 이름·종류·실내 사진을 바꿀 수 있어요. 생활 목적이 있는 캐릭터만 그 장소를 방문합니다.</p><ol><li>편집 모드를 켭니다.</li><li>건물을 눌러 정보를 바꿉니다.</li><li>필요할 때만 위치를 옮깁니다.</li></ol><div><button value="later">나중에</button><button type="button" class="primary" data-start-town-setup>마을 편집 보기</button></div></form>`;
-    dialog.querySelector("[data-start-town-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"done");state.activeTab="town";dialog.close();render()};
+    dialog.querySelector("[data-start-town-setup]").onclick=()=>{localStorage.setItem(SETUP_COACH_KEY,"done");setNavigationTabIntent("town");dialog.close();render()};
   }
   dialog.onclose=()=>{if(dialog.returnValue==="later")localStorage.setItem(SETUP_COACH_KEY,"done");dialog.remove()};
   document.body.append(dialog);dialog.showModal();
@@ -782,7 +784,7 @@ function advanceFirstSetupAfterCharacter(){
   const step=localStorage.getItem(SETUP_COACH_KEY);
   if(!["character","character-editing"].includes(step))return false;
   localStorage.setItem(SETUP_COACH_KEY,"home-editing");
-  state.activeTab="home";
+  setNavigationTabIntent("home");
   setActiveHome(active()?.homeId||state.activeHomeId);
   setHomeEditMode(true);
   render();
@@ -913,6 +915,9 @@ function render(){
   // input 노드가 교체되는 순간 직전 음절을 다시 확정할 수 있다. 사진 복원,
   // 로그인, 시뮬레이션 타이머 등 외부 갱신도 타이핑 중에는 화면을 교체하지
   // 않고 다음 명시적 화면 전환까지 미룬다.
+  // 사진 복원·로그인·초기 안내처럼 늦게 끝나는 작업이 저장 상태의 예전
+  // activeTab을 되돌려도, 사용자가 마지막으로 확정한 화면 이동이 우선이다.
+  if(navigationTabIntent&&state.activeTab!==navigationTabIntent)state.activeTab=navigationTabIntent;
   if(document.documentElement.dataset.drawerRendered==="1"&&isDeferredMobileTextControl(document.activeElement)){
     deferredRenderWhileMobileText=true;
     return;
@@ -1602,7 +1607,7 @@ function bind(){
   $$("[data-cart-plus]").forEach(el=>el.onclick=()=>{const cart=readCart();addCartItem(cart,el.dataset.cartPlus)});
   $$("[data-cart-minus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartMinus,next=(Number(cart[id])||0)-1;if(next>0)cart[id]=next;else delete cart[id];writeCart(cart)});
   $$("[data-cart-remove]").forEach(el=>el.onclick=()=>{const cart=readCart();delete cart[el.dataset.cartRemove];writeCart(cart)});
-  $$("[data-wardrobe-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.wardrobeCharacter);state.activeTab="wardrobe";save();render()});
+  $$("[data-wardrobe-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.wardrobeCharacter);setNavigationTabIntent("catalog");save();render()});
   $("[data-new-clothing]")?.addEventListener("click",()=>openClothingEditor());
   $$("[data-edit-clothing]").forEach(el=>el.onclick=event=>{event.stopPropagation();openClothingEditor(el.dataset.editClothing)});
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
@@ -1704,7 +1709,7 @@ function bind(){
     const continueFirstSetup=was&&localStorage.getItem(SETUP_COACH_KEY)==="home-editing";
     if(continueFirstSetup){
       localStorage.setItem(SETUP_COACH_KEY,"done");
-      state.activeTab="town";
+      setNavigationTabIntent("town");
       setMobileTownEditing(true);
     }
     render();
@@ -2496,7 +2501,8 @@ function navigateToTab(tab,{recordHistory=true}={}){
       state.characterViewTarget=state.order.find(id=>id!==state.activeId)||"";
     }
   }
-  state.activeTab=tab;
+  setNavigationTabIntent(tab);
+  document.documentElement.dataset.lastNavigation=tab;
   if(recordHistory)recordTabHistory(tab);
   resetScrollAfterRender=true;
   render();
@@ -2522,34 +2528,15 @@ window.DrawerVillageNavigation={
   current:()=>state.activeTab
 };
 
-// Android 터치는 pointerup을 한 번의 확정된 이동으로 취급한다. 일부 최신
-// WebView는 pointerup보다 80ms 이상 늦게 합성 click을 보내는데, 그 사이
-// 화면을 다시 그리면 같은 좌표의 새 버튼으로 click이 재지정되어 열었던
-// 화면이 즉시 사라질 수 있다. 같은 손가락에서 뒤늦게 온 click만 좌표로
-// 식별해 버리고, 마우스와 키보드 click은 기존 경로로 그대로 처리한다.
-let touchTabClickGuard={until:0,x:-1000,y:-1000};
+// 탭 전환은 브라우저가 한 번만 확정해서 보내는 click에서 처리한다.
+// pointerup에서 먼저 화면 전체를 다시 그리면 Android WebView가 뒤이어
+// 보내는 click의 대상이 새 화면의 다른 버튼으로 바뀌어, 열었던 화면이
+// 즉시 닫히거나 버튼이 번쩍이기만 하는 문제가 생긴다.
 function tabButtonFromEvent(event){
   const path=typeof event.composedPath==="function"?event.composedPath():[];
   return path.find(node=>node?.matches?.("[data-tab]"))||event.target?.closest?.("[data-tab]");
 }
-function captureTabPointerUp(event){
-  if(event.pointerType==="mouse")return;
-  const button=tabButtonFromEvent(event);
-  const tab=button?.dataset?.tab;
-  if(!APP_TABS.includes(tab))return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  touchTabClickGuard={until:performance.now()+900,x:event.clientX,y:event.clientY};
-  navigateToTab(tab);
-}
 function captureTabClick(event){
-  const guarded=performance.now()<touchTabClickGuard.until&&Math.hypot(event.clientX-touchTabClickGuard.x,event.clientY-touchTabClickGuard.y)<=32;
-  if(guarded){
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    touchTabClickGuard={until:0,x:-1000,y:-1000};
-    return;
-  }
   const button=tabButtonFromEvent(event);
   const tab=button?.dataset?.tab;
   if(!APP_TABS.includes(tab))return;
@@ -2557,7 +2544,6 @@ function captureTabClick(event){
   event.stopImmediatePropagation();
   navigateToTab(tab);
 }
-document.addEventListener("pointerup",captureTabPointerUp,true);
 document.addEventListener("click",captureTabClick,true);
 
 window.addEventListener("drawer-village-native-back",event=>{
@@ -3002,7 +2988,7 @@ function focusCharacter(id){
   setActive(id);
   const e=eventFor(state.characters[id]);
   if(e.home){
-    state.activeTab="home";
+    setNavigationTabIntent("home");
     state.activeHomeId=state.characters[id].homeId||id;
     save();
     render();
@@ -3020,7 +3006,7 @@ function focusCharacter(id){
 function focusHomeCharacter(id){
   setActive(id);
   state.activeHomeId=state.characters[id]?.homeId||id;
-  if(state.activeTab!=="home")state.activeTab="home";
+  if(state.activeTab!=="home")setNavigationTabIntent("home");
   save();
   render();
   requestAnimationFrame(()=>{
@@ -3283,7 +3269,7 @@ window.ParallelCity={
   replaceState:x=>{
     const view={activeTab:state.activeTab,characterPane:state.characterPane,activeId:state.activeId,activeHomeId:state.activeHomeId,activeTownId:state.activeTownId};
     replaceState(x);
-    state.activeTab=view.activeTab;
+    setNavigationTabIntent(view.activeTab);
     state.characterPane=view.characterPane;
     if(state.characters[view.activeId])state.activeId=view.activeId;
     if(state.homes[view.activeHomeId])state.activeHomeId=view.activeHomeId;
@@ -3316,6 +3302,10 @@ window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.
 window.addEventListener("popstate",event=>{
   const tab=event.state?.drawerVillageTab;
   if(APP_TABS.includes(tab))navigateToTab(tab,{recordHistory:false});
+});
+window.addEventListener("hashchange",()=>{
+  const tab=new URLSearchParams(location.hash.replace(/^#/,"")).get("tab");
+  if(APP_TABS.includes(tab)&&tab!==state.activeTab)navigateToTab(tab,{recordHistory:false});
 });
 const localDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
 const atLocalTime=(date,hour,minute=0)=>new Date(date.getFullYear(),date.getMonth(),date.getDate(),hour,minute,0,0).getTime();
@@ -3710,15 +3700,20 @@ document.addEventListener("change",event=>{
 });
 const mobileSiteQuery=window.matchMedia?.("(max-width:720px)");
 mobileSiteQuery?.addEventListener?.("change",()=>render());
-// A saved URL such as #tab=settings is useful while navigating inside the
-// running app, but it must not turn the next launch into a settings screen.
-// Every cold start and refresh begins at the observation home.
-state.activeTab="observe";
-recordTabHistory("observe",true);
+// 사이트는 공유하거나 새로고침한 #tab 주소를 그대로 복원한다. Android
+// 앱의 새 실행만 관찰 화면에서 시작한다. 무엇보다 초기 화면을 그린 뒤에는
+// 이 부팅 코드가 사용자가 이미 누른 탭을 다시 덮어쓰지 않는다.
+const startupHashTab=new URLSearchParams(location.hash.replace(/^#/,"")).get("tab");
+const nativeStartup=Boolean(window.DRAWER_VILLAGE_NATIVE||window.Capacitor?.isNativePlatform?.());
+const startupTab=nativeStartup?"observe":APP_TABS.includes(startupHashTab)?startupHashTab:"observe";
+document.documentElement.dataset.startupTab=startupTab;
+document.documentElement.dataset.startupNative=String(nativeStartup);
+if(document.documentElement.dataset.drawerRendered!=="1")setNavigationTabIntent(startupTab);
+recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820notificationcare1").catch(error=>{
+  import("./auth.js?v=20260820navigationfix2").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3733,7 +3728,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820notificationcare1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820navigationfix2",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
