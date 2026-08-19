@@ -3906,6 +3906,17 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   object-fit:cover;
   background:#fff;
 }
+.native-app .native-scene-action-prop.catalog-food-photo{
+  left:78%;top:76%;width:68px;height:68px;padding:3px;border:2px solid #fff9;
+  border-radius:50%;background:#fff;box-shadow:0 10px 24px #0007;overflow:hidden;
+}
+.native-app .native-person-action-prop.catalog-food-photo{
+  left:72%;top:70%;width:44px;height:44px;padding:2px;border:2px solid #fff9;
+  border-radius:50%;background:#fff;box-shadow:0 7px 16px #0006;overflow:hidden;
+}
+.native-app :is(.native-scene-action-prop,.native-person-action-prop).catalog-food-photo img{
+  border-radius:50%;object-fit:cover;background:transparent;
+}
 .native-app .native-person-action-prop{
   position:absolute;
   left:57%;
@@ -6266,8 +6277,15 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
   filter:drop-shadow(0 7px 7px #0009)!important;
   animation:native-toothbrush-motion 1.25s ease-in-out infinite!important;
 }
+.native-app .scene-action-washing-up .action-prop-razor{
+  text-shadow:none!important;
+  filter:drop-shadow(0 7px 7px #0009)!important;
+  animation:native-razor-motion 1.4s ease-in-out infinite!important;
+}
 .native-app .scene-action-washing-up .action-prop-toothbrush::before,
-.native-app .scene-action-washing-up .action-prop-toothbrush::after{display:none!important;content:none!important}
+.native-app .scene-action-washing-up .action-prop-toothbrush::after,
+.native-app .scene-action-washing-up .action-prop-razor::before,
+.native-app .scene-action-washing-up .action-prop-razor::after{display:none!important;content:none!important}
 .native-app .scene-action-shoe-care :is(.native-scene-action-prop,.native-person-action-prop){
   text-shadow:none!important;
   animation:native-shoe-care 1.7s ease-in-out infinite!important;
@@ -6275,6 +6293,10 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
 @keyframes native-toothbrush-motion{
   0%,100%{translate:-7px 3px;rotate:-10deg}
   50%{translate:7px -3px;rotate:9deg}
+}
+@keyframes native-razor-motion{
+  0%,100%{translate:-5px 4px;rotate:-8deg}
+  50%{translate:5px -4px;rotate:7deg}
 }
 @keyframes native-shoe-care{
   0%,100%{translate:-6px 5px;rotate:-8deg}

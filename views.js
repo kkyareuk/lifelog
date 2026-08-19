@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core3";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core3";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core4";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core4";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -827,14 +827,15 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   else if(actionKind==="gardening")symbol="🪴";
   else if(actionKind==="mail")symbol="✉️";
   if(!symbol)return "";
-  const propVariant=symbol==="🪥"?" action-prop-toothbrush":symbol==="🧼"?" action-prop-soap":symbol==="👞"?" action-prop-shoe":"";
+  const propVariant=symbol==="🪥"?" action-prop-toothbrush":symbol==="🪒"?" action-prop-razor":symbol==="🧼"?" action-prop-soap":symbol==="👞"?" action-prop-shoe":"";
   const animatedFood=!item&&foodSymbols.length>1?`<span class="food-preference-symbols">${foodSymbols.map((food,index)=>`<i style="--food-index:${index}">${esc(food)}</i>`).join("")}</span>`:"";
-  // Catalog images are user reference photos, not transparent scene props.
-  // Showing one here cropped it into a rounded square over the character.
-  // Keep that photo in the catalog and use a semantic scene prop instead.
-  const image=animatedFood||esc(symbol);
+  // A named catalog food is the user's actual collection item, so keep its
+  // photo visible. The dedicated class places it beside/below the character
+  // instead of cropping a pale square over the character's face.
+  const hasCatalogPhoto=Boolean(item?.image);
+  const image=hasCatalogPhoto?`<img src="${esc(item.image)}" alt="">`:(animatedFood||esc(symbol));
   const title=item?.name?`${person?.name||"캐릭터"} · ${item.name}`:`${person?.name||"캐릭터"} · ${symbol}`;
-  return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}${propVariant}${animatedFood?" food-preference-animation":""}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
+  return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}${propVariant}${animatedFood?" food-preference-animation":""}${hasCatalogPhoto?" catalog-food-photo":""}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
 }
 function isRomanticCharacterView(view){
   const overall=String(view?.overall||"").trim();
@@ -2524,6 +2525,22 @@ Object.assign(UI_TEXT.ja,{
 });
 UI_DYNAMIC_TEXT.en.push([/^(\d+)개 선택$/,(count)=>`${count} selected`]);
 UI_DYNAMIC_TEXT.ja.push([/^(\d+)개 선택$/,(count)=>`${count}個選択`]);
+Object.assign(UI_TEXT.en,{
+  "+ 반려생물 추가":"+ Add pet","+ 방 추가":"+ Add room","+ 옷 등록":"+ Add clothing","+ 일정 추가":"+ Add schedule","+ 자동차 추가":"+ Add car","+ 집만 생성":"+ Create home only","+ 코디 만들기":"+ Create outfit","+ 크게":"+ Larger","− 작게":"− Smaller","✓ 기준 주거지":"✓ Primary residence",
+  "🎁 구체적인 물건 구매·선물하기":"🎁 Buy or gift a specific item","🏠 자택근무":"🏠 Work from home","📍 외출 중":"📍 Out and about","🚌 이동 중":"🚌 In transit","간단 설정":"Basic settings","고급 설정":"Advanced settings","거주 방식":"Residence type","건강·장애·접근성 설정 · 선택 사항":"Health, disability & accessibility · optional","기타 건강 상태":"Other health condition","기타 소유자·단체 이름":"Other owner or group name",
+  "끌어서 놓거나 버튼을 누르면 바로 저장됩니다.":"Drag and drop or use the buttons to save immediately.","눌러서 편집":"Tap to edit","단맛 선호":"Sweetness preference","매운맛 선호":"Spice preference","마을 지정 안 함":"No town assigned","머무는 때":"When they stay","명절·기념일 날짜":"Holiday or anniversary dates","반려생물 편집하기":"Edit pet","방 구성":"Room setup","방문 목적·설명":"Visit purpose & notes","방문 요일":"Visit days",
+  "보유한 옷":"Owned clothing","분류":"Category","분류 선택":"Choose category","세부 항목":"Details","세부 항목 선택":"Choose details","소유 캐릭터":"Owning character","소유자 종류":"Owner type","소지품":"Belongings","아이콘 링크":"Icon link","아직 등록된 항목이 없어요.":"No items have been added yet.","아직 만든 집이 없어요.":"No homes have been created yet.","아직 설정한 공식 관계가 없어요.":"No official relationships have been set yet.","아직 집 기록이 없어요.":"No home log entries yet.",
+  "옷을 등록하고, 자주 입는 조합을 코디로 저장해요.":"Add clothing and save frequently worn combinations as outfits.","요일":"Day of week","원형 사진":"Circular photo","의수 종류 직접 입력":"Enter prosthetic arm type","의족 종류 직접 입력":"Enter prosthetic leg type","이 집 삭제":"Delete this home","이 집을 사용하는 캐릭터":"Characters using this home","이 캐릭터에게 어떤 집인가요?":"What kind of home is this for the character?","이름":"Name","이미 적용 중":"Already active","이미지 링크":"Image link","이미지 미등록":"No image added","일정 없음":"No schedule",
+  "자는 방":"Bedroom","저장한 코디":"Saved outfits","접근성 참고 메모 · 설정표용":"Accessibility notes · settings only","종류":"Type","주로 있는 방":"Usual room","중성화 완료":"Neutered","지금 이 순간":"Current moment","집 생활 로그":"Home life log","집 선택 버튼 배경 사진":"Home selector background photo","집 설명":"Home description","집 외관 스타일":"Home exterior style","집 이름":"Home name","집과 생활 거점":"Homes & living bases","집의 아름다운 정도":"Home appearance","집의 종류":"Home type","집이 있는 마을":"Home town","최애":"Favorite","캐릭터 위치 바꾸기":"Move character","캐릭터 위치·크기":"Character position & size","코디 편집":"Edit outfit","투명 아이콘":"Transparent icon","표현 안전 안내":"Representation safety notice","품종":"Breed","함께 산책이 필요함":"Needs walks together","함께할 캐릭터":"Character to join","행동 아이콘 위치":"Action icon position","현재 배치 초기화":"Reset current layout","홈 캐릭터·행동 아이콘 배치":"Home character & action icon layout","홈 화면 배치 미리보기":"Home layout preview","LD 배치":"LD placement","SD 배치":"SD placement"
+});
+Object.assign(UI_TEXT.ja,{
+  "+ 반려생물 추가":"＋ペットを追加","+ 방 추가":"＋部屋を追加","+ 옷 등록":"＋服を登録","+ 일정 추가":"＋予定を追加","+ 자동차 추가":"＋車を追加","+ 집만 생성":"＋家だけ作成","+ 코디 만들기":"＋コーデを作成","+ 크게":"＋大きく","− 작게":"− 小さく","✓ 기준 주거지":"✓ 基準の住居",
+  "🎁 구체적인 물건 구매·선물하기":"🎁 実際の品物を購入・贈る","🏠 자택근무":"🏠 在宅勤務","📍 외출 중":"📍 外出中","🚌 이동 중":"🚌 移動中","간단 설정":"かんたん設定","고급 설정":"詳細設定","거주 방식":"居住形態","건강·장애·접근성 설정 · 선택 사항":"健康・障害・アクセシビリティ・任意","기타 건강 상태":"その他の健康状態","기타 소유자·단체 이름":"その他の所有者・団体名",
+  "끌어서 놓거나 버튼을 누르면 바로 저장됩니다.":"ドラッグするかボタンを押すとすぐ保存されます。","눌러서 편집":"タップして編集","단맛 선호":"甘さの好み","매운맛 선호":"辛さの好み","마을 지정 안 함":"村を指定しない","머무는 때":"滞在する時","명절·기념일 날짜":"祝日・記念日の日付","반려생물 편집하기":"ペットを編集","방 구성":"部屋の構成","방문 목적·설명":"訪問目的・説明","방문 요일":"訪問する曜日",
+  "보유한 옷":"持っている服","분류":"カテゴリー","분류 선택":"カテゴリーを選択","세부 항목":"詳細項目","세부 항목 선택":"詳細項目を選択","소유 캐릭터":"所有キャラクター","소유자 종류":"所有者の種類","소지품":"持ち物","아이콘 링크":"アイコンリンク","아직 등록된 항목이 없어요.":"登録された項目はまだありません。","아직 만든 집이 없어요.":"作成した家はまだありません。","아직 설정한 공식 관계가 없어요.":"設定された公式関係はまだありません。","아직 집 기록이 없어요.":"家の記録はまだありません。",
+  "옷을 등록하고, 자주 입는 조합을 코디로 저장해요.":"服を登録し、よく着る組み合わせをコーデとして保存します。","요일":"曜日","원형 사진":"円形写真","의수 종류 직접 입력":"義手の種類を直接入力","의족 종류 직접 입력":"義足の種類を直接入力","이 집 삭제":"この家を削除","이 집을 사용하는 캐릭터":"この家を使うキャラクター","이 캐릭터에게 어떤 집인가요?":"このキャラクターにとってどんな家ですか？","이름":"名前","이미 적용 중":"適用中","이미지 링크":"画像リンク","이미지 미등록":"画像未登録","일정 없음":"予定なし",
+  "자는 방":"寝る部屋","저장한 코디":"保存したコーデ","접근성 참고 메모 · 설정표용":"アクセシビリティ参考メモ・設定用","종류":"種類","주로 있는 방":"普段いる部屋","중성화 완료":"避妊・去勢済み","지금 이 순간":"今この瞬間","집 생활 로그":"家の生活ログ","집 선택 버튼 배경 사진":"家選択ボタンの背景写真","집 설명":"家の説明","집 외관 스타일":"家の外観スタイル","집 이름":"家の名前","집과 생활 거점":"家と生活拠点","집의 아름다운 정도":"家の美しさ","집의 종류":"家の種類","집이 있는 마을":"家がある村","최애":"最推し","캐릭터 위치 바꾸기":"キャラクター位置を変更","캐릭터 위치·크기":"キャラクターの位置・サイズ","코디 편집":"コーデを編集","투명 아이콘":"透過アイコン","표현 안전 안내":"表現上の安全案内","품종":"品種","함께 산책이 필요함":"一緒に散歩が必要","함께할 캐릭터":"一緒に行くキャラクター","행동 아이콘 위치":"行動アイコンの位置","현재 배치 초기화":"現在の配置をリセット","홈 캐릭터·행동 아이콘 배치":"ホームのキャラクター・行動アイコン配置","홈 화면 배치 미리보기":"ホーム画面配置プレビュー","LD 배치":"LD配置","SD 배치":"SD配置"
+});
 const unorderedSettingsContent=settingsContent;
 settingsContent=()=>{
   let html=unorderedSettingsContent();
