@@ -747,7 +747,10 @@ function render(){
     requestAnimationFrame(showSetupCoach);
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
     requestAnimationFrame(maybeShowPageGuide);
-    if(state.activeTab==="town"||(state.activeTab==="observe"&&!document.documentElement.classList.contains("native-app")))centerMobileTownMap();
+    // The desktop observation map is already positioned by CSS. Smoothly
+    // scrolling its large canvas after every render made the whole site feel
+    // delayed and could briefly place an invisible scroll layer over the nav.
+    if(state.activeTab==="town")centerMobileTownMap();
     document.documentElement.dataset.drawerRendered="1";
     if(preservePageScroll)restoreWindowScroll(previousPageX,previousPageY);
   }catch(error){
@@ -1213,7 +1216,7 @@ function bind(){
   });
   // iOS Safari에서 장면 합성 레이어가 click target을 바꾸는 경우에도
   // 고정 메뉴 버튼 자체가 항상 화면 이동을 처리하도록 직접 연결한다.
-  $$(".native-game-menu [data-tab], .native-sub-header [data-tab]").forEach(button=>{
+  $$("header nav [data-tab], .native-game-menu [data-tab], .native-sub-header [data-tab]").forEach(button=>{
     const openTab=event=>{
       event.preventDefault();
       event.stopPropagation();

@@ -39,7 +39,7 @@ img.sprite,.char-row>.sprite,.char-row>.avatar,.home-person>.sprite,.home-person
 .place.has-art .place-label{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);z-index:14;pointer-events:none}
 .map-place-label{position:absolute;z-index:30;display:grid;place-items:center;transform:translate(-50%,calc(-100% - 48px));min-width:110px;color:#050505;text-align:center;text-shadow:-1px -1px 0 #fff,1px -1px 0 #fff,-1px 1px 0 #fff,1px 1px 0 #fff,0 2px 3px #fff;pointer-events:none}.map-place-label small{color:#050505}
 .place-people{z-index:18!important;display:grid!important;justify-items:center!important;gap:3px!important;transform:translate(-50%,-50%)!important;overflow:visible!important}.place-people-faces{display:flex!important;align-items:flex-end!important;gap:2px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}.place-people-faces .avatar,.place-people-faces .sprite{width:52px!important;height:58px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important;overflow:visible!important}.place-people-faces>b{display:grid;place-items:center;width:28px;height:28px;margin-left:2px;border-radius:50%;background:var(--p);color:#fff;font-size:11px}.place-people-names{max-width:150px!important;padding:3px 7px!important;font-size:11px!important;text-align:center!important;white-space:normal!important}
-.place-person-face{display:grid!important;place-items:end center!important;width:auto!important;min-width:0!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
+.world .place-people-faces>.place-person-face{display:grid!important;place-items:end center!important;width:auto!important;min-width:0!important;height:auto!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:none!important;box-shadow:none!important;overflow:visible!important;appearance:none!important;cursor:pointer}
 .date-schedule{display:block!important;margin:10px 0!important;padding:0!important;border:2px solid var(--log-theme)!important;border-radius:17px!important;background:color-mix(in srgb,var(--log-theme) 8%,#fff)!important;overflow:hidden}.date-schedule-title{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;background:var(--log-theme);color:#fff}.date-schedule-title small{color:#fff!important}.date-schedule>ol{max-height:none!important;overflow:visible!important;margin:0!important;padding:5px 13px 9px!important}.date-schedule>ol>li{display:grid!important;grid-template-columns:58px minmax(0,1fr)!important;gap:8px!important;margin:0!important;padding:10px 0!important;border:0!important;border-bottom:1px solid color-mix(in srgb,var(--log-theme) 20%,var(--line))!important;background:transparent!important}.date-schedule>ol>li:last-child{border-bottom:0!important}.date-schedule>ol time{font-weight:800;color:var(--log-theme)}.date-schedule>ol span{display:grid}.date-schedule>ol small{color:var(--muted)}
 .place:not(.has-art) .place-label{padding:0;border:0;background:transparent;box-shadow:none}
 .person>span:not(.avatar){font-size:clamp(12px,1.2vw,18px)}
@@ -5912,16 +5912,15 @@ html:not(.native-app) .standard-observe-view>.roster .roster-card small{
 .desktop-observe-log{margin:0;min-width:0;position:sticky;top:12px}
 .desktop-observe-log .native-log-card{
   display:grid;gap:12px;width:100%;padding:18px 20px;border:1px solid var(--line);
-  border-radius:24px;background:var(--panel);box-shadow:0 12px 34px #17202d16;cursor:pointer;
+  border-radius:24px;background:var(--panel);box-shadow:0 12px 34px #17202d16;cursor:default;
 }
 .desktop-observe-log .native-log-card>div{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .desktop-observe-log .native-log-card>div>b{font-size:22px}
 .desktop-observe-log .native-log-card>div>span{display:flex;gap:8px}
 .desktop-observe-log .native-log-card ol{
   display:grid;grid-template-columns:1fr;gap:10px;margin:0;padding:0;list-style:none;
-  max-height:190px;overflow:hidden;
+  max-height:min(70vh,720px);overflow:auto;overscroll-behavior:contain;
 }
-.desktop-observe-log .native-log-card li:nth-child(n+3){display:none}
 .desktop-observe-log .native-log-card li{
   display:grid;grid-template-columns:55px minmax(0,1fr);gap:10px;padding:10px 12px;
   border:1px solid var(--line);border-radius:15px;background:color-mix(in srgb,var(--p) 6%,var(--panel));

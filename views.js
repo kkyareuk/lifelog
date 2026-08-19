@@ -410,29 +410,37 @@ const displayEntityNames=()=>[
   ...(state.towns||[]).flatMap(town=>[town?.name,...(town?.places||[]).map(place=>place?.name)]),
   ...Object.values(state.catalog||{}).flatMap(items=>(items||[]).map(item=>item?.name))
 ].filter(Boolean).map(String).sort((a,b)=>b.length-a.length);
-function resolveDisplayParticles(text){
+const displayParticleMatcher=()=>{
+  const names=displayEntityNames();
+  return names.length?new RegExp(`(${names.map(regexEscape).join("|")})(은|는|이|가|을|를|과|와)(?=[\\s,.!?·'\"’”)]|$)`,"g"):null;
+};
+function resolveDisplayParticles(text,matcher=displayParticleMatcher()){
   let result=String(text||"")
     .replace(/([가-힣A-Za-z0-9_]+)은\(는\)/g,(_,word)=>withParticle(word,"은","는"))
     .replace(/([가-힣A-Za-z0-9_]+)이\(가\)/g,(_,word)=>subjectText(word))
     .replace(/([가-힣A-Za-z0-9_]+)을\(를\)/g,(_,word)=>objectText(word))
     .replace(/([가-힣A-Za-z0-9_]+)과\(와\)/g,(_,word)=>togetherText(word));
-  displayEntityNames().forEach(name=>{
-    const pattern=new RegExp(`${regexEscape(name)}(은|는|이|가|을|를|과|와)(?=[\\s,.!?·'\"’”)]|$)`,"g");
-    result=result.replace(pattern,(_,particle)=>{
+  if(matcher){
+    matcher.lastIndex=0;
+    result=result.replace(matcher,(_,name,particle)=>{
       if(["은","는"].includes(particle))return withParticle(name,"은","는");
       if(["이","가"].includes(particle))return subjectText(name);
       if(["을","를"].includes(particle))return objectText(name);
       return togetherText(name);
     });
-  });
+  }
   return result;
 }
 function normalizeDisplayedParticles(root){
   if(!root||typeof document.createTreeWalker!=="function")return;
+  // A large character/village can contain thousands of text nodes. Building
+  // the entity-name list and every regular expression for every text node was
+  // the main source of input and tab-navigation stalls on the web build.
+  const matcher=displayParticleMatcher();
   const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
   const nodes=[];
   while(walker.nextNode())nodes.push(walker.currentNode);
-  nodes.forEach(node=>{const next=resolveDisplayParticles(node.nodeValue);if(next!==node.nodeValue)node.nodeValue=next});
+  nodes.forEach(node=>{const next=resolveDisplayParticles(node.nodeValue,matcher);if(next!==node.nodeValue)node.nodeValue=next});
 }
 const sceneFailureIds=new Set();
 const fallbackEvent=c=>{
@@ -573,7 +581,7 @@ function header(){
   const tabs=[["observe",t("observe","관찰"),"◉"],["home",t("home","집"),"⌂"],["character",t("character","캐릭터"),"♙"],["catalog",t("catalog","취향 사전"),"◇"],["relationship",t("relationship","관계"),"∞"],["routine",t("routine","주간 루틴"),"▦"],["statistics",t("statistics","통계"),"▥"],["town",t("town","마을"),"▧"],["shop",t("shop","상점"),"♢"],["settings",t("settings","설정"),"⚙"]];
   const current=tabs.find(([key])=>key===state.activeTab)||tabs[0];
   const nativeBar=state.activeTab==="observe"?"":`<div class="native-sub-header"><button type="button" data-tab="observe" aria-label="${esc(t("메인 화면으로 돌아가기","메인 화면으로 돌아가기"))}">‹</button><b>${current[1]}</b><span>${esc(t("brandName","서랍마을"))}</span></div>`;
-  return `<header><div class="brand"><span class="logo"><img src="./icons/drawer-village-logo.png" alt="${esc(t("brandName","서랍마을"))}"></span><div><h1>${t("brandName","서랍마을")}</h1><small>${t("brandTagline","서랍 속 캐릭터 생활 관찰 게임")}</small></div>${previewMode()?`<span class="preview-badge">${esc(previewConfig().label||"사전 체험")}</span>`:""}</div><nav>${tabs.map(([k,n,icon])=>`<button data-tab="${k}" class="${state.activeTab===k?"on":""}"><span class="tab-icon tab-icon-${k}" data-menu-icon="${k}" aria-hidden="true">${icon}</span><span>${n}</span></button>`).join("")}</nav><span id="save-state">${t("saved","기기에 저장됨")}</span></header>${nativeBar}`;
+  return `<header><div class="brand"><span class="logo"><img src="./icons/drawer-village-logo.png" alt="${esc(t("brandName","서랍마을"))}"></span><div><h1>${t("brandName","서랍마을")}</h1><small>${t("brandTagline","서랍 속 캐릭터 생활 관찰 게임")}</small></div>${previewMode()?`<span class="preview-badge">${esc(previewConfig().label||"사전 체험")}</span>`:""}</div><nav>${tabs.map(([k,n,icon])=>`<button type="button" data-tab="${k}" class="${state.activeTab===k?"on":""}"><span class="tab-icon tab-icon-${k}" data-menu-icon="${k}" aria-hidden="true">${icon}</span><span>${n}</span></button>`).join("")}</nav><span id="save-state">${t("saved","기기에 저장됨")}</span></header>${nativeBar}`;
 }
 const NATIVE_MENU_TABS=[["home","home","집","⌂"],["character","character","캐릭터","♙"],["catalog","catalog","취향 사전","◇"],["relationship","relationship","관계","∞"],["routine","routine","주간 루틴","▦"],["town","town","마을","▧"],["shop","shop","상점","♢"],["settings","settings","설정","⚙"]];
 let mobileTownEditing=false;
@@ -1295,13 +1303,13 @@ function peopleAtPlaceCard(p){
   const visible=group.slice(0,5),hiddenCount=Math.max(0,group.length-visible.length);
   const names=group.map(c=>c.name).join(", ");
   const x=Math.max(9,Math.min(91,p.x)),y=Math.max(12,Math.min(91,p.y+4.5));
-  return `<div class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<button type="button" class="place-person-face" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</button>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
+  return `<div class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<span class="place-person-face" role="button" tabindex="0" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</span>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
 }
 function peopleAtHomeCard(home){
   const group=charactersInsideHome(home.id);if(!group.length)return"";
   const visible=group.slice(0,5),hiddenCount=Math.max(0,group.length-visible.length),names=group.map(c=>c.name).join(", ");
   const x=Math.max(9,Math.min(91,home.mapX)),y=Math.max(12,Math.min(91,home.mapY+4.5));
-  return `<div class="person place-people home-place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<button type="button" class="place-person-face" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</button>`).join("")}${hiddenCount?`<b class="place-person-more">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
+  return `<div class="person place-people home-place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<span class="place-person-face" role="button" tabindex="0" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</span>`).join("")}${hiddenCount?`<b class="place-person-more">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
 }
 function buildingDetailDialogs(){
   const placeDialogs=state.world.places.map(place=>{
@@ -1465,7 +1473,8 @@ function observe(){
   if(mobileHome){
     return `${nativeGameMenu()}<section class="native-observe-home scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}<div class="native-observe-top"><span><b>${esc(c.name)}</b><small>${esc(c.jobTitle||c.job||"생활 중")}</small></span><span class="native-observe-clock"><time>${new Date().toLocaleTimeString(uiLocale(),{hour:"2-digit",minute:"2-digit"})}</time></span></div>${homeTools}<div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale};${sceneLayoutVars(c,visualMode)}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div><div class="native-character-picker" aria-label="관찰 캐릭터 선택">${state.order.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="${id===c.id?"on":""}" style="--picker-theme:${esc(person.theme?.primary||"#176b60")}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${avatar(person)}</button>`}).join("")}</div>${statusCard}${logCard}</section>${nativeFullLog}${homeDialogs}`;
   }
-  const desktopLog=`<section class="desktop-observe-log">${logCard}</section>`;
+  const desktopLogEntries=nativeEntries.slice().reverse().map(item=>`<li><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
+  const desktopLog=`<section class="desktop-observe-log"><section class="native-log-card desktop-log-expanded" aria-label="오늘의 기록"><div><b>${t("todayLog","오늘의 기록")}</b><span><button type="button" data-tab="home">${t("viewHome","집 보기")}</button></span></div><ol>${desktopLogEntries||emptyLog}</ol></section></section>`;
   return `<div class="standard-observe-view">${roster()}${townSwitcher}${desktopScene}<div class="desktop-observe-lower"><div class="observe desktop-observe-map-only"><section><div class="world-hud"><div><small>현재 시각</small><b>${new Date().toLocaleString(uiLocale(),{month:"long",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"})}</b></div><div><small>관찰 중</small><b>${esc(c.name)} · ${esc(e.title)}</b></div></div><div class="viewport">${sleepGate}<div class="world"><img src="${TOWN_BACKGROUND}" class="world-bg">${state.world.places.map(placeCard).join("")}${townHomes().map(homeMapCard).join("")}${state.world.places.map(peopleAtPlaceCard).join("")}${townHomes().map(peopleAtHomeCard).join("")}</div></div></section></div>${desktopLog}</div>${nativeFullLog}${homeDialogs}${buildingDetailDialogs()}</div>`;
 }
 const ROOM_SIZE_SPANS={
