@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819mediafloor1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260819mediafloor1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819backupgrids1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260819backupgrids1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1746,7 +1746,7 @@ const homeActivityPoolFor=(c,date=new Date())=>{
     scentOwner.sleepRoomId||"bedroom"
   ]);
   const gameOwner=!likes(/게임|e스포츠|보드게임/)&&ownerFor(/게임|e스포츠|보드게임/);
-  const home=state.homes[c.homeId],hasGameMachine=Object.values(home?.rooms||{}).some(room=>(room.furniture||[]).includes("게임기"));
+  const home=state.homes[c.homeId],homePets=home?.pets||[],hasGameMachine=Object.values(home?.rooms||{}).some(room=>(room.furniture||[]).includes("게임기"));
   if(gameOwner&&hasGameMachine)pool.push([
     "거실 게임기를 잠깐 만져 보는 중",
     `${gameOwner.name}가 자주 쓰는 게임기의 메뉴를 몇 번 넘겨 봤지만 무엇이 재미있는지 잘 모르겠다는 표정으로 조작기를 내려놓았어요.`,
@@ -1764,7 +1764,7 @@ const homeActivityPoolFor=(c,date=new Date())=>{
     `손가락을 어디에 놓아야 소리가 나는지도 몰라 괜히 건드렸다 망가뜨릴까 봐 가까이에서 생김새만 살펴보고 있어요.`,
     "study"
   ]);
-  (home?.pets||[]).forEach(pet=>{
+  homePets.forEach(pet=>{
     const roomKey=home.rooms?.[pet.room]?pet.room:(home.rooms?.living?"living":Object.keys(home.rooms||{})[0]||"living");
     const species=pet.species==="기타"?(pet.customSpecies?.trim()||"함께 사는 존재"):pet.species;
     const playText={
@@ -1781,9 +1781,10 @@ const homeActivityPoolFor=(c,date=new Date())=>{
     pool.push([`${pet.name} 놀아 주는 중`,playText[pet.species]||`${pet.name}의 반응을 살피며 ${species}에게 익숙한 방식으로 함께 시간을 보내고 있어요.`,roomKey,`pet:${pet.id}`,{petId:pet.id}]);
   });
   const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{},hearing=body.hearing||{},vision=body.vision||{};
-  Object.entries(state.homes[c.homeId]?.rooms||{}).forEach(([roomKey,room])=>{
+  Object.entries(home?.rooms||{}).forEach(([roomKey,room])=>{
     (room.furniture||[]).forEach(rawName=>{
       const normalizedName=normalizedFurnitureName(rawName);
+      if(normalizedName==="캣타워"&&!homePets.some(pet=>pet.species==="고양이"))return;
       if(normalizedName==="러닝머신"&&wheelchair.type&&wheelchair.type!=="사용하지 않음")return;
       const spec=FURNITURE_BEHAVIOR[normalizedName];
       if(!spec)return;

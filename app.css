@@ -2892,6 +2892,17 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   cursor:grab;
 }
 .room-resize-handle{position:absolute;right:4px;bottom:4px;z-index:13;cursor:nwse-resize}
+.home:not(.is-editing) :is(.room-drag-handle,.room-resize-handle,.room-edit-hint){display:none}
+.home.is-editing .rooms::before{
+  content:"";
+  position:absolute;
+  inset:2px;
+  z-index:0;
+  pointer-events:none;
+  background-image:linear-gradient(to right,#ffffff2c 1px,transparent 1px),linear-gradient(to bottom,#ffffff2c 1px,transparent 1px);
+  background-size:calc(100% / 12) calc(100% / 16);
+}
+.home.is-editing .rooms>.room{z-index:1}
 .room-dragging{z-index:20;opacity:.72;filter:brightness(1.08)}
 .room-drop-target{outline:4px solid var(--p);outline-offset:-5px;filter:brightness(1.12)}
 .home-floor-tabs{display:flex;gap:8px;margin:10px 0;overflow-x:auto;scrollbar-width:thin}

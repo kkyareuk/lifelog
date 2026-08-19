@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819mediafloor1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819mediafloor1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819backupgrids1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819backupgrids1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -229,6 +229,9 @@ function normalizeHomes(x){
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
   x.schema=21;
   x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
+  // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
+  // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
+  x.homeEditMode=false;
   const legacyActiveCharacter=x.characters?.[x.activeId]||Object.values(x.characters||{})[0]||{};
   x.homeVisualMode=(x.homeVisualMode||legacyActiveCharacter.homeVisualMode)==="ld"?"ld":"sd";
   x.homeSdScale=Number.isFinite(+x.homeSdScale)?Math.max(70,Math.min(150,+x.homeSdScale)):Math.max(70,Math.min(150,+legacyActiveCharacter.homeSdScale||100));
@@ -1410,8 +1413,27 @@ export function moveHomeOnTown(id,x,y,persist=true){
   if(persist)save();
 }
 export function replaceState(next){
-  state=migrate(preserveDevicePhotos(state,clone(next)));
-  localStorage.setItem(KEY,JSON.stringify(serializeLocalMediaState(state)));
+  const prepared=migrate(preserveDevicePhotos(state,clone(next)));
+  const serialized=JSON.stringify(serializeLocalMediaState(prepared));
+  try{
+    // 영구 저장이 성공한 뒤에만 실행 중 상태를 교체한다. 예전 순서는
+    // localStorage 용량 오류가 나면 메모리만 바뀌고 화면·디스크는 서로 다른
+    // 상태가 되어, 불러오기 직후 캐릭터가 전부 사라진 것처럼 보일 수 있었다.
+    localStorage.setItem(KEY,serialized);
+  }catch(firstError){
+    // 이미 새 저장 키로 이관이 끝난 구버전 복사본만 정리하고 한 번 재시도한다.
+    // 현재 저장본과 클라우드 복구본은 절대 지우지 않는다.
+    ["parallel-city-game-v4","parallel-city-game-v3",oldKey].forEach(key=>{
+      if(key&&key!==KEY)try{localStorage.removeItem(key)}catch{}
+    });
+    try{localStorage.setItem(KEY,serialized)}catch(error){
+      const failure=new Error("backup-storage-full",{cause:error||firstError});
+      failure.code="backup-storage-full";
+      throw failure;
+    }
+  }
+  state=prepared;
+  return true;
 }
 export function resetAll(){
   state=fresh();
