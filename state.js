@@ -1,4 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819perf1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819speech1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819speech1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -512,8 +513,7 @@ function normalizeHomes(x){
     c.alcoholTolerance=alcoholOptions.includes(c.alcoholTolerance)?c.alcoholTolerance:"설정하지 않음";
     c.wakeHabit=c.wakeHabit||"알람을 듣고 천천히 일어남";
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
-    const speechStyleOptions=["자동 · 성격에 맞춤","반말","존댓말 · 해요체","격식 있는 존댓말 · 하십시오체","극존칭","무뚝뚝한 단답","다정하고 부드러운 말투","고풍스러운 말투"];
-    c.speechStyle=speechStyleOptions.includes(c.speechStyle)?c.speechStyle:"자동 · 성격에 맞춤";
+    c.speechStyle=SPEECH_STYLE_OPTIONS.includes(c.speechStyle)?c.speechStyle:"자동 · 성격에 맞춤";
     c.ageGroup=c.ageGroup||"성인";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
     c.personalityTypes=Array.isArray(c.personalityTypes)?[...new Set(c.personalityTypes.map(String))].slice(0,4):[];

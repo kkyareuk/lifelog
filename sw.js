@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260819-performance-questions1";
+const CACHE_VERSION="drawer-village-v20260819-speech-styles1";
 const CORE=[
   "./",
   "./index.html",
@@ -16,6 +16,7 @@ const CORE=[
   "./views.js",
   "./auth.js",
   "./local-media.js",
+  "./speech-styles.js",
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",
   "./fonts/DoHyeon-Regular.ttf",

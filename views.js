@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819perf1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819perf1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819speech1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819speech1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -2478,6 +2478,14 @@ Object.assign(UI_TEXT.ja,{
   "사용자 닉네임":"ユーザーのニックネーム","Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.":"Googleアカウント名の代わりに同期画面へ表示し、キャラクターがユーザーのお願いについて話す時にもこの名前を使います。","캐릭터들이 뭐라고 부를까요?":"キャラクターたちに何と呼ばれたいですか？",
   "캐릭터 말투":"キャラクターの話し方","자동 · 성격에 맞춤":"自動・性格に合わせる","반말":"ため口","존댓말 · 해요체":"丁寧語・ヘヨ体","격식 있는 존댓말 · 하십시오체":"改まった敬語・ハシプシオ体","극존칭":"最上級の敬語","무뚝뚝한 단답":"ぶっきらぼうな短答","다정하고 부드러운 말투":"優しく穏やかな話し方","고풍스러운 말투":"古風な話し方",
   "캐릭터가 직접 말하거나 마을 주인의 부탁을 받아들일지 판단할 때 사용하는 말투예요.":"キャラクターが直接話す時や、村の持ち主からのお願いにどう応じるか判断する時の話し方です。"
+});
+Object.assign(UI_TEXT.en,{
+  "했다체 · 건조한 서술":"Dry declarative narration","기계적인 말투":"Mechanical speech","사무적인 말투 · 직장 메일체":"Businesslike · Office email style","판교어 · 스타트업 업무체":"Pangyo startup jargon","상냥하고 배려하는 말투":"Kind and considerate speech","소심하고 머뭇거리는 말투":"Timid and hesitant speech","열정적인 말투":"Passionate speech","능글맞고 여유로운 말투":"Sly and easygoing speech","냉소적인 말투":"Cynical speech","걸걸한 아저씨 말투":"Gruff older-guy speech","거칠고 상스러운 말투 · 순화":"Rough speech · toned down","중2병 말투":"Chuunibyou dramatic speech","귀여니체 · 2000년대 인터넷소설체":"2000s Korean web-novel style","하드보일드 누아르체":"Hard-boiled noir voice","사극 선비 말투":"Historical scholar speech","군인식 말투":"Military speech","마왕의 말투":"Demon king speech","군주의 말투":"Sovereign speech","신탁을 내리는 신의 말투":"Divine oracle speech","옛날 번역기체":"Old machine-translation style","귀엽고 애교 있는 말투":"Cute and affectionate speech","수다스럽고 말이 많은 말투":"Chatty, talkative speech",
+  "질문 팝업과 캐릭터가 직접 하는 말에 실제로 반영돼요. ‘자동’은 성격 유형을 보고 어울리는 말투를 고릅니다.":"Applied to character question popups and direct dialogue. Auto chooses a fitting voice from the character's personality types."
+});
+Object.assign(UI_TEXT.ja,{
+  "했다체 · 건조한 서술":"乾いた宣言調の叙述","기계적인 말투":"機械的な話し方","사무적인 말투 · 직장 메일체":"事務的・社内メール調","판교어 · 스타트업 업무체":"パンギョ系スタートアップ業務用語","상냥하고 배려하는 말투":"優しく思いやりのある話し方","소심하고 머뭇거리는 말투":"気弱でためらいがちな話し方","열정적인 말투":"情熱的な話し方","능글맞고 여유로운 말투":"飄々として余裕のある話し方","냉소적인 말투":"皮肉っぽい話し方","걸걸한 아저씨 말투":"しゃがれた親父風の話し方","거칠고 상스러운 말투 · 순화":"荒っぽい話し方・表現は控えめ","중2병 말투":"中二病風の話し方","귀여니체 · 2000년대 인터넷소설체":"2000年代ネット小説風","하드보일드 누아르체":"ハードボイルド・ノワール調","사극 선비 말투":"時代劇の士人風","군인식 말투":"軍人風の話し方","마왕의 말투":"魔王の話し方","군주의 말투":"君主の話し方","신탁을 내리는 신의 말투":"神託を告げる神の話し方","옛날 번역기체":"昔の機械翻訳調","귀엽고 애교 있는 말투":"可愛く甘える話し方","수다스럽고 말이 많은 말투":"おしゃべりで話の長い口調",
+  "질문 팝업과 캐릭터가 직접 하는 말에 실제로 반영돼요. ‘자동’은 성격 유형을 보고 어울리는 말투를 고릅니다.":"キャラクターの質問ポップアップと直接の台詞に反映されます。「自動」は性格タイプから合う話し方を選びます。"
 });
 Object.assign(UI_TEXT.en,{
   "편집할 항목을 선택하세요.":"Choose what you want to edit.","위치 바꾸기":"Reorder","편집을 저장하고 닫기":"Save edits and close","편집 완료·저장":"Finish editing & save",

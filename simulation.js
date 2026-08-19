@@ -1,4 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819perf1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819speech1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260819speech1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2146,10 +2147,10 @@ function profileSettingScenePool(c,date){
   const pool=[],add=(category,titleKo,descKo,titleEn,descEn,titleJa,descJa,room="living",fields=[])=>pool.push({
     category,room,fields,title:text(titleKo,titleEn,titleJa),desc:text(descKo,descEn,descJa)
   });
-  if(c.speechStyle&&c.speechStyle!=="자동 · 성격에 맞춤")add("speech",
-    "말투를 고르며 짧게 대답하는 중",`“${characterVoice(c,"오늘은 이 순서대로 해 볼게")}” 하고 혼잣말하며, 평소 쓰는 말투로 다음 행동을 정했어요.`,
-    "Answering in their usual voice","They quietly chose what to do next, using the speaking style set in their profile.",
-    "いつもの話し方で答えているところ","プロフィールで設定した話し方のまま、次にすることを短く口にしました。","study",["speechStyle"]);
+  if(c.speechStyle)add("speech",
+    "말투를 고르며 짧게 대답하는 중",`“${characterPlanSpeech(c,"ko")}” 하고 혼잣말하며, 평소 쓰는 말투로 다음 행동을 정했어요.`,
+    "Answering in their usual voice",`“${characterPlanSpeech(c,"en")}” They quietly chose what to do next in their usual voice.`,
+    "いつもの話し方で答えているところ",`「${characterPlanSpeech(c,"ja")}」いつもの話し方で次の行動を決めました。`,"study",["speechStyle"]);
   if(/한 가지씩|잠깐 쉬고/.test(c.activityTempo||""))add("tempo",
     "한 가지 일을 끝내고 다음으로 넘어가는 중","하던 일을 마무리하고 손에 든 것을 제자리에 둔 뒤, 잠깐 숨을 고르고 다음 일을 시작했어요.",
     "Finishing one thing before the next","They finished the current task, put everything back, and paused before moving on.",

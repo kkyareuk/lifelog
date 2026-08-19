@@ -1,7 +1,8 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819perf1";
-import {eventFor} from "./simulation.js?v=20260819perf1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819perf1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819perf1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819speech1";
+import {eventFor} from "./simulation.js?v=20260819speech1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819speech1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819speech1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819speech1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -448,7 +449,7 @@ function enhanceDynamicForms(){
       const select=(field,title,values,current,help="")=>`<label>${title}<select data-field="${field}">${values.map(value=>`<option value="${htmlEsc(value)}" ${value===current?"selected":""}>${value}</option>`).join("")}</select>${help?`<small>${help}</small>`:""}</label>`;
       block.innerHTML=
         select("gender","성별",["설정하지 않음","남성","여성","그외"],active().gender||"설정하지 않음")+
-        select("speechStyle","캐릭터 말투",["자동 · 성격에 맞춤","반말","존댓말 · 해요체","격식 있는 존댓말 · 하십시오체","극존칭","무뚝뚝한 단답","다정하고 부드러운 말투","고풍스러운 말투"],active().speechStyle||"자동 · 성격에 맞춤","캐릭터가 직접 말하거나 마을 주인의 부탁을 받아들일지 판단할 때 사용하는 말투예요.")+
+        select("speechStyle","캐릭터 말투",SPEECH_STYLE_OPTIONS,active().speechStyle||"자동 · 성격에 맞춤","질문 팝업과 캐릭터가 직접 하는 말에 실제로 반영돼요. ‘자동’은 성격 유형을 보고 어울리는 말투를 고릅니다.")+
         select("attractionTarget","끌리는 대상",["설정하지 않음 · 누구에게도 끌리지 않음","여성에게 끌림","남성에게 끌림","여성과 남성에게 끌림","성별과 무관하게 끌림","그외 성별에게 끌림"],active().attractionTarget||"설정하지 않음 · 누구에게도 끌리지 않음")+
         select("relationshipOpenness","새로운 사람에게 끌리는 정도",["설정하지 않음 · 절대 끌리지 않음","연인이 없을 때만 취향이면 끌림","연인이 있어도 취향이면 끌릴 수 있음"],active().relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음","사용자가 직접 설정하지 않으면 새로운 사람에게 절대 끌리지 않아요.")+
         select("wealth","재산",WEALTH_OPTIONS,active().wealth||"평범한 형편","캐릭터가 실제로 가진 경제적 여유예요. 소비 유형과는 별도로 계산돼요.")+
@@ -3133,7 +3134,8 @@ function openDailyCharacterQuestion(question,now=new Date()){
   let options=question.kind==="weekend"?weekendOptions(character,now):question.kind==="work"?workOptions(character,now):question.kind==="gift"&&target?giftOptions(character,target,now):everydayOptions(character,now);
   if(!options.length)options=everydayOptions(character,now);
   const kind=question.kind==="gift"&&target?"gift":question.kind==="work"?"work":question.kind==="weekend"?"weekend":"everyday";
-  const prompt=kind==="gift"?copy.gift(target.name):copy[kind];
+  const basePrompt=kind==="gift"?copy.gift(target.name):copy[kind];
+  const prompt=characterQuestionPrompt(character,{kind,target:target?.name||"",language,base:basePrompt});
   const dialog=document.createElement("dialog"),image=character.icon||character.photo;
   dialog.className="character-question-dialog";
   dialog.innerHTML=`<form method="dialog"><div class="character-question-speaker">${image?`<img src="${htmlEsc(image)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1))}</span>`}<div><small>${copy.label}</small><b>${htmlEsc(character.name)}</b></div></div><h2>${htmlEsc(prompt)}</h2><p>${copy.saved}</p><div class="character-question-options">${options.map((option,index)=>`<button type="button" data-character-question-option="${index}">${htmlEsc(option.label[language]||option.label.ko)}</button>`).join("")}</div><button value="later" class="character-question-later">${copy.later}</button></form>`;
@@ -3191,7 +3193,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819perf1").catch(error=>{
+  import("./auth.js?v=20260819speech1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3206,7 +3208,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819perf1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819speech1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
