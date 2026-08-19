@@ -32,5 +32,9 @@ assert.match(css,/background-size:calc\(100% \/ 12\) calc\(100% \/ 16\)/);
 assert.match(prepareApp,/async function copyModuleClosure\(\)/);
 assert.match(prepareApp,/relativeModuleImports\(sourceText\)/);
 assert.match(index,/앱 화면을 열지 못했어요/);
+assert.match(views,/storage_50mb:\{label:"사진 저장 공간",title:"사진 저장 공간 50MB 추가"/);
+assert.match(views,/product\("storage_50mb",SHOP_PRODUCTS\.storage_50mb,accountEntitlements\.storage50\?1:0\)/);
+assert.match(views,/id==="storage_50mb"&&accountEntitlements\.storage50\?1:0/);
+assert.match(views,/const purchaseButton=unavailable\?/);
 
 console.log("PASS 백업 병합, 집별 반려동물, 알림 스크롤, 방 격자 회귀 검사를 통과했습니다");
