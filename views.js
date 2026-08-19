@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core2";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core2";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core3";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core3";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -829,7 +829,10 @@ function nativeSceneActionProp(person,entry,actionKind,text,individual=false){
   if(!symbol)return "";
   const propVariant=symbol==="🪥"?" action-prop-toothbrush":symbol==="🧼"?" action-prop-soap":symbol==="👞"?" action-prop-shoe":"";
   const animatedFood=!item&&foodSymbols.length>1?`<span class="food-preference-symbols">${foodSymbols.map((food,index)=>`<i style="--food-index:${index}">${esc(food)}</i>`).join("")}</span>`:"";
-  const image=item?.image?`<img src="${esc(item.image)}" alt="">`:(animatedFood||esc(symbol));
+  // Catalog images are user reference photos, not transparent scene props.
+  // Showing one here cropped it into a rounded square over the character.
+  // Keep that photo in the catalog and use a semantic scene prop instead.
+  const image=animatedFood||esc(symbol);
   const title=item?.name?`${person?.name||"캐릭터"} · ${item.name}`:`${person?.name||"캐릭터"} · ${symbol}`;
   return `<span class="${individual?"native-person-action-prop":"native-scene-action-prop"} action-prop-${actionKind}${propVariant}${animatedFood?" food-preference-animation":""}" title="${esc(title)}" aria-hidden="true">${image}</span>`;
 }
@@ -1818,6 +1821,16 @@ function profileMultiChoice(title,key,options,selected){
   const all=[...options,...[...values].filter(value=>!options.includes(value))];
   return `<fieldset><legend>${title}</legend><div class="chips">${all.map(value=>`<button type="button" data-body-list="${key}" data-value="${esc(value)}" class="${values.has(value)?"on":""}">${esc(value)}</button>`).join("")}</div></fieldset>`;
 }
+function profileCollapsibleChoice(title,key,options,selected){
+  const values=new Set(selected||[]);
+  const all=[...options,...[...values].filter(value=>!options.includes(value))];
+  const summary=values.size?`${values.size}개 선택`:`정하지 않음`;
+  const open=document.documentElement.classList.contains("native-app")?"":" open";
+  return `<details class="body-option-group" data-body-option-group="${esc(key)}"${open}>
+    <summary><span><b>${esc(title)}</b><small>${esc(summary)}</small></span><i aria-hidden="true">＋</i></summary>
+    <div class="chips">${all.map(value=>`<button type="button" data-body-list="${key}" data-value="${esc(value)}" class="${values.has(value)?"on":""}">${esc(value)}</button>`).join("")}</div>
+  </details>`;
+}
 function profileAttractionSettings(c){
   const attractionTraits=Array.isArray(c.attractionTraits)?c.attractionTraits:[];
   const dislikedAttractionTraits=Array.isArray(c.dislikedAttractionTraits)?c.dislikedAttractionTraits:[];
@@ -1841,7 +1854,7 @@ function profileAttractionSettings(c){
 function physicalAppearanceSettings(c){
   const p=c.bodyProfile||{},a=p.appearance||{};
   const physicalTraits=new Set([...(p.physicalTraits||[]),...(c.appearanceTags||[])]);
-  const physicalTraitGroups=Object.entries(PHYSICAL_TRAIT_GROUPS).map(([group,options])=>`<fieldset class="physical-trait-group"><legend>${esc(group)}</legend><div class="chips">${options.map(value=>`<button type="button" data-body-list="physicalTraits" data-value="${esc(value)}" class="${physicalTraits.has(value)?"on":""}">${esc(value)}</button>`).join("")}</div></fieldset>`).join("");
+  const physicalTraitGroups=Object.entries(PHYSICAL_TRAIT_GROUPS).map(([group,options])=>profileCollapsibleChoice(group,`physicalTraits:${group}`,options,[...physicalTraits].filter(value=>options.includes(value)))).join("");
   return `<section class="setting-card physical-appearance-settings">
     <h2>신체와 외형</h2>
     <p>직접 고른 항목만 묘사에 사용합니다. 머리·눈·화장 설정은 아침 준비, 미용실, 가까운 관계의 시선 같은 생활 장면에 드물게 반영돼요.</p>
@@ -1861,10 +1874,10 @@ function physicalAppearanceSettings(c){
       ${profileSelect("미용실 방문 빈도","appearance.salonFrequency",SALON_FREQUENCIES,a.salonFrequency||"자동 · 설정에 맞춤")}
       ${profileSelect("성형·외형 의료 시술 여부","appearance.cosmeticSurgery",["설정하지 않음","하지 않음","과거에 받음","정기적으로 관리 중","받을 계획이 있음"],a.cosmeticSurgery||"설정하지 않음")}
     </div>
-    ${profileMultiChoice("머리 스타일 · 여러 개 선택 가능","appearance.hairStyles",HAIR_STYLES,a.hairStyles)}
-    ${profileMultiChoice("화장 스타일 · 화장할 때 반영","appearance.makeupStyles",MAKEUP_STYLES,a.makeupStyles)}
+    ${profileCollapsibleChoice("머리 스타일 · 여러 개 선택 가능","appearance.hairStyles",HAIR_STYLES,a.hairStyles)}
+    ${profileCollapsibleChoice("화장 스타일 · 화장할 때 반영","appearance.makeupStyles",MAKEUP_STYLES,a.makeupStyles)}
     <section class="physical-trait-groups"><div><h3>신체 특성</h3><small>기존 ‘그 외 외모 태그’도 이곳에서 함께 확인할 수 있어요. 체형·머리색·눈색처럼 위에서 정하는 항목은 중복해서 두지 않았습니다.</small></div>${physicalTraitGroups}</section>
-    ${profileMultiChoice("성형·외형 의료 시술 부위 · 원할 때만","appearance.cosmeticSurgeryAreas",SURGERY_AREAS,a.cosmeticSurgeryAreas)}
+    ${profileCollapsibleChoice("성형·외형 의료 시술 부위 · 원할 때만","appearance.cosmeticSurgeryAreas",SURGERY_AREAS,a.cosmeticSurgeryAreas)}
   </section>`;
 }
 function healthAccessibilitySettings(c){
@@ -2488,6 +2501,29 @@ Object.assign(UI_TEXT.ja,{
   "캐릭터 이름":"キャラクター名","나이대":"年齢層","끌리는 대상":"惹かれる相手","직업 종류":"職業","표기할 직업명":"表示する職業名","출근할 건물":"勤務先","자동 선택 / 없음":"自動選択・なし","자택근무":"在宅勤務",
   "하지 않음":"なし","자동 · 설정에 맞춤":"自動・設定に合わせる","왼쪽 눈 색":"左目の色","오른쪽 눈 색":"右目の色","눈 색":"目の色","상처·흉터 표현 주의":"傷・傷跡の表現について"
 });
+// 신체 편집에서 가장 길게 노출되는 선택지를 우선 번역한다. 접힌
+// summary뿐 아니라 펼친 뒤의 버튼도 선택값은 한국어로 유지한 채
+// 화면에만 번역되므로 기존 저장 데이터와 호환된다.
+Object.assign(UI_TEXT.en,{
+  "키·골격":"Height & frame","체형의 세부 인상":"Detailed body impression","피부·고유 특징":"Skin & distinctive features","얼굴·눈의 인상":"Face & eyes","전체적인 분위기":"Overall impression","신체 특성":"Physical traits","성형·외형 의료 시술 부위 · 원할 때만":"Procedure areas · optional",
+  "키가 매우 큼":"Very tall","키가 큼":"Tall","키가 작음":"Short","키가 매우 작음":"Very short","팔다리가 긴 편":"Long limbs","팔다리가 짧은 편":"Short limbs","어깨가 넓음":"Broad shoulders","어깨가 좁음":"Narrow shoulders","손이 큼":"Large hands","손이 작음":"Small hands",
+  "글래머":"Curvy","근육이 발달함":"Muscular","잔근육이 발달함":"Lean muscle","근육선이 선명함":"Defined muscles","유연한 편":"Flexible","상체가 발달함":"Developed upper body","하체가 발달함":"Developed lower body","허리가 잘록함":"Narrow waist","허리선이 곧은 편":"Straight waistline","골반이 넓음":"Wide hips","골반이 좁음":"Narrow hips","가슴이 큰 편":"Larger chest","가슴이 작은 편":"Smaller chest","복부가 부드러운 편":"Soft midsection","체지방이 적은 편":"Low body fat","전체적으로 둥근 인상":"Overall rounded build","각지고 단단한 인상":"Angular, solid build","자세가 반듯함":"Upright posture","구부정한 자세":"Slouched posture","걸음이 가벼움":"Light steps","걸음이 묵직함":"Heavy steps","붓기가 잘 생김":"Prone to swelling","체중 변화가 잦음":"Frequent weight changes",
+  "피부가 밝은 편":"Light skin tone","중간 피부톤":"Medium skin tone","피부가 어두운 편":"Dark skin tone","구릿빛 피부":"Bronze skin tone","창백한 편":"Pale","흉터가 있음":"Has scars","문신이 있음":"Has tattoos","주근깨가 있음":"Has freckles","점이 있음":"Has beauty marks","보조개가 있음":"Has dimples","피어싱을 함":"Has piercings",
+  "안경을 씀":"Wears glasses","안대":"Eye patch","특이동공":"Unusual pupils","세로동공":"Vertical pupils","삼백안":"Sanpaku eyes","날카로운 눈매":"Sharp eyes","처진 눈매":"Downturned eyes","속눈썹이 김":"Long eyelashes","두꺼운 눈썹":"Thick eyebrows",
+  "중성적인 인상":"Androgynous impression","부드러운 인상":"Gentle impression","날카로운 인상":"Sharp impression","아름다움":"Beautiful","잘생김":"Handsome","귀여움":"Cute","우아함":"Elegant","위압적인 분위기":"Intimidating presence","단정한 분위기":"Neat impression","퇴폐적인 분위기":"Decadent impression","신비로운 분위기":"Mysterious impression","소년미":"Youthful charm","성숙미":"Mature charm",
+  "자연스럽게 풀어 둠":"Worn loose naturally","앞머리 있음":"With bangs","앞머리 없음":"No bangs","시스루 앞머리":"See-through bangs","일자 앞머리":"Blunt bangs","처피뱅":"Choppy bangs","커튼뱅":"Curtain bangs","옆으로 넘긴 앞머리":"Side-swept bangs","앞머리가 한쪽 눈을 가림":"Bangs cover one eye","앞머리가 양쪽 눈을 가림":"Bangs cover both eyes","올백":"Slicked back","슬릭백":"Slick back","보브컷":"Bob cut","픽시컷":"Pixie cut","댄디컷":"Dandy cut","리프컷":"Leaf cut","레이어드컷":"Layered cut","허쉬컷":"Hush cut","샤기컷":"Shag cut","울프컷":"Wolf cut","투블럭":"Two-block cut","언더컷":"Undercut","모히칸":"Mohawk","리젠트":"Pompadour","포니테일":"Ponytail","사이드 포니테일":"Side ponytail","트윈테일":"Twin tails","양갈래":"Pigtails","반묶음":"Half-up","하프업 번":"Half-up bun","땋은 머리":"Braided hair","프렌치 브레이드":"French braid","피시테일 브레이드":"Fishtail braid","콘로우":"Cornrows","박스 브레이드":"Box braids","로우번":"Low bun","하이번":"High bun","스페이스 번":"Space buns","브레이드 업두":"Braided updo","드레드록":"Dreadlocks","히메컷":"Hime cut","롱 스트레이트":"Long straight hair","단발 웨이브":"Wavy bob","웨이브 스타일":"Wavy style","베이비펌":"Baby perm","히피펌":"Hippie perm","가르마펌":"Parted perm","고데기 스타일링":"Heat-styled hair"
+});
+Object.assign(UI_TEXT.ja,{
+  "키·골격":"身長・骨格","체형의 세부 인상":"体型の細かな印象","피부·고유 특징":"肌・固有の特徴","얼굴·눈의 인상":"顔・目の印象","전체적인 분위기":"全体の雰囲気","신체 특성":"身体的特徴","성형·외형 의료 시술 부위 · 원할 때만":"美容・外見施術の部位・任意",
+  "키가 매우 큼":"とても背が高い","키가 큼":"背が高い","키가 작음":"背が低い","키가 매우 작음":"とても背が低い","팔다리가 긴 편":"手足が長め","팔다리가 짧은 편":"手足が短め","어깨가 넓음":"肩幅が広い","어깨가 좁음":"肩幅が狭い","손이 큼":"手が大きい","손이 작음":"手が小さい",
+  "글래머":"グラマラス","근육이 발달함":"筋肉が発達している","잔근육이 발달함":"しなやかな筋肉","근육선이 선명함":"筋肉のラインが明瞭","유연한 편":"柔軟性が高い","상체가 발달함":"上半身が発達している","하체가 발달함":"下半身が発達している","허리가 잘록함":"ウエストが細い","허리선이 곧은 편":"ウエストラインが直線的","골반이 넓음":"骨盤が広い","골반이 좁음":"骨盤が狭い","가슴이 큰 편":"胸が大きめ","가슴이 작은 편":"胸が小さめ","복부가 부드러운 편":"お腹がやわらかめ","체지방이 적은 편":"体脂肪が少なめ","전체적으로 둥근 인상":"全体的に丸みのある印象","각지고 단단한 인상":"角張ったしっかりした印象","자세가 반듯함":"姿勢が良い","구부정한 자세":"猫背","걸음이 가벼움":"足取りが軽い","걸음이 묵직함":"足取りが重い","붓기가 잘 생김":"むくみやすい","체중 변화가 잦음":"体重が変化しやすい",
+  "피부가 밝은 편":"明るい肌色","중간 피부톤":"中間の肌色","피부가 어두운 편":"濃い肌色","구릿빛 피부":"小麦色の肌","창백한 편":"青白いほう","흉터가 있음":"傷跡がある","문신이 있음":"タトゥーがある","주근깨가 있음":"そばかすがある","점이 있음":"ほくろがある","보조개가 있음":"えくぼがある","피어싱을 함":"ピアスをしている",
+  "안경을 씀":"眼鏡をかけている","안대":"眼帯","특이동공":"特徴的な瞳孔","세로동공":"縦長の瞳孔","삼백안":"三白眼","날카로운 눈매":"鋭い目つき","처진 눈매":"垂れ目","속눈썹이 김":"まつ毛が長い","두꺼운 눈썹":"太い眉",
+  "중성적인 인상":"中性的な印象","부드러운 인상":"やわらかな印象","날카로운 인상":"鋭い印象","아름다움":"美しい","잘생김":"端正","귀여움":"かわいい","우아함":"優雅","위압적인 분위기":"威圧感のある雰囲気","단정한 분위기":"きちんとした雰囲気","퇴폐적인 분위기":"退廃的な雰囲気","신비로운 분위기":"神秘的な雰囲気","소년미":"少年らしい魅力","성숙미":"成熟した魅力",
+  "자연스럽게 풀어 둠":"自然に下ろす","앞머리 있음":"前髪あり","앞머리 없음":"前髪なし","시스루 앞머리":"シースルーバング","일자 앞머리":"ぱっつん前髪","처피뱅":"チョッピーバング","커튼뱅":"カーテンバング","옆으로 넘긴 앞머리":"横に流した前髪","앞머리가 한쪽 눈을 가림":"前髪が片目を隠す","앞머리가 양쪽 눈을 가림":"前髪が両目を隠す","올백":"オールバック","슬릭백":"スリックバック","보브컷":"ボブカット","픽시컷":"ピクシーカット","댄디컷":"ダンディーカット","리프컷":"リーフカット","레이어드컷":"レイヤーカット","허쉬컷":"ハッシュカット","샤기컷":"シャギーカット","울프컷":"ウルフカット","투블럭":"ツーブロック","언더컷":"アンダーカット","모히칸":"モヒカン","리젠트":"リーゼント","포니테일":"ポニーテール","사이드 포니테일":"サイドポニーテール","트윈테일":"ツインテール","양갈래":"二つ結び","반묶음":"ハーフアップ","하프업 번":"ハーフアップお団子","땋은 머리":"三つ編み","프렌치 브레이드":"フレンチブレイド","피시테일 브레이드":"フィッシュテールブレイド","콘로우":"コーンロウ","박스 브레이드":"ボックスブレイド","로우번":"ローバン","하이번":"ハイバン","스페이스 번":"スペースバン","브레이드 업두":"編み込みアップ","드레드록":"ドレッドロックス","히메컷":"姫カット","롱 스트레이트":"ロングストレート","단발 웨이브":"ウェーブボブ","웨이브 스타일":"ウェーブスタイル","베이비펌":"ベビーパーマ","히피펌":"ヒッピーパーマ","가르마펌":"分け目パーマ","고데기 스타일링":"アイロンスタイリング"
+});
+UI_DYNAMIC_TEXT.en.push([/^(\d+)개 선택$/,(count)=>`${count} selected`]);
+UI_DYNAMIC_TEXT.ja.push([/^(\d+)개 선택$/,(count)=>`${count}個選択`]);
 const unorderedSettingsContent=settingsContent;
 settingsContent=()=>{
   let html=unorderedSettingsContent();

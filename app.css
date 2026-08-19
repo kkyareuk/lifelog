@@ -2035,6 +2035,14 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .physical-appearance-settings legend{padding:0 7px;font-weight:900}
 .physical-appearance-settings fieldset .chips{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:0;border:0}
 .physical-appearance-settings fieldset button.on{color:#fff;border-color:transparent;background:var(--grad)}
+.body-option-group{margin:0;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden}
+.body-option-group>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:58px;padding:11px 14px;cursor:pointer;list-style:none}
+.body-option-group>summary::-webkit-details-marker{display:none}
+.body-option-group>summary>span{display:grid;gap:3px;min-width:0}.body-option-group>summary b{font-weight:900}.body-option-group>summary small{color:var(--muted)}
+.body-option-group>summary>i{display:grid;place-items:center;width:34px;height:34px;flex:0 0 34px;border:1px solid var(--line);border-radius:50%;font-style:normal;font-size:20px;transition:transform .2s ease}
+.body-option-group[open]>summary>i{transform:rotate(45deg)}
+.physical-appearance-settings .body-option-group>.chips{display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:14px;border:0;border-top:1px solid var(--line)}
+.physical-appearance-settings .body-option-group button.on{color:#fff;border-color:transparent;background:var(--grad)}
 .representation-warning.compact{margin-top:2px}
 .personality-type-choice{margin-bottom:20px;border-width:2px;background:color-mix(in srgb,var(--p) 5%,#fff)}
 .personality-type-choice>div{gap:9px}
@@ -5176,7 +5184,7 @@ html[data-color-mode="dark"] .relationship-map-dialog svg .map-official rect{fil
 html[data-color-mode="dark"] .relationship-map-dialog svg .map-official text{fill:#f5f8fb!important;paint-order:stroke;stroke:#101a28!important;stroke-width:5px;stroke-linejoin:round}
 
 /* 프로필 편집 안의 선택 묶음도 현재 화면 모드를 그대로 따른다. */
-html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) :is(fieldset,.profile-multi-choice,.physical-trait-group,.representation-warning,.profile-tag-actions,.eye-color-pair){
+html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) :is(fieldset,.profile-multi-choice,.physical-trait-group,.body-option-group,.representation-warning,.profile-tag-actions,.eye-color-pair){
   border-color:#ffffff20!important;background:#172536!important;color:#f5f8fb!important
 }
 html[data-color-mode="dark"] :is(.physical-appearance-settings,.profile-attraction-settings,.health-accessibility-settings) :is(input,select,textarea){

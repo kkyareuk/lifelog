@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core2";
-import {eventFor} from "./simulation.js?v=20260819core2";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core2";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819core2";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core3";
+import {eventFor} from "./simulation.js?v=20260819core3";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core3";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819core3";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -27,6 +27,7 @@ let homeCharacterPickerScroll=0;
 let observeRosterScroll=0;
 let mobileCharacterStripScroll=0;
 let mobileCharacterEditorScroll=0;
+let mobileCharacterBodyGroup="";
 let resetScrollAfterRender=false;
 const guidePending=new Set();
 const PAGE_GUIDES={
@@ -850,11 +851,17 @@ function syncOpenCharacterEditorDraft(){
 function renderPreservingCharacterEditorScroll(element){
   const shell=element?.closest?.("[data-mobile-character-editor-dialog]")?.querySelector(".mobile-character-editor-shell");
   if(shell)mobileCharacterEditorScroll=shell.scrollTop;
+  const bodyGroup=element?.closest?.("details[data-body-option-group]");
+  if(bodyGroup?.open)mobileCharacterBodyGroup=bodyGroup.dataset.bodyOptionGroup||"";
   const pageX=window.scrollX,pageY=window.scrollY;
   render();
   requestAnimationFrame(()=>{
     const nextShell=document.querySelector("[data-mobile-character-editor-dialog] .mobile-character-editor-shell");
     if(nextShell)nextShell.scrollTop=mobileCharacterEditorScroll;
+    if(mobileCharacterBodyGroup){
+      const nextGroup=[...document.querySelectorAll("details[data-body-option-group]")].find(group=>group.dataset.bodyOptionGroup===mobileCharacterBodyGroup);
+      if(nextGroup)nextGroup.open=true;
+    }
     restoreWindowScroll(pageX,pageY);
   });
 }
@@ -1769,15 +1776,15 @@ function bind(){
     });
   });
   $$("[data-body-list]").forEach(el=>el.onclick=()=>{
-    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),parts=el.dataset.bodyList.split("."),last=parts.pop();
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),bodyPath=el.dataset.bodyList.split(":")[0],parts=bodyPath.split("."),last=parts.pop();
     let cursor=bodyProfile;
     parts.forEach(part=>{if(!cursor[part]||typeof cursor[part]!=="object"||Array.isArray(cursor[part]))cursor[part]={};cursor=cursor[part]});
     const current=Array.isArray(cursor[last])?cursor[last]:[],value=el.dataset.value;
-    const legacyAppearance=el.dataset.bodyList==="physicalTraits"&&Array.isArray(character.appearanceTags)?character.appearanceTags:[];
+    const legacyAppearance=bodyPath==="physicalTraits"&&Array.isArray(character.appearanceTags)?character.appearanceTags:[];
     const selected=current.includes(value)||legacyAppearance.includes(value);
     cursor[last]=selected?current.filter(item=>item!==value):[...current,value];
     const patch={bodyProfile};
-    if(el.dataset.bodyList==="physicalTraits"&&legacyAppearance.includes(value))patch.appearanceTags=legacyAppearance.filter(item=>item!==value);
+    if(bodyPath==="physicalTraits"&&legacyAppearance.includes(value))patch.appearanceTags=legacyAppearance.filter(item=>item!==value);
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(character.id,patch,false);
     if(!mobileDraft)save(true);
@@ -3055,7 +3062,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819core2").catch(error=>{
+  import("./auth.js?v=20260819core3").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3070,7 +3077,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819core2",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819core3",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
