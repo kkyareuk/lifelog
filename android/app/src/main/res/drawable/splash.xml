@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Default fallback for configurations that do not match one of the generated
+  portrait/landscape splash PNGs. Without this base resource Android can abort
+  activity startup while resolving @drawable/splash on some displays.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FFFFFF" />
+        </shape>
+    </item>
+</layer-list>
