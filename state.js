@@ -1,4 +1,4 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819core10";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819perf1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -176,7 +176,7 @@ const normalizeHomeSceneLayout=value=>{
     }];
   }));
 };
-const fresh=()=>({schema:17,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town.png?v=20260811y",places:[
+const fresh=()=>({schema:18,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -186,6 +186,7 @@ const fresh=()=>({schema:17,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===18)return normalizeHomes(x);
   if(x.schema===17)return normalizeHomes(x);
   if(x.schema===16)return normalizeHomes(x);
   if(x.schema===15)return normalizeHomes(x);
@@ -221,7 +222,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=17;
+  x.schema=18;
   x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   const legacyActiveCharacter=x.characters?.[x.activeId]||Object.values(x.characters||{})[0]||{};
   x.homeVisualMode=(x.homeVisualMode||legacyActiveCharacter.homeVisualMode)==="ld"?"ld":"sd";
@@ -272,6 +273,16 @@ function normalizeHomes(x){
   x.routines=x.routines&&typeof x.routines==="object"?x.routines:{};
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};
   x.interactions=Array.isArray(x.interactions)?x.interactions.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)).slice(-120):[];
+  x.dailyQuestion=x.dailyQuestion&&typeof x.dailyQuestion==="object"&&!Array.isArray(x.dailyQuestion)?{
+    day:String(x.dailyQuestion.day||""),minute:Math.max(600,Math.min(1079,Number(x.dailyQuestion.minute)||600)),
+    characterId:x.characters?.[x.dailyQuestion.characterId]?String(x.dailyQuestion.characterId):"",
+    kind:String(x.dailyQuestion.kind||""),shown:Boolean(x.dailyQuestion.shown),answered:Boolean(x.dailyQuestion.answered)
+  }:null;
+  x.scheduledChoices=Array.isArray(x.scheduledChoices)?x.scheduledChoices.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)&&x.characters?.[item.characterId]).slice(-120).map(item=>({
+    ...item,id:String(item.id||uid()),characterId:String(item.characterId),targetId:x.characters?.[item.targetId]?String(item.targetId):"",
+    kind:String(item.kind||"everyday"),startAt:Number(item.startAt)||Date.now(),buyAt:Number(item.buyAt)||0,giveAt:Number(item.giveAt)||0,
+    itemKind:String(item.itemKind||""),itemId:String(item.itemId||""),settledAt:Number(item.settledAt)||0
+  })):[];
   x.characterViews=x.characterViews&&typeof x.characterViews==="object"?x.characterViews:{};
   x.buildingShapes=Array.isArray(x.buildingShapes)?x.buildingShapes.filter(shape=>shape&&shape.id&&shape.src).map(shape=>({
     id:String(shape.id),
@@ -385,11 +396,11 @@ function normalizeHomes(x){
   x.world.name=x.world.name||defaultWorld.name;
   // 제공받은 손그림 한 장만 마을 배경으로 사용한다. 이전 AI 배경을 고른
   // 저장 데이터도 다음 로드부터 새 배경으로 통일한다.
-  x.world.bg="world-assets/cozy-town.png?v=20260811y";
+  x.world.bg="world-assets/cozy-town-optimized.jpg?v=20260819";
   x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
   x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
   if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town.png?v=20260811y",era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town-optimized.jpg?v=20260819",era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
     p.iconPreset=p.iconPreset||({
@@ -614,6 +625,7 @@ function normalizeHomes(x){
     c.homeId=primary?.homeId||"";
     c.sleepRoomId=primary?.sleepRoomId||"";
   });
+  if(String(x.world?.bg||"").includes("world-assets/cozy-town.png"))x.world.bg="world-assets/cozy-town-optimized.jpg?v=20260819";
   Object.values(x.homes).forEach(home=>{
     if(home.townId)return;
     const resident=Object.values(x.characters).find(c=>(c.residences||[]).some(item=>item.homeId===home.id));
@@ -838,6 +850,53 @@ export function recordCharacterInteraction({type,actorId,targetId="",itemKind=""
   delete state.dailyPlans?.[actorId];
   if(targetId)delete state.dailyPlans?.[targetId];
   save(true);return true;
+}
+export function setDailyQuestion(question){
+  state.dailyQuestion=question&&typeof question==="object"?{
+    day:String(question.day||""),minute:Math.max(600,Math.min(1079,Number(question.minute)||600)),
+    characterId:state.characters[question.characterId]?String(question.characterId):"",
+    kind:String(question.kind||"everyday"),shown:Boolean(question.shown),answered:Boolean(question.answered)
+  }:null;
+  save(true,false);
+  return state.dailyQuestion;
+}
+export function scheduleCharacterChoice(choice){
+  const character=state.characters[choice?.characterId];
+  if(!character)return null;
+  const targetId=state.characters[choice.targetId]?String(choice.targetId):"";
+  const itemKind=String(choice.itemKind||""),itemId=String(choice.itemId||"");
+  if(itemId&&!state.catalog?.[itemKind]?.some(item=>item.id===itemId))return null;
+  const scheduled={
+    id:uid(),characterId:character.id,targetId,kind:String(choice.kind||"everyday"),
+    startAt:Number(choice.startAt)||Date.now(),buyAt:Number(choice.buyAt)||0,giveAt:Number(choice.giveAt)||0,
+    itemKind,itemId,placeType:String(choice.placeType||""),copy:choice.copy&&typeof choice.copy==="object"?choice.copy:{},settledAt:0
+  };
+  state.scheduledChoices=Array.isArray(state.scheduledChoices)?state.scheduledChoices:[];
+  state.scheduledChoices.push(scheduled);
+  state.scheduledChoices=state.scheduledChoices.slice(-120);
+  character.timelineResetAt=Date.now();
+  if(targetId)state.characters[targetId].timelineResetAt=Date.now();
+  if(state.dailyQuestion)state.dailyQuestion.answered=true;
+  save(true);
+  return scheduled.id;
+}
+export function settleScheduledChoices(now=Date.now()){
+  let changed=false;
+  (state.scheduledChoices||[]).forEach(choice=>{
+    if(choice.settledAt||choice.kind!=="gift"||!choice.giveAt||now<choice.giveAt)return;
+    const target=state.characters[choice.targetId];
+    if(target&&state.catalog?.[choice.itemKind]?.some(item=>item.id===choice.itemId)){
+      target.inventory=target.inventory&&typeof target.inventory==="object"?target.inventory:{};
+      target.inventory[choice.itemKind]=Array.isArray(target.inventory[choice.itemKind])?target.inventory[choice.itemKind]:[];
+      if(!target.inventory[choice.itemKind].includes(choice.itemId))target.inventory[choice.itemKind].push(choice.itemId);
+      target.timelineResetAt=now;
+      if(state.characters[choice.characterId])state.characters[choice.characterId].timelineResetAt=now;
+    }
+    choice.settledAt=now;
+    changed=true;
+  });
+  if(changed)save(true,false);
+  return changed;
 }
 export function addRoom(homeId){
   const h=state.homes[homeId];if(!h)return;
@@ -1223,7 +1282,7 @@ function applyCohabit(r){
   b.sleepRoomId=residence.sleepRoomId||"";
   b.townId=state.homes[target].townId||a.townId;
 }
-export function setWorldBackground(){state.world.bg="world-assets/cozy-town.png?v=20260811y";save(true)}
+export function setWorldBackground(){state.world.bg="world-assets/cozy-town-optimized.jpg?v=20260819";save(true)}
 function syncTown(){
   if(!state.activeTownId)return;
   const index=state.towns.findIndex(t=>t.id===state.activeTownId);

@@ -5669,6 +5669,11 @@ html.native-app[data-active-tab="observe"] .native-game-menu button>small{
   color:#fff!important;-webkit-text-fill-color:#fff!important;
 }
 .character-file-actions .danger{border-color:#d24d5e!important;background:#9f2637!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.character-question-dialog{width:min(500px,calc(100vw - 20px));padding:0;border:1px solid color-mix(in srgb,var(--p) 35%,var(--line));border-radius:26px;background:var(--panel);box-shadow:0 24px 70px #21170f45}
+.character-question-dialog::backdrop{background:#21170f78;backdrop-filter:blur(2px)}
+.character-question-dialog form{display:grid;gap:14px;padding:24px}.character-question-dialog h2,.character-question-dialog p{margin:0}.character-question-dialog h2{font-size:clamp(23px,5vw,31px);line-height:1.35}.character-question-dialog p{color:var(--muted);line-height:1.55}
+.character-question-speaker{display:flex;align-items:center;gap:12px}.character-question-speaker>img,.character-question-speaker>span{width:60px;height:60px;object-fit:contain;border-radius:18px;background:color-mix(in srgb,var(--p) 10%,var(--panel))}.character-question-speaker>span{display:grid;place-items:center;font-size:25px;font-weight:900}.character-question-speaker>div{display:grid;gap:2px}.character-question-speaker small{color:var(--muted);font-weight:700}.character-question-speaker b{font-size:19px}
+.character-question-options{display:grid;gap:8px}.character-question-options button{min-height:52px;padding:12px 15px;border-color:color-mix(in srgb,var(--p) 36%,var(--line));background:color-mix(in srgb,var(--p) 7%,var(--panel));text-align:left;font-weight:800}.character-question-options button:active{transform:translateY(1px)}.character-question-later{min-height:44px;color:var(--muted)}
 .character-delete-dialog{width:min(470px,calc(100vw - 24px));padding:0;border-radius:26px}
 .character-delete-dialog>form{display:grid;justify-items:center;gap:10px;padding:28px;text-align:center}
 .character-delete-dialog-icon{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#9f2637;color:#fff;font-size:32px;font-weight:900}

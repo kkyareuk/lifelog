@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core10";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core10";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819perf1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819perf1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -446,15 +446,20 @@ const fallbackEvent=c=>{
   const roomKeys=Object.keys(state.homes?.[c?.homeId]?.rooms||{});
   return {minute:new Date().getHours()*60+new Date().getMinutes(),title:"생활 장면을 다시 계산하는 중",desc:"저장된 설정은 그대로 두고 현재 장면만 안전하게 다시 계산하고 있어요.",home:true,room:c?.sleepRoomId||roomKeys[0]||"",townId:c?.townId||state.activeTownId,mood:"대기"};
 };
+const renderEventCache=new Map(),renderTimelineCache=new Map();
 const eventFor=(c,date=new Date())=>{
-  try{return simulateEventFor(c,date)||fallbackEvent(c)}
+  const key=`${c?.id||""}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}:${date.getHours()}:${date.getMinutes()}`;
+  if(renderEventCache.has(key))return renderEventCache.get(key);
+  try{const value=simulateEventFor(c,date)||fallbackEvent(c);renderEventCache.set(key,value);return value}
   catch(error){
     if(!sceneFailureIds.has(c?.id)){sceneFailureIds.add(c?.id);console.error(`캐릭터 장면 계산 실패 · ${c?.id||"unknown"}`,error)}
     return fallbackEvent(c);
   }
 };
 const visibleTimeline=(c,date=new Date())=>{
-  try{const entries=simulateVisibleTimeline(c,date);return Array.isArray(entries)?entries:[]}
+  const key=`${c?.id||""}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}:${date.getHours()}:${date.getMinutes()}`;
+  if(renderTimelineCache.has(key))return renderTimelineCache.get(key);
+  try{const entries=simulateVisibleTimeline(c,date),value=Array.isArray(entries)?entries:[];renderTimelineCache.set(key,value);return value}
   catch(error){
     if(!sceneFailureIds.has(c?.id)){sceneFailureIds.add(c?.id);console.error(`캐릭터 생활 로그 계산 실패 · ${c?.id||"unknown"}`,error)}
     return[];
@@ -498,6 +503,16 @@ const CATALOG_LABELS={food:"음식",drink:"음료",fashion:"옷·패션",music:"
 const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식"],drink:["커피","차","라테","탄산음료","주스","술","기타 음료"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리"],music:["노래","앨범","플레이리스트","악기"],idol:["솔로 가수","아이돌","밴드","가상 아티스트"],book:["소설","만화","잡지","에세이","전문서적"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임"],perfume:["향수","디퓨저","캔들","바디 제품"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기"]};
 const BLADE_SUBTYPES=["단검","나이프","쇼트소드","아밍소드","롱소드","바스타드소드","대검","클레이모어","레이피어","에페","세이버","커틀러스","샴시르","시미터","카타나","타치","와키자시","노다치","쌍검","검지팡이","의장검"];
 const WEAPON_SUBTYPES={총기:["권총","리볼버","기관단총","돌격소총","소총","저격소총","산탄총","기관총"],"검·도검":BLADE_SUBTYPES,도검:BLADE_SUBTYPES,검:BLADE_SUBTYPES,"활·석궁":["단궁","장궁","복합궁","컴파운드 보우","석궁"],둔기:["곤봉","메이스","철퇴","전투망치"],"창·장병기":["창","장창","할버드","언월도","삼지창"],방어구:["방패","경갑","중갑","투구"],"판타지 무기":["마법봉","지팡이","마도서","마검","에너지 무기"]};
+Object.assign(UI_TEXT.en,{
+  "가족":"Family","가슴":"Chest","가슴 길이":"Chest length","가죽 공예":"Leathercraft","강아지":"Dog","거북이":"Turtle","건물":"Building","거의 가지 않음":"Almost never goes","강한 사랑":"Deep love","같이 나들이하기":"Go on an outing together","같이 운동하기":"Exercise together","개인정보처리방침":"Privacy Policy",
+  "캐릭터가 물어봐요":"A character has a question","오늘은 맡길게":"Let them decide today","이번 주말에는 뭘 할까요?":"What should I do this weekend?","회사에서 무엇부터 할까요?":"What should I do first at work?","오늘 남는 시간에는 뭘 할까요?":"What should I do with my free time today?","정한 일정이 캐릭터의 생활에 반영됩니다.":"Your choice will appear in the character's actual schedule.",
+  "카페에서 느긋하게":"Relax at a café","공원에서 긴 산책":"Take a long park walk","집에서 완전히 쉬기":"Stay home and fully rest","집에서 좋아하는 취미":"Enjoy a favorite hobby at home","공원으로 산책":"Take a walk in the park","저녁 요리 만들기":"Cook dinner","미뤄 둔 핵심 업무":"Finish the most important delayed task","곤란한 동료 도와주기":"Help a struggling coworker","정시에 마치고 퇴근":"Finish on time and leave work"
+});
+Object.assign(UI_TEXT.ja,{
+  "가족":"家族","가슴":"胸","가슴 길이":"胸の長さ","가죽 공예":"レザークラフト","강아지":"犬","거북이":"カメ","건물":"建物","거의 가지 않음":"ほとんど行かない","강한 사랑":"深い愛","같이 나들이하기":"一緒に出かける","같이 운동하기":"一緒に運動する","개인정보처리방침":"プライバシーポリシー",
+  "캐릭터가 물어봐요":"キャラクターからの質問","오늘은 맡길게":"今日は本人に任せる","이번 주말에는 뭘 할까요?":"今週末は何をしよう？","회사에서 무엇부터 할까요?":"会社では何から始めよう？","오늘 남는 시간에는 뭘 할까요?":"今日の空き時間は何をしよう？","정한 일정이 캐릭터의 생활에 반영됩니다.":"選んだ予定はキャラクターの実際の生活に反映されます。",
+  "카페에서 느긋하게":"カフェでのんびり","공원에서 긴 산책":"公園を長く散歩する","집에서 완전히 쉬기":"家でゆっくり休む","집에서 좋아하는 취미":"家で好きな趣味を楽しむ","공원으로 산책":"公園を散歩する","저녁 요리 만들기":"夕食を作る","미뤄 둔 핵심 업무":"後回しにした重要業務","곤란한 동료 도와주기":"困っている同僚を手伝う","정시에 마치고 퇴근":"定時で仕事を終える"
+});
 const DETAIL_OPTIONS={food:["국물","면","밥","구이","튀김","샐러드","케이크","쿠키"],drink:["따뜻하게","차갑게","무카페인","카페인","무알코올","알코올"],fashion:["캐주얼","정장","스포츠","빈티지","스트리트","럭셔리"],music:["보컬곡","연주곡","라이브","기타","피아노","바이올린","드럼","베이스","관악기"],idol:["보컬","댄스","밴드","버추얼","솔로","그룹"],book:["로맨스","판타지","추리","공포","SF","역사","교양"],game:["MOBA","MMORPG","액션 RPG","턴제 RPG","FPS","TPS","배틀로얄","RTS","전략","시뮬레이션","샌드박스","서바이벌","어드벤처","퍼즐","리듬","격투","레이싱","스포츠","공포","소셜·파티"],hobby:["입문용","전문가용","휴대용","수집용","실내용","야외용"],electronics:["스마트폰","태블릿","노트북","데스크톱","콘솔","헤드폰","스피커","카메라","스마트워치"],weapon:[]};
 const PERFUME_NOTES=["우디","플로럴","시트러스","머스크","앰버","아쿠아","그린","파우더리","프루티","스파이시","구르망","레더"];
 const VIDEO_GENRES={
@@ -538,8 +553,8 @@ const characterLimit=()=>5+(Math.max(0,Number(accountEntitlements.characterSlotP
 const townLimit=()=>2+Math.max(0,Number(accountEntitlements.townSlotPacks)||0);
 const hasBackground=id=>(accountEntitlements.backgroundPacks||[]).includes(id);
 const hasDlc=id=>(accountEntitlements.dlcPacks||[]).includes(id);
-const backgroundOptions=()=>`<option value="world-assets/cozy-town.png?v=20260811y" selected>기본 마을 손그림</option>`;
-const TOWN_BACKGROUND="world-assets/cozy-town.png?v=20260811y";
+const backgroundOptions=()=>`<option value="world-assets/cozy-town-optimized.jpg?v=20260819" selected>기본 마을 손그림</option>`;
+const TOWN_BACKGROUND="world-assets/cozy-town-optimized.jpg?v=20260819";
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
 const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${id}" ${p.iconPreset===id?"selected":""}>${label}</option>`).join("");
 const visibleTownId=c=>eventFor(c)?.townId||c.townId;
@@ -2722,6 +2737,8 @@ function view(){
 }
 export function renderApp(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];
+  renderEventCache.clear();
+  renderTimelineCache.clear();
   let content;
   try{content=view()}
   catch(error){
@@ -2731,11 +2748,18 @@ export function renderApp(next){
   const appRoot=document.querySelector("#app");
   document.documentElement.dataset.activeTab=state.activeTab;
   appRoot.innerHTML=`${header()}<main>${content}</main>`;
+  appRoot.querySelectorAll("img").forEach((image,index)=>{
+    image.decoding="async";
+    if(index>2&&!image.closest(".native-current-scene,.home-current-scene,.app-loading-card"))image.loading="lazy";
+    if(image.classList.contains("world-bg")||image.closest("dialog,.building-detail-dialog"))image.fetchPriority="low";
+  });
   normalizeDisplayedParticles(appRoot);
   localizeLanguageSelector(appRoot);
   translateInterface(appRoot);
   const backgroundSelect=document.querySelector("[data-world-bg]");
   if(backgroundSelect){
+    if(backgroundSelect.options[0])backgroundSelect.options[0].value=state.world.bg;
+    backgroundSelect.value=state.world.bg;
     [...backgroundSelect.options].forEach(option=>{
       if(option.value.includes("cozy-town"))option.textContent="마을";
       else if(option.value.includes("downtown"))option.textContent="도시";

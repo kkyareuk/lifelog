@@ -1,7 +1,7 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core10";
-import {eventFor} from "./simulation.js?v=20260819core10";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core10";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819core10";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819perf1";
+import {eventFor} from "./simulation.js?v=20260819perf1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819perf1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819perf1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -764,6 +764,7 @@ function render(){
     requestAnimationFrame(showSetupCoach);
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
     requestAnimationFrame(maybeShowPageGuide);
+    requestAnimationFrame(maybeShowDailyCharacterQuestion);
     // The desktop observation map is already positioned by CSS. Smoothly
     // scrolling its large canvas after every render made the whole site feel
     // delayed and could briefly place an invisible scroll layer over the nav.
@@ -2671,7 +2672,7 @@ function prepareTransparentIcon(file){
       canvas.width=size;canvas.height=size;
       context.clearRect(0,0,size,size);
       context.drawImage(img,Math.round((size-width)/2),Math.round((size-height)/2),width,height);
-      const data=canvas.toDataURL("image/png");
+      const data=canvas.toDataURL("image/webp",.92);
       URL.revokeObjectURL(url);
       resolve(data);
     };
@@ -2679,19 +2680,29 @@ function prepareTransparentIcon(file){
   });
 }
 
-function readOriginalImage(file){
+function prepareLargeArt(file){
   return new Promise((resolve,reject)=>{
-    const reader=new FileReader();
-    reader.onerror=()=>reject(reader.error||new Error("image-load-failed"));
-    reader.onload=()=>resolve(String(reader.result||""));
-    reader.readAsDataURL(file);
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("image-load-failed"))};
+    img.onload=()=>{
+      const maxSide=1800,scale=Math.min(1,maxSide/Math.max(img.naturalWidth,img.naturalHeight));
+      const canvas=document.createElement("canvas"),context=canvas.getContext("2d",{alpha:true});
+      canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));
+      canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+      context.imageSmoothingEnabled=true;context.imageSmoothingQuality="high";
+      context.clearRect(0,0,canvas.width,canvas.height);
+      context.drawImage(img,0,0,canvas.width,canvas.height);
+      const data=canvas.toDataURL("image/webp",.88);
+      URL.revokeObjectURL(url);resolve(data);
+    };
+    img.src=url;
   });
 }
 
 function cropImage(file,type){
   if(type==="catalogImage")return prepareCatalogIllustration(file);
   if(type==="icon"||type==="petIcon")return prepareTransparentIcon(file);
-  if(type==="ldImage"||/^ld(?:Neutral|Joy|Sad|Angry|Tired)$/.test(type))return readOriginalImage(file);
+  if(type==="ldImage"||/^ld(?:Neutral|Joy|Sad|Angry|Tired)$/.test(type))return prepareLargeArt(file);
   const ratios={photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,home:16/9,place:1,placeInterior:16/9};
   const ratio=ratios[type]||16/9;
   const output=ratio<1?600:ratio===1?500:800;
@@ -3045,11 +3056,107 @@ window.addEventListener("popstate",event=>{
   const tab=event.state?.drawerVillageTab;
   if(APP_TABS.includes(tab))navigateToTab(tab,{recordHistory:false});
 });
+const localDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+const atLocalTime=(date,hour,minute=0)=>new Date(date.getFullYear(),date.getMonth(),date.getDate(),hour,minute,0,0).getTime();
+const nextSaturdayAt=(date,hour=14)=>{
+  const target=new Date(date);let days=(6-date.getDay()+7)%7;
+  if(days===0&&date.getHours()>=hour)days=7;
+  target.setDate(date.getDate()+days);return atLocalTime(target,hour,0);
+};
+const relatedTargets=character=>{
+  const ids=new Set();
+  Object.values(state.relationships||{}).forEach(relation=>{
+    if(relation?.temporalStatus==="past")return;
+    if(relation.a===character.id&&state.characters[relation.b])ids.add(relation.b);
+    if(relation.b===character.id&&state.characters[relation.a])ids.add(relation.a);
+  });
+  return [...ids].map(id=>state.characters[id]).filter(Boolean);
+};
+const giftCatalogItems=()=>Object.entries(state.catalog||{}).flatMap(([kind,items])=>(items||[]).filter(item=>item&&item.id&&!['food','drink'].includes(kind)).map(item=>({...item,kind})));
+function availableDailyQuestionKinds(character){
+  const kinds=["weekend","everyday"];
+  if(relatedTargets(character).length&&giftCatalogItems().length)kinds.push("gift");
+  const dlcs=window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks||[];
+  if(dlcs.includes("job_expansion")&&!['','무직','학생'].includes(character.job||""))kinds.push("work");
+  return kinds;
+}
+function ensureDailyQuestionSchedule(now=new Date()){
+  const day=localDateKey(now),current=state.dailyQuestion;
+  if(current?.day===day)return current;
+  const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
+  if(!characters.length)return null;
+  const character=characters[Math.floor(Math.random()*characters.length)],kinds=availableDailyQuestionKinds(character);
+  return setDailyQuestion({day,minute:600+Math.floor(Math.random()*480),characterId:character.id,kind:kinds[Math.floor(Math.random()*kinds.length)],shown:false,answered:false});
+}
+const questionCopy=language=>({
+  ko:{label:"캐릭터가 물어봐요",later:"오늘은 맡길게",weekend:"이번 주말에는 뭘 할까요?",work:"회사에서 무엇부터 할까요?",everyday:"오늘 남는 시간에는 뭘 할까요?",gift:target=>`${target}에게 어떤 선물을 사 줄까요?`,saved:"정한 일정이 캐릭터의 생활에 반영됩니다."},
+  en:{label:"A character has a question",later:"Let them decide today",weekend:"What should I do this weekend?",work:"What should I do first at work?",everyday:"What should I do with my free time today?",gift:target=>`What gift should I buy for ${target}?`,saved:"Your choice will appear in the character's actual schedule."},
+  ja:{label:"キャラクターからの質問",later:"今日は本人に任せる",weekend:"今週末は何をしよう？",work:"会社では何から始めよう？",everyday:"今日の空き時間は何をしよう？",gift:target=>`${target}へのプレゼントは何にしよう？`,saved:"選んだ予定はキャラクターの実際の生活に反映されます。"}
+}[language]||null)||questionCopy("ko");
+function everydayOptions(character,now){
+  const start=now.getHours()<17?now.getTime()+75*60000:atLocalTime(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1),11,0);
+  return [
+    {label:{ko:"집에서 좋아하는 취미",en:"Enjoy a favorite hobby at home",ja:"家で好きな趣味を楽しむ"},placeType:"",copy:{ko:{title:"집에서 좋아하는 취미를 즐기는 중",desc:"마을 주인과 정한 대로 필요한 도구를 꺼내 방해받지 않고 취미에 집중하고 있어요."},en:{title:"Enjoying a favorite hobby at home",desc:"They took out the tools they needed and settled into the hobby chosen with the village owner."},ja:{title:"家で好きな趣味を楽しんでいるところ",desc:"村の持ち主と決めた通り、必要な道具を出して趣味に集中しています。"}}},
+    {label:{ko:"공원으로 산책",en:"Take a walk in the park",ja:"公園を散歩する"},placeType:"공원",copy:{ko:{title:"공원으로 산책 나온 중",desc:"정해 둔 길을 천천히 걸으며 눈에 띄는 풍경 앞에서 잠깐씩 멈추고 있어요."},en:{title:"Taking a walk in the park",desc:"They are following the chosen path slowly and pausing whenever something catches their eye."},ja:{title:"公園を散歩しているところ",desc:"決めた道をゆっくり歩き、気になる景色の前で時々立ち止まっています。"}}},
+    {label:{ko:"저녁 요리 만들기",en:"Cook dinner",ja:"夕食を作る"},placeType:"",copy:{ko:{title:"직접 고른 저녁을 요리하는 중",desc:"먹고 싶은 메뉴를 정하고 재료를 꺼내 순서대로 손질하며 저녁을 만들고 있어요."},en:{title:"Cooking the dinner they chose",desc:"They chose a menu, laid out the ingredients, and are preparing dinner step by step."},ja:{title:"自分で選んだ夕食を作っているところ",desc:"食べたい献立を決め、材料を出して順番に夕食を作っています。"}}}
+  ].map(option=>({...option,startAt:start,kind:"everyday",characterId:character.id}));
+}
+function weekendOptions(character,now){
+  const startAt=nextSaturdayAt(now,14);
+  return [
+    {label:{ko:"카페에서 느긋하게",en:"Relax at a café",ja:"カフェでのんびり"},placeType:"카페",copy:{ko:{title:"카페에서 느긋한 주말을 보내는 중",desc:"창가 자리를 골라 좋아하는 음료를 천천히 마시며 주말 시간을 보내고 있어요."},en:{title:"Spending a slow weekend at a café",desc:"They chose a window seat and are taking their time over a favorite drink."},ja:{title:"カフェでのんびり週末を過ごしているところ",desc:"窓際の席で好きな飲み物をゆっくり楽しんでいます。"}}},
+    {label:{ko:"공원에서 긴 산책",en:"Take a long park walk",ja:"公園を長く散歩する"},placeType:"공원",copy:{ko:{title:"공원에서 긴 주말 산책을 하는 중",desc:"평소보다 먼 길을 골라 천천히 걷고 벤치에서 쉬며 시간을 보내고 있어요."},en:{title:"Taking a long weekend walk",desc:"They picked a longer route, walking slowly and taking breaks on park benches."},ja:{title:"公園で週末の長い散歩をしているところ",desc:"いつもより長い道を選び、ベンチで休みながらゆっくり歩いています。"}}},
+    {label:{ko:"집에서 완전히 쉬기",en:"Stay home and fully rest",ja:"家でゆっくり休む"},placeType:"",copy:{ko:{title:"주말을 집에서 푹 쉬는 중",desc:"급한 일은 미뤄 두고 편한 옷으로 갈아입은 뒤 좋아하는 것만 곁에 두고 쉬고 있어요."},en:{title:"Resting at home for the weekend",desc:"They put off anything non-urgent, changed into comfortable clothes, and kept only favorite things nearby."},ja:{title:"週末を家でゆっくり休んでいるところ",desc:"急ぎでない用事は後にして、楽な服に着替え、好きな物だけをそばに置いて休んでいます。"}}}
+  ].map(option=>({...option,startAt,kind:"weekend",characterId:character.id}));
+}
+function workOptions(character,now){
+  const tomorrow=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1),startAt=atLocalTime(tomorrow,10,0);
+  return [
+    {label:{ko:"미뤄 둔 핵심 업무",en:"Finish the most important delayed task",ja:"後回しにした重要業務"},copy:{ko:{title:"미뤄 둔 핵심 업무를 끝내는 중",desc:"방해되는 알림을 끄고 필요한 자료만 펼쳐 두고 가장 중요한 업무부터 처리하고 있어요."},en:{title:"Finishing an important delayed task",desc:"They silenced distractions, gathered the necessary files, and started with the most important work."},ja:{title:"後回しにした重要業務を終わらせているところ",desc:"通知を切り、必要な資料だけを広げて重要な仕事から進めています。"}}},
+    {label:{ko:"곤란한 동료 도와주기",en:"Help a struggling coworker",ja:"困っている同僚を手伝う"},copy:{ko:{title:"곤란한 동료의 업무를 돕는 중",desc:"자기 업무와 겹치지 않는 범위를 확인한 뒤 동료가 막힌 부분을 함께 살펴보고 있어요."},en:{title:"Helping a coworker with a difficult task",desc:"After checking their own workload, they sat down to work through the coworker's blocker."},ja:{title:"困っている同僚の仕事を手伝っているところ",desc:"自分の業務に支障がない範囲を確認して、同僚が詰まった部分を一緒に見ています。"}}},
+    {label:{ko:"정시에 마치고 퇴근",en:"Finish on time and leave work",ja:"定時で仕事を終える"},copy:{ko:{title:"정시 퇴근을 위해 업무를 정리하는 중",desc:"남은 일을 급한 순서대로 마무리하고 내일 할 일은 짧게 기록해 두고 있어요."},en:{title:"Wrapping up for an on-time departure",desc:"They are finishing urgent items first and leaving concise notes for tomorrow."},ja:{title:"定時退勤のため仕事を整理しているところ",desc:"急ぎの仕事から終わらせ、明日の作業を短く記録しています。"}}}
+  ].map(option=>({...option,startAt,kind:"work",characterId:character.id,placeType:"사무실"}));
+}
+function giftOptions(character,target,now){
+  const owned=new Set(target.inventory?Object.values(target.inventory).flat():[]),favorites=new Set(target.favorites?Object.values(target.favorites).flat():[]);
+  const items=giftCatalogItems().sort((a,b)=>Number(favorites.has(b.id))-Number(favorites.has(a.id))||Number(owned.has(a.id))-Number(owned.has(b.id))).slice(0,3);
+  const base=now.getHours()<17?now.getTime():atLocalTime(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1),11,0);
+  return items.map((item,index)=>({label:{ko:item.name,en:item.name,ja:item.name},kind:"gift",characterId:character.id,targetId:target.id,itemKind:item.kind,itemId:item.id,buyAt:base+(45+index*10)*60000,giveAt:base+(150+index*10)*60000,copy:{
+    ko:{buyTitle:`${item.name}을(를) 사러 가는 중`,buyDesc:`${target.name}에게 줄 ${item.name}을(를) 직접 확인하고 포장을 부탁했어요.`,giveTitle:`${target.name}에게 ${item.name}을(를) 건네는 중`,giveDesc:`${target.name}의 반응을 살피며 직접 고른 ${item.name}을(를) 건넸어요.`,receiveTitle:`${character.name}에게 ${item.name}을(를) 받는 중`,receiveDesc:`포장을 풀어 ${item.name}을(를) 확인하고 ${character.name}에게 고맙다고 말했어요.`},
+    en:{buyTitle:`Shopping for ${item.name}`,buyDesc:`They checked the ${item.name} in person and asked for it to be wrapped for ${target.name}.`,giveTitle:`Giving ${item.name} to ${target.name}`,giveDesc:`They watched ${target.name}'s reaction while handing over the carefully chosen ${item.name}.`,receiveTitle:`Receiving ${item.name} from ${character.name}`,receiveDesc:`They unwrapped the ${item.name} and thanked ${character.name}.`},
+    ja:{buyTitle:`${item.name}を買いに行っているところ`,buyDesc:`${target.name}に贈る${item.name}を自分で確かめ、包装を頼みました。`,giveTitle:`${target.name}に${item.name}を渡しているところ`,giveDesc:`${target.name}の反応を見ながら、自分で選んだ${item.name}を渡しました。`,receiveTitle:`${character.name}から${item.name}を受け取っているところ`,receiveDesc:`包みを開けて${item.name}を確認し、${character.name}にお礼を言いました。`}
+  }}));
+}
+function openDailyCharacterQuestion(question,now=new Date()){
+  const character=state.characters[question.characterId];if(!character)return;
+  const language=state.uiLanguage||"ko",copy=questionCopy(language),targets=relatedTargets(character),target=targets[Math.floor(Math.random()*targets.length)];
+  let options=question.kind==="weekend"?weekendOptions(character,now):question.kind==="work"?workOptions(character,now):question.kind==="gift"&&target?giftOptions(character,target,now):everydayOptions(character,now);
+  if(!options.length)options=everydayOptions(character,now);
+  const kind=question.kind==="gift"&&target?"gift":question.kind==="work"?"work":question.kind==="weekend"?"weekend":"everyday";
+  const prompt=kind==="gift"?copy.gift(target.name):copy[kind];
+  const dialog=document.createElement("dialog"),image=character.icon||character.photo;
+  dialog.className="character-question-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="character-question-speaker">${image?`<img src="${htmlEsc(image)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1))}</span>`}<div><small>${copy.label}</small><b>${htmlEsc(character.name)}</b></div></div><h2>${htmlEsc(prompt)}</h2><p>${copy.saved}</p><div class="character-question-options">${options.map((option,index)=>`<button type="button" data-character-question-option="${index}">${htmlEsc(option.label[language]||option.label.ko)}</button>`).join("")}</div><button value="later" class="character-question-later">${copy.later}</button></form>`;
+  dialog.querySelectorAll("[data-character-question-option]").forEach(button=>button.onclick=()=>{
+    const option=options[Number(button.dataset.characterQuestionOption)];
+    if(scheduleCharacterChoice(option)){dialog.close("answered");showToast(copy.saved);render()}
+  });
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+}
+function maybeShowDailyCharacterQuestion(){
+  if(document.visibilityState!=="visible"||!['observe','home'].includes(state.activeTab)||document.querySelector("dialog[open]"))return;
+  const now=new Date(),minute=now.getHours()*60+now.getMinutes();
+  if(minute<600||minute>1079)return;
+  const question=ensureDailyQuestionSchedule(now);
+  if(!question||question.shown||minute<question.minute)return;
+  setDailyQuestion({...question,shown:true});openDailyCharacterQuestion({...question,shown:true},now);
+}
 function scheduleLiveSceneRefresh(){
   const delay=(15+Math.floor(Math.random()*16))*60*1000;
   setTimeout(()=>{
     if(["observe","home"].includes(state.activeTab)){
       const now=new Date();
+      settleScheduledChoices(now.getTime());
       state.order.map(id=>state.characters[id]).filter(Boolean).forEach(character=>eventFor(character,now));
       render();
     }
@@ -3057,6 +3164,9 @@ function scheduleLiveSceneRefresh(){
   },delay);
 }
 scheduleLiveSceneRefresh();
+setTimeout(maybeShowDailyCharacterQuestion,1200);
+window.addEventListener("focus",()=>setTimeout(maybeShowDailyCharacterQuestion,250));
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(maybeShowDailyCharacterQuestion,250)});
 
 let automaticCloudSyncTimer=0;
 document.addEventListener("change",event=>{
@@ -3081,7 +3191,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819core10").catch(error=>{
+  import("./auth.js?v=20260819perf1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3096,7 +3206,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819core10",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819perf1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
