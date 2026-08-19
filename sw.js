@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260819-new-character-life1";
+const CACHE_VERSION="drawer-village-v20260819-character-editor-background1";
 const CORE=[
   "./",
   "./index.html",

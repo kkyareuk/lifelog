@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819life1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819life1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819scroll1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819scroll1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -1463,8 +1463,12 @@ function observe(){
   const everyoneSleeping=state.order.length>0&&state.order.every(id=>eventFor(state.characters[id]).title==="자는 중");
   const sleepGate=everyoneSleeping?`<div class="sleep-gate"><span>🌙</span><div><h2>모든 인물이 자고 있습니다</h2><p>마을은 조용해졌어요. 집에서 인물들의 수면 상태를 볼 수 있어요.</p></div><button class="primary" data-all-sleep-home>집 보기</button></div>`:"";
   const location=e.home?`🏠 ${esc(state.homes[e.visitHomeId||c.homeId]?.name||"집")} · ${esc(state.homes[e.visitHomeId||c.homeId]?.rooms?.[e.room]?.name||"집 안")}`:e.transit?"🚌 이동 중":place?`📍 ${esc(place.name)} · ${esc(townForEntry(e).name)}`:"📍 외출 중";
+  const sceneTown=townForEntry(e);
   const locationBackground=e.home?state.homes[e.visitHomeId||c.homeId]?.rooms?.[e.room]?.image||"":place?.interiorImage||place?.image||"";
-  const nativeBackground=locationBackground||c.photo||TOWN_BACKGROUND;
+  // 프로필 사진은 캐릭터의 얼굴 표시에만 쓴다. 방·장소 사진이 없는
+  // 장면의 배경으로 재사용하면 캐릭터가 외출했을 때 얼굴 사진이 화면
+  // 전체를 덮는다. 장소 사진, 해당 마을 배경, 기본 배경 순서만 허용한다.
+  const nativeBackground=locationBackground||sceneTown?.bg||state.world?.bg||TOWN_BACKGROUND;
   const nativeEntries=displayTimeline(c,e);
   const logTheme=esc(c?.theme?.primary||"#a96f46");
   const nativeLog=nativeEntries.slice(-2).reverse().map(item=>`<li style="--log-theme:${logTheme}"><time>${esc(item.time)}</time><span><b>${esc(item.title)}</b><small>${esc(item.desc)}</small></span></li>`).join("");
@@ -2401,7 +2405,11 @@ function settingsContent(){
   const backup=`<section class="setting-card backup-file-card"><h2>브라우저 백업 파일</h2><p>사진 없이 정보만 내보냅니다. 불러올 때도 이 기기의 기존 사진은 그대로 유지해요.</p><div class="sync-actions"><button data-export-file>백업 파일 내보내기</button><button data-import-file>백업 파일 불러오기</button></div></section>`;
   const feedback=`<section class="setting-card feedback-card"><h2>개발자에게 피드백 보내기</h2><p>유형을 고르면 기기의 메일 앱이 열려요.</p></section>`;
   const guide=`<section class="setting-card page-guide-card"><h2>페이지 안내</h2><p>각 페이지를 처음 열었을 때 나오는 안내를 다시 볼 수 있어요.</p><button data-guide-reset>모든 페이지 안내 다시 보기</button></section>`;
-  return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${homeCharacterDisplay}${map}${language}${backup}${feedback}${guide}<button data-reset>모든 데이터 초기화</button></section>`;
+  const appVersion=String(window.DRAWER_VILLAGE_APP_VERSION||"").trim(),versionCode=String(window.DRAWER_VILLAGE_VERSION_CODE||"").trim();
+  const buildLabel=state.uiLanguage==="en"?"Build":state.uiLanguage==="ja"?"ビルド":"빌드";
+  const versionText=appVersion?`${appVersion}${versionCode?` · ${buildLabel} ${versionCode}`:""}`:"웹 버전 · 자동 업데이트";
+  const appInfo=`<section class="setting-card app-version-card"><h2>앱 정보</h2><p><b>현재 버전</b> <span>${esc(versionText)}</span></p><small>오류를 제보할 때 이 버전과 빌드 번호를 함께 알려 주세요.</small></section>`;
+  return `<section class="panel form settings-shell"><h1>${t("settings","설정")}</h1>${sync}${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}${homeCharacterDisplay}${map}${language}${backup}${feedback}${guide}${appInfo}<button data-reset>모든 데이터 초기화</button></section>`;
 }
 Object.assign(UI_TEXT.en,{
   "고전과 장식 테마":"Heritage & ornamental themes","바로크 살롱":"Baroque Salon","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식":"Black lacquer frames, aged parchment, wine red, and bronze ornament",
@@ -2733,6 +2741,14 @@ function businessInformationFooter(){
   const tossTerms=window.PARALLEL_CITY_CONFIG?.nativeApp?"":`<a href="https://pages.tosspayments.com/terms/user" target="_blank" rel="noopener">${copy.toss}</a>`;
   return `<footer class="settings-business-footer" aria-label="${copy.aria}"><b>까륵</b><p>${copy.registration} : 540-17-02654 <i></i> ${copy.representative} : 김세은<br>${copy.hosting} : Cloudflare, Inc. <i></i> ${copy.mailOrder} : ${copy.pending} <a href="https://www.ftc.go.kr/bizCommPop.do?wrkr_no=5401702654" target="_blank" rel="noopener">${copy.verify}</a><br>${copy.support} : <a href="tel:01076630610">010-7663-0610</a> <i></i> ${copy.email} : <a href="mailto:kkyaareuk@gmail.com">kkyaareuk@gmail.com</a><br>${copy.address} : 서울특별시 양천구 신정중앙로 68, 403-133호(신정동, 해풍빌딩)</p><nav aria-label="${copy.aria}"><a href="./privacy.html">${copy.privacy}</a><a href="./terms.html">${copy.terms}</a>${tossTerms}</nav></footer>`;
 }
+Object.assign(UI_TEXT.en,{
+  "앱 정보":"App information","현재 버전":"Current version","웹 버전 · 자동 업데이트":"Web version · updates automatically",
+  "오류를 제보할 때 이 버전과 빌드 번호를 함께 알려 주세요.":"Please include this version and build number when reporting an issue."
+});
+Object.assign(UI_TEXT.ja,{
+  "앱 정보":"アプリ情報","현재 버전":"現在のバージョン","웹 버전 · 자동 업데이트":"ウェブ版・自動更新",
+  "오류를 제보할 때 이 버전과 빌드 번호를 함께 알려 주세요.":"不具合を報告する際は、このバージョンとビルド番号もお知らせください。"
+});
 function settings(){return settingsContent().replace(/<\/section>$/,`${businessInformationFooter()}</section>`)}
 function townPlaceEditor(p,items,audiences,selected){
   return `<details class="${selected?"mobile-selected":""}" ${selected?"open":""}><summary><b>${esc(p.emoji)} ${esc(p.name)}</b></summary><div class="place-edit-heading"><span><b>${esc(p.name)} 편집</b><small>유형을 먼저 고르면 어울리는 건물 모양을 추천해요.</small></span><button class="danger" data-delete-place="${p.id}">이 건물 삭제</button></div><div class="place-config"><label>건물 이름<input data-place-field="name" data-place-id="${p.id}" value="${esc(p.name)}"></label><label>건물 유형<select data-place-field="type" data-place-id="${p.id}">${placeTypeOptions(p)}</select></label><label>세부 유형<select data-place-field="subtype" data-place-id="${p.id}">${placeSubtypeOptions(p)}</select></label><label>가격대<select data-place-field="priceRange" data-place-id="${p.id}">${["저렴","보통","고급","명품"].map(x=>`<option ${p.priceRange===x?"selected":""}>${x}</option>`).join("")}</select></label><label>마을 속 건물 크기<input type="range" min=".45" max="1.5" step=".05" data-place-field="imageScale" data-place-id="${p.id}" value="${p.imageScale||1}"></label><label>매운맛 정도<select data-place-field="spicy" data-place-id="${p.id}">${levelOptions(SPICE_LEVELS,p.spicy||0)}</select></label><label>단맛 정도<select data-place-field="sweet" data-place-id="${p.id}">${levelOptions(SWEET_LEVELS,p.sweet||0)}</select></label></div><div class="place-photo-tools"><b>지도에 표시할 건물 모양</b><span><button data-building-shape-open="${p.id}">건물 모양 선택</button></span><b>생활 로그·현재 장면용 내부 사진</b><span><button data-place-interior-image="${p.id}">내부 사진 업로드</button><button data-image-url="placeInterior" data-id="${p.id}">링크</button>${p.interiorImage?`<button data-clear-place-interior-image="${p.id}">지우기</button>`:""}</span></div><h4>주요 이용층</h4><div class="stock-picker">${audiences.map(x=>`<button data-place-audience="${p.id}" data-value="${x}" class="${(p.audiences||[]).includes(x)?"on":""}">${x}</button>`).join("")}</div><h4>이곳에서 파는 것·이용할 수 있는 것</h4><div class="stock-list stock-picker">${items.map(item=>`<button data-place-stock="${p.id}" data-item-id="${item.id}" class="${(p.stock||[]).includes(item.id)?"on":""}">${CATALOG_LABELS[item.kind]} · ${esc(item.name)}</button>`).join("")}</div></details>`;

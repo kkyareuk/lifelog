@@ -31,6 +31,6 @@ const bodyList=section(app,'$$("[data-body-list]")','$$ ("[data-field]")'.replac
 assert.equal(bodyList.includes("render("),false,"신체 특성 선택 하나마다 고급 설정을 닫으면 안 됩니다.");
 
 assert.match(state,/if\(!immediate&&editingText\)/,"텍스트 입력 포커스 중 자동저장 지연 장치가 필요합니다.");
-assert.match(app,/advancedClass:\[\.\.\.details\.classList\]/,"불가피한 재렌더에서도 열린 고급 설정을 복원해야 합니다.");
+assert.doesNotMatch(app,/function renderPreservingCharacterEditorScroll/,"선택 버튼은 캐릭터 편집창을 다시 그리지 않아야 합니다.");
 
 console.log("IME 입력 안정성 및 고급 설정 유지 검사 통과");

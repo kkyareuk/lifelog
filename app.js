@@ -1,8 +1,8 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819life1";
-import {eventFor} from "./simulation.js?v=20260819life1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819life1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819life1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819life1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819scroll1";
+import {eventFor} from "./simulation.js?v=20260819scroll1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819scroll1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819scroll1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819scroll1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -691,9 +691,11 @@ function replaceFeedbackFormWithEmailLink(){
     ja:{title:"開発者へフィードバック",description:"種類を選ぶとメールアプリが開きます。確認に役立つ端末情報も自動で入ります。",recipient:"宛先",diagnostics:"自動添付される診断情報",prompt:"詳しい内容を下に入力してください。",types:[["不具合を報告","不具合","行った操作、問題、再現手順を記入してください。"],["機能を提案","機能提案","ほしい機能と利用場面を記入してください。"],["生活シーン・関係","シーン/関係","どの設定で不自然なシーンが出たか記入してください。必要な場合のみ名前を追加してください。"],["翻訳・文言","翻訳","言語と不自然または誤った文言を記入してください。"],["決済・アカウント・同期","決済/同期","エラー文と試した手順を記入してください。パスワードや秘密鍵は書かないでください。"],["デザイン・操作性","UI","読みにくい、操作しにくい場所と期待した表示を記入してください。"]]}
   }[state.uiLanguage]||null;
   const text=copy||{title:"개발자에게 피드백 보내기",description:"유형을 고르면 기기의 메일 앱이 열려요.",recipient:"받는 주소",diagnostics:"자동 첨부 진단 정보",prompt:"아래에 자세한 내용을 적어 주세요.",types:[["오류 신고","오류","문제와 재현 순서를 적어 주세요."]]};
-const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"20260815av");
+  const build=String(window.DRAWER_VILLAGE_NATIVE_BUILD||"web");
+  const appVersion=String(window.DRAWER_VILLAGE_APP_VERSION||"web"),versionCode=String(window.DRAWER_VILLAGE_VERSION_CODE||"-");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
+    `Version: ${appVersion} / code ${versionCode}`,
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
     `Device/model: ${deviceModel}`,
     `User agent: ${navigator.userAgent||"unknown"}`,
@@ -859,33 +861,6 @@ function syncOpenCharacterEditorDraft(){
     patch.bodyProfile=bodyProfile;
   }
   updateCharacter(character.id,patch,false);
-}
-function renderPreservingCharacterEditorScroll(element){
-  const shell=element?.closest?.("[data-mobile-character-editor-dialog]")?.querySelector(".mobile-character-editor-shell");
-  if(shell)mobileCharacterEditorScroll=shell.scrollTop;
-  const detailsRoot=shell||element?.closest?.(".character-traits-pane,.profile-license,.character-view-dialog")||document;
-  const allDetails=[...detailsRoot.querySelectorAll("details")];
-  const openDetails=allDetails.filter(details=>details.open).map(details=>({
-    bodyGroup:details.dataset.bodyOptionGroup||"",
-    advancedClass:[...details.classList].find(name=>name.endsWith("-advanced-settings"))||"",
-    index:allDetails.indexOf(details)
-  }));
-  const pageX=window.scrollX,pageY=window.scrollY;
-  render();
-  requestAnimationFrame(()=>{
-    const nextShell=document.querySelector("[data-mobile-character-editor-dialog] .mobile-character-editor-shell");
-    if(nextShell)nextShell.scrollTop=mobileCharacterEditorScroll;
-    const candidates=[...(nextShell||document).querySelectorAll("details")];
-    openDetails.forEach(saved=>{
-      const next=saved.bodyGroup
-        ?candidates.find(details=>details.dataset.bodyOptionGroup===saved.bodyGroup)
-        :saved.advancedClass
-          ?candidates.find(details=>details.classList.contains(saved.advancedClass))
-          :candidates[saved.index];
-      if(next)next.open=true;
-    });
-    restoreWindowScroll(pageX,pageY);
-  });
 }
 function renderPreservingPageScroll(element){
   const pageX=window.scrollX,pageY=window.scrollY;
@@ -1877,7 +1852,7 @@ function bind(){
     if(!["primary","secondary"].includes(field)||!/^#[0-9a-f]{6}$/i.test(value||""))return;
     updateCharacter(active().id,{theme:{...active().theme,[field]:value}},true);
     applyTheme();
-    renderPreservingCharacterEditorScroll(el);
+    document.querySelectorAll(`[data-theme-swatch="${CSS.escape(field)}"]`).forEach(button=>button.classList.toggle("on",button.dataset.colorValue===value));
   });
   $$("[data-gradient]").forEach(el=>el.addEventListener("change",e=>{
     const mobileDraft=markMobileCharacterDraft(el);
@@ -1887,19 +1862,25 @@ function bind(){
   }));
   $$("[data-chip]").forEach(el=>el.onclick=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    toggleChip(active().id,el.dataset.chip,el.dataset.value,false);
+    const field=el.dataset.chip,value=el.dataset.value;
+    toggleChip(active().id,field,value,false);
     if(!mobileDraft)save(true);
-    renderPreservingCharacterEditorScroll(el);
+    const selected=(active()[field]||[]).includes(value);
+    document.querySelectorAll(`[data-chip="${CSS.escape(field)}"][data-value="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    toggleFavorite(active().id,el.dataset.favoriteKind,el.dataset.favoriteId,!mobileDraft);
-    renderPreservingCharacterEditorScroll(el);
+    const kind=el.dataset.favoriteKind,itemId=el.dataset.favoriteId;
+    toggleFavorite(active().id,kind,itemId,!mobileDraft);
+    const selected=(active().favorites?.[kind]||[]).includes(itemId);
+    document.querySelectorAll(`[data-favorite-kind="${CSS.escape(kind)}"][data-favorite-id="${CSS.escape(itemId)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-owned-kind]").forEach(el=>el.onclick=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    toggleOwned(active().id,el.dataset.ownedKind,el.dataset.ownedId,!mobileDraft);
-    renderPreservingCharacterEditorScroll(el);
+    const kind=el.dataset.ownedKind,itemId=el.dataset.ownedId;
+    toggleOwned(active().id,kind,itemId,!mobileDraft);
+    const selected=(active().inventory?.[kind]||[]).includes(itemId);
+    document.querySelectorAll(`[data-owned-kind="${CSS.escape(kind)}"][data-owned-id="${CSS.escape(itemId)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-character-interaction]").forEach(el=>el.onclick=()=>{
     const item=String($("[data-character-interaction-item]")?.value||"").split(":");
@@ -3198,7 +3179,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819life1").catch(error=>{
+  import("./auth.js?v=20260819scroll1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3213,7 +3194,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819life1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819scroll1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
