@@ -8,6 +8,10 @@ const prepare=await readFile(new URL("./prepare-app.mjs",import.meta.url),"utf8"
 assert(!views.includes("locationBackground||c.photo"),"프로필 사진을 장면 배경으로 쓰면 안 됩니다.");
 assert(views.includes("locationBackground||sceneTown?.bg||state.world?.bg||TOWN_BACKGROUND"),"장소·마을·기본 배경 순서가 유지되어야 합니다.");
 assert(!app.includes("function renderPreservingCharacterEditorScroll"),"다중 선택 시 편집창 전체를 다시 그리면 안 됩니다.");
+assert(app.includes('openCharacterEditor?.querySelector(".mobile-character-editor-body")'),"실제 캐릭터 편집 스크롤 영역을 저장해야 합니다.");
+assert(app.includes("restoreMobileCharacterEditorContinuity")&&app.includes("mobileCharacterEditorOpenDetails"),"편집 위치와 열린 고급 설정을 함께 복원해야 합니다.");
+assert(app.includes('stabilizeInteractiveScroll(mobileCharacterDialog'),"캐릭터의 단일 선택·다중 선택 모두 화면 위치를 유지해야 합니다.");
+assert(app.includes('stabilizeInteractiveScroll(document.querySelector(".catalog-shell")'),"취향사전의 모든 유형에서 선택 위치를 유지해야 합니다.");
 
 for(const marker of ['$$("[data-chip]")','$$("[data-favorite-kind]")','$$("[data-owned-kind]")']){
   const start=app.indexOf(marker);

@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819catalogreturn1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819catalogreturn1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819scrollscene1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819scrollscene1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -867,10 +867,6 @@ function relationshipForPair(firstId,secondId){
     &&((relation.a===firstId&&relation.b===secondId)||(relation.a===secondId&&relation.b===firstId))
   )||null;
 }
-function pairHasRomanticFeeling(firstId,secondId){
-  return isRomanticCharacterView(explicitCharacterViewFor(firstId,secondId))
-    ||isRomanticCharacterView(explicitCharacterViewFor(secondId,firstId));
-}
 function sceneEmotionScores(value){
   const text=String(value||"");
   const scores={shock:0,anger:0,sad:0,fear:0,romance:0,playful:0,warm:0};
@@ -917,11 +913,15 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
       ?Boolean(thisHomeId&&thisHomeId===otherHomeId&&(!entry?.room||!otherEntry?.room||entry.room===otherEntry.room))
       :Boolean(!entry?.home&&!otherEntry?.home&&entry?.placeId&&entry.placeId===otherEntry?.placeId);
     const namesEachOther=String(otherEntry?.title||"").includes(c.name||"\u0000")||String(otherEntry?.desc||"").includes(c.name||"\u0000");
-    const romanticConnection=samePlace&&pairHasRomanticFeeling(c.id,other.id);
-    return sameMinute&&(sameInteraction||sameDate||(samePlace&&(reciprocal||namesEachOther||romanticConnection)));
+    return sameMinute&&(sameInteraction||sameDate||(samePlace&&(reciprocal||namesEachOther)));
   });
   const namedPartnerIds=state.order.filter(id=>id!==c.id&&id!==entry?.thoughtOfId&&state.characters?.[id]?.name&&text.includes(state.characters[id].name));
-  const rawPartnerIds=[...new Set([...(entry?.participantOrder||[]),...(entry?.withIds||[]),entry?.withId,...namedPartnerIds,...mirroredPartnerIds].filter(id=>{
+  const declaredPartnerIds=[...(entry?.participantOrder||[]),...(entry?.withIds||[]),entry?.withId].filter(id=>id&&id!==c.id);
+  // 현재 장면에 참여자가 명시돼 있으면 다른 캐릭터의 같은 시각 장면을
+  // 역추적해 제3자를 덧붙이지 않는다. 제목은 두 사람인데 화면에는 세 명이
+  // 나타나는 모순과 행동 소품 중복을 이 단계에서 차단한다.
+  const inferredPartnerIds=entry?.groupInteraction&&declaredPartnerIds.length?[]:[...namedPartnerIds,...mirroredPartnerIds];
+  const rawPartnerIds=[...new Set([...declaredPartnerIds,...inferredPartnerIds].filter(id=>{
     if(!id||id===c.id||!state.characters?.[id])return false;
     const otherEntry=eventFor(state.characters[id]);
     const otherSleeping=/자는 중|잠든|수면/.test(`${otherEntry?.title||""} ${otherEntry?.desc||""} ${otherEntry?.mood||""}`);

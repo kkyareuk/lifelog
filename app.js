@@ -1,9 +1,9 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819catalogreturn1";
-import {eventFor} from "./simulation.js?v=20260819catalogreturn1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819catalogreturn1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819catalogreturn1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819catalogreturn1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819catalogreturn1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819scrollscene1";
+import {eventFor} from "./simulation.js?v=20260819scrollscene1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819scrollscene1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819scrollscene1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819scrollscene1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819scrollscene1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -29,6 +29,8 @@ let homeCharacterPickerScroll=0;
 let observeRosterScroll=0;
 let mobileCharacterStripScroll=0;
 let mobileCharacterEditorScroll=0;
+let mobileCharacterEditorOpenDetails=[];
+let mobileCharacterEditorDetailsCaptured=false;
 let resetScrollAfterRender=false;
 let pendingCatalogOpenKey="";
 const guidePending=new Set();
@@ -734,6 +736,52 @@ function restoreMainScroll(left,top,openCatalogKeys=[]){
   requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
   setTimeout(restore,40);
 }
+function characterEditorDetailKey(details){
+  if(details?.dataset?.bodyOptionGroup)return `body:${details.dataset.bodyOptionGroup}`;
+  if(details?.classList?.contains("profile-advanced-settings"))return "profile:advanced";
+  if(details?.classList?.contains("personality-advanced-settings"))return "personality:advanced";
+  if(details?.classList?.contains("body-advanced-settings"))return "body:advanced";
+  return "";
+}
+function restoreMobileCharacterEditorContinuity(dialog){
+  const restore=()=>{
+    const current=document.querySelector("[data-mobile-character-editor-dialog][open]")||dialog;
+    if(!current)return;
+    if(mobileCharacterEditorDetailsCaptured)current.querySelectorAll("details").forEach(details=>{
+      const key=characterEditorDetailKey(details);
+      if(key)details.open=mobileCharacterEditorOpenDetails.includes(key);
+    });
+    const body=current.querySelector(".mobile-character-editor-body");
+    if(body)body.scrollTop=mobileCharacterEditorScroll;
+  };
+  requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
+  setTimeout(restore,60);
+}
+function stabilizeInteractiveScroll(root,resolveScroller){
+  if(!root||root.dataset.stableScrollBound==="1")return;
+  root.dataset.stableScrollBound="1";
+  let left=0,top=0,armed=false;
+  const remember=()=>{
+    const scroller=resolveScroller();
+    if(!scroller)return;
+    left=scroller.scrollLeft;top=scroller.scrollTop;armed=true;
+  };
+  const restore=()=>{
+    if(!armed)return;
+    const apply=()=>{
+      const scroller=resolveScroller();
+      if(!scroller)return;
+      scroller.scrollLeft=left;scroller.scrollTop=top;
+      if(scroller.matches?.(".mobile-character-editor-body"))mobileCharacterEditorScroll=top;
+    };
+    requestAnimationFrame(()=>{apply();requestAnimationFrame(apply)});
+    setTimeout(apply,60);
+  };
+  root.addEventListener("pointerdown",remember,true);
+  root.addEventListener("keydown",event=>{if(["Enter"," "].includes(event.key))remember()},true);
+  root.addEventListener("change",restore,true);
+  root.addEventListener("click",restore,true);
+}
 function render(){
   // Samsung 천지인처럼 여러 단계로 한 글자를 조합하는 키보드는 포커스된
   // input 노드가 교체되는 순간 직전 음절을 다시 확정할 수 있다. 사진 복원,
@@ -761,8 +809,13 @@ function render(){
   }).filter(Boolean);
   if(pendingCatalogOpenKey&&!openCatalogKeys.includes(pendingCatalogOpenKey))openCatalogKeys.push(pendingCatalogOpenKey);
   pendingCatalogOpenKey="";
-  const openCharacterEditor=document.querySelector("[data-mobile-character-editor-dialog][open] .mobile-character-editor-shell");
-  if(openCharacterEditor)mobileCharacterEditorScroll=openCharacterEditor.scrollTop;
+  const openCharacterEditor=document.querySelector("[data-mobile-character-editor-dialog][open]");
+  const openCharacterEditorBody=openCharacterEditor?.querySelector(".mobile-character-editor-body");
+  if(openCharacterEditorBody){
+    mobileCharacterEditorScroll=openCharacterEditorBody.scrollTop;
+    mobileCharacterEditorOpenDetails=[...openCharacterEditorBody.querySelectorAll("details[open]")].map(characterEditorDetailKey).filter(Boolean);
+    mobileCharacterEditorDetailsCaptured=true;
+  }
   resetScrollAfterRender=false;
   try{
     const mobileSite=window.matchMedia?.("(max-width:720px)")?.matches??window.innerWidth<=720;
@@ -908,8 +961,7 @@ function restoreMobileCharacterDialogs(){
     const dialog=document.querySelector("[data-mobile-character-editor-dialog]");
     if(dialog&&!dialog.open&&!document.querySelector("dialog[open]")){
       dialog.showModal();
-      const shell=dialog.querySelector(".mobile-character-editor-shell");
-      if(shell)shell.scrollTop=mobileCharacterEditorScroll;
+      restoreMobileCharacterEditorContinuity(dialog);
     }
   }else if(mobileCharacterReorderOpen){
     const dialog=document.querySelector("[data-mobile-character-reorder-dialog]");
@@ -1448,6 +1500,9 @@ function bind(){
     state.characterPane=el.dataset.openCharacterPane;
     mobileCharacterEditorPane=state.characterPane;
     mobileCharacterDraftDirty=false;
+    mobileCharacterEditorScroll=0;
+    mobileCharacterEditorOpenDetails=[];
+    mobileCharacterEditorDetailsCaptured=false;
     render();
   });
   $("[data-open-character-reorder]")?.addEventListener("click",()=>{
@@ -1455,10 +1510,19 @@ function bind(){
     render();
   });
   const mobileCharacterDialog=$("[data-mobile-character-editor-dialog]");
-  if(mobileCharacterDialog)mobileCharacterDialog.onclose=()=>{
-    flushMobileCharacterDraft();
-    render();
-  };
+  if(mobileCharacterDialog){
+    const body=mobileCharacterDialog.querySelector(".mobile-character-editor-body");
+    body?.addEventListener("scroll",()=>{mobileCharacterEditorScroll=body.scrollTop},{passive:true});
+    body?.querySelectorAll("details").forEach(details=>details.addEventListener("toggle",()=>{
+      const key=characterEditorDetailKey(details);if(!key)return;
+      mobileCharacterEditorOpenDetails=details.open?[...new Set([...mobileCharacterEditorOpenDetails,key])]:mobileCharacterEditorOpenDetails.filter(value=>value!==key);
+    }));
+    stabilizeInteractiveScroll(mobileCharacterDialog,()=>document.querySelector("[data-mobile-character-editor-dialog][open] .mobile-character-editor-body")||body);
+    mobileCharacterDialog.onclose=()=>{
+      flushMobileCharacterDraft();
+      render();
+    };
+  }
   $$("[data-close-mobile-character-editor],[data-save-mobile-character-editor]").forEach(el=>{
     // 버튼이 포커스를 가져가기 전에 조합 중인 글자까지 DOM에서 먼저 읽는다.
     el.addEventListener("pointerdown",syncOpenCharacterEditorDraft,{capture:true,passive:true});
@@ -1992,6 +2056,7 @@ function bind(){
     updateCatalogItem("fashion",item.id,{[field]:selected?[...list,value]:list.filter(entry=>entry!==value)});
     button.classList.toggle("on",selected);
   });
+  stabilizeInteractiveScroll(document.querySelector(".catalog-shell"),()=>document.querySelector("#app>main"));
   $$('[data-home-visual-mode]').forEach(button=>button.onclick=()=>{
     state.homeVisualMode=button.dataset.homeVisualMode==="ld"?"ld":"sd";
     save(true);
@@ -3426,7 +3491,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819catalogreturn1").catch(error=>{
+  import("./auth.js?v=20260819scrollscene1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3441,7 +3506,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819catalogreturn1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819scrollscene1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

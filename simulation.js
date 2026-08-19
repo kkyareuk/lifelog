@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819catalogreturn1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260819catalogreturn1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819scrollscene1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260819scrollscene1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2528,7 +2528,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260819-routine-return1";
+const ENGINE_VERSION="20260819-scene-pairing1";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -3166,24 +3166,17 @@ function placeObjectScene(place,first,second,relation,date){
   return null;
 }
 function interactionPair(group){
+  const people=[...new Map(group.filter(Boolean).map(person=>[person.id,person])).values()].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
   const candidates=[];
-  for(let i=0;i<group.length;i++){
-    for(let j=i+1;j<group.length;j++){
-      const first=group[i],second=group[j];
+  for(let i=0;i<people.length;i++){
+    for(let j=i+1;j<people.length;j++){
+      const first=people[i],second=people[j];
       const relation=relationList().find(r=>(r.a===first.id&&r.b===second.id)||(r.a===second.id&&r.b===first.id))||null;
-      candidates.push({first,second,relation,score:relationImportance(first,second,relation)});
+      candidates.push({first,second,relation,score:relationImportance(first,second,relation),key:`${first.id}:${second.id}`});
     }
   }
-  candidates.sort((a,b)=>b.score-a.score||String(a.first.id).localeCompare(String(b.first.id)));
+  candidates.sort((a,b)=>b.score-a.score||a.key.localeCompare(b.key));
   return candidates[0];
-}
-function interactionPairFor(character,others){
-  const candidates=others.map(other=>{
-    const relation=relationList().filter(r=>r.temporalStatus!=="past").find(r=>(r.a===character.id&&r.b===other.id)||(r.a===other.id&&r.b===character.id))||null;
-    return {first:character,second:other,relation,score:relationImportance(character,other,relation)};
-  });
-  candidates.sort((a,b)=>b.score-a.score||String(a.second.id).localeCompare(String(b.second.id)));
-  return candidates[0]||null;
 }
 function significantEncounter(pair,group,date){
   if(!["부부","연인"].includes(pair.relation?.type))return "";
@@ -3825,6 +3818,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
         ?state.order.find(id=>id!==other.id&&String(otherEvent.dateGroup).includes(id))
         :otherEvent.withId;
       if(otherEvent.dateGroup&&otherEvent.datePurpose&&otherDatePartner&&otherDatePartner!==c.id)return false;
+      const otherInteractionIds=[other.id,...(otherEvent.participantOrder||[]),...(otherEvent.withIds||[]),otherEvent.withId].filter(Boolean);
+      if(otherEvent.groupInteraction&&!otherInteractionIds.includes(c.id))return false;
       const reservedByAnotherDate=state.order.some(ownerId=>{
         const owner=state.characters[ownerId];
         if(!owner||owner.id===other.id||owner.id===c.id)return false;
@@ -3848,8 +3843,11 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const lockedPartner=explicitDatePartner||explicitSharedPartner||explicitCurrentPartner;
   const group=[c,...together],preferred=lockedPartner
     ?{first:c,second:lockedPartner,relation:relationList().find(r=>(r.a===c.id&&r.b===lockedPartner.id)||(r.b===c.id&&r.a===lockedPartner.id))}
-    :interactionPairFor(c,together);
+    :interactionPair(group);
   if(!preferred)return current;
+  // 같은 방에 세 명 이상 있어도 한 캐릭터가 같은 시각에 두 개의 2인 장면에
+  // 동시에 끼지 않도록, 장소 전체에서 하나의 결정적인 짝만 선택한다.
+  if(preferred.first.id!==c.id&&preferred.second.id!==c.id)return current;
   const ordered=[preferred.first,preferred.second].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
   const pair={...preferred,first:ordered[0],second:ordered[1]};
   const isFirst=c.id===pair.first.id;
