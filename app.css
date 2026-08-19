@@ -5938,8 +5938,6 @@ html:not(.native-app) .standard-observe-view>.roster .roster-card small{
 @keyframes nativeThoughtFloat{50%{transform:translateY(-10px) rotate(1deg)}}
 @media(max-width:1050px){.desktop-observe-lower{grid-template-columns:1fr}.desktop-observe-log{position:static}.desktop-observe-log .native-log-card ol{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.desktop-observe-log .native-log-card ol{grid-template-columns:1fr}}
-html.page-switching main{pointer-events:none}
-
 /* Village building information */
 .building-detail-dialog{
   width:min(980px,calc(100vw - 28px));max-height:min(860px,calc(100dvh - 28px));padding:0;
