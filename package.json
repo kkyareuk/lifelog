@@ -5,7 +5,7 @@
   "description": "서랍마을 Android 앱 패키지",
   "scripts": {
     "postinstall": "patch-package",
-    "app:prepare": "node scripts/prepare-app.mjs",
+    "app:prepare": "node scripts/prepare-app.mjs && node scripts/check-native-module-closure.mjs",
     "cap:sync:android": "node --require ./scripts/windows-userinfo-shim.cjs ./node_modules/@capacitor/cli/bin/capacitor sync android",
     "app:sync": "npm run app:prepare && npm run cap:sync:android",
     "app:open": "npm run app:sync && cap open android",

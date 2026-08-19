@@ -1,5 +1,5 @@
 import {mkdir, readFile, readdir, rm, writeFile} from "node:fs/promises";
-import {relative,join} from "node:path";
+import {relative,join,dirname} from "node:path";
 import {fileURLToPath} from "node:url";
 
 const root=new URL("../",import.meta.url);
@@ -15,6 +15,13 @@ const includedFiles=new Set([
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","speech-styles.js","character-notifications.js","sw.js","views.js",
   "town-fit.css"
 ]);
+const relativeModuleImports=source=>{
+  const found=[];
+  const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
+  let match;
+  while((match=pattern.exec(source)))found.push(match[1].split(/[?#]/)[0]);
+  return found;
+};
 
 // OneDrive placeholder/reparse-point files can make fs.cp fail with EPERM on
 // Windows. Reading and writing the bytes also hydrates placeholders reliably.
@@ -56,6 +63,30 @@ for(const entry of entries){
   if(includedFiles.has(entry.name))await writeFile(target,await readFile(source));
 }
 
+// Android 웹 자산은 수동 파일 목록만 믿지 않는다. 진입 모듈에서 시작해
+// 상대 import를 끝까지 따라가며 필요한 모듈을 자동으로 복사한다. 새 모듈을
+// 추가하고 목록 갱신을 빼먹더라도 앱이 로딩 화면에서 멈추는 빌드는 만들지 않는다.
+async function copyModuleClosure(){
+  const rootPath=fileURLToPath(root),queue=[...includedFiles].filter(name=>name.endsWith(".js")),visited=new Set();
+  while(queue.length){
+    const moduleName=queue.shift();
+    if(visited.has(moduleName))continue;
+    visited.add(moduleName);
+    const sourceUrl=new URL(moduleName,root),sourceText=await readFile(sourceUrl,"utf8");
+    for(const specifier of relativeModuleImports(sourceText)){
+      const dependencyUrl=new URL(specifier,sourceUrl);
+      const dependencyName=relative(rootPath,fileURLToPath(dependencyUrl)).replaceAll("\\","/");
+      if(dependencyName.startsWith("../")||dependencyName==="..")throw new Error(`Android 모듈이 프로젝트 밖을 가리킵니다: ${moduleName} -> ${specifier}`);
+      const targetPath=fileURLToPath(new URL(dependencyName,output));
+      await mkdir(dirname(targetPath),{recursive:true});
+      await writeFile(targetPath,await readFile(dependencyUrl));
+      if(dependencyName.endsWith(".js")&&!visited.has(dependencyName))queue.push(dependencyName);
+    }
+  }
+  return visited;
+}
+await copyModuleClosure();
+
 const indexPath=new URL("index.html",output);
 let index=await readFile(indexPath,"utf8");
 index=index.replace(/\s*<footer class="site-footer"[\s\S]*?<\/footer>/,"\n");
@@ -72,17 +103,13 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260819backupgrids1";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260819startupclosure1";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){
       navigator.serviceWorker.getRegistrations().then(items=>Promise.all(items.map(item=>item.unregister()))).catch(()=>{});
     }
     globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});
-    window.addEventListener("DOMContentLoaded",()=>setTimeout(()=>{
-      const startup=document.querySelector("[data-native-startup]");
-      if(startup){startup.querySelector("b").textContent="앱 화면을 불러오지 못했어요";startup.querySelector("small").textContent="앱을 완전히 종료한 뒤 다시 열어 주세요. 계속되면 최신 설치 파일로 다시 설치해 주세요."}
-    },8000));
   </script>
   <script type="module" src="./native-app.js"></script>
 </head>`);

@@ -3,7 +3,7 @@ import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuth
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeDeviceAndCloudState} from "./sync-merge.js?v=20260819backupgrids1";
+import {mergeDeviceAndCloudState} from "./sync-merge.js?v=20260819startupclosure1";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);

@@ -27,12 +27,12 @@
   <script src="font-preferences.js?v=20260810e"></script>
   <script>if(matchMedia("(max-width:720px)").matches)document.documentElement.classList.add("native-app")</script>
   <link rel="stylesheet" href="font-preferences.css?v=20260810e">
-  <link rel="stylesheet" href="app.css?v=20260819backupgrids1">
-  <link rel="stylesheet" href="town-fit.css?v=20260819backupgrids1">
-  <link rel="stylesheet" href="interface-system.css?v=20260819backupgrids1">
-  <link rel="stylesheet" href="home-scene-layout.css?v=20260819backupgrids1">
-  <link rel="stylesheet" href="theme.css?v=20260819backupgrids1">
-  <script src="config.js?v=20260819backupgrids1"></script>
+  <link rel="stylesheet" href="app.css?v=20260819startupclosure1">
+  <link rel="stylesheet" href="town-fit.css?v=20260819startupclosure1">
+  <link rel="stylesheet" href="interface-system.css?v=20260819startupclosure1">
+  <link rel="stylesheet" href="home-scene-layout.css?v=20260819startupclosure1">
+  <link rel="stylesheet" href="theme.css?v=20260819startupclosure1">
+  <script src="config.js?v=20260819startupclosure1"></script>
 </head>
 <body>
   <div id="app-loading" class="app-loading-screen" aria-live="polite">
@@ -63,6 +63,30 @@
     </nav>
   </footer>
   <input id="image-picker" type="file" accept="image/*" hidden>
-  <script type="module" src="app.js?v=20260819backupgrids1"></script>
+  <script>
+    (()=>{
+      let failed=false;
+      const fail=()=>{
+        if(failed||document.documentElement.dataset.drawerRendered==="1")return;
+        const loading=document.querySelector("#app-loading"),card=loading?.querySelector(".app-loading-card");
+        if(!loading||!card)return;
+        const language=(navigator.language||"ko").toLowerCase(),copy=language.startsWith("ja")
+          ?["アプリ画面を開けませんでした","データは削除されていません。最新版を確認して、もう一度お試しください。","再試行"]
+          :language.startsWith("en")
+            ?["The app could not open","Your data was not deleted. Check for the latest version and try again.","Try again"]
+            :["앱 화면을 열지 못했어요","데이터는 지워지지 않았어요. 최신 버전인지 확인한 뒤 다시 시도해 주세요.","다시 시도"];
+        failed=true;loading.classList.add("is-failed");
+        card.querySelector("strong").textContent=copy[0];
+        card.querySelector("span").textContent=copy[1];
+        if(!card.querySelector("button")){
+          const retry=document.createElement("button");retry.type="button";retry.textContent=copy[2];retry.onclick=()=>location.reload();card.append(retry);
+        }
+      };
+      window.addEventListener("error",()=>setTimeout(fail,0));
+      window.addEventListener("unhandledrejection",()=>setTimeout(fail,0));
+      window.addEventListener("DOMContentLoaded",()=>setTimeout(fail,12000));
+    })();
+  </script>
+  <script type="module" src="app.js?v=20260819startupclosure1"></script>
 </body>
 </html>
