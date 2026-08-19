@@ -224,10 +224,10 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
   border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;object-fit:cover!important;overflow:hidden!important;
 }
 .home-occupant-popover .home-occupant-visual{border-radius:0!important;background:transparent!important;overflow:visible!important}
-.home-page :is(.home-person-status,.room-pet-status){position:relative!important;display:grid!important;width:max-content!important;min-width:66px!important;max-width:132px!important;margin:0!important;padding:5px 8px!important;border:1px solid #342b251f!important;border-radius:12px!important;background:rgba(250,248,244,.94)!important;box-shadow:0 5px 14px #00000026!important;backdrop-filter:blur(8px)!important;text-align:center!important;white-space:normal!important;color:#2f2924!important;-webkit-text-fill-color:#2f2924!important}
-.home-page :is(.home-person-status,.room-pet-status) :is(b,small){display:block!important;width:100%!important;margin:0!important;color:inherit!important;-webkit-text-fill-color:inherit!important;text-shadow:none!important;white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important}
+.home-page :is(.home-person-status,.room-pet-status){position:relative!important;display:grid!important;width:max-content!important;min-width:66px!important;max-width:132px!important;margin:0!important;padding:5px 8px!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;text-align:center!important;white-space:normal!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.home-page :is(.home-person-status,.room-pet-status) :is(b,small){display:block!important;width:100%!important;margin:0!important;color:inherit!important;-webkit-text-fill-color:inherit!important;text-shadow:0 2px 4px #000,0 0 5px #000!important;white-space:normal!important;word-break:keep-all!important;overflow-wrap:normal!important}
 .home-page :is(.home-person-status,.room-pet-status) small{display:-webkit-box!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important;overflow:hidden!important}
-html[data-color-mode="dark"] .home-page :is(.home-person-status,.room-pet-status){border-color:#78889a66!important;background:#152334ed!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] .home-page :is(.home-person-status,.room-pet-status){border:0!important;background:transparent!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 
 /* Room photographs are deliberately darkened, so their authored title is
    always light regardless of the active color theme. */
@@ -343,8 +343,8 @@ html[data-color-mode][data-visual-theme] .home-page .room-pet>:not(.room-pet-sta
 html[data-color-mode][data-visual-theme] .home-page .room-pets{border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important}
 html[data-color-mode][data-visual-theme] .home-page .room-pet>:is(.room-pet-photo,.room-pet-icon,.room-pet-emoji){filter:none!important;-webkit-mask:none!important;mask:none!important}
 html[data-color-mode][data-visual-theme] .home-page .room-pet>.room-pet-photo{border-radius:50%!important;clip-path:circle(50% at 50% 50%)!important;object-fit:cover!important}
-html[data-color-mode][data-visual-theme] .home-page .room-pet>.room-pet-status{background:rgba(250,248,244,.94)!important;box-shadow:0 5px 14px #00000026!important}
-html[data-color-mode="dark"][data-visual-theme] .home-page .room-pet>.room-pet-status{background:#152334ed!important}
+html[data-color-mode][data-visual-theme] .home-page .room-pet>.room-pet-status{background:transparent!important;box-shadow:none!important}
+html[data-color-mode="dark"][data-visual-theme] .home-page .room-pet>.room-pet-status{background:transparent!important}
 
 html.native-app[data-active-tab="observe"] .scene-action-tea .native-character-stage.visual-mode-ld :is(.native-scene-action-prop,.native-person-action-prop),
 .desktop-observe-scene.scene-action-tea :is(.native-scene-action-prop,.native-person-action-prop),

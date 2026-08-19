@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260819-relation-combinations7";
+const CACHE_VERSION="drawer-village-v20260819-transparent-occupants8";
 const CORE=[
   "./",
   "./index.html",
