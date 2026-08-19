@@ -6,7 +6,7 @@ const root=new URL("../",import.meta.url);
 const output=new URL("../www/",import.meta.url);
 const includedDirectories=new Set(["fonts","icons","world-assets","vendor","shop-assets","theme-assets"]);
 const includedFiles=new Set([
-  "index.html","app.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
+  "index.html","app.css","interface-system.css","home-scene-layout.css","theme.css","site-fixes.css","app.js","auth.js","config.js",
   "font-preferences.css","font-preferences.js","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","sw.js","views.js",
@@ -69,7 +69,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260819billing3-purchase-recovery";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260819nav6-touch-photo";
     if("serviceWorker" in navigator){
       navigator.serviceWorker.getRegistrations().then(items=>Promise.all(items.map(item=>item.unregister()))).catch(()=>{});
     }

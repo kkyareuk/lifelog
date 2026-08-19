@@ -397,7 +397,6 @@ html[data-color-mode][data-active-tab="settings"] .color-mode-options button.on{
 
 /* Older saves may still contain personal colors. They remain readable data, but no longer tint UI. */
 [style*="--own:"]{--own:var(--p)!important;--own-secondary:var(--s)!important}
-[style*="--log-theme:"]{--log-theme:var(--p)!important}
 [style*="--character-own:"]{--character-own:var(--p)!important;--character-secondary:var(--s)!important}
 [style*="--relationship-own:"]{--relationship-own:var(--p)!important;--relationship-own-secondary:var(--s)!important}
 [style*="--native-own:"]{--native-own:var(--p)!important;--native-own-secondary:var(--s)!important}
@@ -627,6 +626,9 @@ html[data-color-mode].native-app .native-sub-header{
   color:var(--ink)!important;
   box-shadow:0 10px 32px var(--theme-shadow)!important;
 }
+html:not(.native-app) #app>header{isolation:isolate}
+html:not(.native-app) #app>header nav{position:relative;z-index:40;pointer-events:auto!important}
+html:not(.native-app) #app>header nav [data-tab]{position:relative;z-index:41;pointer-events:auto!important;touch-action:manipulation}
 html[data-color-mode] :is(
   .panel,.form,.setting-card,.sync-panel,.feedback-card,.font-preview,
   .catalog-kind,.catalog-dex-card,.catalog-card,.favorite-group,
@@ -5923,8 +5925,11 @@ html:not(.native-app) .standard-observe-view>.roster .roster-card small{
 }
 .desktop-observe-log .native-log-card li{
   display:grid;grid-template-columns:55px minmax(0,1fr);gap:10px;padding:10px 12px;
-  border:1px solid var(--line);border-radius:15px;background:color-mix(in srgb,var(--p) 6%,var(--panel));
+  border:1px solid color-mix(in srgb,var(--log-theme,var(--p)) 36%,var(--line));
+  border-left:5px solid var(--log-theme,var(--p));border-radius:15px;
+  background:color-mix(in srgb,var(--log-theme,var(--p)) 11%,var(--panel));
 }
+.desktop-observe-log .native-log-card li time{color:var(--log-theme,var(--p));font-weight:900}
 .desktop-observe-log .native-log-card li>span{display:grid;min-width:0}
 .desktop-observe-log .native-log-card li small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
 .desktop-observe-map-only{display:block!important}
@@ -6179,7 +6184,6 @@ html[data-color-mode][data-active-tab="settings"] .color-mode-options button.on,
 }
 .visual-theme-options button i{background:linear-gradient(135deg,var(--theme-a,#20242a),var(--theme-b,#6d747d))!important}
 [style*="--own:"]{--own:var(--p)!important;--own-secondary:var(--s)!important}
-[style*="--log-theme:"]{--log-theme:var(--p)!important}
 [style*="--character-own:"]{--character-own:var(--p)!important;--character-secondary:var(--s)!important}
 [style*="--relationship-own:"]{--relationship-own:var(--p)!important;--relationship-own-secondary:var(--s)!important}
 [style*="--native-own:"]{--native-own:var(--p)!important;--native-own-secondary:var(--s)!important}
