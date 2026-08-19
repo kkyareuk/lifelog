@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819nav6";
-import {eventFor} from "./simulation.js?v=20260819nav6";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819nav6";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819nav7";
+import {eventFor} from "./simulation.js?v=20260819nav7";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819nav7";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
 
 await initializeLocalMediaState(state);
@@ -1072,8 +1072,6 @@ function openCharacterDeleteDialog(characterId){
   dialog.showModal();
 }
 
-let menuNavigationListenerBound=false;
-
 const defaultCharacterSceneLayout=()=>({x:0,y:0,scale:1,actionX:0,actionY:0});
 const characterSceneLayout=(character,mode)=>({
   ...defaultCharacterSceneLayout(),
@@ -1202,15 +1200,6 @@ function bindCharacterSceneLayoutEditors(){
 }
 
 function bind(){
-  if(!menuNavigationListenerBound){
-    document.addEventListener("click",event=>{
-      const menuButton=event.target.closest?.("[data-tab]");
-      if(!menuButton)return;
-      event.preventDefault();
-      navigateToTab(menuButton.dataset.tab);
-    });
-    menuNavigationListenerBound=true;
-  }
   // Cloud sync intentionally does not copy device-only photos. If an old
   // device URL is unavailable, replace the broken image with the character's
   // initial so the relationship screen stays readable and tappable.
@@ -1218,20 +1207,6 @@ function bind(){
     const showFallback=()=>replaceBrokenAvatar(image);
     image.addEventListener("error",showFallback,{once:true});
     if(image.complete&&image.naturalWidth===0)showFallback();
-  });
-  // iOS Safari에서 장면 합성 레이어가 click target을 바꾸는 경우에도
-  // 고정 메뉴 버튼 자체가 항상 화면 이동을 처리하도록 직접 연결한다.
-  $$("header nav [data-tab], .native-game-menu [data-tab], .native-sub-header [data-tab]").forEach(button=>{
-    const openTab=event=>{
-      event.preventDefault();
-      event.stopPropagation();
-      navigateToTab(button.dataset.tab);
-    };
-    button.onclick=openTab;
-    button.onpointerup=event=>{
-      if(event.pointerType==="mouse")return;
-      openTab(event);
-    };
   });
   const openNativeLog=()=>document.querySelector("[data-native-log-dialog]")?.showModal();
   const toggleNativeMoment=card=>{
@@ -2260,46 +2235,56 @@ window.DrawerVillageNavigation={
   current:()=>state.activeTab
 };
 
-// PC/PWA에서는 장면의 합성 레이어나 가로 스크롤 영역이 메뉴 click을
-// 가로채더라도 최상위 캡처 단계에서 탭 전환을 먼저 끝낸다. Android의
-// 물리 터치 처리는 아래 captureNativeMenuPress가 별도로 담당한다.
-function captureWebMenuClick(event){
-  if(document.documentElement.classList.contains("native-app"))return;
+// 모든 탭 전환은 이 한 경로에서만 처리한다. 예전에는 pointerdown,
+// touchstart, pointerup, click이 각각 render()를 호출했다. 첫 이벤트가
+// 화면을 교체한 뒤 같은 손가락의 다음 이벤트가 새로 생긴 "관찰" 버튼에
+// 전달되어, 탭이 열리자마자 메인 화면으로 되돌아가는 문제가 있었다.
+// 터치는 손을 뗀 pointerup에서, 마우스·키보드는 click에서 한 번만 예약한다.
+let lastTabGesture={tab:"",at:0};
+let pendingTabTimer=0;
+let ignoreSyntheticTabClicksUntil=0;
+function tabButtonFromEvent(event){
   const path=typeof event.composedPath==="function"?event.composedPath():[];
-  const selector="header nav [data-tab]";
-  const button=path.find(node=>node?.matches?.(selector))||event.target?.closest?.(selector);
-  const tab=button?.dataset?.tab;
+  return path.find(node=>node?.matches?.("[data-tab]"))||event.target?.closest?.("[data-tab]");
+}
+function scheduleTabNavigation(tab,event){
   if(!APP_TABS.includes(tab))return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  navigateToTab(tab);
+  const now=Date.now();
+  if(lastTabGesture.tab===tab&&now-lastTabGesture.at<650)return;
+  lastTabGesture={tab,at:now};
+  clearTimeout(pendingTabTimer);
+  pendingTabTimer=window.setTimeout(()=>{
+    pendingTabTimer=0;
+    navigateToTab(tab);
+  },0);
 }
-document.addEventListener("click",captureWebMenuClick,true);
+function captureTabPointerUp(event){
+  if(event.pointerType==="mouse")return;
+  const button=tabButtonFromEvent(event);
+  if(!button)return;
+  // 터치 pointerup 뒤 브라우저가 만드는 click은 render() 이후 새 탭 메뉴에
+  // 떨어질 수도 있다. 잠시 모든 후속 탭 click을 삼켜 최초 선택만 유지한다.
+  ignoreSyntheticTabClicksUntil=Date.now()+750;
+  scheduleTabNavigation(button.dataset.tab,event);
+}
+function captureTabClick(event){
+  const button=tabButtonFromEvent(event);
+  if(!button)return;
+  if(Date.now()<ignoreSyntheticTabClicksUntil){
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
+  }
+  scheduleTabNavigation(button.dataset.tab,event);
+}
+document.addEventListener("pointerup",captureTabPointerUp,true);
+document.addEventListener("click",captureTabClick,true);
 
 window.addEventListener("drawer-village-native-back",event=>{
   if(navigateBackToObserve())event.preventDefault();
 });
-
-// Android WebView can drop the synthetic click when fixed menu buttons sit
-// above composited scene artwork. Capture the physical press before any scene
-// layer can retarget or cancel it. The existing click handlers remain as the
-// keyboard/mouse fallback.
-let lastNativeMenuPress=0;
-function captureNativeMenuPress(event){
-  if(event.type==="pointerdown"&&event.pointerType==="mouse")return;
-  const path=typeof event.composedPath==="function"?event.composedPath():[];
-  const selector=".native-game-menu [data-tab], .native-sub-header [data-tab]";
-  const button=path.find(node=>node?.matches?.(selector))||event.target?.closest?.(selector);
-  if(!button)return;
-  const tab=button.dataset.tab,now=Date.now();
-  if(!APP_TABS.includes(tab)||(tab===state.activeTab&&now-lastNativeMenuPress<400))return;
-  lastNativeMenuPress=now;
-  event.preventDefault();
-  event.stopPropagation();
-  navigateToTab(tab);
-}
-document.addEventListener("pointerdown",captureNativeMenuPress,true);
-document.addEventListener("touchstart",captureNativeMenuPress,{capture:true,passive:false});
 
 function centerMobileTownMap(characterId){
   requestAnimationFrame(()=>{
@@ -3089,7 +3074,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819nav6",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819nav7",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
