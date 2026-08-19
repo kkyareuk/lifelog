@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819notify1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260819notify1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819catalogreturn1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260819catalogreturn1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2354,7 +2354,9 @@ function build(c,date=new Date()){
   const partnerCars=romantic?state.homes[homeIdForDate(romantic,date)]?.cars||[]:[];
   const partnerCanDrive=canDrive(romantic)&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
   const selfCanDrive=canDrive(c)&&homeCars.length;
-  if(destinationPurpose&&destination.id!==homeTown.id){
+  // 사용자가 등록한 일정은 아래에서 실제 종료 시각에 맞춰 귀가 장면을 만든다.
+  // 예전처럼 모든 외부 일정을 밤 8시에 한꺼번에 귀가시키지 않는다.
+  if(destinationPurpose&&destination.id!==homeTown.id&&purpose.kind!=="routine"){
     const travelMinute=Math.max(wake+75,(work?.minute||720)-45);
     const mode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"transit";
     const title=mode==="mount"?`${rideablePet.name}을 타고 ${destination.name}으로 이동 중`:mode==="partner"?`${romantic.name}의 차를 타고 ${destination.name}으로 이동 중`:mode==="car"?`차를 운전해 ${destination.name}으로 이동 중`:`대중교통으로 ${destination.name} 이동 중`;
@@ -2484,21 +2486,37 @@ function build(c,date=new Date()){
     const script=homeScripts[hash(`${c.id}:${dayKey(date)}:home-evening`)%homeScripts.length];
     list.push(homeEntry(c,eveningMinute,script[0],personalityFlavor(c,script[1],"evening",date),script[2],script[4]||{}));
   }
-  const scheduled=(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay());
-  scheduled.forEach(item=>{
+  const scheduled=(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay()).slice().sort((a,b)=>mins(a.start)-mins(b.start));
+  scheduled.forEach((item,index)=>{
     const minute=mins(item.start),place=state.towns.flatMap(t=>(t.places||[]).map(p=>({...p,townId:t.id}))).find(p=>p.id===item.placeId);
-    if(place&&place.townId!==destination.id&&place.townId!==homeTown.id)return;
     const companions=(item.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
     const companionText=companions.length?`${companions.map(x=>x.name).join(", ")}와 함께 `:"";
     const isDate=item.type==="데이트"&&Boolean(companions[0]);
     const purpose=isDate?String(item.title||item.notes||"함께 정한 약속").replace(/^데이트\s*[·:-]?\s*/,"").trim():"";
-    const endMinute=mins(item.end);
+    const rawEndMinute=mins(item.end),endMinute=rawEndMinute<=minute?rawEndMinute+1440:rawEndMinute;
     const dateGroup=isDate?`date-${[c.id,companions[0].id].sort().join("-")}-${dayKey(date)}-${minute}-${hash(purpose).toString(36)}`:"";
-    const dateMeta=isDate?{withId:companions[0].id,mood:"데이트",dateGroup,datePurpose:purpose,dateStartMinute:minute,dateEndMinute:endMinute}:{withId:companions[0]?.id,mood:"일정"};
+    const routineMeta={routineId:item.id,routineStartMinute:minute,routineEndMinute:endMinute};
+    const dateMeta=isDate?{...routineMeta,withId:companions[0].id,mood:"데이트",dateGroup,datePurpose:purpose,dateStartMinute:minute,dateEndMinute:endMinute}:{...routineMeta,withId:companions[0]?.id,mood:"일정"};
     const desc=item.notes||(isDate?`${purpose} 약속에서 정한 일을 ${companions[0].name}와 순서대로 진행하고 있어요.`:`${companionText}${item.type} 일정을 진행하고 있어요. 종료 예정 시각은 ${item.end}예요.`);
     const title=isDate?`${companions[0].name}와 데이트 · ${purpose}`:item.title;
     if(place)list.push(entry(minute,title,desc,{townId:place.townId,placeId:place.id,...dateMeta}));
     else list.push(homeEntry(c,minute,title,desc,item.type==="휴식"?"living":"study",dateMeta));
+    if(place){
+      const next=scheduled[index+1],nextMinute=next?mins(next.start):Infinity;
+      const continuesOutside=Boolean(next?.placeId&&nextMinute<=endMinute+30);
+      if(!continuesOutside){
+        const crossTown=place.townId!==homeTown.id,homeAt=endMinute+(crossTown?35:15);
+        const copy={
+          ko:{travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${place.name}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."},
+          en:{travel:`Heading home after ${item.title||"an outing"}`,travelDesc:`They finished what they were doing at ${place.name} at the planned time and are heading home.`,home:"Back home after the schedule",homeDesc:"They returned from the outing, put away their shoes and outerwear, and are resting at home."},
+          ja:{travel:`${item.title||"外出の予定"}を終えて帰宅中`,travelDesc:`${place.name}での用事を予定時刻に終え、家へ向かっています。`,home:"予定を終えて家に戻ったところ",homeDesc:"外出の予定を終えて帰宅し、靴と上着を片づけて家で休んでいます。"}
+        }[state.uiLanguage]||{
+          travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${place.name}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."
+        };
+        list.push(entry(endMinute,copy.travel,copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,...routineMeta,mood:"이동"}));
+        list.push(homeEntry(c,homeAt,copy.home,copy.homeDesc,"entry",{...routineMeta,routineReturned:true,mood:"귀가"}));
+      }
+    }
   });
   if(homeTown?.era==="medieval"){
     const minute=Math.min(sleepMinute-120,Math.max(wake+210,600));
@@ -2510,7 +2528,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260819-new-character-life1";
+const ENGINE_VERSION="20260819-routine-return1";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}

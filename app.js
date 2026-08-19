@@ -1,9 +1,9 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819notify1";
-import {eventFor} from "./simulation.js?v=20260819notify1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819notify1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819notify1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819notify1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819notify1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819catalogreturn1";
+import {eventFor} from "./simulation.js?v=20260819catalogreturn1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819catalogreturn1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819catalogreturn1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819catalogreturn1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819catalogreturn1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -30,6 +30,7 @@ let observeRosterScroll=0;
 let mobileCharacterStripScroll=0;
 let mobileCharacterEditorScroll=0;
 let resetScrollAfterRender=false;
+let pendingCatalogOpenKey="";
 const guidePending=new Set();
 const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
@@ -721,6 +722,18 @@ function restoreWindowScroll(x,y){
   requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
   setTimeout(restore,40);
 }
+function restoreMainScroll(left,top,openCatalogKeys=[]){
+  const restore=()=>{
+    const main=document.querySelector("#app>main");
+    if(main){main.scrollLeft=left;main.scrollTop=top}
+    openCatalogKeys.forEach(key=>{
+      const [kind,itemId]=String(key).split(":");
+      document.querySelector(`.catalog-dex-card [data-catalog-field][data-kind="${CSS.escape(kind||"")}"][data-item="${CSS.escape(itemId||"")}"]`)?.closest("details")?.setAttribute("open","");
+    });
+  };
+  requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
+  setTimeout(restore,40);
+}
 function render(){
   // Samsung 천지인처럼 여러 단계로 한 글자를 조합하는 키보드는 포커스된
   // input 노드가 교체되는 순간 직전 음절을 다시 확정할 수 있다. 사진 복원,
@@ -739,6 +752,15 @@ function render(){
   document.documentElement.classList.remove("page-switching");
   const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
+  // 앱에서는 window가 아니라 main이 실제 세로 스크롤을 담당한다. 이 값을
+  // 따로 보존하지 않으면 취향 도감의 모든 재렌더가 화면을 맨 위로 보낸다.
+  const previousMain=document.querySelector("#app>main"),previousMainLeft=previousMain?.scrollLeft||0,previousMainTop=previousMain?.scrollTop||0;
+  const openCatalogKeys=[...document.querySelectorAll(".catalog-dex-card[open]")].map(card=>{
+    const field=card.querySelector("[data-catalog-field][data-kind][data-item]");
+    return field?`${field.dataset.kind}:${field.dataset.item}`:"";
+  }).filter(Boolean);
+  if(pendingCatalogOpenKey&&!openCatalogKeys.includes(pendingCatalogOpenKey))openCatalogKeys.push(pendingCatalogOpenKey);
+  pendingCatalogOpenKey="";
   const openCharacterEditor=document.querySelector("[data-mobile-character-editor-dialog][open] .mobile-character-editor-shell");
   if(openCharacterEditor)mobileCharacterEditorScroll=openCharacterEditor.scrollTop;
   resetScrollAfterRender=false;
@@ -782,7 +804,10 @@ function render(){
     // delayed and could briefly place an invisible scroll layer over the nav.
     if(state.activeTab==="town")centerMobileTownMap();
     document.documentElement.dataset.drawerRendered="1";
-    if(preservePageScroll)restoreWindowScroll(previousPageX,previousPageY);
+    if(preservePageScroll){
+      restoreWindowScroll(previousPageX,previousPageY);
+      restoreMainScroll(previousMainLeft,previousMainTop,openCatalogKeys);
+    }
   }catch(error){
     console.error("화면 복구 필요",error);
     document.querySelector("#app").innerHTML=`<section class="panel empty"><h1>화면을 복구하는 중 문제가 생겼어요</h1><p>저장 데이터는 지우지 않았습니다. 아래 버튼으로 다시 불러와 주세요.</p><button class="primary" id="safe-reload">다시 불러오기</button></section>`;
@@ -1890,17 +1915,18 @@ function bind(){
       showToast(type==="gift"?"선물을 건넸어요":type==="exercise"?"함께 운동을 시작했어요":type==="outing"?"함께 나들이를 시작했어요":"물건을 구매했어요");render();
     }else showToast("상대와 물건을 먼저 골라 주세요");
   });
-  $$("[data-add-catalog]").forEach(el=>el.onclick=()=>{addCatalogItem(el.dataset.addCatalog,{name:"새 항목",category:"기타"});render()});
+  $$("[data-add-catalog]").forEach(el=>el.onclick=()=>{
+    const kind=el.dataset.addCatalog,itemId=addCatalogItem(kind,{name:"새 항목",category:"기타"});
+    pendingCatalogOpenKey=`${kind}:${itemId}`;
+    render();
+  });
   $$("[data-catalog-field]").forEach(el=>el.onchange=()=>{
     const value=["spicy","sweet"].includes(el.dataset.catalogField)?Number(el.value):el.value;
     updateCatalogItem(el.dataset.kind,el.dataset.item,{[el.dataset.catalogField]:value});
     if(el.dataset.catalogField==="category"){
-      const y=window.scrollY,kind=el.dataset.kind,item=el.dataset.item;
+      const kind=el.dataset.kind,item=el.dataset.item;
+      pendingCatalogOpenKey=`${kind}:${item}`;
       render();
-      requestAnimationFrame(()=>{
-        document.querySelector(`[data-catalog-field="category"][data-kind="${CSS.escape(kind)}"][data-item="${CSS.escape(item)}"]`)?.closest("details")?.setAttribute("open","");
-        window.scrollTo({top:y});
-      });
       return;
     }
     const detail=el.closest("details");if(detail)detail.open=true;
@@ -1908,7 +1934,9 @@ function bind(){
   });
   $$("[data-catalog-keyword]").forEach(el=>el.onclick=()=>{
     const item=state.catalog?.[el.dataset.kind]?.find(x=>x.id===el.dataset.catalogKeyword),list=item?.keywords||[],value=el.dataset.value;
-    updateCatalogItem(el.dataset.kind,el.dataset.catalogKeyword,{keywords:list.includes(value)?list.filter(x=>x!==value):[...list,value]});render();
+    const selected=!list.includes(value);
+    updateCatalogItem(el.dataset.kind,el.dataset.catalogKeyword,{keywords:selected?[...list,value]:list.filter(x=>x!==value)});
+    el.classList.toggle("on",selected);
   });
   $$("[data-delete-catalog]").forEach(el=>el.onclick=()=>{if(confirm("이 항목을 삭제할까요?")){deleteCatalogItem(el.dataset.kind,el.dataset.deleteCatalog);render()}});
   $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
@@ -1960,7 +1988,9 @@ function bind(){
   });
   $$('[data-fashion-attr]').forEach(button=>button.onclick=()=>{
     const item=state.catalog.fashion.find(value=>value.id===button.dataset.item);if(!item)return;const field=button.dataset.fashionAttr,value=button.dataset.value,list=Array.isArray(item[field])?[...item[field]]:[];
-    updateCatalogItem("fashion",item.id,{[field]:list.includes(value)?list.filter(entry=>entry!==value):[...list,value]});render();
+    const selected=!list.includes(value);
+    updateCatalogItem("fashion",item.id,{[field]:selected?[...list,value]:list.filter(entry=>entry!==value)});
+    button.classList.toggle("on",selected);
   });
   $$('[data-home-visual-mode]').forEach(button=>button.onclick=()=>{
     state.homeVisualMode=button.dataset.homeVisualMode==="ld"?"ld":"sd";
@@ -3396,7 +3426,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819notify1").catch(error=>{
+  import("./auth.js?v=20260819catalogreturn1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3411,7 +3441,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819notify1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819catalogreturn1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

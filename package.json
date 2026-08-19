@@ -14,7 +14,8 @@
     "test:ime": "node scripts/check-ime-editor-stability.mjs",
     "test:lifecycle": "node scripts/check-new-character-lifecycle.mjs",
     "test:character-ui": "node scripts/check-character-editor-ui-stability.mjs",
-    "test:notifications": "node scripts/check-character-notifications.mjs"
+    "test:notifications": "node scripts/check-character-notifications.mjs",
+    "test:catalog-routine": "node scripts/check-catalog-routine-stability.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
