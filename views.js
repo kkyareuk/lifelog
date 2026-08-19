@@ -2488,6 +2488,12 @@ Object.assign(UI_TEXT.ja,{
   "질문 팝업과 캐릭터가 직접 하는 말에 실제로 반영돼요. ‘자동’은 성격 유형을 보고 어울리는 말투를 고릅니다.":"キャラクターの質問ポップアップと直接の台詞に反映されます。「自動」は性格タイプから合う話し方を選びます。"
 });
 Object.assign(UI_TEXT.en,{
+  "가장 중요한 사람":"Most important person","건물 삭제":"Delete building","건물 정보 보기":"View building details","건축":"Architecture","검·도검":"Swords · blades","검지팡이":"Sword cane","게임 방송":"Gaming streams","게임 예능":"Gaming variety shows","게임기":"Game console","격투":"Martial arts","경갑":"Light armor","경제":"Economics","계정·클라우드 데이터 삭제 안내":"Account & cloud data deletion guide"
+});
+Object.assign(UI_TEXT.ja,{
+  "가장 중요한 사람":"最も大切な人","건물 삭제":"建物を削除","건물 정보 보기":"建物情報を見る","건축":"建築","검·도검":"剣・刀剣","검지팡이":"仕込み杖","게임 방송":"ゲーム配信","게임 예능":"ゲームバラエティ","게임기":"ゲーム機","격투":"格闘","경갑":"軽装鎧","경제":"経済","계정·클라우드 데이터 삭제 안내":"アカウント・クラウドデータ削除案内"
+});
+Object.assign(UI_TEXT.en,{
   "편집할 항목을 선택하세요.":"Choose what you want to edit.","위치 바꾸기":"Reorder","편집을 저장하고 닫기":"Save edits and close","편집 완료·저장":"Finish editing & save",
   "사진·기본 정보·생활 습관":"Photo · basics · daily habits","외형·건강·접근성":"Appearance · health · accessibility","성향·서사·인지":"Personality · narrative · cognition","취미·음식·콘텐츠":"Hobbies · food · media","최애·소지품":"Favorites · belongings","이미지·표현·파일":"Images · display · files",
   "프로필 사진 첨부":"Add a profile photo","여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.":"Add a photo here. Profile photos appear as full-bleed circles and stay separate from SD icons.","사진 파일 선택":"Choose photo file","사진 지우기":"Remove photo","미등록":"Not added","투명 SD 아이콘과 단일 LD 일러스트는 ‘사진·SD·LD’ 탭에서 따로 등록해요.":"Add a transparent SD icon and one LD illustration separately under Images · SD · LD.",
