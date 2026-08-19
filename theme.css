@@ -226,6 +226,9 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.rou
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
+html.native-app[data-active-tab="home"] .home-page .furniture button{
+  border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;
+}
 html[data-color-mode][data-visual-theme][data-active-tab="settings"] .settings-shell :is(input,select,textarea,button:not(.primary)),
 html[data-color-mode][data-visual-theme][data-active-tab="catalog"] .catalog-shell :is(input,select,textarea,button:not(.primary)),
 html[data-color-mode][data-visual-theme][data-active-tab="relationship"] .relationship-page :is(input,select,textarea,button:not(.primary)){

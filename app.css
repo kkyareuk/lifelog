@@ -3907,12 +3907,12 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   background:#fff;
 }
 .native-app .native-scene-action-prop.catalog-food-photo{
-  left:78%;top:76%;width:68px;height:68px;padding:3px;border:2px solid #fff9;
-  border-radius:50%;background:#fff;box-shadow:0 10px 24px #0007;overflow:hidden;
+  left:78%;top:76%;width:68px;height:68px;padding:0;border:0;
+  border-radius:50%;background:transparent;box-shadow:0 9px 20px #0006;overflow:hidden;
 }
 .native-app .native-person-action-prop.catalog-food-photo{
-  left:72%;top:70%;width:44px;height:44px;padding:2px;border:2px solid #fff9;
-  border-radius:50%;background:#fff;box-shadow:0 7px 16px #0006;overflow:hidden;
+  left:72%;top:70%;width:44px;height:44px;padding:0;border:0;
+  border-radius:50%;background:transparent;box-shadow:0 7px 14px #0005;overflow:hidden;
 }
 .native-app :is(.native-scene-action-prop,.native-person-action-prop).catalog-food-photo img{
   border-radius:50%;object-fit:cover;background:transparent;
