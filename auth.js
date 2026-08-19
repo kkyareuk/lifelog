@@ -3,6 +3,7 @@ import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuth
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
+import {mergeDeviceAndCloudState} from "./sync-merge.js?v=20260819mediafloor1";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -533,7 +534,7 @@ async function upload({silent=false,reason=""}={}){
     // 캐릭터·관계·집·방보다 우선한다. 이 병합이 없으면 다른 기기의 낡은 배열이
     // 삭제한 관계를 같은 ID 또는 다른 ID로 되살릴 수 있다.
     const tombstoneSafeState=previousGameState
-      ?applyLocalTombstones(localState,previousGameState)
+      ?mergeDeviceAndCloudState(localState,previousGameState)
       :localState;
     const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState),previousGameState);
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
@@ -593,19 +594,7 @@ async function download({automatic=false}={}){
     const characterIds=value=>new Set(Array.isArray(value?.order)?value.order:Object.keys(value?.characters||{}));
     const localIds=characterIds(localState),remoteIds=characterIds(remote);
     const differentCharacters=localIds.size>0&&remoteIds.size>0&&(localIds.size!==remoteIds.size||[...localIds].some(id=>!remoteIds.has(id)));
-    if(differentCharacters){
-      if(automatic){
-        status(`${accountName()} · 기기와 클라우드 인물 구성이 달라 자동 불러오기 중지`);
-        toast("인물 구성이 달라 자동 동기화를 멈췄어요 · 설정에서 어느 데이터를 쓸지 선택해 주세요");
-        return false;
-      }
-      if(!confirm(`현재 기기에는 ${localCount}명, 클라우드에는 ${remoteCount}명이 있어요.\n\n클라우드 데이터로 기기의 마을 전체를 교체할까요?\n취소하면 현재 기기 데이터를 그대로 유지합니다.`)){
-        status(`${accountName()} · 기기 데이터 유지`);
-        toast("기기의 캐릭터 데이터를 유지했습니다");
-        return false;
-      }
-    }
-    if(automatic&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
+    if(automatic&&!differentCharacters&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
       status(`${accountName()} · 더 최신인 기기 데이터 유지`);
       toast("기기의 최신 변경사항을 유지했습니다");
       return false;
@@ -614,10 +603,15 @@ async function download({automatic=false}={}){
       const raw=localStorage.getItem("drawer-village-game-v1");
       if(raw)localStorage.setItem("drawer-village-recovery-before-cloud",raw);
     }catch(error){console.warn("클라우드 불러오기 전 복구본을 만들지 못했습니다",error)}
-    window.ParallelCity.replaceState(applyLocalTombstones(remote,localState));
+    const imported=differentCharacters
+      ?mergeDeviceAndCloudState(localState,remote)
+      :applyLocalTombstones(remote,localState);
+    window.ParallelCity.replaceState(imported);
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
     status(`${accountName()} · ${accessLabel()} · 불러오기 완료`);
-    toast(automatic?"자동으로 불러왔습니다":"불러왔습니다");
+    toast(differentCharacters
+      ?`기기와 클라우드 인물을 합쳐 ${Object.keys(imported.characters||{}).length}명 불러왔습니다`
+      :automatic?"자동으로 불러왔습니다":"불러왔습니다");
     return true;
   }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false}
 }

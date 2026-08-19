@@ -87,6 +87,8 @@ async function resolveLocalRef(ref){
   }
 }
 
+export const isPendingLocalImage=value=>isLocalRef(value);
+
 export async function initializeLocalMediaState(root){
   navigator.storage?.persist?.().catch(()=>{});
   const jobs=[];
@@ -94,23 +96,27 @@ export async function initializeLocalMediaState(root){
     if(!node||typeof node!=="object")return;
     Object.keys(node).forEach(key=>{
       const value=node[key];
-      if(isLocalRef(value))jobs.push(async()=>{node[key]=await resolveLocalRef(value)});
-      else if(isData(value))jobs.push(async()=>{await persistLocalImage(value)});
+      if(isLocalRef(value))jobs.push(async()=>{
+        const resolved=await resolveLocalRef(value);
+        if(isData(resolved))node[key]=resolved;
+        return isData(resolved);
+      });
+      else if(isData(value))jobs.push(async()=>{await persistLocalImage(value);return true});
       else if(value&&typeof value==="object")walk(value);
     });
   };
   walk(root);
   // 사진 한 장의 IndexedDB 응답이 늦어도 나머지 사진 복원을 막지 않는다.
   // 동시에 너무 많은 Blob을 Data URL로 바꾸지 않도록 작은 작업자 묶음으로 처리한다.
-  let cursor=0;
+  let cursor=0,resolved=0;
   const workers=Array.from({length:Math.min(4,jobs.length)},async()=>{
     while(cursor<jobs.length){
       const job=jobs[cursor++];
-      await job();
+      if(await job())resolved+=1;
     }
   });
   await Promise.allSettled(workers);
-  return jobs.length;
+  return {found:jobs.length,resolved,pending:Math.max(0,jobs.length-resolved)};
 }
 
 export function serializeLocalMediaState(root){
@@ -152,18 +158,43 @@ export function preserveDevicePhotos(deviceState,incomingState){
   walk(deviceState,next);return next;
 }
 
-export async function localMediaUsage(){
+const estimatedDataUrlBytes=value=>{
+  const body=String(value||"").split(",",2)[1]||"";
+  return Math.max(0,Math.floor(body.length*3/4)-(body.endsWith("==")?2:body.endsWith("=")?1:0));
+};
+
+export async function localMediaUsage(root){
+  let records=[];
   try{
-    const records=await new Promise((resolve,reject)=>openDb().then(db=>{
+    records=await new Promise((resolve,reject)=>openDb().then(db=>{
       const request=db.transaction(STORE_NAME,"readonly").objectStore(STORE_NAME).getAll();
       request.onsuccess=()=>{db.close();resolve(request.result||[])};
       request.onerror=()=>{db.close();reject(request.error)};
     },reject));
-    return{count:records.length,bytes:records.reduce((sum,item)=>sum+(Number(item.size)||0),0)};
-  }catch{return{count:0,bytes:0}}
+  }catch(error){console.warn("기기 사진 저장소 용량을 읽지 못해 현재 화면의 사진만 계산합니다",error)}
+  const storedIds=new Set(records.map(item=>String(item.id))),legacy=new Set(),cloud=new Set();
+  const walk=node=>{
+    if(typeof node==="string"){
+      if(isData(node)){
+        const ref=dataToRef.get(node),id=ref?.slice(REF_PREFIX.length);
+        if(!id||!storedIds.has(id))legacy.add(node);
+      }else if(isOldCloudPhoto(node))cloud.add(node);
+      return;
+    }
+    if(!node||typeof node!=="object")return;
+    Object.values(node).forEach(walk);
+  };
+  walk(root);
+  return{
+    count:records.length+legacy.size,
+    bytes:records.reduce((sum,item)=>sum+(Number(item.size)||0),0)+[...legacy].reduce((sum,value)=>sum+estimatedDataUrlBytes(value),0),
+    cloudCount:cloud.size,
+    indexedCount:records.length,
+    legacyCount:legacy.size
+  };
 }
 
 globalThis.DrawerVillageLocalMedia={
   persistLocalImage,initializeLocalMediaState,serializeLocalMediaState,
-  informationOnlyState,preserveDevicePhotos,localMediaUsage
+  informationOnlyState,preserveDevicePhotos,localMediaUsage,isPendingLocalImage
 };

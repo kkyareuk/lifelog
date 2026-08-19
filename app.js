@@ -1,22 +1,29 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819navigationtouch1";
-import {eventFor} from "./simulation.js?v=20260819navigationtouch1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819navigationtouch1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819navigationtouch1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819navigationtouch1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819navigationtouch1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819mediafloor1";
+import {eventFor} from "./simulation.js?v=20260819mediafloor1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819mediafloor1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260819mediafloor1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819mediafloor1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819mediafloor1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
-const localMediaReady=initializeLocalMediaState(state).then(restored=>{
-  if(restored){
-    save(true,false);
-    render();
-  }
-  return restored;
-}).catch(error=>{
-  console.warn("기기 사진 복원을 건너뛰고 앱을 계속 실행합니다",error);
-  return 0;
-});
+let localMediaHydration=null,lastLocalMediaResult={found:0,resolved:0,pending:0};
+const refreshLocalMedia=()=>{
+  if(localMediaHydration)return localMediaHydration;
+  localMediaHydration=initializeLocalMediaState(state).then(result=>{
+    lastLocalMediaResult=result;
+    if(result.resolved){
+      save(true,false);
+      render();
+    }
+    return result;
+  }).catch(error=>{
+    console.warn("기기 사진 복원을 잠시 미루고 앱을 계속 실행합니다",error);
+    lastLocalMediaResult={found:0,resolved:0,pending:0};return lastLocalMediaResult;
+  }).finally(()=>{localMediaHydration=null});
+  return localMediaHydration;
+};
+const localMediaReady=refreshLocalMedia();
 window.DrawerVillageLocalMedia={...(window.DrawerVillageLocalMedia||{}),ready:localMediaReady};
 
 let pendingImage=null;
@@ -67,8 +74,14 @@ function showInstallButton(){
 }
 const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
+const floorLabel=value=>state.uiLanguage==="en"?`Floor ${value}`:state.uiLanguage==="ja"?`${value}階`:`${value}층`;
+const weekdayLabels=()=>state.uiLanguage==="en"?["Sun","Mon","Tue","Wed","Thu","Fri","Sat"]:state.uiLanguage==="ja"?["日","月","火","水","木","金","土"]:["일","월","화","수","목","금","토"];
 function replaceBrokenAvatar(image){
   if(!image?.isConnected)return;
+  // IndexedDB 복원이 끝나기 전의 내부 참조는 실제 손상 파일이 아니다.
+  // 거대한 글자 대체물로 바꾸지 않고 숨겨 두면 포그라운드 복원 뒤
+  // 정상 이미지로 다시 렌더링할 수 있다.
+  if(isPendingLocalImage(image.getAttribute("src"))){image.hidden=true;return}
   const fallback=document.createElement("span");
   const extra=[...image.classList].filter(name=>!["sprite","avatar","profile-photo-fallback"].includes(name));
   fallback.className=["avatar","synced-avatar-fallback",...extra].join(" ");
@@ -535,16 +548,20 @@ function enhanceDynamicForms(){
       ja:{title:"写真ストレージ",usage:"端末の使用量を確認中…",summary:"原本はこの端末に残し、切り抜かない保存用コピーをGoogleアカウントと同期します。"}
     }[state.uiLanguage]||{title:"사진 저장 공간",usage:"기기 사용량 확인 중…",summary:"원본은 이 기기에 유지하고, 자르지 않은 저장용 사본을 Google 계정과 동기화해요."};
     const meter=document.createElement("div");meter.className="storage-meter";meter.innerHTML=`<h3>${storageCopy.title}</h3><div><i style="width:0"></i></div><b>${storageCopy.usage}</b><small>${storageCopy.summary}</small>`;sync.append(meter);
-    localMediaUsage().then(usage=>{
+    localMediaUsage(state).then(usage=>{
       if(!meter.isConnected)return;
       const amount=usage.bytes===0?"0B":usage.bytes<1048576?`${Math.max(0.1,usage.bytes/1024).toFixed(1)}KB`:`${(usage.bytes/1048576).toFixed(1)}MB`;
-      meter.querySelector("b").textContent=state.uiLanguage==="en"?`${usage.count} photos · ${amount} on this device`:state.uiLanguage==="ja"?`${usage.count}枚・この端末で${amount}`:`사진 ${usage.count}장 · 이 기기에서 ${amount} 사용`;
+      const cloudUsage=window.ParallelCityAuth?.getInfo?.().storageUsage||{},cloudCount=Math.max(Number(cloudUsage.count)||0,Number(usage.cloudCount)||0),cloudBytes=Number(cloudUsage.bytes)||0;
+      const cloudAmount=cloudBytes===0?"0B":cloudBytes<1048576?`${Math.max(0.1,cloudBytes/1024).toFixed(1)}KB`:`${(cloudBytes/1048576).toFixed(1)}MB`;
+      meter.querySelector("b").textContent=state.uiLanguage==="en"?`Device originals ${usage.count} · ${amount} / Cloud copies ${cloudCount} · ${cloudAmount}`:state.uiLanguage==="ja"?`端末の原本 ${usage.count}枚・${amount} / クラウド ${cloudCount}枚・${cloudAmount}`:`기기 원본 ${usage.count}장 · ${amount} / 클라우드 사본 ${cloudCount}장 · ${cloudAmount}`;
+      const maximum=Number(cloudUsage.maxBytes)||20*1048576;
+      meter.querySelector("i").style.width=`${Math.min(100,cloudBytes/maximum*100)}%`;
     });
   }
 }
 const addRoutine=characterId=>{
   state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
-  const item={id:crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
+  const id=crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,item={id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
   state.routines[characterId].push(item);save(true);return item.id;
 };
 const updateRoutine=(characterId,id,patch)=>{const item=state.routines[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);save(true)}};
@@ -624,17 +641,66 @@ function openRoomEditor(homeId,roomKey){
   const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
   const drawFurniture=()=>{const list=ROOM_EDITOR_FURNITURE[room.type]||ROOM_EDITOR_FURNITURE.other;return list.map(item=>`<button type="button" data-room-furniture="${item}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")};
   const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>크기에 맞춰 다른 방과 겹치지 않게 자동 배치돼요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
+  const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>처음 배치할 때의 기본 크기이며, 집 화면에서는 모서리를 끌어 더 자유롭게 바꿀 수 있어요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
   const titleToneField=document.createElement("label");
   titleToneField.innerHTML=`방 제목 색<select name="titleTone"><option value="light" ${room.titleTone!=="dark"?"selected":""}>밝은 글자</option><option value="dark" ${room.titleTone==="dark"?"selected":""}>어두운 글자</option></select><small>사진 밝기에 맞춰 방 이름이 잘 보이는 쪽을 고르세요.</small>`;
   dialog.querySelector(".room-editor-fields").insertBefore(titleToneField,dialog.querySelector('[name="type"]').closest("label"));
-  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",size:dialog.querySelector('[name="size"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,titleTone:dialog.querySelector('[name="titleTone"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
+  const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floor:Number(dialog.querySelector('[name="floor"]').value)||1,size:dialog.querySelector('[name="size"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,titleTone:dialog.querySelector('[name="titleTone"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
   dialog.querySelectorAll("[data-room-furniture]").forEach(button=>button.onclick=()=>{toggleFurniture(homeId,roomKey,button.dataset.roomFurniture);button.classList.toggle("on")});
+  dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
   dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
   dialog.onclose=()=>{if(dialog.returnValue==="save"){sync();save(true);render()}dialog.remove()};
-  document.body.append(dialog);dialog.showModal();
+  translateDynamicInterface(dialog);document.body.append(dialog);dialog.showModal();
+}
+
+function captureRoomCanvasLayouts(canvas){
+  const box=canvas?.getBoundingClientRect();if(!box?.width||!box?.height)return false;
+  canvas.querySelectorAll(".room[data-room-key]").forEach(room=>{
+    const rect=room.getBoundingClientRect(),width=Math.max(16,Math.min(100,rect.width/box.width*100)),height=Math.max(16,Math.min(100,rect.height/box.height*100));
+    updateRoom(canvas.dataset.homeId,room.dataset.roomKey,{layout:{x:Math.max(0,Math.min(100-width,(rect.left-box.left)/box.width*100)),y:Math.max(0,Math.min(100-height,(rect.top-box.top)/box.height*100)),w:width,h:height}},false);
+  });
+  save(true);return true;
+}
+
+function bindRoomGeometryHandle(handle,mode){
+  let pointerId=null,startX=0,startY=0,startLayout=null,room=null,canvas=null;
+  const finish=event=>{
+    if(pointerId===null)return;
+    if(handle.hasPointerCapture(pointerId))handle.releasePointerCapture(pointerId);
+    pointerId=null;room?.classList.remove("room-dragging");
+    if(startLayout&&room)updateRoom(handle.dataset.homeId,mode==="move"?handle.dataset.roomDrag:handle.dataset.roomResize,{layout:{
+      x:parseFloat(room.style.getPropertyValue("--mobile-room-x"))||0,
+      y:parseFloat(room.style.getPropertyValue("--mobile-room-y"))||0,
+      w:parseFloat(room.style.getPropertyValue("--mobile-room-w"))||startLayout.w,
+      h:parseFloat(room.style.getPropertyValue("--mobile-room-h"))||startLayout.h
+    }},true);
+    event?.preventDefault?.();event?.stopPropagation?.();
+  };
+  handle.onclick=event=>{event.preventDefault();event.stopPropagation()};
+  handle.onpointerdown=event=>{
+    event.preventDefault();event.stopPropagation();
+    room=handle.closest(".room");canvas=handle.closest("[data-room-canvas]");if(!room||!canvas)return;
+    if(!state.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout)captureRoomCanvasLayouts(canvas);
+    const saved=state.homes[handle.dataset.homeId]?.rooms?.[room.dataset.roomKey]?.layout;if(!saved)return;
+    startLayout={...saved};startX=event.clientX;startY=event.clientY;pointerId=event.pointerId;
+    handle.setPointerCapture(pointerId);room.classList.add("room-dragging");
+  };
+  handle.onpointermove=event=>{
+    if(pointerId!==event.pointerId||!startLayout||!canvas)return;
+    event.preventDefault();event.stopPropagation();
+    const box=canvas.getBoundingClientRect(),dx=(event.clientX-startX)/box.width*100,dy=(event.clientY-startY)/box.height*100;
+    if(mode==="move"){
+      room.style.setProperty("--mobile-room-x",`${Math.max(0,Math.min(100-startLayout.w,startLayout.x+dx))}%`);
+      room.style.setProperty("--mobile-room-y",`${Math.max(0,Math.min(100-startLayout.h,startLayout.y+dy))}%`);
+    }else{
+      room.style.setProperty("--mobile-room-w",`${Math.max(16,Math.min(100-startLayout.x,startLayout.w+dx))}%`);
+      room.style.setProperty("--mobile-room-h",`${Math.max(16,Math.min(100-startLayout.y,startLayout.h+dy))}%`);
+    }
+  };
+  handle.onpointerup=finish;handle.onpointercancel=finish;
 }
 
 function showOnboarding(){
@@ -738,7 +804,8 @@ function replaceFeedbackFormWithEmailLink(){
     `Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone||"unknown"}`,
     `Online: ${navigator.onLine?"yes":"no"}`,
     `Theme: ${state.colorMode||"light"} / ${state.visualTheme||"monochrome"}`,
-    `Data counts: characters ${state.order?.length||0}, towns ${state.towns?.length||0}`
+    `Data counts: characters ${state.order?.length||0}, towns ${state.towns?.length||0}`,
+    `Media restore: found ${lastLocalMediaResult.found}, restored ${lastLocalMediaResult.resolved}, pending ${lastLocalMediaResult.pending}`
   ].join("\n");
   const links=text.types.map(([label,prefix,hint])=>{
     const subject=encodeURIComponent(`[${state.uiLanguage==="ja"?"ひきだし村":state.uiLanguage==="en"?"Drawer Village":"서랍마을"}][${prefix}]`);
@@ -1621,44 +1688,22 @@ function bind(){
     const opened=window.open(link.href,"_blank");
     if(!opened)window.location.href="mailto:kkyaareuk@gmail.com";
   }));
-  $$("[data-add-room]").forEach(button=>button.addEventListener("click",()=>{addRoom(state.activeHomeId);render()}));
+  $$("[data-add-room]").forEach(button=>button.addEventListener("click",()=>{
+    const canvas=button.closest("[data-room-canvas]")||document.querySelector(`[data-room-canvas][data-home-id="${CSS.escape(state.activeHomeId||"")}"]`);
+    if(canvas?.querySelector(".room"))captureRoomCanvasLayouts(canvas);
+    addRoom(state.activeHomeId,state.homes[state.activeHomeId]?.activeFloor||1);render();
+  }));
+  $$("[data-home-floor]").forEach(button=>button.addEventListener("click",()=>{setActiveHomeFloor(button.dataset.homeId,button.dataset.homeFloor);render()}));
   $$("[data-open-room-editor]").forEach(el=>{
     el.onclick=event=>{
-      if(event.target.closest("[data-home-person],[data-home-occupant],.room-pet,.room-drag-handle"))return;
+      if(event.target.closest("[data-home-person],[data-home-occupant],.room-pet,.room-drag-handle,.room-resize-handle"))return;
       event.stopPropagation();
       openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor);
     };
     el.onkeydown=event=>{if(["Enter"," "].includes(event.key)){event.preventDefault();openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor)}};
   });
-  $$("[data-room-drag]").forEach(handle=>{
-    let startX=0,startY=0,moved=false,targetRoom=null;
-    handle.onclick=event=>event.stopPropagation();
-    handle.onpointerdown=event=>{
-      event.preventDefault();event.stopPropagation();
-      handle.setPointerCapture(event.pointerId);
-      startX=event.clientX;startY=event.clientY;moved=false;targetRoom=null;
-      handle.closest(".room")?.classList.add("room-dragging");
-    };
-    handle.onpointermove=event=>{
-      if(!handle.hasPointerCapture(event.pointerId))return;
-      if(Math.hypot(event.clientX-startX,event.clientY-startY)>8)moved=true;
-      if(!moved)return;
-      document.querySelectorAll(".room-drop-target").forEach(room=>room.classList.remove("room-drop-target"));
-      const candidate=document.elementFromPoint(event.clientX,event.clientY)?.closest?.("[data-room-key]");
-      if(candidate&&candidate.dataset.roomKey!==handle.dataset.roomDrag){
-        targetRoom=candidate;
-        targetRoom.classList.add("room-drop-target");
-      }
-    };
-    handle.onpointerup=event=>{
-      if(handle.hasPointerCapture(event.pointerId))handle.releasePointerCapture(event.pointerId);
-      handle.closest(".room")?.classList.remove("room-dragging");
-      document.querySelectorAll(".room-drop-target").forEach(room=>room.classList.remove("room-drop-target"));
-      if(moved&&targetRoom&&reorderRoom(handle.dataset.homeId,handle.dataset.roomDrag,targetRoom.dataset.roomKey)){
-        render();showToast("방 위치를 자석처럼 다시 맞췄어요");
-      }
-    };
-  });
+  $$("[data-room-drag]").forEach(handle=>bindRoomGeometryHandle(handle,"move"));
+  $$("[data-room-resize]").forEach(handle=>bindRoomGeometryHandle(handle,"resize"));
   $$("[data-open-home-feature]").forEach(button=>button.onclick=()=>{
     const card=button.closest("[data-home-card]"),panel=card?.querySelector(`[data-home-feature="${CSS.escape(button.dataset.openHomeFeature)}"]`);
     if(!panel)return;
@@ -1777,6 +1822,7 @@ function bind(){
     const apply=()=>updateHome(el.dataset.homeId,{[el.dataset.homeField]:el.value});
     el.oninput=apply;el.onchange=apply;
   });
+  $$("[data-home-floor-count]").forEach(el=>el.onchange=()=>{setHomeFloorCount(el.dataset.homeId,el.value);render();showToast(`${el.value}층 집으로 바꿨어요`)});
   $$("[data-delete-home]").forEach(el=>el.onclick=()=>{
     const home=state.homes[el.dataset.deleteHome];if(!home)return;
     if(confirm(`‘${home.name}’을 삭제할까요?\n\n이 집의 방·사진·반려생물·자동차도 함께 삭제됩니다. 연결된 캐릭터는 삭제되지 않고 다른 집 연결은 유지됩니다.`)){
@@ -2942,10 +2988,11 @@ function focusHomeCharacter(id){
 
 function openRoutineDialog(id){
   const c=active(),item=state.routines[c.id]?.find(r=>r.id===id);if(!item)return;
+  const seriesId=String(item.seriesId||item.id),series=(state.routines[c.id]||[]).filter(r=>String(r.seriesId||r.id)===seriesId),selectedDays=new Set(series.map(r=>Number(r.day)));
   const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog";
   dialog.innerHTML=`<form method="dialog"><h2>주간 일정 편집</h2>
-    <label>요일<select name="day">${["일","월","화","수","목","금","토"].map((day,index)=>`<option value="${index}" ${item.day===index?"selected":""}>${day}요일</option>`).join("")}</select></label>
+    <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div>${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}> ${day}</label>`).join("")}</div><small>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
     <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
@@ -2954,9 +3001,13 @@ function openRoutineDialog(id){
     <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("")}</fieldset>
     <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
     <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
-  document.body.append(dialog);
+  translateDynamicInterface(dialog);document.body.append(dialog);
   dialog.onclose=()=>{
-    if(dialog.returnValue==="save")updateRoutine(c.id,id,{day:Number(dialog.querySelector("[name=day]").value),start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    if(dialog.returnValue==="save"){
+      const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
+      if(days.length)updateRoutineDays(c.id,id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+      else showToast("일정을 적용할 요일을 하나 이상 골라 주세요");
+    }
     dialog.remove();render();
   };
   dialog.showModal();
@@ -3518,8 +3569,13 @@ setTimeout(maybeShowDailyCharacterQuestion,1200);
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
   if(Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
 });
-window.addEventListener("focus",()=>setTimeout(maybeShowDailyCharacterQuestion,250));
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")setTimeout(maybeShowDailyCharacterQuestion,250)});
+const restoreForegroundState=()=>{
+  refreshLocalMedia();
+  setTimeout(maybeShowDailyCharacterQuestion,250);
+};
+window.addEventListener("focus",restoreForegroundState);
+window.addEventListener("pageshow",restoreForegroundState);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")restoreForegroundState()});
 
 let automaticCloudSyncTimer=0;
 document.addEventListener("change",event=>{
@@ -3544,7 +3600,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819navigationtouch1").catch(error=>{
+  import("./auth.js?v=20260819mediafloor1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3559,7 +3615,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819navigationtouch1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819mediafloor1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

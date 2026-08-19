@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819navigationtouch1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819navigationtouch1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819mediafloor1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819mediafloor1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -22,12 +22,12 @@ const homeMapPosition=index=>{
   return {mapX:Math.max(6,Math.min(94,slot[0]+(round%3-1)*4)),mapY:Math.max(7,Math.min(92,slot[1]+(round%2?3:-2))),mapScale:1.08};
 };
 const rooms=()=>({
-  living:{name:"거실",type:"living",size:"큰 방",order:0,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["소파","TV","책장"]},
-  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["냉장고","조리대","식탁"]},
-  entry:{name:"현관",type:"entry",size:"작은 방",order:2,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["신발장","전신거울"]},
-  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["샤워부스","세면대"]},
-  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["침대","옷장"]},
-  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["책상","컴퓨터"]}
+  living:{name:"거실",type:"living",size:"큰 방",order:0,floor:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["소파","TV","책장"]},
+  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,floor:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["냉장고","조리대","식탁"]},
+  entry:{name:"현관",type:"entry",size:"작은 방",order:2,floor:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["신발장","전신거울"]},
+  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,floor:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["샤워부스","세면대"]},
+  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,floor:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["침대","옷장"]},
+  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,floor:1,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["책상","컴퓨터"]}
 });
 const ROOM_SIZES=["작은 방","보통 방","큰 방","넓고 긴 방"];
 const defaultBodyProfile=()=>({
@@ -178,7 +178,7 @@ const normalizeHomeSceneLayout=value=>{
   }));
 };
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequency:"daily",startHour:10,endHour:18,voiceMode:"mixed",contentKinds:["questions","moments","relationships","home","work","tastes"],recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:20,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:21,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -188,6 +188,7 @@ const fresh=()=>({schema:20,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===21)return normalizeHomes(x);
   if(x.schema===20)return normalizeHomes(x);
   if(x.schema===19)return normalizeHomes(x);
   if(x.schema===18)return normalizeHomes(x);
@@ -226,7 +227,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=20;
+  x.schema=21;
   x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   const legacyActiveCharacter=x.characters?.[x.activeId]||Object.values(x.characters||{})[0]||{};
   x.homeVisualMode=(x.homeVisualMode||legacyActiveCharacter.homeVisualMode)==="ld"?"ld":"sd";
@@ -474,6 +475,8 @@ function normalizeHomes(x){
     h.mapX=Number.isFinite(+h.mapX)?Math.max(4,Math.min(96,+h.mapX)):fallbackMap.mapX;
     h.mapY=Number.isFinite(+h.mapY)?Math.max(5,Math.min(95,+h.mapY)):fallbackMap.mapY;
     h.mapScale=Number.isFinite(+h.mapScale)?Math.max(.7,Math.min(1.7,+h.mapScale)):fallbackMap.mapScale;
+    h.floorCount=Number.isFinite(+h.floorCount)?Math.max(1,Math.min(5,Math.round(+h.floorCount))):1;
+    h.activeFloor=Number.isFinite(+h.activeFloor)?Math.max(1,Math.min(h.floorCount,Math.round(+h.activeFloor))):1;
     h.notes=String(h.notes||"").slice(0,300);
     h.cars=Array.isArray(h.cars)?h.cars.filter(car=>car&&typeof car==="object"&&!Array.isArray(car)).map(car=>({
       id:car.id||uid(),name:car.name||"우리 집 자동차",type:car.type||"승용차",
@@ -499,6 +502,12 @@ function normalizeHomes(x){
       const defaultSize=room.type==="living"?"큰 방":["entry","bath","storage"].includes(room.type)?"작은 방":"보통 방";
       room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
       room.order=Number.isFinite(Number(room.order))?Number(room.order):index;
+      room.floor=Number.isFinite(+room.floor)?Math.max(1,Math.min(h.floorCount,Math.round(+room.floor))):1;
+      if(room.layout&&typeof room.layout==="object"&&!Array.isArray(room.layout)){
+        const width=Math.max(16,Math.min(100,Number(room.layout.w)||50));
+        const height=Math.max(16,Math.min(100,Number(room.layout.h)||50));
+        room.layout={x:Math.max(0,Math.min(100-width,Number(room.layout.x)||0)),y:Math.max(0,Math.min(100-height,Number(room.layout.y)||0)),w:width,h:height};
+      }else delete room.layout;
       return[String(key),room];
     }));
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
@@ -518,12 +527,15 @@ function normalizeHomes(x){
       })):[];
       return[String(key),day];
     }));
-    x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)).map(r=>({
-      id:r.id||uid(),day:Number.isFinite(+r.day)?Math.max(0,Math.min(6,+r.day)):1,
-      start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
-      title:r.title||"새 일정",placeId:r.placeId||"",withIds:Array.isArray(r.withIds)?r.withIds:[],
-      notes:r.notes||""
-    })):[];
+    x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)).map(r=>{
+      const id=r.id||uid();
+      return {
+        id,seriesId:String(r.seriesId||id),day:Number.isFinite(+r.day)?Math.max(0,Math.min(6,+r.day)):1,
+        start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
+        title:r.title||"새 일정",placeId:r.placeId||"",withIds:Array.isArray(r.withIds)?r.withIds:[],
+        notes:r.notes||""
+      };
+    }):[];
     const drivingOptions=["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"];
     c.driverLicense=typeof c.driverLicense==="boolean"?(c.driverLicense?"운전에 익숙함":"면허 없음"):(drivingOptions.includes(c.driverLicense)?c.driverLicense:"면허 없음");
     const smokingOptions=["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"];
@@ -762,7 +774,7 @@ export function createCharacter(limit=5){
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),rooms:rooms(),pets:[],cleanliness:100};
+  state.homes[id]={id,name:"새 캐릭터의 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cleanliness:100};
   state.activeHomeId=id;
   state.routines[id]=[];
   state.activeId=id;state.activeTab="character";save(true);return id;
@@ -815,7 +827,7 @@ export function updateCharacter(id,patch,persist=true){
 export function addRoutine(characterId){
   if(!state.characters[characterId])return;
   state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
-  const routine={id:uid(),day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
+  const id=uid(),routine={id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
   state.routines[characterId].push(routine);state.characters[characterId].timelineResetAt=Date.now();save(true);return routine.id;
 }
 export function updateRoutine(characterId,routineId,patch){
@@ -824,6 +836,20 @@ export function updateRoutine(characterId,routineId,patch){
 }
 export function deleteRoutine(characterId,routineId){
   state.routines[characterId]=(state.routines[characterId]||[]).filter(item=>item.id!==routineId);if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();save(true);
+}
+export function updateRoutineDays(characterId,routineId,days,patch={}){
+  const routines=state.routines[characterId]||[],source=routines.find(item=>item.id===routineId);
+  if(!source)return false;
+  const seriesId=String(source.seriesId||source.id),chosen=[...new Set((days||[]).map(Number).filter(day=>day>=0&&day<=6))].sort((a,b)=>a-b);
+  if(!chosen.length)return false;
+  const group=routines.filter(item=>String(item.seriesId||item.id)===seriesId),byDay=new Map(group.map(item=>[Number(item.day),item]));
+  const replacements=chosen.map(day=>{
+    const existing=byDay.get(day),id=existing?.id||uid();
+    return {...source,...existing,...patch,id,seriesId,day,withIds:Array.isArray(patch.withIds)?[...patch.withIds]:[...(existing?.withIds||source.withIds||[])]};
+  });
+  state.routines[characterId]=routines.filter(item=>String(item.seriesId||item.id)!==seriesId).concat(replacements);
+  if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();
+  save(true);return true;
 }
 export function toggleChip(id,key,value,persist=true){
   const c=state.characters[id];
@@ -854,7 +880,7 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
 export function createHome(){
   const id=`home-${uid()}`;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
+  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
   state.activeHomeId=id;
   state.activeTab="home";
   state.homeEditMode=true;
@@ -947,15 +973,27 @@ export function settleScheduledChoices(now=Date.now()){
   if(changed)save(true,false);
   return changed;
 }
-export function addRoom(homeId){
+export function addRoom(homeId,floor){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
   const key=`room-${uid()}`;
   h.deletedRoomKeys=(h.deletedRoomKeys||[]).filter(value=>value!==key);
   const nextOrder=Math.max(-1,...Object.values(h.rooms).map(room=>Number(room.order)||0))+1;
-  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:[...ROOM_FURNITURE.other]};
+  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,floor:Math.max(1,Math.min(h.floorCount||1,Number(floor)||h.activeFloor||1)),image:"",interiorStyle:"설정하지 않음",titleTone:"light",furniture:[...ROOM_FURNITURE.other]};
   save(true);
   return key;
+}
+export function setHomeFloorCount(homeId,count){
+  const home=state.homes[homeId];if(!home)return false;
+  home.floorCount=Math.max(1,Math.min(5,Math.round(Number(count)||1)));
+  home.activeFloor=Math.max(1,Math.min(home.floorCount,Number(home.activeFloor)||1));
+  Object.values(home.rooms||{}).forEach(room=>{room.floor=Math.max(1,Math.min(home.floorCount,Number(room.floor)||1))});
+  save(true);return true;
+}
+export function setActiveHomeFloor(homeId,floor){
+  const home=state.homes[homeId];if(!home)return false;
+  home.activeFloor=Math.max(1,Math.min(home.floorCount||1,Math.round(Number(floor)||1)));
+  save();return true;
 }
 export function reorderRoom(homeId,sourceKey,targetKey){
   const roomsForHome=state.homes[homeId]?.rooms;
