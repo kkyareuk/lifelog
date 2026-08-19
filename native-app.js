@@ -5,7 +5,21 @@ if(isNative){
   document.documentElement.classList.add("native-platform");
   window.DRAWER_VILLAGE_NATIVE=true;
 
+  // Android 권한 화면에서 돌아올 때 일부 Samsung WebView가 레이아웃
+  // viewport를 넓은 화면 값으로 남긴다. 앱 셸을 다시 모바일 viewport로
+  // 확정해 절반 너비 화면과 선택 뒤 가로 이동을 막는다.
+  const normalizeNativeViewport=()=>{
+    let viewport=document.querySelector('meta[name="viewport"]');
+    if(!viewport){viewport=document.createElement("meta");viewport.name="viewport";document.head.prepend(viewport)}
+    viewport.content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover";
+    document.documentElement.classList.add("native-app","native-platform");
+    document.documentElement.style.removeProperty("width");
+    document.body?.style.removeProperty("width");
+  };
+  normalizeNativeViewport();
+
   const {App,Browser,Network,PlayBilling}=window.Capacitor.Plugins;
+  App.addListener("appStateChange",({isActive})=>{if(isActive)requestAnimationFrame(normalizeNativeViewport)});
   const playConfig=()=>window.PARALLEL_CITY_CONFIG?.playBilling||{};
   const productIds=()=>Object.values(playConfig().products||{}).filter(Boolean);
   const consumableProducts=new Set(["character_slots_5","town_slot_1","green_tea"]);

@@ -7,22 +7,31 @@ const app=read("app.js");
 const views=read("views.js");
 const state=read("state.js");
 const notifications=read("character-notifications.js");
+const speech=read("speech-styles.js");
+const nativeApp=read("native-app.js");
+const css=read("app.css");
 const gradle=read("android/app/build.gradle");
 
 const checks=[
   [state.includes("schema:21")&&state.includes("characterNotificationSettings:defaultCharacterNotificationSettings()"),"알림 설정 스키마와 기본값"],
   [state.includes('frequency:"daily"')&&state.includes('voiceMode:"mixed"'),"빈도와 반복 완화 기본값"],
+  [["questions","checkins","worries","comfort","lifeLogs"].every(kind=>state.includes(`"${kind}"`)),"질문·안부·고민·휴식·생활로그 알림 종류"],
   [state.includes("characterIds:Array.isArray(notificationSource.characterIds)"),"삭제된 캐릭터를 제거하는 설정 마이그레이션"],
   [views.includes("data-character-notification-character")&&views.includes("data-character-notification-setting=\"frequency\"")&&views.includes("data-character-notification-setting=\"voiceMode\""),"캐릭터·빈도·말투 선택 UI"],
   [views.includes("data-character-notification-kind")&&views.includes("data-character-notification-test"),"주제 선택과 시험 알림 UI"],
+  [views.includes("❓ 질문과 실제 선택")&&views.includes("🤔 캐릭터의 고민")&&views.includes("📖 구체적인 생활로그"),"구체적인 알림 종류 안내"],
   [app.includes("confirmCharacterNotificationConsent")&&app.indexOf("confirmCharacterNotificationConsent")<app.indexOf("requestCharacterNotificationPermission()"),"앱 설명 후 Android 권한 요청"],
   [app.includes("recentSignatures")&&app.includes("characters.length>1")&&app.includes('voiceMode||"mixed"'),"최근 문구·연속 캐릭터·말투 반복 방지"],
+  [app.includes("buildLifeLogNotification")&&app.includes("characterContactSpeech(character,neutral"),"생활로그와 말투 적용 연락 분리"],
   [app.includes("dayOffset<15")&&app.includes("replaceCharacterNotifications(items)"),"2주 단위 기기 예약 갱신"],
   [notifications.includes('CHANNEL_ID="character-contact-v2"')&&notifications.includes("checkPermissions()")&&notifications.includes("requestPermissions()"),"Android 알림 채널과 런타임 권한"],
   [notifications.includes("localNotificationActionPerformed")&&app.includes("drawer-village-character-notification-open"),"알림 터치 후 캐릭터 화면 연결"],
+  [notifications.includes("characterNotificationLargeIcon")&&notifications.includes("largeIcon:item.largeIcon||undefined")&&app.includes("item.largeIcon=await icons.get(source)"),"캐릭터 큰 알림 아이콘"],
+  [speech.includes("export function characterContactSpeech")&&speech.includes('language==="ja"'),"말투별 영어·일본어 연락 문장"],
+  [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&css.includes('.notification-kind-grid input{'),"권한 복귀 레이아웃과 숨김 체크박스 포커스 안정화"],
   [gradle.includes("versionCode 57")&&gradle.includes('versionName "1.0.55"'),"내부 테스트 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
-  [app.includes("A life update")&&app.includes("暮らしの便り"),"영어·일본어 알림 본문 번역"]
+  [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);

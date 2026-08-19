@@ -177,7 +177,8 @@ const normalizeHomeSceneLayout=value=>{
     }];
   }));
 };
-const defaultCharacterNotificationSettings=()=>({characterIds:[],frequency:"daily",startHour:10,endHour:18,voiceMode:"mixed",contentKinds:["questions","moments","relationships","home","work","tastes"],recentSignatures:[],lastScheduledAt:0});
+const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
+const defaultCharacterNotificationSettings=()=>({characterIds:[],frequency:"daily",startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],recentSignatures:[],lastScheduledAt:0});
 const fresh=()=>({schema:21,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
@@ -281,12 +282,12 @@ function normalizeHomes(x){
     startHour:Math.max(9,Math.min(16,Number(notificationSource.startHour)||notificationDefaults.startHour)),
     endHour:Math.max(12,Math.min(21,Number(notificationSource.endHour)||notificationDefaults.endHour)),
     voiceMode:["mixed","character","concise"].includes(notificationSource.voiceMode)?notificationSource.voiceMode:notificationDefaults.voiceMode,
-    contentKinds:Array.isArray(notificationSource.contentKinds)?[...new Set(notificationSource.contentKinds.filter(kind=>notificationDefaults.contentKinds.includes(kind)))]:notificationDefaults.contentKinds,
+    contentKinds:Array.isArray(notificationSource.contentKinds)?[...new Set(notificationSource.contentKinds.flatMap(kind=>kind==="moments"?["checkins","comfort","lifeLogs"]:[kind]).filter(kind=>notificationDefaults.contentKinds.includes(kind)))]:notificationDefaults.contentKinds,
     recentSignatures:Array.isArray(notificationSource.recentSignatures)?notificationSource.recentSignatures.map(String).slice(-24):[],
     lastScheduledAt:Number(notificationSource.lastScheduledAt)||0
   };
   if(x.characterNotificationSettings.endHour<=x.characterNotificationSettings.startHour)x.characterNotificationSettings.endHour=Math.min(21,x.characterNotificationSettings.startHour+4);
-  if(!x.characterNotificationSettings.contentKinds.length)x.characterNotificationSettings.contentKinds=["questions","moments"];
+  if(!x.characterNotificationSettings.contentKinds.length)x.characterNotificationSettings.contentKinds=["questions","checkins","comfort","lifeLogs"];
   x.activeId=x.characters[x.activeId]?x.activeId:(x.order[0]||null);
   if(Array.isArray(x.homes))x.homes=Object.fromEntries(x.homes.filter(h=>h&&typeof h==="object"&&!Array.isArray(h)).map(h=>{const id=String(h.id||uid());h.id=id;return[id,h]}));
   x.homes=x.homes&&typeof x.homes==="object"?x.homes:{};

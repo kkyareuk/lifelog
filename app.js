@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819startupclosure1";
-import {eventFor} from "./simulation.js?v=20260819startupclosure1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819startupclosure1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260819startupclosure1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819startupclosure1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications} from "./character-notifications.js?v=20260819startupclosure1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260819startupclosure1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820notificationcare1";
+import {eventFor} from "./simulation.js?v=20260820notificationcare1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820notificationcare1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820notificationcare1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820notificationcare1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820notificationcare1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820notificationcare1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -2204,7 +2204,7 @@ function bind(){
     if(state.characterNotificationsEnabled){
       state.characterNotificationsEnabled=false;
       await cancelCharacterNotifications();
-      save(true);showToast("캐릭터 연락 알림을 껐어요");renderPreservingPageScroll(event.currentTarget);return;
+      save(true);showToast("캐릭터 연락 알림을 껐어요");updateCharacterNotificationControls();return;
     }
     await enableCharacterNotificationsWithConsent(event.currentTarget);
   });
@@ -3416,7 +3416,55 @@ function maybeShowDailyCharacterQuestion(){
 const notificationText=(value,language=state.uiLanguage||"ko")=>typeof value==="string"?value:(value?.[language]||value?.ko||"");
 const notificationHash=value=>[...String(value)].reduce((total,character)=>Math.imul(total^character.charCodeAt(0),16777619)>>>0,2166136261);
 const fillNotificationText=(text,context)=>String(text).replace(/\{(\w+)\}/g,(_,key)=>context[key]||"");
+function updateCharacterNotificationControls(){
+  const enabled=Boolean(state.characterNotificationsEnabled),button=document.querySelector("[data-character-notification-toggle]"),status=document.querySelector("[data-character-notification-status]"),detail=document.querySelector(".notification-settings-detail");
+  if(button){button.textContent=enabled?"알림 끄기":"알림 켜기";button.classList.toggle("danger",enabled);button.classList.toggle("primary",!enabled)}
+  if(status)status.textContent=enabled?"알림 사용 중":state.characterNotificationConsent==="granted"?"알림 꺼짐 · 권한은 유지됨":state.characterNotificationConsent==="denied"?"휴대폰에서 알림이 거부됨":"아직 알림을 요청하지 않음";
+  if(enabled&&detail)detail.open=true;
+  document.querySelector("[data-character-notification-test]")?.toggleAttribute("disabled",!enabled);
+  translateDynamicInterface(document.querySelector(".character-notification-card")||document.body);
+}
 const CHARACTER_CONTACT_PHRASES={
+  checkins:{
+    actions:[
+      {ko:"오늘은 어떤 하루였어요? 마음에 오래 남은 순간이 하나 있었나요?",en:"How was your day? Was there one moment that stayed with you?",ja:"今日はどんな一日でしたか？ 心に残った瞬間はありましたか？"},
+      {ko:"밥은 챙겨 먹었어요? 아직이라면 너무 늦기 전에 간단한 것이라도 같이 골라요.",en:"Did you get something to eat? If not, let's choose something simple before it gets too late.",ja:"ちゃんと食事はできましたか？ まだなら、遅くなる前に簡単なものでも一緒に選びましょう。"},
+      {ko:"지금 기분을 날씨로 말하면 맑음, 흐림, 비 중 어디에 가까워요?",en:"If your mood were weather, would it be sunny, cloudy, or rainy right now?",ja:"今の気分を天気にたとえるなら、晴れ、曇り、雨のどれに近いですか？"},
+      {ko:"오늘 한 일 중에서 스스로 잘했다고 말해 줄 수 있는 게 하나 있나요?",en:"Is there one thing you did today that you can give yourself credit for?",ja:"今日したことの中で、自分を褒めてあげられることは一つありますか？"},
+      {ko:"지금 물 한 잔 마시고 어깨를 한 번 펴 볼래요? 나는 잠깐 기다리고 있을게요.",en:"Want to drink a glass of water and stretch your shoulders? I'll wait here for a moment.",ja:"水を一杯飲んで、肩を少し伸ばしませんか？ ここで待っています。"}
+    ],
+    endings:[
+      {ko:"길게 답하지 않아도 괜찮아요.",en:"You don't have to give a long answer.",ja:"長く答えなくても大丈夫です。"},
+      {ko:"좋았던 일도 힘들었던 일도 그냥 들어 줄게요.",en:"I'll listen, whether it was good or difficult.",ja:"良かったことも大変だったことも、ただ聞きます。"},
+      {ko:"지금 대답하기 싫으면 조용히 지나가도 괜찮아요.",en:"If you don't feel like answering now, it's okay to let this pass quietly.",ja:"今は答えたくなければ、そのまま静かに流しても大丈夫です。"}
+    ]
+  },
+  worries:{
+    actions:[
+      {ko:"해야 할 일은 남았는데 집중이 잘 안 돼요. 10분만 시작할까요, 오늘은 쉬어 갈까요?",en:"I still have things to do, but I can't focus. Should I try for ten minutes or rest for today?",ja:"やることは残っているのに集中できません。10分だけ始めるか、今日は休むか迷っています。"},
+      {ko:"{target}에게 먼저 연락할지 조금 더 기다릴지 고민이에요. 당신이라면 어떻게 할래요?",en:"I'm wondering whether to contact {target} first or wait a little longer. What would you do?",ja:"{target}に先に連絡するか、もう少し待つか迷っています。あなたならどうしますか？"},
+      {ko:"좋아하는 걸 하며 쉴지 일찍 잘지 고민 중이에요. 지금 내게 더 필요한 건 뭘까요?",en:"I'm torn between relaxing with something I like and going to bed early. Which do I need more?",ja:"好きなことをして休むか、早く寝るか迷っています。今の私に必要なのはどちらでしょう？"},
+      {ko:"말을 꺼내면 괜히 분위기를 무겁게 만들까 봐 망설이고 있어요. 짧게라도 솔직히 말해 볼까요?",en:"I'm hesitating because I might make things feel heavy. Should I be honest, even briefly?",ja:"話すと空気を重くしそうで迷っています。短くても正直に伝えてみるべきでしょうか？"}
+    ],
+    endings:[
+      {ko:"정답보다 지금 할 수 있는 쪽을 고르고 싶어요.",en:"I'd rather choose what I can manage now than search for a perfect answer.",ja:"正解より、今できるほうを選びたいです。"},
+      {ko:"당장 결정하지 않아도 된다고 말해 줘도 좋아요.",en:"You can also tell me I don't have to decide right away.",ja:"今すぐ決めなくてもいいと言ってくれても大丈夫です。"},
+      {ko:"작은 선택 하나만 같이 정해 주세요.",en:"Help me settle just one small choice.",ja:"小さな選択を一つだけ、一緒に決めてください。"}
+    ]
+  },
+  comfort:{
+    actions:[
+      {ko:"오늘 계획을 다 못 지켜도 괜찮아요. 지금까지 해낸 것만으로도 하루는 충분히 지나왔어요.",en:"It's okay if you didn't finish every plan today. What you've done is already enough for one day.",ja:"今日の予定を全部こなせなくても大丈夫です。ここまでできたことだけで十分な一日です。"},
+      {ko:"마음이 복잡하면 답을 바로 정하지 않아도 돼요. 숨부터 천천히 쉬어요.",en:"If your mind feels crowded, you don't have to decide right away. Start with one slow breath.",ja:"気持ちが複雑なら、すぐに答えを決めなくても大丈夫です。まずゆっくり呼吸しましょう。"},
+      {ko:"오늘 유난히 지쳤다면 의지가 약한 게 아니라 정말 많이 버틴 걸 수도 있어요.",en:"If you're unusually tired today, it may not be weakness—you may simply have carried a lot.",ja:"今日は特に疲れたなら、意志が弱いのではなく、本当にたくさん耐えたのかもしれません。"},
+      {ko:"아무것도 하지 않는 시간도 회복하는 시간이에요. 잠깐 가만히 있어도 괜찮아요.",en:"Time spent doing nothing can still be recovery. It's okay to be still for a while.",ja:"何もしない時間も回復の時間です。少しじっとしていても大丈夫です。"}
+    ],
+    endings:[
+      {ko:"오늘의 당신 편은 여기에도 있어요.",en:"You have someone on your side here today, too.",ja:"今日のあなたの味方は、ここにもいます。"},
+      {ko:"조금 나아질 때까지 서두르지 않을게요.",en:"I won't rush you while things get a little easier.",ja:"少し楽になるまで、急かしません。"},
+      {ko:"지금은 잘 버티는 것보다 편히 쉬는 게 먼저예요.",en:"Right now, resting matters more than holding everything together.",ja:"今は頑張り続けることより、安心して休むことが先です。"}
+    ]
+  },
   moments:{
     actions:[
       {ko:"잠깐 숨을 고르며 다음에 할 일을 살펴보고 있어요.",en:"I'm taking a short pause and looking over what comes next.",ja:"少しひと息ついて、次にすることを確認しています。"},
@@ -3510,7 +3558,7 @@ function notificationSelectedCharacters(){
   return ids.map(id=>state.characters[id]).filter(Boolean);
 }
 function notificationTopicsFor(character){
-  const wanted=state.characterNotificationSettings?.contentKinds||["questions","moments"],context=notificationContextFor(character,1);
+  const wanted=state.characterNotificationSettings?.contentKinds||["questions","checkins","comfort","lifeLogs"],context=notificationContextFor(character,1);
   return wanted.filter(kind=>kind!=="relationships"||context.targetId).filter(kind=>kind!=="work"||character.job||character.jobTitle);
 }
 function buildQuestionNotification(character,at,seed){
@@ -3523,8 +3571,30 @@ function buildQuestionNotification(character,at,seed){
 function buildMomentNotification(character,topic,at,seed){
   const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),phrases=CHARACTER_CONTACT_PHRASES[topic]||CHARACTER_CONTACT_PHRASES.moments;
   const action=fillNotificationText(notificationText(phrases.actions[seed%phrases.actions.length],language),context),ending=fillNotificationText(notificationText(phrases.endings[Math.floor(seed/7)%phrases.endings.length],language),context);
-  const titles={ko:["생활 소식","지금 이 순간","작은 연락","오늘의 한 장면"],en:["A life update","Right now","A small message","A moment today"],ja:["暮らしの便り","今この瞬間","小さな連絡","今日の一場面"]};
-  return {title:`${character.name} · ${titles[language]?.[seed%4]||titles.ko[seed%4]}`,body:`${action} ${ending}`,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
+  const titles={
+    checkins:{ko:["오늘은 어땠어요?","밥은 챙겼어요?","잠깐 안부를 물어요"],en:["How was your day?","Did you eat?","A quick check-in"],ja:["今日はどうでしたか？","食事はできましたか？","ちょっと様子を聞かせて"]},
+    worries:{ko:["작은 고민이 있어요","당신 생각이 궁금해요","같이 골라 줄래요?"],en:["I have a small worry","What do you think?","Will you help me choose?"],ja:["少し悩んでいます","あなたの考えを聞かせて","一緒に選んでくれますか？"]},
+    comfort:{ko:["잠깐 쉬어 가도 돼요","오늘도 충분히 애썼어요","서두르지 않아도 괜찮아요"],en:["It's okay to pause","You did enough today","You don't have to rush"],ja:["少し休んでも大丈夫","今日も十分頑張りました","急がなくても大丈夫です"]},
+    relationships:{ko:["사람 사이의 작은 고민","연락해 볼까요?","마음에 걸리는 사람이 있어요"],en:["A small relationship question","Should I reach out?","Someone is on my mind"],ja:["人との小さな悩み","連絡してみましょうか？","気になる人がいます"]},
+    home:{ko:["집에서 잠깐","집을 조금 돌보는 중","오늘의 집 이야기"],en:["A moment at home","Taking care of home","A note from home"],ja:["家で少し","家を整えています","今日の家の話"]},
+    work:{ko:["일을 어떻게 나눌까요?","잠깐 업무 고민","오늘 할 일을 정리했어요"],en:["How should I split the work?","A quick work question","Sorting today's work"],ja:["仕事をどう分けましょう？","仕事の小さな悩み","今日の仕事を整理しました"]},
+    tastes:{ko:["오늘 생각난 취향","이게 당기는 날이에요","좋아하는 것 이야기"],en:["Something I like today","I'm craving this today","A favorite thing"],ja:["今日思い出した好み","今日はこれが気になります","好きなものの話"]}
+  };
+  const titlePool=titles[topic]?.[language]||titles[topic]?.ko||titles.checkins.ko,mode=state.characterNotificationSettings?.voiceMode||"mixed";
+  const neutral=`${action} ${ending}`,body=mode==="concise"?neutral:mode==="character"||seed%3!==0?characterContactSpeech(character,neutral,{language}):neutral;
+  return {title:`${character.name} · ${titlePool[seed%titlePool.length]}`,body,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
+}
+function buildLifeLogNotification(character,at,seed){
+  const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),logs=[
+    {title:{ko:"물 한 잔을 마시는 중",en:"Drinking a glass of water",ja:"水を一杯飲んでいるところ"},body:{ko:"컵을 천천히 비운 뒤 싱크대에 헹궈 두었어요.",en:"They slowly finished the glass and rinsed it in the sink.",ja:"ゆっくり飲み終え、コップを流しで軽くすすぎました。"}},
+    {title:{ko:"{home}에서 침구를 정리하는 중",en:"Tidying the bedding at {home}",ja:"{home}で寝具を整えているところ"},body:{ko:"구겨진 이불을 펴고 베개 위치를 바로잡았어요.",en:"They smoothed the rumpled blanket and put the pillow back in place.",ja:"しわになった布団を伸ばし、枕の位置を整えました。"}},
+    {title:{ko:"{item}을 천천히 즐기는 중",en:"Taking time to enjoy {item}",ja:"{item}をゆっくり楽しんでいるところ"},body:{ko:"다른 일을 잠깐 멈추고 좋아하는 것에만 집중하고 있어요.",en:"They paused everything else and focused only on something they enjoy.",ja:"ほかのことを少し止め、好きなものだけに集中しています。"}},
+    {title:{ko:"{target}에게 안부를 보내는 중",en:"Checking in with {target}",ja:"{target}に近況を尋ねているところ"},body:{ko:"부담스럽지 않게 짧은 문장을 고른 뒤 전송했어요.",en:"They chose a short, low-pressure message and sent it.",ja:"負担にならない短い文を選んで送信しました。"}},
+    {title:{ko:"잠깐 바깥 공기를 쐬는 중",en:"Stepping out for some air",ja:"少し外の空気を吸っているところ"},body:{ko:"휴대폰을 주머니에 넣고 가까운 길을 천천히 걷고 있어요.",en:"They put the phone away and are walking slowly along a nearby path.",ja:"スマートフォンをポケットに入れ、近くの道をゆっくり歩いています。"}},
+    {title:{ko:"내일 쓸 물건을 챙기는 중",en:"Preparing things for tomorrow",ja:"明日使う物を準備しているところ"},body:{ko:"가방 옆에 필요한 물건을 하나씩 모아 두었어요.",en:"They gathered the things they'll need beside their bag, one by one.",ja:"必要な物を一つずつ鞄のそばにまとめました。"}}
+  ],entry=logs[seed%logs.length],title=fillNotificationText(notificationText(entry.title,language),context),body=fillNotificationText(notificationText(entry.body,language),context);
+  const label={ko:"생활로그",en:"Life log",ja:"生活ログ"}[language]||"생활로그";
+  return {title:`${character.name} · ${label} · ${title}`,body,signature:`lifeLog:${seed%logs.length}:${character.id}:${context.targetId}`,extra:{mode:"lifeLog",characterId:character.id,topic:"lifeLogs",scheduledAt:at.toISOString()}};
 }
 function buildCharacterContactSchedule(now=new Date()){
   const settings=state.characterNotificationSettings,characters=notificationSelectedCharacters();if(!settings||!characters.length)return [];
@@ -3544,7 +3614,7 @@ function buildCharacterContactSchedule(now=new Date()){
       let topic=fallbackTopics[(daySeed+slot*5)%fallbackTopics.length],seed=daySeed+dayOffset*31+slot*17,item;
       for(let attempt=0;attempt<12;attempt+=1){
         topic=fallbackTopics[(daySeed+slot*5+attempt)%fallbackTopics.length];
-        item=topic==="questions"?buildQuestionNotification(character,at,seed+attempt):buildMomentNotification(character,topic,at,seed+attempt);
+        item=topic==="questions"?buildQuestionNotification(character,at,seed+attempt):topic==="lifeLogs"?buildLifeLogNotification(character,at,seed+attempt):buildMomentNotification(character,topic,at,seed+attempt);
         if(!recent.has(item.signature)&&!newSignatures.includes(item.signature))break;
       }
       generated.push({id:820000000+(Number(dayKey.replaceAll("-",""))%1000000)*10+slot,title:item.title,body:item.body,summaryText:language==="en"?"Drawer Village":language==="ja"?"ひきだし村":"서랍마을",at,extra:item.extra});newSignatures.push(item.signature);
@@ -3557,7 +3627,13 @@ async function syncCharacterNotificationSchedule(){
   if(!state.characterNotificationsEnabled||!characterNotificationsAvailable())return false;
   const permission=await characterNotificationPermission();
   if(permission!=="granted"){state.characterNotificationsEnabled=false;state.characterNotificationConsent="denied";save(true);return false}
-  const items=buildCharacterContactSchedule();await replaceCharacterNotifications(items);save(true);return true;
+  const items=buildCharacterContactSchedule(),icons=new Map();
+  await Promise.all(items.map(async item=>{
+    const character=state.characters[item.extra?.characterId],source=character?.icon||character?.photo||"";
+    if(!icons.has(source))icons.set(source,characterNotificationLargeIcon(source));
+    item.largeIcon=await icons.get(source);
+  }));
+  await replaceCharacterNotifications(items);save(true);return true;
 }
 function notificationConsentCopy(){
   const language=state.uiLanguage||"ko";
@@ -3582,12 +3658,12 @@ async function enableCharacterNotificationsWithConsent(source){
   state.characterNotificationConsent=permission==="granted"?"granted":"denied";state.characterNotificationsEnabled=permission==="granted";
   if(permission==="granted"){await initializeCharacterNotifications();await syncCharacterNotificationSchedule();showToast("캐릭터 연락 알림을 켰어요")}
   else showToast("알림이 허용되지 않았어요. 휴대폰 설정에서 다시 켤 수 있어요");
-  save(true);renderPreservingPageScroll(source);return permission==="granted";
+  save(true);updateCharacterNotificationControls();return permission==="granted";
 }
 async function sendCharacterNotificationTest(){
   const character=notificationSelectedCharacters()[0]||active();if(!character)return showToast("알림을 보낼 캐릭터가 없어요");
-  const at=new Date(Date.now()+5000),item=buildMomentNotification(character,"moments",at,notificationHash(String(Date.now())));
-  await scheduleCharacterNotification({id:829999999,title:item.title,body:item.body,at,extra:item.extra});showToast("5초 뒤 시험 알림이 도착해요");
+  const at=new Date(Date.now()+5000),seed=notificationHash(String(Date.now())),topics=notificationTopicsFor(character),topic=topics[seed%Math.max(1,topics.length)]||"checkins",item=topic==="questions"?buildQuestionNotification(character,at,seed):topic==="lifeLogs"?buildLifeLogNotification(character,at,seed):buildMomentNotification(character,topic,at,seed),largeIcon=await characterNotificationLargeIcon(character.icon||character.photo||"");
+  await scheduleCharacterNotification({id:829999999,title:item.title,body:item.body,largeIcon,at,extra:item.extra});showToast("5초 뒤 시험 알림이 도착해요");
 }
 window.addEventListener("drawer-village-character-notification-open",event=>{
   const extra=event.detail||{},character=state.characters[extra.characterId];if(!character)return;
@@ -3642,7 +3718,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819startupclosure1").catch(error=>{
+  import("./auth.js?v=20260820notificationcare1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3657,7 +3733,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819startupclosure1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820notificationcare1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

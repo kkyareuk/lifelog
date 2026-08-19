@@ -98,6 +98,82 @@ export function characterQuestionPrompt(character,{kind="everyday",target="",lan
   return lines[style]||base;
 }
 
+// 연락 알림은 캐릭터가 직접 보내는 문장이다. 질문 전용 문장을 억지로
+// 재사용하지 않고, 같은 원문을 각 캐릭터의 말버릇으로 짧게 다듬는다.
+// 생활로그 알림은 관찰 기록이므로 호출부에서 이 변환을 사용하지 않는다.
+export function characterContactSpeech(character,base,{language="ko"}={}){
+  const text=String(base||"").trim(),style=effectiveSpeechStyle(character);
+  if(!text)return text;
+  if(language==="en"){
+    const wrappers={
+      "무뚝뚝한 단답":value=>value.replace(/\bI am\b/g,"I'm").replace(/\bI have\b/g,"I've"),
+      "기계적인 말투":value=>`STATUS MESSAGE: ${value}`,
+      "사무적인 말투 · 직장 메일체":value=>`Quick update: ${value}`,
+      "판교어 · 스타트업 업무체":value=>`A quick check-in—${value}`,
+      "소심하고 머뭇거리는 말투":value=>`Um… ${value}`,
+      "열정적인 말투":value=>`Hey! ${value}`,
+      "중2병 말투":value=>`A message crossed the sealed boundary: ${value}`,
+      "하드보일드 누아르체":value=>`${value} That's how the day goes in this town.`,
+      "마왕의 말투":value=>`Mortal, hear this: ${value}`,
+      "군주의 말투":value=>`Hear my words: ${value}`,
+      "신탁을 내리는 신의 말투":value=>`Receive these words: ${value}`,
+      "옛날 번역기체":value=>`It is informed to you that ${value.charAt(0).toLowerCase()}${value.slice(1)}`,
+      "귀엽고 애교 있는 말투":value=>`${value} Okay?`
+    };
+    return (wrappers[style]||((value)=>value))(text);
+  }
+  if(language==="ja"){
+    const wrappers={
+      "무뚝뚝한 단답":value=>value.replace(/です。$/,"。"),
+      "기계적인 말투":value=>`状態報告。${value}`,
+      "사무적인 말투 · 직장 메일체":value=>`取り急ぎ共有いたします。${value}`,
+      "판교어 · 스타트업 업무체":value=>`簡単に認識を合わせたいです。${value}`,
+      "소심하고 머뭇거리는 말투":value=>`あの……${value}`,
+      "열정적인 말투":value=>`ねえ！ ${value}`,
+      "중2병 말투":value=>`封印の向こうから告げよう……${value}`,
+      "하드보일드 누아르체":value=>`${value} そういう日もある。`,
+      "마왕의 말투":value=>`人の子よ、聞くがよい。${value}`,
+      "군주의 말투":value=>`余の言葉を聞け。${value}`,
+      "신탁을 내리는 신의 말투":value=>`この言葉を受け取りなさい。${value}`,
+      "옛날 번역기체":value=>`あなたへ次のことが通知されます。${value}`,
+      "귀엽고 애교 있는 말투":value=>`${value} ね？`
+    };
+    return (wrappers[style]||((value)=>value))(text);
+  }
+  const wrappers={
+    "반말":value=>value.replace(/해요([.?]|$)/g,"해$1").replace(/있어요([.?]|$)/g,"있어$1").replace(/나요\?/g,"나?"),
+    "했다체 · 건조한 서술":value=>`연락할 일이 생겼다. ${value}`,
+    "존댓말 · 해요체":value=>value,
+    "격식 있는 존댓말 · 하십시오체":value=>`잠시 여쭙겠습니다. ${value}`,
+    "극존칭":value=>`감히 여쭙사옵니다. ${value}`,
+    "무뚝뚝한 단답":value=>value.replace(/요([.?]|$)/g,"$1"),
+    "기계적인 말투":value=>`상태 메시지 전송. ${value}`,
+    "사무적인 말투 · 직장 메일체":value=>`안녕하세요. 아래와 같이 짧게 공유드립니다. ${value}`,
+    "판교어 · 스타트업 업무체":value=>`가볍게 체크인드려요. ${value}`,
+    "다정하고 부드러운 말투":value=>`문득 생각나서 연락해요. ${value}`,
+    "상냥하고 배려하는 말투":value=>`답을 서두르지 않아도 괜찮아요. ${value}`,
+    "소심하고 머뭇거리는 말투":value=>`저기… 갑자기 연락해서 미안한데요. ${value}`,
+    "열정적인 말투":value=>`있잖아요! ${value}`,
+    "능글맞고 여유로운 말투":value=>`뭐, 급한 건 아닌데 말이지. ${value}`,
+    "냉소적인 말투":value=>`세상이 답을 대신 골라 주진 않으니까. ${value}`,
+    "걸걸한 아저씨 말투":value=>`어이, 잠깐 얘기 좀 해 보자고. ${value}`,
+    "거칠고 상스러운 말투 · 순화":value=>`아, 복잡하게 굴 것 없이 말해 보자고. ${value}`,
+    "중2병 말투":value=>`봉인의 틈에서 전언이 도착했다… ${value}`,
+    "귀여니체 · 2000년대 인터넷소설체":value=>`있자나… 갑자기 니 생각나서 연락했오 ㅠ_ㅠ ${value}`,
+    "하드보일드 누아르체":value=>`${value} 이 도시의 하루는 늘 그런 식으로 흘렀다.`,
+    "고풍스러운 말투":value=>`문득 그대 생각이 났네. ${value}`,
+    "사극 선비 말투":value=>`잠시 그대의 뜻을 묻고 싶소. ${value}`,
+    "군인식 말투":value=>`연락 사항 보고. ${value}`,
+    "마왕의 말투":value=>`필멸자여, 짐의 말을 들으라. ${value}`,
+    "군주의 말투":value=>`그대에게 물을 것이 있다. ${value}`,
+    "신탁을 내리는 신의 말투":value=>`이 말을 받으라. ${value}`,
+    "옛날 번역기체":value=>`당신에게 다음의 사실이 연락됩니다. ${value}`,
+    "귀엽고 애교 있는 말투":value=>`${value} 답해 주면 안 돼요오?`,
+    "수다스럽고 말이 많은 말투":value=>`별일은 아니고 그냥 생각이 나서 연락한 건데요, ${value}`
+  };
+  return (wrappers[style]||((value)=>value))(text);
+}
+
 export function characterPlanSpeech(character,language="ko"){
   const style=effectiveSpeechStyle(character);
   if(language==="en")return characterQuestionPrompt(character,{kind:"everyday",language,base:"I'll do things in this order today."}).replace(/\?$/,".");

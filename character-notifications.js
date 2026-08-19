@@ -85,6 +85,7 @@ export async function scheduleCharacterNotification(item){
     schedule:{at:item.at,allowWhileIdle:true},
     channelId:CHANNEL_ID,
     smallIcon:"ic_stat_drawer_village",
+    largeIcon:item.largeIcon||undefined,
     iconColor:"#9C514A",
     autoCancel:true,
     group:"drawer-village-character-life",

@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260819-startup-closure-s1";
+const CACHE_VERSION="drawer-village-v20260820-notification-care-s1";
 const CORE=[
   "./",
   "./index.html",
