@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260819-speech-styles1";
+const CACHE_VERSION="drawer-village-v20260819-ime-stability1";
 const CORE=[
   "./",
   "./index.html",

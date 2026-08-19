@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819speech1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819speech1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260819ime1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260819ime1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -686,6 +686,16 @@ export function save(immediate=false,notify=true){
   pendingNotify=pendingNotify||notify;
   document.querySelector("#save-state")?.replaceChildren(document.createTextNode("저장 중…"));
   const run=()=>{
+    const focused=document.activeElement;
+    const type=String(focused?.type||"text").toLowerCase();
+    const editingText=focused&&(focused.tagName==="TEXTAREA"||(focused.tagName==="INPUT"&&!['checkbox','radio','range','color','file','button','submit'].includes(type))||focused.isContentEditable);
+    // 동기식 JSON 직렬화/localStorage 기록은 큰 사진·캐릭터 상태에서
+    // Android IME의 조합 이벤트를 막을 수 있다. 일반 자동저장은 텍스트
+    // 포커스가 빠질 때까지 미루고, pagehide/명시 저장은 기존처럼 즉시 한다.
+    if(!immediate&&editingText){
+      timer=setTimeout(run,700);
+      return;
+    }
     timer=undefined;
     const shouldNotify=pendingNotify;
     pendingNotify=false;

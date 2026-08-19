@@ -1,8 +1,8 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819speech1";
-import {eventFor} from "./simulation.js?v=20260819speech1";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819speech1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819speech1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819speech1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260819ime1";
+import {eventFor} from "./simulation.js?v=20260819ime1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819ime1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819ime1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt} from "./speech-styles.js?v=20260819ime1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -23,12 +23,10 @@ let deferredInstallPrompt=null;
 let mobileCharacterEditorPane="";
 let mobileCharacterReorderOpen=false;
 let mobileCharacterDraftDirty=false;
-let mobileCharacterAutosaveTimer;
 let homeCharacterPickerScroll=0;
 let observeRosterScroll=0;
 let mobileCharacterStripScroll=0;
 let mobileCharacterEditorScroll=0;
-let mobileCharacterBodyGroup="";
 let resetScrollAfterRender=false;
 const guidePending=new Set();
 const PAGE_GUIDES={
@@ -791,17 +789,10 @@ function isDeferredMobileTextControl(element){
 function markMobileCharacterDraft(element){
   if(isMobileCharacterDraftControl(element)){
     mobileCharacterDraftDirty=true;
-    // 전체 게임 상태를 복제하는 저장 작업을 한글 입력 사이마다 실행하면
-    // Android WebView의 IME 조합이 눈에 띄게 느려진다. 타이핑이 완전히
-    // 멈춘 뒤에만 한 번 저장하고, 저장 버튼에서는 화면 값을 다시 읽는다.
-    clearTimeout(mobileCharacterAutosaveTimer);
-    mobileCharacterAutosaveTimer=setTimeout(()=>{
-      if(mobileCharacterDraftDirty){
-        syncOpenCharacterEditorDraft();
-        save(true,false);
-        mobileCharacterDraftDirty=false;
-      }
-    },2500);
+    // Android/Samsung IME가 조합 중인 input에 포커스가 남아 있을 때
+    // 타이머 저장을 실행하면 마지막 음절이 늦게 보이거나, 다음 입력에서
+    // 직전 음절이 한 번 더 확정될 수 있다. 편집 중에는 DOM을 그대로 두고
+    // 포커스 이탈·편집 완료 시 현재 DOM 값을 한 번만 저장한다.
   }
   return isMobileCharacterDraftControl(element);
 }
@@ -862,17 +853,27 @@ function syncOpenCharacterEditorDraft(){
 function renderPreservingCharacterEditorScroll(element){
   const shell=element?.closest?.("[data-mobile-character-editor-dialog]")?.querySelector(".mobile-character-editor-shell");
   if(shell)mobileCharacterEditorScroll=shell.scrollTop;
-  const bodyGroup=element?.closest?.("details[data-body-option-group]");
-  if(bodyGroup?.open)mobileCharacterBodyGroup=bodyGroup.dataset.bodyOptionGroup||"";
+  const detailsRoot=shell||element?.closest?.(".character-traits-pane,.profile-license,.character-view-dialog")||document;
+  const allDetails=[...detailsRoot.querySelectorAll("details")];
+  const openDetails=allDetails.filter(details=>details.open).map(details=>({
+    bodyGroup:details.dataset.bodyOptionGroup||"",
+    advancedClass:[...details.classList].find(name=>name.endsWith("-advanced-settings"))||"",
+    index:allDetails.indexOf(details)
+  }));
   const pageX=window.scrollX,pageY=window.scrollY;
   render();
   requestAnimationFrame(()=>{
     const nextShell=document.querySelector("[data-mobile-character-editor-dialog] .mobile-character-editor-shell");
     if(nextShell)nextShell.scrollTop=mobileCharacterEditorScroll;
-    if(mobileCharacterBodyGroup){
-      const nextGroup=[...document.querySelectorAll("details[data-body-option-group]")].find(group=>group.dataset.bodyOptionGroup===mobileCharacterBodyGroup);
-      if(nextGroup)nextGroup.open=true;
-    }
+    const candidates=[...(nextShell||document).querySelectorAll("details")];
+    openDetails.forEach(saved=>{
+      const next=saved.bodyGroup
+        ?candidates.find(details=>details.dataset.bodyOptionGroup===saved.bodyGroup)
+        :saved.advancedClass
+          ?candidates.find(details=>details.classList.contains(saved.advancedClass))
+          :candidates[saved.index];
+      if(next)next.open=true;
+    });
     restoreWindowScroll(pageX,pageY);
   });
 }
@@ -883,8 +884,6 @@ function renderPreservingPageScroll(element){
   restoreWindowScroll(pageX,pageY);
 }
 function flushMobileCharacterDraft({closeEditor=true}={}){
-  clearTimeout(mobileCharacterAutosaveTimer);
-  mobileCharacterAutosaveTimer=undefined;
   if(mobileCharacterDraftDirty){
     syncOpenCharacterEditorDraft();
     save(true);
@@ -1598,7 +1597,6 @@ function bind(){
   $$("[data-character-check]").forEach(el=>el.onchange=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(el.dataset.characterCheck,{[el.dataset.field]:el.checked},!mobileDraft);
-    render();
   });
   $$("[data-pet-field]").forEach(el=>{
     const apply=()=>{const value=["neutered","needsWalk","rideable"].includes(el.dataset.petField)?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))render()};
@@ -1724,7 +1722,6 @@ function bind(){
     updateCharacter(active().id,{[el.dataset.personalityField]:el.value},false);
     syncCharacterControls(el,"data-personality-field");
     if(!mobileDraft)save(true);
-    renderPreservingCharacterEditorScroll(el);
   });
   $$("[data-personality-type]").forEach(el=>el.onclick=()=>{
     const character=active(),value=el.dataset.personalityType,current=Array.isArray(character.personalityTypes)?character.personalityTypes:[];
@@ -1735,7 +1732,7 @@ function bind(){
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(character.id,{personalityTypes:next},false);
     if(!mobileDraft)save(true);
-    renderPreservingCharacterEditorScroll(el);
+    document.querySelectorAll(`[data-personality-type="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",next.includes(value)));
   });
   const toggleTraitSetting=(key,value,element)=>{
     const character=active(),current=Array.isArray(character[key])?character[key]:[];
@@ -1746,7 +1743,8 @@ function bind(){
     const mobileDraft=markMobileCharacterDraft(element);
     updateCharacter(character.id,{[key]:next},false);
     if(!mobileDraft)save(true);
-    renderPreservingCharacterEditorScroll(element);
+    const attribute=key==="characterTraits"?"data-character-trait":"data-trait-expression";
+    document.querySelectorAll(`[${attribute}="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",next.includes(value)));
   };
   $$("[data-character-trait]").forEach(el=>el.onclick=()=>toggleTraitSetting("characterTraits",el.dataset.characterTrait,el));
   $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting("traitExpressions",el.dataset.traitExpression,el));
@@ -1760,14 +1758,13 @@ function bind(){
     el.addEventListener("change",()=>{
       if(!isMobileCharacterDraftControl(el))return;
       apply();
-      save(true,false);
+      save(false,false);
     });
   });
   $$("[data-trait-notes-in-scripts]").forEach(el=>el.addEventListener("change",e=>{
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(active().id,{traitNotesInScripts:e.target.checked},false);
     if(!mobileDraft)save(true);
-    renderPreservingCharacterEditorScroll(el);
   }));
   $$("[data-body-field]").forEach(el=>{
     const eventName=el.tagName==="SELECT"?"change":"input";
@@ -1783,7 +1780,6 @@ function bind(){
       updateCharacter(character.id,{bodyProfile},false);
       syncCharacterControls(el,"data-body-field");
       if(!mobileDraft)save(el.tagName==="SELECT");
-      if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField))renderPreservingCharacterEditorScroll(el);
     };
     el.addEventListener(eventName,()=>{
       if(eventName==="input"&&isDeferredMobileTextControl(el)){markMobileCharacterDraft(el);return}
@@ -1792,7 +1788,7 @@ function bind(){
     if(eventName==="input")el.addEventListener("change",()=>{
       if(!isMobileCharacterDraftControl(el))return;
       apply();
-      save(true,false);
+      save(false,false);
     });
   });
   $$("[data-body-list]").forEach(el=>el.onclick=()=>{
@@ -1808,7 +1804,7 @@ function bind(){
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(character.id,patch,false);
     if(!mobileDraft)save(true);
-    renderPreservingCharacterEditorScroll(el);
+    document.querySelectorAll(`[data-body-list="${CSS.escape(el.dataset.bodyList)}"][data-value="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",!selected));
   });
   $$("[data-field]").forEach(el=>{
     const apply=()=>{
@@ -1842,7 +1838,7 @@ function bind(){
     });
     el.addEventListener("change",()=>{
       apply();
-      if(isMobileCharacterDraftControl(el))save(true,false);
+      if(isMobileCharacterDraftControl(el))save(false,false);
     });
   });
   $$("[data-color]").forEach(el=>el.oninput=()=>{
@@ -3193,7 +3189,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819speech1").catch(error=>{
+  import("./auth.js?v=20260819ime1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3208,7 +3204,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819speech1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819ime1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

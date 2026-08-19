@@ -9,7 +9,8 @@
     "app:sync": "npm run app:prepare && npm run cap:sync:android",
     "app:open": "npm run app:sync && cap open android",
     "app:build:debug": "npm run app:sync && cd android && gradlew.bat assembleDebug",
-    "app:build:bundle": "npm run app:sync && cd android && gradlew.bat bundleRelease"
+    "app:build:bundle": "npm run app:sync && cd android && gradlew.bat bundleRelease",
+    "test:ime": "node scripts/check-ime-editor-stability.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
