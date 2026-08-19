@@ -506,6 +506,7 @@ async function login(){
 }
 
 async function upload({silent=false,reason=""}={}){
+  await window.DrawerVillageLocalMedia?.ready;
   if(!user){if(!silent)toast("Google 로그인이 필요합니다");return false}
   if(busy){
     const started=Date.now();

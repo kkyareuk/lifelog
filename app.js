@@ -1,10 +1,21 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819nav7";
-import {eventFor} from "./simulation.js?v=20260819nav7";
-import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819nav7";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260811ab";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setRoomType, deleteRoom, reorderRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction} from "./state.js?v=20260819core1";
+import {eventFor} from "./simulation.js?v=20260819core1";
+import {renderApp, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260819core1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage} from "./local-media.js?v=20260819core1";
 
-await initializeLocalMediaState(state);
-save(true,false);
+// IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
+// 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
+const localMediaReady=initializeLocalMediaState(state).then(restored=>{
+  if(restored){
+    save(true,false);
+    render();
+  }
+  return restored;
+}).catch(error=>{
+  console.warn("기기 사진 복원을 건너뛰고 앱을 계속 실행합니다",error);
+  return 0;
+});
+window.DrawerVillageLocalMedia={...(window.DrawerVillageLocalMedia||{}),ready:localMediaReady};
 
 let pendingImage=null;
 let deferredInstallPrompt=null;
@@ -2235,49 +2246,34 @@ window.DrawerVillageNavigation={
   current:()=>state.activeTab
 };
 
-// 모든 탭 전환은 이 한 경로에서만 처리한다. 예전에는 pointerdown,
-// touchstart, pointerup, click이 각각 render()를 호출했다. 첫 이벤트가
-// 화면을 교체한 뒤 같은 손가락의 다음 이벤트가 새로 생긴 "관찰" 버튼에
-// 전달되어, 탭이 열리자마자 메인 화면으로 되돌아가는 문제가 있었다.
-// 터치는 손을 뗀 pointerup에서, 마우스·키보드는 click에서 한 번만 예약한다.
-let lastTabGesture={tab:"",at:0};
-let pendingTabTimer=0;
-let ignoreSyntheticTabClicksUntil=0;
+// 탭 전환은 click에서 한 번만 실행한다. 일부 Android WebView가 click을
+// 만들지 못하는 경우에만 pointerup 뒤 짧은 fallback이 같은 탭을 연다.
+// pointerup 중에는 DOM을 바꾸지 않으므로 후속 click이 새 화면의 다른
+// 버튼으로 재지정되는 문제도 생기지 않는다.
+let pendingTabFallback=0;
 function tabButtonFromEvent(event){
   const path=typeof event.composedPath==="function"?event.composedPath():[];
   return path.find(node=>node?.matches?.("[data-tab]"))||event.target?.closest?.("[data-tab]");
 }
-function scheduleTabNavigation(tab,event){
-  if(!APP_TABS.includes(tab))return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  const now=Date.now();
-  if(lastTabGesture.tab===tab&&now-lastTabGesture.at<650)return;
-  lastTabGesture={tab,at:now};
-  clearTimeout(pendingTabTimer);
-  pendingTabTimer=window.setTimeout(()=>{
-    pendingTabTimer=0;
-    navigateToTab(tab);
-  },0);
-}
 function captureTabPointerUp(event){
   if(event.pointerType==="mouse")return;
   const button=tabButtonFromEvent(event);
-  if(!button)return;
-  // 터치 pointerup 뒤 브라우저가 만드는 click은 render() 이후 새 탭 메뉴에
-  // 떨어질 수도 있다. 잠시 모든 후속 탭 click을 삼켜 최초 선택만 유지한다.
-  ignoreSyntheticTabClicksUntil=Date.now()+750;
-  scheduleTabNavigation(button.dataset.tab,event);
+  const tab=button?.dataset?.tab;
+  if(!APP_TABS.includes(tab))return;
+  clearTimeout(pendingTabFallback);
+  pendingTabFallback=window.setTimeout(()=>{
+    pendingTabFallback=0;
+    navigateToTab(tab);
+  },80);
 }
 function captureTabClick(event){
   const button=tabButtonFromEvent(event);
-  if(!button)return;
-  if(Date.now()<ignoreSyntheticTabClicksUntil){
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    return;
-  }
-  scheduleTabNavigation(button.dataset.tab,event);
+  const tab=button?.dataset?.tab;
+  if(!APP_TABS.includes(tab))return;
+  event.preventDefault();
+  clearTimeout(pendingTabFallback);
+  pendingTabFallback=0;
+  navigateToTab(tab);
 }
 document.addEventListener("pointerup",captureTabPointerUp,true);
 document.addEventListener("click",captureTabClick,true);
@@ -3059,7 +3055,7 @@ recordTabHistory("observe",true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260819sync5").catch(error=>{
+  import("./auth.js?v=20260819core1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3074,7 +3070,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260819nav7",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260819core1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
