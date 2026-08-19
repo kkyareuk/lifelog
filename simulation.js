@@ -1,4 +1,4 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core5";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core6";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2084,12 +2084,12 @@ function profileSettingScenePool(c,date){
     "とっさの反応をあとから落ち着かせるところ","感情が先に出たあと状況を見直し、大きくなる前に距離を取って呼吸を整えました。","living",["impulseControl"]);
   const favoriteFood=(c.foodPreferences||[])[0]||(c.foodTypes||[])[0];
   if(favoriteFood||Number.isFinite(Number(c.spiceTolerance))||Number.isFinite(Number(c.sweetPreference)))add("taste",
-    "입맛에 맞게 간을 조절하는 중",`${favoriteFood?`${favoriteFood}을(를) 준비하며 `:""}프로필에 정해 둔 매운맛과 단맛 취향에 맞게 조금씩 맛을 보고 간을 조절했어요.`,
-    "Adjusting the flavor to their taste",`${favoriteFood?`While preparing ${favoriteFood}, t`:"T"}hey tasted the food and adjusted its heat and sweetness to match their preferences.`,
-    "好みに合わせて味を調整するところ",`${favoriteFood?`${favoriteFood}を用意しながら、`:""}設定した辛さと甘さの好みに合うよう、少しずつ味見して調整しました。`,"kitchen",["foodPreferences","spiceTolerance","sweetPreference"]);
+    "입맛에 맞게 간을 조절하는 중",`${favoriteFood?`${favoriteFood}을(를) 준비하며 `:""}한 입씩 맛을 보고 좋아하는 매운맛과 단맛이 될 때까지 양념을 조금씩 더했어요.`,
+    "Adjusting the flavor to their taste",`${favoriteFood?`While preparing ${favoriteFood}, t`:"T"}hey tasted each addition and adjusted the seasoning until the heat and sweetness felt right.`,
+    "好みに合わせて味を調整するところ",`${favoriteFood?`${favoriteFood}を用意しながら、`:""}少しずつ味見し、好みの辛さと甘さになるまで調味料を加えました。`,"kitchen",["foodPreferences","spiceTolerance","sweetPreference"]);
   const music=(c.musicGenres||[])[0];
   if(music)add("music",
-    `${music}을(를) 골라 듣는 중`,`좋아하는 장르로 설정한 ${music} 재생 목록을 열고, 지금 기분에 맞는 곡부터 차례로 듣고 있어요.`,
+    `${music}을(를) 골라 듣는 중`,`평소 자주 듣는 ${music} 재생 목록을 열고, 지금 기분에 맞는 곡부터 차례로 듣고 있어요.`,
     `Listening to ${music}`,`They opened a playlist from a favorite genre, ${music}, and chose a track that matched the moment.`,
     `${music}を選んで聴いているところ`,`好きなジャンルに設定した${music}のプレイリストを開き、今の気分に合う曲を選びました。`,`bedroom`,["musicGenres"]);
   if(/잘 입음|감각적으로|개성/.test(c.fashionSense||""))add("fashion",
@@ -2097,14 +2097,31 @@ function profileSettingScenePool(c,date){
     "Balancing clothes and accessories","They compared colors and textures, choosing an outfit that showed their taste and suited the day's plans.",
     "服と小物のバランスを整えるところ","色と素材を見比べ、自分らしさがあり今日の予定にも合う組み合わせを選びました。","bedroom",["fashionSense"]);
   if(canDrive(c))add("driving",
-    "외출 전 운전 준비를 확인하는 중","면허와 운전 경험 설정에 맞춰 경로와 주차할 곳을 확인하고, 무리하지 않을 이동 계획을 세웠어요.",
+    "외출 전 운전 준비를 확인하는 중","익숙하게 다닐 수 있는 길과 주차할 곳을 확인하고, 무리하지 않을 이동 계획을 세웠어요.",
     "Checking the drive before leaving","Based on their driving experience, they checked the route and parking and planned a manageable trip.",
     "外出前に運転の準備を確認するところ","運転経験に合わせて経路と駐車場所を確認し、無理のない移動計画を立てました。","entry",["driverLicense"]);
   const relationship=preferredRelation(c);
-  if(relationship)add("relationship",
-    `${relationship.other.name}에게 마음을 표현할 방법을 고르는 중`,`갈등 대응과 애정 표현 설정을 떠올리며, ${relationship.other.name}에게 부담을 주지 않고 자기 마음을 전할 행동을 골랐어요.`,
-    `Choosing how to show care for ${relationship.other.name}`,`They considered their conflict and affection styles and chose a comfortable way to show how they felt.`,
-    `${relationship.other.name}への気持ちの伝え方を選ぶところ`,`対立への向き合い方と愛情表現の設定に合わせ、負担にならない伝え方を選びました。`,`living`,["conflictStyle","affectionStyle","interference"]);
+  if(relationship){
+    const name=relationship.other.name;
+    const affectionScenes={
+      "표현이 서툼":[`${name}의 자주 쓰는 물건을 챙기는 중`,`${name}의 물건을 손 닿기 쉬운 자리에 놓아 두고, 들키자 짧게 고개만 끄덕였어요.`,`Putting ${name}'s things within reach`,`They placed something ${name} often uses within easy reach, then only nodded when noticed.`,`${name}がよく使う物を用意するところ`,`${name}がよく使う物を手の届く場所に置き、気づかれると短くうなずきました。`],
+      "조용히 곁에 있음":[`${name} 곁에 조용히 앉아 있는 중`,`${name}의 말을 재촉하지 않고 가까운 자리에 앉아, 필요할 때 바로 눈을 맞추고 들어 주고 있어요.`,`Sitting quietly beside ${name}`,`They sat nearby without rushing ${name}, ready to make eye contact and listen whenever needed.`,`${name}のそばに静かに座るところ`,`${name}を急かさず近くに座り、必要な時に目を合わせて話を聞いています。`],
+      "말로 표현":[`${name}에게 고마웠던 일을 말하는 중`,`${name}의 눈을 보고 오늘 고마웠던 행동을 하나 짚어, 왜 기뻤는지 또렷하게 말했어요.`,`Telling ${name} what they appreciated`,`They looked at ${name}, named one thoughtful thing from today, and explained why it mattered.`,`${name}に感謝したことを伝えるところ`,`${name}の目を見て、今日うれしかった行動を一つ挙げ、なぜうれしかったか言葉にしました。`],
+      "행동으로 표현":[`${name}의 미뤄 둔 일을 먼저 돕는 중`,`${name}가 손대지 못한 일을 먼저 마치고, 바로 쓸 수 있도록 필요한 물건까지 옆에 정리해 뒀어요.`,`Helping with something ${name} put off`,`They finished a task ${name} had not gotten to and arranged everything needed for the next step.`,`${name}が後回しにしていたことを手伝うところ`,`${name}がまだ手をつけられなかった作業を先に済ませ、次に必要な物までそばに整えました。`],
+      "적극적으로 챙김":[`${name}에게 간식과 필요한 물건을 건네는 중`,`${name}의 일정에 맞춰 간식과 자주 찾는 물건을 한데 챙겨 건네고, 빠뜨린 것은 없는지 다시 확인했어요.`,`Bringing ${name} a snack and essentials`,`They gathered a snack and the things ${name} often needs, handed them over, and checked that nothing was missing.`,`${name}におやつと必要な物を渡すところ`,`${name}の予定に合わせておやつとよく使う物をまとめて渡し、忘れ物がないかもう一度確かめました。`]
+    };
+    const affection=affectionScenes[c.affectionStyle];
+    if(affection)add("relationship-affection",...affection,"living",["affectionStyle","interference"]);
+    const conflictScenes={
+      "피하는 편":[`${name}에게 짧은 메모를 남기는 중`,`바로 마주 앉는 대신 불편했던 상황과 나중에 이야기하고 싶은 내용을 짧게 적어 ${name}가 볼 곳에 두었어요.`,`Leaving ${name} a short note`,`Instead of forcing a conversation, they wrote what felt uncomfortable and what they wanted to discuss later.`,`${name}に短いメモを残すところ`,`すぐに向き合う代わりに、気になったことと後で話したい内容を短く書いて置きました。`],
+      "시간을 두고 말함":[`${name}와 다시 이야기하러 앉은 중`,`잠시 떨어져 숨을 고른 뒤 ${name} 앞에 앉아, 아까 어떤 말이 불편했는지 차분히 설명했어요.`,`Sitting down to talk with ${name} again`,`After taking time to cool down, they sat with ${name} and calmly explained which words had hurt.`,`${name}ともう一度話すために座るところ`,`少し離れて気持ちを整えたあと、${name}の前に座り、どの言葉がつらかったか落ち着いて伝えました。`],
+      "대화로 해결":[`${name}와 서로의 말을 확인하는 중`,`${name}의 설명을 끝까지 들은 뒤 자기 입장을 한 문장씩 말하고, 서로 이해한 내용이 맞는지 다시 확인했어요.`,`Checking each other's understanding with ${name}`,`They listened until ${name} finished, explained their own side one point at a time, and checked what each had understood.`,`${name}と互いの理解を確かめるところ`,`${name}の説明を最後まで聞き、自分の考えを一つずつ伝えて、互いの理解が合っているか確かめました。`],
+      "바로 따짐":[`${name}에게 방금 한 말의 뜻을 묻는 중`,`${name}의 말을 그냥 넘기지 않고 바로 멈춰 세운 뒤, 무엇을 뜻했는지 분명하게 말해 달라고 물었어요.`,`Asking ${name} what they meant`,`They stopped the conversation instead of letting the remark pass and directly asked ${name} to explain what it meant.`,`${name}に今の言葉の意味を聞くところ`,`${name}の言葉をそのまま流さず、その場で止めて何を意味したのかはっきり説明してほしいと尋ねました。`],
+      "끝까지 결론을 냄":[`${name}와 다음 행동을 정하는 중`,`${name}와 쟁점을 하나씩 적어 보고, 다시 같은 일이 생기면 각자 어떻게 행동할지 구체적으로 정했어요.`,`Agreeing on next steps with ${name}`,`They listed each issue with ${name} and agreed on exactly what each person would do if it happened again.`,`${name}と次の行動を決めるところ`,`${name}と論点を一つずつ書き出し、同じことが起きた時にそれぞれどう動くか具体的に決めました。`]
+    };
+    const conflict=conflictScenes[c.conflictStyle];
+    if(conflict)add("relationship-conflict",...conflict,"living",["conflictStyle","interference"]);
+  }
   return pool;
 }
 function profileSettingEvents(c,times,date){

@@ -1,5 +1,5 @@
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core5";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core5";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260819core6";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260819core6";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding."},
@@ -1714,8 +1714,8 @@ function homeCard(id,chars){
     const editAttributes=`data-open-room-editor="${key}" data-home-id="${id}" data-room-key="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`;
     return `<div class="room room-${esc(room.type||key)} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
       <div class="room-heading room-title-${room.titleTone==="dark"?"dark":"light"}"><span><b>${esc(room.name||key)}</b><small class="room-edit-hint">편집</small></span>${edit?`<button type="button" class="room-drag-handle" data-room-drag="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 위치 옮기기">✥</button>`:""}</div>
-      <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c),sleeping=/자는 중|잠든|수면/.test(`${e?.title||""} ${e?.mood||""}`);return `<button class="home-person ${sleeping?"is-sleeping":""}" data-home-occupant="character" data-character-id="${c.id}" data-occupant-name="${esc(c.name)}" data-occupant-title="${esc(e?.title||"집에서 시간을 보내는 중")}" data-occupant-desc="${esc(e?.desc||"")}" data-occupant-room="${esc(room.name||key)}">${avatar(c)}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}<span class="home-person-status"><b>${esc(c.name)}</b><small>${esc(e?.title||"집에서 시간을 보내는 중")}</small></span></button>`}).join("")}</div>
-      <div class="room-pets">${shownPets.map(p=>`<button class="room-pet" data-home-occupant="pet" data-pet-id="${p.id}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></button>`).join("")}</div>
+      <div class="room-people">${shownPeople.map(c=>{const e=sceneFor(c),title=e?.title||"집에서 시간을 보내는 중",sleeping=/자는 중|잠든|수면/.test(`${title} ${e?.mood||""}`);return `<div class="home-person ${sleeping?"is-sleeping":""}" role="button" tabindex="0" aria-label="${esc(`${c.name} · ${title}`)}" data-home-occupant="character" data-character-id="${c.id}" data-occupant-name="${esc(c.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(e?.desc||"")}" data-occupant-room="${esc(room.name||key)}">${avatar(c)}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}<span class="home-person-status"><b>${esc(c.name)}</b><small>${esc(title)}</small></span></div>`}).join("")}</div>
+      <div class="room-pets">${shownPets.map(p=>`<div class="room-pet" role="button" tabindex="0" aria-label="${esc(`${p.name} · ${petScenes[p.id].title}`)}" data-home-occupant="pet" data-pet-id="${p.id}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></div>`).join("")}</div>
     </div>`;
   }).join("");
   const dayLabels=["일","월","화","수","목","금","토"];
@@ -2568,6 +2568,14 @@ Object.assign(UI_TEXT.en,{
   "홈 화면 도구":"Home screen tools","화면 편집":"Edit display","통계":"Statistics",
   "홈 화면 편집":"Edit home display","홈화면 기본 표현":"Default home display","SD 이미지 크기":"SD image size","LD 이미지 크기":"LD image size",
   "두 명이 함께 나올 때도 각 LD의 높이와 크기는 한 명일 때와 같고, 위치만 왼쪽과 오른쪽으로 나뉩니다.":"With two characters, each LD keeps the same size and height as a solo LD; only their positions shift left and right.",
+  "집에서 시간을 보내는 중":"Spending time at home","지금 이 방에 있는 캐릭터":"Character in this room","반려생물":"Pet","이름 없음":"Unnamed","조용히 자기 시간을 보내고 있어요.":"They are quietly spending time on their own.",
+  "이 집 연결됨":"Linked to this home","연결하지 않음":"Not linked","주거지":"Primary home","본가":"Family home","별채":"Secondary home","주말집":"Weekend home","업무용 숙소":"Work accommodation","연인의 집":"Partner's home","친척집":"Relative's home","상시 거주":"Lives here full-time","평일 중심":"Mostly weekdays","주말 중심":"Mostly weekends","요일 지정":"Selected days","명절·기념일":"Holidays & anniversaries","필요할 때 방문":"Visits when needed",
+  "연결을 해제해도 캐릭터나 집은 삭제되지 않습니다. 별채·본가도 주거지와 동시에 둘 수 있어요.":"Unlinking does not delete the character or home. A family or secondary home can be kept alongside the primary home.",
+  "‘명절·기념일’은 위 날짜가 맞는 날, ‘요일 지정’은 고른 요일에 이 집의 장면을 사용해요. ‘필요할 때 방문’은 임의 이동을 만들지 않습니다.":"Holiday or anniversary visits use the dates above; selected-day visits use the chosen weekdays. Visits when needed never create random travel.",
+  "새 방을 만든 뒤 방 자체를 누르면 이름·종류·크기·사진·가구를 편집할 수 있어요. 자는 방은 캐릭터 연결 설정에서 각각 정해요.":"After adding a room, tap it to edit its name, type, size, photo, and furniture. Choose each character's bedroom in their home link settings.",
+  "종류 이름":"Type name","크기":"Size","성향 · 여러 개 선택":"Temperament · choose any","확실히 알고 있는 신체 특징만 선택":"Choose only known physical traits","선택하지 않은 생김새나 능력은 행동에서 지어내지 않아요.":"Scenes never invent appearances or abilities you did not select.",
+  "소형":"Small","중형":"Medium","대형":"Large","온순함":"Gentle","활발함":"Active","사고뭉치":"Mischievous","진중함":"Serious","호기심 많음":"Curious","겁이 많음":"Timid","사람을 잘 따름":"People-friendly","독립적":"Independent","털":"Fur","비늘":"Scales","깃털":"Feathers","날개":"Wings","지느러미":"Fins","뿔":"Horns","꼬리":"Tail","발광":"Bioluminescence","독성":"Venomous",
+  "모름":"Unknown","수컷":"Male","암컷":"Female","등에 타고 이동할 수 있음":"Can be ridden","투명 아이콘":"Transparent icon","아이콘 링크":"Icon link","사진 링크":"Photo link",
   "완료":"Done","캐릭터 통계 보고서":"Character Statistics Report"
 });
 Object.assign(UI_TEXT.ja,{
@@ -2588,6 +2596,14 @@ Object.assign(UI_TEXT.ja,{
   "홈 화면 도구":"ホーム画面ツール","화면 편집":"画面編集","통계":"統計",
   "홈 화면 편집":"ホーム画面編集","홈화면 기본 표현":"ホーム画面の基本表示","SD 이미지 크기":"SD画像サイズ","LD 이미지 크기":"LD画像サイズ",
   "두 명이 함께 나올 때도 각 LD의 높이와 크기는 한 명일 때와 같고, 위치만 왼쪽과 오른쪽으로 나뉩니다.":"2人で表示する場合も、各LDの大きさと高さは1人の時と同じで、位置だけが左右に移動します。",
+  "집에서 시간을 보내는 중":"家で過ごしているところ","지금 이 방에 있는 캐릭터":"今この部屋にいるキャラクター","반려생물":"ペット","이름 없음":"名前なし","조용히 자기 시간을 보내고 있어요.":"静かに自分の時間を過ごしています。",
+  "이 집 연결됨":"この家に登録済み","연결하지 않음":"登録しない","주거지":"住居","본가":"実家","별채":"別宅","주말집":"週末の家","업무용 숙소":"仕事用の宿泊先","연인의 집":"恋人の家","친척집":"親戚の家","상시 거주":"常時居住","평일 중심":"平日中心","주말 중심":"週末中心","요일 지정":"曜日指定","명절·기념일":"祝日・記念日","필요할 때 방문":"必要な時に訪問",
+  "연결을 해제해도 캐릭터나 집은 삭제되지 않습니다. 별채·본가도 주거지와 동시에 둘 수 있어요.":"登録を解除してもキャラクターや家は削除されません。別宅や実家は住居と同時に設定できます。",
+  "‘명절·기념일’은 위 날짜가 맞는 날, ‘요일 지정’은 고른 요일에 이 집의 장면을 사용해요. ‘필요할 때 방문’은 임의 이동을 만들지 않습니다.":"祝日・記念日は上の日付、曜日指定は選んだ曜日にこの家のシーンを使います。必要な時の訪問ではランダムな移動は発生しません。",
+  "새 방을 만든 뒤 방 자체를 누르면 이름·종류·크기·사진·가구를 편집할 수 있어요. 자는 방은 캐릭터 연결 설정에서 각각 정해요.":"部屋を追加したあと、その部屋を押すと名前・種類・大きさ・写真・家具を編集できます。寝る部屋はキャラクターの家設定で個別に選びます。",
+  "종류 이름":"種類名","크기":"大きさ","성향 · 여러 개 선택":"性格・複数選択可","확실히 알고 있는 신체 특징만 선택":"把握している身体的特徴だけ選択","선택하지 않은 생김새나 능력은 행동에서 지어내지 않아요.":"選んでいない外見や能力をシーンで作りません。",
+  "소형":"小型","중형":"中型","대형":"大型","온순함":"おとなしい","활발함":"活発","사고뭉치":"いたずら好き","진중함":"落ち着いている","호기심 많음":"好奇心旺盛","겁이 많음":"怖がり","사람을 잘 따름":"人懐っこい","독립적":"独立心が強い","털":"毛","비늘":"うろこ","깃털":"羽毛","날개":"翼","지느러미":"ひれ","뿔":"角","꼬리":"しっぽ","발광":"発光","독성":"毒性",
+  "모름":"不明","수컷":"オス","암컷":"メス","등에 타고 이동할 수 있음":"背中に乗って移動できる","투명 아이콘":"透過アイコン","아이콘 링크":"アイコンリンク","사진 링크":"写真リンク",
   "완료":"完了","캐릭터 통계 보고서":"キャラクター統計レポート"
 });
 function businessInformationFooter(){

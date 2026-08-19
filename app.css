@@ -553,7 +553,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.rou
   color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -650,7 +650,7 @@ html[data-color-mode] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-st
   color:var(--ink)!important;
 }
 html[data-color-mode] :is(input,select,textarea),
-html[data-color-mode] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person){
+html[data-color-mode] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;

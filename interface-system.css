@@ -210,7 +210,8 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
 .home-occupant-popover .home-occupant-visual :is(.sprite,.room-pet-icon,.room-pet-emoji){
   display:block!important;max-width:none!important;padding:0!important;border:0!important;border-radius:0!important;clip-path:none!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important;
 }
-.home-page :is(.home-person,.room-pet){display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important;border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}
+.home-page :is(.home-person,.room-pet){display:flex!important;flex-direction:column!important;align-items:center!important;gap:4px!important;padding:0!important;border:0!important;outline-offset:3px;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important;appearance:none!important;-webkit-appearance:none!important;cursor:pointer;user-select:none}
+.home-page :is(.home-person,.room-pet):focus-visible{outline:3px solid color-mix(in srgb,var(--p) 72%,#fff)}
 .home-page :is(.home-person,.room-pet)>:is(.avatar,.sprite,.room-pet-photo,.room-pet-icon,.room-pet-emoji){flex:0 0 auto!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important}
 .home-page .home-person>.sprite{width:72px!important;min-width:72px!important;max-width:72px!important;height:72px!important;min-height:72px!important;max-height:72px!important;object-fit:contain!important;overflow:visible!important}
 .home-page .home-person>.avatar{width:64px!important;min-width:64px!important;max-width:64px!important;height:64px!important;min-height:64px!important;max-height:64px!important}
