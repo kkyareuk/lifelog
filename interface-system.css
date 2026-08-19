@@ -39,7 +39,7 @@ html[data-color-mode][data-visual-theme] header nav button{
 }
 html[data-color-mode][data-visual-theme] header nav button:is(.on,:hover,:focus-visible),
 html[data-color-mode][data-visual-theme] button.primary,
-html[data-color-mode][data-visual-theme] button.on:not(.roster-card):not(.place-person-face),
+html[data-color-mode][data-visual-theme] button.on:not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button),
 html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
   border-color:color-mix(in srgb,var(--p) 72%,var(--line))!important;
   background:linear-gradient(135deg,var(--p),var(--s))!important;

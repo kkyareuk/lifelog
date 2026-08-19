@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820contactsettings1";
-import {eventFor} from "./simulation.js?v=20260820contactsettings1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820contactsettings1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820contactsettings1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820contactsettings1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820contactsettings1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820contactsettings1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820layoutroot1";
+import {eventFor} from "./simulation.js?v=20260820layoutroot1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820layoutroot1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820layoutroot1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820layoutroot1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820layoutroot1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820layoutroot1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -49,7 +49,7 @@ const PAGE_GUIDES={
   character:["캐릭터","위쪽에서 캐릭터를 고른 뒤 아래 항목 중 바꾸려는 설정을 누르세요. 프로필 내보내기는 캐릭터 이름 옆에서 바로 할 수 있고, 사진·아이콘·테마에서는 이미지와 대표색을 관리해요."],
   catalog:["취향 사전","음식, 작품, 음악, 향과 소지품을 등록하는 도감이에요. 직접 올린 사진은 동그랗게, 사이트 일러스트는 투명 배경과 원본 비율로 보이며 실제 생활 장면에도 연결됩니다."],
   relationship:["관계","먼저 마음을 보는 사람을 고른 뒤, 그 마음이 향하는 대상을 선택하세요. ‘OO가 OO을 OO으로 여김’ 문장으로 방향을 바로 확인할 수 있어요."],
-  routine:["주간 루틴","일요일부터 토요일까지 한 화면에서 보고, 일정을 눌러 편집해요. 출근·데이트·약속처럼 시간이 정해진 행동은 무작위 생활 장면보다 먼저 적용됩니다."],
+  routine:["일정","주간 일정에는 반복할 요일을, 월간 일정에는 날짜가 정해진 약속을 기록해요. 시간이 정해진 행동은 무작위 생활 장면보다 먼저 적용됩니다."],
   town:["마을","평소에는 캐릭터 위치를 관찰하고, 편집 모드를 켠 뒤에만 건물을 옮기거나 정보를 바꿀 수 있어요. 건물을 누르면 편집 창이 열립니다."],
   shop:["상점","캐릭터·마을 슬롯과 개발 응원을 장바구니에 담는 화면이에요. 구매하지 않아도 이미 만든 캐릭터와 데이터가 임의로 사라지지 않습니다."],
   settings:["설정","백업 파일, 계정 동기화, 화면 표시와 피드백을 관리해요. 데이터 업로드는 여기에서 ‘동기화’를 눌렀을 때만 실행됩니다."]
@@ -569,6 +569,15 @@ const addRoutine=characterId=>{
 };
 const updateRoutine=(characterId,id,patch)=>{const item=state.routines[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);save(true)}};
 const deleteRoutine=(characterId,id)=>{state.routines[characterId]=(state.routines[characterId]||[]).filter(r=>r.id!==id);save(true)};
+const currentMonthKey=()=>{const date=new Date();return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`};
+const addMonthlyRoutine=characterId=>{
+  state.monthlyRoutines[characterId]=Array.isArray(state.monthlyRoutines[characterId])?state.monthlyRoutines[characterId]:[];
+  const month=state.routineMonth||currentMonthKey(),today=new Date(),date=month===currentMonthKey()?`${month}-${String(today.getDate()).padStart(2,"0")}`:`${month}-01`;
+  const id=crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+  state.monthlyRoutines[characterId].push({id,date,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""});save(true);return id;
+};
+const updateMonthlyRoutine=(characterId,id,patch)=>{const item=state.monthlyRoutines?.[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);state.characters[characterId].timelineResetAt=Date.now();save(true)}};
+const deleteMonthlyRoutine=(characterId,id)=>{state.monthlyRoutines[characterId]=(state.monthlyRoutines?.[characterId]||[]).filter(r=>r.id!==id);state.characters[characterId].timelineResetAt=Date.now();save(true)};
 const maintenanceConfig=()=>window.PARALLEL_CITY_CONFIG?.maintenance||{};
 const maintenanceEnabled=()=>Boolean(maintenanceConfig().enabled);
 const ONBOARDING_KEY="drawer-village-onboarding-v2";
@@ -964,6 +973,15 @@ function render(){
     document.querySelectorAll("button:not([type])").forEach(button=>{
       if(button.closest('form[method="dialog"]')&&button.hasAttribute("value"))return;
       button.type="button";
+    });
+    // 사진과 일러스트가 많아져도 첫 화면을 막지 않도록, 현재 관찰 장면과
+    // 로고를 제외한 아래쪽 이미지는 브라우저의 지연 디코딩에 맡긴다.
+    document.querySelectorAll("#app img").forEach(image=>{
+      image.decoding="async";
+      if(!image.matches(".native-observe-background,.native-main-character,.native-scene-lineup-person img,.app-loading-logo")){
+        image.loading="lazy";
+        image.fetchPriority="low";
+      }
     });
     const grid=document.querySelector(".shop-product-grid");
     if(grid&&!grid.querySelector('[data-product-id="green_tea"]')){
@@ -2052,7 +2070,7 @@ function bind(){
     if(!["primary","secondary"].includes(field)||!/^#[0-9a-f]{6}$/i.test(value||""))return;
     updateCharacter(active().id,{theme:{...active().theme,[field]:value}},true);
     applyTheme();
-    document.querySelectorAll(`[data-theme-swatch="${CSS.escape(field)}"]`).forEach(button=>button.classList.toggle("on",button.dataset.colorValue===value));
+    document.querySelectorAll(`[data-theme-swatch="${CSS.escape(field)}"]`).forEach(button=>button.classList.toggle("selected",button.dataset.colorValue===value));
   });
   $$("[data-gradient]").forEach(el=>el.addEventListener("change",e=>{
     const mobileDraft=markMobileCharacterDraft(el);
@@ -2247,9 +2265,14 @@ function bind(){
     if(event.currentTarget.checked)queueCurrentBuildUpdateNotice();
   });
   $("[data-character-notification-test]")?.addEventListener("click",sendCharacterNotificationTest);
+  $$('[data-open-character-contact]').forEach(button=>button.onclick=()=>{
+    const dialog=$('[data-character-contact-dialog]');
+    if(dialog&&!dialog.open)dialog.showModal();
+  });
   $$('[data-open-daily-question]').forEach(button=>button.onclick=()=>{
+    button.closest('dialog[open]')?.close();
     const question=ensureDailyQuestionSchedule();
-    if(question&&!question.answered)openDailyCharacterQuestion({...question,shown:true});
+    if(question&&!question.answered)requestAnimationFrame(()=>openDailyCharacterQuestion({...question,shown:true}));
   });
   $$("[data-setting]").forEach(el=>el.onchange=()=>{
     const restore=preserveSelectionScroll(el);
@@ -2434,11 +2457,20 @@ function bind(){
   });
   $$("[data-routine-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.routineCharacter);render()});
   $("[data-add-routine]")?.addEventListener("click",()=>{const id=addRoutine(active().id);render();requestAnimationFrame(()=>openRoutineDialog(id))});
+  $("[data-add-monthly-routine]")?.addEventListener("click",()=>{const id=addMonthlyRoutine(active().id);render();requestAnimationFrame(()=>openMonthlyRoutineDialog(id))});
+  $$("[data-routine-view]").forEach(el=>el.onclick=()=>{state.routineView=el.dataset.routineView==="monthly"?"monthly":"weekly";if(!state.routineMonth)state.routineMonth=currentMonthKey();save();render()});
+  $$("[data-routine-month-step]").forEach(el=>el.onclick=()=>{const [year,month]=(state.routineMonth||currentMonthKey()).split("-").map(Number),next=new Date(year,month-1+Number(el.dataset.routineMonthStep),1);state.routineMonth=`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,"0")}`;save();render()});
   $$("[data-edit-routine]").forEach(el=>el.onclick=()=>openRoutineDialog(el.dataset.editRoutine));
+  $$("[data-edit-monthly-routine]").forEach(el=>el.onclick=()=>openMonthlyRoutineDialog(el.dataset.editMonthlyRoutine));
   $$("[data-delete-routine]").forEach(el=>el.onclick=()=>{
     const routine=(state.routines?.[active().id]||[]).find(item=>item.id===el.dataset.deleteRoutine);
     if(!confirm(`이 주간 루틴을 삭제하시겠습니까?\n\n일정: ${routine?.title||"제목 없음"}\n삭제한 일정은 되돌릴 수 없습니다.`))return;
     deleteRoutine(active().id,el.dataset.deleteRoutine);render();
+  });
+  $$("[data-delete-monthly-routine]").forEach(el=>el.onclick=()=>{
+    const routine=(state.monthlyRoutines?.[active().id]||[]).find(item=>item.id===el.dataset.deleteMonthlyRoutine);
+    if(!confirm(`이 월간 일정을 삭제하시겠습니까?\n\n일정: ${routine?.title||"제목 없음"}\n삭제한 일정은 되돌릴 수 없습니다.`))return;
+    deleteMonthlyRoutine(active().id,el.dataset.deleteMonthlyRoutine);render();
   });
   $("[data-export-file]")?.addEventListener("click",()=>{
     const blob=new Blob([JSON.stringify({format:"drawer-village-backup",version:2,mediaPolicy:"device-only",exportedAt:new Date().toISOString(),gameState:informationOnlyState(cloneState())})],{type:"application/json"});
@@ -2493,6 +2525,7 @@ async function applyImage(type,id,room,data){
 const APP_TABS=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"];
 function recordTabHistory(tab,replace=false){
   if(!APP_TABS.includes(tab))return;
+  try{sessionStorage.setItem("drawer-village-active-tab",tab)}catch{}
   const url=new URL(location.href);
   url.hash=`tab=${tab}`;
   const next={...(history.state||{}),drawerVillageTab:tab};
@@ -3038,7 +3071,7 @@ function openRoutineDialog(id){
   const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog";
   dialog.innerHTML=`<form method="dialog"><h2>주간 일정 편집</h2>
-    <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div class="routine-day-presets"><button type="button" data-routine-day-preset="weekdays">평일</button><button type="button" data-routine-day-preset="weekend">주말</button><button type="button" data-routine-day-preset="everyday">매일</button><button type="button" data-routine-day-preset="clear">선택 해제</button></div><div>${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}> ${day}</label>`).join("")}</div><small data-routine-day-summary>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
+    <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div class="routine-day-presets"><button type="button" data-routine-day-preset="weekdays">평일</button><button type="button" data-routine-day-preset="weekend">주말</button><button type="button" data-routine-day-preset="everyday">매일</button><button type="button" data-routine-day-preset="clear">선택 해제</button></div><div class="routine-day-pills">${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}><span>${day}</span></label>`).join("")}</div><small data-routine-day-summary>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
     <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
@@ -3057,6 +3090,28 @@ function openRoutineDialog(id){
       if(days.length)updateRoutineDays(c.id,id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
       else showToast("일정을 적용할 요일을 하나 이상 골라 주세요");
     }
+    dialog.remove();render();
+  };
+  dialog.showModal();
+}
+
+function openMonthlyRoutineDialog(id){
+  const c=active(),item=state.monthlyRoutines?.[c.id]?.find(r=>r.id===id);if(!item)return;
+  const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
+  const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog monthly-routine-dialog";
+  dialog.innerHTML=`<form method="dialog"><h2>월간 일정 편집</h2>
+    <label>날짜<input type="date" name="date" value="${item.date}"></label>
+    <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
+    <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
+    <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
+    <label>일정 이름<input name="title" value="${item.title.replace(/"/g,"&quot;")}"></label>
+    <label>장소<select name="placeId"><option value="">집 또는 자동 선택</option>${places.map(p=>`<option value="${p.id}" ${item.placeId===p.id?"selected":""}>${p.townName} · ${p.name}</option>`).join("")}</select></label>
+    <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}><span>${state.characters[cid].name}</span></label>`).join("")}</fieldset>
+    <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
+    <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  translateDynamicInterface(dialog);document.body.append(dialog);
+  dialog.onclose=()=>{
+    if(dialog.returnValue==="save")updateMonthlyRoutine(c.id,id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
     dialog.remove();render();
   };
   dialog.showModal();
@@ -3751,7 +3806,9 @@ mobileSiteQuery?.addEventListener?.("change",()=>render());
 // 이 부팅 코드가 사용자가 이미 누른 탭을 다시 덮어쓰지 않는다.
 const startupHashTab=new URLSearchParams(location.hash.replace(/^#/,"")).get("tab");
 const nativeStartup=Boolean(window.DRAWER_VILLAGE_NATIVE||window.Capacitor?.isNativePlatform?.());
-const startupTab=nativeStartup?"observe":APP_TABS.includes(startupHashTab)?startupHashTab:"observe";
+let startupSessionTab="";
+try{startupSessionTab=sessionStorage.getItem("drawer-village-active-tab")||""}catch{}
+const startupTab=nativeStartup?"observe":APP_TABS.includes(startupHashTab)?startupHashTab:APP_TABS.includes(startupSessionTab)?startupSessionTab:"observe";
 document.documentElement.dataset.startupTab=startupTab;
 document.documentElement.dataset.startupNative=String(nativeStartup);
 if(document.documentElement.dataset.drawerRendered!=="1")setNavigationTabIntent(startupTab);
@@ -3759,7 +3816,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820contactsettings1").catch(error=>{
+  import("./auth.js?v=20260820layoutroot1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3774,7 +3831,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820contactsettings1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820layoutroot1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

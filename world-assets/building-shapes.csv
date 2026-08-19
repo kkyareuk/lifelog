@@ -1,7 +1,7 @@
 id,name,src,types,features
 type-generic,기본 건물,world-assets/building-types/generic.png,기타|쇼핑몰,범용|상업
 type-cafe,카페,world-assets/building-types/cafe.png,카페,음료|디저트|데이트
-type-restaurant,음식점,world-assets/building-types/restaurant.png,음식점,식사|외식
+type-restaurant,음식점,world-assets/building-types/restaurant.png?v=20260820handdrawn1,음식점,식사|외식
 type-hospital,병원,world-assets/building-types/hospital.png,병원,의료|진료
 type-office,사무실·관공서,world-assets/building-types/office.png,사무실|관공서,업무|행정
 type-shop,옷가게·상점,world-assets/building-types/shop.png,옷가게|쇼핑몰,쇼핑|패션
