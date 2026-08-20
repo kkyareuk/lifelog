@@ -1441,7 +1441,7 @@ function activateCharacterInObservedTown(id){
 }
 
 function bindHorizontalWheelNavigation(){
-  document.querySelectorAll(".standard-observe-view>.roster,.native-character-picker").forEach(strip=>{
+  document.querySelectorAll(".standard-observe-view>.roster,.native-character-picker,.game-hud-roster").forEach(strip=>{
     strip.addEventListener("wheel",event=>{
       if(strip.scrollWidth<=strip.clientWidth+1)return;
       const movement=Math.abs(event.deltaX)>Math.abs(event.deltaY)?event.deltaX:event.deltaY;
@@ -1463,6 +1463,11 @@ function bind(){
     if(image.complete&&image.naturalWidth===0)showFallback();
   });
   const openNativeLog=()=>document.querySelector("[data-native-log-dialog]")?.showModal();
+  $$('[data-open-native-log]').forEach(button=>button.addEventListener('click',event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    openNativeLog();
+  }));
   const toggleNativeMoment=card=>{
     if(!card)return;
     const expanded=card.classList.toggle("expanded");
@@ -1550,11 +1555,11 @@ function bind(){
   });
   $$("[data-home-character]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
-    const picker=el.closest(".native-character-picker");
+    const picker=el.closest(".native-character-picker,.game-hud-roster");
     if(picker)homeCharacterPickerScroll=picker.scrollLeft;
     activateCharacterInObservedTown(el.dataset.homeCharacter);
     render();
-    requestAnimationFrame(()=>{const picker=document.querySelector(".native-character-picker");if(picker)picker.scrollLeft=homeCharacterPickerScroll});
+    requestAnimationFrame(()=>{const picker=document.querySelector(".native-character-picker,.game-hud-roster");if(picker)picker.scrollLeft=homeCharacterPickerScroll});
   });
   $("[data-mobile-town-edit-toggle]")?.addEventListener("click",()=>{
     const editing=document.querySelector(".mobile-town-shell")?.classList.contains("editing");

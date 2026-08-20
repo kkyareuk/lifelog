@@ -2320,28 +2320,83 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .native-app .native-log-card ol{display:grid;gap:6px;max-height:118px;margin:9px 0 0;padding:0;overflow-y:auto;list-style:none}
 .native-app .native-log-card li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:7px;padding-top:6px;border-top:1px solid #ffffff1f}
 .native-app .native-log-card time{color:#ffffffa0;font-size:.94rem}.native-app .native-log-card li span{display:grid;min-width:0}.native-app .native-log-card li b{font-size:1.02rem;line-height:1.38}.native-app .native-log-card li small{overflow:hidden;color:#ffffffbd;font-size:.9rem;line-height:1.45;text-overflow:ellipsis;white-space:nowrap}
-.native-app[data-active-tab="observe"] .native-game-menu{display:contents}
-.native-app .native-game-menu button{
-  position:fixed;
-  top:calc(max(80px,env(safe-area-inset-top) + 66px) + var(--native-menu-row) * 68px);
-  z-index:80;
+/* 관찰 화면은 사이트와 앱에서 같은 게임 HUD 구조를 쓴다. 메뉴 위치를
+   화면 밖 fixed 버튼으로 흩뿌리지 않고 하나의 그리드가 직접 소유한다. */
+.game-observe-hud{
+  position:relative;
+  isolation:isolate;
   display:grid;
-  place-items:center;
-  gap:1px;
-  width:58px;
-  min-width:58px;
-  height:58px;
-  padding:5px 2px;
-  border:1px solid #ffffff35;
-  border-radius:17px;
-  background:#111823d9;
+  grid-template:"top top top" auto "left stage right" minmax(250px,1fr) "moment moment moment" auto "dock dock dock" auto/112px minmax(0,1fr) 112px;
+  gap:12px 18px;
+  width:min(1320px,100%);
+  min-height:min(790px,calc(100dvh - 150px));
+  margin:0 auto;
+  padding:24px 28px 18px;
+  overflow:hidden;
+  border:1px solid #ffffff45;
+  border-radius:32px;
+  background:#171d27;
   color:#fff;
-  box-shadow:0 8px 18px #0005,inset 0 1px 0 #ffffff26;
-  backdrop-filter:blur(9px);
+  box-shadow:0 24px 68px #1017223d;
 }
-.native-app .native-game-menu .native-menu-left{left:max(8px,env(safe-area-inset-left))}
-.native-app .native-game-menu .native-menu-right{right:max(8px,env(safe-area-inset-right))}
-.native-app .native-game-menu button>span{font-size:27px;line-height:1}.native-app .native-game-menu button>small{font-size:11px;line-height:1.15;font-weight:800;white-space:nowrap}
+.game-observe-hud>.native-observe-backdrop,.game-observe-hud>.native-observe-shade{position:absolute;inset:0;z-index:-2}
+.game-observe-hud>.native-observe-backdrop{background-position:center;background-size:cover;filter:saturate(.92);transform:none}
+.game-observe-hud>.native-observe-shade{z-index:-1;background:linear-gradient(180deg,#0b11199c 0%,#0d131c38 32%,#0d131c7d 64%,#0b1119e8 100%)}
+.game-hud-top{grid-area:top;z-index:15;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;min-width:0;text-shadow:0 2px 9px #000}
+.game-hud-top>time{padding:12px 4px;color:#fff;font-size:clamp(20px,2.1vw,32px);font-weight:900;white-space:nowrap}
+.game-hud-profile{position:relative;min-width:0}
+.game-hud-profile>summary{display:flex;align-items:center;gap:13px;min-width:0;cursor:pointer;list-style:none}
+.game-hud-profile>summary::-webkit-details-marker{display:none}
+.game-hud-profile>summary :is(.avatar,.sprite){flex:0 0 auto;width:76px;height:76px;border:3px solid #ffffffe0;border-radius:50%;background:transparent;box-shadow:0 10px 24px #0007}
+.game-hud-profile>summary>span{display:grid;min-width:0}
+.game-hud-profile>summary b{overflow:hidden;color:#fff;font-size:clamp(24px,2.8vw,40px);line-height:1.05;text-overflow:ellipsis;white-space:nowrap}
+.game-hud-profile>summary small{margin-top:5px;color:#ffffffc4;font-size:clamp(13px,1.35vw,19px);font-weight:750}
+.game-hud-roster{position:absolute;top:calc(100% + 10px);left:0;z-index:40;display:flex;gap:7px;max-width:min(560px,calc(100vw - 34px));padding:9px;overflow-x:auto;border:1px solid #ffffff46;border-radius:20px;background:#0e1623ee;box-shadow:0 18px 38px #0009;scrollbar-width:none}
+.game-hud-roster::-webkit-scrollbar{display:none}
+.game-hud-roster button{flex:0 0 62px;display:grid;place-items:center;gap:3px;min-width:62px;padding:6px 4px;border:0;background:transparent;color:#fff;box-shadow:none}
+.game-hud-roster button :is(.avatar,.sprite){width:44px;height:44px}
+.game-hud-roster button small{max-width:56px;overflow:hidden;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.game-hud-roster button.on :is(.avatar,.sprite){filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px var(--picker-theme,var(--p)))}
+.game-hud-side{z-index:8;align-self:center;display:grid;align-content:center;gap:18px}
+.game-hud-side-left{grid-area:left}.game-hud-side-right{grid-area:right}
+.game-hud-side button{display:grid;place-items:center;gap:4px;min-width:0;padding:6px 2px;border:0;background:transparent;color:#fff;text-shadow:0 2px 6px #000,0 1px 2px #000;box-shadow:none}
+.game-hud-side button>span{display:grid;place-items:center;width:58px;height:58px;font-size:43px;line-height:1}
+.game-hud-side button>small{font-size:14px;font-weight:900;line-height:1.15;white-space:nowrap}
+.game-hud-stage{grid-area:stage;z-index:4;display:grid;place-items:center;min-width:0;min-height:0}
+.game-observe-hud .native-character-stage{position:relative;display:grid;place-items:end center;width:min(34vw,320px);height:min(39vh,360px);overflow:visible;scale:var(--home-visual-scale,1)}
+.game-observe-hud .native-character-stage .native-main-character{position:relative;z-index:2;width:100%!important;height:100%!important;border:0!important;border-radius:0!important;object-fit:contain!important;background:transparent!important;filter:drop-shadow(0 18px 12px #0008)}
+.game-observe-hud .native-character-stage>i{position:absolute;left:12%;right:12%;bottom:-4px;height:24px;border-radius:50%;background:#05090e88;filter:blur(8px)}
+.game-hud-moment{grid-area:moment;z-index:12;justify-self:center;width:min(780px,calc(100% - 36px));max-height:210px;padding:16px 20px;overflow:hidden;border:1px solid #d9c6b6;border-radius:24px;background:linear-gradient(145deg,#fffaf3f5,#f2e7dcf1);color:#2f251f;box-shadow:0 15px 34px #0005;cursor:pointer;transition:max-height .2s ease}
+.game-hud-moment-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.game-hud-moment-head>small{color:#77685d;font-weight:900;letter-spacing:.05em}
+.game-hud-moment-head>button{min-height:34px;padding:5px 12px;border-color:#ccb8a7;border-radius:999px;background:#fff8f0;color:#392c25;font-size:12px;font-weight:900}
+.game-hud-moment h1{display:-webkit-box;margin:4px 0 5px;overflow:hidden;color:#2f251f;font-size:clamp(19px,2.2vw,28px);line-height:1.3;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+.game-hud-moment p{display:-webkit-box;margin:0 0 8px;overflow:hidden;color:#75675d;font-size:14px;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+.game-hud-moment>b{color:#40352e;font-size:12px}
+.game-hud-moment.expanded{max-height:min(48dvh,520px);overflow-y:auto}
+.game-hud-moment.expanded :is(h1,p){display:block;overflow:visible;-webkit-line-clamp:unset;line-clamp:unset}
+.game-hud-dock{grid-area:dock;z-index:12;justify-self:center;display:grid;grid-template-columns:repeat(5,minmax(64px,108px));gap:8px;width:min(620px,100%);padding:9px 12px;border:1px solid #ffffff42;border-radius:26px;background:#101722d9;box-shadow:0 14px 30px #0006}
+.game-hud-dock button{display:grid;place-items:center;align-content:center;gap:3px;min-width:0;min-height:68px;padding:4px;border:0;border-radius:17px;background:transparent;color:#fff;box-shadow:none}
+.game-hud-dock button.on{background:color-mix(in srgb,var(--native-own) 54%,#111925);box-shadow:inset 0 0 0 1px #ffffff2e}
+.game-hud-dock button>span{font-size:31px;line-height:1}.game-hud-dock button>small{font-size:11px;font-weight:900;white-space:nowrap}
+.game-hud-dock .game-hud-town-button img{width:42px;height:36px;object-fit:contain;filter:drop-shadow(0 3px 2px #0008)}
+.game-observe-empty-copy{grid-area:stage;z-index:4;align-self:center;justify-self:center;max-width:520px;padding:28px;border-radius:26px;background:#101722d9;text-align:center;box-shadow:0 18px 42px #0007}
+.game-observe-empty-copy>span{font-size:54px}.game-observe-empty-copy h1{margin:10px 0 6px;color:#fff}.game-observe-empty-copy p{color:#ffffffc8}
+.game-observe-empty .game-hud-top{display:none}
+
+html.native-app[data-active-tab="observe"] .game-observe-hud{width:100%;height:100%;min-height:0;margin:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));border:0;border-radius:0;box-shadow:none}
+html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-stage{width:min(46vw,205px);height:min(31dvh,250px)}
+html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-stage.has-scene-companion,
+html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-stage.has-scene-lineup{width:min(62vw,270px);height:min(31dvh,250px)}
+@media(max-width:720px){
+  .game-observe-hud{grid-template:"top top top" auto "left stage right" minmax(170px,1fr) "moment moment moment" auto "dock dock dock" auto/66px minmax(0,1fr) 66px;gap:5px 3px;min-height:calc(100dvh - 74px);padding:12px 8px 8px;border-radius:0}
+  .game-hud-top>time{padding:8px 2px;font-size:20px}
+  .game-hud-profile>summary{gap:8px}.game-hud-profile>summary :is(.avatar,.sprite){width:58px;height:58px}.game-hud-profile>summary b{font-size:25px}.game-hud-profile>summary small{font-size:12px}
+  .game-hud-side{gap:12px}.game-hud-side button>span{width:46px;height:46px;font-size:35px}.game-hud-side button>small{font-size:10px}
+  .game-observe-hud .native-character-stage{width:min(45vw,175px);height:min(25dvh,210px)}
+  .game-hud-moment{width:calc(100% - 10px);max-height:174px;padding:12px 14px;border-radius:20px}.game-hud-moment h1{font-size:18px}.game-hud-moment p{font-size:12px}
+  .game-hud-dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;width:100%;padding:6px;border-radius:20px}.game-hud-dock button{min-height:58px}.game-hud-dock button>span{font-size:25px}.game-hud-dock button>small{font-size:9px}.game-hud-dock .game-hud-town-button img{width:34px;height:29px}
+}
 .native-app .native-observe-empty{place-items:center;text-align:center}.native-app .native-observe-empty>div{padding:24px;border-radius:24px;background:#111822d6}.native-app .native-observe-empty span{font-size:48px}
 
 /* 앱 안의 편집 화면은 작은 화면에서도 입력칸을 두 열로 유지한다. */
