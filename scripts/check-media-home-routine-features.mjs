@@ -23,7 +23,7 @@ const checks=[
   [views.includes("nativeSceneActionProp")&&views.includes("native-person-action-prop")&&css.includes(".home-person .native-person-action-prop"),"집 화면 생활 행동 소품과 애니메이션"],
   [views.includes('class="home-person-visual"')&&views.includes('--home-float-delay:')&&css.includes("@keyframes home-person-float"),"집 캐릭터 둥둥 애니메이션 전용 시각 레이어"],
   [css.includes(".home-person .native-person-action-prop{position:absolute")&&css.includes("right:-8px;top:-5px")&&views.includes('</span><span class="home-person-status">'),"행동 소품과 이름·상태표 레이어 분리"],
-  [app.includes('$$("[data-home-resident]")')&&app.includes('renderPreservingPageScroll(el)')&&app.includes('["role","stayPattern","sleepRoomId"].includes(field)'),"구성원·주거지 설정 전체 재렌더 시 현재 스크롤 복원"],
+  [app.includes('$$("[data-home-resident]")')&&app.includes('renderPreservingPageScroll(el)')&&app.includes('if(el.tagName==="SELECT")el.onchange=apply;else el.oninput=apply')&&app.includes('const homeContext=')&&app.includes('townPanelPosition=townPanel'),"구성원 변경은 열린 패널·스크롤을 복원하고 주거지 선택은 전체 재렌더하지 않음"],
   [views.includes('value="__none__"')&&state.includes('item.sleepRoomId==="__none__"?"__none__"')&&read("simulation.js").includes('usableSleepRoom'),"출근용 집의 기타·없음 숙박 선택 저장과 생활 장면 안전 처리"],
   [state.includes('previousSchema<22&&room.image?"cover"'),"기존 집 사진의 회색 여백을 한 번 교정"]
 ];

@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820homehud2";
-import {eventFor} from "./simulation.js?v=20260820homehud2";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820homehud2";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820homehud2";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820homehud2";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820homehud2";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820homehud2";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820settingshud1";
+import {eventFor} from "./simulation.js?v=20260820settingshud1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820settingshud1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820settingshud1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820settingshud1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820settingshud1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820settingshud1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1089,6 +1089,9 @@ function renderPreservingPageScroll(element){
   const pageX=window.scrollX,pageY=window.scrollY;
   const main=document.querySelector("#app>main"),mainLeft=main?.scrollLeft||0,mainTop=main?.scrollTop||0;
   const placeId=element?.closest?.("[data-place-editor-id]")?.dataset.placeEditorId||element?.dataset?.placeId||element?.dataset?.placeAudience||element?.dataset?.placeStock||"";
+  const homeCard=element?.closest?.("[data-home-card]"),homeFeature=element?.closest?.("[data-home-feature]");
+  const homeContext=homeCard&&homeFeature?{homeId:homeCard.dataset.homeCard,feature:homeFeature.dataset.homeFeature,left:homeFeature.scrollLeft,top:homeFeature.scrollTop}:null;
+  const townPanel=element?.closest?.(".town-editor-panel"),townPanelPosition=townPanel?{left:townPanel.scrollLeft,top:townPanel.scrollTop}:null;
   element?.blur?.();
   render();
   const restore=()=>{
@@ -1098,6 +1101,17 @@ function renderPreservingPageScroll(element){
     if(placeId){
       const marker=document.querySelector(`[data-place-id="${CSS.escape(placeId)}"],[data-place-audience="${CSS.escape(placeId)}"],[data-place-stock="${CSS.escape(placeId)}"]`);
       if(marker?.closest("details"))marker.closest("details").open=true;
+    }
+    if(homeContext){
+      const nextCard=document.querySelector(`[data-home-card="${CSS.escape(homeContext.homeId)}"]`);
+      const nextFeature=nextCard?.querySelector(`[data-home-feature="${CSS.escape(homeContext.feature)}"]`);
+      const nextButton=nextCard?.querySelector(`[data-open-home-feature="${CSS.escape(homeContext.feature)}"]`);
+      nextFeature?.classList.add("open");nextButton?.classList.add("on");
+      if(nextFeature){nextFeature.scrollLeft=homeContext.left;nextFeature.scrollTop=homeContext.top}
+    }
+    if(townPanelPosition){
+      const nextTownPanel=document.querySelector(".town-editor-panel");
+      if(nextTownPanel){nextTownPanel.scrollLeft=townPanelPosition.left;nextTownPanel.scrollTop=townPanelPosition.top}
     }
   };
   requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
@@ -1966,9 +1980,8 @@ function bind(){
         el.value=el.value.replace(/(\d{2})-(\d{2})/g,"$1$2").replace(/[^\d,\s]/g,"").slice(0,80);
       }
       updateCharacterResidence(el.dataset.characterId,el.dataset.homeId,{[field]:el.value});
-      if(["role","stayPattern","sleepRoomId"].includes(field))renderPreservingPageScroll(el);
     };
-    el.oninput=apply;el.onchange=apply;
+    if(el.tagName==="SELECT")el.onchange=apply;else el.oninput=apply;
   });
   $$("[data-residence-day]").forEach(el=>el.onclick=()=>{
     const c=state.characters[el.dataset.characterId],residence=c?.residences?.find(item=>item.homeId===el.dataset.homeId);if(!residence)return;
@@ -2474,13 +2487,7 @@ function bind(){
       select.value="신체 접촉 없음";
       showToast("성인 간 친밀한 접촉 범위는 성인 캐릭터끼리만 설정할 수 있어요");
     }
-    state.characterViews=state.characterViews&&typeof state.characterViews==="object"?state.characterViews:{};
-    state.characterViews[source]=state.characterViews[source]&&typeof state.characterViews[source]==="object"?state.characterViews[source]:{};
-    state.characterViews[source][target]=state.characterViews[source][target]&&typeof state.characterViews[source][target]==="object"?state.characterViews[source][target]:{};
-    const editedFields=new Set(Array.isArray(state.characterViews[source][target]._editedFields)?state.characterViews[source][target]._editedFields:[]);
-    editedFields.add(field);
-    state.characterViews[source][target]._editedFields=[...editedFields];
-    state.characterViews[source][target][field]=select.value;
+    updateCharacterView(source,target,field,select.value);
     if(field==="overall"){
       const summary=$$("[data-view-summary]").find(item=>item.dataset.viewSummary===`${source}:${target}`);
       if(summary){
@@ -3969,7 +3976,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820homehud2").catch(error=>{
+  import("./auth.js?v=20260820settingshud1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3984,7 +3991,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820homehud2",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820settingshud1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

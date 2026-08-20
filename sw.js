@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260820-responsive-hud1";
+const CACHE_VERSION="drawer-village-v20260820-settings-hud1";
 const CORE=[
   "./",
   "./index.html",
@@ -21,6 +21,7 @@ const CORE=[
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",
   "./fonts/DoHyeon-Regular.ttf",
+  "./fonts/GriunSimsimche-Regular.ttf",
   "./fonts/SB_Aggro/SB%20%EC%96%B4%EA%B7%B8%EB%A1%9C%20M.ttf",
   "./manifest.webmanifest",
   "./icons/drawer-village-logo.png",

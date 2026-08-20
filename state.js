@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820homehud2";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820homehud2";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820settingshud1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820settingshud1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1238,6 +1238,17 @@ export function explicitCharacterViewFor(sourceId,targetId){
   const explicit={...withoutOrphanedGeneratedView(state.characterViews?.[sourceId]?.[targetId]||{},relations)};
   delete explicit._editedFields;
   return explicit;
+}
+export function updateCharacterView(sourceId,targetId,field,value,{persist=false}={}){
+  if(!sourceId||!targetId||sourceId===targetId||!field||!state.characters?.[sourceId]||!state.characters?.[targetId])return false;
+  state.characterViews=state.characterViews&&typeof state.characterViews==="object"?state.characterViews:{};
+  state.characterViews[sourceId]=state.characterViews[sourceId]&&typeof state.characterViews[sourceId]==="object"?state.characterViews[sourceId]:{};
+  const current=state.characterViews[sourceId][targetId]&&typeof state.characterViews[sourceId][targetId]==="object"?state.characterViews[sourceId][targetId]:{};
+  const editedFields=new Set(Array.isArray(current._editedFields)?current._editedFields:[]);
+  editedFields.add(field);
+  state.characterViews[sourceId][targetId]={...current,[field]:value,_editedFields:[...editedFields]};
+  if(persist)save(true);
+  return true;
 }
 export function characterViewFor(sourceId,targetId){
   const relations=Object.values(state.relationships||{}).filter(item=>
