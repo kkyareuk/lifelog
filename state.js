@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820settings13";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820settings13";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820mailboxhud1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820mailboxhud1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -231,7 +231,7 @@ function normalizeHomes(x){
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
   x.schema=23;
-  x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
+  x.activeTab=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
   x.homeEditMode=false;

@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260820-settings-s13";
+const CACHE_VERSION="drawer-village-v20260820-mailbox-hud1";
 const CORE=[
   "./",
   "./index.html",

@@ -21,9 +21,9 @@ const checks=[
   [views.includes("data-character-notification-character")&&views.includes("data-character-notification-setting=\"frequencyMode\"")&&views.includes("data-character-notification-setting=\"timesPerDay\"")&&views.includes("data-character-notification-setting=\"intervalHours\"")&&views.includes("data-character-notification-setting=\"voiceMode\""),"캐릭터·횟수·간격·말투 선택 UI"],
   [app.includes("buildSpecialDateNotification")&&app.includes('specialKind:"birthday"')&&app.includes('specialKind:"anniversary"'),"생일·기념일 특별 알림"],
   [views.includes("data-character-notification-kind")&&views.includes("data-character-notification-test"),"주제 선택과 시험 알림 UI"],
-  [views.includes("character-contact-shortcut")&&views.includes("character-contact-dialog")&&!views.includes('class="character-contact-card"'),"캐릭터 화면의 작은 연락 메뉴와 독립 대화상자"],
+  [views.includes('function mailbox()')&&views.includes('data-open-daily-question')&&!views.includes('data-open-character-contact'),"캐릭터 화면에서 분리된 우편함"],
   [views.includes("data-character-update-notices")&&app.includes("scheduleCurrentBuildUpdateNotice"),"캐릭터 이미지로 새 버전 소식 예약"],
-  [views.includes("data-open-daily-question")&&!app.includes("setTimeout(maybeShowDailyCharacterQuestion")&&app.includes('navigateToTab("character")'),"질문을 팝업 대신 캐릭터 연락함에서 열기"],
+  [views.includes("data-open-daily-question")&&!app.includes("setTimeout(maybeShowDailyCharacterQuestion")&&app.includes('navigateToTab("mailbox")'),"질문을 팝업 대신 우편함에서 열기"],
   [views.includes("❓ 질문과 실제 선택")&&views.includes("🤔 캐릭터의 고민")&&views.includes("📖 구체적인 생활로그"),"구체적인 알림 종류 안내"],
   [app.includes("confirmCharacterNotificationConsent")&&app.indexOf("confirmCharacterNotificationConsent")<app.indexOf("requestCharacterNotificationPermission()"),"앱 설명 후 Android 권한 요청"],
   [app.includes("recentSignatures")&&app.includes("daySerial+slot")&&app.includes('voiceMode||"mixed"'),"최근 문구·날짜별 캐릭터 순환·말투 반복 방지"],
@@ -35,7 +35,7 @@ const checks=[
   [speech.includes("export function characterContactSpeech")&&speech.includes('language==="ja"'),"말투별 영어·일본어 연락 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&views.includes('aria-pressed="${selected}"')&&css.includes('.notification-kind-grid button{')&&!views.includes('type="checkbox" data-character-notification-kind'),"권한 복귀 레이아웃과 연락 종류 버튼 포커스 안정화"],
   [activity.includes("WindowInsetsCompat.Type.statusBars()")&&activity.includes("BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE"),"상단 상태바 숨김과 스와이프 임시 표시"],
-  [gradle.includes("versionCode 66")&&gradle.includes('versionName "1.0.64"'),"내부 테스트 빌드 번호"],
+  [gradle.includes("versionCode 67")&&gradle.includes('versionName "1.0.65"'),"내부 테스트 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

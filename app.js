@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820settings13";
-import {eventFor} from "./simulation.js?v=20260820settings13";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820settings13";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820settings13";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820settings13";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820settings13";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820settings13";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820mailboxhud1";
+import {eventFor} from "./simulation.js?v=20260820mailboxhud1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820mailboxhud1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820mailboxhud1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820mailboxhud1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820mailboxhud1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820mailboxhud1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -959,7 +959,7 @@ function render({force=false}={}){
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
-    if(state.activeTab==="character")ensureDailyQuestionSchedule();
+    if(["character","mailbox"].includes(state.activeTab))ensureDailyQuestionSchedule();
     renderApp(state);
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
@@ -1452,8 +1452,32 @@ function bindHorizontalWheelNavigation(){
   });
 }
 
+function bindNativeObserveCharacterSwipe(){
+  if(!document.documentElement.classList.contains("native-app")||state.activeTab!=="observe"||state.order.length<2)return;
+  const hud=document.querySelector(".game-observe-hud");
+  if(!hud)return;
+  let start=null;
+  const interactive="button,a,input,select,textarea,summary,dialog,.game-hud-roster,.game-hud-moment";
+  hud.addEventListener("pointerdown",event=>{
+    if(event.target.closest(interactive))return;
+    start={x:event.clientX,y:event.clientY,pointerId:event.pointerId};
+  },{passive:true});
+  hud.addEventListener("pointerup",event=>{
+    if(!start||start.pointerId!==event.pointerId)return;
+    const dx=event.clientX-start.x,dy=event.clientY-start.y;
+    start=null;
+    if(Math.abs(dx)<60||Math.abs(dx)<=Math.abs(dy)*1.25)return;
+    const currentIndex=Math.max(0,state.order.indexOf(state.activeId));
+    const direction=dx<0?1:-1;
+    activateCharacterInObservedTown(state.order[(currentIndex+direction+state.order.length)%state.order.length]);
+    render();
+  },{passive:true});
+  hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
+}
+
 function bind(){
   bindHorizontalWheelNavigation();
+  bindNativeObserveCharacterSwipe();
   // Cloud sync intentionally does not copy device-only photos. If an old
   // device URL is unavailable, replace the broken image with the character's
   // initial so the relationship screen stays readable and tappable.
@@ -1468,6 +1492,20 @@ function bind(){
     event.stopPropagation();
     openNativeLog();
   }));
+  const rosterToggle=$("[data-toggle-game-hud-roster]");
+  const roster=$(".game-hud-roster");
+  rosterToggle?.addEventListener("click",event=>{
+    event.preventDefault();
+    event.stopPropagation();
+    if(!roster)return;
+    roster.hidden=!roster.hidden;
+    rosterToggle.setAttribute("aria-expanded",String(!roster.hidden));
+  });
+  $(".game-observe-hud")?.addEventListener("click",event=>{
+    if(!roster||roster.hidden||event.target.closest(".game-hud-profile"))return;
+    roster.hidden=true;
+    rosterToggle?.setAttribute("aria-expanded","false");
+  });
   const toggleNativeMoment=card=>{
     if(!card)return;
     const expanded=card.classList.toggle("expanded");
@@ -1558,6 +1596,10 @@ function bind(){
     const picker=el.closest(".native-character-picker,.game-hud-roster");
     if(picker)homeCharacterPickerScroll=picker.scrollLeft;
     activateCharacterInObservedTown(el.dataset.homeCharacter);
+    if(picker?.classList.contains("game-hud-roster")){
+      picker.hidden=true;
+      picker.closest(".game-hud-profile")?.querySelector("[data-toggle-game-hud-roster]")?.setAttribute("aria-expanded","false");
+    }
     render();
     requestAnimationFrame(()=>{const picker=document.querySelector(".native-character-picker,.game-hud-roster");if(picker)picker.scrollLeft=homeCharacterPickerScroll});
   });
@@ -2544,7 +2586,7 @@ async function applyImage(type,id,room,data){
   else setCharacterImage(id,type,data);
 }
 
-const APP_TABS=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"];
+const APP_TABS=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"];
 function recordTabHistory(tab,replace=false){
   if(!APP_TABS.includes(tab))return;
   try{sessionStorage.setItem("drawer-village-active-tab",tab)}catch{}
@@ -3852,9 +3894,9 @@ window.addEventListener("drawer-village-character-notification-open",event=>{
   if(extra.mode==="question"){
     const now=new Date(extra.scheduledAt||Date.now());
     setDailyQuestion({day:localDateKey(now),minute:now.getHours()*60+now.getMinutes(),characterId:character.id,targetId:extra.targetId||"",kind:extra.questionKind||"everyday",shown:true,answered:false});
-    state.characterPane="profile";navigateToTab("character");return;
+    navigateToTab("mailbox");return;
   }
-  if(extra.mode==="update"){state.characterPane="profile";navigateToTab("character");return}
+  if(extra.mode==="update"){navigateToTab("mailbox");return}
   navigateToTab("observe");
 });
 function scheduleLiveSceneRefresh(){
@@ -3914,7 +3956,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820settings13").catch(error=>{
+  import("./auth.js?v=20260820mailboxhud1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3929,7 +3971,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820settings13",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820mailboxhud1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
