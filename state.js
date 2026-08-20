@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820svgfit1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820svgfit1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820momentfit1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820momentfit1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -243,7 +243,7 @@ function normalizeHomes(x){
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   if(x.uiFont==="memoment")x.uiFont="corncorn";
   if(["gangwon","seoyun","dunggeunmo","scoredream","chosun100"].includes(x.uiFont))x.uiFont="system";
-  x.uiFont=["system","dangam","dohyeon","haeong","aggro","corncorn"].includes(x.uiFont)?x.uiFont:"system";
+  x.uiFont=["system","dangam","dohyeon","haeong","aggro","corncorn","griun"].includes(x.uiFont)?x.uiFont:"system";
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"light";

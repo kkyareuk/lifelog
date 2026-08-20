@@ -1,5 +1,5 @@
 (()=>{
-  const allowed=new Set(["system","dangam","dohyeon","corncorn","haeong","aggro"]);
+  const allowed=new Set(["system","dangam","dohyeon","corncorn","haeong","aggro","griun"]);
   let selected="system";
   try{
     const saved=JSON.parse(localStorage.getItem("drawer-village-game-v1")||"null");
