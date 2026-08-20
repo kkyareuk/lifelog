@@ -15,7 +15,11 @@ const checks=[
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],
   [state.includes('imageFit:"cover"')&&views.includes('room.imageFit==="contain"?"contain":"cover"')&&css.includes("var(--room-image-fit,cover)"),"방 사진 기본 채우기와 선택적 전체 보기"],
   [state.includes("export function updateRoutineDays")&&app.includes('name="day"')&&app.includes("여러 개 선택 가능")&&app.includes('data-routine-day-preset="weekdays"'),"주간 일정 여러 요일과 평일·주말·매일 빠른 선택"],
-  [state.includes("monthlyRoutines:{}")&&app.includes("addMonthlyRoutine")&&views.includes('class="monthly-calendar"')&&views.includes('data-routine-view="monthly"'),"주간·월간 일정 분리와 날짜별 월간 일정"],
+  [state.includes("monthlyRoutines:{}")&&app.includes("newMonthlyRoutineDraft")&&views.includes('class="monthly-calendar"')&&views.includes('data-routine-view="monthly"'),"주간·월간 일정 분리와 날짜별 월간 일정"],
+  [app.includes('openRoutineDialog("",newRoutineDraft())')&&app.includes('openMonthlyRoutineDialog("",newMonthlyRoutineDraft())'),"일정 추가 취소 시 저장되지 않는 초안 흐름"],
+  [media.includes("remoteById")&&media.includes("String(item.id)"),"차량 순서가 달라도 ID로 기기 사진 보존"],
+  [views.includes("peopleDirection")&&views.includes("is-horizontal")&&css.includes(".room-people.is-horizontal"),"방 가로세로 비율에 맞춘 인물 배치"],
+  [state.includes("anniversaries:[]")&&views.includes("calendar-special birthday")&&views.includes("data-add-anniversary"),"월간 달력 생일·기념일 표시"],
   [views.includes("nativeSceneActionProp")&&views.includes("native-person-action-prop")&&css.includes(".home-person .native-person-action-prop"),"집 화면 생활 행동 소품과 애니메이션"],
   [state.includes('previousSchema<22&&room.image?"cover"'),"기존 집 사진의 회색 여백을 한 번 교정"]
 ];

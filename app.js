@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820layoutroot1";
-import {eventFor} from "./simulation.js?v=20260820layoutroot1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820layoutroot1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820layoutroot1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820layoutroot1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820layoutroot1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820layoutroot1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820calendar1";
+import {eventFor} from "./simulation.js?v=20260820calendar1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, translateDynamicInterface} from "./views.js?v=20260820calendar1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820calendar1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820calendar1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820calendar1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820calendar1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -562,19 +562,14 @@ function enhanceDynamicForms(){
     });
   }
 }
-const addRoutine=characterId=>{
-  state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
-  const id=crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`,item={id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
-  state.routines[characterId].push(item);save(true);return item.id;
-};
+const newId=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
+const newRoutineDraft=()=>{const id=newId();return {id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""}};
 const updateRoutine=(characterId,id,patch)=>{const item=state.routines[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);save(true)}};
 const deleteRoutine=(characterId,id)=>{state.routines[characterId]=(state.routines[characterId]||[]).filter(r=>r.id!==id);save(true)};
 const currentMonthKey=()=>{const date=new Date();return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`};
-const addMonthlyRoutine=characterId=>{
-  state.monthlyRoutines[characterId]=Array.isArray(state.monthlyRoutines[characterId])?state.monthlyRoutines[characterId]:[];
+const newMonthlyRoutineDraft=()=>{
   const month=state.routineMonth||currentMonthKey(),today=new Date(),date=month===currentMonthKey()?`${month}-${String(today.getDate()).padStart(2,"0")}`:`${month}-01`;
-  const id=crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
-  state.monthlyRoutines[characterId].push({id,date,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""});save(true);return id;
+  return {id:newId(),date,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
 };
 const updateMonthlyRoutine=(characterId,id,patch)=>{const item=state.monthlyRoutines?.[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);state.characters[characterId].timelineResetAt=Date.now();save(true)}};
 const deleteMonthlyRoutine=(characterId,id)=>{state.monthlyRoutines[characterId]=(state.monthlyRoutines?.[characterId]||[]).filter(r=>r.id!==id);state.characters[characterId].timelineResetAt=Date.now();save(true)};
@@ -2245,7 +2240,7 @@ function bind(){
   });
   $$('[data-character-notification-setting]').forEach(select=>select.onchange=()=>{
     const restore=preserveSelectionScroll(select);
-    const key=select.dataset.characterNotificationSetting,value=["startHour","endHour"].includes(key)?Number(select.value):select.value;
+    const key=select.dataset.characterNotificationSetting,value=["startHour","endHour","timesPerDay","intervalHours"].includes(key)?Number(select.value):select.value;
     state.characterNotificationSettings[key]=value;
     if(state.characterNotificationSettings.endHour<=state.characterNotificationSettings.startHour)state.characterNotificationSettings.endHour=Math.min(21,state.characterNotificationSettings.startHour+4);
     save(true);select.blur();restore();queueCharacterNotificationSchedule();
@@ -2456,12 +2451,14 @@ function bind(){
     render();explicitSave("그룹 관계 삭제");
   });
   $$("[data-routine-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.routineCharacter);render()});
-  $("[data-add-routine]")?.addEventListener("click",()=>{const id=addRoutine(active().id);render();requestAnimationFrame(()=>openRoutineDialog(id))});
-  $("[data-add-monthly-routine]")?.addEventListener("click",()=>{const id=addMonthlyRoutine(active().id);render();requestAnimationFrame(()=>openMonthlyRoutineDialog(id))});
+  $("[data-add-routine]")?.addEventListener("click",()=>openRoutineDialog("",newRoutineDraft()));
+  $("[data-add-monthly-routine]")?.addEventListener("click",()=>openMonthlyRoutineDialog("",newMonthlyRoutineDraft()));
+  $("[data-add-anniversary]")?.addEventListener("click",()=>openAnniversaryDialog());
   $$("[data-routine-view]").forEach(el=>el.onclick=()=>{state.routineView=el.dataset.routineView==="monthly"?"monthly":"weekly";if(!state.routineMonth)state.routineMonth=currentMonthKey();save();render()});
   $$("[data-routine-month-step]").forEach(el=>el.onclick=()=>{const [year,month]=(state.routineMonth||currentMonthKey()).split("-").map(Number),next=new Date(year,month-1+Number(el.dataset.routineMonthStep),1);state.routineMonth=`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,"0")}`;save();render()});
   $$("[data-edit-routine]").forEach(el=>el.onclick=()=>openRoutineDialog(el.dataset.editRoutine));
   $$("[data-edit-monthly-routine]").forEach(el=>el.onclick=()=>openMonthlyRoutineDialog(el.dataset.editMonthlyRoutine));
+  $$("[data-edit-anniversary]").forEach(el=>el.onclick=()=>openAnniversaryDialog(el.dataset.editAnniversary));
   $$("[data-delete-routine]").forEach(el=>el.onclick=()=>{
     const routine=(state.routines?.[active().id]||[]).find(item=>item.id===el.dataset.deleteRoutine);
     if(!confirm(`이 주간 루틴을 삭제하시겠습니까?\n\n일정: ${routine?.title||"제목 없음"}\n삭제한 일정은 되돌릴 수 없습니다.`))return;
@@ -3065,9 +3062,9 @@ function focusHomeCharacter(id){
   });
 }
 
-function openRoutineDialog(id){
-  const c=active(),item=state.routines[c.id]?.find(r=>r.id===id);if(!item)return;
-  const seriesId=String(item.seriesId||item.id),series=(state.routines[c.id]||[]).filter(r=>String(r.seriesId||r.id)===seriesId),selectedDays=new Set(series.map(r=>Number(r.day)));
+function openRoutineDialog(id,draft=null){
+  const c=active(),item=draft||state.routines[c.id]?.find(r=>r.id===id);if(!item)return;
+  const isNew=Boolean(draft),seriesId=String(item.seriesId||item.id),series=isNew?[item]:(state.routines[c.id]||[]).filter(r=>String(r.seriesId||r.id)===seriesId),selectedDays=new Set(series.map(r=>Number(r.day)));
   const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog";
   dialog.innerHTML=`<form method="dialog"><h2>주간 일정 편집</h2>
@@ -3087,7 +3084,10 @@ function openRoutineDialog(id){
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
       const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
-      if(days.length)updateRoutineDays(c.id,id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+      if(days.length){
+        if(isNew){state.routines[c.id]=Array.isArray(state.routines[c.id])?state.routines[c.id]:[];state.routines[c.id].push(item)}
+        updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+      }
       else showToast("일정을 적용할 요일을 하나 이상 골라 주세요");
     }
     dialog.remove();render();
@@ -3095,8 +3095,9 @@ function openRoutineDialog(id){
   dialog.showModal();
 }
 
-function openMonthlyRoutineDialog(id){
-  const c=active(),item=state.monthlyRoutines?.[c.id]?.find(r=>r.id===id);if(!item)return;
+function openMonthlyRoutineDialog(id,draft=null){
+  const c=active(),item=draft||state.monthlyRoutines?.[c.id]?.find(r=>r.id===id);if(!item)return;
+  const isNew=Boolean(draft);
   const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog monthly-routine-dialog";
   dialog.innerHTML=`<form method="dialog"><h2>월간 일정 편집</h2>
@@ -3111,7 +3112,30 @@ function openMonthlyRoutineDialog(id){
     <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
   translateDynamicInterface(dialog);document.body.append(dialog);
   dialog.onclose=()=>{
-    if(dialog.returnValue==="save")updateMonthlyRoutine(c.id,id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    if(dialog.returnValue==="save"){
+      if(isNew){state.monthlyRoutines[c.id]=Array.isArray(state.monthlyRoutines[c.id])?state.monthlyRoutines[c.id]:[];state.monthlyRoutines[c.id].push(item)}
+      updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    }
+    dialog.remove();render();
+  };
+  dialog.showModal();
+}
+
+const ANNIVERSARY_TYPES=["첫 만남","연애 시작","결혼","가족이 된 날","함께 살기 시작한 날","이사","입학·졸업","입사·창업","반려생물과 만난 날","추모일","사용자 지정"];
+function openAnniversaryDialog(id=""){
+  const existing=(state.anniversaries||[]).find(item=>item.id===id),item=existing||{id:newId(),date:"0101",type:"첫 만남",title:"",characterId:active().id,targetId:"",notes:""},dialog=document.createElement("dialog");
+  dialog.className="relation-dialog routine-dialog anniversary-dialog";
+  dialog.innerHTML=`<form method="dialog"><h2>${existing?"기념일 편집":"기념일 추가"}</h2><label>날짜 · 매년 반복<input name="date" inputmode="numeric" maxlength="4" value="${esc(String(item.date||""))}" placeholder="예: 0521"></label><label>기념일 유형<select name="type">${ANNIVERSARY_TYPES.map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label><label>표시할 이름<input name="title" maxlength="80" value="${esc(item.title||"")}" placeholder="비우면 기념일 유형으로 표시"></label><label>연락을 보낼 캐릭터<select name="characterId">${state.order.map(characterId=>`<option value="${characterId}" ${item.characterId===characterId?"selected":""}>${esc(state.characters[characterId]?.name||"")}</option>`).join("")}</select></label><label>함께 기념할 캐릭터<select name="targetId"><option value="">선택하지 않음</option>${state.order.map(characterId=>`<option value="${characterId}" ${item.targetId===characterId?"selected":""}>${esc(state.characters[characterId]?.name||"")}</option>`).join("")}</select></label><label>메모<textarea name="notes">${esc(item.notes||"")}</textarea></label><div>${existing?'<button type="button" class="danger" data-delete-anniversary>삭제</button>':""}<button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  translateDynamicInterface(dialog);document.body.append(dialog);
+  dialog.querySelector("[data-delete-anniversary]")?.addEventListener("click",()=>{if(confirm("이 기념일을 삭제하시겠습니까?")){state.anniversaries=(state.anniversaries||[]).filter(entry=>entry.id!==item.id);save(true);dialog.close("cancel")}});
+  dialog.onclose=()=>{
+    if(dialog.returnValue==="save"){
+      const date=dialog.querySelector("[name=date]").value.replace(/\D/g,"");
+      if(!/^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/.test(date)){showToast("날짜를 MMDD 네 자리로 입력해 주세요");dialog.remove();render();return}
+      Object.assign(item,{date,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim(),characterId:dialog.querySelector("[name=characterId]").value,targetId:dialog.querySelector("[name=targetId]").value,notes:dialog.querySelector("[name=notes]").value.trim()});
+      if(!existing){state.anniversaries=Array.isArray(state.anniversaries)?state.anniversaries:[];state.anniversaries.push(item)}
+      state.order.forEach(characterId=>{if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now()});save(true);queueCharacterNotificationSchedule();
+    }
     dialog.remove();render();
   };
   dialog.showModal();
@@ -3653,6 +3677,21 @@ function buildLifeLogNotification(character,at,seed){
   const label={ko:"생활로그",en:"Life log",ja:"生活ログ"}[language]||"생활로그";
   return {title:`${character.name} · ${label} · ${title}`,body,signature:`lifeLog:${seed%logs.length}:${character.id}:${context.targetId}`,extra:{mode:"lifeLog",characterId:character.id,topic:"lifeLogs",scheduledAt:at.toISOString()}};
 }
+function buildSpecialDateNotification(character,kind,item,at){
+  const language=state.uiLanguage||"ko",target=state.characters[item?.targetId],targetName=target?.name||({ko:"소중한 사람",en:"someone important",ja:"大切な人"}[language]),type=item?.type||"사용자 지정";
+  if(kind==="birthday"){
+    const base={ko:"오늘은 제 생일이에요. 함께 축하해 줄래요?",en:"It's my birthday today. Will you celebrate with me?",ja:"今日は私の誕生日です。一緒にお祝いしてくれますか？"}[language];
+    return {title:`🎂 ${character.name} · ${language==="en"?"Birthday":language==="ja"?"誕生日":"생일"}`,body:characterContactSpeech(character,base,{language}),extra:{mode:"specialDate",specialKind:"birthday",characterId:character.id,scheduledAt:at.toISOString()}};
+  }
+  const messages={
+    "첫 만남":{ko:`오늘은 ${targetName}와 처음 만난 날이에요. 그날 이야기를 잠깐 떠올려 볼까요?`,en:`Today marks the day I first met ${targetName}. Shall we remember it for a moment?`,ja:`今日は${targetName}と初めて会った日です。あの日を少し思い出してみませんか？`},
+    "연애 시작":{ko:`오늘은 ${targetName}와 마음을 확인한 날이에요. 함께 기념하고 싶어요.`,en:`Today is when ${targetName} and I became a couple. I'd like to celebrate it together.`,ja:`今日は${targetName}と恋人になった日です。一緒に記念したいです。`},
+    "결혼":{ko:`오늘은 ${targetName}와 결혼한 기념일이에요. 둘만의 시간을 보내고 싶어요.`,en:`It's my wedding anniversary with ${targetName}. I'd like us to spend some time together.`,ja:`今日は${targetName}との結婚記念日です。二人で過ごしたいです。`},
+    "가족이 된 날":{ko:`오늘은 ${targetName}와 가족이 된 날이에요. 평소보다 조금 특별하게 보내요.`,en:`Today is when ${targetName} and I became family. Let's make it a little special.`,ja:`今日は${targetName}と家族になった日です。いつもより少し特別に過ごしましょう。`},
+    "추모일":{ko:"오늘은 잊지 않고 기억하고 싶은 날이에요. 조용히 마음을 나누어 줄래요?",en:"Today is a day I want to remember. Will you share a quiet moment with me?",ja:"今日は忘れずに覚えていたい日です。静かな時間を一緒に過ごしてくれますか？"}
+  },fallback={ko:`오늘은 ${item?.title||type} 기념일이에요. 이 날을 함께 기억해 줘요.`,en:`Today is ${item?.title||type}. Please remember this day with me.`,ja:`今日は${item?.title||type}の記念日です。この日を一緒に覚えていてください。`},base=(messages[type]||fallback)[language]||(messages[type]||fallback).ko;
+  return {title:`💌 ${character.name} · ${item?.title||type}`,body:characterContactSpeech(character,base,{language}),extra:{mode:"specialDate",specialKind:"anniversary",anniversaryId:item?.id||"",characterId:character.id,targetId:item?.targetId||"",scheduledAt:at.toISOString()}};
+}
 function buildCharacterContactSchedule(now=new Date()){
   const settings=state.characterNotificationSettings,characters=notificationSelectedCharacters();if(!settings||!characters.length)return [];
   const recent=new Set(settings.recentSignatures||[]),generated=[],newSignatures=[],language=state.uiLanguage||"ko";
@@ -3660,10 +3699,11 @@ function buildCharacterContactSchedule(now=new Date()){
   // 정확한 시각이 필요한 알람이 아니므로 별도의 exact-alarm 권한은 요구하지 않는다.
   for(let dayOffset=0;dayOffset<15;dayOffset+=1){
     const date=new Date(now.getFullYear(),now.getMonth(),now.getDate()+dayOffset),dayKey=localDateKey(date),daySeed=notificationHash(`${dayKey}:${characters.map(item=>item.id).join(":")}`);
-    if(settings.frequency==="light"&&daySeed%7>2)continue;
-    const count=settings.frequency==="lively"?2:1,start=Number(settings.startHour)||10,end=Math.max(start+1,Number(settings.endHour)||18),span=Math.max(60,(end-start)*60);
-    for(let slot=0;slot<count;slot+=1){
-      const minuteOffset=(daySeed+slot*137)%Math.max(30,Math.floor(span/count)),minute=start*60+slot*Math.floor(span/count)+minuteOffset;
+    const recurringKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`,specialAt=new Date(date.getFullYear(),date.getMonth(),date.getDate(),11,0,0,0),specials=[...state.order.map(id=>state.characters[id]).filter(character=>character?.birthday===recurringKey).map(character=>({kind:"birthday",character,item:null})),...(state.anniversaries||[]).filter(item=>item.date===recurringKey).map(item=>({kind:"anniversary",character:state.characters[item.characterId]||characters[0],item}))].filter(entry=>entry.character);
+    if(specialAt.getTime()>=now.getTime()+5*60*1000)specials.forEach((special,index)=>{const item=buildSpecialDateNotification(special.character,special.kind,special.item,specialAt);generated.push({id:830000000+(Number(dayKey.replaceAll("-",""))%100000)*100+index,title:item.title,body:item.body,summaryText:language==="en"?"Drawer Village":language==="ja"?"ひきだし村":"서랍마을",at:specialAt,extra:item.extra})});
+    const start=Number(settings.startHour)||10,end=Math.max(start+1,Number(settings.endHour)||18),span=Math.max(60,(end-start)*60),minutes=settings.frequencyMode==="interval"?Array.from({length:Math.max(1,Math.ceil((end-start)/Math.max(2,Number(settings.intervalHours)||4)))},(_,slot)=>start*60+slot*Math.max(2,Number(settings.intervalHours)||4)*60).filter(minute=>minute<end*60):Array.from({length:Math.max(1,Math.min(6,Number(settings.timesPerDay)||1))},(_,slot,array)=>{const part=Math.floor(span/array.length);return start*60+slot*part+(daySeed+slot*137)%Math.max(30,part)});
+    for(let slot=0;slot<minutes.length;slot+=1){
+      const minute=minutes[slot];
       const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(minute/60),minute%60,0,0);if(at.getTime()<now.getTime()+5*60*1000)continue;
       let character=characters[(daySeed+slot)%characters.length];
       if(generated.at(-1)?.extra?.characterId===character.id&&characters.length>1)character=characters[(characters.indexOf(character)+1)%characters.length];
@@ -3674,7 +3714,7 @@ function buildCharacterContactSchedule(now=new Date()){
         item=topic==="questions"?buildQuestionNotification(character,at,seed+attempt):topic==="lifeLogs"?buildLifeLogNotification(character,at,seed+attempt):buildMomentNotification(character,topic,at,seed+attempt);
         if(!recent.has(item.signature)&&!newSignatures.includes(item.signature))break;
       }
-      generated.push({id:820000000+(Number(dayKey.replaceAll("-",""))%1000000)*10+slot,title:item.title,body:item.body,summaryText:language==="en"?"Drawer Village":language==="ja"?"ひきだし村":"서랍마을",at,extra:item.extra});newSignatures.push(item.signature);
+      generated.push({id:820000000+(Number(dayKey.replaceAll("-",""))%100000)*100+slot,title:item.title,body:item.body,summaryText:language==="en"?"Drawer Village":language==="ja"?"ひきだし村":"서랍마을",at,extra:item.extra});newSignatures.push(item.signature);
     }
   }
   settings.recentSignatures=[...(settings.recentSignatures||[]),...newSignatures].slice(-24);settings.lastScheduledAt=Date.now();
@@ -3816,7 +3856,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820layoutroot1").catch(error=>{
+  import("./auth.js?v=20260820calendar1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3831,7 +3871,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820layoutroot1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820calendar1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

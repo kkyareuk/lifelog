@@ -149,6 +149,14 @@ export function preserveDevicePhotos(deviceState,incomingState){
   const next=clone(incomingState);
   const walk=(local,remote)=>{
     if(!local||!remote||typeof local!=="object"||typeof remote!=="object")return;
+    if(Array.isArray(local)&&Array.isArray(remote)){
+      const remoteById=new Map(remote.filter(item=>item&&typeof item==="object"&&item.id!=null).map(item=>[String(item.id),item]));
+      local.forEach((item,index)=>{
+        const match=item&&typeof item==="object"&&item.id!=null?remoteById.get(String(item.id)):remote[index];
+        if(match)walk(item,match);
+      });
+      return;
+    }
     Object.keys(local).forEach(key=>{
       const value=local[key];
       if(isData(value)||isLocalRef(value))remote[key]=value;

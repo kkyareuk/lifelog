@@ -14,11 +14,12 @@ const gradle=read("android/app/build.gradle");
 const activity=read("android/app/src/main/java/com/drawervillage/app/MainActivity.java");
 
 const checks=[
-  [state.includes("schema:22")&&state.includes("characterNotificationSettings:defaultCharacterNotificationSettings()"),"알림 설정 스키마와 기본값"],
-  [state.includes('frequency:"daily"')&&state.includes('voiceMode:"mixed"')&&state.includes("updateNotices:true"),"빈도·업데이트 소식·반복 완화 기본값"],
+  [state.includes("schema:23")&&state.includes("characterNotificationSettings:defaultCharacterNotificationSettings()"),"알림 설정 스키마와 기본값"],
+  [state.includes('frequencyMode:"perDay"')&&state.includes("timesPerDay:1")&&state.includes("intervalHours:4")&&state.includes('voiceMode:"mixed"')&&state.includes("updateNotices:true"),"횟수·간격·업데이트 소식 기본값"],
   [["questions","checkins","worries","comfort","lifeLogs"].every(kind=>state.includes(`"${kind}"`)),"질문·안부·고민·휴식·생활로그 알림 종류"],
   [state.includes("characterIds:Array.isArray(notificationSource.characterIds)"),"삭제된 캐릭터를 제거하는 설정 마이그레이션"],
-  [views.includes("data-character-notification-character")&&views.includes("data-character-notification-setting=\"frequency\"")&&views.includes("data-character-notification-setting=\"voiceMode\""),"캐릭터·빈도·말투 선택 UI"],
+  [views.includes("data-character-notification-character")&&views.includes("data-character-notification-setting=\"frequencyMode\"")&&views.includes("data-character-notification-setting=\"timesPerDay\"")&&views.includes("data-character-notification-setting=\"intervalHours\"")&&views.includes("data-character-notification-setting=\"voiceMode\""),"캐릭터·횟수·간격·말투 선택 UI"],
+  [app.includes("buildSpecialDateNotification")&&app.includes('specialKind:"birthday"')&&app.includes('specialKind:"anniversary"'),"생일·기념일 특별 알림"],
   [views.includes("data-character-notification-kind")&&views.includes("data-character-notification-test"),"주제 선택과 시험 알림 UI"],
   [views.includes("character-contact-shortcut")&&views.includes("character-contact-dialog")&&!views.includes('class="character-contact-card"'),"캐릭터 화면의 작은 연락 메뉴와 독립 대화상자"],
   [views.includes("data-character-update-notices")&&app.includes("scheduleCurrentBuildUpdateNotice"),"캐릭터 이미지로 새 버전 소식 예약"],
@@ -34,7 +35,7 @@ const checks=[
   [speech.includes("export function characterContactSpeech")&&speech.includes('language==="ja"'),"말투별 영어·일본어 연락 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&css.includes('.notification-kind-grid input{')&&css.includes('input:not([type="checkbox"]):not([type="radio"]):not([type="color"])'),"권한 복귀 레이아웃과 숨김 체크박스 포커스 안정화"],
   [activity.includes("WindowInsetsCompat.Type.statusBars()")&&activity.includes("BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE"),"상단 상태바 숨김과 스와이프 임시 표시"],
-  [gradle.includes("versionCode 61")&&gradle.includes('versionName "1.0.59"'),"내부 테스트 빌드 번호"],
+  [gradle.includes("versionCode 62")&&gradle.includes('versionName "1.0.60"'),"내부 테스트 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

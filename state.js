@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820layoutroot1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820layoutroot1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820calendar1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820calendar1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -178,8 +178,8 @@ const normalizeHomeSceneLayout=value=>{
   }));
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
-const defaultCharacterNotificationSettings=()=>({characterIds:[],frequency:"daily",startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],updateNotices:true,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:22,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],updateNotices:true,recentSignatures:[],lastScheduledAt:0});
+const fresh=()=>({schema:23,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiFont:"system",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -189,6 +189,7 @@ const fresh=()=>({schema:22,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===23)return normalizeHomes(x);
   if(x.schema===22)return normalizeHomes(x);
   if(x.schema===21)return normalizeHomes(x);
   if(x.schema===20)return normalizeHomes(x);
@@ -229,7 +230,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=22;
+  x.schema=23;
   x.activeTab=["observe","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
@@ -279,7 +280,9 @@ function normalizeHomes(x){
   const notificationDefaults=defaultCharacterNotificationSettings(),notificationSource=x.characterNotificationSettings&&typeof x.characterNotificationSettings==="object"&&!Array.isArray(x.characterNotificationSettings)?x.characterNotificationSettings:{};
   x.characterNotificationSettings={
     characterIds:Array.isArray(notificationSource.characterIds)?[...new Set(notificationSource.characterIds.map(String).filter(id=>x.characters[id]))]:[],
-    frequency:["light","daily","lively"].includes(notificationSource.frequency)?notificationSource.frequency:notificationDefaults.frequency,
+    frequencyMode:["perDay","interval"].includes(notificationSource.frequencyMode)?notificationSource.frequencyMode:"perDay",
+    timesPerDay:Math.max(1,Math.min(6,Number(notificationSource.timesPerDay)||({light:1,daily:1,lively:2}[notificationSource.frequency]||notificationDefaults.timesPerDay))),
+    intervalHours:Math.max(2,Math.min(12,Number(notificationSource.intervalHours)||notificationDefaults.intervalHours)),
     startHour:Math.max(9,Math.min(16,Number(notificationSource.startHour)||notificationDefaults.startHour)),
     endHour:Math.max(12,Math.min(21,Number(notificationSource.endHour)||notificationDefaults.endHour)),
     voiceMode:["mixed","character","concise"].includes(notificationSource.voiceMode)?notificationSource.voiceMode:notificationDefaults.voiceMode,
@@ -298,6 +301,10 @@ function normalizeHomes(x){
   x.activeHomeId=x.homes[x.activeHomeId]?x.activeHomeId:(Object.keys(x.homes)[0]||null);
   x.routines=x.routines&&typeof x.routines==="object"?x.routines:{};
   x.monthlyRoutines=x.monthlyRoutines&&typeof x.monthlyRoutines==="object"&&!Array.isArray(x.monthlyRoutines)?x.monthlyRoutines:{};
+  x.anniversaries=Array.isArray(x.anniversaries)?x.anniversaries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)).map(item=>{
+    const compactDate=String(item.date||"").replace(/\D/g,"");
+    return {id:String(item.id||uid()),date:/^(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/.test(compactDate)?compactDate:"",type:String(item.type||"사용자 지정"),title:String(item.title||"").slice(0,80),characterId:x.characters?.[item.characterId]?String(item.characterId):"",targetId:x.characters?.[item.targetId]?String(item.targetId):"",notes:String(item.notes||"").slice(0,300)};
+  }).filter(item=>item.date):[];
   x.routineView=x.routineView==="monthly"?"monthly":"weekly";
   x.routineMonth=/^\d{4}-\d{2}$/.test(String(x.routineMonth||""))?String(x.routineMonth):"";
   x.dailyPlans=x.dailyPlans&&typeof x.dailyPlans==="object"?x.dailyPlans:{};

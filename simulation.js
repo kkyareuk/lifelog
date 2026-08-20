@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820layoutroot1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260820layoutroot1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820calendar1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260820calendar1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2411,6 +2411,12 @@ function build(c,date=new Date()){
       ?entry(1140,title,desc,{...shared,townId:hostTown.id,placeId:restaurant.id})
       :entry(1140,title,desc,{...shared,home:true,visitHomeId:host.homeId,room:"living"}));
   }
+  const anniversaries=(state.anniversaries||[]).filter(item=>item.date===birthdayKey&&(item.characterId===c.id||item.targetId===c.id));
+  anniversaries.forEach((anniversary,index)=>{
+    const owner=state.characters[anniversary.characterId]||c,target=state.characters[anniversary.targetId],withIds=[owner.id,target?.id].filter(id=>id&&id!==c.id),title=anniversary.title||anniversary.type||"기념일";
+    const descriptions={"첫 만남":"처음 만났던 날의 장면을 하나씩 떠올리며 그때 미처 하지 못했던 이야기를 나누고 있어요.","연애 시작":"서로의 마음을 확인했던 날을 기념하며 둘만의 시간을 보내고 있어요.",결혼:"함께 살아온 시간을 돌아보며 식사와 작은 선물을 준비하고 있어요.","가족이 된 날":"가족이 된 뒤 쌓인 기억을 돌아보며 평소보다 다정한 시간을 보내고 있어요.",추모일:"잊지 않고 기억하고 싶은 존재를 떠올리며 조용히 마음을 나누고 있어요."};
+    list.push(homeEntry(c,1160+index*10,`${title}을 기념하는 중`,anniversary.notes||descriptions[anniversary.type]||"달력에 기록해 둔 특별한 날을 기억하며 평소와 다른 시간을 보내고 있어요.","living",{anniversaryId:anniversary.id,anniversaryType:anniversary.type,groupInteraction:Boolean(withIds.length),withIds}));
+  });
   const romanticConnection=related(c).some(({other,r})=>{
     if(!other||mixedAdultMinor(c,other))return false;
     const view=characterViewFor(c.id,other.id);
