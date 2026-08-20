@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820profilepopup1";
-import {eventFor} from "./simulation.js?v=20260820profilepopup1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820profilepopup1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820profilepopup1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820profilepopup1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820profilepopup1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820profilepopup1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820responsivehud1";
+import {eventFor} from "./simulation.js?v=20260820responsivehud1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820responsivehud1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820responsivehud1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820responsivehud1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820responsivehud1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820responsivehud1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1456,21 +1456,40 @@ function bindNativeObserveCharacterSwipe(){
   if(!document.documentElement.classList.contains("native-app")||state.activeTab!=="observe"||state.order.length<2)return;
   const hud=document.querySelector(".game-observe-hud");
   if(!hud)return;
-  let start=null;
-  const interactive="button,a,input,select,textarea,summary,dialog,.game-hud-moment";
-  hud.addEventListener("pointerdown",event=>{
-    if(event.target.closest(interactive))return;
-    start={x:event.clientX,y:event.clientY,pointerId:event.pointerId};
-  },{passive:true});
-  hud.addEventListener("pointerup",event=>{
-    if(!start||start.pointerId!==event.pointerId)return;
-    const dx=event.clientX-start.x,dy=event.clientY-start.y;
+  let start=null,lastSwitch=0;
+  const interactive="button,a,input,select,textarea,summary,dialog,[contenteditable=true]";
+  const begin=(target,x,y,source,id=0)=>{
+    if(target.closest(interactive)||document.querySelector("dialog[open]"))return;
+    start={x,y,source,id};
+  };
+  const finish=(x,y,source,id=0)=>{
+    if(!start||start.source!==source||start.id!==id)return;
+    const dx=x-start.x,dy=y-start.y;
     start=null;
-    if(Math.abs(dx)<60||Math.abs(dx)<=Math.abs(dy)*1.25)return;
+    const threshold=Math.max(48,Math.min(72,window.innerWidth*.13));
+    if(Date.now()-lastSwitch<350||Math.abs(dx)<threshold||Math.abs(dx)<=Math.abs(dy)*1.25)return;
+    lastSwitch=Date.now();
     const currentIndex=Math.max(0,state.order.indexOf(state.activeId));
     const direction=dx<0?1:-1;
     activateCharacterInObservedTown(state.order[(currentIndex+direction+state.order.length)%state.order.length]);
     render();
+  };
+  hud.addEventListener("touchstart",event=>{
+    if(event.touches.length!==1)return;
+    const touch=event.touches[0];
+    begin(event.target,touch.clientX,touch.clientY,"touch",touch.identifier);
+  },{capture:true,passive:true});
+  hud.addEventListener("touchend",event=>{
+    const touch=event.changedTouches[0];
+    if(touch)finish(touch.clientX,touch.clientY,"touch",touch.identifier);
+  },{capture:true,passive:true});
+  hud.addEventListener("touchcancel",()=>{start=null},{capture:true,passive:true});
+  hud.addEventListener("pointerdown",event=>{
+    if(event.pointerType!=="mouse")return;
+    begin(event.target,event.clientX,event.clientY,"mouse",event.pointerId);
+  },{passive:true});
+  hud.addEventListener("pointerup",event=>{
+    if(event.pointerType==="mouse")finish(event.clientX,event.clientY,"mouse",event.pointerId);
   },{passive:true});
   hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
 }
@@ -3908,7 +3927,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820profilepopup1").catch(error=>{
+  import("./auth.js?v=20260820responsivehud1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -3923,7 +3942,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820profilepopup1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820responsivehud1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

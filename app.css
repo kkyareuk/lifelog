@@ -2326,8 +2326,8 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
   position:relative;
   isolation:isolate;
   display:grid;
-  grid-template:"top top top" auto "left stage right" minmax(250px,1fr) "moment moment moment" auto "dock dock dock" auto/112px minmax(0,1fr) 112px;
-  gap:12px 18px;
+  grid-template:"top top top" clamp(96px,12dvh,132px) "left stage right" minmax(250px,1fr) "moment moment moment" auto "dock dock dock" auto/clamp(82px,9vw,112px) minmax(0,1fr) clamp(82px,9vw,112px);
+  gap:10px clamp(8px,1.5vw,18px);
   width:min(1320px,100%);
   min-height:min(790px,calc(100dvh - 150px));
   margin:0 auto;
@@ -2342,7 +2342,8 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .game-observe-hud>.native-observe-backdrop,.game-observe-hud>.native-observe-shade{position:absolute;inset:0;z-index:-2}
 .game-observe-hud>.native-observe-backdrop{background-position:center;background-size:cover;filter:saturate(.92);transform:none}
 .game-observe-hud>.native-observe-shade{z-index:-1;background:linear-gradient(180deg,#0b11199c 0%,#0d131c38 32%,#0d131c7d 64%,#0b1119e8 100%)}
-.game-hud-top{grid-area:top;z-index:15;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;min-width:0;text-shadow:0 2px 9px #000}
+.game-hud-top{position:relative;grid-area:top;z-index:15;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;min-width:0;text-shadow:0 2px 9px #000}
+.game-hud-top::before{content:"";position:absolute;z-index:-1;top:-24px;right:-28px;bottom:0;left:-28px;background:#654b3de8;clip-path:polygon(0 0,100% 0,100% 70%,52% 70%,48% 100%,0 100%)}
 .game-hud-top>time{padding:12px 4px;color:#fff;font-size:clamp(20px,2.1vw,32px);font-weight:900;white-space:nowrap}
 .game-hud-profile{position:relative;min-width:0}
 .game-hud-profile-toggle{display:flex;align-items:center;gap:13px;min-width:0;padding:0;border:0;background:transparent;color:inherit;box-shadow:none;text-align:left}
@@ -2362,7 +2363,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .game-hud-roster-options button :is(.avatar,.sprite){width:66px;height:66px;border:0!important;border-radius:50%!important;background:transparent!important;box-shadow:none!important;object-fit:cover!important}
 .game-hud-roster-options button small{max-width:76px;overflow:hidden;color:#fff;font-size:12px;font-weight:850;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 2px 5px #000}
 .game-hud-roster-options button.on :is(.avatar,.sprite){filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px var(--picker-theme,var(--p)))}
-.game-hud-side{z-index:8;align-self:center;display:grid;align-content:center;gap:18px}
+.game-hud-side{z-index:8;align-self:center;display:grid;align-content:center;gap:18px;min-width:0}
 .game-hud-side-left{grid-area:left}.game-hud-side-right{grid-area:right}
 .game-hud-side button{display:grid;place-items:center;gap:4px;min-width:0;padding:6px 2px;border:0!important;border-radius:0!important;background:transparent!important;color:#fff;text-shadow:0 2px 6px #000,0 1px 2px #000;box-shadow:none!important}
 .game-hud-side button>span{display:grid;place-items:center;width:58px;height:58px;font-size:43px;line-height:1}
@@ -2389,18 +2390,26 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .game-observe-empty-copy>span{font-size:54px}.game-observe-empty-copy h1{margin:10px 0 6px;color:#fff}.game-observe-empty-copy p{color:#ffffffc8}
 .game-observe-empty .game-hud-top{display:none}
 
-html.native-app[data-active-tab="observe"] .game-observe-hud{width:100%;height:100%;min-height:0;margin:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));border:0;border-radius:0;box-shadow:none}
+html.native-app[data-active-tab="observe"] .game-observe-hud{width:100%;height:100%;min-height:0;margin:0;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overflow:hidden;border:0;border-radius:0;box-shadow:none;touch-action:pan-y}
 html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-stage{width:min(46vw,205px);height:min(31dvh,250px)}
 html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-stage.has-scene-companion,
 html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-stage.has-scene-lineup{width:min(62vw,270px);height:min(31dvh,250px)}
 @media(max-width:720px){
-  .game-observe-hud{grid-template:"top top top" auto "left stage right" minmax(170px,1fr) "moment moment moment" auto "dock dock dock" auto/66px minmax(0,1fr) 66px;gap:5px 3px;min-height:calc(100dvh - 74px);padding:12px 8px 8px;border-radius:0}
+  .game-observe-hud{grid-template:"top top top" clamp(82px,13dvh,104px) "left stage right" minmax(180px,1fr) "moment moment moment" auto "dock dock dock" auto/clamp(58px,17vw,70px) minmax(0,1fr) clamp(58px,17vw,70px);gap:5px 3px;min-height:calc(100dvh - 74px);padding:12px 8px 8px;border-radius:0}
+  .game-hud-top::before{top:-12px;right:-8px;left:-8px;clip-path:polygon(0 0,100% 0,100% 68%,54% 68%,49% 100%,0 100%)}
   .game-hud-top>time{padding:8px 2px;font-size:20px}
   .game-hud-profile-toggle{gap:8px}.game-hud-profile-toggle :is(.avatar,.sprite){width:58px;height:58px}.game-hud-profile-toggle b{font-size:25px}.game-hud-profile-toggle small{font-size:12px}
   .game-hud-side{gap:12px}.game-hud-side button>span{width:46px;height:46px;font-size:35px}.game-hud-side button>small{font-size:10px}
   .game-observe-hud .native-character-stage{width:min(45vw,175px);height:min(25dvh,210px)}
   .game-hud-moment{width:calc(100% - 10px);padding:12px 14px;border-radius:20px}.game-hud-moment h1{font-size:18px}.game-hud-moment p{font-size:12px}
   .game-hud-dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;width:100%;padding:6px}.game-hud-dock button{min-height:58px}.game-hud-dock button>span{font-size:25px}.game-hud-dock button>small{font-size:9px}.game-hud-dock .game-hud-mailbox-button img{width:48px;height:52px}.game-hud-dock .game-hud-town-button img{width:58px;height:50px}
+}
+@media(max-width:380px),(max-height:720px){
+  .game-observe-hud{grid-template-rows:78px minmax(150px,1fr) auto auto}
+  .game-hud-profile-toggle :is(.avatar,.sprite){width:52px;height:52px}.game-hud-profile-toggle b{font-size:22px}
+  .game-hud-side{gap:8px}.game-hud-side button>span{width:40px;height:40px;font-size:31px}
+  .game-hud-moment p{display:-webkit-box;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+  .game-hud-dock button{min-height:52px}
 }
 .native-app .native-observe-empty{place-items:center;text-align:center}.native-app .native-observe-empty>div{padding:24px;border-radius:24px;background:#111822d6}.native-app .native-observe-empty span{font-size:48px}
 

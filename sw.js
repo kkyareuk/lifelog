@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260820-profile-popup1";
+const CACHE_VERSION="drawer-village-v20260820-responsive-hud1";
 const CORE=[
   "./",
   "./index.html",

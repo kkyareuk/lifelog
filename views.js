@@ -1,8 +1,8 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820profilepopup1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260820profilepopup1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820responsivehud1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260820responsivehud1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Weekly routine",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)"},
@@ -91,6 +91,36 @@ Object.assign(UI_TEXT.ja,{
   "건물 정보 보기":"建物情報を見る","유형 미설정":"種類未設定","내부 이미지가 아직 없어요":"内観画像はまだありません","마을 편집에서 내부 사진을 등록할 수 있어요.":"村の編集画面から内観画像を登録できます。",
   "건물 유형":"建物の種類","가격대":"価格帯","주요 이용층":"主な利用者","지금 안에 있는 인물":"現在中にいるキャラクター","이곳에서 이용할 수 있는 것":"ここで利用できるもの",
   "현재 이 건물 안에 있는 캐릭터가 없어요.":"現在この建物の中にいるキャラクターはいません。","등록된 판매 상품이나 이용 항목이 없어요.":"販売商品や利用項目はまだ登録されていません。","유형 미설정":"種類未設定","설정하지 않음":"未設定"
+});
+Object.assign(UI_TEXT.en,{
+  "레이아웃은 보기 방식이고, 실제 자동 코디는 상황·색·격식·패션 감각을 따져요.":"The layout only changes the view. Automatic outfit selection still considers the situation, colors, formality, and fashion sense.",
+  "마른 잎 하나를 떨어뜨리고 남은 잎에 힘을 모으고 있어요.":"It dropped one dry leaf and is gathering strength in the leaves that remain.",
+  "먹이 냄새를 따라 목을 길게 내밀고 접시 쪽으로 움직이고 있어요.":"Following the smell of food, it stretches its neck and moves toward the dish.",
+  "먹이와 물이 있는 곳을 확인한 뒤 자기 자리로 돌아가고 있어요.":"After checking where the food and water are, it returns to its spot.",
+  "먹이통에서 좋아하는 알갱이만 골라 천천히 먹고 있어요.":"It picks out its favorite pieces from the feeder and eats them slowly.",
+  "먼저 어울림":"Blend in first","메이스":"Mace",
+  "모든 캐릭터에 같은 표시 방식을 적용합니다. LD는 원본 비율을 유지하고 자르거나 늘리지 않습니다.":"Use the same display style for every character. LD art keeps its original aspect ratio without cropping or stretching.",
+  "모서리를 끌어 캐릭터 크기 조정":"Drag a corner to resize the character",
+  "몸을 낮춘 채 장난감을 노리다가 짧고 빠르게 앞으로 뛰어들었어요.":"Crouching low, it stalked the toy before springing forward in a quick, short pounce.",
+  "몸의 털을 차분히 정돈한 뒤 다시 편한 자세를 잡았어요.":"It calmly groomed its fur, then settled back into a comfortable position.",
+  "못생김":"Unattractive","무난하게 입음":"Dresses simply","무대·촬영용":"Stage · filming","무상 거주":"Rent-free housing","무알코올":"Alcohol-free","무카페인":"Caffeine-free","문구":"Stationery",
+  "문자·시각 정보 함께 제공":"Provide text and visual information together",
+  "물가와 마른 자리를 천천히 오가며 마음에 드는 위치를 고르고 있어요.":"It slowly moves between the water and dry ground, choosing the spot it likes best."
+});
+Object.assign(UI_TEXT.ja,{
+  "레이아웃은 보기 방식이고, 실제 자동 코디는 상황·색·격식·패션 감각을 따져요.":"レイアウトは表示方法だけを変えます。実際の自動コーデは状況・色・格式・ファッション感覚を考慮します。",
+  "마른 잎 하나를 떨어뜨리고 남은 잎에 힘을 모으고 있어요.":"枯れ葉を一枚落とし、残った葉に力を集めています。",
+  "먹이 냄새를 따라 목을 길게 내밀고 접시 쪽으로 움직이고 있어요.":"餌の匂いを追って首を伸ばし、皿の方へ動いています。",
+  "먹이와 물이 있는 곳을 확인한 뒤 자기 자리로 돌아가고 있어요.":"餌と水の場所を確かめてから、自分の場所へ戻っています。",
+  "먹이통에서 좋아하는 알갱이만 골라 천천히 먹고 있어요.":"餌入れから好きな粒だけを選び、ゆっくり食べています。",
+  "먼저 어울림":"まずはなじむ","메이스":"メイス",
+  "모든 캐릭터에 같은 표시 방식을 적용합니다. LD는 원본 비율을 유지하고 자르거나 늘리지 않습니다.":"すべてのキャラクターに同じ表示方法を適用します。LDは元の比率を保ち、切り抜きや引き伸ばしをしません。",
+  "모서리를 끌어 캐릭터 크기 조정":"角をドラッグしてキャラクターの大きさを調整",
+  "몸을 낮춘 채 장난감을 노리다가 짧고 빠르게 앞으로 뛰어들었어요.":"姿勢を低くしておもちゃを狙い、短く素早く飛びかかりました。",
+  "몸의 털을 차분히 정돈한 뒤 다시 편한 자세를 잡았어요.":"毛並みを落ち着いて整えてから、また楽な姿勢を取りました。",
+  "못생김":"不格好","무난하게 입음":"無難な服装","무대·촬영용":"舞台・撮影用","무상 거주":"無償居住","무알코올":"ノンアルコール","무카페인":"ノンカフェイン","문구":"文房具",
+  "문자·시각 정보 함께 제공":"文字と視覚情報をあわせて提供",
+  "물가와 마른 자리를 천천히 오가며 마음에 드는 위치를 고르고 있어요.":"水辺と乾いた場所をゆっくり行き来し、気に入った場所を選んでいます。"
 });
 Object.assign(UI_TEXT.en,{
   "이미지·표현·파일":"Images · Visuals · Files",
@@ -635,7 +665,7 @@ function header(){
   return `<header><div class="brand"><span class="logo"><img src="./icons/drawer-village-logo.png" alt="${esc(t("brandName","서랍마을"))}"></span><div><h1>${t("brandName","서랍마을")}</h1><small>${t("brandTagline","서랍 속 캐릭터 생활 관찰 게임")}</small></div>${previewMode()?`<span class="preview-badge">${esc(previewConfig().label||"사전 체험")}</span>`:""}</div><nav>${tabs.map(([k,n,icon])=>`<button type="button" data-tab="${k}" class="${state.activeTab===k?"on":""}"><span class="tab-icon tab-icon-${k}" data-menu-icon="${k}" aria-hidden="true">${icon}</span><span>${n}</span></button>`).join("")}</nav><span id="save-state">${t("saved","기기에 저장됨")}</span></header>${nativeBar}`;
 }
 const GAME_HUD_SIDE_TABS={
-  left:[["character","character","캐릭터","♙"],["catalog","catalog","취향 사전","◇"],["relationship","relationship","관계","∞"]],
+  left:[["character","character","캐릭터","▱"],["catalog","catalog","취향 사전","◇"],["relationship","relationship","관계","∞"]],
   right:[["routine","routine","주간 루틴","▦"],["statistics","statistics","통계","▥"],["settings","settings","설정","⚙"]]
 };
 let mobileTownEditing=false;
