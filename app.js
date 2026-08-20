@@ -1087,9 +1087,21 @@ function syncOpenCharacterEditorDraft(){
 }
 function renderPreservingPageScroll(element){
   const pageX=window.scrollX,pageY=window.scrollY;
+  const main=document.querySelector("#app>main"),mainLeft=main?.scrollLeft||0,mainTop=main?.scrollTop||0;
+  const placeId=element?.closest?.("[data-place-editor-id]")?.dataset.placeEditorId||element?.dataset?.placeId||element?.dataset?.placeAudience||element?.dataset?.placeStock||"";
   element?.blur?.();
   render();
-  restoreWindowScroll(pageX,pageY);
+  const restore=()=>{
+    restoreWindowScroll(pageX,pageY);
+    const nextMain=document.querySelector("#app>main");
+    if(nextMain){nextMain.scrollLeft=mainLeft;nextMain.scrollTop=mainTop}
+    if(placeId){
+      const marker=document.querySelector(`[data-place-id="${CSS.escape(placeId)}"],[data-place-audience="${CSS.escape(placeId)}"],[data-place-stock="${CSS.escape(placeId)}"]`);
+      if(marker?.closest("details"))marker.closest("details").open=true;
+    }
+  };
+  requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
+  setTimeout(restore,60);setTimeout(restore,180);
 }
 function flushMobileCharacterDraft({closeEditor=true}={}){
   if(mobileCharacterDraftDirty){
@@ -1455,9 +1467,13 @@ function bindHorizontalWheelNavigation(){
 }
 
 function bindNativeObserveCharacterSwipe(){
-  if(!document.documentElement.classList.contains("native-app")||state.activeTab!=="observe"||state.order.length<2)return;
+  if(!document.documentElement.classList.contains("native-app")||state.activeTab!=="observe")return;
   const hud=document.querySelector(".game-observe-hud");
   if(!hud)return;
+  const localOrder=[...document.querySelectorAll("[data-home-character]")]
+    .map(button=>button.dataset.homeCharacter)
+    .filter(Boolean);
+  if(localOrder.length<2)return;
   let start=null,lastSwitch=0;
   const interactive="button,a,input,select,textarea,summary,dialog,[contenteditable=true]";
   const begin=(target,x,y,source,id=0)=>{
@@ -1471,9 +1487,9 @@ function bindNativeObserveCharacterSwipe(){
     const threshold=Math.max(48,Math.min(72,window.innerWidth*.13));
     if(Date.now()-lastSwitch<350||Math.abs(dx)<threshold||Math.abs(dx)<=Math.abs(dy)*1.25)return;
     lastSwitch=Date.now();
-    const currentIndex=Math.max(0,state.order.indexOf(state.activeId));
+    const currentIndex=Math.max(0,localOrder.indexOf(state.activeId));
     const direction=dx<0?1:-1;
-    activateCharacterInObservedTown(state.order[(currentIndex+direction+state.order.length)%state.order.length]);
+    activateCharacterInObservedTown(localOrder[(currentIndex+direction+localOrder.length)%localOrder.length]);
     render();
   };
   hud.addEventListener("touchstart",event=>{
@@ -1513,12 +1529,6 @@ function bind(){
     event.stopPropagation();
     openNativeLog();
   }));
-  const rosterDialog=$("[data-game-hud-roster-dialog]");
-  $("[data-open-game-hud-roster]")?.addEventListener("click",event=>{
-    event.preventDefault();
-    event.stopPropagation();
-    if(rosterDialog&&!rosterDialog.open)rosterDialog.showModal();
-  });
   $$("[data-open-native-log-card]").forEach(card=>{
     card.addEventListener("click",event=>{
       if(event.target.closest("[data-tab]"))return;
@@ -1571,6 +1581,7 @@ function bind(){
     event.stopPropagation();
     const picker=el.closest(".native-character-picker,.game-hud-roster-options");
     if(picker)homeCharacterPickerScroll=picker.scrollLeft;
+    el.closest("details")?.removeAttribute("open");
     activateCharacterInObservedTown(el.dataset.homeCharacter);
     picker?.closest("dialog")?.close();
     render();
@@ -1746,7 +1757,12 @@ function bind(){
   });
   $$("[data-home-person]").forEach(el=>el.onclick=()=>focusHomeCharacter(el.dataset.homePerson));
   $("[data-all-sleep-home]")?.addEventListener("click",()=>focusHomeCharacter(state.activeId||state.order[0]));
-  $$("[data-observe-town]").forEach(el=>el.onclick=()=>{switchTown(el.dataset.observeTown);render()});
+  $$("[data-observe-town]").forEach(el=>el.onclick=event=>{
+    event.stopPropagation();
+    el.closest("details")?.removeAttribute("open");
+    switchTown(el.dataset.observeTown);
+    render();
+  });
   $$("[data-home-select]").forEach(el=>el.onclick=()=>{
     const homeId=el.dataset.homeSelect;
     setActiveHome(homeId);
@@ -1844,7 +1860,7 @@ function bind(){
   });
   $$("[data-pet-field]").forEach(el=>{
     const apply=()=>{const value=["neutered","needsWalk","rideable"].includes(el.dataset.petField)?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))render()};
-    el.oninput=apply;el.onchange=apply;
+    if(el.tagName==="SELECT")el.onchange=apply;else el.oninput=apply;
   });
   $$("[data-pet-trait-field]").forEach(el=>el.onclick=()=>{
     const pet=state.homes[el.dataset.homeId]?.pets?.find(item=>item.id===el.dataset.petId);
@@ -1957,8 +1973,10 @@ function bind(){
   $$("[data-residence-day]").forEach(el=>el.onclick=()=>{
     const c=state.characters[el.dataset.characterId],residence=c?.residences?.find(item=>item.homeId===el.dataset.homeId);if(!residence)return;
     const day=Number(el.dataset.residenceDay),days=Array.isArray(residence.visitDays)?residence.visitDays:[];
-    updateCharacterResidence(c.id,residence.homeId,{visitDays:days.includes(day)?days.filter(value=>value!==day):[...days,day].sort()});
-    renderPreservingPageScroll(el);
+    const nextDays=days.includes(day)?days.filter(value=>value!==day):[...days,day].sort((a,b)=>a-b);
+    updateCharacterResidence(c.id,residence.homeId,{visitDays:nextDays});
+    const selected=nextDays.includes(day);
+    el.classList.toggle("on",selected);el.setAttribute("aria-pressed",String(selected));
   });
   $$("[data-residence-primary]").forEach(el=>el.onclick=()=>{updateCharacterResidence(el.dataset.residencePrimary,el.dataset.homeId,{isPrimary:true});renderPreservingPageScroll(el);showToast("기준 주거지로 지정했습니다")});
   $$("[data-home-town]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.homeTown,{townId:el.value});render()});
@@ -2195,7 +2213,11 @@ function bind(){
       }
     });
   }
-  $$("[data-place-stock]").forEach(el=>el.onclick=()=>{togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);render()});
+  $$("[data-place-stock]").forEach(el=>el.onclick=()=>{
+    togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);
+    const place=state.world.places.find(p=>p.id===el.dataset.placeStock);
+    el.classList.toggle("on",Boolean(place?.stock?.includes(el.dataset.itemId)));
+  });
   const layerCopy={
     en:{label:"Building layer order",back:"Send backward",front:"Bring forward",backDone:"Moved the building one layer backward.",frontDone:"Moved the building one layer forward."},
     ja:{label:"建物の重なり順",back:"背面へ移動",front:"前面へ移動",backDone:"建物を1段階背面へ移動しました。",frontDone:"建物を1段階前面へ移動しました。"}
@@ -2355,7 +2377,7 @@ function bind(){
       if(field==="type"){
         updatePlace(el.dataset.placeId,{subtype:""},false);
         save();
-        render();
+        renderPreservingPageScroll(el);
         return;
       }
       if(field==="imageScale"){
@@ -2364,13 +2386,14 @@ function bind(){
       }
       save(el.tagName==="SELECT");
     };
-    el.oninput=apply;el.onchange=apply;
+    if(el.tagName==="SELECT")el.onchange=apply;else el.oninput=apply;
   });
   $$("[data-place-audience]").forEach(el=>el.onclick=()=>{
     const p=state.world.places.find(x=>x.id===el.dataset.placeAudience);
     const value=el.dataset.value, current=p?.audiences||[];
-    updatePlace(p.id,{audiences:current.includes(value)?current.filter(x=>x!==value):[...current,value]},false);
-    render();
+    const next=current.includes(value)?current.filter(x=>x!==value):[...current,value];
+    updatePlace(p.id,{audiences:next},false);save();
+    el.classList.toggle("on",next.includes(value));
   });
   const worldBgSelect=$("[data-world-bg]");
   if(worldBgSelect)worldBgSelect.value=state.world.bg;
@@ -2457,8 +2480,7 @@ function bind(){
     const editedFields=new Set(Array.isArray(state.characterViews[source][target]._editedFields)?state.characterViews[source][target]._editedFields:[]);
     editedFields.add(field);
     state.characterViews[source][target]._editedFields=[...editedFields];
-    if(["정하지 않음","설정하지 않음","선택하지 않음"].includes(select.value))delete state.characterViews[source][target][field];
-    else state.characterViews[source][target][field]=select.value;
+    state.characterViews[source][target][field]=select.value;
     if(field==="overall"){
       const summary=$$("[data-view-summary]").find(item=>item.dataset.viewSummary===`${source}:${target}`);
       if(summary){

@@ -3919,7 +3919,13 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       scene.second+=encounter;
     }
   }
-  let title=dating?scene.title:(isFirst?scene.firstTitle:scene.secondTitle)||scene.title;
+  // 공동 장면의 기본 제목은 첫 번째 인물의 관점으로 만들어진다. 두 번째
+  // 인물에게 같은 문자열을 그대로 쓰면 "리바이가 리바이에게"처럼 자기
+  // 자신을 상대방으로 표시하므로, 관점별 제목이 없을 때 상대 이름을 바꾼다.
+  const perspectiveTitle=isFirst
+    ?scene.title
+    :String(scene.title||"").split(pair.second.name).join(pair.first.name);
+  let title=dating?scene.title:(isFirst?scene.firstTitle:scene.secondTitle)||perspectiveTitle;
   const detail=isFirst?scene.first:scene.second;
   const dateGroup=dating?current.dateGroup:"";
   const actualPartnerId=c.id===pair.first.id?pair.second.id:pair.first.id;

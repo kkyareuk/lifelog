@@ -1256,20 +1256,29 @@ export function characterViewFor(sourceId,targetId){
   }else if(relations.length){
     defaults={...defaults,overall:"그저 그런 사람",trust:"조심스럽게 지켜봄",closeness:"거리감 있음",comfort:"어색하지만 필요한 대화는 무난함",attention:"관심 없음"};
   }
-  const oldComfort=explicit.spaceComfort&&explicit.spaceComfort!=="정하지 않음"&&explicit.spaceComfort!=="상대 공간에서는 조금 어색함"?explicit.spaceComfort:explicit.comfort;
-  const oldRapport=explicit.rapport||"";
-  const oldUncomfortable=/매우 불편|긴장|조심|어색|개인 공간|숨 막힘/.test(oldComfort||"");
-  const oldSuffocating=/개인 공간|숨 막힘/.test(oldComfort||"");
-  const oldGoodRapport=/농담과 장난|주파수가 완벽/.test(oldRapport);
-  const oldBadRapport=/전혀 통하지|말할수록 부딪/.test(oldRapport);
-  let migratedComfort=oldComfort;
-  if(oldSuffocating&&oldGoodRapport)migratedComfort="같은 공간에서는 숨 막히지만 농담과 장난은 잘 통함";
-  else if(oldUncomfortable&&oldGoodRapport)migratedComfort="공간 공유는 불편하지만 대화는 편안함";
-  else if(oldUncomfortable&&oldBadRapport)migratedComfort="함께 있으면 매우 불편하고 대화도 전혀 통하지 않음";
-  else if(/편안|공유|무방비/.test(oldComfort||"")&&oldGoodRapport)migratedComfort="편안하고 농담과 장난이 잘 통함";
-  else if(oldGoodRapport)migratedComfort="편안하고 농담과 장난이 잘 통함";
-  else if(/편안|공유|무방비/.test(oldComfort||""))migratedComfort="함께 있는 건 편하지만 대화 호흡은 평범함";
-  else if(oldUncomfortable)migratedComfort="긴장하고 대화도 조심스러움";
+  // 예전에는 공간 편안함과 대화 호흡을 따로 저장했다. 이 둘을 합치는
+  // 변환은 구형 필드가 실제로 남아 있을 때 한 번만 한다. 최신 comfort를
+  // 매 렌더링마다 구형 문장으로 해석하면 사용자가 고른 값이 기본 문구로
+  // 되돌아간다.
+  const hasLegacyComfortFields=Object.prototype.hasOwnProperty.call(explicit,"spaceComfort")
+    ||Object.prototype.hasOwnProperty.call(explicit,"rapport");
+  let migratedComfort=explicit.comfort;
+  if(hasLegacyComfortFields){
+    const oldComfort=explicit.spaceComfort&&explicit.spaceComfort!=="정하지 않음"&&explicit.spaceComfort!=="상대 공간에서는 조금 어색함"?explicit.spaceComfort:explicit.comfort;
+    const oldRapport=explicit.rapport||"";
+    const oldUncomfortable=/매우 불편|긴장|조심|어색|개인 공간|숨 막힘/.test(oldComfort||"");
+    const oldSuffocating=/개인 공간|숨 막힘/.test(oldComfort||"");
+    const oldGoodRapport=/농담과 장난|주파수가 완벽/.test(oldRapport);
+    const oldBadRapport=/전혀 통하지|말할수록 부딪/.test(oldRapport);
+    migratedComfort=oldComfort;
+    if(oldSuffocating&&oldGoodRapport)migratedComfort="같은 공간에서는 숨 막히지만 농담과 장난은 잘 통함";
+    else if(oldUncomfortable&&oldGoodRapport)migratedComfort="공간 공유는 불편하지만 대화는 편안함";
+    else if(oldUncomfortable&&oldBadRapport)migratedComfort="함께 있으면 매우 불편하고 대화도 전혀 통하지 않음";
+    else if(/편안|공유|무방비/.test(oldComfort||"")&&oldGoodRapport)migratedComfort="편안하고 농담과 장난이 잘 통함";
+    else if(oldGoodRapport)migratedComfort="편안하고 농담과 장난이 잘 통함";
+    else if(/편안|공유|무방비/.test(oldComfort||""))migratedComfort="함께 있는 건 편하지만 대화 호흡은 평범함";
+    else if(oldUncomfortable)migratedComfort="긴장하고 대화도 조심스러움";
+  }
   const fearMigration={
     "가소롭게 여김":"가소로움",
     "조금 긴장됨":"조금 두려움",
