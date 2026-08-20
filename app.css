@@ -6387,11 +6387,121 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
   content:"❦";position:absolute;z-index:2;right:18px;top:50%;translate:0 -50%;color:#f0c78f;font:700 28px Georgia,serif;text-shadow:0 1px #351724;
 }
 
-/* Final home-screen authority (keep after all legacy mobile rules). */
-html.native-app[data-active-tab="observe"] .native-character-picker button,
-html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button{
-  border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important
+/* Native observe HUD v3 is the single authority for the Android home screen.
+   Percentages reproduce the 412 x 917 Figma frame. Gray boxes in that frame are
+   placement guides, never visible icon backgrounds. */
+html.native-platform #app>header{display:none!important}
+html[data-observe-profile-shield="1"] [data-open-game-hud-roster]{pointer-events:none!important}
+html.native-platform[data-active-tab="observe"] :is(body,#app,main){height:100dvh;min-height:0!important;overflow:hidden!important}
+html.native-platform[data-active-tab="observe"] #app>main{padding:0!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"]{
+  --hud-side-top:13.85dvh;--hud-side-row:11.45dvh;--hud-icon-h:6.87dvh;--hud-label-top:6.22dvh;--hud-label-h:3.71dvh;
+  position:relative!important;display:block!important;width:100%!important;height:100dvh!important;min-height:0!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;box-shadow:none!important;touch-action:pan-y!important
 }
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-top{
+  position:absolute!important;z-index:24!important;inset:0 0 auto 0!important;display:block!important;width:100%!important;height:13.1dvh!important;
+  padding:0!important;overflow:visible!important;pointer-events:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-top::before{
+  position:absolute!important;z-index:-1!important;inset:0!important;content:""!important;background:#654838ed!important;
+  clip-path:polygon(0 0,100% 0,100% 67%,51% 67%,47% 100%,0 100%)!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile{
+  position:absolute!important;left:1.7vw!important;top:3.38dvh!important;width:min(67vw,330px)!important;height:min(9.6dvh,94px)!important;pointer-events:auto!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile-toggle{
+  display:grid!important;grid-template-columns:min(18.93vw,88px) minmax(0,1fr)!important;align-items:center!important;gap:2.1vw!important;
+  width:100%!important;height:100%!important;min-height:0!important;padding:0!important;overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile-frame{
+  position:relative!important;display:grid!important;place-items:center!important;width:min(18.93vw,88px)!important;height:min(8.51dvh,88px)!important;
+  overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile-frame :is(.avatar,.sprite){
+  width:min(15.05vw,70px)!important;height:min(6.76dvh,70px)!important;overflow:hidden!important;border:0!important;border-radius:50%!important;
+  background:transparent!important;box-shadow:none!important;object-fit:cover!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile-ring{
+  position:absolute!important;inset:0!important;z-index:2!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;
+  object-fit:contain!important;pointer-events:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile-copy{
+  display:grid!important;align-content:center!important;min-width:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile-copy b{
+  overflow:hidden!important;color:#f3dfbb!important;font-size:clamp(22px,7vw,34px)!important;line-height:1.05!important;text-overflow:ellipsis!important;
+  white-space:nowrap!important;text-shadow:0 2px 4px #2a160d99!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-profile-copy small{
+  overflow:hidden!important;color:#ead3ae!important;font-size:clamp(11px,3.5vw,17px)!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+  text-shadow:0 2px 4px #2a160d99!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-top>time{
+  position:absolute!important;top:4.03dvh!important;right:4.1vw!important;margin:0!important;padding:0!important;color:#f3dfbb!important;
+  font-size:clamp(20px,6vw,29px)!important;line-height:1!important;text-shadow:0 2px 4px #2a160d99!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-stage{
+  position:absolute!important;z-index:7!important;left:18.45vw!important;right:18.45vw!important;top:13.1dvh!important;height:49.4dvh!important;
+  display:grid!important;place-items:center!important;min-height:0!important;padding:0!important;overflow:visible!important;pointer-events:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .native-character-stage{width:min(48vw,220px)!important;height:min(32dvh,280px)!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .native-character-stage:is(.has-scene-companion,.has-scene-lineup){width:min(65vw,300px)!important;height:min(32dvh,280px)!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side{
+  position:absolute!important;z-index:25!important;top:var(--hud-side-top)!important;display:grid!important;grid-template-rows:repeat(3,var(--hud-side-row))!important;
+  align-content:start!important;gap:0!important;width:16.75vw!important;height:34.35dvh!important;overflow:visible!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-left{left:2.91vw!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-right{right:2.91vw!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side button,
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock button{
+  position:relative!important;display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;padding:0!important;
+  overflow:visible!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;text-shadow:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side button>span,
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side .game-hud-menu-art{
+  position:absolute!important;top:0!important;left:50%!important;display:grid!important;place-items:center!important;width:15.29vw!important;height:var(--hud-icon-h)!important;
+  max-width:none!important;overflow:visible!important;transform:translateX(-50%)!important;border:0!important;background:transparent!important;box-shadow:none!important;
+  color:#fff!important;font-size:clamp(31px,10.4vw,45px)!important;line-height:1!important;object-fit:contain!important;filter:drop-shadow(0 3px 3px #0009)!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] :is(.game-hud-side,.game-hud-dock) button>small{
+  position:absolute!important;z-index:3!important;display:grid!important;place-items:center!important;height:var(--hud-label-h)!important;margin:0!important;padding:0 4px!important;
+  overflow:hidden!important;border:2px solid #1c140e!important;border-radius:999px!important;background:#473a28!important;color:#d4bb7c!important;
+  font-size:clamp(8px,2.65vw,12px)!important;font-weight:900!important;line-height:1!important;text-align:center!important;text-overflow:ellipsis!important;
+  white-space:nowrap!important;text-shadow:none!important;box-shadow:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side button>small{
+  top:var(--hud-label-top)!important;left:50%!important;width:16.75vw!important;transform:translateX(-50%)!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment{
+  position:absolute!important;z-index:27!important;left:8.74vw!important;top:64.34dvh!important;width:84.71vw!important;height:20.39dvh!important;max-width:none!important;
+  margin:0!important;padding:clamp(12px,3.4vw,18px)!important;overflow:hidden!important;border:1px solid #c9ab91!important;border-radius:29px!important;
+  background:#fff8efed!important;box-shadow:0 5px 18px #2b160d35!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment-head{margin:0 0 3px!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment h1{
+  display:-webkit-box!important;margin:0 0 4px!important;overflow:hidden!important;font-size:clamp(17px,4.8vw,23px)!important;line-height:1.18!important;
+  -webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment p{
+  display:-webkit-box!important;margin:0 0 5px!important;overflow:hidden!important;font-size:clamp(10px,2.9vw,13px)!important;line-height:1.35!important;
+  -webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment>b{display:block!important;overflow:hidden!important;font-size:clamp(9px,2.7vw,12px)!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock{
+  position:absolute!important;z-index:28!important;left:1.21vw!important;top:86.69dvh!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important;
+  gap:1.21vw!important;width:97.57vw!important;height:11.45dvh!important;min-height:0!important;margin:0!important;padding:0!important;
+  overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock button>span,
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock button>img{
+  position:absolute!important;top:0!important;left:50%!important;display:grid!important;place-items:center!important;width:18.45vw!important;height:8.29dvh!important;
+  max-width:none!important;overflow:visible!important;transform:translateX(-50%)!important;border:0!important;background:transparent!important;box-shadow:none!important;
+  color:#fff!important;font-size:clamp(27px,8.6vw,38px)!important;line-height:1!important;object-fit:contain!important;filter:drop-shadow(0 3px 3px #0008)!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock button>small{top:7.63dvh!important;left:0!important;width:100%!important;max-width:none!important}
+html.native-app[data-active-tab="observe"] .native-character-picker button,
+html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button,
 html.native-app[data-active-tab="observe"] .native-character-picker button.on,
 html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button.on{
   border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important
@@ -6399,6 +6509,10 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-char
 html.native-app[data-active-tab="observe"] .native-character-picker button.on :is(.avatar,.sprite){
   filter:drop-shadow(0 0 2px #fff) drop-shadow(0 0 7px var(--picker-theme,var(--p))) drop-shadow(0 0 16px var(--picker-theme,var(--p)))!important;
   animation:native-picker-aura 2.2s ease-in-out infinite alternate!important
+}
+@media(max-width:380px),(max-height:720px){
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment{padding:10px 12px!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment p{-webkit-line-clamp:1!important;line-clamp:1!important}
 }
 
 /* 2026-08-15: final mobile scene, action-prop, and expansion-card authority. */
