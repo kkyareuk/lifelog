@@ -16,7 +16,7 @@ const mobileDraft=section(app,"function markMobileCharacterDraft","const numeric
 assert.equal(mobileDraft.includes("setTimeout"),false,"모바일 캐릭터 입력 중 타이머 저장을 다시 추가하면 안 됩니다.");
 assert.equal(mobileDraft.includes("save("),false,"모바일 캐릭터 입력 이벤트에서 즉시 저장하면 안 됩니다.");
 assert.equal(capacitor.android?.captureInput,false,"Android 기본 InputConnection을 가로채면 천지인 조합이 깨질 수 있습니다.");
-assert.match(app,/if\(document\.documentElement\.dataset\.drawerRendered==="1"&&isDeferredMobileTextControl\(document\.activeElement\)\)/,"모바일 텍스트 포커스 중 외부 재렌더를 차단해야 합니다.");
+assert.match(app,/if\(!force&&document\.documentElement\.dataset\.drawerRendered==="1"&&isDeferredMobileTextControl\(document\.activeElement\)\)/,"모바일 텍스트 포커스 중 외부 재렌더를 차단하되 명시적 화면 전환은 허용해야 합니다.");
 assert.doesNotMatch(state,/timer=setTimeout\(run,700\)/,"텍스트 포커스 중 저장 타이머를 반복 실행하면 안 됩니다.");
 
 const characterFields=section(app,'$$("[data-field]")','$$ ("[data-color]")'.replace("$$ (","$$("));

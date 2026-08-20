@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260820-calendar-s1";
+const CACHE_VERSION="drawer-village-v20260820-settings-s13";
 const CORE=[
   "./",
   "./index.html",
@@ -26,6 +26,7 @@ const CORE=[
   "./icons/drawer-village-logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
+  ,"./world-assets/building-types/restaurant-handdrawn.png"
 ];
 
 self.addEventListener("install",event=>{
