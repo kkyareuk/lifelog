@@ -2266,12 +2266,14 @@ function bind(){
     if(state.characterNotificationSettings.endHour<=state.characterNotificationSettings.startHour)state.characterNotificationSettings.endHour=Math.min(21,state.characterNotificationSettings.startHour+4);
     save(true);select.blur();queueCharacterNotificationSchedule();restoreScroll();
   });
-  $$('[data-character-notification-kind]').forEach(input=>input.onchange=()=>{
-    const settings=state.characterNotificationSettings,kind=input.dataset.characterNotificationKind,current=new Set(settings.contentKinds||[]);
-    input.checked?current.add(kind):current.delete(kind);
-    if(!current.size){input.checked=true;current.add(kind);showToast("연락 종류를 하나 이상 골라 주세요")}
-    settings.contentKinds=[...current];input.closest("label")?.classList.toggle("on",input.checked);
-    save(true);input.blur();queueCharacterNotificationSchedule();
+  $$('[data-character-notification-kind]').forEach(button=>button.onclick=()=>{
+    const settings=state.characterNotificationSettings,kind=button.dataset.characterNotificationKind,current=new Set(settings.contentKinds||[]);
+    const selected=current.has(kind);
+    if(selected&&current.size===1){showToast("연락 종류를 하나 이상 골라 주세요");return}
+    selected?current.delete(kind):current.add(kind);
+    settings.contentKinds=[...current];
+    button.classList.toggle("on",!selected);button.setAttribute("aria-pressed",String(!selected));
+    save(true);queueCharacterNotificationSchedule();
   });
   $('[data-character-update-notices]')?.addEventListener('change',event=>{
     state.characterNotificationSettings.updateNotices=event.currentTarget.checked;
