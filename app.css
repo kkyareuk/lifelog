@@ -6390,7 +6390,7 @@ html[data-observe-profile-shield="1"] [data-open-game-hud-roster]{pointer-events
 html.native-platform[data-active-tab="observe"] :is(body,#app,main){height:100dvh;min-height:0!important;overflow:hidden!important}
 html.native-platform[data-active-tab="observe"] #app>main{padding:0!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"]{
-  --hud-side-top:13.85dvh;--hud-side-row:11.45dvh;--hud-icon-h:6.87dvh;--hud-label-top:6.22dvh;--hud-label-h:3.71dvh;
+  --hud-side-row:11.45dvh;--hud-label-h:3.71dvh;
   position:relative!important;display:block!important;width:100%!important;height:100dvh!important;min-height:0!important;
   margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;box-shadow:none!important;touch-action:pan-y!important
 }
@@ -6443,11 +6443,11 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .native-character-stage{width:min(48vw,220px)!important;height:min(32dvh,280px)!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .native-character-stage:is(.has-scene-companion,.has-scene-lineup){width:min(65vw,300px)!important;height:min(32dvh,280px)!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side{
-  position:absolute!important;z-index:25!important;top:var(--hud-side-top)!important;display:grid!important;grid-template-rows:repeat(3,var(--hud-side-row))!important;
+  position:absolute!important;z-index:25!important;display:grid!important;grid-template-rows:repeat(3,var(--hud-side-row))!important;
   align-content:start!important;gap:0!important;width:16.75vw!important;height:34.35dvh!important;overflow:visible!important
 }
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-left{left:2.91vw!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-right{right:2.91vw!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-left{left:2.91vw!important;top:13.85dvh!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-right{right:2.18vw!important;top:10.58dvh!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side button,
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock button{
   position:relative!important;display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;padding:0!important;
@@ -6455,10 +6455,12 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side button>span,
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side .game-hud-menu-art{
-  position:absolute!important;top:0!important;left:50%!important;display:grid!important;place-items:center!important;width:15.29vw!important;height:var(--hud-icon-h)!important;
+  position:absolute!important;top:0!important;left:50%!important;display:grid!important;place-items:center!important;
   max-width:none!important;overflow:visible!important;transform:translateX(-50%)!important;border:0!important;background:transparent!important;box-shadow:none!important;
   color:#fff!important;font-size:clamp(31px,10.4vw,45px)!important;line-height:1!important;object-fit:contain!important;filter:drop-shadow(0 3px 3px #0009)!important
 }
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-left :is(button>span,.game-hud-menu-art){width:15.29vw!important;height:6.87dvh!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-right :is(button>span,.game-hud-menu-art){width:13.11vw!important;height:5.89dvh!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] :is(.game-hud-side,.game-hud-dock) button>small{
   position:absolute!important;z-index:3!important;display:grid!important;place-items:center!important;height:var(--hud-label-h)!important;margin:0!important;padding:0 4px!important;
   overflow:hidden!important;border:2px solid #1c140e!important;border-radius:999px!important;background:#473a28!important;color:#d4bb7c!important;
@@ -6466,18 +6468,31 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   white-space:nowrap!important;text-shadow:none!important;box-shadow:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side button>small{
-  top:var(--hud-label-top)!important;left:50%!important;width:16.75vw!important;transform:translateX(-50%)!important
+  left:50%!important;width:16.75vw!important;transform:translateX(-50%)!important
 }
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-left button>small{top:5.56dvh!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-side-right button>small{top:5.02dvh!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment{
-  position:absolute!important;z-index:27!important;left:7.04vw!important;top:66.08dvh!important;width:85.68vw!important;height:16.57dvh!important;max-width:none!important;
-  margin:0!important;padding:clamp(13px,3.7vw,18px)!important;overflow:visible!important;border:1px solid #c9ab91!important;border-radius:29px!important;
+  position:absolute!important;z-index:27!important;left:7.04vw!important;top:66.06dvh!important;width:85.19vw!important;height:16.47dvh!important;max-width:none!important;
+  margin:0!important;padding:clamp(13px,3.7vw,18px)!important;overflow:visible!important;border:1px solid #483730!important;border-radius:30px!important;
   background:#fff8efed!important;box-shadow:0 5px 18px #2b160d35!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment-head{
-  position:absolute!important;left:7.52vw!important;top:-3.7dvh!important;margin:0!important;font-family:"Griun Simsimche",var(--ui-font)!important;
-  font-size:clamp(15px,4.6vw,21px)!important;font-weight:400!important;white-space:nowrap!important
+  position:absolute!important;left:7.77vw!important;right:3.88vw!important;top:-2.95dvh!important;display:flex!important;align-items:flex-end!important;justify-content:space-between!important;
+  height:3dvh!important;margin:0!important;font-family:"Griun Simsimche",var(--ui-font)!important;font-size:clamp(13px,3.9vw,18px)!important;font-weight:400!important;white-space:nowrap!important;pointer-events:none!important
 }
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment-head>small{color:#3c3029!important;font:inherit!important;letter-spacing:0!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment-head>small{
+  display:grid!important;align-items:center!important;height:2.73dvh!important;padding:0 10px!important;border:1px solid #483730!important;border-bottom:0!important;border-radius:13px 13px 0 0!important;
+  background:#fff8efed!important;color:#3c3029!important;font:inherit!important;letter-spacing:0!important;text-shadow:none!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment-head>button{
+  pointer-events:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:4px!important;min-width:14.95vw!important;height:3.6dvh!important;padding:0 8px!important;
+  border:1px solid #483730!important;border-radius:14px!important;background:#fff8efed!important;color:#564929!important;box-shadow:0 3px 9px #2b160d2b!important;
+  font:inherit!important;line-height:1!important;text-shadow:none!important;transform:rotate(2.5deg)!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment-head>button i{font:400 1em/1 sans-serif!important;transition:transform .18s ease!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment.expanded .game-hud-moment-head>button i{transform:rotate(180deg)!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment-body{height:100%!important;overflow:hidden!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment h1{
   display:-webkit-box!important;margin:0 0 4px!important;overflow:hidden!important;font-family:"Griun Simsimche",var(--ui-font)!important;font-size:clamp(16px,4.6vw,21px)!important;font-weight:400!important;line-height:1.18!important;
   -webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important
@@ -6487,7 +6502,12 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   -webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-location{display:flex!important;gap:2.2vw!important;font-family:"Griun Simsimche",var(--ui-font)!important;font-size:clamp(10px,3.1vw,14px)!important;font-weight:400!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-location :is(img,i){width:6.55vw!important;height:3dvh!important;max-width:30px!important;max-height:30px!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-location :is(img,i){width:6.55vw!important;height:3dvh!important;max-width:30px!important;max-height:30px!important;object-fit:cover!important;border:0!important;background:transparent!important;box-shadow:none!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment.expanded{
+  top:auto!important;bottom:17.47dvh!important;height:auto!important;max-height:46dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment.expanded .game-hud-moment-body{height:auto!important;overflow:visible!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-moment.expanded :is(h1,p){display:block!important;overflow:visible!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-roster-options button,
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-roster-options button>span{border:0!important;background:transparent!important;box-shadow:none!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock{
@@ -6501,7 +6521,10 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   max-width:none!important;overflow:visible!important;transform:translateX(-50%)!important;border:0!important;background:transparent!important;box-shadow:none!important;
   color:#fff!important;font-size:clamp(27px,8.6vw,38px)!important;line-height:1!important;object-fit:contain!important;filter:drop-shadow(0 3px 3px #0008)!important
 }
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock button>small{top:7.63dvh!important;left:0!important;width:100%!important;max-width:none!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-dock button>small{top:7.63dvh!important;left:50%!important;width:16.75vw!important;max-width:none!important;transform:translateX(-50%)!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] :is(.native-scene-lineup-person,.native-scene-companion)>small{
+  -webkit-text-stroke:0!important;text-shadow:none!important
+}
 html.native-app[data-active-tab="observe"] .native-character-picker button,
 html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-character-picker button,
 html.native-app[data-active-tab="observe"] .native-character-picker button.on,
