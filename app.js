@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820momentcontrols1";
-import {eventFor} from "./simulation.js?v=20260820momentcontrols1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820momentcontrols1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820momentcontrols1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820momentcontrols1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820momentcontrols1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820momentcontrols1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820homevisits1";
+import {eventFor,forceCharactersHome} from "./simulation.js?v=20260820homevisits1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820homevisits1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820homevisits1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820homevisits1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820homevisits1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260820homevisits1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -563,13 +563,13 @@ function enhanceDynamicForms(){
   }
 }
 const newId=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
-const newRoutineDraft=()=>{const id=newId();return {id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""}};
+const newRoutineDraft=()=>{const id=newId();return {id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",visitHomeId:"",withIds:[],notes:""}};
 const updateRoutine=(characterId,id,patch)=>{const item=state.routines[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);save(true)}};
 const deleteRoutine=(characterId,id)=>{state.routines[characterId]=(state.routines[characterId]||[]).filter(r=>r.id!==id);save(true)};
 const currentMonthKey=()=>{const date=new Date();return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`};
 const newMonthlyRoutineDraft=()=>{
   const month=state.routineMonth||currentMonthKey(),today=new Date(),date=month===currentMonthKey()?`${month}-${String(today.getDate()).padStart(2,"0")}`:`${month}-01`;
-  return {id:newId(),date,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
+  return {id:newId(),date,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",visitHomeId:"",withIds:[],notes:""};
 };
 const updateMonthlyRoutine=(characterId,id,patch)=>{const item=state.monthlyRoutines?.[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);state.characters[characterId].timelineResetAt=Date.now();save(true)}};
 const deleteMonthlyRoutine=(characterId,id)=>{state.monthlyRoutines[characterId]=(state.monthlyRoutines?.[characterId]||[]).filter(r=>r.id!==id);state.characters[characterId].timelineResetAt=Date.now();save(true)};
@@ -2539,6 +2539,11 @@ function bind(){
     render();explicitSave("그룹 관계 삭제");
   });
   $$("[data-routine-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.routineCharacter);render()});
+  $$("[data-force-home]").forEach(el=>el.onclick=()=>{
+    const ids=el.dataset.forceHome==="all"?[...state.order]:[active().id],count=forceCharactersHome(ids,new Date());
+    const copy={en:count===1?"The selected character is heading home.":`${count} characters are heading home.`,ja:count===1?"選択したキャラクターを帰宅させました。":`${count}人のキャラクターを帰宅させました。`,ko:count===1?"선택한 캐릭터를 집으로 돌려보냈어요.":`${count}명의 캐릭터를 집으로 돌려보냈어요.`}[state.uiLanguage]||"캐릭터를 집으로 돌려보냈어요.";
+    render();showToast(copy);
+  });
   $("[data-add-routine]")?.addEventListener("click",()=>openRoutineDialog("",newRoutineDraft()));
   $("[data-add-monthly-routine]")?.addEventListener("click",()=>openMonthlyRoutineDialog("",newMonthlyRoutineDraft()));
   $("[data-add-anniversary]")?.addEventListener("click",()=>openAnniversaryDialog());
@@ -3191,10 +3196,30 @@ function focusHomeCharacter(id){
   });
 }
 
+function routineDestinationOptions(item){
+  const labels={
+    en:{automatic:"My home or automatic",homes:"Character homes",places:"Town buildings",homeSuffix:"'s home"},
+    ja:{automatic:"自宅または自動選択",homes:"キャラクターの家",places:"村の建物",homeSuffix:"の家"},
+    ko:{automatic:"내 집 또는 자동 선택",homes:"캐릭터의 집",places:"마을의 건물",homeSuffix:"의 집"}
+  }[state.uiLanguage]||{automatic:"내 집 또는 자동 선택",homes:"캐릭터의 집",places:"마을의 건물",homeSuffix:"의 집"};
+  const current=item.visitHomeId?`home:${item.visitHomeId}`:item.placeId?`place:${item.placeId}`:"";
+  const homeOptions=Object.values(state.homes||{}).map(home=>{
+    const town=state.towns.find(value=>value.id===home.townId);
+    const residents=state.order.map(id=>state.characters[id]).filter(character=>character&&(character.homeId===home.id||(character.residences||[]).some(residence=>residence.homeId===home.id)));
+    const owner=residents.map(character=>character.name).filter(Boolean).join(" · "),name=owner?`${owner}${labels.homeSuffix}`:(home.name||labels.homes);
+    return `<option value="home:${esc(home.id)}" ${current===`home:${home.id}`?"selected":""}>${esc(town?.name||"")} · ${esc(name)}</option>`;
+  }).join("");
+  const placeOptions=state.towns.flatMap(town=>(town.id===state.activeTownId?state.world.places:town.places).map(place=>`<option value="place:${esc(place.id)}" ${current===`place:${place.id}`?"selected":""}>${esc(town.name)} · ${esc(place.name)}</option>`)).join("");
+  return `<option value="" ${current?"":"selected"}>${labels.automatic}</option>${homeOptions?`<optgroup label="${labels.homes}">${homeOptions}</optgroup>`:""}${placeOptions?`<optgroup label="${labels.places}">${placeOptions}</optgroup>`:""}`;
+}
+function routineDestinationPatch(dialog){
+  const destination=dialog.querySelector("[name=destination]")?.value||"";
+  return {placeId:destination.startsWith("place:")?destination.slice(6):"",visitHomeId:destination.startsWith("home:")?destination.slice(5):""};
+}
+
 function openRoutineDialog(id,draft=null){
   const c=active(),item=draft||state.routines[c.id]?.find(r=>r.id===id);if(!item)return;
   const isNew=Boolean(draft),seriesId=String(item.seriesId||item.id),series=isNew?[item]:(state.routines[c.id]||[]).filter(r=>String(r.seriesId||r.id)===seriesId),selectedDays=new Set(series.map(r=>Number(r.day)));
-  const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog";
   dialog.innerHTML=`<form method="dialog"><h2>주간 일정 편집</h2>
     <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div class="routine-day-presets"><button type="button" data-routine-day-preset="weekdays">평일</button><button type="button" data-routine-day-preset="weekend">주말</button><button type="button" data-routine-day-preset="everyday">매일</button><button type="button" data-routine-day-preset="clear">선택 해제</button></div><div class="routine-day-pills">${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}><span>${day}</span></label>`).join("")}</div><small data-routine-day-summary>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
@@ -3202,7 +3227,7 @@ function openRoutineDialog(id,draft=null){
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
     <label>일정 이름<input name="title" value="${item.title.replace(/"/g,"&quot;")}"></label>
-    <label>장소<select name="placeId"><option value="">집 또는 자동 선택</option>${places.map(p=>`<option value="${p.id}" ${item.placeId===p.id?"selected":""}>${p.townName} · ${p.name}</option>`).join("")}</select></label>
+    <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>
     <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("")}</fieldset>
     <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
     <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
@@ -3215,7 +3240,7 @@ function openRoutineDialog(id,draft=null){
       const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
       if(days.length){
         if(isNew){state.routines[c.id]=Array.isArray(state.routines[c.id])?state.routines[c.id]:[];state.routines[c.id].push(item)}
-        updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+        updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
       }
       else showToast("일정을 적용할 요일을 하나 이상 골라 주세요");
     }
@@ -3227,7 +3252,6 @@ function openRoutineDialog(id,draft=null){
 function openMonthlyRoutineDialog(id,draft=null){
   const c=active(),item=draft||state.monthlyRoutines?.[c.id]?.find(r=>r.id===id);if(!item)return;
   const isNew=Boolean(draft);
-  const places=state.towns.flatMap(t=>(t.id===state.activeTownId?state.world.places:t.places).map(p=>({...p,townName:t.name})));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog monthly-routine-dialog";
   dialog.innerHTML=`<form method="dialog"><h2>월간 일정 편집</h2>
     <label>날짜<input type="date" name="date" value="${item.date}"></label>
@@ -3235,7 +3259,7 @@ function openMonthlyRoutineDialog(id,draft=null){
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
     <label>일정 이름<input name="title" value="${item.title.replace(/"/g,"&quot;")}"></label>
-    <label>장소<select name="placeId"><option value="">집 또는 자동 선택</option>${places.map(p=>`<option value="${p.id}" ${item.placeId===p.id?"selected":""}>${p.townName} · ${p.name}</option>`).join("")}</select></label>
+    <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>
     <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}><span>${state.characters[cid].name}</span></label>`).join("")}</fieldset>
     <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
     <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
@@ -3243,7 +3267,7 @@ function openMonthlyRoutineDialog(id,draft=null){
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
       if(isNew){state.monthlyRoutines[c.id]=Array.isArray(state.monthlyRoutines[c.id])?state.monthlyRoutines[c.id]:[];state.monthlyRoutines[c.id].push(item)}
-      updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",placeId:dialog.querySelector("[name=placeId]").value,withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+      updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
     }
     dialog.remove();render();
   };
@@ -3995,7 +4019,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820momentcontrols1").catch(error=>{
+  import("./auth.js?v=20260820homevisits1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4010,7 +4034,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820momentcontrols1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260820homevisits1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

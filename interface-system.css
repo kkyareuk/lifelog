@@ -88,7 +88,7 @@ html[data-color-mode][data-visual-theme] :is(
   -webkit-text-fill-color:var(--muted)!important;
 }
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] main button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not([data-home-character]){
+html[data-color-mode][data-visual-theme] main button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.game-hud-moment-title):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not([data-home-character]){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;

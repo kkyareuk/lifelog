@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820momentcontrols1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260820momentcontrols1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820homevisits1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260820homevisits1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -176,8 +176,10 @@ const scheduledForDate=(c,date=new Date())=>[
   ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
 ].slice().sort((a,b)=>mins(a.start)-mins(b.start));
 const scheduledTown=(c,date=new Date())=>{
-  const routine=scheduledForDate(c,date).find(item=>item.placeId);
-  return routine?state.towns.find(t=>t.places?.some(p=>p.id===routine.placeId)):null;
+  const routine=scheduledForDate(c,date).find(item=>item.placeId||item.visitHomeId);
+  if(!routine)return null;
+  const visitHome=state.homes?.[routine.visitHomeId];
+  return visitHome?state.towns.find(t=>t.id===visitHome.townId):state.towns.find(t=>t.places?.some(p=>p.id===routine.placeId));
 };
 const travelPurpose=(c,date=new Date())=>{
   const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
@@ -185,7 +187,7 @@ const travelPurpose=(c,date=new Date())=>{
   if(birthdayHost)return {town:townFor(birthdayHost,date),label:`${birthdayHost.name}의 생일파티`,kind:"birthday"};
   const workTown=workplaceTown(c);
   if(workTown&&c.job!=="무직")return {town:workTown,label:"출근 일정",kind:"work"};
-  const routine=scheduledForDate(c,date).find(item=>item.placeId);
+  const routine=scheduledForDate(c,date).find(item=>item.placeId||item.visitHomeId);
   const town=scheduledTown(c,date);
   if(town)return {town,label:routine?.title||routine?.type||"등록한 일정",kind:"routine"};
   return {town:townFor(c,date),label:"",kind:"home"};
@@ -2501,7 +2503,7 @@ function build(c,date=new Date()){
   }
   const scheduled=scheduledForDate(c,date);
   scheduled.forEach((item,index)=>{
-    const minute=mins(item.start),place=state.towns.flatMap(t=>(t.places||[]).map(p=>({...p,townId:t.id}))).find(p=>p.id===item.placeId);
+    const minute=mins(item.start),place=state.towns.flatMap(t=>(t.places||[]).map(p=>({...p,townId:t.id}))).find(p=>p.id===item.placeId),visitHome=state.homes?.[item.visitHomeId],visitHomeTown=visitHome?state.towns.find(t=>t.id===visitHome.townId):null;
     const companions=(item.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
     const companionText=companions.length?`${companions.map(x=>x.name).join(", ")}와 함께 `:"";
     const isDate=item.type==="데이트"&&Boolean(companions[0]);
@@ -2513,18 +2515,20 @@ function build(c,date=new Date()){
     const desc=item.notes||(isDate?`${purpose} 약속에서 정한 일을 ${companions[0].name}와 순서대로 진행하고 있어요.`:`${companionText}${item.type} 일정을 진행하고 있어요. 종료 예정 시각은 ${item.end}예요.`);
     const title=isDate?`${companions[0].name}와 데이트 · ${purpose}`:item.title;
     if(place)list.push(entry(minute,title,desc,{townId:place.townId,placeId:place.id,...dateMeta}));
+    else if(visitHome)list.push(homeEntry(c,minute,title,desc,item.type==="휴식"?"living":"living",{...dateMeta,visitHomeId:visitHome.id,townId:visitHome.townId}));
     else list.push(homeEntry(c,minute,title,desc,item.type==="휴식"?"living":"study",dateMeta));
-    if(place){
+    const awayFromOwnHome=Boolean(place||(visitHome&&visitHome.id!==currentHomeId));
+    if(awayFromOwnHome){
       const next=scheduled[index+1],nextMinute=next?mins(next.start):Infinity;
-      const continuesOutside=Boolean(next?.placeId&&nextMinute<=endMinute+30);
+      const continuesOutside=Boolean((next?.placeId||next?.visitHomeId)&&nextMinute<=endMinute+30);
       if(!continuesOutside){
-        const crossTown=place.townId!==homeTown.id,homeAt=endMinute+(crossTown?35:15);
+        const destinationTownId=place?.townId||visitHomeTown?.id||visitHome?.townId||homeTown.id,destinationName=place?.name||visitHome?.name||"방문한 집",crossTown=destinationTownId!==homeTown.id,homeAt=endMinute+(crossTown?35:15);
         const copy={
-          ko:{travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${place.name}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."},
-          en:{travel:`Heading home after ${item.title||"an outing"}`,travelDesc:`They finished what they were doing at ${place.name} at the planned time and are heading home.`,home:"Back home after the schedule",homeDesc:"They returned from the outing, put away their shoes and outerwear, and are resting at home."},
-          ja:{travel:`${item.title||"外出の予定"}を終えて帰宅中`,travelDesc:`${place.name}での用事を予定時刻に終え、家へ向かっています。`,home:"予定を終えて家に戻ったところ",homeDesc:"外出の予定を終えて帰宅し、靴と上着を片づけて家で休んでいます。"}
+          ko:{travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${destinationName}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."},
+          en:{travel:`Heading home after ${item.title||"an outing"}`,travelDesc:`They finished what they were doing at ${destinationName} at the planned time and are heading home.`,home:"Back home after the schedule",homeDesc:"They returned from the outing, put away their shoes and outerwear, and are resting at home."},
+          ja:{travel:`${item.title||"外出の予定"}を終えて帰宅中`,travelDesc:`${destinationName}での用事を予定時刻に終え、家へ向かっています。`,home:"予定を終えて家に戻ったところ",homeDesc:"外出の予定を終えて帰宅し、靴と上着を片づけて家で休んでいます。"}
         }[state.uiLanguage]||{
-          travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${place.name}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."
+          travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${destinationName}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."
         };
         list.push(entry(endMinute,copy.travel,copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,...routineMeta,mood:"이동"}));
         list.push(homeEntry(c,homeAt,copy.home,copy.homeDesc,"entry",{...routineMeta,routineReturned:true,mood:"귀가"}));
@@ -2752,6 +2756,11 @@ function commitLiveEntry(c,date,item){
   if(!day||!item)return item;
   item={...item,time:clock(Number(item.minute))};
   const entries=Array.isArray(day.entries)?day.entries:[];
+  if(item.forcedReturn){
+    day.entries=mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]);
+    save(false,false);
+    return item;
+  }
   // 공동 장면 직전에 baseEventFor가 만든 일반 장면이 같은 표시 시각에 남아 있으면
   // 한 사건이 일반 로그와 공동 로그로 두 번 보인다. 한 캐릭터에게 한 시각의 현재
   // 사건은 하나뿐이므로 공동 장면이 그 시각의 기존 항목을 완전히 치환한다.
@@ -2798,6 +2807,22 @@ function commitLiveEntry(c,date,item){
   )||Boolean(lastDateEntry&&Number(item.minute)-Number(lastDateEntry.minute)<dateGap);
   if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save(false,false)}
   return item;
+}
+export function forceCharactersHome(characterIds,date=new Date()){
+  const ids=[...new Set((characterIds||[]).map(String))].filter(id=>state.characters[id]),minute=nowMin(date),day=dayKey(date);
+  ids.forEach(id=>{
+    const c=state.characters[id];
+    timeline(c,date);
+    c.forcedHomeReturn={day,minute};
+    const copy={
+      ko:{title:"바로 집으로 돌아온 참",desc:"외출하던 일을 멈추고 집으로 돌아와 신발과 겉옷을 정리했어요. 다음 등록 일정 전까지 집에서 시간을 보내요."},
+      en:{title:"Just returned home",desc:"They stopped their outing and came home, putting away their shoes and outerwear. They will stay home until the next scheduled plan."},
+      ja:{title:"すぐに帰宅したところ",desc:"外出中の用事を切り上げて帰宅し、靴と上着を片づけました。次の登録予定までは家で過ごします。"}
+    }[state.uiLanguage]||{title:"바로 집으로 돌아온 참",desc:"외출하던 일을 멈추고 집으로 돌아와 신발과 겉옷을 정리했어요. 다음 등록 일정 전까지 집에서 시간을 보내요."};
+    commitLiveEntry(c,date,withResidenceLocation(c,homeEntry(c,minute,copy.title,copy.desc,"entry",{forcedReturn:true,mood:"귀가"}),date));
+  });
+  if(ids.length)save(true,false);
+  return ids.length;
 }
 function liveGapEvent(c,last,n,date){
   const gap=30+(hash(`${c.id}:${dayKey(date)}:${last?.minute??n}:reaction-gap`)%31);
@@ -2871,8 +2896,23 @@ function liveGapEvent(c,last,n,date){
   const script=pool[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%pool.length];
   return homeEntry(c,minute,script[0],personalityFlavor(c,script[1],"live-home",date),script[2],script[4]||{});
 }
+function forcedHomeEventFor(c,date=new Date()){
+  const marker=c?.forcedHomeReturn,n=nowMin(date);
+  if(!marker||marker.day!==dayKey(date)||n<Number(marker.minute))return null;
+  const resumed=scheduledForDate(c,date).some(item=>{const start=mins(item.start);return start>Number(marker.minute)&&start<=n});
+  if(resumed)return null;
+  const saved=(c.days?.[dayKey(date)]?.entries||[]).filter(item=>item.forcedReturn&&Number(item.minute)===Number(marker.minute)).at(-1);
+  if(saved)return withResidenceLocation(c,saved,date);
+  const copy={
+    ko:{title:"집에서 시간을 보내는 중",desc:"귀환한 뒤 다음 등록 일정 전까지 집 안에서 편안하게 시간을 보내고 있어요."},
+    en:{title:"Spending time at home",desc:"After returning, they are spending time comfortably at home until the next scheduled plan."},
+    ja:{title:"家で過ごしているところ",desc:"帰宅後、次の登録予定までは家の中でゆっくり過ごしています。"}
+  }[state.uiLanguage]||{title:"집에서 시간을 보내는 중",desc:"귀환한 뒤 다음 등록 일정 전까지 집 안에서 편안하게 시간을 보내고 있어요."};
+  return withResidenceLocation(c,homeEntry(c,Number(marker.minute),copy.title,copy.desc,"living",{forcedReturn:true,mood:"귀가"}),date);
+}
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
+  const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   if(sleepingNow(c,date))return withResidenceLocation(c,entry(n,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0}),date);
   const list=timeline(c,date), past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n);
   const last=past.at(-1);

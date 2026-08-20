@@ -144,6 +144,43 @@
     translate:-50% 0!important;
     z-index:10!important;
   }
+  /* HUD v3 keeps the character plane below every interface layer (the parent
+     stage remains z-index 7). Only the LD art frame and pair composition are
+     widened to the viewport: selected character in the left foreground,
+     companion behind on the right. */
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-stage .native-character-stage.visual-mode-ld{
+    left:50%!important;
+    top:-13.1dvh!important;
+    bottom:auto!important;
+    width:100vw!important;
+    height:100dvh!important;
+    min-height:100dvh!important;
+    max-width:none!important;
+    max-height:none!important;
+    translate:-50% 0!important;
+    z-index:1!important;
+  }
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-stage .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person{
+    top:auto!important;
+    right:auto!important;
+    transform-origin:50% 100%!important;
+  }
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-stage .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person.is-selected{
+    left:27vw!important;
+    bottom:-12dvh!important;
+    width:100vw!important;
+    height:112dvh!important;
+    scale:1.12!important;
+    z-index:4!important;
+  }
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="3"] .game-hud-stage .native-character-stage.visual-mode-ld.has-two-scene-actors .native-scene-lineup-person:not(.is-selected){
+    left:70vw!important;
+    bottom:-5dvh!important;
+    width:100vw!important;
+    height:88dvh!important;
+    scale:.9!important;
+    z-index:2!important;
+  }
   html.native-app[data-active-tab="observe"] :is(.native-observe-top,.native-character-picker,.native-status-card,.native-log-card){z-index:60!important}
   html.native-app[data-active-tab="observe"] .native-observe-top{position:absolute!important}
   html.native-app[data-active-tab="observe"] .native-character-picker{pointer-events:auto!important}

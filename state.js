@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820momentcontrols1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820momentcontrols1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820homevisits1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820homevisits1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -552,13 +552,13 @@ function normalizeHomes(x){
       return {
         id,seriesId:String(r.seriesId||id),day:Number.isFinite(+r.day)?Math.max(0,Math.min(6,+r.day)):1,
         start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
-        title:r.title||"새 일정",placeId:r.placeId||"",withIds:Array.isArray(r.withIds)?r.withIds:[],
+        title:r.title||"새 일정",placeId:r.placeId||"",visitHomeId:x.homes?.[r.visitHomeId]?String(r.visitHomeId):"",withIds:Array.isArray(r.withIds)?r.withIds:[],
         notes:r.notes||""
       };
     }):[];
     x.monthlyRoutines[c.id]=Array.isArray(x.monthlyRoutines[c.id])?x.monthlyRoutines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)&&/^\d{4}-\d{2}-\d{2}$/.test(String(r.date||""))).map(r=>({
       id:String(r.id||uid()),date:String(r.date),start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
-      title:String(r.title||"새 일정"),placeId:String(r.placeId||""),withIds:Array.isArray(r.withIds)?r.withIds.map(String).filter(id=>x.characters[id]):[],notes:String(r.notes||"")
+      title:String(r.title||"새 일정"),placeId:String(r.placeId||""),visitHomeId:x.homes?.[r.visitHomeId]?String(r.visitHomeId):"",withIds:Array.isArray(r.withIds)?r.withIds.map(String).filter(id=>x.characters[id]):[],notes:String(r.notes||"")
     })):[];
     const drivingOptions=["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"];
     c.driverLicense=typeof c.driverLicense==="boolean"?(c.driverLicense?"운전에 익숙함":"면허 없음"):(drivingOptions.includes(c.driverLicense)?c.driverLicense:"면허 없음");
@@ -578,6 +578,9 @@ function normalizeHomes(x){
      c.traitNotesInScripts=Boolean(c.traitNotesInScripts);
      c.bodyProfile=normalizedBodyProfile(c.bodyProfile);
      c.timelineResetAt=Number.isFinite(Number(c.timelineResetAt))?Number(c.timelineResetAt):0;
+    if(c.forcedHomeReturn&&typeof c.forcedHomeReturn==="object"&&!Array.isArray(c.forcedHomeReturn)&&/^\d{4}-\d{2}-\d{2}$/.test(String(c.forcedHomeReturn.day||""))&&Number.isFinite(Number(c.forcedHomeReturn.minute))){
+      c.forcedHomeReturn={day:String(c.forcedHomeReturn.day),minute:Math.max(0,Math.min(1439,Number(c.forcedHomeReturn.minute)))};
+    }else delete c.forcedHomeReturn;
     c.neatness=c.neatness||"보통";
     c.interference=c.interference==="철저히 선을 지킴"?"요청할 때만 도움":c.interference==="컨트롤프릭"?"통제광":c.interference||"적당히 관여";
     c.conflictStyle=c.conflictStyle||"대화로 해결";
@@ -853,7 +856,7 @@ export function updateCharacter(id,patch,persist=true){
 export function addRoutine(characterId){
   if(!state.characters[characterId])return;
   state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
-  const id=uid(),routine={id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",withIds:[],notes:""};
+  const id=uid(),routine={id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",visitHomeId:"",withIds:[],notes:""};
   state.routines[characterId].push(routine);state.characters[characterId].timelineResetAt=Date.now();save(true);return routine.id;
 }
 export function updateRoutine(characterId,routineId,patch){
@@ -925,6 +928,12 @@ export function deleteHome(homeId){
     c.homeId=primary?.homeId||"";
     c.sleepRoomId=primary?.sleepRoomId||"";
     c.timelineResetAt=Date.now();
+  });
+  Object.keys(state.routines||{}).forEach(characterId=>{
+    state.routines[characterId]=(state.routines[characterId]||[]).map(item=>item.visitHomeId===homeId?{...item,visitHomeId:""}:item);
+  });
+  Object.keys(state.monthlyRoutines||{}).forEach(characterId=>{
+    state.monthlyRoutines[characterId]=(state.monthlyRoutines[characterId]||[]).map(item=>item.visitHomeId===homeId?{...item,visitHomeId:""}:item);
   });
   state.activeHomeId=Object.keys(state.homes)[0]||null;
   save(true);
