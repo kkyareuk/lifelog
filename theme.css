@@ -238,7 +238,7 @@ html[data-color-mode][data-visual-theme][data-active-tab="relationship"] .relati
   -webkit-text-fill-color:var(--ink)!important;
 }
 
-html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog) form{
+html[data-color-mode][data-visual-theme] :is(dialog:not(.game-hud-roster-dialog),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;

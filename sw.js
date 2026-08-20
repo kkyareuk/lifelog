@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260820-mailbox-hud1";
+const CACHE_VERSION="drawer-village-v20260820-profile-popup1";
 const CORE=[
   "./",
   "./index.html",
@@ -26,6 +26,8 @@ const CORE=[
   "./icons/drawer-village-logo.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png"
+  ,"./icons/mailbox.png"
+  ,"./icons/town-map.png"
   ,"./world-assets/building-types/restaurant-handdrawn.png"
 ];
 

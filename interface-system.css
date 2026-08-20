@@ -74,7 +74,7 @@ html[data-color-mode][data-visual-theme] :is(
 html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
-  dialog,.visual-theme-dialog
+  dialog:not(.game-hud-roster-dialog),.visual-theme-dialog
 ) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
@@ -82,7 +82,7 @@ html[data-color-mode][data-visual-theme] :is(
 html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
-  dialog,.visual-theme-dialog
+  dialog:not(.game-hud-roster-dialog),.visual-theme-dialog
 ) :is(p,small,time,em,.muted,.hint){
   color:var(--muted)!important;
   -webkit-text-fill-color:var(--muted)!important;
@@ -94,8 +94,8 @@ html[data-color-mode][data-visual-theme] main button:not(.game-hud-button):not(.
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog),
-html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog)>form{
+html[data-color-mode][data-visual-theme] :is(dialog:not(.game-hud-roster-dialog),.visual-theme-dialog),
+html[data-color-mode][data-visual-theme] :is(dialog:not(.game-hud-roster-dialog),.visual-theme-dialog)>form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;

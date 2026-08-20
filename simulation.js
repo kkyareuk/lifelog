@@ -1,8 +1,9 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820mailboxhud1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260820mailboxhud1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820profilepopup1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260820profilepopup1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
+const usableSleepRoom=value=>value==="__none__"?"":String(value||"");
 const hash=s=>[...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,2166136261);
 const hasBatchim=value=>{
   const chars=[...String(value||"").trim()];
@@ -591,7 +592,7 @@ function adaptAccessibilityWording(c,item){
   return {...item,title,desc};
 }
 function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에 앉아 조용히 쉬고 있어요.",room="living",extra={}){
-  const resolvedRoom=room==="bedroom"?(c.sleepRoomId||"bedroom"):room;
+  const resolvedRoom=room==="bedroom"?(usableSleepRoom(c.sleepRoomId)||"bedroom"):room;
   return adaptAccessibilityWording(c,entry(time,title,desc,{home:true,room:resolvedRoom,...extra}));
 }
 function mobilityAidMorningEntry(c,time,date=new Date()){
@@ -628,11 +629,11 @@ function withResidenceLocation(c,item,date=new Date()){
   const residence=(c.residences||[]).find(value=>value.homeId===homeId);
   const rooms=home.rooms||{};
   let room=item.room;
-  const requestsSleepingRoom=room==="bedroom"||room===c.sleepRoomId||/침실|잠드는|잠에서|잠자리에/.test(`${item.title||""} ${item.desc||""}`);
-  if(requestsSleepingRoom)room=residence?.sleepRoomId||c.sleepRoomId||"bedroom";
+  const requestsSleepingRoom=room==="bedroom"||room===usableSleepRoom(c.sleepRoomId)||/침실|잠드는|잠에서|잠자리에/.test(`${item.title||""} ${item.desc||""}`);
+  if(requestsSleepingRoom)room=usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)||"bedroom";
   if(!rooms[room]){
     room=Object.keys(rooms).find(key=>rooms[key]?.type===item.room)
-      ||(item.room==="bedroom"&&residence?.sleepRoomId)
+      ||(item.room==="bedroom"&&usableSleepRoom(residence?.sleepRoomId))
       ||Object.keys(rooms)[0]
       ||"";
   }
@@ -1748,7 +1749,7 @@ const homeActivityPoolFor=(c,date=new Date())=>{
   if(scentOwner)pool.push([
     `${scentOwner.name}의 향수들을 낯설게 살펴보는 중`,
     `방 한쪽에 놓인 향수병을 조심스럽게 들여다보다 왜 이렇게 비슷해 보이는 향을 여러 개 두는지 이해하지 못한 채 다시 제자리에 놓았어요.`,
-    scentOwner.sleepRoomId||"bedroom"
+    usableSleepRoom(scentOwner.sleepRoomId)||"bedroom"
   ]);
   const gameOwner=!likes(/게임|e스포츠|보드게임/)&&ownerFor(/게임|e스포츠|보드게임/);
   const home=state.homes[c.homeId],homePets=home?.pets||[],hasGameMachine=Object.values(home?.rooms||{}).some(room=>(room.furniture||[]).includes("게임기"));
@@ -2335,7 +2336,7 @@ function build(c,date=new Date()){
   const currentHomeId=homeIdForDate(c,date);
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
   const sleepMinute=sleep<=wake?sleep+1440:sleep;
-  const list=[entry(wake,"기상",wakeScene(c,date),{home:true,room:c.sleepRoomId||"bedroom",mood:"평온",stress:5})];
+  const list=[entry(wake,"기상",wakeScene(c,date),{home:true,room:usableSleepRoom(c.sleepRoomId)||"bedroom",mood:"평온",stress:5})];
   list.push(...recordedInteractionEntries(c,date));
   list.push(...scheduledChoiceEntries(c,date));
   const mobilityMorning=mobilityAidMorningEntry(c,wake+30,date);
@@ -2454,9 +2455,9 @@ function build(c,date=new Date()){
     list.push(entry(returnMinute,returnTitle,returnDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:returnMode,withId:returnMode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
   let stress=Math.max(...list.map(x=>x.stress||0));
-  const currentResidence=residenceForDate(c,date),currentSleepRoom=currentResidence?.sleepRoomId||c.sleepRoomId||"bedroom";
+  const currentResidence=residenceForDate(c,date),currentSleepRoom=usableSleepRoom(currentResidence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)||"bedroom";
   const housemate=state.order.map(id=>state.characters[id]).find(other=>other&&other.id!==c.id&&homeIdForDate(other,date)===currentHomeId);
-  const sameBedroomRelation=related(c).filter(x=>homeIdForDate(x.other,date)===currentHomeId&&(residenceForDate(x.other,date)?.sleepRoomId||x.other.sleepRoomId||"bedroom")===currentSleepRoom).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
+  const sameBedroomRelation=related(c).filter(x=>homeIdForDate(x.other,date)===currentHomeId&&(usableSleepRoom(residenceForDate(x.other,date)?.sleepRoomId)||usableSleepRoom(x.other.sleepRoomId)||"bedroom")===currentSleepRoom).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
   const homeRelation=related(c).filter(x=>homeIdForDate(x.other,date)===currentHomeId).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
   const otherSleep=housemate?(()=>{const value=sleepAt(housemate,date);return value<=wakeAt(housemate,date)?value+1440:value})():Infinity;
   const eveningMinute=Math.max(1020,Math.min(1260,sleepMinute-45,otherSleep-45));
@@ -2639,7 +2640,7 @@ function cleanInvalidRoomAndHobbyEntries(c,entries){
     return true;
   }).map(item=>{
     const residence=(c.residences||[]).find(value=>value.homeId===(item.visitHomeId||c.homeId));
-    const sleepRoom=residence?.sleepRoomId||c.sleepRoomId||"bedroom";
+    const sleepRoom=usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)||"bedroom";
     if(item.home&&item.title?.startsWith("침실에서")&&item.room!==sleepRoom){
       return {...item,room:sleepRoom};
     }
