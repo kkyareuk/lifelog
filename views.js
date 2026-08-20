@@ -1,8 +1,8 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820momentfit1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260820momentfit1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260820momentcontrols1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260820momentcontrols1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about"},
@@ -694,7 +694,7 @@ export function setMobileTownEditing(value){
 export function setMobileTownPanel(value=""){mobileTownPanel=String(value||"")}
 export function setSettingsPane(value="home"){
   const next=String(value||"home");
-  settingsPane=["home","gameplay","display","account","support"].includes(next)?next:"home";
+  settingsPane=["home","gameplay","notifications","display","account","support"].includes(next)?next:"home";
 }
 function gameHudSideMenu(side){
   return `<nav class="game-hud-side game-hud-side-${side}" aria-label="${esc(t(side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴",side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴"))}">${GAME_HUD_SIDE_TABS[side].map(({key,labelKey,label,art,icon})=>`<button type="button" class="game-hud-button" data-tab="${key}">${art?`<img class="game-hud-menu-art" src="${art}" alt="">`:`<span data-menu-icon="${key}" aria-hidden="true">${icon}</span>`}<small>${gameHudLabel(labelKey,label)}</small></button>`).join("")}</nav>`;
@@ -1590,7 +1590,7 @@ function observe(){
   }
   const otherTowns=state.towns.filter(town=>town.id!==state.activeTownId);
   const hudRoster=`<details class="game-hud-profile"><summary class="game-hud-profile-toggle" data-open-game-hud-roster aria-label="${esc(t("characterPicker","관찰 캐릭터 바꾸기"))}"><span class="game-hud-profile-frame">${profileAvatar(c,"game-hud-current-profile")}<img class="game-hud-profile-ring" src="./icons/hud-profile-frame.png" alt=""></span><span class="game-hud-profile-copy"><b>${esc(c.name)}</b><small><em>${esc(c.jobTitle||c.job||t("생활 중","생활 중"))}</em></small></span></summary><section class="game-hud-roster-drawer"><small class="game-hud-roster-kicker">${t("currentTownResidents","이 마을의 캐릭터")}</small><div class="game-hud-roster-options" aria-label="${esc(t("characterPicker","관찰 캐릭터 선택"))}">${localIds.map(id=>{const person=state.characters[id];return `<button type="button" data-home-character="${id}" class="game-hud-button character-picker-button ${id===c.id?"on":""}" style="--picker-theme:${esc(person.theme?.primary||"#176b60")}" title="${esc(person.name)}" aria-label="${esc(person.name)}">${profileAvatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div>${otherTowns.length?`<div class="game-hud-town-jump"><b>${t("moveToAnotherTown","다른 마을로 이동")}</b><div>${otherTowns.map(town=>`<button type="button" data-observe-town="${town.id}">${esc(town.name)}</button>`).join("")}</div></div>`:""}</section></details>`;
-  const statusCard=`<article class="game-hud-moment" data-game-hud-moment><div class="game-hud-moment-head"><small>${t("currentMoment","지금 이 순간")}</small><button type="button" data-toggle-game-hud-moment aria-expanded="false" data-expand-label="${esc(t("expand","펼치기"))}" data-collapse-label="${esc(t("collapse","접기"))}"><span>${t("expand","펼치기")}</span><i aria-hidden="true">⌄</i></button></div><div class="game-hud-moment-body"><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p>${location}</div></article>`;
+  const statusCard=`<article class="game-hud-moment" data-game-hud-moment><div class="game-hud-moment-head"><button type="button" class="game-hud-moment-title" data-toggle-game-hud-moment aria-expanded="false" aria-label="${esc(t("currentMoment","지금 이 순간"))} · ${esc(t("expand","펼치기"))}">${t("currentMoment","지금 이 순간")}</button><button type="button" class="game-hud-moment-toggle" data-toggle-game-hud-moment aria-expanded="false" data-expand-label="${esc(t("expand","펼치기"))}" data-collapse-label="${esc(t("collapse","접기"))}"><span>${t("expand","펼치기")}</span><i aria-hidden="true">⌄</i></button></div><div class="game-hud-moment-body" data-toggle-game-hud-moment role="button" tabindex="0" aria-expanded="false" aria-label="${esc(t("currentMoment","지금 이 순간"))} · ${esc(t("expand","펼치기"))}"><h1>${esc(e.title)}</h1><p>${esc(e.desc)}</p>${location}</div></article>`;
   const gameHud=`<section class="game-observe-hud scene-tone-${presentation.tone} scene-action-${presentation.actionKind}" data-native-hud-version="3" style="--native-own:${esc(c.theme?.primary||"#176b60")};--native-own-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--log-theme:${logTheme}" aria-label="${esc(c.name)}의 관찰 화면"><div class="native-observe-backdrop" style="background-image:url(&quot;${esc(nativeBackground)}&quot;)"></div><div class="native-observe-shade"></div><div class="native-scene-atmosphere atmosphere-${presentation.atmosphere}" aria-hidden="true"></div>${presentation.effects}<div class="game-hud-top">${hudRoster}<time>${new Date().toLocaleTimeString(uiLocale(),{hour:"2-digit",minute:"2-digit"})}</time></div>${gameHudSideMenu("left")}${gameHudSideMenu("right")}<div class="game-hud-stage"><div class="native-character-stage ${stageClasses}" style="--home-visual-scale:${visualScale};${sceneLayoutVars(c,visualMode)}" aria-label="${esc(c.name)} 현재 장면">${sceneActors}</div></div>${statusCard}${gameHudDock()}</section>`;
   return `${gameHud}${nativeFullLog}${buildingDetailDialogs()}`;
 }
@@ -2515,7 +2515,7 @@ Object.assign(UI_TEXT.ja,{
   "초등학교":"小学校","중학교":"中学校","고등학교":"高校","대학교":"大学","학원":"学習塾","근린공원":"近隣公園","수목원":"植物園","놀이공원":"遊園地","반려동물 공원":"ペット公園","공공도서관":"公共図書館","대학도서관":"大学図書館","전문도서관":"専門図書館","백화점":"百貨店","아울렛":"アウトレット","복합 쇼핑몰":"複合ショッピングモール","호텔":"ホテル","여관":"旅館","리조트":"リゾート","게스트하우스":"ゲストハウス","시청":"市役所","주민센터":"住民センター","경찰서":"警察署","소방서":"消防署"
 });
 Object.assign(UI_TEXT.en,{
-  "설정 메뉴":"Settings menu","게임플레이·알림":"Gameplay & notifications","캐릭터 연락, 홈 화면, 마을 표시":"Character messages, home screen, and town display",
+  "설정 메뉴":"Settings menu","게임플레이":"Gameplay","홈 화면과 마을 표시":"Home screen and town display","알림":"Notifications","캐릭터 연락과 업데이트 소식":"Character messages and update news",
   "화면·표시":"Display & appearance","화면 모드, 색상 테마, 글자와 조작 크기":"Display mode, color theme, and text/control size",
   "계정·백업":"Account & backup","언어와 백업 파일":"Language and backup files",
   "도움말·오류 신고":"Help & bug reports","피드백, 페이지 안내, 초기화":"Feedback, page guides, and reset",
@@ -2523,7 +2523,7 @@ Object.assign(UI_TEXT.en,{
   "데이터 초기화":"Reset data","기기의 서랍마을 데이터를 모두 지울 때만 사용하세요.":"Use this only when you want to erase all Drawer Village data on this device."
 });
 Object.assign(UI_TEXT.ja,{
-  "설정 메뉴":"設定メニュー","게임플레이·알림":"ゲームプレイ・通知","캐릭터 연락, 홈 화면, 마을 표시":"キャラクターからの連絡、ホーム画面、村の表示",
+  "설정 메뉴":"設定メニュー","게임플레이":"ゲームプレイ","홈 화면과 마을 표시":"ホーム画面と村の表示","알림":"通知","캐릭터 연락과 업데이트 소식":"キャラクターからの連絡と更新情報",
   "화면·표시":"画面・表示","화면 모드, 색상 테마, 글자와 조작 크기":"画面モード、カラーテーマ、文字と操作の大きさ",
   "계정·백업":"アカウント・バックアップ","언어와 백업 파일":"言語とバックアップファイル",
   "도움말·오류 신고":"ヘルプ・不具合報告","피드백, 페이지 안내, 초기화":"フィードバック、ページ案内、初期化",
@@ -2549,14 +2549,15 @@ function settingsContent(){
   const buildLabel=state.uiLanguage==="en"?"Build":state.uiLanguage==="ja"?"ビルド":"빌드";
   const versionText=appVersion?`${appVersion}${versionCode?` · ${buildLabel} ${versionCode}`:""}`:"웹 버전 · 자동 업데이트";
   const appInfo=`<section class="setting-card app-version-card"><h2>앱 정보</h2><p><b>현재 버전</b> <span>${esc(versionText)}</span></p><small>오류를 제보할 때 이 버전과 빌드 번호를 함께 알려 주세요.</small></section>`;
-  const menu=`<nav class="settings-category-grid" aria-label="설정 메뉴"><button type="button" data-tab="settings" data-settings-pane="gameplay"><span>🎮</span><b>게임플레이·알림</b><small>캐릭터 연락, 홈 화면, 마을 표시</small></button><button type="button" data-tab="settings" data-settings-pane="display"><span>🖥️</span><b>화면·표시</b><small>화면 모드, 색상 테마, 글자와 조작 크기</small></button><button type="button" data-tab="settings" data-settings-pane="account"><span>☁️</span><b>계정·백업</b><small>언어와 백업 파일</small></button><button type="button" data-tab="settings" data-settings-pane="support"><span>🛟</span><b>도움말·오류 신고</b><small>피드백, 페이지 안내, 초기화</small></button></nav>`;
+  const menu=`<nav class="settings-category-grid" aria-label="설정 메뉴"><button type="button" data-tab="settings" data-settings-pane="gameplay"><span>🎮</span><b>게임플레이</b><small>홈 화면과 마을 표시</small></button><button type="button" data-tab="settings" data-settings-pane="notifications"><span>🔔</span><b>알림</b><small>캐릭터 연락과 업데이트 소식</small></button><button type="button" data-tab="settings" data-settings-pane="display"><span>🖥️</span><b>화면·표시</b><small>화면 모드, 색상 테마, 글자와 조작 크기</small></button><button type="button" data-tab="settings" data-settings-pane="account"><span>☁️</span><b>계정·백업</b><small>언어와 백업 파일</small></button><button type="button" data-tab="settings" data-settings-pane="support"><span>🛟</span><b>도움말·오류 신고</b><small>피드백, 페이지 안내, 초기화</small></button></nav>`;
   const paneContent={
-    gameplay:`${notifications}${homeCharacterDisplay}${map}`,
+    gameplay:`${homeCharacterDisplay}${map}`,
+    notifications,
     display:`${colorMode}${visualThemeSettings()}${fontSettings()}${ownerNameSettings()}`,
     account:`${language}${backup}`,
     support:`${feedback}${guide}<section class="setting-card reset-setting-card"><h2>데이터 초기화</h2><p>기기의 서랍마을 데이터를 모두 지울 때만 사용하세요.</p><button class="danger" data-reset>모든 데이터 초기화</button></section>`
   };
-  const paneNames={gameplay:"게임플레이·알림",display:"화면·표시",account:"계정·백업",support:"도움말·오류 신고"};
+  const paneNames={gameplay:"게임플레이",notifications:"알림",display:"화면·표시",account:"계정·백업",support:"도움말·오류 신고"};
   const body=settingsPane==="home"?`${sync}${appInfo}${menu}`:`<div class="settings-pane-heading"><button type="button" data-tab="settings" data-settings-pane="home" aria-label="설정 메뉴로 돌아가기">‹</button><span><small>SETTINGS</small><h2>${paneNames[settingsPane]}</h2></span></div>${paneContent[settingsPane]||menu}`;
   return `<section class="panel form settings-shell ${settingsPane==="home"?"settings-home":"settings-subpage"}"><h1>${t("settings","설정")}</h1>${body}</section>`;
 }

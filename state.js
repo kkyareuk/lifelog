@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820momentfit1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820momentfit1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260820momentcontrols1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260820momentcontrols1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1246,7 +1246,15 @@ export function updateCharacterView(sourceId,targetId,field,value,{persist=false
   const current=state.characterViews[sourceId][targetId]&&typeof state.characterViews[sourceId][targetId]==="object"?state.characterViews[sourceId][targetId]:{};
   const editedFields=new Set(Array.isArray(current._editedFields)?current._editedFields:[]);
   editedFields.add(field);
-  state.characterViews[sourceId][targetId]={...current,[field]:value,_editedFields:[...editedFields]};
+  // 구버전의 spaceComfort·rapport가 남아 있으면 새 comfort를 저장한 뒤에도
+  // 다음 렌더에서 구형 조합이 다시 계산되어 ‘함께 있는 건 편하지만…’으로
+  // 되돌아갔다. 새 통합 항목을 직접 고른 순간 구형 필드를 폐기한다.
+  const next={...current,[field]:value,_editedFields:[...editedFields]};
+  if(field==="comfort"){
+    delete next.spaceComfort;
+    delete next.rapport;
+  }
+  state.characterViews[sourceId][targetId]=next;
   if(persist)save(true);
   return true;
 }
@@ -1271,8 +1279,10 @@ export function characterViewFor(sourceId,targetId){
   // 변환은 구형 필드가 실제로 남아 있을 때 한 번만 한다. 최신 comfort를
   // 매 렌더링마다 구형 문장으로 해석하면 사용자가 고른 값이 기본 문구로
   // 되돌아간다.
-  const hasLegacyComfortFields=Object.prototype.hasOwnProperty.call(explicit,"spaceComfort")
-    ||Object.prototype.hasOwnProperty.call(explicit,"rapport");
+  const rawView=state.characterViews?.[sourceId]?.[targetId]||{};
+  const comfortWasEdited=Array.isArray(rawView._editedFields)&&rawView._editedFields.includes("comfort");
+  const hasLegacyComfortFields=!comfortWasEdited&&(Object.prototype.hasOwnProperty.call(explicit,"spaceComfort")
+    ||Object.prototype.hasOwnProperty.call(explicit,"rapport"));
   let migratedComfort=explicit.comfort;
   if(hasLegacyComfortFields){
     const oldComfort=explicit.spaceComfort&&explicit.spaceComfort!=="정하지 않음"&&explicit.spaceComfort!=="상대 공간에서는 조금 어색함"?explicit.spaceComfort:explicit.comfort;

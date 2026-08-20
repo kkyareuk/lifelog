@@ -21,6 +21,7 @@ const checks=[
   [views.includes("data-character-notification-character")&&views.includes("data-character-notification-setting=\"frequencyMode\"")&&views.includes("data-character-notification-setting=\"timesPerDay\"")&&views.includes("data-character-notification-setting=\"intervalHours\"")&&views.includes("data-character-notification-setting=\"voiceMode\""),"캐릭터·횟수·간격·말투 선택 UI"],
   [app.includes("buildSpecialDateNotification")&&app.includes('specialKind:"birthday"')&&app.includes('specialKind:"anniversary"'),"생일·기념일 특별 알림"],
   [views.includes("data-character-notification-kind")&&views.includes("data-character-notification-test"),"주제 선택과 시험 알림 UI"],
+  [views.includes('data-settings-pane="notifications"')&&views.includes('gameplay:`${homeCharacterDisplay}${map}`')&&views.includes('notifications:"알림"')&&views.includes('notifications,')&&views.includes('settingsPane=["home","gameplay","notifications"'),"게임플레이와 분리된 알림 설정 메뉴"],
   [views.includes('function mailbox()')&&views.includes('data-open-daily-question')&&!views.includes('data-open-character-contact'),"캐릭터 화면에서 분리된 우편함"],
   [views.includes("data-character-update-notices")&&app.includes("scheduleCurrentBuildUpdateNotice"),"캐릭터 이미지로 새 버전 소식 예약"],
   [views.includes("data-open-daily-question")&&!app.includes("setTimeout(maybeShowDailyCharacterQuestion")&&app.includes('navigateToTab("mailbox")'),"질문을 팝업 대신 우편함에서 열기"],
@@ -35,7 +36,7 @@ const checks=[
   [speech.includes("export function characterContactSpeech")&&speech.includes('language==="ja"'),"말투별 영어·일본어 연락 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&views.includes('aria-pressed="${selected}"')&&css.includes('.notification-kind-grid button{')&&!views.includes('type="checkbox" data-character-notification-kind'),"권한 복귀 레이아웃과 연락 종류 버튼 포커스 안정화"],
   [activity.includes("WindowInsetsCompat.Type.statusBars()")&&activity.includes("BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE"),"상단 상태바 숨김과 스와이프 임시 표시"],
-  [gradle.includes("versionCode 76")&&gradle.includes('versionName "1.0.74"'),"내부 테스트 빌드 번호"],
+  [gradle.includes("versionCode 77")&&gradle.includes('versionName "1.0.75"'),"내부 테스트 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

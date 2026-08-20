@@ -6,9 +6,10 @@ const root=path.resolve(import.meta.dirname,"..");
 const app=fs.readFileSync(path.join(root,"app.js"),"utf8");
 const css=fs.readFileSync(path.join(root,"app.css"),"utf8");
 
-globalThis.localStorage={getItem:()=>null,setItem:()=>{},removeItem:()=>{}};
-globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{}};
-globalThis.document={addEventListener:()=>{},visibilityState:"visible"};
+const storage=new Map();
+globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
+globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
+globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
 const stateModule=await import(`../state.js?selection-continuity=${Date.now()}`);
 const {state,updateCharacterView,characterViewFor}=stateModule;
 state.characters={source:{id:"source",name:"관찰자"},target:{id:"target",name:"상대"}};
@@ -20,6 +21,18 @@ assert.equal(characterViewFor("source","target").comfort,"공간도 대화도 �
 assert.equal(updateCharacterView("source","target","comfort","선택하지 않음"),true);
 assert.equal(characterViewFor("source","target").comfort,"선택하지 않음");
 assert.deepEqual(state.characterViews.source.target._editedFields,["comfort"]);
+
+const comfortOptions=["정하지 않음","함께 있으면 매우 불편하고 대화도 전혀 통하지 않음","같은 공간에서는 숨 막히지만 농담과 장난은 잘 통함","공간 공유는 불편하지만 대화는 편안함","긴장하고 대화도 조심스러움","어색하지만 필요한 대화는 무난함","함께 있는 건 편하지만 대화 호흡은 평범함","편안하고 농담과 장난이 잘 통함","말없이 함께 있어도 편안함","공간도 대화도 완벽하게 편안함"];
+for(const comfort of comfortOptions){
+  state.characterViews={source:{target:{comfort:"함께 있는 건 편하지만 대화 호흡은 평범함",spaceComfort:"같이 있어도 편안함",rapport:"대화 호흡은 평범함"}}};
+  assert.equal(updateCharacterView("source","target","comfort",comfort,{persist:true}),true);
+  const stored=JSON.parse([...storage.values()].at(-1));
+  assert.equal(stored.characterViews.source.target.comfort,comfort);
+  assert.equal(Object.hasOwn(stored.characterViews.source.target,"spaceComfort"),false);
+  assert.equal(Object.hasOwn(stored.characterViews.source.target,"rapport"),false);
+  state.characterViews=stored.characterViews;
+  assert.equal(characterViewFor("source","target").comfort,comfort);
+}
 
 const residenceBinding=app.match(/\$\$\("\[data-residence-field\]"\)[\s\S]*?\$\$\("\[data-residence-day\]"\)/)?.[0]||"";
 assert.match(residenceBinding,/if\(el\.tagName==="SELECT"\)el\.onchange=apply;else el\.oninput=apply/);
