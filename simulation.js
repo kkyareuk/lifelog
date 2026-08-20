@@ -2540,7 +2540,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260819-scene-pairing1";
+const ENGINE_VERSION="20260820-scene-occupancy2";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -3732,6 +3732,29 @@ function baseSceneFrom(value){
     withIds:[]
   };
 }
+function sameLiveLocation(first,second){
+  if(!first||!second)return false;
+  if(Boolean(first.home)!==Boolean(second.home))return false;
+  if(first.home){
+    return (first.visitHomeId||first.homeId||"")===(second.visitHomeId||second.homeId||"")
+      &&(first.room||"")===(second.room||"");
+  }
+  return (first.placeId||"")===(second.placeId||"")
+    &&(first.townId||"")===(second.townId||"");
+}
+function committedSharedSceneFor(c,date,current){
+  const entries=c?.days?.[dayKey(date)]?.entries;
+  if(!Array.isArray(entries))return null;
+  const minute=nowMin(date);
+  return entries.slice().reverse().find(item=>
+    item?.groupInteraction
+    &&item.interactionId
+    &&Number(item.minute)<=minute
+    &&minute-Number(item.minute)<30
+    &&sameLiveLocation(item,current)
+    &&[c.id,...(item.participantOrder||[]),...(item.withIds||[]),item.withId].filter(Boolean).includes(c.id)
+  )||null;
+}
 function sharedParticipantOrder(characters,relation){
   const available=new Set(characters.map(character=>character.id));
   const configured=Array.isArray(relation?.displayOrder)?relation.displayOrder:Array.isArray(relation?.groupMembers)?relation.groupMembers:[];
@@ -3744,6 +3767,10 @@ function sharedParticipantOrder(characters,relation){
 }
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
+  const committed=committedSharedSceneFor(c,date,current);
+  // 한 번 성립한 공동 장면은 같은 장소·30분 구간에서 다시 짝을 뽑지 않는다.
+  // 화면을 여는 순서가 달라도 한 인물이 다른 장소의 두 장면에 중복 배정되지 않는다.
+  if(!sharedContext&&committed)return committed;
   const sceneIsSleeping=value=>/자는 중|잠든|수면/.test(`${value?.title||""} ${value?.desc||""} ${value?.mood||""}`);
   const sharedSourceOwner=sharedContext?.sourceOwnerId?state.characters[sharedContext.sourceOwnerId]:null;
   if(sharedContext?.sourceEvent&&sharedSourceOwner&&sharedSourceOwner.id!==c.id){
@@ -3826,6 +3853,11 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       if(!other||other.id===c.id)return false;
       const otherEvent=baseEventFor(other,date);
       if(otherEvent.transit||sceneIsSleeping(current)!==sceneIsSleeping(otherEvent))return false;
+      const reservedScene=committedSharedSceneFor(other,date,otherEvent);
+      if(reservedScene){
+        const reservedIds=[other.id,...(reservedScene.participantOrder||[]),...(reservedScene.withIds||[]),reservedScene.withId].filter(Boolean);
+        if(!reservedIds.includes(c.id))return false;
+      }
       const otherDatePartner=otherEvent.dateGroup&&otherEvent.datePurpose
         ?state.order.find(id=>id!==other.id&&String(otherEvent.dateGroup).includes(id))
         :otherEvent.withId;
@@ -3920,7 +3952,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,combinedDesc))),withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 export function eventFor(c,date=new Date()){
-  let current=adaptAccessibilityWording(c,sharedPlaceScene(c,baseEventFor(c,date),date));
+  const baseCurrent=baseEventFor(c,date);
+  let current=adaptAccessibilityWording(c,committedSharedSceneFor(c,date,baseCurrent)||sharedPlaceScene(c,baseCurrent,date));
   if(current?.dateGroup&&current?.datePurpose){
     const dateIds=dateGroupParticipantIds(current);
     const partnerId=dateIds.find(id=>id!==c.id);

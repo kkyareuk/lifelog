@@ -21,6 +21,8 @@ const checks=[
   [views.includes("peopleDirection")&&views.includes("is-horizontal")&&css.includes(".room-people.is-horizontal"),"방 가로세로 비율에 맞춘 인물 배치"],
   [state.includes("anniversaries:[]")&&views.includes("calendar-special birthday")&&views.includes("data-add-anniversary"),"월간 달력 생일·기념일 표시"],
   [views.includes("nativeSceneActionProp")&&views.includes("native-person-action-prop")&&css.includes(".home-person .native-person-action-prop"),"집 화면 생활 행동 소품과 애니메이션"],
+  [views.includes('class="home-person-visual"')&&views.includes('--home-float-delay:')&&css.includes("@keyframes home-person-float"),"집 캐릭터 둥둥 애니메이션 전용 시각 레이어"],
+  [css.includes(".home-person .native-person-action-prop{position:absolute")&&css.includes("right:-8px;top:-5px")&&views.includes('</span><span class="home-person-status">'),"행동 소품과 이름·상태표 레이어 분리"],
   [state.includes('previousSchema<22&&room.image?"cover"'),"기존 집 사진의 회색 여백을 한 번 교정"]
 ];
 

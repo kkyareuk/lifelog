@@ -1692,13 +1692,14 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .house-event-icon{display:grid!important;place-items:center;background:#eef2f5!important;font-size:21px}
 .rooms,.room{overflow:hidden}
 .room{isolation:isolate}.room:hover,.room:focus-within{z-index:8}
-.home-person{min-width:0;max-width:100%;flex:0 1 auto}.home-person img.avatar,.home-person img.sprite{object-fit:contain;object-position:center;max-width:100%}
+.home-person{min-width:0;max-width:100%;flex:0 1 auto}.home-person-visual{position:relative;display:grid;place-items:center;flex:0 0 auto;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;animation:home-person-float 3.2s var(--home-float-delay,0s) ease-in-out infinite}.home-person img.avatar,.home-person img.sprite{object-fit:contain;object-position:center;max-width:100%}
 .room-people{max-width:calc(100% - 12px);max-height:none;overflow:visible;align-content:flex-end}
 .room-people.is-horizontal{flex-direction:row;flex-wrap:wrap;align-items:flex-end;justify-content:flex-start}
 .room-people.is-vertical{flex-direction:column;flex-wrap:nowrap;align-items:flex-start;justify-content:flex-end}
 .room-people .home-person{max-width:min(145px,100%)}.room-people .pet-person{max-width:min(120px,100%)}
 .room-people .home-person-status{min-width:0;max-width:100%;overflow-wrap:break-word}
-.home-person .native-person-action-prop{position:absolute;z-index:6;left:48%;top:28%;display:grid;place-items:center;width:27px;height:27px;padding:0;border:0;border-radius:0;background:transparent!important;box-shadow:none!important;font-size:23px;line-height:1;pointer-events:none;filter:drop-shadow(0 4px 4px #0007);transform-origin:50% 85%}.home-person .native-person-action-prop img{width:100%;height:100%;padding:0;border:0;border-radius:0;object-fit:contain;background:transparent!important;box-shadow:none!important}.home-person.scene-action-eating .native-person-action-prop{animation:native-prop-eat 1.7s ease-in-out infinite}.home-person.scene-action-gaming .native-person-action-prop{animation:native-prop-game-buttons .48s steps(2,end) infinite}.home-person:is(.scene-action-sweeping,.scene-action-wiping,.scene-action-organizing) .native-person-action-prop{animation:native-prop-work 2.1s ease-in-out infinite}.home-person .native-person-action-prop.catalog-food-photo{left:48%;top:30%;width:38px;height:38px;border-radius:50%;overflow:hidden}.home-person .native-person-action-prop.catalog-food-photo img{border-radius:50%;object-fit:cover}
+.home-person .native-person-action-prop{position:absolute;z-index:6;left:auto;right:-8px;top:-5px;display:grid;place-items:center;width:27px;height:27px;padding:0;border:0;border-radius:0;background:transparent!important;box-shadow:none!important;font-size:23px;line-height:1;pointer-events:none;filter:drop-shadow(0 4px 4px #0007);transform-origin:50% 85%}.home-person .native-person-action-prop img{width:100%;height:100%;padding:0;border:0;border-radius:0;object-fit:contain;background:transparent!important;box-shadow:none!important}.home-person.scene-action-eating .native-person-action-prop{animation:native-prop-eat 1.7s ease-in-out infinite}.home-person.scene-action-gaming .native-person-action-prop{animation:native-prop-game-buttons .48s steps(2,end) infinite}.home-person:is(.scene-action-sweeping,.scene-action-wiping,.scene-action-organizing) .native-person-action-prop{animation:native-prop-work 2.1s ease-in-out infinite}.home-person .native-person-action-prop.catalog-food-photo{left:auto;right:-12px;top:-8px;width:38px;height:38px;border-radius:50%;overflow:hidden}.home-person .native-person-action-prop.catalog-food-photo img{border-radius:50%;object-fit:cover}
+@keyframes home-person-float{0%,100%{transform:translateY(1px)}50%{transform:translateY(-5px)}}
 .cars{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}.car-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}.car-card{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:18px;background:#f7f9fc}.car-card>div{display:grid;gap:4px;flex:1}.car-card small{color:var(--muted)}.car-icon{font-size:38px}.car-photo{width:88px;height:66px;border-radius:13px;object-fit:cover;background:#fff}.car-edit{grid-template-columns:repeat(2,minmax(0,1fr))!important}.car-edit .danger{align-self:end}.room-more{position:static;display:grid;place-items:center;flex:0 0 auto;min-width:38px;width:38px;height:38px;padding:0;border:2px solid #fff;border-radius:50%;background:#273248;color:#fff;font-size:13px;font-weight:900;box-shadow:0 5px 12px #17203344}.room-pets .room-more{align-self:center}
 .fields>label:has([data-image="photo"]){order:-20;grid-column:1/-1;padding:16px;border:2px solid color-mix(in srgb,var(--p) 28%,var(--line));border-radius:18px;background:color-mix(in srgb,var(--p) 5%,white)}
 .profile-license>.check{display:flex;align-items:center;gap:10px;margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:#f8fafc}
@@ -4939,7 +4940,7 @@ html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-buy.pr
   animation:room-sleep-z 2.8s ease-in-out infinite;
 }
 .native-character-sleep-mark.is-main{right:4%;top:5%;font-size:16px}
-.home-person.is-sleeping{animation:room-sleep-breathe 4.8s ease-in-out infinite}
+.home-person.is-sleeping .home-person-visual{animation:room-sleep-breathe 4.8s ease-in-out infinite}
 .home-person .room-sleep-mark{position:absolute;right:-5px;top:-12px;z-index:8;color:#e8e2ff;font-size:13px;font-style:normal;font-weight:900;text-shadow:0 2px 7px #312c60;animation:room-sleep-z 2.8s ease-in-out infinite}
 @keyframes native-sleep-breathe{0%,100%{transform:translateY(3px) rotate(-1deg)}50%{transform:translateY(-3px) rotate(1deg)}}
 @keyframes native-sleep-head{0%,100%{scale:1;rotate:-1deg}50%{scale:1.018;rotate:1deg}}
@@ -5121,7 +5122,7 @@ html[data-color-mode="light"].native-app[data-active-tab="observe"] .native-game
 @media(prefers-reduced-motion:reduce){
   .native-app .scene-tone-sleep .native-character-stage,
   .native-app .scene-tone-sleep .native-character-stage .native-main-character,
-  .home-person.is-sleeping,.home-person .room-sleep-mark,.native-character-sleep-mark{animation:none!important}
+  .home-person-visual,.home-person.is-sleeping .home-person-visual,.home-person .room-sleep-mark,.native-character-sleep-mark{animation:none!important}
 }
 
 /* 2026-08-08d: 관계 선택은 본문 문장 안의 두 이름으로만 조작한다. */

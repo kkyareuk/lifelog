@@ -26,7 +26,7 @@ const checks=[
   [views.includes("data-open-daily-question")&&!app.includes("setTimeout(maybeShowDailyCharacterQuestion")&&app.includes('navigateToTab("character")'),"질문을 팝업 대신 캐릭터 연락함에서 열기"],
   [views.includes("❓ 질문과 실제 선택")&&views.includes("🤔 캐릭터의 고민")&&views.includes("📖 구체적인 생활로그"),"구체적인 알림 종류 안내"],
   [app.includes("confirmCharacterNotificationConsent")&&app.indexOf("confirmCharacterNotificationConsent")<app.indexOf("requestCharacterNotificationPermission()"),"앱 설명 후 Android 권한 요청"],
-  [app.includes("recentSignatures")&&app.includes("characters.length>1")&&app.includes('voiceMode||"mixed"'),"최근 문구·연속 캐릭터·말투 반복 방지"],
+  [app.includes("recentSignatures")&&app.includes("daySerial+slot")&&app.includes('voiceMode||"mixed"'),"최근 문구·날짜별 캐릭터 순환·말투 반복 방지"],
   [app.includes("buildLifeLogNotification")&&app.includes("characterContactSpeech(character,neutral"),"생활로그와 말투 적용 연락 분리"],
   [app.includes("dayOffset<15")&&app.includes("replaceCharacterNotifications(items)"),"2주 단위 기기 예약 갱신"],
   [notifications.includes('CHANNEL_ID="character-contact-v2"')&&notifications.includes("checkPermissions()")&&notifications.includes("requestPermissions()"),"Android 알림 채널과 런타임 권한"],
@@ -35,7 +35,7 @@ const checks=[
   [speech.includes("export function characterContactSpeech")&&speech.includes('language==="ja"'),"말투별 영어·일본어 연락 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&css.includes('.notification-kind-grid input{')&&css.includes('input:not([type="checkbox"]):not([type="radio"]):not([type="color"])'),"권한 복귀 레이아웃과 숨김 체크박스 포커스 안정화"],
   [activity.includes("WindowInsetsCompat.Type.statusBars()")&&activity.includes("BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE"),"상단 상태바 숨김과 스와이프 임시 표시"],
-  [gradle.includes("versionCode 63")&&gradle.includes('versionName "1.0.61"'),"내부 테스트 빌드 번호"],
+  [gradle.includes("versionCode 64")&&gradle.includes('versionName "1.0.62"'),"내부 테스트 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

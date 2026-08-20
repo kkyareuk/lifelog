@@ -2250,19 +2250,21 @@ function bind(){
     await enableCharacterNotificationsWithConsent(event.currentTarget);
   });
   $$('[data-character-notification-character]').forEach(input=>input.onchange=async()=>{
+    const restoreScroll=preserveSelectionScroll(input);
     const settings=state.characterNotificationSettings,all=state.order.filter(id=>state.characters[id]);
     let selected=settings.characterIds?.length?[...settings.characterIds]:[...all];
     selected=input.checked?[...new Set([...selected,input.dataset.characterNotificationCharacter])]:selected.filter(id=>id!==input.dataset.characterNotificationCharacter);
     if(!selected.length){input.checked=true;input.closest("label")?.classList.add("on");showToast("연락받을 캐릭터를 한 명 이상 골라 주세요");return}
     settings.characterIds=selected;
     input.closest("label")?.classList.toggle("on",input.checked);
-    save(true);input.blur();queueCharacterNotificationSchedule();
+    save(true);input.blur();queueCharacterNotificationSchedule();restoreScroll();
   });
   $$('[data-character-notification-setting]').forEach(select=>select.onchange=()=>{
+    const restoreScroll=preserveSelectionScroll(select);
     const key=select.dataset.characterNotificationSetting,value=["startHour","endHour","timesPerDay","intervalHours"].includes(key)?Number(select.value):select.value;
     state.characterNotificationSettings[key]=value;
     if(state.characterNotificationSettings.endHour<=state.characterNotificationSettings.startHour)state.characterNotificationSettings.endHour=Math.min(21,state.characterNotificationSettings.startHour+4);
-    save(true);select.blur();queueCharacterNotificationSchedule();
+    save(true);select.blur();queueCharacterNotificationSchedule();restoreScroll();
   });
   $$('[data-character-notification-kind]').forEach(input=>input.onchange=()=>{
     const settings=state.characterNotificationSettings,kind=input.dataset.characterNotificationKind,current=new Set(settings.contentKinds||[]);
@@ -3744,7 +3746,10 @@ function buildCharacterContactSchedule(now=new Date()){
     for(let slot=0;slot<minutes.length;slot+=1){
       const minute=minutes[slot];
       const at=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(minute/60),minute%60,0,0);if(at.getTime()<now.getTime()+5*60*1000)continue;
-      let character=characters[(daySeed+slot)%characters.length];
+      // 날짜 해시의 우연에 맡기지 않고 날짜와 슬롯 기준으로 발신자를 순환한다.
+      // 하루 한 번 설정이어도 여러 날 연속 같은 첫 캐릭터만 고정되지 않는다.
+      const daySerial=Math.floor(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())/86400000);
+      let character=characters[(daySerial+slot)%characters.length];
       if(generated.at(-1)?.extra?.characterId===character.id&&characters.length>1)character=characters[(characters.indexOf(character)+1)%characters.length];
       const topics=notificationTopicsFor(character),fallbackTopics=topics.length?topics:["questions","moments"];
       let topic=fallbackTopics[(daySeed+slot*5)%fallbackTopics.length],seed=daySeed+dayOffset*31+slot*17,item;
@@ -3789,7 +3794,8 @@ async function scheduleCurrentBuildUpdateNotice(){
   if(!version)return false;
   const key=`drawer-village-update-notice:${version}`;
   if(localStorage.getItem(key)==="scheduled")return false;
-  const character=notificationSelectedCharacters()[0]||active();if(!character)return false;
+  const updateCharacters=notificationSelectedCharacters(),versionCode=Number(window.DRAWER_VILLAGE_VERSION_CODE)||0;
+  const character=updateCharacters.length?updateCharacters[versionCode%updateCharacters.length]:active();if(!character)return false;
   const language=state.uiLanguage||"ko",copy=({
     ko:`설정 화면이 더 안정적으로 움직이고, 오늘의 질문은 캐릭터 화면에서 편하게 확인할 수 있게 바뀌었어요.`,
     en:`Settings now stay in place, and today's questions can be opened calmly from the Character screen.`,
@@ -3825,7 +3831,11 @@ async function enableCharacterNotificationsWithConsent(source){
   save(true);updateCharacterNotificationControls();return permission==="granted";
 }
 async function sendCharacterNotificationTest(){
-  const character=notificationSelectedCharacters()[0]||active();if(!character)return showToast("알림을 보낼 캐릭터가 없어요");
+  const testCharacters=notificationSelectedCharacters();
+  const previousTestId=localStorage.getItem("drawer-village-last-test-notification-character")||"";
+  const previousIndex=testCharacters.findIndex(character=>character.id===previousTestId);
+  const character=testCharacters.length?testCharacters[(previousIndex+1)%testCharacters.length]:active();if(!character)return showToast("알림을 보낼 캐릭터가 없어요");
+  localStorage.setItem("drawer-village-last-test-notification-character",character.id);
   const at=new Date(Date.now()+5000),seed=notificationHash(String(Date.now())),topics=notificationTopicsFor(character),topic=topics[seed%Math.max(1,topics.length)]||"checkins",item=topic==="questions"?buildQuestionNotification(character,at,seed):topic==="lifeLogs"?buildLifeLogNotification(character,at,seed):buildMomentNotification(character,topic,at,seed),largeIcon=await characterNotificationLargeIcon(character.icon||character.photo||"");
   await scheduleCharacterNotification({id:829999999,title:item.title,body:item.body,largeIcon,at,extra:item.extra});showToast("5초 뒤 시험 알림이 도착해요");
 }
