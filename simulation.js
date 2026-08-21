@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260821homeui1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260821homeui1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260821homeui2";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260821homeui2";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -150,6 +150,7 @@ const wakeScene=(c,d=new Date())=>{
 const residenceForDate=(c,date=new Date())=>{
   const residences=(Array.isArray(c?.residences)?c.residences:[]).filter(item=>item&&state.homes?.[item.homeId]);
   const primary=residences.find(item=>item.isPrimary)||residences.find(item=>item.homeId===c?.homeId)||residences[0]||null;
+  if(state.preventInterTownMovement)return primary;
   const day=date.getDay(),dateKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
   const scheduled=residences.filter(item=>{
     if(item===primary)return false;
@@ -169,19 +170,21 @@ const townFor=(c,date=new Date())=>{
   const home=state.homes?.[homeIdForDate(c,date)];
   return state.towns.find(t=>t.id===(home?.townId||c.townId))||state.towns.find(t=>t.id===c.townId)||state.towns[0]||state.world;
 };
-const workplaceTown=c=>state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
+const workplaceTown=c=>state.preventInterTownMovement?townFor(c):state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
 const scheduleDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
 const scheduledForDate=(c,date=new Date())=>[
   ...(state.monthlyRoutines?.[c.id]||[]).filter(item=>item.date===scheduleDateKey(date)),
   ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
 ].slice().sort((a,b)=>mins(a.start)-mins(b.start));
 const scheduledTown=(c,date=new Date())=>{
+  if(state.preventInterTownMovement)return townFor(c,date);
   const routine=scheduledForDate(c,date).find(item=>item.placeId||item.visitHomeId);
   if(!routine)return null;
   const visitHome=state.homes?.[routine.visitHomeId];
   return visitHome?state.towns.find(t=>t.id===visitHome.townId):state.towns.find(t=>t.places?.some(p=>p.id===routine.placeId));
 };
 const travelPurpose=(c,date=new Date())=>{
+  if(state.preventInterTownMovement)return {town:townFor(c,date),label:"",kind:"home"};
   const birthdayKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
   const birthdayHost=state.order.map(id=>state.characters[id]).find(character=>character?.birthday===birthdayKey);
   if(birthdayHost)return {town:townFor(birthdayHost,date),label:`${birthdayHost.name}의 생일파티`,kind:"birthday"};
@@ -2503,7 +2506,7 @@ function build(c,date=new Date()){
   }
   const scheduled=scheduledForDate(c,date);
   scheduled.forEach((item,index)=>{
-    const minute=mins(item.start),place=state.towns.flatMap(t=>(t.places||[]).map(p=>({...p,townId:t.id}))).find(p=>p.id===item.placeId),visitHome=state.homes?.[item.visitHomeId],visitHomeTown=visitHome?state.towns.find(t=>t.id===visitHome.townId):null;
+    const minute=mins(item.start),scheduledPlace=state.towns.flatMap(t=>(t.places||[]).map(p=>({...p,townId:t.id}))).find(p=>p.id===item.placeId),scheduledHome=state.homes?.[item.visitHomeId],place=state.preventInterTownMovement&&scheduledPlace?.townId!==homeTown.id?null:scheduledPlace,visitHome=state.preventInterTownMovement&&scheduledHome?.townId!==homeTown.id?null:scheduledHome,visitHomeTown=visitHome?state.towns.find(t=>t.id===visitHome.townId):null;
     const companions=(item.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
     const companionText=companions.length?`${companions.map(x=>x.name).join(", ")}와 함께 `:"";
     const isDate=item.type==="데이트"&&Boolean(companions[0]);

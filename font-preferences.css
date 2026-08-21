@@ -7,13 +7,5 @@
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 B.ttf") format("truetype");font-weight:700 900;font-display:swap}
 @font-face{font-family:"GriunSimsimche";src:url("./fonts/GriunSimsimche-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"KCCHanbit";src:url("./fonts/KCC-Hanbit.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
-:root{--ui-font:system-ui,-apple-system,"Segoe UI",sans-serif}
-html[data-ui-font="system"]{--ui-font:system-ui,-apple-system,"Segoe UI",sans-serif}
-html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound",sans-serif}
-html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal",sans-serif}
-html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn",sans-serif}
-html[data-ui-font="haeong"]{--ui-font:"HaeongSans",sans-serif}
-html[data-ui-font="aggro"]{--ui-font:"SBAggro",sans-serif}
-html[data-ui-font="griun"]{--ui-font:"GriunSimsimche",sans-serif}
-html[data-ui-font="hanbit"]{--ui-font:"KCCHanbit",sans-serif}
+:root{--ui-font:"KCCHanbit",system-ui,-apple-system,"Segoe UI",sans-serif}
 html,body,button,input,select,textarea{font-family:var(--ui-font)}

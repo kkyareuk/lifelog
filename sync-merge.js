@@ -49,6 +49,10 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.relationships=mergedListById(preferredRelationships,fallbackRelationships).filter(relation=>
     !deletedRelationships.has(String(relation.id||""))&&next.characters[relation.a]&&next.characters[relation.b]
   );
+  next.characterGroups=mergedListById(preferred.characterGroups,fallback.characterGroups).map(group=>({
+    ...group,
+    memberIds:union(group.memberIds,[]).filter(id=>next.characters[id])
+  }));
 
   next.towns=mergedListById(preferred.towns,fallback.towns);
   const preferredPlaces=preferred.world?.places||[],fallbackPlaces=fallback.world?.places||[];
@@ -57,7 +61,7 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.scheduledChoices=mergedListById(preferred.scheduledChoices,fallback.scheduledChoices).slice(-120);
 
   // 화면·언어 설정은 계정이 아니라 현재 기기의 사용 환경을 따른다.
-  ["uiLanguage","uiFont","uiScale","colorMode","visualTheme","activeTab","characterPane"].forEach(key=>{
+  ["uiLanguage","uiScale","colorMode","visualTheme","activeTab","characterPane"].forEach(key=>{
     if(device[key]!==undefined)next[key]=clone(device[key]);
   });
   // 편집 모드는 저장 데이터가 아니라 현재 화면에서 명시적으로 켜는 일시 상태다.

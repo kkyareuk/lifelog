@@ -198,6 +198,8 @@ if(isNative){
   App.addListener("backButton",({canGoBack})=>{
     const opened=document.querySelector("dialog[open]");
     if(opened){opened.close();return}
+    const routineSheet=document.querySelector("[data-routine-sheet]");
+    if(routineSheet){window.dispatchEvent(new CustomEvent("drawer-village-native-back",{cancelable:true}));return}
     if(window.DrawerVillageNavigation?.back?.())return;
     const nativeBackEvent=new CustomEvent("drawer-village-native-back",{cancelable:true});
     window.dispatchEvent(nativeBackEvent);
