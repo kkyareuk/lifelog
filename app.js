@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260821characterui8";
-import {eventFor,forceCharactersHome} from "./simulation.js?v=20260821characterui8";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260821characterui8";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260821characterui8";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260821characterui8";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260821characterui8";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260821characterui8";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260822hudtheme9";
+import {eventFor,forceCharactersHome} from "./simulation.js?v=20260822hudtheme9";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260822hudtheme9";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260822hudtheme9";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260822hudtheme9";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260822hudtheme9";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260822hudtheme9";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1258,31 +1258,10 @@ function openCarEditor(homeId,carId){
 
 function applyTheme(){
   const mode=state.colorMode==="light"?"light":"dark";
-  const palettes={
-    monochrome:{light:["#20242a","#6d747d","#e8eaed","#ffffff","#1d2126","#626a73","#cbd0d5"],dark:["#7f8791","#c0c6ce","#090c10","#151a20","#f4f6f8","#b5bbc3","#343b44"]},
-    cream:{light:["#b06a00","#f2a93b","#fff4d8","#fffdf8","#3a2508","#80613a","#f2d39b"],dark:["#f0a83a","#ffd073","#190f02","#30200b","#fff8e9","#e2c18d","#684617"]},
-    peach:{light:["#ef536f","#ff986e","#fff0e9","#fffaf8","#481923","#955d5d","#ffc6ba"],dark:["#ff7185","#ffad82","#1d080d","#381318","#fff2ef","#efb6ae","#7b3340"]},
-    mint:{light:["#00a982","#4bd8aa","#e9fff6","#fbfffd","#073e32","#4f8878","#b4efd9"],dark:["#21cea3","#6af0c0","#031913","#073128","#effff9","#9ce3cd","#1e7560"]},
-    sunshine:{light:["#d98b00","#ffd23f","#fff8d2","#fffef7","#3e2b00","#836b27","#f4dc82"],dark:["#ffb51f","#ffe05f","#1c1300","#352703","#fffbe8","#e9d184","#735513"]},
-    sage:{light:["#2f855a","#76c36a","#ecf8ed","#fbfffc","#143823","#5a7f66","#bfe1c4"],dark:["#55bc79","#99db76","#06150c","#0f2b19","#effcf3","#a8d4b4","#28643e"]},
-    rose:{light:["#80502f","#b77a4b","#f7efe5","#fffaf4","#2f241d","#75675d","#dfcdbc"],dark:["#d9a46f","#a66e45","#16100c","#241a14","#fff7ef","#d1bfae","#6d4b34"]},
-    ocean:{light:["#007fc2","#36c0e8","#e9f9ff","#fbfeff","#073952","#4f7f93","#b6e8f7"],dark:["#29a9e8","#5cdaf0","#031720","#082f41","#effbff","#9ed7e6","#1e607b"]},
-    lavender:{light:["#7547e8","#c26de8","#f5edff","#fffaff","#2e1652","#76588d","#ddc2fa"],dark:["#956cff","#db86f4","#10051d","#27103b","#faf2ff","#d1afe4","#593180"]},
-    berry:{light:["#be2cff","#ff45b5","#f9ecff","#ffffff","#321044","#7d4a8c","#e5b6f8"],dark:["#d65cff","#ff69c5","#16051d","#2c0c38","#fff2ff","#d9a8e8","#663077"]},
-    sky:{light:["#078cff","#55c8ff","#eaf7ff","#ffffff","#082f50","#4b7895","#b5e2ff"],dark:["#31a8ff","#68ddff","#031522","#092c43","#eefaff","#9ed5ee","#245b79"]},
-    cobalt:{light:["#112250","#3c507d","#f3f0e9","#fffaf4","#112250","#65708a","#d9cbc2"],dark:["#e0c58f","#3c507d","#071124","#101e3b","#f3f0e9","#bac3d7","#3c507d"]},
-    aqua:{light:["#00a9b5","#21dfc5","#e7fffb","#ffffff","#073d3d","#4e8580","#aff1e7"],dark:["#13cbd1","#40f0cd","#031817","#092f2d","#edfffb","#9ce0d6","#1d7069"]},
-    lime:{light:["#52a900","#b4d900","#f3ffe3","#ffffff","#203600","#687f3c","#d3efa8"],dark:["#76ce22","#c9ef43","#0b1602","#1b3309","#f7ffe9","#c0dd99","#466f21"]},
-    coral:{light:["#ff4f62","#ff9770","#fff0ec","#ffffff","#49151b","#955b58","#ffc6ba"],dark:["#ff6674","#ffad82","#1d080b","#381316","#fff3f0","#efb6ae","#7d3439"]},
-    baroque:{light:["#ad6d15","#efbb55","#fbf5d2","#fff9e8","#441004","#79380b","#e2bf6d"],dark:["#efbb55","#ad6d15","#180b03","#2a1306","#fff2cf","#d7ad71","#79380b"]},
-    "moonlit-drawer":{light:["#172a58","#d4a84f","#eef1f8","#fffaf0","#17213b","#5d6170","#c9b477"],dark:["#d4a84f","#6f85bb","#071127","#10204a","#fff4d3","#c8c9d2","#8f743e"]},
-    "ruined-rose":{light:["#681f2a","#9a877f","#e9e4df","#f8f5f1","#241d1d","#6d6060","#b8aaa4"],dark:["#d16b78","#96847e","#08090b","#151315","#f6eff0","#b8aaad","#514449"]},
-    "healing-glasshouse":{light:["#3e755e","#9bb88a","#eef5e9","#fffdf7","#203129","#65766b","#c8d8c5"],dark:["#a8d39d","#6d9b82","#0c1712","#17261d","#eff8ee","#b6c9bb","#405c4b"]},
-    "reverie-ward":{light:["#6551a5","#36a9a0","#f0edf8","#fbf9ff","#27213a","#706887","#c9c1df"],dark:["#b49cff","#4fd5c7","#080716","#15122b","#f5f0ff","#bbb0d3","#4c426e"]},
-    "noir-rain":{light:["#a21f2d","#3e454d","#e9eaec","#fafafa","#191b1f","#63676d","#b8bcc2"],dark:["#e3515e","#8f969e","#050607","#121417","#f4f4f2","#b9bdc2","#44484e"]}
-  };
-  const selected=state.visualTheme||"monochrome";
-  const [primary,secondary,bg,panel,ink,muted,line]=(palettes[selected]||palettes.monochrome)[mode];
+  const palette={light:["#80502f","#b77a4b","#f7efe5","#fffaf4","#2f241d","#75675d","#dfcdbc"],dark:["#d9a46f","#a66e45","#16100c","#241a14","#fff7ef","#d1bfae","#6d4b34"]};
+  const selected="drawer-default";
+  state.visualTheme=selected;
+  const [primary,secondary,bg,panel,ink,muted,line]=palette[mode];
   document.documentElement.dataset.colorMode=mode;
   document.documentElement.dataset.visualTheme=selected;
   document.documentElement.style.setProperty("--p",primary);
@@ -2177,22 +2156,25 @@ function bind(){
     document.querySelectorAll(`[data-chip="${CSS.escape(field)}"][data-value="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{
-    const mobileDraft=markMobileCharacterDraft(el);
+    markMobileCharacterDraft(el);
     const kind=el.dataset.favoriteKind,itemId=el.dataset.favoriteId;
-    toggleFavorite(active().id,kind,itemId,!mobileDraft);
+    // 취향 선택은 모바일 편집창에서도 즉시 저장한다. 편집 완료 버튼은
+    // 화면을 닫는 역할만 하며, 뒤로가기로 선택이 사라지지 않는다.
+    toggleFavorite(active().id,kind,itemId,true);
     const selected=(active().favorites?.[kind]||[]).includes(itemId);
     document.querySelectorAll(`[data-favorite-kind="${CSS.escape(kind)}"][data-favorite-id="${CSS.escape(itemId)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-owned-kind]").forEach(el=>el.onclick=()=>{
-    const mobileDraft=markMobileCharacterDraft(el);
+    markMobileCharacterDraft(el);
     const kind=el.dataset.ownedKind,itemId=el.dataset.ownedId;
-    toggleOwned(active().id,kind,itemId,!mobileDraft);
+    toggleOwned(active().id,kind,itemId,true);
     const selected=(active().inventory?.[kind]||[]).includes(itemId);
     document.querySelectorAll(`[data-owned-kind="${CSS.escape(kind)}"][data-owned-id="${CSS.escape(itemId)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-character-interaction]").forEach(el=>el.onclick=()=>{
-    const item=String($("[data-character-interaction-item]")?.value||"").split(":");
-    const type=el.dataset.characterInteraction,targetId=$("[data-character-interaction-target]")?.value||"";
+    const panel=el.closest("[data-mailbox-gift]")||document;
+    const item=String(panel.querySelector("[data-character-interaction-item]")?.value||"").split(":");
+    const type=el.dataset.characterInteraction,targetId=panel.querySelector("[data-character-interaction-target]")?.value||"";
     if(recordCharacterInteraction({type,actorId:active().id,targetId,itemKind:item[0],itemId:item.slice(1).join(":")})){
       showToast(type==="gift"?"선물을 건넸어요":type==="exercise"?"함께 운동을 시작했어요":type==="outing"?"함께 나들이를 시작했어요":"물건을 구매했어요");render();
     }else showToast("상대와 물건을 먼저 골라 주세요");
@@ -2392,16 +2374,6 @@ function bind(){
     state.colorMode=button.dataset.colorMode==="light"?"light":"dark";
     save(true);
     renderPreservingPageScroll(button);
-  });
-  $$("button[data-visual-theme]").forEach(button=>button.onclick=event=>{
-    event.stopPropagation();
-    state.visualTheme=button.dataset.visualTheme||"monochrome";
-    save(true);
-    renderPreservingPageScroll(button);
-  });
-  $("[data-open-visual-theme-dialog]")?.addEventListener("click",()=>{
-    const dialog=$("[data-visual-theme-dialog]");
-    if(dialog&&!dialog.open)dialog.showModal();
   });
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
@@ -4103,7 +4075,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260821characterui8").catch(error=>{
+  import("./auth.js?v=20260822hudtheme9").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4118,7 +4090,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260821characterui8",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260822hudtheme9",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

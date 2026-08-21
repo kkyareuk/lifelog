@@ -78,3 +78,22 @@ for name in EXISTING_ASSETS_TO_CLEAN:
     pixels = clear_connected_canvas(np.array(Image.open(path).convert("RGBA")))
     Image.fromarray(pixels).save(path)
     print(name, Image.open(path).size)
+
+# The label frame is a hand-drawn capsule.  Scaling the complete image warps
+# both rounded ends and makes a pale seam visible on narrow Android screens.
+# Keep the two end caps at their original ratio and stretch only a tiny flat
+# strip sampled from the centre.
+pill_path = OUTPUT / "pill.png"
+if pill_path.exists():
+    pill = Image.open(pill_path).convert("RGBA")
+    width, height = pill.size
+    cap_width = min(60, width // 3)
+    middle_x = width // 2
+    slices = {
+        "pill-left.png": pill.crop((0, 0, cap_width, height)),
+        "pill-middle.png": pill.crop((middle_x - 1, 0, middle_x + 2, height)),
+        "pill-right.png": pill.crop((width - cap_width, 0, width, height)),
+    }
+    for name, asset in slices.items():
+        asset.save(OUTPUT / name)
+        print(name, asset.size)

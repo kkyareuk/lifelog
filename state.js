@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260821characterui8";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260821characterui8";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822hudtheme9";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822hudtheme9";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -179,7 +179,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:true,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:24,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:25,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -189,6 +189,7 @@ const fresh=()=>({schema:24,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
+  if(x.schema===25)return normalizeHomes(x);
   if(x.schema===24)return normalizeHomes(x);
   if(x.schema===23)return normalizeHomes(x);
   if(x.schema===22)return normalizeHomes(x);
@@ -231,7 +232,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=24;
+  x.schema=25;
   x.activeTab=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
@@ -249,11 +250,10 @@ function normalizeHomes(x){
   x.characterNotificationsEnabled=Boolean(x.characterNotificationsEnabled);
   x.characterNotificationConsent=["unknown","granted","denied"].includes(x.characterNotificationConsent)?x.characterNotificationConsent:"unknown";
   delete x.userMods;
-  // 1.0.14부터 Android 첫 화면은 흰 바탕과 서랍마을 벽돌색을 사용한다.
-  // 기존 테스트 빌드의 기본 크림 테마만 한 번 새 기본값으로 옮기고,
-  // 사용자가 직접 고른 다른 테마와 다크 모드는 그대로 보존한다.
-  if(previousSchema<17&&window.DRAWER_VILLAGE_NATIVE&&(!x.visualTheme||x.visualTheme==="cream"))x.visualTheme="rose";
-  x.visualTheme=["monochrome","sage","rose","ocean","lavender","cream","peach","mint","sunshine","berry","sky","cobalt","aqua","lime","coral","baroque","moonlit-drawer","ruined-rose","healing-glasshouse","reverie-ward","noir-rain"].includes(x.visualTheme)?x.visualTheme:"rose";
+  // 전체 색상 테마는 현재 서랍마을 기본 하나만 제공한다. 예전 선택값은
+  // 남겨 둔 CSS에 의존하지 않도록 한 번에 기본값으로 정규화한다.
+  x.visualTheme="drawer-default";
+  x.homeUiTheme="drawer-classic";
   x.ownerName=String(x.ownerName||"").trim().slice(0,20);
   x.mapLabelMode=["full","name","none"].includes(x.mapLabelMode)?x.mapLabelMode:"full";
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
@@ -628,6 +628,9 @@ function normalizeHomes(x){
     c.ldImage=typeof c.ldImage==="string"&&c.ldImage.trim()?c.ldImage:legacyLd||"";
     ["ldNeutral","ldJoy","ldSad","ldAngry","ldTired"].forEach(field=>delete c[field]);
     c.homeVisualMode=c.homeVisualMode==="ld"?"ld":"sd";
+    // 홈 UI 팩은 전역 기본값을 상속할 수 있고, 이후 판매/다운로드 팩을
+    // 추가할 때 이 문자열만 바꾸면 캐릭터 전환과 함께 전체 HUD가 바뀐다.
+    c.homeUiTheme=c.homeUiTheme==="drawer-classic"?"drawer-classic":x.homeUiTheme;
     c.homeVisualScale=Number.isFinite(+c.homeVisualScale)?Math.max(70,Math.min(150,+c.homeVisualScale)):100;
     c.homeSdScale=Number.isFinite(+c.homeSdScale)?Math.max(70,Math.min(150,+c.homeSdScale)):c.homeVisualScale;
     c.homeLdScale=Number.isFinite(+c.homeLdScale)?Math.max(70,Math.min(150,+c.homeLdScale)):c.homeVisualScale;
@@ -802,7 +805,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
@@ -1453,12 +1456,17 @@ export function addTown(limit=2){
   state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);return id;
 }
 export function switchTown(id,{activeId}={}){
-  syncTown();const town=state.towns.find(t=>t.id===id);if(!town)return;
+  const activeTab=state.activeTab;
+  syncTown();const town=state.towns.find(t=>t.id===id);if(!town)return null;
   state.activeTownId=id;state.world=clone(town);
   const requestedCharacter=state.characters[activeId]?.townId===id?activeId:null;
   const localCharacter=requestedCharacter||state.order.find(cid=>state.characters[cid]?.townId===id);
-  if(localCharacter)state.activeId=localCharacter;
+  state.activeId=localCharacter||null;
+  // 마을 선택은 데이터 범위만 바꾸며 현재 보고 있던 탭을 바꾸지 않는다.
+  // 캐릭터가 없는 마을도 빈 마을 화면으로 정상 렌더링한다.
+  state.activeTab=activeTab;
   save(true);
+  return {id,activeId:state.activeId,hasCharacters:Boolean(localCharacter)};
 }
 export function deleteTown(id){
   if(state.towns.length<=1)return;

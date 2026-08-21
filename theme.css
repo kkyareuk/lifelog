@@ -11,14 +11,14 @@ html[data-color-mode][data-visual-theme] main{
 }
 
 /* 기본 테마: 따뜻한 나무색을 바탕으로 페이지와 카드의 역할을 분리한다. */
-html[data-color-mode="light"][data-visual-theme="rose"],
-html[data-color-mode="light"][data-visual-theme="rose"] body,
-html[data-color-mode="light"][data-visual-theme="rose"] #app,
-html[data-color-mode="light"][data-visual-theme="rose"] main{
+html[data-color-mode="light"][data-visual-theme="drawer-default"],
+html[data-color-mode="light"][data-visual-theme="drawer-default"] body,
+html[data-color-mode="light"][data-visual-theme="drawer-default"] #app,
+html[data-color-mode="light"][data-visual-theme="drawer-default"] main{
   background:var(--bg)!important;
   background-image:none!important;
 }
-html[data-color-mode="light"][data-visual-theme="rose"] :is(
+html[data-color-mode="light"][data-visual-theme="drawer-default"] :is(
   .editor,.character-editor,.desktop-character-editor,.character-editor>.form,
   .profile-license,.home-page,.home,.town-page,.town-editor-panel
 ){
