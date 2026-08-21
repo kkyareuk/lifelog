@@ -39,7 +39,7 @@ html[data-color-mode][data-visual-theme] header nav button{
 }
 html[data-color-mode][data-visual-theme] header nav button:is(.on,:hover,:focus-visible),
 html[data-color-mode][data-visual-theme] button.primary,
-html[data-color-mode][data-visual-theme] button.on:not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button),
+html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button),
 html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
   border-color:color-mix(in srgb,var(--p) 72%,var(--line))!important;
   background:linear-gradient(135deg,var(--p),var(--s))!important;
@@ -50,7 +50,7 @@ html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
 html[data-color-mode][data-visual-theme] :is(
   .panel,.form,.setting-card,.sync-panel,.feedback-card,.font-preview,
   .catalog-shell,.catalog-kind,.catalog-dex-card,.catalog-card,.favorite-group,
-  .routine-shell,.routine-day,.weekly-scroll,.shop-store,.shop-cart,.premium-product,
+  .shop-store,.shop-cart,.premium-product,
   .relationship-page,.relation,.character-menu,
   .mobile-character-dashboard,.mobile-character-heading,.mobile-character-pane-grid>button,
   .town-tabs,.town-editor-panel,.resident-editor,.sleep-room-editor,
@@ -62,7 +62,7 @@ html[data-color-mode][data-visual-theme] :is(
   box-shadow:var(--ui-shadow)!important;
 }
 html[data-color-mode][data-visual-theme] :is(
-  .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
+  .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page
 ){
   border-color:var(--theme-border)!important;
@@ -72,7 +72,7 @@ html[data-color-mode][data-visual-theme] :is(
   color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] :is(
-  .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
+  .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
   dialog,.visual-theme-dialog
 ) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li){
@@ -80,7 +80,7 @@ html[data-color-mode][data-visual-theme] :is(
   -webkit-text-fill-color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] :is(
-  .settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,
+  .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
   dialog,.visual-theme-dialog
 ) :is(p,small,time,em,.muted,.hint){
@@ -88,7 +88,7 @@ html[data-color-mode][data-visual-theme] :is(
   -webkit-text-fill-color:var(--muted)!important;
 }
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] main button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.game-hud-moment-title):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not([data-home-character]){
+html[data-color-mode][data-visual-theme] main button:not(.routine-shell *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.game-hud-moment-title):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not([data-home-character]){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -108,7 +108,7 @@ html[data-visual-theme="ruined-rose"]{--ui-radius:5px}
 html[data-visual-theme="healing-glasshouse"]{--ui-radius:26px}
 html[data-visual-theme="reverie-ward"]{--ui-radius:18px}
 html[data-visual-theme="noir-rain"]{--ui-radius:3px}
-html:is([data-visual-theme="baroque"],[data-visual-theme="moonlit-drawer"],[data-visual-theme="ruined-rose"],[data-visual-theme="healing-glasshouse"],[data-visual-theme="reverie-ward"],[data-visual-theme="noir-rain"]) #app :is(h1,h2,h3,.brand h1){
+html:is([data-visual-theme="baroque"],[data-visual-theme="moonlit-drawer"],[data-visual-theme="ruined-rose"],[data-visual-theme="healing-glasshouse"],[data-visual-theme="reverie-ward"],[data-visual-theme="noir-rain"]) #app :is(h1,h2,h3,.brand h1):not(.routine-shell *){
   font-family:Georgia,"Times New Roman","Noto Serif KR",serif;
   letter-spacing:.018em;
 }

@@ -200,7 +200,7 @@ html[data-color-mode][data-visual-theme] :is(.install-app-button,.pwa-install-bu
 html[data-color-mode][data-visual-theme] :is(
   .panel,.form,.setting-card,.sync-panel,.feedback-card,.font-preview,
   .catalog-kind,.catalog-dex-card,.catalog-card,.favorite-group,
-  .routine-day,.weekly-scroll,.shop-cart,.premium-product,.preview-notice,
+  .shop-cart,.premium-product,.preview-notice,
   .shop-coming:not(.shop-expansion-showcase),.relationship-page,.relation,
   .character-menu,.town-tabs,.resident-editor,.sleep-room-editor,.place-editor details,
   .desktop-observe-log .native-log-card,.native-status-card,.native-log-card
@@ -211,7 +211,7 @@ html[data-color-mode][data-visual-theme] :is(
   box-shadow:0 14px 38px var(--theme-shadow)!important;
 }
 
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page){
   border-color:var(--theme-border)!important;
   background:
     radial-gradient(circle at 5% 1%,color-mix(in srgb,var(--s) 14%,transparent),transparent 28%),
@@ -220,7 +220,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.rou
 }
 
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;

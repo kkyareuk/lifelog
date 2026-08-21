@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260820-home-visits1";
+const CACHE_VERSION="drawer-village-v20260821-home-ui1";
 const CORE=[
   "./",
   "./index.html",
@@ -22,6 +22,7 @@ const CORE=[
   "./fonts/ChangwonDangamRound-Regular.woff2",
   "./fonts/DoHyeon-Regular.ttf",
   "./fonts/GriunSimsimche-Regular.ttf",
+  "./fonts/KCC-Hanbit.ttf",
   "./fonts/SB_Aggro/SB%20%EC%96%B4%EA%B7%B8%EB%A1%9C%20M.ttf",
   "./manifest.webmanifest",
   "./icons/drawer-village-logo.png",
@@ -29,6 +30,20 @@ const CORE=[
   "./icons/icon-512.png"
   ,"./icons/mailbox.png"
   ,"./icons/town-map.png"
+  ,"./assets/home-ui/profile-ring.png"
+  ,"./assets/home-ui/profile-placeholder.png"
+  ,"./assets/home-ui/catalog.png"
+  ,"./assets/home-ui/relationship.png"
+  ,"./assets/home-ui/routine.png"
+  ,"./assets/home-ui/statistics.png"
+  ,"./assets/home-ui/settings.png"
+  ,"./assets/home-ui/home.png"
+  ,"./assets/home-ui/mailbox.png"
+  ,"./assets/home-ui/ink.png"
+  ,"./assets/home-ui/shop.png"
+  ,"./assets/home-ui/town.png"
+  ,"./assets/home-ui/back.png"
+  ,"./assets/home-ui/wood-top.png"
   ,"./world-assets/building-types/restaurant-handdrawn.png"
 ];
 

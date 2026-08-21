@@ -7,7 +7,7 @@ const output=new URL("../www/",import.meta.url);
 const androidGradle=await readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8");
 const appVersionName=androidGradle.match(/versionName\s+["']([^"']+)["']/)?.[1]||"";
 const appVersionCode=androidGradle.match(/versionCode\s+(\d+)/)?.[1]||"";
-const includedDirectories=new Set(["fonts","icons","world-assets","vendor","shop-assets","theme-assets"]);
+const includedDirectories=new Set(["fonts","icons","assets","world-assets","vendor","shop-assets","theme-assets"]);
 const includedFiles=new Set([
   "index.html","app.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","font-preferences.js","manifest.webmanifest",
@@ -103,7 +103,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260820homevisits1";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260821homeui1";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

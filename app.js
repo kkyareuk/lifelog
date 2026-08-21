@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260820homevisits1";
-import {eventFor,forceCharactersHome} from "./simulation.js?v=20260820homevisits1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260820homevisits1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260820homevisits1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260820homevisits1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260820homevisits1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260820homevisits1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260821homeui1";
+import {eventFor,forceCharactersHome} from "./simulation.js?v=20260821homeui1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260821homeui1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260821homeui1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260821homeui1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260821homeui1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260821homeui1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -952,8 +952,12 @@ function render({force=false}={}){
   resetScrollAfterRender=false;
   try{
     const mobileSite=window.matchMedia?.("(max-width:720px)")?.matches??window.innerWidth<=720;
-    const nativePlatform=Boolean(window.DRAWER_VILLAGE_NATIVE||document.documentElement.classList.contains("native-platform"));
-    document.documentElement.classList.toggle("native-app",nativePlatform);
+    const nativePlatform=Boolean(window.DRAWER_VILLAGE_NATIVE||window.Capacitor?.isNativePlatform?.()||((location.hostname==="127.0.0.1"||location.hostname==="localhost")&&new URLSearchParams(location.search).has("native-preview")));
+    const appLayout=nativePlatform||mobileSite;
+    // 모바일 웹도 Android 앱과 같은 DOM·레이어·터치 규칙을 사용한다.
+    // 실제 네이티브 기능 여부는 window.DRAWER_VILLAGE_NATIVE로만 판단한다.
+    document.documentElement.classList.toggle("native-app",appLayout);
+    document.documentElement.classList.toggle("native-platform",appLayout);
     document.documentElement.classList.toggle("mobile-site",!nativePlatform&&mobileSite);
     document.documentElement.lang=({en:"en",ja:"ja"}[state.uiLanguage]||"ko");
     document.title=({en:"Drawer Village",ja:"ひきだし村"}[state.uiLanguage]||"서랍마을");
@@ -1949,7 +1953,7 @@ function bind(){
       const body=encodeURIComponent(`${message}\n\n현재 화면: ${PAGE_GUIDES[state.activeTab]?.[0]||state.activeTab}\n선택 캐릭터: ${character?.name||"없음"}\n보낸 시각: ${new Date().toLocaleString("ko-KR")}`);
       const gmailUrl=`https://mail.google.com/mail/?view=cm&fs=1&to=kkyaareuk%40gmail.com&su=${subject}&body=${body}`;
       const code=String(error?.code||error?.message||"알 수 없는 오류").replace("firebase/","");
-      status.innerHTML=`피드백함 저장 실패 (${esc(code)}). Firebase 보안 규칙을 게시했는지 확인해 주세요. <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer">Gmail 작성창으로 대신 보내기</a>`;
+      status.innerHTML=`피드백함 저장 실패 (${htmlEsc(code)}). Firebase 보안 규칙을 게시했는지 확인해 주세요. <a href="${gmailUrl}" target="_blank" rel="noopener noreferrer">Gmail 작성창으로 대신 보내기</a>`;
       showToast("피드백 저장에 실패했어요 · 화면의 오류를 확인해 주세요");
     }finally{button.disabled=false;button.textContent="피드백 보내기"}
   });
@@ -2545,6 +2549,9 @@ function bind(){
     render();showToast(copy);
   });
   $("[data-add-routine]")?.addEventListener("click",()=>openRoutineDialog("",newRoutineDraft()));
+  $$("[data-add-routine-day]").forEach(el=>el.addEventListener("click",()=>{
+    const draft=newRoutineDraft();draft.day=Math.max(0,Math.min(6,Number(el.dataset.addRoutineDay)||0));openRoutineDialog("",draft);
+  }));
   $("[data-add-monthly-routine]")?.addEventListener("click",()=>openMonthlyRoutineDialog("",newMonthlyRoutineDraft()));
   $("[data-add-anniversary]")?.addEventListener("click",()=>openAnniversaryDialog());
   $$("[data-routine-view]").forEach(el=>el.onclick=()=>{state.routineView=el.dataset.routineView==="monthly"?"monthly":"weekly";if(!state.routineMonth)state.routineMonth=currentMonthKey();save();render()});
@@ -3207,9 +3214,9 @@ function routineDestinationOptions(item){
     const town=state.towns.find(value=>value.id===home.townId);
     const residents=state.order.map(id=>state.characters[id]).filter(character=>character&&(character.homeId===home.id||(character.residences||[]).some(residence=>residence.homeId===home.id)));
     const owner=residents.map(character=>character.name).filter(Boolean).join(" · "),name=owner?`${owner}${labels.homeSuffix}`:(home.name||labels.homes);
-    return `<option value="home:${esc(home.id)}" ${current===`home:${home.id}`?"selected":""}>${esc(town?.name||"")} · ${esc(name)}</option>`;
+    return `<option value="home:${htmlEsc(home.id)}" ${current===`home:${home.id}`?"selected":""}>${htmlEsc(town?.name||"")} · ${htmlEsc(name)}</option>`;
   }).join("");
-  const placeOptions=state.towns.flatMap(town=>(town.id===state.activeTownId?state.world.places:town.places).map(place=>`<option value="place:${esc(place.id)}" ${current===`place:${place.id}`?"selected":""}>${esc(town.name)} · ${esc(place.name)}</option>`)).join("");
+  const placeOptions=state.towns.flatMap(town=>(town.id===state.activeTownId?state.world.places:town.places).map(place=>`<option value="place:${htmlEsc(place.id)}" ${current===`place:${place.id}`?"selected":""}>${htmlEsc(town.name)} · ${htmlEsc(place.name)}</option>`)).join("");
   return `<option value="" ${current?"":"selected"}>${labels.automatic}</option>${homeOptions?`<optgroup label="${labels.homes}">${homeOptions}</optgroup>`:""}${placeOptions?`<optgroup label="${labels.places}">${placeOptions}</optgroup>`:""}`;
 }
 function routineDestinationPatch(dialog){
@@ -3221,31 +3228,30 @@ function openRoutineDialog(id,draft=null){
   const c=active(),item=draft||state.routines[c.id]?.find(r=>r.id===id);if(!item)return;
   const isNew=Boolean(draft),seriesId=String(item.seriesId||item.id),series=isNew?[item]:(state.routines[c.id]||[]).filter(r=>String(r.seriesId||r.id)===seriesId),selectedDays=new Set(series.map(r=>Number(r.day)));
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog";
-  dialog.innerHTML=`<form method="dialog"><h2>주간 일정 편집</h2>
+  dialog.innerHTML=`<form><h2>주간 일정 편집</h2>
     <fieldset class="routine-day-picker"><legend>반복할 요일 · 여러 개 선택 가능</legend><div class="routine-day-presets"><button type="button" data-routine-day-preset="weekdays">평일</button><button type="button" data-routine-day-preset="weekend">주말</button><button type="button" data-routine-day-preset="everyday">매일</button><button type="button" data-routine-day-preset="clear">선택 해제</button></div><div class="routine-day-pills">${weekdayLabels().map((day,index)=>`<label><input type="checkbox" name="day" value="${index}" ${selectedDays.has(index)?"checked":""}><span>${day}</span></label>`).join("")}</div><small data-routine-day-summary>같은 시간과 내용의 일정을 선택한 모든 요일에 한 번에 적용해요.</small></fieldset>
     <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
-    <label>일정 이름<input name="title" value="${item.title.replace(/"/g,"&quot;")}"></label>
+    <label>일정 이름<input name="title" value="${htmlEsc(item.title)}"></label>
     <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>
     <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("")}</fieldset>
-    <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
-    <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+    <label>메모<textarea name="notes">${htmlEsc(item.notes||"")}</textarea></label>
+    <div><button type="button" data-routine-cancel>취소</button><button type="button" class="primary" data-routine-save>저장</button></div></form>`;
   const updateDaySummary=()=>{const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>weekdayLabels()[Number(input.value)]);dialog.querySelector('[data-routine-day-summary]').textContent=days.length?`선택됨: ${days.join(" · ")}`:"요일을 하나 이상 선택해 주세요."};
   dialog.querySelectorAll('[data-routine-day-preset]').forEach(button=>button.onclick=()=>{const preset=button.dataset.routineDayPreset,values=preset==="weekdays"?[1,2,3,4,5]:preset==="weekend"?[0,6]:preset==="everyday"?[0,1,2,3,4,5,6]:[];dialog.querySelectorAll('[name="day"]').forEach(input=>input.checked=values.includes(Number(input.value)));updateDaySummary()});
   dialog.querySelectorAll('[name="day"]').forEach(input=>input.onchange=updateDaySummary);
   updateDaySummary();translateDynamicInterface(dialog);document.body.append(dialog);
-  dialog.onclose=()=>{
-    if(dialog.returnValue==="save"){
-      const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
-      if(days.length){
-        if(isNew){state.routines[c.id]=Array.isArray(state.routines[c.id])?state.routines[c.id]:[];state.routines[c.id].push(item)}
-        updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
-      }
-      else showToast("일정을 적용할 요일을 하나 이상 골라 주세요");
-    }
-    dialog.remove();render();
+  let saved=false;
+  dialog.querySelector("[data-routine-cancel]").onclick=()=>dialog.close("cancel");
+  dialog.querySelector("[data-routine-save]").onclick=()=>{
+    const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
+    if(!days.length){showToast("일정을 적용할 요일을 하나 이상 골라 주세요");return}
+    if(isNew){state.routines[c.id]=Array.isArray(state.routines[c.id])?state.routines[c.id]:[];state.routines[c.id].push(item)}
+    saved=updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    if(saved)dialog.close("save");
   };
+  dialog.onclose=()=>{dialog.remove();if(saved)render()};
   dialog.showModal();
 }
 
@@ -3253,24 +3259,26 @@ function openMonthlyRoutineDialog(id,draft=null){
   const c=active(),item=draft||state.monthlyRoutines?.[c.id]?.find(r=>r.id===id);if(!item)return;
   const isNew=Boolean(draft);
   const dialog=document.createElement("dialog");dialog.className="relation-dialog routine-dialog monthly-routine-dialog";
-  dialog.innerHTML=`<form method="dialog"><h2>월간 일정 편집</h2>
+  dialog.innerHTML=`<form><h2>월간 일정 편집</h2>
     <label>날짜<input type="date" name="date" value="${item.date}"></label>
     <label>시작 시각<input type="time" name="start" value="${item.start}"></label>
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
-    <label>일정 이름<input name="title" value="${item.title.replace(/"/g,"&quot;")}"></label>
+    <label>일정 이름<input name="title" value="${htmlEsc(item.title)}"></label>
     <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>
     <fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}><span>${state.characters[cid].name}</span></label>`).join("")}</fieldset>
-    <label>메모<textarea name="notes">${item.notes||""}</textarea></label>
-    <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+    <label>메모<textarea name="notes">${htmlEsc(item.notes||"")}</textarea></label>
+    <div><button type="button" data-routine-cancel>취소</button><button type="button" class="primary" data-routine-save>저장</button></div></form>`;
   translateDynamicInterface(dialog);document.body.append(dialog);
-  dialog.onclose=()=>{
-    if(dialog.returnValue==="save"){
-      if(isNew){state.monthlyRoutines[c.id]=Array.isArray(state.monthlyRoutines[c.id])?state.monthlyRoutines[c.id]:[];state.monthlyRoutines[c.id].push(item)}
-      updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
-    }
-    dialog.remove();render();
+  let saved=false;
+  dialog.querySelector("[data-routine-cancel]").onclick=()=>dialog.close("cancel");
+  dialog.querySelector("[data-routine-save]").onclick=()=>{
+    if(!dialog.querySelector("[name=date]").value){showToast("날짜를 선택해 주세요");return}
+    if(isNew){state.monthlyRoutines[c.id]=Array.isArray(state.monthlyRoutines[c.id])?state.monthlyRoutines[c.id]:[];state.monthlyRoutines[c.id].push(item)}
+    updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    saved=true;dialog.close("save");
   };
+  dialog.onclose=()=>{dialog.remove();if(saved)render()};
   dialog.showModal();
 }
 
@@ -3278,7 +3286,7 @@ const ANNIVERSARY_TYPES=["첫 만남","연애 시작","결혼","가족이 된 �
 function openAnniversaryDialog(id=""){
   const existing=(state.anniversaries||[]).find(item=>item.id===id),item=existing||{id:newId(),date:"0101",type:"첫 만남",title:"",characterId:active().id,targetId:"",notes:""},dialog=document.createElement("dialog");
   dialog.className="relation-dialog routine-dialog anniversary-dialog";
-  dialog.innerHTML=`<form method="dialog"><h2>${existing?"기념일 편집":"기념일 추가"}</h2><label>날짜 · 매년 반복<input name="date" inputmode="numeric" maxlength="4" value="${esc(String(item.date||""))}" placeholder="예: 0521"></label><label>기념일 유형<select name="type">${ANNIVERSARY_TYPES.map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label><label>표시할 이름<input name="title" maxlength="80" value="${esc(item.title||"")}" placeholder="비우면 기념일 유형으로 표시"></label><label>연락을 보낼 캐릭터<select name="characterId">${state.order.map(characterId=>`<option value="${characterId}" ${item.characterId===characterId?"selected":""}>${esc(state.characters[characterId]?.name||"")}</option>`).join("")}</select></label><label>함께 기념할 캐릭터<select name="targetId"><option value="">선택하지 않음</option>${state.order.map(characterId=>`<option value="${characterId}" ${item.targetId===characterId?"selected":""}>${esc(state.characters[characterId]?.name||"")}</option>`).join("")}</select></label><label>메모<textarea name="notes">${esc(item.notes||"")}</textarea></label><div>${existing?'<button type="button" class="danger" data-delete-anniversary>삭제</button>':""}<button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><h2>${existing?"기념일 편집":"기념일 추가"}</h2><label>날짜 · 매년 반복<input name="date" inputmode="numeric" maxlength="4" value="${htmlEsc(String(item.date||""))}" placeholder="예: 0521"></label><label>기념일 유형<select name="type">${ANNIVERSARY_TYPES.map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label><label>표시할 이름<input name="title" maxlength="80" value="${htmlEsc(item.title||"")}" placeholder="비우면 기념일 유형으로 표시"></label><label>연락을 보낼 캐릭터<select name="characterId">${state.order.map(characterId=>`<option value="${characterId}" ${item.characterId===characterId?"selected":""}>${htmlEsc(state.characters[characterId]?.name||"")}</option>`).join("")}</select></label><label>함께 기념할 캐릭터<select name="targetId"><option value="">선택하지 않음</option>${state.order.map(characterId=>`<option value="${characterId}" ${item.targetId===characterId?"selected":""}>${htmlEsc(state.characters[characterId]?.name||"")}</option>`).join("")}</select></label><label>메모<textarea name="notes">${htmlEsc(item.notes||"")}</textarea></label><div>${existing?'<button type="button" class="danger" data-delete-anniversary>삭제</button>':""}<button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
   translateDynamicInterface(dialog);document.body.append(dialog);
   dialog.querySelector("[data-delete-anniversary]")?.addEventListener("click",()=>{if(confirm("이 기념일을 삭제하시겠습니까?")){state.anniversaries=(state.anniversaries||[]).filter(entry=>entry.id!==item.id);save(true);dialog.close("cancel")}});
   dialog.onclose=()=>{
@@ -4019,7 +4027,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260820homevisits1").catch(error=>{
+  import("./auth.js?v=20260821homeui1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4034,7 +4042,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260820homevisits1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260821homeui1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
