@@ -2333,6 +2333,8 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .game-hud-top{position:relative;grid-area:top;z-index:15;display:flex;align-items:flex-start;justify-content:space-between;gap:20px;min-width:0;text-shadow:0 2px 9px #000}
 .game-hud-top::before{content:"";position:absolute;z-index:-1;top:-24px;right:-28px;bottom:0;left:-28px;background:#654b3de8;clip-path:polygon(0 0,100% 0,100% 70%,52% 70%,48% 100%,0 100%)}
 .game-hud-top>time{padding:12px 4px;color:#fff;font-size:clamp(20px,2.1vw,32px);font-weight:900;white-space:nowrap}
+.game-hud-date{position:absolute;top:48px;right:4px;color:#ffffffd9;font-size:12px;font-weight:750;white-space:nowrap}
+.relation-dialog .relation-stay-together{align-items:flex-start;gap:10px}.relation-dialog .relation-stay-together>span{display:grid;gap:3px}.relation-dialog .relation-stay-together small{color:var(--muted);line-height:1.45}
 .game-hud-profile{position:relative;min-width:0}
 .game-hud-profile>summary{list-style:none}
 .game-hud-profile>summary::-webkit-details-marker{display:none}
@@ -6482,6 +6484,10 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top>time{
   position:absolute!important;top:5.55dvh!important;right:3.1vw!important;margin:0!important;padding:0!important;color:#fff4d7!important;
   font-family:var(--home-ui-font)!important;font-size:clamp(13px,3.6vw,17px)!important;font-weight:400!important;line-height:1!important;text-shadow:0 2px 3px #2a160dcc!important
+}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-date{
+  position:absolute!important;top:7.35dvh!important;right:3.1vw!important;margin:0!important;padding:0!important;color:#fff4d7!important;
+  font-family:var(--home-ui-font)!important;font-size:clamp(9px,2.55vw,12px)!important;font-weight:400!important;line-height:1!important;text-shadow:0 2px 3px #2a160dcc!important;white-space:nowrap!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage{
   position:absolute!important;z-index:7!important;left:18.45vw!important;right:18.45vw!important;top:13.1dvh!important;height:49.4dvh!important;
