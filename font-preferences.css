@@ -7,5 +7,8 @@
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 B.ttf") format("truetype");font-weight:700 900;font-display:swap}
 @font-face{font-family:"GriunSimsimche";src:url("./fonts/GriunSimsimche-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"KCCHanbit";src:url("./fonts/KCC-Hanbit.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"KoPubWorldBatangPro";src:url("./fonts/KoPubWorldBatangPro-Light.otf") format("opentype");font-weight:300;font-style:normal;font-display:swap}
+@font-face{font-family:"KoPubWorldBatangPro";src:url("./fonts/KoPubWorldBatangPro-Bold.otf") format("opentype");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"PuradakGentleGothic";src:url("./fonts/PuradakGentleGothic.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
 :root{--ui-font:"KCCHanbit",system-ui,-apple-system,"Segoe UI",sans-serif}
 html,body,button,input,select,textarea{font-family:var(--ui-font)}

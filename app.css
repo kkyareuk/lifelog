@@ -555,7 +555,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
   color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -652,7 +652,7 @@ html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationsh
   color:var(--ink)!important;
 }
 html[data-color-mode] :is(input,select,textarea),
-html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon){
+html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -5874,7 +5874,7 @@ html[data-color-mode="dark"] :is(.character-editor>.form,.desktop-character-edit
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(p,small,em){color:#c1cfdd!important;-webkit-text-fill-color:#c1cfdd!important}
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(input,select,textarea),
-html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) button:not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon){border-color:#3a5068!important;background:#1c3047!important;color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important;color-scheme:dark}
+html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) button:not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add){border-color:#3a5068!important;background:#1c3047!important;color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important;color-scheme:dark}
 html[data-color-mode="dark"] .character-menu button.on,
 html[data-color-mode="dark"] .character-file-actions .primary,
 html[data-color-mode="dark"] .relationship-pair-core>button.primary,
@@ -6452,11 +6452,11 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top::before{
   position:absolute!important;z-index:-1!important;left:0!important;right:0!important;top:2.4dvh!important;width:100%!important;height:6.22dvh!important;content:""!important;
-  background-color:#5c4234!important;background-image:var(--home-ui-wood-top,url("./assets/home-ui/wood-top.png"))!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;clip-path:none!important
+  background-color:#5c4234!important;background-image:var(--home-ui-wood-top,url("./assets/home-ui/wood-top.png"))!important;background-position:center bottom!important;background-size:cover!important;background-repeat:no-repeat!important;clip-path:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top::after{
   position:absolute!important;z-index:0!important;left:0!important;right:0!important;top:0!important;width:100%!important;height:2.4dvh!important;content:""!important;
-  background-color:#493326!important;background-image:var(--home-ui-wood-strip,url("./assets/home-ui/wood-strip.png"))!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;pointer-events:none!important
+  background-color:#493326!important;background-image:var(--home-ui-wood-strip,url("./assets/home-ui/wood-strip.png"))!important;background-position:center bottom!important;background-size:cover!important;background-repeat:no-repeat!important;pointer-events:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile{
   position:absolute!important;left:1.7vw!important;top:3.38dvh!important;width:min(76vw,360px)!important;height:min(9.6dvh,94px)!important;pointer-events:auto!important
@@ -6548,7 +6548,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right button>small{top:5.02dvh!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{
   position:absolute!important;z-index:27!important;left:7.04vw!important;top:auto!important;bottom:15.38dvh!important;width:85.19vw!important;height:21.26dvh!important;max-height:none!important;max-width:none!important;
-  margin:0!important;padding:clamp(13px,3.7vw,18px)!important;overflow:visible!important;border:1.5px solid #000!important;border-radius:30px!important;
+  box-sizing:border-box!important;margin:0!important;padding:2.45dvh 7.28vw 2.1dvh!important;overflow:visible!important;border:1.5px solid #000!important;border-radius:30px!important;
   background:#fff8efed!important;box-shadow:0 5px 18px #2b160d35!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment-head{
@@ -6561,7 +6561,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   font-family:var(--home-ui-font)!important;font-size:clamp(18px,5.2vw,24px)!important;font-weight:400!important;line-height:1!important;letter-spacing:0!important;-webkit-text-stroke:1.5px #000!important;paint-order:stroke fill!important;text-shadow:0 2px 3px #000b!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment-head>.game-hud-moment-toggle{
-  position:relative!important;top:.72dvh!important;pointer-events:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:0!important;min-width:17.2vw!important;height:4.15dvh!important;padding:0 9px 2px!important;
+  position:relative!important;top:.72dvh!important;margin-left:auto!important;pointer-events:auto!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:0!important;min-width:17.2vw!important;height:4.15dvh!important;padding:0 9px 2px!important;
   border:0!important;border-radius:0!important;background-color:transparent!important;background-image:var(--home-ui-red-tape,url("./assets/home-ui/red-tape.png"))!important;background-position:center!important;background-size:100% 100%!important;background-repeat:no-repeat!important;color:#fff3df!important;box-shadow:none!important;
   font:inherit!important;font-size:clamp(12px,3.55vw,16px)!important;line-height:1!important;text-shadow:0 1px 1px #45160f!important;transform:rotate(2.5deg)!important
 }
@@ -6586,7 +6586,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment.expanded{
   top:auto!important;bottom:15.38dvh!important;height:auto!important;max-height:34dvh!important;overflow:visible!important
 }
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment.expanded .game-hud-moment-body{display:block!important;height:auto!important;max-height:calc(34dvh - 2 * clamp(13px,3.7vw,18px))!important;overflow-y:auto!important;overscroll-behavior:contain!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment.expanded .game-hud-moment-body{display:block!important;height:auto!important;max-height:29dvh!important;overflow-y:auto!important;overscroll-behavior:contain!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment.expanded :is(h1,p){display:block!important;overflow:visible!important;text-overflow:clip!important;white-space:normal!important;-webkit-line-clamp:unset!important;line-clamp:unset!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment.expanded p{margin-top:.75dvh!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment.expanded .game-hud-location{margin-top:1.05dvh!important}
@@ -6625,7 +6625,7 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
   animation:native-picker-aura 2.2s ease-in-out infinite alternate!important
 }
 @media(max-width:380px),(max-height:720px){
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{padding:10px 12px!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{padding:2.1dvh 6.7vw 1.8dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment:not(.expanded) p{-webkit-line-clamp:4!important;line-clamp:4!important}
 }
 
@@ -7026,24 +7026,97 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   }
 }
 
-/* 캐릭터 러프 시안은 선택한 전역 테마와 무관하게 한 장의 종이 UI로 유지한다. */
+/* 캐릭터 모바일 화면: 제공된 412×917 카드지갑 SVG의 좌표와 에셋을 기준으로 구성한다. */
 @media(max-width:720px){
-  html.native-app[data-active-tab="character"] .mobile-character-profile-draft>header{
-    background:#493326 url("./assets/home-ui/wood-strip.png") center/100% 100% no-repeat!important;
-    color:#fff0ca!important;-webkit-text-fill-color:#fff0ca!important
+  html.native-app[data-active-tab="character"] .native-sub-header{display:none!important}
+  html.native-app[data-active-tab="character"] :is(body,#app,#app>main){height:100dvh!important;max-height:100dvh!important;overflow:hidden!important}
+  html.native-app[data-active-tab="character"] :is(#app,#app>main,.character-editor,.character-editor>.form){
+    min-height:100dvh!important;background:#eee7d7!important
   }
-  html.native-app[data-active-tab="character"] .character-draft-sheet,
-  html.native-app[data-active-tab="character"] .character-draft-sheet :is(strong,small,dt,dd){
-    color:#302219!important;-webkit-text-fill-color:#302219!important
+  html.native-app[data-active-tab="character"] .mobile-character-dashboard{
+    position:relative!important;display:grid!important;grid-template-rows:51.5dvh minmax(0,46dvh)!important;
+    gap:0!important;width:100vw!important;min-height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;
+    background:#eee7d7 url("./assets/character-ui/paper.png") center/cover no-repeat!important;color:#241b17!important
   }
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(1){background:#b95043!important}
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(2){background:#c98946!important}
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(3){background:#ded969!important}
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(4){background:#a9c674!important}
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(5){background:#78b5ca!important}
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(6){background:#8d78bd!important}
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon,
-  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon :is(b,span){
-    color:#251a15!important;-webkit-text-fill-color:#251a15!important
+  html.native-app[data-active-tab="character"] .mobile-character-profile-draft{
+    position:relative!important;display:block!important;height:51.5dvh!important;margin:0!important;padding:0!important;overflow:visible!important;border:0!important;background:transparent!important
   }
+  html.native-app[data-active-tab="character"] .character-draft-back{
+    position:absolute!important;z-index:12!important;left:2.91vw!important;top:5.56dvh!important;width:19.42vw!important;height:8.72dvh!important;padding:0!important;
+    border:0!important;background:transparent url("./assets/character-ui/back.png") center/contain no-repeat!important;box-shadow:none!important
+  }
+  html.native-app[data-active-tab="character"] .character-wallet-art{
+    position:absolute!important;z-index:1!important;left:-24.51vw!important;top:11.18dvh!important;width:135.18vw!important;height:41.47dvh!important;
+    transform:rotate(-9.874deg)!important;transform-origin:0 0!important;background:url("./assets/character-ui/wallet.png") center/100% 100% no-repeat!important;pointer-events:none!important
+  }
+  html.native-app[data-active-tab="character"] .character-wallet-selected{
+    position:absolute!important;z-index:14!important;left:2.91vw!important;top:16.03dvh!important;display:block!important;width:19.42vw!important;height:10.47dvh!important;padding:0!important;
+    overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important
+  }
+  html.native-app[data-active-tab="character"] .character-wallet-selected>span{
+    display:grid!important;place-items:center!important;width:19.42vw!important;height:8.72dvh!important;overflow:hidden!important;background:#c7c7c7!important
+  }
+  html.native-app[data-active-tab="character"] .character-wallet-selected img{width:100%!important;height:100%!important;object-fit:contain!important;background:transparent!important}
+  html.native-app[data-active-tab="character"] .character-wallet-selected>b{
+    position:absolute!important;left:.85vw!important;top:7.69dvh!important;display:grid!important;place-items:center!important;width:17.72vw!important;height:2.29dvh!important;
+    border:1.5px solid #1b1310!important;border-radius:999px!important;background:#5a4031!important;color:#fff4d6!important;-webkit-text-fill-color:#fff4d6!important;
+    font:400 clamp(9px,2.7vw,12px)/1 "PuradakGentleGothic",sans-serif!important
+  }
+  html.native-app[data-active-tab="character"] .character-registration-card{
+    position:absolute!important;z-index:4!important;left:-5.02vw!important;top:17.64dvh!important;width:100.66vw!important;height:28.78dvh!important;
+    transform:rotate(-9.874deg)!important;transform-origin:0 0!important;background:url("./assets/character-ui/registration-card.png") center/100% 100% no-repeat!important;color:#241b17!important
+  }
+  html.native-app[data-active-tab="character"] .character-registration-photo{
+    position:absolute!important;left:10.75%!important;top:17.3%!important;display:grid!important;place-items:center!important;width:32.3%!important;height:69.1%!important;overflow:hidden!important
+  }
+  html.native-app[data-active-tab="character"] .character-registration-photo img{width:100%!important;height:100%!important;object-fit:cover!important}
+  html[data-color-mode].native-app[data-active-tab="character"] .character-registration-photo span{padding:8px!important;color:#241b17!important;-webkit-text-fill-color:#241b17!important;font:300 clamp(10px,3vw,15px)/1.6 "KoPubWorldBatangPro",serif!important;text-align:center!important;word-break:keep-all!important}
+  html.native-app[data-active-tab="character"] .character-registration-fields{
+    position:absolute!important;left:47.5%!important;top:11%!important;width:46%!important;height:76%!important;font-family:"KoPubWorldBatangPro",serif!important
+  }
+  html[data-color-mode].native-app[data-active-tab="character"] .character-registration-fields h2{display:block!important;min-height:0!important;margin:0 0 4.5%!important;padding:0!important;color:#241b17!important;-webkit-text-fill-color:#241b17!important;font-size:clamp(13px,4vw,18px)!important;font-weight:700!important;line-height:1.1!important;letter-spacing:-.03em!important;white-space:nowrap!important}
+  html.native-app[data-active-tab="character"] .character-registration-fields dl{display:grid!important;gap:.4dvh!important;margin:0!important;padding:0!important}
+  html.native-app[data-active-tab="character"] .character-registration-fields dl>div{display:grid!important;grid-template-columns:minmax(48px,.75fr) minmax(0,1.65fr)!important;align-items:end!important;gap:4px!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important}
+  html[data-color-mode].native-app[data-active-tab="character"] .character-registration-fields :is(dt,dd){min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;color:#241b17!important;-webkit-text-fill-color:#241b17!important;font-size:clamp(8px,2.45vw,11px)!important;line-height:1.25!important}
+  html.native-app[data-active-tab="character"] .character-registration-fields dt{font-weight:700!important;white-space:nowrap!important}
+  html[data-color-mode].native-app[data-active-tab="character"] .character-registration-fields dd{padding:0 2px 2px!important;overflow:hidden!important;border-bottom:1px solid #3e332d!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+  html.native-app[data-active-tab="character"] .character-draft-actions{
+    position:absolute!important;z-index:15!important;left:3.2vw!important;right:3.2vw!important;top:47.3dvh!important;display:grid!important;grid-template-columns:1.18fr .93fr .93fr!important;gap:4vw!important;transform:rotate(-9.874deg)!important;transform-origin:0 0!important
+  }
+  html.native-app[data-active-tab="character"] .character-draft-actions button{
+    min-width:0!important;height:2.4dvh!important;min-height:22px!important;padding:0 5px!important;border:1.5px solid #130d0b!important;border-radius:999px!important;
+    background:#30241f!important;color:#fff8e7!important;-webkit-text-fill-color:#fff8e7!important;box-shadow:none!important;font:400 clamp(8px,2.35vw,11px)/1 "PuradakGentleGothic",sans-serif!important;white-space:nowrap!important
+  }
+  html.native-app[data-active-tab="character"] .character-draft-actions button.danger{background:#30241f!important;color:#fff8e7!important;-webkit-text-fill-color:#fff8e7!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster{
+    position:absolute!important;z-index:30!important;left:4vw!important;right:4vw!important;top:26.7dvh!important;padding:8px!important;border:2px solid #2a1d17!important;border-radius:15px!important;background:#fff9e9f2!important;box-shadow:0 12px 30px #24160d66!important
+  }
+  html.native-app[data-active-tab="character"] .character-wallet-roster[hidden]{display:none!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster>span{display:flex!important;justify-content:flex-end!important;gap:6px!important;margin-top:6px!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster>span button{min-height:32px!important;padding:5px 10px!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid{
+    position:relative!important;display:grid!important;grid-template-rows:repeat(6,minmax(0,1fr))!important;align-self:stretch!important;gap:0!important;width:100vw!important;height:46dvh!important;margin:0!important;padding:0!important;overflow:visible!important
+  }
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon{
+    position:relative!important;display:grid!important;place-items:center!important;width:123.3vw!important;min-height:0!important;margin-left:-7vw!important;padding:0 13vw!important;overflow:visible!important;
+    border:0!important;border-radius:0!important;clip-path:none!important;background-color:transparent!important;background-position:center!important;background-size:100% 100%!important;background-repeat:no-repeat!important;box-shadow:none!important;
+    color:#241b17!important;-webkit-text-fill-color:#241b17!important;font-family:"PuradakGentleGothic",sans-serif!important;transform-origin:50% 50%!important
+  }
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(1){background-image:url("./assets/character-ui/ribbon-profile.png")!important;transform:rotate(-5.87deg)!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(2){background-image:url("./assets/character-ui/ribbon-body.png")!important;transform:rotate(-3.65deg)!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(3){background-image:url("./assets/character-ui/ribbon-personality.png")!important;transform:rotate(-4.09deg)!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(4){background-image:url("./assets/character-ui/ribbon-taste.png")!important;transform:rotate(-1.39deg)!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(5){background-image:url("./assets/character-ui/ribbon-world.png")!important;transform:rotate(-3.1deg)!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon:nth-child(6){background-image:url("./assets/character-ui/ribbon-manage.png")!important;transform:rotate(-5.77deg)!important}
+  html[data-color-mode].native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon>b{color:#241b17!important;-webkit-text-fill-color:#241b17!important;font-size:clamp(18px,5.3vw,24px)!important;font-weight:400!important;line-height:1!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon>small{display:none!important}
+  html.native-app[data-active-tab="character"] .mobile-character-pane-grid .character-pane-ribbon.on{outline:0!important;filter:brightness(1.08) saturate(1.08)!important}
+  html.native-app[data-active-tab="character"] .character-pane-add{
+    position:absolute!important;z-index:8!important;left:2.91vw!important;bottom:1.1dvh!important;width:19.42vw!important;height:8.72dvh!important;padding:0!important;border:0!important;
+    background:transparent url("./assets/character-ui/add.png") center/contain no-repeat!important;box-shadow:none!important
+  }
+  html.native-app[data-active-tab="character"] .birthday-parts{display:grid!important;grid-template-columns:1fr 1fr!important;gap:8px!important;min-width:0!important;margin:0!important;padding:9px!important;border:1px solid var(--line)!important;border-radius:12px!important}
+  html.native-app[data-active-tab="character"] .birthday-parts legend{padding:0 4px!important;font-weight:800!important}
+  html.native-app[data-active-tab="character"] .birthday-parts label{display:grid!important;gap:4px!important}
+  html.native-app[data-active-tab="character"] .birthday-parts small{grid-column:1/-1!important}
 }

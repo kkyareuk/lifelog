@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260822hudtheme9";
-import {eventFor,forceCharactersHome} from "./simulation.js?v=20260822hudtheme9";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260822hudtheme9";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260822hudtheme9";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260822hudtheme9";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260822hudtheme9";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260822hudtheme9";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260822characterwallet1";
+import {eventFor,forceCharactersHome} from "./simulation.js?v=20260822characterwallet1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260822characterwallet1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260822characterwallet1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260822characterwallet1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260822characterwallet1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260822characterwallet1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -426,8 +426,25 @@ async function exportProfilePngV2(character,download=true){
   ctx.save();ctx.translate(stampX,stampY);ctx.rotate(-.12);ctx.strokeStyle="#b31f24";ctx.fillStyle="#b31f24";ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,0,57,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,46,0,Math.PI*2);ctx.stroke();ctx.textAlign="center";ctx.font=`700 20px ${bodyStack}`;ctx.fillText("서 랍 도 시",0,-5);ctx.font=`700 16px ${bodyStack}`;ctx.fillText("기 록 인",0,22);ctx.restore();
   ctx.fillStyle="#333";ctx.textAlign="left";ctx.font=`17px ${bodyStack}`;ctx.fillText("위 인물의 등록사항을 서랍마을 기록 기준에 따라 증명합니다.",pad,canvas.height-122);
   ctx.fillText("※ 사용자가 직접 설정한 항목만 기록하며, 미설정 항목은 임의로 추정하지 않습니다.",pad,canvas.height-86);
-  if(download)try{const link=document.createElement("a");link.download=`${character.name}-서랍마을-등록사항증명서.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
+  if(download)await saveProfileCanvas(canvas,character,"png");
   return canvas;
+}
+const safeExportFilename=value=>String(value||"character").replace(/[\\/:*?"<>|]/g,"-").trim()||"character";
+async function saveProfileCanvas(canvas,character,format="png"){
+  const base=`${safeExportFilename(character.name)}-서랍마을-등록사항증명서`;
+  const data=canvas.toDataURL("image/png");
+  const nativePlugin=window.Capacitor?.Plugins?.ProfileExport;
+  if(window.Capacitor?.isNativePlatform?.()&&nativePlugin){
+    if(format==="pdf")await nativePlugin.savePdf({filename:`${base}.pdf`,data});
+    else await nativePlugin.savePng({filename:`${base}.png`,data});
+    showToast(format==="pdf"?"다운로드 폴더에 PDF를 저장했어요":"사진의 DrawerVillage 폴더에 PNG를 저장했어요");
+    return;
+  }
+  if(format==="pdf")throw new Error("browser-pdf");
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error("이미지 파일을 만들지 못했습니다.")),"image/png"));
+  const url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.download=`${base}.png`;link.href=url;link.hidden=true;document.body.append(link);link.click();
+  setTimeout(()=>{link.remove();URL.revokeObjectURL(url)},1500);
 }
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
@@ -436,6 +453,11 @@ function exportProfilePdf(character){
   win.document.close();setTimeout(()=>win.print(),900);
 }
 async function exportProfilePdfV2(character,bodyFont){
+  if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.ProfileExport){
+    const canvas=await exportProfilePngV2(character,false,bodyFont);
+    await saveProfileCanvas(canvas,character,"pdf");
+    return;
+  }
   const win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
   win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>프로필 준비 중</title></head><body style="font-family:sans-serif;padding:30px">프로필을 만드는 중이에요…</body></html>');
   try{
@@ -446,8 +468,18 @@ async function exportProfilePdfV2(character,bodyFont){
 function openProfileExportDialog(){
   const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>한글이 깨지지 않는 기본 글꼴로 관공서 제출 서류처럼 만들고, 아래에 서랍마을 기록 도장을 찍어요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-export-format="png"><b>PNG 증명서</b><small>이미지 파일로 바로 저장</small></button><button type="button" data-export-format="pdf"><b>PDF 증명서</b><small>같은 문서를 PDF로 저장·인쇄</small></button></div></form>`;
-  dialog.querySelector('[data-export-format="png"]').onclick=()=>{exportProfilePngV2(character,true);dialog.close()};
-  dialog.querySelector('[data-export-format="pdf"]').onclick=()=>{exportProfilePdfV2(character);dialog.close()};
+  dialog.querySelectorAll("[data-export-format]").forEach(button=>button.onclick=async()=>{
+    dialog.querySelectorAll("button").forEach(value=>value.disabled=true);
+    try{
+      if(button.dataset.exportFormat==="png")await exportProfilePngV2(character,true);
+      else await exportProfilePdfV2(character);
+      dialog.close();
+    }catch(error){
+      console.error("프로필 내보내기 실패",error);
+      showToast(error?.message||"프로필 파일을 저장하지 못했어요");
+      dialog.querySelectorAll("button").forEach(value=>value.disabled=false);
+    }
+  });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 function enhanceCatalogCards(root=document){
@@ -523,11 +555,6 @@ function enhanceDynamicForms(){
       if(job&&gender&&orientation)job.before(gender,...(speech?[speech]:[]),orientation);
       if(job&&jobTitle)job.after(jobTitle);
       if(income&&wealth)income.before(wealth);
-      if(workplace&&!profile.querySelector('[data-field="birthday"]')){
-        const birthday=document.createElement("label");
-        birthday.innerHTML=`생일 · 월일<input type="text" inputmode="numeric" maxlength="4" pattern="(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])" data-field="birthday" value="${active().birthday||""}" placeholder="예: 0804"><small>연도 없이 네 자리로 입력해요. 생일파티는 당일 오후 7시에 생성돼요.</small>`;
-        workplace.after(birthday);
-      }
       const license=profile.querySelector('input[data-character-check][data-field="driverLicense"]')?.closest("label");
       if(license)fields.append(license);
       const exportButton=profile.querySelector("[data-export-profile]");
@@ -1079,6 +1106,18 @@ function syncOpenCharacterEditorDraft(){
   dialog.querySelectorAll("[data-personality-field]").forEach(element=>{
     patch[element.dataset.personalityField]=element.value;
   });
+  const birthMonthControl=dialog.querySelector('[data-birthday-part="month"]');
+  const birthDayControl=dialog.querySelector('[data-birthday-part="day"]');
+  if(birthMonthControl||birthDayControl){
+    const birthMonth=birthMonthControl?.value||"";
+    let birthDay=birthDayControl?.value||"";
+    if(birthMonth&&birthDay){
+      const lastDay=new Date(2000,Number(birthMonth),0).getDate();
+      birthDay=String(Math.min(Number(birthDay),lastDay)).padStart(2,"0");
+      if(birthDayControl)birthDayControl.value=birthDay;
+    }
+    patch.birthday=birthMonth&&birthDay?`${birthMonth}${birthDay}`:"";
+  }
   const traitNotes=dialog.querySelector("[data-trait-notes]");
   if(traitNotes)patch.traitNotes=traitNotes.value.slice(0,1200);
   const bodyFields=[...dialog.querySelectorAll("[data-body-field]")];
@@ -1706,6 +1745,12 @@ function bind(){
     render();
     requestAnimationFrame(()=>{const strip=document.querySelector(".mobile-character-strip");if(strip)strip.scrollLeft=mobileCharacterStripScroll});
   });
+  $$("[data-toggle-character-roster]").forEach(el=>el.onclick=()=>{
+    const roster=document.querySelector("[data-character-roster]");
+    if(!roster)return;
+    roster.hidden=!roster.hidden;
+    el.setAttribute("aria-expanded",String(!roster.hidden));
+  });
   $$("[data-open-character-pane]").forEach(el=>el.onclick=()=>{
     state.characterPane=el.dataset.openCharacterPane;
     mobileCharacterEditorPane=state.characterPane;
@@ -2110,6 +2155,19 @@ function bind(){
       if(isMobileCharacterDraftControl(el))save(false,false);
     });
   });
+  $$("[data-birthday-part]").forEach(el=>el.addEventListener("change",()=>{
+    const scope=el.closest("[data-mobile-character-editor-dialog]")||document;
+    const month=scope.querySelector('[data-birthday-part="month"]')?.value||"";
+    const dayControl=scope.querySelector('[data-birthday-part="day"]');
+    let day=dayControl?.value||"";
+    if(month&&day){
+      const lastDay=new Date(2000,Number(month),0).getDate();
+      day=String(Math.min(Number(day),lastDay)).padStart(2,"0");
+      if(dayControl)dayControl.value=day;
+    }
+    updateCharacter(active().id,{birthday:month&&day?`${month}${day}`:""},false);
+    if(!markMobileCharacterDraft(el))save(true);
+  }));
   $$("[data-color]").forEach(el=>el.oninput=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);
@@ -4075,7 +4133,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260822hudtheme9").catch(error=>{
+  import("./auth.js?v=20260822characterwallet1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4090,7 +4148,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260822hudtheme9",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260822characterwallet1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

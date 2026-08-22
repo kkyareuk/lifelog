@@ -220,7 +220,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
 }
 
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;

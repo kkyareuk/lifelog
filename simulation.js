@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260822hudtheme9";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260822hudtheme9";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260822characterwallet1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260822characterwallet1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2548,7 +2548,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260820-scene-occupancy2";
+const ENGINE_VERSION="20260822-shared-scene-integrity3";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2677,7 +2677,15 @@ function cleanLegacyDateEntries(entries){
   });
 }
 function cleanSelfCompanionEntries(c,entries){
-  return entries.filter(item=>item?.withId!==c.id);
+  const ownName=String(c?.name||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const selfScene=ownName?new RegExp(`(?:${ownName})(?:이|가)?\\s*(?:${ownName})(?:와|과|에게|랑|하고)`):null;
+  return entries.filter(item=>item?.withId!==c.id&&!selfScene?.test(`${item?.title||""} ${item?.desc||""}`)).map(item=>{
+    const withIds=[...new Set((item.withIds||[]).filter(id=>id&&id!==c.id&&state.characters[id]))];
+    const participantOrder=[...new Set((item.participantOrder||[]).filter(id=>id&&state.characters[id]))];
+    const withId=item.withId&&item.withId!==c.id&&state.characters[item.withId]?item.withId:withIds[0];
+    if(item.groupInteraction&&!withId&&!withIds.length)return {...item,withId:undefined,withIds:[],participantOrder:participantOrder.filter(id=>id===c.id),groupInteraction:false,interactionId:undefined};
+    return {...item,withId,withIds,participantOrder};
+  });
 }
 function cleanCharacterBreakingCheeringEntries(entries){
   // 초기 스크립트 팩에 있던 막연한 “하루를 응원” 문장은 상대별 시선과 무관하게
@@ -3864,7 +3872,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       if(!owner||owner.id===c.id)return null;
       const ownerEvent=baseEventFor(owner,date);
       if(sceneIsSleeping(current)!==sceneIsSleeping(ownerEvent))return null;
-      return namedSharedPartner(ownerEvent,owner)?.id===c.id?{owner,event:ownerEvent}:null;
+      return namedSharedPartner(ownerEvent,owner)?.id===c.id&&sameLiveLocation(ownerEvent,current)?{owner,event:ownerEvent}:null;
     }).find(Boolean);
     if(incomingShared){
       current=counterpartSourceEvent(incomingShared.event,incomingShared.owner,c);
@@ -3887,7 +3895,20 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   // 최초 사건의 상대를 고정한다. 그렇지 않으면 같은 방에 세 명 이상 있을 때
   // 상대 화면만 다른 사람과의 장면으로 갈라질 수 있다.
   const explicitSharedPartner=sharedContext?.interactionId&&forcedPartner&&!current.dateGroup?forcedPartner:null;
-  const explicitCurrentPartner=!current.dateGroup?namedSharedPartner(current,c):null;
+  const namedCurrentPartner=!current.dateGroup?namedSharedPartner(current,c):null;
+  const namedPartnerIsPresent=namedCurrentPartner&&sameLiveLocation(current,baseEventFor(namedCurrentPartner,date));
+  // An old/generated sentence can name somebody who is currently in another
+  // room or town. Never keep that claim: show a neutral solo continuation at
+  // the actor's real location until both base timelines place them together.
+  if(namedCurrentPartner&&!namedPartnerIsPresent){
+    const soloCopy={
+      en:{title:"Focusing on their own activity",desc:"They continue what they started here at their own pace."},
+      ja:{title:"ひとりの作業に集中しているところ",desc:"今いる場所で始めたことを、自分のペースで続けています。"},
+      ko:{title:"혼자 하던 일에 집중하는 중",desc:"현재 머무는 곳에서 방금 시작한 일을 자기 속도에 맞춰 이어 가고 있어요."}
+    }[state.uiLanguage]||{title:"혼자 하던 일에 집중하는 중",desc:"현재 머무는 곳에서 방금 시작한 일을 자기 속도에 맞춰 이어 가고 있어요."};
+    current={...current,...soloCopy,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined};
+  }
+  const explicitCurrentPartner=namedPartnerIsPresent?namedCurrentPartner:null;
   if(explicitDatePartner&&current.dateGroup&&current.withId!==explicitDatePartner.id)current={...current,withId:explicitDatePartner.id,withIds:[explicitDatePartner.id]};
   // 날짜와 상대가 정해진 데이트에는 같은 장소에 우연히 있던 제3자를 끼우지 않는다.
   // 일반 장면에서만 현재 방/장소가 같은 인물을 공동 장면 후보로 삼는다.
@@ -3999,7 +4020,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     (isHomeScene?currentHomeId:current.placeId)||"scene",
     current.room||""
   ].join(":");
-  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,combinedDesc))),withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
+  const sharedActionText=cleanRepeatedSceneText(`${scene.title||""} ${scene.first||""} ${scene.second||""}`);
+  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,combinedDesc))),sharedActionText,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 export function eventFor(c,date=new Date()){
   const baseCurrent=baseEventFor(c,date);
