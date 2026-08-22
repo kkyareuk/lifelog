@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822characterui7";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822characterui7";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822schedulecompanion2";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822schedulecompanion2";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -370,6 +370,7 @@ function normalizeHomes(x){
     }
     relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
     relation.interactionsAll=Boolean(relation.interactionsAll);
+    relation.stayTogether=Boolean(relation.stayTogether);
     relation.temporalStatus=relation.temporalStatus==="past"?"past":"current";
     relation.faultParty=relation.temporalStatus==="past"?String(relation.faultParty||""):"";
     relation.faultReason=relation.temporalStatus==="past"?String(relation.faultReason||"정하지 않음"):"";
