@@ -3874,12 +3874,29 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
 
 /* Character groups are separate from official relationship groups. */
 .character-group-manager{display:grid;gap:12px;padding:16px;border:1px solid var(--line);border-radius:20px;background:color-mix(in srgb,var(--panel) 88%,transparent)}
-.character-group-manager>.title{align-items:flex-end}.character-group-manager>.title span{display:grid;gap:3px}.character-group-manager>.title h2,.character-group-manager>.title p{margin:0}
+.character-group-manager>.title{align-items:flex-end}.character-group-manager>.title span{display:grid;gap:3px;min-width:0}.character-group-manager>.title h2,.character-group-manager>.title p{margin:0}
 .character-group-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:9px}
-.character-group-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
-.character-group-card>div{display:flex}.character-group-card .avatar,.character-group-card .sprite{width:34px;height:34px;margin-right:-8px;border:2px solid var(--panel)}
-.character-group-card>span{display:grid;min-width:0}.character-group-card small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.character-group-card button{padding:7px 9px}.character-group-dialog{width:min(520px,calc(100vw - 24px))}.character-group-dialog form{display:grid;gap:13px}.character-group-dialog .group-members{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.character-group-dialog .group-members label{display:flex;align-items:center;gap:7px}
+.character-group-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:15px;background:var(--panel)}
+.character-group-avatars{display:flex;align-items:center;min-width:42px}.character-group-card .avatar,.character-group-card .sprite{width:34px;height:34px;margin-right:-8px;border:2px solid var(--panel)}
+.character-group-copy{display:grid;min-width:0}.character-group-copy b{overflow-wrap:anywhere}.character-group-copy small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.character-group-actions{display:flex;justify-content:flex-end;gap:6px}.character-group-actions button{padding:7px 9px;white-space:nowrap}
+.character-group-dialog{width:min(520px,calc(100vw - 24px))}.character-group-dialog form{display:grid;gap:13px}.character-group-dialog .group-members{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.character-group-dialog .group-members label{display:flex;align-items:center;gap:7px}
+@media(max-width:720px){
+  .character-group-manager{gap:10px;padding:12px;border-radius:18px}
+  .character-group-manager>.title{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px}
+  .character-group-manager>.title small{font-size:10px;letter-spacing:.04em}
+  .character-group-manager>.title h2{font-size:clamp(24px,7.2vw,30px);line-height:1.16}
+  .character-group-manager>.title p{font-size:13px;line-height:1.48;word-break:keep-all}
+  .character-group-manager>.title>button{align-self:end;width:88px;min-height:56px;padding:8px 7px;font-size:13px;line-height:1.25;white-space:normal}
+  .character-group-grid{grid-template-columns:minmax(0,1fr);gap:8px}
+  .character-group-card{grid-template-columns:auto minmax(0,1fr);grid-template-areas:"avatars copy" "actions actions";gap:6px 10px;padding:10px 11px}
+  .character-group-avatars{grid-area:avatars;max-width:112px;padding-right:6px}
+  .character-group-copy{grid-area:copy;align-self:center}
+  .character-group-copy b{font-size:18px;line-height:1.25;word-break:keep-all}
+  .character-group-copy small{font-size:13px;line-height:1.35}
+  .character-group-actions{grid-area:actions}
+  .character-group-actions button{min-width:68px;min-height:36px;padding:6px 10px;font-size:13px}
+}
 
 @media(min-width:721px){
   .routine-sheet-backdrop{position:fixed;z-index:2200;inset:0;display:flex;align-items:flex-end;justify-content:center;background:#111a;opacity:0;transition:opacity .24s ease}
@@ -5468,11 +5485,12 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
   html.native-app[data-active-tab="observe"] .native-character-picker button small{display:none!important}
   html.native-app[data-active-tab="observe"] .native-character-picker :is(.avatar,.sprite){width:42px!important;height:42px!important}
 
-  html.native-app[data-active-tab="relationship"] main{height:calc(100dvh - 60px)!important;min-height:0!important;overflow:hidden!important}
-  html.native-app[data-active-tab="relationship"] :is(.relationship-page,.character-view-editor){width:100%!important;max-width:100vw!important;height:100%!important;min-height:0!important;margin:0!important;padding:8px!important;overflow:hidden!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] main{height:calc(100dvh - 60px)!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important}
+  html.native-app[data-active-tab="relationship"] .relationship-page{display:grid!important;align-content:start!important;gap:12px!important;width:100%!important;max-width:100vw!important;height:auto!important;min-height:100%!important;margin:0!important;padding:8px 8px max(76px,env(safe-area-inset-bottom))!important;overflow:visible!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .character-view-editor{width:100%!important;max-width:100vw!important;height:auto!important;min-height:0!important;margin:0!important;padding:8px!important;overflow:visible!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .character-view-editor>.title{display:none!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:100%!important;min-height:0!important;margin:0!important;padding:7px!important;overflow:hidden!important;box-sizing:border-box!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core{display:flex!important;flex-direction:column!important;justify-content:center!important;gap:7px!important;width:100%!important;min-width:0!important;max-height:100%!important;padding:8px 4px!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:flex!important;align-items:flex-start!important;justify-content:center!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:7px!important;overflow:visible!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:7px!important;width:100%!important;min-width:0!important;max-height:none!important;padding:8px 4px!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .relationship-selected-pair{margin-bottom:0!important;gap:8px!important}
   html.native-app[data-active-tab="relationship"] .relationship-selected-pair :is(.avatar,.sprite){width:138px!important;height:138px!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{min-height:94px!important;padding:21px 23px!important;font-size:1.26rem!important;font-weight:900!important}
@@ -5482,16 +5500,16 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
   html.native-app[data-active-tab="relationship"] .native-sub-header{position:relative!important;z-index:220!important;pointer-events:auto!important}
   html.native-app[data-active-tab="relationship"] .native-sub-header>button{position:relative!important;z-index:221!important;pointer-events:auto!important;touch-action:manipulation!important}
   html.native-app[data-active-tab="relationship"] .relationship-exit-button{
-    position:fixed!important;
-    left:50%!important;
-    bottom:max(12px,env(safe-area-inset-bottom))!important;
-    z-index:210!important;
+    position:relative!important;
+    left:auto!important;
+    bottom:auto!important;
+    z-index:1!important;
     display:block!important;
     width:min(420px,calc(100vw - 28px))!important;
     min-height:52px!important;
-    margin:0!important;
+    margin:8px auto 0!important;
     padding:12px 18px!important;
-    transform:translateX(-50%)!important;
+    transform:none!important;
     border:1px solid color-mix(in srgb,var(--p) 45%,var(--line))!important;
     border-radius:18px!important;
     background:color-mix(in srgb,var(--p) 88%,#18202c)!important;
