@@ -190,187 +190,6 @@ img.sprite,.char-row>.sprite,.char-row>.avatar,.home-person>.sprite,.home-person
   .log-dialog{padding:18px}.log-dialog img{max-height:48dvh}
 }
 
-/* 모바일 관계 화면은 카드 안의 위젯이 아니라 화면 전체를 쓰는 캐릭터 룰렛이다. */
-@media(max-width:720px){
-  html.native-app[data-active-tab="relationship"],
-  html.native-app[data-active-tab="relationship"] body{
-    width:100%;
-    min-height:100%;
-    background:#0f1722!important;
-  }
-  .native-app[data-active-tab="relationship"] main{
-    width:100%;
-    max-width:none;
-    min-height:calc(100dvh - 60px);
-    margin:0;
-    padding:0!important;
-    overflow:visible;
-  }
-  .native-app[data-active-tab="relationship"] main>.relationship-page{
-    width:100%;
-    margin:0;
-    padding:0 0 max(28px,env(safe-area-inset-bottom));
-    overflow:visible;
-    border:0!important;
-    border-radius:0!important;
-    color:#fff;
-    background:
-      radial-gradient(circle at 50% 18%,color-mix(in srgb,var(--p) 32%,transparent),transparent 34%),
-      linear-gradient(180deg,#111a27,#182433 62%,#101722);
-    box-shadow:none!important;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-page>.title,
-  .native-app[data-active-tab="relationship"] .relationship-page>p{display:none}
-  .native-app[data-active-tab="relationship"] .character-view-editor{
-    width:100%;
-    min-height:calc(100dvh - 60px);
-    margin:0;
-    padding:0 5px;
-    overflow:visible;
-    border:0;
-    border-radius:0;
-    color:#fff;
-    background:
-      radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--relationship-own) 54%,transparent),transparent 31%),
-      radial-gradient(circle at 50% 80%,color-mix(in srgb,var(--relationship-own-secondary) 27%,transparent),transparent 38%),
-      linear-gradient(165deg,#0d1520,#1b2735 62%,#0d151f);
-    box-shadow:none;
-    transition:background .38s ease;
-  }
-  .native-app[data-active-tab="relationship"] .character-view-editor>.title{display:none}
-  .native-app[data-active-tab="relationship"] .relationship-pair-magnet{
-    grid-template-columns:minmax(76px,94px) minmax(126px,1fr) minmax(76px,94px);
-    width:100%;
-    height:calc(100dvh - 60px);
-    min-height:590px;
-    max-height:none;
-    gap:0;
-    margin:0;
-    padding:0;
-    overflow:visible;
-    border:0;
-    border-radius:0;
-    background:transparent;
-    box-shadow:none;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-character-rail{
-    width:100%;
-    height:100%;
-    max-height:none;
-    gap:0;
-    padding:calc((100dvh - 142px)/2) 4px;
-    overflow-y:auto;
-    scroll-padding-block:calc((100dvh - 142px)/2);
-    scroll-snap-type:y mandatory;
-    background:transparent;
-    -webkit-mask-image:none;
-    mask-image:none;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button{
-    position:relative;
-    flex:0 0 82px;
-    width:82px;
-    min-height:82px;
-    margin:0;
-    padding:6px;
-    overflow:visible;
-    border:0;
-    border-radius:0;
-    color:#fff;
-    background:transparent;
-    opacity:.58;
-    transform:translateX(var(--fan-shift)) scale(.78);
-    transform-origin:center;
-    scroll-snap-align:center;
-    transition:transform .24s cubic-bezier(.18,.84,.2,1),opacity .2s,filter .24s;
-    animation:relationship-roulette-deal .46s cubic-bezier(.18,.84,.2,1) both;
-    animation-delay:var(--fan-delay);
-    box-shadow:none;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button::before{
-    content:"";
-    position:absolute;
-    inset:12px;
-    z-index:-1;
-    border-radius:50%;
-    background:radial-gradient(circle,color-mix(in srgb,var(--view-primary) 44%,#fff) 0%,color-mix(in srgb,var(--view-primary) 20%,transparent) 52%,transparent 72%);
-    opacity:0;
-    filter:blur(5px);
-    transition:.24s ease;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on,
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview{
-    z-index:4;
-    opacity:1;
-    background:transparent;
-    box-shadow:none;
-    animation:relationship-roulette-selected 2.4s ease-in-out infinite;
-  }
-  .native-app[data-active-tab="relationship"] .source-rail button.on,
-  .native-app[data-active-tab="relationship"] .source-rail button.roulette-preview{transform:translateX(14px) scale(1.3)}
-  .native-app[data-active-tab="relationship"] .target-rail button.on,
-  .native-app[data-active-tab="relationship"] .target-rail button.roulette-preview{transform:translateX(-14px) scale(1.3)}
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on::before,
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview::before{opacity:1}
-  .native-app[data-active-tab="relationship"] .relationship-character-rail .avatar,
-  .native-app[data-active-tab="relationship"] .relationship-character-rail .sprite{
-    width:62px;
-    height:62px;
-    transform:rotate(var(--fan-angle));
-    transform-origin:center;
-    filter:drop-shadow(0 10px 10px #0009);
-    transition:width .24s,height .24s,transform .24s cubic-bezier(.18,.84,.2,1),filter .24s;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on .avatar,
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on .sprite,
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .avatar,
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .sprite{
-    width:68px;
-    height:68px;
-    transform:rotate(0);
-    filter:drop-shadow(0 14px 13px #000b);
-  }
-  .native-app[data-active-tab="relationship"] .relationship-character-rail small{display:none}
-  .native-app[data-active-tab="relationship"] .source-rail,
-  .native-app[data-active-tab="relationship"] .target-rail{border-radius:0;background:transparent}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core{
-    align-self:center;
-    z-index:3;
-    gap:8px;
-    min-width:0;
-    padding:18px 3px;
-    color:#fff;
-    text-align:center;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-pair-icons .avatar,
-  .native-app[data-active-tab="relationship"] .relationship-pair-icons .sprite{width:57px;height:57px;filter:drop-shadow(0 10px 10px #000a)}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>small,
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>span{color:#ffffffa6}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>strong{color:#fff;font-size:16px;line-height:1.4}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>em{max-width:100%;padding:7px 9px;border:1px solid #ffffff16;background:#ffffff12;color:#fff;font-size:9px}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>button{
-    width:100%;
-    min-height:42px;
-    padding:8px 5px;
-    border-color:#ffffff29;
-    background:#ffffff0d;
-    color:#fff;
-    font-size:10px;
-    backdrop-filter:blur(7px);
-  }
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{
-    border-color:transparent;
-    background:linear-gradient(135deg,var(--relationship-own),var(--relationship-own-secondary));
-  }
-  .native-app[data-active-tab="relationship"] .official-relation-heading{margin:0;padding:24px 14px 8px;color:#fff}
-  .native-app[data-active-tab="relationship"] .relationship-card-grid{padding:0 10px 20px}
-  .native-app[data-active-tab="relationship"] .relationship-card-grid .relation{
-    border-color:#ffffff27;
-    background:#ffffffef;
-    color:#2d251f;
-  }
-}
-
 /* 2026-08-11: one vivid global palette controls every screen and character. */
 .visual-theme-options button i{
   background:linear-gradient(135deg,var(--theme-a,#20242a),var(--theme-b,#6d747d))!important;
@@ -1363,57 +1182,6 @@ html[data-active-tab="settings"] .storage-meter :is(h3,b,small){
   .mobile-character-editor-body .physical-trait-groups{grid-template-columns:1fr;padding:10px}.mobile-character-editor-body .physical-trait-groups>div:first-child{grid-column:auto}
   .mobile-character-editor-body .eye-color-pair{grid-column:1/-1;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
 
-  .native-app[data-active-tab="relationship"] .character-view-editor{
-    min-height:calc(100dvh - 86px);
-    margin:18px -13px 24px;
-    padding:13px 9px;
-    border:0;
-    border-radius:26px;
-    color:#fff;
-    background:
-      radial-gradient(circle at 50% 44%,color-mix(in srgb,var(--p) 34%,transparent),transparent 32%),
-      linear-gradient(165deg,#0f1620,#222d3c 64%,#101720);
-    box-shadow:0 18px 42px #07101e66,inset 0 1px #ffffff1f;
-  }
-  .native-app[data-active-tab="relationship"] .character-view-editor>.title{align-items:flex-start;padding:4px 5px}.native-app[data-active-tab="relationship"] .character-view-editor>.title h2{margin:0;color:#fff;font-size:23px}.native-app[data-active-tab="relationship"] .character-view-editor>.title p{margin:5px 0;color:#ffffff9e;font-size:10px;line-height:1.5}.native-app[data-active-tab="relationship"] .character-view-editor>.title>button{flex:0 0 58px;padding:7px;border-color:#ffffff2e;background:#ffffff10;color:#fff;font-size:10px}
-  .native-app[data-active-tab="relationship"] .relationship-pair-magnet{
-    grid-template-columns:minmax(72px,88px) minmax(132px,1fr) minmax(72px,88px);
-    height:calc(100dvh - 225px);
-    min-height:510px;
-    max-height:650px;
-    gap:3px;
-    margin:9px 0 0;
-    padding:7px 3px;
-    border:1px solid #ffffff1b;
-    border-radius:24px;
-    background:transparent;
-    box-shadow:inset 0 0 44px #0002;
-  }
-  .native-app[data-active-tab="relationship"] .relationship-character-rail{max-height:none;height:100%;gap:0;padding-block:clamp(216px,calc((100dvh - 303px)/2),286px);padding-inline:1px;overflow-y:auto;background:transparent}
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button{
-    flex:0 0 78px;
-    width:76px;
-    min-height:74px;
-    margin:-7px 0;
-    padding:6px 2px;
-    border:1px solid #ffffff24;
-    border-radius:19px;
-    color:#fff;
-    background:linear-gradient(145deg,#ffffff1b,#ffffff08);
-    opacity:.72;
-    transform:translateX(var(--fan-shift)) rotate(var(--fan-angle)) scale(.86);
-    transform-origin:right center;
-    animation:relationship-card-deal .38s cubic-bezier(.18,.82,.22,1) both;
-    animation-delay:var(--fan-delay);
-    box-shadow:0 7px 18px #0005,inset 0 1px #ffffff26;
-  }
-  .native-app[data-active-tab="relationship"] .target-rail button{transform-origin:left center}
-  .native-app[data-active-tab="relationship"] .relationship-character-rail button.on{z-index:4;opacity:1;transform:translateX(0) rotate(0) scale(1.08);border-color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--view-primary) 78%,#283343),#1b2532);box-shadow:0 12px 26px #0009,0 0 0 2px #ffffff20;animation:none}
-  .native-app[data-active-tab="relationship"] .relationship-character-rail .avatar,.native-app[data-active-tab="relationship"] .relationship-character-rail .sprite{width:50px;height:50px}.native-app[data-active-tab="relationship"] .relationship-character-rail small{max-width:68px;color:#ffffffbc;font-size:8px}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core{align-self:center;gap:7px;padding:12px 2px;color:#fff}
-  .native-app[data-active-tab="relationship"] .relationship-pair-icons .avatar,.native-app[data-active-tab="relationship"] .relationship-pair-icons .sprite{width:55px;height:55px;filter:drop-shadow(0 9px 10px #0009)}.native-app[data-active-tab="relationship"] .relationship-pair-icons i{color:#ffffff91}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>small,.native-app[data-active-tab="relationship"] .relationship-pair-core>span{color:#ffffff93}.native-app[data-active-tab="relationship"] .relationship-pair-core>strong{color:#fff;font-size:15px}.native-app[data-active-tab="relationship"] .relationship-pair-core>em{max-width:100%;padding:6px 7px;background:#ffffff14;color:#fff;font-size:9px}
-  .native-app[data-active-tab="relationship"] .relationship-pair-core>button{min-height:39px;padding:7px 5px;border-color:#ffffff2b;background:#ffffff10;color:#fff;font-size:9px}.native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{border-color:transparent;background:linear-gradient(135deg,var(--p),var(--s))}
 }
 
 /* 홈 화면의 축약 로그는 눌러서 오늘 기록 전문을 읽을 수 있다. */
@@ -1447,7 +1215,7 @@ html[data-active-tab="settings"] .storage-meter :is(h3,b,small){
 /* 캐릭터 두 명을 자석처럼 조합하는 관계 편집기 */
 .relationship-pair-magnet{
   display:grid;
-  grid-template-columns:118px minmax(220px,1fr) 118px;
+  grid-template-columns:minmax(0,1fr);
   align-items:stretch;
   gap:14px;
   min-height:360px;
@@ -1582,15 +1350,6 @@ html[data-active-tab="settings"] .storage-meter :is(h3,b,small){
   .native-app[data-active-tab="home"] .home-person-status small{display:none}
   .native-app[data-active-tab="home"] .room-pet-status small{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
 
-  .relationship-pair-magnet{grid-template-columns:minmax(68px,82px) minmax(126px,1fr) minmax(68px,82px);gap:4px;min-height:330px;margin-inline:-6px;padding:7px}
-  .relationship-character-rail{max-height:330px;padding:127px 3px;gap:8px}
-  .relationship-character-rail button{flex-basis:68px;padding:3px}
-  .relationship-character-rail .avatar,.relationship-character-rail .sprite{width:48px;height:48px}
-  .relationship-character-rail small{max-width:65px;font-size:8px}
-  .relationship-pair-core{gap:6px;padding:10px 2px}
-  .relationship-pair-icons{gap:3px}.relationship-pair-icons .avatar,.relationship-pair-icons .sprite{width:51px;height:51px}.relationship-pair-icons i{font-size:18px}
-  .relationship-pair-core>strong{font-size:15px}.relationship-pair-core>small,.relationship-pair-core>span,.relationship-pair-core>em{font-size:9px}.relationship-pair-core>em{padding:5px 7px}
-  .relationship-pair-core>button{min-height:38px;padding:6px 5px;font-size:10px}
   .relationship-map-dialog .relationship-map-canvas{width:720px;min-width:720px}
   .relationship-map-dialog form{padding:12px}.relationship-map-dialog-head{top:-12px;margin:-12px -12px 8px;padding:12px}
 }
@@ -2766,100 +2525,6 @@ html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-s
   .native-app[data-active-tab="town"] .town-general-editor>label{display:grid;gap:6px}
 }
 
-/* 최종 모바일 관계 화면 오버라이드: 뒤쪽의 공통 모바일 카드 규칙보다 우선한다. */
-@media(max-width:720px){
-  html.native-app[data-active-tab="relationship"] main{
-    width:100vw!important;
-    max-width:none!important;
-    margin:0!important;
-    padding:0!important;
-    overflow:visible!important;
-    background:#0f1722;
-  }
-  html.native-app[data-active-tab="relationship"] main>.relationship-page{
-    width:100vw!important;
-    margin:0!important;
-    padding:0 0 max(28px,env(safe-area-inset-bottom))!important;
-    overflow:visible!important;
-    border:0!important;
-    border-radius:0!important;
-    background:linear-gradient(180deg,#111a27,#182433 62%,#101722)!important;
-    box-shadow:none!important;
-  }
-  html.native-app[data-active-tab="relationship"] .relationship-page>.title,
-  html.native-app[data-active-tab="relationship"] .relationship-page>p,
-  html.native-app[data-active-tab="relationship"] .character-view-editor>.title{display:none!important}
-  html.native-app[data-active-tab="relationship"] .character-view-editor{
-    width:100vw!important;
-    min-height:calc(100dvh - 60px)!important;
-    margin:0!important;
-    padding:0 5px!important;
-    overflow:visible!important;
-    border:0!important;
-    border-radius:0!important;
-    background:
-      radial-gradient(circle at 50% 42%,color-mix(in srgb,var(--relationship-own) 54%,transparent),transparent 31%),
-      radial-gradient(circle at 50% 80%,color-mix(in srgb,var(--relationship-own-secondary) 27%,transparent),transparent 38%),
-      linear-gradient(165deg,#0d1520,#1b2735 62%,#0d151f)!important;
-    box-shadow:none!important;
-  }
-  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{
-    grid-template-columns:minmax(76px,94px) minmax(126px,1fr) minmax(76px,94px)!important;
-    width:100%!important;
-    height:calc(100dvh - 60px)!important;
-    min-height:590px!important;
-    max-height:none!important;
-    gap:0!important;
-    margin:0!important;
-    padding:0!important;
-    overflow:visible!important;
-    border:0!important;
-    border-radius:0!important;
-    background:transparent!important;
-    box-shadow:none!important;
-  }
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail{
-    width:100%!important;
-    height:100%!important;
-    max-height:none!important;
-    gap:0!important;
-    padding:calc((100dvh - 142px)/2) 4px!important;
-    overflow-y:auto!important;
-    background:transparent!important;
-    -webkit-mask-image:none!important;
-    mask-image:none!important;
-  }
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail button{
-    flex:0 0 82px!important;
-    width:82px!important;
-    min-height:82px!important;
-    margin:0!important;
-    padding:6px!important;
-    overflow:visible!important;
-    border:0!important;
-    border-radius:0!important;
-    background:transparent!important;
-    opacity:.58;
-    transform:translateX(var(--fan-shift)) scale(.78)!important;
-    box-shadow:none!important;
-  }
-  html.native-app[data-active-tab="relationship"] .source-rail button.on,
-  html.native-app[data-active-tab="relationship"] .source-rail button.roulette-preview{opacity:1;transform:translateX(14px) scale(1.3)!important}
-  html.native-app[data-active-tab="relationship"] .target-rail button.on,
-  html.native-app[data-active-tab="relationship"] .target-rail button.roulette-preview{opacity:1;transform:translateX(-14px) scale(1.3)!important}
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail .avatar,
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail .sprite{width:62px!important;height:62px!important;transform:rotate(var(--fan-angle))}
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.on .avatar,
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.on .sprite,
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .avatar,
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail button.roulette-preview .sprite{width:68px!important;height:68px!important;transform:rotate(0)}
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail small{display:none!important}
-  html.native-app[data-active-tab="relationship"] .source-rail,
-  html.native-app[data-active-tab="relationship"] .target-rail{border-radius:0!important;background:transparent!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core{align-self:center!important;gap:8px!important;padding:18px 3px!important;color:#fff!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{width:100%;min-height:42px;padding:8px 5px;border-color:#ffffff29;background:#ffffff0d;color:#fff}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button.primary{background:linear-gradient(135deg,var(--relationship-own),var(--relationship-own-secondary))!important}
-}
 .native-app .native-status-card p{
   display:block!important;
   overflow:visible!important;
@@ -3046,16 +2711,6 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     margin:auto;
   }
 
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail{
-    overscroll-behavior-y:contain;
-    scroll-snap-type:y mandatory;
-    scrollbar-width:none;
-  }
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail::-webkit-scrollbar{display:none}
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail button{
-    scroll-snap-align:center;
-    transition:transform .2s cubic-bezier(.2,.8,.2,1),opacity .18s,filter .2s;
-  }
   .official-relation-dialog>form{padding:14px}
   .official-relation-dialog .relationship-card-grid{grid-template-columns:1fr}
 
@@ -3202,7 +2857,6 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     min-height:0!important;
     max-width:none!important;
     margin:0!important;
-    overflow:hidden!important;
     box-sizing:border-box;
   }
   html.native-app main>*{min-width:0;box-sizing:border-box}
@@ -3398,27 +3052,6 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .car-card{width:100%;min-width:0;text-align:left;color:inherit}
   html.native-app[data-active-tab="home"] .car-card>span{display:grid;gap:3px;flex:1}
   html.native-app[data-active-tab="home"] .car-card em{color:var(--muted);font-size:9px;font-style:normal}
-
-  /* 관계 화면도 바깥 문서는 움직이지 않고 두 룰렛만 내부에서 돈다. */
-  html.native-app[data-active-tab="relationship"] main,
-  html.native-app[data-active-tab="relationship"] main>.relationship-page,
-  html.native-app[data-active-tab="relationship"] .character-view-editor,
-  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{
-    width:100%!important;
-    height:100%!important;
-    min-width:0!important;
-    min-height:0!important;
-    max-width:none!important;
-    max-height:none!important;
-    margin:0!important;
-    overflow:hidden!important;
-    box-sizing:border-box;
-  }
-  html.native-app[data-active-tab="relationship"] main>.relationship-page{padding:0!important}
-  html.native-app[data-active-tab="relationship"] .character-view-editor{padding:0 4px!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{grid-template-columns:minmax(70px,92px) minmax(120px,1fr) minmax(70px,92px)!important}
-  html.native-app[data-active-tab="relationship"] .relationship-character-rail{height:100%!important;min-height:0!important;overflow-y:auto!important;overscroll-behavior:contain}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core>strong{font-size:clamp(12px,3.7vw,17px);line-height:1.42}
 
   /* 관찰 홈도 캐릭터별 글 길이 때문에 body가 늘어나지 않게 한다. */
   html.native-app[data-active-tab="observe"] main,
@@ -5485,15 +5118,49 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
   html.native-app[data-active-tab="observe"] .native-character-picker button small{display:none!important}
   html.native-app[data-active-tab="observe"] .native-character-picker :is(.avatar,.sprite){width:42px!important;height:42px!important}
 
-  html.native-app[data-active-tab="relationship"] main{height:calc(100dvh - 60px)!important;min-height:0!important;overflow-x:hidden!important;overflow-y:auto!important}
-  html.native-app[data-active-tab="relationship"] .relationship-page{display:grid!important;align-content:start!important;gap:12px!important;width:100%!important;max-width:100vw!important;height:auto!important;min-height:100%!important;margin:0!important;padding:8px 8px max(76px,env(safe-area-inset-bottom))!important;overflow:visible!important;box-sizing:border-box!important}
-  html.native-app[data-active-tab="relationship"] .character-view-editor{width:100%!important;max-width:100vw!important;height:auto!important;min-height:0!important;margin:0!important;padding:8px!important;overflow:visible!important;box-sizing:border-box!important}
+  /* 현재 관계 화면의 단일 스크롤 소유자는 main이다. 그룹과 관계 편집기를 같은 흐름에 둔다. */
+  html.native-app[data-active-tab="relationship"] main{
+    width:100%!important;
+    height:calc(100dvh - 60px)!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:0!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    scroll-padding-bottom:max(96px,env(safe-area-inset-bottom));
+    touch-action:pan-y;
+  }
+  html.native-app[data-active-tab="relationship"] .relationship-page{
+    display:grid!important;
+    align-content:start!important;
+    gap:12px!important;
+    width:100%!important;
+    max-width:100%!important;
+    height:max-content!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:8px 8px max(96px,calc(env(safe-area-inset-bottom) + 28px))!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
+  html.native-app[data-active-tab="relationship"] .character-view-editor{
+    width:100%!important;
+    max-width:100%!important;
+    height:max-content!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:8px!important;
+    overflow:visible!important;
+    box-sizing:border-box!important;
+  }
   html.native-app[data-active-tab="relationship"] .character-view-editor>.title{display:none!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:flex!important;align-items:flex-start!important;justify-content:center!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;padding:7px!important;overflow:visible!important;box-sizing:border-box!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-magnet{display:grid!important;grid-template-columns:minmax(0,1fr)!important;align-items:start!important;width:100%!important;height:max-content!important;min-height:0!important;margin:0!important;padding:7px!important;overflow:visible!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core{display:flex!important;flex-direction:column!important;justify-content:flex-start!important;gap:7px!important;width:100%!important;min-width:0!important;max-height:none!important;padding:8px 4px!important;box-sizing:border-box!important}
   html.native-app[data-active-tab="relationship"] .relationship-selected-pair{margin-bottom:0!important;gap:8px!important}
   html.native-app[data-active-tab="relationship"] .relationship-selected-pair :is(.avatar,.sprite){width:138px!important;height:138px!important}
-  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{min-height:94px!important;padding:21px 23px!important;font-size:1.26rem!important;font-weight:900!important}
+  html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{width:100%!important;min-height:54px!important;padding:12px 16px!important;font-size:1rem!important;font-weight:900!important}
   html.native-app[data-active-tab="relationship"] .relationship-pair-core>em{padding:6px 10px!important;font-size:12px!important}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence{gap:4px;font-size:17px}
   html.native-app[data-active-tab="relationship"] .relationship-direction-sentence select{max-width:7.2em;min-height:38px;padding:6px 25px 6px 8px;font-size:16px}
@@ -5546,7 +5213,6 @@ html.native-app[data-color-mode="light"][data-active-tab="settings"] .settings-b
 .relationship-map-canvas .map-arrows{z-index:1}
 .relationship-map-canvas .map-official{position:relative;z-index:4;pointer-events:none}
 .relationship-map-canvas .map-official text{paint-order:stroke!important;stroke:var(--surface)!important;stroke-width:10px!important;stroke-linejoin:round!important}
-html.native-app[data-active-tab="relationship"] .relationship-pair-core>button{display:block!important;visibility:visible!important;min-height:44px!important;padding:9px 12px!important;font-size:.95rem!important}
 html.native-platform .site-footer{display:none!important}
 select[data-world-bg]{display:none!important}
 label:has(>select[data-world-bg])::after{content:"제공받은 기본 마을 손그림";display:block;padding:11px 13px;border:1px solid var(--line);border-radius:13px;background:var(--panel);font-weight:800}
