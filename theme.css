@@ -220,7 +220,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
 }
 
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -244,7 +244,7 @@ html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog) form{
   color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] dialog::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
-html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time){color:var(--muted)!important}
+html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.mobile-character-dashboard[data-character-ui-version="4"] *){color:var(--muted)!important}
 html[data-color-mode][data-visual-theme] .current-visual-theme{
   border-color:var(--theme-border)!important;
   background:linear-gradient(125deg,var(--theme-surface),var(--theme-surface-strong))!important;
@@ -385,19 +385,19 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
     color:var(--ink)!important;
     -webkit-text-fill-color:var(--ink)!important;
   }
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]){
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="4"]){
     background:#fff!important;
     color:var(--ink)!important;
   }
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]) .mobile-character-heading,
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]) .mobile-character-pane-grid button{
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="4"]) .mobile-character-heading,
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="4"]) .mobile-character-pane-grid button{
     border-color:var(--theme-border)!important;
     background:var(--theme-surface)!important;
     color:var(--ink)!important;
     -webkit-text-fill-color:var(--ink)!important;
     box-shadow:0 7px 18px var(--theme-shadow)!important;
   }
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]) .mobile-character-pane-grid button.on{
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="4"]) .mobile-character-pane-grid button.on{
     border-color:var(--p)!important;
     background:linear-gradient(135deg,var(--p),var(--s))!important;
     color:var(--on-grad)!important;
