@@ -1,8 +1,8 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260822characterui4";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260822characterui4";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260822characterui5";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260822characterui5";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Collection",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about"},
@@ -2128,7 +2128,13 @@ function character(){
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?personalityPane:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
   const unknown=t("미설정","미설정");
   const birthdayLabel=c.birthday?`${Number(c.birthday.slice(0,2))}${t("월","월")} ${Number(c.birthday.slice(2))}${t("일","일")}`:unknown;
-  const draftRows=[["이름",c.name],["생일",birthdayLabel],["직업 종류",c.jobTitle||c.job||unknown],["나이",c.ageGroup||unknown],["성별",c.gender||unknown],["키·몸무게",[c.bodyProfile?.height&&`${c.bodyProfile.height}cm`,c.bodyProfile?.weight&&`${c.bodyProfile.weight}kg`].filter(Boolean).join(" · ")||unknown]];
+  const draftRows=[
+    {key:"name",label:"이름",value:c.name},
+    {key:"birthday",label:"생일",value:birthdayLabel},
+    {key:"job",label:"직업 종류",value:c.jobTitle||c.job||unknown},
+    {key:"age",label:"나이",value:c.ageGroup||unknown},
+    {key:"gender",label:"성별",value:c.gender||unknown}
+  ];
   const selectedIcon=c.icon
     ?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)}">`
     :c.photo
@@ -2141,7 +2147,7 @@ function character(){
     <div class="character-wallet-art" aria-hidden="true"></div>
     <section class="character-registration-card">
       <button type="button" class="character-registration-photo" data-image="photo" aria-label="${esc(t(c.photo?"프로필 사진 변경":"프로필 사진 추가",c.photo?"프로필 사진 변경":"프로필 사진 추가"))}">${profilePhoto}</button>
-      <div class="character-registration-fields"><h2>${t("서랍마을 주민등록증","서랍마을 주민등록증")}</h2><dl>${draftRows.map(([label,value])=>`<div><dt>${t(label,label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div>
+      <div class="character-registration-fields"><h2>${t("서랍마을 주민등록증","서랍마을 주민등록증")}</h2><dl>${draftRows.map(({key,label,value})=>`<div class="character-registration-field-${key}"><dt>${t(label,label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div>
     </section>
     <nav class="character-draft-actions"><button type="button" class="character-draft-action" data-export-profile>${t("프로필 내보내기","프로필 내보내기")}</button><button type="button" class="character-draft-action" data-save>${t("캐릭터 저장","캐릭터 저장")}</button><button type="button" class="character-draft-action danger" data-delete-character="${c.id}">${t("캐릭터 삭제","캐릭터 삭제")}</button></nav>
     <div class="character-wallet-roster" data-character-roster hidden><div class="mobile-character-strip">${mobileStrip}</div><span class="character-roster-actions"><button type="button" class="character-roster-add" data-new ${state.order.length>=limit?"disabled":""} aria-label="${esc(t("새 캐릭터 만들기","새 캐릭터 만들기"))}">＋</button><button type="button" class="character-roster-reorder" data-open-character-reorder>${t("위치 바꾸기","위치 바꾸기")}</button></span></div>

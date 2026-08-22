@@ -22,8 +22,12 @@ const checks=[
   [css.includes('assets/home-ui/pill-left.png')&&css.includes('.character-draft-actions button:nth-child(3)')&&css.includes('color:#FFF5DD!important')&&css.includes('font:400 clamp(11px,3.15vw,14px)/1 "KCCHanbit"'),"선택·내보내기·저장·삭제 버튼을 KCC 손그림 알약 에셋으로 통일"],
   [css.includes('.character-wallet-art{')&&css.includes('z-index:8!important')&&css.includes('.character-registration-card{')&&css.includes('z-index:4!important')&&css.includes('pointer-events:none!important'),"카드지갑을 주민등록증 위에 배치하면서 사진 선택 영역 유지"],
   [css.includes('.character-pane-ribbon:nth-child(1)')&&css.includes('top:57.68dvh!important')&&css.includes('.character-pane-ribbon:nth-child(6)')&&css.includes('top:91.83dvh!important'),"연필 설정 띠를 SVG 좌표와 크기로 복원"],
-  [css.includes('font-family:"PuradakGentleGothic"')&&css.includes('grid-auto-flow:column!important')&&css.includes('font-weight:300!important')&&css.includes('font-weight:700!important'),"주민등록증 제목·2열 명조 정보 구조"],
+  [css.includes('font-family:"PuradakGentleGothic"')&&css.includes('.character-registration-field-job{grid-column:1/-1!important')&&css.includes('.character-registration-field-job dd{overflow:visible!important')&&views.includes('{key:"job",label:"직업 종류"')&&!views.includes('["키·몸무게"')&&css.includes('font-weight:300!important')&&css.includes('font-weight:700!important'),"주민등록증 제목·2열 명조 정보와 전체 너비 직업 구조"],
   [css.includes('linear-gradient(180deg,#fff9ebec')&&css.includes('z-index:20!important')&&css.includes('z-index:32!important'),"선택 아이콘 앞·세로로 짙어지는 캐릭터 목록"],
+  [css.includes('.character-wallet-selected>b{')&&css.includes('z-index:4!important')&&css.includes('top:12.4dvh!important'),"선택됨 글자판을 아이콘 아래의 앞 레이어로 분리"],
+  [css.includes('max-height:23.1dvh!important')&&css.includes('height:39.5dvh!important')&&css.includes('top:27.2dvh!important'),"현재 캐릭터 외 세 명을 한 번에 보이고 추가 인원은 스크롤하는 목록"],
+  [css.includes('--character-pill-cap:calc(3.25dvh * .484)')&&css.includes('min-height:29px!important'),"내보내기·저장·삭제 알약 버튼의 세로 크기 확대"],
+  [css.includes('.character-roster-reorder{')&&css.includes('top:34.2dvh!important')&&css.includes('text-decoration:none!important'),"위치 바꾸기 밑줄 제거"],
   [css.includes('-webkit-text-stroke:1.25px #000!important')&&css.includes('color:#FFF0F0!important')&&css.includes('color:#F8F0FF!important'),"연필 탭별 밝은 글자와 검은 테두리"],
   [css.includes('overflow-y:auto!important;overscroll-behavior:contain!important')&&css.includes('touch-action:pan-y!important'),"관계 설정 대화상자의 모바일 세로 스크롤"],
   [!views.includes('const drawerLogLabel='),"홈 카드의 서랍 로그 제목 제거"]
