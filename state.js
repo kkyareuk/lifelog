@@ -1,5 +1,5 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823visualrestore1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823visualrestore1";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823characterfidelity2";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823characterfidelity2";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
