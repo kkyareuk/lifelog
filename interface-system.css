@@ -203,10 +203,6 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
   0%,100%{translate:-4px 3px;rotate:-5deg}
   50%{translate:4px -3px;rotate:5deg}
 }
-html.native-platform .scene-action-washing-up .action-prop-soap{
-  animation:none!important;
-  will-change:auto!important;
-}
 /* House occupants: artwork and status copy are separate. Transparent icon art
    never receives a card, while an actual photo is cropped to a true circle. */
 .home-page .home-person>.sprite,

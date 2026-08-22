@@ -7,7 +7,7 @@ const app=read("app.js"),state=read("state.js"),simulation=read("simulation.js")
 
 const checks=[
   [views.includes('class="game-hud-date"')&&views.includes('toLocaleDateString(uiLocale(),{month:"long",day:"numeric",weekday:"short"})'),"모바일 관찰 화면의 게임 날짜"],
-  [css.includes(".game-hud-date")&&css.includes("top:3.9dvh")&&css.includes("font-size:12px!important")&&css.includes("top:6.25dvh"),"게임 날짜를 12px로 시간 위에 배치"],
+  [css.includes(".game-hud-date")&&css.includes("top:4.035dvh")&&css.includes("font-size:12px!important")&&css.includes("top:5.998dvh")&&css.includes("-webkit-text-fill-color:#fff!important"),"게임 날짜를 흰색 12px로 시간 위에 배치"],
   [simulation.includes("const activeScheduledRoutine=")&&simulation.includes("if(activeRoutineEntry)return withResidenceLocation"),"등록 일정의 시작·종료 구간 우선 적용"],
   [simulation.includes("activeRoutine&&!routineCompanionIds.length")&&simulation.includes("다른 캐릭터의 대화나 공동 행동"),"동행자 없는 일정의 임의 대화 차단"],
   [simulation.includes("withIds:companionIds")&&simulation.includes("routineEndMinute:endMinute"),"일정 동행자와 종료 시각 보존"],
@@ -15,7 +15,7 @@ const checks=[
   [state.includes("relation.stayTogether=Boolean(relation.stayTogether)"),"기존 관계 데이터의 함께 다니기 안전 변환"],
   [simulation.includes("function companionAlignedBaseEvent")&&simulation.includes("!activeScheduledRoutine(other,date)"),"별도 일정이 없는 관계만 동행"],
   [views.includes('"함께 다니기":"Stay together"')&&views.includes('"함께 다니기":"一緒に行動する"'),"함께 다니기 영어·일본어 번역"],
-  [gradle.includes("versionCode 101")&&gradle.includes('versionName "1.0.93"'),"최적화 빌드 버전"]
+  [gradle.includes("versionCode 102")&&gradle.includes('versionName "1.0.94"'),"최신 개발 빌드 버전"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
@@ -26,7 +26,7 @@ const storage=new Map();
 globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
 globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
-const {state:runtimeState}=await import("../state.js?v=20260823performance1");
+const {state:runtimeState}=await import("../state.js?v=20260823visualrestore1");
 const {eventFor}=await import(`../simulation.js?date-schedule-companion=${Date.now()}`);
 const character=(id,name,homeId)=>({id,name,createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",townId:"",homeId,residences:[{homeId,isPrimary:true,stayPattern:"상시 거주"}],wake:"07:00",sleep:"23:00",job:"무직",jobTitle:"",personalityTypes:[],characterTraits:[],traitExpressions:[],hobbies:[],interests:[],inventory:{},foodTypes:[],foodPreferences:[],musicGenres:[],appearanceTags:[],attractionTraits:[],bodyProfile:{},theme:{primary:"#176b60"}});
 runtimeState.characters={a:character("a","가람","ha"),b:character("b","나래","hb")};

@@ -15,9 +15,9 @@ const checks=[
   [simulation.includes("const applyEntries=nextEntries=>")&&simulation.includes("if(changed){day.entries=nextEntries;save(false,false)}"),"동일 공동 장면의 중복 저장 차단"],
   [views.includes("const cacheSetBounded=")&&!views.includes("renderEventCache.clear()")&&!views.includes("renderTimelineCache.clear()"),"분 단위 장면 캐시를 화면 재렌더 사이에 유지"],
   [app.includes("now-lastLocalMediaHydrationAt<30_000")&&app.includes('document.visibilityState==="hidden"'),"중복 사진 복원과 백그라운드 장면 타이머 중단"],
-  [css.includes("content-visibility:auto")&&css.includes("will-change:auto!important")&&homeCss.includes("html.native-platform .native-character-stage.visual-mode-ld>.scene-ld-art"),"Android 비가시 영역 지연 렌더와 연속 합성 애니메이션 제거"],
+  [css.includes("content-visibility:auto")&&css.includes("animation:native-sleep-head 4.6s ease-in-out infinite")&&homeCss.includes("animation:home-ld-idle 4.8s ease-in-out infinite!important")&&!css.includes("html.native-platform .native-scene-atmosphere::before,\nhtml.native-platform .native-scene-atmosphere::after"),"비가시 영역 지연 렌더는 유지하고 장면·LD 애니메이션은 보존"],
   [prepare.includes('"world-assets/cozy-town.png"')&&prepare.includes('"world-assets/downtown.png"')&&prepare.includes('"assets/character-ui/paper.png"')&&prepare.includes("excludedAndroidAssets.has(relativePath)"),"미사용 고해상도 배경·종이 원본을 Android 패키지에서 제외"],
-  [gradle.includes("versionCode 101")&&gradle.includes('versionName "1.0.93"'),"Play Console용 101 / 1.0.93 버전"]
+  [gradle.includes("versionCode 102")&&gradle.includes('versionName "1.0.94"'),"Play Console용 102 / 1.0.94 버전"]
 ];
 
 checks.forEach(([ok,label])=>console.log(`${ok?"PASS":"FAIL"} ${label}`));

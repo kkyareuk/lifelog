@@ -6175,14 +6175,14 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   object-fit:contain!important;pointer-events:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-copy{
-  display:grid!important;align-content:start!important;justify-items:start!important;min-width:0!important;padding:1.42dvh 0 0!important;border:0!important;background:transparent!important;box-shadow:none!important
+  position:absolute!important;left:22.57vw!important;top:1.745dvh!important;display:grid!important;align-content:start!important;justify-items:start!important;min-width:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-copy b{
-  max-width:52vw!important;overflow:hidden!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.2px #000!important;paint-order:stroke fill!important;font-family:var(--home-ui-font)!important;font-size:clamp(18px,5.05vw,23px)!important;font-weight:400!important;line-height:1.05!important;text-overflow:ellipsis!important;
+  max-width:52vw!important;overflow:hidden!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.2px #000!important;paint-order:stroke fill!important;font-family:var(--home-ui-font)!important;font-size:clamp(18px,5.05vw,23px)!important;font-weight:400!important;line-height:25px!important;text-overflow:ellipsis!important;
   white-space:nowrap!important;text-shadow:0 2px 3px #0008!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-copy small{
-  --label-cap:calc(3.45dvh * .484);position:relative!important;z-index:1!important;display:grid!important;grid-template-columns:var(--label-cap) minmax(0,auto) var(--label-cap)!important;align-items:stretch!important;box-sizing:border-box!important;width:max-content!important;max-width:46vw!important;height:3.45dvh!important;max-height:34px!important;margin:1.45dvh 0 0!important;padding:0!important;
+  --label-cap:calc(3.45dvh * .484);position:absolute!important;z-index:1!important;left:.61vw!important;top:4.2dvh!important;display:grid!important;grid-template-columns:var(--label-cap) minmax(0,auto) var(--label-cap)!important;align-items:stretch!important;box-sizing:border-box!important;width:max-content!important;max-width:46vw!important;height:3.45dvh!important;max-height:34px!important;margin:0!important;padding:0!important;
   overflow:visible!important;border:0!important;background:transparent!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-family:var(--home-ui-font)!important;font-size:clamp(10px,3.3vw,15px)!important;font-weight:400!important;white-space:nowrap!important;text-shadow:0 1px 2px #2a160d99!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-copy small::before{
@@ -6195,12 +6195,12 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   display:grid!important;place-items:center!important;min-width:0!important;max-width:40vw!important;margin:0 -1px!important;padding:0 1.2vw!important;overflow:hidden!important;background:var(--home-ui-pill-middle,url("./assets/home-ui/pill-middle.png")) center/100% 100% repeat-x!important;font:inherit!important;font-style:normal!important;text-overflow:ellipsis!important;white-space:nowrap!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top>time{
-  position:absolute!important;top:6.25dvh!important;right:3.1vw!important;margin:0!important;padding:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.1px #000!important;paint-order:stroke fill!important;
-  font-family:var(--home-ui-font)!important;font-size:clamp(13px,3.6vw,17px)!important;font-weight:400!important;line-height:1!important;text-shadow:0 2px 3px #0008!important
+  position:absolute!important;top:5.998dvh!important;right:3.155vw!important;margin:0!important;padding:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.1px #000!important;paint-order:stroke fill!important;
+  font-family:var(--home-ui-font)!important;font-size:clamp(13px,3.6vw,17px)!important;font-weight:400!important;line-height:17px!important;text-shadow:0 2px 3px #0008!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-date{
-  position:absolute!important;top:3.9dvh!important;right:3.1vw!important;margin:0!important;padding:0!important;color:#fff4d7!important;
-  font-family:var(--home-ui-font)!important;font-size:12px!important;font-weight:400!important;line-height:1!important;text-shadow:0 2px 3px #2a160dcc!important;white-space:nowrap!important
+  position:absolute!important;top:4.035dvh!important;right:3.155vw!important;margin:0!important;padding:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;
+  font-family:var(--home-ui-font)!important;font-size:12px!important;font-weight:400!important;line-height:15px!important;text-shadow:0 2px 3px #2a160dcc!important;white-space:nowrap!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage{
   position:absolute!important;z-index:7!important;left:18.45vw!important;right:18.45vw!important;top:13.1dvh!important;height:49.4dvh!important;
@@ -6509,30 +6509,12 @@ html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy
   object-fit:contain;
 }
 html.native-platform .native-observe-backdrop{
-  filter:none!important;
+  filter:saturate(.9)!important;
   transform:none!important;
 }
-html.native-platform :is(.page-guide,.native-status-card,.native-log-card,.home-observe-tools button,.character-stat-actions,.relationship-map-dialog-head,.building-detail-dialog header,.game-hud-roster-options){
+html.native-platform :is(.page-guide,.native-status-card,.native-log-card,.home-observe-tools button){
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
-}
-html.native-platform dialog::backdrop{
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-}
-html.native-platform .native-scene-atmosphere::before,
-html.native-platform .native-scene-atmosphere::after,
-html.native-platform .native-scene-effects i{
-  animation:none!important;
-}
-html.native-platform :is(
-  .native-main-character,.native-scene-lineup-person,.native-scene-companion,
-  .native-scene-action-prop,.native-person-action-prop,.native-pet-actor,
-  .native-conversation-bubbles i,.native-important-thought,.native-character-sleep-mark,
-  .home-person-visual,.room-pet,.room-sleep-mark
-){
-  animation:none!important;
-  will-change:auto!important;
 }
 html.native-platform :is(
   .catalog-dex-card,.setting-card,.settings-complete-group,.relation,
@@ -6540,11 +6522,6 @@ html.native-platform :is(
 ){
   content-visibility:auto;
   contain-intrinsic-size:auto 260px;
-}
-html.native-platform .native-character-picker button.on :is(.avatar,.sprite),
-html.native-platform .game-hud-roster-options button.on :is(.avatar,.sprite){
-  animation:none!important;
-  filter:drop-shadow(0 0 5px var(--picker-theme,var(--p)))!important;
 }
 html.native-platform[data-color-mode="light"] .onboarding-dialog{
   border:1px solid var(--theme-border)!important;
@@ -6797,16 +6774,19 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
     transform:rotate(-9.874deg)!important;transform-origin:0 0!important;background:url("./assets/character-ui/wallet.png") center/100% 100% no-repeat!important;pointer-events:none!important
   }
   html.native-app[data-active-tab="character"] .character-wallet-selected{
-    position:absolute!important;z-index:32!important;left:2.91vw!important;top:14.35dvh!important;display:block!important;width:19.42vw!important;height:11.7dvh!important;padding:0!important;
+    position:absolute!important;z-index:42!important;left:2.91vw!important;top:13.632dvh!important;display:block!important;width:19.42vw!important;height:10.03dvh!important;padding:0!important;
     overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important;pointer-events:auto!important
   }
-  html.native-app[data-active-tab="character"] .character-wallet-selected>span{
-    position:relative!important;display:grid!important;place-items:center!important;width:19.42vw!important;height:8.72dvh!important;overflow:hidden!important;background:transparent!important
+  html.native-app[data-active-tab="character"] body #app main .mobile-character-dashboard[data-character-ui-version="5"] button.character-wallet-selected{
+    border:0!important;border-radius:0!important;outline:0!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;filter:none!important
   }
-  html.native-app[data-active-tab="character"] .character-wallet-selected>span>img{display:block!important;width:100%!important;height:100%!important;background:transparent!important}
+  html.native-app[data-active-tab="character"] .character-wallet-selected>span{
+    position:absolute!important;left:0!important;top:0!important;display:grid!important;place-items:center!important;width:80px!important;height:80px!important;overflow:visible!important;background:transparent!important
+  }
+  html.native-app[data-active-tab="character"] .character-wallet-selected>span>img{display:block!important;width:80px!important;height:80px!important;max-width:80px!important;max-height:80px!important;background:transparent!important;animation:none!important;transform:none!important;translate:0!important;scale:1!important}
   html.native-app[data-active-tab="character"] .character-wallet-selected>span>img.sprite{object-fit:contain!important}
   html.native-app[data-active-tab="character"] .character-wallet-selected>span>img.avatar{border:0!important;border-radius:0!important;object-fit:cover!important;box-shadow:none!important}
-  html.native-app[data-active-tab="character"] .character-wallet-selected>span>.avatar:not(img){display:grid!important;place-items:center!important;width:100%!important;height:100%!important;border:0!important;border-radius:0!important;background:#c7c7c7!important;color:#5a514a!important;font:400 clamp(22px,7vw,30px)/1 "KCCHanbit",sans-serif!important;box-shadow:none!important}
+  html.native-app[data-active-tab="character"] .character-wallet-selected>span>.avatar:not(img){display:grid!important;place-items:center!important;width:100%!important;height:100%!important;border:0!important;border-radius:0!important;background:transparent!important;color:#5a514a!important;font:400 clamp(22px,7vw,30px)/1 "KCCHanbit",sans-serif!important;box-shadow:none!important}
   html.native-app[data-active-tab="character"] .character-wallet-selected>b{
     position:absolute!important;z-index:4!important;left:.85vw!important;top:8.72dvh!important;display:grid!important;place-items:center!important;width:17.72vw!important;height:2.29dvh!important;
     border:0!important;background:transparent!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.8px #241b17!important;
@@ -6839,26 +6819,35 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html[data-color-mode].native-app[data-active-tab="character"] .character-registration-field-job dd{font-size:clamp(7.5px,2.25vw,10.5px)!important;white-space:normal!important}
   html.native-app[data-active-tab="character"] .character-draft-actions{position:absolute!important;z-index:15!important;inset:0!important;display:block!important;width:100vw!important;height:55dvh!important;pointer-events:none!important}
   html.native-app[data-active-tab="character"] .character-draft-actions button{
-    position:absolute!important;display:grid!important;place-items:center!important;min-width:0!important;height:3.25dvh!important;min-height:29px!important;margin:0!important;padding:0 6px!important;
-    transform:rotate(-9.87deg)!important;transform-origin:0 0!important;pointer-events:auto!important;border:0!important;border-radius:16px!important;background:#5c4236e8!important;
+    position:absolute!important;display:grid!important;place-items:center!important;min-width:0!important;height:22px!important;min-height:0!important;margin:0!important;padding:0 6px!important;
+    transform:rotate(-9.87deg)!important;transform-origin:0 0!important;pointer-events:auto!important;border:0!important;border-radius:0!important;background-color:transparent!important;
+    background-image:url("./assets/home-ui/pill-left.png"),url("./assets/home-ui/pill-right.png"),url("./assets/home-ui/pill-middle.png")!important;
+    background-position:left center,right center,center!important;background-size:auto 100%,auto 100%,calc(100% - 20px) 100%!important;background-repeat:no-repeat,no-repeat,repeat-x!important;
     color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;box-shadow:none!important;font:400 clamp(10px,2.9vw,13px)/1 "KCCHanbit",sans-serif!important;white-space:nowrap!important
   }
   html.native-app[data-active-tab="character"] .character-draft-actions button:nth-child(1){left:3.78vw!important;top:52.08dvh!important;width:33.74vw!important}
   html.native-app[data-active-tab="character"] .character-draft-actions button:nth-child(2){left:41.08vw!important;top:49.17dvh!important;width:26.46vw!important}
   html.native-app[data-active-tab="character"] .character-draft-actions button:nth-child(3){left:71.21vw!important;top:46.81dvh!important;width:26.46vw!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster{
-    position:absolute!important;z-index:40!important;left:2.4vw!important;top:12.5dvh!important;width:28.5vw!important;height:min(68dvh,calc(14dvh + (var(--roster-visible,1) * 9dvh)))!important;margin:0!important;padding:2.2dvh 2.4vw 8dvh!important;overflow:hidden!important;pointer-events:auto!important;
-    border:1px solid #fff!important;border-radius:18px!important;background:rgba(255,255,255,.9)!important;box-shadow:0 8px 24px #30211640!important;font-family:"KCCHanbit",sans-serif!important
+    position:absolute!important;z-index:40!important;left:12px!important;top:200px!important;width:80px!important;height:min(calc(100dvh - 212px),calc(187px + (var(--roster-visible,0) * 81px)))!important;box-sizing:border-box!important;margin:0!important;padding:31px 16px 72px!important;overflow:hidden!important;pointer-events:auto!important;
+    border:0!important;border-radius:40px!important;background:rgba(255,255,255,.9)!important;box-shadow:0 8px 24px #30211626!important;font-family:"KCCHanbit",sans-serif!important;
+    opacity:0!important;transform:translateY(-10px) scale(.96)!important;transform-origin:40px 0!important;transition:opacity .2s ease,transform .24s cubic-bezier(.2,.8,.2,1)!important
   }
   html.native-app[data-active-tab="character"] .character-wallet-roster[hidden]{display:none!important}
-  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip{display:grid!important;grid-template-columns:1fr!important;align-content:start!important;gap:1.1dvh!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;scrollbar-width:none!important;touch-action:pan-y!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster.is-open{opacity:1!important;transform:translateY(0) scale(1)!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip{display:grid!important;grid-template-columns:48px!important;grid-auto-rows:81px!important;align-content:start!important;gap:0!important;width:48px!important;height:100%!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;scrollbar-width:none!important;touch-action:pan-y!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip::-webkit-scrollbar{display:none!important}
-  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip button{position:relative!important;display:grid!important;justify-items:center!important;gap:.15dvh!important;width:100%!important;min-height:8.1dvh!important;margin:0!important;padding:0!important;overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important}
-  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip :is(.avatar,.sprite){display:block!important;width:18vw!important;height:5.9dvh!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip button{position:relative!important;display:grid!important;grid-template-rows:48px 17px!important;justify-items:center!important;gap:1px!important;width:48px!important;min-height:0!important;height:66px!important;margin:0!important;padding:0!important;overflow:visible!important;border:0!important;border-radius:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;filter:none!important}
+  html.native-app[data-active-tab="character"] body #app main .mobile-character-dashboard[data-character-ui-version="5"] .character-wallet-roster .mobile-character-strip button.character-roster-entry{
+    border:0!important;border-radius:0!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;filter:none!important
+  }
+  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip button::before,
+  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip button::after{display:none!important;content:none!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip :is(.avatar,.sprite){display:block!important;width:48px!important;height:48px!important;max-width:48px!important;max-height:48px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;filter:none!important;object-fit:contain!important;animation:none!important;transform:none!important;translate:0!important;scale:1!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip img.avatar{object-fit:cover!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip small{display:block!important;max-width:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;background:transparent!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1px #3a261c!important;paint-order:stroke fill!important;font:400 clamp(10px,3vw,13px)/1.1 "KCCHanbit",sans-serif!important;text-overflow:ellipsis!important;white-space:nowrap!important;text-shadow:0 1px 2px #3a261c88!important}
-  html.native-app[data-active-tab="character"] .character-roster-actions{position:absolute!important;left:0!important;right:0!important;bottom:1.2dvh!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;align-items:center!important;gap:1vw!important;padding:0 2.4vw!important}
-  html.native-app[data-active-tab="character"] .character-roster-actions button{display:grid!important;place-items:center!important;width:100%!important;height:5.1dvh!important;min-height:40px!important;margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;color:#5f402f!important;-webkit-text-fill-color:#5f402f!important;font:700 clamp(23px,7vw,32px)/1 sans-serif!important;box-shadow:none!important}
+  html.native-app[data-active-tab="character"] .character-roster-actions{position:absolute!important;left:6px!important;right:6px!important;bottom:14px!important;display:grid!important;grid-template-columns:repeat(3,1fr)!important;align-items:center!important;gap:2px!important;padding:0!important}
+  html.native-app[data-active-tab="character"] .character-roster-actions button{display:grid!important;place-items:center!important;width:100%!important;height:42px!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;color:#5f402f!important;-webkit-text-fill-color:#5f402f!important;font:700 31px/1 sans-serif!important;box-shadow:none!important}
   html.native-app[data-active-tab="character"] body #app main .character-roster-actions button{background-color:transparent!important;background-image:none!important;color:#5f402f!important;-webkit-text-fill-color:#5f402f!important}
   html.native-app[data-active-tab="character"] .character-roster-add img{width:100%!important;height:100%!important;object-fit:contain!important}
   html.native-app[data-active-tab="character"] .character-roster-actions button:disabled{opacity:.35!important}
@@ -6876,8 +6865,10 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .character-full-choice>small{position:absolute!important;left:19%!important;right:14%!important;top:65%!important;color:#66574e!important;-webkit-text-fill-color:#66574e!important;font:400 clamp(8px,2.45vw,11px)/1.2 "KCCHanbit",sans-serif!important}
   html.native-app[data-active-tab="character"] body #app main .character-full-choice>b{color:#3b302a!important;-webkit-text-fill-color:#3b302a!important}
   html.native-app[data-active-tab="character"] body #app main .character-full-choice>small{color:#66574e!important;-webkit-text-fill-color:#66574e!important}
-  html.native-app[data-active-tab="character"] .character-favorite-preview{position:absolute!important;left:16%!important;right:13%!important;top:22%!important;height:27%!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:5%!important;align-items:center!important}
-  html.native-app[data-active-tab="character"] .character-favorite-object{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;background:#d7d4d0!important;border-radius:3px!important;overflow:hidden!important}
+  html.native-app[data-active-tab="character"] .character-favorite-preview{position:absolute!important;inset:0!important;display:block!important;pointer-events:none!important}
+  html.native-app[data-active-tab="character"] .character-favorite-object{position:absolute!important;display:grid!important;place-items:center!important;width:26.14%!important;height:19.57%!important;background:#d9d9d9!important;border-radius:0!important;overflow:hidden!important;transform-origin:0 0!important}
+  html.native-app[data-active-tab="character"] .character-favorite-object:nth-child(1){left:50.95%!important;top:15.82%!important;transform:rotate(-25.6648deg)!important}
+  html.native-app[data-active-tab="character"] .character-favorite-object:nth-child(2){left:42.72%!important;top:66.61%!important;transform:rotate(12.7923deg)!important}
   html.native-app[data-active-tab="character"] .character-favorite-object.has-image{background:transparent!important}
   html.native-app[data-active-tab="character"] .character-favorite-object img{width:100%!important;height:100%!important;object-fit:contain!important;background:transparent!important}
   html.native-app[data-active-tab="character"] .character-favorite-object i{color:#8c8782!important;font-style:normal!important}

@@ -1,9 +1,9 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823performance1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823performance1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823performance1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823visualrestore1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823visualrestore1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823visualrestore1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -2140,7 +2140,7 @@ function character(){
     worldTaste:["세계관 물품","최애·소지품","05"],
     manage:["이미지와 화면","사진·SD·LD·색상·홈 배치","06"]
   };
-  const mobileCharacterIds=state.order.filter(id=>id!==c.id),rosterVisibleRows=Math.min(6,Math.max(1,mobileCharacterIds.length));
+  const mobileCharacterIds=state.order.filter(id=>id!==c.id),rosterVisibleRows=Math.min(6,mobileCharacterIds.length);
   const mobileStrip=mobileCharacterIds.map(id=>{const x=state.characters[id];return `<button type="button" data-mobile-character-select="${id}" class="character-roster-entry" style="--own:${x.theme.primary}">${avatar(x)}<small>${esc(x.name)}</small></button>`}).join("");
   const reorderRows=state.order.map((id,index)=>{const x=state.characters[id];return `<div class="mobile-character-reorder-row">${avatar(x)}<b>${esc(x.name)}</b><span><button type="button" data-sort="${id}" data-direction="-1" ${index===0?"disabled":""} aria-label="위로 이동">↑</button><button type="button" data-sort="${id}" data-direction="1" ${index===state.order.length-1?"disabled":""} aria-label="아래로 이동">↓</button></span></div>`}).join("");
   const ldSource=ldArtSource(c);
