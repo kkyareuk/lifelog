@@ -6605,12 +6605,16 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   color:#fff!important;font-size:clamp(27px,8.6vw,38px)!important;line-height:1!important;object-fit:contain!important;filter:drop-shadow(0 3px 3px #0008)!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>small{top:7.63dvh!important;left:50%!important;width:clamp(62px,18.15vw,84px)!important;max-width:none!important;transform:translateX(-50%)!important}
+/* Tablet hotfix: keep the phone HUD coordinates, but cap illustrated controls
+   so a landscape tablet cannot scale them to the full viewport width. */
 @media(min-width:721px){
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side{width:76px!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left :is(button>span,.game-hud-menu-art){width:70px!important;height:70px!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right :is(button>span,.game-hud-menu-art){width:62px!important;height:62px!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side button>small{width:94px!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>span,
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>img{width:88px!important;height:88px!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>small{width:84px!important}
 }
 html.native-platform[data-active-tab="observe"] .game-observe-empty[data-native-hud-version="4"] .game-hud-top{display:block!important}
 html.native-platform[data-active-tab="observe"] .game-observe-empty[data-native-hud-version="4"] .game-hud-empty-top>div{
