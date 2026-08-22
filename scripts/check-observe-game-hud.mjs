@@ -15,6 +15,7 @@ const homeSceneCss=read("home-scene-layout.css");
 
 const checks=[
   [views.includes('class="game-observe-hud')&&views.includes('class="game-hud-top"')&&views.includes('data-native-hud-version="4"'),"관찰 화면의 단일 게임 HUD v4 구조"],
+  [views.includes('class="game-observe-hud game-observe-empty" data-native-hud-version="4"')&&css.includes('[data-native-hud-version="4"].game-observe-empty .game-observe-empty-copy')&&css.includes('transform:translate(-50%,-50%)!important'),"주민 없는 사용자 마을도 HUD v4 좌표계와 중앙 빈 상태 안내 사용"],
   [views.includes('gameHudSideMenu("left",c)')&&views.includes('gameHudSideMenu("right",c)'),"좌우 기능 메뉴"],
   [views.includes('class="game-hud-dock"')&&views.includes('"mailbox.png"')&&views.includes('"ink.png"')&&views.includes('data-tab="mailbox"')&&views.includes('data-open-native-log')&&fs.existsSync(path.join(root,"assets/home-ui/mailbox.png")),"제공 스프라이트의 우편함·기록물 원화가 포함된 하단 주요 메뉴"],
   [views.includes('"town.png"')&&views.includes('"shop.png"')&&views.includes('"home.png"')&&["town.png","shop.png","home.png"].every(file=>fs.existsSync(path.join(root,"assets/home-ui",file))),"제공 스프라이트의 집·상점·마을 원화 연결"],
