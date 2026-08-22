@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822emptytownhud2";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822emptytownhud2";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823performance1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823performance1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -705,7 +705,7 @@ function load(){
     ].map(parse).filter(value=>count(value)>0).sort((a,b)=>count(b)-count(a)||Number(b.lastSaved||0)-Number(a.lastSaved||0));
     if(candidates[0]){
       try{
-        const recovered=JSON.stringify(serializeLocalMediaState(candidates[0]));
+        const recovered=stringifyLocalMediaState(candidates[0]);
         localStorage.setItem(KEY,recovered);
         localStorage.setItem(LAST_NONEMPTY_KEY,recovered);
         localStorage.setItem("drawer-village-recovered-empty-cloud","1");
@@ -720,6 +720,8 @@ export let state=load();
 let timer;
 let pendingNotify=false;
 let saveRunning=false;
+let lastRecoveryBackupAt=0;
+let lastRecoveryBackupSerialized="";
 let deferredTextSaveTarget=null;
 let deferredTextSaveHandler=null;
 function clearDeferredTextSave(){
@@ -729,10 +731,19 @@ function clearDeferredTextSave(){
 }
 export const active=()=>state.characters[state.activeId];
 const hasCharacters=value=>Array.isArray(value?.order)&&value.order.some(id=>value.characters?.[id]);
-function preserveLastNonempty(value,serialized=""){
+function preserveLastNonempty(value,serialized="",force=false){
   if(!hasCharacters(value))return false;
+  const now=Date.now();
+  // The primary save remains immediate.  The recovery mirror is only a safety
+  // copy, so rewriting the same multi-megabyte payload for every slider or
+  // checkbox doubled storage work without improving recovery.  Refresh it at
+  // most once per minute, and force it for imports/state replacement.
+  if(!force&&lastRecoveryBackupAt&&now-lastRecoveryBackupAt<60_000)return true;
   try{
-    localStorage.setItem(LAST_NONEMPTY_KEY,serialized||JSON.stringify(serializeLocalMediaState(value)));
+    const payload=serialized||stringifyLocalMediaState(value);
+    if(payload!==lastRecoveryBackupSerialized)localStorage.setItem(LAST_NONEMPTY_KEY,payload);
+    lastRecoveryBackupSerialized=payload;
+    lastRecoveryBackupAt=now;
     return true;
   }catch{return false}
 }
@@ -743,7 +754,7 @@ function writeState(notify=true){
   try{
     syncTown();
     state.lastSaved=Date.now();
-    const serialized=JSON.stringify(serializeLocalMediaState(state));
+    const serialized=stringifyLocalMediaState(state);
     localStorage.setItem(KEY,serialized);
     preserveLastNonempty(state,serialized);
     stored=true;
@@ -1491,15 +1502,15 @@ export function moveHomeOnTown(id,x,y,persist=true){
   if(persist)save();
 }
 export function replaceState(next){
-  preserveLastNonempty(state);
+  preserveLastNonempty(state,"",true);
   const prepared=migrate(preserveDevicePhotos(state,clone(next)));
-  const serialized=JSON.stringify(serializeLocalMediaState(prepared));
+  const serialized=stringifyLocalMediaState(prepared);
   try{
     // 영구 저장이 성공한 뒤에만 실행 중 상태를 교체한다. 예전 순서는
     // localStorage 용량 오류가 나면 메모리만 바뀌고 화면·디스크는 서로 다른
     // 상태가 되어, 불러오기 직후 캐릭터가 전부 사라진 것처럼 보일 수 있었다.
     localStorage.setItem(KEY,serialized);
-    preserveLastNonempty(prepared,serialized);
+    preserveLastNonempty(prepared,serialized,true);
   }catch(firstError){
     // 이미 새 저장 키로 이관이 끝난 구버전 복사본만 정리하고 한 번 재시도한다.
     // 현재 저장본과 클라우드 복구본은 절대 지우지 않는다.
@@ -1508,7 +1519,7 @@ export function replaceState(next){
     });
     try{
       localStorage.setItem(KEY,serialized);
-      preserveLastNonempty(prepared,serialized);
+      preserveLastNonempty(prepared,serialized,true);
     }catch(error){
       const failure=new Error("backup-storage-full",{cause:error||firstError});
       failure.code="backup-storage-full";
@@ -1520,6 +1531,8 @@ export function replaceState(next){
 }
 export function resetAll(){
   state=fresh();
+  lastRecoveryBackupAt=0;
+  lastRecoveryBackupSerialized="";
   localStorage.removeItem(KEY);
   localStorage.removeItem("parallel-city-game-v4");
   localStorage.removeItem("parallel-city-game-v3");

@@ -8,6 +8,14 @@ const androidGradle=await readFile(new URL("../android/app/build.gradle",import.
 const appVersionName=androidGradle.match(/versionName\s+["']([^"']+)["']/)?.[1]||"";
 const appVersionCode=androidGradle.match(/versionCode\s+(\d+)/)?.[1]||"";
 const includedDirectories=new Set(["fonts","icons","assets","world-assets","vendor","shop-assets","theme-assets"]);
+// Keep high-resolution source artwork in the repository without shipping it
+// in every APK. Runtime state and selectors use the optimized town JPEG; the
+// source files below are editing leftovers; packaged views use optimized variants.
+const excludedAndroidAssets=new Set([
+  "world-assets/cozy-town.png",
+  "world-assets/downtown.png",
+  "assets/character-ui/paper.png"
+]);
 const includedFiles=new Set([
   "index.html","app.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
@@ -33,10 +41,11 @@ async function copyPortable(source,target){
     const to=new URL(`${entry.name}${entry.isDirectory()?"/":""}`,target);
     if(entry.isDirectory())await copyPortable(from,to);
     else{
+      const relativePath=relative(fileURLToPath(root),fileURLToPath(from)).replaceAll("\\","/");
+      if(excludedAndroidAssets.has(relativePath))continue;
       try{await writeFile(to,await readFile(from));}
       catch(error){
         if(error?.code!=="EPERM")throw error;
-        const relativePath=relative(fileURLToPath(root),fileURLToPath(from));
         const backupPath=join(fileURLToPath(root),"android","app","src","main","assets","public",relativePath);
         try{
           await writeFile(to,await readFile(backupPath));
@@ -103,7 +112,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260822emptytownhud2";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260823performance1";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

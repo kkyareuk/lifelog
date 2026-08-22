@@ -1,9 +1,9 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260822emptytownhud2";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260822emptytownhud2";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822emptytownhud2";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823performance1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823performance1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823performance1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -475,9 +475,14 @@ const displayEntityNames=()=>[
   ...(state.towns||[]).flatMap(town=>[town?.name,...(town?.places||[]).map(place=>place?.name)]),
   ...Object.values(state.catalog||{}).flatMap(items=>(items||[]).map(item=>item?.name))
 ].filter(Boolean).map(String).sort((a,b)=>b.length-a.length);
+let displayParticleMatcherRevision="",cachedDisplayParticleMatcher=null;
 const displayParticleMatcher=()=>{
+  const revision=`${Number(state.lastSaved||0)}:${state.order.length}:${Object.keys(state.homes||{}).length}`;
+  if(revision===displayParticleMatcherRevision)return cachedDisplayParticleMatcher;
   const names=displayEntityNames();
-  return names.length?new RegExp(`(${names.map(regexEscape).join("|")})(은|는|이|가|을|를|과|와)(?=[\\s,.!?·'\"’”)]|$)`,"g"):null;
+  cachedDisplayParticleMatcher=names.length?new RegExp(`(${names.map(regexEscape).join("|")})(은|는|이|가|을|를|과|와)(?=[\\s,.!?·'\"’”)]|$)`,"g"):null;
+  displayParticleMatcherRevision=revision;
+  return cachedDisplayParticleMatcher;
 };
 function resolveDisplayParticles(text,matcher=displayParticleMatcher()){
   let result=String(text||"")
@@ -513,19 +518,25 @@ const fallbackEvent=c=>{
   return {minute:new Date().getHours()*60+new Date().getMinutes(),title:"생활 장면을 다시 계산하는 중",desc:"저장된 설정은 그대로 두고 현재 장면만 안전하게 다시 계산하고 있어요.",home:true,room:c?.sleepRoomId||roomKeys[0]||"",townId:c?.townId||state.activeTownId,mood:"대기"};
 };
 const renderEventCache=new Map(),renderTimelineCache=new Map();
+const cacheSetBounded=(cache,key,value)=>{
+  cache.set(key,value);
+  if(cache.size>160)cache.delete(cache.keys().next().value);
+  return value;
+};
+const renderSceneCacheKey=(c,date)=>`${c?.id||""}:${Number(c?.timelineResetAt||0)}:${Number(state.lastSaved||0)}:${state.uiLanguage}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}:${date.getHours()}:${date.getMinutes()}`;
 const eventFor=(c,date=new Date())=>{
-  const key=`${c?.id||""}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}:${date.getHours()}:${date.getMinutes()}`;
+  const key=renderSceneCacheKey(c,date);
   if(renderEventCache.has(key))return renderEventCache.get(key);
-  try{const value=simulateEventFor(c,date)||fallbackEvent(c);renderEventCache.set(key,value);return value}
+  try{return cacheSetBounded(renderEventCache,key,simulateEventFor(c,date)||fallbackEvent(c))}
   catch(error){
     if(!sceneFailureIds.has(c?.id)){sceneFailureIds.add(c?.id);console.error(`캐릭터 장면 계산 실패 · ${c?.id||"unknown"}`,error)}
     return fallbackEvent(c);
   }
 };
 const visibleTimeline=(c,date=new Date())=>{
-  const key=`${c?.id||""}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}:${date.getHours()}:${date.getMinutes()}`;
+  const key=renderSceneCacheKey(c,date);
   if(renderTimelineCache.has(key))return renderTimelineCache.get(key);
-  try{const entries=simulateVisibleTimeline(c,date),value=Array.isArray(entries)?entries:[];renderTimelineCache.set(key,value);return value}
+  try{const entries=simulateVisibleTimeline(c,date),value=Array.isArray(entries)?entries:[];return cacheSetBounded(renderTimelineCache,key,value)}
   catch(error){
     if(!sceneFailureIds.has(c?.id)){sceneFailureIds.add(c?.id);console.error(`캐릭터 생활 로그 계산 실패 · ${c?.id||"unknown"}`,error)}
     return[];
@@ -3181,8 +3192,6 @@ function view(){
 }
 export function renderApp(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];
-  renderEventCache.clear();
-  renderTimelineCache.clear();
   let content;
   try{content=view()}
   catch(error){

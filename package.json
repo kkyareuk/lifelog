@@ -26,7 +26,8 @@
     "test:android-assets": "node scripts/check-android-build-assets.mjs",
     "test:date-schedule-companion": "node scripts/check-game-date-schedule-companion.mjs",
     "test:forward-schema-recovery": "node scripts/check-forward-schema-recovery.mjs",
-    "test:character-group-layout": "node scripts/check-character-group-layout.mjs"
+    "test:character-group-layout": "node scripts/check-character-group-layout.mjs",
+    "test:performance": "node scripts/check-performance-stability.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

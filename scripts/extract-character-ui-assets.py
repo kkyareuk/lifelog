@@ -62,7 +62,7 @@ def main() -> None:
     sheets = [Image.open(io.BytesIO(base64.b64decode(value))).convert("RGBA") for value in payloads[:6]]
 
     crops = {
-        "paper.png": (sheets[0], (2752, 142, 3958, 1948), False),
+        "paper.webp": (sheets[0], (2752, 142, 3958, 1948), False),
         "wallet.png": (sheets[1], (1280, 103, 2701, 1073), False),
         "registration-card.png": (sheets[1], (1368, 1130, 1944, 1489), False),
         "add.png": (sheets[2], (47, 1877, 271, 2101), False),
@@ -76,7 +76,12 @@ def main() -> None:
         "clip.png": (sheets[4], (629, 1746, 875, 2069), False),
     }
     for filename, (image, box, flip) in crops.items():
-        crop(image, box, flip=flip).save(output_dir / filename, optimize=True)
+        piece = crop(image, box, flip=flip)
+        if filename == "paper.webp":
+            piece.thumbnail((800, 1200), Image.Resampling.LANCZOS)
+            piece.save(output_dir / filename, "WEBP", quality=84, method=6, exact=True)
+        else:
+            piece.save(output_dir / filename, optimize=True)
 
 
 if __name__ == "__main__":

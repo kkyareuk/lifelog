@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260822-empty-town-hud2";
+const CACHE_VERSION="drawer-village-v20260823-performance1";
 const CORE=[
   "./",
   "./index.html",
@@ -47,7 +47,7 @@ const CORE=[
   ,"./assets/home-ui/town.png"
   ,"./assets/home-ui/back.png"
   ,"./assets/home-ui/wood-top.png"
-  ,"./assets/character-ui/paper.png"
+  ,"./assets/character-ui/paper.webp"
   ,"./assets/character-ui/wallet.png"
   ,"./assets/character-ui/registration-card.png"
   ,"./assets/character-ui/ribbon-profile.png"

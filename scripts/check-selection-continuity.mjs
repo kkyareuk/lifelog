@@ -39,13 +39,13 @@ state.catalog={gift:[{id:"tea",name:"차"}]};
 state.characters.source.favorites={};
 toggleFavorite("source","gift","tea",true);
 assert.deepEqual(state.characters.source.favorites.gift,["tea"]);
-assert.deepEqual(JSON.parse([...storage.values()].at(-1)).characters.source.favorites.gift,["tea"]);
+assert.deepEqual(JSON.parse(storage.get("drawer-village-game-v1")).characters.source.favorites.gift,["tea"]);
 
 const comfortOptions=["정하지 않음","함께 있으면 매우 불편하고 대화도 전혀 통하지 않음","같은 공간에서는 숨 막히지만 농담과 장난은 잘 통함","공간 공유는 불편하지만 대화는 편안함","긴장하고 대화도 조심스러움","어색하지만 필요한 대화는 무난함","함께 있는 건 편하지만 대화 호흡은 평범함","편안하고 농담과 장난이 잘 통함","말없이 함께 있어도 편안함","공간도 대화도 완벽하게 편안함"];
 for(const comfort of comfortOptions){
   state.characterViews={source:{target:{comfort:"함께 있는 건 편하지만 대화 호흡은 평범함",spaceComfort:"같이 있어도 편안함",rapport:"대화 호흡은 평범함"}}};
   assert.equal(updateCharacterView("source","target","comfort",comfort,{persist:true}),true);
-  const stored=JSON.parse([...storage.values()].at(-1));
+  const stored=JSON.parse(storage.get("drawer-village-game-v1"));
   assert.equal(stored.characterViews.source.target.comfort,comfort);
   assert.equal(Object.hasOwn(stored.characterViews.source.target,"spaceComfort"),false);
   assert.equal(Object.hasOwn(stored.characterViews.source.target,"rapport"),false);

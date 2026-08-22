@@ -47,6 +47,12 @@
   42%{transform:translate3d(0,-5px,0) rotate(-.12deg)}
   68%{transform:translate3d(0,-2px,0) rotate(.1deg)}
 }
+html.native-platform .native-character-stage.visual-mode-ld>.scene-ld-art,
+html.native-platform .native-character-stage.visual-mode-ld .native-scene-lineup-person.is-ld>.scene-ld-art{
+  animation:none!important;
+  will-change:auto!important;
+  transform:none!important;
+}
 .native-app .native-character-stage.visual-mode-ld.has-two-scene-actors>.native-scene-lineup.is-pair{
   position:absolute!important;
   inset:0!important;

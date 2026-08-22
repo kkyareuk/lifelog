@@ -6509,10 +6509,14 @@ html.native-app[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy
   object-fit:contain;
 }
 html.native-platform .native-observe-backdrop{
-  filter:saturate(.9)!important;
+  filter:none!important;
   transform:none!important;
 }
-html.native-platform :is(.page-guide,.native-status-card,.native-log-card,.home-observe-tools button){
+html.native-platform :is(.page-guide,.native-status-card,.native-log-card,.home-observe-tools button,.character-stat-actions,.relationship-map-dialog-head,.building-detail-dialog header,.game-hud-roster-options){
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+html.native-platform dialog::backdrop{
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
 }
@@ -6520,6 +6524,22 @@ html.native-platform .native-scene-atmosphere::before,
 html.native-platform .native-scene-atmosphere::after,
 html.native-platform .native-scene-effects i{
   animation:none!important;
+}
+html.native-platform :is(
+  .native-main-character,.native-scene-lineup-person,.native-scene-companion,
+  .native-scene-action-prop,.native-person-action-prop,.native-pet-actor,
+  .native-conversation-bubbles i,.native-important-thought,.native-character-sleep-mark,
+  .home-person-visual,.room-pet,.room-sleep-mark
+){
+  animation:none!important;
+  will-change:auto!important;
+}
+html.native-platform :is(
+  .catalog-dex-card,.setting-card,.settings-complete-group,.relation,
+  .character-group-card,.routine-day,.monthly-day,.shop-product-grid>article
+){
+  content-visibility:auto;
+  contain-intrinsic-size:auto 260px;
 }
 html.native-platform .native-character-picker button.on :is(.avatar,.sprite),
 html.native-platform .game-hud-roster-options button.on :is(.avatar,.sprite){
@@ -6761,7 +6781,7 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .mobile-character-dashboard.is-hidden{display:none!important}
   html.native-app[data-active-tab="character"] .mobile-character-dashboard[data-character-ui-version="5"]::before{
     content:""!important;position:absolute!important;z-index:0!important;left:-12vw!important;top:3.6dvh!important;width:125vw!important;aspect-ratio:1206/1806!important;
-    background:transparent url("./assets/character-ui/paper.png") center/contain no-repeat!important;transform:rotate(-2.8deg)!important;transform-origin:50% 8%!important;pointer-events:none!important
+    background:transparent url("./assets/character-ui/paper.webp") center/contain no-repeat!important;transform:rotate(-2.8deg)!important;transform-origin:50% 8%!important;pointer-events:none!important
   }
   html.native-app[data-active-tab="character"] .mobile-character-profile-draft{
     position:absolute!important;z-index:20!important;inset:0!important;display:block!important;width:100vw!important;height:56dvh!important;

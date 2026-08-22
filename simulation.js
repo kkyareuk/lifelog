@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260822emptytownhud2";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260822emptytownhud2";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823performance1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260823performance1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2559,7 +2559,20 @@ function build(c,date=new Date()){
 const ENGINE_VERSION="20260822-shared-scene-integrity3";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+const signatureCache=new Map();
+function signature(c){
+  // Most screens ask for both the current event and the visible timeline.
+  // Both used to serialize the same large simulation input independently.
+  // Character simulation fields update timelineResetAt and relationship/town
+  // edits update lastSaved, so this revision safely reuses that signature.
+  const revision=`${Number(c.timelineResetAt||0)}:${Number(state.lastSaved||0)}:${state.uiLanguage}:${state.order.length}`;
+  const cached=signatureCache.get(c.id);
+  if(cached?.revision===revision)return cached.value;
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
+  signatureCache.set(c.id,{revision,value});
+  if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
+  return value;
+}
 
 const entryMomentKey=item=>{
   const minute=Number(item?.minute);
@@ -2751,10 +2764,13 @@ export function timeline(c,date=new Date()){
   if(c.days[key]&&(!c.days[key]||typeof c.days[key]!=="object"||Array.isArray(c.days[key])))delete c.days[key];
   const old=c.days[key];
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
-  if(old&&Array.isArray(old.entries)){
+  if(old&&Array.isArray(old.entries)&&old.cleanupVersion!==ENGINE_VERSION){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
     const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
-    if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
+    const changed=JSON.stringify(cleaned)!==JSON.stringify(old.entries);
+    if(changed)old.entries=cleaned;
+    old.cleanupVersion=ENGINE_VERSION;
+    save(false,false);
   }
   const today=key===dayKey(new Date());
   // 한 번 만든 하루의 기록은 앱 업데이트나 스크립트 팩 변경으로 다시 쓰지 않는다.
@@ -2774,7 +2790,7 @@ export function timeline(c,date=new Date()){
       const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>engineChanged?item.minute<cutoff:item.minute<=cutoff));
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
-    c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};
+    c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,cleanupVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};
     save(false,false);
   }
   return Array.isArray(c.days[key]?.entries)?c.days[key].entries:[];
@@ -2786,9 +2802,13 @@ function commitLiveEntry(c,date,item){
   if(!day||!item)return item;
   item={...item,time:clock(Number(item.minute))};
   const entries=Array.isArray(day.entries)?day.entries:[];
+  const applyEntries=nextEntries=>{
+    const changed=nextEntries.length!==entries.length||nextEntries.some((entry,index)=>JSON.stringify(entry)!==JSON.stringify(entries[index]));
+    if(changed){day.entries=nextEntries;save(false,false)}
+    return changed;
+  };
   if(item.forcedReturn){
-    day.entries=mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]);
-    save(false,false);
+    applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]));
     return item;
   }
   // 공동 장면 직전에 baseEventFor가 만든 일반 장면이 같은 표시 시각에 남아 있으면
@@ -2810,14 +2830,12 @@ function commitLiveEntry(c,date,item){
           String(item.title||"").split(" · ").includes(String(entry.title||"")));
       return !shadowedBase;
     });
-    day.entries=mergeImmutableEntries(withoutSameMoment,[item]);
-    save(false,false);
+    applyEntries(mergeImmutableEntries(withoutSameMoment,[item]));
     return item;
   }
   const interactionIndex=item.interactionId?entries.findIndex(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute)):-1;
   if(interactionIndex>=0){
-    day.entries=entries.map((entry,index)=>index===interactionIndex?{...entry,...item}:entry);
-    save(false,false);
+    applyEntries(entries.map((entry,index)=>index===interactionIndex?{...entry,...item}:entry));
     return item;
   }
   const sceneKey=value=>String(value||"").split(" · ")[0].replace(/\s+/g," ").trim();

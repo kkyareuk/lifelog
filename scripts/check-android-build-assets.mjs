@@ -16,9 +16,10 @@ function filesUnder(directory){
 const preparedFiles=filesUnder(wwwRoot);
 const required=[
   "index.html","app.js","views.js","state.js","simulation.js","auth.js",
-  "icons/drawer-village-logo.png","assets/character-ui/paper.png",
-  "assets/character-ui/wallet.png","fonts/KCC-Hanbit.ttf"
+  "icons/drawer-village-logo.png","assets/character-ui/paper.webp",
+  "assets/character-ui/wallet.png","world-assets/cozy-town-optimized.jpg","fonts/KCC-Hanbit.ttf"
 ];
+const excluded=["world-assets/cozy-town.png","world-assets/downtown.png","assets/character-ui/paper.png"];
 const failures=[];
 
 if(!gradle.includes("'-WebSource', rootProject.file('../www').absolutePath")){
@@ -35,6 +36,9 @@ for(const path of required){
   if(!existsSync(absolute)||!statSync(absolute).isFile()||statSync(absolute).size===0){
     failures.push(`Missing required prepared asset: ${path}`);
   }
+}
+for(const path of excluded){
+  if(existsSync(resolve(wwwRoot,path)))failures.push(`Unused high-resolution source asset was packaged: ${path}`);
 }
 if(preparedFiles.length<100){
   failures.push(`Prepared web asset set is unexpectedly small: ${preparedFiles.length}`);
