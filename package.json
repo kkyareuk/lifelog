@@ -23,7 +23,8 @@
     "test:observe-hud": "node scripts/check-observe-game-hud.mjs",
     "test:selection-continuity": "node scripts/check-selection-continuity.mjs",
     "test:date-schedule-companion": "node scripts/check-game-date-schedule-companion.mjs",
-    "test:android-assets": "node scripts/check-android-build-assets.mjs"
+    "test:android-assets": "node scripts/check-android-build-assets.mjs",
+    "test:forward-schema-recovery": "node scripts/check-forward-schema-recovery.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
