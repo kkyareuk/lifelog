@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260822relationshipscroll1";
-import {eventFor,forceCharactersHome} from "./simulation.js?v=20260822relationshipscroll1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260822relationshipscroll1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260822relationshipscroll1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260822relationshipscroll1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260822relationshipscroll1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260822relationshipscroll1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260822emptytownhud1";
+import {eventFor,forceCharactersHome} from "./simulation.js?v=20260822emptytownhud1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260822emptytownhud1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260822emptytownhud1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260822emptytownhud1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260822emptytownhud1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260822emptytownhud1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -2353,11 +2353,6 @@ function bind(){
     button.classList.toggle("on",!selected);button.setAttribute("aria-pressed",String(!selected));
     save(true);queueCharacterNotificationSchedule();
   });
-  $('[data-character-update-notices]')?.addEventListener('change',event=>{
-    state.characterNotificationSettings.updateNotices=event.currentTarget.checked;
-    save(true);event.currentTarget.blur();
-    if(event.currentTarget.checked)queueCurrentBuildUpdateNotice();
-  });
   $('[data-character-schedule-end-notices]')?.addEventListener('change',event=>{
     state.characterNotificationSettings.scheduleEnds=event.currentTarget.checked;
     save(true);event.currentTarget.blur();queueCharacterNotificationSchedule();
@@ -3979,29 +3974,6 @@ async function syncCharacterNotificationSchedule(){
   }));
   await replaceCharacterNotifications(items);save(true);return true;
 }
-let currentBuildUpdateNoticeTimer=0;
-function queueCurrentBuildUpdateNotice(){
-  clearTimeout(currentBuildUpdateNoticeTimer);
-  currentBuildUpdateNoticeTimer=setTimeout(()=>scheduleCurrentBuildUpdateNotice().catch(error=>console.warn("업데이트 알림 예약 실패",error)),1200);
-}
-async function scheduleCurrentBuildUpdateNotice(){
-  if(!state.characterNotificationsEnabled||state.characterNotificationSettings?.updateNotices===false||!characterNotificationsAvailable())return false;
-  if(await characterNotificationPermission()!=="granted")return false;
-  const version=String(window.DRAWER_VILLAGE_APP_VERSION||"").trim();
-  if(!version)return false;
-  const key=`drawer-village-update-notice:${version}`;
-  if(localStorage.getItem(key)==="scheduled")return false;
-  const updateCharacters=notificationSelectedCharacters(),versionCode=Number(window.DRAWER_VILLAGE_VERSION_CODE)||0;
-  const character=updateCharacters.length?updateCharacters[versionCode%updateCharacters.length]:active();if(!character)return false;
-  const language=state.uiLanguage||"ko",copy=({
-    ko:`설정 화면이 더 안정적으로 움직이고, 오늘의 질문은 캐릭터 화면에서 편하게 확인할 수 있게 바뀌었어요.`,
-    en:`Settings now stay in place, and today's questions can be opened calmly from the Character screen.`,
-    ja:`設定画面が安定し、今日の質問はキャラクター画面から落ち着いて確認できるようになりました。`
-  })[language]||"";
-  const largeIcon=await characterNotificationLargeIcon(character.icon||character.photo||"");
-  await scheduleCharacterNotification({id:829000000+(Number(window.DRAWER_VILLAGE_VERSION_CODE)||0),title:`${character.name} · ${language==="en"?"Update news":language==="ja"?"アップデートのお知らせ":"업데이트 소식"}`,body:copy,largeIcon,at:new Date(Date.now()+12000),extra:{mode:"update",characterId:character.id,version}});
-  localStorage.setItem(key,"scheduled");return true;
-}
 function notificationConsentCopy(){
   const language=state.uiLanguage||"ko";
   return ({
@@ -4023,7 +3995,7 @@ async function enableCharacterNotificationsWithConsent(source){
   if(current!=="granted"&&!(await confirmCharacterNotificationConsent()))return false;
   const permission=current==="granted"?current:await requestCharacterNotificationPermission();
   state.characterNotificationConsent=permission==="granted"?"granted":"denied";state.characterNotificationsEnabled=permission==="granted";
-  if(permission==="granted"){await initializeCharacterNotifications();await syncCharacterNotificationSchedule();queueCurrentBuildUpdateNotice();showToast("캐릭터 연락 알림을 켰어요")}
+  if(permission==="granted"){await initializeCharacterNotifications();await syncCharacterNotificationSchedule();showToast("캐릭터 연락 알림을 켰어요")}
   else showToast("알림이 허용되지 않았어요. 휴대폰 설정에서 다시 켤 수 있어요");
   save(true);updateCharacterNotificationControls();return permission==="granted";
 }
@@ -4044,7 +4016,6 @@ window.addEventListener("drawer-village-character-notification-open",event=>{
     setDailyQuestion({day:localDateKey(now),minute:now.getHours()*60+now.getMinutes(),characterId:character.id,targetId:extra.targetId||"",kind:extra.questionKind||"everyday",shown:true,answered:false});
     navigateToTab("mailbox");return;
   }
-  if(extra.mode==="update"){navigateToTab("mailbox");return}
   navigateToTab("observe");
 });
 function scheduleLiveSceneRefresh(){
@@ -4063,7 +4034,6 @@ scheduleLiveSceneRefresh();
 ensureDailyQuestionSchedule();
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
   if(Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
-  queueCurrentBuildUpdateNotice();
 });
 const restoreForegroundState=()=>{
   refreshLocalMedia();
@@ -4104,7 +4074,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260822relationshipscroll1").catch(error=>{
+  import("./auth.js?v=20260822emptytownhud1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4119,7 +4089,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260822relationshipscroll1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260822emptytownhud1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

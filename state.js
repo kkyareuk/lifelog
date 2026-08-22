@@ -1,5 +1,5 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822relationshipscroll1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822relationshipscroll1";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822emptytownhud1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822emptytownhud1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -179,7 +179,7 @@ const normalizeHomeSceneLayout=value=>{
   }));
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
-const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:true,recentSignatures:[],lastScheduledAt:0});
+const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
 const fresh=()=>({schema:24,activeTab:"observe",characterPane:"profile",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"rose",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
@@ -272,7 +272,9 @@ function normalizeHomes(x){
     voiceMode:["mixed","character","concise"].includes(notificationSource.voiceMode)?notificationSource.voiceMode:notificationDefaults.voiceMode,
     contentKinds:Array.isArray(notificationSource.contentKinds)?[...new Set(notificationSource.contentKinds.flatMap(kind=>kind==="moments"?["checkins","comfort","lifeLogs"]:[kind]).filter(kind=>notificationDefaults.contentKinds.includes(kind)))]:notificationDefaults.contentKinds,
     scheduleEnds:Boolean(notificationSource.scheduleEnds),
-    updateNotices:notificationSource.updateNotices===undefined?true:Boolean(notificationSource.updateNotices),
+    // 업데이트 공지는 더 이상 기기 알림으로 예약하지 않는다. 이전 백업의
+    // true 값도 복원 시 false로 고정해 구버전 설정이 다시 살아나지 않게 한다.
+    updateNotices:false,
     recentSignatures:Array.isArray(notificationSource.recentSignatures)?notificationSource.recentSignatures.map(String).slice(-24):[],
     lastScheduledAt:Number(notificationSource.lastScheduledAt)||0
   };
