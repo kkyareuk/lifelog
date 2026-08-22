@@ -2556,7 +2556,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260822-schedule-companion2";
+const ENGINE_VERSION="20260822-shared-scene-integrity3";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
@@ -2684,16 +2684,27 @@ function cleanLegacyDateEntries(entries){
     return purpose?{...item,datePurpose:purpose,dateGroup:`${item.dateGroup}-${hash(purpose).toString(36)}`} :item;
   });
 }
+function repairSelfNamedPartnerText(c,partner,value){
+  if(!c?.name||!partner?.name||c.id===partner.id)return String(value||"");
+  const own=String(c.name).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  return String(value||"")
+    .replace(new RegExp(`(${own}(?:이|가)?\\s*)${own}(?:와|과)(?=\\s|$)`,"g"),`$1${togetherWith(partner.name)}`)
+    .replace(new RegExp(`(${own}(?:이|가)?\\s*)${own}(?=(?:에게|랑|하고))`,"g"),`$1${partner.name}`);
+}
 function cleanSelfCompanionEntries(c,entries){
   const ownName=String(c?.name||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
   const selfScene=ownName?new RegExp(`(?:${ownName})(?:이|가)?\\s*(?:${ownName})(?:와|과|에게|랑|하고)`):null;
-  return entries.filter(item=>item?.withId!==c.id&&!selfScene?.test(`${item?.title||""} ${item?.desc||""}`)).map(item=>{
+  return entries.map(item=>{
     const withIds=[...new Set((item.withIds||[]).filter(id=>id&&id!==c.id&&state.characters[id]))];
     const participantOrder=[...new Set((item.participantOrder||[]).filter(id=>id&&state.characters[id]))];
     const withId=item.withId&&item.withId!==c.id&&state.characters[item.withId]?item.withId:withIds[0];
     if(item.groupInteraction&&!withId&&!withIds.length)return {...item,withId:undefined,withIds:[],participantOrder:participantOrder.filter(id=>id===c.id),groupInteraction:false,interactionId:undefined};
-    return {...item,withId,withIds,participantOrder};
-  });
+    const partner=state.characters[withId];
+    const repaired=selfScene?.test(`${item?.title||""} ${item?.desc||""}`)&&partner
+      ?{title:repairSelfNamedPartnerText(c,partner,item.title),desc:repairSelfNamedPartnerText(c,partner,item.desc)}
+      :{};
+    return {...item,...repaired,withId,withIds,participantOrder};
+  }).filter(item=>item?.withId!==c.id);
 }
 function cleanCharacterBreakingCheeringEntries(entries){
   // 초기 스크립트 팩에 있던 막연한 “하루를 응원” 문장은 상대별 시선과 무관하게
@@ -3776,11 +3787,13 @@ function namedSharedPartner(event,owner){
 }
 function counterpartSourceEvent(source,sourceOwner,viewer){
   const base=baseSceneFrom(source);
-  const swap=value=>String(value||"").split(viewer.name).join(sourceOwner.name);
   return {
     ...base,
-    title:swap(base.title),
-    desc:swap(base.desc),
+    // source is already a shared scene. Its baseTitle/baseDesc are the neutral
+    // solo scene that existed before the encounter. Replacing every mention of
+    // the viewer used to turn “크로가 네리네와” into “크로가 크로와”.
+    title:base.baseTitle||base.title,
+    desc:base.baseDesc||base.desc,
     withId:sourceOwner.id,
     withIds:[sourceOwner.id],
     participantOrder:[sourceOwner.id,viewer.id],
@@ -3811,14 +3824,21 @@ function committedSharedSceneFor(c,date,current){
   const entries=c?.days?.[dayKey(date)]?.entries;
   if(!Array.isArray(entries))return null;
   const minute=nowMin(date);
-  return entries.slice().reverse().find(item=>
-    item?.groupInteraction
-    &&item.interactionId
-    &&Number(item.minute)<=minute
-    &&minute-Number(item.minute)<30
-    &&sameLiveLocation(item,current)
-    &&[c.id,...(item.participantOrder||[]),...(item.withIds||[]),item.withId].filter(Boolean).includes(c.id)
-  )||null;
+  return entries.slice().reverse().find(item=>{
+    if(!item?.groupInteraction||!item.interactionId||Number(item.minute)>minute||minute-Number(item.minute)>=30||!sameLiveLocation(item,current))return false;
+    const participantIds=[...(item.participantOrder||[]),...(item.withIds||[]),item.withId].filter(id=>id&&id!==c.id);
+    if(!participantIds.length)return false;
+    // A cached shared entry is valid only while every named participant's own
+    // base timeline still resolves to the same room/place. This prevents one
+    // character from continuing a solo home activity while another screen
+    // reuses an older “together” scene with them.
+    return participantIds.every(id=>{
+      const participant=state.characters[id];
+      if(!participant)return false;
+      const participantCurrent=companionAlignedBaseEvent(participant,baseEventFor(participant,date),date);
+      return sameLiveLocation(item,participantCurrent);
+    });
+  })||null;
 }
 function sharedParticipantOrder(characters,relation){
   const available=new Set(characters.map(character=>character.id));
@@ -4035,7 +4055,9 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     current.room||""
   ].join(":");
   const sharedActionText=cleanRepeatedSceneText(`${scene.title||""} ${scene.first||""} ${scene.second||""}`);
-  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,combinedDesc))),sharedActionText,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
+  const safeTitle=repairSelfNamedPartnerText(c,actualPartner,combinedTitle);
+  const safeDescription=repairSelfNamedPartnerText(c,actualPartner,combinedDesc);
+  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(safeTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,safeDescription))),sharedActionText,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 function companionAlignedBaseEvent(c,current,date){
   if(!c||activeScheduledRoutine(c,date))return current;

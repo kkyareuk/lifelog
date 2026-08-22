@@ -47,7 +47,7 @@ const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
   home:["집","위에서 집을 고르고 ‘집 편집’을 켜세요. 한 줄 도구의 ‘방 추가·구성’에서 방을 늘리고, 방 자체를 누르면 이름·크기·사진·가구를 바꿀 수 있어요."],
   character:["캐릭터","위쪽에서 캐릭터를 고른 뒤 아래 항목 중 바꾸려는 설정을 누르세요. 프로필 내보내기는 캐릭터 이름 옆에서 바로 할 수 있고, 사진·아이콘·테마에서는 이미지와 대표색을 관리해요."],
-  catalog:["취향 사전","음식, 작품, 음악, 향과 소지품을 등록하는 도감이에요. 직접 올린 사진은 동그랗게, 사이트 일러스트는 투명 배경과 원본 비율로 보이며 실제 생활 장면에도 연결됩니다."],
+  catalog:["사전","음식, 작품, 음악, 향과 소지품을 등록하는 도감이에요. 직접 올린 사진은 동그랗게, 사이트 일러스트는 투명 배경과 원본 비율로 보이며 실제 생활 장면에도 연결됩니다."],
   relationship:["관계","먼저 마음을 보는 사람을 고른 뒤, 그 마음이 향하는 대상을 선택하세요. ‘OO가 OO을 OO으로 여김’ 문장으로 방향을 바로 확인할 수 있어요."],
   routine:["일정","주간 일정에는 반복할 요일을, 월간 일정에는 날짜가 정해진 약속을 기록해요. 시간이 정해진 행동은 무작위 생활 장면보다 먼저 적용됩니다."],
   town:["마을","평소에는 캐릭터 위치를 관찰하고, 편집 모드를 켠 뒤에만 건물을 옮기거나 정보를 바꿀 수 있어요. 건물을 누르면 편집 창이 열립니다."],
@@ -1751,6 +1751,25 @@ function bind(){
     roster.hidden=!roster.hidden;
     el.setAttribute("aria-expanded",String(!roster.hidden));
   });
+  $("[data-open-quick-character-settings]")?.addEventListener("click",()=>{
+    mobileCharacterEditorPane="quick";
+    mobileCharacterDraftDirty=false;
+    mobileCharacterEditorScroll=0;
+    mobileCharacterEditorOpenDetails=[];
+    mobileCharacterEditorDetailsCaptured=false;
+    render();
+  });
+  $("[data-open-full-character-settings]")?.addEventListener("click",()=>{
+    state.characterSettingsView="full";
+    state.characterPane="profile";
+    save(true);
+    render();
+  });
+  $("[data-close-full-character-settings]")?.addEventListener("click",()=>{
+    state.characterSettingsView="hub";
+    save(true);
+    render();
+  });
   $$("[data-open-character-pane]").forEach(el=>el.onclick=()=>{
     state.characterPane=el.dataset.openCharacterPane;
     mobileCharacterEditorPane=state.characterPane;
@@ -2317,7 +2336,7 @@ function bind(){
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });
   $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}));
-  $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
+  $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
   $$(".place-editor details").forEach(details=>{
     const audienceTitle=[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
@@ -2688,6 +2707,7 @@ function recordTabHistory(tab,replace=false){
 }
 function navigateToTab(tab,{recordHistory=true}={}){
   if(!APP_TABS.includes(tab))return;
+  if(tab==="character"&&state.activeTab!=="character")state.characterSettingsView="hub";
   const returningToObserve=tab==="observe"&&state.activeTab!=="observe";
   if(returningToObserve)armObserveProfileInputShield();
   document.querySelector(".page-guide[open]")?.close("navigate");
@@ -3864,7 +3884,7 @@ const CHARACTER_CONTACT_PHRASES={
   tastes:{
     actions:[
       {ko:"문득 {item} 생각이 나서 오늘 즐길 수 있을지 보고 있어요.",en:"I suddenly thought of {item} and I'm seeing if I can enjoy it today.",ja:"ふと{item}を思い出して、今日楽しめるか考えています。"},
-      {ko:"취향 사전에 넣어 둔 {item}을 다시 들여다보고 있어요.",en:"I'm looking back at {item} from the taste collection.",ja:"好み図鑑に入れておいた{item}をもう一度見ています。"},
+      {ko:"사전에 넣어 둔 {item}을 다시 들여다보고 있어요.",en:"I'm looking back at {item} from the dictionary.",ja:"辞典に入れておいた{item}をもう一度見ています。"},
       {ko:"오늘 기분에는 {item}이 잘 맞을 것 같아요.",en:"{item} feels like it would suit my mood today.",ja:"今日の気分には{item}が合いそうです。"},
       {ko:"비슷한 것들 사이에서 결국 {item} 쪽으로 마음이 가고 있어요.",en:"Among a few similar choices, I keep leaning toward {item}.",ja:"似たものの中でも、やっぱり{item}が気になっています。"},
       {ko:"{item}을 천천히 즐길 시간을 어디에 넣을지 생각 중이에요.",en:"I'm deciding where to make time to enjoy {item} slowly.",ja:"{item}をゆっくり楽しむ時間をどこに入れるか考えています。"},

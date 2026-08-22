@@ -7,7 +7,7 @@ const app=read("app.js"),state=read("state.js"),simulation=read("simulation.js")
 
 const checks=[
   [views.includes('class="game-hud-date"')&&views.includes('toLocaleDateString(uiLocale(),{month:"long",day:"numeric",weekday:"short"})'),"모바일 관찰 화면의 게임 날짜"],
-  [css.includes(".game-hud-date")&&css.includes("top:7.35dvh"),"게임 날짜 상단바 배치"],
+  [css.includes(".game-hud-date")&&css.includes("top:3.9dvh")&&css.includes("font-size:12px!important")&&css.includes("top:6.25dvh"),"게임 날짜를 12px로 시간 위에 배치"],
   [simulation.includes("const activeScheduledRoutine=")&&simulation.includes("if(activeRoutineEntry)return withResidenceLocation"),"등록 일정의 시작·종료 구간 우선 적용"],
   [simulation.includes("activeRoutine&&!routineCompanionIds.length")&&simulation.includes("다른 캐릭터의 대화나 공동 행동"),"동행자 없는 일정의 임의 대화 차단"],
   [simulation.includes("withIds:companionIds")&&simulation.includes("routineEndMinute:endMinute"),"일정 동행자와 종료 시각 보존"],

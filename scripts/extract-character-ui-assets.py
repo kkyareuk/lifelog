@@ -21,29 +21,59 @@ def crop(image: Image.Image, box: tuple[int, int, int, int], *, flip=False) -> I
     return piece.transpose(Image.Transpose.FLIP_LEFT_RIGHT) if flip else piece
 
 
+def trim_alpha(image: Image.Image, padding: int = 8) -> Image.Image:
+    bounds = image.getchannel("A").getbbox()
+    if not bounds:
+        return image
+    left, top, right, bottom = bounds
+    return image.crop((
+        max(0, left - padding),
+        max(0, top - padding),
+        min(image.width, right + padding),
+        min(image.height, bottom + padding),
+    ))
+
+
 def main() -> None:
     if len(sys.argv) != 3:
         raise SystemExit("usage: extract-character-ui-assets.py <character.svg> <output-dir>")
     svg_path, output_dir = Path(sys.argv[1]), Path(sys.argv[2])
     output_dir.mkdir(parents=True, exist_ok=True)
+    if svg_path.suffix.lower() == ".png":
+        sheet = Image.open(svg_path).convert("RGBA")
+        # Bounds are deliberately generous; trim_alpha removes only the fully
+        # transparent outer canvas and preserves the hand-drawn soft edges.
+        crops = {
+            "post-it.png": (2330, 1320, 2910, 1710),
+            "book.png": (1500, 1760, 3040, 3025),
+            "notebook.png": (3150, 2210, 3745, 3035),
+            "clip.png": (715, 2020, 1040, 2430),
+        }
+        for filename, box in crops.items():
+            piece = trim_alpha(sheet.crop(box))
+            if filename == "book.png":
+                piece.thumbnail((820, 820), Image.Resampling.LANCZOS)
+            piece.save(output_dir / filename, optimize=True)
+        return
     source = svg_path.read_text(encoding="utf-8")
     payloads = re.findall(r'<image[^>]+href="data:image/png;base64,([^\"]+)', source)
-    if len(payloads) < 3:
+    if len(payloads) < 6:
         raise SystemExit("character SVG did not contain the expected embedded PNGs")
-    sheets = [Image.open(io.BytesIO(base64.b64decode(value))).convert("RGBA") for value in payloads[:3]]
+    sheets = [Image.open(io.BytesIO(base64.b64decode(value))).convert("RGBA") for value in payloads[:6]]
 
     crops = {
         "paper.png": (sheets[0], (2752, 142, 3958, 1948), False),
         "wallet.png": (sheets[1], (1280, 103, 2701, 1073), False),
         "registration-card.png": (sheets[1], (1368, 1130, 1944, 1489), False),
-        "ribbon-profile.png": (sheets[1], (1324, 1559, 2445, 1678), False),
-        "ribbon-body.png": (sheets[1], (1327, 1742, 2437, 1860), True),
-        "ribbon-personality.png": (sheets[1], (1328, 1921, 2449, 2040), False),
-        "ribbon-taste.png": (sheets[1], (1325, 2092, 2446, 2211), False),
-        "ribbon-world.png": (sheets[1], (1314, 2267, 2440, 2387), True),
-        "ribbon-manage.png": (sheets[1], (1305, 2456, 2427, 2575), False),
         "add.png": (sheets[2], (47, 1877, 271, 2101), False),
         "back.png": (sheets[2], (359, 1273, 583, 1496), False),
+        # The rebuilt character hub uses the stationery pieces as independent
+        # transparent assets.  Keeping them separate avoids baking the SVG's
+        # artboard/background into every button.
+        "post-it.png": (sheets[1], (2041, 1164, 2460, 1439), False),
+        "book.png": (sheets[1], (1347, 1545, 2578, 2577), False),
+        "notebook.png": (sheets[3], (2737, 1928, 3159, 2570), False),
+        "clip.png": (sheets[4], (629, 1746, 875, 2069), False),
     }
     for filename, (image, box, flip) in crops.items():
         crop(image, box, flip=flip).save(output_dir / filename, optimize=True)
