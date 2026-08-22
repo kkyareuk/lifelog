@@ -7048,13 +7048,17 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .mobile-character-dashboard[data-character-ui-version="4"]{
     position:relative!important;display:block!important;
     width:100vw!important;height:100dvh!important;min-height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;
-    background:#eee7d7 url("./assets/character-ui/paper.png") center/auto 103% no-repeat!important;color:#241b17!important
+    isolation:isolate!important;background:#d9c6aa!important;color:#241b17!important
+  }
+  html.native-app[data-active-tab="character"] .mobile-character-dashboard[data-character-ui-version="4"]::before{
+    content:""!important;position:absolute!important;z-index:0!important;left:-14vw!important;top:4.4dvh!important;width:128vw!important;height:auto!important;aspect-ratio:1206/1806!important;
+    background:transparent url("./assets/character-ui/paper.png") center/contain no-repeat!important;transform:rotate(-2.8deg)!important;transform-origin:50% 8%!important;filter:drop-shadow(0 1.2dvh 1.8dvh #60452e42)!important;pointer-events:none!important
   }
   html.native-app[data-active-tab="character"] .mobile-character-profile-draft{
-    position:absolute!important;z-index:2!important;inset:0!important;display:block!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:visible!important;border:0!important;background:transparent!important;pointer-events:none!important
+    position:absolute!important;z-index:20!important;inset:0!important;display:block!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:visible!important;border:0!important;background:transparent!important;pointer-events:none!important
   }
   html.native-app[data-active-tab="character"] .character-draft-back{
-    position:absolute!important;z-index:12!important;left:2.91vw!important;top:5.56dvh!important;width:19.42vw!important;height:8.72dvh!important;padding:0!important;
+    position:absolute!important;z-index:12!important;left:4.1vw!important;top:3.9dvh!important;width:17vw!important;height:7.63dvh!important;padding:0!important;
     border:0!important;background:transparent url("./assets/character-ui/back.png") center/contain no-repeat!important;box-shadow:none!important;pointer-events:auto!important
   }
   html.native-app[data-active-tab="character"] .character-wallet-art{
@@ -7062,7 +7066,7 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
     transform:rotate(-9.874deg)!important;transform-origin:0 0!important;background:url("./assets/character-ui/wallet.png") center/100% 100% no-repeat!important;pointer-events:none!important
   }
   html.native-app[data-active-tab="character"] .character-wallet-selected{
-    position:absolute!important;z-index:32!important;left:2.91vw!important;top:16.03dvh!important;display:block!important;width:19.42vw!important;height:11.7dvh!important;padding:0!important;
+    position:absolute!important;z-index:32!important;left:2.91vw!important;top:14.35dvh!important;display:block!important;width:19.42vw!important;height:11.7dvh!important;padding:0!important;
     overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important;pointer-events:auto!important
   }
   html.native-app[data-active-tab="character"] .character-wallet-selected>span{
@@ -7075,7 +7079,7 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .character-wallet-selected>span>.avatar:not(img){display:grid!important;place-items:center!important;width:100%!important;height:100%!important;border:0!important;border-radius:0!important;background:#c7c7c7!important;color:#5a514a!important;font-family:"KCCHanbit",sans-serif!important;font-size:clamp(22px,7vw,30px)!important;box-shadow:none!important}
   html.native-app[data-active-tab="character"] .character-wallet-selected>b{
     --character-pill-cap:calc(2.29dvh * .484);
-    position:absolute!important;z-index:4!important;left:.85vw!important;top:12.4dvh!important;display:grid!important;place-items:center!important;width:17.72vw!important;height:2.29dvh!important;
+    position:absolute!important;z-index:4!important;left:.85vw!important;top:8.72dvh!important;display:grid!important;place-items:center!important;width:17.72vw!important;height:2.29dvh!important;
     border:0!important;border-radius:0!important;background-color:transparent!important;background-image:url("./assets/home-ui/pill-left.png"),url("./assets/home-ui/pill-right.png"),url("./assets/home-ui/pill-middle.png")!important;
     background-position:left center,right center,center!important;background-size:auto 100%,auto 100%,calc(100% - (2 * var(--character-pill-cap)) + 2px) 100%!important;background-repeat:no-repeat!important;
     color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;font:400 clamp(9px,2.7vw,12px)/1 "KCCHanbit",sans-serif!important;text-shadow:none!important
@@ -7120,20 +7124,20 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .character-draft-actions button:nth-child(3){left:71.21vw!important;top:46.81dvh!important;width:26.46vw!important}
   html.native-app[data-active-tab="character"] .character-draft-actions button.danger{color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster{
-    position:absolute!important;z-index:20!important;left:2.91vw!important;right:auto!important;top:24.43dvh!important;width:19.42vw!important;height:39.5dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;pointer-events:auto!important;
-    border:0!important;border-radius:9.71vw!important;background:linear-gradient(180deg,#fff9ebec 0%,#f3e5cfc9 52%,#795941a8 100%)!important;box-shadow:0 9px 24px #24160d38!important;font-family:"KCCHanbit",sans-serif!important
+    position:absolute!important;z-index:30!important;left:2.91vw!important;right:auto!important;top:22.75dvh!important;width:19.42vw!important;height:calc(13.3dvh + (var(--roster-visible,3) * 7.85dvh))!important;max-height:65dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;pointer-events:auto!important;
+    border:0!important;border-radius:9.71vw!important;background:linear-gradient(180deg,#fff9eb 0%,#f3e5cf 52%,#795941 100%)!important;box-shadow:0 9px 24px #24160d5c!important;font-family:"KCCHanbit",sans-serif!important
   }
   html.native-app[data-active-tab="character"] .character-wallet-roster[hidden]{display:none!important}
-  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip{position:absolute!important;z-index:1!important;left:2.91vw!important;top:3.38dvh!important;display:grid!important;grid-auto-rows:7.4dvh!important;gap:.45dvh!important;width:13.59vw!important;max-height:23.1dvh!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;scrollbar-width:none!important;touch-action:pan-y!important}
+  html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip{position:absolute!important;z-index:1!important;left:2.91vw!important;top:3.38dvh!important;display:grid!important;grid-auto-rows:7.4dvh!important;gap:.45dvh!important;width:13.59vw!important;max-height:calc((var(--roster-visible,3) * 7.85dvh) - .45dvh)!important;margin:0!important;padding:0!important;overflow-x:hidden!important;overflow-y:auto!important;scrollbar-width:none!important;touch-action:pan-y!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip::-webkit-scrollbar{display:none!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip button{position:relative!important;display:block!important;width:13.59vw!important;height:7.4dvh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:visible!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;scroll-snap-align:none!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip :is(.avatar,.sprite){display:block!important;width:13.59vw!important;height:5.2dvh!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip img.avatar{object-fit:cover!important}
   html.native-app[data-active-tab="character"] .character-wallet-roster .mobile-character-strip small{--character-pill-cap:calc(1.85dvh * .484);position:absolute!important;z-index:2!important;left:0!important;top:5.45dvh!important;display:grid!important;place-items:center!important;width:13.59vw!important;height:1.85dvh!important;margin:0!important;padding:0 3px!important;overflow:hidden!important;border:0!important;background-color:transparent!important;background-image:url("./assets/home-ui/pill-left.png"),url("./assets/home-ui/pill-right.png"),url("./assets/home-ui/pill-middle.png")!important;background-position:left center,right center,center!important;background-size:auto 100%,auto 100%,calc(100% - (2 * var(--character-pill-cap)) + 2px) 100%!important;background-repeat:no-repeat!important;color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;font:400 clamp(7px,2.2vw,10px)/1 "KCCHanbit",sans-serif!important;text-overflow:ellipsis!important;white-space:nowrap!important}
-  html.native-app[data-active-tab="character"] .character-roster-actions{position:absolute!important;inset:0!important;display:block!important;margin:0!important;padding:0!important}
-  html.native-app[data-active-tab="character"] .character-roster-add{position:absolute!important;left:4.37vw!important;top:27.2dvh!important;display:grid!important;place-items:center!important;width:10.68vw!important;height:5.35dvh!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#5f402f!important;-webkit-text-fill-color:#5f402f!important;font:400 clamp(30px,10.2vw,44px)/1 "KCCHanbit",sans-serif!important;box-shadow:none!important;text-shadow:0 1px #fff8!important}
+  html.native-app[data-active-tab="character"] .character-roster-actions{position:absolute!important;z-index:4!important;inset:0!important;display:block!important;margin:0!important;padding:0!important}
+  html.native-app[data-active-tab="character"] .character-roster-add{position:absolute!important;left:4.37vw!important;top:calc(3.85dvh + (var(--roster-visible,3) * 7.85dvh))!important;display:grid!important;place-items:center!important;width:10.68vw!important;height:5.35dvh!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#5f402f!important;-webkit-text-fill-color:#5f402f!important;font:400 clamp(30px,10.2vw,44px)/1 "KCCHanbit",sans-serif!important;box-shadow:none!important;text-shadow:0 1px #fff8!important}
   html.native-app[data-active-tab="character"] .character-roster-add:disabled{opacity:.35!important}
-  html.native-app[data-active-tab="character"] .character-roster-reorder{position:absolute!important;left:1.21vw!important;top:34.2dvh!important;display:grid!important;place-items:center!important;width:17vw!important;height:2.4dvh!important;min-height:22px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;font:400 clamp(7px,2.15vw,10px)/1 "KCCHanbit",sans-serif!important;box-shadow:none!important;text-decoration:none!important;white-space:nowrap!important}
+  html.native-app[data-active-tab="character"] .character-roster-reorder{position:absolute!important;z-index:5!important;left:1.21vw!important;top:calc(9dvh + (var(--roster-visible,3) * 7.85dvh))!important;display:grid!important;place-items:center!important;width:17vw!important;height:2.85dvh!important;min-height:24px!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;-webkit-text-stroke:.25px #2b1c13!important;font:400 clamp(11px,3.1vw,13px)/1 "KCCHanbit",sans-serif!important;box-shadow:none!important;text-decoration:none!important;text-shadow:0 1px 2px #2b1c13!important;white-space:nowrap!important}
   html.native-app[data-active-tab="character"] .mobile-character-pane-grid{
     position:absolute!important;z-index:18!important;inset:0!important;display:block!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:visible!important;pointer-events:none!important
   }
