@@ -385,19 +385,19 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
     color:var(--ink)!important;
     -webkit-text-fill-color:var(--ink)!important;
   }
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard{
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]){
     background:#fff!important;
     color:var(--ink)!important;
   }
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-heading,
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-pane-grid button{
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]) .mobile-character-heading,
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]) .mobile-character-pane-grid button{
     border-color:var(--theme-border)!important;
     background:var(--theme-surface)!important;
     color:var(--ink)!important;
     -webkit-text-fill-color:var(--ink)!important;
     box-shadow:0 7px 18px var(--theme-shadow)!important;
   }
-  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-pane-grid button.on{
+  html.native-platform[data-color-mode="light"][data-active-tab="character"] .mobile-character-dashboard:not([data-character-ui-version="3"]) .mobile-character-pane-grid button.on{
     border-color:var(--p)!important;
     background:linear-gradient(135deg,var(--p),var(--s))!important;
     color:var(--on-grad)!important;
