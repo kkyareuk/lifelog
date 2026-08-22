@@ -1,8 +1,9 @@
-import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822schedulecompanion2";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822schedulecompanion2";
+import {serializeLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260822forwardrecovery2";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260822forwardrecovery2";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
+const LAST_NONEMPTY_KEY="drawer-village-last-nonempty-state-v1";
 const renameBrand=value=>{
   const walk=node=>{
     if(!node||typeof node!=="object")return;
@@ -189,27 +190,9 @@ const fresh=()=>({schema:25,activeTab:"observe",characterPane:"profile",activeId
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
-  if(x.schema===25)return normalizeHomes(x);
-  if(x.schema===24)return normalizeHomes(x);
-  if(x.schema===23)return normalizeHomes(x);
-  if(x.schema===22)return normalizeHomes(x);
-  if(x.schema===21)return normalizeHomes(x);
-  if(x.schema===20)return normalizeHomes(x);
-  if(x.schema===19)return normalizeHomes(x);
-  if(x.schema===18)return normalizeHomes(x);
-  if(x.schema===17)return normalizeHomes(x);
-  if(x.schema===16)return normalizeHomes(x);
-  if(x.schema===15)return normalizeHomes(x);
-  if(x.schema===14)return normalizeHomes(x);
-  if(x.schema===13)return normalizeHomes(x);
-  if(x.schema===12)return normalizeHomes(x);
-  if(x.schema===11)return normalizeHomes(x);
-  if(x.schema===10)return normalizeHomes(x);
-  if(x.schema===9)return normalizeHomes(x);
-  if(x.schema===8)return normalizeHomes(x);
-  if(x.schema===7)return normalizeHomes(x);
-  if(x.schema===6)return normalizeHomes(x);
-  if(x.schema===5)return normalizeHomes(x);
+  // 이후 핫픽스/개발판의 더 높은 스키마도 빈 새 게임으로 바꾸지 않는다.
+  // 모르는 필드는 유지하고 현재 버전이 아는 필드만 안전하게 보완한다.
+  if(Number(x.schema)>=5)return normalizeHomes(x);
   if(x.schema===4){
     x.schema=5;x.homeEditMode=false;
     return normalizeHomes(x);
@@ -711,13 +694,19 @@ function load(){
   const deliberateDeletes=Array.isArray(primary?.deletedCharacterIds)&&primary.deletedCharacterIds.length>0;
   if(!deliberateDeletes){
     const candidates=[
+      localStorage.getItem(LAST_NONEMPTY_KEY),
       localStorage.getItem("drawer-village-recovery-before-cloud"),
       localStorage.getItem("parallel-city-game-v4"),
       localStorage.getItem("parallel-city-game-v3"),
       localStorage.getItem(oldKey)
     ].map(parse).filter(value=>count(value)>0).sort((a,b)=>count(b)-count(a)||Number(b.lastSaved||0)-Number(a.lastSaved||0));
     if(candidates[0]){
-      try{localStorage.setItem("drawer-village-recovered-empty-cloud","1")}catch{}
+      try{
+        const recovered=JSON.stringify(serializeLocalMediaState(candidates[0]));
+        localStorage.setItem(KEY,recovered);
+        localStorage.setItem(LAST_NONEMPTY_KEY,recovered);
+        localStorage.setItem("drawer-village-recovered-empty-cloud","1");
+      }catch{}
       return candidates[0];
     }
   }
@@ -736,6 +725,14 @@ function clearDeferredTextSave(){
   deferredTextSaveHandler=null;
 }
 export const active=()=>state.characters[state.activeId];
+const hasCharacters=value=>Array.isArray(value?.order)&&value.order.some(id=>value.characters?.[id]);
+function preserveLastNonempty(value,serialized=""){
+  if(!hasCharacters(value))return false;
+  try{
+    localStorage.setItem(LAST_NONEMPTY_KEY,serialized||JSON.stringify(serializeLocalMediaState(value)));
+    return true;
+  }catch{return false}
+}
 function writeState(notify=true){
   if(saveRunning)return false;
   saveRunning=true;
@@ -743,7 +740,9 @@ function writeState(notify=true){
   try{
     syncTown();
     state.lastSaved=Date.now();
-    localStorage.setItem(KEY,JSON.stringify(serializeLocalMediaState(state)));
+    const serialized=JSON.stringify(serializeLocalMediaState(state));
+    localStorage.setItem(KEY,serialized);
+    preserveLastNonempty(state,serialized);
     stored=true;
   }catch(error){
     console.warn("기기 저장 공간이 부족해 사진은 계정 저장을 우선합니다.",error);
@@ -1489,6 +1488,7 @@ export function moveHomeOnTown(id,x,y,persist=true){
   if(persist)save();
 }
 export function replaceState(next){
+  preserveLastNonempty(state);
   const prepared=migrate(preserveDevicePhotos(state,clone(next)));
   const serialized=JSON.stringify(serializeLocalMediaState(prepared));
   try{
@@ -1496,13 +1496,17 @@ export function replaceState(next){
     // localStorage 용량 오류가 나면 메모리만 바뀌고 화면·디스크는 서로 다른
     // 상태가 되어, 불러오기 직후 캐릭터가 전부 사라진 것처럼 보일 수 있었다.
     localStorage.setItem(KEY,serialized);
+    preserveLastNonempty(prepared,serialized);
   }catch(firstError){
     // 이미 새 저장 키로 이관이 끝난 구버전 복사본만 정리하고 한 번 재시도한다.
     // 현재 저장본과 클라우드 복구본은 절대 지우지 않는다.
     ["parallel-city-game-v4","parallel-city-game-v3",oldKey].forEach(key=>{
       if(key&&key!==KEY)try{localStorage.removeItem(key)}catch{}
     });
-    try{localStorage.setItem(KEY,serialized)}catch(error){
+    try{
+      localStorage.setItem(KEY,serialized);
+      preserveLastNonempty(prepared,serialized);
+    }catch(error){
       const failure=new Error("backup-storage-full",{cause:error||firstError});
       failure.code="backup-storage-full";
       throw failure;
@@ -1517,5 +1521,6 @@ export function resetAll(){
   localStorage.removeItem("parallel-city-game-v4");
   localStorage.removeItem("parallel-city-game-v3");
   localStorage.removeItem(oldKey);
+  localStorage.removeItem(LAST_NONEMPTY_KEY);
 }
 export const cloneState=()=>clone(state);
