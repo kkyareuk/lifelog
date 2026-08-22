@@ -18,10 +18,14 @@ const checks=[
   [simulation.includes('namedPartnerIsPresent')&&simulation.includes('sameLiveLocation(current,baseEventFor'),"서로 다른 장소의 대화 차단"],
   [simulation.includes('sharedActionText')&&views.includes('entry?.sharedActionText||text'),"공동 장면 소품 기준 공유"],
   [css.includes('background-position:center bottom!important')&&css.includes('background-color:transparent!important'),"홈 상단 목재 에셋 하단 기준 크롭과 투명 여백의 갈색 노출 제거"],
-  [views.includes('class="character-roster-add"')&&views.includes('class="character-roster-reorder"')&&!views.includes('class="character-pane-add"')&&css.includes('assets/character-ui/add.png'),"추가 버튼을 캐릭터 선택 서랍 안으로 이동"],
+  [views.includes('class="character-roster-add"')&&views.includes('class="character-roster-reorder"')&&views.includes('>＋</button>')&&!views.includes('class="character-pane-add"')&&!css.includes('.character-roster-add{position:absolute!important;left:3.4vw!important;top:18.87dvh!important;width:12.62vw!important;height:5.67dvh!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;background:transparent url("./assets/character-ui/add.png")'),"추가 버튼을 캐릭터 선택 서랍의 단순 + 표시로 변경"],
   [css.includes('assets/home-ui/pill-left.png')&&css.includes('.character-draft-actions button:nth-child(3)')&&css.includes('color:#FFF5DD!important')&&css.includes('font:400 clamp(11px,3.15vw,14px)/1 "KCCHanbit"'),"선택·내보내기·저장·삭제 버튼을 KCC 손그림 알약 에셋으로 통일"],
   [css.includes('.character-wallet-art{')&&css.includes('z-index:8!important')&&css.includes('.character-registration-card{')&&css.includes('z-index:4!important')&&css.includes('pointer-events:none!important'),"카드지갑을 주민등록증 위에 배치하면서 사진 선택 영역 유지"],
   [css.includes('.character-pane-ribbon:nth-child(1)')&&css.includes('top:57.68dvh!important')&&css.includes('.character-pane-ribbon:nth-child(6)')&&css.includes('top:91.83dvh!important'),"연필 설정 띠를 SVG 좌표와 크기로 복원"],
+  [css.includes('font-family:"PuradakGentleGothic"')&&css.includes('grid-auto-flow:column!important')&&css.includes('font-weight:300!important')&&css.includes('font-weight:700!important'),"주민등록증 제목·2열 명조 정보 구조"],
+  [css.includes('linear-gradient(180deg,#fff9ebec')&&css.includes('z-index:20!important')&&css.includes('z-index:32!important'),"선택 아이콘 앞·세로로 짙어지는 캐릭터 목록"],
+  [css.includes('-webkit-text-stroke:1.25px #000!important')&&css.includes('color:#FFF0F0!important')&&css.includes('color:#F8F0FF!important'),"연필 탭별 밝은 글자와 검은 테두리"],
+  [css.includes('overflow-y:auto!important;overscroll-behavior:contain!important')&&css.includes('touch-action:pan-y!important'),"관계 설정 대화상자의 모바일 세로 스크롤"],
   [!views.includes('const drawerLogLabel='),"홈 카드의 서랍 로그 제목 제거"]
 ];
 const failed=checks.filter(([ok])=>!ok);
