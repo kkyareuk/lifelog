@@ -1,6 +1,6 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823roomlayout";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823roomlayout";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260823roomlayout";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823logimmutablehotfix";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823logimmutablehotfix";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260823logimmutablehotfix";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";

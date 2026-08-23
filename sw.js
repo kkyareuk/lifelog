@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260823-character-contrast";
+const CACHE_VERSION="drawer-village-v20260823-log-immutable-hotfix";
 const CORE=[
   "./",
   "./index.html",

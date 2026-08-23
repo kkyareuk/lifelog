@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823roomlayout";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260823roomlayout";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823logimmutablehotfix";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260823logimmutablehotfix";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2789,9 +2789,12 @@ export function timeline(c,date=new Date()){
       if(target<createdDay)entries=[];
       else if(target.getTime()===createdDay.getTime())entries=entries.filter(item=>item.minute>=created.getHours()*60+created.getMinutes());
     }
-    const settingsChanged=old&&today&&Number(c.timelineResetAt||0)>Number(old.settingsAppliedAt||0);
-    if(old&&today&&!settingsChanged){
-      const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>engineChanged?item.minute<cutoff:item.minute<=cutoff));
+    if(old&&today){
+      // 설정·집 배치·동기화는 이미 기록된 사실을 다시 쓰지 않는다.
+      // 현재 시각까지의 항목은 제목·본문·시각을 그대로 보존하고, 바뀐
+      // 설정은 다음 장면부터만 적용한다. 엔진 버전이 달라져도 위의 정리
+      // 단계만 거치며 저장된 현재/과거 장면을 새 무작위 장면으로 치환하지 않는다.
+      const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>Number(item.minute)<=cutoff));
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
     c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,cleanupVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};
