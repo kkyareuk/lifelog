@@ -1,5 +1,6 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823notificationvoice";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823notificationvoice";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823roomlayout";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823roomlayout";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260823roomlayout";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -516,11 +517,8 @@ function normalizeHomes(x){
       room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
       room.order=Number.isFinite(Number(room.order))?Number(room.order):index;
       room.floor=Number.isFinite(+room.floor)?Math.max(1,Math.min(h.floorCount,Math.round(+room.floor))):1;
-      if(room.layout&&typeof room.layout==="object"&&!Array.isArray(room.layout)){
-        const width=Math.max(16,Math.min(100,Number(room.layout.w)||50));
-        const height=Math.max(16,Math.min(100,Number(room.layout.h)||50));
-        room.layout={x:Math.max(0,Math.min(100-width,Number(room.layout.x)||0)),y:Math.max(0,Math.min(100-height,Number(room.layout.y)||0)),w:width,h:height};
-      }else delete room.layout;
+      const normalizedLayout=normalizeRoomLayout(room.layout);
+      if(normalizedLayout)room.layout=normalizedLayout;else delete room.layout;
       return[String(key),room];
     }));
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
