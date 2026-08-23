@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import {mergeDeviceAndCloudState} from "../sync-merge.js";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "../sync-merge.js";
 import fs from "node:fs";
 
 const character=(id,name)=>({id,name,photo:"",icon:""});
@@ -29,7 +29,26 @@ console.log("PASS 기기·클라우드의 서로 다른 인물과 연결 데이�
 console.log("PASS 양쪽 삭제 기록이 캐릭터보다 우선합니다");
 console.log("PASS 같은 ID는 더 최신인 전체 상태를 우선합니다");
 console.log("PASS 현재 기기의 언어·화면 설정을 보존합니다");
+const restoreDevice={
+  ...device,lastSaved:300,activeId:null,characters:{},order:[],homes:{},
+  deletedCharacterIds:["cloud"],deletedHomeIds:["home-cloud"],
+  interactions:[{id:"device-copy",type:"request",actorId:"cloud",requestTitle:"책 정리",createdAt:1234}]
+};
+const restoreCloud={
+  ...cloud,lastSaved:200,characters:{cloud:{...character("cloud","복구된 캐릭터"),days:{"2026-08-23":{entries:[{minute:60,title:"기존 로그"}]}}}},order:["cloud"],
+  homes:{"home-cloud":{id:"home-cloud",name:"복구된 집"}},deletedCharacterIds:[],deletedHomeIds:[],
+  interactions:[{id:"cloud-copy",type:"request",actorId:"cloud",requestTitle:"책 정리",createdAt:1234}]
+};
+const restored=mergeCloudRestoreState(restoreDevice,restoreCloud);
+assert.equal(restored.characters.cloud.name,"복구된 캐릭터");
+assert.equal(restored.characters.cloud.days["2026-08-23"].entries.length,1);
+assert.equal(restored.homes["home-cloud"].name,"복구된 집");
+assert.equal(restored.deletedCharacterIds.includes("cloud"),false);
+assert.equal(restored.deletedHomeIds.includes("home-cloud"),false);
+assert.equal(restored.interactions.length,1);
+console.log("PASS 수동 불러오기는 원격의 실제 캐릭터를 오래된 기기 삭제표보다 우선합니다");
+console.log("PASS 같은 원격 로그와 상호작용을 불러올 때 중복으로 늘리지 않습니다");
 const authSource=fs.readFileSync(new URL("../auth.js",import.meta.url),"utf8");
 assert.match(authSource,/const tombstoneSafeState=previousGameState\s*\?mergeDeviceAndCloudState\(localState,previousGameState\)/);
-assert.match(authSource,/const imported=differentCharacters\s*\?mergeDeviceAndCloudState\(localState,remote\)/);
-console.log("PASS 올리기와 자동 불러오기 모두 서로 다른 인물 구성을 병합합니다");
+assert.match(authSource,/const imported=automatic\s*\?differentCharacters\?mergeDeviceAndCloudState\(localState,remote\):applyLocalTombstones\(remote,localState\)\s*:mergeCloudRestoreState\(localState,remote\)/);
+console.log("PASS 업로드·자동 불러오기와 명시적 복구의 병합 정책을 분리합니다");

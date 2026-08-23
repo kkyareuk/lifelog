@@ -6,6 +6,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(android.os.Bundle savedInstanceState) {
         registerPlugin(PlayBillingPlugin.class);
+        registerPlugin(ProfileExportPlugin.class);
         super.onCreate(savedInstanceState);
         hideStatusBar();
     }

@@ -51,6 +51,7 @@ Get-ChildItem -LiteralPath $sourceRoot -File -Force | ForEach-Object {
     )
 }
 
+
 # Capacitor's copy command can return success after OneDrive blocks deletion of
 # an existing reparse-point file. Package the prepared `www` directory directly
 # so a partial android/app/src/main/assets/public tree can never reach an APK.

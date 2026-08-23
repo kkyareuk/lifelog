@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260823-true-ld-preview-hotfix1";
+const CACHE_VERSION="drawer-village-v20260823-character-contrast";
 const CORE=[
   "./",
   "./index.html",
@@ -23,6 +23,9 @@ const CORE=[
   "./fonts/DoHyeon-Regular.ttf",
   "./fonts/GriunSimsimche-Regular.ttf",
   "./fonts/KCC-Hanbit.ttf",
+  "./fonts/KoPubWorldBatangPro-Bold.otf",
+  "./fonts/KoPubWorldBatangPro-Light.otf",
+  "./fonts/PuradakGentleGothic.ttf",
   "./fonts/SB_Aggro/SB%20%EC%96%B4%EA%B7%B8%EB%A1%9C%20M.ttf",
   "./manifest.webmanifest",
   "./icons/drawer-village-logo.png",
@@ -44,6 +47,17 @@ const CORE=[
   ,"./assets/home-ui/town.png"
   ,"./assets/home-ui/back.png"
   ,"./assets/home-ui/wood-top.png"
+  ,"./assets/character-ui/paper.webp"
+  ,"./assets/character-ui/wallet.png"
+  ,"./assets/character-ui/registration-card.png"
+  ,"./assets/character-ui/ribbon-profile.png"
+  ,"./assets/character-ui/ribbon-body.png"
+  ,"./assets/character-ui/ribbon-personality.png"
+  ,"./assets/character-ui/ribbon-taste.png"
+  ,"./assets/character-ui/ribbon-world.png"
+  ,"./assets/character-ui/ribbon-manage.png"
+  ,"./assets/character-ui/add.png"
+  ,"./assets/character-ui/back.png"
   ,"./world-assets/building-types/restaurant-handdrawn.png"
 ];
 

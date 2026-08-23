@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823truepreviewhotfix1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260823truepreviewhotfix1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823notificationvoice";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260823notificationvoice";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2556,10 +2556,27 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260822-schedule-companion1";
+const ENGINE_VERSION="20260822-shared-scene-integrity3";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-function signature(c){return JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))})}
+const signatureCache=new Map();
+function signature(c){
+  // Most screens ask for both the current event and the visible timeline.
+  // Both used to serialize the same large simulation input independently.
+  // Character simulation fields update timelineResetAt and relationship/town
+  // edits update lastSaved, so this revision safely reuses that signature.
+  // lastSaved는 입력·사진 복원·클라우드 불러오기 등 모든 저장에서 바뀐다.
+  // 이를 장면 설정 변경으로 사용하면 같은 설정인데도 오늘 로그를 다시 만들어
+  // 동기화 직후 항목이 늘어난다. 캐릭터 객체가 교체되거나 실제 시뮬레이션
+  // 설정의 timelineResetAt이 바뀐 경우에만 서명을 다시 계산한다.
+  const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
+  const cached=signatureCache.get(c.id);
+  if(cached?.character===c&&cached.revision===revision)return cached.value;
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
+  signatureCache.set(c.id,{character:c,revision,value});
+  if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
+  return value;
+}
 
 const entryMomentKey=item=>{
   const minute=Number(item?.minute);
@@ -2684,8 +2701,27 @@ function cleanLegacyDateEntries(entries){
     return purpose?{...item,datePurpose:purpose,dateGroup:`${item.dateGroup}-${hash(purpose).toString(36)}`} :item;
   });
 }
+function repairSelfNamedPartnerText(c,partner,value){
+  if(!c?.name||!partner?.name||c.id===partner.id)return String(value||"");
+  const own=String(c.name).replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  return String(value||"")
+    .replace(new RegExp(`(${own}(?:이|가)?\\s*)${own}(?:와|과)(?=\\s|$)`,"g"),`$1${togetherWith(partner.name)}`)
+    .replace(new RegExp(`(${own}(?:이|가)?\\s*)${own}(?=(?:에게|랑|하고))`,"g"),`$1${partner.name}`);
+}
 function cleanSelfCompanionEntries(c,entries){
-  return entries.filter(item=>item?.withId!==c.id);
+  const ownName=String(c?.name||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+  const selfScene=ownName?new RegExp(`(?:${ownName})(?:이|가)?\\s*(?:${ownName})(?:와|과|에게|랑|하고)`):null;
+  return entries.map(item=>{
+    const withIds=[...new Set((item.withIds||[]).filter(id=>id&&id!==c.id&&state.characters[id]))];
+    const participantOrder=[...new Set((item.participantOrder||[]).filter(id=>id&&state.characters[id]))];
+    const withId=item.withId&&item.withId!==c.id&&state.characters[item.withId]?item.withId:withIds[0];
+    if(item.groupInteraction&&!withId&&!withIds.length)return {...item,withId:undefined,withIds:[],participantOrder:participantOrder.filter(id=>id===c.id),groupInteraction:false,interactionId:undefined};
+    const partner=state.characters[withId];
+    const repaired=selfScene?.test(`${item?.title||""} ${item?.desc||""}`)&&partner
+      ?{title:repairSelfNamedPartnerText(c,partner,item.title),desc:repairSelfNamedPartnerText(c,partner,item.desc)}
+      :{};
+    return {...item,...repaired,withId,withIds,participantOrder};
+  }).filter(item=>item?.withId!==c.id);
 }
 function cleanCharacterBreakingCheeringEntries(entries){
   // 초기 스크립트 팩에 있던 막연한 “하루를 응원” 문장은 상대별 시선과 무관하게
@@ -2732,10 +2768,13 @@ export function timeline(c,date=new Date()){
   if(c.days[key]&&(!c.days[key]||typeof c.days[key]!=="object"||Array.isArray(c.days[key])))delete c.days[key];
   const old=c.days[key];
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
-  if(old&&Array.isArray(old.entries)){
+  if(old&&Array.isArray(old.entries)&&old.cleanupVersion!==ENGINE_VERSION){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
     const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
-    if(JSON.stringify(cleaned)!==JSON.stringify(old.entries)){old.entries=cleaned;save(false,false)}
+    const changed=JSON.stringify(cleaned)!==JSON.stringify(old.entries);
+    if(changed)old.entries=cleaned;
+    old.cleanupVersion=ENGINE_VERSION;
+    save(false,false);
   }
   const today=key===dayKey(new Date());
   // 한 번 만든 하루의 기록은 앱 업데이트나 스크립트 팩 변경으로 다시 쓰지 않는다.
@@ -2755,21 +2794,45 @@ export function timeline(c,date=new Date()){
       const cutoff=nowMin(date),kept=cleanExactRepeatedEntries((Array.isArray(old.entries)?old.entries:[]).filter(item=>engineChanged?item.minute<cutoff:item.minute<=cutoff));
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
-    c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};
+    c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,cleanupVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};
     save(false,false);
   }
   return Array.isArray(c.days[key]?.entries)?c.days[key].entries:[];
 }
 export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))}
 
+export function nextSceneRefreshDelay(c,date=new Date()){
+  if(!c)return 10*60*1000;
+  const n=nowMin(date),list=timeline(c,date).filter(item=>item&&dateEntryBelongsTo(c,item));
+  const past=list.filter(item=>Number(item.minute)<=n),last=past.at(-1),candidates=[];
+  const future=list.map(item=>Number(item.minute)).filter(minute=>Number.isFinite(minute)&&minute>n);
+  if(future.length)candidates.push(Math.min(...future));
+  if(last){
+    const gap=30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31);
+    const routineEnd=Number(last.routineEndMinute)||0;
+    const nextMinute=Math.max(Number(last.minute)+gap,routineEnd);
+    if(nextMinute>n)candidates.push(nextMinute);
+  }
+  const wake=wakeAt(c,date),sleep=sleepAt(c,date);
+  if(wake>n)candidates.push(wake);
+  if(sleep>n)candidates.push(sleep);
+  const nextMinute=candidates.length?Math.min(...candidates):n+10;
+  const minuteStart=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(nextMinute/60),nextMinute%60,1,0).getTime();
+  return Math.max(1000,Math.min(10*60*1000,minuteStart-date.getTime()));
+}
+
 function commitLiveEntry(c,date,item){
   const key=dayKey(date),day=c.days?.[key];
   if(!day||!item)return item;
   item={...item,time:clock(Number(item.minute))};
   const entries=Array.isArray(day.entries)?day.entries:[];
+  const applyEntries=nextEntries=>{
+    const changed=nextEntries.length!==entries.length||nextEntries.some((entry,index)=>JSON.stringify(entry)!==JSON.stringify(entries[index]));
+    if(changed){day.entries=nextEntries;save(false,false)}
+    return changed;
+  };
   if(item.forcedReturn){
-    day.entries=mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]);
-    save(false,false);
+    applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]));
     return item;
   }
   // 공동 장면 직전에 baseEventFor가 만든 일반 장면이 같은 표시 시각에 남아 있으면
@@ -2791,14 +2854,12 @@ function commitLiveEntry(c,date,item){
           String(item.title||"").split(" · ").includes(String(entry.title||"")));
       return !shadowedBase;
     });
-    day.entries=mergeImmutableEntries(withoutSameMoment,[item]);
-    save(false,false);
+    applyEntries(mergeImmutableEntries(withoutSameMoment,[item]));
     return item;
   }
   const interactionIndex=item.interactionId?entries.findIndex(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute)):-1;
   if(interactionIndex>=0){
-    day.entries=entries.map((entry,index)=>index===interactionIndex?{...entry,...item}:entry);
-    save(false,false);
+    applyEntries(entries.map((entry,index)=>index===interactionIndex?{...entry,...item}:entry));
     return item;
   }
   const sceneKey=value=>String(value||"").split(" · ")[0].replace(/\s+/g," ").trim();
@@ -2933,7 +2994,13 @@ function baseEventFor(c,date=new Date()){
   const past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n);
   const last=past.at(-1);
   const nextGap=last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30;
-  if(last&&n-last.minute>=nextGap)return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,n,date),date));
+  if(last&&n-last.minute>=nextGap){
+    const plannedMinute=Math.max(Number(last.minute)+nextGap,Number(last.routineEndMinute)||0);
+    // 앱이 잠깐 백그라운드였던 경우 실제로 바뀌었어야 할 분을 보존한다.
+    // 오래 꺼져 있었던 경우에는 과거 장면을 연속 생성하지 않고 현재 분 하나만 기록한다.
+    const sceneMinute=n-plannedMinute<=15?plannedMinute:n;
+    return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,sceneMinute,date),date));
+  }
   if(last)return withResidenceLocation(c,last,date);
   // 생성 당일에는 생성 시각 이전의 일정을 타임라인에서 제외한다. 예전에는
   // 그 결과 과거 장면이 하나도 없으면 24시간 동안 캐릭터 전체를 "대기"로
@@ -2993,6 +3060,20 @@ function relationImportance(first,second,relation){
 function dateLikePair(first,second,relation,current={}){
   if(mixedAdultMinor(first,second)||relation?.temporalStatus==="past"||["부모·자녀","형제·자매"].includes(relation?.type))return false;
   return Boolean(current.dateGroup&&current.datePurpose&&current.mood==="데이트"&&[first.id,second.id].includes(current.withId));
+}
+function interactionInitiativeScore(character){
+  const profile=[...(character.personalityTypes||[]),character.socialStyle,character.activityTempo,character.conflictStyle,character.interference,character.decisionStyle].filter(Boolean).join(" ");
+  let score=Number(character.socialEnergy??3);
+  if(/외향|활발|사교|무리의 중심|먼저 다가감|바로 따짐|주도/.test(profile))score+=4;
+  if(/내향|낯을 가림|혼자가 편함|수줍|조용|피하는 편|시간을 두고 말함|거리/.test(profile))score-=4;
+  if(/생각나면 바로|즉흥|직접/.test(profile))score+=1;
+  if(/관여하지 않|간섭하지 않|신중|관찰/.test(profile))score-=1;
+  return score;
+}
+function interactionInitiator(first,second,key){
+  const firstScore=interactionInitiativeScore(first),secondScore=interactionInitiativeScore(second);
+  if(firstScore!==secondScore)return firstScore>secondScore?first:second;
+  return hash(`${[first.id,second.id].sort().join(":")}:${key}:initiative`)%2?first:second;
 }
 function viewDrivenInteraction(place,first,second,date){
   const firstView=explicitCharacterViewFor(first.id,second.id);
@@ -3064,7 +3145,7 @@ function viewDrivenInteraction(place,first,second,date){
       {title:"찻잔을 둘 자리를 놓고 툭툭 받아치는 중",first:"찻잔을 조리대 끝에 두지 말라고 짚은 뒤 자리를 직접 비웠어요.",second:"그 정도는 바로 치울 수 있다며 받아치고 찻잔을 물기 없는 쪽으로 옮겼어요."},
       {title:"간식 접시를 누가 치울지 짧게 말씨름하는 중",first:"방금 먹은 사람이 치우는 게 맞다고 말하며 빈 포장부터 한데 모았어요.",second:"준비한 사람이 따로 있지 않냐고 맞받아치면서도 접시는 싱크대로 가져갔어요."}
     ]:/카페|음식점/.test(placeType)?[
-      {title:"메뉴 고르는 순서를 두고 툭툭 받아치는 중",first:"계속 페이지를 되돌리지 말고 후보부터 줄이자고 말하며 메뉴 두 개를 짚었어요.",second:"서두르면 꼭 후회한다며 받아치고, 대신 그중 하나는 바로 제외했어요."},
+      {title:"메뉴를 고르며 티격태격하는 중",first:"메뉴판을 넘겨 보다가 먹고 싶은 메뉴 두 개를 가리키며, 여기서 하나씩 고르자고 말했어요.",second:"천천히 봐야 후회하지 않는다며 받아치면서도, 마음이 덜 가는 메뉴 하나는 바로 제외했어요.",copy:{en:{title:"Bickering while choosing from the menu",first:"After looking through the menu, they pointed to two dishes they wanted and suggested choosing one from those.",second:"They replied that rushing would only lead to regret, but still ruled out the less appealing dish."},ja:{title:"メニューを選びながら軽く言い合っているところ",first:"メニューを見ながら食べたい料理を二つ指し、ここから一つずつ選ぼうと提案しました。",second:"急いで決めると後悔すると言い返しつつも、気持ちが向かない一品はすぐ候補から外しました。"}}},
       {title:"마지막 한입을 누가 먹을지 실랑이하는 중",first:"처음부터 먹고 싶었다면 진작 말했어야 한다며 접시를 가운데로 밀었어요.",second:"혼자 다 먹을 생각은 아니었다고 받아치며 정확히 반으로 나눴어요."}
     ]:/공원|산책/.test(placeType)?[
       {title:"산책 방향을 두고 짧게 말씨름하는 중",first:"방금 지나온 길로 되돌아가기는 싫다며 표지판의 다른 길을 가리켰어요.",second:"그 길이 더 멀다고 바로 받아쳤지만, 지도를 다시 보고 우회로를 하나 골랐어요."},
@@ -3074,21 +3155,15 @@ function viewDrivenInteraction(place,first,second,date){
       {title:"다음 순서를 정하며 짧게 의견을 주고받는 중",first:"한꺼번에 바꾸지 말고 급한 일부터 하자며 순서를 세 가지로 줄였어요.",second:"자기 차례를 마음대로 정하지 말라고 받아친 뒤 두 번째 순서에는 동의했어요."},
       {title:"설명에서 빠진 부분을 두고 한마디씩 보태는 중",first:"중간 과정이 빠졌다며 정확히 어느 부분부터 다시 말해야 하는지 짚었어요.",second:"그 정도는 알아들을 줄 알았다고 받아치고 빠진 설명을 짧게 덧붙였어요."}
     ];
-    const chosen=pick(scenePool,3);
+    const selectedScene=pick(scenePool,3),chosen=selectedScene.copy?.[state.uiLanguage]||selectedScene;
+    const initiator=interactionInitiator(first,second,`${place?.id||placeType}:${dayKey(date)}`),firstLeads=initiator.id===first.id;
+    const firstAction=firstLeads?chosen.first:chosen.second,secondAction=firstLeads?chosen.second:chosen.first;
     const firstTitle=`${togetherWith(second.name)} ${chosen.title}`;
     const secondTitle=`${togetherWith(first.name)} ${chosen.title}`;
     return {
     title:firstTitle,firstTitle,secondTitle,
-    first:pick([
-      `${subject(second.name)} 먼저 말을 꺼내자 ${chosen.first}${/연애 감정|사랑|좋아함/.test(firstCombined)?" 말투는 퉁명스러웠지만 상대가 곤란해질 부분은 따로 챙겼어요.":""}`,
-      `${chosen.first} ${second.name}의 대답이 마음에 들지는 않았지만 무엇을 바꾸길 원하는지는 분명히 말했어요.`,
-      `${subject(second.name)} 자기 방식을 고집하자 한숨을 삼키고 ${chosen.first}`
-    ]),
-    second:pick([
-      `${subject(first.name)} 퉁명스럽게 짚자 ${chosen.second}${/연애 감정|사랑|좋아함/.test(secondCombined)?" 투덜거리면서도 상대가 신경 쓰던 부분은 그대로 두지 않았어요.":""}`,
-      `${chosen.second} 말끝은 날카로웠지만 할 일을 미루거나 자리를 떠나지는 않았어요.`,
-      `${first.name}의 짧은 지적에 눈을 굴린 뒤 ${chosen.second}`
-    ],1)
+    first:`${firstAction}${/연애 감정|사랑|좋아함/.test(firstCombined)&&state.uiLanguage==="ko"?" 말투는 퉁명스러웠지만 상대가 곤란해질 부분은 따로 챙겼어요.":""}`,
+    second:`${secondAction}${/연애 감정|사랑|좋아함/.test(secondCombined)&&state.uiLanguage==="ko"?" 투덜거리면서도 상대가 신경 쓰던 부분은 그대로 두지 않았어요.":""}`
   };}
   return null;
 }
@@ -3768,11 +3843,13 @@ function namedSharedPartner(event,owner){
 }
 function counterpartSourceEvent(source,sourceOwner,viewer){
   const base=baseSceneFrom(source);
-  const swap=value=>String(value||"").split(viewer.name).join(sourceOwner.name);
   return {
     ...base,
-    title:swap(base.title),
-    desc:swap(base.desc),
+    // source is already a shared scene. Its baseTitle/baseDesc are the neutral
+    // solo scene that existed before the encounter. Replacing every mention of
+    // the viewer used to turn “크로가 네리네와” into “크로가 크로와”.
+    title:base.baseTitle||base.title,
+    desc:base.baseDesc||base.desc,
     withId:sourceOwner.id,
     withIds:[sourceOwner.id],
     participantOrder:[sourceOwner.id,viewer.id],
@@ -3803,14 +3880,21 @@ function committedSharedSceneFor(c,date,current){
   const entries=c?.days?.[dayKey(date)]?.entries;
   if(!Array.isArray(entries))return null;
   const minute=nowMin(date);
-  return entries.slice().reverse().find(item=>
-    item?.groupInteraction
-    &&item.interactionId
-    &&Number(item.minute)<=minute
-    &&minute-Number(item.minute)<30
-    &&sameLiveLocation(item,current)
-    &&[c.id,...(item.participantOrder||[]),...(item.withIds||[]),item.withId].filter(Boolean).includes(c.id)
-  )||null;
+  return entries.slice().reverse().find(item=>{
+    if(!item?.groupInteraction||!item.interactionId||Number(item.minute)>minute||minute-Number(item.minute)>=30||!sameLiveLocation(item,current))return false;
+    const participantIds=[...(item.participantOrder||[]),...(item.withIds||[]),item.withId].filter(id=>id&&id!==c.id);
+    if(!participantIds.length)return false;
+    // A cached shared entry is valid only while every named participant's own
+    // base timeline still resolves to the same room/place. This prevents one
+    // character from continuing a solo home activity while another screen
+    // reuses an older “together” scene with them.
+    return participantIds.every(id=>{
+      const participant=state.characters[id];
+      if(!participant)return false;
+      const participantCurrent=companionAlignedBaseEvent(participant,baseEventFor(participant,date),date);
+      return sameLiveLocation(item,participantCurrent);
+    });
+  })||null;
 }
 function sharedParticipantOrder(characters,relation){
   const available=new Set(characters.map(character=>character.id));
@@ -3877,7 +3961,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       if(!owner||owner.id===c.id)return null;
       const ownerEvent=baseEventFor(owner,date);
       if(sceneIsSleeping(current)!==sceneIsSleeping(ownerEvent))return null;
-      return namedSharedPartner(ownerEvent,owner)?.id===c.id?{owner,event:ownerEvent}:null;
+      return namedSharedPartner(ownerEvent,owner)?.id===c.id&&sameLiveLocation(ownerEvent,current)?{owner,event:ownerEvent}:null;
     }).find(Boolean);
     if(incomingShared){
       current=counterpartSourceEvent(incomingShared.event,incomingShared.owner,c);
@@ -3901,7 +3985,20 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   // 상대 화면만 다른 사람과의 장면으로 갈라질 수 있다.
   const explicitSharedPartner=sharedContext?.interactionId&&forcedPartner&&!current.dateGroup?forcedPartner:null;
   const configuredCompanion=!current.dateGroup&&current.forcedCompanionId?state.characters[current.forcedCompanionId]:null;
-  const explicitCurrentPartner=!current.dateGroup?(configuredCompanion||namedSharedPartner(current,c)):null;
+  const namedCurrentPartner=!current.dateGroup?(configuredCompanion||namedSharedPartner(current,c)):null;
+  const namedPartnerIsPresent=configuredCompanion||namedCurrentPartner&&sameLiveLocation(current,baseEventFor(namedCurrentPartner,date));
+  // An old/generated sentence can name somebody who is currently in another
+  // room or town. Never keep that claim: show a neutral solo continuation at
+  // the actor's real location until both base timelines place them together.
+  if(namedCurrentPartner&&!namedPartnerIsPresent){
+    const soloCopy={
+      en:{title:"Focusing on their own activity",desc:"They continue what they started here at their own pace."},
+      ja:{title:"ひとりの作業に集中しているところ",desc:"今いる場所で始めたことを、自分のペースで続けています。"},
+      ko:{title:"혼자 하던 일에 집중하는 중",desc:"현재 머무는 곳에서 방금 시작한 일을 자기 속도에 맞춰 이어 가고 있어요."}
+    }[state.uiLanguage]||{title:"혼자 하던 일에 집중하는 중",desc:"현재 머무는 곳에서 방금 시작한 일을 자기 속도에 맞춰 이어 가고 있어요."};
+    current={...current,...soloCopy,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined};
+  }
+  const explicitCurrentPartner=namedPartnerIsPresent?namedCurrentPartner:null;
   if(explicitDatePartner&&current.dateGroup&&current.withId!==explicitDatePartner.id)current={...current,withId:explicitDatePartner.id,withIds:[explicitDatePartner.id]};
   // 날짜와 상대가 정해진 데이트에는 같은 장소에 우연히 있던 제3자를 끼우지 않는다.
   // 일반 장면에서만 현재 방/장소가 같은 인물을 공동 장면 후보로 삼는다.
@@ -4013,7 +4110,10 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     (isHomeScene?currentHomeId:current.placeId)||"scene",
     current.room||""
   ].join(":");
-  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(combinedTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,combinedDesc))),withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
+  const sharedActionText=cleanRepeatedSceneText(`${scene.title||""} ${scene.first||""} ${scene.second||""}`);
+  const safeTitle=repairSelfNamedPartnerText(c,actualPartner,combinedTitle);
+  const safeDescription=repairSelfNamedPartnerText(c,actualPartner,combinedDesc);
+  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(safeTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,safeDescription))),sharedActionText,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 function companionAlignedBaseEvent(c,current,date){
   if(!c||activeScheduledRoutine(c,date))return current;

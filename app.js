@@ -1,16 +1,22 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823truepreviewhotfix1";
-import {eventFor,forceCharactersHome} from "./simulation.js?v=20260823truepreviewhotfix1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823truepreviewhotfix1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823truepreviewhotfix1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260823truepreviewhotfix1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823truepreviewhotfix1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260823truepreviewhotfix1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823notificationvoice";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823notificationvoice";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823notificationvoice";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823notificationvoice";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823notificationvoice";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823notificationvoice";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260823notificationvoice";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
-let localMediaHydration=null,lastLocalMediaResult={found:0,resolved:0,pending:0};
-const refreshLocalMedia=()=>{
+let localMediaHydration=null,lastLocalMediaResult={found:0,resolved:0,pending:0},lastLocalMediaHydrationAt=0;
+const refreshLocalMedia=({force=false}={})=>{
   if(localMediaHydration)return localMediaHydration;
+  const now=Date.now();
+  // Android commonly emits focus, pageshow and visibilitychange together.
+  // Rewalking every character and photo for each lifecycle event caused three
+  // identical IndexedDB scans whenever the app returned to the foreground.
+  if(!force&&lastLocalMediaHydrationAt&&now-lastLocalMediaHydrationAt<30_000)return Promise.resolve(lastLocalMediaResult);
+  lastLocalMediaHydrationAt=now;
   localMediaHydration=initializeLocalMediaState(state).then(result=>{
     lastLocalMediaResult=result;
     if(result.resolved){
@@ -47,7 +53,7 @@ const PAGE_GUIDES={
   observe:["관찰","가운데 캐릭터를 바꾸면 홈 화면은 그대로 유지한 채 그 캐릭터의 현재 장면으로 전환돼요. ‘지금 이 순간’을 누르면 잘리지 않은 전문과 오늘의 생활로그를 볼 수 있습니다."],
   home:["집","위에서 집을 고르고 ‘집 편집’을 켜세요. 한 줄 도구의 ‘방 추가·구성’에서 방을 늘리고, 방 자체를 누르면 이름·크기·사진·가구를 바꿀 수 있어요."],
   character:["캐릭터","위쪽에서 캐릭터를 고른 뒤 아래 항목 중 바꾸려는 설정을 누르세요. 프로필 내보내기는 캐릭터 이름 옆에서 바로 할 수 있고, 사진·아이콘·테마에서는 이미지와 대표색을 관리해요."],
-  catalog:["취향 사전","음식, 작품, 음악, 향과 소지품을 등록하는 도감이에요. 직접 올린 사진은 동그랗게, 사이트 일러스트는 투명 배경과 원본 비율로 보이며 실제 생활 장면에도 연결됩니다."],
+  catalog:["사전","음식, 작품, 음악, 향과 소지품을 등록하는 도감이에요. 직접 올린 사진은 동그랗게, 사이트 일러스트는 투명 배경과 원본 비율로 보이며 실제 생활 장면에도 연결됩니다."],
   relationship:["관계","먼저 마음을 보는 사람을 고른 뒤, 그 마음이 향하는 대상을 선택하세요. ‘OO가 OO을 OO으로 여김’ 문장으로 방향을 바로 확인할 수 있어요."],
   routine:["일정","주간 일정에는 반복할 요일을, 월간 일정에는 날짜가 정해진 약속을 기록해요. 시간이 정해진 행동은 무작위 생활 장면보다 먼저 적용됩니다."],
   town:["마을","평소에는 캐릭터 위치를 관찰하고, 편집 모드를 켠 뒤에만 건물을 옮기거나 정보를 바꿀 수 있어요. 건물을 누르면 편집 창이 열립니다."],
@@ -426,8 +432,25 @@ async function exportProfilePngV2(character,download=true){
   ctx.save();ctx.translate(stampX,stampY);ctx.rotate(-.12);ctx.strokeStyle="#b31f24";ctx.fillStyle="#b31f24";ctx.lineWidth=6;ctx.beginPath();ctx.arc(0,0,57,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(0,0,46,0,Math.PI*2);ctx.stroke();ctx.textAlign="center";ctx.font=`700 20px ${bodyStack}`;ctx.fillText("서 랍 도 시",0,-5);ctx.font=`700 16px ${bodyStack}`;ctx.fillText("기 록 인",0,22);ctx.restore();
   ctx.fillStyle="#333";ctx.textAlign="left";ctx.font=`17px ${bodyStack}`;ctx.fillText("위 인물의 등록사항을 서랍마을 기록 기준에 따라 증명합니다.",pad,canvas.height-122);
   ctx.fillText("※ 사용자가 직접 설정한 항목만 기록하며, 미설정 항목은 임의로 추정하지 않습니다.",pad,canvas.height-86);
-  if(download)try{const link=document.createElement("a");link.download=`${character.name}-서랍마을-등록사항증명서.png`;link.href=canvas.toDataURL("image/png");link.click()}catch{showToast("외부 이미지 보안 제한으로 PNG를 만들 수 없어요. PDF 내보내기를 이용해 주세요.")}
+  if(download)await saveProfileCanvas(canvas,character,"png");
   return canvas;
+}
+const safeExportFilename=value=>String(value||"character").replace(/[\\/:*?"<>|]/g,"-").trim()||"character";
+async function saveProfileCanvas(canvas,character,format="png"){
+  const base=`${safeExportFilename(character.name)}-서랍마을-등록사항증명서`;
+  const data=canvas.toDataURL("image/png");
+  const nativePlugin=window.Capacitor?.Plugins?.ProfileExport;
+  if(window.Capacitor?.isNativePlatform?.()&&nativePlugin){
+    if(format==="pdf")await nativePlugin.savePdf({filename:`${base}.pdf`,data});
+    else await nativePlugin.savePng({filename:`${base}.png`,data});
+    showToast(format==="pdf"?"다운로드 폴더에 PDF를 저장했어요":"사진의 DrawerVillage 폴더에 PNG를 저장했어요");
+    return;
+  }
+  if(format==="pdf")throw new Error("browser-pdf");
+  const blob=await new Promise((resolve,reject)=>canvas.toBlob(value=>value?resolve(value):reject(new Error("이미지 파일을 만들지 못했습니다.")),"image/png"));
+  const url=URL.createObjectURL(blob),link=document.createElement("a");
+  link.download=`${base}.png`;link.href=url;link.hidden=true;document.body.append(link);link.click();
+  setTimeout(()=>{link.remove();URL.revokeObjectURL(url)},1500);
 }
 function exportProfilePdf(character){
   const sections=profileExportLines(character),win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
@@ -436,6 +459,11 @@ function exportProfilePdf(character){
   win.document.close();setTimeout(()=>win.print(),900);
 }
 async function exportProfilePdfV2(character,bodyFont){
+  if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.ProfileExport){
+    const canvas=await exportProfilePngV2(character,false,bodyFont);
+    await saveProfileCanvas(canvas,character,"pdf");
+    return;
+  }
   const win=window.open("","_blank");if(!win){showToast("팝업을 허용한 뒤 다시 시도해 주세요");return}
   win.document.write('<!doctype html><html><head><meta charset="utf-8"><title>프로필 준비 중</title></head><body style="font-family:sans-serif;padding:30px">프로필을 만드는 중이에요…</body></html>');
   try{
@@ -446,8 +474,18 @@ async function exportProfilePdfV2(character,bodyFont){
 function openProfileExportDialog(){
   const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>한글이 깨지지 않는 기본 글꼴로 관공서 제출 서류처럼 만들고, 아래에 서랍마을 기록 도장을 찍어요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-export-format="png"><b>PNG 증명서</b><small>이미지 파일로 바로 저장</small></button><button type="button" data-export-format="pdf"><b>PDF 증명서</b><small>같은 문서를 PDF로 저장·인쇄</small></button></div></form>`;
-  dialog.querySelector('[data-export-format="png"]').onclick=()=>{exportProfilePngV2(character,true);dialog.close()};
-  dialog.querySelector('[data-export-format="pdf"]').onclick=()=>{exportProfilePdfV2(character);dialog.close()};
+  dialog.querySelectorAll("[data-export-format]").forEach(button=>button.onclick=async()=>{
+    dialog.querySelectorAll("button").forEach(value=>value.disabled=true);
+    try{
+      if(button.dataset.exportFormat==="png")await exportProfilePngV2(character,true);
+      else await exportProfilePdfV2(character);
+      dialog.close();
+    }catch(error){
+      console.error("프로필 내보내기 실패",error);
+      showToast(error?.message||"프로필 파일을 저장하지 못했어요");
+      dialog.querySelectorAll("button").forEach(value=>value.disabled=false);
+    }
+  });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 function enhanceCatalogCards(root=document){
@@ -523,11 +561,6 @@ function enhanceDynamicForms(){
       if(job&&gender&&orientation)job.before(gender,...(speech?[speech]:[]),orientation);
       if(job&&jobTitle)job.after(jobTitle);
       if(income&&wealth)income.before(wealth);
-      if(workplace&&!profile.querySelector('[data-field="birthday"]')){
-        const birthday=document.createElement("label");
-        birthday.innerHTML=`생일 · 월일<input type="text" inputmode="numeric" maxlength="4" pattern="(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])" data-field="birthday" value="${active().birthday||""}" placeholder="예: 0804"><small>연도 없이 네 자리로 입력해요. 생일파티는 당일 오후 7시에 생성돼요.</small>`;
-        workplace.after(birthday);
-      }
       const license=profile.querySelector('input[data-character-check][data-field="driverLicense"]')?.closest("label");
       if(license)fields.append(license);
       const exportButton=profile.querySelector("[data-export-profile]");
@@ -1079,6 +1112,18 @@ function syncOpenCharacterEditorDraft(){
   dialog.querySelectorAll("[data-personality-field]").forEach(element=>{
     patch[element.dataset.personalityField]=element.value;
   });
+  const birthMonthControl=dialog.querySelector('[data-birthday-part="month"]');
+  const birthDayControl=dialog.querySelector('[data-birthday-part="day"]');
+  if(birthMonthControl||birthDayControl){
+    const birthMonth=birthMonthControl?.value||"";
+    let birthDay=birthDayControl?.value||"";
+    if(birthMonth&&birthDay){
+      const lastDay=new Date(2000,Number(birthMonth),0).getDate();
+      birthDay=String(Math.min(Number(birthDay),lastDay)).padStart(2,"0");
+      if(birthDayControl)birthDayControl.value=birthDay;
+    }
+    patch.birthday=birthMonth&&birthDay?`${birthMonth}${birthDay}`:"";
+  }
   const traitNotes=dialog.querySelector("[data-trait-notes]");
   if(traitNotes)patch.traitNotes=traitNotes.value.slice(0,1200);
   const bodyFields=[...dialog.querySelectorAll("[data-body-field]")];
@@ -1258,31 +1303,10 @@ function openCarEditor(homeId,carId){
 
 function applyTheme(){
   const mode=state.colorMode==="light"?"light":"dark";
-  const palettes={
-    monochrome:{light:["#20242a","#6d747d","#e8eaed","#ffffff","#1d2126","#626a73","#cbd0d5"],dark:["#7f8791","#c0c6ce","#090c10","#151a20","#f4f6f8","#b5bbc3","#343b44"]},
-    cream:{light:["#b06a00","#f2a93b","#fff4d8","#fffdf8","#3a2508","#80613a","#f2d39b"],dark:["#f0a83a","#ffd073","#190f02","#30200b","#fff8e9","#e2c18d","#684617"]},
-    peach:{light:["#ef536f","#ff986e","#fff0e9","#fffaf8","#481923","#955d5d","#ffc6ba"],dark:["#ff7185","#ffad82","#1d080d","#381318","#fff2ef","#efb6ae","#7b3340"]},
-    mint:{light:["#00a982","#4bd8aa","#e9fff6","#fbfffd","#073e32","#4f8878","#b4efd9"],dark:["#21cea3","#6af0c0","#031913","#073128","#effff9","#9ce3cd","#1e7560"]},
-    sunshine:{light:["#d98b00","#ffd23f","#fff8d2","#fffef7","#3e2b00","#836b27","#f4dc82"],dark:["#ffb51f","#ffe05f","#1c1300","#352703","#fffbe8","#e9d184","#735513"]},
-    sage:{light:["#2f855a","#76c36a","#ecf8ed","#fbfffc","#143823","#5a7f66","#bfe1c4"],dark:["#55bc79","#99db76","#06150c","#0f2b19","#effcf3","#a8d4b4","#28643e"]},
-    rose:{light:["#80502f","#b77a4b","#f7efe5","#fffaf4","#2f241d","#75675d","#dfcdbc"],dark:["#d9a46f","#a66e45","#16100c","#241a14","#fff7ef","#d1bfae","#6d4b34"]},
-    ocean:{light:["#007fc2","#36c0e8","#e9f9ff","#fbfeff","#073952","#4f7f93","#b6e8f7"],dark:["#29a9e8","#5cdaf0","#031720","#082f41","#effbff","#9ed7e6","#1e607b"]},
-    lavender:{light:["#7547e8","#c26de8","#f5edff","#fffaff","#2e1652","#76588d","#ddc2fa"],dark:["#956cff","#db86f4","#10051d","#27103b","#faf2ff","#d1afe4","#593180"]},
-    berry:{light:["#be2cff","#ff45b5","#f9ecff","#ffffff","#321044","#7d4a8c","#e5b6f8"],dark:["#d65cff","#ff69c5","#16051d","#2c0c38","#fff2ff","#d9a8e8","#663077"]},
-    sky:{light:["#078cff","#55c8ff","#eaf7ff","#ffffff","#082f50","#4b7895","#b5e2ff"],dark:["#31a8ff","#68ddff","#031522","#092c43","#eefaff","#9ed5ee","#245b79"]},
-    cobalt:{light:["#112250","#3c507d","#f3f0e9","#fffaf4","#112250","#65708a","#d9cbc2"],dark:["#e0c58f","#3c507d","#071124","#101e3b","#f3f0e9","#bac3d7","#3c507d"]},
-    aqua:{light:["#00a9b5","#21dfc5","#e7fffb","#ffffff","#073d3d","#4e8580","#aff1e7"],dark:["#13cbd1","#40f0cd","#031817","#092f2d","#edfffb","#9ce0d6","#1d7069"]},
-    lime:{light:["#52a900","#b4d900","#f3ffe3","#ffffff","#203600","#687f3c","#d3efa8"],dark:["#76ce22","#c9ef43","#0b1602","#1b3309","#f7ffe9","#c0dd99","#466f21"]},
-    coral:{light:["#ff4f62","#ff9770","#fff0ec","#ffffff","#49151b","#955b58","#ffc6ba"],dark:["#ff6674","#ffad82","#1d080b","#381316","#fff3f0","#efb6ae","#7d3439"]},
-    baroque:{light:["#ad6d15","#efbb55","#fbf5d2","#fff9e8","#441004","#79380b","#e2bf6d"],dark:["#efbb55","#ad6d15","#180b03","#2a1306","#fff2cf","#d7ad71","#79380b"]},
-    "moonlit-drawer":{light:["#172a58","#d4a84f","#eef1f8","#fffaf0","#17213b","#5d6170","#c9b477"],dark:["#d4a84f","#6f85bb","#071127","#10204a","#fff4d3","#c8c9d2","#8f743e"]},
-    "ruined-rose":{light:["#681f2a","#9a877f","#e9e4df","#f8f5f1","#241d1d","#6d6060","#b8aaa4"],dark:["#d16b78","#96847e","#08090b","#151315","#f6eff0","#b8aaad","#514449"]},
-    "healing-glasshouse":{light:["#3e755e","#9bb88a","#eef5e9","#fffdf7","#203129","#65766b","#c8d8c5"],dark:["#a8d39d","#6d9b82","#0c1712","#17261d","#eff8ee","#b6c9bb","#405c4b"]},
-    "reverie-ward":{light:["#6551a5","#36a9a0","#f0edf8","#fbf9ff","#27213a","#706887","#c9c1df"],dark:["#b49cff","#4fd5c7","#080716","#15122b","#f5f0ff","#bbb0d3","#4c426e"]},
-    "noir-rain":{light:["#a21f2d","#3e454d","#e9eaec","#fafafa","#191b1f","#63676d","#b8bcc2"],dark:["#e3515e","#8f969e","#050607","#121417","#f4f4f2","#b9bdc2","#44484e"]}
-  };
-  const selected=state.visualTheme||"monochrome";
-  const [primary,secondary,bg,panel,ink,muted,line]=(palettes[selected]||palettes.monochrome)[mode];
+  const palette={light:["#80502f","#b77a4b","#f7efe5","#fffaf4","#2f241d","#75675d","#dfcdbc"],dark:["#d9a46f","#a66e45","#16100c","#241a14","#fff7ef","#d1bfae","#6d4b34"]};
+  const selected="drawer-default";
+  state.visualTheme=selected;
+  const [primary,secondary,bg,panel,ink,muted,line]=palette[mode];
   document.documentElement.dataset.colorMode=mode;
   document.documentElement.dataset.visualTheme=selected;
   document.documentElement.style.setProperty("--p",primary);
@@ -1740,6 +1764,44 @@ function bind(){
     render();
     requestAnimationFrame(()=>{const strip=document.querySelector(".mobile-character-strip");if(strip)strip.scrollLeft=mobileCharacterStripScroll});
   });
+  $$("[data-toggle-character-roster]").forEach(el=>el.onclick=()=>{
+    const roster=document.querySelector("[data-character-roster]");
+    if(!roster)return;
+    const open=roster.hidden;
+    if(open){
+      roster.hidden=false;
+      roster.classList.remove("is-closing");
+      requestAnimationFrame(()=>requestAnimationFrame(()=>roster.classList.add("is-open")));
+    }else{
+      roster.classList.remove("is-open");
+      roster.classList.add("is-closing");
+      setTimeout(()=>{
+        if(roster.classList.contains("is-open"))return;
+        roster.hidden=true;
+        roster.classList.remove("is-closing");
+      },240);
+    }
+    document.querySelectorAll("[data-toggle-character-roster]").forEach(button=>button.setAttribute("aria-expanded",String(open)));
+  });
+  $("[data-open-quick-character-settings]")?.addEventListener("click",()=>{
+    mobileCharacterEditorPane="quick";
+    mobileCharacterDraftDirty=false;
+    mobileCharacterEditorScroll=0;
+    mobileCharacterEditorOpenDetails=[];
+    mobileCharacterEditorDetailsCaptured=false;
+    render();
+  });
+  $("[data-open-full-character-settings]")?.addEventListener("click",()=>{
+    state.characterSettingsView="full";
+    state.characterPane="profile";
+    save(true);
+    render();
+  });
+  $("[data-close-full-character-settings]")?.addEventListener("click",()=>{
+    state.characterSettingsView="hub";
+    save(true);
+    render();
+  });
   $$("[data-open-character-pane]").forEach(el=>el.onclick=()=>{
     state.characterPane=el.dataset.openCharacterPane;
     mobileCharacterEditorPane=state.characterPane;
@@ -2044,7 +2106,11 @@ function bind(){
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(character.id,{personalityTypes:next},false);
     if(!mobileDraft)save(true);
-    document.querySelectorAll(`[data-personality-type="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",next.includes(value)));
+    document.querySelectorAll(`[data-personality-type="${CSS.escape(value)}"]`).forEach(button=>{
+      const selected=next.includes(value);
+      button.classList.toggle("on",selected);
+      button.setAttribute("aria-pressed",String(selected));
+    });
   });
   const toggleTraitSetting=(key,value,element)=>{
     const character=active(),current=Array.isArray(character[key])?character[key]:[];
@@ -2144,6 +2210,19 @@ function bind(){
       if(isMobileCharacterDraftControl(el))save(false,false);
     });
   });
+  $$("[data-birthday-part]").forEach(el=>el.addEventListener("change",()=>{
+    const scope=el.closest("[data-mobile-character-editor-dialog]")||document;
+    const month=scope.querySelector('[data-birthday-part="month"]')?.value||"";
+    const dayControl=scope.querySelector('[data-birthday-part="day"]');
+    let day=dayControl?.value||"";
+    if(month&&day){
+      const lastDay=new Date(2000,Number(month),0).getDate();
+      day=String(Math.min(Number(day),lastDay)).padStart(2,"0");
+      if(dayControl)dayControl.value=day;
+    }
+    updateCharacter(active().id,{birthday:month&&day?`${month}${day}`:""},false);
+    if(!markMobileCharacterDraft(el))save(true);
+  }));
   $$("[data-color]").forEach(el=>el.oninput=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
     updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);
@@ -2190,22 +2269,25 @@ function bind(){
     document.querySelectorAll(`[data-chip="${CSS.escape(field)}"][data-value="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-favorite-kind]").forEach(el=>el.onclick=()=>{
-    const mobileDraft=markMobileCharacterDraft(el);
+    markMobileCharacterDraft(el);
     const kind=el.dataset.favoriteKind,itemId=el.dataset.favoriteId;
-    toggleFavorite(active().id,kind,itemId,!mobileDraft);
+    // 취향 선택은 모바일 편집창에서도 즉시 저장한다. 편집 완료 버튼은
+    // 화면을 닫는 역할만 하며, 뒤로가기로 선택이 사라지지 않는다.
+    toggleFavorite(active().id,kind,itemId,true);
     const selected=(active().favorites?.[kind]||[]).includes(itemId);
     document.querySelectorAll(`[data-favorite-kind="${CSS.escape(kind)}"][data-favorite-id="${CSS.escape(itemId)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-owned-kind]").forEach(el=>el.onclick=()=>{
-    const mobileDraft=markMobileCharacterDraft(el);
+    markMobileCharacterDraft(el);
     const kind=el.dataset.ownedKind,itemId=el.dataset.ownedId;
-    toggleOwned(active().id,kind,itemId,!mobileDraft);
+    toggleOwned(active().id,kind,itemId,true);
     const selected=(active().inventory?.[kind]||[]).includes(itemId);
     document.querySelectorAll(`[data-owned-kind="${CSS.escape(kind)}"][data-owned-id="${CSS.escape(itemId)}"]`).forEach(button=>button.classList.toggle("on",selected));
   });
   $$("[data-character-interaction]").forEach(el=>el.onclick=()=>{
-    const item=String($("[data-character-interaction-item]")?.value||"").split(":");
-    const type=el.dataset.characterInteraction,targetId=$("[data-character-interaction-target]")?.value||"";
+    const panel=el.closest("[data-mailbox-gift]")||document;
+    const item=String(panel.querySelector("[data-character-interaction-item]")?.value||"").split(":");
+    const type=el.dataset.characterInteraction,targetId=panel.querySelector("[data-character-interaction-target]")?.value||"";
     if(recordCharacterInteraction({type,actorId:active().id,targetId,itemKind:item[0],itemId:item.slice(1).join(":")})){
       showToast(type==="gift"?"선물을 건넸어요":type==="exercise"?"함께 운동을 시작했어요":type==="outing"?"함께 나들이를 시작했어요":"물건을 구매했어요");render();
     }else showToast("상대와 물건을 먼저 골라 주세요");
@@ -2290,7 +2372,7 @@ function bind(){
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });
   $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}));
-  $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("취향 사전 저장"));
+  $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("사전 저장"));
   $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
   $$(".place-editor details").forEach(details=>{
     const audienceTitle=[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
@@ -2400,16 +2482,6 @@ function bind(){
     state.colorMode=button.dataset.colorMode==="light"?"light":"dark";
     save(true);
     renderPreservingPageScroll(button);
-  });
-  $$("button[data-visual-theme]").forEach(button=>button.onclick=event=>{
-    event.stopPropagation();
-    state.visualTheme=button.dataset.visualTheme||"monochrome";
-    save(true);
-    renderPreservingPageScroll(button);
-  });
-  $("[data-open-visual-theme-dialog]")?.addEventListener("click",()=>{
-    const dialog=$("[data-visual-theme-dialog]");
-    if(dialog&&!dialog.open)dialog.showModal();
   });
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-sync-download]")?.addEventListener("click",()=>window.ParallelCityAuth?.download());
@@ -2671,6 +2743,7 @@ function recordTabHistory(tab,replace=false){
 }
 function navigateToTab(tab,{recordHistory=true}={}){
   if(!APP_TABS.includes(tab))return;
+  if(tab==="character"&&state.activeTab!=="character")state.characterSettingsView="hub";
   const returningToObserve=tab==="observe"&&state.activeTab!=="observe";
   if(returningToObserve)armObserveProfileInputShield();
   document.querySelector(".page-guide[open]")?.close("navigate");
@@ -3847,7 +3920,7 @@ const CHARACTER_CONTACT_PHRASES={
   tastes:{
     actions:[
       {ko:"문득 {item} 생각이 나서 오늘 즐길 수 있을지 보고 있어요.",en:"I suddenly thought of {item} and I'm seeing if I can enjoy it today.",ja:"ふと{item}を思い出して、今日楽しめるか考えています。"},
-      {ko:"취향 사전에 넣어 둔 {item}을 다시 들여다보고 있어요.",en:"I'm looking back at {item} from the taste collection.",ja:"好み図鑑に入れておいた{item}をもう一度見ています。"},
+      {ko:"사전에 넣어 둔 {item}을 다시 들여다보고 있어요.",en:"I'm looking back at {item} from the dictionary.",ja:"辞典に入れておいた{item}をもう一度見ています。"},
       {ko:"오늘 기분에는 {item}이 잘 맞을 것 같아요.",en:"{item} feels like it would suit my mood today.",ja:"今日の気分には{item}が合いそうです。"},
       {ko:"비슷한 것들 사이에서 결국 {item} 쪽으로 마음이 가고 있어요.",en:"Among a few similar choices, I keep leaning toward {item}.",ja:"似たものの中でも、やっぱり{item}が気になっています。"},
       {ko:"{item}을 천천히 즐길 시간을 어디에 넣을지 생각 중이에요.",en:"I'm deciding where to make time to enjoy {item} slowly.",ja:"{item}をゆっくり楽しむ時間をどこに入れるか考えています。"},
@@ -3881,7 +3954,8 @@ function buildQuestionNotification(character,at,seed){
   const kind=kinds[seed%kinds.length],base=kind==="gift"?copy.gift(context.target):copy[kind],mode=state.characterNotificationSettings?.voiceMode||"mixed";
   const body=mode==="character"||(mode==="mixed"&&seed%3===0)?characterQuestionPrompt(character,{kind,target:context.target,language,base}):base;
   const titles={ko:["선택을 물어봤어요","잠깐 상의하고 싶대요","결정을 기다리고 있어요","오늘의 질문이 도착했어요"],en:["A question for you","A quick decision","Waiting for your choice","Today's question"],ja:["選んでほしいことがあります","少し相談したいようです","選択を待っています","今日の質問が届きました"]};
-  return {title:`${character.name} · ${titles[language]?.[seed%4]||titles.ko[seed%4]}`,body,signature:`question:${kind}:${seed%7}:${character.id}`,extra:{mode:"question",characterId:character.id,targetId:kind==="gift"?context.targetId:"",questionKind:kind,scheduledAt:at.toISOString()}};
+  const title=characterContactTitle(character,titles[language]?.[seed%4]||titles.ko[seed%4],{language});
+  return {title:`${character.name} · ${title}`,body,signature:`question:${kind}:${seed%7}:${character.id}`,extra:{mode:"question",characterId:character.id,targetId:kind==="gift"?context.targetId:"",questionKind:kind,scheduledAt:at.toISOString()}};
 }
 function buildMomentNotification(character,topic,at,seed){
   const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),phrases=CHARACTER_CONTACT_PHRASES[topic]||CHARACTER_CONTACT_PHRASES.moments;
@@ -3897,7 +3971,8 @@ function buildMomentNotification(character,topic,at,seed){
   };
   const titlePool=titles[topic]?.[language]||titles[topic]?.ko||titles.checkins.ko,mode=state.characterNotificationSettings?.voiceMode||"mixed";
   const neutral=`${action} ${ending}`,body=mode==="concise"?neutral:mode==="character"||seed%3!==0?characterContactSpeech(character,neutral,{language}):neutral;
-  return {title:`${character.name} · ${titlePool[seed%titlePool.length]}`,body,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
+  const title=characterContactTitle(character,titlePool[seed%titlePool.length],{language});
+  return {title:`${character.name} · ${title}`,body,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
 }
 function buildLifeLogNotification(character,at,seed){
   const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),logs=[
@@ -4031,17 +4106,24 @@ window.addEventListener("drawer-village-character-notification-open",event=>{
   }
   navigateToTab("observe");
 });
+let liveSceneRefreshTimer=0;
+let lastForegroundSceneRefreshAt=0;
 function scheduleLiveSceneRefresh(){
-  const delay=(15+Math.floor(Math.random()*16))*60*1000;
-  setTimeout(()=>{
-    if(["observe","home"].includes(state.activeTab)){
+  clearTimeout(liveSceneRefreshTimer);
+  if(document.visibilityState==="hidden"){liveSceneRefreshTimer=0;return}
+  const now=new Date();
+  const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
+  const delay=[...characters.map(character=>nextSceneRefreshDelay(character,now)),10*60*1000].reduce((soonest,value)=>Math.min(soonest,value),10*60*1000);
+  liveSceneRefreshTimer=setTimeout(()=>{
+    liveSceneRefreshTimer=0;
+    if(document.visibilityState!=="hidden"&&["observe","home"].includes(state.activeTab)){
       const now=new Date();
       settleScheduledChoices(now.getTime());
       state.order.map(id=>state.characters[id]).filter(Boolean).forEach(character=>eventFor(character,now));
       render();
     }
     scheduleLiveSceneRefresh();
-  },delay);
+  },Math.max(1000,delay));
 }
 scheduleLiveSceneRefresh();
 ensureDailyQuestionSchedule();
@@ -4050,10 +4132,21 @@ if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initia
 });
 const restoreForegroundState=()=>{
   refreshLocalMedia();
+  const refreshedAt=Date.now();
+  if(refreshedAt-lastForegroundSceneRefreshAt>1000&&["observe","home"].includes(state.activeTab)){
+    lastForegroundSceneRefreshAt=refreshedAt;
+    const now=new Date();
+    state.order.map(id=>state.characters[id]).filter(Boolean).forEach(character=>eventFor(character,now));
+    render();
+  }
+  scheduleLiveSceneRefresh();
 };
 window.addEventListener("focus",restoreForegroundState);
 window.addEventListener("pageshow",restoreForegroundState);
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")restoreForegroundState()});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="visible")restoreForegroundState();
+  else{clearTimeout(liveSceneRefreshTimer);liveSceneRefreshTimer=0}
+});
 
 let automaticCloudSyncTimer=0;
 document.addEventListener("change",event=>{
@@ -4087,7 +4180,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260823truepreviewhotfix1").catch(error=>{
+  import("./auth.js?v=20260823notificationvoice").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4102,7 +4195,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260823truepreviewhotfix1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260823notificationvoice",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

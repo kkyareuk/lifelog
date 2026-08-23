@@ -15,6 +15,29 @@ const mergedListById=(preferred=[],fallback=[])=>{
   });
   return result;
 };
+const canonicalRelationshipType=type=>({
+  "폴리 관계":"연인","유사 연인":"연인","비공식 연인":"연인","연애 관계":"연인","커플":"연인",
+  "절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구",
+  "유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"
+})[type]||String(type||"친구");
+const relationshipIdentity=relation=>{
+  if(!relation?.a||!relation?.b||relation.a===relation.b)return"";
+  const type=canonicalRelationshipType(relation.type),directional=type==="부모·자녀"||Boolean(relation.directional);
+  const pair=directional?`${relation.a}>${relation.b}`:[relation.a,relation.b].sort().join("~");
+  return`${type}|${pair}|${String(relation.parentRole||"")}`;
+};
+const mergedInteractions=(preferred=[],fallback=[])=>{
+  const result=[],seenIds=new Set(),seenMoments=new Set();
+  [...(preferred||[]),...(fallback||[])].forEach(item=>{
+    if(!item||typeof item!=="object")return;
+    const id=String(item.id||"");
+    const moment=[item.type,item.actorId,item.targetId,item.itemKind,item.itemId,item.requestTitle,item.requestCategory,item.requestedBy,Number(item.createdAt)||0].map(value=>String(value||"")).join("|");
+    if((id&&seenIds.has(id))||seenMoments.has(moment))return;
+    if(id)seenIds.add(id);
+    seenMoments.add(moment);result.push(clone(item));
+  });
+  return result;
+};
 
 // 동기화 시 한쪽 마을 전체를 다른 쪽으로 덮지 않는다. 최신 상태를 같은 ID의
 // 기준으로 삼되, 반대쪽에만 있는 캐릭터·집·일정도 함께 보존한다. 삭제 기록은
@@ -57,7 +80,7 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.towns=mergedListById(preferred.towns,fallback.towns);
   const preferredPlaces=preferred.world?.places||[],fallbackPlaces=fallback.world?.places||[];
   next.world={...clone(fallback.world),...clone(preferred.world),places:mergedListById(preferredPlaces,fallbackPlaces)};
-  next.interactions=mergedListById(preferred.interactions,fallback.interactions).slice(-300);
+  next.interactions=mergedInteractions(preferred.interactions,fallback.interactions).slice(-300);
   next.scheduledChoices=mergedListById(preferred.scheduledChoices,fallback.scheduledChoices).slice(-120);
 
   // 화면·언어 설정은 계정이 아니라 현재 기기의 사용 환경을 따른다.
@@ -71,6 +94,30 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.activeHomeId=next.homes[device.activeHomeId]?device.activeHomeId:(next.homes[preferred.activeHomeId]?preferred.activeHomeId:Object.keys(next.homes)[0]||null);
   next.lastSaved=Math.max(Number(device.lastSaved)||0,Number(cloud.lastSaved)||0);
   return next;
+}
+
+// 사용자가 직접 누른 불러오기는 클라우드에 실제로 존재하는 캐릭터를
+// 복구 대상으로 취급한다. 업데이트 뒤 기기에 남은 오래된 삭제 표식이
+// 서버의 정상 캐릭터·집·관계를 다시 지우지 않도록 실제 원격 데이터가
+// 있는 ID의 표식만 해제한 뒤, 클라우드 내용을 같은 ID의 우선본으로 병합한다.
+export function mergeCloudRestoreState(deviceValue,cloudValue){
+  const device=clone(deviceValue),cloud=clone(cloudValue);
+  const cloudCharacters=mapById(cloud.characters),cloudHomes=mapById(cloud.homes);
+  const cloudRelationships=Array.isArray(cloud.relationships)?cloud.relationships:Object.values(cloud.relationships||{});
+  const relationshipIds=new Set(cloudRelationships.map(item=>String(item?.id||"")).filter(Boolean));
+  const relationshipKeys=new Set(cloudRelationships.map(relationshipIdentity).filter(Boolean));
+  const keepMissing=(list,present)=>Array.isArray(list)?list.map(String).filter(id=>!present.has(id)):[];
+  const characterIds=new Set(Object.keys(cloudCharacters)),homeIds=new Set(Object.keys(cloudHomes));
+  device.deletedCharacterIds=keepMissing(device.deletedCharacterIds,characterIds);
+  cloud.deletedCharacterIds=keepMissing(cloud.deletedCharacterIds,characterIds);
+  device.deletedHomeIds=keepMissing(device.deletedHomeIds,homeIds);
+  cloud.deletedHomeIds=keepMissing(cloud.deletedHomeIds,homeIds);
+  device.deletedRelationshipIds=keepMissing(device.deletedRelationshipIds,relationshipIds);
+  cloud.deletedRelationshipIds=keepMissing(cloud.deletedRelationshipIds,relationshipIds);
+  device.deletedRelationshipKeys=(device.deletedRelationshipKeys||[]).filter(key=>!relationshipKeys.has(String(key)));
+  cloud.deletedRelationshipKeys=(cloud.deletedRelationshipKeys||[]).filter(key=>!relationshipKeys.has(String(key)));
+  cloud.lastSaved=Math.max(Date.now(),Number(device.lastSaved)||0,Number(cloud.lastSaved)||0)+1;
+  return mergeDeviceAndCloudState(device,cloud);
 }
 
 // 백업 파일은 현재 기기의 데이터를 지우는 "교체"가 아니라 복구용 병합으로

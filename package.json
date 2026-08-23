@@ -19,13 +19,16 @@
     "test:navigation": "node scripts/check-navigation-event-boundary.mjs",
     "test:media-home-routine": "node scripts/check-media-home-routine-features.mjs",
     "test:cloud-merge": "node scripts/check-cloud-character-merge.mjs",
+    "test:log-continuity": "node scripts/check-log-sync-continuity.mjs",
     "test:backup-home-scene": "node scripts/check-backup-home-scene-stability.mjs",
     "test:observe-hud": "node scripts/check-observe-game-hud.mjs",
     "test:selection-continuity": "node scripts/check-selection-continuity.mjs",
-    "test:date-schedule-companion": "node scripts/check-game-date-schedule-companion.mjs",
+    "test:character-wallet": "node scripts/check-character-wallet-scene-integrity.mjs",
     "test:android-assets": "node scripts/check-android-build-assets.mjs",
+    "test:date-schedule-companion": "node scripts/check-game-date-schedule-companion.mjs",
     "test:forward-schema-recovery": "node scripts/check-forward-schema-recovery.mjs",
-    "test:character-group-layout": "node scripts/check-character-group-layout.mjs"
+    "test:character-group-layout": "node scripts/check-character-group-layout.mjs",
+    "test:performance": "node scripts/check-performance-stability.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

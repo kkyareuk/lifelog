@@ -13,8 +13,8 @@ android {
         applicationId "com.drawervillage.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 107
-        versionName "1.0.78.8"
+        versionCode 115
+        versionName "1.0.105"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -76,10 +76,10 @@ android.sourceSets.main.assets.srcDirs = [externalAssetsDir]
 
 def prepareExternalWebAssets = tasks.register('prepareExternalWebAssets', Exec) {
     commandLine 'powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-              '-File', file('../copy-assets-for-gradle.ps1').absolutePath,
-              '-Source', file('src/main/assets').absolutePath,
-              '-WebSource', rootProject.file('../www').absolutePath,
-              '-Destination', externalAssetsDir.absolutePath
+            '-File', file('../copy-assets-for-gradle.ps1').absolutePath,
+            '-Source', file('src/main/assets').absolutePath,
+            '-WebSource', rootProject.file('../www').absolutePath,
+            '-Destination', externalAssetsDir.absolutePath
 }
 
 tasks.configureEach { task ->

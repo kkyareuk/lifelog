@@ -39,7 +39,7 @@ html[data-color-mode][data-visual-theme] header nav button{
 }
 html[data-color-mode][data-visual-theme] header nav button:is(.on,:hover,:focus-visible),
 html[data-color-mode][data-visual-theme] button.primary,
-html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button),
+html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button):not(.character-pane-ribbon):not(.character-wallet-selected):not(.character-roster-entry),
 html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
   border-color:color-mix(in srgb,var(--p) 72%,var(--line))!important;
   background:linear-gradient(135deg,var(--p),var(--s))!important;
@@ -52,7 +52,7 @@ html[data-color-mode][data-visual-theme] :is(
   .catalog-shell,.catalog-kind,.catalog-dex-card,.catalog-card,.favorite-group,
   .shop-store,.shop-cart,.premium-product,
   .relationship-page,.relation,.character-menu,
-  .mobile-character-dashboard,.mobile-character-heading,.mobile-character-pane-grid>button,
+  .mobile-character-heading,
   .town-tabs,.town-editor-panel,.resident-editor,.sleep-room-editor,
   .character-statistics-page,.character-statistics-page article,.character-statistics-page section
 ){
@@ -75,7 +75,7 @@ html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
   dialog,.visual-theme-dialog
-) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li){
+) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
@@ -83,12 +83,12 @@ html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
   dialog,.visual-theme-dialog
-) :is(p,small,time,em,.muted,.hint){
+) :is(p,small,time,em,.muted,.hint):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *){
   color:var(--muted)!important;
   -webkit-text-fill-color:var(--muted)!important;
 }
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] main button:not(.routine-shell *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.game-hud-moment-title):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not([data-home-character]){
+html[data-color-mode][data-visual-theme] main button:not(.routine-shell *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.game-hud-moment-title):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not([data-home-character]):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
