@@ -1,13 +1,13 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823homelife";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823homelife";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823homelife";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823homelife";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823homelife";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823homelife";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260823homelife";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260823homelife";
-import {furnitureCatalogForRoom,furnitureIcon,furnitureLabel,normalizeFurniturePlacement} from "./furniture-layout.js?v=20260823homelife";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260823homelife";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823griddecor";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823griddecor";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823griddecor";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823griddecor";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823griddecor";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823griddecor";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260823griddecor";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260823griddecor";
+import {FURNITURE_PROPS,furnitureCatalogForRoom,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260823griddecor";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260823griddecor";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -767,6 +767,23 @@ function setFurniturePlacementStyle(element,placement){
   element.style.setProperty("--furniture-layer",String(placement.layer));
 }
 
+function openFurniturePropsDialog(homeId,roomKey,placementId){
+  const placement=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId);if(!placement||!supportsFurnitureProps(placement.item))return;
+  const copy={
+    ko:{eyebrow:"선반 위 꾸미기",title:"소품 올리기",available:"올릴 소품",attached:"현재 올려둔 소품",empty:"아직 올려둔 소품이 없어요.",remove:"치우기",close:"완료",limit:"소품은 가구 하나에 4개까지 올릴 수 있어요."},
+    en:{eyebrow:"Decorate the surface",title:"Add props",available:"Available props",attached:"Placed props",empty:"No props placed yet.",remove:"Remove",close:"Done",limit:"Each piece of furniture can hold up to four props."},
+    ja:{eyebrow:"棚の上を飾る",title:"小物を置く",available:"置ける小物",attached:"置いている小物",empty:"小物はまだありません。",remove:"片付ける",close:"完了",limit:"家具1つにつき小物は4個まで置けます。"}
+  }[state.uiLanguage]||null;
+  const dialog=document.createElement("dialog");dialog.className="furniture-props-dialog";
+  const draw=()=>{
+    const current=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId),props=current?.props||[],full=props.length>=4;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.close}">×</button></div><p>${copy.limit}</p><section><h3>${copy.available}</h3><div class="furniture-prop-picker">${FURNITURE_PROPS.map(item=>`<button type="button" data-add-furniture-prop="${item}" ${full?"disabled":""}><span aria-hidden="true">${furniturePropIcon(item)}</span><b>${htmlEsc(furniturePropLabel(item,state.uiLanguage))}</b></button>`).join("")}</div></section><section><h3>${copy.attached}</h3><div class="furniture-prop-current">${props.length?props.map(prop=>`<button type="button" data-delete-furniture-prop="${htmlEsc(prop.id)}"><span aria-hidden="true">${furniturePropIcon(prop.item)}</span><b>${htmlEsc(furniturePropLabel(prop.item,state.uiLanguage))}</b><small>${copy.remove}</small></button>`).join(""):`<p>${copy.empty}</p>`}</div></section><button class="primary furniture-props-done" value="close">${copy.close}</button></form>`;
+    dialog.querySelectorAll("[data-add-furniture-prop]").forEach(button=>button.onclick=()=>{if(addFurnitureProp(homeId,roomKey,placementId,button.dataset.addFurnitureProp))draw()});
+    dialog.querySelectorAll("[data-delete-furniture-prop]").forEach(button=>button.onclick=()=>{if(deleteFurnitureProp(homeId,roomKey,placementId,button.dataset.deleteFurnitureProp))draw()});
+  };
+  draw();dialog.onclose=()=>{dialog.remove();pendingFurnitureSelection={homeId,roomKey,placementId};render()};document.body.append(dialog);dialog.showModal();
+}
+
 function bindFurniturePlacementEditors(){
   const toolbar=document.querySelector("[data-furniture-edit-toolbar]");
   if(!toolbar)return;
@@ -783,14 +800,15 @@ function bindFurniturePlacementEditors(){
     toolbar.dataset.roomKey=element.dataset.roomKey||"";
     toolbar.dataset.placementId=element.dataset.furniturePlacement||"";
     const name=toolbar.querySelector("[data-furniture-edit-name]");if(name)name.textContent=element.dataset.furnitureName||"가구";
+    const props=toolbar.querySelector('[data-furniture-command="props"]');if(props)props.hidden=element.dataset.furnitureSupportsProps!=="true";
   };
   document.querySelectorAll("[data-furniture-placement]").forEach(element=>{
-    let pointerId=null,roomRect=null,latest=null,dragged=false,startX=0,startY=0;
+    let pointerId=null,roomRect=null,canvasRect=null,latest=null,dragged=false,startX=0,startY=0;
     element.onclick=event=>{event.preventDefault();event.stopPropagation();selectFurniture(element)};
     element.onpointerdown=event=>{
       const room=element.closest(".room");if(!room)return;
       event.preventDefault();event.stopPropagation();selectFurniture(element);
-      pointerId=event.pointerId;roomRect=room.getBoundingClientRect();latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
+      pointerId=event.pointerId;roomRect=room.getBoundingClientRect();canvasRect=room.closest("[data-room-canvas]")?.getBoundingClientRect()||roomRect;latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
       element.setPointerCapture(pointerId);element.classList.add("is-dragging");
     };
     element.onpointermove=event=>{
@@ -798,11 +816,11 @@ function bindFurniturePlacementEditors(){
       event.preventDefault();event.stopPropagation();
       if(Math.hypot(event.clientX-startX,event.clientY-startY)>4)dragged=true;
       if(!dragged)return;
-      const x=Math.max(6,Math.min(94,(event.clientX-roomRect.left)/roomRect.width*100));
-      const y=Math.max(14,Math.min(90,(event.clientY-roomRect.top)/roomRect.height*100));
+      const rawX=(event.clientX-roomRect.left)/roomRect.width*100,rawY=(event.clientY-roomRect.top)/roomRect.height*100;
+      const snapped=snapFurniturePosition(rawX,rawY,furnitureGridForRoom(roomRect,canvasRect));
       const room=state.homes[element.dataset.homeId]?.rooms?.[element.dataset.roomKey];
       const current=room?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);if(!current)return;
-      latest=normalizeFurniturePlacement({...current,x,y});setFurniturePlacementStyle(element,latest);
+      latest=normalizeFurniturePlacement({...current,x:snapped.x,y:snapped.y});setFurniturePlacementStyle(element,latest);
     };
     const finish=event=>{
       if(pointerId===null||event.pointerId!==pointerId)return;
@@ -819,12 +837,13 @@ function bindFurniturePlacementEditors(){
     if(command==="done"){clearSelection();return}
     const {homeId,roomKey,placementId}=toolbar.dataset;
     const current=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId);if(!current)return;
+    if(command==="props"){openFurniturePropsDialog(homeId,roomKey,placementId);return}
     if(command==="delete"){
       if(confirm(`‘${current.item}’ 가구를 방에서 치울까요?`)){deleteFurniturePlacement(homeId,roomKey,placementId);pendingFurnitureSelection=null;render()}
       return;
     }
-    const patch=command==="smaller"?{scale:current.scale-.1}
-      :command==="larger"?{scale:current.scale+.1}
+    const patch=command==="smaller"?{scale:current.scale-.25}
+      :command==="larger"?{scale:current.scale+.25}
       :command==="rotate"?{rotation:current.rotation+15}
       :command==="back"?{layer:current.layer-1}
       :command==="front"?{layer:current.layer+1}:{};
@@ -4283,7 +4302,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260823homelife").catch(error=>{
+  import("./auth.js?v=20260823griddecor").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4298,7 +4317,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260823homelife",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260823griddecor",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

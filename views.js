@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823homelife";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823homelife";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823homelife";
-import {furnitureIcon,furnitureLabel,normalizeFurniturePlacements} from "./furniture-layout.js?v=20260823homelife";
-import {homeLifePresentation} from "./home-simulation.js?v=20260823homelife";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823griddecor";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823griddecor";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823griddecor";
+import {furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260823griddecor";
+import {homeLifePresentation} from "./home-simulation.js?v=20260823griddecor";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -1705,7 +1705,10 @@ function mobileRoomLayout(roomKeys,roomData){
 }
 function roomStyle(h,key,layout,mobileLayout){
   const room=h.rooms?.[key]||{},manual=room.layout&&typeof room.layout==="object"?room.layout:null;
-  const resolvedMobile=manual||mobileLayout||{x:0,y:0,w:100,h:100},image=room.image,parts=[
+  const resolvedMobile=manual||mobileLayout||{x:0,y:0,w:100,h:100},image=room.image;
+  const furnitureColumns=Math.max(1,Math.round((Number(resolvedMobile.w)||100)/100*12));
+  const furnitureRows=Math.max(1,Math.round((Number(resolvedMobile.h)||100)/100*16));
+  const parts=[
     `--room-x:${layout?.x||1}`,
     `--room-y:${layout?.y||1}`,
     `--room-w:${layout?.w||1}`,
@@ -1714,6 +1717,10 @@ function roomStyle(h,key,layout,mobileLayout){
     `--mobile-room-y:${(Number(resolvedMobile.y)||0).toFixed(4)}%`,
     `--mobile-room-w:${(Number(resolvedMobile.w)||100).toFixed(4)}%`,
     `--mobile-room-h:${(Number(resolvedMobile.h)||100).toFixed(4)}%`,
+    `--furniture-grid-cols:${furnitureColumns}`,
+    `--furniture-grid-rows:${furnitureRows}`,
+    `--furniture-cell-w:${(100/furnitureColumns).toFixed(4)}%`,
+    `--furniture-cell-h:${(100/furnitureRows).toFixed(4)}%`,
     `--room-image-fit:${room.imageFit==="contain"?"contain":"cover"}`
   ];
   if(image)parts.push(`background-image:linear-gradient(#ffffff30,#ffffff30),url('${image}')`);
@@ -1721,8 +1728,8 @@ function roomStyle(h,key,layout,mobileLayout){
 }
 function roomFurnitureMarkup(homeId,roomKey,room,edit){
   const placements=normalizeFurniturePlacements(room.furniturePlacements);
-  if(!placements.length)return "";
-  return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{const label=furnitureLabel(placement.item,state.uiLanguage);return `<button type="button" class="room-furniture-item" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" style="--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.rotation}deg;--furniture-layer:${placement.layer}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}><span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>${edit?`<small>${esc(label)}</small>`:""}</button>`}).join("")}</div>`;
+  if(!placements.length&&!edit)return "";
+  return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{const label=furnitureLabel(placement.item,state.uiLanguage),props=placement.props||[];return `<button type="button" class="room-furniture-item" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" data-furniture-supports-props="${supportsFurnitureProps(placement.item)}" style="--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.rotation}deg;--furniture-layer:${placement.layer}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}><span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>${props.length?`<span class="room-furniture-props" aria-hidden="true">${props.map((prop,index)=>`<i style="--prop-slot:${index}">${furniturePropIcon(prop.item)}</i>`).join("")}</span>`:""}${edit?`<small>${esc(label)}</small>`:""}</button>`}).join("")}</div>`;
 }
 function homeLifePersonMarkup(character,event,agent,room,roomKey,index){
   const furnitureName=agent?.item?furnitureLabel(agent.item,state.uiLanguage):furnitureLabel("가구",state.uiLanguage);
@@ -1935,7 +1942,8 @@ function homeCard(id,chars){
     <div class="home-photo-editor"><b>집 선택 버튼 배경 사진</b><span><button data-home-bg="${id}">사진</button><button data-image-url="home" data-id="${id}">링크</button>${h.image?`<button data-clear-home-bg="${id}">지우기</button>`:""}</span></div>
   </section>`:"";
   const editToolbar=edit?`<nav class="home-edit-toolbar" aria-label="집 편집 도구"><button type="button" data-open-home-feature="house-settings">집 설정</button><button type="button" data-open-home-feature="room-plan">방 추가·구성</button><button type="button" data-open-home-feature="residents">구성원</button><button type="button" class="primary" data-home-edit>완료</button></nav>`:"";
-  const furnitureToolbar=edit?`<nav class="furniture-edit-toolbar" data-furniture-edit-toolbar hidden aria-label="선택한 가구 편집"><strong data-furniture-edit-name>가구</strong><button type="button" data-furniture-command="smaller" aria-label="가구 작게">−</button><button type="button" data-furniture-command="larger" aria-label="가구 크게">＋</button><button type="button" data-furniture-command="rotate" aria-label="가구 회전">↻</button><button type="button" data-furniture-command="back" aria-label="가구 뒤로">↓</button><button type="button" data-furniture-command="front" aria-label="가구 앞으로">↑</button><button type="button" class="danger" data-furniture-command="delete">삭제</button><button type="button" class="primary" data-furniture-command="done">완료</button></nav>`:"";
+  const propToolbarLabel=state.uiLanguage==="en"?"Props +":state.uiLanguage==="ja"?"小物＋":"소품 +";
+  const furnitureToolbar=edit?`<nav class="furniture-edit-toolbar" data-furniture-edit-toolbar hidden aria-label="선택한 가구 편집"><strong data-furniture-edit-name>가구</strong><button type="button" data-furniture-command="smaller" aria-label="가구 작게">−</button><button type="button" data-furniture-command="larger" aria-label="가구 크게">＋</button><button type="button" data-furniture-command="rotate" aria-label="가구 회전">↻</button><button type="button" data-furniture-command="back" aria-label="가구 뒤로">↓</button><button type="button" data-furniture-command="front" aria-label="가구 앞으로">↑</button><button type="button" data-furniture-command="props">${propToolbarLabel}</button><button type="button" class="danger" data-furniture-command="delete">삭제</button><button type="button" class="primary" data-furniture-command="done">완료</button></nav>`:"";
   return `<article class="home panel ${edit?"is-editing":""}" data-home-card="${id}">
     <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.length?`${chars.map(c=>c.name).join(" · ")} 연결됨`:"아직 연결된 캐릭터가 없는 집"}</small></div><b>${inside.length}명 머무는 중</b></div>
     ${editToolbar}${homeSettings}${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>

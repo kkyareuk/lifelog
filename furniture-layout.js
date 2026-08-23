@@ -1,5 +1,14 @@
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
 
+export const HOUSE_FURNITURE_GRID=Object.freeze({columns:12,rows:16});
+export const FURNITURE_PROPS=Object.freeze(["책","화분","향수","액자","컵","인형","수집품","조명"]);
+const PROP_ICONS={책:"📕",화분:"🪴",향수:"🧴",액자:"🖼️",컵:"☕",인형:"🧸",수집품:"🏺",조명:"💡"};
+const PROP_LABELS={
+  en:{책:"Book",화분:"Plant",향수:"Perfume",액자:"Frame",컵:"Cup",인형:"Doll",수집품:"Collectible",조명:"Lamp"},
+  ja:{책:"本",화분:"鉢植え",향수:"香水",액자:"写真立て",컵:"カップ",인형:"人形",수집품:"コレクション",조명:"照明"}
+};
+const PROP_SURFACE_PATTERN=/(선반|책장|진열|수납장|신발장|찬장|와인장|책상|테이블|협탁|화장대|조리대|작업대|식탁|바)$/;
+
 export const FURNITURE_CATALOG=Object.freeze({
   living:["소파","TV","책장","오디오","안마의자","게임기","캣타워","턴테이블","보드게임장","홈시어터","프로젝터","악기 진열장","수집품 진열장","독서 의자","반려동물 장난감","러닝머신"],
   kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기","에스프레소 머신","티 세트","제빵 도구","칵테일 바","와인 냉장고","향신료 선반","요리책 선반"],
@@ -28,6 +37,40 @@ const ICONS={
 
 export const furnitureIcon=item=>ICONS[String(item||"")]||"🪑";
 export const furnitureCatalogForRoom=type=>FURNITURE_CATALOG[type]||FURNITURE_CATALOG.other;
+export const furniturePropIcon=item=>PROP_ICONS[String(item||"")]||"✨";
+export const furniturePropLabel=(item,locale="ko")=>PROP_LABELS[locale]?.[String(item||"")]||String(item||"");
+export const supportsFurnitureProps=item=>PROP_SURFACE_PATTERN.test(String(item||"").trim());
+
+export function furnitureGridForRoom(roomRect,canvasRect){
+  const canvasWidth=Math.max(1,Number(canvasRect?.width)||Number(roomRect?.width)||1);
+  const canvasHeight=Math.max(1,Number(canvasRect?.height)||Number(roomRect?.height)||1);
+  return {
+    columns:Math.max(1,Math.round((Math.max(1,Number(roomRect?.width)||1)/canvasWidth)*HOUSE_FURNITURE_GRID.columns)),
+    rows:Math.max(1,Math.round((Math.max(1,Number(roomRect?.height)||1)/canvasHeight)*HOUSE_FURNITURE_GRID.rows))
+  };
+}
+
+export function snapFurniturePosition(x,y,grid={}){
+  const columns=Math.max(1,Math.round(Number(grid.columns)||4)),rows=Math.max(1,Math.round(Number(grid.rows)||4));
+  const column=Math.round(clamp(x,0,100)/100*columns-.5),row=Math.round(clamp(y,0,100)/100*rows-.5);
+  return {
+    x:Number((((clamp(column,0,columns-1)+.5)/columns)*100).toFixed(4)),
+    y:Number((((clamp(row,0,rows-1)+.5)/rows)*100).toFixed(4)),
+    column:clamp(column,0,columns-1),row:clamp(row,0,rows-1)
+  };
+}
+
+export function normalizeFurnitureProp(value,index=0){
+  if(!value||typeof value!=="object"||Array.isArray(value))return null;
+  const item=String(value.item||"").trim().slice(0,40);if(!FURNITURE_PROPS.includes(item))return null;
+  return {id:String(value.id||`prop-${index+1}`).slice(0,120),item,slot:Math.round(clamp(value.slot??index,0,3))};
+}
+export function normalizeFurnitureProps(value){
+  if(!Array.isArray(value))return [];
+  const seen=new Set();
+  return value.map(normalizeFurnitureProp).filter(item=>item&&!seen.has(item.id)&&(seen.add(item.id),true)).slice(0,4);
+}
+export const newFurnitureProp=(id,item,index=0)=>normalizeFurnitureProp({id,item,slot:index},index);
 
 const LABELS={
   en:{"소파":"Sofa","TV":"TV","책장":"Bookcase","오디오":"Audio system","안마의자":"Massage chair","게임기":"Game console","캣타워":"Cat tower","턴테이블":"Turntable","보드게임장":"Board game table","홈시어터":"Home theater","프로젝터":"Projector","악기 진열장":"Instrument display","수집품 진열장":"Collection display","독서 의자":"Reading chair","반려동물 장난감":"Pet toys","러닝머신":"Treadmill","냉장고":"Refrigerator","조리대":"Kitchen counter","식탁":"Dining table","오븐":"Oven","커피머신":"Coffee machine","식기세척기":"Dishwasher","에스프레소 머신":"Espresso machine","티 세트":"Tea set","제빵 도구":"Baking tools","칵테일 바":"Cocktail bar","와인 냉장고":"Wine fridge","향신료 선반":"Spice rack","요리책 선반":"Cookbook shelf","신발장":"Shoe cabinet","전신거울":"Full-length mirror","우산꽂이":"Umbrella stand","반려동물 산책용품":"Pet walking gear","자전거 보관대":"Bike rack","운동 장비 선반":"Exercise rack","캠핑 장비":"Camping gear","샤워부스":"Shower","욕조":"Bathtub","세면대":"Sink","세탁기":"Washing machine","건조기":"Dryer","입욕제 선반":"Bath shelf","향수 선반":"Perfume shelf","스킨케어 선반":"Skincare shelf","침대":"Bed","옷장":"Wardrobe","화장대":"Vanity","협탁":"Bedside table","빔프로젝터":"Beam projector","독서등":"Reading lamp","향수 진열대":"Perfume display","레코드 플레이어":"Record player","작은 게임기":"Mini console","봉제인형":"Plush toy","책상":"Desk","컴퓨터":"Computer","피아노":"Piano","기타":"Guitar","그림 도구":"Art supplies","재봉틀":"Sewing machine","운동기구":"Exercise equipment","디지털 드로잉 장비":"Digital art setup","촬영 장비":"Camera gear","보드게임 선반":"Board game shelf","공예 도구":"Craft tools","뜨개 도구":"Knitting tools","프라모델 작업대":"Model workbench","천체망원경":"Telescope","악기":"Instrument","의자":"Chair","찬장":"Cupboard","티 테이블":"Tea table","와인장":"Wine cabinet","수납장":"Storage cabinet","놀이 매트":"Play mat","기저귀 교환대":"Changing table","옷걸이":"Clothes rack","작은 책상":"Small desk","작업대":"Workbench","화분":"Plant","야외 의자":"Outdoor chair","작은 테이블":"Small table","빨래 건조대":"Drying rack","원예 도구":"Gardening tools","캠핑 의자":"Camping chair","선반":"Shelf","보관 상자":"Storage box","수집품 상자":"Collection box","아기 침대":"Crib"},
@@ -43,11 +86,12 @@ export function normalizeFurniturePlacement(value,index=0){
   return {
     id:String(value.id||`furniture-${index+1}`).slice(0,120),
     item,
-    x:clamp(value.x,6,94),
-    y:clamp(value.y,14,90),
+    x:clamp(value.x,.5,99.5),
+    y:clamp(value.y,.5,99.5),
     scale:clamp(value.scale||1,.55,1.8),
     layer:Math.round(clamp(value.layer??index,0,20)),
-    rotation:Number(rotation.toFixed(2))
+    rotation:Number(rotation.toFixed(2)),
+    props:supportsFurnitureProps(item)?normalizeFurnitureProps(value.props):[]
   };
 }
 
@@ -60,5 +104,6 @@ export function normalizeFurniturePlacements(value){
 const START_SLOTS=[[22,34],[50,34],[78,34],[28,62],[58,62],[82,66],[18,80],[46,80],[72,80]];
 export function newFurniturePlacement(id,item,index=0){
   const [x,y]=START_SLOTS[Math.max(0,Number(index)||0)%START_SLOTS.length];
-  return normalizeFurniturePlacement({id,item,x,y,scale:1,rotation:0,layer:Math.min(20,index)},index);
+  const snapped=snapFurniturePosition(x,y,{columns:4,rows:4});
+  return normalizeFurniturePlacement({id,item,x:snapped.x,y:snapped.y,scale:1,rotation:0,layer:Math.min(20,index),props:[]},index);
 }
