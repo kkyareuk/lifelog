@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823charactersvg1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260823charactersvg1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823characterrefine1";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260823characterrefine1";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -3101,7 +3101,7 @@ function viewDrivenInteraction(place,first,second,date){
       {title:"찻잔을 둘 자리를 놓고 툭툭 받아치는 중",first:"찻잔을 조리대 끝에 두지 말라고 짚은 뒤 자리를 직접 비웠어요.",second:"그 정도는 바로 치울 수 있다며 받아치고 찻잔을 물기 없는 쪽으로 옮겼어요."},
       {title:"간식 접시를 누가 치울지 짧게 말씨름하는 중",first:"방금 먹은 사람이 치우는 게 맞다고 말하며 빈 포장부터 한데 모았어요.",second:"준비한 사람이 따로 있지 않냐고 맞받아치면서도 접시는 싱크대로 가져갔어요."}
     ]:/카페|음식점/.test(placeType)?[
-      {title:"메뉴 고르는 순서를 두고 툭툭 받아치는 중",first:"계속 페이지를 되돌리지 말고 후보부터 줄이자고 말하며 메뉴 두 개를 짚었어요.",second:"서두르면 꼭 후회한다며 받아치고, 대신 그중 하나는 바로 제외했어요."},
+      {title:"메뉴를 고르며 티격태격하는 중",first:"메뉴판을 넘겨 보다가 먹고 싶은 메뉴 두 개를 가리키며, 여기서 하나씩 고르자고 말했어요.",second:"천천히 봐야 후회하지 않는다며 받아치면서도, 마음이 덜 가는 메뉴 하나는 바로 제외했어요.",copy:{en:{title:"Bickering while choosing from the menu",first:"After looking through the menu, they pointed to two dishes they wanted and suggested choosing one from those.",second:"They replied that rushing would only lead to regret, but still ruled out the less appealing dish."},ja:{title:"メニューを選びながら軽く言い合っているところ",first:"メニューを見ながら食べたい料理を二つ指し、ここから一つずつ選ぼうと提案しました。",second:"急いで決めると後悔すると言い返しつつも、気持ちが向かない一品はすぐ候補から外しました。"}}},
       {title:"마지막 한입을 누가 먹을지 실랑이하는 중",first:"처음부터 먹고 싶었다면 진작 말했어야 한다며 접시를 가운데로 밀었어요.",second:"혼자 다 먹을 생각은 아니었다고 받아치며 정확히 반으로 나눴어요."}
     ]:/공원|산책/.test(placeType)?[
       {title:"산책 방향을 두고 짧게 말씨름하는 중",first:"방금 지나온 길로 되돌아가기는 싫다며 표지판의 다른 길을 가리켰어요.",second:"그 길이 더 멀다고 바로 받아쳤지만, 지도를 다시 보고 우회로를 하나 골랐어요."},
@@ -3111,7 +3111,7 @@ function viewDrivenInteraction(place,first,second,date){
       {title:"다음 순서를 정하며 짧게 의견을 주고받는 중",first:"한꺼번에 바꾸지 말고 급한 일부터 하자며 순서를 세 가지로 줄였어요.",second:"자기 차례를 마음대로 정하지 말라고 받아친 뒤 두 번째 순서에는 동의했어요."},
       {title:"설명에서 빠진 부분을 두고 한마디씩 보태는 중",first:"중간 과정이 빠졌다며 정확히 어느 부분부터 다시 말해야 하는지 짚었어요.",second:"그 정도는 알아들을 줄 알았다고 받아치고 빠진 설명을 짧게 덧붙였어요."}
     ];
-    const chosen=pick(scenePool,3);
+    const selectedScene=pick(scenePool,3),chosen=selectedScene.copy?.[state.uiLanguage]||selectedScene;
     const firstTitle=`${togetherWith(second.name)} ${chosen.title}`;
     const secondTitle=`${togetherWith(first.name)} ${chosen.title}`;
     return {
