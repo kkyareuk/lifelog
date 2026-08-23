@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823charactercontrast";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823charactercontrast";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823charactercontrast";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823charactercontrast";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260823charactercontrast";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823charactercontrast";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260823charactercontrast";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823notificationvoice";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823notificationvoice";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823notificationvoice";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823notificationvoice";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823notificationvoice";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823notificationvoice";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260823notificationvoice";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -3954,7 +3954,8 @@ function buildQuestionNotification(character,at,seed){
   const kind=kinds[seed%kinds.length],base=kind==="gift"?copy.gift(context.target):copy[kind],mode=state.characterNotificationSettings?.voiceMode||"mixed";
   const body=mode==="character"||(mode==="mixed"&&seed%3===0)?characterQuestionPrompt(character,{kind,target:context.target,language,base}):base;
   const titles={ko:["선택을 물어봤어요","잠깐 상의하고 싶대요","결정을 기다리고 있어요","오늘의 질문이 도착했어요"],en:["A question for you","A quick decision","Waiting for your choice","Today's question"],ja:["選んでほしいことがあります","少し相談したいようです","選択を待っています","今日の質問が届きました"]};
-  return {title:`${character.name} · ${titles[language]?.[seed%4]||titles.ko[seed%4]}`,body,signature:`question:${kind}:${seed%7}:${character.id}`,extra:{mode:"question",characterId:character.id,targetId:kind==="gift"?context.targetId:"",questionKind:kind,scheduledAt:at.toISOString()}};
+  const title=characterContactTitle(character,titles[language]?.[seed%4]||titles.ko[seed%4],{language});
+  return {title:`${character.name} · ${title}`,body,signature:`question:${kind}:${seed%7}:${character.id}`,extra:{mode:"question",characterId:character.id,targetId:kind==="gift"?context.targetId:"",questionKind:kind,scheduledAt:at.toISOString()}};
 }
 function buildMomentNotification(character,topic,at,seed){
   const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),phrases=CHARACTER_CONTACT_PHRASES[topic]||CHARACTER_CONTACT_PHRASES.moments;
@@ -3970,7 +3971,8 @@ function buildMomentNotification(character,topic,at,seed){
   };
   const titlePool=titles[topic]?.[language]||titles[topic]?.ko||titles.checkins.ko,mode=state.characterNotificationSettings?.voiceMode||"mixed";
   const neutral=`${action} ${ending}`,body=mode==="concise"?neutral:mode==="character"||seed%3!==0?characterContactSpeech(character,neutral,{language}):neutral;
-  return {title:`${character.name} · ${titlePool[seed%titlePool.length]}`,body,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
+  const title=characterContactTitle(character,titlePool[seed%titlePool.length],{language});
+  return {title:`${character.name} · ${title}`,body,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
 }
 function buildLifeLogNotification(character,at,seed){
   const language=state.uiLanguage||"ko",context=notificationContextFor(character,seed),logs=[
@@ -4178,7 +4180,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260823charactercontrast").catch(error=>{
+  import("./auth.js?v=20260823notificationvoice").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4193,7 +4195,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260823charactercontrast",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260823notificationvoice",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
