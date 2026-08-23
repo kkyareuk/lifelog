@@ -6201,7 +6201,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-date{
   position:absolute!important;top:3.487dvh!important;right:3.155vw!important;display:block!important;width:max-content!important;margin:0!important;padding:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.85px #000!important;paint-order:stroke fill!important;
-  font-family:var(--home-ui-font)!important;font-size:12px!important;font-weight:400!important;line-height:15px!important;text-align:right!important;text-shadow:0 2px 3px #2a160dcc!important;white-space:nowrap!important
+  font-family:var(--home-ui-font)!important;font-size:10px!important;font-weight:400!important;line-height:12px!important;text-align:right!important;text-shadow:0 2px 3px #2a160dcc!important;white-space:nowrap!important;-webkit-text-size-adjust:none!important;text-size-adjust:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage{
   position:absolute!important;z-index:7!important;left:18.45vw!important;right:18.45vw!important;top:13.1dvh!important;height:49.4dvh!important;
@@ -6802,17 +6802,21 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .character-registration-card{
     position:absolute!important;z-index:4!important;inset:0!important;width:100cqw!important;height:100dvh!important;background:transparent!important;color:#241b17!important;pointer-events:none!important
   }
-  html.native-app[data-active-tab="character"] .character-registration-card::before{position:absolute!important;left:-5.02447cqw!important;top:17.64329dvh!important;display:block!important;width:100.66456cqw!important;height:28.78124dvh!important;content:""!important;transform:rotate(-9.87417deg)!important;transform-origin:0 0!important;background:url("./assets/character-ui/registration-card.png") center/100% 100% no-repeat!important;pointer-events:none!important}
+  html.native-app[data-active-tab="character"] .character-registration-card::before{display:none!important;content:none!important}
+  html.native-app[data-active-tab="character"] .character-registration-paper{
+    position:absolute!important;z-index:2!important;left:-5.02447cqw!important;top:17.64329dvh!important;display:block!important;width:100.66456cqw!important;height:28.78124dvh!important;max-width:none!important;max-height:none!important;
+    object-fit:fill!important;transform:rotate(-9.87417deg)!important;transform-origin:0 0!important;background:transparent!important;pointer-events:none!important
+  }
   html.native-app[data-active-tab="character"] .character-registration-photo{
-    position:absolute!important;left:4.13813cqw!important;top:20.74242dvh!important;display:grid!important;place-items:center!important;width:38.43568cqw!important;height:22.08528dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;
+    position:absolute!important;z-index:1!important;left:7.54612cqw!important;top:21.69575dvh!important;display:grid!important;place-items:center!important;width:32.52427cqw!important;height:19.90840dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;
     transform:rotate(-9.87417deg)!important;transform-origin:0 0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;cursor:pointer!important;pointer-events:auto!important
   }
   html.native-app[data-active-tab="character"] body #app main button.character-registration-photo{background:#fff!important;background-image:none!important}
   html.native-app[data-active-tab="character"] .character-registration-photo img{width:100%!important;height:100%!important;object-fit:cover!important}
   html[data-color-mode].native-app[data-active-tab="character"] .character-registration-photo span{padding:8px!important;color:#241b17!important;-webkit-text-fill-color:#241b17!important;font:400 clamp(10px,3cqw,15px)/1.55 "KCCHanbit",sans-serif!important;text-align:center!important;word-break:keep-all!important}
-  html.native-app[data-active-tab="character"] .character-registration-fields{position:absolute!important;inset:0!important;width:100cqw!important;height:100dvh!important;font-family:"KoPubWorldBatangPro",serif!important;pointer-events:none!important}
+  html.native-app[data-active-tab="character"] .character-registration-fields{position:absolute!important;z-index:3!important;inset:0!important;width:100cqw!important;height:100dvh!important;font-family:"KoPubWorldBatangPro",serif!important;pointer-events:none!important}
   html[data-color-mode].native-app[data-active-tab="character"] .character-registration-fields h2{position:absolute!important;left:48.24029cqw!important;top:19.11014dvh!important;width:38.03883cqw!important;margin:0!important;color:#241b17!important;-webkit-text-fill-color:#241b17!important;font:400 clamp(13px,4.25cqw,19px)/1.08 "PuradakGentleGothic",sans-serif!important;letter-spacing:-.045em!important;white-space:nowrap!important;transform:rotate(-9.87417deg)!important;transform-origin:0 0!important}
-  html[lang="en"].native-app[data-active-tab="character"] .character-registration-fields h2{font-size:clamp(9px,2.9cqw,13px)!important}
+  html[lang="en"].native-app[data-active-tab="character"] .character-registration-fields h2{width:44.5cqw!important;font-size:9px!important;letter-spacing:-.055em!important}
   html[lang="ja"].native-app[data-active-tab="character"] .character-registration-fields h2{font-size:clamp(10px,3.25cqw,15px)!important}
   html.native-app[data-active-tab="character"] .character-registration-fields :is(dl,dl>div){display:contents!important;margin:0!important;padding:0!important}
   html[data-color-mode].native-app[data-active-tab="character"] .character-registration-fields :is(dt,dd){position:absolute!important;min-width:0!important;margin:0!important;overflow:hidden!important;transform:rotate(-9.87417deg)!important;transform-origin:0 0!important;color:#241b17!important;-webkit-text-fill-color:#241b17!important;text-overflow:ellipsis!important;white-space:nowrap!important}
@@ -6830,12 +6834,16 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .character-registration-field-gender dd{left:71.40049cqw!important;top:28.39258dvh!important;max-width:17.1cqw!important}
   html.native-app[data-active-tab="character"] .character-registration-field-job dt{left:49.80097cqw!important;top:32.93457dvh!important}
   html.native-app[data-active-tab="character"] .character-registration-field-job dd{left:50.40777cqw!important;top:34.59760dvh!important;max-width:34cqw!important;font-size:clamp(7.5px,2.25cqw,10.5px)!important;white-space:normal!important}
-  html.native-app[data-active-tab="character"] .character-draft-actions{position:absolute!important;z-index:30!important;inset:0!important;display:block!important;width:100cqw!important;height:55dvh!important;pointer-events:none!important}
+  html.native-app[data-active-tab="character"] .character-draft-actions{
+    position:absolute!important;z-index:100!important;left:50%!important;top:0!important;display:block!important;width:min(100vw,44.92912dvh)!important;height:55dvh!important;margin:0!important;padding:0!important;
+    pointer-events:none!important;transform:translateX(-50%)!important;container-type:inline-size!important
+  }
   html.native-app[data-active-tab="character"] .character-draft-actions button{
     --draft-button-cap:12.58px;position:absolute!important;display:grid!important;grid-template-columns:var(--draft-button-cap) minmax(0,1fr) var(--draft-button-cap)!important;align-items:stretch!important;min-width:0!important;height:26px!important;min-height:0!important;margin:0!important;padding:0!important;
     transform:rotate(-9.87deg)!important;transform-origin:0 0!important;pointer-events:auto!important;border:0!important;border-radius:0!important;background:transparent!important;
     color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;box-shadow:none!important;font:400 clamp(10px,2.9cqw,13px)/1 "KCCHanbit",sans-serif!important;white-space:nowrap!important
   }
+  html[lang="en"].native-app[data-active-tab="character"] .character-draft-actions button{font-size:10px!important}
   html.native-app[data-active-tab="character"] .character-draft-actions button::before{display:block!important;content:""!important;background:url("./assets/home-ui/pill-left.png") right center/auto 100% no-repeat!important}
   html.native-app[data-active-tab="character"] .character-draft-actions button::after{display:block!important;content:""!important;background:url("./assets/home-ui/pill-right.png") left center/auto 100% no-repeat!important}
   html.native-app[data-active-tab="character"] .character-draft-actions button>span{position:relative!important;z-index:1!important;display:grid!important;place-items:center!important;min-width:0!important;height:26px!important;margin:0 -1px!important;padding:0 4px!important;overflow:hidden!important;background:url("./assets/home-ui/pill-middle.png") center/100% 100% repeat-x!important;color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;text-overflow:clip!important;white-space:nowrap!important;text-shadow:0 1px 2px #24150d66!important}

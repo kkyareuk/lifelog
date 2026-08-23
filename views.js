@@ -31,6 +31,8 @@ Object.assign(UI_TEXT.en,{"빠른 설정 바로가기":"Quick settings shortcut"
 Object.assign(UI_TEXT.ja,{"빠른 설정 바로가기":"クイック設定へ","전체 설정 바로가기":"全体設定へ"});
 Object.assign(UI_TEXT.en,{"새 캐릭터":"New character"});
 Object.assign(UI_TEXT.ja,{"새 캐릭터":"新しい人物"});
+Object.assign(UI_TEXT.en,{"캐릭터 관리":"Character management"});
+Object.assign(UI_TEXT.ja,{"캐릭터 관리":"キャラクター管理"});
 const UI_TEXT_MORE={
   en:{
     "로그인 전에는 예시 캐릭터나 실제 지역이 표시되지 않아요.":"No sample characters or real-world locations are shown before you sign in.",
@@ -2204,11 +2206,12 @@ function character(){
     <img class="character-setting-clip" src="./assets/character-ui/clip.png" alt="">
     <section class="character-registration-card">
       <button type="button" class="character-registration-photo" data-image="photo" aria-label="${esc(t(c.photo?"프로필 사진 변경":"프로필 사진 추가",c.photo?"프로필 사진 변경":"프로필 사진 추가"))}">${profilePhoto}</button>
+      <img class="character-registration-paper" src="./assets/character-ui/registration-card.png" alt="" aria-hidden="true">
       <div class="character-registration-fields"><h2>${t("서랍마을 주민등록증","서랍마을 주민등록증")}</h2><dl>${draftRows.map(({key,label,value})=>`<div class="character-registration-field-${key}"><dt>${t(label,label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div>
     </section>
-    <nav class="character-draft-actions"><button type="button" class="character-draft-action" data-export-profile><span>${t("프로필 내보내기","프로필 내보내기")}</span></button><button type="button" class="character-draft-action" data-save><span>${t("캐릭터 저장","캐릭터 저장")}</span></button><button type="button" class="character-draft-action danger" data-delete-character="${c.id}"><span>${t("캐릭터 삭제","캐릭터 삭제")}</span></button></nav>
     <div class="character-wallet-roster" data-character-roster data-roster-count="${rosterItemCount}" style="--roster-visible:${rosterVisibleRows}" hidden><div class="mobile-character-strip">${mobileStrip}</div><span class="character-roster-actions"><button type="button" class="character-roster-reorder" data-open-character-reorder aria-label="${esc(t("위치 바꾸기","위치 바꾸기"))}">↕</button><button type="button" class="character-roster-close" data-toggle-character-roster aria-label="${esc(t("닫기","닫기"))}">×</button></span></div>
   </section>`;
+  const draftActions=`<nav class="character-draft-actions" aria-label="${esc(t("캐릭터 관리","캐릭터 관리"))}"><button type="button" class="character-draft-action" data-export-profile><span>${t("프로필 내보내기","프로필 내보내기")}</span></button><button type="button" class="character-draft-action" data-save><span>${t("캐릭터 저장","캐릭터 저장")}</span></button><button type="button" class="character-draft-action danger" data-delete-character="${c.id}"><span>${t("캐릭터 삭제","캐릭터 삭제")}</span></button></nav>`;
   const hubActions=`<section class="character-setting-choices" aria-label="${esc(t("캐릭터 설정 방식","캐릭터 설정 방식"))}"><span class="character-setting-cloth" aria-hidden="true"><img src="./assets/character-ui/character-cloth-white.png" alt=""></span><img class="character-setting-book" src="./assets/character-ui/book.png" alt=""><img class="character-setting-tape" src="./assets/character-ui/tape.png" alt=""><img class="character-setting-key" src="./assets/character-ui/key.png" alt=""><span class="character-favorite-preview" aria-label="${esc(t("선호 물품 미리보기","선호 물품 미리보기"))}">${favoriteSlots}</span><button type="button" class="character-setting-choice character-quick-choice" data-open-quick-character-settings><span><b>${t("빠른설정","빠른설정")}</b><small>${t("바로가기","바로가기")}</small></span></button><button type="button" class="character-setting-choice character-full-choice" data-open-full-character-settings><span><b>${t("전체설정","전체설정")}</b><small>${t("바로가기","바로가기")}</small></span></button></section>`;
   const fullNavigation=Object.entries(paneMeta).map(([key,[label,help,index]])=>`<button type="button" data-character-pane="${key}" class="${state.characterPane===key?"on":""}"><i>${index}</i><span><b>${t(label,label)}</b><small>${t(help,help)}</small></span></button>`).join("");
   return `<div class="editor character-editor" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
@@ -2218,6 +2221,7 @@ function character(){
         <img class="character-checker-background" src="./assets/character-ui/character-background.webp" alt="" aria-hidden="true">
         ${mobileProfileDraft}
         ${hubActions}
+        ${draftActions}
       </section>
       <section class="mobile-character-full-settings ${state.characterSettingsView==="full"?"is-open":""}"><header><button type="button" data-close-full-character-settings aria-label="${esc(t("캐릭터 페이지로 돌아가기","캐릭터 페이지로 돌아가기"))}">‹</button><span><small>ALL CHARACTER SETTINGS</small><h1>${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1></span><button type="button" data-save aria-label="${esc(t("저장","저장"))}">✓</button></header><nav>${fullNavigation}</nav><main>${pane}</main></section>
       <section class="desktop-character-editor"><div class="character-menu">${Object.entries(paneMeta).map(([key,[label]])=>`<button data-character-pane="${key}" class="${state.characterPane===key?"on":""}">${label}</button>`).join("")}<div class="character-file-actions"><button type="button" data-export-profile>프로필 내보내기</button><button type="button" data-tab="statistics">통계</button><button type="button" class="primary" data-save>캐릭터 저장</button><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></div></div>${pane}</section>
