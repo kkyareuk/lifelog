@@ -9,6 +9,10 @@ assert.doesNotMatch(simulation,/const revision=`\$\{Number\(c\.timelineResetAt\|
 assert.match(simulation,/cached\?\.character===c&&cached\.revision===revision/);
 console.log("PASS 일반 저장·동기화 시각은 생활 로그 생성 서명을 바꾸지 않습니다");
 
+assert.doesNotMatch(simulation,/const settingsChanged=old&&today/);
+assert.match(simulation,/if\(old&&today\)\{[\s\S]*Number\(item\.minute\)<=cutoff[\s\S]*entries\.filter\(item=>item\.minute>cutoff\)/);
+console.log("PASS 설정·집 배치·동기화 뒤에도 현재 시각까지의 로그 원문과 시각을 보존합니다");
+
 assert.match(simulation,/const plannedMinute=Math\.max\(Number\(last\.minute\)\+nextGap,Number\(last\.routineEndMinute\)\|\|0\)/);
 assert.match(simulation,/const sceneMinute=n-plannedMinute<=15\?plannedMinute:n/);
 console.log("PASS 잠깐 앱을 비웠다가 돌아와도 동일 행동의 예정 시각을 현재 시각으로 바꾸지 않습니다");
