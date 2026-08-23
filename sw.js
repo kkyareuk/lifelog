@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260823-ld-stage-hotfix1";
+const CACHE_VERSION="drawer-village-v20260823-true-ld-preview-hotfix1";
 const CORE=[
   "./",
   "./index.html",
