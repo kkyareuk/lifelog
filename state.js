@@ -1,5 +1,5 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823characterfidelity2";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823characterfidelity2";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823ldstagedev1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823ldstagedev1";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -169,9 +169,10 @@ const normalizeHomeSceneLayout=value=>{
   const clamp=(number,min,max,fallback)=>Number.isFinite(Number(number))?Math.max(min,Math.min(max,Number(number))):fallback;
   return Object.fromEntries(["sd","ld"].map(mode=>{
     const layout=source[mode]&&typeof source[mode]==="object"&&!Array.isArray(source[mode])?source[mode]:{};
+    const isLd=mode==="ld";
     return [mode,{
-      x:clamp(layout.x,-45,45,0),
-      y:clamp(layout.y,-45,45,0),
+      x:clamp(layout.x,isLd?-50:-45,isLd?50:45,0),
+      y:clamp(layout.y,isLd?-90:-45,isLd?90:45,0),
       scale:clamp(layout.scale,.45,2.5,1),
       actionX:clamp(layout.actionX,-45,45,0),
       actionY:clamp(layout.actionY,-45,45,0)
