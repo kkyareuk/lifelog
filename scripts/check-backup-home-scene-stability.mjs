@@ -4,7 +4,7 @@ import {mergeImportedBackupState} from "../sync-merge.js";
 
 const root=new URL("../",import.meta.url);
 const read=file=>fs.readFileSync(new URL(file,root),"utf8");
-const app=read("app.js"),state=read("state.js"),views=read("views.js"),simulation=read("simulation.js"),css=read("app.css"),prepareApp=read("scripts/prepare-app.mjs"),index=read("index.html");
+const app=read("app.js"),state=read("state.js"),views=read("views.js"),simulation=read("simulation.js"),css=read("app.css"),roomLayout=read("room-layout.js"),prepareApp=read("scripts/prepare-app.mjs"),index=read("index.html");
 
 const device={
   lastSaved:20,activeId:"device",activeHomeId:"device-home",characters:{device:{id:"device",name:"기기 인물"}},order:["device"],
@@ -22,7 +22,7 @@ assert.equal(merged.homeEditMode,false);
 
 assert.match(app,/mergeImportedBackupState\(cloneState\(\),incoming\)/);
 assert.match(app,/preserveSelectionScroll\(select\)/);
-assert.match(app,/ROOM_LAYOUT_GRID=\{columns:12,rows:16/);
+assert.match(roomLayout,/ROOM_LAYOUT_GRID=Object\.freeze\(\{columns:12,rows:16/);
 assert.ok(state.indexOf("localStorage.setItem(KEY,serialized)")<state.indexOf("state=prepared"),"영구 저장 전에 실행 상태가 교체됩니다");
 const petFunction=views.slice(views.indexOf("function nativePetForScene"),views.indexOf("function nativeVisualSeed"));
 assert.doesNotMatch(petFunction,/Object\.values\(state\.homes/);
