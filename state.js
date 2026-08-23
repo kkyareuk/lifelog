@@ -1,8 +1,8 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824homesync";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824homesync";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260824homesync";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824homesync";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824homesync";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824homehud";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824homehud";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260824homehud";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824homehud";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824homehud";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";

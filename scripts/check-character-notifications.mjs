@@ -48,7 +48,7 @@ const checks=[
   [demonSample==="필멸자여, 짐의 말을 들으라. 마음이 복잡하면 답을 바로 정하지 않아도 된다. 먼저 숨을 천천히 고르라. 오늘의 그대 편은 여기에도 있다.","마왕 말투에서 해요체가 섞이지 않는 완성 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&views.includes('aria-pressed="${selected}"')&&css.includes('.notification-kind-grid button{')&&!views.includes('type="checkbox" data-character-notification-kind'),"권한 복귀 레이아웃과 연락 종류 버튼 포커스 안정화"],
   [activity.includes("WindowInsetsCompat.Type.statusBars()")&&activity.includes("BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE"),"상단 상태바 숨김과 스와이프 임시 표시"],
-  [gradle.includes("versionCode 121")&&gradle.includes('versionName "1.0.110"'),"통합 집 생활 개발 빌드 번호"],
+  [gradle.includes("versionCode 122")&&gradle.includes('versionName "1.0.111"'),"새 집 UI 개발 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

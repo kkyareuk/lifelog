@@ -44,6 +44,10 @@ const checks=[
   ,[simulation.includes("scheduledHome=state.homes?.[item.visitHomeId]")&&simulation.includes("visitHomeId:visitHome.id")&&simulation.includes("next?.visitHomeId"),"캐릭터 집 방문 일정과 일정 종료 후 귀가 시뮬레이션"]
   ,[simulation.includes("export function forceCharactersHome")&&simulation.includes("function forcedHomeEventFor")&&app.includes('[data-force-home]')&&views.includes('data-force-home="all"'),"선택 캐릭터·전체 즉시 귀환과 다음 일정 자동 재개"]
   ,[state.includes('item.visitHomeId===homeId?{...item,visitHomeId:""}')&&state.includes("forcedHomeReturn={day:String"),"삭제된 집 목적지와 귀환 상태 데이터 정규화"]
+  ,[views.includes('data-home-native-hud')&&views.includes('data-home-switcher-toggle')&&views.includes('data-home-ui-toggle')&&views.includes('data-open-home-feature="house-info"'),"첨부 시안 기반 집 HUD와 집 이동·정보·UI 숨김 조작부"]
+  ,[css.includes('top:78px;bottom:0')&&css.includes('--home-ui-pill-left')&&css.includes('--home-ui-pill-middle')&&css.includes('--home-ui-pill-right'),"상단 78px 아래 집 장면 고정과 3조각 버튼 조합"]
+  ,[app.includes('[data-home-switcher-toggle]')&&app.includes('[data-home-ui-toggle]')&&app.includes('home-ui-hidden'),"집 선택 팝업과 UI 숨김·복원 이벤트"]
+  ,[views.includes('"집 이동":"Switch home"')&&views.includes('"집 이동":"家を移動"')&&views.includes('"반려생물":"Pets"')&&views.includes('"반려생물":"ペット"'),"새 집 HUD 영어·일본어 번역"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
