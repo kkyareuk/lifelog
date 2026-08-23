@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
 const read=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),"utf8");
-const views=read("views.js"),app=read("app.js"),simulation=read("simulation.js"),css=read("app.css"),state=read("state.js");
+const views=read("views.js"),app=read("app.js"),simulation=read("simulation.js"),css=read("app.css"),state=read("state.js"),interfaceCss=read("interface-system.css"),themeCss=read("theme.css");
 const native=read("android/app/src/main/java/com/drawervillage/app/ProfileExportPlugin.java");
 const checks=[
   [views.includes('data-character-ui-version="8"')&&views.includes('data-open-quick-character-settings')&&views.includes('data-open-full-character-settings'),"캐릭터 허브는 빠른 설정과 전체 설정 두 진입점만 제공"],
@@ -24,8 +24,11 @@ const checks=[
   [css.includes('rotate(-25.6648deg)')&&css.includes('rotate(12.7923deg)')&&css.includes('rotate(-22.8827deg)')&&css.includes('width:16.9903vw!important;height:7.6336dvh!important'),"펼친 책 위 선호 물품 3자리의 SVG 화면 좌표 보존"],
   [views.includes('"빠른 설정 바로가기":"Quick settings shortcut"')&&views.includes('"전체 설정 바로가기":"Full settings shortcut"')&&views.includes('"빠른 설정 바로가기":"クイック設定へ"')&&views.includes('"전체 설정 바로가기":"全体設定へ"'),"빠른·전체 설정 바로가기 영어·일본어 번역"],
   [css.includes('left:-5.02447vw!important;top:17.64329dvh!important')&&css.includes('left:4.13813vw!important;top:20.74242dvh!important')&&css.includes('left:46.99029vw!important;top:25.55943dvh!important')&&css.includes('left:69.51456vw!important;top:23.82443dvh!important'),"주민등록증 종이·사진·이름·나이 좌표를 412×917 SVG 수치로 분리 적용"],
-  [views.includes('aria-pressed="${(c.personalityTypes||[]).includes(value)}"')&&app.includes('button.setAttribute("aria-pressed",String(selected))')&&css.includes('background:var(--character-own)!important'),"빠른 설정 성격 키워드는 전체 설정 데이터와 연동되고 캐릭터 테마색으로 선택 상태를 표시"],
-  [views.includes('class="character-setting-cloth" aria-hidden="true"')&&css.includes('-webkit-mask:url("./assets/character-ui/character-cloth.png")')&&css.includes('background:var(--character-own)!important'),"책 뒤 천을 캐릭터 테마색으로 표시"],
+  [views.includes('aria-pressed="${(c.personalityTypes||[]).includes(value)}"')&&app.includes('button.setAttribute("aria-pressed",String(selected))')&&views.includes('--character-accent:${esc(c.theme?.primary')&&css.includes('background:var(--character-accent)!important'),"빠른 설정 성격 키워드는 전체 설정 데이터와 연동되고 공통 팔레트에 치환되지 않는 캐릭터 테마색으로 선택 상태를 표시"],
+  [views.includes('class="character-setting-cloth" aria-hidden="true"')&&css.includes('-webkit-mask:url("./assets/character-ui/character-cloth.png")')&&css.includes('background:var(--character-accent)!important'),"책 뒤 천을 공통 팔레트에 치환되지 않는 캐릭터 테마색으로 표시"],
+  [interfaceCss.includes(':not(.mobile-character-dashboard[data-character-ui-version="8"] *)')&&interfaceCss.includes(':not(.character-quick-settings-dialog *)')&&themeCss.includes(':not(.mobile-character-dashboard[data-character-ui-version="8"] *)'),"공통 테마 글자색이 캐릭터 허브·빠른 설정의 전용 흰색과 캐릭터색을 덮어쓰지 않음"],
+  [css.includes('.character-registration-fields dt{max-width:none!important;overflow:visible!important;text-overflow:clip!important}')&&!css.includes('character-registration-field-name dt{left:46.29854vw!important;top:23.95856dvh!important;max-width'),"주민등록증 이름·나이 등 항목명을 한 글자 말줄임 없이 표시"],
+  [css.includes('color:#FFF!important;-webkit-text-fill-color:#FFF!important;-webkit-text-stroke:1px #111!important')&&css.includes('text-shadow:-1px -1px 0 #111,1px -1px 0 #111'),"캐릭터 선택 팝업 이름을 WebView에서도 흰색 검은 외곽선으로 표시"],
   [simulation.includes('function interactionInitiativeScore')&&simulation.includes('const initiator=interactionInitiator')&&simulation.includes('firstAction=firstLeads?chosen.first:chosen.second'),"공동 장면의 선행 발화 역할을 캐릭터 성향에 맞춰 배정"],
   [views.includes('catalog:"Dictionary"')&&views.includes('catalog:"辞典"')&&views.includes('catalog:"사전"'),"사전 명칭 한국어·영어·일본어 적용"],
   [simulation.includes('repairSelfNamedPartnerText')&&!simulation.includes('const swap=value=>String(value||"").split(viewer.name)'),"상대 관점 변환의 자기 자신 동행 문장 방지"],
