@@ -23,7 +23,7 @@ const checks=[
   [furnitureCapacity("침대")===1&&furnitureCapacity("커플 침대")===2&&normalizeFurniturePlacement({id:"couple",item:"커플 침대",assignedCharacterIds:["a","b","c"]}).assignedCharacterIds.length===2&&state.includes("export function assignFurnitureBed"),"일반 침대 1명·커플 침대 2명 지정과 중복 제한"],
   [app.includes("openFurniturePlacementDialog")&&views.includes('data-open-furniture-layout=')&&!app.includes('class="room-editor-furniture-wrap"'),"방 설정과 분리된 독립 가구 배치 UI"],
   [views.includes("const scene=event;")&&app.includes("sceneKey:")&&app.includes("timeline(character,now)"),"집·관찰·생활 로그가 동일한 장면 타임라인을 사용"],
-  [views.includes('<span class="home-person-status"><b>')&&!views.includes('<span class="home-person-status"><b>${esc(character.name)}</b><small>')&&app.includes("home-occupant-recent"),"집 캐릭터는 이름만 표시하고 클릭 시 상태·최근 로그 시트 제공"],
+  [views.includes('<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small>')&&app.includes("home-occupant-recent"),"집 캐릭터 카드에 이름·현재 행동을 표시하고 클릭 시 상태·최근 로그 시트 제공"],
   [views.includes("room-furniture-props")&&views.includes("--furniture-grid-cols")&&css.includes(".home.is-editing .room-furniture-layer::before"),"편집 중 방 칸 그리드와 가구에 붙는 소품 표시"],
   [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱 재시작·테두리 픽셀과 무관한 방 크기 보존"],
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],
@@ -45,9 +45,13 @@ const checks=[
   ,[simulation.includes("export function forceCharactersHome")&&simulation.includes("function forcedHomeEventFor")&&app.includes('[data-force-home]')&&views.includes('data-force-home="all"'),"선택 캐릭터·전체 즉시 귀환과 다음 일정 자동 재개"]
   ,[state.includes('item.visitHomeId===homeId?{...item,visitHomeId:""}')&&state.includes("forcedHomeReturn={day:String"),"삭제된 집 목적지와 귀환 상태 데이터 정규화"]
   ,[views.includes('data-home-native-hud')&&views.includes('data-home-switcher-toggle')&&views.includes('data-home-ui-toggle')&&views.includes('data-open-home-feature="house-info"'),"첨부 시안 기반 집 HUD와 집 이동·정보·UI 숨김 조작부"]
-  ,[css.includes('top:78px;bottom:0')&&css.includes('--home-ui-pill-left')&&css.includes('--home-ui-pill-middle')&&css.includes('--home-ui-pill-right'),"상단 78px 아래 집 장면 고정과 3조각 버튼 조합"]
+  ,[css.includes('top:88px;bottom:0')&&css.includes('--home-ui-pill-left')&&css.includes('--home-ui-pill-middle')&&css.includes('--home-ui-pill-right'),"겹쳐 그린 88px 상단 장식 아래 집 장면 고정과 3조각 버튼 조합"]
   ,[app.includes('[data-home-switcher-toggle]')&&app.includes('[data-home-ui-toggle]')&&app.includes('home-ui-hidden'),"집 선택 팝업과 UI 숨김·복원 이벤트"]
   ,[views.includes('"집 이동":"Switch home"')&&views.includes('"집 이동":"家を移動"')&&views.includes('"반려생물":"Pets"')&&views.includes('"반려생물":"ペット"'),"새 집 HUD 영어·일본어 번역"]
+  ,[views.includes('class="home-native-house-icon"')&&views.includes('class="home-native-house-name"')&&views.includes('${esc(h.name||t("이름 없는 집"'),"상단에 캐릭터가 아닌 집 아이콘과 집 이름 표시"]
+  ,[views.includes("homeLifeInteractionMarkup")&&views.includes("home-interaction-${summary.kind}")&&css.includes("@keyframes home-interaction-kiss-left"),"같은 상호작용의 두 구성원을 한 카드와 상호작용 애니메이션으로 표시"]
+  ,[css.includes("home-edit-toolbar:not(.home-native-edit-tools)")&&css.includes("grid-template-columns:repeat(4,71px)"),"집 편집 세부 도구를 기본 우측 메뉴와 분리"]
+  ,[views.includes('"뽀뽀하는 중":"Kissing"')&&views.includes('"뽀뽀하는 중":"キスしているところ"'),"구성원 상호작용 카드 영어·일본어 번역"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
