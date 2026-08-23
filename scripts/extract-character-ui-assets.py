@@ -56,30 +56,33 @@ def main() -> None:
             piece.save(output_dir / filename, optimize=True)
         return
     source = svg_path.read_text(encoding="utf-8")
-    payloads = re.findall(r'<image[^>]+href="data:image/png;base64,([^\"]+)', source)
-    if len(payloads) < 6:
+    image_matches = re.findall(
+        r'<image\s+id="([^\"]+)"[^>]+href="data:image/png;base64,([^\"]+)',
+        source,
+    )
+    if len(image_matches) < 5:
         raise SystemExit("character SVG did not contain the expected embedded PNGs")
-    sheets = [Image.open(io.BytesIO(base64.b64decode(value))).convert("RGBA") for value in payloads[:6]]
+    sheets = {
+        image_id: Image.open(io.BytesIO(base64.b64decode(value))).convert("RGBA")
+        for image_id, value in image_matches
+    }
 
     crops = {
-        "paper.webp": (sheets[0], (2752, 142, 3958, 1948), False),
-        "wallet.png": (sheets[1], (1280, 103, 2701, 1073), False),
-        "registration-card.png": (sheets[1], (1368, 1130, 1944, 1489), False),
-        "add.png": (sheets[2], (47, 1877, 271, 2101), False),
-        "back.png": (sheets[2], (359, 1273, 583, 1496), False),
-        # The rebuilt character hub uses the stationery pieces as independent
-        # transparent assets.  Keeping them separate avoids baking the SVG's
-        # artboard/background into every button.
-        "post-it.png": (sheets[1], (2041, 1164, 2460, 1439), False),
-        "book.png": (sheets[1], (1347, 1545, 2578, 2577), False),
-        "notebook.png": (sheets[3], (2737, 1928, 3159, 2570), False),
-        "clip.png": (sheets[4], (629, 1746, 875, 2069), False),
+        # Exact inverse crops from 캐릭터1.svg pattern matrices.
+        "character-background.webp": (sheets["image0_42_47"], (3073, 252, 3684, 1613), False),
+        "character-cloth.png": (sheets["image1_42_47"], (85, 2448, 775, 3119), False),
+        "registration-card.png": (sheets["image2_42_47"], (1368, 1130, 1944, 1489), False),
+        "wallet.png": (sheets["image2_42_47"], (1280, 103, 2701, 1073), False),
+        "key.png": (sheets["image1_42_47"], (825, 1726, 1185, 1887), False),
+        "book.png": (sheets["image0_42_47"], (1347, 1545, 2577, 2577), False),
+        "tape.png": (sheets["image3_42_47"], (313, 1857, 466, 2101), False),
+        "clip.png": (sheets["image3_42_47"], (629, 1746, 875, 2069), False),
+        "back.png": (sheets["image4_42_47"], (359, 1273, 583, 1496), False),
     }
     for filename, (image, box, flip) in crops.items():
         piece = crop(image, box, flip=flip)
-        if filename == "paper.webp":
-            piece.thumbnail((800, 1200), Image.Resampling.LANCZOS)
-            piece.save(output_dir / filename, "WEBP", quality=84, method=6, exact=True)
+        if filename.endswith(".webp"):
+            piece.save(output_dir / filename, "WEBP", lossless=True, method=6, exact=True)
         else:
             piece.save(output_dir / filename, optimize=True)
 
