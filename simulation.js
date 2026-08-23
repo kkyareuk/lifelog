@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823characterrefine1";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260823characterrefine1";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823characterlayer2";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260823characterlayer2";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -3031,6 +3031,20 @@ function dateLikePair(first,second,relation,current={}){
   if(mixedAdultMinor(first,second)||relation?.temporalStatus==="past"||["부모·자녀","형제·자매"].includes(relation?.type))return false;
   return Boolean(current.dateGroup&&current.datePurpose&&current.mood==="데이트"&&[first.id,second.id].includes(current.withId));
 }
+function interactionInitiativeScore(character){
+  const profile=[...(character.personalityTypes||[]),character.socialStyle,character.activityTempo,character.conflictStyle,character.interference,character.decisionStyle].filter(Boolean).join(" ");
+  let score=Number(character.socialEnergy??3);
+  if(/외향|활발|사교|무리의 중심|먼저 다가감|바로 따짐|주도/.test(profile))score+=4;
+  if(/내향|낯을 가림|혼자가 편함|수줍|조용|피하는 편|시간을 두고 말함|거리/.test(profile))score-=4;
+  if(/생각나면 바로|즉흥|직접/.test(profile))score+=1;
+  if(/관여하지 않|간섭하지 않|신중|관찰/.test(profile))score-=1;
+  return score;
+}
+function interactionInitiator(first,second,key){
+  const firstScore=interactionInitiativeScore(first),secondScore=interactionInitiativeScore(second);
+  if(firstScore!==secondScore)return firstScore>secondScore?first:second;
+  return hash(`${[first.id,second.id].sort().join(":")}:${key}:initiative`)%2?first:second;
+}
 function viewDrivenInteraction(place,first,second,date){
   const firstView=explicitCharacterViewFor(first.id,second.id);
   const secondView=explicitCharacterViewFor(second.id,first.id);
@@ -3112,20 +3126,14 @@ function viewDrivenInteraction(place,first,second,date){
       {title:"설명에서 빠진 부분을 두고 한마디씩 보태는 중",first:"중간 과정이 빠졌다며 정확히 어느 부분부터 다시 말해야 하는지 짚었어요.",second:"그 정도는 알아들을 줄 알았다고 받아치고 빠진 설명을 짧게 덧붙였어요."}
     ];
     const selectedScene=pick(scenePool,3),chosen=selectedScene.copy?.[state.uiLanguage]||selectedScene;
+    const initiator=interactionInitiator(first,second,`${place?.id||placeType}:${dayKey(date)}`),firstLeads=initiator.id===first.id;
+    const firstAction=firstLeads?chosen.first:chosen.second,secondAction=firstLeads?chosen.second:chosen.first;
     const firstTitle=`${togetherWith(second.name)} ${chosen.title}`;
     const secondTitle=`${togetherWith(first.name)} ${chosen.title}`;
     return {
     title:firstTitle,firstTitle,secondTitle,
-    first:pick([
-      `${subject(second.name)} 먼저 말을 꺼내자 ${chosen.first}${/연애 감정|사랑|좋아함/.test(firstCombined)?" 말투는 퉁명스러웠지만 상대가 곤란해질 부분은 따로 챙겼어요.":""}`,
-      `${chosen.first} ${second.name}의 대답이 마음에 들지는 않았지만 무엇을 바꾸길 원하는지는 분명히 말했어요.`,
-      `${subject(second.name)} 자기 방식을 고집하자 한숨을 삼키고 ${chosen.first}`
-    ]),
-    second:pick([
-      `${subject(first.name)} 퉁명스럽게 짚자 ${chosen.second}${/연애 감정|사랑|좋아함/.test(secondCombined)?" 투덜거리면서도 상대가 신경 쓰던 부분은 그대로 두지 않았어요.":""}`,
-      `${chosen.second} 말끝은 날카로웠지만 할 일을 미루거나 자리를 떠나지는 않았어요.`,
-      `${first.name}의 짧은 지적에 눈을 굴린 뒤 ${chosen.second}`
-    ],1)
+    first:`${firstAction}${/연애 감정|사랑|좋아함/.test(firstCombined)&&state.uiLanguage==="ko"?" 말투는 퉁명스러웠지만 상대가 곤란해질 부분은 따로 챙겼어요.":""}`,
+    second:`${secondAction}${/연애 감정|사랑|좋아함/.test(secondCombined)&&state.uiLanguage==="ko"?" 투덜거리면서도 상대가 신경 쓰던 부분은 그대로 두지 않았어요.":""}`
   };}
   return null;
 }
