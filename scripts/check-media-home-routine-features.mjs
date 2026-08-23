@@ -5,6 +5,7 @@ const root=path.resolve(import.meta.dirname,"..");
 const read=file=>fs.readFileSync(path.join(root,file),"utf8");
 const app=read("app.js"),state=read("state.js"),views=read("views.js"),simulation=read("simulation.js"),media=read("local-media.js"),css=read("app.css");
 const {normalizeRoomLayout}=await import("../room-layout.js");
+const {newFurniturePlacement,normalizeFurniturePlacement,normalizeFurniturePlacements}=await import("../furniture-layout.js");
 const smallRoom={x:83.3333333333,y:87.5,w:16.6666666667,h:12.5};
 const normalizedOnce=normalizeRoomLayout(smallRoom),normalizedRepeated=normalizeRoomLayout(normalizedOnce);
 
@@ -15,6 +16,8 @@ const checks=[
   [media.includes("estimatedDataUrlBytes")&&media.includes("cloudCount:cloud.size")&&app.includes("기기 원본 ${usage.count}장")&&app.includes("클라우드 사본 ${cloudCount}장"),"기존 사진과 클라우드 사본을 구분한 저장 공간 집계"],
   [state.includes("floorCount:1,activeFloor:1")&&views.includes('data-home-floor-count')&&views.includes('data-home-floor='),"집 층수 및 층별 방 화면"],
   [state.includes("normalizeRoomLayout(room.layout)")&&app.includes("captureRoomCanvasLayouts")&&app.includes("bindRoomGeometryHandle"),"방 위치·모서리 크기 직접 조절 저장"],
+  [state.includes("export function addFurniturePlacement")&&state.includes("export function updateFurniturePlacement")&&state.includes("export function deleteFurniturePlacement")&&app.includes("bindFurniturePlacementEditors")&&views.includes('data-furniture-placement=')&&css.includes(".furniture-edit-toolbar"),"방 안 가구 추가·이동·크기·회전·앞뒤·삭제 편집"],
+  [normalizeFurniturePlacements([newFurniturePlacement("chair-1","의자",0),newFurniturePlacement("chair-1","의자",1)]).length===1&&normalizeFurniturePlacement({id:"edge",item:"침대",x:999,y:-20,scale:9,rotation:390,layer:99}).x===94,"가구 좌표·크기·회전·중복 ID 정규화"],
   [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱 재시작·테두리 픽셀과 무관한 방 크기 보존"],
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],
   [state.includes('imageFit:"cover"')&&views.includes('room.imageFit==="contain"?"contain":"cover"')&&css.includes("var(--room-image-fit,cover)"),"방 사진 기본 채우기와 선택적 전체 보기"],

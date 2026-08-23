@@ -1,6 +1,7 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823roomlayout";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823roomlayout";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260823roomlayout";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823furnitureplacement";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823furnitureplacement";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260823furnitureplacement";
+import {FURNITURE_CATALOG,furnitureCatalogForRoom,newFurniturePlacement,normalizeFurniturePlacement,normalizeFurniturePlacements} from "./furniture-layout.js?v=20260823furnitureplacement";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -24,12 +25,12 @@ const homeMapPosition=index=>{
   return {mapX:Math.max(6,Math.min(94,slot[0]+(round%3-1)*4)),mapY:Math.max(7,Math.min(92,slot[1]+(round%2?3:-2))),mapScale:1.08};
 };
 const rooms=()=>({
-  living:{name:"거실",type:"living",size:"큰 방",order:0,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["소파","TV","책장"]},
-  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["냉장고","조리대","식탁"]},
-  entry:{name:"현관",type:"entry",size:"작은 방",order:2,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["신발장","전신거울"]},
-  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["샤워부스","세면대"]},
-  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["침대","옷장"]},
-  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["책상","컴퓨터"]}
+  living:{name:"거실",type:"living",size:"큰 방",order:0,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["소파","TV","책장"],furniturePlacements:[]},
+  kitchen:{name:"주방",type:"kitchen",size:"보통 방",order:1,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["냉장고","조리대","식탁"],furniturePlacements:[]},
+  entry:{name:"현관",type:"entry",size:"작은 방",order:2,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["신발장","전신거울"],furniturePlacements:[]},
+  bath:{name:"욕실",type:"bath",size:"작은 방",order:3,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["샤워부스","세면대"],furniturePlacements:[]},
+  bedroom:{name:"침실",type:"bedroom",size:"보통 방",order:4,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["침대","옷장"],furniturePlacements:[]},
+  study:{name:"서재·취미방",type:"study",size:"보통 방",order:5,floor:1,image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:["책상","컴퓨터"],furniturePlacements:[]}
 });
 const ROOM_SIZES=["작은 방","보통 방","큰 방","넓고 긴 방"];
 const defaultBodyProfile=()=>({
@@ -104,21 +105,6 @@ const normalizedBodyProfile=value=>{
     accessibilityPreferences:Array.isArray(source.accessibilityPreferences)?[...new Set(source.accessibilityPreferences.map(String))].slice(0,10):[],
     notes:String(source.notes||"").slice(0,600)
   };
-};
-const ROOM_FURNITURE={
-  living:["소파","TV","책장","오디오","안마의자","게임기","캣타워"],
-  kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기"],
-  entry:["신발장","전신거울","우산꽂이","함께 사는 존재 산책용품"],
-  bath:["샤워부스","욕조","세면대","세탁기","건조기"],
-  bedroom:["침대","옷장","화장대","협탁","빔프로젝터"],
-  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구"],
-  dining:["식탁","의자","찬장","티 테이블","와인장"],
-  nursery:["아기 침대","수납장","놀이 매트","책장","기저귀 교환대"],
-  guest:["침대","협탁","옷걸이","작은 책상","전신거울"],
-  hobby:["작업대","수납장","그림 도구","재봉틀","악기","운동기구"],
-  balcony:["화분","야외 의자","작은 테이블","빨래 건조대"],
-  storage:["수납장","선반","보관 상자","옷걸이"],
-  other:["수납장","의자","작은 테이블"]
 };
 const defaultCatalog=()=>({
   food:[
@@ -512,7 +498,9 @@ function normalizeHomes(x){
       // v22부터 사진이 있는 방의 기본 표시를 공간 채우기로 통일한다. 이전
       // 버전의 암묵적 contain 값이 남아 회색 여백이 생기던 집만 한 번 교정한다.
       room.imageFit=previousSchema<22&&room.image?"cover":room.imageFit==="contain"?"contain":"cover";
-      room.interiorStyle=String(room.interiorStyle||"설정하지 않음");room.titleTone=room.titleTone==="dark"?"dark":"light";room.furniture=Array.isArray(room.furniture)?room.furniture.map(String):[];
+      room.interiorStyle=String(room.interiorStyle||"설정하지 않음");room.titleTone=room.titleTone==="dark"?"dark":"light";room.furniture=Array.isArray(room.furniture)?[...new Set(room.furniture.map(String))]:[];
+      room.furniturePlacements=normalizeFurniturePlacements(room.furniturePlacements);
+      room.furniturePlacements.forEach(placement=>{if(!room.furniture.includes(placement.item))room.furniture.push(placement.item)});
       const defaultSize=room.type==="living"?"큰 방":["entry","bath","storage"].includes(room.type)?"작은 방":"보통 방";
       room.size=ROOM_SIZES.includes(room.size)?room.size:defaultSize;
       room.order=Number.isFinite(Number(room.order))?Number(room.order):index;
@@ -1041,7 +1029,7 @@ export function addRoom(homeId,floor){
   const key=`room-${uid()}`;
   h.deletedRoomKeys=(h.deletedRoomKeys||[]).filter(value=>value!==key);
   const nextOrder=Math.max(-1,...Object.values(h.rooms).map(room=>Number(room.order)||0))+1;
-  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,floor:Math.max(1,Math.min(h.floorCount||1,Number(floor)||h.activeFloor||1)),image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:[...ROOM_FURNITURE.other]};
+  h.rooms[key]={name:"새 방",type:"other",size:"보통 방",order:nextOrder,floor:Math.max(1,Math.min(h.floorCount||1,Number(floor)||h.activeFloor||1)),image:"",imageFit:"cover",interiorStyle:"설정하지 않음",titleTone:"light",furniture:[...FURNITURE_CATALOG.other],furniturePlacements:[]};
   save(true);
   return key;
 }
@@ -1070,11 +1058,11 @@ export function reorderRoom(homeId,sourceKey,targetKey){
   return true;
 }
 export function setRoomType(homeId,roomKey,type){
-  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room||!ROOM_FURNITURE[type])return;
+  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room||!FURNITURE_CATALOG[type])return;
   const oldType=room.type||"other";
   const defaultNames={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
   room.type=type;
-  room.furniture=[...ROOM_FURNITURE[type]];
+  room.furniture=[...new Set([...furnitureCatalogForRoom(type).slice(0,3),...normalizeFurniturePlacements(room.furniturePlacements).map(item=>item.item)])];
   if(!room.name||room.name==="새 방"||room.name===defaultNames[oldType])room.name=defaultNames[type];
   save(true);
 }
@@ -1206,6 +1194,33 @@ export function deletePlace(placeId){
   });
   touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));
   save(true);
+}
+export function addFurniturePlacement(homeId,roomKey,item){
+  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return "";
+  const placements=normalizeFurniturePlacements(room.furniturePlacements),id=`furniture-${uid()}`;
+  placements.push(newFurniturePlacement(id,item,placements.length));
+  room.furniturePlacements=placements;
+  room.furniture=Array.isArray(room.furniture)?[...new Set([...room.furniture,String(item)])]:[String(item)];
+  touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
+  save(true);return id;
+}
+export function updateFurniturePlacement(homeId,roomKey,placementId,patch,persist=true){
+  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return false;
+  const placements=normalizeFurniturePlacements(room.furniturePlacements),index=placements.findIndex(item=>item.id===placementId);
+  if(index<0)return false;
+  const next=normalizeFurniturePlacement({...placements[index],...patch},index);if(!next)return false;
+  placements[index]=next;room.furniturePlacements=placements;
+  if(persist){touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));save(true)}
+  return next;
+}
+export function deleteFurniturePlacement(homeId,roomKey,placementId){
+  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return false;
+  const placements=normalizeFurniturePlacements(room.furniturePlacements),removed=placements.find(item=>item.id===placementId);
+  if(!removed)return false;
+  room.furniturePlacements=placements.filter(item=>item.id!==placementId);
+  if(!room.furniturePlacements.some(item=>item.item===removed.item))room.furniture=(room.furniture||[]).filter(item=>item!==removed.item);
+  touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
+  save(true);return true;
 }
 export function addCatalogItem(kind,data){
   if(!state.catalog[kind])state.catalog[kind]=[];

@@ -1,9 +1,10 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823roomlayout";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823roomlayout";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823roomlayout";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823furnitureplacement";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823furnitureplacement";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823furnitureplacement";
+import {furnitureIcon,furnitureLabel,normalizeFurniturePlacements} from "./furniture-layout.js?v=20260823furnitureplacement";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -33,6 +34,8 @@ Object.assign(UI_TEXT.en,{"새 캐릭터":"New character"});
 Object.assign(UI_TEXT.ja,{"새 캐릭터":"新しい人物"});
 Object.assign(UI_TEXT.en,{"캐릭터 관리":"Character management"});
 Object.assign(UI_TEXT.ja,{"캐릭터 관리":"キャラクター管理"});
+Object.assign(UI_TEXT.en,{"방 편집":"Edit room","방 이름":"Room name","방 유형":"Room type","방이 있는 층":"Floor","방 크기":"Room size","방 사진 표시":"Room photo fit","인테리어 스타일":"Interior style","방 제목 색":"Room title color","가구 배치":"Furniture placement","가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.":"Tap furniture to add it to the room. Drag it in the edit view, then use the toolbar to rotate, resize, or change its layer.","선택한 가구 편집":"Edit selected furniture","가구 작게":"Make furniture smaller","가구 크게":"Make furniture larger","가구 회전":"Rotate furniture","가구 뒤로":"Send furniture backward","가구 앞으로":"Bring furniture forward","가구":"Furniture"});
+Object.assign(UI_TEXT.ja,{"방 편집":"部屋を編集","방 이름":"部屋の名前","방 유형":"部屋の種類","방이 있는 층":"部屋の階","방 크기":"部屋の大きさ","방 사진 표시":"部屋写真の表示","인테리어 스타일":"インテリアスタイル","방 제목 색":"部屋名の色","가구 배치":"家具の配置","가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.":"家具を押すと部屋に1つ追加されます。編集画面でドラッグし、下のツールで回転・大きさ・前後関係を調整できます。","선택한 가구 편집":"選択した家具を編集","가구 작게":"家具を小さくする","가구 크게":"家具を大きくする","가구 회전":"家具を回転","가구 뒤로":"家具を後ろへ","가구 앞으로":"家具を前へ","가구":"家具"});
 const UI_TEXT_MORE={
   en:{
     "로그인 전에는 예시 캐릭터나 실제 지역이 표시되지 않아요.":"No sample characters or real-world locations are shown before you sign in.",
@@ -615,21 +618,6 @@ const placeTypeOptions=place=>Object.keys(PLACE_TYPES).map(type=>`<option ${plac
 const placeSubtypeOptions=place=>(PLACE_TYPES[place.type]||[""]).map(type=>`<option value="${type}" ${place.subtype===type?"selected":""}>${type||"지정 안 함 · 해당 유형 전체 취급"}</option>`).join("");
 const CATALOG_ICONS={food:"🍽️",drink:"🥤",fashion:"👗",music:"🎵",idol:"🎤",book:"📚",movie:"🎬",game:"🎮",perfume:"🧴",hobby:"🎨",electronics:"💻",weapon:"⚔️"};
 const roomClasses={living:"living",kitchen:"kitchen",entry:"entry",bath:"bath",bedroom:"bedroom",study:"study"};
-const FURNITURE={
-  living:["소파","TV","책장","오디오","안마의자","게임기","캣타워","턴테이블","보드게임장","홈시어터","프로젝터","악기 진열장","수집품 진열장","독서 의자","반려동물 장난감","러닝머신"],
-  kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기","에스프레소 머신","티 세트","제빵 도구","칵테일 바","와인 냉장고","향신료 선반","요리책 선반"],
-  entry:["신발장","전신거울","우산꽂이","반려동물 산책용품","자전거 보관대","운동 장비 선반","캠핑 장비"],
-  bath:["샤워부스","욕조","세면대","세탁기","건조기","입욕제 선반","향수 선반","스킨케어 선반"],
-  bedroom:["침대","옷장","화장대","협탁","빔프로젝터","독서등","향수 진열대","레코드 플레이어","작은 게임기","봉제인형","수집품 진열장"],
-  study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구","디지털 드로잉 장비","촬영 장비","보드게임 선반","공예 도구","뜨개 도구","프라모델 작업대","천체망원경","악기"],
-  dining:["식탁","의자","찬장","티 테이블","와인장"],
-  nursery:["아기 침대","수납장","놀이 매트","책장","기저귀 교환대"],
-  guest:["침대","협탁","옷걸이","작은 책상","전신거울"],
-  hobby:["작업대","수납장","그림 도구","재봉틀","악기","운동기구","디지털 드로잉 장비","촬영 장비","보드게임 선반","공예 도구","뜨개 도구","프라모델 작업대","천체망원경"],
-  balcony:["화분","야외 의자","작은 테이블","빨래 건조대","원예 도구","캠핑 의자","천체망원경"],
-  storage:["수납장","선반","보관 상자","옷걸이","캠핑 장비","운동 장비","수집품 상자"],
-  other:["수납장","의자","작은 테이블","책장","오디오"]
-};
 const ROOM_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
 const roomTypeOptions=room=>Object.entries(ROOM_TYPES).map(([value,label])=>`<option value="${value}" ${(room.type||"other")===value?"selected":""}>${label}</option>`).join("");
 let accountText="Google 로그인 안 됨";
@@ -1730,6 +1718,11 @@ function roomStyle(h,key,layout,mobileLayout){
   if(image)parts.push(`background-image:linear-gradient(#ffffff30,#ffffff30),url('${image}')`);
   return `style="${parts.join(";")}"`;
 }
+function roomFurnitureMarkup(homeId,roomKey,room,edit){
+  const placements=normalizeFurniturePlacements(room.furniturePlacements);
+  if(!placements.length)return "";
+  return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{const label=furnitureLabel(placement.item,state.uiLanguage);return `<button type="button" class="room-furniture-item" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" style="--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.rotation}deg;--furniture-layer:${placement.layer}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}><span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>${edit?`<small>${esc(label)}</small>`:""}</button>`}).join("")}</div>`;
+}
 function home(){
   const groups=homeGroups(),ids=Object.keys(state.homes||{}),selected=state.homes[state.activeHomeId]?state.activeHomeId:(state.homes[active()?.homeId]?active().homeId:ids[0]);
   state.activeHomeId=selected;
@@ -1877,11 +1870,11 @@ function homeCard(id,chars){
     const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>sceneFor(c)?.room===key);
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
     const shownPeople=roomPeople,shownPets=roomPets;
-    const furniture=FURNITURE[room.type||key]||FURNITURE.other;
     const editAttributes=edit?`data-open-room-editor="${key}" data-home-id="${id}" data-room-key="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`:`data-room-key="${key}"`;
     const roomLayout=packedRooms.items[key]||{},peopleDirection=Number(roomLayout.w)>Number(roomLayout.h)?"is-horizontal":"is-vertical";
     return `<div class="room room-${esc(room.type||key)} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
       <div class="room-heading room-title-${room.titleTone==="dark"?"dark":"light"}"><span><b>${esc(room.name||key)}</b>${edit?`<small class="room-edit-hint">${activeFloor}층 · ${t("gridEdit","격자 편집")}</small>`:""}</span>${edit?`<button type="button" class="room-drag-handle" data-room-drag="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 위치 옮기기">✥</button>`:""}</div>${edit?`<button type="button" class="room-resize-handle" data-room-resize="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 크기 조절">↘</button>`:""}
+      ${roomFurnitureMarkup(id,key,room,edit)}
       <div class="room-people ${peopleDirection}">${shownPeople.map((c,index)=>{const e=sceneFor(c),title=e?.title||"집에서 시간을 보내는 중",text=`${title} ${e?.desc||""} ${e?.mood||""}`,presentation=nativeScenePresentation(c,e,"sd"),sleeping=presentation.actionKind==="sleep",actionProp=nativeSceneActionProp(c,e,presentation.actionKind,text,true);return `<div class="home-person scene-action-${esc(presentation.actionKind)} ${sleeping?"is-sleeping":""}" style="--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${c.name} · ${title}`)}" data-home-occupant="character" data-character-id="${c.id}" data-occupant-name="${esc(c.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(e?.desc||"")}" data-occupant-room="${esc(room.name||key)}"><span class="home-person-visual">${avatar(c)}${actionProp}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span><span class="home-person-status"><b>${esc(c.name)}</b><small>${esc(title)}</small></span></div>`}).join("")}</div>
       <div class="room-pets">${shownPets.map(p=>`<div class="room-pet" role="button" tabindex="0" aria-label="${esc(`${p.name} · ${petScenes[p.id].title}`)}" data-home-occupant="pet" data-pet-id="${p.id}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></div>`).join("")}</div>
     </div>`;
@@ -1927,11 +1920,12 @@ function homeCard(id,chars){
     <div class="home-photo-editor"><b>집 선택 버튼 배경 사진</b><span><button data-home-bg="${id}">사진</button><button data-image-url="home" data-id="${id}">링크</button>${h.image?`<button data-clear-home-bg="${id}">지우기</button>`:""}</span></div>
   </section>`:"";
   const editToolbar=edit?`<nav class="home-edit-toolbar" aria-label="집 편집 도구"><button type="button" data-open-home-feature="house-settings">집 설정</button><button type="button" data-open-home-feature="room-plan">방 추가·구성</button><button type="button" data-open-home-feature="residents">구성원</button><button type="button" class="primary" data-home-edit>완료</button></nav>`:"";
+  const furnitureToolbar=edit?`<nav class="furniture-edit-toolbar" data-furniture-edit-toolbar hidden aria-label="선택한 가구 편집"><strong data-furniture-edit-name>가구</strong><button type="button" data-furniture-command="smaller" aria-label="가구 작게">−</button><button type="button" data-furniture-command="larger" aria-label="가구 크게">＋</button><button type="button" data-furniture-command="rotate" aria-label="가구 회전">↻</button><button type="button" data-furniture-command="back" aria-label="가구 뒤로">↓</button><button type="button" data-furniture-command="front" aria-label="가구 앞으로">↑</button><button type="button" class="danger" data-furniture-command="delete">삭제</button><button type="button" class="primary" data-furniture-command="done">완료</button></nav>`:"";
   return `<article class="home panel ${edit?"is-editing":""}" data-home-card="${id}">
     <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.length?`${chars.map(c=>c.name).join(" · ")} 연결됨`:"아직 연결된 캐릭터가 없는 집"}</small></div><b>${inside.length}명 머무는 중</b></div>
     ${editToolbar}${homeSettings}${residentEditor}${sleepEditor}<div class="clean">청결도 · ${Math.round(h.cleanliness??100)}% <i style="width:${h.cleanliness??100}%"></i></div>
     ${floorCount>1?`<nav class="home-floor-tabs" aria-label="집 층 선택">${Array.from({length:floorCount},(_,index)=>index+1).map(floor=>`<button type="button" data-home-floor="${floor}" data-home-id="${id}" class="${floor===activeFloor?"on":""}">${floor}층 <small>${roomKeys.filter(key=>(Number(h.rooms[key]?.floor)||1)===floor).length}개 방</small></button>`).join("")}</nav>`:""}
-    <div class="rooms ${visibleRoomKeys.length>6?"has-extra":""}" data-room-canvas data-home-id="${id}" data-room-floor="${activeFloor}" data-room-grid-cols="12" data-room-grid-rows="16" style="--room-count:${visibleRoomKeys.length};--room-cols:4;--room-rows:${packedRooms.rows}">${roomHtml||`<button type="button" class="empty-floor-room" data-add-room>+ ${activeFloor}층에 방 추가</button>`}</div>
+    <div class="rooms ${visibleRoomKeys.length>6?"has-extra":""}" data-room-canvas data-home-id="${id}" data-room-floor="${activeFloor}" data-room-grid-cols="12" data-room-grid-rows="16" style="--room-count:${visibleRoomKeys.length};--room-cols:4;--room-rows:${packedRooms.rows}">${roomHtml||`<button type="button" class="empty-floor-room" data-add-room>+ ${activeFloor}층에 방 추가</button>`}</div>${furnitureToolbar}
     <section class="pets home-feature-panel" data-home-feature="pets"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>반려생물</h2><button data-add-pet>+ 반려생물 추가</button></div><div class="pet-grid">${petCards||"<p>아직 등록된 반려생물이 없어요.</p>"}</div></section>
     <section class="cars home-feature-panel" data-home-feature="cars"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>자동차</h2><button data-add-car>+ 자동차 추가</button></div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
     <section class="resident-scenes home-feature-panel" data-home-feature="scenes"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>구성원</h2></div><div>${residentScenes}</div></section>

@@ -1,11 +1,12 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823roomlayout";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823roomlayout";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823roomlayout";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823roomlayout";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823roomlayout";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823roomlayout";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260823roomlayout";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260823roomlayout";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823furnitureplacement";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823furnitureplacement";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823furnitureplacement";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823furnitureplacement";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823furnitureplacement";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823furnitureplacement";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260823furnitureplacement";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260823furnitureplacement";
+import {furnitureCatalogForRoom,furnitureIcon,furnitureLabel,normalizeFurniturePlacement} from "./furniture-layout.js?v=20260823furnitureplacement";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -48,6 +49,7 @@ let mobileCharacterEditorOpenDetails=[];
 let mobileCharacterEditorDetailsCaptured=false;
 let resetScrollAfterRender=false;
 let navigationTabIntent="";
+let pendingFurnitureSelection=null;
 const setNavigationTabIntent=tab=>{navigationTabIntent=tab;state.activeTab=tab;return tab};
 const guidePending=new Set();
 const PAGE_GUIDES={
@@ -612,14 +614,6 @@ const maintenanceEnabled=()=>Boolean(maintenanceConfig().enabled);
 const ONBOARDING_KEY="drawer-village-onboarding-v2";
 const SETUP_COACH_KEY="drawer-village-first-setup-v2";
 const ROOM_EDITOR_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
-const ROOM_EDITOR_FURNITURE={
-  living:["소파","TV","책장","오디오","안마의자","게임기","캣타워","턴테이블","보드게임장","홈시어터","프로젝터","악기 진열장","수집품 진열장","독서 의자","반려동물 장난감","러닝머신"],kitchen:["냉장고","조리대","식탁","오븐","커피머신","식기세척기","에스프레소 머신","티 세트","제빵 도구","칵테일 바","와인 냉장고","향신료 선반","요리책 선반"],
-  entry:["신발장","전신거울","우산꽂이","반려동물 산책용품","자전거 보관대","운동 장비 선반","캠핑 장비"],bath:["샤워부스","욕조","세면대","세탁기","건조기","입욕제 선반","향수 선반","스킨케어 선반"],
-  bedroom:["침대","옷장","화장대","협탁","빔프로젝터","독서등","향수 진열대","레코드 플레이어","작은 게임기","봉제인형","수집품 진열장"],study:["책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구","디지털 드로잉 장비","촬영 장비","보드게임 선반","공예 도구","뜨개 도구","프라모델 작업대","천체망원경","악기"],
-  dining:["식탁","의자","찬장","티 테이블","와인장"],nursery:["아기 침대","수납장","놀이 매트","책장","기저귀 교환대"],
-  guest:["침대","협탁","옷걸이","작은 책상","전신거울"],hobby:["작업대","수납장","그림 도구","재봉틀","악기","운동기구","디지털 드로잉 장비","촬영 장비","보드게임 선반","공예 도구","뜨개 도구","프라모델 작업대","천체망원경"],
-  balcony:["화분","야외 의자","작은 테이블","빨래 건조대","원예 도구","캠핑 의자","천체망원경"],storage:["수납장","선반","보관 상자","옷걸이","캠핑 장비","운동 장비","수집품 상자"],other:["수납장","의자","작은 테이블","책장","오디오"]
-};
 const roomIllustration=(type="other",index=0)=>{
   const palettes={
     living:[["#e8d6bf","#a5785d"],["#d7e6df","#5b8476"]],kitchen:[["#e8e4da","#8c9a91"],["#f2dfc5","#b9825e"]],
@@ -680,17 +674,30 @@ function openRoomIllustrations(homeId,roomKey){
 function openRoomEditor(homeId,roomKey){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
   const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
-  const drawFurniture=()=>{const list=ROOM_EDITOR_FURNITURE[room.type]||ROOM_EDITOR_FURNITURE.other;return list.map(item=>`<button type="button" data-room-furniture="${item}" class="${(room.furniture||[]).includes(item)?"on":""}">${item}</button>`).join("")};
+  const drawFurniture=()=>{
+    const placements=Array.isArray(room.furniturePlacements)?room.furniturePlacements:[];
+    return furnitureCatalogForRoom(room.type).map(item=>{
+      const count=placements.filter(placement=>placement?.item===item).length;
+      const label=furnitureLabel(item,state.uiLanguage);
+      const status=count?(state.uiLanguage==="en"?`${count} placed`:state.uiLanguage==="ja"?`${count}個配置済み`:`${count}개 배치됨`):(state.uiLanguage==="en"?"Tap to place":state.uiLanguage==="ja"?"押して配置":"눌러서 배치");
+      return `<button type="button" data-add-room-furniture="${item}" class="${count?"on":""}"><span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span><b>${label}</b><small>${status}</small></button>`;
+    }).join("");
+  };
   const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
   const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>방 사진 표시<select name="imageFit"><option value="contain" ${room.imageFit!=="cover"?"selected":""}>전체 보기 · 자르지 않음</option><option value="cover" ${room.imageFit==="cover"?"selected":""}>공간 채우기 · 가장자리 잘림</option></select><small>침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>이 방에 있는 가구</b><p class="room-editor-note">장면에 실제로 등장할 수 있는 가구만 선택해 주세요. 주민의 취미가 맞으면 능숙하게 즐기고, 낯선 취미라면 서툴게 시도하거나 관심 없이 지나쳐요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>방 사진 표시<select name="imageFit"><option value="contain" ${room.imageFit!=="cover"?"selected":""}>전체 보기 · 자르지 않음</option><option value="cover" ${room.imageFit==="cover"?"selected":""}>공간 채우기 · 가장자리 잘림</option></select><small>침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>가구 배치</b><p class="room-editor-note">가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
   const titleToneField=document.createElement("label");
   titleToneField.innerHTML=`방 제목 색<select name="titleTone"><option value="light" ${room.titleTone!=="dark"?"selected":""}>밝은 글자</option><option value="dark" ${room.titleTone==="dark"?"selected":""}>어두운 글자</option></select><small>사진 밝기에 맞춰 방 이름이 잘 보이는 쪽을 고르세요.</small>`;
   dialog.querySelector(".room-editor-fields").insertBefore(titleToneField,dialog.querySelector('[name="type"]').closest("label"));
   const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floor:Number(dialog.querySelector('[name="floor"]').value)||1,size:dialog.querySelector('[name="size"]').value,imageFit:dialog.querySelector('[name="imageFit"]').value==="cover"?"cover":"contain",interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,titleTone:dialog.querySelector('[name="titleTone"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
-  dialog.querySelectorAll("[data-room-furniture]").forEach(button=>button.onclick=()=>{toggleFurniture(homeId,roomKey,button.dataset.roomFurniture);button.classList.toggle("on")});
+  dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
+    sync();
+    const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);
+    pendingFurnitureSelection={homeId,roomKey,placementId};
+    dialog.close("furniture");render();showToast("가구를 추가했어요 · 끌어서 자리를 정해 주세요");
+  });
   dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
   dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
   dialog.onclose=()=>{if(dialog.returnValue==="save"){sync();save(true);render()}dialog.remove()};
@@ -748,6 +755,85 @@ function bindRoomGeometryHandle(handle,mode){
     }
   };
   handle.onpointerup=finish;handle.onpointercancel=finish;
+}
+
+function setFurniturePlacementStyle(element,placement){
+  if(!element||!placement)return;
+  element.style.setProperty("--furniture-x",`${placement.x}%`);
+  element.style.setProperty("--furniture-y",`${placement.y}%`);
+  element.style.setProperty("--furniture-scale",String(placement.scale));
+  element.style.setProperty("--furniture-rotation",`${placement.rotation}deg`);
+  element.style.setProperty("--furniture-layer",String(placement.layer));
+}
+
+function bindFurniturePlacementEditors(){
+  const toolbar=document.querySelector("[data-furniture-edit-toolbar]");
+  if(!toolbar)return;
+  let selected=null;
+  const clearSelection=()=>{
+    document.querySelectorAll("[data-furniture-placement].is-selected").forEach(item=>item.classList.remove("is-selected"));
+    selected=null;toolbar.hidden=true;
+  };
+  const selectFurniture=element=>{
+    if(!element)return;
+    document.querySelectorAll("[data-furniture-placement].is-selected").forEach(item=>item.classList.remove("is-selected"));
+    selected=element;element.classList.add("is-selected");toolbar.hidden=false;
+    toolbar.dataset.homeId=element.dataset.homeId||"";
+    toolbar.dataset.roomKey=element.dataset.roomKey||"";
+    toolbar.dataset.placementId=element.dataset.furniturePlacement||"";
+    const name=toolbar.querySelector("[data-furniture-edit-name]");if(name)name.textContent=element.dataset.furnitureName||"가구";
+  };
+  document.querySelectorAll("[data-furniture-placement]").forEach(element=>{
+    let pointerId=null,roomRect=null,latest=null,dragged=false,startX=0,startY=0;
+    element.onclick=event=>{event.preventDefault();event.stopPropagation();selectFurniture(element)};
+    element.onpointerdown=event=>{
+      const room=element.closest(".room");if(!room)return;
+      event.preventDefault();event.stopPropagation();selectFurniture(element);
+      pointerId=event.pointerId;roomRect=room.getBoundingClientRect();latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
+      element.setPointerCapture(pointerId);element.classList.add("is-dragging");
+    };
+    element.onpointermove=event=>{
+      if(pointerId!==event.pointerId||!roomRect?.width||!roomRect?.height)return;
+      event.preventDefault();event.stopPropagation();
+      if(Math.hypot(event.clientX-startX,event.clientY-startY)>4)dragged=true;
+      if(!dragged)return;
+      const x=Math.max(6,Math.min(94,(event.clientX-roomRect.left)/roomRect.width*100));
+      const y=Math.max(14,Math.min(90,(event.clientY-roomRect.top)/roomRect.height*100));
+      const room=state.homes[element.dataset.homeId]?.rooms?.[element.dataset.roomKey];
+      const current=room?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);if(!current)return;
+      latest=normalizeFurniturePlacement({...current,x,y});setFurniturePlacementStyle(element,latest);
+    };
+    const finish=event=>{
+      if(pointerId===null||event.pointerId!==pointerId)return;
+      if(element.hasPointerCapture(pointerId))element.releasePointerCapture(pointerId);
+      pointerId=null;element.classList.remove("is-dragging");
+      if(latest)updateFurniturePlacement(element.dataset.homeId,element.dataset.roomKey,element.dataset.furniturePlacement,{x:latest.x,y:latest.y},true);
+      event.preventDefault();event.stopPropagation();
+    };
+    element.onpointerup=finish;element.onpointercancel=finish;
+  });
+  toolbar.querySelectorAll("[data-furniture-command]").forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();
+    const command=button.dataset.furnitureCommand;
+    if(command==="done"){clearSelection();return}
+    const {homeId,roomKey,placementId}=toolbar.dataset;
+    const current=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId);if(!current)return;
+    if(command==="delete"){
+      if(confirm(`‘${current.item}’ 가구를 방에서 치울까요?`)){deleteFurniturePlacement(homeId,roomKey,placementId);pendingFurnitureSelection=null;render()}
+      return;
+    }
+    const patch=command==="smaller"?{scale:current.scale-.1}
+      :command==="larger"?{scale:current.scale+.1}
+      :command==="rotate"?{rotation:current.rotation+15}
+      :command==="back"?{layer:current.layer-1}
+      :command==="front"?{layer:current.layer+1}:{};
+    const next=updateFurniturePlacement(homeId,roomKey,placementId,patch,true);if(next&&selected)setFurniturePlacementStyle(selected,next);
+  });
+  if(pendingFurnitureSelection){
+    const target=[...document.querySelectorAll("[data-furniture-placement]")].find(element=>element.dataset.homeId===pendingFurnitureSelection.homeId&&element.dataset.roomKey===pendingFurnitureSelection.roomKey&&element.dataset.furniturePlacement===pendingFurnitureSelection.placementId);
+    if(target)requestAnimationFrame(()=>{target.scrollIntoView({block:"center",behavior:"smooth"});selectFurniture(target)});
+    pendingFurnitureSelection=null;
+  }
 }
 
 function showOnboarding(){
@@ -1563,6 +1649,7 @@ function bindNativeObserveCharacterSwipe(){
 function bind(){
   bindHorizontalWheelNavigation();
   bindNativeObserveCharacterSwipe();
+  bindFurniturePlacementEditors();
   // Cloud sync intentionally does not copy device-only photos. If an old
   // device URL is unavailable, replace the broken image with the character's
   // initial so the relationship screen stays readable and tappable.
@@ -1906,7 +1993,7 @@ function bind(){
   $$("[data-home-floor]").forEach(button=>button.addEventListener("click",()=>{setActiveHomeFloor(button.dataset.homeId,button.dataset.homeFloor);render()}));
   $$("[data-open-room-editor]").forEach(el=>{
     el.onclick=event=>{
-      if(event.target.closest("[data-home-person],[data-home-occupant],.room-pet,.room-drag-handle,.room-resize-handle"))return;
+      if(event.target.closest("[data-home-person],[data-home-occupant],[data-furniture-placement],.room-pet,.room-drag-handle,.room-resize-handle"))return;
       event.stopPropagation();
       openRoomEditor(el.dataset.homeId,el.dataset.openRoomEditor);
     };
@@ -2053,11 +2140,6 @@ function bind(){
     }
   });
   $$("[data-sleep-room]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.sleepRoom,{sleepRoomId:el.value});renderPreservingPageScroll(el)});
-  $$("[data-furniture]").forEach(el=>el.onclick=()=>{
-    toggleFurniture(el.dataset.homeId,el.dataset.room,el.dataset.furniture);
-    el.classList.toggle("on",state.homes[el.dataset.homeId]?.rooms?.[el.dataset.room]?.furniture?.includes(el.dataset.furniture));
-    document.querySelectorAll(`[data-furniture="${CSS.escape(el.dataset.furniture)}"][data-home-id="${CSS.escape(el.dataset.homeId)}"][data-room="${CSS.escape(el.dataset.room)}"]`).forEach(button=>button.classList.toggle("on",el.classList.contains("on")));
-  });
   $$("[data-home-resident]").forEach(el=>el.onclick=()=>{
     const homeId=el.dataset.homeId,id=el.dataset.homeResident;
     const connected=state.characters[id]?.residences?.some(item=>item.homeId===homeId);
@@ -4173,7 +4255,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260823roomlayout").catch(error=>{
+  import("./auth.js?v=20260823furnitureplacement").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4188,7 +4270,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260823roomlayout",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260823furnitureplacement",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
