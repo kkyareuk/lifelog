@@ -1,13 +1,13 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823griddecor";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823griddecor";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823griddecor";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823griddecor";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823griddecor";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823griddecor";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260823griddecor";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260823griddecor";
-import {FURNITURE_PROPS,furnitureCatalogForRoom,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260823griddecor";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260823griddecor";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260824homesync";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260824homesync";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260824homesync";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260824homesync";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260824homesync";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260824homesync";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260824homesync";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260824homesync";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260824homesync";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260824homesync";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -675,34 +675,56 @@ function openRoomIllustrations(homeId,roomKey){
 function openRoomEditor(homeId,roomKey){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
   const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
-  const drawFurniture=()=>{
-    const placements=Array.isArray(room.furniturePlacements)?room.furniturePlacements:[];
-    return furnitureCatalogForRoom(room.type).map(item=>{
-      const count=placements.filter(placement=>placement?.item===item).length;
-      const label=furnitureLabel(item,state.uiLanguage);
-      const status=count?(state.uiLanguage==="en"?`${count} placed`:state.uiLanguage==="ja"?`${count}個配置済み`:`${count}개 배치됨`):(state.uiLanguage==="en"?"Tap to place":state.uiLanguage==="ja"?"押して配置":"눌러서 배치");
-      return `<button type="button" data-add-room-furniture="${item}" class="${count?"on":""}"><span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span><b>${label}</b><small>${status}</small></button>`;
-    }).join("");
-  };
   const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
   const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>방 사진 표시<select name="imageFit"><option value="contain" ${room.imageFit!=="cover"?"selected":""}>전체 보기 · 자르지 않음</option><option value="cover" ${room.imageFit==="cover"?"selected":""}>공간 채우기 · 가장자리 잘림</option></select><small>침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-furniture-wrap"><b>가구 배치</b><p class="room-editor-note">가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.</p><div class="room-editor-furniture">${drawFurniture()}</div></div><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>방 사진 표시<select name="imageFit"><option value="contain" ${room.imageFit!=="cover"?"selected":""}>전체 보기 · 자르지 않음</option><option value="cover" ${room.imageFit==="cover"?"selected":""}>공간 채우기 · 가장자리 잘림</option></select><small>침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
   const titleToneField=document.createElement("label");
   titleToneField.innerHTML=`방 제목 색<select name="titleTone"><option value="light" ${room.titleTone!=="dark"?"selected":""}>밝은 글자</option><option value="dark" ${room.titleTone==="dark"?"selected":""}>어두운 글자</option></select><small>사진 밝기에 맞춰 방 이름이 잘 보이는 쪽을 고르세요.</small>`;
   dialog.querySelector(".room-editor-fields").insertBefore(titleToneField,dialog.querySelector('[name="type"]').closest("label"));
   const sync=()=>{updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floor:Number(dialog.querySelector('[name="floor"]').value)||1,size:dialog.querySelector('[name="size"]').value,imageFit:dialog.querySelector('[name="imageFit"]').value==="cover"?"cover":"contain",interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,titleTone:dialog.querySelector('[name="titleTone"]').value});const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType)};
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
-  dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
-    sync();
-    const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);
-    pendingFurnitureSelection={homeId,roomKey,placementId};
-    dialog.close("furniture");render();showToast("가구를 추가했어요 · 끌어서 자리를 정해 주세요");
-  });
   dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
   dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
   dialog.onclose=()=>{if(dialog.returnValue==="save"){sync();save(true);render()}dialog.remove()};
   translateDynamicInterface(dialog);document.body.append(dialog);dialog.showModal();
+}
+
+function openBedAssignmentDialog(homeId,roomKey,placementId,{returnToFurniture=true}={}){
+  const home=state.homes[homeId],placement=home?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId);
+  if(!placement||!isBedFurniture(placement.item))return;
+  const residents=state.order.map(id=>state.characters[id]).filter(character=>character?.residences?.some(entry=>entry.homeId===homeId));
+  const copy={ko:{eyebrow:"침대 지정",title:furnitureLabel(placement.item,"ko"),help:`${furnitureCapacity(placement.item)}명까지 이 침대를 함께 지정할 수 있어요. 일반 침대는 한 명만 지정됩니다.`,none:"이 집에 연결된 캐릭터가 없어요.",done:"완료",full:"이 침대의 정원이 찼어요."},en:{eyebrow:"Bed assignment",title:furnitureLabel(placement.item,"en"),help:`Up to ${furnitureCapacity(placement.item)} character(s) can be assigned. A regular bed allows one.`,none:"No characters are connected to this home.",done:"Done",full:"This bed is already full."},ja:{eyebrow:"ベッド指定",title:furnitureLabel(placement.item,"ja"),help:`このベッドには${furnitureCapacity(placement.item)}人まで指定できます。通常のベッドは1人用です。`,none:"この家に紐づく人物はいません。",done:"完了",full:"このベッドは定員です。"}}[state.uiLanguage]||null;
+  const dialog=document.createElement("dialog");dialog.className="bed-assignment-dialog";
+  const draw=()=>{
+    const current=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId),assigned=new Set(current?.assignedCharacterIds||[]);
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><div class="bed-assignment-list">${residents.length?residents.map(character=>`<button type="button" data-assign-bed-character="${htmlEsc(character.id)}" class="${assigned.has(character.id)?"on":""}">${character.icon?`<img src="${htmlEsc(character.icon)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1)||"?")}</span>`}<b>${htmlEsc(character.name)}</b><small>${assigned.has(character.id)?"✓":"＋"}</small></button>`).join(""):`<p>${copy.none}</p>`}</div><button class="primary" value="close">${copy.done}</button></form>`;
+    dialog.querySelectorAll("[data-assign-bed-character]").forEach(button=>button.onclick=()=>{
+      const characterId=button.dataset.assignBedCharacter,on=current?.assignedCharacterIds?.includes(characterId);
+      const result=assignFurnitureBed(homeId,roomKey,placementId,characterId,!on);
+      if(!result&&!on){showToast(copy.full);return}draw();
+    });
+  };
+  draw();dialog.onclose=()=>{dialog.remove();if(returnToFurniture)openFurniturePlacementDialog(homeId,roomKey)};document.body.append(dialog);dialog.showModal();
+}
+
+function openFurniturePlacementDialog(homeId,initialRoomKey=""){
+  const home=state.homes[homeId];if(!home)return;
+  const roomKeys=Object.keys(home.rooms||{}).sort((a,b)=>(Number(home.rooms[a]?.order)||0)-(Number(home.rooms[b]?.order)||0));
+  let roomKey=home.rooms?.[initialRoomKey]?initialRoomKey:roomKeys.find(key=>(Number(home.rooms[key]?.floor)||1)===(Number(home.activeFloor)||1))||roomKeys[0];
+  if(!roomKey){showToast("먼저 방을 추가해 주세요");return}
+  const copy={ko:{eyebrow:"집 편집 · 독립 도구",title:"가구 배치",help:"방을 고르고 가구를 추가하세요. 창을 닫으면 방 화면에서 격자에 맞춰 위치·크기·각도를 조절할 수 있어요.",placed:"배치된 가구",catalog:"추가할 가구",empty:"아직 배치한 가구가 없어요.",assign:"침대 지정",done:"방에서 위치 조정하기"},en:{eyebrow:"Home edit · Separate tool",title:"Furniture placement",help:"Choose a room and add furniture. Close this panel to position it on the room grid.",placed:"Placed furniture",catalog:"Add furniture",empty:"No furniture placed yet.",assign:"Assign bed",done:"Position in room"},ja:{eyebrow:"家の編集・独立ツール",title:"家具の配置",help:"部屋を選び家具を追加してください。閉じると部屋のグリッド上で位置を調整できます。",placed:"配置済み家具",catalog:"追加する家具",empty:"配置した家具はまだありません。",assign:"ベッド指定",done:"部屋で位置を調整"}}[state.uiLanguage]||null;
+  const dialog=document.createElement("dialog");dialog.className="furniture-placement-dialog";
+  const draw=()=>{
+    const room=state.homes[homeId]?.rooms?.[roomKey],placements=room?.furniturePlacements||[];
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><section><h3>${copy.placed}</h3><div class="furniture-placement-current">${placements.length?placements.map(placement=>`<article><span aria-hidden="true">${furnitureIcon(placement.item)}</span><b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`).join(""):`<p>${copy.empty}</p>`}</div></section><section><h3>${copy.catalog}</h3><div class="room-editor-furniture">${furnitureCatalogForRoom(room.type).map(item=>`<button type="button" data-add-room-furniture="${htmlEsc(item)}"><span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span><b>${htmlEsc(furnitureLabel(item,state.uiLanguage))}</b><small>＋</small></button>`).join("")}</div></section><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
+    dialog.querySelectorAll("[data-furniture-room]").forEach(button=>button.onclick=()=>{roomKey=button.dataset.furnitureRoom;draw()});
+    dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
+      const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
+    });
+    dialog.querySelectorAll("[data-open-bed-assignment]").forEach(button=>button.onclick=()=>{const placementId=button.dataset.openBedAssignment;dialog.onclose=()=>dialog.remove();dialog.close();openBedAssignmentDialog(homeId,roomKey,placementId)});
+  };
+  draw();dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 
 function setRoomLayoutStyle(room,layout){
@@ -1052,14 +1074,15 @@ function prepareActiveHomeLife(now=new Date()){
   const homeId=state.homes[state.activeHomeId]?state.activeHomeId:(state.homes[active()?.homeId]?active().homeId:Object.keys(state.homes||{})[0]);
   if(!homeId)return null;
   state.activeHomeId=homeId;
-  const initialRooms={},characterIds=state.order.filter(characterId=>{
+  const contexts={},minute=now.getHours()*60+now.getMinutes(),dayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),characterIds=state.order.filter(characterId=>{
     const character=state.characters[characterId];if(!character)return false;
     const scene=eventFor(character,now),sceneHomeId=scene?.visitHomeId||character.homeId;
     if(!scene?.home||sceneHomeId!==homeId)return false;
-    initialRooms[characterId]=scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"";
+    const entries=timeline(character,now),next=entries.find(entry=>Number(entry?.minute)>minute),sceneMinute=Math.max(0,Number(scene.minute)||minute);
+    contexts[characterId]={scene,roomKey:scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"",sceneKey:`${sceneMinute}:${scene.title||""}:${scene.room||""}:${scene.withId||""}`,startedAt:dayStart+sceneMinute*60_000,endsAt:next?dayStart+Number(next.minute)*60_000:dayStart+(sceneMinute+60)*60_000};
     return true;
   });
-  return advanceHomeLifeSimulation(homeId,characterIds,initialRooms,now.getTime(),true);
+  return advanceHomeLifeSimulation(homeId,characterIds,contexts,now.getTime(),true);
 }
 function scheduleHomeLifeRefresh(){
   clearTimeout(homeLifeRefreshTimer);homeLifeRefreshTimer=0;
@@ -1373,7 +1396,10 @@ function openHomeOccupantSheet(button){
   dialog.className="home-occupant-sheet home-occupant-popover";
   dialog.dataset.homeOccupantSheet="";
   dialog.setAttribute("role","status");
-  dialog.innerHTML=`<button class="home-occupant-popover-close" type="button" aria-label="닫기">×</button><div class="home-occupant-sheet-content"><div class="home-occupant-visual"></div><span><small>${button.dataset.homeOccupant==="pet"?"반려생물":"지금 이 방에 있는 캐릭터"} · ${htmlEsc(button.dataset.occupantRoom||"집 안")}</small><h2></h2><b></b><p></p></span></div>`;
+  const character=button.dataset.characterId?state.characters[button.dataset.characterId]:null,now=new Date(),minute=now.getHours()*60+now.getMinutes();
+  const recent=character?timeline(character,now).filter(entry=>Number(entry?.minute)<=minute).slice(-3).reverse():[];
+  const copy={ko:{who:"지금 이 방에 있는 캐릭터",pet:"반려생물",recent:"최근 생활 로그",empty:"아직 표시할 로그가 없어요."},en:{who:"Character in this room",pet:"Companion",recent:"Recent life log",empty:"No life log to show yet."},ja:{who:"この部屋にいる人物",pet:"ペット",recent:"最近の生活ログ",empty:"表示できるログはまだありません。"}}[state.uiLanguage]||null;
+  dialog.innerHTML=`<button class="home-occupant-popover-close" type="button" aria-label="닫기">×</button><div class="home-occupant-sheet-content"><div class="home-occupant-visual"></div><span><small>${button.dataset.homeOccupant==="pet"?copy.pet:copy.who} · ${htmlEsc(button.dataset.occupantRoom||"집 안")}</small><h2></h2><b></b><p></p></span></div>${character?`<section class="home-occupant-recent"><h3>${copy.recent}</h3>${recent.length?`<ol>${recent.map(entry=>`<li><time>${htmlEsc(entry.time||"")}</time><span><b>${htmlEsc(entry.title||"")}</b><small>${htmlEsc(entry.desc||"")}</small></span></li>`).join("")}</ol>`:`<p>${copy.empty}</p>`}</section>`:""}`;
   const sourceVisual=button.querySelector(".avatar,.sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji");
   if(sourceVisual)dialog.querySelector(".home-occupant-visual").append(sourceVisual.cloneNode(true));
   dialog.querySelector("h2").textContent=button.dataset.occupantName||"이름 없음";
@@ -1383,7 +1409,6 @@ function openHomeOccupantSheet(button){
   requestAnimationFrame(()=>dialog.classList.add("show"));
   dialog.querySelector(".home-occupant-popover-close").onclick=()=>dialog.remove();
   clearTimeout(openHomeOccupantSheet.timer);
-  openHomeOccupantSheet.timer=setTimeout(()=>dialog.remove(),5000);
 }
 
 function openCarEditor(homeId,carId){
@@ -2026,6 +2051,9 @@ function bind(){
       await explicitSave("집 편집 저장");
       if(continueFirstSetup)showToast("마지막으로 마을의 건물과 배치를 정해 보세요.");
     }
+  }));
+  $$("[data-open-furniture-layout]").forEach(button=>button.addEventListener("click",event=>{
+    event.preventDefault();event.stopPropagation();openFurniturePlacementDialog(button.dataset.openFurnitureLayout||state.activeHomeId);
   }));
   $$("[data-email-compose]").forEach(link=>link.addEventListener("click",event=>{
     event.preventDefault();
@@ -4302,7 +4330,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260823griddecor").catch(error=>{
+  import("./auth.js?v=20260824homesync").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4317,7 +4345,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260823griddecor",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260824homesync",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

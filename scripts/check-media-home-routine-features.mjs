@@ -5,7 +5,7 @@ const root=path.resolve(import.meta.dirname,"..");
 const read=file=>fs.readFileSync(path.join(root,file),"utf8");
 const app=read("app.js"),state=read("state.js"),views=read("views.js"),simulation=read("simulation.js"),media=read("local-media.js"),css=read("app.css");
 const {normalizeRoomLayout}=await import("../room-layout.js");
-const {furnitureGridForRoom,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,snapFurniturePosition,supportsFurnitureProps}=await import("../furniture-layout.js");
+const {furnitureCapacity,furnitureGridForRoom,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,snapFurniturePosition,supportsFurnitureProps}=await import("../furniture-layout.js");
 const smallRoom={x:83.3333333333,y:87.5,w:16.6666666667,h:12.5};
 const normalizedOnce=normalizeRoomLayout(smallRoom),normalizedRepeated=normalizeRoomLayout(normalizedOnce);
 
@@ -20,6 +20,10 @@ const checks=[
   [normalizeFurniturePlacements([newFurniturePlacement("chair-1","의자",0),newFurniturePlacement("chair-1","의자",1)]).length===1&&normalizeFurniturePlacement({id:"edge",item:"침대",x:999,y:-20,scale:9,rotation:390,layer:99}).x===99.5,"가구 좌표·크기·회전·중복 ID 정규화"],
   [JSON.stringify(furnitureGridForRoom({width:200,height:160},{width:600,height:640}))===JSON.stringify({columns:4,rows:4})&&snapFurniturePosition(88,12,{columns:4,rows:4}).x===87.5,"기존 12×16 집 격자를 방 크기에 맞춘 가구 스냅"],
   [supportsFurnitureProps("향수 선반")&&!supportsFurnitureProps("침대")&&normalizeFurniturePlacement({id:"shelf",item:"선반",x:50,y:50,props:[newFurnitureProp("p1","화분",0)]}).props[0].item==="화분"&&state.includes("export function addFurnitureProp")&&app.includes("openFurniturePropsDialog"),"선반·책상류 위 최대 4개 소품 배치와 저장"],
+  [furnitureCapacity("침대")===1&&furnitureCapacity("커플 침대")===2&&normalizeFurniturePlacement({id:"couple",item:"커플 침대",assignedCharacterIds:["a","b","c"]}).assignedCharacterIds.length===2&&state.includes("export function assignFurnitureBed"),"일반 침대 1명·커플 침대 2명 지정과 중복 제한"],
+  [app.includes("openFurniturePlacementDialog")&&views.includes('data-open-furniture-layout=')&&!app.includes('class="room-editor-furniture-wrap"'),"방 설정과 분리된 독립 가구 배치 UI"],
+  [views.includes("const scene=event;")&&app.includes("sceneKey:")&&app.includes("timeline(character,now)"),"집·관찰·생활 로그가 동일한 장면 타임라인을 사용"],
+  [views.includes('<span class="home-person-status"><b>')&&!views.includes('<span class="home-person-status"><b>${esc(character.name)}</b><small>')&&app.includes("home-occupant-recent"),"집 캐릭터는 이름만 표시하고 클릭 시 상태·최근 로그 시트 제공"],
   [views.includes("room-furniture-props")&&views.includes("--furniture-grid-cols")&&css.includes(".home.is-editing .room-furniture-layer::before"),"편집 중 방 칸 그리드와 가구에 붙는 소품 표시"],
   [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱 재시작·테두리 픽셀과 무관한 방 크기 보존"],
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],

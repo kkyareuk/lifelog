@@ -5,20 +5,22 @@ const clamp=(value,min,max,fallback=min)=>{
 const hash=value=>[...String(value||"")].reduce((result,character)=>(result*31+character.charCodeAt(0))>>>0,2166136261);
 
 const PROFILE_GROUPS=[
-  {match:/샤워|욕조/,kind:"shower",duration:24_000},
-  {match:/세면대|전신거울|화장대|스킨케어|향수/,kind:"groom",duration:18_000},
-  {match:/침대/,kind:"sleep",duration:32_000},
-  {match:/소파|의자|안마의자|놀이 매트/,kind:"rest",duration:24_000},
-  {match:/TV|홈시어터|프로젝터|빔프로젝터/,kind:"watch",duration:26_000},
-  {match:/게임기|보드게임/,kind:"game",duration:25_000},
-  {match:/식탁|티 테이블|커피|에스프레소|티 세트|칵테일|와인/,kind:"eat",duration:21_000},
-  {match:/냉장고|조리대|오븐|제빵|향신료|요리책/,kind:"cook",duration:27_000},
-  {match:/책장|독서|책상|컴퓨터/,kind:"study",duration:28_000},
-  {match:/피아노|기타|악기|오디오|턴테이블|레코드/,kind:"music",duration:25_000},
-  {match:/그림|재봉|드로잉|촬영|공예|뜨개|프라모델|작업대|천체망원경/,kind:"create",duration:29_000},
-  {match:/러닝|운동/,kind:"exercise",duration:23_000},
-  {match:/세탁|건조|빨래/,kind:"laundry",duration:26_000},
-  {match:/캣타워|반려동물|봉제인형|장난감/,kind:"play",duration:20_000}
+  {match:/샤워/,kind:"shower",minutes:[10,20]},
+  {match:/욕조/,kind:"shower",minutes:[25,45]},
+  {match:/세면대|전신거울|화장대|스킨케어|향수/,kind:"groom",minutes:[10,25]},
+  {match:/침대/,kind:"sleep",minutes:[60,480]},
+  {match:/안마의자/,kind:"rest",minutes:[15,30]},
+  {match:/소파|의자|놀이 매트/,kind:"rest",minutes:[20,60]},
+  {match:/TV|홈시어터|프로젝터|빔프로젝터/,kind:"watch",minutes:[30,90]},
+  {match:/게임기|보드게임/,kind:"game",minutes:[30,120]},
+  {match:/식탁|티 테이블|커피|에스프레소|티 세트|칵테일|와인/,kind:"eat",minutes:[20,50]},
+  {match:/냉장고|조리대|오븐|제빵|향신료|요리책/,kind:"cook",minutes:[30,90]},
+  {match:/책장|독서|책상|컴퓨터/,kind:"study",minutes:[30,120]},
+  {match:/피아노|기타|악기|오디오|턴테이블|레코드/,kind:"music",minutes:[30,90]},
+  {match:/그림|재봉|드로잉|촬영|공예|뜨개|프라모델|작업대|천체망원경/,kind:"create",minutes:[45,150]},
+  {match:/러닝|운동/,kind:"exercise",minutes:[30,90]},
+  {match:/세탁|건조|빨래/,kind:"laundry",minutes:[25,70]},
+  {match:/캣타워|반려동물|봉제인형|장난감/,kind:"play",minutes:[20,60]}
 ];
 
 const ACTION_COPY={
@@ -49,7 +51,27 @@ const ACTION_COPY={
 export function furnitureUseProfile(item){
   const name=String(item||"");
   const profile=PROFILE_GROUPS.find(entry=>entry.match.test(name));
-  return profile?{kind:profile.kind,duration:profile.duration}:{kind:"use",duration:20_000};
+  const minutes=profile?.minutes||[20,45];
+  return {kind:profile?.kind||"use",duration:minutes[0]*60_000,minMinutes:minutes[0],maxMinutes:minutes[1]};
+}
+
+export function homeActivityDurationMinutes(item,seed=""){
+  const profile=furnitureUseProfile(item),span=Math.max(0,profile.maxMinutes-profile.minMinutes);
+  return profile.minMinutes+(span?hash(`${item}:${seed}`)%(span+1):0);
+}
+
+const SCENE_FURNITURE=[
+  {scene:/샤워|씻는|씻고/,item:/샤워/},{scene:/목욕|반신욕|욕조/,item:/욕조/},{scene:/TV|텔레비전|방송|영화|영상|드라마|프로그램|화면을 보는/,item:/TV|홈시어터|프로젝터|빔프로젝터/},
+  {scene:/안마|마사지/,item:/안마의자/},{scene:/자는 중|잠들|낮잠|침구|이불/,item:/침대/},{scene:/요리|조리|식사 준비|굽는|반죽/,item:/조리대|오븐|냉장고|제빵|향신료|요리책/},
+  {scene:/식사|아침을 먹|점심을 먹|저녁을 먹|차를 마|커피|음료|디저트/,item:/식탁|티 테이블|커피|에스프레소|티 세트|칵테일|와인/},
+  {scene:/게임/,item:/게임기|보드게임/},{scene:/책|독서|공부|과제|업무|파일|컴퓨터/,item:/책장|독서|책상|컴퓨터/},{scene:/운동|러닝/,item:/러닝|운동/},
+  {scene:/세탁|빨래|건조/,item:/세탁|건조|빨래/},{scene:/화장|단장|거울|스킨케어|향수/,item:/세면대|전신거울|화장대|스킨케어|향수/},
+  {scene:/음악|연주|노래|레코드/,item:/피아노|기타|악기|오디오|턴테이블|레코드/},{scene:/그림|작업|만드는|공예|뜨개|촬영|재봉/,item:/그림|재봉|드로잉|촬영|공예|뜨개|프라모델|작업대/},
+  {scene:/쉬는|휴식|멍하니|대화|이야기/,item:/소파|의자|안마의자/}
+];
+export function furniturePatternForScene(scene){
+  const text=`${scene?.title||""} ${scene?.desc||""}`;
+  return SCENE_FURNITURE.find(entry=>entry.scene.test(text))?.item||null;
 }
 
 export function homeLifePresentation(agent,{roomName="집 안",furnitureName="가구",locale="ko"}={}){
@@ -69,8 +91,9 @@ function normalizeAgent(value,characterId,roomKeys){
     x:clamp(source.x,5,95,50),y:clamp(source.y,14,92,72),
     fromX:clamp(source.fromX,5,95,12),fromY:clamp(source.fromY,14,92,78),
     furnitureId:String(source.furnitureId||"").slice(0,120),item:String(source.item||"").slice(0,80),
-    actionKind:String(source.actionKind||"use").slice(0,40),
+    actionKind:String(source.actionKind||"use").slice(0,40),sceneKey:String(source.sceneKey||"").slice(0,300),
     startedAt:Math.max(0,Number(source.startedAt)||0),endsAt:Math.max(0,Number(source.endsAt)||0),
+    arrivesAt:Math.max(0,Number(source.arrivesAt)||0),
     sequence:Math.max(0,Math.floor(Number(source.sequence)||0)),blockedCount:Math.max(0,Math.floor(Number(source.blockedCount)||0))
   };
 }
@@ -88,7 +111,8 @@ export function normalizeHomeLifeSimulation(value,roomKeys=[]){
 
 function placementList(home){
   return Object.entries(home?.rooms||{}).flatMap(([roomKey,room])=>(Array.isArray(room?.furniturePlacements)?room.furniturePlacements:[]).filter(Boolean).map(placement=>({
-    id:String(placement.id||""),roomKey,item:String(placement.item||""),x:clamp(placement.x,6,94,50),y:clamp(placement.y,14,90,65)
+    id:String(placement.id||""),roomKey,item:String(placement.item||""),x:clamp(placement.x,6,94,50),y:clamp(placement.y,14,90,65),
+    assignedCharacterIds:Array.isArray(placement.assignedCharacterIds)?placement.assignedCharacterIds.map(String):[],capacity:String(placement.item||"")==="커플 침대"?2:/침대/.test(String(placement.item||""))?1:1
   }))).filter(placement=>placement.id&&placement.item);
 }
 
@@ -98,7 +122,7 @@ function walkingDuration(agent,target){
   return Math.round(clamp(2600+distance*28,2600,6500,4200));
 }
 
-export function advanceHomeLifeSimulation(home,characterIds,initialRooms={},now=Date.now()){
+export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date.now()){
   const roomKeys=Object.keys(home?.rooms||{}),current=normalizeHomeLifeSimulation(home?.lifeSimulation,roomKeys);
   const before=JSON.stringify({...current,updatedAt:0}),eligible=[...new Set((characterIds||[]).map(String))].filter(Boolean).slice(0,40);
   const eligibleSet=new Set(eligible),placements=placementList(home),placementById=new Map(placements.map(item=>[item.id,item]));
@@ -107,55 +131,45 @@ export function advanceHomeLifeSimulation(home,characterIds,initialRooms={},now=
     return {simulation:current,changed:before!==JSON.stringify({...current,updatedAt:0}),nextAt:now+10_000};
   }
   Object.keys(current.agents).forEach(id=>{if(!eligibleSet.has(id))delete current.agents[id]});
-  Object.keys(current.reservations).forEach(id=>delete current.reservations[id]);
-
+  current.reservations={};
+  const occupied=new Map();
   eligible.forEach((characterId,index)=>{
-    if(current.agents[characterId])return;
-    const roomKey=roomKeys.includes(initialRooms[characterId])?initialRooms[characterId]:roomKeys[index%Math.max(1,roomKeys.length)]||"";
-    current.agents[characterId]=normalizeAgent({roomKey,phase:"waiting",x:25+(hash(characterId)%51),y:60+(hash(`${characterId}:y`)%22),endsAt:now},characterId,roomKeys);
-  });
-
-  // 먼저 끝난 행동을 정리한 뒤 예약표를 다시 만든다. 앱을 오래 닫아 둔
-  // 경우에도 과거 행동을 수백 번 재생하지 않고 현재 시점에서 한 번만 잇는다.
-  eligible.forEach(characterId=>{
-    const agent=current.agents[characterId];
-    if(agent.phase==="walking"&&agent.endsAt<=now){
-      const target=placementById.get(agent.furnitureId);
-      if(target){
-        const profile=furnitureUseProfile(target.item);
-        Object.assign(agent,{phase:"using",roomKey:target.roomKey,x:target.x,y:target.y,fromX:target.x,fromY:target.y,item:target.item,actionKind:profile.kind,startedAt:now,endsAt:now+profile.duration+(hash(`${characterId}:${agent.sequence}:duration`)%5000)});
-      }else Object.assign(agent,{phase:"waiting",furnitureId:"",item:"",startedAt:now,endsAt:now});
-    }else if(agent.phase==="using"&&agent.endsAt<=now){
-      Object.assign(agent,{phase:"waiting",furnitureId:"",item:"",startedAt:now,endsAt:now,sequence:agent.sequence+1});
+    const context=contexts?.[characterId]&&typeof contexts[characterId]==="object"?contexts[characterId]:{};
+    const scene=context.scene||{},roomKey=roomKeys.includes(scene.room)?scene.room:(roomKeys.includes(context.roomKey)?context.roomKey:roomKeys[index%Math.max(1,roomKeys.length)]||"");
+    const sceneKey=String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=furniturePatternForScene(scene),sleeping=/자는 중|잠들|낮잠|침구|이불/.test(`${scene.title||""} ${scene.desc||""}`);
+    let candidates=placements.filter(item=>item.roomKey===roomKey&&(!pattern||pattern.test(item.item)));
+    if(sleeping){
+      const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
+      candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);
     }
-  });
-
-  eligible.forEach(characterId=>{
-    const agent=current.agents[characterId];
-    if(["walking","using"].includes(agent.phase)&&placementById.has(agent.furnitureId))current.reservations[agent.furnitureId]={characterId,until:agent.endsAt};
-  });
-
-  eligible.forEach(characterId=>{
-    const agent=current.agents[characterId];
-    if(agent.phase!=="waiting"||agent.endsAt>now)return;
-    const available=placements.filter(item=>!current.reservations[item.id]);
-    if(!available.length){
-      agent.blockedCount+=1;agent.startedAt=now;agent.endsAt=now+4500+(hash(`${characterId}:${agent.blockedCount}`)%2500);return;
+    candidates=candidates.filter(item=>(occupied.get(item.id)||0)<item.capacity);
+    const target=candidates.length?candidates[hash(`${characterId}:${sceneKey}`)%candidates.length]:null;
+    if(target)occupied.set(target.id,(occupied.get(target.id)||0)+1);
+    const old=current.agents[characterId],sameScene=old?.sceneKey===sceneKey&&(!old.furnitureId||placementById.has(old.furnitureId));
+    const sceneStartAt=Math.max(0,Number(context.startedAt)||now),sceneEndAt=Math.max(now+60_000,Number(context.endsAt)||now+homeActivityDurationMinutes(target?.item||scene.title,`${characterId}:${sceneKey}`)*60_000);
+    if(sameScene){
+      old.endsAt=sceneEndAt;
+      if(old.phase==="walking"&&old.arrivesAt<=now){old.phase="using";old.startedAt=old.arrivesAt||now}
+      if(target){old.x=target.x;old.y=target.y;old.roomKey=target.roomKey;old.item=target.item;old.furnitureId=target.id;old.actionKind=furnitureUseProfile(target.item).kind}
+    }else{
+      const fallback={roomKey,x:18+(hash(`${characterId}:${sceneKey}:x`)%65),y:35+(hash(`${characterId}:${sceneKey}:y`)%48)};
+      const destination=target||fallback,fromRoom=roomKeys.includes(old?.roomKey)?old.roomKey:roomKey,fromX=Number(old?.x)||12,fromY=Number(old?.y)||82;
+      const arrivesAt=now+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
+      current.agents[characterId]=normalizeAgent({characterId,phase:target?"walking":"using",roomKey,destination,x:destination.x,y:destination.y,fromX,fromY,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:target?now:sceneStartAt,arrivesAt:target?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }
-    const different=available.filter(item=>item.id!==agent.furnitureId),pool=different.length?different:available;
-    const target=pool[hash(`${characterId}:${agent.sequence}:${Math.floor(now/60_000)}`)%pool.length],profile=furnitureUseProfile(target.item);
-    const duration=walkingDuration(agent,target),sameRoom=agent.roomKey===target.roomKey;
-    const fromX=sameRoom?agent.x:(hash(`${characterId}:${target.roomKey}:side`)%2?12:88),fromY=sameRoom?agent.y:82;
-    Object.assign(agent,{phase:"walking",roomKey:target.roomKey,fromX,fromY,x:target.x,y:target.y,furnitureId:target.id,item:target.item,actionKind:profile.kind,startedAt:now,endsAt:now+duration,blockedCount:0});
-    current.reservations[target.id]={characterId,until:agent.endsAt};
+    const agent=current.agents[characterId];
+    if(target){
+      const reservation=current.reservations[target.id]||{characterId,characterIds:[],until:sceneEndAt};
+      reservation.characterIds=[...new Set([...reservation.characterIds,characterId])];reservation.characterId=reservation.characterIds[0];reservation.until=Math.max(reservation.until,sceneEndAt);current.reservations[target.id]=reservation;
+    }
   });
 
   current.updatedAt=now;
-  const nextAt=eligible.map(id=>current.agents[id]?.endsAt||now+10_000).filter(value=>value>now).reduce((soonest,value)=>Math.min(soonest,value),now+10_000);
+  const nextAt=eligible.flatMap(id=>[current.agents[id]?.phase==="walking"?current.agents[id]?.arrivesAt:0,current.agents[id]?.endsAt]).filter(value=>value>now).reduce((soonest,value)=>Math.min(soonest,value),now+10*60_000);
   return {simulation:current,changed:before!==JSON.stringify({...current,updatedAt:0}),nextAt};
 }
 
 export function homeLifeNextDelay(value,now=Date.now()){
-  const agents=Object.values(value?.agents||{}),nextAt=agents.map(agent=>Number(agent?.endsAt)||0).filter(time=>time>now).reduce((soonest,time)=>Math.min(soonest,time),now+10_000);
-  return clamp(nextAt-now,800,10_000,3000);
+  const agents=Object.values(value?.agents||{}),nextAt=agents.flatMap(agent=>[agent?.phase==="walking"?Number(agent?.arrivesAt)||0:0,Number(agent?.endsAt)||0]).filter(time=>time>now).reduce((soonest,time)=>Math.min(soonest,time),now+10*60_000);
+  return clamp(nextAt-now,800,10*60_000,3000);
 }

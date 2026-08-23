@@ -1,8 +1,8 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823griddecor";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823griddecor";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260823griddecor";
-import {FURNITURE_CATALOG,furnitureCatalogForRoom,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260823griddecor";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260823griddecor";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824homesync";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824homesync";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260824homesync";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824homesync";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824homesync";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -169,7 +169,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:27,activeTab:"observe",characterPane:"profile",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:28,activeTab:"observe",characterPane:"profile",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -204,7 +204,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=27;
+  x.schema=28;
   x.activeTab=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
@@ -1230,6 +1230,23 @@ export function deleteFurniturePlacement(homeId,roomKey,placementId){
   touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
   save(true);return true;
 }
+export function assignFurnitureBed(homeId,roomKey,placementId,characterId,assigned=true){
+  const room=state.homes[homeId]?.rooms?.[roomKey],character=state.characters[characterId];if(!room||!character)return false;
+  const placements=normalizeFurniturePlacements(room.furniturePlacements),index=placements.findIndex(item=>item.id===placementId);
+  if(index<0||!isBedFurniture(placements[index].item))return false;
+  const current=placements[index],capacity=furnitureCapacity(current.item),ids=new Set(current.assignedCharacterIds||[]);
+  if(assigned){
+    if(!ids.has(characterId)&&ids.size>=capacity)return false;
+    // 한 집에서는 한 캐릭터가 한 침대만 사용한다. 다른 침대의 지정은 해제한다.
+    placements.forEach((placement,placementIndex)=>{
+      if(placementIndex===index||!isBedFurniture(placement.item)||!placement.assignedCharacterIds?.includes(characterId))return;
+      placements[placementIndex]=normalizeFurniturePlacement({...placement,assignedCharacterIds:placement.assignedCharacterIds.filter(id=>id!==characterId)},placementIndex);
+    });
+    ids.add(characterId);
+  }else ids.delete(characterId);
+  placements[index]=normalizeFurniturePlacement({...current,assignedCharacterIds:[...ids]},index);
+  room.furniturePlacements=placements;touchCharacterTimelines([characterId]);save(true);return placements[index];
+}
 export function addFurnitureProp(homeId,roomKey,placementId,item){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return "";
   const placements=normalizeFurniturePlacements(room.furniturePlacements),index=placements.findIndex(entry=>entry.id===placementId);
@@ -1245,9 +1262,9 @@ export function deleteFurnitureProp(homeId,roomKey,placementId,propId){
   const props=placements[index].props.filter(prop=>prop.id!==propId);if(props.length===placements[index].props.length)return false;
   placements[index]=normalizeFurniturePlacement({...placements[index],props},index);room.furniturePlacements=placements;save(true);return true;
 }
-export function advanceHomeLifeSimulation(homeId,characterIds,initialRooms={},now=Date.now(),persist=true){
+export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Date.now(),persist=true){
   const home=state.homes[homeId];if(!home)return {changed:false,nextAt:now+10_000,simulation:null};
-  const result=advanceLifeSimulation(home,characterIds,initialRooms,now);
+  const result=advanceLifeSimulation(home,characterIds,contexts,now);
   home.lifeSimulation=result.simulation;
   if(result.changed&&persist)save(false,false);
   return result;
