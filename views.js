@@ -1,10 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823furnitureplacement";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823furnitureplacement";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823furnitureplacement";
-import {furnitureIcon,furnitureLabel,normalizeFurniturePlacements} from "./furniture-layout.js?v=20260823furnitureplacement";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823homelife";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823homelife";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823homelife";
+import {furnitureIcon,furnitureLabel,normalizeFurniturePlacements} from "./furniture-layout.js?v=20260823homelife";
+import {homeLifePresentation} from "./home-simulation.js?v=20260823homelife";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -1723,6 +1724,18 @@ function roomFurnitureMarkup(homeId,roomKey,room,edit){
   if(!placements.length)return "";
   return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{const label=furnitureLabel(placement.item,state.uiLanguage);return `<button type="button" class="room-furniture-item" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" style="--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.rotation}deg;--furniture-layer:${placement.layer}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}><span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>${edit?`<small>${esc(label)}</small>`:""}</button>`}).join("")}</div>`;
 }
+function homeLifePersonMarkup(character,event,agent,room,roomKey,index){
+  const furnitureName=agent?.item?furnitureLabel(agent.item,state.uiLanguage):furnitureLabel("가구",state.uiLanguage);
+  const life=agent?homeLifePresentation(agent,{roomName:room.name||roomKey,furnitureName,locale:state.uiLanguage}):null;
+  const scene=life?{...event,title:life.title,desc:life.desc,room:roomKey}:event;
+  const title=scene?.title||"집에서 시간을 보내는 중",text=`${title} ${scene?.desc||""} ${scene?.mood||""}`;
+  const presentation=nativeScenePresentation(character,scene,"sd"),walking=agent?.phase==="walking",sleeping=!walking&&presentation.actionKind==="sleep";
+  const actionKind=walking?"walking":presentation.actionKind,actionProp=nativeSceneActionProp(character,scene,actionKind,text,true);
+  const duration=Math.max(1,Number(agent?.endsAt||0)-Number(agent?.startedAt||0)),elapsed=Math.max(0,Math.min(duration,Date.now()-Number(agent?.startedAt||0)));
+  const lifeClass=agent?`home-life-person home-life-${agent.phase}`:"";
+  const lifeStyle=agent?`--life-x:${agent.x}%;--life-y:${agent.y}%;--life-from-x:${agent.fromX}%;--life-from-y:${agent.fromY}%;--life-duration:${duration}ms;--life-delay:-${elapsed}ms;`:"";
+  return `<div class="home-person ${lifeClass} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" style="${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span><span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(title)}</small></span></div>`;
+}
 function home(){
   const groups=homeGroups(),ids=Object.keys(state.homes||{}),selected=state.homes[state.activeHomeId]?state.activeHomeId:(state.homes[active()?.homeId]?active().homeId:ids[0]);
   state.activeHomeId=selected;
@@ -1743,6 +1756,8 @@ function homeCard(id,chars){
   const sceneFor=c=>currentScenes.get(c.id);
   const inside=state.order.map(characterId=>state.characters[characterId]).filter(c=>c&&sceneFor(c)?.home&&(sceneFor(c).visitHomeId||c.homeId)===id);
   const edit=state.homeEditMode;
+  const lifeAgents=edit?{}:(h.lifeSimulation?.agents||{});
+  const roomForCharacter=character=>h.rooms?.[lifeAgents[character.id]?.roomKey]?lifeAgents[character.id].roomKey:sceneFor(character)?.room;
   const roomKeys=Object.keys(h.rooms||{}).sort((a,b)=>(Number(h.rooms[a]?.order)||0)-(Number(h.rooms[b]?.order)||0));
   const floorCount=Math.max(1,Math.min(5,Number(h.floorCount)||1)),activeFloor=Math.max(1,Math.min(floorCount,Number(h.activeFloor)||1));
   const visibleRoomKeys=roomKeys.filter(key=>(Number(h.rooms[key]?.floor)||1)===activeFloor);
@@ -1867,7 +1882,7 @@ function homeCard(id,chars){
   };
   const petScenes=Object.fromEntries(pets.map(p=>[p.id,petScene(p)]));
   const roomHtml=visibleRoomKeys.map(key=>{
-    const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>sceneFor(c)?.room===key);
+    const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>roomForCharacter(c)===key);
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
     const shownPeople=roomPeople,shownPets=roomPets;
     const editAttributes=edit?`data-open-room-editor="${key}" data-home-id="${id}" data-room-key="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`:`data-room-key="${key}"`;
@@ -1875,7 +1890,7 @@ function homeCard(id,chars){
     return `<div class="room room-${esc(room.type||key)} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
       <div class="room-heading room-title-${room.titleTone==="dark"?"dark":"light"}"><span><b>${esc(room.name||key)}</b>${edit?`<small class="room-edit-hint">${activeFloor}층 · ${t("gridEdit","격자 편집")}</small>`:""}</span>${edit?`<button type="button" class="room-drag-handle" data-room-drag="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 위치 옮기기">✥</button>`:""}</div>${edit?`<button type="button" class="room-resize-handle" data-room-resize="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 크기 조절">↘</button>`:""}
       ${roomFurnitureMarkup(id,key,room,edit)}
-      <div class="room-people ${peopleDirection}">${shownPeople.map((c,index)=>{const e=sceneFor(c),title=e?.title||"집에서 시간을 보내는 중",text=`${title} ${e?.desc||""} ${e?.mood||""}`,presentation=nativeScenePresentation(c,e,"sd"),sleeping=presentation.actionKind==="sleep",actionProp=nativeSceneActionProp(c,e,presentation.actionKind,text,true);return `<div class="home-person scene-action-${esc(presentation.actionKind)} ${sleeping?"is-sleeping":""}" style="--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${c.name} · ${title}`)}" data-home-occupant="character" data-character-id="${c.id}" data-occupant-name="${esc(c.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(e?.desc||"")}" data-occupant-room="${esc(room.name||key)}"><span class="home-person-visual">${avatar(c)}${actionProp}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span><span class="home-person-status"><b>${esc(c.name)}</b><small>${esc(title)}</small></span></div>`}).join("")}</div>
+      <div class="room-people ${shownPeople.some(c=>lifeAgents[c.id])?"has-home-life":""} ${peopleDirection}">${shownPeople.map((c,index)=>homeLifePersonMarkup(c,sceneFor(c),lifeAgents[c.id],room,key,index)).join("")}</div>
       <div class="room-pets">${shownPets.map(p=>`<div class="room-pet" role="button" tabindex="0" aria-label="${esc(`${p.name} · ${petScenes[p.id].title}`)}" data-home-occupant="pet" data-pet-id="${p.id}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></div>`).join("")}</div>
     </div>`;
   }).join("");

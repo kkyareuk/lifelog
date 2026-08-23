@@ -1,12 +1,13 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823furnitureplacement";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823furnitureplacement";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823furnitureplacement";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823furnitureplacement";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823furnitureplacement";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823furnitureplacement";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260823furnitureplacement";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260823furnitureplacement";
-import {furnitureCatalogForRoom,furnitureIcon,furnitureLabel,normalizeFurniturePlacement} from "./furniture-layout.js?v=20260823furnitureplacement";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823homelife";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay} from "./simulation.js?v=20260823homelife";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823homelife";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823homelife";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260823homelife";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823homelife";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260823homelife";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260823homelife";
+import {furnitureCatalogForRoom,furnitureIcon,furnitureLabel,normalizeFurniturePlacement} from "./furniture-layout.js?v=20260823homelife";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260823homelife";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1026,6 +1027,31 @@ function stabilizeInteractiveScroll(root,resolveScroller){
   root.addEventListener("change",restore,true);
   root.addEventListener("click",restore,true);
 }
+let homeLifeRefreshTimer=0;
+function prepareActiveHomeLife(now=new Date()){
+  if(state.activeTab!=="home"||state.homeEditMode||document.visibilityState==="hidden")return null;
+  const homeId=state.homes[state.activeHomeId]?state.activeHomeId:(state.homes[active()?.homeId]?active().homeId:Object.keys(state.homes||{})[0]);
+  if(!homeId)return null;
+  state.activeHomeId=homeId;
+  const initialRooms={},characterIds=state.order.filter(characterId=>{
+    const character=state.characters[characterId];if(!character)return false;
+    const scene=eventFor(character,now),sceneHomeId=scene?.visitHomeId||character.homeId;
+    if(!scene?.home||sceneHomeId!==homeId)return false;
+    initialRooms[characterId]=scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"";
+    return true;
+  });
+  return advanceHomeLifeSimulation(homeId,characterIds,initialRooms,now.getTime(),true);
+}
+function scheduleHomeLifeRefresh(){
+  clearTimeout(homeLifeRefreshTimer);homeLifeRefreshTimer=0;
+  if(document.visibilityState==="hidden"||state.activeTab!=="home"||state.homeEditMode)return;
+  const simulation=state.homes[state.activeHomeId]?.lifeSimulation;
+  if(!Object.keys(simulation?.agents||{}).length)return;
+  homeLifeRefreshTimer=setTimeout(()=>{
+    homeLifeRefreshTimer=0;
+    if(document.visibilityState!=="hidden"&&state.activeTab==="home"&&!state.homeEditMode)render();
+  },homeLifeNextDelay(simulation));
+}
 function render({force=false}={}){
   // Samsung 천지인처럼 여러 단계로 한 글자를 조합하는 키보드는 포커스된
   // input 노드가 교체되는 순간 직전 음절을 다시 확정할 수 있다. 사진 복원,
@@ -1078,6 +1104,7 @@ function render({force=false}={}){
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
     if(["character","mailbox"].includes(state.activeTab))ensureDailyQuestionSchedule();
+    prepareActiveHomeLife();
     renderApp(state);
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
@@ -1117,6 +1144,7 @@ function render({force=false}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     if(state.activeTab==="town")centerMobileTownMap();
     document.documentElement.dataset.drawerRendered="1";
+    scheduleHomeLifeRefresh();
     if(preservePageScroll){
       restoreWindowScroll(previousPageX,previousPageY);
       restoreMainScroll(previousMainLeft,previousMainTop,openCatalogKeys);
@@ -4220,7 +4248,7 @@ window.addEventListener("focus",restoreForegroundState);
 window.addEventListener("pageshow",restoreForegroundState);
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState==="visible")restoreForegroundState();
-  else{clearTimeout(liveSceneRefreshTimer);liveSceneRefreshTimer=0}
+  else{clearTimeout(liveSceneRefreshTimer);liveSceneRefreshTimer=0;clearTimeout(homeLifeRefreshTimer);homeLifeRefreshTimer=0}
 });
 
 let automaticCloudSyncTimer=0;
@@ -4255,7 +4283,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260823furnitureplacement").catch(error=>{
+  import("./auth.js?v=20260823homelife").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4270,7 +4298,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260823furnitureplacement",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260823homelife",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

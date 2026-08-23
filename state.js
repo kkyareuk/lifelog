@@ -1,7 +1,8 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823furnitureplacement";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823furnitureplacement";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260823furnitureplacement";
-import {FURNITURE_CATALOG,furnitureCatalogForRoom,newFurniturePlacement,normalizeFurniturePlacement,normalizeFurniturePlacements} from "./furniture-layout.js?v=20260823furnitureplacement";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823homelife";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823homelife";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260823homelife";
+import {FURNITURE_CATALOG,furnitureCatalogForRoom,newFurniturePlacement,normalizeFurniturePlacement,normalizeFurniturePlacements} from "./furniture-layout.js?v=20260823homelife";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260823homelife";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -168,7 +169,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:25,activeTab:"observe",characterPane:"profile",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:26,activeTab:"observe",characterPane:"profile",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -203,7 +204,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=25;
+  x.schema=26;
   x.activeTab=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
@@ -509,6 +510,7 @@ function normalizeHomes(x){
       if(normalizedLayout)room.layout=normalizedLayout;else delete room.layout;
       return[String(key),room];
     }));
+    h.lifeSimulation=normalizeHomeLifeSimulation(h.lifeSimulation,Object.keys(h.rooms));
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
   });
   Object.values(x.characters||{}).forEach(c=>{
@@ -1214,13 +1216,26 @@ export function updateFurniturePlacement(homeId,roomKey,placementId,patch,persis
   return next;
 }
 export function deleteFurniturePlacement(homeId,roomKey,placementId){
-  const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return false;
+  const home=state.homes[homeId],room=home?.rooms?.[roomKey];if(!room)return false;
   const placements=normalizeFurniturePlacements(room.furniturePlacements),removed=placements.find(item=>item.id===placementId);
   if(!removed)return false;
   room.furniturePlacements=placements.filter(item=>item.id!==placementId);
   if(!room.furniturePlacements.some(item=>item.item===removed.item))room.furniture=(room.furniture||[]).filter(item=>item!==removed.item);
+  const simulation=home.lifeSimulation;
+  if(simulation?.reservations)delete simulation.reservations[placementId];
+  Object.values(simulation?.agents||{}).forEach(agent=>{
+    if(agent.furnitureId!==placementId)return;
+    agent.phase="waiting";agent.furnitureId="";agent.item="";agent.startedAt=Date.now();agent.endsAt=Date.now();
+  });
   touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
   save(true);return true;
+}
+export function advanceHomeLifeSimulation(homeId,characterIds,initialRooms={},now=Date.now(),persist=true){
+  const home=state.homes[homeId];if(!home)return {changed:false,nextAt:now+10_000,simulation:null};
+  const result=advanceLifeSimulation(home,characterIds,initialRooms,now);
+  home.lifeSimulation=result.simulation;
+  if(result.changed&&persist)save(false,false);
+  return result;
 }
 export function addCatalogItem(kind,data){
   if(!state.catalog[kind])state.catalog[kind]=[];

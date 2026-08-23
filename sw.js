@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260823-character-contrast";
+const CACHE_VERSION="drawer-village-v20260823-home-life";
 const CORE=[
   "./",
   "./index.html",
@@ -14,6 +14,8 @@ const CORE=[
   "./state.js",
   "./simulation.js",
   "./views.js",
+  "./furniture-layout.js",
+  "./home-simulation.js",
   "./auth.js",
   "./local-media.js",
   "./speech-styles.js",
