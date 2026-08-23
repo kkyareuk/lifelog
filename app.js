@@ -1,10 +1,10 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260822emptytownhud1";
-import {eventFor,forceCharactersHome} from "./simulation.js?v=20260822emptytownhud1";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260822emptytownhud1";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260822emptytownhud1";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260822emptytownhud1";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260822emptytownhud1";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260822emptytownhud1";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, toggleFurniture, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260823ldstagehotfix1";
+import {eventFor,forceCharactersHome} from "./simulation.js?v=20260823ldstagehotfix1";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260823ldstagehotfix1";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260823ldstagehotfix1";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech} from "./speech-styles.js?v=20260823ldstagehotfix1";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260823ldstagehotfix1";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260823ldstagehotfix1";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1342,9 +1342,9 @@ const characterSceneLayout=(character,mode)=>({
   ...defaultCharacterSceneLayout(),
   ...(character?.homeSceneLayout?.[mode]||{})
 });
-const clampSceneLayout=(layout)=>({
-  x:Math.max(-45,Math.min(45,Number(layout.x)||0)),
-  y:Math.max(-45,Math.min(45,Number(layout.y)||0)),
+const clampSceneLayout=(layout,mode="sd")=>({
+  x:Math.max(mode==="ld"?-50:-45,Math.min(mode==="ld"?50:45,Number(layout.x)||0)),
+  y:Math.max(mode==="ld"?-90:-45,Math.min(mode==="ld"?90:45,Number(layout.y)||0)),
   scale:Math.max(.45,Math.min(2.5,Number(layout.scale)||1)),
   actionX:Math.max(-45,Math.min(45,Number(layout.actionX)||0)),
   actionY:Math.max(-45,Math.min(45,Number(layout.actionY)||0))
@@ -1363,7 +1363,7 @@ function applyCharacterSceneLayoutPreview(characterId,mode,layout){
 function persistCharacterSceneLayout(characterId,mode,layout){
   const character=state.characters[characterId];
   if(!character)return;
-  const next=clampSceneLayout(layout);
+  const next=clampSceneLayout(layout,mode);
   updateCharacter(characterId,{homeSceneLayout:{
     sd:characterSceneLayout(character,"sd"),
     ld:characterSceneLayout(character,"ld"),
@@ -1387,9 +1387,21 @@ function bindCharacterSceneLayoutEditors(){
       persistCharacterSceneLayout(characterId,mode,defaultCharacterSceneLayout());
       showToast(`${mode.toUpperCase()} 배치를 초기화했습니다`);
     });
+    editor.querySelector('[data-home-layout-fill]')?.addEventListener("click",()=>{
+      const globalScale=Math.max(.7,Math.min(1.5,(Number(state.homeLdScale)||100)/100));
+      persistCharacterSceneLayout(characterId,"ld",{...defaultCharacterSceneLayout(),scale:1/globalScale});
+      const copy={
+        en:{note:"The LD now fills the placement area height.",toast:"LD fitted to the full stage"},
+        ja:{note:"LDを配置範囲の高さに合わせました。",toast:"LDを画面いっぱいに合わせました"},
+        ko:{note:"LD를 전체 배치 영역 높이에 맞췄습니다.",toast:"LD를 화면에 꽉 차게 맞췄습니다"}
+      }[state.uiLanguage||"ko"];
+      const note=editor.querySelector('.home-layout-save-note');
+      if(note)note.textContent=copy.note;
+      showToast(copy.toast);
+    });
     editor.querySelectorAll('[data-home-layout-nudge]').forEach(button=>button.addEventListener("click",()=>{
       const mode=editor.dataset.mode==="ld"?"ld":"sd";
-      const current=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode));
+      const current=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode),mode);
       const target=button.dataset.homeLayoutTarget==="action"?"action":"art";
       const dx=Number(button.dataset.homeLayoutDx)||0;
       const dy=Number(button.dataset.homeLayoutDy)||0;
@@ -1416,11 +1428,11 @@ function bindCharacterSceneLayoutEditors(){
       const startDrag=(event,kind)=>{
         if(event.button!==undefined&&event.button!==0)return;
         event.preventDefault();event.stopPropagation();
-        const starting=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode));
+        const starting=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode),mode);
         // Always measure against the whole preview. The old SD implementation
         // measured its small art layer, making a short finger movement jump all
         // the way to the +/-45% limit on Android.
-        const canvasRect=canvas.getBoundingClientRect();
+        const canvasRect=(mode==="ld"?layer:canvas).getBoundingClientRect();
         const artRect=art.getBoundingClientRect();
         const startDistance=Math.max(20,Math.hypot(event.clientX-(artRect.left+artRect.width/2),event.clientY-(artRect.top+artRect.height/2)));
         const pointerId=event.pointerId;
@@ -1437,7 +1449,7 @@ function bindCharacterSceneLayoutEditors(){
             const distance=Math.max(12,Math.hypot(moveEvent.clientX-(artRect.left+artRect.width/2),moveEvent.clientY-(artRect.top+artRect.height/2)));
             next.scale=starting.scale*(distance/startDistance);
           }
-          const clamped=clampSceneLayout(next);
+          const clamped=clampSceneLayout(next,mode);
           layer.dataset.pendingLayout=JSON.stringify(clamped);
           applyCharacterSceneLayoutPreview(characterId,mode,clamped);
         };
@@ -4074,7 +4086,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260822emptytownhud1").catch(error=>{
+  import("./auth.js?v=20260823ldstagehotfix1").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4089,7 +4101,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260822emptytownhud1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260823ldstagehotfix1",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
