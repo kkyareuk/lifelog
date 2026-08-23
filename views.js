@@ -1,9 +1,9 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823ldstagedev1";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823ldstagedev1";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823ldstagedev1";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823truepreview1";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260823truepreview1";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823truepreview1";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -2076,16 +2076,36 @@ function healthAccessibilitySettings(c){
 }
 function characterHomeLayoutEditor(c){
   const activeMode=state.homeVisualMode==="ld"&&hasLdArt(c)?"ld":"sd";
+  const previewEntry=eventFor(c);
+  const previewText=`${previewEntry?.title||""} ${previewEntry?.desc||""} ${previewEntry?.mood||""}`;
+  const previewPresentation=nativeScenePresentation(c,previewEntry,activeMode);
+  const previewAction=nativeSceneActionProp(c,previewEntry,previewPresentation.actionKind,previewText)||'<span class="native-scene-action-prop action-prop-preview" aria-hidden="true">✨</span>';
+  const previewBackground=sceneImage(c,previewEntry)||townForEntry(previewEntry)?.bg||state.world?.bg||TOWN_BACKGROUND;
+  const previewLocation=previewEntry?.home
+    ?`${state.homes[previewEntry.visitHomeId||c.homeId]?.name||"집"} · ${state.homes[previewEntry.visitHomeId||c.homeId]?.rooms?.[previewEntry.room]?.name||"집 안"}`
+    :placeForEntry(previewEntry)?.name||t("outAndAbout","외출 중");
   const sdArt=c.icon
     ?`<img src="${esc(c.icon)}" alt="${esc(c.name)} SD 미리보기">`
     :c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} SD 미리보기">`
       :`<span class="home-layout-fallback">${esc((c.name||"새").slice(0,1))}</span>`;
   const ldArt=hasLdArt(c)
-    ?`<img src="${esc(ldArtSource(c))}" alt="${esc(c.name)} LD 미리보기">`
+    ?`<img class="scene-ld-art" src="${esc(ldArtSource(c))}" alt="${esc(c.name)} LD 미리보기">`
     :`<span class="home-layout-fallback is-ld">LD<br><small>이미지 미등록</small></span>`;
-  const layer=(mode,art)=>`<div class="home-layout-layer" data-home-layout-layer="${mode}" style="${sceneLayoutVars(c,mode)}"><div class="home-layout-art" data-home-layout-drag="art" role="img" aria-label="${esc(c.name)} ${mode.toUpperCase()} 위치 조정">${art}<button type="button" class="home-layout-resize-handle" data-home-layout-resize aria-label="모서리를 끌어 캐릭터 크기 조정">↘</button></div><button type="button" class="home-layout-action" data-home-layout-drag="action" aria-label="행동 이모티콘 위치 조정">☕</button></div>`;
+  const layer=(mode,art)=>`<div class="home-layout-layer visual-mode-${mode}" data-home-layout-layer="${mode}" style="${sceneLayoutVars(c,mode)}"><div class="home-layout-art" data-home-layout-drag="art" role="img" aria-label="${esc(c.name)} ${mode.toUpperCase()} 위치 조정">${art}<button type="button" class="home-layout-resize-handle" data-home-layout-resize aria-label="모서리를 끌어 캐릭터 크기 조정">↘</button></div><button type="button" class="home-layout-action" data-home-layout-drag="action" aria-label="행동 아이콘 위치 조정">${previewAction}</button></div>`;
   const nudgeButtons=(target)=>`<div class="home-layout-nudge-pad" aria-label="${target==="art"?"캐릭터":"행동 아이콘"} 위치 미세 조정"><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dy="-5" aria-label="위로 이동">↑</button><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dx="-5" aria-label="왼쪽으로 이동">←</button><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dy="5" aria-label="아래로 이동">↓</button><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dx="5" aria-label="오른쪽으로 이동">→</button></div>`;
-  return `<section class="character-home-layout-editor" data-home-layout-editor data-character-id="${c.id}" data-mode="${activeMode}"><div class="character-home-layout-heading"><div><h3>홈 캐릭터·행동 아이콘 배치</h3><p>LD의 회색 영역은 실제 홈 화면의 상단 바 아래부터 화면 맨 아래까지와 같은 비율입니다. 영역 안에서 직접 끌고 모서리 손잡이로 크기를 조절하세요.</p><small>1인과 2인 장면은 저장한 Y 위치와 크기를 그대로 사용하며, 2인일 때는 X 위치만 좌우로 나뉩니다.</small></div><div class="home-layout-mode-buttons"><button type="button" data-home-layout-mode="sd" class="${activeMode==="sd"?"on":""}">SD 배치</button><button type="button" data-home-layout-mode="ld" class="${activeMode==="ld"?"on":""}" ${hasLdArt(c)?"":"disabled"}>LD 배치</button><button type="button" data-home-layout-fill ${hasLdArt(c)?"":"disabled"}>LD 화면에 꽉 차게</button><button type="button" data-home-layout-reset>현재 배치 초기화</button></div></div><div class="home-layout-preview" style="--layout-preview-bg:url(&quot;${esc(state.world.bg||TOWN_BACKGROUND)}&quot;)"><div class="home-layout-ld-frame-guide" aria-hidden="true"><small>LD 배치 영역</small></div><div class="home-layout-preview-title"><b>${esc(c.name)}</b><time>오후 07:30</time></div><div class="home-layout-preview-menu left">⌂<br>♙<br>◇<br>∞</div><div class="home-layout-preview-menu right">▦<br>▧<br>♢<br>⚙</div>${layer("sd",sdArt)}${layer("ld",ldArt)}<div class="home-layout-preview-picker">${avatar(c)}<span></span><span></span><span></span></div><div class="home-layout-preview-card"><small>지금 이 순간</small><b>홈 화면 배치 미리보기</b></div></div><div class="home-layout-adjustments"><section><b>캐릭터 위치·크기</b>${nudgeButtons("art")}<div class="home-layout-scale-buttons"><button type="button" data-home-layout-nudge data-home-layout-target="art" data-home-layout-scale="-.1">− 작게</button><button type="button" data-home-layout-nudge data-home-layout-target="art" data-home-layout-scale=".1">+ 크게</button></div></section><section><b>행동 아이콘 위치</b>${nudgeButtons("action")}</section></div><small class="home-layout-save-note">끌어서 놓거나 버튼을 누르면 바로 저장됩니다.</small></section>`;
+  const previewSide=side=>`<nav class="home-layout-preview-side ${side}">${GAME_HUD_SIDE_TABS[side].map(({key,labelKey,label,asset})=>`<span><img src="${esc(homeUiAsset(c,asset))}" alt=""><small>${gameHudLabel(labelKey,label)}</small></span>`).join("")}</nav>`;
+  const dockItems=[["home","집","home.png"],["mailbox","우편함","mailbox.png"],["todayLog","기록물","ink.png"],["shop","상점","shop.png"],["town","마을","town.png"]];
+  const previewDock=`<nav class="home-layout-preview-dock">${dockItems.map(([key,label,asset])=>`<span><img src="${esc(homeUiAsset(c,asset))}" alt=""><small>${gameHudLabel(key,label)}</small></span>`).join("")}</nav>`;
+  return `<section class="character-home-layout-editor" data-home-layout-editor data-character-id="${c.id}" data-mode="${activeMode}">
+    <div class="character-home-layout-heading"><div><h3>홈 캐릭터·행동 아이콘 배치</h3><p>미리보기 전체가 실제 412×917 홈 화면과 같은 비율입니다. 상단바 아래부터 화면의 절대적인 맨 아래까지 보면서 전신을 직접 배치하세요.</p><small>1인과 2인 장면은 저장한 Y 위치와 크기를 그대로 사용하며, 2인일 때는 X 위치만 좌우로 나뉩니다.</small></div><div class="home-layout-mode-buttons"><button type="button" data-home-layout-mode="sd" class="${activeMode==="sd"?"on":""}">SD 배치</button><button type="button" data-home-layout-mode="ld" class="${activeMode==="ld"?"on":""}" ${hasLdArt(c)?"":"disabled"}>LD 배치</button><button type="button" data-home-layout-fill ${hasLdArt(c)?"":"disabled"}>LD 화면에 꽉 차게</button><button type="button" data-home-layout-reset>현재 배치 초기화</button></div></div>
+    <div class="home-layout-preview" style="${homeUiThemeStyle(c)};--layout-preview-bg:url(&quot;${esc(previewBackground)}&quot;)">
+      <div class="home-layout-preview-backdrop"></div><div class="home-layout-ld-frame-guide" aria-hidden="true"><small>실제 LD 배치 영역</small></div>
+      ${layer("sd",sdArt)}${layer("ld",ldArt)}
+      <div class="home-layout-preview-ui" aria-hidden="true"><div class="home-layout-preview-wood"></div><div class="home-layout-preview-top"><span>${profileAvatar(c)}<img src="${esc(homeUiAsset(c,"profile-ring.png"))}" alt=""></span><b>${esc(c.name)}</b><em>${esc(c.jobTitle||c.job||"생활 중")}</em><small>8월 23일 (일)</small><time>오후 07:30</time></div>${previewSide("left")}${previewSide("right")}<article class="home-layout-preview-moment"><strong>서랍 로그</strong><b>${esc(previewEntry?.title||"지금 이 순간")}</b><p>${esc(previewEntry?.desc||"캐릭터의 생활 장면이 이곳에 표시됩니다.")}</p><small>🏠 ${esc(previewLocation)}</small></article>${previewDock}</div>
+    </div>
+    <small class="home-layout-preview-caption">실제 홈 화면 비율 · 흰 점선 아래부터 화면 최하단까지가 LD 좌표계입니다.</small>
+    <div class="home-layout-adjustments"><section><b>캐릭터 위치·크기</b>${nudgeButtons("art")}<div class="home-layout-scale-buttons"><button type="button" data-home-layout-nudge data-home-layout-target="art" data-home-layout-scale="-.1">− 작게</button><button type="button" data-home-layout-nudge data-home-layout-target="art" data-home-layout-scale=".1">+ 크게</button></div></section><section><b>행동 아이콘 위치</b>${nudgeButtons("action")}</section></div><small class="home-layout-save-note">끌어서 놓거나 버튼을 누르면 바로 저장됩니다.</small>
+  </section>`;
 }
 function character(){
   const c=active();
@@ -3167,11 +3187,17 @@ Object.assign(UI_TEXT.ja,{
 });
 Object.assign(UI_TEXT.en,{
   "LD의 회색 영역은 실제 홈 화면의 상단 바 아래부터 화면 맨 아래까지와 같은 비율입니다. 영역 안에서 직접 끌고 모서리 손잡이로 크기를 조절하세요.":"The gray LD area matches the real home screen from below the top bar to the bottom edge. Drag the LD inside it and use the corner handle to resize it.",
+  "미리보기 전체가 실제 412×917 홈 화면과 같은 비율입니다. 상단바 아래부터 화면의 절대적인 맨 아래까지 보면서 전신을 직접 배치하세요.":"The entire preview uses the real 412×917 home-screen ratio. Position the full body while viewing everything from below the top bar to the absolute bottom edge.",
+  "실제 LD 배치 영역":"Actual LD placement area","실제 홈 화면 비율 · 흰 점선 아래부터 화면 최하단까지가 LD 좌표계입니다.":"Actual home-screen ratio · The LD coordinate space runs from below the white dashed line to the bottom edge.",
+  "행동 아이콘 위치 조정":"Adjust action icon position",
   "1인과 2인 장면은 저장한 Y 위치와 크기를 그대로 사용하며, 2인일 때는 X 위치만 좌우로 나뉩니다.":"Solo and two-character scenes keep the saved Y position and size. With two characters, only the X positions split left and right.",
   "LD 화면에 꽉 차게":"Fill LD stage","LD 배치 영역":"LD placement area","LD를 전체 배치 영역 높이에 맞췄습니다.":"The LD now fills the placement area height."
 });
 Object.assign(UI_TEXT.ja,{
   "LD의 회색 영역은 실제 홈 화면의 상단 바 아래부터 화면 맨 아래까지와 같은 비율입니다. 영역 안에서 직접 끌고 모서리 손잡이로 크기를 조절하세요.":"LDの灰色の範囲は、実際のホーム画面で上部バーの下から画面最下部までの比率と同じです。範囲内でLDをドラッグし、角のハンドルで大きさを調整してください。",
+  "미리보기 전체가 실제 412×917 홈 화면과 같은 비율입니다. 상단바 아래부터 화면의 절대적인 맨 아래까지 보면서 전신을 직접 배치하세요.":"プレビュー全体は実際の412×917ホーム画面と同じ比率です。上部バーの下から画面の最下端までを見ながら全身を配置できます。",
+  "실제 LD 배치 영역":"実際のLD配置範囲","실제 홈 화면 비율 · 흰 점선 아래부터 화면 최하단까지가 LD 좌표계입니다.":"実際のホーム画面比率・白い点線の下から画面最下部までがLD座標範囲です。",
+  "행동 아이콘 위치 조정":"アクションアイコンの位置を調整",
   "1인과 2인 장면은 저장한 Y 위치와 크기를 그대로 사용하며, 2인일 때는 X 위치만 좌우로 나뉩니다.":"1人・2人のシーンとも保存したY位置と大きさを維持し、2人のときだけX位置が左右に分かれます。",
   "LD 화면에 꽉 차게":"LDを画面いっぱいにする","LD 배치 영역":"LD配置範囲","LD를 전체 배치 영역 높이에 맞췄습니다.":"LDを配置範囲の高さに合わせました。"
 });
