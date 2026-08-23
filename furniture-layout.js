@@ -2,6 +2,9 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
 
 export const HOUSE_FURNITURE_GRID=Object.freeze({columns:12,rows:16});
 export const FURNITURE_PROPS=Object.freeze(["책","화분","향수","액자","컵","인형","수집품","조명"]);
+export const FURNITURE_FOOTPRINTS=Object.freeze({
+  "커플 침대":Object.freeze({columns:2,rows:2})
+});
 const PROP_ICONS={책:"📕",화분:"🪴",향수:"🧴",액자:"🖼️",컵:"☕",인형:"🧸",수집품:"🏺",조명:"💡"};
 const PROP_LABELS={
   en:{책:"Book",화분:"Plant",향수:"Perfume",액자:"Frame",컵:"Cup",인형:"Doll",수집품:"Collectible",조명:"Lamp"},
@@ -81,6 +84,7 @@ Object.assign(LABELS.ja,{"커플 침대":"ダブルベッド"});
 export const furnitureLabel=(item,locale="ko")=>LABELS[locale]?.[String(item||"")]||String(item||"");
 export const isBedFurniture=item=>/침대/.test(String(item||""));
 export const furnitureCapacity=item=>String(item||"")==="커플 침대"?2:isBedFurniture(item)?1:0;
+export const furnitureFootprint=item=>FURNITURE_FOOTPRINTS[String(item||"")]||{columns:1,rows:1};
 
 export function normalizeFurniturePlacement(value,index=0){
   if(!value||typeof value!=="object"||Array.isArray(value))return null;
@@ -110,5 +114,6 @@ const START_SLOTS=[[22,34],[50,34],[78,34],[28,62],[58,62],[82,66],[18,80],[46,8
 export function newFurniturePlacement(id,item,index=0){
   const [x,y]=START_SLOTS[Math.max(0,Number(index)||0)%START_SLOTS.length];
   const snapped=snapFurniturePosition(x,y,{columns:4,rows:4});
-  return normalizeFurniturePlacement({id,item,x:snapped.x,y:snapped.y,scale:1,rotation:0,layer:Math.min(20,index),props:[],assignedCharacterIds:[]},index);
+  const footprint=furnitureFootprint(item),position=footprint.columns>1||footprint.rows>1?{x:50,y:50}:snapped;
+  return normalizeFurniturePlacement({id,item,x:position.x,y:position.y,scale:1,rotation:0,layer:Math.min(20,index),props:[],assignedCharacterIds:[]},index);
 }

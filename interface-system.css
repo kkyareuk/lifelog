@@ -39,7 +39,7 @@ html[data-color-mode][data-visual-theme] header nav button{
 }
 html[data-color-mode][data-visual-theme] header nav button:is(.on,:hover,:focus-visible),
 html[data-color-mode][data-visual-theme] button.primary,
-html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button):not(.character-pane-ribbon):not(.character-wallet-selected):not(.character-roster-entry),
+html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button):not(.character-pane-ribbon):not(.character-wallet-selected):not(.character-roster-entry):not(.home-native-pill),
 html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
   border-color:color-mix(in srgb,var(--p) 72%,var(--line))!important;
   background:linear-gradient(135deg,var(--p),var(--s))!important;
@@ -75,7 +75,7 @@ html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
   dialog,.visual-theme-dialog
-) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *):not(.home-native-hud *){
+) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *):not(.home-native-hud *):not(.home-native-edit-tools *){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }

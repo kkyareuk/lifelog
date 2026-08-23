@@ -5,7 +5,7 @@ const root=path.resolve(import.meta.dirname,"..");
 const read=file=>fs.readFileSync(path.join(root,file),"utf8");
 const app=read("app.js"),state=read("state.js"),views=read("views.js"),simulation=read("simulation.js"),media=read("local-media.js"),css=read("app.css");
 const {normalizeRoomLayout}=await import("../room-layout.js");
-const {furnitureCapacity,furnitureGridForRoom,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,snapFurniturePosition,supportsFurnitureProps}=await import("../furniture-layout.js");
+const {furnitureCapacity,furnitureFootprint,furnitureGridForRoom,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,snapFurniturePosition,supportsFurnitureProps}=await import("../furniture-layout.js");
 const smallRoom={x:83.3333333333,y:87.5,w:16.6666666667,h:12.5};
 const normalizedOnce=normalizeRoomLayout(smallRoom),normalizedRepeated=normalizeRoomLayout(normalizedOnce);
 
@@ -21,6 +21,7 @@ const checks=[
   [JSON.stringify(furnitureGridForRoom({width:200,height:160},{width:600,height:640}))===JSON.stringify({columns:4,rows:4})&&snapFurniturePosition(88,12,{columns:4,rows:4}).x===87.5,"기존 12×16 집 격자를 방 크기에 맞춘 가구 스냅"],
   [supportsFurnitureProps("향수 선반")&&!supportsFurnitureProps("침대")&&normalizeFurniturePlacement({id:"shelf",item:"선반",x:50,y:50,props:[newFurnitureProp("p1","화분",0)]}).props[0].item==="화분"&&state.includes("export function addFurnitureProp")&&app.includes("openFurniturePropsDialog"),"선반·책상류 위 최대 4개 소품 배치와 저장"],
   [furnitureCapacity("침대")===1&&furnitureCapacity("커플 침대")===2&&normalizeFurniturePlacement({id:"couple",item:"커플 침대",assignedCharacterIds:["a","b","c"]}).assignedCharacterIds.length===2&&state.includes("export function assignFurnitureBed"),"일반 침대 1명·커플 침대 2명 지정과 중복 제한"],
+  [JSON.stringify(furnitureFootprint("커플 침대"))===JSON.stringify({columns:2,rows:2})&&newFurniturePlacement("couple","커플 침대",0).x===50&&views.includes('data-furniture-columns="${footprint.columns}"')&&css.includes('var(--furniture-grid-width,1)'),"커플 침대를 기존 배치까지 2×2 격자 크기로 표시"],
   [app.includes("openFurniturePlacementDialog")&&views.includes('data-open-furniture-layout=')&&!app.includes('class="room-editor-furniture-wrap"'),"방 설정과 분리된 독립 가구 배치 UI"],
   [views.includes("const scene=event;")&&app.includes("sceneKey:")&&app.includes("timeline(character,now)"),"집·관찰·생활 로그가 동일한 장면 타임라인을 사용"],
   [views.includes('<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small>')&&app.includes("home-occupant-recent"),"집 캐릭터 카드에 이름·현재 행동을 표시하고 클릭 시 상태·최근 로그 시트 제공"],
@@ -49,8 +50,10 @@ const checks=[
   ,[app.includes('[data-home-switcher-toggle]')&&app.includes('[data-home-ui-toggle]')&&app.includes('home-ui-hidden'),"집 선택 팝업과 UI 숨김·복원 이벤트"]
   ,[views.includes('"집 이동":"Switch home"')&&views.includes('"집 이동":"家を移動"')&&views.includes('"반려생물":"Pets"')&&views.includes('"반려생물":"ペット"'),"새 집 HUD 영어·일본어 번역"]
   ,[views.includes('class="home-native-house-icon"')&&views.includes('class="home-native-house-name"')&&views.includes('${esc(h.name||t("이름 없는 집"'),"상단에 캐릭터가 아닌 집 아이콘과 집 이름 표시"]
+  ,[views.includes('class="home-native-meta"')&&css.includes("align-items:end")&&css.includes("min-height:var(--home-pill-height)!important"),"집 이름·집 정보를 같은 하단선에 맞추고 버튼 캡 높이 충돌 차단"]
   ,[views.includes("homeLifeInteractionMarkup")&&views.includes("home-interaction-${summary.kind}")&&css.includes("@keyframes home-interaction-kiss-left"),"같은 상호작용의 두 구성원을 한 카드와 상호작용 애니메이션으로 표시"]
-  ,[css.includes("home-edit-toolbar:not(.home-native-edit-tools)")&&css.includes("grid-template-columns:repeat(4,71px)"),"집 편집 세부 도구를 기본 우측 메뉴와 분리"]
+  ,[css.includes("home-edit-toolbar:not(.home-native-edit-tools)")&&css.includes("grid-template-columns:repeat(4,82px)"),"집 편집 세부 도구를 기본 우측 메뉴와 분리"]
+  ,[views.includes("coupleBedSlots")&&views.includes("bedSlot===0?-22")&&views.includes("bedSlot===0?-10")&&css.includes(".home-life-person.is-couple-bed-user"),"커플 침대의 두 사용자를 서로 다른 2×2 칸에 배치"]
   ,[views.includes('"뽀뽀하는 중":"Kissing"')&&views.includes('"뽀뽀하는 중":"キスしているところ"'),"구성원 상호작용 카드 영어·일본어 번역"]
 ];
 
