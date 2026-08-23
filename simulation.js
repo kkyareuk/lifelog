@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823characterlayer2";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260823characterlayer2";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823synccontinuity";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260823synccontinuity";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2565,11 +2565,15 @@ function signature(c){
   // Both used to serialize the same large simulation input independently.
   // Character simulation fields update timelineResetAt and relationship/town
   // edits update lastSaved, so this revision safely reuses that signature.
-  const revision=`${Number(c.timelineResetAt||0)}:${Number(state.lastSaved||0)}:${state.uiLanguage}:${state.order.length}`;
+  // lastSaved는 입력·사진 복원·클라우드 불러오기 등 모든 저장에서 바뀐다.
+  // 이를 장면 설정 변경으로 사용하면 같은 설정인데도 오늘 로그를 다시 만들어
+  // 동기화 직후 항목이 늘어난다. 캐릭터 객체가 교체되거나 실제 시뮬레이션
+  // 설정의 timelineResetAt이 바뀐 경우에만 서명을 다시 계산한다.
+  const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c.id);
-  if(cached?.revision===revision)return cached.value;
+  if(cached?.character===c&&cached.revision===revision)return cached.value;
   const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
-  signatureCache.set(c.id,{revision,value});
+  signatureCache.set(c.id,{character:c,revision,value});
   if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
   return value;
 }
@@ -2797,6 +2801,26 @@ export function timeline(c,date=new Date()){
 }
 export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))}
 
+export function nextSceneRefreshDelay(c,date=new Date()){
+  if(!c)return 10*60*1000;
+  const n=nowMin(date),list=timeline(c,date).filter(item=>item&&dateEntryBelongsTo(c,item));
+  const past=list.filter(item=>Number(item.minute)<=n),last=past.at(-1),candidates=[];
+  const future=list.map(item=>Number(item.minute)).filter(minute=>Number.isFinite(minute)&&minute>n);
+  if(future.length)candidates.push(Math.min(...future));
+  if(last){
+    const gap=30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31);
+    const routineEnd=Number(last.routineEndMinute)||0;
+    const nextMinute=Math.max(Number(last.minute)+gap,routineEnd);
+    if(nextMinute>n)candidates.push(nextMinute);
+  }
+  const wake=wakeAt(c,date),sleep=sleepAt(c,date);
+  if(wake>n)candidates.push(wake);
+  if(sleep>n)candidates.push(sleep);
+  const nextMinute=candidates.length?Math.min(...candidates):n+10;
+  const minuteStart=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(nextMinute/60),nextMinute%60,1,0).getTime();
+  return Math.max(1000,Math.min(10*60*1000,minuteStart-date.getTime()));
+}
+
 function commitLiveEntry(c,date,item){
   const key=dayKey(date),day=c.days?.[key];
   if(!day||!item)return item;
@@ -2970,7 +2994,13 @@ function baseEventFor(c,date=new Date()){
   const past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n);
   const last=past.at(-1);
   const nextGap=last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30;
-  if(last&&n-last.minute>=nextGap)return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,n,date),date));
+  if(last&&n-last.minute>=nextGap){
+    const plannedMinute=Math.max(Number(last.minute)+nextGap,Number(last.routineEndMinute)||0);
+    // 앱이 잠깐 백그라운드였던 경우 실제로 바뀌었어야 할 분을 보존한다.
+    // 오래 꺼져 있었던 경우에는 과거 장면을 연속 생성하지 않고 현재 분 하나만 기록한다.
+    const sceneMinute=n-plannedMinute<=15?plannedMinute:n;
+    return commitLiveEntry(c,date,withResidenceLocation(c,liveGapEvent(c,last,sceneMinute,date),date));
+  }
   if(last)return withResidenceLocation(c,last,date);
   // 생성 당일에는 생성 시각 이전의 일정을 타임라인에서 제외한다. 예전에는
   // 그 결과 과거 장면이 하나도 없으면 24시간 동안 캐릭터 전체를 "대기"로

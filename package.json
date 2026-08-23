@@ -19,6 +19,7 @@
     "test:navigation": "node scripts/check-navigation-event-boundary.mjs",
     "test:media-home-routine": "node scripts/check-media-home-routine-features.mjs",
     "test:cloud-merge": "node scripts/check-cloud-character-merge.mjs",
+    "test:log-continuity": "node scripts/check-log-sync-continuity.mjs",
     "test:backup-home-scene": "node scripts/check-backup-home-scene-stability.mjs",
     "test:observe-hud": "node scripts/check-observe-game-hud.mjs",
     "test:selection-continuity": "node scripts/check-selection-continuity.mjs",

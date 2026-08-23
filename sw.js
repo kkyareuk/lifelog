@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260823-character-layer2";
+const CACHE_VERSION="drawer-village-v20260823-sync-continuity";
 const CORE=[
   "./",
   "./index.html",

@@ -1,5 +1,5 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823characterlayer2";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823characterlayer2";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260823synccontinuity";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260823synccontinuity";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -603,9 +603,11 @@ function normalizeHomes(x){
       ? [...c.foodPreferences]
       : [...new Set([...c.tastes,...c.foodTypes])];
     c.drinks=Array.isArray(c.drinks)?[...c.drinks]:[];
-    c.favorites=c.favorites&&typeof c.favorites==="object"?c.favorites:{};
+    c.favorites=c.favorites&&typeof c.favorites==="object"&&!Array.isArray(c.favorites)?c.favorites:{};
+    Object.entries(c.favorites).forEach(([kind,ids])=>c.favorites[kind]=Array.isArray(ids)?[...new Set(ids.map(String))]:[]);
     Object.keys(defaultsCatalog).forEach(kind=>c.favorites[kind]=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[]);
-    c.inventory=c.inventory&&typeof c.inventory==="object"?c.inventory:{};
+    c.inventory=c.inventory&&typeof c.inventory==="object"&&!Array.isArray(c.inventory)?c.inventory:{};
+    Object.entries(c.inventory).forEach(([kind,ids])=>c.inventory[kind]=Array.isArray(ids)?[...new Set(ids.map(String))]:[]);
     Object.keys(defaultsCatalog).forEach(kind=>c.inventory[kind]=Array.isArray(c.inventory[kind])?[...c.inventory[kind]]:[]);
     const consumptionMap={"빠듯함":"절약 우선","보통":"필요한 만큼 소비","여유 있음":"취향에는 아끼지 않음","부유함":"품질 우선","대부호":"가격을 거의 신경 쓰지 않음"};
     c.income=consumptionMap[c.income]||c.income||"필요한 만큼 소비";
@@ -861,6 +863,10 @@ export function deleteCharacter(id){
   save(true);
 }
 const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl"]);
+const touchCharacterTimelines=ids=>{
+  const stamp=Date.now();
+  [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});
+};
 export function updateCharacter(id,patch,persist=true){
   const c=state.characters[id];if(!c)return;
   Object.assign(c,patch);
@@ -922,12 +928,12 @@ export function setHomeBackground(homeId,data){
 export function setHomeEditMode(value){state.homeEditMode=Boolean(value);save()}
 export function updateHome(homeId,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
-  Object.assign(h,patch);if(persist)save();
+  Object.assign(h,patch);touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(item=>item.homeId===homeId)).map(c=>c.id));if(persist)save();
 }
 export function updateRoom(homeId,roomKey,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
-  h.rooms[roomKey]={...h.rooms[roomKey],...patch};if(persist)save();
+  h.rooms[roomKey]={...h.rooms[roomKey],...patch};touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(item=>item.homeId===homeId)).map(c=>c.id));if(persist)save();
 }
 export function createHome(){
   const id=`home-${uid()}`;
@@ -1181,6 +1187,7 @@ export function updatePlace(placeId,patch,persist=true){
   p.sweet=Math.max(0,Math.min(5,Number(p.sweet)||0));
   p.stock=Array.isArray(p.stock)?[...p.stock]:[];
   p.audiences=Array.isArray(p.audiences)?[...p.audiences]:[];
+  touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));
   if(persist)save(true);
 }
 export function reorderPlace(placeId,direction){
@@ -1199,6 +1206,7 @@ export function deletePlace(placeId){
   Object.values(state.characters).forEach(character=>{
     if(character.workplaceId===placeId)character.workplaceId="";
   });
+  touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));
   save(true);
 }
 export function addCatalogItem(kind,data){
@@ -1385,11 +1393,12 @@ export function addRelationship(data){
   }
   const id=uid();
   state.deletedRelationshipIds=(state.deletedRelationshipIds||[]).filter(value=>value!==id);
-  state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);save(true);
+  state.relationships[id]={id,...data};applyCohabit(state.relationships[id]);touchCharacterTimelines([data.a,data.b]);save(true);
   return id;
 }
 export function updateRelationship(id,data){
   const relation=state.relationships[id];if(!relation)return;
+  const previousCharacterIds=[relation.a,relation.b];
   const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);
   Object.assign(relation,data);
@@ -1405,6 +1414,7 @@ export function updateRelationship(id,data){
     if(!state.deletedRelationshipIds.includes(id))state.deletedRelationshipIds.push(id);
     delete state.relationships[id];
     applyCohabit(duplicate);
+    touchCharacterTimelines([...previousCharacterIds,duplicate.a,duplicate.b]);
     save(true);
     return duplicate.id;
   }
@@ -1422,6 +1432,7 @@ export function updateRelationship(id,data){
       b.sleepRoomId=primary?.sleepRoomId||"";
     }
   }
+  touchCharacterTimelines([...previousCharacterIds,relation.a,relation.b]);
   save(true);
   return id;
 }
@@ -1438,6 +1449,7 @@ export function deleteRelationship(id){
   const relationKey=relationshipIdentity(relation);
   if(relationKey&&!state.deletedRelationshipKeys.includes(relationKey))state.deletedRelationshipKeys.push(relationKey);
   delete state.relationships[id];
+  touchCharacterTimelines([relation.a,relation.b]);
   save(true);
 }
 function applyCohabit(r){
@@ -1493,7 +1505,7 @@ export function deleteTown(id){
 }
 export function addPlace(){
   const name=prompt("건물 이름","새 건물");if(!name)return;
-  state.world.places.push({id:uid(),name,type:"기타",subtype:"",emoji:"🏬",image:"",interiorImage:"",imageScale:1,stock:[],priceRange:"보통",audiences:[],spicy:0,sweet:0,x:50,y:50,color:"#8ecbc0"});save(true);
+  state.world.places.push({id:uid(),name,type:"기타",subtype:"",emoji:"🏬",image:"",interiorImage:"",imageScale:1,stock:[],priceRange:"보통",audiences:[],spicy:0,sweet:0,x:50,y:50,color:"#8ecbc0"});touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));save(true);
 }
 export function movePlace(id,x,y,persist=true){const p=state.world.places.find(p=>p.id===id);if(p){p.x=x;p.y=y;if(persist)save()}}
 export function moveHomeOnTown(id,x,y,persist=true){

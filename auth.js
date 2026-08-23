@@ -3,7 +3,7 @@ import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuth
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeDeviceAndCloudState} from "./sync-merge.js?v=20260823characterlayer2";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260823synccontinuity";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -603,9 +603,9 @@ async function download({automatic=false}={}){
       const raw=localStorage.getItem("drawer-village-game-v1");
       if(raw)localStorage.setItem("drawer-village-recovery-before-cloud",raw);
     }catch(error){console.warn("클라우드 불러오기 전 복구본을 만들지 못했습니다",error)}
-    const imported=differentCharacters
-      ?mergeDeviceAndCloudState(localState,remote)
-      :applyLocalTombstones(remote,localState);
+    const imported=automatic
+      ?differentCharacters?mergeDeviceAndCloudState(localState,remote):applyLocalTombstones(remote,localState)
+      :mergeCloudRestoreState(localState,remote);
     window.ParallelCity.replaceState(imported);
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
     status(`${accountName()} · ${accessLabel()} · 불러오기 완료`);
