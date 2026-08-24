@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
 const read=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),"utf8");
-const views=read("views.js"),app=read("app.js"),simulation=read("simulation.js"),css=read("app.css"),state=read("state.js"),interfaceCss=read("interface-system.css"),themeCss=read("theme.css");
+const views=read("views.js"),app=read("app.js"),simulation=read("simulation.js"),css=read("app.css"),bookCss=read("character-book.css"),state=read("state.js"),interfaceCss=read("interface-system.css"),themeCss=read("theme.css");
 const native=read("android/app/src/main/java/com/drawervillage/app/ProfileExportPlugin.java");
 const checks=[
   [views.includes('data-character-ui-version="8"')&&views.includes('data-open-quick-character-settings')&&views.includes('data-open-full-character-settings'),"캐릭터 허브는 빠른 설정과 전체 설정 두 진입점만 제공"],
@@ -10,9 +10,9 @@ const checks=[
   [views.includes('assets/character-ui/character-cloth-white.png')&&views.includes('assets/character-ui/book.png')&&views.includes('assets/character-ui/tape.png')&&views.includes('assets/character-ui/key.png')&&views.includes('assets/character-ui/clip.png')&&fs.existsSync(new URL('../assets/character-ui/character-cloth-white.png',import.meta.url)),"새 SVG 문구 에셋을 독립 투명 이미지로 사용"],
   [!views.includes('const paneButtons=')&&!views.includes('ribbon-profile.png')&&!views.includes('character-pane-ribbon'),"색연필 설정 띠 완전 제거"],
   [views.includes('data-mobile-character-editor-dialog="quick"')&&views.includes('notebook-white.svg')&&views.includes('data-field="speechStyle"')&&views.includes('data-field="attractionTarget"'),"빠른 설정을 흰색 SVG 수첩과 핵심 생활 항목으로 구성"],
-  [views.includes('class="mobile-character-full-settings')&&state.includes('characterSettingsView:"hub"')&&app.includes('data-open-full-character-settings'),"전체 설정을 팝업이 아닌 독립 화면 상태로 전환"],
-  [views.includes('data-character-full-ui-version="5"')&&views.includes('class="character-full-tabs"')&&views.includes('<div class="character-full-book"')&&views.includes('class="character-full-back"')&&css.includes('.character-full-book>img'),"전체 설정을 Android 안전 DOM 이미지·CSS 예비 표면의 나무 배경·책·원형 뒤로가기 구조로 교체"],
-  [views.includes('["visual","이미지"')&&views.includes('["profile","개요"')&&views.includes('["body","신체"')&&views.includes('["personality","성격"')&&views.includes('["taste","취향"')&&views.includes('["worldTaste","소지품"')&&views.includes('character-full-first-tab')&&css.includes('.character-full-tab.on'),"첫 장 이미지 책갈피와 개요 이후 다섯 색인을 분리해 적용"],
+  [views.includes('class="character-book-v8')&&state.includes('characterSettingsView:"hub"')&&app.includes('data-open-full-character-settings'),"전체 설정을 팝업이 아닌 독립 화면 상태로 전환"],
+  [views.includes('data-character-full-ui-version="8"')&&views.includes('class="character-book-v8-tabs"')&&views.includes('class="character-book-v8-paper"')&&views.includes('class="character-book-v8-back"')&&bookCss.includes('.character-book-v8-paper'),"전체 설정을 구형 CSS와 격리된 Android 안전 DOM 이미지·단일 412×917 좌표계로 교체"],
+  [views.includes('["visual","이미지"')&&views.includes('["profile","개요"')&&views.includes('["body","신체"')&&views.includes('["personality","성격"')&&views.includes('["taste","취향"')&&views.includes('["worldTaste","소지품"')&&views.includes('character-book-v8-tab')&&bookCss.includes('.character-book-v8-tab.on'),"첫 장 이미지 책갈피와 개요 이후 다섯 색인을 분리해 적용"],
   [!app.includes('button[aria-current="page"]')&&css.includes('position:absolute!important;z-index:6!important;inset:0!important'),"색인 이동 시 화면을 흔들던 가로 스크롤 보정 제거"],
   [views.includes('settings-complete-group personality-complete-settings')&&views.includes('settings-complete-group body-complete-settings')&&!views.includes('personality-advanced-settings')&&!views.includes('body-advanced-settings')&&!views.includes('profile-advanced-settings'),"기존 캐릭터 고급 설정을 접지 않은 전체 항목으로 통합"],
   [css.includes('background:rgba(255,255,255,.9)!important')&&css.includes('text-shadow:0 2px 3px #000e,0 4px 7px #0009!important')&&css.includes('calc(184px + (var(--roster-visible,0) * 84px))')&&css.includes('.character-wallet-roster.is-open'),"캐릭터 선택 팝업은 흰색 90% 배경·그림자 이름·인원별 높이·전환 애니메이션 사용"],
