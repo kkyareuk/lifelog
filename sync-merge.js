@@ -80,8 +80,12 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.towns=mergedListById(preferred.towns,fallback.towns);
   const preferredPlaces=preferred.world?.places||[],fallbackPlaces=fallback.world?.places||[];
   next.world={...clone(fallback.world),...clone(preferred.world),places:mergedListById(preferredPlaces,fallbackPlaces)};
-  next.interactions=mergedInteractions(preferred.interactions,fallback.interactions).slice(-300);
-  next.scheduledChoices=mergedListById(preferred.scheduledChoices,fallback.scheduledChoices).slice(-120);
+  next.interactions=mergedInteractions(preferred.interactions,fallback.interactions).filter(item=>
+    (!item.actorId||next.characters[item.actorId])&&(!item.characterId||next.characters[item.characterId])&&(!item.targetId||next.characters[item.targetId])
+  ).slice(-300);
+  next.scheduledChoices=mergedListById(preferred.scheduledChoices,fallback.scheduledChoices).filter(item=>
+    (!item.characterId||next.characters[item.characterId])&&(!item.targetId||next.characters[item.targetId])
+  ).slice(-120);
 
   // 화면·언어 설정은 계정이 아니라 현재 기기의 사용 환경을 따른다.
   ["uiLanguage","uiScale","colorMode","visualTheme","activeTab","characterPane"].forEach(key=>{
@@ -96,26 +100,11 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   return next;
 }
 
-// 사용자가 직접 누른 불러오기는 클라우드에 실제로 존재하는 캐릭터를
-// 복구 대상으로 취급한다. 업데이트 뒤 기기에 남은 오래된 삭제 표식이
-// 서버의 정상 캐릭터·집·관계를 다시 지우지 않도록 실제 원격 데이터가
-// 있는 ID의 표식만 해제한 뒤, 클라우드 내용을 같은 ID의 우선본으로 병합한다.
+// 사용자가 직접 누른 불러오기도 현재 기기의 삭제 기록을 보존한다.
+// 삭제한 캐릭터·집이 예전 클라우드 사본에 남아 있더라도 되살아나지 않아야
+// 다음 동기화 때 같은 새 캐릭터와 집이 반복 생성되지 않는다.
 export function mergeCloudRestoreState(deviceValue,cloudValue){
   const device=clone(deviceValue),cloud=clone(cloudValue);
-  const cloudCharacters=mapById(cloud.characters),cloudHomes=mapById(cloud.homes);
-  const cloudRelationships=Array.isArray(cloud.relationships)?cloud.relationships:Object.values(cloud.relationships||{});
-  const relationshipIds=new Set(cloudRelationships.map(item=>String(item?.id||"")).filter(Boolean));
-  const relationshipKeys=new Set(cloudRelationships.map(relationshipIdentity).filter(Boolean));
-  const keepMissing=(list,present)=>Array.isArray(list)?list.map(String).filter(id=>!present.has(id)):[];
-  const characterIds=new Set(Object.keys(cloudCharacters)),homeIds=new Set(Object.keys(cloudHomes));
-  device.deletedCharacterIds=keepMissing(device.deletedCharacterIds,characterIds);
-  cloud.deletedCharacterIds=keepMissing(cloud.deletedCharacterIds,characterIds);
-  device.deletedHomeIds=keepMissing(device.deletedHomeIds,homeIds);
-  cloud.deletedHomeIds=keepMissing(cloud.deletedHomeIds,homeIds);
-  device.deletedRelationshipIds=keepMissing(device.deletedRelationshipIds,relationshipIds);
-  cloud.deletedRelationshipIds=keepMissing(cloud.deletedRelationshipIds,relationshipIds);
-  device.deletedRelationshipKeys=(device.deletedRelationshipKeys||[]).filter(key=>!relationshipKeys.has(String(key)));
-  cloud.deletedRelationshipKeys=(cloud.deletedRelationshipKeys||[]).filter(key=>!relationshipKeys.has(String(key)));
   cloud.lastSaved=Math.max(Date.now(),Number(device.lastSaved)||0,Number(cloud.lastSaved)||0)+1;
   return mergeDeviceAndCloudState(device,cloud);
 }

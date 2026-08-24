@@ -18,9 +18,17 @@ const checks=[
   [state.includes('rotation:clamp(layout.rotation,-180,180,0)'),"회전값 저장·복원 정규화"],
   [sceneCss.includes('rotate:var(--character-art-rotation,0deg)!important'),"저장한 회전값이 실제 홈 장면에도 적용"],
   [css.includes('left:-135.2786cqw!important;top:3.8835cqw!important')&&css.includes('width:242.7888cqw!important;height:203.6663cqw!important'),"원본 SVG 책 위치·크기 좌표"],
+  [views.includes('<div class="character-full-wood"')&&views.includes('<div class="character-full-book"')&&css.includes('character-wood-background.png')&&css.includes('character-ui/book.png'),"전체설정 책과 목재 배경이 독립 레이어로 유지됨"],
+  [views.includes('class="character-full-image-slot icon" data-image="icon">${currentIcon}</button>')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치됨"],
+  [css.includes('.character-full-image-slot.ld{background:transparent!important;box-shadow:none!important}')&&css.includes('.character-full-image-slot.icon{background:transparent!important;box-shadow:none!important}'),"LD와 아이콘 뒤 회색 판 제거"],
+  [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="${key}"')&&state.includes('characterOverviewPane:"basic"'),"개요를 기본·생활·이끌림의 독립된 책 페이지로 구성"],
+  [css.includes('left:36.408cqw!important;top:22.816cqw!important')&&css.includes('left:57.815cqw!important;top:23.301cqw!important')&&css.includes('left:77.913cqw!important;top:25.971cqw!important'),"개요 안쪽 세 책갈피의 SVG 좌표와 회전값"],
+  [views.includes('class="character-overview-tab-icon"')&&css.includes('top:10.922cqw!important')&&css.includes('width:10.194cqw!important'),"개요 책갈피 통계 아이콘의 SVG 위치와 크기"],
+  [views.includes('overview-job-title')&&views.includes('overview-family-home')&&views.includes('overview-license')&&views.includes('overview-alcohol'),"개요 기본 페이지의 전체 항목을 실제 캐릭터 데이터 입력에 연결"],
+  [css.includes('transform:rotate(4.09141deg)!important')&&css.includes('background-color:#d9d1be!important'),"개요 기본 내용의 SVG 회전과 값 종이 색상"],
   [css.includes('background-repeat:repeat-x')&&css.includes('background-size:auto 100%'),"벽지를 찌그러뜨리지 않고 높이에 맞춰 가로 타일링"],
   [css.includes('body.is-building-size-preview .mobile-town-shell')&&css.includes('background:transparent!important'),"건물 크기 조절 중 설정창 투명 실시간 미리보기"],
-  [gradle.includes('versionCode 136')&&gradle.includes('versionName "1.0.125"'),"Android 개발 버전 136 / 1.0.125"]
+  [gradle.includes('versionCode 137')&&gradle.includes('versionName "1.0.126"'),"Android 개발 버전 137 / 1.0.126"]
 ];
 
 let failed=0;

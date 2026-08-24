@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824charactersvggesture";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824charactersvggesture";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824characterbooksync";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824characterbooksync";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2413,13 +2413,26 @@ function build(c,date=new Date()){
   const purpose=travelPurpose(c,date),destination=purpose.town,homeTown=townFor(c,date);
   const destinationPurpose=purpose.label;
   const work=purpose.kind==="birthday"&&workplaceTown(c)?.id!==destination.id?null:workEvent(c,Math.max(wake+90,540),date);
-  const homeCars=state.homes[currentHomeId]?.cars||[];
+  const homeCars=(state.homes[currentHomeId]?.cars||[]).filter(car=>!car.ownerCharacterId||car.ownerCharacterId===c.id);
   const rideablePet=(state.homes[currentHomeId]?.pets||[]).find(p=>p.rideable&&["드래곤","호랑이"].includes(p.species));
   const useMount=rideablePet&&(hash(`${c.id}:${dayKey(date)}:mount`)%2===0);
   const relation=preferredRelation(c),romantic=relation&&["부부","연인"].includes(relation.r.type)?relation.other:null;
-  const partnerCars=romantic?state.homes[homeIdForDate(romantic,date)]?.cars||[]:[];
+  const partnerCars=romantic?(state.homes[homeIdForDate(romantic,date)]?.cars||[]).filter(car=>!car.ownerCharacterId||car.ownerCharacterId===romantic.id):[];
   const partnerCanDrive=canDrive(romantic)&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
   const selfCanDrive=canDrive(c)&&homeCars.length;
+  const configuredCommuteModes=(c.commuteModes||[]).filter(mode=>mode!=="자차"||selfCanDrive);
+  const commuteMode=configuredCommuteModes.length
+    ?configuredCommuteModes[hash(`${c.id}:${dayKey(date)}:configured-commute`)%configuredCommuteModes.length]
+    :selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute-fallback`)%2===0)?"자차":"대중교통";
+  const commuteCopy={
+    자차:["차로 출근하는 중","소유주로 지정된 집의 자동차를 운전해 직장에 도착할 준비를 하고 있어요."],
+    대중교통:["대중교통으로 출근하는 중","버스나 지하철 노선을 확인하고 직장으로 이동하고 있어요."],
+    버스:["버스로 출근하는 중","정류장에서 버스를 타고 직장과 가까운 정류장으로 이동하고 있어요."],
+    지하철:["지하철로 출근하는 중","환승 경로와 하차역을 확인하며 지하철로 직장에 가고 있어요."],
+    택시:["택시로 출근하는 중","택시를 불러 목적지를 확인한 뒤 직장으로 이동하고 있어요."],
+    도보:["걸어서 출근하는 중","출근 시간을 맞춰 보행로를 따라 직장으로 걸어가고 있어요."],
+    자전거:["자전거로 출근하는 중","안전한 길을 골라 자전거를 타고 직장으로 이동하고 있어요."]
+  };
   // 사용자가 등록한 일정은 아래에서 실제 종료 시각에 맞춰 귀가 장면을 만든다.
   // 예전처럼 모든 외부 일정을 밤 8시에 한꺼번에 귀가시키지 않는다.
   if(destinationPurpose&&destination.id!==homeTown.id&&purpose.kind!=="routine"){
@@ -2449,8 +2462,9 @@ function build(c,date=new Date()){
   });
   if(work){
     if(!work.home){
-      const riding=rideablePet&&(hash(`${c.id}:${dayKey(date)}:ride-commute`)%3)===0,driving=!riding&&selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
-      list.push(entry(work.minute-35,riding?`${rideablePet.name}을 타고 출근하는 중`:driving?"차로 출근하는 중":"대중교통으로 출근하는 중",riding?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로로 직장을 향하고 있어요.`:`${rideablePet.name}의 등에 올라 안전한 길을 따라 직장을 향하고 있어요.`):driving?"차를 운전해 직장에 도착할 준비를 하고 있어요.":"버스나 지하철을 이용해 직장에 도착할 준비를 하고 있어요.",away(c,{placeId:work.placeId,mood:"출근"})));
+      const riding=!configuredCommuteModes.length&&rideablePet&&(hash(`${c.id}:${dayKey(date)}:ride-commute`)%3)===0;
+      const [commuteTitle,commuteDesc]=commuteCopy[commuteMode]||commuteCopy.대중교통;
+      list.push(entry(work.minute-35,riding?`${rideablePet.name}을 타고 출근하는 중`:commuteTitle,riding?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로로 직장을 향하고 있어요.`:`${rideablePet.name}의 등에 올라 안전한 길을 따라 직장을 향하고 있어요.`):commuteDesc,{...away(c,{placeId:work.placeId,mood:"출근"}),transit:true,transportMode:riding?"mount":commuteMode}));
     }
     list.push(work);
   }
@@ -2613,7 +2627,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260824-wall-schedule-integrity1";
+const ENGINE_VERSION="20260824-character-book-sync2";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -2629,7 +2643,7 @@ function signature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c.id);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
   signatureCache.set(c.id,{character:c,revision,value});
   if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
   return value;

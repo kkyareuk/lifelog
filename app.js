@@ -1,14 +1,14 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260824charactersvggesture";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260824charactersvggesture";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260824charactersvggesture";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260824charactersvggesture";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260824charactersvggesture";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260824charactersvggesture";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260824charactersvggesture";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260824charactersvggesture";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260824charactersvggesture";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824charactersvggesture";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260824charactersvggesture";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260824characterbooksync";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260824characterbooksync";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260824characterbooksync";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260824characterbooksync";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260824characterbooksync";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260824characterbooksync";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260824characterbooksync";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260824characterbooksync";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260824characterbooksync";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824characterbooksync";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260824characterbooksync";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -883,8 +883,8 @@ function bindFurniturePlacementEditors(){
     const patch=command==="smaller"?{scale:current.scale-.25}
       :command==="larger"?{scale:current.scale+.25}
       :command==="rotate"?{rotation:current.rotation+15}
-      :command==="back"?{layer:current.layer-1}
-      :command==="front"?{layer:current.layer+1}:{};
+      :command==="back"?{layerAction:"back"}
+      :command==="front"?{layerAction:"front"}:{};
     const next=updateFurniturePlacement(homeId,roomKey,placementId,patch,true);if(next&&selected)setFurniturePlacementStyle(selected,next);
   });
   if(pendingFurnitureSelection){
@@ -1487,10 +1487,11 @@ function openCarEditor(homeId,carId){
   if(!car)return;
   document.querySelector("[data-home-car-dialog]")?.remove();
   const types=["경차","승용차","SUV","승합차","스포츠카","전기차","오토바이","기타"];
+  const ownerOptions=state.order.map(id=>`<option value="${id}" ${id===car.ownerCharacterId?"selected":""}>${htmlEsc(state.characters[id]?.name||"")}</option>`).join("");
   const dialog=document.createElement("dialog");
   dialog.className="home-car-dialog";
   dialog.dataset.homeCarDialog="";
-  dialog.innerHTML=`<form method="dialog"><div class="mobile-editor-head"><span><small>CAR SETTING</small><b>${htmlEsc(car.name)}</b></span><button value="cancel" aria-label="닫기">×</button></div><div class="home-car-preview">${car.image?`<img src="${htmlEsc(car.image)}" alt="">`:"<span>🚙</span>"}</div><div class="fields"><label>차량 이름<input name="name" value="${htmlEsc(car.name)}"></label><label>종류<select name="type">${types.map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>색상<input name="color" value="${htmlEsc(car.color||"")}"></label><label>좌석 수<input name="seats" type="number" min="1" max="12" value="${Number(car.seats)||5}"></label></div><div class="image-actions"><button type="button" data-dialog-car-image>차 사진 선택</button><button type="button" data-dialog-car-url>사진 링크</button></div><div class="crop-actions"><button type="button" class="danger" data-dialog-delete-car>자동차 삭제</button><button value="cancel">취소</button><button class="primary" value="save">편집 완료</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="mobile-editor-head"><span><small>CAR SETTING</small><b>${htmlEsc(car.name)}</b></span><button value="cancel" aria-label="닫기">×</button></div><div class="home-car-preview">${car.image?`<img src="${htmlEsc(car.image)}" alt="">`:"<span>🚙</span>"}</div><div class="fields"><label>차량 이름<input name="name" value="${htmlEsc(car.name)}"></label><label>종류<select name="type">${types.map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>차 소유주<select name="ownerCharacterId"><option value="">가족 공동 차량</option>${ownerOptions}</select></label><label>색상<input name="color" value="${htmlEsc(car.color||"")}"></label><label>좌석 수<input name="seats" type="number" min="1" max="12" value="${Number(car.seats)||5}"></label></div><div class="image-actions"><button type="button" data-dialog-car-image>차 사진 선택</button><button type="button" data-dialog-car-url>사진 링크</button></div><div class="crop-actions"><button type="button" class="danger" data-dialog-delete-car>자동차 삭제</button><button value="cancel">취소</button><button class="primary" value="save">편집 완료</button></div></form>`;
   dialog.querySelector("[data-dialog-car-image]").onclick=()=>{
     dialog.close("cancel");
     pickImage("car",homeId,carId);
@@ -1511,6 +1512,7 @@ function openCarEditor(homeId,carId){
       updateCar(homeId,carId,{
         name:form.name.value.trim()||"이름 없는 자동차",
         type:form.type.value,
+        ownerCharacterId:form.ownerCharacterId.value,
         color:form.color.value.trim(),
         seats:Math.max(1,Math.min(12,Number(form.seats.value)||5))
       });
@@ -2452,7 +2454,7 @@ function bind(){
     });
   });
   $$("[data-birthday-part]").forEach(el=>el.addEventListener("change",()=>{
-    const scope=el.closest("[data-mobile-character-editor-dialog]")||document;
+    const scope=el.closest("[data-mobile-character-editor-dialog],.character-overview-basic")||document;
     const month=scope.querySelector('[data-birthday-part="month"]')?.value||"";
     const dayControl=scope.querySelector('[data-birthday-part="day"]');
     let day=dayControl?.value||"";
@@ -2634,6 +2636,14 @@ function bind(){
     const dialog=document.querySelector(`[data-building-detail-dialog="${CSS.escape(button.dataset.buildingDetailOpen)}"]`);
     if(dialog&&!dialog.open)dialog.showModal();
   });
+  $$('[data-home-exterior-image]').forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
+    pickImage("homeExterior",button.dataset.homeExteriorImage);
+  });
+  $$('[data-open-home-editor]').forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
+    setActiveHome(button.dataset.openHomeEditor);state.activeTab="home";setHomeEditMode(true);render();
+  });
   $$('[data-home-visual-mode]').forEach(button=>button.onclick=()=>{
     state.homeVisualMode=button.dataset.homeVisualMode==="ld"?"ld":"sd";
     save(true);
@@ -2653,6 +2663,11 @@ function bind(){
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);renderPreservingPageScroll(el)});
+  $$("[data-character-overview-pane]").forEach(el=>el.onclick=()=>{
+    state.characterOverviewPane=["basic","life","attraction"].includes(el.dataset.characterOverviewPane)?el.dataset.characterOverviewPane:"basic";
+    save(true);
+    renderPreservingPageScroll(el);
+  });
   $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
   $("[data-character-notification-toggle]")?.addEventListener("click",async event=>{
@@ -2974,6 +2989,7 @@ async function applyImage(type,id,room,data){
   if(type==="room")setHomeImage(id,room,data);
   else if(type==="roomFloor")setRoomFloorImage(id,room,data);
   else if(type==="home")setHomeBackground(id,data);
+  else if(type==="homeExterior")setHomeExteriorImage(id,data);
   else if(type==="placeInterior")setPlaceInteriorImage(id,data);
   else if(type==="petPhoto")setPetImage(id,room,"photo",data);
   else if(type==="petIcon")setPetImage(id,room,"icon",data);
@@ -4449,7 +4465,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260824charactersvggesture").catch(error=>{
+import("./auth.js?v=20260824characterbooksync").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4464,7 +4480,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260824charactersvggesture",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260824characterbooksync",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
