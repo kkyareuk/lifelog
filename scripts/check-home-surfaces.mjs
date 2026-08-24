@@ -23,5 +23,6 @@ for(const required of ["room-wall-shell","wallMaterial","home-ui-hidden .home-na
 if(!combined.includes('"cream-panel":"./assets/home-walls/cream-panel.png"'))throw new Error("기본 사용자 벽지 연결이 누락되었습니다.");
 if(combined.includes("drawer-cream-wall.png")||combined.includes("wall-redraw-reference.png"))throw new Error("제거한 AI 벽지 참조가 남았습니다.");
 if(!combined.includes("border:2px solid #000"))throw new Error("방별 2px 검은 외곽선이 누락되었습니다.");
+if(!combined.includes("height:clamp(52px,15vw,64px)"))throw new Error("모든 방이 공유하는 고정 벽 높이 기준이 누락되었습니다.");
 if(combined.includes("furniture-redraw-reference-6x4.png"))throw new Error("덧그리기용 가구 참고 그림을 앱 화면에 연결하면 안 됩니다.");
 console.log(`집 바닥 ${expected.length}종 · 사용자 벽지 ${expectedWalls.length}종 · 편집 숨김/이모지 가구 검증 완료`);

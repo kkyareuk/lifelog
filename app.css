@@ -5800,7 +5800,7 @@ html[data-color-mode="dark"] .relationship-pair-core>em{border:1px solid #3a5068
   box-shadow:none;pointer-events:none
 }
 .home-page .room-wall-shell::before{
-  position:absolute;left:0;right:0;top:0;height:clamp(42px,24%,96px);content:"";
+  position:absolute;left:0;right:0;top:0;height:clamp(52px,15vw,64px);content:"";
   background-color:#f4f0e8;background-image:var(--room-wall-image);
   background-position:left top;background-repeat:repeat-x;background-size:auto 100%;
   border-bottom:3px solid #5c4234;box-shadow:none

@@ -137,8 +137,11 @@ export function serializeLocalMediaState(root){
 // which produced visible pauses and heat on Android.  A JSON replacer performs
 // the same local-media reference substitution in a single traversal without
 // mutating the live state.
-export function stringifyLocalMediaState(root){
-  return JSON.stringify(root,(_key,value)=>isData(value)&&dataToRef.has(value)?dataToRef.get(value):value);
+export function stringifyLocalMediaState(root,overrides=null){
+  return JSON.stringify(root,(key,value)=>{
+    if(overrides&&Object.prototype.hasOwnProperty.call(overrides,key))return overrides[key];
+    return isData(value)&&dataToRef.has(value)?dataToRef.get(value):value;
+  });
 }
 
 export function informationOnlyState(root){

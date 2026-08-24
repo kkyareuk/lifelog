@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825characterbookrewrite";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookrewrite";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260825characterbookrewrite";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookrewrite";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825characterbookrewrite";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterbookrewrite";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825characterhubisolation";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterhubisolation";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260825characterhubisolation";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterhubisolation";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825characterhubisolation";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterhubisolation";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -235,7 +235,10 @@ function normalizeHomes(x){
   if(x.characterPane==="traits")x.characterPane="personality";
   x.characterPane=["profile","body","personality","taste","worldTaste","manage"].includes(x.characterPane)?x.characterPane:"profile";
   x.characterOverviewPane=x.characterOverviewPane==="basic"?"basic":"life";
-  x.characterSettingsView=x.characterSettingsView==="full"?"full":"hub";
+  // 전체설정 열림 여부는 저장 데이터가 아니라 현재 화면 세션의 상태다.
+  // 예전에는 full 값을 기기·동기화에 저장해 앱을 다시 열었을 때 캐릭터
+  // 기본 화면이 숨겨지고 전체설정 배경만 화면을 덮을 수 있었다.
+  x.characterSettingsView="hub";
   if(Array.isArray(x.characters)){
     const list=x.characters.filter(c=>c&&typeof c==="object"&&!Array.isArray(c));
     x.characters=Object.fromEntries(list.map(c=>{const id=String(c.id||uid());c.id=id;return[id,c]}));
@@ -756,7 +759,7 @@ function writeState(notify=true){
   try{
     syncTown();
     state.lastSaved=Date.now();
-    const serialized=stringifyLocalMediaState(state);
+    const serialized=stringifyLocalMediaState(state,{characterSettingsView:"hub"});
     localStorage.setItem(KEY,serialized);
     preserveLastNonempty(state,serialized);
     stored=true;
@@ -1650,4 +1653,4 @@ export function resetAll(){
   localStorage.removeItem(oldKey);
   localStorage.removeItem(LAST_NONEMPTY_KEY);
 }
-export const cloneState=()=>clone(state);
+export const cloneState=()=>({...clone(state),characterSettingsView:"hub"});
