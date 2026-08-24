@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260824-town-building-book-fallback";
+const CACHE_VERSION="drawer-village-v20260824-custom-floor-character-layers";
 const CORE=[
   "./",
   "./index.html",

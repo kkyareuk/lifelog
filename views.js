@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824townbuildingbookfallback";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824townbuildingbookfallback";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824townbuildingbookfallback";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824townbuildingbookfallback";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824townbuildingbookfallback";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824customfloorcharacterlayers";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824customfloorcharacterlayers";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824customfloorcharacterlayers";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824customfloorcharacterlayers";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824customfloorcharacterlayers";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -1758,7 +1758,7 @@ function roomStyle(h,key,layout,mobileLayout){
   const floorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
   const wallMaterial=normalizeWallSurface(room.wallMaterial,floorMaterial,room.type);
   const floorImage=homeSurfaceImage(floorMaterial,room.floorImage,room.type);
-  const wallImage=wallSurfaceImage(wallMaterial,floorMaterial,room.floorImage,room.type);
+  const wallImage=floorMaterial==="custom"?"":wallSurfaceImage(wallMaterial,floorMaterial,room.floorImage,room.type);
   const furnitureColumns=Math.max(1,Math.round((Number(resolvedMobile.w)||100)/100*12));
   const furnitureRows=Math.max(1,Math.round((Number(resolvedMobile.h)||100)/100*16));
   const parts=[
@@ -1776,7 +1776,7 @@ function roomStyle(h,key,layout,mobileLayout){
     `--furniture-cell-h:${(100/furnitureRows).toFixed(4)}%`,
     `--room-image-fit:${room.imageFit==="contain"?"contain":"cover"}`,
     `--room-floor-size:250px`,
-    `--room-wall-image:url('${wallImage}')`,
+    `--room-wall-image:${wallImage?`url('${wallImage}')`:"none"}`,
     `background-image:linear-gradient(#1010100a,#1010100a),url('${floorImage}')`
   ];
   return `style="${parts.join(";")}"`;
@@ -2032,6 +2032,7 @@ function homeCard(id,chars){
   };
   const roomHtml=visibleRoomKeys.map(key=>{
     const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>roomForCharacter(c)===key);
+    const customFloor=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage})==="custom";
     const roomPets=pets.filter(p=>petScenes[p.id]?.roomKey===key);
     const shownPeople=roomPeople.filter(character=>!isCrossRoomWalker(character)),shownPets=roomPets;
     const editAttributes=`data-home-id="${id}" data-room-key="${key}" data-home-room-hold="${key}"${edit?` data-open-room-editor="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`:""}`;
@@ -2080,7 +2081,7 @@ function homeCard(id,chars){
       renderedPeople.add(character.id);
       peopleMarkup.push(homeLifePersonMarkup(character,scene,lifeAgents[character.id],room,key,index,coupleBedSlots.get(character.id)??-1));
     });
-    return `<div class="room room-${esc(room.type||key)} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
+    return `<div class="room room-${esc(room.type||key)} ${customFloor?"room-custom-floor":""} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
       <span class="room-wall-shell" aria-hidden="true"></span>
       <div class="room-heading room-title-${room.titleTone==="dark"?"dark":"light"}"><span><b>${esc(room.name||key)}</b>${edit?`<small class="room-edit-hint">${activeFloor}층 · ${t("gridEdit","격자 편집")}</small>`:""}</span>${edit?`<button type="button" class="room-drag-handle" data-room-drag="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 위치 옮기기">✥</button>`:""}</div>${edit?`<button type="button" class="room-resize-handle" data-room-resize="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 크기 조절">↘</button>`:""}
       ${roomFurnitureMarkup(id,key,room,edit)}
@@ -2506,9 +2507,9 @@ function character(){
         ${hubActions}
         ${draftActions}
       </section>
-      <section class="mobile-character-full-settings ${state.characterSettingsView==="full"?"is-open":""}" data-character-full-ui-version="4" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
-        <img class="character-full-wood" src="./assets/character-ui/character-wood-background.png" alt="" aria-hidden="true">
-        <img class="character-full-book" src="./assets/character-ui/book.png" alt="" aria-hidden="true">
+      <section class="mobile-character-full-settings ${state.characterSettingsView==="full"?"is-open":""}" data-character-full-ui-version="5" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
+        <div class="character-full-wood" aria-hidden="true" style="position:absolute!important;z-index:1!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;background:#5d4032 url('./assets/character-ui/character-wood-background.png') center/cover no-repeat!important;opacity:1!important;visibility:visible!important;pointer-events:none!important"><img src="./assets/character-ui/character-wood-background.png" alt="" style="display:block!important;width:100%!important;height:100%!important;object-fit:cover!important;opacity:1!important;visibility:visible!important"></div>
+        <div class="character-full-book" aria-hidden="true" style="position:absolute!important;z-index:10!important;left:max(-135.2786vw,-60.769dvh)!important;top:min(3.8835vw,1.7447dvh)!important;display:block!important;width:min(242.7888vw,109.0807dvh)!important;height:min(203.6663vw,91.4994dvh)!important;background:transparent url('./assets/character-ui/book.png') 0 0/100% 100% no-repeat!important;opacity:1!important;visibility:visible!important;filter:drop-shadow(0 7px 8px #25150b70)!important;transform:rotate(3.66623deg)!important;transform-origin:0 0!important;pointer-events:none!important"><img src="./assets/character-ui/book.png" alt="" style="display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:fill!important;opacity:1!important;visibility:visible!important"></div>
         <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
         <button type="button" class="character-full-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 페이지로 돌아가기","캐릭터 페이지로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
         ${firstPageBookmark}
@@ -3280,6 +3281,8 @@ Object.assign(UI_TEXT.en,{"집 이동":"Switch home","집 정보":"Home info","�
 Object.assign(UI_TEXT.ja,{"집 이동":"家を移動","집 정보":"家情報","집 편집":"編集","편집 완료":"完了","구성원":"住人","반려생물":"ペット","UI 숨김":"UI非表示","UI 표시":"UI表示","생활 로그":"生活ログ","자동차":"自動車","새 집 만들기":"新しい家を作る","이름 없는 집":"名前のない家","집 안에 머무는 중":"家にいる","연결된 구성원":"登録住人","청결도":"清潔度","층":"階","집 설정":"家設定","방 구성":"部屋構成","가구 배치":"家具配置","거주 설정":"居住設定"});
 Object.assign(UI_TEXT.en,{"바닥재":"Floor material","벽 재질":"Wall material","살구빛 목재":"Apricot wood","내추럴 목재":"Natural wood","크림 목재":"Cream wood","차콜 목재":"Charcoal wood","월넛 목재":"Walnut wood","직접 그린 바닥":"Custom floor","바닥과 같은 벽":"Match the floor","보내 주신 다섯 재질 중 하나를 고르거나 직접 그린 바닥을 넣을 수 있어요.":"Choose one of the five supplied materials or add your own floor artwork.","방 위쪽에 벽면을 세우고 짙은 갈색 테두리로 바닥과 구분해요.":"Adds a wall face along the top of the room with a dark brown boundary.","직접 그린 바닥 첨부":"Add custom floor","직접 그린 바닥 변경":"Change custom floor"});
 Object.assign(UI_TEXT.ja,{"바닥재":"床材","벽 재질":"壁材","살구빛 목재":"アプリコット材","내추럴 목재":"ナチュラル材","크림 목재":"クリーム材","차콜 목재":"チャコール材","월넛 목재":"ウォールナット材","직접 그린 바닥":"自作の床","바닥과 같은 벽":"床と同じ壁","보내 주신 다섯 재질 중 하나를 고르거나 직접 그린 바닥을 넣을 수 있어요.":"提供された5種類の素材から選ぶか、自作の床画像を追加できます。","방 위쪽에 벽면을 세우고 짙은 갈색 테두리로 바닥과 구분해요.":"部屋上部に壁面を作り、濃い茶色の境界線で床と分けます。","직접 그린 바닥 첨부":"自作の床を追加","직접 그린 바닥 변경":"自作の床を変更"});
+Object.assign(UI_TEXT.en,{"직접 그린 바닥을 선택하면 첨부 이미지가 방 전체에 표시되고 벽은 숨겨져요.":"When Custom floor is selected, the attached image fills the room and the wall is hidden."});
+Object.assign(UI_TEXT.ja,{"직접 그린 바닥을 선택하면 첨부 이미지가 방 전체에 표시되고 벽은 숨겨져요.":"「自作の床」を選ぶと、添付画像が部屋全体に表示され、壁は非表示になります。"});
 Object.assign(UI_TEXT.en,{"벽지":"Wallpaper","직접 그린 벽지 7종 가운데 방에 어울리는 무늬를 골라 주세요.":"Choose the hand-drawn wallpaper that best fits this room from the seven available designs."});
 Object.assign(UI_TEXT.ja,{"벽지":"壁紙","직접 그린 벽지 7종 가운데 방에 어울리는 무늬를 골라 주세요.":"手描きの壁紙7種類から、この部屋に合う柄を選んでください。"});
 Object.assign(UI_TEXT.en,{

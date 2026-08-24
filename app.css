@@ -5784,6 +5784,7 @@ html[data-color-mode="dark"] .relationship-pair-core>em{border:1px solid #3a5068
   background-position:left top;background-repeat:repeat-x;background-size:auto 100%;
   border-bottom:3px solid #5c4234;box-shadow:none
 }
+.home-page .room.room-custom-floor .room-wall-shell::before{display:none!important;content:none!important}
 .home-page .room-heading,.home-page .room-furniture-layer,.home-page .room-people,.home-page .room-pets{position:absolute}
 .home-page .room-heading{position:relative}
 
@@ -7149,16 +7150,15 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
     --ink:#2e211b!important;--muted:#746457!important;--panel:#fffaf2!important;--soft:#f2e8d9!important;--line:#b9a68f!important;--bg:#f4ecdf!important;
     --theme-surface:#fff7eb!important;--theme-surface-strong:#f3e5d1!important;--theme-border:#8f7662!important;--on-grad:#fff8e8!important
   }
-  html.native-app[data-active-tab="character"] .mobile-character-full-settings.is-open::before{
-    content:""!important;position:absolute!important;z-index:10!important;left:-135.2786cqw!important;top:3.8835cqw!important;display:block!important;width:242.7888cqw!important;height:203.6663cqw!important;
-    background-color:transparent!important;background-image:url("./assets/character-ui/book.png")!important;background-position:0 0!important;background-size:100% 100%!important;background-repeat:no-repeat!important;opacity:1!important;visibility:visible!important;filter:drop-shadow(0 7px 8px #25150b70)!important;transform:rotate(3.66623deg)!important;transform-origin:0 0!important;pointer-events:none!important
-  }
+  html.native-app[data-active-tab="character"] .mobile-character-full-settings.is-open::before{display:none!important;content:none!important}
   html.native-app[data-active-tab="character"] .character-full-wood{
-    display:none!important
+    position:absolute!important;z-index:1!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;overflow:hidden!important;background:#5d4032 url("./assets/character-ui/character-wood-background.png") center/cover no-repeat!important;opacity:1!important;visibility:visible!important;pointer-events:none!important
   }
+  html.native-app[data-active-tab="character"] .character-full-wood>img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:cover!important;opacity:1!important;visibility:visible!important}
   html.native-app[data-active-tab="character"] .character-full-book{
-    display:none!important
+    position:absolute!important;z-index:10!important;left:max(-135.2786vw,-60.769dvh)!important;top:min(3.8835vw,1.7447dvh)!important;display:block!important;width:min(242.7888vw,109.0807dvh)!important;height:min(203.6663vw,91.4994dvh)!important;overflow:visible!important;background:transparent url("./assets/character-ui/book.png") 0 0/100% 100% no-repeat!important;opacity:1!important;visibility:visible!important;filter:drop-shadow(0 7px 8px #25150b70)!important;transform:rotate(3.66623deg)!important;transform-origin:0 0!important;pointer-events:none!important
   }
+  html.native-app[data-active-tab="character"] .character-full-book>img{display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:fill!important;opacity:1!important;visibility:visible!important}
   html.native-app[data-active-tab="character"] .character-full-back{
     position:absolute!important;z-index:20!important;left:5.0971cqw!important;top:10.6796cqw!important;display:grid!important;place-items:center!important;width:14.8058cqw!important;height:14.8058cqw!important;min-height:0!important;
     margin:0!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;background-image:none!important;box-shadow:none!important
