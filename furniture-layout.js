@@ -2,9 +2,25 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
 
 export const HOUSE_FURNITURE_GRID=Object.freeze({columns:12,rows:16});
 export const FURNITURE_PROPS=Object.freeze(["책","화분","향수","액자","컵","인형","수집품","조명"]);
+const footprint=(columns,rows)=>Object.freeze({columns,rows});
 export const FURNITURE_FOOTPRINTS=Object.freeze({
-  "커플 침대":Object.freeze({columns:2,rows:2})
+  "소파":footprint(3,1),"TV":footprint(2,1),"책장":footprint(2,2),"오디오":footprint(2,1),"안마의자":footprint(2,2),"게임기":footprint(1,1),"캣타워":footprint(2,2),"턴테이블":footprint(2,1),"보드게임장":footprint(2,2),"홈시어터":footprint(3,2),"프로젝터":footprint(1,1),"악기 진열장":footprint(2,2),"수집품 진열장":footprint(2,2),"독서 의자":footprint(2,2),"반려동물 장난감":footprint(1,1),"러닝머신":footprint(2,2),
+  "냉장고":footprint(1,2),"조리대":footprint(3,1),"식탁":footprint(3,2),"오븐":footprint(1,2),"커피머신":footprint(1,1),"식기세척기":footprint(1,2),"에스프레소 머신":footprint(1,1),"티 세트":footprint(1,1),"제빵 도구":footprint(2,1),"칵테일 바":footprint(2,2),"와인 냉장고":footprint(1,2),"향신료 선반":footprint(2,1),"요리책 선반":footprint(2,2),
+  "신발장":footprint(2,1),"전신거울":footprint(1,2),"우산꽂이":footprint(1,1),"반려동물 산책용품":footprint(1,1),"자전거 보관대":footprint(2,2),"운동 장비 선반":footprint(2,2),"운동 장비":footprint(2,2),"캠핑 장비":footprint(2,2),
+  "샤워부스":footprint(2,2),"욕조":footprint(3,1),"세면대":footprint(2,1),"세탁기":footprint(1,2),"건조기":footprint(1,2),"입욕제 선반":footprint(2,1),"향수 선반":footprint(2,1),"스킨케어 선반":footprint(2,1),
+  "침대":footprint(2,2),"커플 침대":footprint(3,2),"아기 침대":footprint(2,2),"옷장":footprint(2,2),"화장대":footprint(2,2),"협탁":footprint(1,1),"빔프로젝터":footprint(1,1),"독서등":footprint(1,2),"향수 진열대":footprint(2,1),"레코드 플레이어":footprint(1,1),"작은 게임기":footprint(1,1),"봉제인형":footprint(1,1),
+  "책상":footprint(2,2),"작은 책상":footprint(2,1),"컴퓨터":footprint(2,1),"피아노":footprint(3,2),"기타":footprint(1,2),"그림 도구":footprint(2,2),"재봉틀":footprint(2,2),"운동기구":footprint(2,2),"디지털 드로잉 장비":footprint(2,2),"촬영 장비":footprint(2,2),"보드게임 선반":footprint(2,2),"공예 도구":footprint(2,2),"뜨개 도구":footprint(1,1),"프라모델 작업대":footprint(2,2),"천체망원경":footprint(2,2),"악기":footprint(3,2),
+  "의자":footprint(1,1),"야외 의자":footprint(1,1),"캠핑 의자":footprint(1,1),"찬장":footprint(2,2),"티 테이블":footprint(2,1),"와인장":footprint(2,2),"수납장":footprint(2,1),"선반":footprint(2,2),"보관 상자":footprint(2,1),"수집품 상자":footprint(2,1),"옷걸이":footprint(2,2),"놀이 매트":footprint(2,2),"기저귀 교환대":footprint(2,2),"작업대":footprint(2,2),"화분":footprint(1,2),"작은 테이블":footprint(1,1),"빨래 건조대":footprint(3,1),"원예 도구":footprint(1,1)
 });
+
+const SPRITE_ATLASES=[
+  ["소파","TV","책장","오디오","안마의자","게임기","캣타워","턴테이블","보드게임장","홈시어터","프로젝터","악기 진열장","수집품 진열장","독서 의자","반려동물 장난감","러닝머신","냉장고","조리대","식탁","오븐"],
+  ["커피머신","식기세척기","티 세트","제빵 도구","칵테일 바","와인 냉장고","향신료 선반","요리책 선반","신발장","전신거울","우산꽂이","자전거 보관대","운동 장비 선반","캠핑 장비","샤워부스","욕조","세면대","세탁기","건조기","입욕제 선반"],
+  ["침대","커플 침대","옷장","화장대","협탁","독서등","레코드 플레이어","작은 게임기","봉제인형","책상","컴퓨터","피아노","기타","그림 도구","재봉틀","운동기구","디지털 드로잉 장비","촬영 장비","보드게임 선반","공예 도구"],
+  ["뜨개 도구","프라모델 작업대","천체망원경","악기","의자","찬장","티 테이블","와인장","수납장","놀이 매트","기저귀 교환대","옷걸이","작은 책상","작업대","화분","야외 의자","작은 테이블","빨래 건조대","원예 도구","캠핑 의자"]
+];
+const FURNITURE_SPRITES=Object.fromEntries(SPRITE_ATLASES.flatMap((items,atlasIndex)=>items.map((item,itemIndex)=>[item,`./assets/home-furniture/sprites/furniture-${String(atlasIndex+1).padStart(2,"0")}-${String(itemIndex+1).padStart(2,"0")}.png`])));
+Object.assign(FURNITURE_SPRITES,{"에스프레소 머신":FURNITURE_SPRITES["커피머신"],"반려동물 산책용품":FURNITURE_SPRITES["반려동물 장난감"],"운동 장비":FURNITURE_SPRITES["운동 장비 선반"],"향수 선반":FURNITURE_SPRITES["입욕제 선반"],"스킨케어 선반":FURNITURE_SPRITES["입욕제 선반"],"향수 진열대":FURNITURE_SPRITES["입욕제 선반"],"빔프로젝터":FURNITURE_SPRITES["프로젝터"],"선반":FURNITURE_SPRITES["책장"],"보관 상자":FURNITURE_SPRITES["수납장"],"수집품 상자":FURNITURE_SPRITES["수집품 진열장"],"아기 침대":FURNITURE_SPRITES["침대"]});
 const PROP_ICONS={책:"📕",화분:"🪴",향수:"🧴",액자:"🖼️",컵:"☕",인형:"🧸",수집품:"🏺",조명:"💡"};
 const PROP_LABELS={
   en:{책:"Book",화분:"Plant",향수:"Perfume",액자:"Frame",컵:"Cup",인형:"Doll",수집품:"Collectible",조명:"Lamp"},
@@ -39,6 +55,7 @@ const ICONS={
 };
 
 export const furnitureIcon=item=>ICONS[String(item||"")]||"🪑";
+export const furnitureSprite=item=>FURNITURE_SPRITES[String(item||"")]||FURNITURE_SPRITES["의자"];
 export const furnitureCatalogForRoom=type=>FURNITURE_CATALOG[type]||FURNITURE_CATALOG.other;
 export const furniturePropIcon=item=>PROP_ICONS[String(item||"")]||"✨";
 export const furniturePropLabel=(item,locale="ko")=>PROP_LABELS[locale]?.[String(item||"")]||String(item||"");
@@ -53,13 +70,15 @@ export function furnitureGridForRoom(roomRect,canvasRect){
   };
 }
 
-export function snapFurniturePosition(x,y,grid={}){
+export function snapFurniturePosition(x,y,grid={},itemFootprint={columns:1,rows:1}){
   const columns=Math.max(1,Math.round(Number(grid.columns)||4)),rows=Math.max(1,Math.round(Number(grid.rows)||4));
-  const column=Math.round(clamp(x,0,100)/100*columns-.5),row=Math.round(clamp(y,0,100)/100*rows-.5);
+  const width=Math.max(1,Math.min(columns,Math.round(Number(itemFootprint.columns)||1))),height=Math.max(1,Math.min(rows,Math.round(Number(itemFootprint.rows)||1)));
+  const column=Math.round(clamp(x,0,100)/100*columns-width/2),row=Math.round(clamp(y,0,100)/100*rows-height/2);
+  const startColumn=clamp(column,0,columns-width),startRow=clamp(row,0,rows-height);
   return {
-    x:Number((((clamp(column,0,columns-1)+.5)/columns)*100).toFixed(4)),
-    y:Number((((clamp(row,0,rows-1)+.5)/rows)*100).toFixed(4)),
-    column:clamp(column,0,columns-1),row:clamp(row,0,rows-1)
+    x:Number((((startColumn+width/2)/columns)*100).toFixed(4)),
+    y:Number((((startRow+height/2)/rows)*100).toFixed(4)),
+    column:startColumn,row:startRow
   };
 }
 
@@ -84,7 +103,7 @@ Object.assign(LABELS.ja,{"커플 침대":"ダブルベッド"});
 export const furnitureLabel=(item,locale="ko")=>LABELS[locale]?.[String(item||"")]||String(item||"");
 export const isBedFurniture=item=>/침대/.test(String(item||""));
 export const furnitureCapacity=item=>String(item||"")==="커플 침대"?2:isBedFurniture(item)?1:0;
-export const furnitureFootprint=item=>FURNITURE_FOOTPRINTS[String(item||"")]||{columns:1,rows:1};
+export const furnitureFootprint=item=>FURNITURE_FOOTPRINTS[String(item||"")]||footprint(1,1);
 
 export function normalizeFurniturePlacement(value,index=0){
   if(!value||typeof value!=="object"||Array.isArray(value))return null;
@@ -113,7 +132,6 @@ export function normalizeFurniturePlacements(value){
 const START_SLOTS=[[22,34],[50,34],[78,34],[28,62],[58,62],[82,66],[18,80],[46,80],[72,80]];
 export function newFurniturePlacement(id,item,index=0){
   const [x,y]=START_SLOTS[Math.max(0,Number(index)||0)%START_SLOTS.length];
-  const snapped=snapFurniturePosition(x,y,{columns:4,rows:4});
-  const footprint=furnitureFootprint(item),position=footprint.columns>1||footprint.rows>1?{x:50,y:50}:snapped;
-  return normalizeFurniturePlacement({id,item,x:position.x,y:position.y,scale:1,rotation:0,layer:Math.min(20,index),props:[],assignedCharacterIds:[]},index);
+  const footprint=furnitureFootprint(item),snapped=snapFurniturePosition(x,y,{columns:4,rows:4},footprint);
+  return normalizeFurniturePlacement({id,item,x:snapped.x,y:snapped.y,scale:1,rotation:0,layer:Math.min(20,index),props:[],assignedCharacterIds:[]},index);
 }

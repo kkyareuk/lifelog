@@ -1,13 +1,13 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260824roomtonepairmotion";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260824roomtonepairmotion";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260824roomtonepairmotion";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260824roomtonepairmotion";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260824roomtonepairmotion";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260824roomtonepairmotion";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260824roomtonepairmotion";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260824roomtonepairmotion";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260824roomtonepairmotion";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260824roomtonepairmotion";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260824furnituresprites";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260824furnituresprites";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260824furnituresprites";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260824furnituresprites";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260824furnituresprites";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260824furnituresprites";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260824furnituresprites";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260824furnituresprites";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureLabel,furniturePropIcon,furniturePropLabel,furnitureSprite,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260824furnituresprites";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260824furnituresprites";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -51,6 +51,10 @@ let mobileCharacterEditorDetailsCaptured=false;
 let resetScrollAfterRender=false;
 let navigationTabIntent="";
 let pendingFurnitureSelection=null;
+const closeHomeOccupantSheet=()=>{
+  document.querySelector("[data-home-occupant-sheet]")?.remove();
+  document.querySelector("[data-home-occupant-dismiss]")?.remove();
+};
 const setNavigationTabIntent=tab=>{navigationTabIntent=tab;state.activeTab=tab;return tab};
 const guidePending=new Set();
 const PAGE_GUIDES={
@@ -732,7 +736,7 @@ function openFurniturePlacementDialog(homeId,initialRoomKey=""){
   const dialog=document.createElement("dialog");dialog.className="furniture-placement-dialog";
   const draw=()=>{
     const room=state.homes[homeId]?.rooms?.[roomKey],placements=room?.furniturePlacements||[];
-    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><section><h3>${copy.placed}</h3><div class="furniture-placement-current">${placements.length?placements.map(placement=>`<article><span aria-hidden="true">${furnitureIcon(placement.item)}</span><b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`).join(""):`<p>${copy.empty}</p>`}</div></section><section><h3>${copy.catalog}</h3><div class="room-editor-furniture">${furnitureCatalogForRoom(room.type).map(item=>`<button type="button" data-add-room-furniture="${htmlEsc(item)}"><span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span><b>${htmlEsc(furnitureLabel(item,state.uiLanguage))}</b><small>＋</small></button>`).join("")}</div></section><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><section><h3>${copy.placed}</h3><div class="furniture-placement-current">${placements.length?placements.map(placement=>{const size=furnitureFootprint(placement.item);return `<article><span aria-hidden="true"><img src="${htmlEsc(furnitureSprite(placement.item))}" alt=""></span><b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b><small>${size.columns}×${size.rows}</small>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`}).join(""):`<p>${copy.empty}</p>`}</div></section><section><h3>${copy.catalog}</h3><div class="room-editor-furniture">${furnitureCatalogForRoom(room.type).map(item=>{const size=furnitureFootprint(item);return `<button type="button" data-add-room-furniture="${htmlEsc(item)}"><span class="room-editor-furniture-icon" aria-hidden="true"><img src="${htmlEsc(furnitureSprite(item))}" alt=""></span><b>${htmlEsc(furnitureLabel(item,state.uiLanguage))}</b><small>${size.columns}×${size.rows} · ＋</small></button>`}).join("")}</div></section><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
     dialog.querySelectorAll("[data-furniture-room]").forEach(button=>button.onclick=()=>{roomKey=button.dataset.furnitureRoom;draw()});
     dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
       const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
@@ -854,9 +858,9 @@ function bindFurniturePlacementEditors(){
       if(Math.hypot(event.clientX-startX,event.clientY-startY)>4)dragged=true;
       if(!dragged)return;
       const rawX=(event.clientX-roomRect.left)/roomRect.width*100,rawY=(event.clientY-roomRect.top)/roomRect.height*100;
-      const snapped=snapFurniturePosition(rawX,rawY,furnitureGridForRoom(roomRect,canvasRect));
       const room=state.homes[element.dataset.homeId]?.rooms?.[element.dataset.roomKey];
       const current=room?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);if(!current)return;
+      const snapped=snapFurniturePosition(rawX,rawY,furnitureGridForRoom(roomRect,canvasRect),furnitureFootprint(current.item));
       latest=normalizeFurniturePlacement({...current,x:snapped.x,y:snapped.y});setFurniturePlacementStyle(element,latest);
     };
     const finish=event=>{
@@ -1094,7 +1098,12 @@ function prepareActiveHomeLife(now=new Date()){
     const scene=eventFor(character,now),sceneHomeId=scene?.visitHomeId||character.homeId;
     if(!scene?.home||sceneHomeId!==homeId)return false;
     const entries=timeline(character,now),next=entries.find(entry=>Number(entry?.minute)>minute),sceneMinute=Math.max(0,Number(scene.minute)||minute);
-    contexts[characterId]={scene,roomKey:scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"",sceneKey:`${sceneMinute}:${scene.title||""}:${scene.room||""}:${scene.withId||""}`,interactionId:scene.groupInteraction?scene.interactionId||"":"",partnerIds:scene.groupInteraction?(scene.participantOrder||[characterId,...(scene.withIds||[])]):[],startedAt:dayStart+sceneMinute*60_000,endsAt:next?dayStart+Number(next.minute)*60_000:dayStart+(sceneMinute+60)*60_000};
+    const interactionId=scene.groupInteraction?scene.interactionId||"":"";
+    // 같은 공동 장면의 표현 문구가 다시 계산되어도 이동 장면은 하나다.
+    // 제목을 sceneKey에 넣으면 화면 재진입 때마다 새 행동으로 오인해 두 사람이
+    // 다시 서로에게 달려가는 문제가 생기므로 안정적인 interactionId를 쓴다.
+    const sceneKey=interactionId?`interaction:${interactionId}`:`${sceneMinute}:${scene.title||""}:${scene.room||""}:${scene.withId||""}`;
+    contexts[characterId]={scene,roomKey:scene.room||character.sleepRoomId||Object.keys(state.homes[homeId]?.rooms||{})[0]||"",sceneKey,interactionId,partnerIds:scene.groupInteraction?(scene.participantOrder||[characterId,...(scene.withIds||[])]):[],startedAt:dayStart+sceneMinute*60_000,endsAt:next?dayStart+Number(next.minute)*60_000:dayStart+(sceneMinute+60)*60_000};
     return true;
   });
   return advanceHomeLifeSimulation(homeId,characterIds,contexts,now.getTime(),true);
@@ -1406,7 +1415,7 @@ function downloadCharacterStatisticsReport(dialog){
 
 function openHomeOccupantSheet(button){
   if(!button)return;
-  document.querySelector("[data-home-occupant-sheet]")?.remove();
+  closeHomeOccupantSheet();
   const dialog=document.createElement("aside");
   dialog.className="home-occupant-sheet home-occupant-popover";
   dialog.dataset.homeOccupantSheet="";
@@ -1420,9 +1429,15 @@ function openHomeOccupantSheet(button){
   dialog.querySelector("h2").textContent=button.dataset.occupantName||"이름 없음";
   dialog.querySelector("b").textContent=button.dataset.occupantTitle||"집에서 시간을 보내는 중";
   dialog.querySelector("p").textContent=button.dataset.occupantDesc||"조용히 자기 시간을 보내고 있어요.";
+  const close=()=>closeHomeOccupantSheet();
+  const dismiss=document.createElement("button");
+  dismiss.type="button";dismiss.className="home-occupant-dismiss-layer";dismiss.dataset.homeOccupantDismiss="";
+  dismiss.setAttribute("aria-label",state.uiLanguage==="en"?"Close character log":state.uiLanguage==="ja"?"キャラクターログを閉じる":"캐릭터 로그 닫기");
+  dismiss.onclick=close;
+  document.body.append(dismiss);
   document.body.append(dialog);
   requestAnimationFrame(()=>dialog.classList.add("show"));
-  dialog.querySelector(".home-occupant-popover-close").onclick=()=>dialog.remove();
+  dialog.querySelector(".home-occupant-popover-close").onclick=close;
   clearTimeout(openHomeOccupantSheet.timer);
 }
 
@@ -2974,6 +2989,7 @@ function recordTabHistory(tab,replace=false){
 }
 function navigateToTab(tab,{recordHistory=true}={}){
   if(!APP_TABS.includes(tab))return;
+  if(tab!=="home")closeHomeOccupantSheet();
   if(tab==="character"&&state.activeTab!=="character")state.characterSettingsView="hub";
   const returningToObserve=tab==="observe"&&state.activeTab!=="observe";
   if(returningToObserve)armObserveProfileInputShield();
@@ -4411,7 +4427,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260824roomtonepairmotion").catch(error=>{
+  import("./auth.js?v=20260824furnituresprites").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4426,7 +4442,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260824roomtonepairmotion",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260824furnituresprites",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
