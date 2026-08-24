@@ -26,6 +26,8 @@ assert.match(roomLayout,/ROOM_LAYOUT_GRID=Object\.freeze\(\{columns:12,rows:16/)
 assert.ok(state.indexOf("localStorage.setItem(KEY,serialized)")<state.indexOf("state=prepared"),"영구 저장 전에 실행 상태가 교체됩니다");
 const petFunction=views.slice(views.indexOf("function nativePetForScene"),views.indexOf("function nativeVisualSeed"));
 assert.doesNotMatch(petFunction,/Object\.values\(state\.homes/);
+assert.match(views,/const preferredRoom=h\.rooms\?\.\[pet\.room\]\?pet\.room:""/);
+assert.match(views,/const roomKey=preferredRoom\|\|/);
 assert.match(simulation,/normalizedName==="캣타워"&&!homePets\.some\(pet=>pet\.species==="고양이"\)/);
 assert.match(css,/\.home\.is-editing \.rooms::before/);
 assert.match(css,/background-size:calc\(100% \/ 12\) calc\(100% \/ 16\)/);

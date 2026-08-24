@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824homesurfaces";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824homesurfaces";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260824homesurfaces";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824homesurfaces";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824homesurfaces";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824homesurfaces";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824walllogfix";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824walllogfix";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260824walllogfix";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824walllogfix";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824walllogfix";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824walllogfix";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -931,7 +931,13 @@ export function setRoomFloorImage(homeId,room,data){
 export function updateRoom(homeId,roomKey,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
-  h.rooms[roomKey]={...h.rooms[roomKey],...patch};touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(item=>item.homeId===homeId)).map(c=>c.id));if(persist)save();
+  h.rooms[roomKey]={...h.rooms[roomKey],...patch};
+  // 위치·크기·이름·바닥·벽처럼 화면에만 영향을 주는 편집은 생활 사실을
+  // 바꾸지 않는다. 방 용도나 가구처럼 실제 행동 후보가 달라지는 변경만
+  // 다음 생활 장면에 반영한다.
+  const simulationKeys=new Set(["type","furniture","furniturePlacements"]);
+  if(Object.keys(patch||{}).some(key=>simulationKeys.has(key)))touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(item=>item.homeId===homeId)).map(c=>c.id));
+  if(persist)save();
 }
 export function createHome(){
   const id=`home-${uid()}`;

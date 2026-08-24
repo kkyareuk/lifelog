@@ -7,11 +7,12 @@ const SURFACE_IMAGES=Object.freeze({
   charcoal:"./assets/home-surfaces/charcoal-planks.png",
   walnut:"./assets/home-surfaces/walnut-planks.png"
 });
+const DEFAULT_WALL_IMAGE="./assets/home-walls/drawer-cream-wall.png";
 
 const SURFACE_LABELS=Object.freeze({
-  ko:{apricot:"살구빛 목재",natural:"내추럴 목재",cream:"크림 목재",charcoal:"차콜 목재",walnut:"월넛 목재",custom:"직접 그린 바닥",same:"바닥과 같은 벽"},
-  en:{apricot:"Apricot wood",natural:"Natural wood",cream:"Cream wood",charcoal:"Charcoal wood",walnut:"Walnut wood",custom:"Custom floor",same:"Match the floor"},
-  ja:{apricot:"アプリコット材",natural:"ナチュラル材",cream:"クリーム材",charcoal:"チャコール材",walnut:"ウォールナット材",custom:"自作の床",same:"床と同じ壁"}
+  ko:{apricot:"살구빛 목재",natural:"내추럴 목재",cream:"크림 목재",charcoal:"차콜 목재",walnut:"월넛 목재",custom:"직접 그린 바닥",same:"기본 손그림 벽"},
+  en:{apricot:"Apricot wood",natural:"Natural wood",cream:"Cream wood",charcoal:"Charcoal wood",walnut:"Walnut wood",custom:"Custom floor",same:"Default illustrated wall"},
+  ja:{apricot:"アプリコット材",natural:"ナチュラル材",cream:"クリーム材",charcoal:"チャコール材",walnut:"ウォールナット材",custom:"自作の床",same:"基本の手描き壁"}
 });
 
 export const defaultHomeSurfaceForRoom=roomType=>["entry","bath"].includes(String(roomType||""))?"cream":"natural";
@@ -37,7 +38,7 @@ export function homeSurfaceImage(material,customImage="",roomType="other"){
 
 export function wallSurfaceImage(wallMaterial,floorMaterial,floorImage="",roomType="other"){
   const normalizedWall=normalizeWallSurface(wallMaterial,floorMaterial,roomType);
-  if(normalizedWall==="same")return homeSurfaceImage(floorMaterial,floorImage,roomType);
+  if(normalizedWall==="same")return DEFAULT_WALL_IMAGE;
   return homeSurfaceImage(normalizedWall,"",roomType);
 }
 

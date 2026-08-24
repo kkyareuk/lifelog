@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824homesurfaces";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824homesurfaces";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824walllogfix";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824walllogfix";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1736,10 +1736,40 @@ const EXPANDED_LIFE_ACTIVITY_POOL=[
   ["집에서 물 한 잔을 천천히 마시는 중","목이 마르기 전에 잔을 채워 두고 하던 일을 잠시 멈춘 채 몇 번 나누어 마셨어요.","living"],
   ["집에서 조용한 시간을 보내는 중","아무것도 급히 시작하지 않고 주변 소리를 들으며 생각이 자연스럽게 가라앉기를 기다렸어요.","living"]
 ];
+// 같은 집을 오래 보고 있어도 반복감이 적도록, 생활의 작은 동작을 세 언어로
+// 함께 보강한다. 이 묶음은 특정 취미가 없어도 누구나 자연스럽게 할 수 있는
+// 행동만 담아 캐릭터 설정과 충돌하지 않는다.
+const MULTILINGUAL_HOME_ACTIVITY_POOL=[
+  {room:"living",ko:["거실에서 오늘 들을 음악을 고르는 중","재생 목록을 넘기며 지금 기분에 맞는 곡 몇 개를 골라 순서를 바꾸고 있어요."],en:["Choosing music for the day","They are browsing playlists, picking songs that fit the moment, and changing their order."],ja:["今日聴く音楽を選んでいるところ","プレイリストを眺め、今の気分に合う曲を選んで順番を入れ替えています。"]},
+  {room:"living",ko:["거실에서 리모컨을 모아 두는 중","소파와 탁자 사이에 흩어진 리모컨을 찾아 작동을 확인하고 한곳에 모아 두었어요."],en:["Gathering the remotes","They are finding remotes around the sofa and table, checking them, and putting them together."],ja:["リモコンをまとめているところ","ソファやテーブルの間に散らばったリモコンを探し、動作を確かめて一か所にまとめました。"]},
+  {room:"living",ko:["거실에서 쿠션의 느슨한 실을 정리하는 중","튀어나온 실을 억지로 잡아당기지 않고 작은 가위로 다듬은 뒤 모양을 다시 잡았어요."],en:["Tidying a loose cushion thread","They carefully trimmed a loose thread without pulling it and reshaped the cushion."],ja:["クッションのほつれを整えているところ","飛び出した糸を引っ張らず、小さなはさみで整えて形を直しました。"]},
+  {room:"living",ko:["거실에서 오래된 공연 영상을 보는 중","좋아했던 장면을 다시 찾아 보며 익숙한 부분에서는 박자에 맞춰 손끝을 움직이고 있어요."],en:["Watching an old concert recording","They found a favorite part again and are tapping along with the familiar rhythm."],ja:["昔のライブ映像を見ているところ","好きだった場面を見つけ、知っている部分では指先でリズムを取っています。"]},
+  {room:"kitchen",ko:["주방에서 양념 맛을 확인하는 중","작은 숟가락으로 맛을 본 뒤 모자란 간을 아주 조금씩 더하며 균형을 맞추고 있어요."],en:["Checking the seasoning","They are tasting with a small spoon and adjusting the seasoning a little at a time."],ja:["味付けを確かめているところ","小さなスプーンで味見し、足りない味を少しずつ足して整えています。"]},
+  {room:"kitchen",ko:["주방에서 얼음 틀을 채우는 중","빈 칸마다 물을 넘치지 않게 붓고 냉동실 안에서 기울지 않을 자리를 골랐어요."],en:["Refilling an ice tray","They filled each section without spilling and found a level spot in the freezer."],ja:["製氷皿に水を入れているところ","こぼれないよう各マスに水を入れ、冷凍庫の平らな場所に置きました。"]},
+  {room:"kitchen",ko:["주방에서 주전자 안을 헹구는 중","남은 물을 비우고 안쪽을 깨끗한 물로 헹군 뒤 뚜껑을 열어 말리고 있어요."],en:["Rinsing the kettle","They emptied the old water, rinsed the inside, and left the lid open to dry."],ja:["やかんの中をすすいでいるところ","残った水を捨てて中をすすぎ、ふたを開けたまま乾かしています。"]},
+  {room:"kitchen",ko:["주방에서 남은 음식을 새 접시에 담는 중","먹을 만큼만 보기 좋게 옮겨 담고 나머지는 마르지 않도록 다시 밀폐했어요."],en:["Plating some leftovers","They arranged a small portion on a plate and resealed the rest so it would not dry out."],ja:["残り物を盛り付けているところ","食べる分だけ皿にきれいに盛り、残りは乾かないよう密閉し直しました。"]},
+  {room:"study",ko:["서재에서 충전 케이블을 구분하는 중","서로 비슷한 케이블의 용도를 하나씩 확인하고 꼬이지 않게 느슨하게 말아 두었어요."],en:["Sorting charging cables","They are checking similar cables one by one and loosely coiling each to prevent tangles."],ja:["充電ケーブルを分けているところ","似たケーブルの用途を一つずつ確かめ、絡まないよう緩くまとめています。"]},
+  {room:"study",ko:["서재에서 키보드 틈을 청소하는 중","전원을 끈 뒤 부드러운 솔로 틈의 먼지를 털고 자주 쓰는 키를 천으로 닦았어요."],en:["Cleaning between the keyboard keys","They turned it off, brushed dust from the gaps, and wiped the most-used keys."],ja:["キーボードの隙間を掃除しているところ","電源を切り、柔らかいブラシでほこりを払い、よく使うキーを拭きました。"]},
+  {room:"study",ko:["서재에서 지도에 가 보고 싶은 곳을 표시하는 중","궁금했던 장소를 찾아 작은 표시를 남기고 이동 경로를 천천히 이어 보고 있어요."],en:["Marking places to visit on a map","They are marking interesting places and slowly tracing possible routes between them."],ja:["地図に行きたい場所を記しているところ","気になっていた場所に印を付け、移動経路をゆっくりつないでいます。"]},
+  {room:"study",ko:["서재에서 필기구의 잉크를 시험하는 중","종이 한쪽에 짧은 선을 그어 보고 잘 나오는 것과 교체할 것을 나누고 있어요."],en:["Testing pens and pencils","They are making short marks on scrap paper and separating reliable pens from ones to replace."],ja:["筆記具の書き味を試しているところ","紙の端に短い線を書き、使える物と交換する物を分けています。"]},
+  {room:"bedroom",ko:["침실에서 양말 짝을 맞추는 중","마른 양말을 색과 길이별로 나눈 뒤 같은 짝을 찾아 서랍에 넣고 있어요."],en:["Pairing socks","They are sorting dry socks by color and length, matching pairs, and putting them away."],ja:["靴下の組み合わせをそろえているところ","乾いた靴下を色と長さで分け、同じ組を見つけて引き出しにしまっています。"]},
+  {room:"bedroom",ko:["침실에서 느슨해진 단추를 꿰매는 중","옷감과 비슷한 실을 골라 단추가 흔들리지 않을 만큼만 단단하게 고정했어요."],en:["Sewing on a loose button","They chose matching thread and secured the button firmly without pulling the fabric."],ja:["緩んだボタンを縫い直しているところ","布に合う糸を選び、生地を引っ張らないようしっかり留めました。"]},
+  {room:"bedroom",ko:["침실에서 안경을 닦는 중","렌즈의 먼지를 먼저 털고 부드러운 천으로 가장자리까지 천천히 닦고 있어요."],en:["Cleaning their glasses","They brushed dust from the lenses first and are polishing the edges with a soft cloth."],ja:["眼鏡を拭いているところ","レンズのほこりを先に払い、柔らかい布で端までゆっくり磨いています。"]},
+  {room:"bedroom",ko:["침실에서 전자기기를 충전하는 중","남은 배터리를 확인하고 자주 쓰는 기기부터 케이블을 연결해 안전한 곳에 두었어요."],en:["Charging personal devices","They checked the batteries and connected the most-used devices first in a safe spot."],ja:["電子機器を充電しているところ","残量を確認し、よく使う機器からケーブルにつないで安全な場所に置きました。"]},
+  {room:"bath",ko:["욕실에서 세면용품을 채우는 중","얼마 남지 않은 용기를 확인하고 필요한 것만 새로 채운 뒤 입구를 깨끗이 닦았어요."],en:["Refilling bathroom supplies","They checked nearly empty containers, refilled what was needed, and wiped the openings clean."],ja:["洗面用品を補充しているところ","残り少ない容器を確認し、必要な物だけ補充して口元をきれいに拭きました。"]},
+  {room:"bath",ko:["욕실에서 발매트를 말리는 중","젖은 부분이 겹치지 않게 펼쳐 걸고 바닥에 남은 물기를 닦고 있어요."],en:["Drying the bath mat","They hung it open so the wet parts do not overlap and wiped the remaining water from the floor."],ja:["バスマットを乾かしているところ","濡れた部分が重ならないよう広げて掛け、床の水気を拭いています。"]},
+  {room:"entry",ko:["현관에서 열쇠 자리를 정리하는 중","자주 쓰는 열쇠와 예비 열쇠를 나누고 급할 때 바로 찾을 수 있게 놓았어요."],en:["Organizing the key tray","They separated everyday keys from spares and placed them where they can be found quickly."],ja:["玄関の鍵置きを整えているところ","よく使う鍵と予備の鍵を分け、急いでいてもすぐ見つかるよう置きました。"]},
+  {room:"entry",ko:["현관에서 신발 바닥을 털어 내는 중","홈에 낀 작은 돌과 먼지를 솔로 털고 현관 바닥도 함께 쓸어 냈어요."],en:["Brushing dirt from shoe soles","They brushed small stones and dust from the treads and swept the entry floor too."],ja:["靴底の汚れを落としているところ","溝に入った小石やほこりをブラシで落とし、玄関の床も掃きました。"]},
+  {room:"entry",ko:["현관에서 우산 꽂이를 정리하는 중","완전히 마른 우산과 아직 젖은 우산을 나누고 손잡이가 엉키지 않게 방향을 맞췄어요."],en:["Organizing the umbrella stand","They separated dry umbrellas from damp ones and aligned the handles so they do not tangle."],ja:["傘立てを整えているところ","乾いた傘とまだ濡れた傘を分け、持ち手が絡まないよう向きをそろえました。"]}
+];
+const localizedHomeActivities=()=>MULTILINGUAL_HOME_ACTIVITY_POOL.map(item=>{
+  const copy=item[state.uiLanguage]||item.ko;
+  return[copy[0],copy[1],item.room];
+});
 const homeActivityPoolFor=(c,date=new Date())=>{
   const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
-  const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL].filter(([title])=>{
+  const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL,...localizedHomeActivities()].filter(([title])=>{
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
     if(title.includes("기초 화장품을 바르는"))return appearanceProfile(c).makeupLevel!=="하지 않음";
     if(title.includes("손톱을 정돈하는")){
@@ -2987,7 +3017,8 @@ function liveGapEvent(c,last,n,date){
     ["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"],
     ["집 안을 정돈하는 중","눈에 띄는 물건 몇 개를 제자리로 옮기고 주변을 가볍게 정리하고 있어요.","living"]
   ];
-  const recentTitles=new Set((c.days?.[dayKey(date)]?.entries||[]).filter(item=>minute-Number(item.minute)<=360).map(item=>item.title));
+  const recentDayKeys=Object.keys(c.days||{}).sort().slice(-3);
+  const recentTitles=new Set(recentDayKeys.flatMap(key=>(c.days?.[key]?.entries||[]).map(item=>item.title)));
   const freshScripts=scripts.filter(script=>!recentTitles.has(script[0]));
   const pool=freshScripts.length?freshScripts:scripts;
   const script=pool[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%pool.length];

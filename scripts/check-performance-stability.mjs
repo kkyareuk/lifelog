@@ -17,7 +17,7 @@ const checks=[
   [app.includes("now-lastLocalMediaHydrationAt<30_000")&&app.includes('document.visibilityState==="hidden"'),"중복 사진 복원과 백그라운드 장면 타이머 중단"],
   [css.includes("content-visibility:auto")&&css.includes("animation:native-sleep-head 4.6s ease-in-out infinite")&&homeCss.includes("animation:home-ld-idle 4.8s ease-in-out infinite!important")&&!css.includes("html.native-platform .native-scene-atmosphere::before,\nhtml.native-platform .native-scene-atmosphere::after"),"비가시 영역 지연 렌더는 유지하고 장면·LD 애니메이션은 보존"],
   [prepare.includes('"world-assets/cozy-town.png"')&&prepare.includes('"world-assets/downtown.png"')&&prepare.includes('"assets/character-ui/paper.png"')&&prepare.includes("excludedAndroidAssets.has(relativePath)"),"미사용 고해상도 배경·종이 원본을 Android 패키지에서 제외"],
-  [gradle.includes("versionCode 132")&&gradle.includes('versionName "1.0.121"'),"개발 빌드 132 / 1.0.121 버전"]
+  [gradle.includes("versionCode 133")&&gradle.includes('versionName "1.0.122"'),"개발 빌드 133 / 1.0.122 버전"]
 ];
 
 checks.forEach(([ok,label])=>console.log(`${ok?"PASS":"FAIL"} ${label}`));

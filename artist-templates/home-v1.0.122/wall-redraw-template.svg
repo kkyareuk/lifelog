@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024">
+  <defs>
+    <pattern id="checker" width="32" height="32" patternUnits="userSpaceOnUse">
+      <rect width="32" height="32" fill="#fffdf8"/>
+      <path d="M0 0h16v16H0zm16 16h16v16H16z" fill="#eee8df"/>
+    </pattern>
+  </defs>
+  <rect width="1536" height="1024" fill="url(#checker)"/>
+  <rect x="2" y="2" width="1532" height="1020" fill="none" stroke="#5c4234" stroke-width="4"/>
+  <path d="M0 48H1536M0 894H1536" fill="none" stroke="#d64343" stroke-width="3" stroke-dasharray="18 12"/>
+  <path d="M768 0V1024" fill="none" stroke="#2d83a5" stroke-width="2" stroke-dasharray="12 12" opacity=".7"/>
+</svg>

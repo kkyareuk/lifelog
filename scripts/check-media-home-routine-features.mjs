@@ -8,6 +8,7 @@ const {normalizeRoomLayout}=await import("../room-layout.js");
 const {furnitureCapacity,furnitureFootprint,furnitureGridForRoom,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,snapFurniturePosition,supportsFurnitureProps}=await import("../furniture-layout.js");
 const smallRoom={x:83.3333333333,y:87.5,w:16.6666666667,h:12.5};
 const normalizedOnce=normalizeRoomLayout(smallRoom),normalizedRepeated=normalizeRoomLayout(normalizedOnce);
+const restartLayouts=Array.from({length:20}).reduce(layout=>normalizeRoomLayout(layout),smallRoom);
 
 const checks=[
   [media.includes("return {found:jobs.length,resolved,pending")&&app.includes("refreshLocalMedia")&&app.includes('window.addEventListener("pageshow",restoreForegroundState)'),"앱 복귀 시 기기 사진 복원 재시도"],
@@ -26,7 +27,7 @@ const checks=[
   [views.includes("const scene=event;")&&app.includes("const sceneKey=")&&app.includes("timeline(character,now)"),"집·관찰·생활 로그가 동일한 장면 타임라인을 사용"],
   [views.includes('<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small>')&&app.includes("home-occupant-recent"),"집 캐릭터 카드에 이름·현재 행동을 표시하고 클릭 시 상태·최근 로그 시트 제공"],
   [views.includes("room-furniture-props")&&views.includes("--furniture-grid-cols")&&css.includes(".home.is-editing .room-furniture-layer::before"),"편집 중 방 칸 그리드와 가구에 붙는 소품 표시"],
-  [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱 재시작·테두리 픽셀과 무관한 방 크기 보존"],
+  [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&JSON.stringify(normalizedOnce)===JSON.stringify(restartLayouts)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱을 반복 재시작해도 테두리 픽셀과 무관하게 방 크기 보존"],
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],
   [state.includes('floorMaterial:"cream"')&&state.includes('wallMaterial:"same"')&&state.includes("export function setRoomFloorImage")&&views.includes("wallSurfaceImage")&&views.includes("room-wall-shell")&&css.includes("var(--room-floor-size,260px)")&&app.includes('pickImage("roomFloor"'),"집 화면의 사용자 바닥 5종·벽면·직접 그린 바닥재"],
   [state.includes("export function updateRoutineDays")&&app.includes('name="day"')&&app.includes("여러 개 선택 가능")&&app.includes('data-routine-day-preset="weekdays"'),"주간 일정 여러 요일과 평일·주말·매일 빠른 선택"],
@@ -67,6 +68,7 @@ const checks=[
   ,[css.includes('@keyframes home-activity-watch')&&css.includes('@keyframes home-activity-cook')&&css.includes('@keyframes home-activity-rhythm'),"행동 종류별 생활 애니메이션 다양화"]
   ,[css.includes('background:#fffdf9c9!important')&&css.includes('max-height:min(210px,30dvh)')&&css.includes('.home-occupant-popover h2{font-size:14px!important'),"캐릭터 정보창을 작고 반투명한 하단 시트로 조정"]
   ,[views.includes('floorUp:"Go up one floor"')&&views.includes('floorUp:"一つ上の階へ"')&&views.includes('floorLabel:n=>`F${n}`')&&views.includes('floorLabel:n=>`${n}階`'),"층 이동 영어·일본어 번역"]
+  ,[simulation.includes("MULTILINGUAL_HOME_ACTIVITY_POOL")&&simulation.includes("localizedHomeActivities")&&simulation.includes("recentDayKeys")&&simulation.includes("slice(-3)"),"세 언어 집 활동을 보강하고 최근 3일 같은 행동 반복을 억제"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
