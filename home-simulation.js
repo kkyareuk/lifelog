@@ -93,6 +93,7 @@ function normalizeAgent(value,characterId,roomKeys){
     fromX:clamp(source.fromX,5,95,12),fromY:clamp(source.fromY,14,92,78),
     furnitureId:String(source.furnitureId||"").slice(0,120),item:String(source.item||"").slice(0,80),
     actionKind:String(source.actionKind||"use").slice(0,40),sceneKey:String(source.sceneKey||"").slice(0,300),
+    interactionId:String(source.interactionId||"").slice(0,180),approachingInteraction:Boolean(source.approachingInteraction),
     startedAt:Math.max(0,Number(source.startedAt)||0),endsAt:Math.max(0,Number(source.endsAt)||0),
     arrivesAt:Math.max(0,Number(source.arrivesAt)||0),
     sequence:Math.max(0,Math.floor(Number(source.sequence)||0)),blockedCount:Math.max(0,Math.floor(Number(source.blockedCount)||0))
@@ -151,19 +152,56 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     if(sameScene){
       old.endsAt=sceneEndAt;
       if(old.phase==="walking"&&old.arrivesAt<=now){old.phase="using";old.startedAt=old.arrivesAt||now;old.fromRoomKey=old.roomKey}
-      if(target){old.x=target.x;old.y=target.y;old.roomKey=target.roomKey;old.item=target.item;old.furnitureId=target.id;old.actionKind=furnitureUseProfile(target.item).kind}
+      if(target){if(!context.interactionId){old.x=target.x;old.y=target.y}old.roomKey=target.roomKey;old.item=target.item;old.furnitureId=target.id;old.actionKind=furnitureUseProfile(target.item).kind}
     }else{
       const fallback={roomKey,x:18+(hash(`${characterId}:${sceneKey}:x`)%65),y:35+(hash(`${characterId}:${sceneKey}:y`)%48)};
-      const destination=target||fallback,fromRoom=roomKeys.includes(old?.roomKey)?old.roomKey:roomKey,fromX=Number(old?.x)||12,fromY=Number(old?.y)||82;
+      const destination=target||fallback,currentPoint=currentAgentPoint(old,now),fromRoom=roomKeys.includes(currentPoint.roomKey)?currentPoint.roomKey:roomKey,fromX=old?(Number(currentPoint.x)||12):14+(hash(`${characterId}:spawn-x`)%66),fromY=old?(Number(currentPoint.y)||82):48+(hash(`${characterId}:spawn-y`)%38);
       const arrivesAt=now+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
       current.agents[characterId]=normalizeAgent({characterId,phase:target?"walking":"using",roomKey,fromRoomKey:fromRoom,x:destination.x,y:destination.y,fromX,fromY,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:target?now:sceneStartAt,arrivesAt:target?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }
     const agent=current.agents[characterId];
+    if(!context.interactionId){agent.interactionId="";agent.approachingInteraction=false}
     if(target){
       const reservation=current.reservations[target.id]||{characterId,characterIds:[],until:sceneEndAt};
       reservation.characterIds=[...new Set([...reservation.characterIds,characterId])];reservation.characterId=reservation.characterIds[0];reservation.until=Math.max(reservation.until,sceneEndAt);current.reservations[target.id]=reservation;
     }
   });
+
+  // 공동 장면은 화면에서 좌표만 순간적으로 붙이지 않고, 두 인물이 실제로
+  // 서로를 향해 걸어간 뒤 마주 보는 자리에서 멈추도록 목표를 만든다.
+  const interactionGroups=new Map();
+  eligible.forEach(characterId=>{
+    const context=contexts?.[characterId]||{},interactionId=String(context.interactionId||"");if(!interactionId)return;
+    const members=interactionGroups.get(interactionId)||[];members.push(characterId);interactionGroups.set(interactionId,members);
+  });
+  interactionGroups.forEach((members,interactionId)=>{
+    if(members.length<2)return;
+    const preferred=contexts?.[members[0]]?.partnerIds||[];
+    const ordered=[...members].sort((a,b)=>{const ai=preferred.indexOf(a),bi=preferred.indexOf(b);return (ai<0?99:ai)-(bi<0?99:bi)||a.localeCompare(b)}).slice(0,2);
+    const agents=ordered.map(id=>current.agents[id]).filter(Boolean);if(agents.length<2)return;
+    const roomKey=agents[0].roomKey,anchorX=clamp(agents.reduce((sum,agent)=>sum+Number(agent.x||50),0)/agents.length,22,78,50),anchorY=clamp(agents.reduce((sum,agent)=>sum+Number(agent.y||58),0)/agents.length,22,84,58);
+    const text=ordered.map(id=>`${contexts?.[id]?.scene?.title||""} ${contexts?.[id]?.scene?.desc||""}`).join(" "),close=/뽀뽀|입맞춤|키스|포옹|껴안/.test(text),gap=close?7:15;
+    ordered.forEach((characterId,index)=>{
+      const agent=current.agents[characterId],point=currentAgentPoint(agent,now),destination={roomKey,x:clamp(anchorX+(index?-gap:gap),7,93,50),y:clamp(anchorY+(index?2:-2),16,90,58)};
+      const alreadyHeading=agent.interactionId===interactionId&&agent.roomKey===roomKey&&Math.hypot(Number(agent.x)-destination.x,Number(agent.y)-destination.y)<1;
+      agent.interactionId=interactionId;
+      if(alreadyHeading){if(agent.phase==="walking"&&agent.arrivesAt<=now)agent.phase="using";if(agent.phase!=="walking")agent.approachingInteraction=false;return}
+      const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72));
+      Object.assign(agent,{phase:"walking",fromRoomKey:point.roomKey||roomKey,roomKey,fromX:point.x,fromY:point.y,x:destination.x,y:destination.y,startedAt:now,arrivesAt:now+duration,endsAt:Math.max(agent.endsAt,now+duration+5_000),interactionId,approachingInteraction:true});
+    });
+  });
+
+  // 상호작용 중이 아닐 때는 사람끼리 같은 지점을 차지하지 않게 한다.
+  // 결정적인 방향으로만 밀어 재렌더할 때 좌우가 뒤집히거나 떨리지 않는다.
+  const agents=eligible.map(id=>current.agents[id]).filter(Boolean);
+  for(let i=0;i<agents.length;i+=1)for(let j=i+1;j<agents.length;j+=1){
+    const a=agents[i],b=agents[j];if(a.roomKey!==b.roomKey)continue;
+    const sameInteraction=a.interactionId&&a.interactionId===b.interactionId,minDistance=sameInteraction?8:17,dx=Number(b.x)-Number(a.x),dy=Number(b.y)-Number(a.y),distance=Math.hypot(dx,dy);
+    if(distance>=minDistance)continue;
+    const direction=hash(`${a.characterId}:${b.characterId}`)%2?1:-1,shift=(minDistance-distance)/2+1;
+    a.x=clamp(Number(a.x)-direction*shift,6,94,50);b.x=clamp(Number(b.x)+direction*shift,6,94,50);
+    if(Math.abs(dy)<4){a.y=clamp(Number(a.y)-shift*.35,14,92,55);b.y=clamp(Number(b.y)+shift*.35,14,92,55)}
+  }
 
   current.updatedAt=now;
   const nextAt=eligible.flatMap(id=>[current.agents[id]?.phase==="walking"?current.agents[id]?.arrivesAt:0,current.agents[id]?.endsAt]).filter(value=>value>now).reduce((soonest,value)=>Math.min(soonest,value),now+10*60_000);
@@ -173,4 +211,11 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
 export function homeLifeNextDelay(value,now=Date.now()){
   const agents=Object.values(value?.agents||{}),nextAt=agents.flatMap(agent=>[agent?.phase==="walking"?Number(agent?.arrivesAt)||0:0,Number(agent?.endsAt)||0]).filter(time=>time>now).reduce((soonest,time)=>Math.min(soonest,time),now+10*60_000);
   return clamp(nextAt-now,800,10*60_000,3000);
+}
+
+function currentAgentPoint(agent,now){
+  if(!agent)return {x:12,y:82,roomKey:""};
+  if(agent.phase!=="walking"||!agent.arrivesAt||now>=agent.arrivesAt)return {x:agent.x,y:agent.y,roomKey:agent.roomKey};
+  const duration=Math.max(1,Number(agent.arrivesAt)-Number(agent.startedAt)),progress=clamp((now-Number(agent.startedAt))/duration,0,1,0);
+  return {x:Number(agent.fromX)+(Number(agent.x)-Number(agent.fromX))*progress,y:Number(agent.fromY)+(Number(agent.y)-Number(agent.fromY))*progress,roomKey:progress<.5?agent.fromRoomKey:agent.roomKey};
 }

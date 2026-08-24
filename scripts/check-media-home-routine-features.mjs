@@ -28,7 +28,7 @@ const checks=[
   [views.includes("room-furniture-props")&&views.includes("--furniture-grid-cols")&&css.includes(".home.is-editing .room-furniture-layer::before"),"편집 중 방 칸 그리드와 가구에 붙는 소품 표시"],
   [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱 재시작·테두리 픽셀과 무관한 방 크기 보존"],
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],
-  [state.includes('imageFit:"cover"')&&views.includes('room.imageFit==="contain"?"contain":"cover"')&&css.includes("var(--room-image-fit,cover)"),"방 사진 기본 채우기와 선택적 전체 보기"],
+  [state.includes('floorMaterial:"tile"')&&state.includes("export function setRoomFloorImage")&&views.includes("assets/home-floors/cream-tile.png")&&views.includes("assets/home-floors/wood-floor.png")&&css.includes("var(--room-floor-size,260px)")&&app.includes('pickImage("roomFloor"'),"집 화면 방 사진 대신 방별 마루·타일·직접 그린 바닥재"],
   [state.includes("export function updateRoutineDays")&&app.includes('name="day"')&&app.includes("여러 개 선택 가능")&&app.includes('data-routine-day-preset="weekdays"'),"주간 일정 여러 요일과 평일·주말·매일 빠른 선택"],
   [state.includes("monthlyRoutines:{}")&&app.includes("newMonthlyRoutineDraft")&&views.includes('class="monthly-calendar"')&&views.includes('data-routine-view="monthly"'),"주간·월간 일정 분리와 날짜별 월간 일정"],
   [app.includes('openRoutineDialog("",newRoutineDraft())')&&app.includes('openMonthlyRoutineDialog("",newMonthlyRoutineDraft())'),"일정 추가 취소 시 저장되지 않는 초안 흐름"],

@@ -1,10 +1,10 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824homehudtvjognail";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824homehudtvjognail";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824homehudtvjognail";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824homehudtvjognail";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824floortownconversation";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824floortownconversation";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824floortownconversation";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824floortownconversation";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -12,6 +12,8 @@ const I18N={
 };
 Object.assign(I18N.en,{"같이 TV 보는 중":"Watching TV together","조깅 · 이동 중":"Jogging · moving","집 메뉴":"Home menu","아침 조깅을 마치고 집으로 돌아가는 중":"Heading home after a morning jog","욕실에서 손톱을 정돈하는 중":"Trimming their nails in the bathroom"});
 Object.assign(I18N.ja,{"같이 TV 보는 중":"一緒にテレビを見ているところ","조깅 · 이동 중":"ジョギング・移動中","집 메뉴":"家のメニュー","아침 조깅을 마치고 집으로 돌아가는 중":"朝のジョギングを終えて帰宅中","욕실에서 손톱을 정돈하는 중":"浴室で爪を整えているところ"});
+Object.assign(I18N.en,{"마을 산책 중":"Roaming around town","마을에서 대화 중":"Chatting in town"});
+Object.assign(I18N.ja,{"마을 산책 중":"村を散策中","마을에서 대화 중":"村で会話中"});
 const t=(key,fallback)=>I18N[state.uiLanguage]?.[key]||fallback;
 const homeFloorLabel=floor=>typeof I18N[state.uiLanguage]?.floorLabel==="function"?I18N[state.uiLanguage].floorLabel(floor):`${floor}층`;
 const uiLocale=()=>({en:"en-US",ja:"ja-JP"}[state.uiLanguage]||"ko-KR");
@@ -41,6 +43,8 @@ Object.assign(UI_TEXT.en,{"방 편집":"Edit room","방 이름":"Room name","방
 Object.assign(UI_TEXT.ja,{"방 편집":"部屋を編集","방 이름":"部屋の名前","방 유형":"部屋の種類","방이 있는 층":"部屋の階","방 크기":"部屋の大きさ","방 사진 표시":"部屋写真の表示","인테리어 스타일":"インテリアスタイル","방 제목 색":"部屋名の色","가구 배치":"家具の配置","가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.":"家具を押すと部屋に1つ追加されます。編集画面でドラッグし、下のツールで回転・大きさ・前後関係を調整できます。","선택한 가구 편집":"選択した家具を編集","가구 작게":"家具を小さくする","가구 크게":"家具を大きくする","가구 회전":"家具を回転","가구 뒤로":"家具を後ろへ","가구 앞으로":"家具を前へ","가구":"家具"});
 Object.assign(UI_TEXT.en,{"가구 배치":"Furniture placement","커플 침대":"Couple bed","침대 지정":"Assign bed","최근 생활 로그":"Recent life log"});
 Object.assign(UI_TEXT.ja,{"가구 배치":"家具の配置","커플 침대":"ダブルベッド","침대 지정":"ベッド指定","최근 생활 로그":"最近の生活ログ"});
+Object.assign(UI_TEXT.en,{"바닥재":"Flooring","마루 바닥":"Wood floor","크림 타일":"Cream tile","직접 그린 바닥":"Custom floor","바닥 이미지 첨부":"Add custom floor image","직접 그린 바닥 변경":"Change custom floor","집 화면에는 바닥재가 보이고, 방 사진은 관찰 장면과 집 정보에서만 사용돼요.":"The home view shows flooring. Room photos are used only in observation scenes and home details.","관찰·집 정보용 방 사진":"Room photo for observation and home details","방 사진 변경":"Change room photo","방 사진 추가하기":"Add room photo"});
+Object.assign(UI_TEXT.ja,{"바닥재":"床材","마루 바닥":"木の床","크림 타일":"クリーム色のタイル","직접 그린 바닥":"自作の床","바닥 이미지 첨부":"床画像を追加","직접 그린 바닥 변경":"自作の床を変更","집 화면에는 바닥재가 보이고, 방 사진은 관찰 장면과 집 정보에서만 사용돼요.":"家の画面には床材が表示され、部屋写真は観察シーンと家情報でのみ使用されます。","관찰·집 정보용 방 사진":"観察・家情報用の部屋写真","방 사진 변경":"部屋写真を変更","방 사진 추가하기":"部屋写真を追加"});
 const UI_TEXT_MORE={
   en:{
     "로그인 전에는 예시 캐릭터나 실제 지역이 표시되지 않아요.":"No sample characters or real-world locations are shown before you sign in.",
@@ -762,7 +766,7 @@ function homeMapCard(home){
 function charactersInsideHome(homeId){
   return state.order.map(id=>state.characters[id]).filter(Boolean).filter(character=>{
     const entry=eventFor(character);
-    return Boolean(entry?.home&&(entry.visitHomeId||character.homeId)===homeId);
+    return Boolean(entry?.home&&!entry.transit&&(entry.visitHomeId||character.homeId)===homeId);
   });
 }
 function catalogItem(id){return catalogItems().find(item=>item.id===id)}
@@ -1456,10 +1460,15 @@ function peopleAtPlaceCard(p){
   const visible=group.slice(0,5),hiddenCount=Math.max(0,group.length-visible.length);
   const names=group.map(c=>c.name).join(", ");
   const x=Math.max(9,Math.min(91,p.x)),y=Math.max(12,Math.min(91,p.y+4.5));
-  return `<div class="person place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<span class="place-person-face" role="button" tabindex="0" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</span>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
+  const scenes=visible.map(character=>eventFor(character)),interactionId=scenes.find(scene=>scene?.groupInteraction&&scene.interactionId)?.interactionId;
+  const conversation=Boolean(interactionId&&scenes.filter(scene=>scene?.interactionId===interactionId).length>=2);
+  return `<div class="person place-people ${conversation?"is-town-conversation":""} ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}">${conversation?'<span class="town-conversation-bubbles" aria-hidden="true"><i>•••</i><i>♪</i></span>':""}<span class="place-people-faces">${visible.map(c=>`<span class="place-person-face" role="button" tabindex="0" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</span>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
 }
 function peopleAtHomeCard(home){
-  const group=charactersInsideHome(home.id),travelers=townTravelersMarkup(home.id);if(!group.length&&!travelers)return"";
+  // 지도에 떠도는 인물 레이어는 집마다 중복되지 않도록 첫 집 카드에서만
+  // 한 번 붙인다. 각 인물의 실제 장면이 home이면 아래 후보에서 제외된다.
+  const travelers=home.id===townHomes()[0]?.id?townTravelersMarkup():"";
+  const group=charactersInsideHome(home.id);if(!group.length&&!travelers)return"";
   const visible=group.slice(0,5),hiddenCount=Math.max(0,group.length-visible.length),names=group.map(c=>c.name).join(", ");
   const x=Math.max(9,Math.min(91,home.mapX)),y=Math.max(12,Math.min(91,home.mapY+4.5));
   const residents=group.length?`<div class="person place-people home-place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>`<span class="place-person-face" role="button" tabindex="0" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</span>`).join("")}${hiddenCount?`<b class="place-person-more">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`:"";
@@ -1468,15 +1477,16 @@ function peopleAtHomeCard(home){
 function townTravelersMarkup(homeId=""){
   const travelers=state.order.map(id=>state.characters[id]).filter(Boolean).filter(character=>{
     const scene=eventFor(character);
-    return visibleTownId(character)===state.activeTownId&&scene?.transit&&!placeForEntry(scene)&&(!homeId||scene.destinationHomeId===homeId);
+    return visibleTownId(character)===state.activeTownId&&!scene?.home&&!placeForEntry(scene)&&(!homeId||scene.destinationHomeId===homeId);
   });
   return travelers.map((character,index)=>{
     const scene=eventFor(character),home=state.homes?.[scene.destinationHomeId||character.homeId];
-    const seed=nativeVisualSeed(`${character.id}:${scene.minute}:${scene.movementKind||"transit"}`);
+    const conversation=Boolean(scene.groupInteraction&&scene.interactionId),seed=nativeVisualSeed(`${conversation?scene.interactionId:character.id}:${scene.minute}:${scene.movementKind||"roaming"}`);
     const baseX=home?.townId===state.activeTownId?Number(home.mapX)||50:20+(seed%61),baseY=home?.townId===state.activeTownId?Number(home.mapY)||50:18+((seed>>>5)%61);
-    const x=Math.max(14,Math.min(86,baseX+(scene.returningHome?-13:0))),y=Math.max(17,Math.min(84,baseY+(scene.returningHome?10:0)));
-    const symbol=scene.movementKind==="jog"?"🏃":"➜",label=scene.movementKind==="jog"?t("조깅 · 이동 중","조깅 · 이동 중"):t("이동 중","이동 중");
-    return `<button type="button" class="town-traveler ${scene.movementKind==="jog"?"is-jogging":"is-transit"}" data-person="${esc(character.id)}" style="left:${x}%;top:${y}%;--traveler-delay:${-(index%5)*.7}s" aria-label="${esc(`${character.name} · ${scene.title}`)}"><span class="town-traveler-visual">${avatar(character)}<i aria-hidden="true">${symbol}</i></span><span class="town-traveler-status"><b>${esc(character.name)}</b><small>${esc(label)}</small></span></button>`;
+    const participantIndex=Math.max(0,(scene.participantOrder||[]).indexOf(character.id));
+    const x=Math.max(14,Math.min(86,baseX+(scene.returningHome?-13:0)+(conversation?(participantIndex%2?6:-6):0))),y=Math.max(17,Math.min(84,baseY+(scene.returningHome?10:0)));
+    const symbol=conversation?"💬":scene.movementKind==="jog"?"🏃":scene.transit?"➜":"•",label=conversation?t("마을에서 대화 중","마을에서 대화 중"):scene.movementKind==="jog"?t("조깅 · 이동 중","조깅 · 이동 중"):scene.transit?t("이동 중","이동 중"):t("마을 산책 중","마을 산책 중");
+    return `<button type="button" class="town-traveler ${conversation?"is-conversation":scene.movementKind==="jog"?"is-jogging":scene.transit?"is-transit":"is-roaming"}" data-person="${esc(character.id)}" style="left:${x}%;top:${y}%;--traveler-delay:${-(index%5)*.7}s" aria-label="${esc(`${character.name} · ${scene.title}`)}"><span class="town-traveler-visual">${avatar(character)}<i aria-hidden="true">${symbol}</i></span><span class="town-traveler-status"><b>${esc(character.name)}</b><small>${esc(label)}</small></span></button>`;
   }).join("");
 }
 function buildingDetailDialogs(){
@@ -1730,7 +1740,9 @@ function mobileRoomLayout(roomKeys,roomData){
 }
 function roomStyle(h,key,layout,mobileLayout){
   const room=h.rooms?.[key]||{},manual=room.layout&&typeof room.layout==="object"?room.layout:null;
-  const resolvedMobile=manual||mobileLayout||{x:0,y:0,w:100,h:100},image=room.image;
+  const resolvedMobile=manual||mobileLayout||{x:0,y:0,w:100,h:100};
+  const floorMaterial=room.floorMaterial==="custom"&&room.floorImage?"custom":room.floorMaterial==="tile"||["entry","bath"].includes(room.type)?"tile":"wood";
+  const floorImage=floorMaterial==="custom"?room.floorImage:floorMaterial==="tile"?"./assets/home-floors/cream-tile.png":"./assets/home-floors/wood-floor.png";
   const furnitureColumns=Math.max(1,Math.round((Number(resolvedMobile.w)||100)/100*12));
   const furnitureRows=Math.max(1,Math.round((Number(resolvedMobile.h)||100)/100*16));
   const parts=[
@@ -1746,9 +1758,10 @@ function roomStyle(h,key,layout,mobileLayout){
     `--furniture-grid-rows:${furnitureRows}`,
     `--furniture-cell-w:${(100/furnitureColumns).toFixed(4)}%`,
     `--furniture-cell-h:${(100/furnitureRows).toFixed(4)}%`,
-    `--room-image-fit:${room.imageFit==="contain"?"contain":"cover"}`
+    `--room-image-fit:${room.imageFit==="contain"?"contain":"cover"}`,
+    `--room-floor-size:${floorMaterial==="tile"?"184px":"290px"}`,
+    `background-image:linear-gradient(#1010100a,#1010100a),url('${floorImage}')`
   ];
-  if(image)parts.push(`background-image:linear-gradient(#ffffff30,#ffffff30),url('${image}')`);
   return `style="${parts.join(";")}"`;
 }
 function roomFurnitureMarkup(homeId,roomKey,room,edit){
@@ -1764,7 +1777,7 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   const presentation=nativeScenePresentation(character,scene,"sd"),walking=agent?.phase==="walking",sleeping=!walking&&presentation.actionKind==="sleep",conversing=Boolean(options.conversing);
   const actionKind=walking?"walking":conversing&&agent?.actionKind?agent.actionKind:presentation.actionKind,actionProp=nativeSceneActionProp(character,scene,actionKind,text,true);
   const duration=Math.max(1,Number(agent?.endsAt||0)-Number(agent?.startedAt||0)),elapsed=Math.max(0,Math.min(duration,Date.now()-Number(agent?.startedAt||0)));
-  const coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${agent.phase}${coupleBedClass}${conversationClass}${canvasClass}`:"";
+  const coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}${agent?.approachingInteraction?" is-approaching-conversation":""}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${agent.phase}${coupleBedClass}${conversationClass}${canvasClass}`:"";
   const x=agent?Math.max(5,Math.min(95,Number(agent.x)+(bedSlot===0?-22:bedSlot===1?22:0))):50;
   const y=agent?Math.max(5,Math.min(95,Number(agent.y)+(bedSlot===0?-10:bedSlot===1?10:0))):50;
   const fromX=agent?Math.max(5,Math.min(95,Number(agent.fromX)||x)):x,fromY=agent?Math.max(5,Math.min(95,Number(agent.fromY)||y)):y;
@@ -1772,7 +1785,7 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   const sceneActivity=String(title).replace(`${room.name||roomKey}에서 `,"").replace(`${room.name||roomKey} `,"");
   const itemLabel=agent?.item?furnitureLabel(agent.item,state.uiLanguage):"";
   const activity=conversing&&itemLabel?state.uiLanguage==="en"?`${itemLabel} · chatting`:state.uiLanguage==="ja"?`${itemLabel}を使いながら会話中`:`${itemLabel}을 사용하며 대화 중`:sceneActivity;
-  const speech=conversing?'<i class="home-person-chat-bubble" aria-hidden="true">•••</i>':"";
+  const speech=conversing?`<i class="home-person-chat-bubble" aria-hidden="true">${agent?.approachingInteraction?"!":"•••"}</i>`:"";
   return `<div class="home-person ${lifeClass} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" style="${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${speech}${sleeping?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span><span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small></span></div>`;
 }
 function homeInteractionSummary(scene){
@@ -1972,11 +1985,21 @@ function homeCard(id,chars){
     return {roomKey,title:`${room}에서 ${titleMap[pet.species]||titleMap.기타}`,desc};
   };
   const petScenes=Object.fromEntries(pets.map(p=>[p.id,petScene(p)]));
+  const petMotionSeed=pet=>[...(String(pet.id||pet.name)+new Date().toDateString())].reduce((sum,ch)=>sum+ch.charCodeAt(0),0);
+  const petPoint=(pet,step)=>{const seed=petMotionSeed(pet);return {x:18+((seed+step*37)%65),y:28+((seed*3+step*29)%54)}};
+  const visibleAgentPoint=agent=>{
+    if(!agent||agent.phase!=="walking"||!agent.arrivesAt||Date.now()>=agent.arrivesAt)return{x:Number(agent?.x)||50,y:Number(agent?.y)||55};
+    const progress=Math.max(0,Math.min(1,(Date.now()-Number(agent.startedAt||Date.now()))/Math.max(1,Number(agent.arrivesAt)-Number(agent.startedAt||Date.now()))));
+    return{x:Number(agent.fromX)+(Number(agent.x)-Number(agent.fromX))*progress,y:Number(agent.fromY)+(Number(agent.y)-Number(agent.fromY))*progress};
+  };
   const petMotion=(pet,index)=>{
-    const seed=[...(String(pet.id||pet.name)+new Date().toDateString())].reduce((sum,ch)=>sum+ch.charCodeAt(0),0);
+    const seed=petMotionSeed(pet);
     const sleeping=/자는 중|잠들|낮잠/.test(`${petScenes[pet.id]?.title||""} ${petScenes[pet.id]?.desc||""}`);
-    const point=step=>({x:18+((seed+step*37)%65),y:28+((seed*3+step*29)%54)});
-    const motionSlot=Math.floor(Date.now()/(12*60_000)),current=point(motionSlot),previous=point(motionSlot-1);
+    const motionSlot=Math.floor(Date.now()/(12*60_000)),roomKey=petScenes[pet.id]?.roomKey;
+    const occupied=[...Object.values(lifeAgents).filter(agent=>agent?.roomKey===roomKey).map(visibleAgentPoint),...pets.slice(0,index).filter(other=>petScenes[other.id]?.roomKey===roomKey).map(other=>petPoint(other,motionSlot))];
+    let chosenSlot=motionSlot,current=petPoint(pet,chosenSlot),attempt=0;
+    while(occupied.some(point=>Math.hypot(point.x-current.x,point.y-current.y)<20)&&attempt<7){attempt+=1;chosenSlot=motionSlot+attempt*3;current=petPoint(pet,chosenSlot)}
+    const previous=petPoint(pet,chosenSlot-1);
     return {x:current.x,y:current.y,dx:sleeping?0:previous.x-current.x,dy:sleeping?0:previous.y-current.y,duration:sleeping?0:9+(seed%5),delay:-(index%4)*1.3,sleeping,motion:["sniff","look","stretch","pounce"][(seed+motionSlot)%4]};
   };
   const roomHtml=visibleRoomKeys.map(key=>{
@@ -2018,10 +2041,9 @@ function homeCard(id,chars){
         partners.forEach(other=>renderedPeople.add(other.id));
         const summary=homeInteractionSummary(scene);
         if(summary.kind==="talk"){
-          const orderedPartners=[...partners].sort((a,b)=>state.order.indexOf(a.id)-state.order.indexOf(b.id)),partnerAgents=orderedPartners.map(person=>lifeAgents[person.id]).filter(Boolean);
-          const anchorX=partnerAgents.length?partnerAgents.reduce((sum,item)=>sum+Number(item.x||50),0)/partnerAgents.length:50,anchorY=partnerAgents.length?partnerAgents.reduce((sum,item)=>sum+Number(item.y||55),0)/partnerAgents.length:55;
+          const orderedPartners=[...partners].sort((a,b)=>state.order.indexOf(a.id)-state.order.indexOf(b.id));
           orderedPartners.slice(0,2).forEach((person,slot)=>{
-            const source=lifeAgents[person.id]||{},paired={...source,x:Math.max(18,Math.min(82,anchorX+(slot===0?-14:14))),y:Math.max(18,Math.min(86,anchorY+(slot===0?0:3)))};
+            const paired=lifeAgents[person.id]||{};
             peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),paired,room,key,index+slot,coupleBedSlots.get(person.id)??-1,{conversing:true,slot:slot+1}));
           });
         }else peopleMarkup.push(homeLifeInteractionMarkup(partners,partners.map(sceneFor),lifeAgents,room,key,index));

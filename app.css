@@ -1245,6 +1245,7 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person .home-person-status small{display:-webkit-box;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-walking{animation:home-life-walk var(--life-duration) linear var(--life-delay) both}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-walking .home-person-visual{animation:home-life-step .42s ease-in-out infinite}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-walking.is-approaching-conversation .home-person-visual{animation:home-life-eager-step .28s ease-in-out infinite}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-using .home-person-visual{animation:home-person-float 3.2s var(--home-float-delay,0s) ease-in-out infinite}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-waiting{opacity:.94}
 .home-interaction-card{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:min(184px,94%);padding:0;border:0;background:transparent;filter:drop-shadow(0 7px 7px #19223844)}
@@ -1268,6 +1269,10 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .home-life-using:is(.scene-action-cook,.scene-action-eat) .home-person-visual{animation:home-activity-cook 1.25s steps(2,end) infinite!important}
 .home-life-using:is(.scene-action-study,.scene-action-create) .home-person-visual{animation:home-activity-focus 3.1s ease-in-out infinite!important}
 .home-life-using:is(.scene-action-music,.scene-action-exercise,.scene-action-play) .home-person-visual{animation:home-activity-rhythm 1.15s ease-in-out infinite!important}
+.home-life-using.scene-action-exercise .home-person-visual{animation:home-activity-exercise .92s cubic-bezier(.45,0,.55,1) infinite!important}
+.home-life-using.is-conversing:not(.scene-action-exercise) .home-person-visual{transform-origin:50% 88%}
+.home-life-using.is-conversing.conversation-slot-1:not(.scene-action-exercise) .home-person-visual{animation:home-conversation-left 1.45s ease-in-out infinite!important}
+.home-life-using.is-conversing.conversation-slot-2:not(.scene-action-exercise) .home-person-visual{animation:home-conversation-right 1.45s .24s ease-in-out infinite!important}
 .home-life-using.scene-action-sleep .home-person-visual{animation:home-activity-sleep 5.2s ease-in-out infinite!important}
 .home-interaction-kiss .home-interaction-avatar:first-of-type{animation:home-interaction-kiss-left 1.8s ease-in-out infinite}.home-interaction-kiss .home-interaction-avatar:nth-of-type(2){animation:home-interaction-kiss-right 1.8s ease-in-out infinite}.home-interaction-kiss .home-interaction-visual>em{animation:home-interaction-heart 1.8s ease-in-out infinite}
 .home-interaction-hug .home-interaction-avatar:first-of-type{animation:home-interaction-hug-left 2.2s ease-in-out infinite}.home-interaction-hug .home-interaction-avatar:nth-of-type(2){animation:home-interaction-hug-right 2.2s ease-in-out infinite}
@@ -1294,6 +1299,7 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 @keyframes home-tv-cry{0%,100%{transform:translateY(0) rotate(0)}48%{transform:translateY(2px) rotate(-2deg)}70%{transform:translateY(-1px) rotate(1deg)}}
 @keyframes home-life-walk{from{transform:translate(calc(-50% + var(--life-dx,0cqw)),calc(-72% + var(--life-dy,0cqh)))}to{transform:translate(-50%,-72%)}}
 @keyframes home-life-step{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}
+@keyframes home-life-eager-step{0%,100%{transform:translate(-1px,1px) rotate(-4deg)}50%{transform:translate(2px,-5px) rotate(4deg)}}
 @keyframes home-talk-bubble{0%,100%{opacity:.6;transform:translateY(2px) scale(.94)}50%{opacity:1;transform:translateY(-2px) scale(1.04)}}
 @keyframes home-activity-watch{0%,100%{transform:translateY(0) rotate(-1deg)}45%{transform:translateY(-2px) rotate(1deg)}52%{transform:translateY(-2px) rotate(-2deg)}}
 @keyframes home-activity-rest{0%,100%{transform:translateY(1px) rotate(-1deg)}50%{transform:translateY(-2px) rotate(1deg)}}
@@ -1301,6 +1307,9 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 @keyframes home-activity-cook{0%,100%{transform:translate(-1px,0) rotate(-1deg)}50%{transform:translate(2px,-2px) rotate(1deg)}}
 @keyframes home-activity-focus{0%,100%{transform:translateY(0) rotate(0)}38%{transform:translateY(1px) rotate(1deg)}62%{transform:translateY(-1px) rotate(-1deg)}}
 @keyframes home-activity-rhythm{0%,100%{transform:translateY(1px) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes home-activity-exercise{0%,100%{transform:translateY(1px) rotate(-2deg) scaleY(.97)}28%{transform:translate(-2px,-6px) rotate(3deg) scaleY(1.03)}55%{transform:translateY(2px) rotate(1deg) scaleY(.94)}76%{transform:translate(2px,-5px) rotate(-3deg) scaleY(1.02)}}
+@keyframes home-conversation-left{0%,100%{transform:translateY(1px) rotate(-2deg)}36%{transform:translate(2px,-3px) rotate(3deg)}64%{transform:translate(1px,0) rotate(1deg)}}
+@keyframes home-conversation-right{0%,100%{transform:translateY(0) rotate(2deg)}34%{transform:translate(-1px,1px) rotate(-1deg)}62%{transform:translate(-2px,-3px) rotate(-3deg)}}
 @keyframes home-activity-sleep{0%,100%{transform:translateY(1px) scale(1)}50%{transform:translateY(0) scale(1.015)}}
 @keyframes home-pet-roam{
   0%{transform:translate(calc(-50% + var(--pet-dx,0cqw)),calc(-50% + var(--pet-dy,0cqh))) rotate(-3deg)}
@@ -1347,8 +1356,13 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .town-traveler-visual{position:relative;display:grid;place-items:end center;width:54px;height:58px}.town-traveler-visual :is(.avatar,.sprite){width:48px!important;height:54px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important;animation:town-traveler-step .46s steps(2,end) infinite}
 .town-traveler-visual>i{position:absolute;right:-8px;top:-5px;display:grid;place-items:center;min-width:24px;height:24px;padding:0 3px;border:1px solid #fff9;border-radius:50%;background:#273449e8;color:#fff;font:normal 13px/1 sans-serif;box-shadow:0 3px 8px #0005;animation:town-traveler-signal 1.2s ease-in-out infinite}
 .town-traveler-status{display:grid;gap:1px;max-width:92px;padding:4px 7px;border-radius:10px;background:#172033c9;box-shadow:0 3px 8px #0005;text-align:center}.town-traveler-status b,.town-traveler-status small{overflow:hidden;color:#fff!important;-webkit-text-fill-color:#fff!important;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px #000}.town-traveler-status b{font-size:10px}.town-traveler-status small{font-size:8px}
+.town-traveler.is-conversation{animation-duration:8.4s}.town-traveler.is-conversation .town-traveler-visual :is(.avatar,.sprite){animation:town-conversation-walk .64s steps(2,end) infinite}.town-traveler.is-conversation:nth-of-type(even) .town-traveler-visual{transform:scaleX(-1)}.town-traveler.is-conversation:nth-of-type(even) .town-traveler-visual>i{transform:scaleX(-1)}
+.place-people.is-town-conversation{z-index:25!important}.place-people.is-town-conversation .place-person-face:first-of-type{animation:town-conversation-left 1.2s ease-in-out infinite}.place-people.is-town-conversation .place-person-face:nth-of-type(2){animation:town-conversation-right 1.2s .18s ease-in-out infinite}.town-conversation-bubbles{position:absolute;left:50%;bottom:100%;z-index:5;display:flex;gap:24px;transform:translateX(-50%);pointer-events:none}.town-conversation-bubbles i{display:grid;place-items:center;min-width:25px;height:18px;padding:0 5px;border:1px solid #493b31;border-radius:12px;background:#fffdf7;color:#493b31;font:900 8px/1 sans-serif;box-shadow:0 2px 5px #0004;animation:home-talk-bubble 1.55s ease-in-out infinite}.town-conversation-bubbles i:nth-child(2){animation-delay:.55s}
 @keyframes town-traveler-route{0%,100%{transform:translate(-50%,-50%) translate(-34px,18px)}28%{transform:translate(-50%,-50%) translate(2px,-18px)}57%{transform:translate(-50%,-50%) translate(38px,-2px)}82%{transform:translate(-50%,-50%) translate(12px,22px)}}
 @keyframes town-traveler-step{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes town-conversation-walk{0%,100%{transform:translateY(1px) rotate(-3deg)}50%{transform:translateY(-4px) rotate(3deg)}}
+@keyframes town-conversation-left{0%,100%{transform:translateX(-2px) rotate(-2deg)}50%{transform:translateX(2px) translateY(-3px) rotate(2deg)}}
+@keyframes town-conversation-right{0%,100%{transform:translateX(2px) rotate(2deg)}50%{transform:translateX(-2px) translateY(-2px) rotate(-2deg)}}
 @keyframes town-traveler-signal{0%,100%{transform:scale(.9);opacity:.72}50%{transform:scale(1.06);opacity:1}}
 @media(prefers-reduced-motion:reduce){.town-traveler,.town-traveler :is(.avatar,.sprite),.town-traveler-visual>i{animation:none!important}}
 
@@ -2739,8 +2753,8 @@ html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-s
     border:4px solid #fff;
     border-radius:18px;
     background-position:center;
-    background-size:100% 100%,var(--room-image-fit,cover);
-    background-repeat:no-repeat;
+    background-size:100% 100%,var(--room-floor-size,260px) var(--room-floor-size,260px);
+    background-repeat:no-repeat,repeat;
     box-sizing:border-box;
   }
 }
@@ -3149,8 +3163,8 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     border:2px solid #ffffffdd!important;
     border-radius:13px!important;
     background-position:center!important;
-    background-size:100% 100%,var(--room-image-fit,cover)!important;
-    background-repeat:no-repeat!important;
+    background-size:100% 100%,var(--room-floor-size,260px) var(--room-floor-size,260px)!important;
+    background-repeat:no-repeat,repeat!important;
     box-shadow:inset 0 0 0 999px #0c142122,0 7px 18px #0005!important;
     box-sizing:border-box;
     container-type:size;
@@ -3175,7 +3189,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .home-interaction-card{max-width:min(96%,176px)}
   html.native-app[data-active-tab="home"] .home-interaction-status{max-width:100px!important;padding:5px 7px!important}
   html.native-app[data-active-tab="home"] .room-pets{inset:0;display:block;max-width:none;transform:none;overflow:visible;pointer-events:none}
-  html.native-app[data-active-tab="home"] .room-pet.home-pet-roaming{position:absolute;left:var(--pet-x);top:var(--pet-y);z-index:5;max-width:132px;pointer-events:auto;transform:translate(-50%,-50%);will-change:transform;animation:home-pet-roam var(--pet-roam-duration,10s) steps(10,end) var(--pet-roam-delay,0s) infinite alternate both}
+  html.native-app[data-active-tab="home"] .room-pet.home-pet-roaming{position:absolute;left:var(--pet-x);top:var(--pet-y);z-index:3;max-width:132px;pointer-events:auto;transform:translate(-50%,-50%);will-change:transform;animation:home-pet-roam var(--pet-roam-duration,10s) steps(10,end) var(--pet-roam-delay,0s) infinite alternate both}
   html.native-app[data-active-tab="home"] .room-pet img,
   html.native-app[data-active-tab="home"] .room-pet-emoji{width:34px;height:34px;font-size:23px}
   html.native-app[data-active-tab="home"] .room-pet-status{min-width:54px;max-width:82px;padding:3px 5px!important}

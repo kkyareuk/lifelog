@@ -14,7 +14,9 @@ const includedDirectories=new Set(["fonts","icons","assets","world-assets","vend
 const excludedAndroidAssets=new Set([
   "world-assets/cozy-town.png",
   "world-assets/downtown.png",
-  "assets/character-ui/paper.png"
+  "assets/character-ui/paper.png",
+  "assets/home-floors/wood-floor-original.png",
+  "assets/home-floors/cream-tile-original.png"
 ]);
 const includedFiles=new Set([
   "index.html","app.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
@@ -112,7 +114,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260824homehudtvjognail";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260824floortownconversation";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

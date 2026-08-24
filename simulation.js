@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824homehudtvjognail";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824homehudtvjognail";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824floortownconversation";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824floortownconversation";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2398,6 +2398,7 @@ function build(c,date=new Date()){
           returningHome:true,
           movementKind:"jog",
           destinationHomeId:currentHomeId,
+          holdMinutes:12,
           mood:"개운함"
         })));
       }else list.push(homeEntry(c,minute,script[0],script[1],script[2]));
@@ -2915,6 +2916,14 @@ export function forceCharactersHome(characterIds,date=new Date()){
 function liveGapEvent(c,last,n,date){
   const gap=30+(hash(`${c.id}:${dayKey(date)}:${last?.minute??n}:reaction-gap`)%31);
   const minute=Math.min(n,(Number(last?.minute)||n)+gap);
+  if(last?.transit&&last?.returningHome){
+    const copy={
+      ko:{title:"현관에서 신발과 겉옷을 정리하는 중",desc:"밖에서 돌아와 현관에 도착했어요. 신발의 흙먼지를 털고 겉옷과 소지품을 제자리에 둔 뒤 집 안으로 들어갈 준비를 하고 있어요."},
+      en:{title:"Putting away shoes and outerwear by the entry",desc:"They have arrived home from outside. They are brushing dust off their shoes and putting away their outerwear and belongings before heading further inside."},
+      ja:{title:"玄関で靴と上着を片づけているところ",desc:"外から帰って玄関に到着しました。靴のほこりを払い、上着と持ち物を所定の場所に戻してから家の中へ入る準備をしています。"}
+    }[state.uiLanguage]||{title:"현관에서 신발과 겉옷을 정리하는 중",desc:"밖에서 돌아와 현관에 도착했어요. 신발의 흙먼지를 털고 겉옷과 소지품을 제자리에 둔 뒤 집 안으로 들어갈 준비를 하고 있어요."};
+    return homeEntry(c,minute,copy.title,copy.desc,"entry",{arrivedFromTransit:true,holdMinutes:8,mood:"귀가"});
+  }
   if(last?.placeId){
     const currentTown=state.towns.find(t=>t.id===(last.townId||c.townId))||townFor(c);
     const place=(currentTown?.places||[]).find(p=>p.id===last.placeId);
@@ -3009,7 +3018,7 @@ function baseEventFor(c,date=new Date()){
   if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);
   const past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n);
   const last=past.at(-1);
-  const nextGap=last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30;
+  const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){
     const plannedMinute=Math.max(Number(last.minute)+nextGap,Number(last.routineEndMinute)||0);
     // 앱이 잠깐 백그라운드였던 경우 실제로 바뀌었어야 할 분을 보존한다.
