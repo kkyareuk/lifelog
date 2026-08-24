@@ -244,7 +244,7 @@ html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog) form{
   color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] dialog::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
-html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.mobile-character-dashboard[data-character-ui-version="4"] *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *){color:var(--muted)!important}
+html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint):not(.mobile-character-dashboard[data-character-ui-version="4"] *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *){color:var(--muted)!important}
 html[data-color-mode][data-visual-theme] .current-visual-theme{
   border-color:var(--theme-border)!important;
   background:linear-gradient(125deg,var(--theme-surface),var(--theme-surface-strong))!important;

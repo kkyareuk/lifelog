@@ -59,6 +59,6 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 124")&&gradleSource.includes('versionName "1.0.113"'),"Android 버전을 124로 올렸다");
+ok(gradleSource.includes("versionCode 125")&&gradleSource.includes('versionName "1.0.114"'),"Android 버전을 125로 올렸다");
 
 console.log(`home life simulation checks passed: ${checks}`);

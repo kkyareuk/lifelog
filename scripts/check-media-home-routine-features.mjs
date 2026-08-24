@@ -55,6 +55,15 @@ const checks=[
   ,[css.includes("home-edit-toolbar:not(.home-native-edit-tools)")&&css.includes("grid-template-columns:repeat(4,82px)"),"집 편집 세부 도구를 기본 우측 메뉴와 분리"]
   ,[views.includes("coupleBedSlots")&&views.includes("bedSlot===0?-22")&&views.includes("bedSlot===0?-10")&&css.includes(".home-life-person.is-couple-bed-user"),"커플 침대의 두 사용자를 서로 다른 2×2 칸에 배치"]
   ,[views.includes('"뽀뽀하는 중":"Kissing"')&&views.includes('"뽀뽀하는 중":"キスしているところ"'),"구성원 상호작용 카드 영어·일본어 번역"]
+  ,[views.includes('class="home-native-house-name" data-home-switcher-toggle')&&views.includes("homeExteriorSource(h)")&&!views.includes('home-native-switcher-button'),"집 이름 자체로 집 이동 메뉴를 열고 집 외형 아이콘 표시"]
+  ,[views.includes('home-native-pill home-native-floor-label')&&views.includes('class="home-native-elevator"')&&app.includes('[data-home-floor-step]')&&views.includes("homeFloorLabel(activeFloor)"),"기존 집 이동 자리의 현재 층과 우측 엘리베이터 층 이동"]
+  ,[css.includes('.home-native-page.home-ui-hidden :is(.home-native-floor-label')&&!css.includes('.home-native-page.home-ui-hidden :is(.home-native-header'),"UI 숨김 후에도 상단바 유지"]
+  ,[css.includes('width:112px;pointer-events:none')&&css.includes('.home-native-ui-toggle{left:7px;bottom:max(21px,env(safe-area-inset-bottom));width:100px!important'),"편집 완료·UI 숨김 조합형 버튼의 캡 안쪽 글자 폭 확보"]
+  ,[css.includes('html:not(.native-app) .room-heading.room-title-dark')&&css.includes('.room-heading .room-edit-hint{color:#fff!important;-webkit-text-fill-color:#fff!important'),"집 방 이름과 층·격자 편집 문구를 흰색으로 고정"]
+  ,[views.includes('--life-dx:${fromX-x}cqw')&&css.includes('@keyframes home-life-walk{from{transform:translate')&&!css.includes('@keyframes home-life-walk{from{left:'),"캐릭터 이동을 left/top 재배치 없이 transform 애니메이션으로 처리"]
+  ,[views.includes('class="room-pet home-pet-roaming"')&&css.includes('@keyframes home-pet-roam')&&css.includes('will-change:transform;animation:home-pet-roam'),"반려생물의 저발열 transform 이동 애니메이션"]
+  ,[views.includes('home-interaction-speech')&&css.includes('@keyframes home-talk-bubble'),"대화 상호작용 말풍선 효과"]
+  ,[views.includes('floorUp:"Go up one floor"')&&views.includes('floorUp:"一つ上の階へ"')&&views.includes('floorLabel:n=>`F${n}`')&&views.includes('floorLabel:n=>`${n}階`'),"층 이동 영어·일본어 번역"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
