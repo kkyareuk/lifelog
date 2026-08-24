@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825roomlayerbookoverview";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260825roomlayerbookoverview";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825roomlayerbookoverview";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825roomlayerbookoverview";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260825roomlayerbookoverview";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookrootfix";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260825characterbookrootfix";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookrootfix";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookrootfix";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260825characterbookrootfix";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2452,9 +2452,9 @@ function character(){
     <div class="overview-field overview-attraction"><b>${t("선호하는 특성","선호하는 특성")}</b><button type="button" data-profile-tags="attractionTraits">${(c.attractionTraits||[]).length?esc(c.attractionTraits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
     <div class="overview-field overview-disliked-attraction"><b>${t("비선호하는 특성","비선호하는 특성")}</b><button type="button" data-profile-tags="dislikedAttractionTraits">${(c.dislikedAttractionTraits||[]).length?esc(c.dislikedAttractionTraits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
   </section>`;
-  const overviewControls=`<nav class="character-overview-page-controls" aria-label="${esc(t("개요 페이지 이동","개요 페이지 이동"))}"><button type="button" data-character-overview-pane="basic" ${overviewPane==="basic"?"disabled":""} aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>${overviewPane==="basic"?"1":"2"}</b><button type="button" data-character-overview-pane="life" ${overviewPane==="life"?"disabled":""} aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>`;
+  const overviewControls=overviewPane==="basic"?`<nav class="character-overview-section-tabs" aria-label="${esc(t("개요 페이지 이동","개요 페이지 이동"))}"><button type="button" class="character-overview-section-tab on" data-character-overview-pane="basic">${t("기본","기본")}</button><button type="button" class="character-overview-section-tab" data-character-overview-pane="life">${t("생활","생활")}</button><button type="button" class="character-overview-section-tab" data-character-overview-pane="life">${t("이끌림","이끌림")}</button></nav>`:`<nav class="character-overview-page-controls" aria-label="${esc(t("개요 페이지 이동","개요 페이지 이동"))}"><button type="button" data-character-overview-pane="basic" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>2</b></nav>`;
   const overviewNextBookmark=`<button type="button" class="character-overview-next-bookmark" data-character-pane="body"><b>${t("모양","모양")}</b></button>`;
-  const profileOverviewPane=`<section class="character-profile-overview-page">${overviewControls}${overviewPane==="basic"?overviewBasic:overviewLife}${overviewNextBookmark}</section>`;
+  const profileOverviewPane=`<section class="character-profile-overview-page" data-overview-page="${overviewPane}">${overviewControls}${overviewPane==="basic"?overviewBasic:`${overviewLife}${overviewNextBookmark}<img class="character-overview-ink" src="./assets/home-ui/ink.png" alt="" aria-hidden="true">`}</section>`;
   const bodyAppearance=c.bodyProfile?.appearance||{};
   const bodyBasics=`<section class="profile-basic-settings body-basic-settings"><div class="settings-section-heading"><span><small>QUICK SETTINGS</small><h3>간단 설정</h3></span><p>캐릭터를 알아보는 데 중요한 외형만 먼저 골라요.</p></div><div class="health-field-grid"><label>외모가 눈에 띄는 정도<select data-field="appearanceLevel">${["매우 추함","못생김","눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"].map(value=>`<option ${value===(c.appearanceLevel||"보통")?"selected":""}>${value}</option>`).join("")}</select></label>${profileSelect("체형","bodySize",BODY_SIZES,c.bodyProfile?.bodySize||"설정하지 않음")}${profileSelect("현재 머리색","appearance.hairColor",HAIR_COLORS,bodyAppearance.hairColor||"설정하지 않음")}${profileSelect("머리 기장","appearance.hairLength",HAIR_LENGTHS,bodyAppearance.hairLength||"설정하지 않음")}${profileSelect("화장 정도","appearance.makeupLevel",MAKEUP_LEVELS,bodyAppearance.makeupLevel||"하지 않음")}</div></section>`;
   const bodyPane=`<section class="character-traits-pane body-pane"><div class="traits-pane-heading"><h2>${esc(c.name)}의 신체</h2><p>전체 설정에서는 신체·외형·건강·접근성 항목을 접지 않고 모두 표시해요.</p></div>${bodyBasics}<section class="settings-complete-group body-complete-settings"><div class="settings-section-heading"><span><small>ALL BODY DETAILS</small><h3>전체 신체 항목</h3></span></div>${physicalAppearanceSettings(c)}${healthAccessibilitySettings(c)}</section></section>`;
@@ -2534,8 +2534,8 @@ function character(){
         ${hubActions}
         ${draftActions}
       </section>
-      <section class="mobile-character-full-settings ${state.characterSettingsView==="full"?"is-open":""}" data-character-full-ui-version="6" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};background:#5d4032 url('./assets/character-ui/character-full-shell.svg') center/100% 100% no-repeat!important">
-        <img class="character-full-shell" src="./assets/character-ui/character-full-shell.svg" alt="" aria-hidden="true">
+      <section class="mobile-character-full-settings ${state.characterSettingsView==="full"?"is-open":""}" data-character-full-ui-version="7" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
+        <span class="character-full-stage" aria-hidden="true"><img class="character-full-wood" src="./assets/character-ui/character-wood-background.png" alt=""><img class="character-full-book" src="./assets/character-ui/book.png" alt=""></span>
         <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
         <button type="button" class="character-full-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 페이지로 돌아가기","캐릭터 페이지로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
         ${firstPageBookmark}
