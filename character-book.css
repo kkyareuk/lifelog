@@ -44,8 +44,7 @@ body #app .character-book-v8 .character-book-v8-tab{
   color:var(--tab-ink)!important;-webkit-text-fill-color:var(--tab-ink)!important;box-shadow:0 .7cqw 1.1cqw #27160c55!important;
   transform:rotate(var(--tab-rotation))!important;transform-origin:0 0!important;pointer-events:auto!important
 }
-body #app .character-book-v8 .character-book-v8-tab[data-book-pane="profile"],
-body #app .character-book-v8 .character-book-v8-tab[data-book-pane="visual"]{z-index:3!important}
+body #app .character-book-v8 .character-book-v8-tab[data-book-pane="profile"]{z-index:3!important}
 body #app .character-book-v8 .character-book-v8-tab>b{color:inherit!important;-webkit-text-fill-color:inherit!important;font:700 3.55cqw/1 "KoPubWorldBatangPro",serif!important;letter-spacing:-.08em!important;white-space:nowrap!important;text-shadow:none!important}
 .character-book-v8-tab.on{filter:saturate(1.08) brightness(1.04)!important}
 .character-book-v8-tab-icon{position:absolute!important;left:1.95cqw!important;top:10.9cqw!important;width:10.2cqw!important;height:10.2cqw!important;max-width:none!important;object-fit:contain!important;background:transparent!important}
@@ -78,7 +77,7 @@ body #app .character-book-v8 .character-book-v8-save{
   background:#65493b!important;background-image:linear-gradient(180deg,#7b5c4b 0 49%,#5b4034 50% 100%)!important;
   color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;
   box-shadow:inset 0 0 0 .48cqw #9d7a61,inset 0 0 0 .85cqw #3a251b,0 .85cqw .65cqw #23150e66!important;
-  font:700 3.1cqw/1 "KoPubWorldBatangPro",serif!important
+  font:700 3.1cqw/1 "KCCHanbit",sans-serif!important
 }
 
 /* First image/theme page. Coordinates are kept in the same 412px-wide unit. */
@@ -108,9 +107,6 @@ body #app .character-book-v8 .character-full-placement-card{left:6.974cqw!import
 
 /* Overview page 1 and 2. Field positions are copied from the two supplied SVGs. */
 .character-book-v8 .character-profile-overview-page{position:absolute!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;pointer-events:none!important}
-.character-book-v8 .character-overview-section-tabs{position:absolute!important;z-index:12!important;left:37.1cqw!important;top:23.1cqw!important;display:flex!important;align-items:center!important;gap:2.1cqw!important;width:auto!important;margin:0!important;padding:0!important;transform:rotate(3.66623deg)!important;transform-origin:0 0!important;pointer-events:auto!important}
-body #app .character-book-v8 .character-overview-section-tab{display:grid!important;place-items:center!important;width:17cqw!important;height:6.55cqw!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:48% 52% 48% 52%/42% 45% 55% 58%!important;background:#704c39!important;background-image:none!important;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;box-shadow:inset 0 0 0 .65cqw #25180f,inset 0 0 0 1cqw #9b755b,0 .9cqw .8cqw #20120a66!important;font:700 3cqw/1 "KoPubWorldBatangPro",serif!important}
-.character-book-v8 .character-overview-section-tab:nth-child(2){transform:rotate(4deg)!important}.character-book-v8 .character-overview-section-tab:nth-child(3){transform:rotate(9deg)!important}.character-book-v8 .character-overview-section-tab.on{filter:brightness(1.12)!important}
 .character-book-v8 .character-overview-page-controls{position:absolute!important;z-index:12!important;left:69.41cqw!important;top:26.456cqw!important;display:grid!important;grid-template-columns:8.5cqw 4cqw 8.5cqw!important;align-items:center!important;gap:1.4cqw!important;width:auto!important;margin:0!important;padding:0!important;transform:rotate(3.32548deg)!important;pointer-events:auto!important}
 body #app .character-book-v8 .character-overview-page-controls button{display:grid!important;place-items:center!important;width:8.5cqw!important;height:8.5cqw!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:1px solid #7c644f!important;border-radius:50%!important;background:#fffaf0!important;background-image:none!important;color:#35271e!important;-webkit-text-fill-color:#35271e!important;box-shadow:0 .45cqw 1cqw #3a241d30!important;font:700 3.5cqw/1 sans-serif!important}
 .character-book-v8 .character-overview-page-controls>b{color:#35271e!important;-webkit-text-fill-color:#35271e!important;font:700 3.4cqw/1 "KCCHanbit",sans-serif!important;text-align:center!important}

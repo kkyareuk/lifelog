@@ -7268,13 +7268,13 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .character-overview-section-tabs button:nth-child(2){transform:rotate(4deg)!important}
   html.native-app[data-active-tab="character"] .character-overview-section-tabs button:nth-child(3){transform:rotate(9deg)!important}
   html.native-app[data-active-tab="character"] .character-overview-section-tabs button.on{filter:brightness(1.12)!important}
-  html.native-app[data-active-tab="character"] .character-overview-page-controls{
+  html.native-app[data-active-tab="character"] .mobile-character-full-settings .character-overview-page-controls{
     position:absolute!important;z-index:8!important;left:81.3cqw!important;top:188.6cqw!important;display:grid!important;grid-template-columns:5.8cqw 3cqw!important;align-items:center!important;gap:.6cqw!important;width:auto!important;margin:0!important;padding:0!important;transform:rotate(3.32548deg)!important;pointer-events:auto!important
   }
-  html.native-app[data-active-tab="character"] .character-overview-page-controls button{
+  html.native-app[data-active-tab="character"] .mobile-character-full-settings .character-overview-page-controls button{
     display:grid!important;place-items:center!important;width:5.8cqw!important;height:5.8cqw!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:1px solid #7c644f!important;border-radius:50%!important;background:#fffaf0!important;color:#35271e!important;-webkit-text-fill-color:#35271e!important;box-shadow:0 .45cqw 1cqw #3a241d30!important;font:700 2.6cqw/1 sans-serif!important
   }
-  html.native-app[data-active-tab="character"] .character-overview-page-controls>b{color:#35271e!important;-webkit-text-fill-color:#35271e!important;font:700 2.7cqw/1 "KCCHanbit",sans-serif!important;text-align:center!important}
+  html.native-app[data-active-tab="character"] .mobile-character-full-settings .character-overview-page-controls>b{color:#35271e!important;-webkit-text-fill-color:#35271e!important;font:700 2.7cqw/1 "KCCHanbit",sans-serif!important;text-align:center!important}
   html.native-app[data-active-tab="character"] .character-overview-next-bookmark{
     position:absolute!important;z-index:8!important;left:58.65cqw!important;top:195.92cqw!important;display:grid!important;place-items:center!important;width:15.05cqw!important;height:9.21cqw!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:#0e514e!important;color:#fffbd6!important;-webkit-text-fill-color:#fffbd6!important;box-shadow:0 .8cqw 1.3cqw #2e1b1230!important;transform:rotate(8.53029deg)!important;pointer-events:auto!important
   }

@@ -5,13 +5,14 @@ const views=read("views.js");
 const app=read("app.js");
 const css=read("app.css");
 const bookCss=read("character-book.css");
+const interfaceCss=read("interface-system.css");
 const sceneCss=read("home-scene-layout.css");
 const state=read("state.js");
 const gradle=read("android/app/build.gradle");
 
 const checks=[
   [views.includes('const fullActivePane=["visual","profile","body","personality","taste","worldTaste"]'),"이미지 첫 장과 개요 이후 다섯 목차가 서로 다른 상태"],
-  [views.includes('["visual","이미지"')&&views.indexOf('["visual","이미지"')<views.indexOf('["profile","개요"'),"이미지 책갈피가 개요보다 먼저 배치됨"],
+  [!views.includes('["visual","이미지"')&&views.includes('["profile","개요"'),"프로필 사진 첫 장은 하단 모양 책갈피로만 열고 상단 청록 책갈피는 제거"],
   [views.includes('data-full-pane="${fullActivePane}"')&&views.includes('fullActivePane==="visual"?characterFullOverview(c)'),"전체설정 첫 장이 전용 이미지 페이지를 사용"],
   [views.includes('data-open-character-layout')&&views.includes('data-character-layout-dialog'),"배치 조정 카드와 전체화면 팝업 연결"],
   [app.includes('const pointers=new Map()')&&app.includes('measured.distance/gesture.distance')&&app.includes('measured.angle-gesture.angle'),"한 손 이동·두 손 확대축소·회전 제스처"],
@@ -23,13 +24,15 @@ const checks=[
   [views.includes('class="character-full-image-slot icon" data-image="icon">${currentIcon}</button>')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치됨"],
   [bookCss.includes('.character-full-image-slot.ld{')&&bookCss.includes('.character-full-image-slot.icon{')&&bookCss.includes('background:transparent!important;box-shadow:none!important'),"LD와 아이콘 뒤 회색 판 제거"],
   [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="basic"')&&views.includes('data-character-overview-pane="life"')&&state.includes('characterOverviewPane:"basic"'),"개요 기본·생활 두 장을 독립된 책 페이지로 구성"],
-  [views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&views.includes('character-book-v8-shape')&&bookCss.includes('left:58.6478cqw!important;top:195.9199cqw!important'),"개요 소탭·페이지 화살표와 하단 모양 포스트잇 배치"],
+  [!views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&views.includes('class="character-book-v8-shape" data-character-pane="visual"')&&bookCss.includes('left:58.6478cqw!important;top:195.9199cqw!important'),"개요 소탭은 제거하고 페이지 화살표와 하단 모양 포스트잇만 배치"],
+  [views.includes('const fullSave=fullActivePane==="visual"?""')&&bookCss.includes('font:700 3.1cqw/1 "KCCHanbit"'),"프로필 사진 첫 장의 불필요한 하단 장식을 숨기고 저장 버튼은 KCC 글꼴 사용"],
+  [interfaceCss.includes(':not(.character-book-v8 *)')&&css.includes('.mobile-character-full-settings .character-overview-page-controls'),"전역 테마와 구형 모바일 개요 규칙이 새 SVG 책의 색상·화살표 위치를 덮지 않음"],
   [views.includes('overview-wake-habit')&&views.includes('overview-sleep-habit')&&views.includes('overview-food-habit')&&views.includes('overview-walking-style'),"개요 생활 페이지의 기상·취침·식사·걸음걸이 항목 연결"],
   [views.includes('overview-job-title')&&views.includes('overview-family-home')&&views.includes('overview-license')&&views.includes('overview-alcohol'),"개요 기본 페이지의 전체 항목을 실제 캐릭터 데이터 입력에 연결"],
   [bookCss.includes('transform:rotate(1.44787deg)!important')&&bookCss.includes('background:#dad1bd!important'),"개요 기본 내용의 SVG 회전과 값 종이 색상"],
   [css.includes('background-repeat:repeat-x')&&css.includes('background-size:auto 100%'),"벽지를 찌그러뜨리지 않고 높이에 맞춰 가로 타일링"],
   [css.includes('body.is-building-size-preview .mobile-town-shell')&&css.includes('background:transparent!important'),"건물 크기 조절 중 설정창 투명 실시간 미리보기"],
-  [gradle.includes('versionCode 145')&&gradle.includes('versionName "1.0.134"'),"Android 개발 버전 145 / 1.0.134"]
+  [gradle.includes('versionCode 146')&&gradle.includes('versionName "1.0.135"'),"Android 개발 버전 146 / 1.0.135"]
 ];
 
 let failed=0;
