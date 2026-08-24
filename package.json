@@ -30,7 +30,7 @@
     "test:character-group-layout": "node scripts/check-character-group-layout.mjs",
     "test:performance": "node scripts/check-performance-stability.mjs",
     "test:home-life": "node scripts/check-home-life-simulation.mjs",
-    "test:furniture-sprites": "node scripts/check-furniture-sprites.mjs"
+    "test:home-surfaces": "node scripts/check-home-surfaces.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
