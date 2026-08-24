@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260824-home-hud-tv-jog-nail";
+const CACHE_VERSION="drawer-village-v20260824-character-svg-gesture-wall-tile";
 const CORE=[
   "./",
   "./index.html",

@@ -1,14 +1,14 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260824walllogtablet";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260824walllogtablet";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260824walllogtablet";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260824walllogtablet";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260824walllogtablet";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260824walllogtablet";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260824walllogtablet";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260824walllogtablet";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260824walllogtablet";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824walllogtablet";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260824walllogtablet";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260824charactersvggesture";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260824charactersvggesture";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260824charactersvggesture";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260824charactersvggesture";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260824charactersvggesture";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260824charactersvggesture";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260824charactersvggesture";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260824charactersvggesture";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260824charactersvggesture";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824charactersvggesture";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260824charactersvggesture";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1583,7 +1583,7 @@ function openCharacterDeleteDialog(characterId){
   dialog.showModal();
 }
 
-const defaultCharacterSceneLayout=()=>({x:0,y:0,scale:1,actionX:0,actionY:0});
+const defaultCharacterSceneLayout=()=>({x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0});
 const characterSceneLayout=(character,mode)=>({
   ...defaultCharacterSceneLayout(),
   ...(character?.homeSceneLayout?.[mode]||{})
@@ -1592,6 +1592,7 @@ const clampSceneLayout=(layout,mode="sd")=>({
   x:Math.max(mode==="ld"?-50:-45,Math.min(mode==="ld"?50:45,Number(layout.x)||0)),
   y:Math.max(mode==="ld"?-90:-45,Math.min(mode==="ld"?90:45,Number(layout.y)||0)),
   scale:Math.max(.45,Math.min(2.5,Number(layout.scale)||1)),
+  rotation:((Number(layout.rotation)||0)+540)%360-180,
   actionX:Math.max(-45,Math.min(45,Number(layout.actionX)||0)),
   actionY:Math.max(-45,Math.min(45,Number(layout.actionY)||0))
 });
@@ -1602,6 +1603,7 @@ function applyCharacterSceneLayoutPreview(characterId,mode,layout){
     layer.style.setProperty("--character-art-y",`${layout.y}%`);
     layer.style.setProperty("--character-art-scale",String(layout.scale));
     layer.style.setProperty("--character-render-scale",String(globalScale*layout.scale));
+    layer.style.setProperty("--character-art-rotation",`${layout.rotation||0}deg`);
     layer.style.setProperty("--character-action-x",`${layout.actionX}%`);
     layer.style.setProperty("--character-action-y",`${layout.actionY}%`);
   });
@@ -1645,81 +1647,74 @@ function bindCharacterSceneLayoutEditors(){
       if(note)note.textContent=copy.note;
       showToast(copy.toast);
     });
-    editor.querySelectorAll('[data-home-layout-nudge]').forEach(button=>button.addEventListener("click",()=>{
-      const mode=editor.dataset.mode==="ld"?"ld":"sd";
-      const current=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode),mode);
-      const target=button.dataset.homeLayoutTarget==="action"?"action":"art";
-      const dx=Number(button.dataset.homeLayoutDx)||0;
-      const dy=Number(button.dataset.homeLayoutDy)||0;
-      const scale=Number(button.dataset.homeLayoutScale)||0;
-      const next={...current};
-      if(target==="action"){
-        next.actionX+=dx;
-        next.actionY+=dy;
-      }else{
-        next.x+=dx;
-        next.y+=dy;
-        next.scale+=scale;
+    const canvas=editor.querySelector('[data-home-layout-gesture-surface]');
+    if(!canvas)return;
+    const pointers=new Map();
+    let gesture=null,frame=0;
+    const activeMode=()=>editor.dataset.mode==="ld"?"ld":"sd";
+    const activeLayer=()=>editor.querySelector(`[data-home-layout-layer="${activeMode()}"]`);
+    const pendingLayout=()=>{
+      const layer=activeLayer();
+      if(layer?.dataset.pendingLayout){try{return JSON.parse(layer.dataset.pendingLayout)}catch{}}
+      return clampSceneLayout(characterSceneLayout(state.characters[characterId],activeMode()),activeMode());
+    };
+    const pointPair=()=>[...pointers.values()].slice(0,2);
+    const measurePair=pair=>{
+      const [a,b]=pair;
+      return {centerX:(a.x+b.x)/2,centerY:(a.y+b.y)/2,distance:Math.max(12,Math.hypot(b.x-a.x,b.y-a.y)),angle:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI};
+    };
+    const beginGesture=kind=>{
+      const pair=pointPair(),starting=pendingLayout();
+      gesture=pair.length>=2?{kind:"art",starting,...measurePair(pair)}:pair.length===1?{kind,starting,startX:pair[0].x,startY:pair[0].y}:null;
+    };
+    const preview=layout=>{
+      const mode=activeMode(),layer=activeLayer(),clamped=clampSceneLayout(layout,mode);
+      if(layer)layer.dataset.pendingLayout=JSON.stringify(clamped);
+      cancelAnimationFrame(frame);
+      frame=requestAnimationFrame(()=>applyCharacterSceneLayoutPreview(characterId,mode,clamped));
+    };
+    canvas.addEventListener("pointerdown",event=>{
+      if(event.button!==undefined&&event.button!==0)return;
+      event.preventDefault();
+      pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      try{canvas.setPointerCapture(event.pointerId)}catch{}
+      beginGesture(event.target.closest('[data-home-layout-action]')?"action":"art");
+      canvas.classList.add("is-gesturing");
+    },{passive:false});
+    canvas.addEventListener("pointermove",event=>{
+      if(!pointers.has(event.pointerId)||!gesture)return;
+      event.preventDefault();
+      pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      const rect=canvas.getBoundingClientRect(),pair=pointPair(),next={...gesture.starting};
+      if(pair.length>=2){
+        const measured=measurePair(pair);
+        next.x=gesture.starting.x+(measured.centerX-gesture.centerX)/Math.max(1,rect.width)*100;
+        next.y=gesture.starting.y+(measured.centerY-gesture.centerY)/Math.max(1,rect.height)*100;
+        next.scale=gesture.starting.scale*(measured.distance/gesture.distance);
+        next.rotation=gesture.starting.rotation+(measured.angle-gesture.angle);
+      }else if(pair.length===1){
+        const dx=(pair[0].x-gesture.startX)/Math.max(1,rect.width)*100;
+        const dy=(pair[0].y-gesture.startY)/Math.max(1,rect.height)*100;
+        if(gesture.kind==="action"){next.actionX=gesture.starting.actionX+dx;next.actionY=gesture.starting.actionY+dy}
+        else{next.x=gesture.starting.x+dx;next.y=gesture.starting.y+dy}
       }
-      persistCharacterSceneLayout(characterId,mode,next);
+      preview(next);
+    },{passive:false});
+    const finishPointer=event=>{
+      if(!pointers.has(event.pointerId))return;
+      pointers.delete(event.pointerId);
+      try{canvas.releasePointerCapture(event.pointerId)}catch{}
+      if(pointers.size){beginGesture(gesture?.kind||"art");return}
+      canvas.classList.remove("is-gesturing");
+      const mode=activeMode(),layer=activeLayer(),pending=pendingLayout();
+      if(layer)delete layer.dataset.pendingLayout;
+      persistCharacterSceneLayout(characterId,mode,pending);
       const note=editor.querySelector('.home-layout-save-note');
       if(note)note.textContent=`${mode.toUpperCase()} 배치를 저장했습니다.`;
-    }));
-    editor.querySelectorAll('[data-home-layout-layer]').forEach(layer=>{
-      const mode=layer.dataset.homeLayoutLayer;
-      const canvas=editor.querySelector('.home-layout-preview');
-      const art=layer.querySelector('[data-home-layout-drag="art"]');
-      const action=layer.querySelector('[data-home-layout-drag="action"]');
-      const resizeHandle=layer.querySelector('[data-home-layout-resize]');
-      const startDrag=(event,kind)=>{
-        if(event.button!==undefined&&event.button!==0)return;
-        event.preventDefault();event.stopPropagation();
-        const starting=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode),mode);
-        // Always measure against the whole preview. The old SD implementation
-        // measured its small art layer, making a short finger movement jump all
-        // the way to the +/-45% limit on Android.
-        const canvasRect=(mode==="ld"?layer:canvas).getBoundingClientRect();
-        const visualArt=mode==="ld"?(art.querySelector(".scene-ld-art")||art.querySelector(".home-layout-fallback")||art):art;
-        const artRect=visualArt.getBoundingClientRect();
-        const startDistance=Math.max(20,Math.hypot(event.clientX-(artRect.left+artRect.width/2),event.clientY-(artRect.top+artRect.height/2)));
-        const pointerId=event.pointerId;
-        event.currentTarget.setPointerCapture?.(pointerId);
-        const move=moveEvent=>{
-          if(moveEvent.pointerId!==pointerId)return;
-          moveEvent.preventDefault();
-          const dx=(moveEvent.clientX-event.clientX)/Math.max(1,canvasRect.width)*100;
-          const dy=(moveEvent.clientY-event.clientY)/Math.max(1,canvasRect.height)*100;
-          const next={...starting};
-          if(kind==="art"){next.x=starting.x+dx;next.y=starting.y+dy}
-          else if(kind==="action"){next.actionX=starting.actionX+dx;next.actionY=starting.actionY+dy}
-          else{
-            const distance=Math.max(12,Math.hypot(moveEvent.clientX-(artRect.left+artRect.width/2),moveEvent.clientY-(artRect.top+artRect.height/2)));
-            next.scale=starting.scale*(distance/startDistance);
-          }
-          const clamped=clampSceneLayout(next,mode);
-          layer.dataset.pendingLayout=JSON.stringify(clamped);
-          applyCharacterSceneLayoutPreview(characterId,mode,clamped);
-        };
-        const finish=finishEvent=>{
-          if(finishEvent.pointerId!==pointerId)return;
-          window.removeEventListener("pointermove",move);
-          window.removeEventListener("pointerup",finish);
-          window.removeEventListener("pointercancel",finish);
-          try{event.currentTarget.releasePointerCapture?.(pointerId)}catch{}
-          const pending=layer.dataset.pendingLayout?JSON.parse(layer.dataset.pendingLayout):starting;
-          delete layer.dataset.pendingLayout;
-          persistCharacterSceneLayout(characterId,mode,pending);
-          const note=editor.querySelector('.home-layout-save-note');
-          if(note)note.textContent=`${mode.toUpperCase()} 배치를 저장했습니다.`;
-        };
-        window.addEventListener("pointermove",move,{passive:false});
-        window.addEventListener("pointerup",finish);
-        window.addEventListener("pointercancel",finish);
-      };
-      art?.addEventListener("pointerdown",event=>{if(!event.target.closest('[data-home-layout-resize]'))startDrag(event,"art")},{passive:false});
-      action?.addEventListener("pointerdown",event=>startDrag(event,"action"),{passive:false});
-      resizeHandle?.addEventListener("pointerdown",event=>startDrag(event,"resize"),{passive:false});
-    });
+      gesture=null;
+    };
+    canvas.addEventListener("pointerup",finishPointer);
+    canvas.addEventListener("pointercancel",finishPointer);
   });
 }
 
@@ -2016,7 +2011,7 @@ function bind(){
   });
   $("[data-open-full-character-settings]")?.addEventListener("click",()=>{
     state.characterSettingsView="full";
-    state.characterPane="profile";
+    state.characterPane="visual";
     save(true);
     render();
   });
@@ -2024,6 +2019,10 @@ function bind(){
     state.characterSettingsView="hub";
     save(true);
     render();
+  });
+  $("[data-open-character-layout]")?.addEventListener("click",()=>{
+    const dialog=$("[data-character-layout-dialog]");
+    if(dialog&&!dialog.open)dialog.showModal();
   });
   $$("[data-open-character-pane]").forEach(el=>el.onclick=()=>{
     state.characterPane=el.dataset.openCharacterPane;
@@ -2736,8 +2735,38 @@ function bind(){
   $("[data-cloud-upload]")?.addEventListener("click",async()=>window.ParallelCityAuth?.upload());
   $("[data-cloud-download]")?.addEventListener("click",async()=>window.ParallelCityAuth?.download());
   $$("[data-place-field]").forEach(el=>{
+    const field=el.dataset.placeField;
+    if(field==="imageScale"){
+      let previewing=false;
+      const preview=()=>{
+        updatePlace(el.dataset.placeId,{imageScale:Number(el.value)},false);
+        const card=document.querySelector(`.place[data-place="${CSS.escape(el.dataset.placeId)}"]`);
+        card?.style.setProperty("--place-scale",el.value);
+        el.closest("label")?.style.setProperty("--live-building-scale",`"${Math.round(Number(el.value)*100)}%"`);
+      };
+      const finish=()=>{
+        if(!previewing)return;
+        previewing=false;
+        window.removeEventListener("pointerup",finish);
+        window.removeEventListener("pointercancel",finish);
+        preview();
+        document.body.classList.remove("is-building-size-preview");
+        save(true);
+      };
+      const begin=()=>{
+        if(previewing)return;
+        previewing=true;
+        document.body.classList.add("is-building-size-preview");
+        window.addEventListener("pointerup",finish);
+        window.addEventListener("pointercancel",finish);
+      };
+      el.addEventListener("pointerdown",begin);
+      el.addEventListener("input",()=>{begin();preview()});
+      el.addEventListener("change",finish);
+      el.addEventListener("blur",finish);
+      return;
+    }
     const apply=()=>{
-      const field=el.dataset.placeField;
       const numeric=["imageScale","spicy","sweet"].includes(field);
       updatePlace(el.dataset.placeId,{[field]:numeric?Number(el.value):el.value},false);
       if(field==="type"){
@@ -2745,10 +2774,6 @@ function bind(){
         save();
         renderPreservingPageScroll(el);
         return;
-      }
-      if(field==="imageScale"){
-        const card=document.querySelector(`.place[data-place="${CSS.escape(el.dataset.placeId)}"]`);
-        card?.style.setProperty("--place-scale",el.value);
       }
       save(el.tagName==="SELECT");
     };
@@ -4424,7 +4449,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260824walllogtablet").catch(error=>{
+import("./auth.js?v=20260824charactersvggesture").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4439,7 +4464,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260824walllogtablet",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260824charactersvggesture",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824walllogtablet";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824walllogtablet";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824walllogtablet";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824walllogtablet";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824walllogtablet";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824charactersvggesture";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824charactersvggesture";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824charactersvggesture";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824charactersvggesture";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824charactersvggesture";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -42,6 +42,10 @@ Object.assign(UI_TEXT.en,{"캐릭터 관리":"Character management"});
 Object.assign(UI_TEXT.ja,{"캐릭터 관리":"キャラクター管理"});
 Object.assign(UI_TEXT.en,{"개요":"Overview","취향":"Preferences","소지품":"Belongings","전체 설정":"Full settings"});
 Object.assign(UI_TEXT.ja,{"개요":"概要","취향":"好み","소지품":"持ち物","전체 설정":"全体設定"});
+Object.assign(UI_TEXT.en,{"캐릭터 테마색":"Character theme colors","주 색상":"Primary color","보조 색상":"Secondary color","두 색상을 그라데이션으로 사용":"Use both colors as a gradient","프로필 사진 추가하기":"Add profile photo","배치 조정하기":"Adjust placement","LD 사진 추가하기":"Add LD image","아이콘 추가하기":"Add icon","손가락으로 직접 배치":"Direct touch placement","한 손가락으로 이동하고, 두 손가락으로 확대·축소와 회전을 조절해요.":"Drag with one finger. Pinch and rotate with two fingers.","배치 편집 닫기":"Close placement editor"});
+Object.assign(UI_TEXT.ja,{"캐릭터 테마색":"キャラクターのテーマ色","주 색상":"メインカラー","보조 색상":"サブカラー","두 색상을 그라데이션으로 사용":"2色をグラデーションで使う","프로필 사진 추가하기":"プロフィール写真を追加","배치 조정하기":"配置を調整","LD 사진 추가하기":"LD画像を追加","아이콘 추가하기":"アイコンを追加","손가락으로 직접 배치":"指で直接配置","한 손가락으로 이동하고, 두 손가락으로 확대·축소와 회전을 조절해요.":"1本指で移動し、2本指で拡大・縮小と回転を調整します。","배치 편집 닫기":"配置編集を閉じる"});
+Object.assign(UI_TEXT.en,{"이미지":"Images"});
+Object.assign(UI_TEXT.ja,{"이미지":"画像"});
 Object.assign(UI_TEXT.en,{"방 편집":"Edit room","방 이름":"Room name","방 유형":"Room type","방이 있는 층":"Floor","방 크기":"Room size","방 사진 표시":"Room photo fit","인테리어 스타일":"Interior style","방 제목 색":"Room title color","가구 배치":"Furniture placement","가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.":"Tap furniture to add it to the room. Drag it in the edit view, then use the toolbar to rotate, resize, or change its layer.","선택한 가구 편집":"Edit selected furniture","가구 작게":"Make furniture smaller","가구 크게":"Make furniture larger","가구 회전":"Rotate furniture","가구 뒤로":"Send furniture backward","가구 앞으로":"Bring furniture forward","가구":"Furniture"});
 Object.assign(UI_TEXT.ja,{"방 편집":"部屋を編集","방 이름":"部屋の名前","방 유형":"部屋の種類","방이 있는 층":"部屋の階","방 크기":"部屋の大きさ","방 사진 표시":"部屋写真の表示","인테리어 스타일":"インテリアスタイル","방 제목 색":"部屋名の色","가구 배치":"家具の配置","가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.":"家具を押すと部屋に1つ追加されます。編集画面でドラッグし、下のツールで回転・大きさ・前後関係を調整できます。","선택한 가구 편집":"選択した家具を編集","가구 작게":"家具を小さくする","가구 크게":"家具を大きくする","가구 회전":"家具を回転","가구 뒤로":"家具を後ろへ","가구 앞으로":"家具を前へ","가구":"家具"});
 Object.assign(UI_TEXT.en,{"가구 배치":"Furniture placement","커플 침대":"Couple bed","침대 지정":"Assign bed","최근 생활 로그":"Recent life log"});
@@ -671,14 +675,14 @@ const homeSceneLayoutFor=(c,mode)=>{
   const source=c?.homeSceneLayout?.[mode]||{};
   const number=(value,fallback=0)=>Number.isFinite(Number(value))?Number(value):fallback;
   return {
-    x:number(source.x),y:number(source.y),scale:number(source.scale,1),
+    x:number(source.x),y:number(source.y),scale:number(source.scale,1),rotation:number(source.rotation),
     actionX:number(source.actionX),actionY:number(source.actionY)
   };
 };
 const sceneLayoutVars=(c,mode)=>{
   const layout=homeSceneLayoutFor(c,mode);
   const globalScale=Math.max(70,Math.min(150,Number(mode==="ld"?state.homeLdScale:state.homeSdScale)||100))/100;
-  return `--character-art-x:${layout.x}%;--character-art-y:${layout.y}%;--character-art-scale:${layout.scale};--character-render-scale:${globalScale*layout.scale};--character-action-x:${layout.actionX}%;--character-action-y:${layout.actionY}%`;
+  return `--character-art-x:${layout.x}%;--character-art-y:${layout.y}%;--character-art-scale:${layout.scale};--character-render-scale:${globalScale*layout.scale};--character-art-rotation:${layout.rotation}deg;--character-action-x:${layout.actionX}%;--character-action-y:${layout.actionY}%`;
 };
 function sceneAvatar(c,cls="",tone="neutral",mode="sd"){
   if(mode==="ld"&&hasLdArt(c)){
@@ -2308,20 +2312,45 @@ function characterHomeLayoutEditor(c){
   const ldArt=hasLdArt(c)
     ?`<img class="scene-ld-art" src="${esc(ldArtSource(c))}" alt="${esc(c.name)} LD 미리보기">`
     :`<span class="home-layout-fallback is-ld">LD<br><small>이미지 미등록</small></span>`;
-  const layer=(mode,art)=>`<div class="home-layout-layer visual-mode-${mode}" data-home-layout-layer="${mode}" style="${sceneLayoutVars(c,mode)}"><div class="home-layout-art" data-home-layout-drag="art" role="img" aria-label="${esc(c.name)} ${mode.toUpperCase()} 위치 조정">${art}<button type="button" class="home-layout-resize-handle" data-home-layout-resize aria-label="모서리를 끌어 캐릭터 크기 조정">↘</button></div><button type="button" class="home-layout-action" data-home-layout-drag="action" aria-label="행동 아이콘 위치 조정">${previewAction}</button></div>`;
-  const nudgeButtons=(target)=>`<div class="home-layout-nudge-pad" aria-label="${target==="art"?"캐릭터":"행동 아이콘"} 위치 미세 조정"><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dy="-5" aria-label="위로 이동">↑</button><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dx="-5" aria-label="왼쪽으로 이동">←</button><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dy="5" aria-label="아래로 이동">↓</button><button type="button" data-home-layout-nudge data-home-layout-target="${target}" data-home-layout-dx="5" aria-label="오른쪽으로 이동">→</button></div>`;
+  const layer=(mode,art)=>`<div class="home-layout-layer visual-mode-${mode}" data-home-layout-layer="${mode}" style="${sceneLayoutVars(c,mode)}"><div class="home-layout-art" role="img" aria-label="${esc(c.name)} ${mode.toUpperCase()} 위치 조정">${art}</div><button type="button" class="home-layout-action" data-home-layout-action aria-label="행동 아이콘 위치 조정">${previewAction}</button></div>`;
   const previewSide=side=>`<nav class="home-layout-preview-side ${side}">${GAME_HUD_SIDE_TABS[side].map(({key,labelKey,label,asset})=>`<span><img src="${esc(homeUiAsset(c,asset))}" alt=""><small>${gameHudLabel(labelKey,label)}</small></span>`).join("")}</nav>`;
   const dockItems=[["home","집","home.png"],["mailbox","우편함","mailbox.png"],["todayLog","기록물","ink.png"],["shop","상점","shop.png"],["town","마을","town.png"]];
   const previewDock=`<nav class="home-layout-preview-dock">${dockItems.map(([key,label,asset])=>`<span><img src="${esc(homeUiAsset(c,asset))}" alt=""><small>${gameHudLabel(key,label)}</small></span>`).join("")}</nav>`;
   return `<section class="character-home-layout-editor" data-home-layout-editor data-character-id="${c.id}" data-mode="${activeMode}">
-    <div class="character-home-layout-heading"><div><h3>홈 캐릭터·행동 아이콘 배치</h3><p>미리보기 전체가 실제 412×917 홈 화면과 같은 비율입니다. 상단바 아래부터 화면의 절대적인 맨 아래까지 보면서 전신을 직접 배치하세요.</p><small>1인과 2인 장면은 저장한 Y 위치와 크기를 그대로 사용하며, 2인일 때는 X 위치만 좌우로 나뉩니다.</small></div><div class="home-layout-mode-buttons"><button type="button" data-home-layout-mode="sd" class="${activeMode==="sd"?"on":""}">SD 배치</button><button type="button" data-home-layout-mode="ld" class="${activeMode==="ld"?"on":""}" ${hasLdArt(c)?"":"disabled"}>LD 배치</button><button type="button" data-home-layout-fill ${hasLdArt(c)?"":"disabled"}>LD 화면에 꽉 차게</button><button type="button" data-home-layout-reset>현재 배치 초기화</button></div></div>
-    <div class="home-layout-preview" style="${homeUiThemeStyle(c)};--layout-preview-bg:url(&quot;${esc(previewBackground)}&quot;)">
+    <div class="character-home-layout-heading"><div><h3>${t("손가락으로 직접 배치","손가락으로 직접 배치")}</h3><p>${t("한 손가락으로 이동하고, 두 손가락으로 확대·축소와 회전을 조절해요.","한 손가락으로 이동하고, 두 손가락으로 확대·축소와 회전을 조절해요.")}</p><small>1인과 2인 장면은 저장한 Y 위치·크기·회전을 그대로 사용하며, 2인일 때는 X 위치만 좌우로 나뉩니다.</small></div><div class="home-layout-mode-buttons"><button type="button" data-home-layout-mode="sd" class="${activeMode==="sd"?"on":""}">SD 배치</button><button type="button" data-home-layout-mode="ld" class="${activeMode==="ld"?"on":""}" ${hasLdArt(c)?"":"disabled"}>LD 배치</button><button type="button" data-home-layout-fill ${hasLdArt(c)?"":"disabled"}>LD 화면에 꽉 차게</button><button type="button" data-home-layout-reset>현재 배치 초기화</button></div></div>
+    <div class="home-layout-preview" data-home-layout-gesture-surface style="${homeUiThemeStyle(c)};--layout-preview-bg:url(&quot;${esc(previewBackground)}&quot;)" aria-label="${esc(c.name)} 배치 미리보기. 한 손가락 이동, 두 손가락 확대 축소 및 회전">
       <div class="home-layout-preview-backdrop"></div><div class="home-layout-ld-frame-guide" aria-hidden="true"><small>실제 LD 배치 영역</small></div>
       ${layer("sd",sdArt)}${layer("ld",ldArt)}
       <div class="home-layout-preview-ui" aria-hidden="true"><div class="home-layout-preview-wood"></div><div class="home-layout-preview-top"><span>${profileAvatar(c)}<img src="${esc(homeUiAsset(c,"profile-ring.png"))}" alt=""></span><b>${esc(c.name)}</b><em>${esc(c.jobTitle||c.job||"생활 중")}</em><small>8월 23일 (일)</small><time>오후 07:30</time></div>${previewSide("left")}${previewSide("right")}<article class="home-layout-preview-moment"><strong>서랍 로그</strong><b>${esc(previewEntry?.title||"지금 이 순간")}</b><p>${esc(previewEntry?.desc||"캐릭터의 생활 장면이 이곳에 표시됩니다.")}</p><small>🏠 ${esc(previewLocation)}</small></article>${previewDock}</div>
     </div>
-    <small class="home-layout-preview-caption">실제 홈 화면 비율 · 흰 점선 아래부터 화면 최하단까지가 LD 좌표계입니다.</small>
-    <div class="home-layout-adjustments"><section><b>캐릭터 위치·크기</b>${nudgeButtons("art")}<div class="home-layout-scale-buttons"><button type="button" data-home-layout-nudge data-home-layout-target="art" data-home-layout-scale="-.1">− 작게</button><button type="button" data-home-layout-nudge data-home-layout-target="art" data-home-layout-scale=".1">+ 크게</button></div></section><section><b>행동 아이콘 위치</b>${nudgeButtons("action")}</section></div><small class="home-layout-save-note">끌어서 놓거나 버튼을 누르면 바로 저장됩니다.</small>
+    <small class="home-layout-preview-caption">실제 홈 화면 비율 · 화면 어디서든 한 손가락으로 이동하고, 두 손가락으로 크기와 각도를 함께 맞출 수 있어요. 행동 아이콘은 아이콘을 직접 끌어 옮겨요.</small>
+    <small class="home-layout-save-note">손가락을 떼면 현재 배치가 바로 저장됩니다.</small>
+  </section>`;
+}
+
+function characterFullOverview(c){
+  const primary=String(c.theme?.primary||"#176B60").toUpperCase();
+  const secondary=String(c.theme?.secondary||"#6FD0AE").toUpperCase();
+  const currentIcon=c.icon
+    ?`<img src="${esc(c.icon)}" alt="${esc(c.name)} 아이콘 미리보기">`
+    :`<img src="./assets/home-ui/profile-placeholder.png" alt="기본 아이콘 미리보기">`;
+  const placementArt=hasLdArt(c)
+    ?`<img class="scene-ld-art" src="${esc(ldArtSource(c))}" alt="${esc(c.name)} LD 배치 미리보기">`
+    :c.icon?`<img src="${esc(c.icon)}" alt="${esc(c.name)} SD 배치 미리보기">`:profileAvatar(c);
+  return `<section class="character-full-svg-overview" aria-label="${esc(c.name)} ${t("이미지","이미지")}">
+    <h2 class="character-full-theme-title">${t("캐릭터 테마색","캐릭터 테마색")}</h2>
+    <label class="character-full-theme-row primary"><input type="color" data-color="primary" value="${esc(primary)}"><b>${t("주 색상","주 색상")}</b><input type="text" data-theme-hex="primary" value="${esc(primary)}" maxlength="7" inputmode="text" aria-label="${t("주 색상","주 색상")} HEX"></label>
+    <label class="character-full-theme-row secondary"><input type="color" data-color="secondary" value="${esc(secondary)}"><b>${t("보조 색상","보조 색상")}</b><input type="text" data-theme-hex="secondary" value="${esc(secondary)}" maxlength="7" inputmode="text" aria-label="${t("보조 색상","보조 색상")} HEX"></label>
+    <label class="character-full-gradient"><input type="checkbox" data-gradient ${c.theme?.gradient!==false?"checked":""}><span>${t("두 색상을 그라데이션으로 사용","두 색상을 그라데이션으로 사용")}</span></label>
+    <button type="button" class="character-full-image-slot profile" data-image="photo">${c.photo?`<img src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:""}</button>
+    <span class="character-full-slot-label profile">${t("프로필 사진 추가하기","프로필 사진 추가하기")}</span>
+    <button type="button" class="character-full-placement-card" data-open-character-layout>${placementArt}</button>
+    <span class="character-full-slot-label placement">${t("배치 조정하기","배치 조정하기")}</span>
+    <button type="button" class="character-full-image-slot ld" data-image="ldImage">${hasLdArt(c)?`<img src="${esc(ldArtSource(c))}" alt="${esc(c.name)} LD 일러스트">`:""}</button>
+    <span class="character-full-slot-label ld">${t("LD 사진 추가하기","LD 사진 추가하기")}</span>
+    <button type="button" class="character-full-image-slot icon" data-image="icon"></button>
+    <span class="character-full-slot-label icon">${t("아이콘 추가하기","아이콘 추가하기")}</span>
+    <span class="character-full-current-icon" aria-label="${esc(c.name)} 현재 아이콘">${currentIcon}</span>
   </section>`;
 }
 function character(){
@@ -2389,8 +2418,9 @@ function character(){
   const homeVisualChoice=`<section class="character-manage-theme"><div><h3>캐릭터 테마색</h3><p>색상표에서 직접 고르거나 6자리 HEX 코드를 입력해요. 캐릭터 선택 효과와 강조색에 함께 적용됩니다.</p></div><div class="theme-color-groups">${themeColorField("primary","주 색상",c.theme?.primary||"#176B60")}${themeColorField("secondary","보조 색상",c.theme?.secondary||"#D4A373")}</div><label class="theme-gradient-toggle"><input type="checkbox" data-gradient ${c.theme?.gradient!==false?"checked":""}><span>두 색상을 그라데이션으로 사용</span></label></section>`;
   const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 사진·색상·배치</h2><p>프로필·SD·LD 이미지와 캐릭터 테마색, 홈 화면 배치를 한곳에서 설정해요.</p></div><div class="character-manage-grid">${homeVisualChoice}<section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요. LD 일러스트는 자르지 않고 원본 비율 전체를 사용하며, 위에서 선택한 표현 방식으로 홈화면에 표시합니다.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div></section>${characterHomeLayoutEditor(c)}<section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?personalityPane:state.characterPane==="taste"?taste:state.characterPane==="worldTaste"?worldTaste:state.characterPane==="manage"?managePane:profileWithLicense;
-  const fullActivePane=["body","personality","taste","worldTaste"].includes(state.characterPane)?state.characterPane:"profile";
-  const fullPane=fullActivePane==="body"?bodyPane:fullActivePane==="personality"?personalityPane:fullActivePane==="taste"?taste:fullActivePane==="worldTaste"?worldTaste:`<section class="character-full-overview">${managePane}${profileWithLicense}</section>`;
+  const fullActivePane=["visual","profile","body","personality","taste","worldTaste"].includes(state.characterPane)?state.characterPane:"visual";
+  const fullPane=fullActivePane==="visual"?characterFullOverview(c):fullActivePane==="profile"?profileWithLicense:fullActivePane==="body"?bodyPane:fullActivePane==="personality"?personalityPane:fullActivePane==="taste"?taste:worldTaste;
+  const layoutDialog=fullActivePane==="visual"?`<dialog class="character-layout-dialog" data-character-layout-dialog><form method="dialog" class="character-layout-dialog-shell"><header><span><small>HOME SCENE LAYOUT</small><b>${t("배치 조정하기","배치 조정하기")}</b></span><button value="close" aria-label="${t("배치 편집 닫기","배치 편집 닫기")}">×</button></header>${characterHomeLayoutEditor(c)}</form></dialog>`:"";
   const unknown=t("미설정","미설정");
   const birthdayLabel=c.birthday?`${Number(c.birthday.slice(0,2))}${t("월","월")} ${Number(c.birthday.slice(2))}${t("일","일")}`:unknown;
   const draftRows=[
@@ -2425,13 +2455,16 @@ function character(){
   const draftActions=`<nav class="character-draft-actions" aria-label="${esc(t("캐릭터 관리","캐릭터 관리"))}"><button type="button" class="character-draft-action" data-export-profile><span>${t("프로필 내보내기","프로필 내보내기")}</span></button><button type="button" class="character-draft-action" data-save><span>${t("캐릭터 저장","캐릭터 저장")}</span></button><button type="button" class="character-draft-action danger" data-delete-character="${c.id}"><span>${t("캐릭터 삭제","캐릭터 삭제")}</span></button></nav>`;
   const hubActions=`<section class="character-setting-choices" aria-label="${esc(t("캐릭터 설정 방식","캐릭터 설정 방식"))}"><span class="character-setting-cloth" aria-hidden="true"><img src="./assets/character-ui/character-cloth-white.png" alt=""></span><img class="character-setting-book" src="./assets/character-ui/book.png" alt=""><img class="character-setting-tape" src="./assets/character-ui/tape.png" alt=""><img class="character-setting-key" src="./assets/character-ui/key.png" alt=""><span class="character-favorite-preview" aria-label="${esc(t("선호 물품 미리보기","선호 물품 미리보기"))}">${favoriteSlots}</span><button type="button" class="character-setting-choice character-quick-choice" data-open-quick-character-settings><span><b>${t("빠른설정","빠른설정")}</b><small>${t("바로가기","바로가기")}</small></span></button><button type="button" class="character-setting-choice character-full-choice" data-open-full-character-settings><span><b>${t("전체설정","전체설정")}</b><small>${t("바로가기","바로가기")}</small></span></button></section>`;
   const fullPaneMeta=[
-    ["profile","개요","statistics.png","#7f232b","-5deg"],
-    ["body","신체","profile-placeholder.png","#dc8f9b","3deg"],
-    ["personality","성격","relationship.png","#e1bd57","-2deg"],
-    ["taste","취향","catalog.png","#7f9b66","4deg"],
-    ["worldTaste","소지품","mailbox.png","#873943","-3deg"]
+    ["visual","이미지","#176B60","#FFFBD6",23,40,-5.2],
+    ["profile","개요","#B43535","#FFFBD6",86.561,35,2.5168],
+    ["body","신체","#F5B79D","#570000",150,37.8242,-.761713],
+    ["personality","성격","#FFE167","#000000",219.086,36.0001,10.0279],
+    ["taste","취향","#ABC536","#253809",282.086,44,10.0279],
+    ["worldTaste","소지품","#510E0F","#FFFBD6",346.109,56,18.0074]
   ];
-  const fullNavigation=fullPaneMeta.map(([key,label,asset,color,rotation],index)=>`<button type="button" data-character-pane="${key}" class="character-full-tab ${fullActivePane===key?"on":""}" ${fullActivePane===key?'aria-current="page"':""} style="--tab-left:${20.5+index*15.65}cqw;--tab-color:${color};--tab-rotation:${rotation}"><b>${t(label,label)}</b><img src="./assets/home-ui/${asset}" alt="" aria-hidden="true"></button>`).join("");
+  const fullTab=([key,label,color,ink,x,y,rotation],extraClass="")=>`<button type="button" data-character-pane="${key}" class="character-full-tab ${extraClass} ${fullActivePane===key?"on":""}" ${fullActivePane===key?'aria-current="page"':""} style="--tab-left:${(x/4.12).toFixed(4)}cqw;--tab-top:${(y/4.12).toFixed(4)}cqw;--tab-color:${color};--tab-ink:${ink};--tab-rotation:${rotation}deg"><b>${t(label,label)}</b></button>`;
+  const firstPageBookmark=fullTab(fullPaneMeta[0],"character-full-first-tab");
+  const fullNavigation=fullPaneMeta.slice(1).map(meta=>fullTab(meta)).join("");
   return `<div class="editor character-editor" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
     <aside class="panel desktop-character-list"><div class="title"><h2>캐릭터 목록</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside>
     <section class="panel form">
@@ -2446,9 +2479,10 @@ function character(){
         <img class="character-full-book" src="./assets/character-ui/book.png" alt="" aria-hidden="true">
         <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
         <button type="button" class="character-full-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 페이지로 돌아가기","캐릭터 페이지로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
+        ${firstPageBookmark}
         <nav class="character-full-tabs" aria-label="${esc(t("전체 설정","전체 설정"))}">${fullNavigation}</nav>
         <main class="character-full-book-content">${fullPane}</main>
-        <button type="button" class="character-full-save" data-save>${t("저장","저장")}</button>
+        ${layoutDialog}<button type="button" class="character-full-save" data-save>${t("저장","저장")}</button>
       </section>
       <section class="desktop-character-editor"><div class="character-menu">${Object.entries(paneMeta).map(([key,[label]])=>`<button data-character-pane="${key}" class="${state.characterPane===key?"on":""}">${label}</button>`).join("")}<div class="character-file-actions"><button type="button" data-export-profile>프로필 내보내기</button><button type="button" data-tab="statistics">통계</button><button type="button" class="primary" data-save>캐릭터 저장</button><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></div></div>${pane}</section>
       ${quickSettings}

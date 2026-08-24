@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824walllogtablet";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824walllogtablet";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260824walllogtablet";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824walllogtablet";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824walllogtablet";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824walllogtablet";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824charactersvggesture";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824charactersvggesture";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260824charactersvggesture";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824charactersvggesture";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824charactersvggesture";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824charactersvggesture";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -150,8 +150,8 @@ const defaultCatalog=()=>({
   weapon:[]
 });
 const defaultHomeSceneLayout=()=>({
-  sd:{x:0,y:0,scale:1,actionX:0,actionY:0},
-  ld:{x:0,y:0,scale:1,actionX:0,actionY:0}
+  sd:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0},
+  ld:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0}
 });
 const normalizeHomeSceneLayout=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
@@ -163,6 +163,7 @@ const normalizeHomeSceneLayout=value=>{
       x:clamp(layout.x,isLd?-50:-45,isLd?50:45,0),
       y:clamp(layout.y,isLd?-90:-45,isLd?90:45,0),
       scale:clamp(layout.scale,.45,2.5,1),
+      rotation:clamp(layout.rotation,-180,180,0),
       actionX:clamp(layout.actionX,-45,45,0),
       actionY:clamp(layout.actionY,-45,45,0)
     }];
@@ -825,7 +826,7 @@ export function createCharacter(limit=5){
   state.activeId=id;state.activeTab="character";save(true);return id;
 }
 export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
-export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":(["profile","body","personality","taste","worldTaste","manage"].includes(value)?value:"profile");save()}
+export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":(["visual","profile","body","personality","taste","worldTaste","manage"].includes(value)?value:"profile");save()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;
