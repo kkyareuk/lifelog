@@ -220,7 +220,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
 }
 
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -244,7 +244,7 @@ html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog) form{
   color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] dialog::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
-html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint):not(.mobile-character-dashboard[data-character-ui-version="4"] *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *){color:var(--muted)!important}
+html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint):not(.mobile-character-dashboard[data-character-ui-version="4"] *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *){color:var(--muted)!important}
 html[data-color-mode][data-visual-theme] .current-visual-theme{
   border-color:var(--theme-border)!important;
   background:linear-gradient(125deg,var(--theme-surface),var(--theme-surface-strong))!important;
@@ -475,7 +475,7 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
   }
 
   html.native-platform[data-active-tab="character"] .character-manage-pane,
-  html.native-platform[data-active-tab="character"] .character-manage-grid,
+  html.native-platform[data-active-tab="character"] .character-manage-grid:not(.character-full-overview .character-manage-grid),
   html.native-platform[data-active-tab="character"] .character-home-layout-editor{
     display:grid!important;
     grid-template-columns:minmax(0,1fr)!important;
@@ -484,7 +484,7 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
     max-width:100%!important;
     gap:14px!important;
   }
-  html.native-platform[data-active-tab="character"] .character-manage-pane :is(h2,h3,h4,p,small,label,b),
+  html.native-platform[data-active-tab="character"] .character-manage-pane:not(.character-full-overview .character-manage-pane) :is(h2,h3,h4,p,small,label,b),
   html.native-platform[data-active-tab="character"] .character-home-layout-editor :is(h3,p,small,b,time){
     max-width:100%!important;
     color:var(--ink)!important;
@@ -492,26 +492,26 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
     word-break:keep-all!important;
     overflow-wrap:break-word!important;
   }
-  html.native-platform[data-active-tab="character"] .character-manage-grid>section{
+  html.native-platform[data-active-tab="character"] .character-manage-grid:not(.character-full-overview .character-manage-grid)>section{
     width:100%!important;
     min-width:0!important;
     max-width:100%!important;
     margin:0!important;
     box-sizing:border-box!important;
   }
-  html.native-platform[data-active-tab="character"] .character-manage-grid>section:not(.character-ld-settings):not(.character-home-layout-editor):not(.character-manage-files){
+  html.native-platform[data-active-tab="character"] .character-manage-grid:not(.character-full-overview .character-manage-grid)>section:not(.character-ld-settings):not(.character-home-layout-editor):not(.character-manage-files){
     display:grid!important;
     grid-template-columns:78px minmax(0,1fr)!important;
     align-items:start!important;
     gap:12px!important;
     padding:13px!important;
   }
-  html.native-platform[data-active-tab="character"] .character-manage-grid>section>span{
+  html.native-platform[data-active-tab="character"] .character-manage-grid:not(.character-full-overview .character-manage-grid)>section>span{
     width:78px!important;
     min-width:78px!important;
     height:78px!important;
   }
-  html.native-platform[data-active-tab="character"] .character-manage-grid>section>div,
+  html.native-platform[data-active-tab="character"] .character-manage-grid:not(.character-full-overview .character-manage-grid)>section>div,
   html.native-platform[data-active-tab="character"] .character-ld-settings,
   html.native-platform[data-active-tab="character"] .character-manage-files{
     min-width:0!important;

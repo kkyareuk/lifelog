@@ -44,7 +44,6 @@ def main() -> None:
         # Bounds are deliberately generous; trim_alpha removes only the fully
         # transparent outer canvas and preserves the hand-drawn soft edges.
         crops = {
-            "post-it.png": (2330, 1320, 2910, 1710),
             "book.png": (1500, 1760, 3040, 3025),
             "notebook.png": (3150, 2210, 3745, 3035),
             "clip.png": (715, 2020, 1040, 2430),
@@ -69,7 +68,6 @@ def main() -> None:
 
     crops = {
         # Exact inverse crops from 캐릭터1.svg pattern matrices.
-        "character-background.webp": (sheets["image0_42_47"], (3073, 252, 3684, 1613), False),
         "character-cloth.png": (sheets["image1_42_47"], (85, 2448, 775, 3119), False),
         "registration-card.png": (sheets["image2_42_47"], (1368, 1130, 1944, 1489), False),
         "wallet.png": (sheets["image2_42_47"], (1280, 103, 2701, 1073), False),
