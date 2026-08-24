@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824floortownconversation";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824floortownconversation";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824roomtonepairmotion";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824roomtonepairmotion";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -3795,11 +3795,10 @@ function concreteInteraction(place,first,second,relation,date=new Date()){
         title:"엇갈린 호감을 느끼는 중"
       };
     }
-    return {
-      first:`${name}와 같은 공간에 있지만 아직 서로를 잘 알지 못해요. 시선이 마주쳤을 때 가볍게 목례한 뒤 각자 보던 것과 하던 일로 돌아갔어요.`,
-      second:`${subject(first.name)} 가까이에 있다는 것은 알아챘지만 아는 사이가 아니라 굳이 말을 붙이지 않았어요. 서로의 동선을 방해하지 않을 만큼 거리를 두고 있어요.`,
-      title:"낯선 사람과 각자 시간을 보내는 중"
-    };
+    // 같은 장소에 있다는 이유만으로 모르는 사람들을 공동 장면으로 묶지
+    // 않는다. 실제 호감·갈등처럼 상호작용 근거가 있을 때만 위에서 장면을
+    // 반환하고, 그 밖에는 각자의 원래 행동을 그대로 유지한다.
+    return null;
   }
   if(["혐관","라이벌"].includes(relation?.type))return {
     first:`${name}와 눈이 마주치자 먼저 시선을 거두고, 일부러 조금 떨어진 자리를 골라 하던 일에 집중하고 있어요.`,
@@ -4072,7 +4071,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   // 같은 방에 세 명 이상 있어도 한 캐릭터가 같은 시각에 두 개의 2인 장면에
   // 동시에 끼지 않도록, 장소 전체에서 하나의 결정적인 짝만 선택한다.
   if(preferred.first.id!==c.id&&preferred.second.id!==c.id)return current;
-  const ordered=[preferred.first,preferred.second].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+  const relationshipOrder=sharedParticipantOrder([preferred.first,preferred.second],preferred.relation);
+  const ordered=relationshipOrder.map(id=>id===preferred.first.id?preferred.first:preferred.second).filter(Boolean);
   const pair={...preferred,first:ordered[0],second:ordered[1]};
   const isFirst=c.id===pair.first.id;
   const officialRomance=!mixedAdultMinor(pair.first,pair.second)&&pair.relation?.temporalStatus!=="past"&&["연인","부부"].includes(pair.relation?.type);
@@ -4089,6 +4089,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   let scene=dating
     ?datePurposeScene(purpose,place,pair.first,pair.second,date,datePhase)
     :concreteInteraction(place,pair.first,pair.second,pair.relation,date);
+  if(!scene)return current;
   if(!dating){
     const objectScene=placeObjectScene(place,pair.first,pair.second,pair.relation,date);
     if(objectScene&&!/때리|싸우|충돌|밀어|몸싸움/.test(`${scene.title} ${scene.first} ${scene.second}`))scene={...scene,...objectScene};

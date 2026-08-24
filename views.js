@@ -1,10 +1,10 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824floortownconversation";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824floortownconversation";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824floortownconversation";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824floortownconversation";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824roomtonepairmotion";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824roomtonepairmotion";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824roomtonepairmotion";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824roomtonepairmotion";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -1798,16 +1798,24 @@ function homeInteractionSummary(scene){
   if(/장난|게임|놀|춤|노래/.test(text))return {kind:"play",label:t("함께 노는 중","함께 노는 중"),symbol:"♪"};
   return {kind:"together",label:t("함께 시간을 보내는 중","함께 시간을 보내는 중"),symbol:"✦"};
 }
+function homeOrderedCharacters(characters,scenes=[]){
+  const configured=scenes.flatMap(scene=>Array.isArray(scene?.participantOrder)?scene.participantOrder:[]),rank=id=>{
+    const configuredIndex=configured.indexOf(id);
+    return configuredIndex>=0?configuredIndex:configured.length+Math.max(0,state.order.indexOf(id));
+  };
+  return [...characters].sort((a,b)=>rank(a.id)-rank(b.id));
+}
 function homeTvInteractionMarkup(characters,scenes,agents,room,roomKey,index){
-  const ordered=[...characters].sort((a,b)=>state.order.indexOf(a.id)-state.order.indexOf(b.id)).slice(0,2),activeAgents=ordered.map(character=>agents[character.id]).filter(Boolean);
+  const sceneByCharacterId=new Map(characters.map((character,sceneIndex)=>[character.id,scenes[sceneIndex]]));
+  const ordered=homeOrderedCharacters(characters,scenes).slice(0,2),activeAgents=ordered.map(character=>agents[character.id]).filter(Boolean);
   const average=(key,fallback)=>activeAgents.length?activeAgents.reduce((sum,agent)=>sum+(Number(agent?.[key])||0),0)/activeAgents.length:fallback;
   const x=Math.max(14,Math.min(86,average("x",50))),y=Math.max(16,Math.min(86,average("y",55))),names=ordered.map(character=>character.name).join(" · ");
   const reactions=["laugh","angry","cry"],symbols={laugh:"😂",angry:"💢",cry:"😢"};
-  return `<div class="home-interaction-card home-life-interaction home-interaction-watch" style="--life-x:${x}%;--life-y:${y}%;--home-float-delay:${-(index%4)*.37}s" role="group" aria-label="${esc(`${names} ${t("같이 TV 보는 중","같이 TV 보는 중")}`)}"><span class="home-interaction-visual">${ordered.map((character,avatarIndex)=>{const scene=scenes[avatarIndex]||scenes[0]||{},reaction=reactions[nativeVisualSeed(`${character.id}:${scene.minute}:tv-reaction`)%reactions.length];return `<button type="button" class="home-interaction-avatar home-interaction-avatar-${avatarIndex+1} tv-reaction-${reaction}" aria-label="${esc(`${character.name} · ${t("같이 TV 보는 중","같이 TV 보는 중")}`)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(scene.title||t("같이 TV 보는 중","같이 TV 보는 중"))}" data-occupant-desc="${esc(scene.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}">${avatar(character)}<i class="home-tv-reaction" aria-hidden="true">${symbols[reaction]}</i></button>`}).join("")}</span><span class="home-interaction-status"><b>${esc(names)}</b><small>${esc(t("같이 TV 보는 중","같이 TV 보는 중"))}</small></span></div>`;
+  return `<div class="home-interaction-card home-life-interaction home-interaction-watch" style="--life-x:${x}%;--life-y:${y}%;--home-float-delay:${-(index%4)*.37}s" role="group" aria-label="${esc(`${names} ${t("같이 TV 보는 중","같이 TV 보는 중")}`)}"><span class="home-interaction-visual">${ordered.map((character,avatarIndex)=>{const scene=sceneByCharacterId.get(character.id)||scenes[0]||{},reaction=reactions[nativeVisualSeed(`${character.id}:${scene.minute}:tv-reaction`)%reactions.length];return `<button type="button" class="home-interaction-avatar home-interaction-avatar-${avatarIndex+1} tv-reaction-${reaction}" aria-label="${esc(`${character.name} · ${t("같이 TV 보는 중","같이 TV 보는 중")}`)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(scene.title||t("같이 TV 보는 중","같이 TV 보는 중"))}" data-occupant-desc="${esc(scene.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}">${avatar(character)}<i class="home-tv-reaction" aria-hidden="true">${symbols[reaction]}</i></button>`}).join("")}</span><span class="home-interaction-status"><b>${esc(names)}</b><small>${esc(t("같이 TV 보는 중","같이 TV 보는 중"))}</small></span></div>`;
 }
 function homeLifeInteractionMarkup(characters,scenes,agents,room,roomKey,index){
   const sceneByCharacterId=new Map(characters.map((character,sceneIndex)=>[character.id,scenes[sceneIndex]]));
-  const ordered=[...characters].sort((a,b)=>state.order.indexOf(a.id)-state.order.indexOf(b.id));
+  const ordered=homeOrderedCharacters(characters,scenes);
   const scene=scenes[0]||{},summary=homeInteractionSummary(scene),activeAgents=ordered.map(character=>agents[character.id]).filter(Boolean);
   if(summary.kind==="watch")return homeTvInteractionMarkup(ordered,scenes,agents,room,roomKey,index);
   const average=(key,fallback)=>activeAgents.length?activeAgents.reduce((sum,agent)=>sum+(Number(agent?.[key])||0),0)/activeAgents.length:fallback;
@@ -2041,7 +2049,7 @@ function homeCard(id,chars){
         partners.forEach(other=>renderedPeople.add(other.id));
         const summary=homeInteractionSummary(scene);
         if(summary.kind==="talk"){
-          const orderedPartners=[...partners].sort((a,b)=>state.order.indexOf(a.id)-state.order.indexOf(b.id));
+          const orderedPartners=homeOrderedCharacters(partners,partners.map(sceneFor));
           orderedPartners.slice(0,2).forEach((person,slot)=>{
             const paired=lifeAgents[person.id]||{};
             peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),paired,room,key,index+slot,coupleBedSlots.get(person.id)??-1,{conversing:true,slot:slot+1}));

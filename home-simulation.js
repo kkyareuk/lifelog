@@ -182,7 +182,9 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const roomKey=agents[0].roomKey,anchorX=clamp(agents.reduce((sum,agent)=>sum+Number(agent.x||50),0)/agents.length,22,78,50),anchorY=clamp(agents.reduce((sum,agent)=>sum+Number(agent.y||58),0)/agents.length,22,84,58);
     const text=ordered.map(id=>`${contexts?.[id]?.scene?.title||""} ${contexts?.[id]?.scene?.desc||""}`).join(" "),close=/뽀뽀|입맞춤|키스|포옹|껴안/.test(text),gap=close?7:15;
     ordered.forEach((characterId,index)=>{
-      const agent=current.agents[characterId],point=currentAgentPoint(agent,now),destination={roomKey,x:clamp(anchorX+(index?-gap:gap),7,93,50),y:clamp(anchorY+(index?2:-2),16,90,58)};
+      // participantOrder의 첫 인물은 항상 화면 왼쪽, 두 번째 인물은 오른쪽에
+      // 둔다. 관계 설정에서 정한 좌우 순서가 집 장면에서도 뒤집히지 않는다.
+      const agent=current.agents[characterId],point=currentAgentPoint(agent,now),destination={roomKey,x:clamp(anchorX+(index?gap:-gap),7,93,50),y:clamp(anchorY+(index?2:-2),16,90,58)};
       const alreadyHeading=agent.interactionId===interactionId&&agent.roomKey===roomKey&&Math.hypot(Number(agent.x)-destination.x,Number(agent.y)-destination.y)<1;
       agent.interactionId=interactionId;
       if(alreadyHeading){if(agent.phase==="walking"&&agent.arrivesAt<=now)agent.phase="using";if(agent.phase!=="walking")agent.approachingInteraction=false;return}

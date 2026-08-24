@@ -15,7 +15,7 @@ const checks=[
   [state.includes("relation.stayTogether=Boolean(relation.stayTogether)"),"기존 관계 데이터의 함께 다니기 안전 변환"],
   [simulation.includes("function companionAlignedBaseEvent")&&simulation.includes("!activeScheduledRoutine(other,date)"),"별도 일정이 없는 관계만 동행"],
   [views.includes('"함께 다니기":"Stay together"')&&views.includes('"함께 다니기":"一緒に行動する"'),"함께 다니기 영어·일본어 번역"],
-  [gradle.includes("versionCode 129")&&gradle.includes('versionName "1.0.118"'),"집 바닥·마을 이동·상호작용 개선 개발 빌드 버전"]
+  [gradle.includes("versionCode 130")&&gradle.includes('versionName "1.0.119"'),"방 색감·관계 좌우·상호작용 개선 개발 빌드 버전"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
@@ -26,7 +26,7 @@ const storage=new Map();
 globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
 globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
-const {state:runtimeState}=await import("../state.js?v=20260824floortownconversation");
+const {state:runtimeState}=await import("../state.js?v=20260824roomtonepairmotion");
 const {eventFor}=await import(`../simulation.js?date-schedule-companion=${Date.now()}`);
 const character=(id,name,homeId)=>({id,name,createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",townId:"",homeId,residences:[{homeId,isPrimary:true,stayPattern:"상시 거주"}],wake:"07:00",sleep:"23:00",job:"무직",jobTitle:"",personalityTypes:[],characterTraits:[],traitExpressions:[],hobbies:[],interests:[],inventory:{},foodTypes:[],foodPreferences:[],musicGenres:[],appearanceTags:[],attractionTraits:[],bodyProfile:{},theme:{primary:"#176b60"}});
 runtimeState.characters={a:character("a","가람","ha"),b:character("b","나래","hb")};
