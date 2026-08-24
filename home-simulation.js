@@ -67,7 +67,7 @@ const SCENE_FURNITURE=[
   {scene:/게임/,item:/게임기|보드게임/},{scene:/책|독서|공부|과제|업무|파일|컴퓨터/,item:/책장|독서|책상|컴퓨터/},{scene:/운동|러닝/,item:/러닝|운동/},
   {scene:/세탁|빨래|건조/,item:/세탁|건조|빨래/},{scene:/화장|단장|거울|스킨케어|향수/,item:/세면대|전신거울|화장대|스킨케어|향수/},
   {scene:/음악|연주|노래|레코드/,item:/피아노|기타|악기|오디오|턴테이블|레코드/},{scene:/그림|작업|만드는|공예|뜨개|촬영|재봉/,item:/그림|재봉|드로잉|촬영|공예|뜨개|프라모델|작업대/},
-  {scene:/쉬는|휴식|멍하니|대화|이야기/,item:/소파|의자|안마의자/}
+  {scene:/쉬는|휴식|멍하니/,item:/소파|의자|안마의자/}
 ];
 export function furniturePatternForScene(scene){
   const text=`${scene?.title||""} ${scene?.desc||""}`;
@@ -88,6 +88,7 @@ function normalizeAgent(value,characterId,roomKeys){
   const phase=["waiting","walking","using"].includes(source.phase)?source.phase:"waiting";
   return {
     characterId:String(characterId),phase,roomKey:fallbackRoom,
+    fromRoomKey:roomKeys.includes(source.fromRoomKey)?source.fromRoomKey:fallbackRoom,
     x:clamp(source.x,5,95,50),y:clamp(source.y,14,92,72),
     fromX:clamp(source.fromX,5,95,12),fromY:clamp(source.fromY,14,92,78),
     furnitureId:String(source.furnitureId||"").slice(0,120),item:String(source.item||"").slice(0,80),
@@ -149,13 +150,13 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const sceneStartAt=Math.max(0,Number(context.startedAt)||now),sceneEndAt=Math.max(now+60_000,Number(context.endsAt)||now+homeActivityDurationMinutes(target?.item||scene.title,`${characterId}:${sceneKey}`)*60_000);
     if(sameScene){
       old.endsAt=sceneEndAt;
-      if(old.phase==="walking"&&old.arrivesAt<=now){old.phase="using";old.startedAt=old.arrivesAt||now}
+      if(old.phase==="walking"&&old.arrivesAt<=now){old.phase="using";old.startedAt=old.arrivesAt||now;old.fromRoomKey=old.roomKey}
       if(target){old.x=target.x;old.y=target.y;old.roomKey=target.roomKey;old.item=target.item;old.furnitureId=target.id;old.actionKind=furnitureUseProfile(target.item).kind}
     }else{
       const fallback={roomKey,x:18+(hash(`${characterId}:${sceneKey}:x`)%65),y:35+(hash(`${characterId}:${sceneKey}:y`)%48)};
       const destination=target||fallback,fromRoom=roomKeys.includes(old?.roomKey)?old.roomKey:roomKey,fromX=Number(old?.x)||12,fromY=Number(old?.y)||82;
       const arrivesAt=now+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
-      current.agents[characterId]=normalizeAgent({characterId,phase:target?"walking":"using",roomKey,destination,x:destination.x,y:destination.y,fromX,fromY,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:target?now:sceneStartAt,arrivesAt:target?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
+      current.agents[characterId]=normalizeAgent({characterId,phase:target?"walking":"using",roomKey,fromRoomKey:fromRoom,x:destination.x,y:destination.y,fromX,fromY,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:target?now:sceneStartAt,arrivesAt:target?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }
     const agent=current.agents[characterId];
     if(target){

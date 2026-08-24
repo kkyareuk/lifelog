@@ -374,7 +374,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
   color:var(--ink)!important;
 }
 html[data-color-mode][data-visual-theme] :is(input,select,textarea),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -471,7 +471,7 @@ html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationsh
   color:var(--ink)!important;
 }
 html[data-color-mode] :is(input,select,textarea),
-html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
+html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -1238,15 +1238,16 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 /* 생활 시뮬레이션 캐릭터는 방 안의 실제 백분율 좌표를 사용한다. 가구보다
    위에, 편집 손잡이보다 아래에 두고 이동 중에도 눌러 상태를 확인할 수 있다. */
 .room-people.has-home-life{position:absolute;inset:0;z-index:4;display:block;max-width:none;max-height:none;overflow:visible;pointer-events:none}
-.room-people.has-home-life .home-life-person{--life-edge:52px;position:absolute;left:clamp(var(--life-edge),var(--life-x),calc(100% - var(--life-edge)));top:var(--life-y);z-index:4;display:flex;max-width:min(150px,82%);pointer-events:auto;transform:translate(-50%,-72%);will-change:transform}
-.room-people.has-home-life .home-life-person.is-couple-bed-user{--life-edge:36px}
-.room-people.has-home-life .home-life-person .home-person-status{max-width:105px;padding:5px 7px;font-size:10px;line-height:1.2}
-.room-people.has-home-life .home-life-person .home-person-status small{display:-webkit-box;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
-.room-people.has-home-life .home-life-walking{animation:home-life-walk var(--life-duration) linear var(--life-delay) both}
-.room-people.has-home-life .home-life-walking .home-person-visual{animation:home-life-step .42s ease-in-out infinite}
-.room-people.has-home-life .home-life-using .home-person-visual{animation:home-person-float 3.2s var(--home-float-delay,0s) ease-in-out infinite}
-.room-people.has-home-life .home-life-waiting{opacity:.94}
-.home-interaction-card{display:flex;align-items:center;gap:5px;max-width:min(184px,94%);padding:0;border:0;background:transparent;filter:drop-shadow(0 7px 7px #19223844)}
+.home-life-roaming-layer{position:absolute;z-index:30;inset:0;overflow:visible;pointer-events:none;container-type:size}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person{--life-edge:52px;position:absolute;left:clamp(var(--life-edge),var(--life-x),calc(100% - var(--life-edge)));top:var(--life-y);z-index:4;display:flex;flex-direction:column;align-items:center;max-width:min(150px,82%);pointer-events:auto;transform:translate(-50%,-72%);will-change:transform}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person.is-couple-bed-user{--life-edge:36px}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person .home-person-status{max-width:105px;padding:5px 7px;font-size:10px;line-height:1.2}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person .home-person-status small{display:-webkit-box;white-space:normal;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-walking{animation:home-life-walk var(--life-duration) linear var(--life-delay) both}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-walking .home-person-visual{animation:home-life-step .42s ease-in-out infinite}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-using .home-person-visual{animation:home-person-float 3.2s var(--home-float-delay,0s) ease-in-out infinite}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-waiting{opacity:.94}
+.home-interaction-card{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:min(184px,94%);padding:0;border:0;background:transparent;filter:drop-shadow(0 7px 7px #19223844)}
 .room-people.has-home-life .home-life-interaction{position:absolute;left:clamp(58px,var(--life-x),calc(100% - 58px));top:var(--life-y);z-index:5;pointer-events:auto;transform:translate(-50%,-72%)}
 .home-interaction-visual{position:relative;display:flex!important;align-items:flex-end!important;justify-content:center!important;width:76px;min-width:76px;height:58px;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 .home-interaction-avatar{display:grid!important;place-items:center!important;width:48px;height:54px;margin:0 -10px 0 0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-style:normal;transform-origin:50% 82%}
@@ -1259,6 +1260,15 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .home-interaction-status{display:grid!important;gap:1px!important;min-width:78px;max-width:108px;padding:6px 8px!important;border:0!important;border-radius:11px!important;background:#fffdf3e8!important;box-shadow:0 3px 9px #0003!important;color:#2f2924!important;-webkit-text-fill-color:#2f2924!important;text-align:center}
 .home-interaction-status b,.home-interaction-status small{display:block;min-width:0;margin:0;color:inherit!important;-webkit-text-fill-color:inherit!important;line-height:1.25;white-space:normal;word-break:keep-all}
 .home-interaction-status b{font-size:10px}.home-interaction-status small{font-size:8px;color:#554940!important;-webkit-text-fill-color:#554940!important}
+.home-person-chat-bubble{position:absolute;z-index:9;right:-9px;top:-10px;display:grid;place-items:center;width:26px;height:18px;border:1px solid #4c4038;border-radius:12px;background:#fffdf7;color:#504238;font:900 8px/1 sans-serif;box-shadow:0 2px 5px #0004;animation:home-talk-bubble 1.7s ease-in-out infinite}
+.home-person-chat-bubble::after{position:absolute;content:"";right:5px;bottom:-4px;width:6px;height:6px;border-right:1px solid #4c4038;border-bottom:1px solid #4c4038;background:#fffdf7;transform:rotate(45deg)}
+.home-life-using.scene-action-watch .home-person-visual{animation:home-activity-watch 2.8s ease-in-out infinite!important}
+.home-life-using.scene-action-rest .home-person-visual{animation:home-activity-rest 4.4s ease-in-out infinite!important}
+.home-life-using:is(.scene-action-shower,.scene-action-groom) .home-person-visual{animation:home-activity-groom 1.9s ease-in-out infinite!important}
+.home-life-using:is(.scene-action-cook,.scene-action-eat) .home-person-visual{animation:home-activity-cook 1.25s steps(2,end) infinite!important}
+.home-life-using:is(.scene-action-study,.scene-action-create) .home-person-visual{animation:home-activity-focus 3.1s ease-in-out infinite!important}
+.home-life-using:is(.scene-action-music,.scene-action-exercise,.scene-action-play) .home-person-visual{animation:home-activity-rhythm 1.15s ease-in-out infinite!important}
+.home-life-using.scene-action-sleep .home-person-visual{animation:home-activity-sleep 5.2s ease-in-out infinite!important}
 .home-interaction-kiss .home-interaction-avatar:first-of-type{animation:home-interaction-kiss-left 1.8s ease-in-out infinite}.home-interaction-kiss .home-interaction-avatar:nth-of-type(2){animation:home-interaction-kiss-right 1.8s ease-in-out infinite}.home-interaction-kiss .home-interaction-visual>em{animation:home-interaction-heart 1.8s ease-in-out infinite}
 .home-interaction-hug .home-interaction-avatar:first-of-type{animation:home-interaction-hug-left 2.2s ease-in-out infinite}.home-interaction-hug .home-interaction-avatar:nth-of-type(2){animation:home-interaction-hug-right 2.2s ease-in-out infinite}
 .home-interaction-talk .home-interaction-avatar:first-of-type,.home-interaction-play .home-interaction-avatar:first-of-type{animation:home-interaction-talk-left 1.2s ease-in-out infinite}.home-interaction-talk .home-interaction-avatar:nth-of-type(2),.home-interaction-play .home-interaction-avatar:nth-of-type(2){animation:home-interaction-talk-right 1.2s .2s ease-in-out infinite}
@@ -1272,23 +1282,42 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 @keyframes home-life-walk{from{transform:translate(calc(-50% + var(--life-dx,0cqw)),calc(-72% + var(--life-dy,0cqh)))}to{transform:translate(-50%,-72%)}}
 @keyframes home-life-step{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-4px) rotate(1deg)}}
 @keyframes home-talk-bubble{0%,100%{opacity:.6;transform:translateY(2px) scale(.94)}50%{opacity:1;transform:translateY(-2px) scale(1.04)}}
+@keyframes home-activity-watch{0%,100%{transform:translateY(0) rotate(-1deg)}45%{transform:translateY(-2px) rotate(1deg)}52%{transform:translateY(-2px) rotate(-2deg)}}
+@keyframes home-activity-rest{0%,100%{transform:translateY(1px) rotate(-1deg)}50%{transform:translateY(-2px) rotate(1deg)}}
+@keyframes home-activity-groom{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-3px) rotate(2deg)}}
+@keyframes home-activity-cook{0%,100%{transform:translate(-1px,0) rotate(-1deg)}50%{transform:translate(2px,-2px) rotate(1deg)}}
+@keyframes home-activity-focus{0%,100%{transform:translateY(0) rotate(0)}38%{transform:translateY(1px) rotate(1deg)}62%{transform:translateY(-1px) rotate(-1deg)}}
+@keyframes home-activity-rhythm{0%,100%{transform:translateY(1px) rotate(-2deg)}50%{transform:translateY(-4px) rotate(2deg)}}
+@keyframes home-activity-sleep{0%,100%{transform:translateY(1px) scale(1)}50%{transform:translateY(0) scale(1.015)}}
 @keyframes home-pet-roam{
   0%{transform:translate(calc(-50% + var(--pet-dx,0cqw)),calc(-50% + var(--pet-dy,0cqh))) rotate(-3deg)}
   48%{transform:translate(-50%,-54%) rotate(2deg)}
   65%{transform:translate(-50%,-47%) rotate(-2deg)}
   100%{transform:translate(-50%,-50%) rotate(0)}
 }
+.home-pet-roaming :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation:home-pet-step .52s steps(2,end) infinite;transform-origin:50% 90%}
+.home-pet-roaming.pet-motion-sniff :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation-name:home-pet-sniff}
+.home-pet-roaming.pet-motion-look :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation-name:home-pet-look;animation-duration:2.4s}
+.home-pet-roaming.pet-motion-stretch :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation-name:home-pet-stretch;animation-duration:3.2s}
+.home-pet-roaming.pet-motion-pounce :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation-name:home-pet-pounce;animation-duration:1.1s}
+.home-pet-roaming.is-sleeping{animation:none!important;will-change:auto!important}
+.home-pet-roaming.is-sleeping :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation:none!important}
+@keyframes home-pet-step{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
+@keyframes home-pet-sniff{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translate(2px,2px) rotate(5deg)}}
+@keyframes home-pet-look{0%,65%,100%{transform:rotate(0)}72%,88%{transform:rotate(-7deg)}}
+@keyframes home-pet-stretch{0%,70%,100%{transform:scale(1)}82%{transform:scale(1.08,.9) translateY(2px)}}
+@keyframes home-pet-pounce{0%,100%{transform:translateY(0) rotate(-2deg)}45%{transform:translateY(-6px) rotate(3deg)}}
 @media(max-width:720px){
-  .room-people.has-home-life .home-life-person{--life-edge:46px;max-width:76%;transform:translate(-50%,-70%)}
-  .room-people.has-home-life .home-life-person .home-person-status{max-width:76px;padding:3px 5px;font-size:8px}
-  .room-people.has-home-life .home-life-person img.avatar{width:40px;height:40px}
-  .room-people.has-home-life .home-life-person img.sprite{width:48px;height:48px}
+  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person{--life-edge:46px;max-width:76%;transform:translate(-50%,-70%)}
+  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person .home-person-status{max-width:76px;padding:3px 5px;font-size:8px}
+  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person img.avatar{width:40px;height:40px}
+  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person img.sprite{width:48px;height:48px}
 }
 @media(prefers-reduced-motion:reduce){
-  .room-people.has-home-life .home-life-walking{animation:none}
-  .room-people.has-home-life .home-life-walking .home-person-visual{animation:none}
+  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-walking{animation:none}
+  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person .home-person-visual{animation:none!important}
   .home-interaction-card :is(.home-interaction-avatar,.home-interaction-visual>em){animation:none!important}
-  .home-interaction-speech i,.home-pet-roaming{animation:none!important}
+  .home-interaction-speech i,.home-person-chat-bubble,.home-pet-roaming,.home-pet-roaming :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation:none!important}
 }
 
 /* 캐릭터 두 명을 자석처럼 조합하는 관계 편집기 */
@@ -3017,32 +3046,32 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .sleep-room-editor,
   html.native-app[data-active-tab="home"] .clean{display:none!important}
   html.native-app[data-active-tab="home"] .home-native-hud{position:absolute;z-index:720;inset:0;overflow:visible;pointer-events:none;font-family:var(--home-ui-font),sans-serif}
-  html.native-app[data-active-tab="home"] .home-native-header{position:absolute;z-index:20;inset:0 0 auto;height:88px;overflow:visible;pointer-events:none}
-  html.native-app[data-active-tab="home"] .home-native-header::before{position:absolute;z-index:-2;content:"";left:0;right:0;top:14px;height:74px;background:var(--home-ui-wood-top) center/cover no-repeat}
-  html.native-app[data-active-tab="home"] .home-native-header::after{position:absolute;z-index:-1;content:"";left:0;right:0;top:-16px;height:48px;background:var(--home-ui-wood-strip) center bottom/cover no-repeat}
-  html.native-app[data-active-tab="home"] .home-native-back{position:absolute;z-index:30;left:17px;top:28px;width:70px;height:70px;min-width:0;min-height:0;margin:0;padding:0;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;pointer-events:auto}
+  html.native-app[data-active-tab="home"] .home-native-header{position:absolute;z-index:20;inset:0 0 auto;height:78px;overflow:visible;pointer-events:none}
+  html.native-app[data-active-tab="home"] .home-native-header::before{position:absolute;z-index:-2;content:"";left:0;right:0;top:0;height:78px;background:var(--home-ui-wood-top) center/cover no-repeat}
+  html.native-app[data-active-tab="home"] .home-native-header::after{position:absolute;z-index:-1;content:"";left:0;right:0;top:-11px;height:34px;background:var(--home-ui-wood-strip) center bottom/cover no-repeat}
+  html.native-app[data-active-tab="home"] .home-native-back{position:absolute;z-index:30;left:21px;top:44px;width:61px;height:61px;min-width:0;min-height:0;margin:0;padding:0;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;pointer-events:auto}
   html.native-app[data-active-tab="home"] .home-native-back img{display:block;width:100%;height:100%;padding:0!important;border:0!important;border-radius:0!important;object-fit:contain;background:transparent!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px #0004)}
-  html.native-app[data-active-tab="home"] .home-native-meta{position:absolute;left:92px;right:10px;bottom:7px;display:grid;grid-template-columns:31px minmax(0,1fr) auto;align-items:end;gap:10px;min-width:0;pointer-events:none}
+  html.native-app[data-active-tab="home"] .home-native-meta{position:absolute;left:92px;right:88px;top:25px;display:grid;grid-template-columns:31px minmax(0,1fr);grid-template-rows:13px 31px;align-items:center;gap:1px 7px;min-width:0;pointer-events:none}
+  html.native-app[data-active-tab="home"] .home-native-context{grid-column:1/-1;align-self:end;overflow:hidden;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.45px #211710;paint-order:stroke fill;font:400 7px/1 var(--home-ui-font),sans-serif;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 2px #0008}
   html.native-app[data-active-tab="home"] .home-native-house-icon{position:relative;display:grid;place-items:center;width:31px;height:31px;overflow:visible;background:transparent!important}
   html.native-app[data-active-tab="home"] .home-native-house-icon img{display:block;width:31px;height:31px;padding:0!important;border:0!important;border-radius:0!important;object-fit:contain;background:transparent!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px #0007)}
-  html.native-app[data-active-tab="home"] .home-native-house-name{position:relative;display:block;width:100%!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0;padding:0;overflow:hidden;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background:transparent!important;box-shadow:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1px #211710;paint-order:stroke fill;font:400 20px/1 var(--home-ui-font),sans-serif;text-align:left;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 2px 2px #0008;pointer-events:auto}
+  html.native-app[data-active-tab="home"] .home-native-house-name{position:relative;display:block;width:100%!important;min-width:0!important;height:31px!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.8px #17110d;paint-order:stroke fill;font:400 16px/31px var(--home-ui-font),sans-serif;text-align:left;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 0 #17110d,1px 0 0 #17110d,-1px 0 0 #17110d,0 -1px 0 #17110d,0 2px 2px #0007;pointer-events:auto}
+  html.native-app[data-active-tab="home"] .home-native-house-name::before,html.native-app[data-active-tab="home"] .home-native-house-name::after{display:none!important;content:none!important}
   html.native-app[data-active-tab="home"] .home-native-info-link{position:relative;width:auto!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0;padding:0;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.7px #211710;paint-order:stroke fill;font:400 12px/1 var(--home-ui-font),sans-serif;text-shadow:0 2px 2px #0008;pointer-events:auto}
   html.native-app[data-active-tab="home"] .home-native-pill{--home-pill-height:36px;--home-pill-cap:calc(var(--home-pill-height)*.484);position:absolute;display:grid;grid-template-columns:var(--home-pill-cap) minmax(0,1fr) var(--home-pill-cap);align-items:stretch;width:96px!important;height:var(--home-pill-height)!important;min-width:0!important;min-height:var(--home-pill-height)!important;max-height:var(--home-pill-height)!important;margin:0;padding:0;overflow:visible;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent;pointer-events:auto}
   html.native-app[data-active-tab="home"] .home-native-pill::before{content:"";display:block;background:var(--home-ui-pill-left) right center/auto 100% no-repeat}
   html.native-app[data-active-tab="home"] .home-native-pill::after{content:"";display:block;background:var(--home-ui-pill-right) left center/auto 100% no-repeat}
   html.native-app[data-active-tab="home"] .home-native-pill>span{display:grid;place-items:center;min-width:0;overflow:visible;margin:0 -1px;padding:0 1px;background:var(--home-ui-pill-middle) center/100% 100% repeat-x!important;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;font:400 13px/1 var(--home-ui-font),sans-serif;white-space:nowrap;text-align:center;text-shadow:0 1px 1px #2a160d}
-  html.native-app[data-active-tab="home"] .home-native-floor-label{--home-pill-height:28px;left:93px;top:94px;width:92px!important;pointer-events:none}
-  html.native-app[data-active-tab="home"] .home-native-floor-label>span{font-size:13px}
-  html.native-app[data-active-tab="home"] .home-native-side{position:absolute;z-index:8;right:2px;top:94px;display:grid;gap:7px;width:112px;pointer-events:none}
-  html.native-app[data-active-tab="home"] .home-native-side .home-native-pill{position:relative;inset:auto;width:112px!important}
+  html.native-app[data-active-tab="home"] .home-native-side{position:absolute;z-index:8;right:8px;top:85px;display:grid;gap:7px;width:71px;pointer-events:none}
+  html.native-app[data-active-tab="home"] .home-native-side .home-native-pill{--home-pill-height:32px;position:relative;inset:auto;width:71px!important}
+  html.native-app[data-active-tab="home"] .home-native-side .home-native-pill>span{font-size:10px}
   html.native-app[data-active-tab="home"] .home-native-side .home-native-pill.on{filter:brightness(1.08)}
-  html[lang="en"].native-app[data-active-tab="home"] .home-native-floor-label{width:112px!important}
-  html[lang="en"].native-app[data-active-tab="home"] .home-native-floor-label>span{font-size:10px}
-  html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-native-pill>span{font-size:11px}
-  html.native-app[data-active-tab="home"] .home-native-ui-toggle{left:7px;bottom:max(21px,env(safe-area-inset-bottom));width:100px!important}
-  html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle{width:104px!important}
-  html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle>span{font-size:10px}
-  html.native-app[data-active-tab="home"] .home-native-switcher{position:absolute;z-index:12;left:91px;top:124px;display:grid;width:min(230px,calc(100vw - 105px));max-height:min(62dvh,530px);gap:5px;padding:12px;overflow:auto;border:1px solid #624735;border-radius:15px;background:#fffdf7ed;box-shadow:0 13px 35px #2a160d66;backdrop-filter:blur(7px);pointer-events:auto}
+  html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-native-pill>span{font-size:7px}
+  html.native-app[data-active-tab="home"] .home-native-ui-toggle{--home-pill-height:32px;left:7px;bottom:max(21px,env(safe-area-inset-bottom));width:71px!important}
+  html.native-app[data-active-tab="home"] .home-native-ui-toggle>span{font-size:9px}
+  html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle{width:78px!important}
+  html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle>span{font-size:7px}
+  html.native-app[data-active-tab="home"] .home-native-switcher{position:absolute;z-index:12;left:91px;top:78px;display:grid;width:min(230px,calc(100vw - 105px));max-height:min(62dvh,530px);gap:5px;padding:12px;overflow:auto;border:1px solid #624735;border-radius:15px;background:#fffdf7ed;box-shadow:0 13px 35px #2a160d66;backdrop-filter:blur(7px);pointer-events:auto}
   html.native-app[data-active-tab="home"] .home-native-switcher[hidden]{display:none!important}
   html.native-app[data-active-tab="home"] .home-native-switcher>button{display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:0 7px;min-height:47px;padding:5px 8px;border:1px solid #aa927f;border-radius:11px;background:#fffaf1;color:#32241d;text-align:left;box-shadow:none}
   html.native-app[data-active-tab="home"] .home-native-switcher>button>span{grid-row:1/3;font-size:21px}.home-native-switcher>button>b{overflow-wrap:anywhere}.home-native-switcher>button>small{font-size:10px;color:#756357}
@@ -3052,12 +3081,12 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .home-native-elevator button{display:grid;width:100%;height:34px;min-width:0;min-height:0;margin:0;padding:0;place-items:center;border:0!important;border-radius:0!important;background:#664b3a!important;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;font:900 15px/1 sans-serif;box-shadow:none!important}
   html.native-app[data-active-tab="home"] .home-native-elevator button:disabled{opacity:.35}
   html.native-app[data-active-tab="home"] .home-native-elevator b{display:grid;width:100%;min-height:27px;place-items:center;color:#463126!important;-webkit-text-fill-color:#463126!important;font:400 10px/1 var(--home-ui-font),sans-serif;white-space:nowrap}
-  html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden :is(.home-native-floor-label,.home-native-switcher,.home-native-side,.home-native-elevator,.home-native-edit-tools){opacity:0;visibility:hidden;pointer-events:none}
+  html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden :is(.home-native-switcher,.home-native-side,.home-native-elevator,.home-native-edit-tools){opacity:0;visibility:hidden;pointer-events:none}
   html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-native-ui-toggle{opacity:.72}
   html.native-app[data-active-tab="home"] .rooms,
   html.native-app[data-active-tab="home"] .rooms.has-extra{
     position:absolute;
-    left:0;right:0;top:88px;bottom:0;
+    left:0;right:0;top:78px;bottom:0;
     display:block!important;
     width:100%!important;
     height:auto!important;
@@ -3067,6 +3096,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     margin:0!important;
     padding:0!important;
     overflow:hidden!important;
+    container-type:size;
     border-radius:0!important;
     background:#c4c4c4;
     box-sizing:border-box;
@@ -3081,7 +3111,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
     min-height:0!important;
     margin:0!important;
     padding:6px!important;
-    overflow:hidden!important;
+    overflow:visible!important;
     border:2px solid #ffffffdd!important;
     border-radius:13px!important;
     background-position:center!important;
@@ -3111,7 +3141,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .home-interaction-card{max-width:min(96%,176px)}
   html.native-app[data-active-tab="home"] .home-interaction-status{max-width:100px!important;padding:5px 7px!important}
   html.native-app[data-active-tab="home"] .room-pets{inset:0;display:block;max-width:none;transform:none;overflow:visible;pointer-events:none}
-  html.native-app[data-active-tab="home"] .room-pet.home-pet-roaming{position:absolute;left:var(--pet-x);top:var(--pet-y);z-index:5;max-width:132px;pointer-events:auto;transform:translate(-50%,-50%);will-change:transform;animation:home-pet-roam var(--pet-roam-duration,10s) ease-in-out var(--pet-roam-delay,0s) infinite alternate both}
+  html.native-app[data-active-tab="home"] .room-pet.home-pet-roaming{position:absolute;left:var(--pet-x);top:var(--pet-y);z-index:5;max-width:132px;pointer-events:auto;transform:translate(-50%,-50%);will-change:transform;animation:home-pet-roam var(--pet-roam-duration,10s) steps(10,end) var(--pet-roam-delay,0s) infinite alternate both}
   html.native-app[data-active-tab="home"] .room-pet img,
   html.native-app[data-active-tab="home"] .room-pet-emoji{width:34px;height:34px;font-size:23px}
   html.native-app[data-active-tab="home"] .room-pet-status{min-width:54px;max-width:82px;padding:3px 5px!important}
@@ -4057,27 +4087,27 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   position:fixed;
   z-index:500;
   right:max(12px,env(safe-area-inset-right));
-  bottom:max(82px,calc(env(safe-area-inset-bottom) + 70px));
-  width:min(430px,calc(100vw - 24px));
-  max-height:min(240px,42dvh);
-  padding:13px 42px 13px 13px;
+  bottom:max(55px,calc(env(safe-area-inset-bottom) + 48px));
+  width:min(360px,calc(100vw - 16px));
+  max-height:min(210px,30dvh);
+  padding:9px 34px 9px 9px;
   overflow:auto;
   border:1px solid #ffffff42;
   border-radius:20px;
-  background:#101923ee;
+  background:#101923c7;
   color:#fff;
   box-shadow:0 18px 44px #0007;
   opacity:0;
   transform:translateY(10px);
   transition:opacity .18s ease,transform .18s ease;
-  backdrop-filter:blur(14px);
+  backdrop-filter:blur(10px);
 }
 .home-occupant-popover.show{opacity:1;transform:none}
 .home-occupant-popover .home-occupant-visual{border-radius:0;background:transparent;overflow:visible}
 .home-occupant-popover .home-occupant-visual :is(.sprite,.room-pet-icon,.room-pet-emoji){border-radius:0;background:transparent;object-fit:contain}
 .home-occupant-popover .home-occupant-visual :is(.avatar,.room-pet-photo){border-radius:50%;background:transparent;object-fit:cover}
 .home-occupant-popover small,.home-occupant-popover p{color:#d8e0e8}
-.home-occupant-popover-close{position:absolute;right:8px;top:8px;width:30px!important;height:30px!important;min-height:0!important;padding:0!important;border-color:#ffffff2b!important;background:#ffffff0d!important;color:#fff!important}
+.home-occupant-popover-close{position:absolute;right:6px;top:6px;width:26px!important;height:26px!important;min-height:0!important;padding:0!important;border-color:#ffffff2b!important;background:#ffffff0d!important;color:#fff!important;font-size:12px!important}
 
 .catalog-app-icon.catalog-user-photo{border-radius:50%!important;object-fit:cover!important}
 .catalog-app-icon.catalog-app-art{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important}
@@ -5055,7 +5085,7 @@ html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-m
 html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-menu button{color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-menu button.on{background:#e8ded4!important;color:#302a25!important}
 html[data-color-mode="light"].native-app[data-active-tab="home"] .home-feature-panel.open{border-color:#d8cec5!important;background:#fffdf9f7!important;color:#302a25!important}
-html[data-color-mode="light"] .home-occupant-popover{border-color:#d8cec5!important;background:#fffdf9f5!important;color:#302a25!important;box-shadow:0 18px 44px #3b2d242d!important}
+html[data-color-mode="light"] .home-occupant-popover{border-color:#d8cec5!important;background:#fffdf9c9!important;color:#302a25!important;box-shadow:0 18px 44px #3b2d242d!important}
 html[data-color-mode="light"] .home-occupant-popover :is(h2,b,p,small){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 html[data-color-mode="light"] .home-occupant-popover-close{border-color:#d8cec5!important;background:#f0e8df!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 
@@ -5617,7 +5647,7 @@ html[data-color-mode="dark"] :is(.character-editor>.form,.desktop-character-edit
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(p,small,em):not(.room-edit-hint){color:#c1cfdd!important;-webkit-text-fill-color:#c1cfdd!important}
 html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) :is(input,select,textarea),
-html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) button:not(.home-person):not(.room-pet):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){border-color:#3a5068!important;background:#1c3047!important;color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important;color-scheme:dark}
+html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel,.relationship-page,.character-view-editor) button:not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.theme-swatch):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){border-color:#3a5068!important;background:#1c3047!important;color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important;color-scheme:dark}
 
 /* 집 생활 카드는 아이콘과 현재 행동을 짧게 함께 보여 준다. 긴 설명과
    최근 로그는 인물을 눌렀을 때 아래의 비차단 시트에서 확인한다. */
@@ -5628,12 +5658,16 @@ html[data-color-mode="dark"] :is(.character-editor,.home-page,.town-editor-panel
 }
 .home-page .home-person .home-person-status b{font-size:11px!important;line-height:1.15!important;color:inherit!important;-webkit-text-fill-color:inherit!important;text-shadow:none!important}
 .home-page .home-person .home-person-status small{display:-webkit-box!important;max-width:98px!important;margin-top:2px!important;overflow:hidden!important;color:#554940!important;-webkit-text-fill-color:#554940!important;font-size:8px!important;line-height:1.25!important;white-space:normal!important;-webkit-box-orient:vertical!important;-webkit-line-clamp:2!important;line-clamp:2!important}
-.home-occupant-popover{max-height:min(330px,38dvh)}
-.home-occupant-recent{margin-top:11px;padding-top:10px;border-top:1px solid #ffffff25}
-.home-occupant-recent h3{margin:0 0 7px;font-size:12px}
-.home-occupant-recent ol{display:grid;gap:6px;margin:0;padding:0;list-style:none}
-.home-occupant-recent li{display:grid;grid-template-columns:42px minmax(0,1fr);gap:7px;padding:7px;border-radius:10px;background:#ffffff0c}
-.home-occupant-recent time{font-size:10px;opacity:.7}.home-occupant-recent li span{display:grid;gap:2px;min-width:0}.home-occupant-recent li b{font-size:11px}.home-occupant-recent li small{display:-webkit-box;font-size:10px;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.home-occupant-popover .home-occupant-sheet-content{gap:8px}
+.home-occupant-popover .home-occupant-visual{width:52px;height:52px;min-width:52px}
+.home-occupant-popover .home-occupant-visual :is(.avatar,.sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji){width:48px!important;height:48px!important;font-size:32px!important}
+.home-occupant-popover :is(h2,b,p,small){margin-top:0!important}
+.home-occupant-popover h2{font-size:14px!important;line-height:1.15!important}.home-occupant-popover b{font-size:11px!important;line-height:1.25!important}.home-occupant-popover p{font-size:10px!important;line-height:1.4!important}.home-occupant-popover small{font-size:8px!important}
+.home-occupant-recent{margin-top:7px;padding-top:6px;border-top:1px solid #ffffff25}
+.home-occupant-recent h3{margin:0 0 4px;font-size:10px}
+.home-occupant-recent ol{display:grid;gap:3px;margin:0;padding:0;list-style:none}
+.home-occupant-recent li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:5px;padding:4px 5px;border-radius:8px;background:#ffffff0c}
+.home-occupant-recent time{font-size:8px;opacity:.7}.home-occupant-recent li span{display:grid;gap:1px;min-width:0}.home-occupant-recent li b{font-size:9px!important}.home-occupant-recent li small{display:-webkit-box;font-size:8px!important;line-height:1.25;-webkit-box-orient:vertical;-webkit-line-clamp:1;overflow:hidden}
 html[data-color-mode="light"] .home-occupant-recent{border-top-color:#3b2d241f}.home-occupant-recent li{background:#7c665e12}
 
 .furniture-placement-dialog,.bed-assignment-dialog{width:min(680px,calc(100vw - 18px));max-height:calc(100dvh - 18px);padding:0;overflow:hidden}

@@ -24,8 +24,17 @@ const walkingEnds=Math.max(...Object.values(first.simulation.agents).map(agent=>
 home.lifeSimulation=first.simulation;
 const arrived=advanceHomeLifeSimulation(home,["a","b"],contexts,walkingEnds+1);
 ok(Object.values(arrived.simulation.agents).every(agent=>agent.phase==="using"),"도착한 뒤 가구 사용 단계로 전환한다");
+ok(Object.values(arrived.simulation.agents).every(agent=>agent.fromRoomKey===agent.roomKey),"도착하면 출발 방을 현재 방으로 확정한다");
 ok(Object.values(arrived.simulation.agents).some(agent=>agent.actionKind==="rest"),"소파는 휴식 행동으로 연결된다");
 ok(Object.values(arrived.simulation.agents).some(agent=>agent.actionKind==="study"),"컴퓨터는 집중 행동으로 연결된다");
+
+home.rooms.study.furniturePlacements.push({id:"desk-2",item:"컴퓨터",x:36,y:62});
+home.lifeSimulation=arrived.simulation;
+const crossRoomContexts={...contexts,a:{scene:{minute:650,title:"컴퓨터로 자료를 살펴보는 중",room:"study"},sceneKey:"a-cross-room",startedAt:walkingEnds+1,endsAt:walkingEnds+46*60_000}};
+const crossing=advanceHomeLifeSimulation(home,["a","b"],crossRoomContexts,walkingEnds+2);
+equal(crossing.simulation.agents.a.fromRoomKey,"living","다른 방으로 걸을 때 출발 방을 보존한다");
+equal(crossing.simulation.agents.a.roomKey,"study","방 사이 이동의 도착 방을 별도로 보존한다");
+equal(crossing.simulation.agents.a.phase,"walking","방 사이 이동을 순간이동하지 않고 걷기 단계로 유지한다");
 
 const oneSeat={rooms:{living:{name:"거실",furniturePlacements:[{id:"only-sofa",item:"소파",x:50,y:65}]}}};
 const sharedContext={a:{scene:{minute:600,title:"소파에서 쉬는 중",room:"living"},sceneKey:"a-seat",endsAt:start+40*60_000},b:{scene:{minute:600,title:"소파에서 쉬는 중",room:"living"},sceneKey:"b-seat",endsAt:start+40*60_000}};
@@ -59,6 +68,6 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 125")&&gradleSource.includes('versionName "1.0.114"'),"Android 버전을 125로 올렸다");
+ok(gradleSource.includes("versionCode 126")&&gradleSource.includes('versionName "1.0.115"'),"Android 버전을 126으로 올렸다");
 
 console.log(`home life simulation checks passed: ${checks}`);
