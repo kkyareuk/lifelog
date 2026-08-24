@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825characterhubisolation";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterhubisolation";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260825characterhubisolation";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterhubisolation";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825characterhubisolation";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterhubisolation";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825characterbookbundle";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookbundle";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260825characterbookbundle";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookbundle";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825characterbookbundle";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterbookbundle";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";

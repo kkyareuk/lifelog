@@ -29,7 +29,7 @@ const checks=[
   [bookCss.includes('transform:rotate(1.44787deg)!important')&&bookCss.includes('background:#dad1bd!important'),"개요 기본 내용의 SVG 회전과 값 종이 색상"],
   [css.includes('background-repeat:repeat-x')&&css.includes('background-size:auto 100%'),"벽지를 찌그러뜨리지 않고 높이에 맞춰 가로 타일링"],
   [css.includes('body.is-building-size-preview .mobile-town-shell')&&css.includes('background:transparent!important'),"건물 크기 조절 중 설정창 투명 실시간 미리보기"],
-  [gradle.includes('versionCode 144')&&gradle.includes('versionName "1.0.133"'),"Android 개발 버전 144 / 1.0.133"]
+  [gradle.includes('versionCode 145')&&gradle.includes('versionName "1.0.134"'),"Android 개발 버전 145 / 1.0.134"]
 ];
 
 let failed=0;

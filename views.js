@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterhubisolation";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260825characterhubisolation";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterhubisolation";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterhubisolation";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260825characterhubisolation";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookbundle";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260825characterbookbundle";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookbundle";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookbundle";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260825characterbookbundle";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2534,7 +2534,7 @@ function character(){
         ${hubActions}
         ${draftActions}
       </section>
-      <section class="character-book-v8 ${state.characterSettingsView==="full"?"is-open":""}" data-character-full-ui-version="8" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
+      <section class="character-book-v8 ${state.characterSettingsView==="full"?"is-open":""}" ${state.characterSettingsView==="full"?"":"hidden"} data-character-full-ui-version="8" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
         <div class="character-book-v8-canvas">
           <span class="character-book-v8-stage" aria-hidden="true"><img class="character-book-v8-wood" src="./assets/character-ui/character-wood-background.png" alt=""><img class="character-book-v8-paper" src="./assets/character-ui/book.png" alt=""></span>
           <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
