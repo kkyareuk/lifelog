@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824hometvjogmotion";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824hometvjogmotion";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824homehudtvjognail";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824homehudtvjognail";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -843,7 +843,7 @@ function morningScripts(c,date){
   const videoTypes=c.favoriteVideoGenres||[];
   const choices=[];
   if(likes.some(x=>/운동|산책|사진/.test(x)))choices.push(
-    ["아침 조깅을 마치고 돌아오는 중","동네를 가볍게 달린 뒤 숨을 고르며 집 쪽으로 천천히 이동하고 있어요.","entry"],
+    ["아침 조깅을 마치고 집으로 돌아가는 중","동네를 가볍게 달린 뒤 숨을 고르며 집 쪽으로 천천히 이동하고 있어요.","entry"],
     ["거실에서 스트레칭 중","창문을 조금 열어 둔 채 굳은 어깨와 다리를 천천히 풀고 있어요.","living"]
   );
   if(likes.some(x=>/독서|역사|만화|문구/.test(x)))choices.push(
@@ -1726,7 +1726,7 @@ const EXPANDED_LIFE_ACTIVITY_POOL=[
   ["욕실에서 면도하는 중","피부가 당기지 않게 충분히 적신 뒤 털이 난 방향을 살피며 천천히 정돈했어요.","bath"],
   ["욕실에서 머리를 말리는 중","한곳에 뜨거운 바람이 오래 닿지 않게 거리를 두고 두피부터 차례로 말렸어요.","bath"],
   ["욕실에서 기초 화장품을 바르는 중","자기 피부에 평소 사용하던 제품만 필요한 만큼 덜어 순서대로 가볍게 발랐어요.","bath"],
-  ["욕실에서 손톱을 정돈하는 중","걸리는 부분만 짧게 다듬고 날카로운 모서리가 남지 않도록 파일로 부드럽게 갈았어요.","bath"],
+  ["욕실에서 손톱을 정돈하는 중","걸리는 부분만 짧게 다듬고 날카로운 모서리가 남지 않도록 손톱줄로 부드럽게 다듬었어요.","bath"],
   ["현관에서 우산 상태를 확인하는 중","살이 휘거나 젖은 곳이 없는지 펼쳐 보고 비 소식이 있을 때 바로 챙길 자리에 두었어요.","entry"],
   ["현관에서 외출용 가방을 챙기는 중","오늘 필요한 카드와 열쇠, 충전 도구만 넣고 불필요하게 무거운 물건은 꺼냈어요.","entry"],
   ["현관에서 신발끈을 다시 묶는 중","걸을 때 풀리지 않으면서 발등을 조이지 않도록 좌우 끈의 길이를 맞춰 묶었어요.","entry"],
@@ -1742,6 +1742,10 @@ const homeActivityPoolFor=(c,date=new Date())=>{
   const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL].filter(([title])=>{
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
     if(title.includes("기초 화장품을 바르는"))return appearanceProfile(c).makeupLevel!=="하지 않음";
+    if(title.includes("손톱을 정돈하는")){
+      const reservedMasculine=String(c.gender)==="남성"&&(c.personalityTypes||[]).some(type=>["냉정하고 논리적","완고하고 통제적","무심하고 독립적"].includes(type));
+      return !reservedMasculine;
+    }
     if(title.includes("잃어버린 물건")&&((c.personalityTypes||[]).includes("철두철미함")||["계획적","강박적으로 계획함"].includes(c.planningStyle)||["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness)))return false;
     if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
     if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
@@ -2387,7 +2391,7 @@ function build(c,date=new Date()){
   [wake+150,wake+200,wake+250,wake+300].forEach((minute,index)=>{
     if(minute<720&&minute<commuteMinute-10){
       const script=morning[index%morning.length];
-      if(/아침 (?:조깅|바깥 운동)을 마치고 돌아오는 중/.test(script[0])){
+      if(/아침 (?:조깅|바깥 운동)을 마치고 (?:집으로 )?돌아(?:오|가)는 중/.test(script[0])){
         list.push(adaptAccessibilityWording(c,entry(minute,script[0],script[1],{
           townId:homeTown.id,
           transit:true,

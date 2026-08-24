@@ -68,20 +68,25 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 127")&&gradleSource.includes('versionName "1.0.116"'),"Android 버전을 127로 올렸다");
+ok(gradleSource.includes("versionCode 128")&&gradleSource.includes('versionName "1.0.117"'),"Android 버전을 128로 올렸다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),
   readFile(new URL("../home-simulation.js",import.meta.url),"utf8")
 ]);
 ok(homeSimulationSource.includes('/TV|홈시어터|프로젝터|빔프로젝터/.test(String(placement.item||""))?4'),"TV 가구는 함께 시청할 수 있도록 여러 자리를 제공한다");
-ok(viewsSource.includes("homeTvInteractionMarkup")&&viewsSource.includes("home-tv-reaction")&&viewsSource.includes("같이 TV 보는 중"),"함께 TV를 볼 때 웃음·분노·울음 반응 연출을 렌더링한다");
+ok(viewsSource.includes("homeTvInteractionMarkup")&&viewsSource.includes("home-tv-reaction")&&viewsSource.includes("같이 TV 보는 중")&&!viewsSource.match(/home-interaction-watch[\s\S]{0,1600}<em aria-hidden="true">📺<\/em>/),"함께 TV를 볼 때 가구와 중복되지 않는 웃음·분노·울음 반응을 렌더링한다");
 ok(viewsSource.includes("townTravelersMarkup")&&viewsSource.includes("movementKind===\"jog\""),"조깅 복귀 캐릭터를 마을 이동자로 렌더링한다");
 ok(simulationSource.includes("returningHome:true")&&simulationSource.includes('movementKind:"jog"')&&simulationSource.includes("집 쪽으로 천천히 이동"),"아침 조깅 복귀를 실제 이동 상태와 일치시킨다");
 ok(cssSource.includes("@keyframes town-traveler-route")&&cssSource.includes("transform:translate3d"),"마을 이동 애니메이션은 저발열 transform 경로를 사용한다");
+ok(viewsSource.includes('movementClass=e.transit')&&viewsSource.includes('native-scene-moving-badge')&&cssSource.includes('@keyframes native-scene-jog'),"관찰 화면에서도 조깅 복귀가 이동 배지와 실제 움직임으로 표시된다");
 ok(cssSource.includes(".home-native-header::before")&&cssSource.includes("right:-2px"),"집 상단바가 화면 오른쪽 끝까지 덮인다");
-ok(cssSource.includes('.home-native-house-name')&&cssSource.includes('font:400 20px')&&cssSource.includes('.home-native-info-link')&&cssSource.includes('font:400 12px'),"집 이름과 우측 메뉴의 크기·대비 계층을 유지한다");
-ok(cssSource.includes('.home-native-page.home-ui-hidden .home-native-ui-toggle')&&cssSource.includes('background-color:transparent!important'),"UI 표시 버튼에 갈색 배경 에셋을 남기지 않는다");
+ok(viewsSource.includes('<nav class="home-native-side"')&&viewsSource.includes('homeNativePill(t("집 정보"')&&!viewsSource.includes('</div><button type="button" class="home-native-info-link"'),"집 정보는 SVG와 같은 우측 조합형 버튼열에 둔다");
+ok(cssSource.includes('body #app .home-native-context')&&cssSource.includes('-webkit-text-fill-color:#fff!important')&&cssSource.includes('text-align:right'),"일반 주거·층수 문맥을 흰 글씨로 우측 정렬한다");
+ok(cssSource.includes('.home-native-page.home-ui-hidden .home-native-ui-toggle')&&cssSource.includes('background-color:transparent!important')&&cssSource.includes('--home-ui-pill-left'),"UI 표시 버튼은 조합형 에셋을 유지하고 바깥 네모만 제거한다");
+ok(simulationSource.includes('손톱줄로 부드럽게 다듬었어요')&&!simulationSource.includes('파일로 부드럽게 갈았어요')&&viewsSource.includes('symbol="💅"'),"손톱 정돈은 파일 오인 없이 전용 이모지로 표시한다");
+ok(simulationSource.includes('reservedMasculine')&&simulationSource.includes('냉정하고 논리적'),"과묵하고 마초적인 남성 성격에는 손톱 정돈 장면을 배정하지 않는다");
 ok(viewsSource.includes('Watching TV together')&&viewsSource.includes('一緒にテレビを見ているところ'),"함께 TV 보기 문구를 영어와 일본어로 제공한다");
+ok(viewsSource.includes('Heading home after a morning jog')&&viewsSource.includes('朝のジョギングを終えて帰宅中'),"새 조깅·손톱 장면을 영어와 일본어로 제공한다");
 
 console.log(`home life simulation checks passed: ${checks}`);
