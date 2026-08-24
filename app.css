@@ -1314,8 +1314,6 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 @keyframes home-activity-sleep{0%,100%{transform:translateY(1px) scale(1)}50%{transform:translateY(0) scale(1.015)}}
 @keyframes home-pet-roam{
   0%{transform:translate(calc(-50% + var(--pet-dx,0cqw)),calc(-50% + var(--pet-dy,0cqh))) rotate(-3deg)}
-  48%{transform:translate(-50%,-54%) rotate(2deg)}
-  65%{transform:translate(-50%,-47%) rotate(-2deg)}
   100%{transform:translate(-50%,-50%) rotate(0)}
 }
 .home-pet-roaming :is(.room-pet-icon,.room-pet-photo,.room-pet-emoji){animation:home-pet-step .52s steps(2,end) infinite;transform-origin:50% 90%}
@@ -1330,7 +1328,7 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 @keyframes home-pet-look{0%,65%,100%{transform:rotate(0)}72%,88%{transform:rotate(-7deg)}}
 @keyframes home-pet-stretch{0%,70%,100%{transform:scale(1)}82%{transform:scale(1.08,.9) translateY(2px)}}
 @keyframes home-pet-pounce{0%,100%{transform:translateY(0) rotate(-2deg)}45%{transform:translateY(-6px) rotate(3deg)}}
-@media(max-width:720px){
+@media(max-width:1200px){
   :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person{--life-edge:46px;max-width:76%;transform:translate(-50%,-70%)}
   :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person .home-person-status{max-width:76px;padding:3px 5px;font-size:8px}
   :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person img.avatar{width:40px;height:40px}
@@ -2973,8 +2971,8 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   }
 }
 
-/* 2026-08-07 모바일 앱 셸: 바깥 문서는 기기 크기에 고정하고 각 화면만 내부에서 동작한다. */
-@media(max-width:720px){
+/* 모바일·태블릿 앱 셸: 바깥 문서는 기기 크기에 고정하고 각 화면만 내부에서 동작한다. */
+@media(max-width:1200px){
   html.native-app,
   html.native-app body{
     width:100%!important;
@@ -3191,7 +3189,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .home-interaction-card{max-width:min(96%,176px)}
   html.native-app[data-active-tab="home"] .home-interaction-status{max-width:100px!important;padding:5px 7px!important}
   html.native-app[data-active-tab="home"] .room-pets{inset:0;display:block;max-width:none;transform:none;overflow:visible;pointer-events:none}
-  html.native-app[data-active-tab="home"] .room-pet.home-pet-roaming{position:absolute;left:var(--pet-x);top:var(--pet-y);z-index:3;max-width:132px;pointer-events:auto;transform:translate(-50%,-50%);will-change:transform;animation:home-pet-roam var(--pet-roam-duration,10s) steps(10,end) var(--pet-roam-delay,0s) infinite alternate both}
+  html.native-app[data-active-tab="home"] .room-pet.home-pet-roaming{position:absolute;left:var(--pet-x);top:var(--pet-y);z-index:3;max-width:132px;pointer-events:auto;transform:translate(-50%,-50%);will-change:transform;animation:home-pet-roam var(--pet-roam-duration,14s) linear var(--pet-roam-delay,0s) infinite alternate both}
   html.native-app[data-active-tab="home"] .room-pet img,
   html.native-app[data-active-tab="home"] .room-pet-emoji{width:34px;height:34px;font-size:23px}
   html.native-app[data-active-tab="home"] .room-pet-status{min-width:54px;max-width:82px;padding:3px 5px!important}
@@ -5761,11 +5759,10 @@ html[data-color-mode="dark"] .relationship-pair-core>em{border:1px solid #3a5068
   box-shadow:none;pointer-events:none
 }
 .home-page .room-wall-shell::before{
-  position:absolute;left:0;right:0;top:0;height:clamp(20px,14%,46px);content:"";
-  background-color:#f1dfba;background-image:var(--room-wall-image);
-  background-position:center;background-repeat:repeat-x;background-size:auto 100%;
-  border-bottom:4px solid #5c4234;box-shadow:inset 0 -3px 0 #fff3,0 5px 9px #2a1d1645;
-  clip-path:polygon(0 0,100% 0,100% 86%,98.5% 100%,1.5% 100%,0 86%)
+  position:absolute;left:0;right:0;top:0;height:clamp(42px,24%,96px);content:"";
+  background-color:#f4f0e8;background-image:var(--room-wall-image);
+  background-position:center;background-repeat:no-repeat;background-size:100% 100%;
+  border-bottom:3px solid #5c4234;box-shadow:none
 }
 .home-page .room-heading,.home-page .room-furniture-layer,.home-page .room-people,.home-page .room-pets{position:absolute}
 .home-page .room-heading{position:relative}
@@ -5783,6 +5780,13 @@ html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-n
   opacity:.58!important;filter:saturate(.8)!important
 }
 html.native-app[data-active-tab="home"] .home-native-page.home-ui-hidden .home-native-ui-toggle:is(:hover,:focus-visible,:active){opacity:.72!important}
+
+/* 태블릿에서도 방 좌표계를 무한히 넓히지 않고 휴대전화 화면과 같은 폭으로
+   고정한다. 남는 영역은 방 경계색으로 채워 UI가 늘어나거나 갈라지지 않는다. */
+@media(min-width:721px) and (max-width:1200px){
+  html[data-active-tab="home"] #app>main{display:grid!important;place-items:stretch center;background:#5c4234!important}
+  html[data-active-tab="home"] .home-page{width:min(100vw,480px)!important;max-width:480px!important;margin:0 auto!important}
+}
 
 html[data-color-mode="dark"] .town-editor-panel :is(.inline-guide,.town-general-editor>label,.place-photo-tools,.audience-open-button){border-color:#3a5068!important;background:#1a2d42!important;color:#f5f8fb!important}
 html[data-color-mode="dark"] .town-editor-panel .place-editor details[open]{background:#182b40!important}

@@ -50,7 +50,7 @@ const conversationContexts={
 };
 const approaching=advanceHomeLifeSimulation(conversationHome,["a","b"],conversationContexts,start);
 ok(Object.values(approaching.simulation.agents).every(agent=>agent.phase==="walking"&&agent.interactionId==="talk-1"&&agent.approachingInteraction),"대화 상대에게 실제 보행 단계로 접근한다");
-ok(Math.hypot(approaching.simulation.agents.a.x-approaching.simulation.agents.b.x,approaching.simulation.agents.a.y-approaching.simulation.agents.b.y)>=8,"대화 자리도 서로를 가리지 않을 최소 간격을 둔다");
+ok(Math.hypot(approaching.simulation.agents.a.x-approaching.simulation.agents.b.x,approaching.simulation.agents.a.y-approaching.simulation.agents.b.y)>=10,"대화 자리도 서로를 가리지 않을 최소 간격을 둔다");
 ok(approaching.simulation.agents.a.x<approaching.simulation.agents.b.x,"관계 표시 순서의 첫 인물을 실제 좌측 좌표에 둔다");
 ok(approaching.simulation.agents.a.fromX!==approaching.simulation.agents.b.fromX||approaching.simulation.agents.a.fromY!==approaching.simulation.agents.b.fromY,"첫 배치부터 두 인물이 같은 지점에 겹치지 않는다");
 
@@ -84,7 +84,7 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 134")&&gradleSource.includes('versionName "1.0.123"'),"Android 버전을 134로 올렸다");
+ok(gradleSource.includes("versionCode 135")&&gradleSource.includes('versionName "1.0.124"'),"Android 버전을 135로 올렸다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),
@@ -97,7 +97,7 @@ ok(viewsSource.includes("entry?.home&&!entry.transit")&&viewsSource.includes("!s
 ok(viewsSource.includes('is-town-conversation')&&viewsSource.includes('town-conversation-bubbles')&&cssSource.includes('@keyframes town-conversation-left'),"마을에서 마주친 두 인물이 마주 보고 대화하는 몸동작을 표시한다");
 ok(homeSimulationSource.includes("currentAgentPoint(old,now)")&&homeSimulationSource.includes("approachingInteraction:true"),"대화 상대에게 이동할 때 현재 보간 위치부터 이어 달려가 순간이동을 막는다");
 ok(viewsSource.includes("visibleAgentPoint")&&viewsSource.includes("Math.hypot(point.x-current.x,point.y-current.y)<20"),"반려생물은 걷는 사람의 현재 위치까지 피해서 이동한다");
-ok(cssSource.includes('.room-pet.home-pet-roaming{position:absolute')&&cssSource.includes('z-index:3')&&cssSource.includes('.home-life-person{--life-edge:52px')&&cssSource.includes('z-index:4'),"우연히 가까워져도 사람을 반려생물이 가리지 않는다");
+ok(cssSource.includes('.room-pet.home-pet-roaming{position:absolute')&&cssSource.includes('linear var(--pet-roam-delay')&&cssSource.includes('z-index:3')&&cssSource.includes('.home-life-person{--life-edge:52px')&&cssSource.includes('z-index:4'),"반려생물은 transform 기반의 연속 보행으로 움직이며 사람을 가리지 않는다");
 ok(simulationSource.includes("returningHome:true")&&simulationSource.includes('movementKind:"jog"')&&simulationSource.includes("집 쪽으로 천천히 이동"),"아침 조깅 복귀를 실제 이동 상태와 일치시킨다");
 ok(cssSource.includes("@keyframes town-traveler-route")&&cssSource.includes("transform:translate3d"),"마을 이동 애니메이션은 저발열 transform 경로를 사용한다");
 ok(viewsSource.includes('movementClass=e.transit')&&viewsSource.includes('native-scene-moving-badge')&&cssSource.includes('@keyframes native-scene-jog'),"관찰 화면에서도 조깅 복귀가 이동 배지와 실제 움직임으로 표시된다");

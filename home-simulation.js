@@ -180,7 +180,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const ordered=[...members].sort((a,b)=>{const ai=preferred.indexOf(a),bi=preferred.indexOf(b);return (ai<0?99:ai)-(bi<0?99:bi)||a.localeCompare(b)}).slice(0,2);
     const agents=ordered.map(id=>current.agents[id]).filter(Boolean);if(agents.length<2)return;
     const roomKey=agents[0].roomKey,anchorX=clamp(agents.reduce((sum,agent)=>sum+Number(agent.x||50),0)/agents.length,22,78,50),anchorY=clamp(agents.reduce((sum,agent)=>sum+Number(agent.y||58),0)/agents.length,22,84,58);
-    const text=ordered.map(id=>`${contexts?.[id]?.scene?.title||""} ${contexts?.[id]?.scene?.desc||""}`).join(" "),close=/뽀뽀|입맞춤|키스|포옹|껴안/.test(text),gap=close?7:15;
+    const text=ordered.map(id=>`${contexts?.[id]?.scene?.title||""} ${contexts?.[id]?.scene?.desc||""}`).join(" "),close=/뽀뽀|입맞춤|키스|포옹|껴안/.test(text),gap=close?9:17;
     ordered.forEach((characterId,index)=>{
       // participantOrder의 첫 인물은 항상 화면 왼쪽, 두 번째 인물은 오른쪽에
       // 둔다. 관계 설정에서 정한 좌우 순서가 집 장면에서도 뒤집히지 않는다.
@@ -198,7 +198,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
   const agents=eligible.map(id=>current.agents[id]).filter(Boolean);
   for(let i=0;i<agents.length;i+=1)for(let j=i+1;j<agents.length;j+=1){
     const a=agents[i],b=agents[j];if(a.roomKey!==b.roomKey)continue;
-    const sameInteraction=a.interactionId&&a.interactionId===b.interactionId,minDistance=sameInteraction?8:17,dx=Number(b.x)-Number(a.x),dy=Number(b.y)-Number(a.y),distance=Math.hypot(dx,dy);
+    const sameInteraction=a.interactionId&&a.interactionId===b.interactionId,minDistance=sameInteraction?10:23,dx=Number(b.x)-Number(a.x),dy=Number(b.y)-Number(a.y),distance=Math.hypot(dx,dy);
     if(distance>=minDistance)continue;
     const direction=hash(`${a.characterId}:${b.characterId}`)%2?1:-1,shift=(minDistance-distance)/2+1;
     a.x=clamp(Number(a.x)-direction*shift,6,94,50);b.x=clamp(Number(b.x)+direction*shift,6,94,50);

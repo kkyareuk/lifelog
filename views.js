@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824characterbook";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824characterbook";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824characterbook";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824characterbook";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824characterbook";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824walllogtablet";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824walllogtablet";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824walllogtablet";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824walllogtablet";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824walllogtablet";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -602,7 +602,7 @@ const PLACE_TYPES={
   "기타":[""]
 };
 const CATALOG_LABELS={food:"음식",drink:"음료",fashion:"옷·패션",music:"음악",idol:"아이돌·밴드",book:"책·작품",movie:"영화·영상",game:"게임",perfume:"향수",hobby:"취미 물품",electronics:"전자기기",weapon:"무기"};
-const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식"],drink:["커피","차","라테","탄산음료","주스","술","기타 음료"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리"],music:["노래","앨범","플레이리스트","악기"],idol:["솔로 가수","아이돌","밴드","가상 아티스트"],book:["소설","만화","잡지","에세이","전문서적"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임"],perfume:["향수","디퓨저","캔들","바디 제품"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기"]};
+const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식","기타"],drink:["커피","차","라테","탄산음료","주스","술","기타 음료","기타"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리","기타"],music:["노래","앨범","플레이리스트","악기","기타"],idol:["솔로 가수","아이돌","밴드","가상 아티스트","기타"],book:["소설","만화","잡지","에세이","전문서적","기타"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상","기타"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임","기타"],perfume:["향수","디퓨저","캔들","바디 제품","기타"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품","기타"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전","기타"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기","기타"]};
 const BLADE_SUBTYPES=["단검","나이프","쇼트소드","아밍소드","롱소드","바스타드소드","대검","클레이모어","레이피어","에페","세이버","커틀러스","샴시르","시미터","카타나","타치","와키자시","노다치","쌍검","검지팡이","의장검"];
 const WEAPON_SUBTYPES={총기:["권총","리볼버","기관단총","돌격소총","소총","저격소총","산탄총","기관총"],"검·도검":BLADE_SUBTYPES,도검:BLADE_SUBTYPES,검:BLADE_SUBTYPES,"활·석궁":["단궁","장궁","복합궁","컴파운드 보우","석궁"],둔기:["곤봉","메이스","철퇴","전투망치"],"창·장병기":["창","장창","할버드","언월도","삼지창"],방어구:["방패","경갑","중갑","투구"],"판타지 무기":["마법봉","지팡이","마도서","마검","에너지 무기"]};
 Object.assign(UI_TEXT.en,{
@@ -618,11 +618,12 @@ Object.assign(UI_TEXT.ja,{
 const DETAIL_OPTIONS={food:["국물","면","밥","구이","튀김","샐러드","케이크","쿠키"],drink:["따뜻하게","차갑게","무카페인","카페인","무알코올","알코올"],fashion:["캐주얼","정장","스포츠","빈티지","스트리트","럭셔리"],music:["보컬곡","연주곡","라이브","기타","피아노","바이올린","드럼","베이스","관악기"],idol:["보컬","댄스","밴드","버추얼","솔로","그룹"],book:["로맨스","판타지","추리","공포","SF","역사","교양"],game:["MOBA","MMORPG","액션 RPG","턴제 RPG","FPS","TPS","배틀로얄","RTS","전략","시뮬레이션","샌드박스","서바이벌","어드벤처","퍼즐","리듬","격투","레이싱","스포츠","공포","소셜·파티"],hobby:["입문용","전문가용","휴대용","수집용","실내용","야외용"],electronics:["스마트폰","태블릿","노트북","데스크톱","콘솔","헤드폰","스피커","카메라","스마트워치"],weapon:[]};
 const PERFUME_NOTES=["우디","플로럴","시트러스","머스크","앰버","아쿠아","그린","파우더리","프루티","스파이시","구르망","레더"];
 const VIDEO_GENRES={
-  "영화":["로맨스","코미디","액션","스릴러","공포","판타지","SF","다큐멘터리"],
+  "영화":["드라마","로맨스","코미디","액션","스릴러","미스터리","범죄","공포","판타지","SF","가족","모험","다큐멘터리"],
   "드라마":["로맨스","가족","법정","의학","범죄","사극","판타지","청춘"],
   "애니메이션":["일상","판타지","액션","로맨스","스포츠","SF","아동"],
   "예능":["연애 예능","여행 예능","음악 예능","관찰 예능","게임 예능","토크쇼","서바이벌","코미디"],
-  "유튜브·웹영상":["브이로그","게임 방송","먹방","리뷰","교육","숏폼","웹예능","웹드라마"]
+  "유튜브·웹영상":["브이로그","게임 방송","먹방","리뷰","교육","숏폼","웹예능","웹드라마"],
+  "기타":[]
 };
 const catalogItems=()=>Object.entries(state.catalog||{}).flatMap(([kind,items])=>(items||[]).map(item=>({...item,kind})));
 const levelOptions=(labels,value)=>labels.map((label,index)=>`<option value="${index}" ${Number(value)===index?"selected":""}>${label}</option>`).join("");
@@ -2017,7 +2018,7 @@ function homeCard(id,chars){
     let chosenSlot=motionSlot,current=petPoint(pet,chosenSlot),attempt=0;
     while(occupied.some(point=>Math.hypot(point.x-current.x,point.y-current.y)<20)&&attempt<7){attempt+=1;chosenSlot=motionSlot+attempt*3;current=petPoint(pet,chosenSlot)}
     const previous=petPoint(pet,chosenSlot-1);
-    return {x:current.x,y:current.y,dx:sleeping?0:previous.x-current.x,dy:sleeping?0:previous.y-current.y,duration:sleeping?0:9+(seed%5),delay:-(index%4)*1.3,sleeping,motion:["sniff","look","stretch","pounce"][(seed+motionSlot)%4]};
+    return {x:current.x,y:current.y,dx:sleeping?0:previous.x-current.x,dy:sleeping?0:previous.y-current.y,duration:sleeping?0:13+(seed%6),delay:-(index%4)*1.3,sleeping,motion:["sniff","look","stretch","pounce"][(seed+motionSlot)%4]};
   };
   const roomHtml=visibleRoomKeys.map(key=>{
     const room=h.rooms?.[key]||{},roomPeople=inside.filter(c=>roomForCharacter(c)===key);
@@ -3213,6 +3214,8 @@ Object.assign(UI_TEXT.en,{"집 이동":"Switch home","집 정보":"Home info","�
 Object.assign(UI_TEXT.ja,{"집 이동":"家を移動","집 정보":"家情報","집 편집":"編集","편집 완료":"完了","구성원":"住人","반려생물":"ペット","UI 숨김":"UI非表示","UI 표시":"UI表示","생활 로그":"生活ログ","자동차":"自動車","새 집 만들기":"新しい家を作る","이름 없는 집":"名前のない家","집 안에 머무는 중":"家にいる","연결된 구성원":"登録住人","청결도":"清潔度","층":"階","집 설정":"家設定","방 구성":"部屋構成","가구 배치":"家具配置","거주 설정":"居住設定"});
 Object.assign(UI_TEXT.en,{"바닥재":"Floor material","벽 재질":"Wall material","살구빛 목재":"Apricot wood","내추럴 목재":"Natural wood","크림 목재":"Cream wood","차콜 목재":"Charcoal wood","월넛 목재":"Walnut wood","직접 그린 바닥":"Custom floor","바닥과 같은 벽":"Match the floor","보내 주신 다섯 재질 중 하나를 고르거나 직접 그린 바닥을 넣을 수 있어요.":"Choose one of the five supplied materials or add your own floor artwork.","방 위쪽에 벽면을 세우고 짙은 갈색 테두리로 바닥과 구분해요.":"Adds a wall face along the top of the room with a dark brown boundary.","직접 그린 바닥 첨부":"Add custom floor","직접 그린 바닥 변경":"Change custom floor"});
 Object.assign(UI_TEXT.ja,{"바닥재":"床材","벽 재질":"壁材","살구빛 목재":"アプリコット材","내추럴 목재":"ナチュラル材","크림 목재":"クリーム材","차콜 목재":"チャコール材","월넛 목재":"ウォールナット材","직접 그린 바닥":"自作の床","바닥과 같은 벽":"床と同じ壁","보내 주신 다섯 재질 중 하나를 고르거나 직접 그린 바닥을 넣을 수 있어요.":"提供された5種類の素材から選ぶか、自作の床画像を追加できます。","방 위쪽에 벽면을 세우고 짙은 갈색 테두리로 바닥과 구분해요.":"部屋上部に壁面を作り、濃い茶色の境界線で床と分けます。","직접 그린 바닥 첨부":"自作の床を追加","직접 그린 바닥 변경":"自作の床を変更"});
+Object.assign(UI_TEXT.en,{"벽지":"Wallpaper","직접 그린 벽지 7종 가운데 방에 어울리는 무늬를 골라 주세요.":"Choose the hand-drawn wallpaper that best fits this room from the seven available designs."});
+Object.assign(UI_TEXT.ja,{"벽지":"壁紙","직접 그린 벽지 7종 가운데 방에 어울리는 무늬를 골라 주세요.":"手描きの壁紙7種類から、この部屋に合う柄を選んでください。"});
 Object.assign(UI_TEXT.en,{
   "‘상대를 때릴 수 있음’ 이상을 고르면 설정한 충동·갈등·성격에 따라 낮은 수위의 폭행 장면이 나올 수 있어요. 충동만 있고 실행하지 않는 캐릭터는 반드시 ‘행동으로 옮기지 않음’을 골라 주세요.":"Choosing ‘May hit the other person’ or above can produce low-level assault scenes when impulse, conflict, and personality allow it. If the character has urges but never acts, choose ‘Does not act on it’.",
   "‘좋아하는 장르’는 책·영화·드라마·애니메이션 등 이야기 콘텐츠 전체에 공통으로 반영돼요.":"Favorite genres apply across books, films, dramas, animation, and other story-based media.",

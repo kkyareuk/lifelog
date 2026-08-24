@@ -11,11 +11,12 @@ const checks=[
   [simulation.includes("const activeScheduledRoutine=")&&simulation.includes("if(activeRoutineEntry)return withResidenceLocation"),"등록 일정의 시작·종료 구간 우선 적용"],
   [simulation.includes("activeRoutine&&!routineCompanionIds.length")&&simulation.includes("다른 캐릭터의 대화나 공동 행동"),"동행자 없는 일정의 임의 대화 차단"],
   [simulation.includes("withIds:companionIds")&&simulation.includes("routineEndMinute:endMinute"),"일정 동행자와 종료 시각 보존"],
+  [simulation.includes("rawEnd===start?start+30")&&simulation.includes("?Number(current.routineStartMinute)") ,"시작·종료가 같은 일정을 24시간으로 늘리지 않고 원래 로그 시각 보존"],
   [app.includes('name="stayTogether"')&&app.includes("stayTogether:f.stayTogether.checked"),"관계의 함께 다니기 설정 저장"],
   [state.includes("relation.stayTogether=Boolean(relation.stayTogether)"),"기존 관계 데이터의 함께 다니기 안전 변환"],
   [simulation.includes("function companionAlignedBaseEvent")&&simulation.includes("!activeScheduledRoutine(other,date)"),"별도 일정이 없는 관계만 동행"],
   [views.includes('"함께 다니기":"Stay together"')&&views.includes('"함께 다니기":"一緒に行動する"'),"함께 다니기 영어·일본어 번역"],
-  [gradle.includes("versionCode 134")&&gradle.includes('versionName "1.0.123"'),"캐릭터 전체 설정 개편 개발 빌드 버전"]
+  [gradle.includes("versionCode 135")&&gradle.includes('versionName "1.0.124"'),"벽지·일정·태블릿 개선 개발 빌드 버전"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
@@ -26,7 +27,7 @@ const storage=new Map();
 globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)};
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
 globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
-const {state:runtimeState}=await import("../state.js?v=20260824characterbook");
+const {state:runtimeState}=await import("../state.js?v=20260824walllogtablet");
 const {eventFor}=await import(`../simulation.js?date-schedule-companion=${Date.now()}`);
 const character=(id,name,homeId)=>({id,name,createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",townId:"",homeId,residences:[{homeId,isPrimary:true,stayPattern:"상시 거주"}],wake:"07:00",sleep:"23:00",job:"무직",jobTitle:"",personalityTypes:[],characterTraits:[],traitExpressions:[],hobbies:[],interests:[],inventory:{},foodTypes:[],foodPreferences:[],musicGenres:[],appearanceTags:[],attractionTraits:[],bodyProfile:{},theme:{primary:"#176b60"}});
 runtimeState.characters={a:character("a","가람","ha"),b:character("b","나래","hb")};
@@ -43,4 +44,15 @@ if(scheduledEvent.routineId!=="planned"||scheduledEvent.title!=="도서관 자�
   process.exit(1);
 }
 console.log("PASS 실행 중인 등록 일정은 동행자 없는 원래 제목과 행동을 유지합니다");
-console.log(`\nPASS ${checks.length+1} game date, schedule, and companion checks.`);
+runtimeState.characters.c=character("c","다온","hc");
+runtimeState.order.push("c");
+runtimeState.homes.hc={id:"hc",townId:"",rooms:{living:{name:"거실",type:"living"}}};
+runtimeState.routines.c=[{id:"same-time",day:6,start:"14:15",end:"14:15",type:"개인 일정",title:"새벽이 집 데려다주기",withIds:[]}];
+runtimeState.monthlyRoutines.c=[];
+const afterSameTimeSchedule=eventFor(runtimeState.characters.c,new Date(2026,7,22,17,34,0,0));
+if(afterSameTimeSchedule.routineId==="same-time"){
+  console.error("FAIL 시작·종료가 같은 일정이 17:34까지 계속 활성화됐습니다",afterSameTimeSchedule);
+  process.exit(1);
+}
+console.log("PASS 14:15 단일 일정은 17:34에 다시 활성화되지 않습니다");
+console.log(`\nPASS ${checks.length+2} game date, schedule, and companion checks.`);

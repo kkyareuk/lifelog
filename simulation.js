@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824characterbook";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824characterbook";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824walllogtablet";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824walllogtablet";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -172,14 +172,27 @@ const townFor=(c,date=new Date())=>{
 };
 const workplaceTown=c=>state.preventInterTownMovement?townFor(c):state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
 const scheduleDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
-const scheduledForDate=(c,date=new Date())=>[
-  ...(state.monthlyRoutines?.[c.id]||[]).filter(item=>item.date===scheduleDateKey(date)),
-  ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
-].slice().sort((a,b)=>mins(a.start)-mins(b.start));
+const routineEndMinute=item=>{
+  const start=mins(item?.start),rawEnd=mins(item?.end);
+  // 시작과 종료가 같은 일정은 24시간 일정이 아니라 시작 시각부터
+  // 30분 동안 유지되는 단일 일정으로 본다. 자정을 넘기는 일정만 다음 날로 잇는다.
+  return rawEnd===start?start+30:rawEnd<start?rawEnd+1440:rawEnd;
+};
+const scheduledForDate=(c,date=new Date())=>{
+  const seen=new Set();
+  return [
+    ...(state.monthlyRoutines?.[c.id]||[]).filter(item=>item.date===scheduleDateKey(date)),
+    ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
+  ].filter(item=>{
+    const key=String(item?.id||`${item?.start}|${item?.end}|${item?.title}|${item?.placeId||item?.visitHomeId||""}`);
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+  }).sort((a,b)=>mins(a.start)-mins(b.start));
+};
 const activeScheduledRoutine=(c,date=new Date())=>{
   const minute=nowMin(date);
   return scheduledForDate(c,date).filter(item=>{
-    const start=mins(item.start),rawEnd=mins(item.end),end=rawEnd<=start?rawEnd+1440:rawEnd;
+    const start=mins(item.start),end=routineEndMinute(item);
     return start<=minute&&minute<end;
   }).at(-1)||null;
 };
@@ -2159,7 +2172,7 @@ function relationshipCombinationScenePool(c,relationship,date){
     scene("jealous-stepback",`${name}를 붙잡기 전에 혼자 진정하는 중`,"확인되지 않은 상상을 사실처럼 말하지 않으려고 창가로 가 숨을 고르고 보고 들은 것만 정리했어요.",`Calming down before confronting ${name}`,"To avoid treating imagination as fact, they stepped away, breathed, and listed only what they had actually seen or heard.",`${name}を問い詰める前に一人で落ち着くところ`,"想像を事実のように言わないため窓辺で呼吸を整え、実際に見聞きしたことだけ整理しました。","living");
   }
   if(flags.annoyed){
-    scene("annoyed-request",`${name}에게 반복되는 행동을 멈춰 달라고 말하는 중`,"사람 자체가 싫다고 몰아붙이지 않고 방금 반복된 행동과 원하는 변화를 짧게 말했어요.",`Asking ${name} to stop a repeated behavior`,"They named the repeated behavior and requested a concrete change without attacking the person.",`${name}に繰り返す行動をやめてほしいと伝えるところ`,"人そのものを責めず、繰り返された行動と望む変化を短く伝えました。","living");
+    scene("annoyed-request",`${name}에게 말을 세 번 끊지 말라고 따지는 중`,`${name}가 같은 설명 도중 말을 세 차례 끊자, 끝까지 듣고 나서 대답하라고 단호하게 몰아붙였어요.`,`Confronting ${name} for interrupting three times`,`${name} interrupted the same explanation three times, so they firmly demanded that ${name} listen to the end before answering.`,`${name}に三度も話を遮らないよう問い詰めるところ`,`${name}が同じ説明の途中で三度も話を遮ったため、最後まで聞いてから答えるよう強く迫りました。`,"living");
     scene("annoyed-break",`${name}와의 대화를 잠깐 멈추는 중`,"같은 설명을 다시 들으면 말이 거칠어질 것 같아 십 분 뒤에 이어 말하자고 하고 물러났어요.",`Taking a break from talking with ${name}`,"Feeling their words might turn harsh, they asked to continue in ten minutes and stepped away.",`${name}との話をいったん止めるところ`,"同じ説明を聞くと口調が荒くなりそうで、十分後に続けようと伝えて離れました。","living");
   }
   if(flags.distant){
@@ -2562,7 +2575,7 @@ function build(c,date=new Date()){
     const companionText=companions.length?`${companions.map(x=>x.name).join(", ")}와 함께 `:"";
     const isDate=item.type==="데이트"&&Boolean(companions[0]);
     const purpose=isDate?String(item.title||item.notes||"함께 정한 약속").replace(/^데이트\s*[·:-]?\s*/,"").trim():"";
-    const rawEndMinute=mins(item.end),endMinute=rawEndMinute<=minute?rawEndMinute+1440:rawEndMinute;
+    const endMinute=routineEndMinute(item);
     const dateGroup=isDate?`date-${[c.id,companions[0].id].sort().join("-")}-${dayKey(date)}-${minute}-${hash(purpose).toString(36)}`:"";
     const routineMeta={routineId:item.id,routineStartMinute:minute,routineEndMinute:endMinute};
     const companionIds=companions.map(person=>person.id);
@@ -2600,7 +2613,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260822-shared-scene-integrity3";
+const ENGINE_VERSION="20260824-wall-schedule-integrity1";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -2756,6 +2769,7 @@ function cleanSelfCompanionEntries(c,entries){
   const ownName=String(c?.name||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
   const selfScene=ownName?new RegExp(`(?:${ownName})(?:이|가)?\\s*(?:${ownName})(?:와|과|에게|랑|하고)`):null;
   return entries.map(item=>{
+    if(item?.withId===c.id)return null;
     const withIds=[...new Set((item.withIds||[]).filter(id=>id&&id!==c.id&&state.characters[id]))];
     const participantOrder=[...new Set((item.participantOrder||[]).filter(id=>id&&state.characters[id]))];
     const withId=item.withId&&item.withId!==c.id&&state.characters[item.withId]?item.withId:withIds[0];
@@ -2764,8 +2778,17 @@ function cleanSelfCompanionEntries(c,entries){
     const repaired=selfScene?.test(`${item?.title||""} ${item?.desc||""}`)&&partner
       ?{title:repairSelfNamedPartnerText(c,partner,item.title),desc:repairSelfNamedPartnerText(c,partner,item.desc)}
       :{};
+    if(selfScene?.test(`${item?.title||""} ${item?.desc||""}`)&&!partner)return null;
     return {...item,...repaired,withId,withIds,participantOrder};
-  }).filter(item=>item?.withId!==c.id);
+  }).filter(Boolean);
+}
+function cleanScheduledRoutineEntries(entries){
+  const normalized=entries.map(item=>{
+    const start=Number(item?.routineStartMinute);
+    if(!item?.routineId||!item.groupInteraction||!Number.isFinite(start))return item;
+    return {...item,minute:start,time:clock(start)};
+  });
+  return cleanSameMinuteEntries(cleanExactRepeatedEntries(normalized));
 }
 function cleanCharacterBreakingCheeringEntries(entries){
   // 초기 스크립트 팩에 있던 막연한 “하루를 응원” 문장은 상대별 시선과 무관하게
@@ -2814,7 +2837,7 @@ export function timeline(c,date=new Date()){
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
   if(old&&Array.isArray(old.entries)&&old.cleanupVersion!==ENGINE_VERSION){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
+    const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanScheduledRoutineEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
     const changed=JSON.stringify(cleaned)!==JSON.stringify(old.entries);
     if(changed)old.entries=cleaned;
     old.cleanupVersion=ENGINE_VERSION;
@@ -2878,6 +2901,12 @@ function commitLiveEntry(c,date,item){
     if(changed){day.entries=nextEntries;save(false,false)}
     return changed;
   };
+  // 수면은 현재 화면과 로그가 반드시 같은 한 사건을 가리켜야 한다. 같은 시각에
+  // 예전 엔진이 만든 일반 장면이 남아 있어도 중복으로 거부하지 않고 수면으로 교체한다.
+  if(item.mood==="수면"){
+    applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)),[item]));
+    return item;
+  }
   if(item.forcedReturn){
     applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]));
     return item;
@@ -3040,9 +3069,15 @@ function forcedHomeEventFor(c,date=new Date()){
 }
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
+  const list=timeline(c,date);
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
-  if(sleepingNow(c,date))return withResidenceLocation(c,entry(n,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0}),date);
-  const list=timeline(c,date),activeRoutine=activeScheduledRoutine(c,date);
+  if(sleepingNow(c,date)){
+    const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
+    const existing=[...list].reverse().find(item=>Number(item.minute)===sleepMinute&&/자는 중|잠든|수면/.test(`${item.title||""} ${item.mood||""}`));
+    if(existing)return withResidenceLocation(c,existing,date);
+    return commitLiveEntry(c,date,withResidenceLocation(c,entry(sleepMinute,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0,holdMinutes:Math.max(30,(n<wake?wake:1440)-sleepMinute)}),date));
+  }
+  const activeRoutine=activeScheduledRoutine(c,date);
   const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
@@ -4177,7 +4212,7 @@ function companionAlignedBaseEvent(c,current,date){
   const candidate=relationList().filter(relation=>
     relation?.stayTogether&&relation.temporalStatus!=="past"&&(relation.a===c.id||relation.b===c.id)
   ).map(relation=>({relation,other:state.characters[relation.a===c.id?relation.b:relation.a]}))
-    .filter(({other})=>other&&!activeScheduledRoutine(other,date))
+    .filter(({other})=>other&&other.id!==c.id&&!activeScheduledRoutine(other,date))
     .sort((first,second)=>(relationPriority[second.relation.type]||0)-(relationPriority[first.relation.type]||0))[0];
   if(!candidate)return current;
   const {other}=candidate,ownerIndex=state.order.indexOf(c.id),otherIndex=state.order.indexOf(other.id);
@@ -4217,7 +4252,11 @@ export function eventFor(c,date=new Date()){
     }
   }
   if(current?.groupInteraction){
-    const sharedMinute=nowMin(date);
+    // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한
+    // 시작 시각을 보존한다. 같은 일정을 다시 열어도 새 시각의 로그가 생기지 않는다.
+    const sharedMinute=current.routineId&&Number.isFinite(Number(current.routineStartMinute))
+      ?Number(current.routineStartMinute)
+      :nowMin(date);
     current.minute=sharedMinute;
     current.time=clock(sharedMinute);
     commitLiveEntry(c,date,current);
