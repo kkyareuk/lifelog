@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260824-character-svg-gesture-wall-tile";
+const CACHE_VERSION="drawer-village-v20260824-character-layer-town-bubble";
 const CORE=[
   "./",
   "./index.html",

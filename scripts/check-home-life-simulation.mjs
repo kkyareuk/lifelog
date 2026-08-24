@@ -84,7 +84,7 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 137")&&gradleSource.includes('versionName "1.0.126"'),"Android 버전을 137로 올렸다");
+ok(gradleSource.includes("versionCode 138")&&gradleSource.includes('versionName "1.0.127"'),"Android 버전을 138로 올렸다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),
@@ -95,6 +95,7 @@ ok(viewsSource.includes("homeTvInteractionMarkup")&&viewsSource.includes("home-t
 ok(viewsSource.includes("townTravelersMarkup")&&viewsSource.includes("movementKind===\"jog\""),"조깅 복귀 캐릭터를 마을 이동자로 렌더링한다");
 ok(viewsSource.includes("entry?.home&&!entry.transit")&&viewsSource.includes("!scene?.home&&!placeForEntry(scene)"),"복귀 중인 캐릭터는 현관에 세우지 않고 마을 이동 레이어에 둔다");
 ok(viewsSource.includes('is-town-conversation')&&viewsSource.includes('town-conversation-bubbles')&&cssSource.includes('@keyframes town-conversation-left'),"마을에서 마주친 두 인물이 마주 보고 대화하는 몸동작을 표시한다");
+ok(viewsSource.includes('bubble-edge-left')&&viewsSource.includes('bubble-edge-right')&&cssSource.includes('.place-people.bubble-edge-left .town-conversation-bubbles')&&cssSource.includes('background:transparent!important;background-image:none!important'),"마을 대화 말풍선의 바깥 흰 판을 제거하고 가장자리 잘림을 방지한다");
 ok(homeSimulationSource.includes("currentAgentPoint(old,now)")&&homeSimulationSource.includes("approachingInteraction:true"),"대화 상대에게 이동할 때 현재 보간 위치부터 이어 달려가 순간이동을 막는다");
 ok(viewsSource.includes("visibleAgentPoint")&&viewsSource.includes("Math.hypot(point.x-current.x,point.y-current.y)<20"),"반려생물은 걷는 사람의 현재 위치까지 피해서 이동한다");
 ok(cssSource.includes('.room-pet.home-pet-roaming{position:absolute')&&cssSource.includes('linear var(--pet-roam-delay')&&cssSource.includes('z-index:3')&&cssSource.includes('.home-life-person{--life-edge:52px')&&cssSource.includes('z-index:4'),"반려생물은 transform 기반의 연속 보행으로 움직이며 사람을 가리지 않는다");

@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824characterbooksync";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824characterbooksync";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824characterbooksync";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824characterbooksync";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824characterbooksync";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824characterlayerfix";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260824characterlayerfix";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824characterlayerfix";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824characterlayerfix";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260824characterlayerfix";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -1474,7 +1474,9 @@ function peopleAtPlaceCard(p){
   const x=Math.max(9,Math.min(91,p.x)),y=Math.max(12,Math.min(91,p.y+4.5));
   const scenes=visible.map(character=>eventFor(character)),interactionId=scenes.find(scene=>scene?.groupInteraction&&scene.interactionId)?.interactionId;
   const conversation=Boolean(interactionId&&scenes.filter(scene=>scene?.interactionId===interactionId).length>=2);
-  return `<div class="person place-people ${conversation?"is-town-conversation":""} ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}">${conversation?'<span class="town-conversation-bubbles" aria-hidden="true"><i>•••</i><i>♪</i></span>':""}<span class="place-people-faces">${visible.map(c=>`<span class="place-person-face" role="button" tabindex="0" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</span>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
+  const bubbleEdge=x<=18?"bubble-edge-left":x>=82?"bubble-edge-right":"";
+  const bubbleVertical=y<=18?"bubble-below":"";
+  return `<div class="person place-people ${conversation?"is-town-conversation":""} ${bubbleEdge} ${bubbleVertical} ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}">${conversation?'<span class="town-conversation-bubbles" aria-hidden="true"><i>•••</i><i>♪</i></span>':""}<span class="place-people-faces">${visible.map(c=>`<span class="place-person-face" role="button" tabindex="0" data-person="${c.id}" title="${esc(c.name)}">${avatar(c)}</span>`).join("")}${hiddenCount?`<b class="place-person-more" aria-label="그 외 ${hiddenCount}명">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`;
 }
 function peopleAtHomeCard(home){
   // 지도에 떠도는 인물 레이어는 집마다 중복되지 않도록 첫 집 카드에서만
@@ -2504,9 +2506,9 @@ function character(){
         ${hubActions}
         ${draftActions}
       </section>
-      <section class="mobile-character-full-settings ${state.characterSettingsView==="full"?"is-open":""}" data-character-full-ui-version="2" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
-        <div class="character-full-wood" aria-hidden="true"></div>
-        <div class="character-full-book" aria-hidden="true"></div>
+      <section class="mobile-character-full-settings ${state.characterSettingsView==="full"?"is-open":""}" data-character-full-ui-version="3" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
+        <img class="character-full-wood" src="./assets/character-ui/character-wood-background.png" alt="" aria-hidden="true">
+        <img class="character-full-book" src="./assets/character-ui/book.png" alt="" aria-hidden="true">
         <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
         <button type="button" class="character-full-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 페이지로 돌아가기","캐릭터 페이지로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
         ${firstPageBookmark}
