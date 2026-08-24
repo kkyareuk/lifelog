@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260824-character-layer-town-bubble";
+const CACHE_VERSION="drawer-village-v20260824-town-building-book-fallback";
 const CORE=[
   "./",
   "./index.html",

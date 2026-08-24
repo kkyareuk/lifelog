@@ -2546,6 +2546,11 @@ html.native-app[data-active-tab="observe"] .game-observe-hud .native-character-s
     pointer-events:auto;
   }
   .native-app[data-active-tab="town"] .mobile-town-hud button.on{background:var(--grad)}
+  .native-app[data-active-tab="town"] .mobile-town-hold-guide{
+    position:fixed;z-index:205;left:12px;top:calc(env(safe-area-inset-top) + 120px);max-width:min(74vw,320px);margin:0;padding:6px 10px;border-radius:12px;
+    background:#111923a8;color:#fff;-webkit-text-fill-color:#fff;font-size:10px;line-height:1.3;box-shadow:0 6px 16px #0003;backdrop-filter:blur(6px);pointer-events:none
+  }
+  .native-app[data-active-tab="town"] .town-edit .place.is-hold-pending{filter:brightness(1.08) drop-shadow(0 0 6px #fff8)}
   .native-app[data-active-tab="town"] .mobile-town-tools{
     position:fixed;
     top:calc(env(safe-area-inset-top) + 122px);
@@ -7140,17 +7145,19 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .mobile-character-full-settings{display:none!important}
   html.native-app[data-active-tab="character"] .mobile-character-full-settings.is-open{
     position:fixed!important;z-index:142!important;inset:0 auto 0 50%!important;display:block!important;width:min(100vw,44.9291dvh)!important;height:100dvh!important;transform:translateX(-50%)!important;
-    margin:0!important;padding:0!important;overflow:hidden!important;isolation:isolate!important;container-type:inline-size!important;background:#5d4032!important;color:#2e211b!important;
+    margin:0!important;padding:0!important;overflow:hidden!important;isolation:isolate!important;container-type:inline-size!important;background-color:#5d4032!important;background-image:url("./assets/character-ui/character-wood-background.png")!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;color:#2e211b!important;
     --ink:#2e211b!important;--muted:#746457!important;--panel:#fffaf2!important;--soft:#f2e8d9!important;--line:#b9a68f!important;--bg:#f4ecdf!important;
     --theme-surface:#fff7eb!important;--theme-surface-strong:#f3e5d1!important;--theme-border:#8f7662!important;--on-grad:#fff8e8!important
   }
+  html.native-app[data-active-tab="character"] .mobile-character-full-settings.is-open::before{
+    content:""!important;position:absolute!important;z-index:10!important;left:-135.2786cqw!important;top:3.8835cqw!important;display:block!important;width:242.7888cqw!important;height:203.6663cqw!important;
+    background-color:transparent!important;background-image:url("./assets/character-ui/book.png")!important;background-position:0 0!important;background-size:100% 100%!important;background-repeat:no-repeat!important;opacity:1!important;visibility:visible!important;filter:drop-shadow(0 7px 8px #25150b70)!important;transform:rotate(3.66623deg)!important;transform-origin:0 0!important;pointer-events:none!important
+  }
   html.native-app[data-active-tab="character"] .character-full-wood{
-    position:absolute!important;z-index:1!important;inset:0!important;display:block!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;
-    object-fit:cover!important;background:#5d4032!important;opacity:1!important;visibility:visible!important;pointer-events:none!important
+    display:none!important
   }
   html.native-app[data-active-tab="character"] .character-full-book{
-    position:absolute!important;z-index:10!important;left:-135.2786cqw!important;top:3.8835cqw!important;display:block!important;width:242.7888cqw!important;height:203.6663cqw!important;max-width:none!important;max-height:none!important;margin:0!important;padding:0!important;border:0!important;
-    object-fit:fill!important;background:transparent!important;opacity:1!important;visibility:visible!important;filter:drop-shadow(0 7px 8px #25150b70)!important;transform:rotate(3.66623deg)!important;transform-origin:0 0!important;pointer-events:none!important
+    display:none!important
   }
   html.native-app[data-active-tab="character"] .character-full-back{
     position:absolute!important;z-index:20!important;left:5.0971cqw!important;top:10.6796cqw!important;display:grid!important;place-items:center!important;width:14.8058cqw!important;height:14.8058cqw!important;min-height:0!important;

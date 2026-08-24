@@ -69,6 +69,9 @@ const checks=[
   ,[css.includes('background:#fffdf9c9!important')&&css.includes('max-height:min(210px,30dvh)')&&css.includes('.home-occupant-popover h2{font-size:14px!important'),"캐릭터 정보창을 작고 반투명한 하단 시트로 조정"]
   ,[views.includes('floorUp:"Go up one floor"')&&views.includes('floorUp:"一つ上の階へ"')&&views.includes('floorLabel:n=>`F${n}`')&&views.includes('floorLabel:n=>`${n}階`'),"층 이동 영어·일본어 번역"]
   ,[simulation.includes("MULTILINGUAL_HOME_ACTIVITY_POOL")&&simulation.includes("localizedHomeActivities")&&simulation.includes("recentDayKeys")&&simulation.includes("slice(-3)"),"세 언어 집 활동을 보강하고 최근 3일 같은 행동 반복을 억제"]
+  ,[views.includes('data-home-exterior-image="${home.id}">집 외형 바꾸기')&&views.includes('data-open-place-editor="${place.id}">이 건물 편집하기'),"마을 건물 정보에서 집 외형 변경과 일반 건물 편집 진입 제공"]
+  ,[app.includes("function bindTownBuildingHold()")&&app.includes("setMobileTownEditing(true);setMobileTownPanel(el.dataset.place)")&&app.includes("},560);")&&views.includes("건물이나 집을 길게 누르면 바로 편집할 수 있어요."),"마을 건물·집 0.56초 길게 누르기 편집과 안내"]
+  ,[views.includes('"집 외형 바꾸기":"Change home exterior"')&&views.includes('"집 외형 바꾸기":"家の外観を変更"')&&views.includes('"이 건물 편집하기":"Edit this building"')&&views.includes('"이 건물 편집하기":"この建物を編集"'),"마을 건물 편집 기능 영어·일본어 번역"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
