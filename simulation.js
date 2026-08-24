@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824homelivelymotion";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824homelivelymotion";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824hometvjogmotion";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824hometvjogmotion";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -843,7 +843,7 @@ function morningScripts(c,date){
   const videoTypes=c.favoriteVideoGenres||[];
   const choices=[];
   if(likes.some(x=>/운동|산책|사진/.test(x)))choices.push(
-    ["아침 조깅을 마치고 돌아오는 중","동네를 가볍게 달린 뒤 숨을 고르며 집으로 돌아와 물을 마시고 있어요.","entry"],
+    ["아침 조깅을 마치고 돌아오는 중","동네를 가볍게 달린 뒤 숨을 고르며 집 쪽으로 천천히 이동하고 있어요.","entry"],
     ["거실에서 스트레칭 중","창문을 조금 열어 둔 채 굳은 어깨와 다리를 천천히 풀고 있어요.","living"]
   );
   if(likes.some(x=>/독서|역사|만화|문구/.test(x)))choices.push(
@@ -2387,7 +2387,16 @@ function build(c,date=new Date()){
   [wake+150,wake+200,wake+250,wake+300].forEach((minute,index)=>{
     if(minute<720&&minute<commuteMinute-10){
       const script=morning[index%morning.length];
-      list.push(homeEntry(c,minute,script[0],script[1],script[2]));
+      if(/아침 (?:조깅|바깥 운동)을 마치고 돌아오는 중/.test(script[0])){
+        list.push(adaptAccessibilityWording(c,entry(minute,script[0],script[1],{
+          townId:homeTown.id,
+          transit:true,
+          returningHome:true,
+          movementKind:"jog",
+          destinationHomeId:currentHomeId,
+          mood:"개운함"
+        })));
+      }else list.push(homeEntry(c,minute,script[0],script[1],script[2]));
     }
   });
   if(work){

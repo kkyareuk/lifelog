@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260824-home-lively-motion";
+const CACHE_VERSION="drawer-village-v20260824-home-tv-jog-motion";
 const CORE=[
   "./",
   "./index.html",

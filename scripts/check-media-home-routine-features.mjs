@@ -50,7 +50,7 @@ const checks=[
   ,[app.includes('[data-home-switcher-toggle]')&&app.includes('[data-home-ui-toggle]')&&app.includes('toggleHomeUi')&&app.includes('lastTapAt<330'),"집 선택 팝업과 버튼·화면 두 번 탭 UI 숨김·복원"]
   ,[views.includes('"집 이동":"Switch home"')&&views.includes('"집 이동":"家を移動"')&&views.includes('"반려생물":"Pets"')&&views.includes('"반려생물":"ペット"'),"새 집 HUD 영어·일본어 번역"]
   ,[views.includes('class="home-native-house-icon"')&&views.includes('class="home-native-house-name"')&&views.includes('${esc(h.name||t("이름 없는 집"'),"상단에 캐릭터가 아닌 집 아이콘과 집 이름 표시"]
-  ,[views.includes('class="home-native-meta"')&&views.includes('class="home-native-context"')&&css.includes('background:none!important')&&css.includes('-webkit-text-stroke:.8px #17110d'),"집 제목을 수정 SVG 위치의 배경 없는 흰 글자·검은 외곽선으로 표시"]
+  ,[views.includes('class="home-native-meta"')&&views.includes('class="home-native-context"')&&css.includes('background:none!important')&&css.includes('-webkit-text-stroke:.85px #17110d'),"집 제목을 수정 SVG 위치의 배경 없는 흰 글자·검은 외곽선으로 표시"]
   ,[views.includes("homeLifeInteractionMarkup")&&views.includes('class="home-interaction-avatar')&&views.includes('data-character-id="${esc(character.id)}"')&&css.includes("@keyframes home-interaction-kiss-left"),"상호작용 중에도 두 구성원을 각각 눌러 개인 로그를 열 수 있음"]
   ,[css.includes("home-edit-toolbar:not(.home-native-edit-tools)")&&css.includes("grid-template-columns:repeat(4,82px)"),"집 편집 세부 도구를 기본 우측 메뉴와 분리"]
   ,[views.includes("coupleBedSlots")&&views.includes("bedSlot===0?-22")&&views.includes("bedSlot===0?-10")&&css.includes(".home-life-person.is-couple-bed-user"),"커플 침대의 두 사용자를 서로 다른 2×2 칸에 배치"]

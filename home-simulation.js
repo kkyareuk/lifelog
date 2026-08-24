@@ -113,7 +113,7 @@ export function normalizeHomeLifeSimulation(value,roomKeys=[]){
 function placementList(home){
   return Object.entries(home?.rooms||{}).flatMap(([roomKey,room])=>(Array.isArray(room?.furniturePlacements)?room.furniturePlacements:[]).filter(Boolean).map(placement=>({
     id:String(placement.id||""),roomKey,item:String(placement.item||""),x:clamp(placement.x,6,94,50),y:clamp(placement.y,14,90,65),
-    assignedCharacterIds:Array.isArray(placement.assignedCharacterIds)?placement.assignedCharacterIds.map(String):[],capacity:String(placement.item||"")==="커플 침대"?2:/침대/.test(String(placement.item||""))?1:1
+    assignedCharacterIds:Array.isArray(placement.assignedCharacterIds)?placement.assignedCharacterIds.map(String):[],capacity:String(placement.item||"")==="커플 침대"?2:/TV|홈시어터|프로젝터|빔프로젝터/.test(String(placement.item||""))?4:/침대/.test(String(placement.item||""))?1:1
   }))).filter(placement=>placement.id&&placement.item);
 }
 

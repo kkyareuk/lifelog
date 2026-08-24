@@ -68,6 +68,20 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 126")&&gradleSource.includes('versionName "1.0.115"'),"Android 버전을 126으로 올렸다");
+ok(gradleSource.includes("versionCode 127")&&gradleSource.includes('versionName "1.0.116"'),"Android 버전을 127로 올렸다");
+
+const [simulationSource,homeSimulationSource]=await Promise.all([
+  readFile(new URL("../simulation.js",import.meta.url),"utf8"),
+  readFile(new URL("../home-simulation.js",import.meta.url),"utf8")
+]);
+ok(homeSimulationSource.includes('/TV|홈시어터|프로젝터|빔프로젝터/.test(String(placement.item||""))?4'),"TV 가구는 함께 시청할 수 있도록 여러 자리를 제공한다");
+ok(viewsSource.includes("homeTvInteractionMarkup")&&viewsSource.includes("home-tv-reaction")&&viewsSource.includes("같이 TV 보는 중"),"함께 TV를 볼 때 웃음·분노·울음 반응 연출을 렌더링한다");
+ok(viewsSource.includes("townTravelersMarkup")&&viewsSource.includes("movementKind===\"jog\""),"조깅 복귀 캐릭터를 마을 이동자로 렌더링한다");
+ok(simulationSource.includes("returningHome:true")&&simulationSource.includes('movementKind:"jog"')&&simulationSource.includes("집 쪽으로 천천히 이동"),"아침 조깅 복귀를 실제 이동 상태와 일치시킨다");
+ok(cssSource.includes("@keyframes town-traveler-route")&&cssSource.includes("transform:translate3d"),"마을 이동 애니메이션은 저발열 transform 경로를 사용한다");
+ok(cssSource.includes(".home-native-header::before")&&cssSource.includes("right:-2px"),"집 상단바가 화면 오른쪽 끝까지 덮인다");
+ok(cssSource.includes('.home-native-house-name')&&cssSource.includes('font:400 20px')&&cssSource.includes('.home-native-info-link')&&cssSource.includes('font:400 12px'),"집 이름과 우측 메뉴의 크기·대비 계층을 유지한다");
+ok(cssSource.includes('.home-native-page.home-ui-hidden .home-native-ui-toggle')&&cssSource.includes('background-color:transparent!important'),"UI 표시 버튼에 갈색 배경 에셋을 남기지 않는다");
+ok(viewsSource.includes('Watching TV together')&&viewsSource.includes('一緒にテレビを見ているところ'),"함께 TV 보기 문구를 영어와 일본어로 제공한다");
 
 console.log(`home life simulation checks passed: ${checks}`);
