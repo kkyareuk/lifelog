@@ -32,7 +32,8 @@
     "test:character-group-layout": "node scripts/check-character-group-layout.mjs",
     "test:performance": "node scripts/check-performance-stability.mjs",
     "test:home-life": "node scripts/check-home-life-simulation.mjs",
-    "test:home-surfaces": "node scripts/check-home-surfaces.mjs"
+    "test:home-surfaces": "node scripts/check-home-surfaces.mjs",
+    "test:hotfix-relationship-catalog": "node scripts/check-hotfix-relationship-catalog.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

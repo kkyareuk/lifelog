@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824homesurfaces";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260824homesurfaces";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825relationshipcataloghotfix133";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260825relationshipcataloghotfix133";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -245,7 +245,7 @@ const relationList=()=>Object.values(state.relationships||{});
 const relationPriority={"부모·자녀":10,"형제·자매":9,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,동거인:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const related=c=>{
   const grouped=new Map();
-  relationList().filter(r=>r.a===c.id||r.b===c.id).forEach(relation=>{
+  relationList().filter(r=>r.temporalStatus!=="past"&&(r.a===c.id||r.b===c.id)).forEach(relation=>{
     const otherId=relation.a===c.id?relation.b:relation.a;
     if(!grouped.has(otherId))grouped.set(otherId,[]);
     grouped.get(otherId).push(relation);
@@ -253,9 +253,24 @@ const related=c=>{
   return [...grouped.entries()].map(([otherId,relations])=>{
     const primary=relations.slice().sort((a,b)=>(relationPriority[b.type]||0)-(relationPriority[a.type]||0))[0];
     return {other:state.characters[otherId],relations,r:{...primary,types:[...new Set(relations.map(relation=>relation.type))],intimacy:Math.max(...relations.map(relation=>Number(relation.intimacy)||0)),conflict:Math.max(...relations.map(relation=>Number(relation.conflict)||0))}};
-  }).filter(item=>item.other);
+  }).filter(item=>item.other&&item.other.id!==c.id);
 };
-const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
+const relationshipText=(c,pick)=>Object.values(characterViewFor(c.id,pick.other.id)||{}).filter(value=>typeof value==="string").join(" ");
+const hostileRelationship=(c,pick)=>{
+  const types=pick?.r?.types||[pick?.r?.type].filter(Boolean),view=relationshipText(c,pick);
+  return types.some(type=>["혐관","원수"].includes(type))
+    ||/매우 싫|미워|혐오|원망|적대|남보다도 멂|낯선 사이|거리감 있음|매우 불편|숨 막히|전혀 통하지|전혀 믿지|보기만 해도 피곤|격렬하게 충돌|파국적인 충돌/.test(view)
+    ||(Number(pick?.r?.conflict||0)>=70&&Number(pick?.r?.intimacy||0)<60);
+};
+const friendlyRelationship=(c,pick)=>{
+  if(!pick||hostileRelationship(c,pick))return false;
+  const types=pick.r?.types||[pick.r?.type].filter(Boolean),view=relationshipText(c,pick);
+  return types.some(type=>["부모·자녀","형제·자매","부부","연인","짝사랑","유사 연인","소꿉친구","친구","학창 시절 친구들","친구 모임","산악회","동거인","동아리 동료","직장 동료","라이벌"].includes(type))
+    ||/좋아|소중|사랑|호감|끌림|아끼|존경|동경|가까운 사이|편한 사이|신뢰/.test(view);
+};
+const preferredRelation=(c,{friendlyOnly=false,sameHome=false,date=new Date()}={})=>related(c)
+  .filter(pick=>(!friendlyOnly||friendlyRelationship(c,pick))&&(!sameHome||homeIdForDate(pick.other,date)===homeIdForDate(c,date)))
+  .sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
 function selectedBodyVariants(c,socialScene,seed="",date=new Date()){
   // 신체·접근성 설정은 존중해야 하지만 캐릭터의 모든 장면을 그 특성으로
@@ -1032,7 +1047,8 @@ function workEvent(c,time,date){
 }
 
 function socialEvent(c,time,date){
-  let pick=preferredRelation(c);
+  // 실제 감정·거리감·갈등 설정이 적대적이면 친근한 동행으로 묶지 않는다.
+  let pick=preferredRelation(c,{friendlyOnly:true,date});
   if(pick&&activityTown(pick.other,date)?.id!==activityTown(c,date)?.id)pick=null;
   if(pick&&mixedAdultMinor(c,pick.other)){
     const types=pick.r?.types||[pick.r?.type];
@@ -2236,7 +2252,8 @@ function profileSettingScenePool(c,date){
     "외출 전 운전 준비를 확인하는 중","익숙하게 다닐 수 있는 길과 주차할 곳을 확인하고, 무리하지 않을 이동 계획을 세웠어요.",
     "Checking the drive before leaving","Based on their driving experience, they checked the route and parking and planned a manageable trip.",
     "外出前に運転の準備を確認するところ","運転経験に合わせて経路と駐車場所を確認し、無理のない移動計画を立てました。","entry",["driverLicense"]);
-  const relationship=preferredRelation(c);
+  // 집 안 장면에는 실제로 같은 집에 사는 관계만 등장시킨다.
+  const relationship=preferredRelation(c,{sameHome:true,date});
   if(relationship){
     const name=relationship.other.name;
     const relationshipView=characterViewFor(c.id,relationship.other.id)||{};
@@ -2321,6 +2338,7 @@ function scheduledChoiceEntries(c,date){
   const atMinute=stamp=>{const value=new Date(stamp);return value.getHours()*60+value.getMinutes()};
   const entries=[];
   (state.scheduledChoices||[]).filter(choice=>choice&&(choice.characterId===c.id||choice.targetId===c.id)).forEach(choice=>{
+    if(choice.targetId&&choice.targetId===choice.characterId)return;
     const shared={scheduledChoiceId:choice.id,interactionId:`choice:${choice.id}`,withId:choice.targetId||undefined,mood:"약속"};
     if(choice.kind==="gift"){
       if(choice.characterId===c.id&&choice.buyAt>=dayStart&&choice.buyAt<dayEnd){
@@ -2329,9 +2347,19 @@ function scheduledChoiceEntries(c,date){
       }
       if(choice.giveAt>=dayStart&&choice.giveAt<dayEnd){
         const actor=state.characters[choice.characterId],target=state.characters[choice.targetId],other=c.id===choice.characterId?target:actor,item=itemById(choice.itemId);
-        const title=c.id===choice.characterId?(localized(choice,"giveTitle")||`${other?.name}에게 ${item?.name||"선물"}을 건네는 중`):(localized(choice,"receiveTitle")||`${other?.name}에게 ${item?.name||"선물"}을 받는 중`);
+        // 예약 당시 문구가 아니라 현재 사전의 항목 이름을 사용한다.
+        const itemName=item?.name||"선물",language=state.uiLanguage||"ko";
+        const title=language==="en"
+          ?(c.id===choice.characterId?`Giving ${itemName} to ${other?.name}`:`Receiving ${itemName} from ${other?.name}`)
+          :language==="ja"
+            ?(c.id===choice.characterId?`${other?.name}に${itemName}を渡すところ`:`${other?.name}から${itemName}を受け取るところ`)
+            :(c.id===choice.characterId?`${other?.name}에게 ${itemName}을(를) 건네는 중`:`${other?.name}에게 ${itemName}을(를) 받는 중`);
         const desc=c.id===choice.characterId?(localized(choice,"giveDesc")||"상대의 반응을 살피며 직접 고른 선물을 건넸어요."):(localized(choice,"receiveDesc")||"선물을 받아 포장을 풀고 고맙다고 이야기했어요.");
-        entries.push(entry(atMinute(choice.giveAt),title,desc,{...shared,home:true,room:"living",withId:other?.id,itemId:choice.itemId,itemKind:choice.itemKind,interactionId:`choice:${choice.id}:give`}));
+        const place=choice.placeType?placeFor([choice.placeType],`${choice.id}:gift-place`,actor,date):null;
+        const location=place
+          ?{townId:townFor(actor,date).id,placeId:place.id}
+          :{home:true,visitHomeId:homeIdForDate(actor,date),room:"living"};
+        entries.push(entry(atMinute(choice.giveAt),title,desc,{...shared,...location,withId:other?.id,itemId:choice.itemId,itemKind:choice.itemKind,interactionId:`choice:${choice.id}:give`}));
       }
       return;
     }
@@ -2570,7 +2598,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260822-shared-scene-integrity3";
+const ENGINE_VERSION="20260825-relationship-location-catalog-hotfix";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();

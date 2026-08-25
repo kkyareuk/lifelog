@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260824homesurfaces";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260824homesurfaces";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260824homesurfaces";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260824homesurfaces";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260824homesurfaces";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260824homesurfaces";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825relationshipcataloghotfix133";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825relationshipcataloghotfix133";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260825relationshipcataloghotfix133";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825relationshipcataloghotfix133";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825relationshipcataloghotfix133";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825relationshipcataloghotfix133";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -968,6 +968,7 @@ export function deleteHome(homeId){
 }
 export function recordCharacterInteraction({type,actorId,targetId="",itemKind="",itemId="",requestTitle="",requestCategory=""}){
   const actor=state.characters[actorId],target=state.characters[targetId];
+  if(targetId&&String(actorId)===String(targetId))return false;
   if(!actor||(["gift","exercise","outing"].includes(type)&&!target))return false;
   if(["buy","gift"].includes(type)&&(!state.catalog?.[itemKind]?.some(item=>item.id===itemId)))return false;
   const receiver=type==="gift"?target:actor;
@@ -1000,7 +1001,7 @@ export function setDailyQuestion(question){
 export function scheduleCharacterChoice(choice){
   const character=state.characters[choice?.characterId];
   if(!character)return null;
-  const targetId=state.characters[choice.targetId]?String(choice.targetId):"";
+  const targetId=state.characters[choice.targetId]&&String(choice.targetId)!==String(character.id)?String(choice.targetId):"";
   const itemKind=String(choice.itemKind||""),itemId=String(choice.itemId||"");
   if(itemId&&!state.catalog?.[itemKind]?.some(item=>item.id===itemId))return null;
   const scheduled={
@@ -1289,7 +1290,30 @@ export function addCatalogItem(kind,data){
 }
 export function updateCatalogItem(kind,id,patch){
   const item=state.catalog[kind]?.find(x=>x.id===id);if(!item)return;
-  Object.assign(item,patch);save();
+  const previousName=String(item.name||"");
+  Object.assign(item,patch);
+  const nextName=String(item.name||"");
+  if(previousName&&nextName&&previousName!==nextName){
+    const replaceName=value=>{
+      if(typeof value==="string")return value.split(previousName).join(nextName);
+      if(Array.isArray(value))return value.map(replaceName);
+      if(value&&typeof value==="object")return Object.fromEntries(Object.entries(value).map(([key,entry])=>[key,replaceName(entry)]));
+      return value;
+    };
+    // 완료된 과거 로그는 보존하고, 앞으로 실행될 예약 문구만 최신 이름으로 바꾼다.
+    const affectedCharacterIds=new Set();
+    (state.scheduledChoices||[]).filter(choice=>!choice.settledAt&&choice.itemKind===kind&&choice.itemId===id).forEach(choice=>{
+      choice.copy=replaceName(choice.copy||{});
+      if(choice.characterId)affectedCharacterIds.add(choice.characterId);
+      if(choice.targetId)affectedCharacterIds.add(choice.targetId);
+    });
+    Object.values(state.characters||{}).forEach(character=>{
+      if((character.favorites?.[kind]||[]).includes(id)||(character.inventory?.[kind]||[]).includes(id))affectedCharacterIds.add(character.id);
+    });
+    const changedAt=Date.now();
+    affectedCharacterIds.forEach(characterId=>{if(state.characters[characterId])state.characters[characterId].timelineResetAt=changedAt});
+  }
+  save();
 }
 export function deleteCatalogItem(kind,id){
   state.catalog[kind]=(state.catalog[kind]||[]).filter(x=>x.id!==id);

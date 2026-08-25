@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260824-home-hud-tv-jog-nail";
+const CACHE_VERSION="drawer-village-v20260825-relationship-catalog-hotfix-133";
 const CORE=[
   "./",
   "./index.html",
