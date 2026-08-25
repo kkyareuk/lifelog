@@ -23,7 +23,7 @@ const styledTitlesComplete=Object.keys(voiceSamples).every(language=>SPEECH_STYL
 const demonSample=characterContactSpeech({speechStyle:"마왕의 말투"},voiceSamples.ko,{language:"ko"});
 
 const checks=[
-  [state.includes("schema:25")&&state.includes("characterNotificationSettings:defaultCharacterNotificationSettings()"),"알림 설정 스키마와 기본값"],
+  [state.includes("schema:28")&&state.includes("characterNotificationSettings:defaultCharacterNotificationSettings()"),"알림 설정 스키마와 기본값"],
   [state.includes('frequencyMode:"perDay"')&&state.includes("timesPerDay:1")&&state.includes("intervalHours:4")&&state.includes('voiceMode:"mixed"')&&state.includes("scheduleEnds:false")&&state.includes("updateNotices:false"),"횟수·간격·일정 종료 기본값과 업데이트 알림 비활성화"],
   [["questions","checkins","worries","comfort","lifeLogs"].every(kind=>state.includes(`"${kind}"`)),"질문·안부·고민·휴식·생활로그 알림 종류"],
   [state.includes("characterIds:Array.isArray(notificationSource.characterIds)"),"삭제된 캐릭터를 제거하는 설정 마이그레이션"],
@@ -48,7 +48,7 @@ const checks=[
   [demonSample==="필멸자여, 짐의 말을 들으라. 마음이 복잡하면 답을 바로 정하지 않아도 된다. 먼저 숨을 천천히 고르라. 오늘의 그대 편은 여기에도 있다.","마왕 말투에서 해요체가 섞이지 않는 완성 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&views.includes('aria-pressed="${selected}"')&&css.includes('.notification-kind-grid button{')&&!views.includes('type="checkbox" data-character-notification-kind'),"권한 복귀 레이아웃과 연락 종류 버튼 포커스 안정화"],
   [activity.includes("WindowInsetsCompat.Type.statusBars()")&&activity.includes("BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE"),"상단 상태바 숨김과 스와이프 임시 표시"],
-  [gradle.includes("versionCode 119")&&gradle.includes('versionName "1.0.106.1"'),"생활 로그 불변성 핫픽스 빌드 번호"],
+  [gradle.includes("versionCode 132")&&gradle.includes('versionName "1.0.121"'),"사용자 집 재질·벽 개발 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

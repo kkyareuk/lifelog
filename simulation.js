@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260823logimmutablehotfix";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260823logimmutablehotfix";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260824homesurfaces";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260824homesurfaces";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -843,7 +843,7 @@ function morningScripts(c,date){
   const videoTypes=c.favoriteVideoGenres||[];
   const choices=[];
   if(likes.some(x=>/운동|산책|사진/.test(x)))choices.push(
-    ["아침 조깅을 마치고 돌아오는 중","동네를 가볍게 달린 뒤 숨을 고르며 집으로 돌아와 물을 마시고 있어요.","entry"],
+    ["아침 조깅을 마치고 집으로 돌아가는 중","동네를 가볍게 달린 뒤 숨을 고르며 집 쪽으로 천천히 이동하고 있어요.","entry"],
     ["거실에서 스트레칭 중","창문을 조금 열어 둔 채 굳은 어깨와 다리를 천천히 풀고 있어요.","living"]
   );
   if(likes.some(x=>/독서|역사|만화|문구/.test(x)))choices.push(
@@ -1726,7 +1726,7 @@ const EXPANDED_LIFE_ACTIVITY_POOL=[
   ["욕실에서 면도하는 중","피부가 당기지 않게 충분히 적신 뒤 털이 난 방향을 살피며 천천히 정돈했어요.","bath"],
   ["욕실에서 머리를 말리는 중","한곳에 뜨거운 바람이 오래 닿지 않게 거리를 두고 두피부터 차례로 말렸어요.","bath"],
   ["욕실에서 기초 화장품을 바르는 중","자기 피부에 평소 사용하던 제품만 필요한 만큼 덜어 순서대로 가볍게 발랐어요.","bath"],
-  ["욕실에서 손톱을 정돈하는 중","걸리는 부분만 짧게 다듬고 날카로운 모서리가 남지 않도록 파일로 부드럽게 갈았어요.","bath"],
+  ["욕실에서 손톱을 정돈하는 중","걸리는 부분만 짧게 다듬고 날카로운 모서리가 남지 않도록 손톱줄로 부드럽게 다듬었어요.","bath"],
   ["현관에서 우산 상태를 확인하는 중","살이 휘거나 젖은 곳이 없는지 펼쳐 보고 비 소식이 있을 때 바로 챙길 자리에 두었어요.","entry"],
   ["현관에서 외출용 가방을 챙기는 중","오늘 필요한 카드와 열쇠, 충전 도구만 넣고 불필요하게 무거운 물건은 꺼냈어요.","entry"],
   ["현관에서 신발끈을 다시 묶는 중","걸을 때 풀리지 않으면서 발등을 조이지 않도록 좌우 끈의 길이를 맞춰 묶었어요.","entry"],
@@ -1742,6 +1742,10 @@ const homeActivityPoolFor=(c,date=new Date())=>{
   const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL].filter(([title])=>{
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
     if(title.includes("기초 화장품을 바르는"))return appearanceProfile(c).makeupLevel!=="하지 않음";
+    if(title.includes("손톱을 정돈하는")){
+      const reservedMasculine=String(c.gender)==="남성"&&(c.personalityTypes||[]).some(type=>["냉정하고 논리적","완고하고 통제적","무심하고 독립적"].includes(type));
+      return !reservedMasculine;
+    }
     if(title.includes("잃어버린 물건")&&((c.personalityTypes||[]).includes("철두철미함")||["계획적","강박적으로 계획함"].includes(c.planningStyle)||["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness)))return false;
     if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
     if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
@@ -2387,7 +2391,17 @@ function build(c,date=new Date()){
   [wake+150,wake+200,wake+250,wake+300].forEach((minute,index)=>{
     if(minute<720&&minute<commuteMinute-10){
       const script=morning[index%morning.length];
-      list.push(homeEntry(c,minute,script[0],script[1],script[2]));
+      if(/아침 (?:조깅|바깥 운동)을 마치고 (?:집으로 )?돌아(?:오|가)는 중/.test(script[0])){
+        list.push(adaptAccessibilityWording(c,entry(minute,script[0],script[1],{
+          townId:homeTown.id,
+          transit:true,
+          returningHome:true,
+          movementKind:"jog",
+          destinationHomeId:currentHomeId,
+          holdMinutes:12,
+          mood:"개운함"
+        })));
+      }else list.push(homeEntry(c,minute,script[0],script[1],script[2]));
     }
   });
   if(work){
@@ -2902,6 +2916,14 @@ export function forceCharactersHome(characterIds,date=new Date()){
 function liveGapEvent(c,last,n,date){
   const gap=30+(hash(`${c.id}:${dayKey(date)}:${last?.minute??n}:reaction-gap`)%31);
   const minute=Math.min(n,(Number(last?.minute)||n)+gap);
+  if(last?.transit&&last?.returningHome){
+    const copy={
+      ko:{title:"현관에서 신발과 겉옷을 정리하는 중",desc:"밖에서 돌아와 현관에 도착했어요. 신발의 흙먼지를 털고 겉옷과 소지품을 제자리에 둔 뒤 집 안으로 들어갈 준비를 하고 있어요."},
+      en:{title:"Putting away shoes and outerwear by the entry",desc:"They have arrived home from outside. They are brushing dust off their shoes and putting away their outerwear and belongings before heading further inside."},
+      ja:{title:"玄関で靴と上着を片づけているところ",desc:"外から帰って玄関に到着しました。靴のほこりを払い、上着と持ち物を所定の場所に戻してから家の中へ入る準備をしています。"}
+    }[state.uiLanguage]||{title:"현관에서 신발과 겉옷을 정리하는 중",desc:"밖에서 돌아와 현관에 도착했어요. 신발의 흙먼지를 털고 겉옷과 소지품을 제자리에 둔 뒤 집 안으로 들어갈 준비를 하고 있어요."};
+    return homeEntry(c,minute,copy.title,copy.desc,"entry",{arrivedFromTransit:true,holdMinutes:8,mood:"귀가"});
+  }
   if(last?.placeId){
     const currentTown=state.towns.find(t=>t.id===(last.townId||c.townId))||townFor(c);
     const place=(currentTown?.places||[]).find(p=>p.id===last.placeId);
@@ -2996,7 +3018,7 @@ function baseEventFor(c,date=new Date()){
   if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);
   const past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n);
   const last=past.at(-1);
-  const nextGap=last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30;
+  const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){
     const plannedMinute=Math.max(Number(last.minute)+nextGap,Number(last.routineEndMinute)||0);
     // 앱이 잠깐 백그라운드였던 경우 실제로 바뀌었어야 할 분을 보존한다.
@@ -3773,11 +3795,10 @@ function concreteInteraction(place,first,second,relation,date=new Date()){
         title:"엇갈린 호감을 느끼는 중"
       };
     }
-    return {
-      first:`${name}와 같은 공간에 있지만 아직 서로를 잘 알지 못해요. 시선이 마주쳤을 때 가볍게 목례한 뒤 각자 보던 것과 하던 일로 돌아갔어요.`,
-      second:`${subject(first.name)} 가까이에 있다는 것은 알아챘지만 아는 사이가 아니라 굳이 말을 붙이지 않았어요. 서로의 동선을 방해하지 않을 만큼 거리를 두고 있어요.`,
-      title:"낯선 사람과 각자 시간을 보내는 중"
-    };
+    // 같은 장소에 있다는 이유만으로 모르는 사람들을 공동 장면으로 묶지
+    // 않는다. 실제 호감·갈등처럼 상호작용 근거가 있을 때만 위에서 장면을
+    // 반환하고, 그 밖에는 각자의 원래 행동을 그대로 유지한다.
+    return null;
   }
   if(["혐관","라이벌"].includes(relation?.type))return {
     first:`${name}와 눈이 마주치자 먼저 시선을 거두고, 일부러 조금 떨어진 자리를 골라 하던 일에 집중하고 있어요.`,
@@ -4050,7 +4071,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   // 같은 방에 세 명 이상 있어도 한 캐릭터가 같은 시각에 두 개의 2인 장면에
   // 동시에 끼지 않도록, 장소 전체에서 하나의 결정적인 짝만 선택한다.
   if(preferred.first.id!==c.id&&preferred.second.id!==c.id)return current;
-  const ordered=[preferred.first,preferred.second].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+  const relationshipOrder=sharedParticipantOrder([preferred.first,preferred.second],preferred.relation);
+  const ordered=relationshipOrder.map(id=>id===preferred.first.id?preferred.first:preferred.second).filter(Boolean);
   const pair={...preferred,first:ordered[0],second:ordered[1]};
   const isFirst=c.id===pair.first.id;
   const officialRomance=!mixedAdultMinor(pair.first,pair.second)&&pair.relation?.temporalStatus!=="past"&&["연인","부부"].includes(pair.relation?.type);
@@ -4067,6 +4089,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   let scene=dating
     ?datePurposeScene(purpose,place,pair.first,pair.second,date,datePhase)
     :concreteInteraction(place,pair.first,pair.second,pair.relation,date);
+  if(!scene)return current;
   if(!dating){
     const objectScene=placeObjectScene(place,pair.first,pair.second,pair.relation,date);
     if(objectScene&&!/때리|싸우|충돌|밀어|몸싸움/.test(`${scene.title} ${scene.first} ${scene.second}`))scene={...scene,...objectScene};

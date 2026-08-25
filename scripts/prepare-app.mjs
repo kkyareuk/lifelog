@@ -16,6 +16,7 @@ const excludedAndroidAssets=new Set([
   "world-assets/downtown.png",
   "assets/character-ui/paper.png"
 ]);
+const excludedAndroidAssetPrefixes=[];
 const includedFiles=new Set([
   "index.html","app.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
@@ -42,7 +43,7 @@ async function copyPortable(source,target){
     if(entry.isDirectory())await copyPortable(from,to);
     else{
       const relativePath=relative(fileURLToPath(root),fileURLToPath(from)).replaceAll("\\","/");
-      if(excludedAndroidAssets.has(relativePath))continue;
+      if(excludedAndroidAssets.has(relativePath)||excludedAndroidAssetPrefixes.some(prefix=>relativePath.startsWith(prefix)))continue;
       try{await writeFile(to,await readFile(from));}
       catch(error){
         if(error?.code!=="EPERM")throw error;
@@ -112,7 +113,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260823logimmutablehotfix";
+    window.DRAWER_VILLAGE_NATIVE_BUILD="20260824homesurfaces";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){
