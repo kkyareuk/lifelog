@@ -1595,6 +1595,7 @@ body,button,input,select,small,b,p,span{word-break:keep-all;overflow-wrap:break-
 .home-family-log{margin-top:18px;box-shadow:none}.log-person{display:grid!important;grid-template-columns:44px minmax(0,1fr);align-items:center;gap:9px}.log-person>.avatar,.log-person>.sprite{width:42px;height:42px}.log-person>span{display:grid}
 .setting-card{display:grid;gap:10px;margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:18px;background:#f7f9fc}
 .setting-card h2{margin:0}.setting-card label{display:grid;gap:7px}.setting-card small{color:var(--muted)}
+.sound-setting-card .sound-volume-control{grid-template-columns:minmax(0,1fr) auto;align-items:center}.sound-setting-card .sound-volume-control input{grid-column:1/-1;width:100%;accent-color:var(--p)}.sound-setting-card .sound-volume-control output{font-variant-numeric:tabular-nums;color:var(--muted)}.sound-setting-card>[data-sound-preview]{justify-self:start}
 .settings-shell,.settings-shell>*{min-width:0;max-width:100%;box-sizing:border-box}
 .settings-category-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .settings-category-grid>:is(button,a){display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:4px 10px;min-width:0;padding:16px;border:1px solid var(--line);border-radius:17px;background:var(--panel);color:var(--text);text-align:left;text-decoration:none}

@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookperception";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260825characterbookperception";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookperception";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookperception";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260825characterbookperception";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookaudio";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260825characterbookaudio";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookaudio";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookaudio";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260825characterbookaudio";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -57,6 +57,8 @@ Object.assign(UI_TEXT.en,{"캐릭터 테마색":"Character theme colors","주 �
 Object.assign(UI_TEXT.ja,{"캐릭터 테마색":"キャラクターのテーマ色","주 색상":"メインカラー","보조 색상":"サブカラー","두 색상을 그라데이션으로 사용":"2色をグラデーションで使う","프로필 사진 추가하기":"プロフィール写真を追加","배치 조정하기":"配置を調整","LD 사진 추가하기":"LD画像を追加","아이콘 추가하기":"アイコンを追加","손가락으로 직접 배치":"指で直接配置","한 손가락으로 이동하고, 두 손가락으로 확대·축소와 회전을 조절해요.":"1本指で移動し、2本指で拡大・縮小と回転を調整します。","배치 편집 닫기":"配置編集を閉じる"});
 Object.assign(UI_TEXT.en,{"이미지":"Images"});
 Object.assign(UI_TEXT.ja,{"이미지":"画像"});
+Object.assign(UI_TEXT.en,{"소리":"Sound","이동과 생활 효과음":"Movement & life sounds","캐릭터가 걷거나 뛰는 동안 들리는 효과음을 조절해요.":"Adjust the sound effects played while characters walk or run.","모든 효과음 음소거":"Mute all sound effects","앱의 이동·생활 효과음을 한 번에 끕니다.":"Turn off movement and life sound effects at once.","효과음 크기":"Sound effects volume","구두소리 미리 듣기":"Preview footsteps","음소거를 해제하면 미리 들을 수 있어요.":"Unmute sound effects to preview them."});
+Object.assign(UI_TEXT.ja,{"소리":"サウンド","이동과 생활 효과음":"移動・生活効果音","캐릭터가 걷거나 뛰는 동안 들리는 효과음을 조절해요.":"キャラクターが歩いたり走ったりする時の効果音を調整します。","모든 효과음 음소거":"すべての効果音をミュート","앱의 이동·생활 효과음을 한 번에 끕니다.":"移動・生活効果音をまとめてオフにします。","효과음 크기":"効果音の音量","구두소리 미리 듣기":"足音を試聴","음소거를 해제하면 미리 들을 수 있어요.":"ミュートを解除すると試聴できます。"});
 Object.assign(UI_TEXT.en,{"방 편집":"Edit room","방 이름":"Room name","방 유형":"Room type","방이 있는 층":"Floor","방 크기":"Room size","방 사진 표시":"Room photo fit","인테리어 스타일":"Interior style","방 제목 색":"Room title color","가구 배치":"Furniture placement","가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.":"Tap furniture to add it to the room. Drag it in the edit view, then use the toolbar to rotate, resize, or change its layer.","선택한 가구 편집":"Edit selected furniture","가구 작게":"Make furniture smaller","가구 크게":"Make furniture larger","가구 회전":"Rotate furniture","가구 뒤로":"Send furniture backward","가구 앞으로":"Bring furniture forward","가구":"Furniture"});
 Object.assign(UI_TEXT.ja,{"방 편집":"部屋を編集","방 이름":"部屋の名前","방 유형":"部屋の種類","방이 있는 층":"部屋の階","방 크기":"部屋の大きさ","방 사진 표시":"部屋写真の表示","인테리어 스타일":"インテリアスタイル","방 제목 색":"部屋名の色","가구 배치":"家具の配置","가구를 누르면 방 안에 하나씩 추가돼요. 편집 화면에서 직접 끌고, 아래 도구로 회전·크기·앞뒤 순서를 바꿀 수 있어요.":"家具を押すと部屋に1つ追加されます。編集画面でドラッグし、下のツールで回転・大きさ・前後関係を調整できます。","선택한 가구 편집":"選択した家具を編集","가구 작게":"家具を小さくする","가구 크게":"家具を大きくする","가구 회전":"家具を回転","가구 뒤로":"家具を後ろへ","가구 앞으로":"家具を前へ","가구":"家具"});
 Object.assign(UI_TEXT.en,{"가구 배치":"Furniture placement","커플 침대":"Couple bed","침대 지정":"Assign bed","최근 생활 로그":"Recent life log"});
@@ -751,7 +753,7 @@ export function setMobileTownEditing(value){
 export function setMobileTownPanel(value=""){mobileTownPanel=String(value||"")}
 export function setSettingsPane(value="home"){
   const next=String(value||"home");
-  settingsPane=["home","gameplay","notifications","display","account","support"].includes(next)?next:"home";
+  settingsPane=["home","gameplay","sound","notifications","display","account","support"].includes(next)?next:"home";
 }
 function gameHudSideMenu(side,character){
   return `<nav class="game-hud-side game-hud-side-${side}" aria-label="${esc(t(side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴",side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴"))}">${GAME_HUD_SIDE_TABS[side].map(({key,labelKey,label,asset,icon})=>`<button type="button" class="game-hud-button" data-tab="${key}">${asset?`<img class="game-hud-menu-art" src="${esc(homeUiAsset(character,asset))}" alt="">`:`<span data-menu-icon="${key}" aria-hidden="true">${icon}</span>`}<small><span>${gameHudLabel(labelKey,label)}</span></small></button>`).join("")}</nav>`;
@@ -3051,6 +3053,7 @@ Object.assign(UI_TEXT.ja,{
 });
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;
+  const sound=`<section class="setting-card sound-setting-card"><h2>이동과 생활 효과음</h2><p>캐릭터가 걷거나 뛰는 동안 들리는 효과음을 조절해요.</p><label class="notification-update-option"><input type="checkbox" data-sound-muted ${state.soundMuted?"checked":""}><span><b>모든 효과음 음소거</b><small>앱의 이동·생활 효과음을 한 번에 끕니다.</small></span></label><label class="sound-volume-control">효과음 크기 <output>${Math.round(Number(state.soundEffectsVolume)||0)}%</output><input type="range" min="0" max="100" step="5" value="${Number(state.soundEffectsVolume)||0}" data-sound-volume ${state.soundMuted?"disabled":""}></label><button type="button" data-sound-preview ${state.soundMuted?"disabled":""}>구두소리 미리 듣기</button>${state.soundMuted?"<small>음소거를 해제하면 미리 들을 수 있어요.</small>":""}</section>`;
   const homeCharacterDisplay=`<section class="setting-card home-character-display-card"><h2>홈 화면 캐릭터 표현</h2><p>모든 캐릭터에 같은 표시 방식을 적용합니다. LD는 원본 비율을 유지하고 자르거나 늘리지 않습니다.</p><label>SD / LD<select data-setting="homeVisualMode"><option value="sd" ${state.homeVisualMode!=="ld"?"selected":""}>SD</option><option value="ld" ${state.homeVisualMode==="ld"?"selected":""}>LD</option></select></label><label>SD 크기 <output>${Math.round(Number(state.homeSdScale)||100)}%</output><input type="range" min="70" max="150" step="5" value="${Number(state.homeSdScale)||100}" data-setting="homeSdScale"></label><label>LD 크기 <output>${Math.round(Number(state.homeLdScale)||100)}%</output><input type="range" min="70" max="150" step="5" value="${Number(state.homeLdScale)||100}" data-setting="homeLdScale"></label><small>2인 LD도 1인과 같은 높이·같은 Y좌표를 사용하고 X좌표만 좌우로 나뉩니다. 현재 선택한 캐릭터가 항상 앞에 표시됩니다.</small></section>`;
   const sync=`<section class="sync-panel setting-card"><h2>저장과 동기화</h2><p id="account-status">${esc(accountText)}</p><div class="sync-actions"><button class="primary" data-auth>Google 로그인 / 로그아웃</button><button data-sync-upload>동기화</button><button data-sync-download>불러오기</button></div><small>캐릭터 정보와 사진을 함께 Google 계정에 동기화합니다.</small><small>LD는 자르지 않고 원본 비율을 유지하며, 큰 사진은 저장용 사본만 비율대로 축소해요.</small><div class="account-deletion-links"><a href="./privacy.html#account-deletion" target="_blank" rel="noopener">계정·클라우드 데이터 삭제 안내</a><a href="mailto:kkyaareuk@gmail.com?subject=%EC%84%9C%EB%9E%8D%EB%A7%88%EC%9D%84%20%EA%B3%84%EC%A0%95%20%EB%B0%8F%20%EB%8D%B0%EC%9D%B4%ED%84%B0%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">삭제 요청 메일 보내기</a></div></section>`;
   const map=`<section class="setting-card map-display-card"><h2>마을 지도 표시</h2><label>건물 표기 방식<select data-setting="buildingLabelMode"><option value="full" ${state.buildingLabelMode==="full"?"selected":""}>이름과 건물 유형 표시</option><option value="name" ${state.buildingLabelMode==="name"?"selected":""}>이름만 표시</option><option value="none" ${state.buildingLabelMode==="none"?"selected":""}>아무 글자도 표시하지 않기</option></select></label><label>지도 위 캐릭터 표기<select data-setting="mapCharacterLabelMode"><option value="none" ${state.mapCharacterLabelMode==="none"?"selected":""}>캐릭터 아이콘만 표시</option><option value="name" ${state.mapCharacterLabelMode==="name"?"selected":""}>아이콘 아래 이름 표시</option></select></label><small>같은 건물에 있는 캐릭터는 지도에서 한 묶음으로 표시됩니다.</small></section>`;
@@ -3069,15 +3072,16 @@ function settingsContent(){
   const buildLabel=state.uiLanguage==="en"?"Build":state.uiLanguage==="ja"?"ビルド":"빌드";
   const versionText=appVersion?`${appVersion}${versionCode?` · ${buildLabel} ${versionCode}`:""}`:"웹 버전 · 자동 업데이트";
   const appInfo=`<section class="setting-card app-version-card"><h2>앱 정보</h2><p><b>현재 버전</b> <span>${esc(versionText)}</span></p><small>오류를 제보할 때 이 버전과 빌드 번호를 함께 알려 주세요.</small></section>`;
-  const menu=`<nav class="settings-category-grid" aria-label="설정 메뉴"><button type="button" data-tab="settings" data-settings-pane="gameplay"><span>🎮</span><b>게임플레이</b><small>홈 화면과 마을 표시</small></button><button type="button" data-tab="settings" data-settings-pane="notifications"><span>🔔</span><b>알림</b><small>캐릭터 연락과 일정 종료 알림</small></button><button type="button" data-tab="settings" data-settings-pane="display"><span>🖥️</span><b>화면·표시</b><small>화면 모드, 색상 테마, 글자와 조작 크기</small></button><button type="button" data-tab="settings" data-settings-pane="account"><span>☁️</span><b>계정·백업</b><small>언어와 백업 파일</small></button><button type="button" data-tab="settings" data-settings-pane="support"><span>🛟</span><b>도움말·오류 신고</b><small>피드백, 페이지 안내, 초기화</small></button></nav>`;
+  const menu=`<nav class="settings-category-grid" aria-label="설정 메뉴"><button type="button" data-tab="settings" data-settings-pane="gameplay"><span>🎮</span><b>게임플레이</b><small>홈 화면과 마을 표시</small></button><button type="button" data-tab="settings" data-settings-pane="sound"><span>🔊</span><b>소리</b><small>이동과 생활 효과음</small></button><button type="button" data-tab="settings" data-settings-pane="notifications"><span>🔔</span><b>알림</b><small>캐릭터 연락과 일정 종료 알림</small></button><button type="button" data-tab="settings" data-settings-pane="display"><span>🖥️</span><b>화면·표시</b><small>화면 모드, 색상 테마, 글자와 조작 크기</small></button><button type="button" data-tab="settings" data-settings-pane="account"><span>☁️</span><b>계정·백업</b><small>언어와 백업 파일</small></button><button type="button" data-tab="settings" data-settings-pane="support"><span>🛟</span><b>도움말·오류 신고</b><small>피드백, 페이지 안내, 초기화</small></button></nav>`;
   const paneContent={
     gameplay:`${homeCharacterDisplay}${map}${movement}`,
+    sound,
     notifications,
     display:`${colorMode}${visualThemeSettings()}${screenScaleSettings()}${ownerNameSettings()}`,
     account:`${language}${backup}`,
     support:`${feedback}${guide}<section class="setting-card reset-setting-card"><h2>데이터 초기화</h2><p>기기의 서랍마을 데이터를 모두 지울 때만 사용하세요.</p><button class="danger" data-reset>모든 데이터 초기화</button></section>`
   };
-  const paneNames={gameplay:"게임플레이",notifications:"알림",display:"화면·표시",account:"계정·백업",support:"도움말·오류 신고"};
+  const paneNames={gameplay:"게임플레이",sound:"소리",notifications:"알림",display:"화면·표시",account:"계정·백업",support:"도움말·오류 신고"};
   const body=settingsPane==="home"?`${sync}${appInfo}${menu}`:`<div class="settings-pane-heading"><button type="button" data-tab="settings" data-settings-pane="home" aria-label="설정 메뉴로 돌아가기">‹</button><span><small>SETTINGS</small><h2>${paneNames[settingsPane]}</h2></span></div>${paneContent[settingsPane]||menu}`;
   return `<section class="panel form settings-shell ${settingsPane==="home"?"settings-home":"settings-subpage"}"><h1>${t("settings","설정")}</h1>${body}</section>`;
 }
