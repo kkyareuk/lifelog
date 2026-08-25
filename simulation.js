@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookfidelity";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260825characterbookfidelity";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookperception";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260825characterbookperception";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -3414,14 +3414,41 @@ function placeObjectScene(place,first,second,relation,date){
   }
   return null;
 }
-function interactionPair(group){
+function visionSideScore(character,side){
+  const appearance=appearanceProfile(character),direct=String(appearance?.[`${side}Vision`]||"");
+  const legacy=character?.bodyProfile?.vision||{};
+  const value=direct||((legacy.side==="양쪽"||legacy.side===(side==="right"?"오른쪽":"왼쪽"))?String(legacy.level||""):"");
+  if(/보이지 않음|맹/.test(value))return .03;
+  if(/거의/.test(value))return .16;
+  if(/저시력|낮은 시력|약함/.test(value))return .42;
+  return 1;
+}
+function relationshipAwareness(first,second,relation){
+  const firstView=characterViewFor(first.id,second.id)||{},secondView=characterViewFor(second.id,first.id)||{};
+  const text=[...Object.values(firstView),...Object.values(secondView),relation?.type,relation?.stage].join(" ");
+  let score=(RELATION_CLOSENESS[relation?.type]||0)/100;
+  if(/신뢰|믿|편안|소중|사랑|호감|가까운/.test(text))score+=.3;
+  if(/불신|못 믿|숨 막|불편|어색|낯선/.test(text))score-=.22;
+  return Math.max(0,Math.min(1,score));
+}
+function interactionPair(group,date=new Date(),placeKey=""){
   const people=[...new Map(group.filter(Boolean).map(person=>[person.id,person])).values()].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
   const candidates=[];
   for(let i=0;i<people.length;i++){
     for(let j=i+1;j<people.length;j++){
       const first=people[i],second=people[j];
       const relation=relationList().find(r=>(r.a===first.id&&r.b===second.id)||(r.a===second.id&&r.b===first.id))||null;
-      candidates.push({first,second,relation,score:relationImportance(first,second,relation),key:`${first.id}:${second.id}`});
+      const key=`${first.id}:${second.id}`,relativeSide=hash(`${key}:${placeKey}:${dayKey(date)}:side`)%2?"right":"left";
+      const inverseSide=relativeSide==="right"?"left":"right";
+      const perception=Math.max(visionSideScore(first,relativeSide),visionSideScore(second,inverseSide));
+      const familiarity=relationshipAwareness(first,second,relation);
+      const initiative=Math.max(interactionInitiativeScore(first),interactionInitiativeScore(second));
+      const explicit=Object.keys(explicitCharacterViewFor(first.id,second.id)).length||Object.keys(explicitCharacterViewFor(second.id,first.id)).length;
+      const willingness=Math.max(4,Math.min(92,12+familiarity*56+initiative*3+explicit*18))*perception;
+      // 모르는 사람은 같은 장소에 있다는 이유만으로 매번 대화하지 않는다.
+      // 관계·편안함·신뢰와 실제로 보이는 방향을 통과했을 때만 먼저 다가간다.
+      if(hash(`${key}:${placeKey}:${dayKey(date)}:${Math.floor(nowMin(date)/30)}:notice`)%100>=willingness)continue;
+      candidates.push({first,second,relation,score:relationImportance(first,second,relation)+familiarity*35+perception*18,key,perceptionSide:relativeSide});
     }
   }
   candidates.sort((a,b)=>b.score-a.score||a.key.localeCompare(b.key));
@@ -4146,7 +4173,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const lockedPartner=explicitDatePartner||explicitSharedPartner||explicitCurrentPartner;
   const group=[c,...together],preferred=lockedPartner
     ?{first:c,second:lockedPartner,relation:relationList().find(r=>(r.a===c.id&&r.b===lockedPartner.id)||(r.b===c.id&&r.a===lockedPartner.id))}
-    :interactionPair(group);
+    :interactionPair(group,date,place.id);
   if(!preferred)return current;
   // 같은 방에 세 명 이상 있어도 한 캐릭터가 같은 시각에 두 개의 2인 장면에
   // 동시에 끼지 않도록, 장소 전체에서 하나의 결정적인 짝만 선택한다.
@@ -4229,18 +4256,17 @@ function companionAlignedBaseEvent(c,current,date){
     .filter(({other})=>other&&other.id!==c.id&&!activeScheduledRoutine(other,date))
     .sort((first,second)=>(relationPriority[second.relation.type]||0)-(relationPriority[first.relation.type]||0))[0];
   if(!candidate)return current;
-  const {other}=candidate,ownerIndex=state.order.indexOf(c.id),otherIndex=state.order.indexOf(other.id);
-  const anchor=ownerIndex>=0&&otherIndex>=0&&ownerIndex<=otherIndex?c:other;
-  const anchorEvent=anchor.id===c.id?current:baseEventFor(anchor,date);
+  const {other}=candidate,otherEvent=baseEventFor(other,date);
   const sleeping=value=>/자는 중|잠든|수면/.test(`${value?.title||""} ${value?.desc||""} ${value?.mood||""}`);
-  if(!anchorEvent||anchorEvent.transit||current.transit||sleeping(anchorEvent)!==sleeping(current))return current;
-  const location={
-    home:Boolean(anchorEvent.home),room:anchorEvent.home?anchorEvent.room:undefined,
-    visitHomeId:anchorEvent.home?(anchorEvent.visitHomeId||anchor.homeId):undefined,
-    placeId:anchorEvent.home?undefined:anchorEvent.placeId,
-    townId:anchorEvent.townId||anchor.townId,transit:false
-  };
-  return {...current,...location,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
+  if(!otherEvent||otherEvent.transit||current.transit||sleeping(otherEvent)!==sleeping(current))return current;
+  const currentHomeId=current.visitHomeId||c.homeId,otherHomeId=otherEvent.visitHomeId||other.homeId;
+  const sameLocation=current.home&&otherEvent.home
+    ?currentHomeId===otherHomeId&&Boolean(current.room)&&current.room===otherEvent.room
+    :!current.home&&!otherEvent.home&&Boolean(current.placeId)&&current.placeId===otherEvent.placeId&&(current.townId||c.townId)===(otherEvent.townId||other.townId);
+  // 동행 관계는 같은 장소에 있을 때 상호작용 우선순위만 높인다.
+  // 한쪽의 방/건물 좌표를 다른 쪽에 복사해 서로 다른 방을 같은 방처럼 만들지 않는다.
+  if(!sameLocation)return current;
+  return {...current,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
 }
 export function eventFor(c,date=new Date()){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);

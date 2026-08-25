@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825characterbookfidelity";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookfidelity";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260825characterbookfidelity";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookfidelity";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825characterbookfidelity";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterbookfidelity";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825characterbookperception";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookperception";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260825characterbookperception";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookperception";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825characterbookperception";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterbookperception";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -42,11 +42,16 @@ const defaultBodyProfile=()=>({
     hairColor:"설정하지 않음",
     hairColorOrigin:"설정하지 않음",
     naturalHairColor:"설정하지 않음",
+    dyeColor:"설정하지 않음",
     hairLength:"설정하지 않음",
     hairTexture:"설정하지 않음",
     hairStyles:[],
     leftEyeColor:"설정하지 않음",
     rightEyeColor:"설정하지 않음",
+    leftVision:"정상 시력",
+    rightVision:"정상 시력",
+    eyeFeatures:[],
+    glasses:"착용하지 않음",
     makeupLevel:"하지 않음",
     makeupStyles:[],
     salonFrequency:"자동 · 설정에 맞춤",
@@ -54,6 +59,9 @@ const defaultBodyProfile=()=>({
     cosmeticSurgeryAreas:[]
   },
   healthConditions:[],
+  heightCm:"",
+  heightImpression:"설정하지 않음",
+  weightKg:"",
   healthOther:"",
   wheelchair:{type:"사용하지 않음",pattern:""},
   prostheticArm:{side:"사용하지 않음",type:"",custom:""},
@@ -86,17 +94,25 @@ const normalizedBodyProfile=value=>{
       hairColor:String(appearanceSource.hairColor||appearanceDefaults.hairColor),
       hairColorOrigin:String(appearanceSource.hairColorOrigin||appearanceDefaults.hairColorOrigin),
       naturalHairColor:String(appearanceSource.naturalHairColor||appearanceDefaults.naturalHairColor),
+      dyeColor:String(appearanceSource.dyeColor||appearanceDefaults.dyeColor),
       hairLength:String(appearanceSource.hairLength||appearanceDefaults.hairLength),
       hairTexture:String(appearanceSource.hairTexture||appearanceDefaults.hairTexture),
       hairStyles:Array.isArray(appearanceSource.hairStyles)?[...new Set(appearanceSource.hairStyles.map(String))].slice(0,12):[],
       leftEyeColor:String(appearanceSource.leftEyeColor||appearanceDefaults.leftEyeColor),
       rightEyeColor:String(appearanceSource.rightEyeColor||appearanceDefaults.rightEyeColor),
+      leftVision:String(appearanceSource.leftVision||appearanceDefaults.leftVision),
+      rightVision:String(appearanceSource.rightVision||appearanceDefaults.rightVision),
+      eyeFeatures:Array.isArray(appearanceSource.eyeFeatures)?[...new Set(appearanceSource.eyeFeatures.map(String))].slice(0,8):[],
+      glasses:String(appearanceSource.glasses||appearanceDefaults.glasses),
       makeupLevel:String(appearanceSource.makeupLevel||appearanceDefaults.makeupLevel),
       makeupStyles:Array.isArray(appearanceSource.makeupStyles)?[...new Set(appearanceSource.makeupStyles.map(String))].slice(0,6):[],
       salonFrequency:String(appearanceSource.salonFrequency||appearanceDefaults.salonFrequency),
       cosmeticSurgery:String(appearanceSource.cosmeticSurgery||appearanceDefaults.cosmeticSurgery),
       cosmeticSurgeryAreas:Array.isArray(appearanceSource.cosmeticSurgeryAreas)?[...new Set(appearanceSource.cosmeticSurgeryAreas.map(String))].slice(0,8):[]
     },
+    heightCm:String(source.heightCm||""),
+    heightImpression:String(source.heightImpression||defaults.heightImpression),
+    weightKg:String(source.weightKg||""),
     healthConditions:Array.isArray(source.healthConditions)?[...new Set(source.healthConditions.map(String))].slice(0,12):[],
     healthOther:String(source.healthOther||"").slice(0,200),
     wheelchair:normalizeDevice("wheelchair","사용하지 않음"),

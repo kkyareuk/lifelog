@@ -54,6 +54,14 @@ ok(Math.hypot(approaching.simulation.agents.a.x-approaching.simulation.agents.b.
 ok(approaching.simulation.agents.a.x<approaching.simulation.agents.b.x,"관계 표시 순서의 첫 인물을 실제 좌측 좌표에 둔다");
 ok(approaching.simulation.agents.a.fromX!==approaching.simulation.agents.b.fromX||approaching.simulation.agents.a.fromY!==approaching.simulation.agents.b.fromY,"첫 배치부터 두 인물이 같은 지점에 겹치지 않는다");
 
+const splitRoomHome={rooms:{living:{name:"거실",furniturePlacements:[{id:"sofa-split",item:"소파",x:30,y:60}]},study:{name:"서재",furniturePlacements:[{id:"desk-split",item:"컴퓨터",x:68,y:56}]}}};
+const splitRoomContexts={
+  a:{scene:{minute:700,title:"각자 할 일을 하는 중",room:"living",groupInteraction:true,interactionId:"wrong-room-talk"},sceneKey:"split-a",interactionId:"wrong-room-talk",partnerIds:["a","b"],endsAt:start+50*60_000},
+  b:{scene:{minute:700,title:"각자 할 일을 하는 중",room:"study",groupInteraction:true,interactionId:"wrong-room-talk"},sceneKey:"split-b",interactionId:"wrong-room-talk",partnerIds:["a","b"],endsAt:start+50*60_000}
+};
+const splitRoom=advanceHomeLifeSimulation(splitRoomHome,["a","b"],splitRoomContexts,start);
+ok(Object.values(splitRoom.simulation.agents).every(agent=>!agent.interactionId),"서로 다른 방의 인물은 같은 대화 자리로 합쳐지지 않는다");
+
 conversationHome.lifeSimulation=approaching.simulation;
 const changedContexts={...conversationContexts,a:{...conversationContexts.a,sceneKey:"talk-a-next",scene:{...conversationContexts.a.scene,title:"운동을 마치고 대화를 이어가는 중"}}};
 const midTime=start+Math.round((approaching.simulation.agents.a.arrivesAt-start)/2),continued=advanceHomeLifeSimulation(conversationHome,["a","b"],changedContexts,midTime);
@@ -68,6 +76,8 @@ equal(normalized.agents.a.roomKey,"living","삭제된 방 위치는 남아 있�
 ok(normalized.agents.a.x<=95&&normalized.agents.a.y>=14,"복원 좌표를 방 안으로 제한한다");
 
 equal(furnitureUseProfile("샤워부스").kind,"shower","샤워기를 씻기 행동으로 분류한다");
+equal(furnitureUseProfile("화장대").kind,"groom","화장대는 옷 고르기가 아니라 단장 행동으로 분류한다");
+equal(furnitureUseProfile("옷장").kind,"dress","옷 고르기는 옷장 계열 가구에서만 수행한다");
 ok(homeActivityDurationMinutes("샤워부스","a")>=10&&homeActivityDurationMinutes("샤워부스","a")<=20,"샤워는 10~20분 범위를 사용한다");
 ok(homeActivityDurationMinutes("TV","a")>=30,"TV 시청은 최소 30분을 사용한다");
 const english=homeLifePresentation({phase:"using",actionKind:"shower"},{roomName:"Bathroom",furnitureName:"Shower",locale:"en"});
@@ -84,7 +94,7 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 142")&&gradleSource.includes('versionName "1.0.131"'),"Android 버전을 142로 올렸다");
+ok(gradleSource.includes("versionCode 147")&&gradleSource.includes('versionName "1.0.136"'),"Android 개발 버전을 147 / 1.0.136으로 올렸다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),
@@ -105,6 +115,10 @@ ok(viewsSource.includes('movementClass=e.transit')&&viewsSource.includes('native
 ok(cssSource.includes('background:#5c4234')&&cssSource.includes('border:2px solid #5c4234!important')&&!cssSource.includes('box-shadow:inset 0 0 0 999px #0c142122'),"모든 방과 사이 공간을 갈색으로 잇고 방을 톤다운하던 오버레이를 제거한다");
 ok(cssSource.includes('.home-interaction-together .home-interaction-avatar:first-of-type')&&cssSource.includes('.home-interaction-together .home-interaction-visual>em'),"일반적인 함께 보내기 장면에도 두 사람의 몸동작과 반응 애니메이션을 표시한다");
 ok(homeSimulationSource.includes('anchorX+(index?gap:-gap)'),"관계 표시 순서의 첫 인물을 왼쪽에 고정한다");
+ok(homeSimulationSource.includes('HOME_SAFE_BOUNDS={minX:8,maxX:91,minY:23,maxY:84}')&&homeSimulationSource.includes('function safeHomePoint'),"사람과 반려생물의 이동 목표를 상단 메뉴와 화면 최하단 밖의 안전 영역으로 제한한다");
+ok(homeSimulationSource.includes('/옷장|행거|옷걸이|의류 수납/')&&homeSimulationSource.includes('scene:/옷을 고르|입을 옷|옷차림|의상을 고르|갈아입/'),"옷 고르기 장면은 화장대가 아니라 옷장 계열 가구에만 연결한다");
+ok(homeSimulationSource.includes('contextRooms.size!==1')&&homeSimulationSource.includes('agents.some(agent=>agent.roomKey!==roomKey)'),"다른 방에 있는 인물은 같은 집 상호작용 그룹으로 합쳐지지 않는다");
+ok(simulationSource.includes('function visionSideScore')&&simulationSource.includes('[`${side}Vision`]')&&simulationSource.includes('relationshipAwareness')&&simulationSource.includes('willingness'),"마을·집의 자율 상호작용은 좌우 시야와 신뢰·편안함·관계 친밀도를 함께 계산한다");
 ok(simulationSource.includes('const relationshipOrder=sharedParticipantOrder')&&simulationSource.includes('if(!scene)return current'),"관계 좌우 순서를 공동 장면까지 보존하고 상호작용 없는 낯선 사람은 각자 행동을 유지한다");
 ok(viewsSource.includes('function homeOrderedCharacters')&&viewsSource.includes('homeOrderedCharacters(partners,partners.map(sceneFor))'),"집의 개별·합성 상호작용 렌더링도 관계 좌우 순서를 사용한다");
 ok(cssSource.includes(".home-native-header::before")&&cssSource.includes("right:-2px"),"집 상단바가 화면 오른쪽 끝까지 덮인다");
