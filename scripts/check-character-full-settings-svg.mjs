@@ -25,7 +25,7 @@ const checks=[
   [views.includes('class="character-full-image-slot icon" data-image="icon">${currentIcon}</button>')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치됨"],
   [bookCss.includes('.character-full-image-slot.ld{')&&bookCss.includes('.character-full-image-slot.icon{')&&bookCss.includes('background:transparent!important;box-shadow:none!important'),"LD와 아이콘 뒤 회색 판 제거"],
   [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="basic"')&&views.includes('data-character-overview-pane="life"')&&state.includes('characterOverviewPane:"basic"'),"개요 기본·생활 두 장을 독립된 책 페이지로 구성"],
-  [!views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&views.includes('class="character-book-v8-shape-bookmark ${fullActivePane==="visual"?"on":""}"')&&bookCss.includes('left:58.6148cqw!important;top:196.1393cqw!important')&&bookCss.includes('width:15.0485cqw!important;height:8.9927cqw!important'),"하단 모양 책갈피를 전용 클래스와 SVG 좌표로 고정"],
+  [!views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&!views.includes('character-book-v8-shape-bookmark')&&!bookCss.includes('.character-book-v8-shape-bookmark'),"하단 모양 책갈피를 제거하고 페이지 화살표만 유지"],
   [views.includes('class="character-book-cover-controls"')&&views.includes('data-character-pane="profile"')&&bookCss.includes('.character-book-cover-controls'),"전체설정 표지의 개요 이동 화살표"],
   [views.includes('class="character-book-v8-save character-book-v9-composite"')&&bookCss.includes('.character-book-v9-composite')&&bookCss.includes('font:400 3.25cqw/1 "KCCHanbit"'),"상단 메뉴와 저장을 캡·가운데·캡 조합형 KCC 버튼으로 고정"],
   [views.includes('class="character-book-v9-fill"')&&bookCss.includes('.character-book-v9-fill'),"조합형 버튼 가운데 조각을 캡 안쪽에 고정해 돌출·틈 제거"],
@@ -41,8 +41,11 @@ const checks=[
   [css.includes('body.is-building-size-preview .mobile-town-shell')&&css.includes('background:transparent!important'),"건물 크기 조절 중 설정창 투명 실시간 미리보기"],
   [views.includes('data-settings-pane="sound"')&&views.includes('data-sound-muted')&&views.includes('data-sound-volume')&&views.includes('data-sound-preview'),"설정의 효과음 음소거·볼륨·미리듣기"],
   [audio.includes('assets/audio/shoe-walking.m4a')&&audio.includes('assets/audio/shoe-running.m4a')&&audio.includes('home-life-walking')&&audio.includes('town-traveler.is-jogging'),"걷기·달리기 구두 발걸음을 실제 이동 상태에만 연결"],
+  [bookCss.includes('.body-hair-curl{')&&bookCss.includes('.body-hair-condition{')&&views.includes('const HAIR_CURL_PATTERNS=')&&views.includes('const HAIR_CONDITIONS='),"곱슬기와 머릿결을 독립된 의미·행으로 분리"],
+  [views.includes('data-eye-color-preview="left"')&&views.includes('data-eye-color-preview="right"')&&views.includes('appearancePreviewColor(bodyAppearance.leftEyeColor')&&views.includes('appearancePreviewColor(bodyAppearance.rightEyeColor'),"좌우 눈 색상 설정이 각각 미리보기 색에 연결됨"],
+  [views.includes('const hairCurlPreviewPath=value=>')&&views.includes('data-hair-curl-preview=')&&views.includes('data-hair-shape-preview')&&app.includes('hairCurlPreviewPath(el.value)'),"곱슬기 설정별 머리 선 형태 미리보기"],
   [bookCss.includes('.body-hair-amount{')&&bookCss.includes('.body-hair-locations{')&&bookCss.includes('height:7.4cqw!important'),"신체 5쪽에 체모 정도·체모 위치와 두꺼운 복수 선택 필드"],
-  [gradle.includes('versionCode 152')&&gradle.includes('versionName "1.0.141"'),"Android 개발 버전 152 / 1.0.141"]
+  [gradle.includes('versionCode 154')&&gradle.includes('versionName "1.0.142"'),"Android 개발 버전 154 / 1.0.142"]
 ];
 
 let failed=0;

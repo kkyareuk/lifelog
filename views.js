@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260826characterbody152";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260826characterbody152";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbody152";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbody152";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260826characterbody152";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260826characterbook154";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260826characterbook154";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbook154";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbook154";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260826characterbook154";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -1613,7 +1613,8 @@ function characterStatisticsDialog(standalone=false){
     ,["신체 특징",distribution(characters.map(character=>character.bodyProfile?.physicalTraits?.length?character.bodyProfile.physicalTraits:["설정하지 않음"]),12)]
     ,["머리색",distribution(characters.map(character=>bodyValue(character,["appearance","hairColor"]))) ]
     ,["머리 길이",distribution(characters.map(character=>bodyValue(character,["appearance","hairLength"]))) ]
-    ,["머리 질감",distribution(characters.map(character=>bodyValue(character,["appearance","hairTexture"]))) ]
+    ,["곱슬기",distribution(characters.map(character=>bodyValue(character,["appearance","hairTexture"]))) ]
+    ,["머릿결",distribution(characters.map(character=>bodyValue(character,["appearance","hairCondition"]))) ]
     ,["눈동자 색",distribution(eyeValues,10)]
     ,["화장 정도",distribution(characters.map(character=>bodyValue(character,["appearance","makeupLevel"],"하지 않음"))) ]
     ,["화장 스타일",distribution(characters.map(character=>character.bodyProfile?.appearance?.makeupStyles?.length?character.bodyProfile.appearance.makeupStyles:["설정하지 않음"]),10)]
@@ -2223,13 +2224,30 @@ const PHYSICAL_TRAIT_GROUPS={
 const HAIR_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","밝은 갈색","금발","백발·은발","회색","청회색","빨간색","주황색","분홍색","보라색","파란색","청록색","초록색","여러 색","기타"];
 const HAIR_ORIGINS=["설정하지 않음","자연모","전체 염색","부분 염색","탈색 후 염색","가발·헤어피스"];
 const HAIR_LENGTHS=["설정하지 않음","삭발·매우 짧음","귀 위 길이","숏컷","단발","어깨 길이","가슴 길이","허리 길이","허리보다 김"];
-const HAIR_TEXTURES=["설정하지 않음","직모","약한 반곱슬","강한 반곱슬","곱슬","강한 곱슬"];
+const HAIR_CURL_PATTERNS=["설정하지 않음","완전한 직모","약한 반곱슬","강한 반곱슬","느슨한 웨이브","굵은 곱슬","촘촘한 곱슬","코일형"];
+const HAIR_CONDITIONS=["설정하지 않음","매끄럽고 윤기 있음","부드러운 편","보통","굵고 탄탄함","거칠고 뻣뻣함","건조하고 푸석함","쉽게 엉킴","잘 끊어짐"];
 const HAIR_STYLES=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","시스루 앞머리","일자 앞머리","처피뱅","커튼뱅","옆으로 넘긴 앞머리","앞머리가 한쪽 눈을 가림","앞머리가 양쪽 눈을 가림","올백","슬릭백","보브컷","픽시컷","댄디컷","리프컷","레이어드컷","허쉬컷","샤기컷","울프컷","투블럭","언더컷","모히칸","리젠트","포니테일","사이드 포니테일","트윈테일","양갈래","반묶음","하프업 번","땋은 머리","프렌치 브레이드","피시테일 브레이드","콘로우","박스 브레이드","로우번","하이번","스페이스 번","브레이드 업두","드레드록","히메컷","롱 스트레이트","단발 웨이브","웨이브 스타일","베이비펌","히피펌","가르마펌","고데기 스타일링"];
 const EYE_FEATURE_OPTIONS=["눈매가 날카로움","눈매가 부드러움","눈꼬리가 올라감","눈꼬리가 내려감","큰 눈","작은 눈","쌍꺼풀 있음","속쌍꺼풀","무쌍","삼백안","사백안","졸린 눈","처진 눈","짝눈","오드아이","눈 밑 점","다크서클","속눈썹이 김","눈썹이 진함"];
 const HAIR_ACCESSORY_OPTIONS=["머리핀","리본","헤어밴드","머리띠","비녀","장식 빗","꽃 장식","베일","모자","후드","왕관","티아라","뿔","한쪽 뿔","한 쌍의 뿔","후광","동물 귀 장식","깃털 장식","보석 장식","체인 장식"];
 const BODY_HAIR_AMOUNTS=["설정하지 않음","없음","거의 없음","적은 편","보통","많은 편","매우 많음"];
 const BODY_HAIR_LOCATION_OPTIONS=["얼굴","인중","턱","구레나룻","가슴","배","등","어깨","팔","겨드랑이","손","허벅지","종아리","발"];
 const EYE_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","연갈색","호박색","금색","초록색","청록색","파란색","청회색","회색","보라색","분홍색","빨간색","백색","여러 색","기타"];
+const APPEARANCE_PREVIEW_COLORS={
+  "설정하지 않음":"#D8D1C2","검은색":"#22201F","짙은 갈색":"#3C281F","갈색":"#704A32","밝은 갈색":"#A8774F",
+  "연갈색":"#B68A61","호박색":"#C78222","금색":"#E1B72E","금발":"#E5C65A","백발·은발":"#D9DDE1","백색":"#F4F1E9",
+  "회색":"#808489","청회색":"#6F8795","빨간색":"#9D2A2A","주황색":"#D06E2E","분홍색":"#D67C9D","보라색":"#75569A",
+  "파란색":"#416FA8","청록색":"#2D8C82","초록색":"#4E7D4B","여러 색":"#8A65A5","기타":"#8D8178"
+};
+export const appearancePreviewColor=(value,fallback="#D8D1C2")=>APPEARANCE_PREVIEW_COLORS[value]||fallback;
+export const hairCurlPreviewPath=value=>({
+  "완전한 직모":"M67 491 L324 491",
+  "약한 반곱슬":"M67 492 C111 481 143 483 177 493 C213 503 256 499 324 486",
+  "강한 반곱슬":"M67 494 C91 470 124 470 150 493 C177 517 207 516 234 491 C261 466 294 468 324 494",
+  "느슨한 웨이브":"M67 494 C101 463 135 463 169 494 C203 525 237 525 271 494 C289 478 307 478 324 492",
+  "굵은 곱슬":"M67 495 C82 466 106 466 121 495 C136 524 160 524 175 495 C190 466 214 466 229 495 C244 524 268 524 283 495 C294 474 311 472 324 491",
+  "촘촘한 곱슬":"M67 493 C76 470 90 470 99 493 C108 516 122 516 131 493 C140 470 154 470 163 493 C172 516 186 516 195 493 C204 470 218 470 227 493 C236 516 250 516 259 493 C268 470 282 470 291 493 C300 516 314 514 324 490",
+  "코일형":"M67 493 C67 474 91 474 91 493 C91 512 67 512 67 493 M99 493 C99 474 123 474 123 493 C123 512 99 512 99 493 M131 493 C131 474 155 474 155 493 C155 512 131 512 131 493 M163 493 C163 474 187 474 187 493 C187 512 163 512 163 493 M195 493 C195 474 219 474 219 493 C219 512 195 512 195 493 M227 493 C227 474 251 474 251 493 C251 512 227 512 227 493 M259 493 C259 474 283 474 283 493 C283 512 259 512 259 493 M291 493 C291 474 315 474 315 493 C315 508 302 512 294 504"
+}[value]||"M67 492 C108 480 143 481 177 493 C213 506 258 501 324 486");
 const MAKEUP_LEVELS=["하지 않음","스킨케어만","선크림·기초만","가벼운 메이크업","포인트 메이크업","풀 메이크업"];
 const MAKEUP_STYLES=["내추럴","글로우","매트","음영","아이 메이크업 중심","립 중심","화려한 색조","무대·촬영용","고딕","복고풍"];
 const SALON_FREQUENCIES=["자동 · 설정에 맞춤","거의 가지 않음","3~4개월에 한 번","1~2개월에 한 번","한 달에 한 번","2주에 한 번","주 1회 이상"];
@@ -2287,7 +2305,8 @@ function physicalAppearanceSettings(c){
       ${profileSelect("머리색 설정","appearance.hairColorOrigin",HAIR_ORIGINS,a.hairColorOrigin||"설정하지 않음")}
       ${profileSelect("본래 머리색 · 염색모일 때","appearance.naturalHairColor",HAIR_COLORS,a.naturalHairColor||"설정하지 않음")}
       ${profileSelect("머리 기장","appearance.hairLength",HAIR_LENGTHS,a.hairLength||"설정하지 않음")}
-      ${profileSelect("머리 결","appearance.hairTexture",HAIR_TEXTURES,a.hairTexture||"설정하지 않음")}
+      ${profileSelect("곱슬기","appearance.hairTexture",HAIR_CURL_PATTERNS,a.hairTexture||"설정하지 않음")}
+      ${profileSelect("머릿결","appearance.hairCondition",HAIR_CONDITIONS,a.hairCondition||"설정하지 않음")}
       <div class="eye-color-pair">
         ${profileSelect("왼쪽 눈 색","appearance.leftEyeColor",EYE_COLORS,a.leftEyeColor||"설정하지 않음")}
         ${profileSelect("오른쪽 눈 색","appearance.rightEyeColor",EYE_COLORS,a.rightEyeColor||"설정하지 않음")}
@@ -2488,14 +2507,18 @@ function character(){
     const selectedSet=new Set(selected);
     return `<section class="character-body-choice-panel" data-body-choice-panel="${esc(path)}" data-body-choice-title="${esc(t(label,label))}" hidden>${options.map(value=>`<button type="button" data-body-list="${esc(path)}" data-value="${esc(value)}" class="${selectedSet.has(value)?"on":""}"><span>${esc(t(value,value))}</span><i aria-hidden="true">✓</i></button>`).join("")}</section>`;
   };
-  const bodyGuide=`<svg class="character-body-guide" viewBox="0 0 412 917" aria-hidden="true" focusable="false"><ellipse cx="112" cy="235" rx="26" ry="26.5" fill="#8D2626"/><path d="M54 244C54 244 62 208 111.5 208C161 208 169 244 169 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M54 244.5C54 244.5 62 261.5 111.5 261.5C161 261.5 169 244.5 169 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><ellipse cx="278" cy="235" rx="26" ry="26.5" fill="#ECD047"/><path d="M220 244C220 244 228 208 277.5 208C327 208 335 244 335 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M220 244.5C220 244.5 228 261.5 277.5 261.5C327 261.5 335 244.5 335 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M67 491.5C67 491.5 101 474.438 149.5 475.5C198 476.562 199.5 503 246 503C292.5 503 324 481.5 324 481.5" fill="none" stroke="#7F0000" stroke-width="3"/></svg>`;
+  const leftEyePreview=appearancePreviewColor(bodyAppearance.leftEyeColor,"#D8D1C2");
+  const rightEyePreview=appearancePreviewColor(bodyAppearance.rightEyeColor,"#D8D1C2");
+  const hairPreviewColor=appearancePreviewColor(bodyAppearance.hairColor,"#7F0000");
+  const hairPreviewPath=hairCurlPreviewPath(bodyAppearance.hairTexture);
+  const bodyGuide=`<svg class="character-body-guide" viewBox="0 0 412 917" aria-hidden="true" focusable="false" data-hair-curl-preview="${esc(bodyAppearance.hairTexture||"설정하지 않음")}"><ellipse data-eye-color-preview="left" cx="112" cy="235" rx="26" ry="26.5" fill="${leftEyePreview}"/><path d="M54 244C54 244 62 208 111.5 208C161 208 169 244 169 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M54 244.5C54 244.5 62 261.5 111.5 261.5C161 261.5 169 244.5 169 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><ellipse data-eye-color-preview="right" cx="278" cy="235" rx="26" ry="26.5" fill="${rightEyePreview}"/><path d="M220 244C220 244 228 208 277.5 208C327 208 335 244 335 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M220 244.5C220 244.5 228 261.5 277.5 261.5C327 261.5 335 244.5 335 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><path data-hair-shape-preview d="${hairPreviewPath}" fill="none" stroke="${hairPreviewColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   const bodyChoiceDialog=`<dialog class="character-body-choice-dialog" data-body-choice-dialog><form method="dialog"><header><span><small>MULTI SELECT</small><b data-body-choice-dialog-title>${t("여러 개 선택 가능","여러 개 선택 가능")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("여러 개 선택 가능","여러 개 선택 가능")}</p>${bodyChoicePanel("appearance.eyeFeatures","눈 특징",EYE_FEATURE_OPTIONS,bodyAppearance.eyeFeatures||[])}${bodyChoicePanel("appearance.hairStyles","헤어스타일",HAIR_STYLES,bodyAppearance.hairStyles||[])}${bodyChoicePanel("appearance.hairAccessories","머리 장식",HAIR_ACCESSORY_OPTIONS,bodyAppearance.hairAccessories||[])}${bodyChoicePanel("appearance.bodyHairLocations","체모 위치",BODY_HAIR_LOCATION_OPTIONS,bodyAppearance.bodyHairLocations||[])}<footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
   const bodyPane=`<section class="character-body-svg-page" aria-label="${esc(c.name)} ${esc(t("신체 설정","신체 설정"))}">
     ${bodyGuide}
     <section class="character-body-eye-card">
-      <label class="body-svg-field body-left-eye"><b>${t("왼쪽 눈","왼쪽 눈")}</b>${bodySelect("appearance.leftEyeColor",HAIR_COLORS,bodyAppearance.leftEyeColor||"설정하지 않음")}</label>
+      <label class="body-svg-field body-left-eye"><b>${t("왼쪽 눈","왼쪽 눈")}</b>${bodySelect("appearance.leftEyeColor",EYE_COLORS,bodyAppearance.leftEyeColor||"설정하지 않음")}</label>
       <label class="body-svg-field body-left-vision"><b>${t("왼쪽 시력","왼쪽 시력")}</b>${bodySelect("appearance.leftVision",["정상 시력","저시력","거의 보이지 않음","보이지 않음"],bodyAppearance.leftVision||"정상 시력")}</label>
-      <label class="body-svg-field body-right-eye"><b>${t("오른쪽 눈","오른쪽 눈")}</b>${bodySelect("appearance.rightEyeColor",HAIR_COLORS,bodyAppearance.rightEyeColor||"설정하지 않음")}</label>
+      <label class="body-svg-field body-right-eye"><b>${t("오른쪽 눈","오른쪽 눈")}</b>${bodySelect("appearance.rightEyeColor",EYE_COLORS,bodyAppearance.rightEyeColor||"설정하지 않음")}</label>
       <label class="body-svg-field body-right-vision"><b>${t("오른쪽 시력","오른쪽 시력")}</b>${bodySelect("appearance.rightVision",["정상 시력","저시력","거의 보이지 않음","보이지 않음"],bodyAppearance.rightVision||"정상 시력")}</label>
       <div class="body-svg-field body-eye-features"><b>${t("눈 특징","눈 특징")}</b>${bodyChoiceOpener("appearance.eyeFeatures","눈 특징",bodyAppearance.eyeFeatures||[])}</div>
       <label class="body-svg-field body-glasses"><b>${t("안경","안경")}</b>${bodySelect("appearance.glasses",["착용하지 않음","필요할 때만 착용","안경 착용","선글라스 착용"],bodyAppearance.glasses||"착용하지 않음")}</label>
@@ -2503,9 +2526,10 @@ function character(){
     <section class="character-body-hair-card">
       <label class="body-svg-field body-hair-color"><b>${t("현재 머리색","현재 머리색")}</b>${bodySelect("appearance.hairColor",HAIR_COLORS,bodyAppearance.hairColor||"설정하지 않음")}</label>
       <label class="body-svg-field body-hair-origin"><b>${t("머리색 설정","머리색 설정")}</b>${bodySelect("appearance.hairColorOrigin",["자연 모발","염색","부분 염색","가발·헤어피스","설정하지 않음"],bodyAppearance.hairColorOrigin||"설정하지 않음")}</label>
-      <label class="body-svg-field body-natural-hair"><b>${t("본래 머리색:","본래 머리색:")}</b>${bodySelect("appearance.naturalHairColor",HAIR_COLORS,bodyAppearance.naturalHairColor||"설정하지 않음")}</label>
+      <label class="body-svg-field body-natural-hair"><b>${t("본래 머리색","본래 머리색")}</b>${bodySelect("appearance.naturalHairColor",HAIR_COLORS,bodyAppearance.naturalHairColor||"설정하지 않음")}</label>
       <label class="body-svg-field body-hair-length"><b>${t("머리 기장","머리 기장")}</b>${bodySelect("appearance.hairLength",HAIR_LENGTHS,bodyAppearance.hairLength||"설정하지 않음")}</label>
-      <label class="body-svg-field body-hair-texture"><b>${t("머릿결","머릿결")}</b>${bodySelect("appearance.hairTexture",HAIR_TEXTURES,bodyAppearance.hairTexture||"설정하지 않음")}</label>
+      <label class="body-svg-field body-hair-curl"><b>${t("곱슬기","곱슬기")}</b>${bodySelect("appearance.hairTexture",HAIR_CURL_PATTERNS,bodyAppearance.hairTexture||"설정하지 않음")}</label>
+      <label class="body-svg-field body-hair-condition"><b>${t("머릿결","머릿결")}</b>${bodySelect("appearance.hairCondition",HAIR_CONDITIONS,bodyAppearance.hairCondition||"설정하지 않음")}</label>
       <div class="body-svg-field body-hair-style"><b>${t("헤어스타일","헤어스타일")}</b>${bodyChoiceOpener("appearance.hairStyles","헤어스타일",bodyAppearance.hairStyles||[])}</div>
       <div class="body-svg-field body-hair-ornament"><b>${t("머리 장식","머리 장식")}</b>${bodyChoiceOpener("appearance.hairAccessories","머리 장식",bodyAppearance.hairAccessories||[])}</div>
       <label class="body-svg-field body-hair-amount"><b>${t("체모 정도","체모 정도")}</b>${bodySelect("appearance.bodyHairAmount",BODY_HAIR_AMOUNTS,bodyAppearance.bodyHairAmount||"설정하지 않음")}</label>
@@ -2572,7 +2596,6 @@ function character(){
   const fullPaneMeta=[["visual","사진·색상·배치"],["profile","개요"],["body","신체"],["personality","성격"],["taste","취향"],["worldTaste","소지품"]];
   const fullPaneTitle=fullPaneMeta.find(([key])=>key===fullActivePane)?.[1]||"전체 설정";
   const fullNavigation=`<details class="character-book-v9-menu"><summary class="character-book-v9-composite"><i class="character-book-v9-fill" aria-hidden="true"></i><span aria-hidden="true">☰</span><b>${t(fullPaneTitle,fullPaneTitle)}</b></summary><nav aria-label="${esc(t("전체 설정 메뉴","전체 설정 메뉴"))}">${fullPaneMeta.map(([key,label])=>`<button type="button" class="character-book-v9-composite ${key===fullActivePane?"on":""}" data-character-pane="${key}" ${key===fullActivePane?'aria-current="page"':""}><i class="character-book-v9-fill" aria-hidden="true"></i><span>${t(label,label)}</span></button>`).join("")}</nav></details>`;
-  const lowerBookmark=`<button type="button" class="character-book-v8-shape-bookmark ${fullActivePane==="visual"?"on":""}" data-character-pane="visual" ${fullActivePane==="visual"?'aria-current="page"':""}><b>${t("모양","모양")}</b></button>`;
   const cornerInk='<img class="character-book-v8-ink" src="./assets/home-ui/ink.png" alt="" aria-hidden="true">';
   const fullSave=`<button type="button" class="character-book-v8-save character-book-v9-composite" data-save><i class="character-book-v9-fill" aria-hidden="true"></i><span>${t("저장","저장")}</span></button>`;
   return `<div class="editor character-editor" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
@@ -2592,7 +2615,7 @@ function character(){
           <button type="button" class="character-book-v8-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 페이지로 돌아가기","캐릭터 페이지로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
           ${fullNavigation}
           <main class="character-book-v8-page" data-book-page="${fullActivePane}">${fullPane}</main>
-          ${cornerInk}${lowerBookmark}${fullSave}
+          ${cornerInk}${fullSave}
         </div>
         ${layoutDialog}
       </section>
@@ -3557,10 +3580,12 @@ Object.assign(UI_TEXT.ja,{
   "방 사진 표시":"部屋写真の表示","전체 보기 · 자르지 않음":"全体表示・切り抜かない","공간 채우기 · 가장자리 잘림":"空間を埋める・端を切り抜く","침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.":"寝室など写真全体が重要な部屋には「全体表示」をおすすめします。"
 });
 Object.assign(UI_TEXT.en,{
-  "테마 고르기":"Choose theme","전체 설정 메뉴":"Full settings menu","머리 장식":"Hair accessories","머릿결":"Hair texture","가발·헤어피스":"Wig · hairpiece"
+  "테마 고르기":"Choose theme","전체 설정 메뉴":"Full settings menu","머리 장식":"Hair accessories","곱슬기":"Curl pattern","머릿결":"Hair condition","가발·헤어피스":"Wig · hairpiece","본래 머리색":"Natural hair color",
+  "완전한 직모":"Pin-straight","약한 반곱슬":"Slightly wavy","강한 반곱슬":"Strongly wavy","느슨한 웨이브":"Loose waves","굵은 곱슬":"Large curls","촘촘한 곱슬":"Tight curls","코일형":"Coily","매끄럽고 윤기 있음":"Smooth and glossy","부드러운 편":"Soft","보통":"Average","굵고 탄탄함":"Thick and resilient","거칠고 뻣뻣함":"Coarse and stiff","건조하고 푸석함":"Dry and frizzy","쉽게 엉킴":"Tangles easily","잘 끊어짐":"Breaks easily"
 });
 Object.assign(UI_TEXT.ja,{
-  "테마 고르기":"テーマを選ぶ","전체 설정 메뉴":"全体設定メニュー","머리 장식":"ヘアアクセサリー","머릿결":"髪質","가발·헤어피스":"かつら・ヘアピース"
+  "테마 고르기":"テーマを選ぶ","전체 설정 메뉴":"全体設定メニュー","머리 장식":"ヘアアクセサリー","곱슬기":"カールの強さ","머릿결":"髪質","가발·헤어피스":"かつら・ヘアピース","본래 머리색":"地毛の色",
+  "완전한 직모":"完全な直毛","약한 반곱슬":"ゆるいくせ毛","강한 반곱슬":"強いくせ毛","느슨한 웨이브":"ゆるいウェーブ","굵은 곱슬":"大きなカール","촘촘한 곱슬":"細かいカール","코일형":"コイル状","매끄럽고 윤기 있음":"なめらかで艶がある","부드러운 편":"柔らかめ","보통":"普通","굵고 탄탄함":"太くてしっかり","거칠고 뻣뻣함":"粗くて硬い","건조하고 푸석함":"乾燥してぱさつく","쉽게 엉킴":"絡まりやすい","잘 끊어짐":"切れやすい"
 });
 Object.assign(UI_TEXT.en,{
   "✉ 연락":"✉ Contact","높은 자리에 올라 주변을 내려다보며 귀를 움직이고 있어요.":"They perch up high, looking around while their ears twitch.","눈에 띄게 아름다움":"Strikingly beautiful","눈에 띄지 않음":"Unnoticeable","다관절 전자의수":"Multi-articulating electronic hand","다큐멘터리":"Documentary","단검":"Dagger","단궁":"Shortbow","단체":"Group","달콤함":"Sweetness","대검":"Greatsword","대기":"Waiting","대표":"Representative","댄스":"Dance","덕질":"Fandom activities","데스크톱":"Desktop computer","독서 의자":"Reading chair","독서등":"Reading lamp","돌격소총":"Assault rifle","동행 안내":"Companion guidance"

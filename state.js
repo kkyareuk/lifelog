@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826characterbody152";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbody152";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260826characterbody152";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbody152";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826characterbody152";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826characterbody152";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826characterbook154";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbook154";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260826characterbook154";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbook154";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826characterbook154";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826characterbook154";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -45,6 +45,7 @@ const defaultBodyProfile=()=>({
     dyeColor:"설정하지 않음",
     hairLength:"설정하지 않음",
     hairTexture:"설정하지 않음",
+    hairCondition:"설정하지 않음",
     hairStyles:[],
     hairAccessories:[],
     bodyHairAmount:"설정하지 않음",
@@ -99,7 +100,8 @@ const normalizedBodyProfile=value=>{
       naturalHairColor:String(appearanceSource.naturalHairColor||appearanceDefaults.naturalHairColor),
       dyeColor:String(appearanceSource.dyeColor||appearanceDefaults.dyeColor),
       hairLength:String(appearanceSource.hairLength||appearanceDefaults.hairLength),
-      hairTexture:String(appearanceSource.hairTexture||appearanceDefaults.hairTexture),
+      hairTexture:String(({"직모":"완전한 직모","곱슬":"굵은 곱슬","강한 곱슬":"촘촘한 곱슬"})[appearanceSource.hairTexture]||appearanceSource.hairTexture||appearanceDefaults.hairTexture),
+      hairCondition:String(appearanceSource.hairCondition||appearanceDefaults.hairCondition),
       hairStyles:Array.isArray(appearanceSource.hairStyles)?[...new Set(appearanceSource.hairStyles.map(String))].slice(0,12):[],
       hairAccessories:Array.isArray(appearanceSource.hairAccessories)?[...new Set(appearanceSource.hairAccessories.map(String))].slice(0,12):[],
       bodyHairAmount:String(appearanceSource.bodyHairAmount||appearanceDefaults.bodyHairAmount),
