@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookchoices151";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260825characterbookchoices151";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookchoices151";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookchoices151";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260825characterbookchoices151";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260826characterbody152";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260826characterbody152";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbody152";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbody152";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260826characterbody152";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -24,6 +24,8 @@ Object.assign(I18N.en,{"왼쪽 눈":"Left eye","오른쪽 눈":"Right eye","본�
 Object.assign(I18N.ja,{"왼쪽 눈":"左目","오른쪽 눈":"右目","본래 머리색:":"地毛の色："});
 Object.assign(I18N.en,{"헤어스타일":"Hairstyles","머리 장식":"Hair accessories","여러 개 선택 가능":"Select multiple","선택 완료":"Done","선택한 항목이 없습니다.":"No items selected."});
 Object.assign(I18N.ja,{"헤어스타일":"ヘアスタイル","머리 장식":"髪飾り","여러 개 선택 가능":"複数選択できます","선택 완료":"選択完了","선택한 항목이 없습니다.":"選択項目はありません。"});
+Object.assign(I18N.en,{"체모 정도":"Body hair amount","체모 위치":"Body hair locations","없음":"None","거의 없음":"Almost none","적은 편":"Light","많은 편":"Heavy","매우 많음":"Very heavy","얼굴":"Face","인중":"Upper lip","턱":"Chin","구레나룻":"Sideburns","가슴":"Chest","배":"Abdomen","등":"Back","어깨":"Shoulders","팔":"Arms","겨드랑이":"Armpits","손":"Hands","허벅지":"Thighs","종아리":"Calves","발":"Feet"});
+Object.assign(I18N.ja,{"체모 정도":"体毛の量","체모 위치":"体毛の部位","없음":"なし","거의 없음":"ほとんどなし","적은 편":"少なめ","많은 편":"多め","매우 많음":"非常に多い","얼굴":"顔","인중":"口ひげ","턱":"あご","구레나룻":"もみあげ","가슴":"胸","배":"腹","등":"背中","어깨":"肩","팔":"腕","겨드랑이":"わき","손":"手","허벅지":"太もも","종아리":"ふくらはぎ","발":"足"});
 Object.assign(I18N.en,{"눈 특징":"Eye features","눈매가 날카로움":"Sharp eyes","눈매가 부드러움":"Soft eyes","눈꼬리가 올라감":"Upturned eyes","눈꼬리가 내려감":"Downturned eyes","큰 눈":"Large eyes","작은 눈":"Small eyes","쌍꺼풀 있음":"Double eyelids","속쌍꺼풀":"Inner double eyelids","무쌍":"Monolids","삼백안":"Sanpaku eyes","사백안":"Four-white eyes","졸린 눈":"Sleepy eyes","처진 눈":"Droopy eyes","짝눈":"Asymmetrical eyes","오드아이":"Heterochromia","눈 밑 점":"Beauty mark under eye","다크서클":"Dark circles","속눈썹이 김":"Long eyelashes","눈썹이 진함":"Thick eyebrows","머리핀":"Hairpin","리본":"Ribbon","헤어밴드":"Hair band","머리띠":"Headband","비녀":"Hair stick","장식 빗":"Decorative comb","꽃 장식":"Flower accessory","베일":"Veil","모자":"Hat","후드":"Hood","왕관":"Crown","티아라":"Tiara","뿔":"Horns","한쪽 뿔":"Single horn","한 쌍의 뿔":"Pair of horns","후광":"Halo","동물 귀 장식":"Animal ear accessory","깃털 장식":"Feather accessory","보석 장식":"Gem accessory","체인 장식":"Chain accessory"});
 Object.assign(I18N.ja,{"눈 특징":"目の特徴","눈매가 날카로움":"鋭い目つき","눈매가 부드러움":"柔らかい目つき","눈꼬리가 올라감":"つり目","눈꼬리가 내려감":"たれ目","큰 눈":"大きな目","작은 눈":"小さな目","쌍꺼풀 있음":"二重","속쌍꺼풀":"奥二重","무쌍":"一重","삼백안":"三白眼","사백안":"四白眼","졸린 눈":"眠そうな目","처진 눈":"垂れた目","짝눈":"左右非対称の目","오드아이":"オッドアイ","눈 밑 점":"泣きぼくろ","다크서클":"目のくま","속눈썹이 김":"まつ毛が長い","눈썹이 진함":"眉が濃い","머리핀":"ヘアピン","리본":"リボン","헤어밴드":"ヘアバンド","머리띠":"カチューシャ","비녀":"かんざし","장식 빗":"飾り櫛","꽃 장식":"花飾り","베일":"ベール","모자":"帽子","후드":"フード","왕관":"王冠","티아라":"ティアラ","뿔":"角","한쪽 뿔":"片角","한 쌍의 뿔":"一対の角","후광":"光輪","동물 귀 장식":"動物耳の飾り","깃털 장식":"羽飾り","보석 장식":"宝石飾り","체인 장식":"チェーン飾り"});
 const t=(key,fallback)=>I18N[state.uiLanguage]?.[key]||fallback;
@@ -2225,6 +2227,8 @@ const HAIR_TEXTURES=["설정하지 않음","직모","약한 반곱슬","강한 �
 const HAIR_STYLES=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","시스루 앞머리","일자 앞머리","처피뱅","커튼뱅","옆으로 넘긴 앞머리","앞머리가 한쪽 눈을 가림","앞머리가 양쪽 눈을 가림","올백","슬릭백","보브컷","픽시컷","댄디컷","리프컷","레이어드컷","허쉬컷","샤기컷","울프컷","투블럭","언더컷","모히칸","리젠트","포니테일","사이드 포니테일","트윈테일","양갈래","반묶음","하프업 번","땋은 머리","프렌치 브레이드","피시테일 브레이드","콘로우","박스 브레이드","로우번","하이번","스페이스 번","브레이드 업두","드레드록","히메컷","롱 스트레이트","단발 웨이브","웨이브 스타일","베이비펌","히피펌","가르마펌","고데기 스타일링"];
 const EYE_FEATURE_OPTIONS=["눈매가 날카로움","눈매가 부드러움","눈꼬리가 올라감","눈꼬리가 내려감","큰 눈","작은 눈","쌍꺼풀 있음","속쌍꺼풀","무쌍","삼백안","사백안","졸린 눈","처진 눈","짝눈","오드아이","눈 밑 점","다크서클","속눈썹이 김","눈썹이 진함"];
 const HAIR_ACCESSORY_OPTIONS=["머리핀","리본","헤어밴드","머리띠","비녀","장식 빗","꽃 장식","베일","모자","후드","왕관","티아라","뿔","한쪽 뿔","한 쌍의 뿔","후광","동물 귀 장식","깃털 장식","보석 장식","체인 장식"];
+const BODY_HAIR_AMOUNTS=["설정하지 않음","없음","거의 없음","적은 편","보통","많은 편","매우 많음"];
+const BODY_HAIR_LOCATION_OPTIONS=["얼굴","인중","턱","구레나룻","가슴","배","등","어깨","팔","겨드랑이","손","허벅지","종아리","발"];
 const EYE_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","연갈색","호박색","금색","초록색","청록색","파란색","청회색","회색","보라색","분홍색","빨간색","백색","여러 색","기타"];
 const MAKEUP_LEVELS=["하지 않음","스킨케어만","선크림·기초만","가벼운 메이크업","포인트 메이크업","풀 메이크업"];
 const MAKEUP_STYLES=["내추럴","글로우","매트","음영","아이 메이크업 중심","립 중심","화려한 색조","무대·촬영용","고딕","복고풍"];
@@ -2485,7 +2489,7 @@ function character(){
     return `<section class="character-body-choice-panel" data-body-choice-panel="${esc(path)}" data-body-choice-title="${esc(t(label,label))}" hidden>${options.map(value=>`<button type="button" data-body-list="${esc(path)}" data-value="${esc(value)}" class="${selectedSet.has(value)?"on":""}"><span>${esc(t(value,value))}</span><i aria-hidden="true">✓</i></button>`).join("")}</section>`;
   };
   const bodyGuide=`<svg class="character-body-guide" viewBox="0 0 412 917" aria-hidden="true" focusable="false"><ellipse cx="112" cy="235" rx="26" ry="26.5" fill="#8D2626"/><path d="M54 244C54 244 62 208 111.5 208C161 208 169 244 169 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M54 244.5C54 244.5 62 261.5 111.5 261.5C161 261.5 169 244.5 169 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><ellipse cx="278" cy="235" rx="26" ry="26.5" fill="#ECD047"/><path d="M220 244C220 244 228 208 277.5 208C327 208 335 244 335 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M220 244.5C220 244.5 228 261.5 277.5 261.5C327 261.5 335 244.5 335 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M67 491.5C67 491.5 101 474.438 149.5 475.5C198 476.562 199.5 503 246 503C292.5 503 324 481.5 324 481.5" fill="none" stroke="#7F0000" stroke-width="3"/></svg>`;
-  const bodyChoiceDialog=`<dialog class="character-body-choice-dialog" data-body-choice-dialog><form method="dialog"><header><span><small>MULTI SELECT</small><b data-body-choice-dialog-title>${t("여러 개 선택 가능","여러 개 선택 가능")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("여러 개 선택 가능","여러 개 선택 가능")}</p>${bodyChoicePanel("appearance.eyeFeatures","눈 특징",EYE_FEATURE_OPTIONS,bodyAppearance.eyeFeatures||[])}${bodyChoicePanel("appearance.hairStyles","헤어스타일",HAIR_STYLES,bodyAppearance.hairStyles||[])}${bodyChoicePanel("appearance.hairAccessories","머리 장식",HAIR_ACCESSORY_OPTIONS,bodyAppearance.hairAccessories||[])}<footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
+  const bodyChoiceDialog=`<dialog class="character-body-choice-dialog" data-body-choice-dialog><form method="dialog"><header><span><small>MULTI SELECT</small><b data-body-choice-dialog-title>${t("여러 개 선택 가능","여러 개 선택 가능")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("여러 개 선택 가능","여러 개 선택 가능")}</p>${bodyChoicePanel("appearance.eyeFeatures","눈 특징",EYE_FEATURE_OPTIONS,bodyAppearance.eyeFeatures||[])}${bodyChoicePanel("appearance.hairStyles","헤어스타일",HAIR_STYLES,bodyAppearance.hairStyles||[])}${bodyChoicePanel("appearance.hairAccessories","머리 장식",HAIR_ACCESSORY_OPTIONS,bodyAppearance.hairAccessories||[])}${bodyChoicePanel("appearance.bodyHairLocations","체모 위치",BODY_HAIR_LOCATION_OPTIONS,bodyAppearance.bodyHairLocations||[])}<footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
   const bodyPane=`<section class="character-body-svg-page" aria-label="${esc(c.name)} ${esc(t("신체 설정","신체 설정"))}">
     ${bodyGuide}
     <section class="character-body-eye-card">
@@ -2504,6 +2508,8 @@ function character(){
       <label class="body-svg-field body-hair-texture"><b>${t("머릿결","머릿결")}</b>${bodySelect("appearance.hairTexture",HAIR_TEXTURES,bodyAppearance.hairTexture||"설정하지 않음")}</label>
       <div class="body-svg-field body-hair-style"><b>${t("헤어스타일","헤어스타일")}</b>${bodyChoiceOpener("appearance.hairStyles","헤어스타일",bodyAppearance.hairStyles||[])}</div>
       <div class="body-svg-field body-hair-ornament"><b>${t("머리 장식","머리 장식")}</b>${bodyChoiceOpener("appearance.hairAccessories","머리 장식",bodyAppearance.hairAccessories||[])}</div>
+      <label class="body-svg-field body-hair-amount"><b>${t("체모 정도","체모 정도")}</b>${bodySelect("appearance.bodyHairAmount",BODY_HAIR_AMOUNTS,bodyAppearance.bodyHairAmount||"설정하지 않음")}</label>
+      <div class="body-svg-field body-hair-locations"><b>${t("체모 위치","체모 위치")}</b>${bodyChoiceOpener("appearance.bodyHairLocations","체모 위치",bodyAppearance.bodyHairLocations||[])}</div>
     </section>
     <nav class="character-book-page-controls body-controls"><button type="button" data-character-pane="profile" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>5</b><button type="button" data-character-pane="personality" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>
     ${bodyChoiceDialog}
