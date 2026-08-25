@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookaudio";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260825characterbookaudio";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825habitsaudio149";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260825habitsaudio149";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -258,15 +258,16 @@ const relationList=()=>Object.values(state.relationships||{});
 const relationPriority={"부모·자녀":10,"형제·자매":9,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,동거인:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const related=c=>{
   const grouped=new Map();
-  relationList().filter(r=>r.a===c.id||r.b===c.id).forEach(relation=>{
+  relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)).forEach(relation=>{
     const otherId=relation.a===c.id?relation.b:relation.a;
+    if(!otherId||otherId===c.id)return;
     if(!grouped.has(otherId))grouped.set(otherId,[]);
     grouped.get(otherId).push(relation);
   });
   return [...grouped.entries()].map(([otherId,relations])=>{
     const primary=relations.slice().sort((a,b)=>(relationPriority[b.type]||0)-(relationPriority[a.type]||0))[0];
     return {other:state.characters[otherId],relations,r:{...primary,types:[...new Set(relations.map(relation=>relation.type))],intimacy:Math.max(...relations.map(relation=>Number(relation.intimacy)||0)),conflict:Math.max(...relations.map(relation=>Number(relation.conflict)||0))}};
-  }).filter(item=>item.other);
+  }).filter(item=>item.other&&item.other.id!==c.id);
 };
 const preferredRelation=c=>related(c).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0)||(b.r.intimacy||0)-(a.r.intimacy||0))[0];
 
@@ -2089,6 +2090,29 @@ function contextualDailyEvent(c,time,date){
     const scene=BODY_DETAIL_DAILY_SCENES[trait];
     if(scene)pool.push([scene[0],scene[1],"bedroom"]);
   });
+  const language=state.uiLanguage||"ko",local=(ko,en,ja)=>({ko,en,ja}[language]||ko);
+  const dailyHabitScenes=[
+    [/주머니|가방|잠겼|엘리베이터 버튼|뒤를 돌아/,local("나가기 전 확인을 한 번 더 하는 중","Double-checking before heading out","出かける前にもう一度確認するところ"),local("습관대로 빠뜨린 물건과 잠긴 문을 차례로 확인한 뒤에야 발걸음을 옮겼어요.","They followed their usual routine, checking belongings and the locked door before moving on.","いつもの習慣どおり忘れ物と戸締まりを順に確認してから歩き出しました。"),"entry"],
+    [/같은 자리에|같은 쪽|주변을 정돈|신발 방향/,local("늘 두는 자리로 물건을 정리하는 중","Putting things back in their usual places","物をいつもの場所へ戻すところ"),local("손이 기억하는 자리에 물건을 하나씩 맞춰 놓고 주변까지 가지런히 정리했어요.","They returned each item to its familiar spot and tidied the surrounding area.","手が覚えている場所へ物を一つずつ戻し、周りもきれいに整えました。"),"living"],
+    [/손을 씻|옷을 갈아입|물기를 바로 닦/,local("들어오자마자 몸을 정돈하는 중","Freshening up right after coming in","入ってすぐ身支度を整えるところ"),local("다른 일을 시작하기 전에 손과 옷차림부터 습관대로 깔끔하게 정리했어요.","Before doing anything else, they cleaned their hands and straightened their clothes as usual.","ほかのことを始める前に、手と服装をいつものように整えました。"),"bathroom"],
+    [/두드림|옷소매|머리카락|발끝|뭔가를 쥐/,local("손끝의 버릇이 드러난 중","Falling into a familiar fidget","指先の癖が出ているところ"),local("생각을 고르는 동안 무심코 손끝을 움직이다가 스스로 알아차리고 잠시 멈췄어요.","While gathering their thoughts, their hands moved out of habit until they noticed and paused.","考えをまとめる間、無意識に指先を動かし、自分で気づいて少し止めました。"),"living"],
+    [/혼잣말|콧노래/,local("작은 소리를 내며 할 일을 이어 가는 중","Keeping busy with a quiet sound","小さな音を口ずさみながら過ごすところ"),local("혼잣말과 짧은 콧노래가 자연스럽게 섞인 채 손에 잡은 일을 이어 갔어요.","They carried on, naturally mixing quiet self-talk with a short hum.","独り言と短い鼻歌を自然に交えながら、手元の作業を続けました。"),"living"],
+    [/메모|표시|알림/,local("잊지 않도록 짧게 표시하는 중","Leaving a quick reminder","忘れないよう短く印を残すところ"),local("나중에 다시 확인할 내용을 짧게 적고 눈에 잘 띄는 자리에 표시해 두었어요.","They wrote a brief reminder and left it somewhere easy to notice later.","あとで確認する内容を短く書き、目につきやすい場所に残しました。"),"study"],
+    [/환기|불을 바로 끔|소리가 나지 않게/,local("방을 나서기 전 주변을 살피는 중","Checking the room before leaving","部屋を出る前に周りを確かめるところ"),local("창문과 불, 문소리를 차례로 살펴 다음 사람이 불편하지 않게 정리했어요.","They checked the window, lights, and door so the next person would not be inconvenienced.","窓と照明、扉の音を順に確かめ、次の人が困らないよう整えました。"),"living"]
+  ];
+  const eatingHabitScenes=[
+    [/양치|가글/,local("식사를 마치고 바로 입안을 정리하는 중","Cleaning up right after the meal","食後すぐ口の中を整えるところ"),local("마지막 한입을 삼킨 뒤 미루지 않고 칫솔과 가글을 챙겨 평소 순서대로 마무리했어요.","After the last bite, they immediately reached for their toothbrush and rinse and finished their usual routine.","最後の一口を飲み込むと後回しにせず、歯ブラシとうがいをいつもの順番で済ませました。"),"bathroom"],
+    [/사진|냄새/,local("먹기 전에 음식부터 살펴보는 중","Taking in the meal before eating","食べる前に料理を確かめるところ"),local("접시에 손대기 전에 모양과 향을 충분히 확인하고 마음에 드는 장면을 남겼어요.","Before touching the plate, they took in its appearance and aroma and saved the view they liked.","皿に手をつける前に見た目と香りを確かめ、気に入った光景を残しました。"),"kitchen"],
+    [/비평|감탄/,local("한입마다 맛의 인상을 말하는 중","Commenting on every bite","一口ごとの味を言葉にするところ"),local("향과 식감, 간을 차례로 짚으며 좋았던 점과 아쉬운 점을 구체적으로 말했어요.","They described aroma, texture, and seasoning, naming exactly what worked and what did not.","香り、食感、味付けを順に挙げ、良かった点と惜しい点を具体的に話しました。"),"kitchen"],
+    [/다른 사람 몫|나눠 줌|대화를 즐김/,local("곁의 사람 몫을 먼저 챙기는 중","Serving the people nearby first","そばの人の分を先に用意するところ"),local("자기 접시보다 다른 사람의 빈 그릇을 먼저 보고 먹기 편한 만큼 나누어 건넸어요.","Before their own plate, they noticed someone else's empty dish and shared an easy portion.","自分の皿より先に相手の空いた器に気づき、食べやすい分だけ取り分けました。"),"kitchen"],
+    [/천천히|빠르게/,local("자기 속도로 식사를 이어 가는 중","Eating at their own pace","自分の速さで食事を続けるところ"),local("평소 씹는 속도를 그대로 유지하며 주변의 식사 속도에는 휩쓸리지 않았어요.","They kept their usual pace without being pulled along by how quickly others ate.","いつもの噛む速さを保ち、周りの食事の速さには流されませんでした。"),"kitchen"],
+    [/휴대폰|책을 읽|TV/,local("식사와 함께 볼거리를 챙긴 중","Pairing the meal with something to watch or read","食事と一緒に見る物を用意するところ"),local("자리에 앉기 전에 보던 화면과 읽을거리를 손 닿는 곳에 두고 식사를 시작했어요.","Before sitting down, they put the screen or reading material within reach and began eating.","座る前に見ていた画面や読み物を手の届く所へ置き、食事を始めました。"),"kitchen"],
+    [/소스|후추|간을 바꾸지/,local("익숙한 간으로 한입을 준비하는 중","Preparing each bite with familiar seasoning","慣れた味付けで一口を用意するところ"),local("먼저 맛을 확인한 뒤 평소 즐기는 방식에 맞춰 양념을 더하거나 그대로 두었어요.","They tasted first, then added seasoning or left it alone according to their usual preference.","まず味を確かめ、いつもの好みに合わせて調味料を足すか、そのままにしました。"),"kitchen"],
+    [/같은 자리|같은 식기|독특함|한입 크기/,local("익숙한 자리와 식기를 고르는 중","Choosing a familiar seat and utensils","慣れた席と食器を選ぶところ"),local("늘 편하게 느끼는 자리와 식기를 골라 한입씩 자기 방식대로 준비했어요.","They chose the seat and utensils that felt familiar and prepared each bite in their own way.","いつも落ち着く席と食器を選び、一口ずつ自分のやり方で整えました。"),"kitchen"],
+    [/깨끗이 비움|조금 남김|맨 마지막|맨 먼저|섞지 않고|번갈아/,local("정해 둔 순서대로 접시를 비우는 중","Eating through the plate in a set order","決めた順番で皿を食べ進めるところ"),local("좋아하는 것과 남길 양을 미리 정한 듯 익숙한 순서로 접시를 정리해 갔어요.","As if the favorites and leftovers were already decided, they worked through the plate in a familiar order.","好きな物と残す量を決めていたように、慣れた順番で皿を食べ進めました。"),"kitchen"]
+  ];
+  (c.dailyHabits||[]).forEach(habit=>{const scene=dailyHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
+  (c.eatingHabits||[]).forEach(habit=>{const scene=eatingHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
   if((c.hobbies||[]).length)pool.push(
     [`${c.hobbies[hash(`${c.id}:${dayKey(date)}:context-hobby`)%c.hobbies.length]}에 몰두하는 중`,"좋아하는 활동에 필요한 도구를 차분히 꺼내고 자기 방식대로 집중할 환경을 만들었어요.","study"]);
   if(!pool.length)pool.push(["잠깐 숨을 고르는 중","하던 일을 멈추고 물을 한 모금 마시며 다음에 무엇을 할지 천천히 생각하고 있어요.","living"]);
@@ -2096,6 +2120,7 @@ function contextualDailyEvent(c,time,date){
   return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily",date),script[2]);
 }
 function relationshipCombinationScenePool(c,relationship,date){
+  if(!relationship?.other||relationship.other.id===c.id)return[];
   if(!relationship?.other)return[];
   const language=state.uiLanguage||"ko",name=relationship.other.name;
   const local=(ko,en,ja)=>({ko,en,ja}[language]||ko);
@@ -2643,7 +2668,7 @@ function signature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c.id);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,walkingStyle:c.walkingStyle,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
   signatureCache.set(c.id,{character:c,revision,value});
   if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
   return value;

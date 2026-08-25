@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260824-custom-floor-character-layers";
+const CACHE_VERSION="drawer-village-v20260825-habits-audio-149";
 const CORE=[
   "./",
   "./index.html",
@@ -20,6 +20,8 @@ const CORE=[
   "./local-media.js",
   "./speech-styles.js",
   "./character-notifications.js",
+  "./audio.js",
+  "./character-book.css",
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",
   "./fonts/DoHyeon-Regular.ttf",
@@ -60,6 +62,8 @@ const CORE=[
   ,"./assets/character-ui/ribbon-manage.png"
   ,"./assets/character-ui/add.png"
   ,"./assets/character-ui/back.png"
+  ,"./assets/audio/shoe-walking.m4a"
+  ,"./assets/audio/shoe-running.m4a"
   ,"./world-assets/building-types/restaurant-handdrawn.png"
 ];
 

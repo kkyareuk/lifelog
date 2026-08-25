@@ -1,15 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260825characterbookaudio";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260825characterbookaudio";
-import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260825characterbookaudio";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260825characterbookaudio";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260825characterbookaudio";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260825characterbookaudio";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260825characterbookaudio";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260825characterbookaudio";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookaudio";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterbookaudio";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260825characterbookaudio";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260825characterbookaudio";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260825habitsaudio149";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260825habitsaudio149";
+import {renderApp, catalogCardMarkup, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260825habitsaudio149";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260825habitsaudio149";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260825habitsaudio149";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260825habitsaudio149";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260825habitsaudio149";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260825habitsaudio149";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260825habitsaudio149";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825habitsaudio149";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260825habitsaudio149";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260825habitsaudio149";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -249,18 +249,29 @@ const STRUCTURED_APPEARANCE_TAGS=["검은 머리","갈색 머리","금발","백�
 const HAIR_STYLE_ATTRACTION_TAGS=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","시스루 앞머리","일자 앞머리","처피뱅","커튼뱅","옆으로 넘긴 앞머리","앞머리가 한쪽 눈을 가림","앞머리가 양쪽 눈을 가림","올백","슬릭백","보브컷","픽시컷","댄디컷","리프컷","레이어드컷","허쉬컷","샤기컷","울프컷","투블럭","언더컷","모히칸","리젠트","포니테일","사이드 포니테일","트윈테일","양갈래","반묶음","하프업 번","땋은 머리","프렌치 브레이드","피시테일 브레이드","콘로우","박스 브레이드","로우번","하이번","스페이스 번","브레이드 업두","드레드록","히메컷","롱 스트레이트","단발 웨이브","웨이브 스타일","베이비펌","히피펌","가르마펌","고데기 스타일링"];
 const APPEARANCE_TAGS=["안경을 씀","안대","특이동공","세로동공","삼백안","날카로운 눈매","처진 눈매","속눈썹이 김","두꺼운 눈썹","중성적인 인상","부드러운 인상","날카로운 인상","아름다움","잘생김","귀여움","우아함","위압적인 분위기","단정한 분위기","퇴폐적인 분위기","신비로운 분위기","소년미","성숙미"];
 const WEALTH_OPTIONS=["생계가 빠듯함","여유가 적음","평범한 형편","경제적으로 여유로움","부유함","대부호","재산을 알 수 없음"];
+const DAILY_HABIT_OPTIONS=["외출 전 주머니와 가방을 두 번 확인함","문이 잠겼는지 되돌아가 확인함","물건을 늘 같은 자리에 둠","방에 들어오면 바로 손을 씻음","귀가하면 먼저 옷을 갈아입음","신발 방향을 가지런히 맞춤","앉으면 다리를 꼼","생각할 때 손가락이나 펜을 두드림","긴장하면 옷소매를 만짐","혼잣말을 자주 함","콧노래를 흥얼거림","알림을 확인하면 바로 지움","읽던 곳을 접거나 표시함","컵과 휴대폰을 늘 같은 쪽에 둠","이동할 때 벽과 가구에서 거리를 둠","엘리베이터 버튼을 다시 확인함","계단 수를 세며 오르내림","창문을 자주 열어 환기함","빈 방의 불을 바로 끔","방을 나설 때 뒤를 돌아봄","옷깃과 소매를 자주 정리함","머리카락을 귀 뒤로 넘김","대화할 때 눈을 오래 마주침","대화할 때 시선을 자주 피함","해야 할 말을 짧게 메모함","씻고 나면 물기를 바로 닦음","손에 뭔가를 쥐고 있어야 편함","자리에 앉기 전에 주변을 정돈함","문을 닫을 때 소리가 나지 않게 잡음","기다릴 때 발끝으로 박자를 탐"];
+const EATING_HABIT_OPTIONS=["식사 후 꼭 양치함","식사 후 가글함","쩝쩝거리며 먹음","소리 없이 조용히 먹음","음식 사진부터 찍음","먹기 전 냄새부터 맡음","맛을 꼼꼼히 비평함","맛있으면 감탄을 크게 표현함","접시를 깨끗이 비움","늘 조금 남김","좋아하는 음식은 맨 마지막에 먹음","좋아하는 음식은 맨 먼저 먹음","음식끼리 섞지 않고 따로 먹음","반찬을 한입씩 번갈아 먹음","휴대폰을 보며 먹음","책을 읽으며 먹음","TV를 보며 먹음","식사 중 대화를 즐김","물이나 음료를 많이 마심","식사 중에는 거의 마시지 않음","소스나 후추를 꼭 더함","나온 간을 바꾸지 않고 먹음","천천히 오래 씹음","아주 빠르게 먹음","다른 사람 몫을 먼저 챙김","음식을 자주 나눠 줌","늘 같은 자리에 앉음","같은 식기만 골라 씀","젓가락질이나 식기 사용이 독특함","음식을 한입 크기로 잘라 먹음"];
+const HABIT_TRANSLATIONS={
+  en:Object.fromEntries([...DAILY_HABIT_OPTIONS,...EATING_HABIT_OPTIONS].map((value,index)=>[value,["Checks pockets and bag twice before leaving","Goes back to check whether the door is locked","Always keeps belongings in the same place","Washes hands immediately after entering a room","Changes clothes first after coming home","Lines shoes up neatly","Crosses legs when seated","Taps fingers or a pen while thinking","Touches sleeves when nervous","Often talks to themself","Hums frequently","Clears notifications immediately","Folds or marks the page being read","Keeps cup and phone on the same side","Keeps distance from walls and furniture while moving","Checks the elevator button again","Counts steps on stairs","Opens windows often to air the room","Turns off lights in empty rooms immediately","Looks back when leaving a room","Frequently straightens collar and sleeves","Tucks hair behind the ear","Maintains eye contact for a long time","Frequently avoids eye contact","Writes short notes for things to say","Wipes up water immediately after washing","Feels comfortable holding something","Tidies the area before sitting down","Holds the door so it closes quietly","Taps a beat with toes while waiting","Always brushes teeth after meals","Gargles after meals","Chews noisily","Eats silently","Takes food photos first","Smells food before eating","Habitually critiques the taste","Expresses delight loudly when food is good","Cleans the plate","Always leaves a little","Saves favorite food for last","Eats favorite food first","Keeps foods separate","Alternates side dishes one bite at a time","Uses the phone while eating","Reads while eating","Watches TV while eating","Enjoys conversation during meals","Drinks a lot of water or beverages","Rarely drinks during meals","Always adds sauce or pepper","Does not alter the seasoning","Chews slowly and thoroughly","Eats very quickly","Serves others first","Often shares food","Always sits in the same seat","Chooses the same utensils","Uses chopsticks or utensils in a distinctive way","Cuts food into bite-size pieces"][index]])),
+  ja:Object.fromEntries([...DAILY_HABIT_OPTIONS,...EATING_HABIT_OPTIONS].map((value,index)=>[value,["外出前にポケットとかばんを二度確認する","鍵をかけたか戻って確認する","物をいつも同じ場所に置く","部屋に入るとすぐ手を洗う","帰宅するとまず着替える","靴の向きをきれいにそろえる","座ると脚を組む","考える時に指やペンで音を立てる","緊張すると袖を触る","独り言が多い","よく鼻歌を歌う","通知を確認したらすぐ消す","読んだ所を折る・印を付ける","コップとスマホをいつも同じ側に置く","移動時に壁や家具から距離を取る","エレベーターのボタンを再確認する","階段の段数を数える","よく窓を開けて換気する","空室の照明をすぐ消す","部屋を出る時に振り返る","襟や袖をよく整える","髪を耳にかける","会話中に長く目を合わせる","会話中によく視線をそらす","言うことを短くメモする","洗った後すぐ水気を拭く","何かを握っていると落ち着く","座る前に周りを整える","音がしないよう扉を押さえる","待つ間つま先で拍子を取る","食後は必ず歯を磨く","食後にうがいをする","音を立てて食べる","静かに食べる","まず料理の写真を撮る","食べる前に香りを嗅ぐ","味を細かく批評する","おいしいと大きく感嘆する","皿をきれいに空ける","いつも少し残す","好きな物を最後に食べる","好きな物を最初に食べる","料理を混ぜず別々に食べる","おかずを一口ずつ交互に食べる","スマホを見ながら食べる","本を読みながら食べる","テレビを見ながら食べる","食事中の会話を楽しむ","水や飲み物をたくさん飲む","食事中はほとんど飲まない","必ずソースや胡椒を足す","出された味付けを変えない","ゆっくりよく噛む","とても速く食べる","他人の分を先に用意する","よく料理を分ける","いつも同じ席に座る","同じ食器だけを選ぶ","箸や食器の使い方が独特","一口大に切って食べる"][index]]))
+};
 const PROFILE_TAG_OPTIONS={
   attractedGenders:["남성","여성","그외","없음"],
   appearanceTags:APPEARANCE_TAGS,
-  attractionTraits:[...new Set([...STRUCTURED_APPEARANCE_TAGS,...HAIR_STYLE_ATTRACTION_TAGS,...APPEARANCE_TAGS,"단정한 사람","자기 관리를 잘함","전문직","예술가 기질","제복이 어울림","지적인 분위기","말투가 다정함","목소리가 좋음","능력 있는 사람","성실한 사람","책임감이 강함","리더십이 있음","침착한 사람","유머 감각이 있음","자신감이 있음","수줍은 사람","상냥한 사람","강단 있는 사람","신비로운 사람","위험한 분위기","연상","연하","동갑",...WEALTH_OPTIONS])]
+  attractionTraits:[...new Set([...STRUCTURED_APPEARANCE_TAGS,...HAIR_STYLE_ATTRACTION_TAGS,...APPEARANCE_TAGS,"단정한 사람","자기 관리를 잘함","전문직","예술가 기질","제복이 어울림","지적인 분위기","말투가 다정함","목소리가 좋음","능력 있는 사람","성실한 사람","책임감이 강함","리더십이 있음","침착한 사람","유머 감각이 있음","자신감이 있음","수줍은 사람","상냥한 사람","강단 있는 사람","신비로운 사람","위험한 분위기","연상","연하","동갑",...WEALTH_OPTIONS])],
+  dailyHabits:DAILY_HABIT_OPTIONS,
+  eatingHabits:EATING_HABIT_OPTIONS
 };
 PROFILE_TAG_OPTIONS.dislikedAttractionTraits=PROFILE_TAG_OPTIONS.attractionTraits;
 function openProfileTagsDialog(field){
   const character=active(),options=PROFILE_TAG_OPTIONS[field];if(!character||!options)return;
   let selected=[...(character[field]||[])].filter(value=>field!=="appearanceTags"||options.includes(value));
-  const titles={attractedGenders:"성지향 설정",appearanceTags:"외모 태그 정하기",attractionTraits:"끌리는 특징 정하기",dislikedAttractionTraits:"비선호하는 특징 정하기"};
+  const language=state.uiLanguage||"ko";
+  const titles={ko:{attractedGenders:"성지향 설정",appearanceTags:"외모 태그 정하기",attractionTraits:"끌리는 특징 정하기",dislikedAttractionTraits:"비선호하는 특징 정하기",dailyHabits:"생활습관 정하기",eatingHabits:"식습관 정하기"},en:{attractedGenders:"Orientation",appearanceTags:"Appearance tags",attractionTraits:"Attractive traits",dislikedAttractionTraits:"Disliked traits",dailyHabits:"Everyday habits",eatingHabits:"Eating habits"},ja:{attractedGenders:"性的指向",appearanceTags:"外見タグ",attractionTraits:"惹かれる特徴",dislikedAttractionTraits:"苦手な特徴",dailyHabits:"生活習慣",eatingHabits:"食習慣"}};
+  const copy={ko:{multi:"여러 개를 선택할 수 있어요.",none:" ‘없음’을 고르면 다른 선택은 해제돼요.",cancel:"취소",save:"저장"},en:{multi:"You can select multiple items.",none:" Selecting ‘None’ clears the other choices.",cancel:"Cancel",save:"Save"},ja:{multi:"複数選択できます。",none:"「なし」を選ぶと他の選択は解除されます。",cancel:"キャンセル",save:"保存"}}[language]||null;
+  const localized=value=>HABIT_TRANSLATIONS[language]?.[value]||value;
   const dialog=document.createElement("dialog");dialog.className="profile-tags-dialog";
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${titles[field]}</h2><small>여러 개를 선택할 수 있어요.${field==="attractedGenders"?" ‘없음’을 고르면 다른 선택은 해제돼요.":""}</small></div><button value="cancel">×</button></div><div class="profile-tag-grid">${options.map(value=>`<button type="button" data-profile-tag="${value}" class="${selected.includes(value)?"on":""}">${value}</button>`).join("")}</div><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${titles[language]?.[field]||titles.ko[field]}</h2><small>${copy?.multi||"여러 개를 선택할 수 있어요."}${field==="attractedGenders"?(copy?.none||" ‘없음’을 고르면 다른 선택은 해제돼요."):""}</small></div><button value="cancel">×</button></div><div class="profile-tag-grid">${options.map(value=>`<button type="button" data-profile-tag="${value}" class="${selected.includes(value)?"on":""}">${localized(value)}</button>`).join("")}</div><div class="crop-actions"><button value="cancel">${copy?.cancel||"취소"}</button><button class="primary" value="save">${copy?.save||"저장"}</button></div></form>`;
   dialog.querySelectorAll("[data-profile-tag]").forEach(button=>button.onclick=()=>{
     const value=button.dataset.profileTag;
     if(field==="attractedGenders"){
@@ -2744,9 +2755,9 @@ function bind(){
     previewFootstep(state);
     event.currentTarget.blur();
   });
-  $('[data-sound-preview]')?.addEventListener('click',()=>{
-    if(!previewFootstep(state))showToast('음소거를 해제하면 미리 들을 수 있어요.');
-  });
+  $$('[data-sound-preview]').forEach(button=>button.addEventListener('click',()=>{
+    if(!previewFootstep(state,button.dataset.soundPreview||'walk'))showToast('음소거를 해제하면 미리 들을 수 있어요.');
+  }));
   $("[data-character-notification-test]")?.addEventListener("click",sendCharacterNotificationTest);
   $$('[data-open-character-contact]').forEach(button=>button.onclick=()=>{
     const dialog=$('[data-character-contact-dialog]');
@@ -4535,7 +4546,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260825characterbookaudio").catch(error=>{
+import("./auth.js?v=20260825habitsaudio149").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4550,7 +4561,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260825characterbookaudio",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260825habitsaudio149",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

@@ -25,17 +25,19 @@ const checks=[
   [views.includes('class="character-full-image-slot icon" data-image="icon">${currentIcon}</button>')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치됨"],
   [bookCss.includes('.character-full-image-slot.ld{')&&bookCss.includes('.character-full-image-slot.icon{')&&bookCss.includes('background:transparent!important;box-shadow:none!important'),"LD와 아이콘 뒤 회색 판 제거"],
   [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="basic"')&&views.includes('data-character-overview-pane="life"')&&state.includes('characterOverviewPane:"basic"'),"개요 기본·생활 두 장을 독립된 책 페이지로 구성"],
-  [!views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&views.includes('class="character-book-v8-shape ${fullActivePane==="visual"?"on":""}"')&&bookCss.includes('left:58.6148cqw!important;top:196.1391cqw!important')&&bookCss.includes('height:8.9884cqw!important'),"개요 소탭은 제거하고 SVG 좌표의 하단 모양 책갈피만 배치"],
+  [!views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&views.includes('class="character-book-v8-shape-bookmark ${fullActivePane==="visual"?"on":""}"')&&bookCss.includes('left:58.6148%!important;top:88.1235%!important')&&bookCss.includes('aspect-ratio:62/37!important'),"하단 모양 책갈피를 전용 클래스와 SVG 비율로 고정"],
+  [views.includes('class="character-book-cover-controls"')&&views.includes('data-character-pane="profile"')&&bookCss.includes('.character-book-cover-controls'),"전체설정 표지의 개요 이동 화살표"],
   [views.includes('const fullSave=`<button type="button" class="character-book-v8-save"')&&bookCss.includes('font:700 3.1cqw/1 "KCCHanbit"'),"모든 책 페이지에서 저장 버튼을 KCC 글꼴로 고정"],
   [interfaceCss.includes(':not(.character-book-v8 *)')&&css.includes('.mobile-character-full-settings .character-overview-page-controls'),"전역 테마와 구형 모바일 개요 규칙이 새 SVG 책의 색상·화살표 위치를 덮지 않음"],
-  [views.includes('overview-wake-habit')&&views.includes('overview-sleep-habit')&&views.includes('overview-food-habit')&&views.includes('overview-walking-style'),"개요 생활 페이지의 기상·취침·식사·걸음걸이 항목 연결"],
+  [views.includes('overview-wake-habit')&&views.includes('overview-sleep-habit')&&views.includes('data-profile-tags="eatingHabits"')&&views.includes('overview-walking-style'),"개요 생활 페이지의 기상·취침·식사·걸음걸이 항목 연결"],
+  [views.includes('data-profile-tags="dailyHabits"')&&app.includes('const DAILY_HABIT_OPTIONS=')&&app.includes('const EATING_HABIT_OPTIONS='),"생활습관·식습관 상세 다중 선택 후보"],
   [views.includes('overview-job-title')&&views.includes('overview-family-home')&&views.includes('overview-license')&&views.includes('overview-alcohol'),"개요 기본 페이지의 전체 항목을 실제 캐릭터 데이터 입력에 연결"],
   [bookCss.includes('transform:rotate(1.44787deg)!important')&&bookCss.includes('background:#dad1bd!important'),"개요 기본 내용의 SVG 회전과 값 종이 색상"],
   [css.includes('background-repeat:repeat-x')&&css.includes('background-size:auto 100%'),"벽지를 찌그러뜨리지 않고 높이에 맞춰 가로 타일링"],
   [css.includes('body.is-building-size-preview .mobile-town-shell')&&css.includes('background:transparent!important'),"건물 크기 조절 중 설정창 투명 실시간 미리보기"],
   [views.includes('data-settings-pane="sound"')&&views.includes('data-sound-muted')&&views.includes('data-sound-volume')&&views.includes('data-sound-preview'),"설정의 효과음 음소거·볼륨·미리듣기"],
-  [audio.includes('assets/audio/shoe-steps.wav')&&audio.includes('home-life-walking')&&audio.includes('town-traveler.is-jogging'),"추출한 구두 발걸음을 실제 이동 상태에만 연결"],
-  [gradle.includes('versionCode 148')&&gradle.includes('versionName "1.0.137"'),"Android 개발 버전 148 / 1.0.137"]
+  [audio.includes('assets/audio/shoe-walking.m4a')&&audio.includes('assets/audio/shoe-running.m4a')&&audio.includes('home-life-walking')&&audio.includes('town-traveler.is-jogging'),"걷기·달리기 구두 발걸음을 실제 이동 상태에만 연결"],
+  [gradle.includes('versionCode 149')&&gradle.includes('versionName "1.0.138"'),"Android 개발 버전 149 / 1.0.138"]
 ];
 
 let failed=0;

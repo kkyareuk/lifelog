@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825characterbookaudio";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825characterbookaudio";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260825characterbookaudio";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825characterbookaudio";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825characterbookaudio";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825characterbookaudio";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825habitsaudio149";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825habitsaudio149";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260825habitsaudio149";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825habitsaudio149";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825habitsaudio149";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825habitsaudio149";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -354,6 +354,7 @@ function normalizeHomes(x){
     const id=relation.id||uid();
     if(x.deletedRelationshipIds.includes(String(id)))return;
     if(x.deletedCharacterIds.includes(String(relation.a))||x.deletedCharacterIds.includes(String(relation.b)))return;
+    if(!relation.a||!relation.b||String(relation.a)===String(relation.b))return;
     if(relation.type==="짝사랑"){
       const source=relation.admirerId||relation.a,target=relation.targetId||relation.b;
       if(x.characters[source]&&x.characters[target]){
@@ -580,6 +581,8 @@ function normalizeHomes(x){
     c.wakeHabit=c.wakeHabit||"알람을 듣고 천천히 일어남";
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.foodHabit=c.foodHabit||"규칙적으로 식사함";
+    c.dailyHabits=[...new Set(Array.isArray(c.dailyHabits)?c.dailyHabits.filter(value=>typeof value==="string"&&value.trim()):[])];
+    c.eatingHabits=[...new Set(Array.isArray(c.eatingHabits)?c.eatingHabits.filter(value=>typeof value==="string"&&value.trim()):[])];
     c.walkingStyle=["느리고 조심스럽게","차분하고 반듯하게","보통 속도로 자연스럽게","가볍고 경쾌하게","빠르고 성큼성큼"].includes(c.walkingStyle)?c.walkingStyle:"보통 속도로 자연스럽게";
     c.speechStyle=SPEECH_STYLE_OPTIONS.includes(c.speechStyle)?c.speechStyle:"자동 · 성격에 맞춤";
     c.ageGroup=c.ageGroup||"성인";
@@ -844,6 +847,8 @@ export function createCharacter(limit=5){
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
   state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.characters[id].commuteModes=[];
+  state.characters[id].dailyHabits=[];
+  state.characters[id].eatingHabits=[];
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
@@ -883,7 +888,7 @@ export function deleteCharacter(id){
   state.activeId=state.order[0]||null;
   save(true);
 }
-const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","walkingStyle","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl"]);
+const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl"]);
 const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
   [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});
@@ -1503,6 +1508,7 @@ export function addRelationship(data){
     stage:data?.stage||"관계 단계 미설정",
     legalStatus:data?.type==="부부"?"법적으로 관계가 등록됨":(data?.legalStatus||"가까운 사람에게만 알림")
   };
+  if(!data.a||!data.b||data.a===data.b)return null;
   const identity=relationshipIdentity(data);
   state.deletedRelationshipKeys=(state.deletedRelationshipKeys||[]).filter(value=>value!==identity);
   const existing=matchingRelationship(data);
@@ -1517,6 +1523,7 @@ export function addRelationship(data){
 }
 export function updateRelationship(id,data){
   const relation=state.relationships[id];if(!relation)return;
+  if((data.a||relation.a)===(data.b||relation.b))return;
   const previousCharacterIds=[relation.a,relation.b];
   const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);

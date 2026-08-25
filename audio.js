@@ -1,19 +1,34 @@
-const FOOTSTEP_URL="./assets/audio/shoe-steps.wav?v=20260825characterbookaudio";
-const MOVING_SELECTOR=[
-  ".home-life-walking",
-  ".town-traveler.is-roaming",
-  ".town-traveler.is-jogging",
-  ".town-traveler.is-transit",
-  ".is-scene-moving"
-].join(",");
+const FOOTSTEP_URLS={
+  walk:"./assets/audio/shoe-walking.m4a?v=20260825habitsaudio149",
+  run:"./assets/audio/shoe-running.m4a?v=20260825habitsaudio149"
+};
+const RUNNING_SELECTOR=[".town-traveler.is-jogging",".town-traveler.is-scene-running",".home-life-running"].join(",");
+const WALKING_SELECTOR=[".home-life-walking",".town-traveler.is-roaming",".town-traveler.is-transit",".is-scene-moving"].join(",");
 
 let footstepAudio=null;
+let footstepMode="walk";
 let repeatTimer=0;
 let movementActive=false;
 
-function audioElement(){
-  if(footstepAudio)return footstepAudio;
-  footstepAudio=new Audio(FOOTSTEP_URL);
+function visibleElements(selector){
+  return [...document.querySelectorAll(selector)].some(element=>{
+    const style=getComputedStyle(element),rect=element.getBoundingClientRect();
+    return style.display!=="none"&&style.visibility!=="hidden"&&Number(style.opacity)>0&&rect.width>0&&rect.height>0;
+  });
+}
+
+function movementMode(){
+  if(visibleElements(RUNNING_SELECTOR))return"run";
+  if(visibleElements(WALKING_SELECTOR))return"walk";
+  return"";
+}
+
+function audioElement(mode="walk"){
+  const nextMode=mode==="run"?"run":"walk";
+  if(footstepAudio&&footstepMode===nextMode)return footstepAudio;
+  if(footstepAudio)footstepAudio.pause();
+  footstepMode=nextMode;
+  footstepAudio=new Audio(FOOTSTEP_URLS[nextMode]);
   footstepAudio.preload="auto";
   footstepAudio.playsInline=true;
   return footstepAudio;
@@ -24,40 +39,35 @@ function audioVolume(state){
   return Math.max(0,Math.min(1,(Number(state?.soundEffectsVolume)||0)/100));
 }
 
-function visibleMovementExists(){
-  return [...document.querySelectorAll(MOVING_SELECTOR)].some(element=>{
-    const style=getComputedStyle(element),rect=element.getBoundingClientRect();
-    return style.display!=="none"&&style.visibility!=="hidden"&&Number(style.opacity)>0&&rect.width>0&&rect.height>0;
-  });
-}
-
 function clearRepeat(){
   clearTimeout(repeatTimer);
   repeatTimer=0;
 }
 
-function playStep(state,{preview=false}={}){
-  const volume=audioVolume(state);
+function playStep(state,{preview=false,mode=""}={}){
+  const volume=audioVolume(state),nextMode=mode||movementMode()||"walk";
   if(!volume||(!preview&&!movementActive))return;
-  const audio=audioElement();
+  const audio=audioElement(nextMode);
   audio.volume=volume;
   audio.currentTime=0;
-  audio.playbackRate=document.querySelector(".town-traveler.is-jogging")?1.13:1;
+  audio.playbackRate=1;
   audio.play().catch(()=>{});
 }
 
 function scheduleStep(state){
   clearRepeat();
-  if(!movementActive||!audioVolume(state))return;
-  playStep(state);
-  repeatTimer=setTimeout(()=>scheduleStep(state),930);
+  const mode=movementMode();
+  if(!movementActive||!mode||!audioVolume(state))return;
+  playStep(state,{mode});
+  repeatTimer=setTimeout(()=>scheduleStep(state),mode==="run"?620:930);
 }
 
 export function syncMovementAudio(state){
-  const nextActive=document.visibilityState!=="hidden"&&visibleMovementExists()&&audioVolume(state)>0;
+  const mode=movementMode();
+  const nextActive=document.visibilityState!=="hidden"&&Boolean(mode)&&audioVolume(state)>0;
   if(nextActive===movementActive){
     if(nextActive){
-      const audio=audioElement();
+      const audio=audioElement(mode);
       audio.volume=audioVolume(state);
       if(!repeatTimer)scheduleStep(state);
     }
@@ -68,9 +78,9 @@ export function syncMovementAudio(state){
   else stopMovementAudio();
 }
 
-export function previewFootstep(state){
+export function previewFootstep(state,mode="walk"){
   if(state?.soundMuted||audioVolume(state)<=0)return false;
-  playStep(state,{preview:true});
+  playStep(state,{preview:true,mode});
   return true;
 }
 
