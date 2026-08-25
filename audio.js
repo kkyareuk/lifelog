@@ -1,6 +1,6 @@
 const FOOTSTEP_URLS={
-  walk:"./assets/audio/shoe-walking.m4a?v=20260825habitsaudio149",
-  run:"./assets/audio/shoe-running.m4a?v=20260825habitsaudio149"
+  walk:"./assets/audio/shoe-walking.m4a?v=20260825characterbookmenu150",
+  run:"./assets/audio/shoe-running.m4a?v=20260825characterbookmenu150"
 };
 const RUNNING_SELECTOR=[".town-traveler.is-jogging",".town-traveler.is-scene-running",".home-life-running"].join(",");
 const WALKING_SELECTOR=[".home-life-walking",".town-traveler.is-roaming",".town-traveler.is-transit",".is-scene-moving"].join(",");

@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260825-habits-audio-149";
+const CACHE_VERSION="drawer-village-v20260825-character-book-menu-150";
 const CORE=[
   "./",
   "./index.html",

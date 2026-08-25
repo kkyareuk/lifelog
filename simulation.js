@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825habitsaudio149";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260825habitsaudio149";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260825characterbookmenu150";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260825characterbookmenu150";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -1737,7 +1737,7 @@ const EXPANDED_LIFE_ACTIVITY_POOL=[
   ["서재에서 취미 도구를 시험하는 중","본 작업을 시작하기 전에 작은 재료로 힘과 속도를 바꿔 보며 손에 맞는 방법을 찾았어요.","study"],
   ["욕실에서 세수하는 중","미지근한 물로 얼굴을 적시고 눈가를 세게 문지르지 않도록 손끝으로 부드럽게 씻었어요.","bath"],
   ["욕실에서 이를 닦는 중","너무 힘을 주지 않고 안쪽과 바깥쪽을 차례로 닦은 뒤 입안을 깨끗하게 헹궜어요.","bath"],
-  ["욕실에서 면도하는 중","피부가 당기지 않게 충분히 적신 뒤 털이 난 방향을 살피며 천천히 정돈했어요.","bath"],
+  ["욕실에서 세면대를 닦는 중","물방울과 비누 자국이 남은 곳을 부드러운 천으로 닦고 수도꼭지 주변까지 정돈했어요.","bath"],
   ["욕실에서 머리를 말리는 중","한곳에 뜨거운 바람이 오래 닿지 않게 거리를 두고 두피부터 차례로 말렸어요.","bath"],
   ["욕실에서 기초 화장품을 바르는 중","자기 피부에 평소 사용하던 제품만 필요한 만큼 덜어 순서대로 가볍게 발랐어요.","bath"],
   ["욕실에서 손톱을 정돈하는 중","걸리는 부분만 짧게 다듬고 날카로운 모서리가 남지 않도록 손톱줄로 부드럽게 다듬었어요.","bath"],
