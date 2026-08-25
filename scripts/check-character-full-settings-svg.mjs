@@ -21,13 +21,17 @@ const checks=[
   [state.includes('rotation:clamp(layout.rotation,-180,180,0)'),"회전값 저장·복원 정규화"],
   [sceneCss.includes('rotate:var(--character-art-rotation,0deg)!important'),"저장한 회전값이 실제 홈 장면에도 적용"],
   [bookCss.includes('.character-book-v8-stage')&&bookCss.includes('.character-book-v8-wood')&&bookCss.includes('.character-book-v8-paper'),"전체설정 목재·책을 독립 화면 레이어로 고정"],
-  [views.includes('data-character-full-ui-version="8"')&&views.includes('class="character-book-v8-stage"')&&views.includes('class="character-book-v8-wood"')&&views.includes('class="character-book-v8-paper"')&&!views.includes('class="mobile-character-full-settings'),"구형 전체설정 컨테이너를 제거하고 Android 안전 DOM 이미지·CSS 좌표계로 교체"],
+  [views.includes('data-character-full-ui-version="9"')&&views.includes('class="character-book-v8-stage"')&&views.includes('class="character-book-v8-wood"')&&views.includes('class="character-book-v8-paper"')&&!views.includes('class="mobile-character-full-settings'),"구형 전체설정 컨테이너를 제거하고 Android 안전 DOM 이미지·CSS 좌표계로 교체"],
   [views.includes('class="character-full-image-slot icon" data-image="icon">${currentIcon}</button>')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치됨"],
   [bookCss.includes('.character-full-image-slot.ld{')&&bookCss.includes('.character-full-image-slot.icon{')&&bookCss.includes('background:transparent!important;box-shadow:none!important'),"LD와 아이콘 뒤 회색 판 제거"],
   [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="basic"')&&views.includes('data-character-overview-pane="life"')&&state.includes('characterOverviewPane:"basic"'),"개요 기본·생활 두 장을 독립된 책 페이지로 구성"],
   [!views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&views.includes('class="character-book-v8-shape-bookmark ${fullActivePane==="visual"?"on":""}"')&&bookCss.includes('left:58.6148cqw!important;top:196.1393cqw!important')&&bookCss.includes('width:15.0485cqw!important;height:8.9927cqw!important'),"하단 모양 책갈피를 전용 클래스와 SVG 좌표로 고정"],
   [views.includes('class="character-book-cover-controls"')&&views.includes('data-character-pane="profile"')&&bookCss.includes('.character-book-cover-controls'),"전체설정 표지의 개요 이동 화살표"],
   [views.includes('class="character-book-v8-save character-book-v9-composite"')&&bookCss.includes('.character-book-v9-composite')&&bookCss.includes('font:400 3.25cqw/1 "KCCHanbit"'),"상단 메뉴와 저장을 캡·가운데·캡 조합형 KCC 버튼으로 고정"],
+  [views.includes('class="character-book-v9-fill"')&&bookCss.includes('.character-book-v9-fill'),"조합형 버튼 가운데 조각을 캡 안쪽에 고정해 돌출·틈 제거"],
+  [views.includes('data-open-body-choice="${esc(path)}"')&&views.includes('appearance.eyeFeatures')&&views.includes('appearance.hairStyles')&&views.includes('appearance.hairAccessories'),"눈 특징·헤어스타일·머리 장식이 각각 독립 다중 선택창을 엶"],
+  [views.includes('class="character-body-guide"')&&views.includes('data-body-choice-panel="${esc(path)}"')&&bookCss.includes('.character-body-choice-dialog'),"신체 SVG 가이드와 다중 선택 팝업 레이어"],
+  [state.includes('hairAccessories:[]')&&state.includes('hairAccessories:Array.isArray(appearanceSource.hairAccessories)'),"머리 장식 복수 선택 저장·복원"],
   [interfaceCss.includes(':not(.character-book-v8 *)')&&!css.includes('.mobile-character-full-settings .character-overview-page-controls')&&css.includes('Character full settings is owned exclusively by character-book.css'),"전역 테마와 구형 모바일 개요 규칙이 새 SVG 책의 색상·화살표 위치를 덮지 않음"],
   [views.includes('overview-wake-habit')&&views.includes('overview-sleep-habit')&&views.includes('data-profile-tags="eatingHabits"')&&views.includes('overview-walking-style'),"개요 생활 페이지의 기상·취침·식사·걸음걸이 항목 연결"],
   [views.includes('data-profile-tags="dailyHabits"')&&app.includes('const DAILY_HABIT_OPTIONS=')&&app.includes('const EATING_HABIT_OPTIONS='),"생활습관·식습관 상세 다중 선택 후보"],
@@ -37,7 +41,7 @@ const checks=[
   [css.includes('body.is-building-size-preview .mobile-town-shell')&&css.includes('background:transparent!important'),"건물 크기 조절 중 설정창 투명 실시간 미리보기"],
   [views.includes('data-settings-pane="sound"')&&views.includes('data-sound-muted')&&views.includes('data-sound-volume')&&views.includes('data-sound-preview'),"설정의 효과음 음소거·볼륨·미리듣기"],
   [audio.includes('assets/audio/shoe-walking.m4a')&&audio.includes('assets/audio/shoe-running.m4a')&&audio.includes('home-life-walking')&&audio.includes('town-traveler.is-jogging'),"걷기·달리기 구두 발걸음을 실제 이동 상태에만 연결"],
-  [gradle.includes('versionCode 150')&&gradle.includes('versionName "1.0.139"'),"Android 개발 버전 150 / 1.0.139"]
+  [gradle.includes('versionCode 151')&&gradle.includes('versionName "1.0.140"'),"Android 개발 버전 151 / 1.0.140"]
 ];
 
 let failed=0;

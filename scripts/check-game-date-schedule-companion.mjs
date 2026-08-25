@@ -16,7 +16,7 @@ const checks=[
   [state.includes("relation.stayTogether=Boolean(relation.stayTogether)"),"기존 관계 데이터의 함께 다니기 안전 변환"],
   [simulation.includes("function companionAlignedBaseEvent")&&simulation.includes("!activeScheduledRoutine(other,date)"),"별도 일정이 없는 관계만 동행"],
   [views.includes('"함께 다니기":"Stay together"')&&views.includes('"함께 다니기":"一緒に行動する"'),"함께 다니기 영어·일본어 번역"],
-  [gradle.includes("versionCode 150")&&gradle.includes('versionName "1.0.139"'),"캐릭터 전체설정 조합형 메뉴 개발 빌드 버전"]
+  [gradle.includes("versionCode 151")&&gradle.includes('versionName "1.0.140"'),"캐릭터 전체설정 선택창 개발 빌드 버전"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);
