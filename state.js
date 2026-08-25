@@ -1,4 +1,4 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260825relationshipcataloghotfix133";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826mediarestorehotfix134";
 import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825relationshipcataloghotfix133";
 import {normalizeRoomLayout} from "./room-layout.js?v=20260825relationshipcataloghotfix133";
 import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825relationshipcataloghotfix133";

@@ -7,6 +7,7 @@ const OPERATION_TIMEOUT_MS=5000;
 
 const isData=value=>typeof value==="string"&&value.startsWith("data:image/");
 const isLocalRef=value=>typeof value==="string"&&value.startsWith(REF_PREFIX);
+const isRemoteImage=value=>typeof value==="string"&&/^(https?:|blob:)/.test(value);
 const isOldCloudPhoto=value=>typeof value==="string"&&/firebasestorage\.googleapis\.com|firebasestorage\.app|storage\.googleapis\.com/.test(value);
 const clone=value=>JSON.parse(JSON.stringify(value));
 const withTimeout=(promise,label)=>new Promise((resolve,reject)=>{
@@ -168,7 +169,11 @@ export function preserveDevicePhotos(deviceState,incomingState){
     }
     Object.keys(local).forEach(key=>{
       const value=local[key];
-      if(isData(value)||isLocalRef(value))remote[key]=value;
+      // A local-media reference is only useful on the device whose IndexedDB
+      // record still exists.  It must never replace a downloadable cloud URL:
+      // after WebView storage loss that used to turn a successful cloud restore
+      // back into dozens of unresolved local-media:// placeholders.
+      if(isData(value)||(isLocalRef(value)&&!isData(remote[key])&&!isRemoteImage(remote[key])))remote[key]=value;
       else if(value&&typeof value==="object"&&remote[key]&&typeof remote[key]==="object")walk(value,remote[key]);
     });
   };
