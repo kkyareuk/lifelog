@@ -23,7 +23,7 @@ const checks=[
   [state.includes('rotation:clamp(layout.rotation,-180,180,0)'),"회전값 저장·복원 정규화"],
   [sceneCss.includes('rotate:var(--character-art-rotation,0deg)!important'),"저장한 회전값이 실제 홈 장면에도 적용"],
   [bookCss.includes('.character-book-v8-stage')&&bookCss.includes('.character-book-v8-wood')&&!bookCss.includes('.character-book-v8-paper'),"SVG의 목재와 책을 한 장의 고정 412×917 무대 레이어로 사용"],
-  [views.includes('data-character-full-ui-version="9"')&&views.includes('class="character-book-v8-stage"')&&views.includes('class="character-book-v8-wood"')&&views.includes('character-book-stage-v13.png')&&!views.includes('class="character-book-v8-paper"')&&!views.includes('class="mobile-character-full-settings'),"잘리지 않은 v13 단일 책 무대 이미지와 좌표계"],
+  [views.includes('data-character-full-ui-version="9"')&&views.includes('class="character-book-v8-stage"')&&views.includes('class="character-book-v8-wood"')&&views.includes('character-book-stage-v14.png')&&!views.includes('class="character-book-v8-paper"')&&!views.includes('class="mobile-character-full-settings'),"잘리지 않은 v14 단일 책 무대 이미지와 좌표계"],
   [views.includes('class="character-full-image-slot icon ${c.icon?"has-image":"is-empty"}" data-image="icon">${currentIcon}</button>')&&views.includes('character-full-empty-slot')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치되고 빈 슬롯은 추가 안내를 표시"],
   [bookCss.includes('.character-full-image-slot.ld{')&&bookCss.includes('.character-full-image-slot.icon{')&&bookCss.includes('background:transparent!important;box-shadow:none!important'),"LD와 아이콘 뒤 회색 판 제거"],
   [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="basic"')&&views.includes('data-character-overview-pane="life"')&&state.includes('characterOverviewPane:"basic"'),"개요 기본·생활 두 장을 독립된 책 페이지로 구성"],
@@ -66,7 +66,7 @@ const checks=[
   [state.includes('medications:[]')&&state.includes('normalizeMedications')&&views.includes('data-body-medication-action="add"')&&views.includes('data-body-medication-field="purpose"'),"복용약 추가·제거와 목적·주기 상세 설정"],
   [app.includes('function chooseCharacterImageSource(')&&app.includes('data-image-source="device"')&&app.includes('data-image-source="link"'),"사진 슬롯마다 기기 업로드·링크 추가 방식 선택"],
   [views.includes('서사·인지 특성 선택사항')&&views.includes('실제 장면에 반영할 표현')&&bookCss.includes('.personality-detail-actions'),"성격 9쪽의 서사·인지와 장면 표현 큰 선택 버튼"],
-  [gradle.includes('versionCode 163')&&gradle.includes('versionName "1.0.150"'),"Android 개발 버전 163 / 1.0.150"]
+  [gradle.includes('versionCode 164')&&gradle.includes('versionName "1.0.151"'),"Android 개발 버전 164 / 1.0.151"]
 ];
 
 let failed=0;

@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260827-wardrobe-163";
+const CACHE_VERSION="drawer-village-v20260827-town-layout-164";
 const CORE=[
   "./",
   "./index.html",

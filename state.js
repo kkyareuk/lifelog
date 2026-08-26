@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827wardrobe163";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827wardrobe163";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260827wardrobe163";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827wardrobe163";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827wardrobe163";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827wardrobe163";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827townlayout164";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827townlayout164";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260827townlayout164";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townlayout164";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827townlayout164";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townlayout164";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -256,7 +256,7 @@ const fresh=()=>({schema:30,activeTab:"observe",characterPane:"profile",characte
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
   {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:21,y:68,color:"#6db7e8"},
   {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",imageScale:1,stock:[],priceRange:"무료",servicePrice:"무료",audiences:[],spicy:0,sweet:0,x:64,y:76,color:"#66c68a"}
-]}});
+],decorations:[]}});
 
 function migrate(x){
   if(!x)return normalizeHomes(fresh());
@@ -510,9 +510,10 @@ function normalizeHomes(x){
   // 저장 데이터도 다음 로드부터 새 배경으로 통일한다.
   x.world.bg="world-assets/cozy-town-optimized.jpg?v=20260819";
   x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
+  x.world.decorations=Array.isArray(x.world.decorations)?x.world.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[];
   x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
   if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town-optimized.jpg?v=20260819",era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[]}));
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town-optimized.jpg?v=20260819",era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
     p.iconPreset=p.iconPreset||({
@@ -525,6 +526,13 @@ function normalizeHomes(x){
     p.imageScale=Number.isFinite(+p.imageScale)?Math.max(.45,Math.min(2,+p.imageScale)):1;
     p.spicy=Number.isFinite(+p.spicy)?Math.max(0,Math.min(5,+p.spicy)):0;p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
     p.x=Number.isFinite(+p.x)?Math.max(0,Math.min(100,+p.x)):50;p.y=Number.isFinite(+p.y)?Math.max(0,Math.min(100,+p.y)):50;
+    p.flipX=Boolean(p.flipX);p.mapZ=Number.isFinite(+p.mapZ)?+p.mapZ:10;
+  }));
+  x.towns.forEach(t=>t.decorations.forEach((item,index)=>{
+    item.id=String(item.id||uid());item.name=String(item.name||"마을 장식");item.type=String(item.type||"기타");item.emoji=String(item.emoji||"✨");item.image=String(item.image||"");
+    item.x=Number.isFinite(+item.x)?Math.max(2,Math.min(98,+item.x)):50;item.y=Number.isFinite(+item.y)?Math.max(3,Math.min(97,+item.y)):55;
+    item.scale=Number.isFinite(+item.scale)?Math.max(.45,Math.min(2,+item.scale)):1;item.flipX=Boolean(item.flipX);item.mapZ=Number.isFinite(+item.mapZ)?+item.mapZ:20+index;
+    item.interactions=Array.isArray(item.interactions)?item.interactions.map(String).filter(Boolean):[];
   }));
   x.activeTownId=x.towns.some(t=>t.id===x.activeTownId)?x.activeTownId:x.towns[0].id;
   x.world=clone(x.towns.find(t=>t.id===x.activeTownId));
@@ -1743,7 +1751,7 @@ export function addTown(limit=2){
   if(state.towns.length>=limit)return null;
   syncTown();
   const id=uid(),base=fresh().world;
-  const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,era:"modern",places:[]};
+  const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,era:"modern",places:[],decorations:[]};
   state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);return id;
 }
 export function switchTown(id,{activeId}={}){
@@ -1778,6 +1786,33 @@ export function moveHomeOnTown(id,x,y,persist=true){
   home.mapY=Math.max(5,Math.min(95,Number(y)||50));
   if(persist)save();
 }
+const TOWN_DECORATION_PRESETS={
+  bench:{name:"마을 벤치",type:"벤치",emoji:"🪑",interactions:["앉아 쉬기","나란히 대화하기"]},
+  lamp:{name:"가로등",type:"가로등",emoji:"💡",interactions:["불빛 아래 잠시 서 있기","가로등을 바라보기"]},
+  fountain:{name:"분수",type:"분수",emoji:"⛲",interactions:["분수 구경하기","분수 앞에서 사진 찍기"]},
+  tree:{name:"마을 나무",type:"나무",emoji:"🌳",interactions:["그늘에서 쉬기","나무를 올려다보기"]},
+  flowers:{name:"꽃밭",type:"꽃밭",emoji:"🌸",interactions:["꽃 향 맡기","꽃밭 사진 찍기"]},
+  statue:{name:"조각상",type:"조각상",emoji:"🗿",interactions:["조각상 구경하기","조각상 앞에서 사진 찍기"]},
+  sign:{name:"안내판",type:"안내판",emoji:"🪧",interactions:["안내판에서 길 확인하기"]},
+  vending:{name:"자판기",type:"자판기",emoji:"🥤",interactions:["자판기에서 음료 고르기"]}
+};
+export function addTownDecoration(kind="bench"){
+  const preset=TOWN_DECORATION_PRESETS[kind]||TOWN_DECORATION_PRESETS.bench,id=`decor-${uid()}`,items=state.world.decorations||(state.world.decorations=[]);
+  items.push({id,...clone(preset),image:"",x:48+(items.length%3)*4,y:48+(items.length%4)*5,scale:1,flipX:false,mapZ:20+items.length});
+  touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));save(true);return id;
+}
+export function updateTownDecoration(id,patch,persist=true){
+  const item=(state.world.decorations||[]).find(entry=>entry.id===id);if(!item)return false;Object.assign(item,patch||{});
+  item.scale=Math.max(.45,Math.min(2,Number(item.scale)||1));item.interactions=Array.isArray(item.interactions)?item.interactions.map(String).filter(Boolean):[];
+  if(persist)save(true);return true;
+}
+export function moveTownDecoration(id,x,y,persist=true){const item=(state.world.decorations||[]).find(entry=>entry.id===id);if(!item)return;item.x=Math.max(2,Math.min(98,Number(x)||50));item.y=Math.max(3,Math.min(97,Number(y)||50));if(persist)save()}
+export function reorderTownDecoration(id,direction){
+  const items=state.world.decorations||[],index=items.findIndex(item=>item.id===id);if(index<0)return false;
+  const next=direction==="front"?Math.min(items.length-1,index+1):direction==="back"?Math.max(0,index-1):index;if(next===index)return false;
+  const [item]=items.splice(index,1);items.splice(next,0,item);items.forEach((entry,i)=>entry.mapZ=20+i);save(true);return true;
+}
+export function deleteTownDecoration(id){state.world.decorations=(state.world.decorations||[]).filter(item=>item.id!==id);touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));save(true)}
 export function replaceState(next){
   preserveLastNonempty(state,"",true);
   const prepared=migrate(preserveDevicePhotos(state,clone(next)));
