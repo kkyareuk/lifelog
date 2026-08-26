@@ -166,8 +166,9 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     }else{
       const fallback={roomKey,...safeHomePoint(18+(hash(`${characterId}:${sceneKey}:x`)%65),35+(hash(`${characterId}:${sceneKey}:y`)%48))};
       const destination=target||fallback,currentPoint=currentAgentPoint(old,now),fromRoom=roomKeys.includes(currentPoint.roomKey)?currentPoint.roomKey:roomKey,fromX=old?(Number(currentPoint.x)||12):14+(hash(`${characterId}:spawn-x`)%66),fromY=old?(Number(currentPoint.y)||82):48+(hash(`${characterId}:spawn-y`)%38);
-      const arrivesAt=now+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
-      current.agents[characterId]=normalizeAgent({characterId,phase:target?"walking":"using",roomKey,fromRoomKey:fromRoom,x:destination.x,y:destination.y,fromX,fromY,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:target?now:sceneStartAt,arrivesAt:target?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
+      const movementStartsAt=target?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):sceneStartAt;
+      const arrivesAt=movementStartsAt+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
+      current.agents[characterId]=normalizeAgent({characterId,phase:target?"walking":"using",roomKey,fromRoomKey:fromRoom,x:destination.x,y:destination.y,fromX,fromY,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:target?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }
     const agent=current.agents[characterId];
     if(!context.interactionId){agent.interactionId="";agent.approachingInteraction=false}
@@ -202,8 +203,8 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
       const alreadyHeading=agent.interactionId===interactionId&&agent.roomKey===roomKey&&Math.hypot(Number(agent.x)-destination.x,Number(agent.y)-destination.y)<1;
       agent.interactionId=interactionId;
       if(alreadyHeading){if(agent.phase==="walking"&&agent.arrivesAt<=now)agent.phase="using";if(agent.phase!=="walking")agent.approachingInteraction=false;return}
-      const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72));
-      Object.assign(agent,{phase:"walking",fromRoomKey:point.roomKey||roomKey,roomKey,fromX:point.x,fromY:point.y,x:destination.x,y:destination.y,startedAt:now,arrivesAt:now+duration,endsAt:Math.max(agent.endsAt,now+duration+5_000),interactionId,approachingInteraction:true});
+      const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72)),startsAt=now+120+(hash(`${characterId}:${interactionId}:movement-start`)%1800);
+      Object.assign(agent,{phase:"walking",fromRoomKey:point.roomKey||roomKey,roomKey,fromX:point.x,fromY:point.y,x:destination.x,y:destination.y,startedAt:startsAt,arrivesAt:startsAt+duration,endsAt:Math.max(agent.endsAt,startsAt+duration+5_000),interactionId,approachingInteraction:true});
     });
   });
 
@@ -220,12 +221,12 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
   }
 
   current.updatedAt=now;
-  const nextAt=eligible.flatMap(id=>[current.agents[id]?.phase==="walking"?current.agents[id]?.arrivesAt:0,current.agents[id]?.endsAt]).filter(value=>value>now).reduce((soonest,value)=>Math.min(soonest,value),now+10*60_000);
+  const nextAt=eligible.flatMap(id=>[current.agents[id]?.phase==="walking"?current.agents[id]?.startedAt:0,current.agents[id]?.phase==="walking"?current.agents[id]?.arrivesAt:0,current.agents[id]?.endsAt]).filter(value=>value>now).reduce((soonest,value)=>Math.min(soonest,value),now+10*60_000);
   return {simulation:current,changed:before!==JSON.stringify({...current,updatedAt:0}),nextAt};
 }
 
 export function homeLifeNextDelay(value,now=Date.now()){
-  const agents=Object.values(value?.agents||{}),nextAt=agents.flatMap(agent=>[agent?.phase==="walking"?Number(agent?.arrivesAt)||0:0,Number(agent?.endsAt)||0]).filter(time=>time>now).reduce((soonest,time)=>Math.min(soonest,time),now+10*60_000);
+  const agents=Object.values(value?.agents||{}),nextAt=agents.flatMap(agent=>[agent?.phase==="walking"?Number(agent?.startedAt)||0:0,agent?.phase==="walking"?Number(agent?.arrivesAt)||0:0,Number(agent?.endsAt)||0]).filter(time=>time>now).reduce((soonest,time)=>Math.min(soonest,time),now+10*60_000);
   return clamp(nextAt-now,800,10*60_000,3000);
 }
 

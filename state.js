@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826characterbook154";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbook154";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260826characterbook154";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbook154";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826characterbook154";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826characterbook154";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826habitsmovement155";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826habitsmovement155";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260826habitsmovement155";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826habitsmovement155";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826habitsmovement155";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826habitsmovement155";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -87,6 +87,13 @@ const normalizedBodyProfile=value=>{
   });
   const appearanceSource=source.appearance&&typeof source.appearance==="object"&&!Array.isArray(source.appearance)?source.appearance:{};
   const appearanceDefaults=defaults.appearance;
+  const normalizedHairOrigin=String(appearanceSource.hairColorOrigin||appearanceDefaults.hairColorOrigin);
+  const normalizedHairColor=String(appearanceSource.hairColor||appearanceDefaults.hairColor);
+  // 자연 모발은 화면 표현뿐 아니라 저장 데이터에서도 현재색과 본래색을
+  // 하나로 유지한다. 예전 저장본도 불러오는 즉시 같은 값으로 복구된다.
+  const normalizedNaturalHairColor=normalizedHairOrigin==="자연 모발"
+    ?normalizedHairColor
+    :String(appearanceSource.naturalHairColor||appearanceDefaults.naturalHairColor);
   return{
     ...defaults,
     ...source,
@@ -95,9 +102,9 @@ const normalizedBodyProfile=value=>{
     appearance:{
       ...appearanceDefaults,
       ...appearanceSource,
-      hairColor:String(appearanceSource.hairColor||appearanceDefaults.hairColor),
-      hairColorOrigin:String(appearanceSource.hairColorOrigin||appearanceDefaults.hairColorOrigin),
-      naturalHairColor:String(appearanceSource.naturalHairColor||appearanceDefaults.naturalHairColor),
+      hairColor:normalizedHairColor,
+      hairColorOrigin:normalizedHairOrigin,
+      naturalHairColor:normalizedNaturalHairColor,
       dyeColor:String(appearanceSource.dyeColor||appearanceDefaults.dyeColor),
       hairLength:String(appearanceSource.hairLength||appearanceDefaults.hairLength),
       hairTexture:String(({"직모":"완전한 직모","곱슬":"굵은 곱슬","강한 곱슬":"촘촘한 곱슬"})[appearanceSource.hairTexture]||appearanceSource.hairTexture||appearanceDefaults.hairTexture),
@@ -590,6 +597,7 @@ function normalizeHomes(x){
     c.sleepHabit=c.sleepHabit||"이불을 단정히 덮고 잠";
     c.foodHabit=c.foodHabit||"규칙적으로 식사함";
     c.dailyHabits=[...new Set(Array.isArray(c.dailyHabits)?c.dailyHabits.filter(value=>typeof value==="string"&&value.trim()):[])];
+    c.behaviorHabits=[...new Set(Array.isArray(c.behaviorHabits)?c.behaviorHabits.filter(value=>typeof value==="string"&&value.trim()):[])];
     c.eatingHabits=[...new Set(Array.isArray(c.eatingHabits)?c.eatingHabits.filter(value=>typeof value==="string"&&value.trim()):[])];
     c.walkingStyle=["느리고 조심스럽게","차분하고 반듯하게","보통 속도로 자연스럽게","가볍고 경쾌하게","빠르고 성큼성큼"].includes(c.walkingStyle)?c.walkingStyle:"보통 속도로 자연스럽게";
     c.speechStyle=SPEECH_STYLE_OPTIONS.includes(c.speechStyle)?c.speechStyle:"자동 · 성격에 맞춤";
@@ -856,6 +864,7 @@ export function createCharacter(limit=5){
   state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.characters[id].commuteModes=[];
   state.characters[id].dailyHabits=[];
+  state.characters[id].behaviorHabits=[];
   state.characters[id].eatingHabits=[];
   state.order.push(id);
   state.characters[id].townId=state.activeTownId;
@@ -913,7 +922,7 @@ export function updateCharacter(id,patch,persist=true){
     const residence=(c.residences||[]).find(item=>item.homeId===c.homeId);
     if(residence)residence.sleepRoomId=patch.sleepRoomId;
   }
-  if(Object.keys(patch).some(key=>SIMULATION_FIELDS.has(key)))c.timelineResetAt=Date.now();
+  if(Object.keys(patch).some(key=>SIMULATION_FIELDS.has(key))||Object.hasOwn(patch,"behaviorHabits"))c.timelineResetAt=Date.now();
   if(persist)save();
 }
 export function addRoutine(characterId){

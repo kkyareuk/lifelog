@@ -18,6 +18,7 @@ const first=advanceHomeLifeSimulation(home,["a","b"],contexts,start);
 equal(Object.keys(first.simulation.agents).length,2,"두 캐릭터의 생활 상태를 만든다");
 equal(new Set(Object.values(first.simulation.agents).map(agent=>agent.furnitureId)).size,2,"두 캐릭터가 서로 다른 가구를 예약한다");
 ok(Object.values(first.simulation.agents).every(agent=>agent.phase==="walking"),"첫 행동은 가구로 걸어가는 단계다");
+ok(new Set(Object.values(first.simulation.agents).map(agent=>agent.startedAt)).size===2,"캐릭터마다 서로 다른 이동 시작 시각을 갖는다");
 equal(Object.keys(first.simulation.reservations).length,2,"이동을 시작할 때부터 가구를 예약한다");
 
 const walkingEnds=Math.max(...Object.values(first.simulation.agents).map(agent=>agent.arrivesAt));
@@ -86,15 +87,15 @@ ok(english.title.includes("Shower")&&!english.title.includes("씻"),"영어 행�
 ok(japanese.title.includes("家具"),"일본어 대기 문구를 제공한다");
 ok(homeLifeNextDelay(first.simulation,start)>=800,"화면 갱신 간격에 최소 제한을 둔다");
 
-const [stateSource,viewsSource,appSource,cssSource,gradleSource]=await Promise.all([
-  readFile(new URL("../state.js",import.meta.url),"utf8"),readFile(new URL("../views.js",import.meta.url),"utf8"),readFile(new URL("../app.js",import.meta.url),"utf8"),readFile(new URL("../app.css",import.meta.url),"utf8"),readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8")
+const [stateSource,viewsSource,appSource,cssSource,gradleSource,audioSource]=await Promise.all([
+  readFile(new URL("../state.js",import.meta.url),"utf8"),readFile(new URL("../views.js",import.meta.url),"utf8"),readFile(new URL("../app.js",import.meta.url),"utf8"),readFile(new URL("../app.css",import.meta.url),"utf8"),readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8"),readFile(new URL("../audio.js",import.meta.url),"utf8")
 ]);
 ok(stateSource.includes("h.lifeSimulation=normalizeHomeLifeSimulation"),"동기화·불러오기 때 생활 상태를 정규화한다");
 ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계층에 생활 진행 함수를 둔다");
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 151")&&gradleSource.includes('versionName "1.0.140"'),"Android 개발 버전을 151 / 1.0.140으로 올렸다");
+ok(gradleSource.includes("versionCode 155")&&gradleSource.includes('versionName "1.0.143"'),"Android 개발 버전을 155 / 1.0.143으로 올렸다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),
@@ -116,6 +117,7 @@ ok(cssSource.includes('background:#5c4234')&&cssSource.includes('border:2px soli
 ok(cssSource.includes('.home-interaction-together .home-interaction-avatar:first-of-type')&&cssSource.includes('.home-interaction-together .home-interaction-visual>em'),"일반적인 함께 보내기 장면에도 두 사람의 몸동작과 반응 애니메이션을 표시한다");
 ok(homeSimulationSource.includes('anchorX+(index?gap:-gap)'),"관계 표시 순서의 첫 인물을 왼쪽에 고정한다");
 ok(homeSimulationSource.includes('HOME_SAFE_BOUNDS={minX:8,maxX:91,minY:23,maxY:84}')&&homeSimulationSource.includes('function safeHomePoint'),"사람과 반려생물의 이동 목표를 상단 메뉴와 화면 최하단 밖의 안전 영역으로 제한한다");
+ok(homeSimulationSource.includes(':movement-start')&&audioSource.includes('const channels=new Map()'),"이동 시각과 발소리를 캐릭터별 채널로 분리한다");
 ok(homeSimulationSource.includes('/옷장|행거|옷걸이|의류 수납/')&&homeSimulationSource.includes('scene:/옷을 고르|입을 옷|옷차림|의상을 고르|갈아입/'),"옷 고르기 장면은 화장대가 아니라 옷장 계열 가구에만 연결한다");
 ok(homeSimulationSource.includes('contextRooms.size!==1')&&homeSimulationSource.includes('agents.some(agent=>agent.roomKey!==roomKey)'),"다른 방에 있는 인물은 같은 집 상호작용 그룹으로 합쳐지지 않는다");
 ok(simulationSource.includes('function visionSideScore')&&simulationSource.includes('[`${side}Vision`]')&&simulationSource.includes('relationshipAwareness')&&simulationSource.includes('willingness'),"마을·집의 자율 상호작용은 좌우 시야와 신뢰·편안함·관계 친밀도를 함께 계산한다");

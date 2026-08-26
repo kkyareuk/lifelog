@@ -10,6 +10,8 @@ const sceneCss=read("home-scene-layout.css");
 const state=read("state.js");
 const gradle=read("android/app/build.gradle");
 const audio=read("audio.js");
+const simulation=read("simulation.js");
+const homeSimulation=read("home-simulation.js");
 
 const checks=[
   [views.includes('const fullActivePane=["visual","profile","body","personality","taste","worldTaste"]'),"이미지 첫 장과 개요 이후 다섯 목차가 서로 다른 상태"],
@@ -22,7 +24,7 @@ const checks=[
   [sceneCss.includes('rotate:var(--character-art-rotation,0deg)!important'),"저장한 회전값이 실제 홈 장면에도 적용"],
   [bookCss.includes('.character-book-v8-stage')&&bookCss.includes('.character-book-v8-wood')&&bookCss.includes('.character-book-v8-paper'),"전체설정 목재·책을 독립 화면 레이어로 고정"],
   [views.includes('data-character-full-ui-version="9"')&&views.includes('class="character-book-v8-stage"')&&views.includes('class="character-book-v8-wood"')&&views.includes('class="character-book-v8-paper"')&&!views.includes('class="mobile-character-full-settings'),"구형 전체설정 컨테이너를 제거하고 Android 안전 DOM 이미지·CSS 좌표계로 교체"],
-  [views.includes('class="character-full-image-slot icon" data-image="icon">${currentIcon}</button>')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치됨"],
+  [views.includes('class="character-full-image-slot icon ${c.icon?"has-image":"is-empty"}" data-image="icon">${currentIcon}</button>')&&views.includes('character-full-empty-slot')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치되고 빈 슬롯은 추가 안내를 표시"],
   [bookCss.includes('.character-full-image-slot.ld{')&&bookCss.includes('.character-full-image-slot.icon{')&&bookCss.includes('background:transparent!important;box-shadow:none!important'),"LD와 아이콘 뒤 회색 판 제거"],
   [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="basic"')&&views.includes('data-character-overview-pane="life"')&&state.includes('characterOverviewPane:"basic"'),"개요 기본·생활 두 장을 독립된 책 페이지로 구성"],
   [!views.includes('character-overview-section-tabs')&&views.includes('class="character-overview-page-controls"')&&!views.includes('character-book-v8-shape-bookmark')&&!bookCss.includes('.character-book-v8-shape-bookmark'),"하단 모양 책갈피를 제거하고 페이지 화살표만 유지"],
@@ -45,7 +47,12 @@ const checks=[
   [views.includes('data-eye-color-preview="left"')&&views.includes('data-eye-color-preview="right"')&&views.includes('appearancePreviewColor(bodyAppearance.leftEyeColor')&&views.includes('appearancePreviewColor(bodyAppearance.rightEyeColor'),"좌우 눈 색상 설정이 각각 미리보기 색에 연결됨"],
   [views.includes('const hairCurlPreviewPath=value=>')&&views.includes('data-hair-curl-preview=')&&views.includes('data-hair-shape-preview')&&app.includes('hairCurlPreviewPath(el.value)'),"곱슬기 설정별 머리 선 형태 미리보기"],
   [bookCss.includes('.body-hair-amount{')&&bookCss.includes('.body-hair-locations{')&&bookCss.includes('height:7.4cqw!important'),"신체 5쪽에 체모 정도·체모 위치와 두꺼운 복수 선택 필드"],
-  [gradle.includes('versionCode 154')&&gradle.includes('versionName "1.0.142"'),"Android 개발 버전 154 / 1.0.142"]
+  [bookCss.includes('left:-135.278cqw!important')&&bookCss.includes('width:242.789cqw!important')&&bookCss.includes('.character-full-content-group{')&&bookCss.includes('transform:rotate(1.45deg)'),"SVG 원본 책 외곽과 콘텐츠 그룹 회전을 동일 좌표계에 고정"],
+  [state.includes('normalizedHairOrigin==="자연 모발"')&&app.includes('appearance.hairColorOrigin==="자연 모발"')&&app.includes('appearance.naturalHairColor=appearance.hairColor'),"자연 모발 설정에서 현재·본래 머리색 자동 동기화"],
+  [views.includes('data-profile-tags="behaviorHabits"')&&app.includes('const BEHAVIOR_HABIT_GROUPS=')&&app.includes('const DAILY_HABIT_GROUPS=')&&state.includes('c.behaviorHabits='),"행동 습관과 생활 습관을 카테고리별 복수 선택으로 저장"],
+  [simulation.includes('function eatingHabitEvent(')&&!simulation.includes('(c.eatingHabits||[]).forEach')&&simulation.includes('const breakfastHabit=eatingHabitEvent')&&simulation.includes('const dinnerHabit=eatingHabitEvent'),"식습관 로그를 일반 성격 로그에서 분리해 식사 시간에만 생성"],
+  [homeSimulation.includes(':movement-start')&&homeSimulation.includes('movementStartsAt')&&audio.includes('const channels=new Map()')&&audio.includes('initial?140+(hash(actor.id)%780)')&&audio.includes('element.dataset.homePerson'),"캐릭터별 독립 이동 시작 시각과 시간차 발소리 채널"],
+  [gradle.includes('versionCode 155')&&gradle.includes('versionName "1.0.143"'),"Android 개발 버전 155 / 1.0.143"]
 ];
 
 let failed=0;

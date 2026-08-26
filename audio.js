@@ -1,97 +1,76 @@
 const FOOTSTEP_URLS={
-  walk:"./assets/audio/shoe-walking.m4a?v=20260825characterbookmenu150",
-  run:"./assets/audio/shoe-running.m4a?v=20260825characterbookmenu150"
+  walk:"./assets/audio/shoe-walking.m4a?v=20260826independent155",
+  run:"./assets/audio/shoe-running.m4a?v=20260826independent155"
 };
 const RUNNING_SELECTOR=[".town-traveler.is-jogging",".town-traveler.is-scene-running",".home-life-running"].join(",");
 const WALKING_SELECTOR=[".home-life-walking",".town-traveler.is-roaming",".town-traveler.is-transit",".is-scene-moving"].join(",");
+const channels=new Map();
+let previewAudio=null;
 
-let footstepAudio=null;
-let footstepMode="walk";
-let repeatTimer=0;
-let movementActive=false;
-
-function visibleElements(selector){
-  return [...document.querySelectorAll(selector)].some(element=>{
-    const style=getComputedStyle(element),rect=element.getBoundingClientRect();
-    return style.display!=="none"&&style.visibility!=="hidden"&&Number(style.opacity)>0&&rect.width>0&&rect.height>0;
+const hash=value=>[...String(value||"")].reduce((result,character)=>(result*31+character.charCodeAt(0))>>>0,2166136261);
+function visible(element){
+  const style=getComputedStyle(element),rect=element.getBoundingClientRect();
+  return style.display!=="none"&&style.visibility!=="hidden"&&Number(style.opacity)>0&&rect.width>0&&rect.height>0;
+}
+function actorId(element,index){
+  return element.dataset.homePerson||element.dataset.person||element.dataset.characterId||element.closest("[data-character-id]")?.dataset.characterId||`visible-${index}`;
+}
+function movingActors(){
+  const actors=new Map();
+  [...document.querySelectorAll(`${RUNNING_SELECTOR},${WALKING_SELECTOR}`)].forEach((element,index)=>{
+    if(!visible(element))return;
+    const id=actorId(element,index),mode=element.matches(RUNNING_SELECTOR)?"run":"walk";
+    if(!actors.has(id)||mode==="run")actors.set(id,{id,mode});
   });
+  return [...actors.values()];
 }
-
-function movementMode(){
-  if(visibleElements(RUNNING_SELECTOR))return"run";
-  if(visibleElements(WALKING_SELECTOR))return"walk";
-  return"";
-}
-
-function audioElement(mode="walk"){
-  const nextMode=mode==="run"?"run":"walk";
-  if(footstepAudio&&footstepMode===nextMode)return footstepAudio;
-  if(footstepAudio)footstepAudio.pause();
-  footstepMode=nextMode;
-  footstepAudio=new Audio(FOOTSTEP_URLS[nextMode]);
-  footstepAudio.preload="auto";
-  footstepAudio.playsInline=true;
-  return footstepAudio;
-}
-
 function audioVolume(state){
   if(state?.soundMuted)return 0;
   return Math.max(0,Math.min(1,(Number(state?.soundEffectsVolume)||0)/100));
 }
-
-function clearRepeat(){
-  clearTimeout(repeatTimer);
-  repeatTimer=0;
+function stopChannel(id){
+  const channel=channels.get(id);if(!channel)return;
+  clearTimeout(channel.timer);channel.audio.pause();channel.audio.currentTime=0;channels.delete(id);
 }
-
-function playStep(state,{preview=false,mode=""}={}){
-  const volume=audioVolume(state),nextMode=mode||movementMode()||"walk";
-  if(!volume||(!preview&&!movementActive))return;
-  const audio=audioElement(nextMode);
-  audio.volume=volume;
-  audio.currentTime=0;
-  audio.playbackRate=1;
-  audio.play().catch(()=>{});
-}
-
-function scheduleStep(state){
-  clearRepeat();
-  const mode=movementMode();
-  if(!movementActive||!mode||!audioVolume(state))return;
-  playStep(state,{mode});
-  repeatTimer=setTimeout(()=>scheduleStep(state),mode==="run"?620:930);
+function scheduleChannel(state,actor,initial=false){
+  const volume=audioVolume(state);if(!volume||document.visibilityState==="hidden")return stopChannel(actor.id);
+  let channel=channels.get(actor.id);
+  if(!channel||channel.mode!==actor.mode){
+    if(channel)stopChannel(actor.id);
+    const audio=new Audio(FOOTSTEP_URLS[actor.mode]);audio.preload="auto";audio.playsInline=true;
+    channel={audio,mode:actor.mode,timer:0};channels.set(actor.id,channel);
+  }
+  clearTimeout(channel.timer);channel.audio.volume=Math.min(1,volume*.82);
+  const play=()=>{
+    if(!channels.has(actor.id)||!movingActors().some(item=>item.id===actor.id&&item.mode===actor.mode))return stopChannel(actor.id);
+    channel.audio.currentTime=0;channel.audio.playbackRate=actor.mode==="run"?1.04:.96+(hash(actor.id)%9)/100;
+    channel.audio.play().catch(()=>{});
+    const base=actor.mode==="run"?610:900,variance=hash(`${actor.id}:${Date.now()>>10}`)%190;
+    channel.timer=setTimeout(play,base+variance);
+  };
+  channel.timer=setTimeout(play,initial?140+(hash(actor.id)%780):0);
 }
 
 export function syncMovementAudio(state){
-  const mode=movementMode();
-  const nextActive=document.visibilityState!=="hidden"&&Boolean(mode)&&audioVolume(state)>0;
-  if(nextActive===movementActive){
-    if(nextActive){
-      const audio=audioElement(mode);
-      audio.volume=audioVolume(state);
-      if(!repeatTimer)scheduleStep(state);
-    }
-    return;
-  }
-  movementActive=nextActive;
-  if(nextActive)scheduleStep(state);
-  else stopMovementAudio();
+  const actors=document.visibilityState==="hidden"||!audioVolume(state)?[]:movingActors();
+  const activeIds=new Set(actors.map(actor=>actor.id));
+  [...channels.keys()].forEach(id=>{if(!activeIds.has(id))stopChannel(id)});
+  actors.forEach(actor=>{
+    const channel=channels.get(actor.id);
+    if(!channel||channel.mode!==actor.mode)scheduleChannel(state,actor,true);
+    else channel.audio.volume=Math.min(1,audioVolume(state)*.82);
+  });
 }
 
 export function previewFootstep(state,mode="walk"){
-  if(state?.soundMuted||audioVolume(state)<=0)return false;
-  playStep(state,{preview:true,mode});
-  return true;
+  const volume=audioVolume(state);if(!volume)return false;
+  previewAudio?.pause();previewAudio=new Audio(FOOTSTEP_URLS[mode==="run"?"run":"walk"]);
+  previewAudio.volume=volume;previewAudio.play().catch(()=>{});return true;
 }
 
 export function stopMovementAudio(){
-  movementActive=false;
-  clearRepeat();
-  if(!footstepAudio)return;
-  footstepAudio.pause();
-  footstepAudio.currentTime=0;
+  [...channels.keys()].forEach(stopChannel);
+  if(previewAudio){previewAudio.pause();previewAudio.currentTime=0;previewAudio=null}
 }
 
-document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState==="hidden")stopMovementAudio();
-});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")stopMovementAudio()});

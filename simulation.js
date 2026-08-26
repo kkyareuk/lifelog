@@ -2127,12 +2127,37 @@ function contextualDailyEvent(c,time,date){
     [/깨끗이 비움|조금 남김|맨 마지막|맨 먼저|섞지 않고|번갈아/,local("정해 둔 순서대로 접시를 비우는 중","Eating through the plate in a set order","決めた順番で皿を食べ進めるところ"),local("좋아하는 것과 남길 양을 미리 정한 듯 익숙한 순서로 접시를 정리해 갔어요.","As if the favorites and leftovers were already decided, they worked through the plate in a familiar order.","好きな物と残す量を決めていたように、慣れた順番で皿を食べ進めました。"),"kitchen"]
   ];
   (c.dailyHabits||[]).forEach(habit=>{const scene=dailyHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
-  (c.eatingHabits||[]).forEach(habit=>{const scene=eatingHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
+  const behaviorHabitScenes=[
+    [/머리카락|손톱|입술|펜을 돌|주먹|입을 가림|몸이 먼저 굳|팔짱|기대어/,local("무심코 익숙한 몸짓을 하는 중","Falling into a familiar gesture","無意識にいつもの仕草をするところ"),local("생각에 잠긴 사이 몸이 먼저 익숙한 습관을 반복하다가 천천히 다음 행동으로 옮겨 갔어요.","While lost in thought, their body repeated a familiar habit before easing into the next task.","考え込む間に体がいつもの癖を繰り返し、ゆっくり次の行動へ移りました。"),"living"],
+    [/말끝|감탄사|별명|존댓말|답장|연락|통화|농담/,local("익숙한 방식으로 연락을 이어 가는 중","Communicating in their usual way","いつものやり方で連絡するところ"),local("상대와 상황을 살피면서도 평소의 말버릇과 연락 방식이 자연스럽게 드러났어요.","Their usual wording and communication rhythm showed naturally as they considered the person and situation.","相手と状況を見ながら、普段の口癖と連絡の取り方が自然に表れました。"),"study"],
+    [/스트레스|화나면|긴장|진정|산책하며/,local("마음을 가라앉히는 자기만의 순서를 따르는 중","Following a personal calming routine","自分なりの落ち着く手順をたどるところ"),local("감정이 커지기 전에 익숙한 행동을 하나씩 이어 가며 호흡과 생각을 정리했어요.","Before the feeling grew, they followed familiar steps to settle their breathing and thoughts.","感情が大きくなる前に慣れた行動を重ね、呼吸と思考を整えました。"),"living"],
+    [/몰아서|스포일러|운동|수집|버리지|일기|사진으로|메모/,local("좋아하는 방식으로 여가를 기록하는 중","Enjoying and recording free time their way","自分らしく余暇を楽しみ記録するところ"),local("자기에게 편한 속도로 취미를 이어 가며 남기고 싶은 장면만 골라 기록했어요.","They enjoyed the hobby at a comfortable pace and recorded only the moments they wanted to keep.","自分に合う速さで趣味を続け、残したい場面だけを記録しました。"),"study"],
+    [/눈인사|손을 흔들|선물|거리|스킨십|비 오는|따뜻한 음료|동물|식물|새벽/,local("상황에 맞는 익숙한 반응을 보이는 중","Responding with a familiar situational habit","状況に応じたいつもの反応をするところ"),local("주변과 상대를 확인한 뒤 평소 편하게 느끼는 방식으로 반응했어요.","After checking the surroundings and the other person, they responded in the way that felt most natural.","周囲と相手を確かめ、普段いちばん自然に感じる方法で反応しました。"),"living"]
+  ];
+  (c.behaviorHabits||[]).forEach(habit=>{const scene=behaviorHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
   if((c.hobbies||[]).length)pool.push(
     [`${c.hobbies[hash(`${c.id}:${dayKey(date)}:context-hobby`)%c.hobbies.length]}에 몰두하는 중`,"좋아하는 활동에 필요한 도구를 차분히 꺼내고 자기 방식대로 집중할 환경을 만들었어요.","study"]);
   if(!pool.length)pool.push(["잠깐 숨을 고르는 중","하던 일을 멈추고 물을 한 모금 마시며 다음에 무엇을 할지 천천히 생각하고 있어요.","living"]);
   const script=pool[hash(`${c.id}:${dayKey(date)}:contextual-daily`)%pool.length];
   return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily",date),script[2]);
+}
+function eatingHabitEvent(c,time,date,meal="식사",location={home:true,room:"kitchen"}){
+  const habits=Array.isArray(c.eatingHabits)?c.eatingHabits:[];
+  if(!habits.length)return null;
+  const habit=habits[hash(`${c.id}:${dayKey(date)}:${meal}:eating-habit`)%habits.length];
+  const language=state.uiLanguage||"ko",local=(ko,en,ja)=>({ko,en,ja}[language]||ko);
+  const scenes=[
+    [/양치|가글/,local(`${meal} 뒤 입안을 정리하는 중`,`Cleaning up after ${meal}`,`${meal}のあと口の中を整えるところ`),local("식사를 마친 뒤 미루지 않고 칫솔이나 가글을 챙겨 평소 순서대로 마무리했어요.","After finishing the meal, they immediately followed their usual brushing or rinsing routine.","食事を終えると後回しにせず、歯磨きやうがいをいつもの順番で済ませました。"),"bathroom",15],
+    [/사진|냄새/,local(`${meal}을 먹기 전에 살펴보는 중`,`Taking in the meal before eating`,`食べる前に料理を確かめるところ`),local("접시에 손대기 전에 모양과 향을 확인하고 마음에 드는 장면을 남겼어요.","Before touching the plate, they checked its appearance and aroma and saved the view they liked.","皿に手をつける前に見た目と香りを確かめ、気に入った光景を残しました。"),"kitchen",0],
+    [/비평|감탄/,local(`${meal}의 맛을 이야기하는 중`,`Commenting on the meal`,`食事の味を言葉にするところ`),local("향과 식감, 간을 차례로 짚으며 느낀 점을 구체적으로 말했어요.","They described the aroma, texture, and seasoning in detail.","香り、食感、味付けを順に挙げ、感じたことを具体的に話しました。"),"kitchen",4],
+    [/쩝쩝|조용히|천천히|빠르게/,local(`평소 속도로 ${meal} 중`,`Eating at their usual pace`,`いつもの速さで食事中`),local("주변에 휩쓸리지 않고 평소의 소리와 속도로 식사를 이어 갔어요.","They ate with their usual pace and sound without being pulled along by others.","周りに流されず、普段の音と速さで食事を続けました。"),"kitchen",5],
+    [/다른 사람|나눠|대화/,local(`${meal} 자리에서 곁의 사람을 챙기는 중`,`Looking after others at the table`,`食卓でそばの人を気づかうところ`),local("자기 접시보다 곁의 사람을 먼저 살피고 먹기 편한 만큼 나누어 건넸어요.","They checked on the people nearby and shared an easy portion before tending to their own plate.","自分の皿より先に周りを見て、食べやすい分だけ取り分けました。"),"kitchen",3],
+    [/휴대폰|책을 읽|TV/,local(`${meal}과 함께 볼거리를 챙긴 중`,`Pairing the meal with something to watch or read`,`食事と一緒に見る物を用意するところ`),local("보던 화면이나 읽을거리를 손 닿는 곳에 두고 식사를 시작했어요.","They placed a screen or reading material within reach and began eating.","画面や読み物を手の届く所へ置き、食事を始めました。"),"kitchen",2],
+    [/소스|후추|간을 바꾸지/,local(`${meal}의 간을 맞추는 중`,`Seasoning the meal their way`,`自分好みに味を整えるところ`),local("먼저 맛을 확인한 뒤 평소 즐기는 방식대로 양념을 더하거나 그대로 두었어요.","They tasted first, then seasoned it or left it alone according to habit.","まず味を確かめ、いつもの好みに合わせて調味料を足すか、そのままにしました。"),"kitchen",2],
+    [/.*/,local(`익숙한 방식으로 ${meal} 중`,`Eating in their familiar way`,`いつものやり方で食事中`),local("자리와 식기, 먹는 순서를 자기에게 익숙한 방식으로 맞추며 식사했어요.","They ate with the seat, utensils, and order that felt familiar.","席と食器、食べる順番を自分になじむ形に整えて食事しました。"),"kitchen",4]
+  ];
+  const [,title,desc,room,offset]=scenes.find(([pattern])=>pattern.test(habit));
+  return location.home?homeEntry(c,time+offset,title,desc,room):entry(time+offset,title,desc,{...location,mood:"식사"});
 }
 function relationshipCombinationScenePool(c,relationship,date){
   if(!relationship?.other||relationship.other.id===c.id)return[];
@@ -2457,6 +2482,8 @@ function build(c,date=new Date()){
   const makeupLevel=appearanceProfile(c).makeupLevel||"하지 않음";
   const breakfastMinute=wake+65+({스킨케어만:4,"선크림·기초만":7,"가벼운 메이크업":10,"포인트 메이크업":14,"풀 메이크업":18}[makeupLevel]||0);
   list.push(homeEntry(c,breakfastMinute,"주방에서 아침 준비 중","냉장고를 열어 먹을 것을 고르고 식탁에 아침을 차리고 있어요.","kitchen"));
+  const breakfastHabit=eatingHabitEvent(c,breakfastMinute+18,date,"아침");
+  if(breakfastHabit)list.push(breakfastHabit);
   const morningRelation=related(c).filter(x=>homeIdForDate(x.other,date)===currentHomeId).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
   const morningTogether=morningRelation&&relationshipMorningEntry(c,morningRelation,breakfastMinute+30,date);
   if(morningTogether)list.push(morningTogether);
@@ -2520,11 +2547,16 @@ function build(c,date=new Date()){
   }
   const lunchPlace=placeFor(["음식점"],`${c.id}:${dayKey(date)}:lunch`,c);
   const eatsOutForLunch=hash(`${c.id}:${dayKey(date)}:eats-out`)%4===0;
+  const lunchMinute=720+(hash(`${c.id}:${dayKey(date)}:lunch-minute`)%91);
   if(eatsOutForLunch&&lunchPlace?.type==="음식점"){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
-    const lunchMinute=720+(hash(`${c.id}:${dayKey(date)}:lunch-minute`)%91);
     list.push(entry(lunchMinute,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
+    const lunchHabit=eatingHabitEvent(c,lunchMinute,date,"점심",away(c,{placeId:lunchPlace.id,itemId:food?.id}));if(lunchHabit)list.push(lunchHabit);
+  }else{
+    const lunchLocation=work&&!work.home?away(c,{placeId:work.placeId}):{home:true,room:"kitchen"};
+    const lunchHabit=eatingHabitEvent(c,lunchMinute,date,"점심",lunchLocation);if(lunchHabit)list.push(lunchHabit);
   }
+  const dinnerHabit=eatingHabitEvent(c,1110+(hash(`${c.id}:${dayKey(date)}:dinner-minute`)%46),date,"저녁");if(dinnerHabit)list.push(dinnerHabit);
   list.push(contextualDailyEvent(c,930,date));
   const profileTimes=[Math.max(wake+330,870),Math.max(wake+455,1035)].map(minute=>Math.min(minute,sleepMinute-105));
   list.push(...profileSettingEvents(c,profileTimes,date));
@@ -2677,7 +2709,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260825-character-book-choices-relationship-catalog";
+const ENGINE_VERSION="20260826-meal-habits-independent-movement";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
