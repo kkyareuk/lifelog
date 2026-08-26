@@ -624,6 +624,23 @@ function normalizeHomes(x){
       id:String(r.id||uid()),date:String(r.date),start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
       title:String(r.title||"새 일정"),placeId:String(r.placeId||""),visitHomeId:x.homes?.[r.visitHomeId]?String(r.visitHomeId):"",withIds:Array.isArray(r.withIds)?r.withIds.map(String).filter(id=>x.characters[id]):[],notes:String(r.notes||"")
     })):[];
+    // 1.0.121.3 이하에서 삭제된 일정에는 tombstone이 없었다. 그 버전에서
+    // 이미 일정만 지운 사용자는 로그에 남은 routineId를 근거로 삭제를
+    // 복원해야 클라우드의 오래된 일정이 다음 동기화 때 되살아나지 않는다.
+    const activeScheduleIds=new Set([
+      ...x.routines[c.id].map(item=>String(item.id||"")),
+      ...x.monthlyRoutines[c.id].map(item=>String(item.id||""))
+    ].filter(Boolean));
+    const orphanedScheduleIds=[...new Set(Object.values(c.days).flatMap(day=>(day.entries||[]).map(entry=>String(entry?.routineId||"")).filter(id=>id&&!activeScheduleIds.has(id))))];
+    if(orphanedScheduleIds.length){
+      // 예전 저장본에는 주간/월간 구분도 남지 않으므로 양쪽 삭제 목록에
+      // 넣는다. 일정 ID는 전역 UUID여서 다른 정상 일정을 가리지 않는다.
+      x.deletedRoutineIds=[...new Set([...x.deletedRoutineIds,...orphanedScheduleIds])];
+      x.deletedMonthlyRoutineIds=[...new Set([...x.deletedMonthlyRoutineIds,...orphanedScheduleIds])];
+      const orphaned=new Set(orphanedScheduleIds);
+      Object.values(c.days).forEach(day=>{day.entries=(day.entries||[]).filter(entry=>!orphaned.has(String(entry?.routineId||"")))});
+      delete x.dailyPlans[c.id];
+    }
     const drivingOptions=["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"];
     c.driverLicense=typeof c.driverLicense==="boolean"?(c.driverLicense?"운전에 익숙함":"면허 없음"):(drivingOptions.includes(c.driverLicense)?c.driverLicense:"면허 없음");
     c.commuteModes=Array.isArray(c.commuteModes)?[...new Set(c.commuteModes.map(String).filter(value=>["자차","대중교통","버스","지하철","택시","도보","자전거"].includes(value)))]:[];

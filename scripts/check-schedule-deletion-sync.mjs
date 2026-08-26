@@ -26,4 +26,6 @@ const state=fs.readFileSync(new URL("../state.js",import.meta.url),"utf8");
 assert.match(app,/deleteStateRoutine\(characterId,id\)/);
 assert.match(app,/deleteStateMonthlyRoutine\(characterId,id\)/);
 assert.match(state,/day\.entries=day\.entries\.filter\(entry=>!deleted\.has\(String\(entry\?\.routineId/);
+assert.match(state,/const orphanedScheduleIds=.*routineId/);
+assert.match(state,/x\.deletedRoutineIds=\[\.\.\.new Set\(\[\.\.\.x\.deletedRoutineIds,\.\.\.orphanedScheduleIds\]\)\]/);
 console.log("PASS 일정 삭제 버튼은 공용 삭제 처리와 해당 일정 로그 캐시 정리를 사용합니다");
