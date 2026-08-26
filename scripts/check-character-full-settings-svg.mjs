@@ -61,12 +61,13 @@ const checks=[
   [views.includes('overview-life-adaptation')&&views.includes('overview-education')&&views.includes('overview-openness')&&app.includes('bindCharacterBookSwipe()'),"환경 적응도·교육 수준·자율 이끌림·가로 스와이프 이동"],
   [app.includes('openIndex=values.length-1')&&app.includes('if(openIndex>=0)requestAnimationFrame')&&app.includes('dialog.showModal()'),"흉터·문신 추가 직후 새 항목의 상세 설정창을 자동으로 엶"],
   [views.includes('const WARDROBE_TAG_GROUPS=')&&views.includes('"가격대"')&&views.includes('"분위기"')&&views.includes('"형태·소재"')&&views.includes('class="character-book-form-page wardrobe-book-page"'),"옷장 7쪽과 가격·색·분위기·형태 소재별 의상 태그"],
+  [views.includes('book-form-field book-form-continuation')&&views.includes('<span class="sr-only">${t(label,label)}</span>')&&views.includes('bookListContinuation("화장 스타일"')&&views.includes('bookListContinuation("시술 부위"')&&views.includes('bookListContinuation("의상 태그"')&&views.includes('bookFieldContinuation("미용실에서 하는 일"')&&bookCss.includes('.book-form-stack.book-form-combined{gap:.25cqw!important}'),"옷장 보조 제목을 시각적으로 제거하고 앞 항목과 한 묶음으로 배치"],
   [views.includes('const MAKEUP_STYLES=')&&views.includes('드랙 메이크업')&&views.includes('인외 메이크업'),"확장된 화장 스타일 선택지"],
   [views.includes('data-character-body-pane="accessibility"')&&app.includes('state.characterPane="body";')&&app.includes('includes(el.dataset.characterBodyPane)?el.dataset.characterBodyPane:"figure"'),"옷장 7쪽 이전 버튼이 신체 6쪽으로 복귀"],
   [state.includes('medications:[]')&&state.includes('normalizeMedications')&&views.includes('data-body-medication-action="add"')&&views.includes('data-body-medication-field="purpose"'),"복용약 추가·제거와 목적·주기 상세 설정"],
   [app.includes('function chooseCharacterImageSource(')&&app.includes('data-image-source="device"')&&app.includes('data-image-source="link"'),"사진 슬롯마다 기기 업로드·링크 추가 방식 선택"],
   [views.includes('서사·인지 특성 선택사항')&&views.includes('실제 장면에 반영할 표현')&&bookCss.includes('.personality-detail-actions'),"성격 9쪽의 서사·인지와 장면 표현 큰 선택 버튼"],
-  [gradle.includes('versionCode 165')&&gradle.includes('versionName "1.0.152"'),"Android 개발 버전 165 / 1.0.152"]
+  [gradle.includes('versionCode 166')&&gradle.includes('versionName "1.0.153"'),"Android 개발 버전 166 / 1.0.153"]
 ];
 
 let failed=0;

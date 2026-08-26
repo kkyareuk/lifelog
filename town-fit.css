@@ -214,10 +214,10 @@
     min-height:var(--town-canvas-height)!important;
     touch-action:pan-x pan-y!important;
   }
-  html.native-app[data-active-tab="town"] .mobile-town-shell:not(.editing) .town-map-scroll .place{
+  html.native-app[data-active-tab="town"] .mobile-town-shell:not(.buildings-editing):not(.decorations-editing) .town-map-scroll .place{
     touch-action:manipulation!important;
   }
-  html.native-app[data-active-tab="town"] .mobile-town-shell.editing .town-map-scroll .place{
+  html.native-app[data-active-tab="town"] .mobile-town-shell:is(.buildings-editing,.decorations-editing) .town-map-scroll .place{
     touch-action:none!important;
   }
 }
