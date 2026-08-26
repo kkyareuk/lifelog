@@ -16,11 +16,11 @@ assert(views.includes('data-theme-hex="${field}"')&&views.includes('type="color"
 assert(views.includes('aria-label="위로 이동"')&&views.includes('aria-label="아래로 이동"'),"모바일 캐릭터 순서는 위·아래 버튼으로 조정해야 합니다.");
 assert(app.includes("queueCharacterNotificationSchedule")&&app.includes("save(true);select.blur();queueCharacterNotificationSchedule();"),"연락 설정은 전체 화면을 다시 그리지 않고 네이티브 선택창을 닫은 뒤 지연 반영해야 합니다.");
 assert(app.includes('catalogShell.addEventListener("change"')&&app.includes("replaceCatalogCard"),"취향사전은 전체 화면이 아니라 해당 카드만 갱신해야 합니다.");
-assert(views.includes("character-book-stage-v12.png"),"책은 왼쪽 여백이 제거된 SVG 추출 배경을 사용해야 합니다.");
+assert(views.includes("character-book-stage-v13.png"),"책은 좌우가 잘리지 않은 SVG 추출 배경을 사용해야 합니다.");
 assert(views.includes("wardrobe-book-page")&&views.includes("personality-book-page")&&views.includes("taste-book-page")&&views.includes("inventory-book-page"),"옷장·성격·취향·소지품 고정 페이지가 모두 있어야 합니다.");
 assert(views.includes('const fixedBookMode=state.characterSettingsView==="full"')&&views.includes('const favorites=fixedBookMode?""'),"전체설정에서는 사용하지 않는 예전 장문 패널을 만들지 않아야 합니다.");
-assert(characterBookCss.includes('.personality-detail-book-page>.book-form-field:nth-of-type(3){top:101cqw!important}'),"성격 상세 두 번째 선택 칸이 책 위로 새면 안 됩니다.");
-assert(characterBookCss.includes('.wardrobe-book-page .book-form-grid{top:31.55cqw!important;row-gap:1.75cqw!important}'),"옷장 마지막 행과 페이지 이동 버튼은 겹치면 안 됩니다.");
+assert(characterBookCss.includes('.personality-detail-actions{position:absolute!important')&&characterBookCss.includes('top:67cqw!important'),"성격 상세의 큰 선택 버튼은 책 안쪽 고정 영역에 있어야 합니다.");
+assert(characterBookCss.includes('.wardrobe-book-page .book-form-grid{top:30.8cqw!important;row-gap:1.45cqw!important}'),"옷장 마지막 행과 페이지 이동 버튼은 겹치면 안 됩니다.");
 
 for(const marker of ['$$("[data-chip]")','$$("[data-favorite-kind]")','$$("[data-owned-kind]")']){
   const start=app.indexOf(marker);

@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826characterchapters162";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterchapters162";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260826characterchapters162";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterchapters162";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826characterchapters162";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826characterchapters162";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827wardrobe163";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827wardrobe163";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260827wardrobe163";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827wardrobe163";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827wardrobe163";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827wardrobe163";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -81,7 +81,8 @@ const defaultBodyProfile=()=>({
   vision:{side:"설정하지 않음",level:"",supports:[]},
   accessibilityPreferences:[],
   hospitalVisitFrequency:"자동 · 설정에 맞춤",
-  hospitalVisitPurpose:"",
+  hospitalVisitPurpose:"설정하지 않음",
+  medications:[],
   medication1:"",
   medication2:"",
   notes:""
@@ -97,6 +98,18 @@ const normalizeBodyMarks=(values,kind)=>Array.isArray(values)?values.slice(0,8).
     attitude:String(source.attitude||"설정하지 않음").slice(0,80)
   };
 }).filter(value=>value.location&&value.location!=="설정하지 않음"):[];
+const normalizeMedications=(values,legacy=[])=>{
+  const source=Array.isArray(values)&&values.length?values:legacy.filter(Boolean);
+  return source.slice(0,12).map((value,index)=>{
+    const item=value&&typeof value==="object"&&!Array.isArray(value)?value:{name:String(value||"")};
+    return{
+      name:String(item.name||`복용약 ${index+1}`).slice(0,60),
+      purpose:String(item.purpose||"설정하지 않음").slice(0,80),
+      frequency:String(item.frequency||"설정하지 않음").slice(0,80),
+      notes:String(item.notes||"").slice(0,160)
+    };
+  }).filter(item=>item.name);
+};
 const normalizedBodyProfile=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const defaults=defaultBodyProfile();
@@ -166,7 +179,8 @@ const normalizedBodyProfile=value=>{
     vision:{...normalizeDevice("vision","설정하지 않음"),supports:Array.isArray(source.vision?.supports)?[...new Set(source.vision.supports.map(String))].slice(0,8):[]},
     accessibilityPreferences:Array.isArray(source.accessibilityPreferences)?[...new Set(source.accessibilityPreferences.map(String))].slice(0,10):[],
     hospitalVisitFrequency:String(source.hospitalVisitFrequency||defaults.hospitalVisitFrequency),
-    hospitalVisitPurpose:String(source.hospitalVisitPurpose||"").slice(0,120),
+    hospitalVisitPurpose:String(source.hospitalVisitPurpose||defaults.hospitalVisitPurpose),
+    medications:normalizeMedications(source.medications,[source.medication1,source.medication2]),
     medication1:String(source.medication1||"").slice(0,80),
     medication2:String(source.medication2||"").slice(0,80),
     notes:String(source.notes||"").slice(0,600)
