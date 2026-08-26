@@ -95,7 +95,7 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 158")&&gradleSource.includes('versionName "1.0.146"'),"Android 개발 버전을 158 / 1.0.146로 올렸다");
+ok(gradleSource.includes("versionCode 159")&&gradleSource.includes('versionName "1.0.147"'),"Android 개발 버전을 159 / 1.0.147로 올렸다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),
@@ -124,6 +124,7 @@ ok(simulationSource.includes('function visionSideScore')&&simulationSource.inclu
 ok(simulationSource.includes('const relationshipOrder=sharedParticipantOrder')&&simulationSource.includes('if(!scene)return current'),"관계 좌우 순서를 공동 장면까지 보존하고 상호작용 없는 낯선 사람은 각자 행동을 유지한다");
 ok(viewsSource.includes('function homeOrderedCharacters')&&viewsSource.includes('homeOrderedCharacters(partners,partners.map(sceneFor))'),"집의 개별·합성 상호작용 렌더링도 관계 좌우 순서를 사용한다");
 ok(cssSource.includes(".home-native-header::before")&&cssSource.includes("right:-2px"),"집 상단바가 화면 오른쪽 끝까지 덮인다");
+ok(cssSource.includes('game-hud-top{')&&cssSource.includes('height:78px!important')&&cssSource.includes('.game-hud-top::after')&&cssSource.includes('top:-11px!important'),"관찰 화면 상단바를 집 상단바와 같은 높이·상단 목재 결로 맞춘다");
 ok(viewsSource.includes('<nav class="home-native-side"')&&viewsSource.includes('homeNativePill(t("집 정보"')&&!viewsSource.includes('</div><button type="button" class="home-native-info-link"'),"집 정보는 SVG와 같은 우측 조합형 버튼열에 둔다");
 ok(cssSource.includes('body #app .home-native-context')&&cssSource.includes('-webkit-text-fill-color:#fff!important')&&cssSource.includes('text-align:right'),"일반 주거·층수 문맥을 흰 글씨로 우측 정렬한다");
 ok(cssSource.includes('.home-native-page.home-ui-hidden .home-native-ui-toggle')&&cssSource.includes('background-color:transparent!important')&&cssSource.includes('--home-ui-pill-left'),"UI 표시 버튼은 조합형 에셋을 유지하고 바깥 네모만 제거한다");

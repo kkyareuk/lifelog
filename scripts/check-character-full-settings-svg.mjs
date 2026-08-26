@@ -36,7 +36,7 @@ const checks=[
   [state.includes('hairAccessories:[]')&&state.includes('hairAccessories:Array.isArray(appearanceSource.hairAccessories)')&&state.includes('bodyHairAmount:"설정하지 않음"')&&state.includes('bodyHairLocations:[]')&&state.includes('bodyHairLocations:Array.isArray(appearanceSource.bodyHairLocations)'),"머리 장식과 체모 위치 복수 선택 및 체모 정도 저장·복원"],
   [interfaceCss.includes(':not(.character-book-v8 *)')&&!css.includes('.mobile-character-full-settings .character-overview-page-controls')&&css.includes('Character full settings is owned exclusively by character-book.css'),"전역 테마와 구형 모바일 개요 규칙이 새 SVG 책의 색상·화살표 위치를 덮지 않음"],
   [views.includes('overview-wake-habit')&&views.includes('overview-sleep-habit')&&views.includes('data-profile-tags="eatingHabits"')&&views.includes('overview-walking-style'),"개요 생활 페이지의 기상·취침·식사·걸음걸이 항목 연결"],
-  [views.includes('data-profile-tags="dailyHabits"')&&app.includes('const DAILY_HABIT_OPTIONS=')&&app.includes('const EATING_HABIT_OPTIONS='),"생활습관·식습관 상세 다중 선택 후보"],
+  [views.includes('overviewSelect("lifeAdaptation"')&&views.includes('overviewSelect("educationLevel"')&&app.includes('const EATING_HABIT_OPTIONS='),"성격형 습관 대신 생활 환경 적응도·교육 수준 드롭다운과 식습관 상세 후보"],
   [views.includes('overview-job-title')&&views.includes('overview-family-home')&&views.includes('overview-license')&&views.includes('overview-alcohol'),"개요 기본 페이지의 전체 항목을 실제 캐릭터 데이터 입력에 연결"],
   [bookCss.includes('transform:rotate(1.44787deg)!important')&&bookCss.includes('background:#dad1bd!important'),"개요 기본 내용의 SVG 회전과 값 종이 색상"],
   [css.includes('background-repeat:repeat-x')&&css.includes('background-size:auto 100%'),"벽지를 찌그러뜨리지 않고 높이에 맞춰 가로 타일링"],
@@ -47,17 +47,18 @@ const checks=[
   [views.includes('data-eye-color-preview="left"')&&views.includes('data-eye-color-preview="right"')&&views.includes('appearancePreviewColor(bodyAppearance.leftEyeColor')&&views.includes('appearancePreviewColor(bodyAppearance.rightEyeColor'),"좌우 눈 색상 설정이 각각 미리보기 색에 연결됨"],
   [views.includes('const hairCurlPreviewPath=value=>')&&views.includes('data-hair-curl-preview=')&&views.includes('data-hair-shape-preview')&&app.includes('hairCurlPreviewPath(el.value)'),"곱슬기 설정별 머리 선 형태 미리보기"],
   [bookCss.includes('.body-hair-amount{')&&bookCss.includes('.body-hair-locations{')&&bookCss.includes('height:7.4cqw!important'),"신체 5쪽에 체모 정도·체모 위치와 두꺼운 복수 선택 필드"],
-  [views.includes('book-right-page.png')&&bookCss.includes('left:-1.8cqw!important')&&bookCss.includes('width:103.6cqw!important')&&bookCss.includes('transform:none!important')&&bookCss.includes('.character-full-image-slot.profile{')&&bookCss.includes('rotate(-9.84995deg)'),"양면 원본을 화면 밖에서 자르지 않고 제본선이 포함된 오른쪽 책장을 독립 렌더링하며 사진별 SVG 원본 각도를 유지"],
+  [views.includes('book-right-page.png')&&bookCss.includes('left:-7.25cqw!important')&&bookCss.includes('width:114.5cqw!important')&&bookCss.includes('height:auto!important')&&bookCss.includes('object-fit:contain!important')&&bookCss.includes('.character-full-image-slot.profile{')&&bookCss.includes('rotate(-9.84995deg)'),"책 원본 종횡비와 제본선을 보존하고 사진별 SVG 원본 각도를 유지"],
   [state.includes('normalizedHairOrigin==="자연 모발"')&&app.includes('appearance.hairColorOrigin==="자연 모발"')&&app.includes('appearance.naturalHairColor=appearance.hairColor'),"자연 모발 설정에서 현재·본래 머리색 자동 동기화"],
-  [views.includes('data-profile-tags="behaviorHabits"')&&app.includes('const BEHAVIOR_HABIT_GROUPS=')&&app.includes('const DAILY_HABIT_GROUPS=')&&state.includes('c.behaviorHabits='),"행동 습관과 생활 습관을 카테고리별 복수 선택으로 저장"],
+  [views.includes('overview-life-adaptation')&&views.includes('overview-education')&&state.includes('c.lifeAdaptation=')&&state.includes('c.educationLevel=')&&simulation.includes('educationLevel:c.educationLevel'),"생활 환경 적응도와 교육 수준을 저장하고 로그 갱신 서명에 반영"],
   [simulation.includes('function eatingHabitEvent(')&&!simulation.includes('(c.eatingHabits||[]).forEach')&&simulation.includes('const breakfastHabit=eatingHabitEvent')&&simulation.includes('const dinnerHabit=eatingHabitEvent'),"식습관 로그를 일반 성격 로그에서 분리해 식사 시간에만 생성"],
   [homeSimulation.includes(':movement-start')&&homeSimulation.includes('movementStartsAt')&&audio.includes('const channels=new Map()')&&audio.includes('initial?140+(hash(actor.id)%780)')&&audio.includes('element.dataset.homePerson'),"캐릭터별 독립 이동 시작 시각과 시간차 발소리 채널"],
   [views.includes('character-body-figure-page')&&views.includes('data-character-body-pane="appearance"')&&state.includes('characterBodyPane:"figure"'),"신체 4·5쪽을 독립 페이지로 구성"],
   [views.includes('const SKIN_TONE_DEPTHS=[0,3,5,7,10,13,17,21,23,25,28,31,35,40,45,50,55,60]')&&views.includes('data-skin-tone-choice=')&&views.includes('skinToneColor(selectedSkinTone)'),"72색 언더톤·명도 피부 팔레트와 본문 미리보기"],
   [views.includes('const SCAR_LOCATION_OPTIONS=')&&views.includes('const SCAR_TYPE_OPTIONS=')&&views.includes('data-body-mark-field="attitude"')&&views.includes('data-body-array-action="add"')&&bookCss.includes('.character-body-mark-dialog'),"흉터·문신의 이름·위치·유형·인식을 각각 편집하는 복수 드롭다운 UI"],
   [app.includes('button.dataset.bodyArrayAction==="add"')&&app.includes('values.length>=8')&&app.includes('data-body-mark-field')&&state.includes('normalizeBodyMarks(source.scars,"scar")'),"흉터·문신을 구조화 데이터로 최대 8개까지 추가·삭제하고 구형 저장본도 복원"],
-  [views.includes('overviewChoiceCount(c.behaviorHabits||[])')&&views.includes('overview-openness')&&app.includes('bindCharacterBookSwipe()'),"행동 습관 개수 요약·자율 이끌림·가로 스와이프 이동"],
-  [gradle.includes('versionCode 158')&&gradle.includes('versionName "1.0.146"'),"Android 개발 버전 158 / 1.0.146"]
+  [views.includes('overview-life-adaptation')&&views.includes('overview-education')&&views.includes('overview-openness')&&app.includes('bindCharacterBookSwipe()'),"환경 적응도·교육 수준·자율 이끌림·가로 스와이프 이동"],
+  [app.includes('openIndex=values.length-1')&&app.includes('if(openIndex>=0)requestAnimationFrame')&&app.includes('dialog.showModal()'),"흉터·문신 추가 직후 새 항목의 상세 설정창을 자동으로 엶"],
+  [gradle.includes('versionCode 159')&&gradle.includes('versionName "1.0.147"'),"Android 개발 버전 159 / 1.0.147"]
 ];
 
 let failed=0;
