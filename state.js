@@ -1,9 +1,9 @@
 import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826mediarestorehotfix134";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260825relationshipcataloghotfix133";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260825relationshipcataloghotfix133";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260825relationshipcataloghotfix133";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260825relationshipcataloghotfix133";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260825relationshipcataloghotfix133";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826scheduledeletionhotfix161";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260826scheduledeletionhotfix161";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826scheduledeletionhotfix161";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826scheduledeletionhotfix161";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826scheduledeletionhotfix161";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -170,7 +170,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:28,activeTab:"observe",characterPane:"profile",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:28,activeTab:"observe",characterPane:"profile",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -246,6 +246,8 @@ function normalizeHomes(x){
   x.deletedRelationshipIds=Array.isArray(x.deletedRelationshipIds)?[...new Set(x.deletedRelationshipIds.map(String))]:[];
   x.deletedRelationshipKeys=Array.isArray(x.deletedRelationshipKeys)?[...new Set(x.deletedRelationshipKeys.map(normalizeRelationshipTombstoneKey).filter(Boolean))]:[];
   x.deletedHomeIds=Array.isArray(x.deletedHomeIds)?[...new Set(x.deletedHomeIds.map(String))]:[];
+  x.deletedRoutineIds=Array.isArray(x.deletedRoutineIds)?[...new Set(x.deletedRoutineIds.map(String).filter(Boolean))]:[];
+  x.deletedMonthlyRoutineIds=Array.isArray(x.deletedMonthlyRoutineIds)?[...new Set(x.deletedMonthlyRoutineIds.map(String).filter(Boolean))]:[];
   x.deletedCharacterIds.forEach(id=>delete x.characters[id]);
   const characterIds=Object.keys(x.characters);
   x.order=Array.isArray(x.order)?x.order.map(String).filter((id,index,list)=>x.characters[id]&&list.indexOf(id)===index):[];
@@ -524,7 +526,8 @@ function normalizeHomes(x){
        day.signature=typeof day.signature==="string"?day.signature:"";
        day.engineVersion=String(day.engineVersion||"");
        day.settingsAppliedAt=Number.isFinite(Number(day.settingsAppliedAt))?Number(day.settingsAppliedAt):0;
-      day.entries=Array.isArray(day.entries)?day.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)).map(item=>({
+      const deletedScheduleIds=new Set([...x.deletedRoutineIds,...x.deletedMonthlyRoutineIds]);
+      day.entries=Array.isArray(day.entries)?day.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)&&!deletedScheduleIds.has(String(item.routineId||""))).map(item=>({
         ...item,
         minute:Number.isFinite(Number(item.minute))?Number(item.minute):0,
         title:String(item.title||"생활 중"),
@@ -532,7 +535,7 @@ function normalizeHomes(x){
       })):[];
       return[String(key),day];
     }));
-    x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)).map(r=>{
+    x.routines[c.id]=Array.isArray(x.routines[c.id])?x.routines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)&&!x.deletedRoutineIds.includes(String(r.id||""))).map(r=>{
       const id=r.id||uid();
       return {
         id,seriesId:String(r.seriesId||id),day:Number.isFinite(+r.day)?Math.max(0,Math.min(6,+r.day)):1,
@@ -541,7 +544,7 @@ function normalizeHomes(x){
         notes:r.notes||""
       };
     }):[];
-    x.monthlyRoutines[c.id]=Array.isArray(x.monthlyRoutines[c.id])?x.monthlyRoutines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)&&/^\d{4}-\d{2}-\d{2}$/.test(String(r.date||""))).map(r=>({
+    x.monthlyRoutines[c.id]=Array.isArray(x.monthlyRoutines[c.id])?x.monthlyRoutines[c.id].filter(r=>r&&typeof r==="object"&&!Array.isArray(r)&&!x.deletedMonthlyRoutineIds.includes(String(r.id||""))&&/^\d{4}-\d{2}-\d{2}$/.test(String(r.date||""))).map(r=>({
       id:String(r.id||uid()),date:String(r.date),start:r.start||"09:00",end:r.end||"10:00",type:r.type||"개인 일정",
       title:String(r.title||"새 일정"),placeId:String(r.placeId||""),visitHomeId:x.homes?.[r.visitHomeId]?String(r.visitHomeId):"",withIds:Array.isArray(r.withIds)?r.withIds.map(String).filter(id=>x.characters[id]):[],notes:String(r.notes||"")
     })):[];
@@ -884,8 +887,31 @@ export function updateRoutine(characterId,routineId,patch){
   const routine=state.routines[characterId]?.find(item=>item.id===routineId);if(!routine)return;
   Object.assign(routine,patch);if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();save();
 }
+function invalidateDeletedSchedules(characterId,routineIds,tombstoneKey){
+  const ids=[...new Set((routineIds||[]).map(String).filter(Boolean))];
+  if(!ids.length)return;
+  state[tombstoneKey]=[...new Set([...(state[tombstoneKey]||[]).map(String),...ids])];
+  const deleted=new Set(ids),changedAt=Date.now();
+  Object.values(state.characters||{}).forEach(character=>{
+    if(!character||typeof character!=="object")return;
+    let affected=character.id===characterId;
+    Object.values(character.days||{}).forEach(day=>{
+      if(!Array.isArray(day?.entries))return;
+      const before=day.entries.length;
+      day.entries=day.entries.filter(entry=>!deleted.has(String(entry?.routineId||"")));
+      if(day.entries.length!==before)affected=true;
+    });
+    if(affected)character.timelineResetAt=changedAt;
+  });
+  delete state.dailyPlans?.[characterId];
+}
 export function deleteRoutine(characterId,routineId){
-  state.routines[characterId]=(state.routines[characterId]||[]).filter(item=>item.id!==routineId);if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();save(true);
+  state.routines[characterId]=(state.routines[characterId]||[]).filter(item=>item.id!==routineId);
+  invalidateDeletedSchedules(characterId,[routineId],"deletedRoutineIds");save(true);
+}
+export function deleteMonthlyRoutine(characterId,routineId){
+  state.monthlyRoutines[characterId]=(state.monthlyRoutines?.[characterId]||[]).filter(item=>item.id!==routineId);
+  invalidateDeletedSchedules(characterId,[routineId],"deletedMonthlyRoutineIds");save(true);
 }
 export function updateRoutineDays(characterId,routineId,days,patch={}){
   const routines=state.routines[characterId]||[],source=routines.find(item=>item.id===routineId);
@@ -897,7 +923,9 @@ export function updateRoutineDays(characterId,routineId,days,patch={}){
     const existing=byDay.get(day),id=existing?.id||uid();
     return {...source,...existing,...patch,id,seriesId,day,withIds:Array.isArray(patch.withIds)?[...patch.withIds]:[...(existing?.withIds||source.withIds||[])]};
   });
+  const replacementIds=new Set(replacements.map(item=>String(item.id))),removedIds=group.map(item=>String(item.id)).filter(id=>!replacementIds.has(id));
   state.routines[characterId]=routines.filter(item=>String(item.seriesId||item.id)!==seriesId).concat(replacements);
+  invalidateDeletedSchedules(characterId,removedIds,"deletedRoutineIds");
   if(state.characters[characterId])state.characters[characterId].timelineResetAt=Date.now();
   save(true);return true;
 }

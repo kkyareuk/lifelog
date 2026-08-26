@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260825-relationship-catalog-hotfix-133";
+const CACHE_VERSION="drawer-village-v20260826-schedule-deletion-hotfix-161";
 const CORE=[
   "./",
   "./index.html",

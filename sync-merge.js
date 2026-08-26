@@ -52,6 +52,8 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.deletedRelationshipIds=union(device.deletedRelationshipIds,cloud.deletedRelationshipIds);
   next.deletedRelationshipKeys=union(device.deletedRelationshipKeys,cloud.deletedRelationshipKeys);
   next.deletedHomeIds=union(device.deletedHomeIds,cloud.deletedHomeIds);
+  next.deletedRoutineIds=union(device.deletedRoutineIds,cloud.deletedRoutineIds);
+  next.deletedMonthlyRoutineIds=union(device.deletedMonthlyRoutineIds,cloud.deletedMonthlyRoutineIds);
   const deletedCharacters=new Set(next.deletedCharacterIds),deletedHomes=new Set(next.deletedHomeIds);
 
   next.characters=mergedMap(preferred.characters,fallback.characters);
@@ -63,6 +65,14 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.homes=mergedMap(preferred.homes,fallback.homes);
   deletedHomes.forEach(id=>delete next.homes[id]);
   next.routines=mergedMap(preferred.routines,fallback.routines);
+  next.monthlyRoutines=mergedMap(preferred.monthlyRoutines,fallback.monthlyRoutines);
+  const deletedRoutines=new Set(next.deletedRoutineIds),deletedMonthlyRoutines=new Set(next.deletedMonthlyRoutineIds);
+  Object.keys(next.routines).forEach(characterId=>{
+    next.routines[characterId]=(Array.isArray(next.routines[characterId])?next.routines[characterId]:[]).filter(item=>!deletedRoutines.has(String(item?.id||"")));
+  });
+  Object.keys(next.monthlyRoutines).forEach(characterId=>{
+    next.monthlyRoutines[characterId]=(Array.isArray(next.monthlyRoutines[characterId])?next.monthlyRoutines[characterId]:[]).filter(item=>!deletedMonthlyRoutines.has(String(item?.id||"")));
+  });
   next.dailyPlans=mergedMap(preferred.dailyPlans,fallback.dailyPlans);
   next.characterViews=mergedMap(preferred.characterViews,fallback.characterViews);
 

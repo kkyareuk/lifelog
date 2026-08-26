@@ -3,7 +3,7 @@ import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuth
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260825relationshipcataloghotfix133";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260826scheduledeletionhotfix161";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -63,10 +63,14 @@ const applyLocalTombstones=(remote,local)=>{
   const deletedRelationships=new Set([...(local?.deletedRelationshipIds||[]),...(next.deletedRelationshipIds||[])].map(String));
   const deletedRelationshipKeys=new Set([...(local?.deletedRelationshipKeys||[]),...(next.deletedRelationshipKeys||[])].map(normalizeRelationshipTombstoneKey).filter(Boolean));
   const deletedHomes=new Set([...(local?.deletedHomeIds||[]),...(next.deletedHomeIds||[])].map(String));
+  const deletedRoutines=new Set([...(local?.deletedRoutineIds||[]),...(next.deletedRoutineIds||[])].map(String));
+  const deletedMonthlyRoutines=new Set([...(local?.deletedMonthlyRoutineIds||[]),...(next.deletedMonthlyRoutineIds||[])].map(String));
   next.deletedCharacterIds=[...deletedCharacters];
   next.deletedRelationshipIds=[...deletedRelationships];
   next.deletedRelationshipKeys=[...deletedRelationshipKeys];
   next.deletedHomeIds=[...deletedHomes];
+  next.deletedRoutineIds=[...deletedRoutines];
+  next.deletedMonthlyRoutineIds=[...deletedMonthlyRoutines];
   if(Array.isArray(next.characters))next.characters=next.characters.filter(character=>character&&!deletedCharacters.has(String(character.id)));
   else Object.keys(next.characters||{}).forEach(id=>{if(deletedCharacters.has(String(id)))delete next.characters[id]});
   next.order=(Array.isArray(next.order)?next.order:[]).filter(id=>!deletedCharacters.has(String(id)));
@@ -89,6 +93,12 @@ const applyLocalTombstones=(remote,local)=>{
     if(!character||typeof character!=="object")return;
     if(Array.isArray(character.residences))character.residences=character.residences.filter(item=>item&&!deletedHomes.has(String(item.homeId)));
     if(deletedHomes.has(String(character.homeId)))character.homeId="";
+  });
+  Object.keys(next.routines||{}).forEach(characterId=>{
+    next.routines[characterId]=(Array.isArray(next.routines[characterId])?next.routines[characterId]:[]).filter(item=>!deletedRoutines.has(String(item?.id||"")));
+  });
+  Object.keys(next.monthlyRoutines||{}).forEach(characterId=>{
+    next.monthlyRoutines[characterId]=(Array.isArray(next.monthlyRoutines[characterId])?next.monthlyRoutines[characterId]:[]).filter(item=>!deletedMonthlyRoutines.has(String(item?.id||"")));
   });
   return next;
 };
