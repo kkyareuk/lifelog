@@ -1,15 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260826habitsmovement155";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260826habitsmovement155";
-import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260826habitsmovement155";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260826habitsmovement155";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260826habitsmovement155";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260826habitsmovement155";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260826habitsmovement155";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260826habitsmovement155";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260826habitsmovement155";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826habitsmovement155";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260826habitsmovement155";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260826habitsmovement155";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260826characterbookskin156";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260826characterbookskin156";
+import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260826characterbookskin156";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260826characterbookskin156";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260826characterbookskin156";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260826characterbookskin156";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260826characterbookskin156";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260826characterbookskin156";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbookskin156";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826characterbookskin156";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260826characterbookskin156";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260826characterbookskin156";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -328,7 +328,7 @@ function profileExportLines(character){
   const sections=[
     exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["끌리는 대상",character.attractionTarget],["새로운 사람에게 끌리는 정도",character.relationshipOpenness],["직업",character.jobTitle||character.job],["생일",character.birthday?`${character.birthday.slice(0,2)}월 ${character.birthday.slice(2)}일`:""],["재산",character.wealth],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 특징",listText(character.attractionTraits)]]),
     exportSection("성격",[["전체적인 유형",listText(character.personalityTypes)],["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["패션 감각",character.fashionSense],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm],["유머·장난 성향",character.humorStyle],["감정 표현의 크기",character.emotionalExpression],["충동을 참는 정도",character.impulseControl],["서사·인지 특성",listText(character.characterTraits)],["장면에 반영할 특성 표현",listText(character.traitExpressions)],["특성 표현 메모",character.traitNotes],["메모를 로그에 반영",character.traitNotesInScripts?"사용":""]]),
-    exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["곱슬기",appearance.hairTexture],["머릿결",appearance.hairCondition],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
+    exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["외모 자각",body.appearanceAwareness],["피부색",body.skinTone],["피부 특징",listText(body.skinFeatures)],["흉터",listText(body.scars)],["문신",listText(body.tattoos)],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["곱슬기",appearance.hairTexture],["머릿결",appearance.hairCondition],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
     exportSection("건강·장애·접근성",[["만성질환·건강 관리",listText(body.healthConditions)],["기타 건강 상태",body.healthOther],["휠체어",wheelchair.type],["휠체어 이용 방식",wheelchair.pattern],["의수 사용 부위",arm.side],["의수 종류",arm.custom||arm.type],["의족 사용 부위",leg.side],["의족 종류",leg.custom||leg.type],["청각장애·난청 부위",hearing.side],["청각 특성",hearing.level],["청각 접근 방식",listText(hearing.supports)],["시각장애·저시력 부위",vision.side],["시각 특성",vision.level],["시각 접근 방식",listText(vision.supports)],["상호작용에서 지킬 방식",listText(body.accessibilityPreferences)],["표현 메모",body.notes]]),
     exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]])
   ];
@@ -1188,7 +1188,11 @@ function render({force=false}={}){
   // and made the entire app untappable. Always recover from that stale state
   // before rebuilding the screen; navigation no longer disables pointer input.
   document.documentElement.classList.remove("page-switching");
-  const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender;
+  // 전체설정 책은 main의 스크롤 위치와 무관한 412×917 고정 무대다.
+  // 팝업이 포커스를 옮기며 main.scrollTop을 바꿔도 그 값을 책 화면에
+  // 복원하지 않아야 상단 메뉴와 책 전체가 함께 위로 튕기지 않는다.
+  const fullCharacterBookActive=state.activeTab==="character"&&state.characterSettingsView==="full";
+  const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender&&!fullCharacterBookActive;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
   // 앱에서는 window가 아니라 main이 실제 세로 스크롤을 담당한다. 이 값을
   // 따로 보존하지 않으면 취향 도감의 모든 재렌더가 화면을 맨 위로 보낸다.
@@ -1263,6 +1267,11 @@ function render({force=false}={}){
     if(state.activeTab==="town")centerMobileTownMap();
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
+    if(fullCharacterBookActive){
+      const main=document.querySelector("#app>main");
+      if(main){main.scrollLeft=0;main.scrollTop=0}
+      window.scrollTo(0,0);
+    }
     if(preservePageScroll){
       restoreWindowScroll(previousPageX,previousPageY);
       restoreMainScroll(previousMainLeft,previousMainTop,openCatalogKeys);
@@ -1841,9 +1850,42 @@ function bindNativeObserveCharacterSwipe(){
   hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
 }
 
+function moveCharacterBookPage(direction){
+  const pages=["visual","overview-basic","overview-life","body-figure","body-appearance","personality","taste","worldTaste"];
+  const current=state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane;
+  const currentIndex=pages.indexOf(current),next=pages[currentIndex+direction];
+  if(currentIndex<0||!next)return false;
+  if(next.startsWith("overview-")){
+    state.characterPane="profile";
+    state.characterOverviewPane=next.endsWith("life")?"life":"basic";
+  }else if(next.startsWith("body-")){
+    state.characterPane="body";
+    state.characterBodyPane=next.endsWith("appearance")?"appearance":"figure";
+  }else state.characterPane=next;
+  save(true);render();return true;
+}
+function bindCharacterBookSwipe(){
+  const page=document.querySelector(".character-book-v8.is-open .character-book-v8-page");
+  if(!page)return;
+  let start=null;
+  page.addEventListener("pointerdown",event=>{
+    if(event.pointerType==="mouse"&&event.button!==0)return;
+    if(event.target.closest("button,input,select,textarea,dialog,details,a,[contenteditable]"))return;
+    start={x:event.clientX,y:event.clientY,id:event.pointerId};
+  },{passive:true});
+  page.addEventListener("pointerup",event=>{
+    if(!start||start.id!==event.pointerId)return;
+    const dx=event.clientX-start.x,dy=event.clientY-start.y;start=null;
+    if(Math.abs(dx)<46||Math.abs(dx)<Math.abs(dy)*1.35)return;
+    moveCharacterBookPage(dx<0?1:-1);
+  },{passive:true});
+  page.addEventListener("pointercancel",()=>{start=null},{passive:true});
+}
+
 function bind(){
   bindHorizontalWheelNavigation();
   bindNativeObserveCharacterSwipe();
+  bindCharacterBookSwipe();
   bindFurniturePlacementEditors();
   // Cloud sync intentionally does not copy device-only photos. If an old
   // device URL is unavailable, replace the broken image with the character's
@@ -2477,6 +2519,33 @@ function bind(){
     };
     el.addEventListener(eventName,apply);
   });
+  $$('[data-body-array-field]').forEach(el=>{
+    const apply=()=>{
+      const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),field=el.dataset.bodyArrayField,index=Number(el.dataset.bodyArrayIndex)||0;
+      const values=Array.isArray(bodyProfile[field])?[...bodyProfile[field]]:[];
+      values[index]=el.value.slice(0,80);
+      bodyProfile[field]=values;
+      const mobileDraft=markMobileCharacterDraft(el);
+      updateCharacter(character.id,{bodyProfile},false);
+      if(!mobileDraft)save();
+    };
+    if(isDeferredMobileTextControl(el))el.addEventListener('input',()=>markMobileCharacterDraft(el),{passive:true});
+    else el.addEventListener('input',apply);
+    el.addEventListener('change',apply);
+  });
+  $$('[data-open-skin-tone]').forEach(el=>el.onclick=()=>{
+    const dialog=document.querySelector('[data-skin-tone-dialog]');
+    if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
+  });
+  $$('[data-skin-tone-choice]').forEach(el=>el.onclick=()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{});
+    bodyProfile.skinTone=el.dataset.skinToneChoice;
+    updateCharacter(character.id,{bodyProfile},false);save(true);
+    document.querySelectorAll('[data-skin-tone-choice]').forEach(button=>button.classList.toggle('on',button===el));
+    const preview=document.querySelector('.body-skin-tone>button>i'),label=document.querySelector('.body-skin-tone>button>span');
+    if(preview)preview.style.setProperty('--skin-tone',getComputedStyle(el).getPropertyValue('--skin-tone'));
+    if(label)label.textContent=el.getAttribute('aria-label')||el.dataset.skinToneChoice;
+  });
   $$("[data-body-list]").forEach(el=>el.onclick=()=>{
     const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),bodyPath=el.dataset.bodyList.split(":")[0],parts=bodyPath.split("."),last=parts.pop();
     let cursor=bodyProfile;
@@ -2765,14 +2834,20 @@ function bind(){
   $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{
     const pane=el.dataset.characterPane;
-    if(pane==="profile") state.characterOverviewPane="basic";
+    if(pane==="profile") state.characterOverviewPane=el.dataset.characterOverviewTarget==="life"?"life":"basic";
+    if(pane==="body") state.characterBodyPane="figure";
     setCharacterPane(pane);
-    renderPreservingPageScroll(el);
+    el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
   });
   $$("[data-character-overview-pane]").forEach(el=>el.onclick=()=>{
     state.characterOverviewPane=el.dataset.characterOverviewPane==="life"?"life":"basic";
     save(true);
-    renderPreservingPageScroll(el);
+    el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
+  });
+  $$("[data-character-body-pane]").forEach(el=>el.onclick=()=>{
+    state.characterBodyPane=el.dataset.characterBodyPane==="appearance"?"appearance":"figure";
+    save(true);
+    el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
   });
   $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
@@ -4627,7 +4702,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260826habitsmovement155").catch(error=>{
+import("./auth.js?v=20260826characterbookskin156").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4642,7 +4717,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260826habitsmovement155",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260826characterbookskin156",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260826habitsmovement155";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260826habitsmovement155";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826habitsmovement155";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826habitsmovement155";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260826habitsmovement155";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260826characterbookskin156";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260826characterbookskin156";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbookskin156";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbookskin156";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260826characterbookskin156";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -26,6 +26,10 @@ Object.assign(I18N.en,{"헤어스타일":"Hairstyles","머리 장식":"Hair acce
 Object.assign(I18N.ja,{"헤어스타일":"ヘアスタイル","머리 장식":"髪飾り","여러 개 선택 가능":"複数選択できます","선택 완료":"選択完了","선택한 항목이 없습니다.":"選択項目はありません。"});
 Object.assign(I18N.en,{"체모 정도":"Body hair amount","체모 위치":"Body hair locations","없음":"None","거의 없음":"Almost none","적은 편":"Light","많은 편":"Heavy","매우 많음":"Very heavy","얼굴":"Face","인중":"Upper lip","턱":"Chin","구레나룻":"Sideburns","가슴":"Chest","배":"Abdomen","등":"Back","어깨":"Shoulders","팔":"Arms","겨드랑이":"Armpits","손":"Hands","허벅지":"Thighs","종아리":"Calves","발":"Feet"});
 Object.assign(I18N.ja,{"체모 정도":"体毛の量","체모 위치":"体毛の部位","없음":"なし","거의 없음":"ほとんどなし","적은 편":"少なめ","많은 편":"多め","매우 많음":"非常に多い","얼굴":"顔","인중":"口ひげ","턱":"あご","구레나룻":"もみあげ","가슴":"胸","배":"腹","등":"背中","어깨":"肩","팔":"腕","겨드랑이":"わき","손":"手","허벅지":"太もも","종아리":"ふくらはぎ","발":"足"});
+Object.assign(I18N.en,{"행동 습관":"Behavior habits","2개 선택됨":"2 selected","개 선택됨":" selected","외모가 눈에 띄는 정도":"How noticeable their appearance is","본인 외모에 대한 자각 정도":"Awareness of their appearance","피부":"Skin","피부 특징":"Skin features","흉터":"Scars","문신":"Tattoos","종합 인상":"Overall impression","피부색 고르기":"Choose a skin tone","서랍마을 피부 팔레트":"Drawer Village skin palette","인종이나 국가 대신 색의 밝기와 언더톤으로 고릅니다.":"Choose by depth and undertone, without race or nationality labels.","쿨톤":"Cool","뉴트럴톤":"Neutral","웜톤":"Warm","올리브톤":"Olive","신체 페이지 이동":"Body page navigation"});
+Object.assign(I18N.ja,{"행동 습관":"行動の癖","2개 선택됨":"2個選択済み","개 선택됨":"個選択済み","외모가 눈에 띄는 정도":"外見の目立ちやすさ","본인 외모에 대한 자각 정도":"自分の外見への自覚","피부":"肌","피부 특징":"肌の特徴","흉터":"傷跡","문신":"タトゥー","종합 인상":"全体の印象","피부색 고르기":"肌色を選ぶ","서랍마을 피부 팔레트":"ひきだし村スキンパレット","人種や国籍ではなく、明るさとアンダートーンで選びます。":"人種や国籍ではなく、明るさとアンダートーンで選びます。","쿨톤":"クール","뉴트럴톤":"ニュートラル","웜톤":"ウォーム","올리브톤":"オリーブ","신체 페이지 이동":"身体ページの移動"});
+Object.assign(I18N.en,{"설정하지 않음":"Not set","전혀 자각하지 못함":"Not aware at all","조금 알고 있음":"Slightly aware","대체로 알고 있음":"Generally aware","정확히 알고 있음":"Clearly aware","타인의 반응까지 잘 앎":"Aware of others’ reactions","신체 일러스트":"Body illustration","사진 추가하기":"Add image","주근깨가 있음":"Freckles","점이 있음":"Moles","홍조가 있음":"Rosy complexion","피부 결이 매끄러움":"Smooth skin texture","피부가 건조함":"Dry skin","피부가 민감함":"Sensitive skin","햇볕에 잘 탐":"Tans easily","햇볕에 쉽게 붉어짐":"Sunburns easily","색소침착이 있음":"Hyperpigmentation","백반이 있음":"Vitiligo","여드름 흔적이 있음":"Acne marks","기타 피부 특징":"Other skin feature","공포스러운":"Frightening","퇴폐적인 분위기":"Decadent aura","중성적인 인상":"Androgynous impression","부드러운 인상":"Gentle impression","날카로운 인상":"Sharp impression","귀여운 인상":"Cute impression","우아한 인상":"Elegant impression","위압적인 분위기":"Intimidating aura","단정한 분위기":"Neat impression","신비로운 분위기":"Mysterious aura","성숙한 인상":"Mature impression","어린 인상":"Youthful impression"});
+Object.assign(I18N.ja,{"설정하지 않음":"未設定","전혀 자각하지 못함":"まったく自覚していない","조금 알고 있음":"少し自覚している","대체로 알고 있음":"だいたい自覚している","정확히 알고 있음":"正確に自覚している","타인의 반응까지 잘 앎":"周囲の反応までよく分かる","신체 일러스트":"全身イラスト","사진 추가하기":"画像を追加","주근깨가 있음":"そばかすがある","점이 있음":"ほくろがある","홍조가 있음":"赤みがある","피부 결이 매끄러움":"肌のきめが滑らか","피부가 건조함":"乾燥肌","피부가 민감함":"敏感肌","햇볕에 잘 탐":"日焼けしやすい","햇볕에 쉽게 붉어짐":"日に当たると赤くなりやすい","색소침착이 있음":"色素沈着がある","백반이 있음":"白斑がある","여드름 흔적이 있음":"にきび跡がある","기타 피부 특징":"その他の肌の特徴","공포스러운":"恐ろしい","퇴폐적인 분위기":"退廃的な雰囲気","중성적인 인상":"中性的な印象","부드러운 인상":"柔らかな印象","날카로운 인상":"鋭い印象","귀여운 인상":"可愛い印象","우아한 인상":"優雅な印象","위압적인 분위기":"威圧的な雰囲気","단정한 분위기":"端正な雰囲気","신비로운 분위기":"神秘的な雰囲気","성숙한 인상":"大人びた印象","어린 인상":"幼い印象"});
 Object.assign(I18N.en,{"눈 특징":"Eye features","눈매가 날카로움":"Sharp eyes","눈매가 부드러움":"Soft eyes","눈꼬리가 올라감":"Upturned eyes","눈꼬리가 내려감":"Downturned eyes","큰 눈":"Large eyes","작은 눈":"Small eyes","쌍꺼풀 있음":"Double eyelids","속쌍꺼풀":"Inner double eyelids","무쌍":"Monolids","삼백안":"Sanpaku eyes","사백안":"Four-white eyes","졸린 눈":"Sleepy eyes","처진 눈":"Droopy eyes","짝눈":"Asymmetrical eyes","오드아이":"Heterochromia","눈 밑 점":"Beauty mark under eye","다크서클":"Dark circles","속눈썹이 김":"Long eyelashes","눈썹이 진함":"Thick eyebrows","머리핀":"Hairpin","리본":"Ribbon","헤어밴드":"Hair band","머리띠":"Headband","비녀":"Hair stick","장식 빗":"Decorative comb","꽃 장식":"Flower accessory","베일":"Veil","모자":"Hat","후드":"Hood","왕관":"Crown","티아라":"Tiara","뿔":"Horns","한쪽 뿔":"Single horn","한 쌍의 뿔":"Pair of horns","후광":"Halo","동물 귀 장식":"Animal ear accessory","깃털 장식":"Feather accessory","보석 장식":"Gem accessory","체인 장식":"Chain accessory"});
 Object.assign(I18N.ja,{"눈 특징":"目の特徴","눈매가 날카로움":"鋭い目つき","눈매가 부드러움":"柔らかい目つき","눈꼬리가 올라감":"つり目","눈꼬리가 내려감":"たれ目","큰 눈":"大きな目","작은 눈":"小さな目","쌍꺼풀 있음":"二重","속쌍꺼풀":"奥二重","무쌍":"一重","삼백안":"三白眼","사백안":"四白眼","졸린 눈":"眠そうな目","처진 눈":"垂れた目","짝눈":"左右非対称の目","오드아이":"オッドアイ","눈 밑 점":"泣きぼくろ","다크서클":"目のくま","속눈썹이 김":"まつ毛が長い","눈썹이 진함":"眉が濃い","머리핀":"ヘアピン","리본":"リボン","헤어밴드":"ヘアバンド","머리띠":"カチューシャ","비녀":"かんざし","장식 빗":"飾り櫛","꽃 장식":"花飾り","베일":"ベール","모자":"帽子","후드":"フード","왕관":"王冠","티아라":"ティアラ","뿔":"角","한쪽 뿔":"片角","한 쌍의 뿔":"一対の角","후광":"光輪","동물 귀 장식":"動物耳の飾り","깃털 장식":"羽飾り","보석 장식":"宝石飾り","체인 장식":"チェーン飾り"});
 const t=(key,fallback)=>I18N[state.uiLanguage]?.[key]||fallback;
@@ -2233,6 +2237,29 @@ const EYE_FEATURE_OPTIONS=["눈매가 날카로움","눈매가 부드러움","�
 const HAIR_ACCESSORY_OPTIONS=["머리핀","리본","헤어밴드","머리띠","비녀","장식 빗","꽃 장식","베일","모자","후드","왕관","티아라","뿔","한쪽 뿔","한 쌍의 뿔","후광","동물 귀 장식","깃털 장식","보석 장식","체인 장식"];
 const BODY_HAIR_AMOUNTS=["설정하지 않음","없음","거의 없음","적은 편","보통","많은 편","매우 많음"];
 const BODY_HAIR_LOCATION_OPTIONS=["얼굴","인중","턱","구레나룻","가슴","배","등","어깨","팔","겨드랑이","손","허벅지","종아리","발"];
+const SKIN_FEATURE_OPTIONS=["주근깨가 있음","점이 있음","홍조가 있음","피부 결이 매끄러움","피부가 건조함","피부가 민감함","햇볕에 잘 탐","햇볕에 쉽게 붉어짐","색소침착이 있음","백반이 있음","여드름 흔적이 있음","기타 피부 특징"];
+const OVERALL_IMPRESSION_OPTIONS=["공포스러운","퇴폐적인 분위기","중성적인 인상","부드러운 인상","날카로운 인상","귀여운 인상","우아한 인상","위압적인 분위기","단정한 분위기","신비로운 분위기","성숙한 인상","어린 인상"];
+const SKIN_TONE_DEPTHS=[10,13,17,21,23,25,28,31,35,40,45,50];
+const SKIN_TONE_COLORS={
+  "쿨톤":["#F9DED5","#F3CFC5","#EABBAE","#DDA392","#CE8C79","#BC755F","#A45F4B","#8C4C3C","#733B31","#5B2D27","#45221E","#321815"],
+  "뉴트럴톤":["#F6DFD0","#EFCDBA","#E5B7A0","#D59F84","#C68A70","#B57459","#9D5E47","#854B39","#6C3A2F","#552C26","#40211D","#2E1714"],
+  "웜톤":["#F7DFBF","#F0CEAA","#E6B98E","#D7A172","#C98B5E","#B7744B","#9F5D3B","#87492F","#6F3827","#582B21","#432019","#301611"],
+  "올리브톤":["#EFE0BE","#E3CFAB","#D3B98C","#C0A075","#AD8961","#99744F","#825E40","#6C4B35","#573B2C","#452E24","#34221C","#251815"]
+};
+const skinToneParts=value=>{
+  const match=String(value||"").match(/^(쿨톤|뉴트럴톤|웜톤|올리브톤)\s+(\d+)호$/);
+  return match?{undertone:match[1],depth:Number(match[2])}:{undertone:"뉴트럴톤",depth:23};
+};
+export const skinToneColor=value=>{
+  const {undertone,depth}=skinToneParts(value),index=Math.max(0,SKIN_TONE_DEPTHS.indexOf(depth));
+  return SKIN_TONE_COLORS[undertone]?.[index]||SKIN_TONE_COLORS["뉴트럴톤"][4];
+};
+const skinToneLabel=value=>{
+  const {undertone,depth}=skinToneParts(value);
+  if(state.uiLanguage==="en")return `${t(undertone,undertone)} ${depth}`;
+  if(state.uiLanguage==="ja")return `${t(undertone,undertone)} ${depth}号`;
+  return `${undertone} ${depth}호`;
+};
 const EYE_COLORS=["설정하지 않음","검은색","짙은 갈색","갈색","연갈색","호박색","금색","초록색","청록색","파란색","청회색","회색","보라색","분홍색","빨간색","백색","여러 색","기타"];
 const APPEARANCE_PREVIEW_COLORS={
   "설정하지 않음":"#D8D1C2","검은색":"#22201F","짙은 갈색":"#3C281F","갈색":"#704A32","밝은 갈색":"#A8774F",
@@ -2412,7 +2439,7 @@ function characterFullOverview(c){
     <button type="button" class="character-full-image-slot icon ${c.icon?"has-image":"is-empty"}" data-image="icon">${currentIcon}</button>
     <span class="character-full-slot-label icon">${t("아이콘 추가하기","아이콘 추가하기")}</span>
     <label class="character-full-theme-chooser" aria-label="${esc(t("테마 고르기","테마 고르기"))}"><input type="color" data-color="primary" value="${esc(primary)}"><span>${t("테마 고르기","테마 고르기")}</span></label>
-    <nav class="character-book-cover-controls" aria-label="${esc(t("표지에서 개요로 이동","표지에서 개요로 이동"))}"><button type="button" data-character-pane="profile" aria-label="${esc(t("개요 첫 페이지","개요 첫 페이지"))}">▶</button><b>1</b></nav></div>
+    <nav class="character-book-cover-controls" aria-label="${esc(t("표지에서 개요로 이동","표지에서 개요로 이동"))}"><button type="button" disabled aria-label="${esc(t("이전 페이지 없음","이전 페이지 없음"))}">◀</button><b>1</b><button type="button" data-character-pane="profile" aria-label="${esc(t("개요 첫 페이지","개요 첫 페이지"))}">▶</button></nav></div>
   </section>`;
 }
 function character(){
@@ -2460,7 +2487,7 @@ function character(){
   const photoQuickCard=`<section class="character-photo-quick-card"><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진 첨부</h3><p>여기서 바로 사진을 등록할 수 있어요. 프로필 사진은 동그랗게 표시되며 SD 아이콘과는 별도입니다.</p><div class="image-actions"><button type="button" class="primary" data-image="photo">사진 파일 선택</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">사진 지우기</button>`:""}</div><small>투명 SD 아이콘과 단일 LD 일러스트는 ‘사진·SD·LD’ 탭에서 따로 등록해요.</small></div></section>`;
   const profileWithLicense=`<section class="profile-license">${photoQuickCard}${townAssignment(c)}${profile}<section class="settings-complete-group profile-complete-settings"><div class="settings-section-heading"><span><small>PROFILE DETAILS</small><h3>생활·관계 설정</h3></span><p>직장·소비·입맛·생활 습관·끌림 설정을 모두 표시해요.</p></div>${profileAdvancedFields}<section class="setting-card character-lifestyle-settings"><h2>운전·흡연·주량</h2><p>캐릭터의 실제 생활 습관에 가까운 상태를 골라 주세요.</p><div class="fields lifestyle-profile-fields">${lifestyleSelect("운전면허·운전 경험","driverLicense",["면허 없음","면허만 있음 · 운전하지 않음","초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"],c.driverLicense||"면허 없음")}${lifestyleSelect("흡연 여부","smokingStatus",["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"],c.smokingStatus||"설정하지 않음")}${lifestyleSelect("주량","alcoholTolerance",["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"],c.alcoholTolerance||"설정하지 않음")}</div>${commuteModes}</section>${profileAttractionSettings(c)}</section></section>`;
   const overviewPane=state.characterOverviewPane==="basic"?"basic":"life";
-  const overviewOption=(value,current)=>`<option value="${esc(value)}" ${value===current?"selected":""}>${esc(value)}</option>`;
+  const overviewOption=(value,current)=>`<option value="${esc(value)}" ${value===current?"selected":""}>${esc(t(value,value))}</option>`;
   const overviewSelect=(field,values,current,extra="")=>`<select data-field="${field}" ${extra}>${values.map(value=>overviewOption(value,current)).join("")}</select>`;
   const overviewMonth=`<select data-birthday-part="month" aria-label="${esc(t("생일 월","생일 월"))}"><option value="">-</option>${Array.from({length:12},(_,index)=>String(index+1).padStart(2,"0")).map(value=>`<option value="${value}" ${value===birthMonth?"selected":""}>${Number(value)}</option>`).join("")}</select>`;
   const overviewDay=`<select data-birthday-part="day" aria-label="${esc(t("생일 일","생일 일"))}"><option value="">-</option>${Array.from({length:31},(_,index)=>String(index+1).padStart(2,"0")).map(value=>`<option value="${value}" ${value===birthDay?"selected":""}>${Number(value)}</option>`).join("")}</select>`;
@@ -2483,15 +2510,17 @@ function character(){
     <label class="overview-field overview-smoking"><b>${t("흡연 여부","흡연 여부")}</b>${overviewSelect("smokingStatus",["설정하지 않음","비흡연","금연 중","가끔 흡연","전자담배 사용","흡연"],c.smokingStatus||"설정하지 않음")}</label>
     <label class="overview-field overview-alcohol"><b>${t("주량","주량")}</b>${overviewSelect("alcoholTolerance",["설정하지 않음","마시지 않음","한두 모금","매우 약함","약한 편","보통","강한 편","매우 강함"],c.alcoholTolerance||"설정하지 않음")}</label>
   </section>`;
+  const overviewChoiceCount=values=>values?.length?`${values.length}${t("개 선택됨","개 선택됨")}`:t("정하지 않음","정하지 않음");
   const overviewLife=`<section class="character-overview-basic character-overview-life" aria-label="${esc(t("개요 생활 설정","개요 생활 설정"))}">
     <label class="overview-field overview-wake"><b>${t("기상 시각","기상 시각")}</b><input type="time" data-field="wake" value="${esc(c.wake||"07:30")}"></label>
     <label class="overview-field overview-wake-habit"><b>${t("기상 습관","기상 습관")}</b>${overviewSelect("wakeHabit",["알람을 듣고 천천히 일어남","알람이 울리기 전에 눈을 뜸","알람을 여러 번 미룸","눈을 뜨자마자 바로 일어남","이불 속에서 한참 뒹굶","일어나자마자 창문을 엶","일어나자마자 물을 마심","침대에서 오늘 일정을 확인함","비몽사몽한 채 방을 돌아다님","누가 깨워 줘야 일어남"],c.wakeHabit||"알람을 듣고 천천히 일어남")}</label>
     <label class="overview-field overview-sleep"><b>${t("취침 시각","취침 시각")}</b><input type="time" data-field="sleep" value="${esc(c.sleep||"00:30")}"></label>
     <label class="overview-field overview-sleep-habit"><b>${t("취침 습관","취침 습관")}</b>${overviewSelect("sleepHabit",["이불을 단정히 덮고 잠","이불을 걷어차며 잠","옆으로 웅크려 잠","팔다리를 뻗고 잠","베개를 끌어안고 잠","잠꼬대를 자주 함","뒤척임이 많음","아주 얌전히 잠","새벽에 자주 깸","코를 골며 깊이 잠"],c.sleepHabit||"이불을 단정히 덮고 잠")}</label>
-    <div class="overview-field overview-life-habit"><b>${t("생활습관","생활습관")}</b><button type="button" data-profile-tags="dailyHabits">${(c.dailyHabits||[]).length?esc(c.dailyHabits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
-    <div class="overview-field overview-food-habit"><b>${t("식습관","식습관")}</b><button type="button" data-profile-tags="eatingHabits">${(c.eatingHabits||[]).length?esc(c.eatingHabits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
+    <div class="overview-field overview-life-habit"><b>${t("생활습관","생활습관")}</b><button type="button" data-profile-tags="dailyHabits"><span>${esc(overviewChoiceCount(c.dailyHabits||[]))}</span><i>＋</i></button></div>
+    <div class="overview-field overview-food-habit"><b>${t("식습관","식습관")}</b><button type="button" data-profile-tags="eatingHabits"><span>${esc(overviewChoiceCount(c.eatingHabits||[]))}</span><i>＋</i></button></div>
     <label class="overview-field overview-walking-style"><b>${t("걸음걸이","걸음걸이")}</b>${overviewSelect("walkingStyle",["느리고 조심스럽게","차분하고 반듯하게","보통 속도로 자연스럽게","가볍고 경쾌하게","빠르고 성큼성큼"],c.walkingStyle||"보통 속도로 자연스럽게")}</label>
-    <div class="overview-field overview-openness overview-life-habit overview-behavior-habit"><b>${t("행동 습관","행동 습관")}</b><button type="button" data-profile-tags="behaviorHabits">${(c.behaviorHabits||[]).length?esc(c.behaviorHabits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
+    <div class="overview-field overview-behavior-habit"><b>${t("행동 습관","행동 습관")}</b><button type="button" data-profile-tags="behaviorHabits"><span>${esc(overviewChoiceCount(c.behaviorHabits||[]))}</span><i>＋</i></button></div>
+    <label class="overview-field overview-openness"><b>${t("자율 이끌림","자율 이끌림")}</b>${overviewSelect("relationshipOpenness",["설정하지 않음 · 절대 끌리지 않음","연인이 없을 때만 취향이면 끌림","연인이 있어도 취향이면 끌릴 수 있음"],c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음")}</label>
     <label class="overview-field overview-appearance-interest"><b>${t("상대의 외모를 보는 정도","상대의 외모를 보는 정도")}</b>${overviewSelect("appearanceInterest",["거의 보지 않음","조금 봄","보통","꽤 중요하게 봄","외모에 크게 끌림"],c.appearanceInterest||"보통")}</label>
     <div class="overview-field overview-attraction"><b>${t("선호하는 특성","선호하는 특성")}</b><button type="button" data-profile-tags="attractionTraits">${(c.attractionTraits||[]).length?esc(c.attractionTraits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
     <div class="overview-field overview-disliked-attraction"><b>${t("비선호하는 특성","비선호하는 특성")}</b><button type="button" data-profile-tags="dislikedAttractionTraits">${(c.dislikedAttractionTraits||[]).length?esc(c.dislikedAttractionTraits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
@@ -2515,8 +2544,28 @@ function character(){
   const hairPreviewColor=appearancePreviewColor(bodyAppearance.hairColor,"#7F0000");
   const hairPreviewPath=hairCurlPreviewPath(bodyAppearance.hairTexture);
   const bodyGuide=`<svg class="character-body-guide" viewBox="0 0 412 917" aria-hidden="true" focusable="false" data-hair-curl-preview="${esc(bodyAppearance.hairTexture||"설정하지 않음")}"><ellipse data-eye-color-preview="left" cx="112" cy="235" rx="26" ry="26.5" fill="${leftEyePreview}"/><path d="M54 244C54 244 62 208 111.5 208C161 208 169 244 169 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M54 244.5C54 244.5 62 261.5 111.5 261.5C161 261.5 169 244.5 169 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><ellipse data-eye-color-preview="right" cx="278" cy="235" rx="26" ry="26.5" fill="${rightEyePreview}"/><path d="M220 244C220 244 228 208 277.5 208C327 208 335 244 335 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M220 244.5C220 244.5 228 261.5 277.5 261.5C327 261.5 335 244.5 335 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><path data-hair-shape-preview d="${hairPreviewPath}" fill="none" stroke="${hairPreviewColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const bodyChoiceDialog=`<dialog class="character-body-choice-dialog" data-body-choice-dialog><form method="dialog"><header><span><small>MULTI SELECT</small><b data-body-choice-dialog-title>${t("여러 개 선택 가능","여러 개 선택 가능")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("여러 개 선택 가능","여러 개 선택 가능")}</p>${bodyChoicePanel("appearance.eyeFeatures","눈 특징",EYE_FEATURE_OPTIONS,bodyAppearance.eyeFeatures||[])}${bodyChoicePanel("appearance.hairStyles","헤어스타일",HAIR_STYLES,bodyAppearance.hairStyles||[])}${bodyChoicePanel("appearance.hairAccessories","머리 장식",HAIR_ACCESSORY_OPTIONS,bodyAppearance.hairAccessories||[])}${bodyChoicePanel("appearance.bodyHairLocations","체모 위치",BODY_HAIR_LOCATION_OPTIONS,bodyAppearance.bodyHairLocations||[])}<footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
-  const bodyPane=`<section class="character-body-svg-page" aria-label="${esc(c.name)} ${esc(t("신체 설정","신체 설정"))}">
+  const bodyChoiceDialog=`<dialog class="character-body-choice-dialog" data-body-choice-dialog><form method="dialog"><header><span><small>MULTI SELECT</small><b data-body-choice-dialog-title>${t("여러 개 선택 가능","여러 개 선택 가능")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("여러 개 선택 가능","여러 개 선택 가능")}</p>${bodyChoicePanel("appearance.eyeFeatures","눈 특징",EYE_FEATURE_OPTIONS,bodyAppearance.eyeFeatures||[])}${bodyChoicePanel("appearance.hairStyles","헤어스타일",HAIR_STYLES,bodyAppearance.hairStyles||[])}${bodyChoicePanel("appearance.hairAccessories","머리 장식",HAIR_ACCESSORY_OPTIONS,bodyAppearance.hairAccessories||[])}${bodyChoicePanel("appearance.bodyHairLocations","체모 위치",BODY_HAIR_LOCATION_OPTIONS,bodyAppearance.bodyHairLocations||[])}${bodyChoicePanel("skinFeatures","피부 특징",SKIN_FEATURE_OPTIONS,c.bodyProfile?.skinFeatures||[])}${bodyChoicePanel("overallImpressions","종합 인상",OVERALL_IMPRESSION_OPTIONS,c.bodyProfile?.overallImpressions||[])}<footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
+  const selectedSkinTone=c.bodyProfile?.skinTone||"뉴트럴톤 23호";
+  const skinToneDialog=`<dialog class="character-skin-tone-dialog" data-skin-tone-dialog><form method="dialog"><header><span><small>SKIN PALETTE</small><b>${t("피부색 고르기","피부색 고르기")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("인종이나 국가 대신 색의 밝기와 언더톤으로 고릅니다.","인종이나 국가 대신 색의 밝기와 언더톤으로 고릅니다.")}</p><div class="character-skin-tone-grid">${Object.entries(SKIN_TONE_COLORS).map(([undertone,colors])=>`<section><h3>${t(undertone,undertone)}</h3><div>${colors.map((color,index)=>{const value=`${undertone} ${SKIN_TONE_DEPTHS[index]}호`;return `<button type="button" data-skin-tone-choice="${esc(value)}" class="${value===selectedSkinTone?"on":""}" style="--skin-tone:${color}" aria-label="${esc(skinToneLabel(value))}"><i></i><span>${SKIN_TONE_DEPTHS[index]}</span></button>`}).join("")}</div></section>`).join("")}</div><footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
+  const bodyFigureSource=hasLdArt(c)?ldArtSource(c):c.photo||"";
+  const bodyFigureImage=bodyFigureSource?`<img src="${esc(bodyFigureSource)}" alt="${esc(c.name)} ${esc(t("신체 일러스트","신체 일러스트"))}">`:`<span>${t("사진 추가하기","사진 추가하기")}</span>`;
+  const bodyFigurePane=`<section class="character-body-svg-page character-body-figure-page" aria-label="${esc(c.name)} ${esc(t("신체 설정","신체 설정"))}">
+    <label class="body-figure-field body-appearance-level"><b>${t("외모가 눈에 띄는 정도","외모가 눈에 띄는 정도")}</b>${overviewSelect("appearanceLevel",["매우 추함","못생김","눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"],c.appearanceLevel||"보통")}</label>
+    <label class="body-figure-field body-appearance-awareness"><b>${t("본인 외모에 대한 자각 정도","본인 외모에 대한 자각 정도")}</b>${bodySelect("appearanceAwareness",["설정하지 않음","전혀 자각하지 못함","조금 알고 있음","대체로 알고 있음","정확히 알고 있음","타인의 반응까지 잘 앎"],c.bodyProfile?.appearanceAwareness||"설정하지 않음")}</label>
+    <button type="button" class="body-figure-art ${bodyFigureSource?"has-image":"is-empty"}" data-image="${hasLdArt(c)?"ldImage":"photo"}">${bodyFigureImage}</button>
+    <label class="body-figure-field body-height"><b>${t("키","키")}</b><span><input type="number" inputmode="decimal" min="20" max="300" step="0.1" data-body-field="heightCm" value="${esc(c.bodyProfile?.heightCm||"")}"><i>cm</i></span></label>
+    <label class="body-figure-field body-height-impression">${bodySelect("heightImpression",["설정하지 않음","키가 매우 작음","키가 작은 편","평균적인 키","키가 큰 편","키가 매우 큼"],c.bodyProfile?.heightImpression||"설정하지 않음")}</label>
+    <label class="body-figure-field body-weight"><b>${t("몸무게","몸무게")}</b><span><input type="number" inputmode="decimal" min="1" max="500" step="0.1" data-body-field="weightKg" value="${esc(c.bodyProfile?.weightKg||"")}"><i>kg</i></span></label>
+    <label class="body-figure-field body-build">${bodySelect("bodySize",BODY_SIZES,c.bodyProfile?.bodySize||"설정하지 않음")}</label>
+    <div class="body-figure-field body-overall"><b>${t("종합 인상","종합 인상")}</b>${bodyChoiceOpener("overallImpressions","종합 인상",c.bodyProfile?.overallImpressions||[])}</div>
+    <div class="body-figure-field body-skin-tone"><b>${t("피부","피부")}</b><button type="button" data-open-skin-tone><i style="--skin-tone:${skinToneColor(selectedSkinTone)}"></i><span>${esc(skinToneLabel(selectedSkinTone))}</span></button></div>
+    <div class="body-figure-field body-skin-features"><b>${t("피부 특징","피부 특징")}</b>${bodyChoiceOpener("skinFeatures","피부 특징",c.bodyProfile?.skinFeatures||[])}</div>
+    <fieldset class="body-figure-field body-scars"><legend>${t("흉터","흉터")}</legend>${[0,1,2].map(index=>`<input data-body-array-field="scars" data-body-array-index="${index}" value="${esc(c.bodyProfile?.scars?.[index]||"")}" placeholder="${esc(t("정하지 않음","정하지 않음"))}">`).join("")}</fieldset>
+    <fieldset class="body-figure-field body-tattoos"><legend>${t("문신","문신")}</legend>${[0,1,2].map(index=>`<input data-body-array-field="tattoos" data-body-array-index="${index}" value="${esc(c.bodyProfile?.tattoos?.[index]||"")}" placeholder="${esc(t("정하지 않음","정하지 않음"))}">`).join("")}</fieldset>
+    <nav class="character-book-page-controls body-controls" aria-label="${esc(t("신체 페이지 이동","신체 페이지 이동"))}"><button type="button" data-character-pane="profile" data-character-overview-target="life" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>4</b><button type="button" data-character-body-pane="appearance" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>
+    ${bodyChoiceDialog}${skinToneDialog}
+  </section>`;
+  const bodyAppearancePane=`<section class="character-body-svg-page character-body-appearance-page" aria-label="${esc(c.name)} ${esc(t("신체 설정","신체 설정"))}">
     ${bodyGuide}
     <section class="character-body-eye-card">
       <label class="body-svg-field body-left-eye"><b>${t("왼쪽 눈","왼쪽 눈")}</b>${bodySelect("appearance.leftEyeColor",EYE_COLORS,bodyAppearance.leftEyeColor||"설정하지 않음")}</label>
@@ -2538,9 +2587,10 @@ function character(){
       <label class="body-svg-field body-hair-amount"><b>${t("체모 정도","체모 정도")}</b>${bodySelect("appearance.bodyHairAmount",BODY_HAIR_AMOUNTS,bodyAppearance.bodyHairAmount||"설정하지 않음")}</label>
       <div class="body-svg-field body-hair-locations"><b>${t("체모 위치","체모 위치")}</b>${bodyChoiceOpener("appearance.bodyHairLocations","체모 위치",bodyAppearance.bodyHairLocations||[])}</div>
     </section>
-    <nav class="character-book-page-controls body-controls"><button type="button" data-character-pane="profile" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>5</b><button type="button" data-character-pane="personality" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>
+    <nav class="character-book-page-controls body-controls" aria-label="${esc(t("신체 페이지 이동","신체 페이지 이동"))}"><button type="button" data-character-body-pane="figure" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>5</b><button type="button" data-character-pane="personality" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>
     ${bodyChoiceDialog}
   </section>`;
+  const bodyPane=state.characterBodyPane==="appearance"?bodyAppearancePane:bodyFigurePane;
   const limit=characterLimit();
   const slotLabel=state.order.length>limit?`${state.order.length}명 저장됨 · 한도 ${limit}명`:`+ 생성 · ${state.order.length}/${limit}`;
   const paneMeta={

@@ -6413,11 +6413,11 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top::before{
   position:absolute!important;z-index:-1!important;left:0!important;right:0!important;top:1.45dvh!important;width:100%!important;height:7.17dvh!important;content:""!important;
-  background-color:transparent!important;background-image:var(--home-ui-wood-top,url("./assets/home-ui/wood-top.png"))!important;background-position:center bottom!important;background-size:cover!important;background-repeat:no-repeat!important;clip-path:none!important
+  background-color:transparent!important;background-image:var(--home-ui-wood-top,url("./assets/home-ui/wood-top.png"))!important;background-position:left bottom!important;background-size:calc(100% + 10px) 100%!important;background-repeat:no-repeat!important;clip-path:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top::after{
   position:absolute!important;z-index:0!important;left:0!important;right:0!important;top:0!important;width:100%!important;height:2.95dvh!important;content:""!important;
-  background-color:transparent!important;background-image:var(--home-ui-wood-strip,url("./assets/home-ui/wood-strip.png"))!important;background-position:center bottom!important;background-size:cover!important;background-repeat:no-repeat!important;pointer-events:none!important
+  background-color:transparent!important;background-image:var(--home-ui-wood-strip,url("./assets/home-ui/wood-strip.png"))!important;background-position:left bottom!important;background-size:calc(100% + 10px) 100%!important;background-repeat:no-repeat!important;pointer-events:none!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile{
   position:absolute!important;left:1.7vw!important;top:3.38dvh!important;width:min(76vw,360px)!important;height:min(9.6dvh,94px)!important;pointer-events:auto!important
