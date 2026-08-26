@@ -22,8 +22,8 @@ const checks=[
   [app.includes('event.target.closest(\'[data-home-layout-action]\')?"action":"art"'),"행동 아이콘을 직접 끌어 배치"],
   [state.includes('rotation:clamp(layout.rotation,-180,180,0)'),"회전값 저장·복원 정규화"],
   [sceneCss.includes('rotate:var(--character-art-rotation,0deg)!important'),"저장한 회전값이 실제 홈 장면에도 적용"],
-  [bookCss.includes('.character-book-v8-stage')&&bookCss.includes('.character-book-v8-wood')&&bookCss.includes('.character-book-v8-paper'),"전체설정 목재·책을 독립 화면 레이어로 고정"],
-  [views.includes('data-character-full-ui-version="9"')&&views.includes('class="character-book-v8-stage"')&&views.includes('class="character-book-v8-wood"')&&views.includes('class="character-book-v8-paper"')&&!views.includes('class="mobile-character-full-settings'),"구형 전체설정 컨테이너를 제거하고 Android 안전 DOM 이미지·CSS 좌표계로 교체"],
+  [bookCss.includes('.character-book-v8-stage')&&bookCss.includes('.character-book-v8-wood')&&!bookCss.includes('.character-book-v8-paper'),"SVG의 목재와 책을 한 장의 고정 412×917 무대 레이어로 사용"],
+  [views.includes('data-character-full-ui-version="9"')&&views.includes('class="character-book-v8-stage"')&&views.includes('class="character-book-v8-wood"')&&views.includes('character-book-stage-v11.png')&&!views.includes('class="character-book-v8-paper"')&&!views.includes('class="mobile-character-full-settings'),"구형 종이 오버레이를 제거하고 SVG와 동일한 단일 무대 이미지·좌표계로 교체"],
   [views.includes('class="character-full-image-slot icon ${c.icon?"has-image":"is-empty"}" data-image="icon">${currentIcon}</button>')&&views.includes('character-full-empty-slot')&&!views.includes('character-full-current-icon'),"아이콘이 별도 위치가 아닌 아이콘 슬롯 안에 배치되고 빈 슬롯은 추가 안내를 표시"],
   [bookCss.includes('.character-full-image-slot.ld{')&&bookCss.includes('.character-full-image-slot.icon{')&&bookCss.includes('background:transparent!important;box-shadow:none!important'),"LD와 아이콘 뒤 회색 판 제거"],
   [views.includes('class="character-profile-overview-page"')&&views.includes('data-character-overview-pane="basic"')&&views.includes('data-character-overview-pane="life"')&&state.includes('characterOverviewPane:"basic"'),"개요 기본·생활 두 장을 독립된 책 페이지로 구성"],
@@ -47,18 +47,20 @@ const checks=[
   [views.includes('data-eye-color-preview="left"')&&views.includes('data-eye-color-preview="right"')&&views.includes('appearancePreviewColor(bodyAppearance.leftEyeColor')&&views.includes('appearancePreviewColor(bodyAppearance.rightEyeColor'),"좌우 눈 색상 설정이 각각 미리보기 색에 연결됨"],
   [views.includes('const hairCurlPreviewPath=value=>')&&views.includes('data-hair-curl-preview=')&&views.includes('data-hair-shape-preview')&&app.includes('hairCurlPreviewPath(el.value)'),"곱슬기 설정별 머리 선 형태 미리보기"],
   [bookCss.includes('.body-hair-amount{')&&bookCss.includes('.body-hair-locations{')&&bookCss.includes('height:7.4cqw!important'),"신체 5쪽에 체모 정도·체모 위치와 두꺼운 복수 선택 필드"],
-  [views.includes('book-right-page.png')&&bookCss.includes('left:-7.25cqw!important')&&bookCss.includes('width:114.5cqw!important')&&bookCss.includes('height:auto!important')&&bookCss.includes('object-fit:contain!important')&&bookCss.includes('.character-full-image-slot.profile{')&&bookCss.includes('rotate(-9.84995deg)'),"책 원본 종횡비와 제본선을 보존하고 사진별 SVG 원본 각도를 유지"],
+  [fs.existsSync(new URL('../assets/character-ui/character-book-stage-v11.png',import.meta.url))&&bookCss.includes('object-fit:fill!important')&&bookCss.includes('.character-full-image-slot.profile{')&&bookCss.includes('rotate(-9.84995deg)'),"신체 6쪽 SVG의 책 전체 종횡비·양쪽 가장자리를 보존하고 사진별 원본 각도를 유지"],
   [state.includes('normalizedHairOrigin==="자연 모발"')&&app.includes('appearance.hairColorOrigin==="자연 모발"')&&app.includes('appearance.naturalHairColor=appearance.hairColor'),"자연 모발 설정에서 현재·본래 머리색 자동 동기화"],
   [views.includes('overview-life-adaptation')&&views.includes('overview-education')&&state.includes('c.lifeAdaptation=')&&state.includes('c.educationLevel=')&&simulation.includes('educationLevel:c.educationLevel'),"생활 환경 적응도와 교육 수준을 저장하고 로그 갱신 서명에 반영"],
   [simulation.includes('function eatingHabitEvent(')&&!simulation.includes('(c.eatingHabits||[]).forEach')&&simulation.includes('const breakfastHabit=eatingHabitEvent')&&simulation.includes('const dinnerHabit=eatingHabitEvent'),"식습관 로그를 일반 성격 로그에서 분리해 식사 시간에만 생성"],
   [homeSimulation.includes(':movement-start')&&homeSimulation.includes('movementStartsAt')&&audio.includes('const channels=new Map()')&&audio.includes('initial?140+(hash(actor.id)%780)')&&audio.includes('element.dataset.homePerson'),"캐릭터별 독립 이동 시작 시각과 시간차 발소리 채널"],
-  [views.includes('character-body-figure-page')&&views.includes('data-character-body-pane="appearance"')&&state.includes('characterBodyPane:"figure"'),"신체 4·5쪽을 독립 페이지로 구성"],
+  [views.includes('character-body-figure-page')&&views.includes('character-body-appearance-page')&&views.includes('character-body-accessibility-page')&&views.includes('data-character-body-pane="accessibility"')&&state.includes('characterBodyPane:"figure"'),"신체 4·5·6쪽을 독립 페이지로 구성"],
+  [views.includes('data-open-body-choice="${esc(path)}"')&&views.includes('appearanceSummaries')&&views.includes('overallImpressions')&&views.includes('총평')&&views.includes('분위기'),"첫인상 총평과 세부 분위기를 서로 다른 다중 선택 데이터로 분리"],
+  [views.includes('body-wheelchair')&&views.includes('body-hearing')&&views.includes('body-prosthetic-arm')&&views.includes('body-prosthetic-leg')&&views.includes('body-health-conditions')&&views.includes('body-vision-supports')&&views.includes('<b>6</b>'),"신체 6쪽의 이동 보조·감각 접근·건강 관리 설정을 연결"],
   [views.includes('const SKIN_TONE_DEPTHS=[0,3,5,7,10,13,17,21,23,25,28,31,35,40,45,50,55,60]')&&views.includes('data-skin-tone-choice=')&&views.includes('skinToneColor(selectedSkinTone)'),"72색 언더톤·명도 피부 팔레트와 본문 미리보기"],
   [views.includes('const SCAR_LOCATION_OPTIONS=')&&views.includes('const SCAR_TYPE_OPTIONS=')&&views.includes('data-body-mark-field="attitude"')&&views.includes('data-body-array-action="add"')&&bookCss.includes('.character-body-mark-dialog'),"흉터·문신의 이름·위치·유형·인식을 각각 편집하는 복수 드롭다운 UI"],
   [app.includes('button.dataset.bodyArrayAction==="add"')&&app.includes('values.length>=8')&&app.includes('data-body-mark-field')&&state.includes('normalizeBodyMarks(source.scars,"scar")'),"흉터·문신을 구조화 데이터로 최대 8개까지 추가·삭제하고 구형 저장본도 복원"],
   [views.includes('overview-life-adaptation')&&views.includes('overview-education')&&views.includes('overview-openness')&&app.includes('bindCharacterBookSwipe()'),"환경 적응도·교육 수준·자율 이끌림·가로 스와이프 이동"],
   [app.includes('openIndex=values.length-1')&&app.includes('if(openIndex>=0)requestAnimationFrame')&&app.includes('dialog.showModal()'),"흉터·문신 추가 직후 새 항목의 상세 설정창을 자동으로 엶"],
-  [gradle.includes('versionCode 159')&&gradle.includes('versionName "1.0.147"'),"Android 개발 버전 159 / 1.0.147"]
+  [gradle.includes('versionCode 160')&&gradle.includes('versionName "1.0.148"'),"Android 개발 버전 160 / 1.0.148"]
 ];
 
 let failed=0;

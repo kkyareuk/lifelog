@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826booklayout159";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826booklayout159";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260826booklayout159";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826booklayout159";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826booklayout159";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826booklayout159";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826bodypage160";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826bodypage160";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260826bodypage160";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826bodypage160";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826bodypage160";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826bodypage160";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -39,6 +39,7 @@ const defaultBodyProfile=()=>({
   bodySize:"설정하지 않음",
   physicalTraits:[],
   appearanceAwareness:"설정하지 않음",
+  appearanceSummaries:[],
   overallImpressions:[],
   skinTone:"뉴트럴톤 23호",
   skinFeatures:[],
@@ -79,6 +80,10 @@ const defaultBodyProfile=()=>({
   hearing:{side:"설정하지 않음",level:"",supports:[]},
   vision:{side:"설정하지 않음",level:"",supports:[]},
   accessibilityPreferences:[],
+  hospitalVisitFrequency:"자동 · 설정에 맞춤",
+  hospitalVisitPurpose:"",
+  medication1:"",
+  medication2:"",
   notes:""
 });
 const normalizeBodyMarks=(values,kind)=>Array.isArray(values)?values.slice(0,8).map((value,index)=>{
@@ -117,6 +122,7 @@ const normalizedBodyProfile=value=>{
     bodySize:String(source.bodySize||defaults.bodySize),
     physicalTraits:Array.isArray(source.physicalTraits)?[...new Set(source.physicalTraits.map(String))].slice(0,40):[],
     appearanceAwareness:String(source.appearanceAwareness||defaults.appearanceAwareness),
+    appearanceSummaries:Array.isArray(source.appearanceSummaries)?[...new Set(source.appearanceSummaries.map(String))].slice(0,4):[],
     overallImpressions:Array.isArray(source.overallImpressions)?[...new Set(source.overallImpressions.map(String))].slice(0,6):[],
     skinTone:String(source.skinTone||defaults.skinTone),
     skinFeatures:Array.isArray(source.skinFeatures)?[...new Set(source.skinFeatures.map(String))].slice(0,12):[],
@@ -159,6 +165,10 @@ const normalizedBodyProfile=value=>{
     hearing:{...normalizeDevice("hearing","설정하지 않음"),supports:Array.isArray(source.hearing?.supports)?[...new Set(source.hearing.supports.map(String))].slice(0,8):[]},
     vision:{...normalizeDevice("vision","설정하지 않음"),supports:Array.isArray(source.vision?.supports)?[...new Set(source.vision.supports.map(String))].slice(0,8):[]},
     accessibilityPreferences:Array.isArray(source.accessibilityPreferences)?[...new Set(source.accessibilityPreferences.map(String))].slice(0,10):[],
+    hospitalVisitFrequency:String(source.hospitalVisitFrequency||defaults.hospitalVisitFrequency),
+    hospitalVisitPurpose:String(source.hospitalVisitPurpose||"").slice(0,120),
+    medication1:String(source.medication1||"").slice(0,80),
+    medication2:String(source.medication2||"").slice(0,80),
     notes:String(source.notes||"").slice(0,600)
   };
 };
@@ -226,7 +236,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:28,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:29,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -292,7 +302,7 @@ function normalizeHomes(x){
   if(x.characterPane==="traits")x.characterPane="personality";
   x.characterPane=["profile","body","personality","taste","worldTaste","manage"].includes(x.characterPane)?x.characterPane:"profile";
   x.characterOverviewPane=x.characterOverviewPane==="basic"?"basic":"life";
-  x.characterBodyPane=x.characterBodyPane==="appearance"?"appearance":"figure";
+  x.characterBodyPane=["figure","appearance","accessibility"].includes(x.characterBodyPane)?x.characterBodyPane:"figure";
   // 전체설정 열림 여부는 저장 데이터가 아니라 현재 화면 세션의 상태다.
   // 예전에는 full 값을 기기·동기화에 저장해 앱을 다시 열었을 때 캐릭터
   // 기본 화면이 숨겨지고 전체설정 배경만 화면을 덮을 수 있었다.
