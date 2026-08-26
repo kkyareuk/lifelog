@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826characterbookskin156";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826characterbookskin156";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260826characterbookskin156";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826characterbookskin156";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826characterbookskin156";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826characterbookskin156";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826skinrepeat157";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826skinrepeat157";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260826skinrepeat157";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826skinrepeat157";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826skinrepeat157";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826skinrepeat157";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -109,8 +109,8 @@ const normalizedBodyProfile=value=>{
     overallImpressions:Array.isArray(source.overallImpressions)?[...new Set(source.overallImpressions.map(String))].slice(0,6):[],
     skinTone:String(source.skinTone||defaults.skinTone),
     skinFeatures:Array.isArray(source.skinFeatures)?[...new Set(source.skinFeatures.map(String))].slice(0,12):[],
-    scars:Array.isArray(source.scars)?source.scars.map(value=>String(value).slice(0,80)).filter(Boolean).slice(0,3):[],
-    tattoos:Array.isArray(source.tattoos)?source.tattoos.map(value=>String(value).slice(0,80)).filter(Boolean).slice(0,3):[],
+    scars:Array.isArray(source.scars)?source.scars.map(value=>String(value).slice(0,80)).filter(value=>value&&value!=="설정하지 않음").slice(0,8):[],
+    tattoos:Array.isArray(source.tattoos)?source.tattoos.map(value=>String(value).slice(0,80)).filter(value=>value&&value!=="설정하지 않음").slice(0,8):[],
     appearance:{
       ...appearanceDefaults,
       ...appearanceSource,
