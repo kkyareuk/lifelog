@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826skinrepeat157";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826skinrepeat157";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260826skinrepeat157";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826skinrepeat157";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826skinrepeat157";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826skinrepeat157";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260826bodydetail158";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260826bodydetail158";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260826bodydetail158";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260826bodydetail158";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260826bodydetail158";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826bodydetail158";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -81,6 +81,17 @@ const defaultBodyProfile=()=>({
   accessibilityPreferences:[],
   notes:""
 });
+const normalizeBodyMarks=(values,kind)=>Array.isArray(values)?values.slice(0,8).map((value,index)=>{
+  const legacy=typeof value==="string"?value:"";
+  const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
+  const label=kind==="scar"?"흉터":"문신";
+  return{
+    name:String(source.name||`${label} ${index+1}`).slice(0,40),
+    location:String(source.location||legacy||"기타 위치").slice(0,80),
+    type:String(source.type||"설정하지 않음").slice(0,80),
+    attitude:String(source.attitude||"설정하지 않음").slice(0,80)
+  };
+}).filter(value=>value.location&&value.location!=="설정하지 않음"):[];
 const normalizedBodyProfile=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const defaults=defaultBodyProfile();
@@ -109,8 +120,8 @@ const normalizedBodyProfile=value=>{
     overallImpressions:Array.isArray(source.overallImpressions)?[...new Set(source.overallImpressions.map(String))].slice(0,6):[],
     skinTone:String(source.skinTone||defaults.skinTone),
     skinFeatures:Array.isArray(source.skinFeatures)?[...new Set(source.skinFeatures.map(String))].slice(0,12):[],
-    scars:Array.isArray(source.scars)?source.scars.map(value=>String(value).slice(0,80)).filter(value=>value&&value!=="설정하지 않음").slice(0,8):[],
-    tattoos:Array.isArray(source.tattoos)?source.tattoos.map(value=>String(value).slice(0,80)).filter(value=>value&&value!=="설정하지 않음").slice(0,8):[],
+    scars:normalizeBodyMarks(source.scars,"scar"),
+    tattoos:normalizeBodyMarks(source.tattoos,"tattoo"),
     appearance:{
       ...appearanceDefaults,
       ...appearanceSource,
@@ -215,7 +226,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:28,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
+const fresh=()=>({schema:28,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -261,6 +272,7 @@ function normalizeHomes(x){
   x.homeLdScale=Number.isFinite(+x.homeLdScale)?Math.max(70,Math.min(150,+x.homeLdScale)):Math.max(70,Math.min(150,+legacyActiveCharacter.homeLdScale||100));
   x.soundMuted=Boolean(x.soundMuted);
   x.soundEffectsVolume=Number.isFinite(+x.soundEffectsVolume)?Math.max(0,Math.min(100,+x.soundEffectsVolume)):45;
+  x.measurementUnits=x.measurementUnits==="imperial"?"imperial":"metric";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
   delete x.uiFont;

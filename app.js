@@ -1,15 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260826skinrepeat157";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260826skinrepeat157";
-import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260826skinrepeat157";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260826skinrepeat157";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260826skinrepeat157";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260826skinrepeat157";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260826skinrepeat157";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260826skinrepeat157";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260826skinrepeat157";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826skinrepeat157";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260826skinrepeat157";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260826skinrepeat157";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260826bodydetail158";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260826bodydetail158";
+import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260826bodydetail158";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260826bodydetail158";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260826bodydetail158";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260826bodydetail158";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260826bodydetail158";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260826bodydetail158";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260826bodydetail158";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826bodydetail158";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260826bodydetail158";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260826bodydetail158";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -251,11 +251,10 @@ const APPEARANCE_TAGS=["안경을 씀","안대","특이동공","세로동공","�
 const WEALTH_OPTIONS=["생계가 빠듯함","여유가 적음","평범한 형편","경제적으로 여유로움","부유함","대부호","재산을 알 수 없음"];
 const DAILY_HABIT_OPTIONS=["외출 전 주머니와 가방을 두 번 확인함","문이 잠겼는지 되돌아가 확인함","물건을 늘 같은 자리에 둠","방에 들어오면 바로 손을 씻음","귀가하면 먼저 옷을 갈아입음","신발 방향을 가지런히 맞춤","앉으면 다리를 꼼","생각할 때 손가락이나 펜을 두드림","긴장하면 옷소매를 만짐","혼잣말을 자주 함","콧노래를 흥얼거림","알림을 확인하면 바로 지움","읽던 곳을 접거나 표시함","컵과 휴대폰을 늘 같은 쪽에 둠","이동할 때 벽과 가구에서 거리를 둠","엘리베이터 버튼을 다시 확인함","계단 수를 세며 오르내림","창문을 자주 열어 환기함","빈 방의 불을 바로 끔","방을 나설 때 뒤를 돌아봄","옷깃과 소매를 자주 정리함","머리카락을 귀 뒤로 넘김","대화할 때 눈을 오래 마주침","대화할 때 시선을 자주 피함","해야 할 말을 짧게 메모함","씻고 나면 물기를 바로 닦음","손에 뭔가를 쥐고 있어야 편함","자리에 앉기 전에 주변을 정돈함","문을 닫을 때 소리가 나지 않게 잡음","기다릴 때 발끝으로 박자를 탐"];
 const BEHAVIOR_HABIT_GROUPS={
-  "몸짓·표현":["머리카락을 자주 만짐","손톱이나 입술을 뜯음","펜을 돌림","주먹을 쥐었다 폄","웃을 때 입을 가림","놀라면 몸이 먼저 굳음","팔짱을 자주 낌","기대어 서거나 앉음","눈을 잘 마주치지 못함","상대를 뚫어지게 바라봄"],
-  "언어·소통":["말끝을 자주 흐림","특정 감탄사를 반복함","별명을 지어 부름","항상 존댓말을 고수함","답장이 매우 빠름","답장을 오래 고민함","먼저 연락하는 편임","문자보다 통화를 선호함","농담으로 진심을 숨김"],
-  "감정 루틴":["스트레스를 받으면 청소함","스트레스를 받으면 운동함","화나면 말수가 줄어듦","긴장하면 말이 빨라짐","긴장하면 물건을 만지작거림","혼자 음악을 들으며 진정함","혼자 산책하며 생각을 정리함"],
-  "여가·기록":["콘텐츠를 몰아서 봄","스포일러를 철저히 피함","혼자 운동하는 것을 선호함","사람과 함께 운동하는 것을 선호함","특정 물건을 수집함","물건을 쉽게 버리지 못함","매일 일기를 씀","사진으로 기록을 남김","짧은 메모를 자주 남김"],
-  "관계·상황":["눈인사만 하는 편임","반갑게 손을 흔들어 인사함","기념일이 아니어도 선물함","선물을 몰래 두고 감","친한 사람과도 거리를 둠","친한 사람에게 가벼운 스킨십을 함","비 오는 날 창밖을 오래 봄","추우면 따뜻한 음료를 찾음","동물을 만나면 먼저 눈높이를 맞춤","식물 상태를 매일 확인함","새벽에만 하는 개인 루틴이 있음"]
+  "무의식적인 몸짓":["생각할 때 엄지손가락 마디를 문지름","머리카락 끝을 손가락에 감음","소매 끝을 손안에 말아 쥠","대답을 고를 때 입술 안쪽을 깨묾","기분이 좋으면 발뒤꿈치를 가볍게 들썩임","경계하면 출입구 쪽으로 몸을 틀어 둠","의자에 앉기 전 등받이를 한 번 짚음","집중하면 숨을 잠깐 멈췄다가 내쉼"],
+  "표정과 시선":["웃음을 참을 때 한쪽 입꼬리만 올라감","당황하면 눈을 빠르게 두 번 깜박임","생각에 잠기면 시선이 왼쪽 위로 향함","속마음을 숨길 때 턱에 힘이 들어감","호기심이 생기면 상대 쪽으로 고개를 기울임","불편하면 상대의 눈보다 손을 바라봄","진지한 이야기를 들을 때 눈썹 사이가 좁아짐","안심하면 어깨와 눈매가 함께 풀림"],
+  "말과 반응":["대답하기 전에 짧게 숨을 고름","확신이 없으면 문장을 중간에 고쳐 말함","기뻐도 목소리가 크게 높아지지 않음","흥분하면 설명 순서가 앞뒤로 섞임","장난을 들으면 한 박자 늦게 웃음","진심을 말한 뒤 가벼운 농담을 덧붙임","낯선 사람의 이름을 속으로 한 번 되뇌임","고마울 때 말보다 작은 행동으로 먼저 답함"],
+  "감정이 새는 순간":["불안하면 주변 물건의 모서리를 맞춤","화가 나면 목소리보다 말수가 먼저 줄어듦","서운하면 혼자 있을 자리를 찾음","긴장이 풀리면 갑자기 말이 많아짐","부끄러우면 귀나 목덜미를 만짐","걱정할 때 같은 화면이나 문장을 다시 확인함","기쁜 일을 들으면 가장 먼저 챙길 사람을 떠올림","마음이 복잡하면 손을 씻으며 생각을 정리함"]
 };
 const BEHAVIOR_HABIT_OPTIONS=Object.values(BEHAVIOR_HABIT_GROUPS).flat();
 const DAILY_HABIT_GROUPS={
@@ -270,13 +269,13 @@ const HABIT_TRANSLATIONS={
   ja:Object.fromEntries([...DAILY_HABIT_OPTIONS,...EATING_HABIT_OPTIONS].map((value,index)=>[value,["外出前にポケットとかばんを二度確認する","鍵をかけたか戻って確認する","物をいつも同じ場所に置く","部屋に入るとすぐ手を洗う","帰宅するとまず着替える","靴の向きをきれいにそろえる","座ると脚を組む","考える時に指やペンで音を立てる","緊張すると袖を触る","独り言が多い","よく鼻歌を歌う","通知を確認したらすぐ消す","読んだ所を折る・印を付ける","コップとスマホをいつも同じ側に置く","移動時に壁や家具から距離を取る","エレベーターのボタンを再確認する","階段の段数を数える","よく窓を開けて換気する","空室の照明をすぐ消す","部屋を出る時に振り返る","襟や袖をよく整える","髪を耳にかける","会話中に長く目を合わせる","会話中によく視線をそらす","言うことを短くメモする","洗った後すぐ水気を拭く","何かを握っていると落ち着く","座る前に周りを整える","音がしないよう扉を押さえる","待つ間つま先で拍子を取る","食後は必ず歯を磨く","食後にうがいをする","音を立てて食べる","静かに食べる","まず料理の写真を撮る","食べる前に香りを嗅ぐ","味を細かく批評する","おいしいと大きく感嘆する","皿をきれいに空ける","いつも少し残す","好きな物を最後に食べる","好きな物を最初に食べる","料理を混ぜず別々に食べる","おかずを一口ずつ交互に食べる","スマホを見ながら食べる","本を読みながら食べる","テレビを見ながら食べる","食事中の会話を楽しむ","水や飲み物をたくさん飲む","食事中はほとんど飲まない","必ずソースや胡椒を足す","出された味付けを変えない","ゆっくりよく噛む","とても速く食べる","他人の分を先に用意する","よく料理を分ける","いつも同じ席に座る","同じ食器だけを選ぶ","箸や食器の使い方が独特","一口大に切って食べる"][index]]))
 };
 const BEHAVIOR_TRANSLATION_VALUES={
-  en:["Touches their hair often","Bites nails or lips","Spins a pen","Clenches and opens their fists","Covers their mouth when laughing","Freezes first when startled","Often folds their arms","Leans while standing or sitting","Finds eye contact difficult","Stares intently at the other person","Often trails off at sentence endings","Repeats a particular exclamation","Gives people nicknames","Always maintains formal speech","Replies very quickly","Takes a long time to compose replies","Usually contacts others first","Prefers calls to texts","Hides sincerity behind jokes","Cleans when stressed","Exercises when stressed","Becomes quiet when angry","Talks faster when nervous","Fidgets with objects when nervous","Calms down by listening to music alone","Clears their thoughts on solitary walks","Binge-watches content","Avoids spoilers completely","Prefers exercising alone","Prefers exercising with others","Collects particular objects","Finds it hard to throw things away","Writes a diary every day","Keeps records through photos","Leaves short notes often","Usually greets with their eyes only","Waves enthusiastically in greeting","Gives gifts outside special occasions","Leaves gifts secretly","Keeps physical distance even with close people","Uses light touch with close people","Watches the window for a long time on rainy days","Looks for a warm drink when cold","Gets down to an animal's eye level first","Checks plants every day","Has a personal late-night routine"],
-  ja:["よく髪を触る","爪や唇を噛む","ペンを回す","拳を握って開く","笑う時に口元を隠す","驚くと先に体が固まる","よく腕を組む","立つ時や座る時にもたれる","目を合わせるのが苦手","相手をじっと見つめる","語尾をよく濁す","特定の感嘆詞を繰り返す","あだ名を付けて呼ぶ","いつも敬語を崩さない","返信がとても速い","返信を長く考える","先に連絡することが多い","文字より通話を好む","冗談で本音を隠す","ストレスを感じると掃除する","ストレスを感じると運動する","怒ると口数が減る","緊張すると早口になる","緊張すると物をいじる","一人で音楽を聴いて落ち着く","一人で散歩して考えを整理する","作品を一気見する","ネタバレを徹底的に避ける","一人で運動するのを好む","誰かと運動するのを好む","特定の物を集める","物をなかなか捨てられない","毎日日記を書く","写真で記録を残す","短いメモをよく残す","目礼だけで挨拶することが多い","元気に手を振って挨拶する","記念日以外にも贈り物をする","贈り物をこっそり置く","親しい人とも物理的距離を取る","親しい人には軽いスキンシップをする","雨の日は長く窓の外を見る","寒いと温かい飲み物を探す","動物に会うとまず目線を合わせる","植物の状態を毎日確認する","深夜だけの個人ルーティンがある"]
+  en:["Rubs the thumb joint while thinking","Twists the ends of their hair around a finger","Rolls a sleeve edge into the palm","Bites the inside of the lip while choosing an answer","Lightly bounces on the heels when pleased","Turns the body toward an exit when wary","Touches the chair back before sitting","Briefly holds a breath while concentrating","Only one corner of the mouth rises when suppressing laughter","Blinks twice quickly when flustered","Looks up and left while thinking","Tenses the jaw when hiding feelings","Tilts the head toward something curious","Looks at the other person's hands instead of their eyes when uncomfortable","Draws the brows together during serious conversations","Shoulders and eyes relax together when reassured","Takes a short breath before answering","Restarts a sentence when uncertain","Voice barely rises even when delighted","Explanations lose their order when excited","Laughs a beat late at jokes","Adds a light joke after saying something sincere","Repeats an unfamiliar name silently once","Answers gratitude with a small action before words","Aligns nearby object corners when anxious","Goes quiet before the voice rises when angry","Looks for a place to be alone when hurt","Suddenly becomes talkative once tension lifts","Touches the ear or nape when embarrassed","Rechecks the same screen or sentence when worried","Thinks first of someone to care for after good news","Sorts out tangled thoughts while washing hands"],
+  ja:["考える時に親指の関節をなでる","毛先を指に巻き付ける","袖口を手のひらに丸め込む","答えを選ぶ時に唇の内側を噛む","嬉しいと踵を軽く弾ませる","警戒すると出口側へ体を向ける","座る前に椅子の背へ一度触れる","集中すると一瞬息を止めてから吐く","笑いをこらえると片方の口角だけ上がる","戸惑うと素早く二度まばたきする","考え込むと左上を見る","本音を隠す時に顎へ力が入る","興味を持つと相手側へ首を傾ける","居心地が悪いと相手の目より手を見る","真剣な話では眉間が狭くなる","安心すると肩と目元が一緒に緩む","答える前に短く息を整える","自信がないと文を途中で言い直す","嬉しくても声があまり高くならない","興奮すると説明の順番が前後する","冗談に一拍遅れて笑う","本音の後に軽い冗談を添える","知らない名前を心の中で一度繰り返す","感謝には言葉より小さな行動で先に返す","不安になると周囲の物の角をそろえる","怒ると声より先に口数が減る","傷つくと一人になれる場所を探す","緊張が解けると急に話が増える","恥ずかしいと耳やうなじに触れる","心配すると同じ画面や文を確認し直す","良い知らせにはまず世話をしたい人を思う","手を洗いながら複雑な考えを整える"]
 };
 for(const language of ["en","ja"])BEHAVIOR_HABIT_OPTIONS.forEach((value,index)=>{HABIT_TRANSLATIONS[language][value]=BEHAVIOR_TRANSLATION_VALUES[language][index]||value});
 const HABIT_CATEGORY_TRANSLATIONS={
-  en:{"정리·위생":"Tidying & hygiene","확인·시간":"Checking & time","사소한 몸짓":"Small gestures","공간·물건":"Spaces & objects","몸짓·표현":"Gestures & expression","언어·소통":"Language & communication","감정 루틴":"Emotional routines","여가·기록":"Leisure & records","관계·상황":"Relationships & situations"},
-  ja:{"정리·위생":"整理・衛生","확인·시간":"確認・時間","사소한 몸짓":"小さな仕草","공간·물건":"空間・持ち物","몸짓·표현":"仕草・表現","언어·소통":"言葉・コミュニケーション","감정 루틴":"感情のルーティン","여가·기록":"余暇・記録","관계·상황":"関係・状況"}
+  en:{"정리·위생":"Tidying & hygiene","확인·시간":"Checking & time","사소한 몸짓":"Small gestures","공간·물건":"Spaces & objects","무의식적인 몸짓":"Unconscious gestures","표정과 시선":"Expression & gaze","말과 반응":"Speech & response","감정이 새는 순간":"When emotions show"},
+  ja:{"정리·위생":"整理・衛生","확인·시간":"確認・時間","사소한 몸짓":"小さな仕草","공간·물건":"空間・持ち物","무의식적인 몸짓":"無意識の仕草","표정과 시선":"表情・視線","말과 반응":"言葉・反応","감정이 새는 순간":"感情が漏れる瞬間"}
 };
 const PROFILE_TAG_OPTIONS={
   attractedGenders:["남성","여성","그외","없음"],
@@ -328,7 +327,7 @@ function profileExportLines(character){
   const sections=[
     exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["끌리는 대상",character.attractionTarget],["새로운 사람에게 끌리는 정도",character.relationshipOpenness],["직업",character.jobTitle||character.job],["생일",character.birthday?`${character.birthday.slice(0,2)}월 ${character.birthday.slice(2)}일`:""],["재산",character.wealth],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 특징",listText(character.attractionTraits)]]),
     exportSection("성격",[["전체적인 유형",listText(character.personalityTypes)],["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["패션 감각",character.fashionSense],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm],["유머·장난 성향",character.humorStyle],["감정 표현의 크기",character.emotionalExpression],["충동을 참는 정도",character.impulseControl],["서사·인지 특성",listText(character.characterTraits)],["장면에 반영할 특성 표현",listText(character.traitExpressions)],["특성 표현 메모",character.traitNotes],["메모를 로그에 반영",character.traitNotesInScripts?"사용":""]]),
-    exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["외모 자각",body.appearanceAwareness],["피부색",body.skinTone],["피부 특징",listText(body.skinFeatures)],["흉터",listText(body.scars)],["문신",listText(body.tattoos)],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["곱슬기",appearance.hairTexture],["머릿결",appearance.hairCondition],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
+    exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["자기 외형에 대한 인식",body.appearanceAwareness],["피부색",body.skinTone],["피부 특징",listText(body.skinFeatures)],["흉터",listText((body.scars||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["문신",listText((body.tattoos||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["곱슬기",appearance.hairTexture],["머릿결",appearance.hairCondition],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
     exportSection("건강·장애·접근성",[["만성질환·건강 관리",listText(body.healthConditions)],["기타 건강 상태",body.healthOther],["휠체어",wheelchair.type],["휠체어 이용 방식",wheelchair.pattern],["의수 사용 부위",arm.side],["의수 종류",arm.custom||arm.type],["의족 사용 부위",leg.side],["의족 종류",leg.custom||leg.type],["청각장애·난청 부위",hearing.side],["청각 특성",hearing.level],["청각 접근 방식",listText(hearing.supports)],["시각장애·저시력 부위",vision.side],["시각 특성",vision.level],["시각 접근 방식",listText(vision.supports)],["상호작용에서 지킬 방식",listText(body.accessibilityPreferences)],["표현 메모",body.notes]]),
     exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]])
   ];
@@ -2519,24 +2518,33 @@ function bind(){
     };
     el.addEventListener(eventName,apply);
   });
-  $$('[data-body-array-field]').forEach(el=>{
-    const apply=()=>{
-      const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),field=el.dataset.bodyArrayField,index=Number(el.dataset.bodyArrayIndex)||0;
-      const values=Array.isArray(bodyProfile[field])?[...bodyProfile[field]]:[];
-      if(el.value==="설정하지 않음")values.splice(index,1);
-      else values[index]=el.value.slice(0,80);
-      bodyProfile[field]=values.filter(Boolean).slice(0,8);
-      updateCharacter(character.id,{bodyProfile},false);
-      save(true);render();
-    };
-    el.addEventListener('change',apply);
+  $$('[data-body-measurement]').forEach(el=>el.addEventListener('input',()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),raw=Number(el.value),imperial=state.measurementUnits==="imperial";
+    bodyProfile[el.dataset.bodyMeasurement]=el.value===""?"":String(Math.round((el.dataset.bodyMeasurement==="heightCm"&&imperial?raw*2.54:el.dataset.bodyMeasurement==="weightKg"&&imperial?raw/2.2046226218:raw)*10)/10);
+    updateCharacter(character.id,{bodyProfile},false);save();
+  }));
+  $$('[data-open-body-mark]').forEach(button=>button.onclick=()=>{
+    const dialog=document.querySelector(`[data-body-mark-dialog="${button.dataset.openBodyMark}-${button.dataset.bodyMarkIndex}"]`);
+    if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
   });
+  $$('[data-body-mark-field]').forEach(el=>el.addEventListener(el.tagName==="INPUT"?'change':'change',()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),collection=el.dataset.bodyMarkCollection,index=Number(el.dataset.bodyMarkIndex)||0;
+    const values=Array.isArray(bodyProfile[collection])?[...bodyProfile[collection]]:[];
+    if(!values[index]||typeof values[index]!=="object")values[index]={name:`${collection==="scars"?"흉터":"문신"} ${index+1}`,location:"기타 위치",type:"설정하지 않음",attitude:"설정하지 않음"};
+    values[index]={...values[index],[el.dataset.bodyMarkField]:el.value.slice(0,80)};
+    bodyProfile[collection]=values.slice(0,8);updateCharacter(character.id,{bodyProfile},false);save(true);
+    if(el.dataset.bodyMarkField==="name"){
+      document.querySelector(`[data-open-body-mark="${collection}"][data-body-mark-index="${index}"] span`)?.replaceChildren(document.createTextNode(el.value||`${collection==="scars"?"흉터":"문신"} ${index+1}`));
+      el.closest('dialog')?.querySelector('header b')?.replaceChildren(document.createTextNode(el.value||`${collection==="scars"?"흉터":"문신"} ${index+1}`));
+    }
+  }));
   $$('[data-body-array-action]').forEach(button=>button.onclick=()=>{
     const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),field=button.dataset.bodyArrayField;
     const values=Array.isArray(bodyProfile[field])?[...bodyProfile[field]]:[];
     if(button.dataset.bodyArrayAction==="add"){
       if(values.length>=8){showToast("최대 8개까지 추가할 수 있어요");return}
-      values.push(button.dataset.bodyArrayDefault||"기타 위치");
+      const label=button.dataset.bodyArrayLabel|| (field==="scars"?"흉터":"문신");
+      values.push({name:`${label} ${values.length+1}`,location:"기타 위치",type:"설정하지 않음",attitude:"설정하지 않음"});
     }else values.pop();
     bodyProfile[field]=values;
     updateCharacter(character.id,{bodyProfile},false);save(true);render();
@@ -2937,7 +2945,7 @@ function bind(){
     state[key]=["homeSdScale","homeLdScale"].includes(key)?Math.max(70,Math.min(150,Number(el.value)||100)):el.value;
     if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
     save(true);
-    if(key==="uiLanguage"){renderPreservingPageScroll(el);return}
+    if(key==="uiLanguage"||key==="measurementUnits"){renderPreservingPageScroll(el);return}
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(["homeSdScale","homeLdScale"].includes(key))el.closest("label")?.querySelector("output")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
     el.blur();
@@ -4710,7 +4718,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260826skinrepeat157").catch(error=>{
+import("./auth.js?v=20260826bodydetail158").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4725,7 +4733,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260826skinrepeat157",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260826bodydetail158",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
