@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
 const read=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),"utf8");
-const views=read("views.js"),app=read("app.js"),css=read("app.css"),state=read("state.js"),simulation=read("simulation.js");
+const views=read("views.js"),app=read("app.js"),css=read("app.css"),townFit=read("town-fit.css"),interfaceCss=read("interface-system.css"),state=read("state.js"),simulation=read("simulation.js");
 const checks=[
   [views.includes('class="town-native-header"')&&views.includes('class="town-native-title" data-open-town-switcher')&&views.includes('class="town-native-status"')&&views.includes('homeUiAsset(character||active(),"town.png")')&&css.includes('.native-app[data-active-tab="town"] .native-sub-header{display:none!important}')&&css.includes('var(--home-ui-pill-middle)'),"마을 상단바의 아이콘·마을명·현재/거주 인원 표시와 마을 이동 연결"],
   [css.includes('background-size:4% 4%')&&app.includes('Math.round(Math.max(4,Math.min(96'),"촘촘한 1% 스냅 격자 배치"],
@@ -18,10 +18,16 @@ const checks=[
   [css.includes('@media(min-width:721px) and (orientation:landscape)')&&css.includes('html.native-app[data-active-tab="town"] .mobile-town-shell{position:fixed!important')&&css.includes('html.native-app[data-active-tab="home"] .home-native-tablet-info')&&css.includes('width:32%!important'),"태블릿 가로 집·마을을 화면 전체 고정 좌표계로 분리"],
   [app.includes('const townMapPositions=new Map()')&&app.includes('townMapPositions.set(previousTownId')&&app.includes('townMapPositions.get(state.activeTownId)')&&app.includes('scroller.scrollLeft=previousTownPosition.left;scroller.scrollTop=previousTownPosition.top')&&!app.includes('if(state.activeTab==="town")centerMobileTownMap();'),"버튼 재렌더와 마을 전환 뒤 지도 화면 위치 보존"],
   [views.includes('data-place-field="reputation"')&&views.includes('data-place-field="atmosphere"')&&views.includes('data-home-field="reputation"')&&views.includes('data-home-field="atmosphere"')&&state.includes('p.reputation=String')&&state.includes('p.atmosphere=String')&&state.includes('h.reputation=String')&&state.includes('h.atmosphere=String'),"건물과 집의 평판·분위기 표시 및 저장"],
-  [css.includes('url("./assets/town-ui/building-info-wood.png")')&&css.includes('outline:6px solid #fff')&&css.includes('paint-order:stroke fill'),"제공 목재 배경과 바깥쪽 외곽선"],
+  [css.includes('url("./assets/town-ui/building-info-wood.png")')&&css.includes('box-shadow:0 0 0 6px #fff')&&css.includes('paint-order:stroke fill'),"제공 목재 배경과 잘리지 않는 바깥쪽 외곽선"],
   [app.includes('function openTownCharacterSheet')&&app.includes('if(state.activeTab==="town")')&&app.includes('openTownCharacterSheet(el)'),"마을 주민 클릭 시 집과 같은 하단 정보 시트"],
   [css.includes('animation:town-traveler-route 11.8s')&&!css.includes('town-traveler-step .46s steps')&&css.includes('background:#fffdf3ed')&&css.includes('background-color:transparent!important;background-image:none!important'),"부드러운 마을 이동과 투명 아이콘·흰색 검은 글자 상태표"],
-  [views.includes('"현재 {current}명 · 거주 {resident}명":"{current} here · {resident} residents"')&&views.includes('"현재 {current}명 · 거주 {resident}명":"現在{current}人・居住{resident}人"')&&views.includes('"건물 평판":"Building reputation"')&&views.includes('"건물 분위기":"建物の雰囲気"'),"상단 인원과 건물·편집 UI 영어·일본어 번역"]
+  [views.includes('"현재 {current}명 · 거주 {resident}명":"{current} here · {resident} residents"')&&views.includes('"현재 {current}명 · 거주 {resident}명":"現在{current}人・居住{resident}人"')&&views.includes('"건물 평판":"Building reputation"')&&views.includes('"건물 분위기":"建物の雰囲気"'),"상단 인원과 건물·편집 UI 영어·일본어 번역"],
+  [app.includes('function openPlaceInteriorImageMenu')&&app.includes('data-place-interior-source="game"')&&app.includes('data-place-interior-source="link"')&&app.includes('data-place-interior-source="device"'),"내부 사진의 게임 기본 일러스트·링크·기기 업로드 3가지 선택"],
+  [views.includes('town-building-filter-scroll')&&views.includes('"관공서","기타"')&&css.includes('grid-template-columns:auto minmax(0,1fr)')&&css.includes('.town-building-filter-scroll{display:flex'),"전체 고정과 모든 건물 유형 가로 스크롤"],
+  [views.includes('data-town-placement-command="undo"')&&views.includes('data-town-placement-command="redo"')&&app.includes('const townPlacementHistories=new Map()')&&app.includes('event.ctrlKey||event.metaKey'),"배치 버튼과 Ctrl+Z·Ctrl+Y 실행 취소/다시 실행"],
+  [townFit.includes('scroll-behavior:auto!important')&&townFit.includes('var(--town-label-offset,129px)')&&views.includes('--town-label-offset:'),"재렌더 지도 위치를 즉시 복원하고 건물 이름을 외형 바로 아래에 배치"],
+  [interfaceCss.includes(':not(.town-traveler)')&&css.includes('.town-traveler-visual>i{')&&css.includes('border:0;border-radius:0;background:transparent'),"이동 인물 카드와 상태 아이콘의 불필요한 배경·테두리 제거"],
+  [simulation.includes('routineCanInclude(other,c.id)')&&simulation.includes('committedHasSoloRoutine'),"동행자 없는 고정 일정 인물을 다른 인물의 공동 장면에서 제외"]
 ];
 
 let failed=0;

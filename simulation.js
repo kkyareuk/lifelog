@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260827townfix168r2";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260827townfix168r2";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260827townfix169";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260827townfix169";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -4130,9 +4130,15 @@ function sharedParticipantOrder(characters,relation){
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
   const committed=committedSharedSceneFor(c,date,current);
+  const routineCanInclude=(other,partnerId)=>{
+    const routine=activeScheduledRoutine(other,date);
+    return !routine||(routine.withIds||[]).includes(partnerId);
+  };
+  const committedHasSoloRoutine=committed&&[...(committed.withIds||[]),committed.withId]
+    .filter(Boolean).some(id=>state.characters[id]&&!routineCanInclude(state.characters[id],c.id));
   // 한 번 성립한 공동 장면은 같은 장소·30분 구간에서 다시 짝을 뽑지 않는다.
   // 화면을 여는 순서가 달라도 한 인물이 다른 장소의 두 장면에 중복 배정되지 않는다.
-  if(!sharedContext&&committed)return committed;
+  if(!sharedContext&&committed&&!committedHasSoloRoutine)return committed;
   const sceneIsSleeping=value=>/자는 중|잠든|수면/.test(`${value?.title||""} ${value?.desc||""} ${value?.mood||""}`);
   const sharedSourceOwner=sharedContext?.sourceOwnerId?state.characters[sharedContext.sourceOwnerId]:null;
   if(sharedContext?.sourceEvent&&sharedSourceOwner&&sharedSourceOwner.id!==c.id){
@@ -4207,7 +4213,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const explicitSharedPartner=sharedContext?.interactionId&&forcedPartner&&!current.dateGroup?forcedPartner:null;
   const configuredCompanion=!current.dateGroup&&current.forcedCompanionId?state.characters[current.forcedCompanionId]:null;
   const namedCurrentPartner=!current.dateGroup?(configuredCompanion||namedSharedPartner(current,c)):null;
-  const namedPartnerIsPresent=configuredCompanion||namedCurrentPartner&&sameLiveLocation(current,baseEventFor(namedCurrentPartner,date));
+  const namedPartnerIsPresent=(configuredCompanion&&routineCanInclude(configuredCompanion,c.id))
+    ||(namedCurrentPartner&&routineCanInclude(namedCurrentPartner,c.id)&&sameLiveLocation(current,baseEventFor(namedCurrentPartner,date)));
   // An old/generated sentence can name somebody who is currently in another
   // room or town. Never keep that claim: show a neutral solo continuation at
   // the actor's real location until both base timelines place them together.
@@ -4227,6 +4234,9 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     ?[explicitDatePartner||explicitSharedPartner||explicitCurrentPartner]
     :state.order.map(id=>state.characters[id]).filter(other=>{
       if(!other||other.id===c.id)return false;
+      // 상대에게 동행자가 없는 고정 일정이 활성화되어 있으면, 같은 장소에
+      // 우연히 있다는 이유로 다른 인물의 대화 장면에 끌어오지 않는다.
+      if(!routineCanInclude(other,c.id))return false;
       const otherEvent=baseEventFor(other,date);
       if(otherEvent.transit||sceneIsSleeping(current)!==sceneIsSleeping(otherEvent))return false;
       const reservedScene=committedSharedSceneFor(other,date,otherEvent);

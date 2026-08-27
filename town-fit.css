@@ -20,6 +20,11 @@
   scrollbar-width:thin!important;
   background:color-mix(in srgb,#d9e9df 78%,var(--bg))!important;
 }
+html.native-app[data-active-tab="town"] .town-map-scroll{scroll-behavior:auto!important}
+html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label{
+  transform:translate(-50%,var(--town-label-offset,129px))!important;
+}
+html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{display:none!important}
 :is(.town-map-scroll,.standard-observe-view .viewport)>.world{
   position:relative!important;
   display:block!important;
