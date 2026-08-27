@@ -4,19 +4,19 @@ import path from "node:path";
 const root=path.resolve(import.meta.dirname,"..");
 const read=file=>fs.readFileSync(path.join(root,file),"utf8");
 const views=read("views.js");
+const app=read("app.js");
 const css=read("app.css");
-const relationshipMainRules=(css.match(/html\.native-app\[data-active-tab="relationship"\] main\{/g)||[]).length;
 
 const checks=[
-  [views.includes('class="character-group-avatars"')&&views.includes('class="character-group-copy"')&&views.includes('class="character-group-actions"'),"그룹 아이콘·이름·동작 영역을 독립 구조로 렌더링"],
-  [css.includes('grid-template-areas:"avatars copy" "actions actions"'),"좁은 화면에서는 편집·삭제를 별도 행으로 배치"],
-  [css.includes('.character-group-copy b{font-size:18px')&&css.includes('word-break:keep-all'),"그룹 이름이 한 글자 폭으로 찌그러지지 않음"],
-  [css.includes('.character-group-manager>.title>button{align-self:end;width:88px;min-height:56px'),"그룹 만들기 버튼이 설명 영역을 과도하게 침범하지 않음"],
-  [css.includes('.relationship-page{\n    display:grid!important')&&css.includes('height:max-content!important;\n    min-height:0!important'),"그룹 목록 아래 관계 화면이 내용 높이만 사용"],
-  [css.includes('.relationship-pair-magnet{display:grid!important;grid-template-columns:minmax(0,1fr)!important')&&css.includes('height:max-content!important'),"현재 단일 열 관계 편집 구조와 CSS가 일치"],
-  [relationshipMainRules===1&&!css.includes('관계 화면도 바깥 문서는 움직이지 않고 두 룰렛만 내부에서 돈다.'),"모바일 관계 화면 높이·overflow 규칙이 한 곳에만 존재"],
-  [css.includes('scroll-padding-bottom:max(96px,env(safe-area-inset-bottom))')&&css.includes('touch-action:pan-y'),"관계 설정 버튼까지 main 세로 스크롤 허용"],
-  [css.includes('dialog.character-view-dialog form{')&&css.includes('overflow-y:auto!important')&&css.includes('max-height:calc(100dvh - 12px)!important'),"관계 설정 팝업도 독립적으로 끝까지 스크롤"]
+  [views.includes('class="relationship-choice-row"')&&views.includes('class="relationship-hero-pair"')&&views.includes('class="relationship-reality-pill"'),"SVG 시안의 캐릭터 선택·큰 캐릭터·현재 단계 구조"],
+  [views.includes('class="relationship-stage-actions"')&&views.includes('data-open-view-dialog')&&views.includes('data-open-official-relations')&&views.includes('data-add-character-group'),"관계 설정·공식 관계·목록·그룹 동작을 한 화면에 배치"],
+  [views.includes('class="character-view-fields relationship-all-fields"')&&!views.includes('class="settings-advanced-group relationship-advanced-settings"'),"16개 감정 항목을 고급 설정 없이 모두 펼침"],
+  [css.includes('--relationship-paper:#eee6d3')&&css.includes('background-size:72px 72px!important'),"베이지 체크무늬 관계 배경"],
+  [css.includes('height:100dvh!important')&&css.includes('overflow-y:hidden!important')&&css.includes('data-active-tab="relationship"'),"모바일 관계 화면 문서 스크롤 차단"],
+  [css.includes('.relationship-all-fields')&&css.includes('grid-template-columns:repeat(2,minmax(0,1fr))!important'),"관계 감정 편집을 두 열 한 화면으로 배치"],
+  [views.includes('data-official-card')&&views.includes('data-official-page-label')&&app.includes('data-official-page'),"공식 관계 목록을 한 장씩 넘기는 페이지 구조"],
+  [app.includes('RELATION_DEFAULT_STAGE')&&app.includes('친구:"편한 친구"')&&app.includes('연인:"편안한 연인"')&&app.includes('라이벌:"경쟁하며 의식함"'),"관계 유형을 들었을 때 자연스러운 기본 단계"],
+  [app.includes('relationship-fullscreen-dialog')&&!app.includes('relation-official-advanced'),"공식 관계 설정을 고급 접힘 없이 전체 화면으로 제공"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);

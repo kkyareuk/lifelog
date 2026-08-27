@@ -1,15 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260827townhome170";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260827townhome170";
-import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260827townhome170";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260827townhome170";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260827townhome170";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260827townhome170";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260827townhome170";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260827townhome170";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townhome170";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townhome170";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260827townhome170";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260827townhome170";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260827relationship171";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260827relationship171";
+import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260827relationship171";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260827relationship171";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260827relationship171";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260827relationship171";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260827relationship171";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260827relationship171";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260827relationship171";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827relationship171";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260827relationship171";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260827relationship171";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -3404,7 +3404,10 @@ function bind(){
     save(true);setMobileTownPlacement(kind,id);render();
   });
   const addPlaceButton=$("[data-add-place]");
-  $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
+  $$("[data-add-rel]").forEach(button=>button.addEventListener("click",()=>{
+    button.closest("[data-official-relation-dialog]")?.close();
+    openRelationDialog();
+  }));
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>{
     el.closest("[data-official-relation-dialog]")?.close();
     openRelationDialog(el.dataset.editRel);
@@ -3438,7 +3441,22 @@ function bind(){
   $("[data-open-relationship-map]")?.addEventListener("click",openRelationshipMap);
   $("[data-open-official-relations]")?.addEventListener("click",()=>{
     const dialog=$("[data-official-relation-dialog]");
-    if(dialog&&!dialog.open)dialog.showModal();
+    if(dialog&&!dialog.open){
+      const cards=[...dialog.querySelectorAll("[data-official-card]")];
+      cards.forEach((card,index)=>card.classList.toggle("is-page-current",index===0));
+      dialog.dataset.page="0";
+      const label=dialog.querySelector("[data-official-page-label]");
+      if(label)label.textContent=cards.length?`1 / ${cards.length}`:"0 / 0";
+      dialog.showModal();
+    }
+  });
+  $$("[data-official-page]").forEach(button=>button.onclick=()=>{
+    const dialog=button.closest("[data-official-relation-dialog]"),cards=[...dialog.querySelectorAll("[data-official-card]")];
+    if(!cards.length)return;
+    const next=(Number(dialog.dataset.page||0)+Number(button.dataset.officialPage)+cards.length)%cards.length;
+    dialog.dataset.page=String(next);
+    cards.forEach((card,index)=>card.classList.toggle("is-page-current",index===next));
+    const label=dialog.querySelector("[data-official-page-label]");if(label)label.textContent=`${next+1} / ${cards.length}`;
   });
   $("[data-refresh-relationship-map]")?.addEventListener("click",()=>{
     render();
@@ -4331,6 +4349,7 @@ const RELATION_STAGES={
   "부모·자녀":["연락이 끊긴 사이","서먹한 부모와 자녀","필요할 때만 연락함","무난한 부모와 자녀","서로 의지하는 가족","무척 각별한 부모와 자녀"],
   "형제·자매":["연락이 끊긴 형제자매","서로 불편한 형제자매","필요할 때만 연락함","무난한 형제자매","친구 같은 형제자매","서로를 가장 잘 아는 형제자매"],
   동거인:["서로 거의 모르는 동거인","생활만 공유하는 동거인","어색한 동거인","무난한 동거인","편한 동거인","친구 같은 동거인","유사가족 같은 동거인"],
+  라이벌:["서로 무관심한 라이벌","경계하는 라이벌","경쟁하며 의식함","서로 실력을 인정함","좋은 자극을 주는 라이벌"],
   default:["매우 불편함","서먹함","조금 가까움","편안함","가까움","매우 가까움"]
 };
 const PAST_RELATION_STAGES={
@@ -4342,160 +4361,81 @@ const PAST_RELATION_STAGES={
   default:["관계가 끝난 직후","아직 감정이 남아 있음","서로 피하는 중","필요할 때만 연락함","완전히 정리된 과거 관계"]
 };
 const stagesFor=(type,temporalStatus="current")=>temporalStatus==="past"?(PAST_RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","친구 모임","산악회"].includes(type)?PAST_RELATION_STAGES.친구:PAST_RELATION_STAGES.default)):(RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","친구 모임","산악회"].includes(type)?RELATION_STAGES.친구:RELATION_STAGES.default));
+const RELATION_DEFAULT_STAGE={연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구","부모·자녀":"무난한 부모와 자녀","형제·자매":"무난한 형제자매",동거인:"무난한 동거인",소꿉친구:"편한 친구","학창 시절 친구들":"편한 친구","친구 모임":"편한 친구",라이벌:"경쟁하며 의식함",혐관:"서로 못마땅함",default:"편안함"};
+const defaultRelationStage=(type,temporalStatus="current")=>{
+  const values=stagesFor(type,temporalStatus);
+  if(temporalStatus==="past")return values[Math.min(2,values.length-1)]||values[0];
+  const wanted=RELATION_DEFAULT_STAGE[type]||(["산악회","동아리 동료","직장 동료"].includes(type)?"편안함":RELATION_DEFAULT_STAGE.default);
+  return values.includes(wanted)?wanted:(values[Math.floor(values.length/2)]||values[0]);
+};
 const FAULT_REASONS=["정하지 않음","누구의 잘못도 아님","성격 차이","신뢰를 깨뜨림","거짓말과 은폐","금전 문제","빚·과소비","재산·수입 갈등","약속·책임을 지키지 않음","일방적인 연락 단절","지나친 통제와 간섭","반복된 갈등","가족·주변인의 개입","생활 방식·미래 계획 차이","거리·이사·환경 변화","직장·학교 등 여건 변화","서로 자연스럽게 멀어짐","기타"];
 function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
-  const old=id?state.relationships[id]:null,dialog=document.createElement("dialog");dialog.className="relation-dialog relation-editor-dialog";
-  const oldGroup=old?.groupId?Object.values(state.relationships).filter(relation=>relation.groupId===old.groupId):old?[old]:[];
-  const oldMembers=old?.groupMembers?.length?old.groupMembers:[old?.a,old?.b].filter(Boolean);
-  const oldMothers=[...new Set(oldGroup.filter(relation=>relation.parentRole==="엄마").map(relation=>relation.parentId||relation.a))];
-  const oldFathers=[...new Set(oldGroup.filter(relation=>relation.parentRole==="아빠").map(relation=>relation.parentId||relation.a))];
-  const oldChildren=[...new Set(oldGroup.filter(relation=>relation.type==="부모·자녀").map(relation=>relation.childId||relation.b))];
-  const oldKinshipByPair=Object.assign({},...oldGroup.map(relation=>relation.kinshipByPair||{[[relation.a,relation.b].sort().join("~")]:relation.kinship||"blood"}));
-  const oldSiblingKinshipByPair=Object.assign({},...oldGroup.map(relation=>relation.siblingKinshipByPair||{}));
-  const characterChecks=(name,selected=[])=>state.order.map(cid=>`<label class="relation-character-chip" data-role-character="${cid}"><input type="checkbox" name="${name}" value="${cid}" ${selected.includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("");
-  const miniAvatar=cid=>{const c=state.characters[cid],src=c?.icon||c?.photo;return src?`<img class="relation-mini-avatar" src="${src}" alt="">`:`<span class="relation-mini-avatar fallback">${String(c?.name||"?").slice(0,1)}</span>`};
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${old?"관계 편집":"관계 추가"}</h2><p>함께할 캐릭터와 관계 종류부터 정해 주세요.</p></div><button value="cancel">×</button></div>
-    <section class="relationship-basic-settings relation-official-basic"><div class="settings-section-heading compact"><span><small>BASIC RELATIONSHIP</small><h3>기본 설정</h3></span><p>관계를 만드는 데 꼭 필요한 항목만 보여요.</p></div>
-    <fieldset class="relation-member-picker"><legend>관계에 포함할 캐릭터 · 두 명 이상</legend><div>${characterChecks("member",oldMembers.length?oldMembers:[state.activeId,state.order.find(cid=>cid!==state.activeId)].filter(Boolean))}</div><small>여기서 바로 캐릭터를 더하거나 뺄 수 있어요. 여러 명의 연인·부부 관계도 가능해요.</small></fieldset>
-    <label>관계 종류<select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select><small class="relation-type-help" data-relation-type-help></small></label>
-    <label><span data-stage-label>현재 관계 단계</span><select name="stage"></select></label></section>
-    <details class="settings-advanced-group relation-official-advanced"><summary><span><small>DETAILS</small><b>고급 설정</b><em>과거 관계·표시 순서·가족 역할·공개 범위·동거</em></span><i aria-hidden="true">＋</i></summary><div class="settings-advanced-body">
-    <label class="relation-temporal"><input type="checkbox" name="temporalStatus" value="past" ${old?.temporalStatus==="past"?"checked":""}><span><b>과거의 관계</b><small>체크하면 ‘헤어진 연인·이혼한 부부·절연한 친구’처럼 바뀝니다.</small></span></label>
-    <section class="relation-order-control"><b>관계 구성원 표시 순서</b><span data-relation-order-label></span><div class="relation-member-order-list" data-relation-member-order-list></div><button type="button" data-swap-relation-order>↔ 두 사람 좌우 바꾸기</button><small>두 명 관계의 왼쪽·오른쪽과 여러 명이 함께 만날 때의 배치를 이 순서대로 유지해요.</small></section>
-    <fieldset class="parent-direction" hidden><legend>선택한 구성원의 부모와 자녀 역할</legend><div class="parent-columns"><section><b>엄마 역할 · 여러 명 가능</b><div>${characterChecks("mother",oldMothers)}</div></section><section><b>아빠 역할 · 여러 명 가능</b><div>${characterChecks("father",oldFathers)}</div></section><span>→</span><section><b>자녀 · 여러 명 가능</b><div>${characterChecks("child",oldChildren)}</div></section></div><div class="parent-kinship-grid" data-parent-kinship></div><small>위에서 선택한 관계 구성원만 표시됩니다. 부모와 자녀 조합마다 혈연 여부를 따로 정할 수 있어요.</small></fieldset>
-    <fieldset class="sibling-direction" hidden><legend>선택한 구성원의 형제·자매 순서와 혈연</legend><div class="sibling-role-list">${state.order.map((cid,index)=>`<label data-role-character="${cid}"><b>${state.characters[cid].name}</b><span>순서<select name="siblingOrder" data-sibling-id="${cid}">${state.order.map((_,order)=>`<option value="${order+1}" ${(old?.siblingOrder?.[cid]||index+1)===order+1?"selected":""}>${order+1}번째</option>`).join("")}</select></span></label>`).join("")}</div><div class="sibling-kinship-grid" data-sibling-kinship></div><small>혈연은 사람 한 명이 아니라 두 사람의 조합마다 정합니다. 셋이 모두 비혈연이면 성별 구성에 따라 의형제·의자매·의남매로 표시돼요.</small></fieldset>
-    <fieldset class="past-fault" hidden><legend>관계가 끝난 책임과 이유</legend><label>주된 책임이 있는 쪽<select name="faultParty"></select></label><label>무슨 일이 있었나요?<select name="faultReason">${FAULT_REASONS.map(value=>`<option ${old?.faultReason===value?"selected":""}>${value}</option>`).join("")}</select></label><small>속마음이나 호감과는 별개예요. 관계가 끝난 사건과 이후 장면의 긴장에 사용됩니다.</small></fieldset>
-    <label class="relation-officiality">관계가 밖에서 다뤄지는 방식<select name="legalStatus">${["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함","법적으로 관계가 등록됨"].map(value=>`<option>${value}</option>`).join("")}</select><small data-officiality-help>감정을 뜻하는 항목이 아니에요. 맨 위는 밖에서 관계 이름을 쓰지 않는 상태이고, 아래로 갈수록 공개 범위가 넓어집니다.</small></label>
-    <label class="cohabit"><input type="checkbox" name="cohabit"> 함께 살기</label>
-    <label class="cohabit relation-stay-together"><input type="checkbox" name="stayTogether"><span><b>함께 다니기</b><small>둘 다 별도 일정이 없을 때 같은 장소에서 함께 행동하고, 생활 로그에도 함께 표시해요.</small></span></label>
-    <p class="hint">공식 관계와 관계 단계, 각 캐릭터의 성격과 신체 접촉 반응을 함께 분석해 상호작용을 자동으로 만들어요.</p></div></details>
-    <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
+  const old=id?state.relationships[id]:null,dialog=document.createElement("dialog");dialog.className="relation-dialog relation-editor-dialog relationship-fullscreen-dialog";
+  const language=state.uiLanguage||"ko",copy=({
+    en:{title:old?"Edit official relationship":"Set official relationship",back:"Back",personA:"First character",personB:"Second character",type:"Relationship",stage:"Current stage",time:"Status",current:"Current",past:"Past",publicity:"Recognition",parentRole:"Parent role",kinship:"Family link",sibling:"Sibling link",fault:"Why it ended",cohabit:"Live together",together:"Travel together",cancel:"Cancel",save:"Save",swap:"Swap"},
+    ja:{title:old?"公式関係を編集":"公式関係を設定",back:"戻る",personA:"1人目",personB:"2人目",type:"関係の種類",stage:"現在の段階",time:"関係の状態",current:"現在",past:"過去",publicity:"公開範囲",parentRole:"親の役割",kinship:"家族関係",sibling:"きょうだい関係",fault:"関係が終わった理由",cohabit:"一緒に住む",together:"一緒に行動",cancel:"取消",save:"保存",swap:"左右を入れ替え"},
+    ko:{title:old?"공식 관계 편집":"공식 관계 설정",back:"돌아가기",personA:"첫 번째 캐릭터",personB:"두 번째 캐릭터",type:"관계 종류",stage:"현재 관계 단계",time:"관계 시점",current:"현재 관계",past:"과거 관계",publicity:"관계 공개 범위",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"좌우 바꾸기"}
+  }[language]||null)||{title:old?"공식 관계 편집":"공식 관계 설정",back:"돌아가기",personA:"첫 번째 캐릭터",personB:"두 번째 캐릭터",type:"관계 종류",stage:"현재 관계 단계",time:"관계 시점",current:"현재 관계",past:"과거 관계",publicity:"관계 공개 범위",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"좌우 바꾸기"};
+  const aId=state.characters[old?.a]?old.a:(state.characters[state.activeId]?state.activeId:state.order[0]),bId=state.characters[old?.b]&&old.b!==aId?old.b:state.order.find(cid=>cid!==aId);
+  const characterOptions=selected=>state.order.map(cid=>`<option value="${htmlEsc(cid)}" ${cid===selected?"selected":""}>${htmlEsc(state.characters[cid]?.name||"")}</option>`).join("");
+  const officialValues=["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함","법적으로 관계가 등록됨"];
+  dialog.innerHTML=`<form method="dialog"><header class="relationship-editor-head"><button value="cancel" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><span><small>OFFICIAL RELATIONSHIP</small><h2>${copy.title}</h2></span></header>
+    <section class="official-pair-picker"><label><b>${copy.personA}</b><span data-official-avatar="a"></span><select name="a">${characterOptions(aId)}</select></label><button type="button" data-swap-official-pair aria-label="${copy.swap}">↔</button><label><b>${copy.personB}</b><span data-official-avatar="b"></span><select name="b">${characterOptions(bId)}</select></label></section>
+    <div class="official-relation-fields">
+      <label><b>${copy.type}</b><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select></label>
+      <label><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
+      <label><b>${copy.time}</b><select name="temporalStatus"><option value="current">${copy.current}</option><option value="past">${copy.past}</option></select></label>
+      <label><b>${copy.publicity}</b><select name="legalStatus">${officialValues.map(value=>`<option>${value}</option>`).join("")}</select></label>
+      <label class="official-parent-role" hidden><b>${copy.parentRole}</b><select name="parentRole"><option>엄마</option><option>아빠</option><option>부모</option></select></label>
+      <label class="official-kinship" hidden><b>${copy.kinship}</b><select name="kinship"><option value="blood">혈연</option><option value="nonblood">비혈연·입양</option></select></label>
+      <label class="official-sibling-link" hidden><b>${copy.sibling}</b><select name="siblingKinship"><option value="full">양쪽 부모가 같은 혈연</option><option value="half">한쪽 부모만 같은 혈연</option><option value="nonblood">비혈연 형제·자매</option></select></label>
+      <label class="official-fault" hidden><b>${copy.fault}</b><select name="faultReason">${FAULT_REASONS.map(value=>`<option ${old?.faultReason===value?"selected":""}>${value}</option>`).join("")}</select></label>
+    </div>
+    <div class="official-relation-toggles"><label><input type="checkbox" name="cohabit"><span>${copy.cohabit}</span></label><label><input type="checkbox" name="stayTogether"><span>${copy.together}</span></label></div>
+    <div class="relationship-editor-actions"><button value="cancel">${copy.cancel}</button><button class="primary" value="save">${copy.save}</button></div>
   </form>`;
   document.body.append(dialog);const f=dialog.querySelector("form");
-  let memberOrder=Array.isArray(old?.displayOrder)&&old.displayOrder.length===oldMembers.length
-    ?[...old.displayOrder]:[...oldMembers];
-  const checkedMembers=()=>[...f.querySelectorAll('[name="member"]:checked')].map(input=>input.value);
-  const syncPairOrder=()=>{
-    const selected=checkedMembers();
-    memberOrder=[...memberOrder.filter(member=>selected.includes(member)),...selected.filter(member=>!memberOrder.includes(member))];
-    const orderAvailable=selected.length>=2&&!["부모·자녀","형제·자매"].includes(f.type.value);
-    f.querySelector(".relation-order-control").hidden=!orderAvailable;
-    f.querySelector("[data-relation-order-label]").textContent=orderAvailable?memberOrder.map(id=>state.characters[id]?.name||"").join(" × "):"구성원을 두 명 이상 선택하면 순서를 정할 수 있어요.";
-    const list=f.querySelector("[data-relation-member-order-list]");
-    if(list)list.innerHTML=memberOrder.map((id,index)=>`<span>${miniAvatar(id)}<b>${state.characters[id]?.name||""}</b><button type="button" data-relation-order-move="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-relation-order-move="${id}" data-direction="1" ${index===memberOrder.length-1?"disabled":""}>→</button></span>`).join("");
-    const swap=f.querySelector("[data-swap-relation-order]");
-    if(swap)swap.hidden=memberOrder.length!==2;
-    [".parent-direction",".sibling-direction"].forEach(selector=>f.querySelector(selector)?.querySelectorAll("[data-role-character]").forEach(label=>{
-      const visible=selected.includes(label.dataset.roleCharacter);
-      label.hidden=!visible;
-      if(!visible)label.querySelectorAll('input[type="checkbox"]').forEach(input=>input.checked=false);
-    }));
-    refreshParentKinship();
-    refreshSiblingKinship();
-    refreshFaultParties();
-  };
-  const kinshipKey=(a,b)=>[a,b].sort().join("~");
-  const refreshParentKinship=()=>{
-    const box=f.querySelector("[data-parent-kinship]");if(!box)return;
-    const parents=[...f.querySelectorAll('[name="mother"]:checked,[name="father"]:checked')].map(input=>input.value),children=[...f.querySelectorAll('[name="child"]:checked')].map(input=>input.value);
-    box.innerHTML=parents.flatMap(parent=>children.filter(child=>child!==parent).map(child=>{const key=kinshipKey(parent,child),blood=oldKinshipByPair[key]!=="nonblood";return `<label><span><b>${state.characters[parent]?.name} ↔ ${state.characters[child]?.name}</b><small>이 부모와 자녀 사이</small></span><input type="checkbox" data-parent-blood="${key}" ${blood?"checked":""}> 혈연</label>`})).join("");
-  };
-  const refreshSiblingKinship=()=>{
-    const box=f.querySelector("[data-sibling-kinship]");if(!box)return;
-    const members=checkedMembers();
-    box.innerHTML=members.flatMap((a,index)=>members.slice(index+1).map(b=>{
-      const key=kinshipKey(a,b);
-      let selected=oldSiblingKinshipByPair[key];
-      if(!selected&&old?.siblingBlood)selected=old.siblingBlood[a]!==false&&old.siblingBlood[b]!==false?(old.siblingBloodType?.[a]==="half"||old.siblingBloodType?.[b]==="half"?"half":"full"):"nonblood";
-      selected=selected||"full";
-      return `<label class="sibling-pair-card"><span class="sibling-pair-people">${miniAvatar(a)}<b>${state.characters[a]?.name}</b><i>↔</i>${miniAvatar(b)}<b>${state.characters[b]?.name}</b></span><select data-sibling-kinship-pair="${key}"><option value="full" ${selected==="full"?"selected":""}>양쪽 부모가 같은 혈연</option><option value="half" ${selected==="half"?"selected":""}>한쪽 부모만 같은 혈연</option><option value="nonblood" ${selected==="nonblood"?"selected":""}>비혈연 · 서로를 형제로 선택함</option></select></label>`;
-    })).join("");
-  };
-  const temporalStatus=()=>f.querySelector('[name="temporalStatus"]:checked')?.value||"current";
-  const refreshFaultParties=()=>{
-    const select=f.faultParty;if(!select)return;
-    const members=checkedMembers(),values=[["","정하지 않음"],["none","누구의 잘못도 아님"],["both","양쪽 모두"],...members.map(id=>[id,state.characters[id]?.name||id])];
-    select.innerHTML=values.map(([value,label])=>`<option value="${value}" ${old?.faultParty===value?"selected":""}>${label}</option>`).join("");
-    f.querySelector(".past-fault").hidden=temporalStatus()!=="past";
-  };
-  const pastTypeLabels={연인:"헤어진 연인",부부:"이혼한 부부",친구:"절연한 친구","소꿉친구":"멀어진 소꿉친구","학창 시절 친구들":"멀어진 학창 시절 친구","직장 동료":"전 직장 동료","형제·자매":"절연한 형제·자매","부모·자녀":"절연한 부모·자녀",동거인:"옛 동거인",라이벌:"과거의 라이벌",혐관:"과거의 악연"};
-  const refreshTemporalLabels=()=>{
-    const past=temporalStatus()==="past";
-    [...f.type.options].forEach(option=>option.textContent=past?(pastTypeLabels[option.value]||`과거의 ${option.value}`):option.value);
-    f.querySelector("[data-stage-label]").textContent=past?"과거 관계 단계":"현재 관계 단계";
-  };
-  const refreshStages=()=>{refreshTemporalLabels();const values=stagesFor(f.type.value,temporalStatus()),selected=old?.stage&&values.includes(old.stage)?old.stage:values[0];f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("")};
-  const relationTypeHelp={
-    "부모·자녀":"누가 부모이고 누가 자녀인지 역할이 있는 관계예요. 혈연·입양·법적 등록 여부는 아래 공개·공적 기록 항목으로 따로 정합니다.",
-    "형제·자매":"선택한 구성원마다 첫째·둘째 순서와 혈연·이복·이부·비혈연 여부를 따로 정하는 관계예요.",
-    동거인:"같은 집에서 생활을 공유하는 관계예요. 거의 모르는 사이부터 친구, 유사가족 같은 동거인까지 단계로 표현합니다."
-  };
-  const updateType=()=>{
-    refreshStages();
-    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매";
-    const advanced=f.querySelector(".relation-official-advanced");
-    if(advanced&&(parent||sibling))advanced.open=true;
-    f.querySelector(".parent-direction").hidden=!parent;
-    f.querySelector(".sibling-direction").hidden=!sibling;
-    f.querySelector(".relation-member-picker").hidden=false;
-    f.querySelector("[data-relation-type-help]").textContent=relationTypeHelp[f.type.value]||"두 사람 사이를 밖에서 어떤 관계라고 부르는지 정합니다. 속마음과 신뢰는 캐릭터별 시선에서 따로 설정해요.";
-    f.querySelector("[data-officiality-help]").textContent=["부모·자녀","형제·자매"].includes(f.type.value)?"마지막 ‘법적으로 관계가 등록됨’은 가족관계·입양처럼 이 가족 역할이 공적 서류에 기록된 경우예요. 혈연 여부와는 별개입니다.":"맨 위는 밖에서 관계 이름을 쓰지 않는 상태이고, 아래로 갈수록 공개 범위가 넓어집니다. 마지막은 이 관계와 관련된 공적 서류가 있는 경우예요.";
-    if(f.type.value==="동거인")f.cohabit.checked=true;
-    f.cohabit.disabled=f.type.value==="동거인";
-    const married=f.type.value==="부부";
-    if(married)f.legalStatus.value="법적으로 관계가 등록됨";
-    f.legalStatus.disabled=married;
-    syncPairOrder();
-    refreshFaultParties();
-  };
   const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
   f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";
+  f.temporalStatus.value=old?.temporalStatus==="past"?"past":"current";
   f.legalStatus.value=f.type.value==="부부"?"법적으로 관계가 등록됨":officialityMigration[old?.legalStatus]||old?.legalStatus||"가까운 사람에게만 알림";
-  updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
-  f.querySelectorAll('[name="member"]').forEach(input=>input.onchange=syncPairOrder);
-  f.querySelectorAll('[name="temporalStatus"]').forEach(input=>input.onchange=()=>{refreshStages();refreshFaultParties()});
-  f.querySelectorAll('[name="mother"],[name="father"],[name="child"]').forEach(input=>input.onchange=refreshParentKinship);
-  f.querySelector("[data-swap-relation-order]").onclick=()=>{if(memberOrder.length===2){memberOrder.reverse();syncPairOrder()}};
-  f.querySelector("[data-relation-member-order-list]").onclick=event=>{
-    const button=event.target.closest("[data-relation-order-move]");if(!button)return;
-    const index=memberOrder.indexOf(button.dataset.relationOrderMove),next=index+Number(button.dataset.direction);
-    if(index<0||next<0||next>=memberOrder.length)return;
-    [memberOrder[index],memberOrder[next]]=[memberOrder[next],memberOrder[index]];
-    syncPairOrder();
+  f.parentRole.value=old?.parentRole||"부모";f.kinship.value=old?.kinship||"blood";
+  const oldSiblingKey=[aId,bId].sort().join("~");f.siblingKinship.value=old?.siblingKinshipByPair?.[oldSiblingKey]||"full";
+  f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
+  let initial=true;
+  const avatarMarkup=cid=>{const c=state.characters[cid],src=c?.icon||c?.photo;return src?`<img src="${htmlEsc(src)}" alt="">`:`<i>${htmlEsc(String(c?.name||"?").slice(0,1))}</i>`};
+  const refreshPair=()=>{
+    if(f.a.value===f.b.value)f.b.value=state.order.find(cid=>cid!==f.a.value)||f.b.value;
+    f.querySelector('[data-official-avatar="a"]').innerHTML=avatarMarkup(f.a.value);
+    f.querySelector('[data-official-avatar="b"]').innerHTML=avatarMarkup(f.b.value);
   };
+  const refreshStages=()=>{
+    const values=stagesFor(f.type.value,f.temporalStatus.value),selected=initial&&old?.stage&&values.includes(old.stage)?old.stage:defaultRelationStage(f.type.value,f.temporalStatus.value);
+    f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("");
+    f.querySelector("[data-stage-label]").textContent=f.temporalStatus.value==="past"?(language==="en"?"Past relationship stage":language==="ja"?"過去の関係段階":"과거 관계 단계"):copy.stage;
+    f.querySelector(".official-fault").hidden=f.temporalStatus.value!=="past";
+    initial=false;
+  };
+  const refreshType=()=>{
+    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매",married=f.type.value==="부부",roommate=f.type.value==="동거인";
+    f.querySelector(".official-parent-role").hidden=!parent;f.querySelector(".official-kinship").hidden=!parent;f.querySelector(".official-sibling-link").hidden=!sibling;
+    if(married)f.legalStatus.value="법적으로 관계가 등록됨";f.legalStatus.disabled=married;
+    if(roommate)f.cohabit.checked=true;f.cohabit.disabled=roommate;
+    refreshStages();
+  };
+  refreshPair();refreshType();
+  f.a.onchange=refreshPair;f.b.onchange=refreshPair;
+  f.type.onchange=refreshType;f.temporalStatus.onchange=refreshStages;
+  f.querySelector("[data-swap-official-pair]").onclick=()=>{const a=f.a.value;f.a.value=f.b.value;f.b.value=a;refreshPair()};
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
-      const members=checkedMembers();
-      const mothers=[...f.querySelectorAll('[name="mother"]:checked')].map(input=>input.value),fathers=[...f.querySelectorAll('[name="father"]:checked')].map(input=>input.value),children=[...f.querySelectorAll('[name="child"]:checked')].map(input=>input.value);
-      const parentPairs=f.type.value==="부모·자녀"?[...mothers.map(id=>[id,"엄마"]),...fathers.map(id=>[id,"아빠"])].flatMap(([parent,role])=>children.filter(child=>child!==parent).map(child=>[parent,child,role])):[];
-      const kinshipByPair=Object.fromEntries([...f.querySelectorAll("[data-parent-blood]")].map(input=>[input.dataset.parentBlood,input.checked?"blood":"nonblood"]));
-      const siblingOrder=Object.fromEntries(members.map(id=>[id,Number(f.querySelector(`[data-sibling-id="${CSS.escape(id)}"]`)?.value)||1]));
-      const siblingKinshipByPair=Object.fromEntries([...f.querySelectorAll("[data-sibling-kinship-pair]")].map(select=>[select.dataset.siblingKinshipPair,select.value]));
-      const duplicateSiblingOrder=f.type.value==="형제·자매"&&new Set(Object.values(siblingOrder)).size!==members.length;
-      if(f.type.value==="부모·자녀"&&!parentPairs.length)alert("엄마 또는 아빠와 자녀를 한 명 이상씩 골라 주세요.");
-      else if(duplicateSiblingOrder)alert("형제·자매의 첫째·둘째·셋째 순서는 서로 겹치지 않게 골라 주세요.");
-      else if(f.type.value!=="부모·자녀"&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
-      else{
-        const temporal=temporalStatus(),levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1);
-        const hostile=f.type.value==="혐관",base={type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:temporal==="past"?f.faultParty.value:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,kinshipByPair,siblingOrder,siblingKinshipByPair,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
-        if(old?.groupId)Object.values(state.relationships).filter(r=>r.groupId===old.groupId).forEach(r=>deleteRelationship(r.id));
-        else if(old&&(f.type.value==="부모·자녀"||members.length!==2))deleteRelationship(id);
-        if(f.type.value==="부모·자녀"){
-          const groupId=parentPairs.length>1?`family-${Date.now()}`:"";
-          parentPairs.forEach(([parent,child,parentRole])=>addRelationship({...base,a:parent,b:child,parentId:parent,childId:child,parentRole,kinship:kinshipByPair[kinshipKey(parent,child)]||"blood",directional:true,groupId,groupMembers:[...new Set([...mothers,...fathers,...children])]}));
-        }else if(members.length===2){
-          const ordered=memberOrder.length===2&&memberOrder.every(member=>members.includes(member))?memberOrder:members;
-          const patch={...base,a:ordered[0],b:ordered[1],displayOrder:[...ordered],directional:false,groupId:"",groupMembers:[]};
-          old&&!old.groupId&&state.relationships[id]?updateRelationship(id,patch):addRelationship(patch);
-        }
-        else{
-          const groupId=`group-${members.slice().sort().join("-")}-${Date.now()}`;
-          const ordered=memberOrder.length===members.length&&memberOrder.every(member=>members.includes(member))?memberOrder:members;
-          for(let i=0;i<members.length;i++)for(let j=i+1;j<members.length;j++)addRelationship({...base,a:members[i],b:members[j],groupId,groupMembers:[...members],displayOrder:[...ordered]});
-        }
-        render();explicitSave("관계 저장");
-      }
+      const a=f.a.value,b=f.b.value,temporal=f.temporalStatus.value,levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1),hostile=f.type.value==="혐관",pairKey=[a,b].sort().join("~");
+      const patch={a,b,type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[a,b],directional:f.type.value==="부모·자녀",groupId:"",groupMembers:[]};
+      if(f.type.value==="부모·자녀")Object.assign(patch,{parentId:a,childId:b,parentRole:f.parentRole.value,kinship:f.kinship.value,kinshipByPair:{[pairKey]:f.kinship.value}});
+      if(f.type.value==="형제·자매")Object.assign(patch,{siblingOrder:{[a]:1,[b]:2},siblingKinshipByPair:{[pairKey]:f.siblingKinship.value}});
+      old&&state.relationships[id]?updateRelationship(id,patch):addRelationship(patch);
+      render();explicitSave("관계 저장");
     }
     dialog.remove();
   };
@@ -5064,7 +5004,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260827townhome170").catch(error=>{
+import("./auth.js?v=20260827relationship171").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5079,7 +5019,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260827townhome170",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260827relationship171",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
