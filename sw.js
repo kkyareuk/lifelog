@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260827-town-layout-164";
+const CACHE_VERSION="drawer-village-v20260828-relationship-174";
 const CORE=[
   "./",
   "./index.html",
@@ -51,6 +51,7 @@ const CORE=[
   ,"./assets/home-ui/town.png"
   ,"./assets/home-ui/back.png"
   ,"./assets/home-ui/wood-top.png"
+  ,"./assets/home-ui/relationship-mosaic.png"
   ,"./assets/character-ui/paper.webp"
   ,"./assets/character-ui/wallet.png"
   ,"./assets/character-ui/registration-card.png"

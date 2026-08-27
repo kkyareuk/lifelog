@@ -1,15 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260828relationship173";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260828relationship173";
-import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260828relationship173";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260828relationship173";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260828relationship173";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260828relationship173";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260828relationship173";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260828relationship173";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship173";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828relationship173";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260828relationship173";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260828relationship173";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260828relationship174";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260828relationship174";
+import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260828relationship174";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260828relationship174";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260828relationship174";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260828relationship174";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260828relationship174";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260828relationship174";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship174";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828relationship174";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260828relationship174";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260828relationship174";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1734,14 +1734,24 @@ function applyTheme(){
 }
 
 async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfter=true}={}){
+  const copy=({
+    en:{characterSaving:"Saving character…",characterDone:"Character saved",deviceDone:"Saved on this device",syncing:"Saved on this device · syncing account",syncFailed:"Saved on this device, but account sync did not finish"},
+    ja:{characterSaving:"キャラクターを保存中…",characterDone:"キャラクターを保存しました",deviceDone:"端末に保存しました",syncing:"端末に保存しました・アカウント同期中",syncFailed:"端末には保存しましたが、アカウント同期は完了しませんでした"},
+    ko:{characterSaving:"캐릭터 저장 중…",characterDone:"캐릭터 저장 완료",deviceDone:"기기에 저장되었습니다",syncing:"기기에 저장했습니다 · 계정 동기화 중",syncFailed:"기기에는 저장했지만 계정 동기화는 완료하지 못했어요"}
+  }[state.uiLanguage||"ko"]);
+  const characterSave=label==="캐릭터 저장";
+  if(characterSave&&!alreadySaved){
+    showToast(copy.characterSaving);
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  }
   if(!alreadySaved)save(true);
   if(renderAfter)render();
   const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
-  showToast(label==="캐릭터 저장"?"캐릭터 저장 완료":info?.user?"기기에 저장했습니다 · 계정 동기화 중":"기기에 저장되었습니다");
+  showToast(characterSave?copy.characterDone:info?.user?copy.syncing:copy.deviceDone);
   if(info?.user){
     Promise.resolve(auth.upload({reason:label})).then(synced=>{
-      if(!synced)showToast("기기에는 저장했지만 계정 동기화는 완료하지 못했어요");
-    }).catch(()=>showToast("기기에는 저장했지만 계정 동기화는 완료하지 못했어요"));
+      if(!synced)showToast(copy.syncFailed);
+    }).catch(()=>showToast(copy.syncFailed));
   }
   return true;
 }
@@ -3059,7 +3069,13 @@ function bind(){
     const shell=el.closest(".mobile-town-shell");if(shell&&shell.dataset.townMode!=="buildings")return;
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });
-  $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}));
+  $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{
+    if(button.dataset.saving==="1")return;
+    button.dataset.saving="1";
+    const fullBook=Boolean(button.closest(".character-book-v8"));
+    try{await explicitSave("캐릭터 저장",{renderAfter:!fullBook});advanceFirstSetupAfterCharacter()}
+    finally{delete button.dataset.saving}
+  }));
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("사전 저장"));
   $("[data-town-save]")?.addEventListener("click",event=>{const shell=event.currentTarget.closest(".mobile-town-shell");if(shell&&shell.dataset.townMode!=="town")return;explicitSave("마을 저장")});
   $$(".place-editor details").forEach(details=>{
@@ -5041,7 +5057,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260828relationship173").catch(error=>{
+import("./auth.js?v=20260828relationship174").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5056,7 +5072,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260828relationship173",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260828relationship174",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
