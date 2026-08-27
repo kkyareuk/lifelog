@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827townui167";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827townui167";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260827townui167";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townui167";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827townui167";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townui167";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827townfix168r2";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827townfix168r2";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260827townfix168r2";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townfix168r2";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827townfix168r2";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townfix168r2";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -527,6 +527,7 @@ function normalizeHomes(x){
     }[p.type]||"shop");
     p.subtype=String(p.subtype||"");p.interiorImage=String(p.interiorImage||"");p.stock=Array.isArray(p.stock)?p.stock.map(String):[];
     p.audiences=Array.isArray(p.audiences)?p.audiences.map(String):[];p.priceRange=String(p.priceRange||"보통");p.servicePrice=String(p.servicePrice||p.priceRange);
+    p.reputation=String(p.reputation||"지정 안 함");p.atmosphere=String(p.atmosphere||"지정 안 함");
     p.imageScale=Number.isFinite(+p.imageScale)?Math.max(.45,Math.min(2,+p.imageScale)):1;
     p.spicy=Number.isFinite(+p.spicy)?Math.max(0,Math.min(5,+p.spicy)):0;p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
     p.x=Number.isFinite(+p.x)?Math.max(0,Math.min(100,+p.x)):50;p.y=Number.isFinite(+p.y)?Math.max(0,Math.min(100,+p.y)):50;
@@ -569,6 +570,8 @@ function normalizeHomes(x){
     h.name=String(h.name||"이름 없는 집");
     h.kind=["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"].includes(h.kind)?h.kind:"일반 주거";
     h.exteriorStyle=String(h.exteriorStyle||"설정하지 않음");
+    h.reputation=String(h.reputation||"지정 안 함");
+    h.atmosphere=String(h.atmosphere||"지정 안 함");
     h.beautyLevel=String(h.beautyLevel||"평범함");
     h.ownershipType=String(h.ownershipType||"설정하지 않음");
     h.ownerKind=String(h.ownerKind||"설정하지 않음");
@@ -1107,7 +1110,7 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
 export function createHome(){
   const id=`home-${uid()}`;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
+  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",reputation:"지정 안 함",atmosphere:"지정 안 함",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
   state.activeHomeId=id;
   state.activeTab="home";
   state.homeEditMode=true;
