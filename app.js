@@ -1,15 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260827townfix169";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260827townfix169";
-import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260827townfix169";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260827townfix169";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260827townfix169";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260827townfix169";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260827townfix169";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260827townfix169";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townfix169";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townfix169";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260827townfix169";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260827townfix169";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260827townhome170";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260827townhome170";
+import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260827townhome170";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260827townhome170";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260827townhome170";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260827townhome170";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260827townhome170";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260827townhome170";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townhome170";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townhome170";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260827townhome170";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260827townhome170";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -191,6 +191,20 @@ function openAudienceDialog(placeId){
   dialog.onclose=()=>{if(dialog.returnValue==="apply"){updatePlace(placeId,{audiences:[...selected]},true);render();showToast("주요 이용층을 적용했습니다")}dialog.remove()};
   document.body.append(dialog);dialog.showModal();
 }
+function openTownHomeResidentsDialog(homeId){
+  const home=state.homes[homeId];if(!home)return;
+  const selected=new Set(state.order.filter(id=>{const character=state.characters[id];return character&&(character.homeId===homeId||(character.residences||[]).some(residence=>residence.homeId===homeId))}));
+  const copy={
+    en:{title:`${home.name} residents`,help:"Choose every character who uses this home.",cancel:"Cancel",apply:"Apply",close:"Close",empty:"No characters yet"},
+    ja:{title:`${home.name}の住人`,help:"この家を利用するキャラクターをすべて選んでください。",cancel:"キャンセル",apply:"適用",close:"閉じる",empty:"キャラクターがまだいません"},
+    ko:{title:`${home.name} 구성원`,help:"이 집을 사용하는 캐릭터를 모두 선택해 주세요.",cancel:"취소",apply:"선택 적용",close:"닫기",empty:"아직 만든 캐릭터가 없어요"}
+  }[state.uiLanguage]||{title:`${home.name} 구성원`,help:"이 집을 사용하는 캐릭터를 모두 선택해 주세요.",cancel:"취소",apply:"선택 적용",close:"닫기",empty:"아직 만든 캐릭터가 없어요"};
+  const dialog=document.createElement("dialog");dialog.className="audience-dialog town-home-residents-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${htmlEsc(copy.title)}</h2><small>${copy.help}</small></div><button value="cancel" aria-label="${copy.close}">×</button></div><div class="audience-dialog-list">${state.order.map(id=>{const character=state.characters[id];return `<button type="button" data-town-home-resident="${htmlEsc(id)}" class="${selected.has(id)?"on":""}">${htmlEsc(character?.name||"")}</button>`}).join("")||`<p>${copy.empty}</p>`}</div><div class="crop-actions"><button value="cancel">${copy.cancel}</button><button class="primary" value="apply">${copy.apply}</button></div></form>`;
+  dialog.querySelectorAll("[data-town-home-resident]").forEach(button=>button.onclick=()=>{const id=button.dataset.townHomeResident;selected.has(id)?selected.delete(id):selected.add(id);button.classList.toggle("on",selected.has(id))});
+  dialog.onclose=()=>{if(dialog.returnValue==="apply"){setHomeResidents(homeId,[...selected]);render()}dialog.remove()};
+  document.body.append(dialog);dialog.showModal();
+}
 const FALLBACK_BUILDING_SHAPES=[
   {id:"type-restaurant",name:"음식점",src:"world-assets/building-types/restaurant-handdrawn.png",types:["음식점"]},
   {id:"drawer-building",name:"쌍둥이 서랍 건물",src:"world-assets/drawer-building.png"},
@@ -275,16 +289,19 @@ function openOutfitEditor(outfitId=""){
   dialog.onclose=()=>{if(dialog.returnValue==="save"){outfit.name=String(new FormData(dialog.querySelector("form")).get("name")||"저장 코디");const index=(character.savedOutfits||[]).findIndex(value=>value.id===outfit.id);index<0?character.savedOutfits.push(outfit):character.savedOutfits.splice(index,1,outfit);save(true)}dialog.remove();render()};
   document.body.append(dialog);dialog.showModal();
 }
-function openBuildingShapeDialog(placeId){
-  const place=state.world.places.find(item=>item.id===placeId);if(!place)return;
+function openBuildingShapeDialog(targetId,targetKind="place"){
+  const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
+  const buildingType=isHome?"집":target.type;
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
-  const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(place.type));
+  const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(buildingType)||isHome&&shape.id==="drawer-home");
   const ordered=[...recommended,...BUILDING_SHAPES.filter(shape=>!recommended.includes(shape))];
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${place.type}</b> 유형에 어울리는 모양을 먼저 보여드려요. 보유한 건물 아이콘 팩의 그림도 이곳에 나타나요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${buildingType}</b> 유형에 어울리는 모양을 먼저 보여드려요. 보유한 건물 아이콘 팩의 그림도 이곳에 나타나요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${target.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
     if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
-    const shape=BUILDING_SHAPES.find(item=>item.id===button.dataset.buildingShape);
-    updatePlace(placeId,{iconPreset:button.dataset.buildingShape,image:""},true);dialog.close();render();showToast("건물 모양을 바꿨습니다");
+    const iconPreset=button.dataset.buildingShape;
+    if(isHome)updateHome(targetId,{iconPreset,exteriorImage:""},true);
+    else updatePlace(targetId,{iconPreset,image:""},true);
+    dialog.close();render();showToast("건물 모양을 바꿨습니다");
   });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
@@ -761,32 +778,34 @@ function openRoomIllustrations(homeId,roomKey){
   dialog.querySelectorAll("[data-room-illustration]").forEach(button=>button.onclick=()=>{setHomeImage(homeId,roomKey,roomIllustration(room.type,Number(button.dataset.roomIllustration)));dialog.close();render()});
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
-const buildingInteriorIllustration=(place,index=0)=>{
-  const type=String(place?.type||"기타"),roomType=/음식점|카페/.test(type)?"kitchen":/병원|사무실|학교|도서관|관공서/.test(type)?"study":/숙박|집/.test(type)?"living":"other";
+const buildingInteriorIllustration=(building,index=0)=>{
+  const type=String(building?.type||"기타"),roomType=/음식점|카페/.test(type)?"kitchen":/병원|사무실|학교|도서관|관공서/.test(type)?"study":/숙박|집/.test(type)?"living":"other";
   return roomIllustration(roomType,index);
 };
-function openPlaceInteriorIllustrations(placeId){
-  const place=state.world.places.find(item=>item.id===placeId);if(!place)return;
+function openBuildingInteriorIllustrations(targetKind,targetId){
+  const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
+  const building=isHome?{...target,type:"집"}:target;
   const copy={en:{title:"Choose a game illustration",warm:"Warm interior",calm:"Calm interior",close:"Close"},ja:{title:"ゲーム内イラストを選ぶ",warm:"あたたかな内観",calm:"落ち着いた内観",close:"閉じる"},ko:{title:"게임 기본 일러스트 선택",warm:"포근한 내부",calm:"차분한 내부",close:"닫기"}}[state.uiLanguage]||{title:"게임 기본 일러스트 선택",warm:"포근한 내부",calm:"차분한 내부",close:"닫기"};
   const dialog=document.createElement("dialog");dialog.className="room-illustration-dialog place-interior-illustration-dialog";
-  dialog.innerHTML=`<form method="dialog"><div class="title"><h2>${copy.title}</h2><button value="close" aria-label="${copy.close}">×</button></div><div class="room-illustration-grid">${[0,1].map(index=>`<button type="button" data-place-interior-illustration="${index}" style="background-image:url('${buildingInteriorIllustration(place,index)}')"><span>${index?copy.calm:copy.warm}</span></button>`).join("")}</div></form>`;
-  dialog.querySelectorAll("[data-place-interior-illustration]").forEach(button=>button.onclick=()=>{setPlaceInteriorImage(placeId,buildingInteriorIllustration(place,Number(button.dataset.placeInteriorIllustration)));dialog.close();render()});
+  dialog.innerHTML=`<form method="dialog"><div class="title"><h2>${copy.title}</h2><button value="close" aria-label="${copy.close}">×</button></div><div class="room-illustration-grid">${[0,1].map(index=>`<button type="button" data-building-interior-illustration="${index}" style="background-image:url('${buildingInteriorIllustration(building,index)}')"><span>${index?copy.calm:copy.warm}</span></button>`).join("")}</div></form>`;
+  dialog.querySelectorAll("[data-building-interior-illustration]").forEach(button=>button.onclick=()=>{const image=buildingInteriorIllustration(building,Number(button.dataset.buildingInteriorIllustration));if(isHome)setHomeBackground(targetId,image);else setPlaceInteriorImage(targetId,image);dialog.close();render()});
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
-function openPlaceInteriorImageMenu(placeId){
-  const place=state.world.places.find(item=>item.id===placeId);if(!place)return;
+function openBuildingInteriorImageMenu(targetKind,targetId){
+  const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
   const copy={
     en:{eyebrow:"Interior image",title:"How would you like to add it?",game:"Game illustration",gameHelp:"Choose a built-in interior",link:"Add a link",linkHelp:"Use a public image URL",device:"Upload from device",deviceHelp:"Choose a photo on this device",close:"Close"},
     ja:{eyebrow:"内観画像",title:"追加方法を選んでください",game:"ゲーム内イラスト",gameHelp:"用意された内観から選択",link:"リンクを追加",linkHelp:"公開画像URLを使用",device:"端末からアップロード",deviceHelp:"この端末の写真を選択",close:"閉じる"},
     ko:{eyebrow:"내부 사진",title:"어떤 방식으로 추가할까요?",game:"게임 기본 일러 선택",gameHelp:"게임에 준비된 내부 그림",link:"링크 추가",linkHelp:"공개 이미지 주소 사용",device:"기기에서 업로드",deviceHelp:"이 기기에 저장된 사진",close:"닫기"}
   }[state.uiLanguage]||{eyebrow:"내부 사진",title:"어떤 방식으로 추가할까요?",game:"게임 기본 일러 선택",gameHelp:"게임에 준비된 내부 그림",link:"링크 추가",linkHelp:"공개 이미지 주소 사용",device:"기기에서 업로드",deviceHelp:"이 기기에 저장된 사진",close:"닫기"};
   const dialog=document.createElement("dialog");dialog.className="room-image-dialog place-interior-image-dialog";
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.close}">×</button></div><div class="room-image-choice"><button type="button" data-place-interior-source="game">🎨<b>${copy.game}</b><small>${copy.gameHelp}</small></button><button type="button" data-place-interior-source="link">🔗<b>${copy.link}</b><small>${copy.linkHelp}</small></button><button type="button" data-place-interior-source="device">🖼️<b>${copy.device}</b><small>${copy.deviceHelp}</small></button></div></form>`;
-  dialog.querySelector('[data-place-interior-source="game"]').onclick=()=>{dialog.close();openPlaceInteriorIllustrations(placeId)};
-  dialog.querySelector('[data-place-interior-source="link"]').onclick=()=>{dialog.close();useImageUrl("placeInterior",placeId)};
-  dialog.querySelector('[data-place-interior-source="device"]').onclick=()=>{dialog.close();pickImage("placeInterior",placeId)};
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.close}">×</button></div><div class="room-image-choice"><button type="button" data-building-interior-source="game">🎨<b>${copy.game}</b><small>${copy.gameHelp}</small></button><button type="button" data-building-interior-source="link">🔗<b>${copy.link}</b><small>${copy.linkHelp}</small></button><button type="button" data-building-interior-source="device">🖼️<b>${copy.device}</b><small>${copy.deviceHelp}</small></button></div></form>`;
+  dialog.querySelector('[data-building-interior-source="game"]').onclick=()=>{dialog.close();openBuildingInteriorIllustrations(targetKind,targetId)};
+  dialog.querySelector('[data-building-interior-source="link"]').onclick=()=>{dialog.close();useImageUrl(isHome?"home":"placeInterior",targetId)};
+  dialog.querySelector('[data-building-interior-source="device"]').onclick=()=>{dialog.close();pickImage(isHome?"home":"placeInterior",targetId)};
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
+const openPlaceInteriorImageMenu=placeId=>openBuildingInteriorImageMenu("place",placeId);
 function openRoomEditor(homeId,roomKey){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
   const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
@@ -3049,6 +3068,10 @@ function bind(){
   });
   $$('[data-edit-audiences]').forEach(button=>button.onclick=()=>openAudienceDialog(button.dataset.editAudiences));
   $$('[data-building-shape-open]').forEach(button=>button.onclick=()=>openBuildingShapeDialog(button.dataset.buildingShapeOpen));
+  $$('[data-home-building-shape]').forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
+    openBuildingShapeDialog(button.dataset.homeBuildingShape,"home");
+  });
   $$('[data-building-detail-open]').forEach(button=>button.onclick=event=>{
     const shell=button.closest('.mobile-town-shell'),mode=shell?.dataset.townMode||"";
     if(mode==="town"||mode==="decorations")return;
@@ -3073,9 +3096,9 @@ function bind(){
     if(shell?.dataset.townMode!=="buildings")return;
     setMobileTownPanel(button.dataset.openPlaceEditor);setMobileTownPlacement("place",button.dataset.openPlaceEditor);render();
   });
-  $$('[data-home-exterior-image]').forEach(button=>button.onclick=event=>{
+  $$('[data-open-home-residents]').forEach(button=>button.onclick=event=>{
     event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
-    pickImage("homeExterior",button.dataset.homeExteriorImage);
+    openTownHomeResidentsDialog(button.dataset.openHomeResidents);
   });
   $$('[data-open-home-editor]').forEach(button=>button.onclick=event=>{
     event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
@@ -3095,6 +3118,7 @@ function bind(){
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
   $$("[data-place-interior-image]").forEach(el=>el.onclick=()=>openPlaceInteriorImageMenu(el.dataset.placeInteriorImage));
+  $$("[data-home-interior-image]").forEach(el=>el.onclick=()=>openBuildingInteriorImageMenu("home",el.dataset.homeInteriorImage));
   $$("[data-image-url]").forEach(el=>el.onclick=()=>useImageUrl(el.dataset.imageUrl,el.dataset.id,el.dataset.room||""));
   $$("[data-clear-room-bg]").forEach(el=>el.onclick=()=>{setHomeImage(el.dataset.homeId,el.dataset.room,"");render()});
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
@@ -5040,7 +5064,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260827townfix169").catch(error=>{
+import("./auth.js?v=20260827townhome170").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5055,7 +5079,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260827townfix169",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260827townhome170",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

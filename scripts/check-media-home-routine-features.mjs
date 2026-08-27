@@ -71,7 +71,7 @@ const checks=[
   ,[css.includes('.room{isolation:auto}.room:hover,.room:focus-within{z-index:auto}')&&views.includes('room-has-occupants'),"방 클릭·포커스가 방 전체를 인물 위로 올리지 않음"]
   ,[views.includes('walkStyleClassFor')&&views.includes('walk-style-striding')&&css.includes('@keyframes home-life-careful-step')&&css.includes('@keyframes home-life-light-step'),"걸음걸이 설정을 집·관찰 이동 속도와 보폭 애니메이션에 반영"]
   ,[simulation.includes("MULTILINGUAL_HOME_ACTIVITY_POOL")&&simulation.includes("localizedHomeActivities")&&simulation.includes("recentDayKeys")&&simulation.includes("slice(-3)"),"세 언어 집 활동을 보강하고 최근 3일 같은 행동 반복을 억제"]
-  ,[views.includes('data-home-exterior-image="${home.id}"')&&views.includes('townBuildingBrowser(character)')&&views.includes('data-building-browser-open')&&views.includes('townBuildingDetailScreen'),"마을 건물 정보 목록에서 집·일반 건물 상세 편집 진입 제공"]
+  ,[views.includes('data-home-building-shape="${home.id}"')&&views.includes('townBuildingBrowser(character)')&&views.includes('data-building-browser-open')&&views.includes('townBuildingDetailScreen'),"마을 건물 정보 목록에서 집·일반 건물 상세 편집 진입 제공"]
   ,[app.includes("function bindTownBuildingHold()")&&app.includes("편집 모드는 상단의 명시적인 버튼으로만 연다")&&views.includes('data-mobile-building-edit-mode')&&views.includes('data-mobile-town-decoration-mode'),"우발적인 길게 누르기 대신 상단 건물 정보·편집모드로만 진입"]
   ,[views.includes('"집 외형 바꾸기":"Change home exterior"')&&views.includes('"집 외형 바꾸기":"家の外観を変更"')&&views.includes('"이 건물 편집하기":"Edit this building"')&&views.includes('"이 건물 편집하기":"この建物を編集"'),"마을 건물 편집 기능 영어·일본어 번역"]
 ];

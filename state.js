@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827townfix169";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827townfix169";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260827townfix169";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townfix169";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827townfix169";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townfix169";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827townhome170";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827townhome170";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260827townhome170";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townhome170";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827townhome170";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townhome170";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -567,6 +567,7 @@ function normalizeHomes(x){
   Object.values(x.homes||{}).forEach((h,homeIndex)=>{
     h.image=h.image||"";
     h.exteriorImage=String(h.exteriorImage||"");
+    h.iconPreset=String(h.iconPreset||"drawer-home");
     h.name=String(h.name||"이름 없는 집");
     h.kind=["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"].includes(h.kind)?h.kind:"일반 주거";
     h.exteriorStyle=String(h.exteriorStyle||"설정하지 않음");
@@ -1110,7 +1111,7 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
 export function createHome(){
   const id=`home-${uid()}`;
   state.deletedHomeIds=(state.deletedHomeIds||[]).filter(value=>value!==id);
-  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",reputation:"지정 안 함",atmosphere:"지정 안 함",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
+  state.homes[id]={id,name:"새 집",kind:"일반 주거",townId:state.activeTownId||"",notes:"",image:"",exteriorImage:"",iconPreset:"drawer-home",...homeMapPosition(Object.keys(state.homes).length),exteriorStyle:"설정하지 않음",reputation:"지정 안 함",atmosphere:"지정 안 함",beautyLevel:"평범함",ownershipType:"설정하지 않음",ownerKind:"설정하지 않음",ownerCharacterId:"",ownerName:"",floorCount:1,activeFloor:1,rooms:rooms(),pets:[],cars:[],cleanliness:100,deletedRoomKeys:[]};
   state.activeHomeId=id;
   state.activeTab="home";
   state.homeEditMode=true;
