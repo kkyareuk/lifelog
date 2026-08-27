@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260827relationship171";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260827relationship171";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827relationship171";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827relationship171";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260827relationship171";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260827relationship172";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260827relationship172";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827relationship172";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827relationship172";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260827relationship172";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2929,10 +2929,10 @@ const characterViewOptions=key=>{
   return (CHARACTER_VIEW_OPTIONS[key]||[]).map(value=>value==="정하지 않음"?"선택하지 않음":value);
 };
 const relationshipScreenCopy=()=>({
-  en:{selected:"Selected",mindOf:"'s feelings toward",officialNone:"No official relationship · strangers",setFeelings:"Set relationship",setOfficial:"Set official relationship",officialList:"Official relationships",makeGroup:"Create group",relationshipMap:"Relationship map",done:"Done",reset:"Reset these feelings",back:"Back",officialTitle:"Official relationships",officialEmpty:"No official relationships yet.",officialHint:"Select a relationship to edit it.",previous:"Previous",next:"Next",close:"Close"},
-  ja:{selected:"選択中",mindOf:"が相手をどう思うか",officialNone:"公式関係なし・他人",setFeelings:"関係を設定",setOfficial:"公式関係を設定",officialList:"公式関係一覧",makeGroup:"グループ作成",relationshipMap:"関係図",done:"編集完了",reset:"この関係を初期化",back:"戻る",officialTitle:"公式関係一覧",officialEmpty:"設定した公式関係はまだありません。",officialHint:"関係を選ぶと編集できます。",previous:"前へ",next:"次へ",close:"閉じる"},
-  ko:{selected:"선택됨",mindOf:"의 마음이 향하는 방향",officialNone:"공식 관계 없음 · 이방인",setFeelings:"관계 설정하기",setOfficial:"공식 관계 설정",officialList:"공식 관계 목록",makeGroup:"그룹 만들기",relationshipMap:"관계도 보기",done:"편집 완료",reset:"이 관계 설정 초기화",back:"돌아가기",officialTitle:"공식 관계 목록",officialEmpty:"아직 설정한 공식 관계가 없어요.",officialHint:"관계를 누르면 편집하거나 삭제할 수 있어요.",previous:"이전",next:"다음",close:"닫기"}
-}[state.uiLanguage]||null)||{selected:"선택됨",mindOf:"의 마음이 향하는 방향",officialNone:"공식 관계 없음 · 이방인",setFeelings:"관계 설정하기",setOfficial:"공식 관계 설정",officialList:"공식 관계 목록",makeGroup:"그룹 만들기",relationshipMap:"관계도 보기",done:"편집 완료",reset:"이 관계 설정 초기화",back:"돌아가기",officialTitle:"공식 관계 목록",officialEmpty:"아직 설정한 공식 관계가 없어요.",officialHint:"관계를 누르면 편집하거나 삭제할 수 있어요.",previous:"이전",next:"다음",close:"닫기"};
+  en:{selected:"Selected",mindOf:"'s feelings toward",officialNone:"No official relationship · strangers",setFeelings:"Set viewpoint",setOfficial:"Set official relationship",officialList:"Official relationships",makeGroup:"Group settings",relationshipMap:"Relationship map",done:"Done",reset:"Reset these feelings",back:"Back",officialTitle:"Official relationships",officialEmpty:"No official relationships yet.",officialHint:"Select a relationship to edit it.",previous:"Previous",next:"Next",close:"Close"},
+  ja:{selected:"選択中",mindOf:"が相手をどう思うか",officialNone:"公式関係なし・他人",setFeelings:"視線設定",setOfficial:"公式関係を設定",officialList:"公式関係一覧",makeGroup:"グループ設定",relationshipMap:"関係図",done:"編集完了",reset:"この関係を初期化",back:"戻る",officialTitle:"公式関係一覧",officialEmpty:"設定した公式関係はまだありません。",officialHint:"関係を選ぶと編集できます。",previous:"前へ",next:"次へ",close:"閉じる"},
+  ko:{selected:"선택됨",mindOf:"의 마음이 향하는 방향",officialNone:"공식 관계 없음 · 이방인",setFeelings:"시선 설정",setOfficial:"공식 관계 설정",officialList:"공식 관계 목록",makeGroup:"그룹 설정",relationshipMap:"관계도 보기",done:"편집 완료",reset:"이 관계 설정 초기화",back:"돌아가기",officialTitle:"공식 관계 목록",officialEmpty:"아직 설정한 공식 관계가 없어요.",officialHint:"관계를 누르면 편집하거나 삭제할 수 있어요.",previous:"이전",next:"다음",close:"닫기"}
+}[state.uiLanguage]||null)||{selected:"선택됨",mindOf:"의 마음이 향하는 방향",officialNone:"공식 관계 없음 · 이방인",setFeelings:"시선 설정",setOfficial:"공식 관계 설정",officialList:"공식 관계 목록",makeGroup:"그룹 설정",relationshipMap:"관계도 보기",done:"편집 완료",reset:"이 관계 설정 초기화",back:"돌아가기",officialTitle:"공식 관계 목록",officialEmpty:"아직 설정한 공식 관계가 없어요.",officialHint:"관계를 누르면 편집하거나 삭제할 수 있어요.",previous:"이전",next:"다음",close:"닫기"};
 const characterViewEditor=()=>{
   const copy=relationshipScreenCopy();
   const translatedFieldLabels=({
@@ -2959,28 +2959,30 @@ const characterViewEditor=()=>{
   const officialText=[...new Set(official.map(relation=>currentOfficialLabel(relation)))].join(" · ");
   const overall=characterViewFor(sourceId,targetId).overall;
   const viewFields=`${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"importance","중요도","이 캐릭터의 삶에서 상대가 얼마나 중요한지 정해요.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요.")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함","둘이 같은 공간에 있을 때의 편안함과 대화 호흡을 정해요.")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 감정을 얼마나 파악하고 있는지 정해요.")}${field(sourceId,targetId,"fear","두려움 정도","상대를 얼마나 우습게 보거나 두려워하는지 강도를 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살필지 정해요.")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개로 정해요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개인 실제 충돌 강도예요.")}${field(sourceId,targetId,"expectation","관계에 대한 기대","이 관계가 얼마나 이어질 거라 생각하는지 정해요.")}${field(sourceId,targetId,"touchIntensity","스킨십 범위","두 캐릭터의 범위가 다르면 더 낮은 쪽까지만 반영돼요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","충동만으로 실제 공격하지 않아요.")}${field(sourceId,targetId,"aggressionAction","충동을 실제로 표현하는 단계","충동 단계보다 센 행동은 절대 나오지 않아요.")}`;
-  const personOptions=(ids,selectedId)=>ids.map(id=>`<option value="${id}" ${id===selectedId?"selected":""}>${esc(state.characters[id].name)}</option>`).join("");
+  const characterSelector=(role,ids,selectedId,character)=>`<div class="relationship-character-selector selector-${role}">
+    <button type="button" class="relationship-character-selected" data-toggle-relationship-roster="${role}" aria-label="${esc(character.name)} · ${copy.selected}"><span>${avatar(character)}</span><b><i aria-hidden="true"></i><em>${copy.selected}</em></b></button>
+    <div class="relationship-character-roster" data-relationship-roster="${role}" hidden><div>${ids.map(id=>{const person=state.characters[id];return `<button type="button" class="relationship-character-roster-entry ${id===selectedId?"on":""}" data-relationship-character="${role}" data-character-id="${id}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><button type="button" class="relationship-character-roster-close" data-toggle-relationship-roster="${role}" aria-label="${copy.close}">×</button></div>
+  </div>`;
   const sourceParticle=subjectText(source.name).slice(source.name.length);
   const targetParticle=objectText(target.name).slice(target.name.length);
   return `<section class="character-view-editor relationship-stage" style="--relationship-own:${esc(source.theme?.primary||"#176b60")};--relationship-own-secondary:${esc(source.theme?.secondary||source.theme?.primary||"#176b60")}">
     <button type="button" class="relationship-back-button" data-tab="observe" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button>
     <div class="relationship-choice-row">
-      <label class="relationship-character-choice">${avatar(source)}<select data-view-source aria-label="마음을 보는 사람">${personOptions(state.order,sourceId)}</select><small>${copy.selected}</small></label>
+      ${characterSelector("source",state.order,sourceId,source)}
       <span class="relationship-choice-arrow" aria-hidden="true"></span>
-      <label class="relationship-character-choice">${avatar(target)}<select data-view-target aria-label="마음의 대상">${personOptions(targetIds,targetId)}</select><small>${copy.selected}</small></label>
+      ${characterSelector("target",targetIds,targetId,target)}
     </div>
     <div class="relationship-hero-pair" aria-hidden="true">${avatar(source)}${avatar(target)}</div>
-    <div class="relationship-direction-sentence" data-view-summary="${sourceId}:${targetId}"><span>${esc(subjectText(source.name))} ${esc(objectText(target.name))}</span><strong>${esc(overallViewPhrase(overall))}</strong></div>
+    <div class="relationship-direction-sentence" data-view-summary="${sourceId}:${targetId}"><span><b style="--sentence-name:${esc(source.theme?.primary||"#176b60")}">${esc(source.name)}</b>${esc(sourceParticle)} <b style="--sentence-name:${esc(target.theme?.primary||"#176b60")}">${esc(target.name)}</b>${esc(targetParticle)}</span><strong data-view-summary-phrase>${esc(overallViewPhrase(overall))}</strong></div>
     <small class="relationship-official-status">${officialText?`공식 관계 · ${esc(officialText)}`:copy.officialNone}</small>
     <em class="relationship-reality-pill">${esc(relationshipReality(sourceId,targetId,official))}</em>
     <nav class="relationship-stage-actions">
-      <button type="button" data-open-view-dialog="${sourceId}:${targetId}">${copy.setFeelings}</button>
-      <button type="button" data-add-rel>${copy.setOfficial}</button>
-      <button type="button" data-open-official-relations>${copy.officialList}</button>
-      <button type="button" data-add-character-group>${copy.makeGroup}</button>
-      <button type="button" data-open-relationship-map>${copy.relationshipMap}</button>
+      <button type="button" class="relationship-composite-action" data-open-view-dialog="${sourceId}:${targetId}"><i aria-hidden="true"></i><span>${copy.setFeelings}</span></button>
+      <button type="button" class="relationship-composite-action" data-add-rel><i aria-hidden="true"></i><span>${copy.setOfficial}</span></button>
+      <button type="button" class="relationship-composite-action" data-add-character-group><i aria-hidden="true"></i><span>${copy.makeGroup}</span></button>
+      <button type="button" class="relationship-composite-action" data-open-relationship-map><i aria-hidden="true"></i><span>${copy.relationshipMap}</span></button>
     </nav>
-    <dialog class="character-view-dialog relationship-fullscreen-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><header class="relationship-editor-head"><button value="close" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><div class="relationship-editor-pair">${avatar(source)}<i>→</i>${avatar(target)}<span><b>${esc(source.name)}</b><small>${copy.mindOf} ${esc(target.name)}</small></span></div></header><div class="character-view-fields relationship-all-fields">${viewFields}</div><div class="relationship-editor-actions"><button type="button" data-reset-character-view="${sourceId}:${targetId}">${copy.reset}</button><button class="primary" value="close">${copy.done}</button></div></form></dialog>
+    <dialog class="character-view-dialog relationship-fullscreen-dialog relationship-viewpoint-dialog" data-view-dialog="${sourceId}:${targetId}"><form method="dialog"><header class="relationship-editor-head"><button value="close" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><div class="relationship-editor-pair"><figure>${avatar(source)}<b>${esc(source.name)}</b></figure><i aria-hidden="true"></i><figure>${avatar(target)}<b>${esc(target.name)}</b></figure></div></header><div class="character-view-fields relationship-all-fields">${viewFields}</div></form></dialog>
   </section>`;
 };
 const relationPairKey=(a,b)=>[a,b].sort().join("~");

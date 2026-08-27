@@ -201,17 +201,17 @@ html[data-color-mode][data-visual-theme] :is(
   .panel,.form,.setting-card,.sync-panel,.feedback-card,.font-preview,
   .catalog-kind,.catalog-dex-card,.catalog-card,.favorite-group,
   .shop-cart,.premium-product,.preview-notice,
-  .shop-coming:not(.shop-expansion-showcase),.relationship-page,.relation,
+  .shop-coming:not(.shop-expansion-showcase),.relationship-page:not(.relationship-redesign),.relation,
   .character-menu,.town-tabs,.resident-editor,.sleep-room-editor,.place-editor details,
   .desktop-observe-log .native-log-card,.native-status-card,.native-log-card
-):not(.town-building-detail-form details){
+):not(.relationship-redesign):not(.town-building-detail-form details){
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
   box-shadow:0 14px 38px var(--theme-shadow)!important;
 }
 
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign)){
   border-color:var(--theme-border)!important;
   background:
     radial-gradient(circle at 5% 1%,color-mix(in srgb,var(--s) 14%,transparent),transparent 28%),
@@ -220,7 +220,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
 }
 
 html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-book-v8 *):not(.town-building-screen *),
-html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.character-book-v8 *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
+html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign),.editor,.home-page) button:not(.character-book-v8 *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
@@ -231,14 +231,14 @@ html.native-app[data-active-tab="home"] .home-page .furniture button{
 }
 html[data-color-mode][data-visual-theme][data-active-tab="settings"] .settings-shell :is(input,select,textarea,button:not(.primary)),
 html[data-color-mode][data-visual-theme][data-active-tab="catalog"] .catalog-shell :is(input,select,textarea,button:not(.primary)),
-html[data-color-mode][data-visual-theme][data-active-tab="relationship"] .relationship-page :is(input,select,textarea,button:not(.primary)){
+html[data-color-mode][data-visual-theme][data-active-tab="relationship"] .relationship-page:not(.relationship-redesign) :is(input,select,textarea,button:not(.primary)){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
 
-html[data-color-mode][data-visual-theme] :is(dialog,.visual-theme-dialog) form{
+html[data-color-mode][data-visual-theme] :is(dialog:not(.relationship-fullscreen-dialog),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
