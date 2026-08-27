@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260827relationship172";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260827relationship172";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827relationship172";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827relationship172";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260827relationship172";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828relationship173";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260828relationship173";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828relationship173";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship173";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260828relationship173";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -14,6 +14,8 @@ const I18N={
 };
 Object.assign(I18N.en,{"같이 TV 보는 중":"Watching TV together","조깅 · 이동 중":"Jogging · moving","집 메뉴":"Home menu","아침 조깅을 마치고 집으로 돌아가는 중":"Heading home after a morning jog","욕실에서 손톱을 정돈하는 중":"Trimming their nails in the bathroom"});
 Object.assign(I18N.ja,{"같이 TV 보는 중":"一緒にテレビを見ているところ","조깅 · 이동 중":"ジョギング・移動中","집 메뉴":"家のメニュー","아침 조깅을 마치고 집으로 돌아가는 중":"朝のジョギングを終えて帰宅中","욕실에서 손톱을 정돈하는 중":"浴室で爪を整えているところ"});
+Object.assign(I18N.en,{"빈집":"Empty home","빈집 삭제":"Delete empty home","빈집을 바로 삭제할 수 있어요.":"This empty home can be deleted here."});
+Object.assign(I18N.ja,{"빈집":"空き家","빈집 삭제":"空き家を削除","빈집을 바로 삭제할 수 있어요.":"この空き家はここから削除できます。"});
 Object.assign(I18N.en,{"마을 산책 중":"Roaming around town","마을에서 대화 중":"Chatting in town"});
 Object.assign(I18N.ja,{"마을 산책 중":"村を散策中","마을에서 대화 중":"村で会話中"});
 Object.assign(I18N.en,{"개요 페이지 이동":"Overview page navigation","이전 페이지":"Previous page","이전 페이지 없음":"No previous page","다음 페이지":"Next page","다음 페이지 없음":"No next page","기상 습관":"Wake-up habit","취침 습관":"Bedtime habit","생활습관":"Daily rhythm","식습관":"Eating habits","걸음걸이":"Walking style","자율 이끌림":"Autonomous attraction","외모를 보는 정도":"Attention to appearance","선호하는 특성":"Preferred traits","비선호하는 특성":"Disliked traits","모양":"Appearance"});
@@ -2174,7 +2176,7 @@ function homeCard(id,chars){
     const e=eventFor(c),place=placeForEntry(e),image=sceneImage(c,e),sceneHome=state.homes[e.visitHomeId||c.homeId];
     const location=e.home?`🏠 ${sceneHome?.name||"집"} · ${sceneHome?.rooms?.[e.room]?.name||"집 안"}`:e.transit?"🚌 이동 중":place?`📍 ${place.name} · ${townForEntry(e).name}`:"📍 외출 중";
     return `<article class="resident-scene-card" style="--resident-theme:${esc(c.theme?.primary||"#176b60")}">
-      <div class="resident-profile">${c.photo?`<img src="${esc(c.photo)}" alt="">`:avatar(c)}<span><h3>${esc(c.name)}</h3><small>${esc(c.jobTitle||c.job)}</small></span></div>
+      <div class="resident-profile">${profileAvatar(c,"resident-character-image")}<span><h3>${esc(c.name)}</h3><small>${esc(c.jobTitle||c.job)}</small></span></div>
       <div class="resident-current"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${image?`<img src="${esc(image)}" alt="">`:""}</div>
     </article>`;
   }).join("");
@@ -2200,7 +2202,7 @@ function homeCard(id,chars){
   const hudCharacter=chars.find(character=>character.id===state.activeId)||chars[0]||active();
   const nativeHud=nativeHome?`<div class="home-native-hud" data-home-native-hud style="${homeUiThemeStyle(hudCharacter)};--home-own:${esc(hudCharacter?.theme?.primary||"#176b60")}">
     <div class="home-native-header" aria-label="${esc(h.name)}"><button type="button" class="home-native-back" data-tab="observe" aria-label="${esc(t("메인 화면으로 돌아가기","메인 화면으로 돌아가기"))}"><img src="${esc(homeUiAsset(hudCharacter,"back.png"))}" alt=""></button><div class="home-native-meta"><small class="home-native-context">${esc(t(h.kind||"일반 주거",h.kind||"일반 주거"))} · ${esc(homeFloorLabel(activeFloor))}</small><span class="home-native-house-icon"><img src="${esc(homeExteriorSource(h))}" alt=""></span><button type="button" class="home-native-house-name" data-home-switcher-toggle aria-expanded="false" aria-label="${esc(`${h.name||t("이름 없는 집","이름 없는 집")} · ${t("집 이동","집 이동")}`)}">${esc(h.name||t("이름 없는 집","이름 없는 집"))}</button></div></div>
-    <div class="home-native-switcher" data-home-switcher hidden><b>${esc(t("집 이동","집 이동"))}</b>${Object.keys(state.homes||{}).map(homeId=>{const item=state.homes[homeId]||{},members=homeGroupsById[homeId]||[];return `<button type="button" data-home-select="${esc(homeId)}" class="${homeId===id?"on":""}"><span>🏠</span><b>${esc(item.name||t("이름 없는 집","이름 없는 집"))}</b><small>${esc(item.kind||t("일반 주거","일반 주거"))} · ${members.length}</small></button>`}).join("")}<button type="button" class="home-native-add-home" data-add-home>＋ ${esc(t("새 집 만들기","새 집 만들기"))}</button></div>
+    <div class="home-native-switcher" data-home-switcher hidden><b>${esc(t("집 이동","집 이동"))}</b>${Object.keys(state.homes||{}).map(homeId=>{const item=state.homes[homeId]||{},members=homeGroupsById[homeId]||[];return `<div class="home-native-switcher-row"><button type="button" data-home-select="${esc(homeId)}" class="${homeId===id?"on":""}"><span>🏠</span><b>${esc(item.name||t("이름 없는 집","이름 없는 집"))}</b><small>${esc(item.kind||t("일반 주거","일반 주거"))} · ${members.length?members.length:t("빈집","빈집")}</small></button>${members.length?"":`<button type="button" class="home-native-empty-delete danger" data-delete-home="${esc(homeId)}" title="${esc(t("빈집을 바로 삭제할 수 있어요.","빈집을 바로 삭제할 수 있어요."))}">${esc(t("빈집 삭제","빈집 삭제"))}</button>`}</div>`}).join("")}<button type="button" class="home-native-add-home" data-add-home>＋ ${esc(t("새 집 만들기","새 집 만들기"))}</button></div>
     <nav class="home-native-side" aria-label="${esc(t("집 메뉴","집 메뉴"))}">${homeNativePill(t("집 정보","집 정보"),'data-open-home-feature="house-info"',"home-native-info-link")}${homeNativePill(t(edit?"편집 완료":"집 편집",edit?"편집 완료":"집 편집"),"data-home-edit",`home-native-edit ${edit?"on":""}`)}${homeNativePill(t("구성원","구성원"),'data-open-home-feature="scenes"',"home-native-residents")}${homeNativePill(t("반려생물","반려생물"),'data-open-home-feature="pets"',"home-native-pets")}</nav>
     ${floorCount>1?`<nav class="home-native-elevator" aria-label="${esc(homeFloorLabel(activeFloor))}"><button type="button" data-home-floor-step="1" data-home-id="${esc(id)}" aria-label="${esc(t("floorUp","위층으로 이동"))}" ${activeFloor>=floorCount?"disabled":""}>▲</button><b>${esc(homeFloorLabel(activeFloor))}</b><button type="button" data-home-floor-step="-1" data-home-id="${esc(id)}" aria-label="${esc(t("floorDown","아래층으로 이동"))}" ${activeFloor<=1?"disabled":""}>▼</button></nav>`:""}
     ${homeNativePill(t("UI 숨김","UI 숨김"),'data-home-ui-toggle aria-pressed="false"',"home-native-ui-toggle")}
@@ -2963,9 +2965,10 @@ const characterViewEditor=()=>{
     <button type="button" class="relationship-character-selected" data-toggle-relationship-roster="${role}" aria-label="${esc(character.name)} · ${copy.selected}"><span>${avatar(character)}</span><b><i aria-hidden="true"></i><em>${copy.selected}</em></b></button>
     <div class="relationship-character-roster" data-relationship-roster="${role}" hidden><div>${ids.map(id=>{const person=state.characters[id];return `<button type="button" class="relationship-character-roster-entry ${id===selectedId?"on":""}" data-relationship-character="${role}" data-character-id="${id}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><button type="button" class="relationship-character-roster-close" data-toggle-relationship-roster="${role}" aria-label="${copy.close}">×</button></div>
   </div>`;
+  const sourceColor=source.theme?.primary||"#176b60",targetColor=target.theme?.primary||"#176b60";
   const sourceParticle=subjectText(source.name).slice(source.name.length);
   const targetParticle=objectText(target.name).slice(target.name.length);
-  return `<section class="character-view-editor relationship-stage" style="--relationship-own:${esc(source.theme?.primary||"#176b60")};--relationship-own-secondary:${esc(source.theme?.secondary||source.theme?.primary||"#176b60")}">
+  return `<section class="character-view-editor relationship-stage" style="--relationship-own:${esc(sourceColor)};--relationship-own-secondary:${esc(source.theme?.secondary||sourceColor)};--relationship-target:${esc(targetColor)}">
     <button type="button" class="relationship-back-button" data-tab="observe" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button>
     <div class="relationship-choice-row">
       ${characterSelector("source",state.order,sourceId,source)}
@@ -2973,7 +2976,7 @@ const characterViewEditor=()=>{
       ${characterSelector("target",targetIds,targetId,target)}
     </div>
     <div class="relationship-hero-pair" aria-hidden="true">${avatar(source)}${avatar(target)}</div>
-    <div class="relationship-direction-sentence" data-view-summary="${sourceId}:${targetId}"><span><b style="--sentence-name:${esc(source.theme?.primary||"#176b60")}">${esc(source.name)}</b>${esc(sourceParticle)} <b style="--sentence-name:${esc(target.theme?.primary||"#176b60")}">${esc(target.name)}</b>${esc(targetParticle)}</span><strong data-view-summary-phrase>${esc(overallViewPhrase(overall))}</strong></div>
+    <div class="relationship-direction-sentence" data-view-summary="${sourceId}:${targetId}"><span><mark style="--sentence-name:${esc(sourceColor)}">${esc(source.name)}</mark>${esc(sourceParticle)} <mark style="--sentence-name:${esc(targetColor)}">${esc(target.name)}</mark>${esc(targetParticle)}</span><strong data-view-summary-phrase>${esc(overallViewPhrase(overall))}</strong></div>
     <small class="relationship-official-status">${officialText?`공식 관계 · ${esc(officialText)}`:copy.officialNone}</small>
     <em class="relationship-reality-pill">${esc(relationshipReality(sourceId,targetId,official))}</em>
     <nav class="relationship-stage-actions">

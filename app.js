@@ -1,15 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260827relationship172";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260827relationship172";
-import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260827relationship172";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260827relationship172";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260827relationship172";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260827relationship172";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260827relationship172";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260827relationship172";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260827relationship172";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827relationship172";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260827relationship172";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260827relationship172";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260828relationship173";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260828relationship173";
+import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260828relationship173";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260828relationship173";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260828relationship173";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260828relationship173";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260828relationship173";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260828relationship173";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship173";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828relationship173";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260828relationship173";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260828relationship173";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1733,14 +1733,17 @@ function applyTheme(){
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content",bg);
 }
 
-async function explicitSave(label="저장 완료"){
-  save(true);
-  render();
+async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfter=true}={}){
+  if(!alreadySaved)save(true);
+  if(renderAfter)render();
   const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
+  showToast(label==="캐릭터 저장"?"캐릭터 저장 완료":info?.user?"기기에 저장했습니다 · 계정 동기화 중":"기기에 저장되었습니다");
   if(info?.user){
-    const synced=await auth.upload({reason:label});
-    if(!synced)showToast("기기에는 저장했지만 계정 동기화는 완료하지 못했어요");
-  }else showToast("기기에 저장되었습니다");
+    Promise.resolve(auth.upload({reason:label})).then(synced=>{
+      if(!synced)showToast("기기에는 저장했지만 계정 동기화는 완료하지 못했어요");
+    }).catch(()=>showToast("기기에는 저장했지만 계정 동기화는 완료하지 못했어요"));
+  }
+  return true;
 }
 
 function openCharacterDeleteDialog(characterId){
@@ -2307,7 +2310,8 @@ function bind(){
     }));
     stabilizeInteractiveScroll(mobileCharacterDialog,()=>document.querySelector("[data-mobile-character-editor-dialog][open] .mobile-character-editor-body")||body);
     mobileCharacterDialog.onclose=()=>{
-      flushMobileCharacterDraft();
+      if(mobileCharacterDialog.returnValue!=="save")flushMobileCharacterDraft();
+      else{mobileCharacterDraftDirty=false;mobileCharacterEditorPane=""}
       render();
     };
   }
@@ -2322,9 +2326,9 @@ function bind(){
       // 있으므로 다음 이벤트 묶음이 끝난 뒤 최종 값을 한 번 더 읽는다.
       await new Promise(resolve=>setTimeout(resolve,64));
       syncOpenCharacterEditorDraft();
-      flushMobileCharacterDraft({closeEditor:false});
+      flushMobileCharacterDraft({closeEditor:true});
       mobileCharacterDialog?.close(shouldSync?"save":"close");
-      if(shouldSync){await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}
+      if(shouldSync){await explicitSave("캐릭터 저장",{alreadySaved:true,renderAfter:false});advanceFirstSetupAfterCharacter()}
     };
   });
   const mobileReorderDialog=$("[data-mobile-character-reorder-dialog]");
@@ -2560,8 +2564,13 @@ function bind(){
   $$("[data-home-floor-count]").forEach(el=>el.onchange=()=>{setHomeFloorCount(el.dataset.homeId,el.value);render();showToast(`${el.value}층 집으로 바꿨어요`)});
   $$("[data-delete-home]").forEach(el=>el.onclick=()=>{
     const home=state.homes[el.dataset.deleteHome];if(!home)return;
-    if(confirm(`‘${home.name}’을 삭제할까요?\n\n이 집의 방·사진·반려생물·자동차도 함께 삭제됩니다. 연결된 캐릭터는 삭제되지 않고 다른 집 연결은 유지됩니다.`)){
-      deleteHome(home.id);render();showToast("집을 삭제하고 삭제 기록을 보관했습니다");
+    const copy=state.uiLanguage==="en"
+      ?{question:`Delete “${home.name}”?\n\nIts rooms, images, pets, and cars will also be deleted. Characters remain, along with their other home links.`,done:"Home deleted. Its deletion record was retained."}
+      :state.uiLanguage==="ja"
+        ?{question:`「${home.name}」を削除しますか？\n\n部屋・画像・ペット・車も削除されます。人物とほかの家への接続は残ります。`,done:"家を削除し、削除記録を保持しました。"}
+        :{question:`‘${home.name}’을 삭제할까요?\n\n이 집의 방·사진·반려생물·자동차도 함께 삭제됩니다. 연결된 캐릭터는 삭제되지 않고 다른 집 연결은 유지됩니다.`,done:"집을 삭제하고 삭제 기록을 보관했습니다"};
+    if(confirm(copy.question)){
+      deleteHome(home.id);render();showToast(copy.done);
     }
   });
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
@@ -2796,7 +2805,6 @@ function bind(){
     });
     const title=activePanel?.dataset.bodyChoiceTitle||"";
     dialog.querySelector("[data-body-choice-dialog-title]")?.replaceChildren(document.createTextNode(title));
-    dialog.addEventListener("close",()=>render(),{once:true});
     dialog.showModal();
   });
   $$("[data-open-book-list]").forEach(el=>el.onclick=()=>{
@@ -2810,7 +2818,6 @@ function bind(){
       if(isActive)activePanel=panel;
     });
     dialog.querySelector("[data-book-list-title]")?.replaceChildren(document.createTextNode(el.closest(".book-form-field")?.querySelector("b")?.textContent||"여러 개 선택 가능"));
-    dialog.addEventListener("close",()=>render(),{once:true});
     if(activePanel)dialog.showModal();
   });
   $$('[data-book-list-choice]').forEach(button=>button.onclick=()=>{
@@ -2843,7 +2850,6 @@ function bind(){
       });
     });
     dialog.querySelector("[data-book-catalog-title]")?.replaceChildren(document.createTextNode(el.closest(".book-form-field")?.querySelector("b")?.textContent||"사전에서 고르기"));
-    dialog.addEventListener("close",()=>render(),{once:true});
     dialog.showModal();
   });
   $$("[data-book-catalog-item]").forEach(el=>el.onclick=()=>{
@@ -4387,42 +4393,46 @@ function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
   const old=id?state.relationships[id]:null,dialog=document.createElement("dialog");dialog.className="relation-dialog relation-editor-dialog relationship-fullscreen-dialog";
   const language=state.uiLanguage||"ko",copy=({
-    en:{title:old?"Edit official relationship":"Set official relationship",back:"Back",list:"Official relationships",personA:"First character",personB:"Second character",type:"Relationship",stage:"Current stage",time:"Status",current:"Current",past:"Past",publicity:"Recognition",parentRole:"Parent role",kinship:"Family link",sibling:"Sibling link",fault:"Why it ended",cohabit:"Live together",together:"Travel together",cancel:"Cancel",save:"Save",swap:"Swap"},
-    ja:{title:old?"公式関係を編集":"公式関係を設定",back:"戻る",list:"公式関係一覧",personA:"1人目",personB:"2人目",type:"関係の種類",stage:"現在の段階",time:"関係の状態",current:"現在",past:"過去",publicity:"公開範囲",parentRole:"親の役割",kinship:"家族関係",sibling:"きょうだい関係",fault:"関係が終わった理由",cohabit:"一緒に住む",together:"一緒に行動",cancel:"取消",save:"保存",swap:"左右を入れ替え"},
-    ko:{title:old?"공식 관계 편집":"공식 관계 설정",back:"돌아가기",list:"공식 관계 목록",personA:"첫 번째 캐릭터",personB:"두 번째 캐릭터",type:"관계 종류",stage:"현재 관계 단계",time:"관계 시점",current:"현재 관계",past:"과거 관계",publicity:"관계 공개 범위",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"좌우 바꾸기"}
-  }[language]||null)||{title:old?"공식 관계 편집":"공식 관계 설정",back:"돌아가기",list:"공식 관계 목록",personA:"첫 번째 캐릭터",personB:"두 번째 캐릭터",type:"관계 종류",stage:"현재 관계 단계",time:"관계 시점",current:"현재 관계",past:"과거 관계",publicity:"관계 공개 범위",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"좌우 바꾸기"};
+    en:{title:old?"Edit official relationship":"Set official relationship",back:"Back",list:"Official relationships",members:"Characters in this relationship · two or more",type:"Relationship type",stage:"Current relationship stage",past:"Past relationship",pastHint:"Examples: former partners, estranged spouses, or severed friendships.",order:"Character display order",orderActual:"Set practical order",outside:"How others treat the relationship",acceptance:"Social acceptance of the relationship",parentRole:"Parent role",kinship:"Family link",sibling:"Sibling link",fault:"Why it ended",cohabit:"Live together",together:"Travel together",cancel:"Cancel",save:"Save",swap:"Swap the two characters"},
+    ja:{title:old?"公式関係を編集":"公式関係を設定",back:"戻る",list:"公式関係一覧",members:"関係に含める人物・2人以上",type:"関係の種類",stage:"現在の関係段階",past:"過去の関係",pastHint:"別れた恋人、離婚した夫婦、絶縁した友人などに使います。",order:"人物の表示順",orderActual:"実際の順序を設定",outside:"外部での関係の扱われ方",acceptance:"関係の社会的受容度",parentRole:"親の役割",kinship:"家族関係",sibling:"きょうだい関係",fault:"関係が終わった理由",cohabit:"一緒に住む",together:"一緒に行動",cancel:"取消",save:"保存",swap:"2人の左右を入れ替え"},
+    ko:{title:old?"공식 관계 편집":"공식 관계 설정",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderActual:"실질적 순서 설정하기",outside:"관계가 밖에서 다뤄지는 방식",acceptance:"관계의 사회적 용인도",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"두 사람 좌우 바꾸기"}
+  }[language]||null)||{title:old?"공식 관계 편집":"공식 관계 설정",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderActual:"실질적 순서 설정하기",outside:"관계가 밖에서 다뤄지는 방식",acceptance:"관계의 사회적 용인도",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"두 사람 좌우 바꾸기"};
   const aId=state.characters[old?.a]?old.a:(state.characters[state.activeId]?state.activeId:state.order[0]),bId=state.characters[old?.b]&&old.b!==aId?old.b:state.order.find(cid=>cid!==aId);
   const characterOptions=selected=>state.order.map(cid=>`<option value="${htmlEsc(cid)}" ${cid===selected?"selected":""}>${htmlEsc(state.characters[cid]?.name||"")}</option>`).join("");
   const officialValues=["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함","법적으로 관계가 등록됨"];
-  dialog.innerHTML=`<form method="dialog"><header class="relationship-editor-head official-editor-head"><button value="cancel" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><span><small>OFFICIAL RELATIONSHIP</small><h2>${copy.title}</h2></span><button type="button" class="official-list-shortcut" data-open-official-list-from-editor>${copy.list}</button></header>
-    <section class="official-pair-picker"><label><b>${copy.personA}</b><span data-official-avatar="a"></span><select name="a">${characterOptions(aId)}</select></label><button type="button" data-swap-official-pair aria-label="${copy.swap}">↔</button><label><b>${copy.personB}</b><span data-official-avatar="b"></span><select name="b">${characterOptions(bId)}</select></label></section>
+  const acceptanceValues=language==="en"?["Accepted","Mostly accepted","Varies by community","Often disapproved","Rejected"]:language==="ja"?["受け入れられている","概ね受け入れられている","共同体によって異なる","否定的に見られやすい","受け入れられていない"]:["두루 받아들여짐","대체로 받아들여짐","공동체에 따라 다름","부정적으로 여겨지기 쉬움","받아들여지지 않음"];
+  dialog.innerHTML=`<form method="dialog"><header class="relationship-editor-head official-editor-head"><button value="save" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select></label></header>
+    <section class="official-member-section"><b>${copy.members}</b><div class="official-member-picker">${state.order.map(cid=>`<button type="button" data-official-member="${htmlEsc(cid)}">${htmlEsc(state.characters[cid]?.name||"")}</button>`).join("")}</div><select name="a" hidden>${characterOptions(aId)}</select><select name="b" hidden>${characterOptions(bId)}</select></section>
     <div class="official-relation-fields">
-      <label><b>${copy.type}</b><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select></label>
-      <label><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
-      <label><b>${copy.time}</b><select name="temporalStatus"><option value="current">${copy.current}</option><option value="past">${copy.past}</option></select></label>
-      <label><b>${copy.publicity}</b><select name="legalStatus">${officialValues.map(value=>`<option>${value}</option>`).join("")}</select></label>
+      <label class="official-stage-field"><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
+      <label class="official-past-toggle"><b>${copy.past}</b><input type="checkbox" name="temporalPast"><small>${copy.pastHint}</small><input type="hidden" name="temporalStatus" value="current"></label>
+      <section class="official-order-card"><b>${copy.order}</b><div><span data-official-order-label></span><span class="official-order-avatars"><i data-official-avatar="a"></i><button type="button" data-swap-official-pair aria-label="${copy.swap}">↔</button><i data-official-avatar="b"></i></span></div><button type="button" data-swap-official-pair>${copy.swap}</button><button type="button" data-set-official-order>${copy.orderActual}</button></section>
+      <label class="official-outside-field"><b>${copy.outside}</b><select name="legalStatus">${officialValues.map(value=>`<option>${value}</option>`).join("")}</select></label>
+      <label class="official-acceptance-field"><b>${copy.acceptance}</b><select name="socialAcceptance">${acceptanceValues.map(value=>`<option>${value}</option>`).join("")}</select></label>
       <label class="official-parent-role" hidden><b>${copy.parentRole}</b><select name="parentRole"><option>엄마</option><option>아빠</option><option>부모</option></select></label>
       <label class="official-kinship" hidden><b>${copy.kinship}</b><select name="kinship"><option value="blood">혈연</option><option value="nonblood">비혈연·입양</option></select></label>
       <label class="official-sibling-link" hidden><b>${copy.sibling}</b><select name="siblingKinship"><option value="full">양쪽 부모가 같은 혈연</option><option value="half">한쪽 부모만 같은 혈연</option><option value="nonblood">비혈연 형제·자매</option></select></label>
       <label class="official-fault" hidden><b>${copy.fault}</b><select name="faultReason">${FAULT_REASONS.map(value=>`<option ${old?.faultReason===value?"selected":""}>${value}</option>`).join("")}</select></label>
     </div>
-    <div class="official-relation-toggles"><label><input type="checkbox" name="cohabit"><span>${copy.cohabit}</span></label><label><input type="checkbox" name="stayTogether"><span>${copy.together}</span></label></div>
+    <div class="official-relation-toggles"><label><span>${copy.cohabit}</span><input type="checkbox" name="cohabit"></label><label><span>${copy.together}</span><input type="checkbox" name="stayTogether"></label></div>
     <div class="relationship-editor-actions"><button value="cancel">${copy.cancel}</button><button class="primary" value="save">${copy.save}</button></div>
   </form>`;
   document.body.append(dialog);const f=dialog.querySelector("form");
   const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
   f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";
-  f.temporalStatus.value=old?.temporalStatus==="past"?"past":"current";
+  f.temporalStatus.value=old?.temporalStatus==="past"?"past":"current";f.temporalPast.checked=f.temporalStatus.value==="past";
   f.legalStatus.value=f.type.value==="부부"?"법적으로 관계가 등록됨":officialityMigration[old?.legalStatus]||old?.legalStatus||"가까운 사람에게만 알림";
   f.parentRole.value=old?.parentRole||"부모";f.kinship.value=old?.kinship||"blood";
   const oldSiblingKey=[aId,bId].sort().join("~");f.siblingKinship.value=old?.siblingKinshipByPair?.[oldSiblingKey]||"full";
-  f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
+  f.socialAcceptance.value=old?.socialAcceptance||acceptanceValues[0];f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
   let initial=true;
   const avatarMarkup=cid=>{const c=state.characters[cid],src=c?.icon||c?.photo;return src?`<img src="${htmlEsc(src)}" alt="">`:`<i>${htmlEsc(String(c?.name||"?").slice(0,1))}</i>`};
   const refreshPair=()=>{
     if(f.a.value===f.b.value)f.b.value=state.order.find(cid=>cid!==f.a.value)||f.b.value;
     f.querySelector('[data-official-avatar="a"]').innerHTML=avatarMarkup(f.a.value);
     f.querySelector('[data-official-avatar="b"]').innerHTML=avatarMarkup(f.b.value);
+    f.querySelector('[data-official-order-label]').textContent=`${state.characters[f.a.value]?.name||""} × ${state.characters[f.b.value]?.name||""}`;
+    f.querySelectorAll('[data-official-member]').forEach(button=>button.classList.toggle("on",[f.a.value,f.b.value].includes(button.dataset.officialMember)));
   };
   const refreshStages=()=>{
     const values=stagesFor(f.type.value,f.temporalStatus.value),selected=initial&&old?.stage&&values.includes(old.stage)?old.stage:defaultRelationStage(f.type.value,f.temporalStatus.value);
@@ -4439,7 +4449,9 @@ function openRelationDialog(id=""){
     refreshStages();
   };
   refreshPair();refreshType();
-  f.querySelector("[data-open-official-list-from-editor]").onclick=()=>{
+  f.querySelectorAll('[data-official-member]').forEach(button=>button.onclick=()=>{const cid=button.dataset.officialMember;if([f.a.value,f.b.value].includes(cid))return;f.b.value=cid;refreshPair()});
+  const officialListButton=f.querySelector("[data-open-official-list-from-editor]");
+  if(officialListButton)officialListButton.onclick=()=>{
     dialog.close("cancel");
     requestAnimationFrame(()=>{
       const list=document.querySelector("[data-official-relation-dialog]");
@@ -4450,12 +4462,13 @@ function openRelationDialog(id=""){
     });
   };
   f.a.onchange=refreshPair;f.b.onchange=refreshPair;
-  f.type.onchange=refreshType;f.temporalStatus.onchange=refreshStages;
-  f.querySelector("[data-swap-official-pair]").onclick=()=>{const a=f.a.value;f.a.value=f.b.value;f.b.value=a;refreshPair()};
+  f.type.onchange=refreshType;f.temporalPast.onchange=()=>{f.temporalStatus.value=f.temporalPast.checked?"past":"current";refreshStages()};
+  f.querySelectorAll("[data-swap-official-pair]").forEach(button=>button.onclick=()=>{const a=f.a.value;f.a.value=f.b.value;f.b.value=a;refreshPair()});
+  f.querySelector("[data-set-official-order]").onclick=()=>{const a=f.a.value;f.a.value=f.b.value;f.b.value=a;refreshPair();showToast(copy.orderActual)};
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
       const a=f.a.value,b=f.b.value,temporal=f.temporalStatus.value,levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1),hostile=f.type.value==="혐관",pairKey=[a,b].sort().join("~");
-      const patch={a,b,type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[a,b],directional:f.type.value==="부모·자녀",groupId:"",groupMembers:[]};
+      const patch={a,b,type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[a,b],directional:f.type.value==="부모·자녀",groupId:"",groupMembers:[]};
       if(f.type.value==="부모·자녀")Object.assign(patch,{parentId:a,childId:b,parentRole:f.parentRole.value,kinship:f.kinship.value,kinshipByPair:{[pairKey]:f.kinship.value}});
       if(f.type.value==="형제·자매")Object.assign(patch,{siblingOrder:{[a]:1,[b]:2},siblingKinshipByPair:{[pairKey]:f.siblingKinship.value}});
       old&&state.relationships[id]?updateRelationship(id,patch):addRelationship(patch);
@@ -5028,7 +5041,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260827relationship172").catch(error=>{
+import("./auth.js?v=20260828relationship173").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5043,7 +5056,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260827relationship172",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260828relationship173",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
