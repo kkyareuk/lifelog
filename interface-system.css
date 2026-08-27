@@ -31,13 +31,13 @@ html[data-color-mode][data-visual-theme] .native-sub-header :is(b,span){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] header nav button{
+html[data-color-mode][data-visual-theme] header nav button:not(.home-native-pill){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] header nav button:is(.on,:hover,:focus-visible),
+html[data-color-mode][data-visual-theme] header nav button:not(.home-native-pill):is(.on,:hover,:focus-visible),
 html[data-color-mode][data-visual-theme] button.primary,
 html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button):not(.character-pane-ribbon):not(.character-wallet-selected):not(.character-roster-entry):not(.character-full-tab):not(.character-overview-section-tab):not(.character-overview-next-bookmark):not(.home-native-pill),
 html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
@@ -87,8 +87,8 @@ html[data-color-mode][data-visual-theme] :is(
   color:var(--muted)!important;
   -webkit-text-fill-color:var(--muted)!important;
 }
-html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-book-v8 *),
-html[data-color-mode][data-visual-theme] main button:not(.routine-shell *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.game-hud-moment-title):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not([data-home-character]):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-book-v8 *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
+html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-book-v8 *):not(.town-building-screen *),
+html[data-color-mode][data-visual-theme] main button:not(.routine-shell *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.game-hud-moment-title):not(.primary):not(.on):not(.place):not(.person):not(.place-person-face):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not([data-home-character]):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-book-v8 *):not(.town-building-screen *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.town-native-title):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;

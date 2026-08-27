@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827towneditor166";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827towneditor166";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260827towneditor166";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827towneditor166";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827towneditor166";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827towneditor166";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260827townui167";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260827townui167";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260827townui167";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260827townui167";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260827townui167";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260827townui167";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";

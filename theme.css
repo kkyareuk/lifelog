@@ -176,14 +176,14 @@ html[data-color-mode][data-visual-theme] header .brand :is(h1,small){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme][data-active-tab] header nav button{
+html[data-color-mode][data-visual-theme][data-active-tab] header nav button:not(.home-native-pill){
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
   box-shadow:0 6px 18px var(--theme-shadow)!important;
 }
-html[data-color-mode][data-visual-theme][data-active-tab] header nav button:is(.on,:hover,:focus-visible){
+html[data-color-mode][data-visual-theme][data-active-tab] header nav button:not(.home-native-pill):is(.on,:hover,:focus-visible){
   border-color:color-mix(in srgb,var(--p) 76%,var(--line))!important;
   background:linear-gradient(135deg,var(--p),var(--s))!important;
   color:var(--on-grad)!important;
@@ -204,7 +204,7 @@ html[data-color-mode][data-visual-theme] :is(
   .shop-coming:not(.shop-expansion-showcase),.relationship-page,.relation,
   .character-menu,.town-tabs,.resident-editor,.sleep-room-editor,.place-editor details,
   .desktop-observe-log .native-log-card,.native-status-card,.native-log-card
-){
+):not(.town-building-detail-form details){
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
@@ -219,7 +219,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
   color:var(--ink)!important;
 }
 
-html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-book-v8 *),
+html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-book-v8 *):not(.town-building-screen *),
 html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page,.editor,.home-page) button:not(.character-book-v8 *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
