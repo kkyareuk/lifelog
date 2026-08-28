@@ -26,6 +26,7 @@ const includedFiles=new Set([
   "manifest.webmanifest",
   "social-preview.png",
   "app.css",
+  "character-book.css",
   "font-preferences.css",
   "home-scene-layout.css",
   "interface-system.css",
@@ -34,10 +35,15 @@ const includedFiles=new Set([
   "town-fit.css",
   "ui-theme-sample.css",
   "app.js",
+  "audio.js",
   "auth.js",
   "character-notifications.js",
   "config.js",
   "local-media.js",
+  "furniture-layout.js",
+  "home-simulation.js",
+  "home-surfaces.js",
+  "room-layout.js",
   "simulation.js",
   "speech-styles.js",
   "state.js",
@@ -74,6 +80,12 @@ for(const entry of await readdir(root,{withFileTypes:true})){
 const requiredFiles=[
   "index.html",
   "app.js",
+  "audio.js",
+  "character-book.css",
+  "furniture-layout.js",
+  "home-simulation.js",
+  "home-surfaces.js",
+  "room-layout.js",
   "views.js",
   "state.js",
   "sw.js",
@@ -87,8 +99,8 @@ for(const file of requiredFiles)await readFile(new URL(file,output));
 const index=await readFile(new URL("index.html",output),"utf8");
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
-if(!index.includes("20260823charactercontrast"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
-if(!app.includes("20260823notificationvoice"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260823-character-contrast"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!index.includes("20260828town177"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
+if(!app.includes("20260828town177"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260828-town-177"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log("Cloudflare Pages용 최신 웹 파일을 dist 폴더에 준비했습니다.");
