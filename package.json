@@ -35,6 +35,7 @@
     "test:home-surfaces": "node scripts/check-home-surfaces.mjs",
     "test:hotfix-schedule-deletion": "node scripts/check-schedule-deletion-sync.mjs",
     "test:town-grid": "node scripts/check-town-grid-editor.mjs",
+    "test:town-profile": "node scripts/check-town-profile-bugfixes.mjs",
     "test:reported-bugs": "node scripts/check-reported-bug-fixes.mjs"
   },
   "dependencies": {

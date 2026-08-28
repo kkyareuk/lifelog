@@ -1,9 +1,10 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260828town177";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828town177";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260828town177";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828town177";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260828town177";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828town177";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260828town178b";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828town178b";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260828town178b";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828town178b";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260828town178b";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828town178b";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260828town178b";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -250,7 +251,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:30,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",photo:"",urbanization:"소도시",reputation:"알려지지 않음",description:"",places:[
+const fresh=()=>({schema:31,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/cozy-town-optimized.jpg?v=20260819",illustrationId:"forest-lake",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -285,7 +286,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=28;
+  x.schema=31;
   x.activeTab=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
@@ -508,21 +509,17 @@ function normalizeHomes(x){
   x.world=x.world&&typeof x.world==="object"&&!Array.isArray(x.world)?x.world:clone(defaultWorld);
   x.world.name=x.world.name||defaultWorld.name;
   x.world.photo=String(x.world.photo||"");
-  x.world.townType=String(x.world.townType||"생활 중심 마을");
+  Object.assign(x.world,normalizeTownProfile(x.world));
   x.world.density=String(x.world.density||"여유로움");
   x.world.urbanization=String(x.world.urbanization||"소도시");
   x.world.reputation=String(x.world.reputation||"알려지지 않음");
   x.world.size=String(x.world.size||"보통 마을");
-  x.world.terrainClimate=String(x.world.terrainClimate||"평야·온대");
   x.world.description=String(x.world.description||"").slice(0,600);
-  // 제공받은 손그림 한 장만 마을 배경으로 사용한다. 이전 AI 배경을 고른
-  // 저장 데이터도 다음 로드부터 새 배경으로 통일한다.
-  x.world.bg="world-assets/cozy-town-optimized.jpg?v=20260819";
   x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
   x.world.decorations=Array.isArray(x.world.decorations)?x.world.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[];
   x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
   if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town-optimized.jpg?v=20260819",photo:String(t.photo||""),townType:String(t.townType||"생활 중심 마을"),density:String(t.density||"여유로움"),urbanization:String(t.urbanization||"소도시"),reputation:String(t.reputation||"알려지지 않음"),size:String(t.size||"보통 마을"),terrainClimate:String(t.terrainClimate||"평야·온대"),description:String(t.description||"").slice(0,600),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),...normalizeTownProfile(t),photo:"",density:String(t.density||"여유로움"),urbanization:String(t.urbanization||"소도시"),size:String(t.size||"보통 마을"),description:String(t.description||"").slice(0,600),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
     p.iconPreset=p.iconPreset||({
@@ -1034,6 +1031,7 @@ function invalidateDeletedSchedules(characterId,routineIds,tombstoneKey){
   if(!ids.length)return;
   state[tombstoneKey]=[...new Set([...(state[tombstoneKey]||[]).map(String),...ids])];
   const deleted=new Set(ids),changedAt=Date.now();
+  const affectedCharacterIds=new Set([characterId]);
   Object.values(state.characters||{}).forEach(character=>{
     if(!character||typeof character!=="object")return;
     let affected=character.id===characterId;
@@ -1043,9 +1041,9 @@ function invalidateDeletedSchedules(characterId,routineIds,tombstoneKey){
       day.entries=day.entries.filter(entry=>!deleted.has(String(entry?.routineId||"")));
       if(day.entries.length!==before)affected=true;
     });
-    if(affected)character.timelineResetAt=changedAt;
+    if(affected){character.timelineResetAt=changedAt;affectedCharacterIds.add(character.id)}
   });
-  delete state.dailyPlans?.[characterId];
+  affectedCharacterIds.forEach(id=>delete state.dailyPlans?.[id]);
 }
 export function deleteRoutine(characterId,routineId){
   state.routines[characterId]=(state.routines[characterId]||[]).filter(item=>item.id!==routineId);
@@ -1754,7 +1752,11 @@ function applyCohabit(r){
   b.sleepRoomId=residence.sleepRoomId||"";
   b.townId=state.homes[target].townId||a.townId;
 }
-export function setWorldBackground(){state.world.bg="world-assets/cozy-town-optimized.jpg?v=20260819";save(true)}
+export function setWorldBackground(value){
+  const illustration=TOWN_ILLUSTRATIONS.find(item=>item.pack==="base"&&item.src&&item.src===value);
+  if(!illustration)return false;
+  state.world.bg=illustration.src;state.world.illustrationId=illustration.id;state.world.photo="";touchCharacterTimelines(state.order);save(true);return true;
+}
 function syncTown(){
   if(!state.activeTownId)return;
   const index=state.towns.findIndex(t=>t.id===state.activeTownId);
@@ -1764,7 +1766,7 @@ export function addTown(limit=2){
   if(state.towns.length>=limit)return null;
   syncTown();
   const id=uid(),base=fresh().world;
-  const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,photo:"",townType:"생활 중심 마을",density:"여유로움",urbanization:"소도시",reputation:"알려지지 않음",size:"보통 마을",terrainClimate:"평야·온대",description:"",era:"modern",places:[],decorations:[]};
+  const town={id,name:`새 마을 ${state.towns.length+1}`,...normalizeTownProfile(base),photo:"",density:"여유로움",urbanization:"소도시",size:"보통 마을",description:"",era:"modern",places:[],decorations:[]};
   state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);return id;
 }
 export function switchTown(id,{activeId}={}){

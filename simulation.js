@@ -1,5 +1,6 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828town177";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260828town177";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828town178b";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260828town178b";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260828town178b";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -163,14 +164,16 @@ const residenceForDate=(c,date=new Date())=>{
     return false;
   });
   if(!scheduled.length)return primary;
-  return scheduled[hash(`${c.id}:${dayKey(date)}:scheduled-home`)%scheduled.length];
+  const primaryTown=state.towns.find(town=>town.id===state.homes?.[primary?.homeId]?.townId);
+  const reachable=scheduled.filter(item=>canTravelBetween(primaryTown,state.towns.find(town=>town.id===state.homes?.[item.homeId]?.townId),state.preventInterTownMovement));
+  return reachable.length?reachable[hash(`${c.id}:${dayKey(date)}:scheduled-home`)%reachable.length]:primary;
 };
 const homeIdForDate=(c,date=new Date())=>residenceForDate(c,date)?.homeId||c?.homeId||"";
 const townFor=(c,date=new Date())=>{
   const home=state.homes?.[homeIdForDate(c,date)];
   return state.towns.find(t=>t.id===(home?.townId||c.townId))||state.towns.find(t=>t.id===c.townId)||state.towns[0]||state.world;
 };
-const workplaceTown=c=>state.preventInterTownMovement?townFor(c):state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
+const workplaceTown=c=>{const homeTown=townFor(c),target=state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));return canTravelBetween(homeTown,target,state.preventInterTownMovement)?target:homeTown};
 const scheduleDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
 const routineEndMinute=item=>{
   const start=mins(item?.start),rawEnd=mins(item?.end);
@@ -179,13 +182,13 @@ const routineEndMinute=item=>{
   return rawEnd===start?start+30:rawEnd<start?rawEnd+1440:rawEnd;
 };
 const scheduledForDate=(c,date=new Date())=>{
-  const seen=new Set();
+  const seen=new Set(),deleted=new Set([...(state.deletedRoutineIds||[]),...(state.deletedMonthlyRoutineIds||[])].map(String));
   return [
     ...(state.monthlyRoutines?.[c.id]||[]).filter(item=>item.date===scheduleDateKey(date)),
     ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
   ].filter(item=>{
     const key=String(item?.id||`${item?.start}|${item?.end}|${item?.title}|${item?.placeId||item?.visitHomeId||""}`);
-    if(seen.has(key))return false;
+    if(deleted.has(key)||seen.has(key))return false;
     seen.add(key);return true;
   }).sort((a,b)=>mins(a.start)-mins(b.start));
 };
@@ -201,7 +204,8 @@ const scheduledTown=(c,date=new Date())=>{
   const routine=scheduledForDate(c,date).find(item=>item.placeId||item.visitHomeId);
   if(!routine)return null;
   const visitHome=state.homes?.[routine.visitHomeId];
-  return visitHome?state.towns.find(t=>t.id===visitHome.townId):state.towns.find(t=>t.places?.some(p=>p.id===routine.placeId));
+  const target=visitHome?state.towns.find(t=>t.id===visitHome.townId):state.towns.find(t=>t.places?.some(p=>p.id===routine.placeId));
+  return canTravelBetween(townFor(c,date),target,state.preventInterTownMovement)?target:townFor(c,date);
 };
 const travelPurpose=(c,date=new Date())=>{
   if(state.preventInterTownMovement)return {town:townFor(c,date),label:"",kind:"home"};
@@ -2473,6 +2477,27 @@ function townDecorationEvent(c,date){
   const action=actions[hash(`${c.id}:${dayKey(date)}:${item.id}:interaction`)%actions.length],minute=960+hash(`${c.id}:${dayKey(date)}:${item.id}:minute`)%150;
   return entry(minute,`${item.name}에서 ${action} 중`,`마을을 지나다 ${item.name}에 관심이 가서 잠시 멈췄어요. ${action}로 짧은 시간을 보내고 있어요.`,{townId:town.id,decorationId:item.id,mood:"여유"});
 }
+function townProfileEvent(c,date){
+  const town=townFor(c,date);if(!town||hash(`${c.id}:${dayKey(date)}:town-profile-log`)%3===0)return null;
+  const minute=870+hash(`${c.id}:${dayKey(date)}:town-profile-minute`)%230,language=state.uiLanguage||"ko";
+  const typeScenes={
+    "상업 중심":["중심 상권을 둘러보는 중","가게마다 오가는 손님과 새로 들어온 물건을 살피며 마을의 중심 상권을 지나고 있어요."],
+    "학원·연구 중심":["교육 지구를 지나는 중","수업과 연구 일정에 맞춰 움직이는 사람들 사이로 교육 시설이 모인 길을 지나고 있어요."],
+    "의료·복지 중심":["의료·복지 지구를 지나는 중","병원과 복지 시설을 오가는 사람들을 보며 안내 표지가 잘 정리된 길을 지나고 있어요."],
+    "관광 중심":["마을의 명소를 둘러보는 중","방문객들이 많이 찾는 길을 따라 마을의 대표 풍경과 안내판을 천천히 살펴보고 있어요."],
+    "휴양 중심":["휴양 산책로에서 쉬는 중","마을의 한적한 풍경을 즐기며 휴양 시설로 이어지는 산책로에서 잠깐 쉬고 있어요."],
+    "교통·물류 중심":["교통 거점을 지나는 중","마을을 드나드는 사람과 짐이 모이는 교통 거점에서 노선과 출발 시간을 확인하고 있어요."],
+    "농업 중심":["마을의 농산물 장터를 지나는 중","근처 농가에서 가져온 제철 농산물이 놓인 장터를 둘러보며 오늘 들어온 품목을 살피고 있어요."],
+    "어업·항구 중심":["항구 쪽을 둘러보는 중","배가 들어오는 시간에 맞춰 분주해진 항구와 수산물을 나르는 사람들을 바라보고 있어요."],
+    "문화·예술 중심":["문화 거리를 둘러보는 중","작은 전시와 공연 소식이 붙은 거리를 지나며 오늘 열리는 행사를 하나씩 확인하고 있어요."],
+    "생태·보전 중심":["생태 관찰로를 걷는 중","보호 구역 안내를 따라 자연을 해치지 않는 길로 천천히 걸으며 주변의 식생을 살피고 있어요."]
+  };
+  const base=typeScenes[town.townType]||["마을 중심을 둘러보는 중",`${town.townSubtype||town.townType||"생활권"}의 일상적인 흐름을 따라 마을 중심을 지나고 있어요.`];
+  const terrainNote=`${town.terrain||"평야"} 지형에 맞춰 난 길을 골랐고, ${town.reputation||"알려지지 않은 곳"}이라는 평판이 느껴지는 풍경을 마주했어요.`;
+  const copies={ko:{title:base[0],desc:`${base[1]} ${terrainNote}`},en:{title:"Spending time around town",desc:`They are following a route shaped by the town's terrain, local identity, and reputation, noticing how people use the area.`},ja:{title:"村の中を見て回っているところ",desc:"地形や地域の特色、評判が暮らしに表れている道を歩きながら、人々の過ごし方を眺めています。"}};
+  const copy=copies[language]||copies.ko;
+  return entry(minute,copy.title,copy.desc,{townId:town.id,placeId:"",mood:"관찰",townProfileLog:true});
+}
 function build(c,date=new Date()){
   const currentHomeId=homeIdForDate(c,date);
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
@@ -2481,6 +2506,7 @@ function build(c,date=new Date()){
   list.push(...recordedInteractionEntries(c,date));
   list.push(...scheduledChoiceEntries(c,date));
   const decorationScene=townDecorationEvent(c,date);if(decorationScene)list.push(decorationScene);
+  const profileScene=townProfileEvent(c,date);if(profileScene)list.push(profileScene);
   const mobilityMorning=mobilityAidMorningEntry(c,wake+30,date);
   const morningAppearance=appearanceMorningEntry(c,wake+30,date);
   const morningCare=[mobilityMorning,morningAppearance].filter(Boolean);
@@ -2522,11 +2548,11 @@ function build(c,date=new Date()){
   // 예전처럼 모든 외부 일정을 밤 8시에 한꺼번에 귀가시키지 않는다.
   if(destinationPurpose&&destination.id!==homeTown.id&&purpose.kind!=="routine"){
     const travelMinute=Math.max(wake+75,(work?.minute||720)-45);
-    const mode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"transit";
-    const title=mode==="mount"?`${rideablePet.name}을 타고 ${destination.name}으로 이동 중`:mode==="partner"?`${romantic.name}의 차를 타고 ${destination.name}으로 이동 중`:mode==="car"?`차를 운전해 ${destination.name}으로 이동 중`:`대중교통으로 ${destination.name} 이동 중`;
+    const mode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"town-network",townTransport=transportBetween(homeTown,destination),townTravel=transportSceneCopy(townTransport,destination.name,state.uiLanguage);
+    const title=mode==="mount"?`${rideablePet.name}을 타고 ${destination.name}으로 이동 중`:mode==="partner"?`${romantic.name}의 차를 타고 ${destination.name}으로 이동 중`:mode==="car"?`차를 운전해 ${destination.name}으로 이동 중`:townTravel.title;
     const reason=destinationPurpose?`${destinationPurpose} 때문에 `:"";
-    const desc=mode==="mount"?(rideablePet.species==="드래곤"?`${reason}${rideablePet.name}의 등에 올라 안전한 비행 경로를 따라 ${destination.name}으로 향하고 있어요.`:`${reason}${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 ${destination.name}으로 향하고 있어요.`):mode==="partner"?`${reason}${romantic.name}가 운전하는 차에 함께 타고 ${destination.name}의 목적지로 향하고 있어요.`:mode==="car"?`${reason}집의 자동차를 직접 운전해 ${destination.name}으로 이동하고 있어요. 음주한 날에는 운전하지 않아요.`:`${reason}버스나 지하철 노선을 확인하고 ${destination.name}으로 이동하고 있어요.`;
-    list.push(entry(travelMinute,title,desc,{townId:destination.id,transit:true,withId:mode==="partner"?romantic.id:undefined,mood:"이동"}));
+    const desc=mode==="mount"?(rideablePet.species==="드래곤"?`${reason}${rideablePet.name}의 등에 올라 안전한 비행 경로를 따라 ${destination.name}으로 향하고 있어요.`:`${reason}${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 ${destination.name}으로 향하고 있어요.`):mode==="partner"?`${reason}${romantic.name}가 운전하는 차에 함께 타고 ${destination.name}의 목적지로 향하고 있어요.`:mode==="car"?`${reason}집의 자동차를 직접 운전해 ${destination.name}으로 이동하고 있어요. 음주한 날에는 운전하지 않아요.`:`${reason}${townTravel.desc}`;
+    list.push(entry(travelMinute,title,desc,{townId:destination.id,transit:true,transportMode:townTransport,withId:mode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
   const morning=morningScripts(c,date),commuteMinute=work&&!work.home?work.minute-35:Infinity;
   [wake+150,wake+200,wake+250,wake+300].forEach((minute,index)=>{
@@ -2622,10 +2648,10 @@ function build(c,date=new Date()){
   }
   if(destinationPurpose&&destination.id!==homeTown.id){
     const returnMinute=Math.min(sleepMinute-75,1200);
-    const returnMode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"transit";
-    const returnTitle=returnMode==="mount"?`${rideablePet.name}을 타고 ${homeTown.name}으로 돌아가는 중`:returnMode==="partner"?`${romantic.name}의 차를 타고 ${homeTown.name}으로 돌아가는 중`:returnMode==="car"?`차를 운전해 ${homeTown.name}으로 돌아가는 중`:`대중교통으로 ${homeTown.name}으로 돌아가는 중`;
-    const returnDesc=returnMode==="mount"?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로를 따라 집이 있는 마을로 돌아가고 있어요.`:`${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 집이 있는 마을로 돌아가고 있어요.`):returnMode==="partner"?`${romantic.name}가 운전하는 차에 함께 타고 집이 있는 마을로 돌아가고 있어요.`:returnMode==="car"?"바깥 일정을 마치고 직접 차를 운전해 집이 있는 마을로 돌아가고 있어요.":"버스나 지하철 노선을 확인하고 집이 있는 마을로 돌아가고 있어요.";
-    list.push(entry(returnMinute,returnTitle,returnDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:returnMode,withId:returnMode==="partner"?romantic.id:undefined,mood:"이동"}));
+    const returnMode=useMount?"mount":partnerCanDrive?"partner":selfCanDrive?"car":"town-network",returnTransport=transportBetween(destination,homeTown),returnTravel=transportSceneCopy(returnTransport,homeTown.name,state.uiLanguage);
+    const returnTitle=returnMode==="mount"?`${rideablePet.name}을 타고 ${homeTown.name}으로 돌아가는 중`:returnMode==="partner"?`${romantic.name}의 차를 타고 ${homeTown.name}으로 돌아가는 중`:returnMode==="car"?`차를 운전해 ${homeTown.name}으로 돌아가는 중`:returnTravel.title;
+    const returnDesc=returnMode==="mount"?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로를 따라 집이 있는 마을로 돌아가고 있어요.`:`${rideablePet.name}의 등에 올라 사람이 적고 안전한 길을 따라 집이 있는 마을로 돌아가고 있어요.`):returnMode==="partner"?`${romantic.name}가 운전하는 차에 함께 타고 집이 있는 마을로 돌아가고 있어요.`:returnMode==="car"?"바깥 일정을 마치고 직접 차를 운전해 집이 있는 마을로 돌아가고 있어요.":returnTravel.desc;
+    list.push(entry(returnMinute,returnTitle,returnDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:returnMode==="town-network"?returnTransport:returnMode,withId:returnMode==="partner"?romantic.id:undefined,mood:"이동"}));
   }
   let stress=Math.max(...list.map(x=>x.stress||0));
   const currentResidence=residenceForDate(c,date),currentSleepRoom=usableSleepRoom(currentResidence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)||"bedroom";
@@ -2674,7 +2700,7 @@ function build(c,date=new Date()){
   }
   const scheduled=scheduledForDate(c,date);
   scheduled.forEach((item,index)=>{
-    const minute=mins(item.start),scheduledPlace=state.towns.flatMap(t=>(t.places||[]).map(p=>({...p,townId:t.id}))).find(p=>p.id===item.placeId),scheduledHome=state.homes?.[item.visitHomeId],place=state.preventInterTownMovement&&scheduledPlace?.townId!==homeTown.id?null:scheduledPlace,visitHome=state.preventInterTownMovement&&scheduledHome?.townId!==homeTown.id?null:scheduledHome,visitHomeTown=visitHome?state.towns.find(t=>t.id===visitHome.townId):null;
+    const minute=mins(item.start),scheduledPlace=state.towns.flatMap(t=>(t.places||[]).map(p=>({...p,townId:t.id}))).find(p=>p.id===item.placeId),scheduledHome=state.homes?.[item.visitHomeId],scheduledPlaceTown=state.towns.find(t=>t.id===scheduledPlace?.townId),scheduledHomeTown=state.towns.find(t=>t.id===scheduledHome?.townId),place=canTravelBetween(homeTown,scheduledPlaceTown,state.preventInterTownMovement)?scheduledPlace:null,visitHome=canTravelBetween(homeTown,scheduledHomeTown,state.preventInterTownMovement)?scheduledHome:null,visitHomeTown=visitHome?state.towns.find(t=>t.id===visitHome.townId):null;
     const companions=(item.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
     const companionText=companions.length?`${companions.map(x=>x.name).join(", ")}와 함께 `:"";
     const isDate=item.type==="데이트"&&Boolean(companions[0]);
@@ -2702,7 +2728,8 @@ function build(c,date=new Date()){
         }[state.uiLanguage]||{
           travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${destinationName}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."
         };
-        list.push(entry(endMinute,copy.travel,copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,...routineMeta,mood:"이동"}));
+        const destinationTown=state.towns.find(town=>town.id===destinationTownId),networkMode=crossTown?transportBetween(destinationTown,homeTown):"도보길",networkCopy=crossTown?transportSceneCopy(networkMode,homeTown.name,state.uiLanguage):null;
+        list.push(entry(endMinute,crossTown?networkCopy.title:copy.travel,crossTown?networkCopy.desc:copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:networkMode,...routineMeta,mood:"이동"}));
         list.push(homeEntry(c,homeAt,copy.home,copy.homeDesc,"entry",{...routineMeta,routineReturned:true,mood:"귀가"}));
       }
     }
@@ -2717,7 +2744,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260826-meal-habits-independent-movement";
+const ENGINE_VERSION="20260828-town-profile-shared-log";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -2733,7 +2760,7 @@ function signature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c.id);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
   signatureCache.set(c.id,{character:c,revision,value});
   if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
   return value;
@@ -4344,9 +4371,10 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     current.room||""
   ].join(":");
   const sharedActionText=cleanRepeatedSceneText(`${scene.title||""} ${scene.first||""} ${scene.second||""}`);
-  const safeTitle=repairSelfNamedPartnerText(c,actualPartner,combinedTitle);
-  const safeDescription=repairSelfNamedPartnerText(c,actualPartner,combinedDesc);
-  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(safeTitle),desc:resolveEntityParticles(compactLogDescription(characterVoice(c,safeDescription))),sharedActionText,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
+  const participantNames=participantOrder.map(id=>state.characters[id]?.name).filter(Boolean).join(" · ");
+  const sharedCanonicalTitle=sharedContext?.sharedCanonicalTitle||resolveEntityParticles(`${participantNames} · ${scene.title||combinedTitle}`);
+  const sharedCanonicalDesc=sharedContext?.sharedCanonicalDesc||resolveEntityParticles(compactLogDescription(sharedActionText));
+  return {...current,baseTitle,baseDesc,title:sharedCanonicalTitle,desc:sharedCanonicalDesc,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 function companionAlignedBaseEvent(c,current,date){
   if(!c||activeScheduledRoutine(c,date))return current;
@@ -4422,7 +4450,9 @@ export function eventFor(c,date=new Date()){
         datePurpose:current.datePurpose,
         location:sharedLocation,
         sourceEvent:current,
-        sourceOwnerId:c.id
+        sourceOwnerId:c.id,
+        sharedCanonicalTitle:current.sharedCanonicalTitle,
+        sharedCanonicalDesc:current.sharedCanonicalDesc
       }));
       if(!counterpart?.groupInteraction)return;
       counterpart.minute=sharedMinute;
