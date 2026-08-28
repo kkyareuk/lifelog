@@ -11,15 +11,16 @@ assert(TOWN_TERRAINS.length>=15,"지형 선택지가 충분하지 않습니다")
 const migrated=normalizeTownProfile({townType:"관광 마을",terrainClimate:"해안·해양성",transportModes:["철도"],bg:"world-assets/downtown-optimized.jpg"});
 assert.equal(migrated.townType,"관광 중심");
 assert.equal(migrated.terrain,"해안");
-assert.equal(migrated.bg,"world-assets/downtown-optimized.jpg");
-assert.equal(townIllustrationsFor(migrated)[0].pack,"base");
+assert.equal(migrated.bg,"");
+assert.deepEqual(townIllustrationsFor(migrated),[]);
 assert.equal(transportBetween({transportModes:["철도"]},{transportModes:["철도"]}),"철도");
 assert.equal(canTravelBetween({id:"a",travelAllowed:false},{id:"b",travelAllowed:true}),false);
 
-assert.match(views,/data-town-illustration-open/);
-assert.match(views,/data-town-illustration-locked/);
+assert.doesNotMatch(views,/data-town-illustration-open/);
+assert.doesNotMatch(views,/data-town-illustration-locked/);
+assert.match(views,/등록된 마을 일러스트가 없어요/);
 assert.doesNotMatch(views,/class="town-information-hero" data-town-photo/);
-assert.match(app,/setWorldBackground\(button\.dataset\.townIllustration\)/);
+assert.match(state,/export function setWorldBackground\(value\)/);
 assert.match(app,/f\.elements\.namedItem\("name"\)/);
 assert.match(views,/bodySelect\("appearance\.salonFrequency",SALON_FREQUENCIES/);
 assert.match(state,/affectedCharacterIds\.forEach\(id=>delete state\.dailyPlans\?\.\[id\]\)/);
@@ -27,7 +28,7 @@ assert.match(simulation,/deleted\.has\(key\)\|\|seen\.has\(key\)/);
 assert.match(simulation,/sharedCanonicalTitle:current\.sharedCanonicalTitle/);
 assert.match(simulation,/function townProfileEvent/);
 assert.match(simulation,/transportSceneCopy/);
-assert.match(gradle,/versionCode 179/);
-assert.match(gradle,/versionName "1\.0\.166"/);
+assert.match(gradle,/versionCode 180/);
+assert.match(gradle,/versionName "1\.0\.167"/);
 
 console.log("PASS town profile, illustration, relationship-name, salon, schedule deletion, and shared-log regressions");

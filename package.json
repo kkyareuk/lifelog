@@ -37,7 +37,8 @@
     "test:town-grid": "node scripts/check-town-grid-editor.mjs",
     "test:town-profile": "node scripts/check-town-profile-bugfixes.mjs",
     "test:shop-billing": "node scripts/check-native-shop-billing.mjs",
-    "test:reported-bugs": "node scripts/check-reported-bug-fixes.mjs"
+    "test:reported-bugs": "node scripts/check-reported-bug-fixes.mjs",
+    "test:layout180": "node scripts/check-layout-180.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

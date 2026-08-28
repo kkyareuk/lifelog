@@ -24,7 +24,6 @@
     backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api",
     packageName:"com.drawervillage.app",
     products:{
-      open_celebration_bundle:"open_celebration_bundle",
       character_slots_5:"character_slots_5",
       town_slot_1:"town_slot_1",
       storage_50mb:"storage_50mb",

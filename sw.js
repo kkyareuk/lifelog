@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260828-shop-179";
+const CACHE_VERSION="drawer-village-v20260828-layout-180";
 const CORE=[
   "./",
   "./index.html",
@@ -24,8 +24,9 @@ const CORE=[
   "./audio.js",
   "./character-book.css",
   "./shop.css",
-  "./assets/shop/drawer-shop-base.png",
-  "./assets/shop/drawer-shop-bundle.png",
+  "./assets/shop/drawer-shop-wood.jpg",
+  "./assets/shop/drawer-shop-seller.png",
+  "./assets/shop/character-slots-5.png",
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",
   "./fonts/DoHyeon-Regular.ttf",

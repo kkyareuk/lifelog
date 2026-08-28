@@ -13,7 +13,7 @@ const app=express();
 app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
-const PRODUCTS=new Set(["open_celebration_bundle","character_slots_5","town_slot_1","storage_50mb","green_tea"]);
+const PRODUCTS=new Set(["character_slots_5","town_slot_1","storage_50mb","green_tea"]);
 const CONSUMABLE_PRODUCTS=new Set(["character_slots_5","town_slot_1","green_tea"]);
 const WEB_PRODUCTS=Object.freeze({
   character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:1200},
@@ -86,12 +86,6 @@ function nextEntitlements(current,productId,quantity){
   const count=Math.max(1,Math.min(100,Number(quantity)||1));
   const purchases=Array.from(new Set([...(Array.isArray(current?.purchases)?current.purchases:[]),productId]));
   const next={...(current||{}),purchases};
-  if(productId==="open_celebration_bundle"){
-    next.characterSlotPacks=(Number(current?.characterSlotPacks)||0)+2*count;
-    next.townSlotPacks=(Number(current?.townSlotPacks)||0)+2*count;
-    next.storage50=true;
-    next.teaSupportCount=(Number(current?.teaSupportCount)||0)+count;
-  }
   if(productId==="character_slots_5")next.characterSlotPacks=(Number(current?.characterSlotPacks)||0)+count;
   if(productId==="town_slot_1")next.townSlotPacks=(Number(current?.townSlotPacks)||0)+count;
   if(productId==="storage_50mb")next.storage50=true;

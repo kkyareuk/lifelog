@@ -16,8 +16,8 @@ const checks=[
   [views.includes("const cacheSetBounded=")&&!views.includes("renderEventCache.clear()")&&!views.includes("renderTimelineCache.clear()"),"분 단위 장면 캐시를 화면 재렌더 사이에 유지"],
   [app.includes("now-lastLocalMediaHydrationAt<30_000")&&app.includes('document.visibilityState==="hidden"'),"중복 사진 복원과 백그라운드 장면 타이머 중단"],
   [css.includes("content-visibility:auto")&&css.includes("animation:native-sleep-head 4.6s ease-in-out infinite")&&homeCss.includes("animation:home-ld-idle 4.8s ease-in-out infinite!important")&&!css.includes("html.native-platform .native-scene-atmosphere::before,\nhtml.native-platform .native-scene-atmosphere::after"),"비가시 영역 지연 렌더는 유지하고 장면·LD 애니메이션은 보존"],
-  [prepare.includes('"world-assets/cozy-town.png"')&&prepare.includes('"world-assets/downtown.png"')&&prepare.includes('"assets/character-ui/paper.png"')&&prepare.includes("excludedAndroidAssets.has(relativePath)"),"미사용 고해상도 배경·종이 원본을 Android 패키지에서 제외"],
-  [gradle.includes("versionCode 179")&&gradle.includes('versionName "1.0.166"'),"개발 빌드 178 / 1.0.165 버전"]
+  [!views.includes('world-assets/cozy-town')&&!state.includes('world-assets/cozy-town')&&prepare.includes('"assets/character-ui/paper.png"')&&prepare.includes("excludedAndroidAssets.has(relativePath)"),"생성 마을 배경을 런타임에서 제거하고 미사용 원본을 패키지에서 제외"],
+  [gradle.includes("versionCode 180")&&gradle.includes('versionName "1.0.167"'),"개발 빌드 180 / 1.0.167 버전"]
 ];
 
 checks.forEach(([ok,label])=>console.log(`${ok?"PASS":"FAIL"} ${label}`));

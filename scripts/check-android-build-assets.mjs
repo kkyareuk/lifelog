@@ -17,9 +17,9 @@ const preparedFiles=filesUnder(wwwRoot);
 const required=[
   "index.html","app.css","character-book.css","shop.css","app.js","views.js","state.js","simulation.js","auth.js",
   "icons/drawer-village-logo.png","assets/character-ui/paper.webp",
-  "assets/character-ui/wallet.png","world-assets/cozy-town-optimized.jpg","fonts/KCC-Hanbit.ttf"
+  "assets/character-ui/wallet.png","assets/shop/drawer-shop-wood.jpg","assets/shop/drawer-shop-seller.png","fonts/KCC-Hanbit.ttf"
 ];
-const excluded=["world-assets/cozy-town.png","world-assets/downtown.png","assets/character-ui/paper.png"];
+const excluded=["world-assets/cozy-town.png","world-assets/cozy-town-optimized.jpg","world-assets/downtown.png","world-assets/downtown-optimized.jpg","world-assets/developer-town.svg","world-assets/developer-city.svg","assets/character-ui/paper.png"];
 const failures=[];
 const preparedIndex=readFileSync(resolve(wwwRoot,"index.html"),"utf8");
 const preparedAppCss=readFileSync(resolve(wwwRoot,"app.css"),"utf8");
