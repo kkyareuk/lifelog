@@ -14,9 +14,10 @@ const checks=[
   [css.includes('#mini-toast{')&&css.includes('z-index:2147483647'),"전체설정 책보다 저장 알림을 앞쪽 레이어에 표시한다"],
   [css.includes('url("./assets/home-ui/relationship-mosaic.png")')&&fs.existsSync(path.join(root,"assets/home-ui/relationship-mosaic.png")),"원본 손그림 모자이크 에셋을 관계 화면 배경으로 사용한다"],
   [css.includes('.relationship-viewpoint-dialog .relationship-all-fields')&&css.includes('background:transparent!important')&&css.includes('height:max(100dvh,917px)')&&css.includes('.relationship-viewpoint-dialog .relationship-view-field select')&&css.includes('color-scheme:light!important'),"시선 설정 흰 판을 제거하고 선택상자를 밝게 유지하며 마지막 충동 단계까지 볼 수 있다"],
-  [css.includes('-webkit-text-stroke:2.7px #000')&&css.includes('.relationship-editor-pair figure>b')&&css.includes('-webkit-text-stroke:1.5px #000'),"관계 문구와 두 캐릭터 이름의 검은 외곽선을 강화한다"],
+  [css.includes('-webkit-text-stroke:2.7px #000')&&css.includes('.relationship-editor-pair figure>b')&&css.includes('-webkit-text-stroke:2.1px #000'),"관계 문구와 두 캐릭터 이름의 검은 외곽선을 강화한다"],
   [app.includes('mobileCharacterDialog.returnValue!=="save"')&&app.includes('mobileCharacterDraftDirty=false;mobileCharacterEditorPane=""'),"저장 후 닫기 이벤트가 같은 초안을 다시 저장하지 않는다"],
-  [app.includes('const officialListButton=f.querySelector("[data-open-official-list-from-editor]")')&&app.includes('if(officialListButton)officialListButton.onclick'),"SVG 개편 뒤 선택 요소가 없어도 공식 관계 편집기가 중단되지 않는다"]
+  [views.includes('data-open-official-relations')&&views.includes('relationship-list-create-card')&&app.includes('button.closest("[data-official-relation-dialog]")?.close()'),"공식 관계 목록을 거쳐 새 관계 설정 화면으로 이동한다"],
+  [app.includes('explicitSave("관계 저장",{alreadySaved:true,renderAfter:false})'),"관계 저장 때 직렬화와 전체 렌더를 중복 실행하지 않는다"]
 ];
 const failed=checks.filter(([ok])=>!ok);
 checks.forEach(([ok,label])=>console.log(`${ok?"PASS":"FAIL"} ${label}`));
