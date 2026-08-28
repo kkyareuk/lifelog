@@ -4097,7 +4097,10 @@ function nativePlayShop(){
   const section=nativeShopSection;
   const artwork=section==="bundle"?"./assets/shop/drawer-shop-bundle.png":"./assets/shop/drawer-shop-base.png";
   const tab=(key,label)=>`<button type="button" class="drawer-shop-hit drawer-shop-tab" data-drawer-shop-tab="${key}" aria-pressed="${section===key}">${esc(label)}</button>`;
-  const buy=(id,className,fallback)=>`<button type="button" class="drawer-shop-purchase ${className}" data-play-purchase="${id}" data-purchase-state="checking" disabled aria-label="${esc(SHOP_PRODUCTS[id].title)} · ${esc(copy.checking)}"><span data-play-price="${id}">${fallback}</span><small class="drawer-shop-sr" data-play-label>${esc(copy.checking)}</small></button>`;
+  const buy=(id,className,fallback)=>{
+    const owned=id==="open_celebration_bundle"&&accountEntitlements.purchases.includes(id);
+    return `<button type="button" class="drawer-shop-purchase ${className}" data-play-purchase="${id}" data-play-owned="${owned}" data-purchase-state="${owned?"unavailable":"checking"}" disabled aria-label="${esc(SHOP_PRODUCTS[id].title)} · ${esc(owned?"이미 구매함":copy.checking)}"><span data-play-price="${id}">${fallback}</span><small class="drawer-shop-sr" data-play-label>${esc(owned?"이미 구매함":copy.checking)}</small></button>`;
+  };
   return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><img class="drawer-shop-art" src="${artwork}" alt=""><button type="button" class="drawer-shop-hit drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"></button>${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}${buy("character_slots_5","drawer-shop-buy-left","₩1,200")}${buy("character_slots_5","drawer-shop-buy-right","₩1,200")}${buy("open_celebration_bundle","drawer-shop-buy-bundle","₩12,000")}<p class="drawer-shop-bundle-copy">${esc(copy.bundleContents)}</p><div class="drawer-shop-coming" role="status"><b>${esc(section==="skin"?copy.skinSoon:copy.expansionSoon)}</b><span>${esc(copy.soonDetail)}</span></div><button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button></div></section>`;
 }
 function shop(){

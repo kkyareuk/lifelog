@@ -20,6 +20,8 @@ assert.match(views,/open_celebration_bundle/);
 assert.match(views,/캐릭터 슬롯 \+10/);
 assert.match(app,/querySelectorAll\(`\[data-play-price/);
 assert.match(app,/data-drawer-shop-tab/);
+assert.match(app,/button\.dataset\.playOwned==="true"/);
+assert.match(views,/accountEntitlements\.purchases\.includes\(id\)/);
 assert.match(nativeApp,/purchaseInFlight/);
 assert.match(nativeApp,/verifyPurchase/);
 assert.ok(nativeApp.indexOf("verifyPurchase")<nativeApp.indexOf("finishVerifiedPurchase"),"서버 영수증 검증 코드가 구매 완료 처리보다 먼저 정의되어야 합니다.");

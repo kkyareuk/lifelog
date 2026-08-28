@@ -2217,6 +2217,10 @@ function bind(){
         document.querySelectorAll(`[data-play-price="${CSS.escape(product.productId)}"]`).forEach(price=>{if(product.formattedPrice)price.textContent=product.formattedPrice});
       }
       playButtons.forEach(button=>{
+        if(button.dataset.playOwned==="true"){
+          setPlayButtonState(button,"unavailable","이미 구매함",true);
+          return;
+        }
         if(available.has(button.dataset.playPurchase)){
           setPlayButtonState(button,"ready","구매하기",false);
           const item=products.find(product=>product.productId===button.dataset.playPurchase);
