@@ -1,9 +1,9 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260828relationship174";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828relationship174";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260828relationship174";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship174";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260828relationship174";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828relationship174";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260828town177";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828town177";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260828town177";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828town177";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260828town177";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828town177";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -508,8 +508,12 @@ function normalizeHomes(x){
   x.world=x.world&&typeof x.world==="object"&&!Array.isArray(x.world)?x.world:clone(defaultWorld);
   x.world.name=x.world.name||defaultWorld.name;
   x.world.photo=String(x.world.photo||"");
+  x.world.townType=String(x.world.townType||"생활 중심 마을");
+  x.world.density=String(x.world.density||"여유로움");
   x.world.urbanization=String(x.world.urbanization||"소도시");
   x.world.reputation=String(x.world.reputation||"알려지지 않음");
+  x.world.size=String(x.world.size||"보통 마을");
+  x.world.terrainClimate=String(x.world.terrainClimate||"평야·온대");
   x.world.description=String(x.world.description||"").slice(0,600);
   // 제공받은 손그림 한 장만 마을 배경으로 사용한다. 이전 AI 배경을 고른
   // 저장 데이터도 다음 로드부터 새 배경으로 통일한다.
@@ -518,7 +522,7 @@ function normalizeHomes(x){
   x.world.decorations=Array.isArray(x.world.decorations)?x.world.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[];
   x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
   if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
-  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town-optimized.jpg?v=20260819",photo:String(t.photo||""),urbanization:String(t.urbanization||"소도시"),reputation:String(t.reputation||"알려지지 않음"),description:String(t.description||"").slice(0,600),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
+  x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),bg:"world-assets/cozy-town-optimized.jpg?v=20260819",photo:String(t.photo||""),townType:String(t.townType||"생활 중심 마을"),density:String(t.density||"여유로움"),urbanization:String(t.urbanization||"소도시"),reputation:String(t.reputation||"알려지지 않음"),size:String(t.size||"보통 마을"),terrainClimate:String(t.terrainClimate||"평야·온대"),description:String(t.description||"").slice(0,600),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
     p.iconPreset=p.iconPreset||({
@@ -1760,7 +1764,7 @@ export function addTown(limit=2){
   if(state.towns.length>=limit)return null;
   syncTown();
   const id=uid(),base=fresh().world;
-  const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,photo:"",urbanization:"소도시",reputation:"알려지지 않음",description:"",era:"modern",places:[],decorations:[]};
+  const town={id,name:`새 마을 ${state.towns.length+1}`,bg:base.bg,photo:"",townType:"생활 중심 마을",density:"여유로움",urbanization:"소도시",reputation:"알려지지 않음",size:"보통 마을",terrainClimate:"평야·온대",description:"",era:"modern",places:[],decorations:[]};
   state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);return id;
 }
 export function switchTown(id,{activeId}={}){

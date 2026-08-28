@@ -26,13 +26,15 @@ const checks=[
   [views.includes('data-character-group-list-dialog')&&views.includes('relationship-group-create-card')&&app.includes('data-open-character-groups'),"그룹 메뉴가 그룹 목록을 먼저 열고 새 그룹 추가로 이어짐"],
   [css.includes('.official-relation-fields>[hidden]{display:none!important}')&&app.includes('f.querySelector(".official-fault").hidden=f.temporalStatus.value!=="past"'),"관계가 끝난 이유는 과거 관계에서만 표시"],
   [css.includes('@media(min-width:721px)')&&css.includes('max-width:1180px')&&css.includes('max-width:1100px'),"태블릿·넓은 화면에서 관계 무대와 목록을 화면 폭에 맞게 재배치"],
-  [views.includes('relationship-motion-${relationshipMotion}')&&css.includes('@keyframes relationship-close-left')&&css.includes('@keyframes relationship-flash'),"관계 감정에 맞춘 캐릭터와 화면 효과"],
+  [views.includes('relationshipMotionFor(sourceId,targetId,official)')&&css.includes('.relationship-motion-stranger .relationship-hero-pair::before{content:"?')&&css.includes('relationship-motion-crush-forward')&&css.includes('@keyframes relationship-cuddle-left')&&css.includes('@keyframes relationship-flash'),"이방인·짝사랑 방향·쌍방 사랑·갈등을 시선에 맞춰 구분한 관계 연출"],
   [views.includes('data-relationship-map-content')&&app.includes('content.dataset.loaded!=="1"')&&app.includes('relationshipMapMarkup(ids)'),"무거운 관계도는 실제로 열 때만 생성"],
   [views.includes('data-relationship-map-scope')&&views.includes('data-relationship-map-character')&&app.includes('kind==="town"')&&app.includes('kind==="group"'),"관계도 표시 캐릭터를 전체·마을·그룹·개별 단위로 선택"],
   [views.includes('legend:["강한 사랑"')&&views.includes('stroke-width="5"')&&!views.includes('class="map-official"')&&!views.includes('class="map-heart'),"관계도는 공식관계·요약 문구 없이 감정별 화살표 색과 범례만 표시"],
   [app.includes('window.Capacitor?.Plugins?.ProfileExport')&&app.includes('document.body.append(link)')&&app.includes('서랍마을-인물관계도-'),"Android 네이티브와 브라우저에서 관계도 PNG 저장 지원"],
   [app.includes('data-new-relation-tag')&&app.includes('data-add-relation-tag')&&!app.includes('const relationTagOptions='),"관계 태그를 정해진 목록이 아니라 사용자 직접 입력으로 생성"],
-  [css.includes('relationship-map-node')&&css.includes('overflow:visible')&&css.includes('object-fit:contain!important'),"관계도 캐릭터 아이콘 윗부분이 잘리지 않게 표시"]
+  [css.includes('relationship-map-node')&&css.includes('overflow:visible')&&css.includes('object-fit:contain!important'),"관계도 캐릭터 아이콘 윗부분이 잘리지 않게 표시"],
+  [css.includes('.relationship-stage{')&&css.includes('background-size:412px 917px!important')&&css.includes('background-repeat:repeat-y!important'),"관계 메인 무대 자체에 모자이크 배경을 고정해 테마 덮어쓰기 방지"],
+  [css.includes('.relation-editor-dialog .official-relation-toggles{top:766px!important}')&&css.includes('.official-fault:not([hidden])) .official-relation-toggles'),"과거 관계·가족 추가 설정이 없으면 함께 살기·함께 다니기를 바로 위로 배치"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);

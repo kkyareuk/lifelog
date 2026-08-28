@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828relationship176";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260828relationship176";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828relationship176";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship176";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260828relationship176";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828town177";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260828town177";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828town177";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828town177";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260828town177";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2930,6 +2930,22 @@ const characterViewOptions=key=>{
   if(key==="importance")return["선택하지 않음",...state.order.map((_,index)=>`${index+1}순위${index===0?" · 가장 중요한 사람":""}`)];
   return (CHARACTER_VIEW_OPTIONS[key]||[]).map(value=>value==="정하지 않음"?"선택하지 않음":value);
 };
+function relationshipMotionFor(sourceId,targetId,official=[]){
+  const sourceExplicit=explicitCharacterViewFor(sourceId,targetId),targetExplicit=explicitCharacterViewFor(targetId,sourceId);
+  const hasSourceView=Object.keys(sourceExplicit).length>0,hasTargetView=Object.keys(targetExplicit).length>0;
+  const currentOfficial=official.filter(relation=>relation.temporalStatus!=="past");
+  if(!official.length&&!hasSourceView&&!hasTargetView)return"stranger";
+  const sourceView=characterViewFor(sourceId,targetId),targetView=characterViewFor(targetId,sourceId);
+  const sourceLove=isRomanticCharacterView(sourceView),targetLove=isRomanticCharacterView(targetView);
+  if(sourceLove&&!targetLove)return"crush-forward";
+  if(!sourceLove&&targetLove)return"crush-reverse";
+  if(sourceLove&&targetLove||currentOfficial.some(relation=>["연인","부부"].includes(relation.type)))return"romantic";
+  const combined=[sourceView,targetView].map(view=>`${view.overall||""} ${view.trust||""} ${view.fear||""} ${view.comfort||""} ${view.conflictIntensity||""}`).join(" ");
+  if(/혐오|증오|원수|매우 싫|격렬|파국|자주 충돌/.test(combined)||currentOfficial.some(relation=>["혐관","라이벌"].includes(relation.type)))return"tense";
+  if(/경계|믿지|의심|두려|무서|거리감|매우 불편/.test(combined))return"wary";
+  if(/가까운 사이|가장 가까운|친한 사이|편안|의지|소중/.test(combined)||currentOfficial.some(relation=>["친구","소꿉친구","부모·자녀","형제·자매","동거인"].includes(relation.type)))return"close";
+  return"neutral";
+}
 const relationshipScreenCopy=()=>({
   en:{selected:"Selected",mindOf:"'s feelings toward",officialNone:"No official relationship · strangers",setFeelings:"Set viewpoint",setOfficial:"Official relationships",addOfficial:"Add relationship",officialList:"Official relationships",makeGroup:"Groups",addGroup:"Add group",groupTitle:"Groups",groupEmpty:"No groups yet.",relationshipMap:"Relationship map",done:"Done",reset:"Reset these feelings",back:"Back",officialTitle:"Official relationships",officialEmpty:"No official relationships yet.",officialHint:"Search or select a relationship to edit it.",search:"Search",all:"All",family:"Family",friends:"Friends",romance:"Romance",groups:"Groups",rivals:"Rivals",edit:"Edit",remove:"Delete",close:"Close"},
   ja:{selected:"選択中",mindOf:"が相手をどう思うか",officialNone:"公式関係なし・他人",setFeelings:"視線設定",setOfficial:"公式関係",addOfficial:"関係を追加",officialList:"公式関係一覧",makeGroup:"グループ",addGroup:"グループを追加",groupTitle:"グループ一覧",groupEmpty:"グループはまだありません。",relationshipMap:"関係図",done:"編集完了",reset:"この関係を初期化",back:"戻る",officialTitle:"公式関係一覧",officialEmpty:"設定した公式関係はまだありません。",officialHint:"検索または関係を選んで編集できます。",search:"検索",all:"すべて",family:"家族",friends:"友人",romance:"恋愛",groups:"グループ",rivals:"対立",edit:"編集",remove:"削除",close:"閉じる"},
@@ -2961,7 +2977,7 @@ const characterViewEditor=()=>{
   const officialText=[...new Set(official.map(relation=>currentOfficialLabel(relation)))].join(" · ");
   const overall=characterViewFor(sourceId,targetId).overall;
   const reality=relationshipReality(sourceId,targetId,official);
-  const relationshipMotion=/사랑|연심|연애|짝사랑/.test(reality)?"romantic":/반감|맞서|충돌|경계|믿지/.test(reality)?"tense":/의지|편안|가까|함께/.test(reality)?"close":"neutral";
+  const relationshipMotion=relationshipMotionFor(sourceId,targetId,official);
   const viewFields=`${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"importance","중요도","이 캐릭터의 삶에서 상대가 얼마나 중요한지 정해요.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요.")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함","둘이 같은 공간에 있을 때의 편안함과 대화 호흡을 정해요.")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 감정을 얼마나 파악하고 있는지 정해요.")}${field(sourceId,targetId,"fear","두려움 정도","상대를 얼마나 우습게 보거나 두려워하는지 강도를 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살필지 정해요.")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개로 정해요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개인 실제 충돌 강도예요.")}${field(sourceId,targetId,"expectation","관계에 대한 기대","이 관계가 얼마나 이어질 거라 생각하는지 정해요.")}${field(sourceId,targetId,"touchIntensity","스킨십 범위","두 캐릭터의 범위가 다르면 더 낮은 쪽까지만 반영돼요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","충동만으로 실제 공격하지 않아요.")}${field(sourceId,targetId,"aggressionAction","충동을 실제로 표현하는 단계","충동 단계보다 센 행동은 절대 나오지 않아요.")}`;
   const characterSelector=(role,ids,selectedId,character)=>`<div class="relationship-character-selector selector-${role}">
     <button type="button" class="relationship-character-selected" data-toggle-relationship-roster="${role}" aria-label="${esc(character.name)} · ${copy.selected}"><span>${avatar(character)}</span><b><i aria-hidden="true"></i><em>${copy.selected}</em></b></button>
@@ -3894,6 +3910,32 @@ function townPlacementToolbar(){
   if(!item||!valid)return "";
   return `<nav class="town-placement-toolbar" aria-label="${esc(t("배치 조절","배치 조절"))}"><b>${esc(item.name||"선택 항목")}</b><div><button type="button" data-town-placement-command="undo">↶<small>${t("실행 취소","실행 취소")}</small></button><button type="button" data-town-placement-command="redo">↷<small>${t("다시 실행","다시 실행")}</small></button><button type="button" data-town-placement-command="smaller">−<small>${t("작게","작게")}</small></button><button type="button" data-town-placement-command="larger">＋<small>${t("크게","크게")}</small></button><button type="button" data-town-placement-command="flip">↔<small>${t("좌우반전","좌우반전")}</small></button><button type="button" data-town-placement-command="back">↓<small>${t("뒤로","뒤로")}</small></button><button type="button" data-town-placement-command="front">↑<small>${t("앞으로","앞으로")}</small></button><button type="button" data-town-placement-command="delete" class="danger">${t("삭제","삭제")}</button><button type="button" data-town-placement-command="done" class="primary">${t("완료","완료")}</button></div></nav>`;
 }
+function townInformationScreen(character){
+  const optionList=(values,current)=>values.map(value=>`<option value="${esc(value)}" ${value===current?"selected":""}>${t(value,value)}</option>`).join("");
+  const selectField=(label,dataName,values,current)=>`<label><b>${t(label,label)}</b><select ${dataName}>${optionList(values,current)}</select></label>`;
+  const art=state.world.photo||state.world.bg;
+  return `<aside class="town-information-screen" aria-label="${esc(t("마을 정보 편집","마을 정보 편집"))}">
+    <img class="town-information-backdrop" src="${esc(state.world.bg)}" alt="">
+    <header class="town-information-head"><button type="button" class="town-information-back" data-mobile-town-close aria-label="${esc(t("마을로 돌아가기","마을로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><b data-town-information-title>${esc(state.world.name)}</b></header>
+    <div class="town-information-content">
+      <button type="button" class="town-information-hero" data-town-photo aria-label="${esc(t("마을 사진 바꾸기","마을 사진 바꾸기"))}"><img src="${esc(art)}" alt="${esc(state.world.name)}"><span>${t("마을 사진 바꾸기","마을 사진 바꾸기")}</span></button>
+      <div class="town-information-form">
+        <label class="town-information-name"><b>${t("마을 이름","마을 이름")}</b><input data-world-name maxlength="40" value="${esc(state.world.name)}"></label>
+        <div class="town-information-grid">
+          ${selectField("마을 유형","data-world-town-type",["생활 중심 마을","주거 중심 마을","상업 중심 마을","관광 마을","산업 도시","학원 도시","휴양 마을"],state.world.townType||"생활 중심 마을")}
+          ${selectField("마을 밀집도","data-world-density",["매우 한적함","한적함","여유로움","보통","붐빔","매우 붐빔"],state.world.density||"여유로움")}
+          ${selectField("도시화 정도","data-world-urbanization",["외딴 정착지","한적한 시골","마을","소도시","중소 도시","대도시","초고밀도 도시"],state.world.urbanization||"소도시")}
+          ${selectField("마을 평판","data-world-reputation",["알려지지 않음","조용하고 평화로움","살기 좋음","관광지로 유명함","기회의 도시","위험하다는 소문","폐쇄적인 곳","화려하고 번화함","역사가 깊음"],state.world.reputation||"알려지지 않음")}
+          ${selectField("마을 규모","data-world-size",["작은 정착지","작은 마을","보통 마을","큰 마을","광역 도시"],state.world.size||"보통 마을")}
+          ${selectField("마을 지형·기후","data-world-terrain-climate",["평야·온대","해안·해양성","산지·서늘함","분지·온난함","사막·건조","설원·한랭","열대·다우"],state.world.terrainClimate||"평야·온대")}
+          <label><b>${t("마을 시대","마을 시대")}</b><select data-world-era><option value="modern" ${state.world.era!=="medieval"?"selected":""}>${t("현대","현대")}</option><option value="medieval" ${state.world.era==="medieval"?"selected":""}>${t("중세","중세")}</option></select></label>
+        </div>
+        <label class="town-information-description"><b>${t("마을 소개","마을 소개")}</b><textarea data-world-description rows="4" maxlength="600" placeholder="${esc(t("이 마을의 분위기와 특징을 적어 주세요.","이 마을의 분위기와 특징을 적어 주세요."))}">${esc(state.world.description||"")}</textarea></label>
+        <button type="button" class="town-information-save" data-town-save>${t("저장","저장")}</button>
+      </div>
+    </div>
+  </aside>`;
+}
 function townMobile(){
   const items=catalogItems(),audiences=["아재 입맛","어린이 입맛","가족","연인·데이트","학생","고소득","오타쿠"];
   const selectedPlace=state.world.places.find(place=>place.id===mobileTownPanel);
@@ -3917,15 +3959,17 @@ function townMobile(){
   const generalEditor=panelType==="world"?`<div class="town-general-editor"><div class="title"><h2>${t("마을 정보 편집","마을 정보 편집")}</h2><button class="primary" data-town-save>${t("저장","저장")}</button></div><label>${t("마을 이름","마을 이름")}<input data-world-name value="${esc(state.world.name)}"></label><div class="town-info-grid"><label>${t("도시화 정도","도시화 정도")}<select data-world-urbanization>${["외딴 정착지","한적한 시골","마을","소도시","중소 도시","대도시","초고밀도 도시"].map(value=>`<option ${value===(state.world.urbanization||"소도시")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label>${t("마을 평판","마을 평판")}<select data-world-reputation>${["알려지지 않음","조용하고 평화로움","살기 좋음","관광지로 유명함","기회의 도시","위험하다는 소문","폐쇄적인 곳","화려하고 번화함","역사가 깊음"].map(value=>`<option ${value===(state.world.reputation||"알려지지 않음")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label>${t("마을 시대","마을 시대")}<select data-world-era><option value="modern" ${state.world.era!=="medieval"?"selected":""}>${t("현대","현대")}</option><option value="medieval" ${state.world.era==="medieval"?"selected":""}>${t("중세","중세")}</option></select></label><label>${t("마을 사진","마을 사진")}<span class="town-photo-actions"><button type="button" data-town-photo>${state.world.photo?t("사진 변경","사진 변경"):t("사진 추가","사진 추가")}</button>${state.world.photo?`<button type="button" data-clear-town-photo>${t("지우기","지우기")}</button>`:""}</span></label></div><label>${t("마을 소개","마을 소개")}<textarea data-world-description rows="3">${esc(state.world.description||"")}</textarea></label></div>`:panelType==="info"?townInfo:panelType==="buildings"?`<div class="town-general-editor town-building-start"><p>${t("건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.","건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.")}</p><button data-add-place>+ ${t("건물 추가","건물 추가")}</button></div>`:panelType==="decorations"?`<div class="town-general-editor town-decoration-editor">${decorationCatalog}</div>`:"";
   const placeEditors=mobileTownMode==="buildings"&&selectedPlace?townPlaceEditor(selectedPlace,items,audiences,true):mobileTownMode==="buildings"&&selectedHome?townHomeEditor(selectedHome,true):"";
   const selectedBuildingName=selectedPlace?.name||selectedHome?.name||t("건물 편집","건물 편집");
-  const editorPanel=panelType==="buildings"?townBuildingBrowser(character):["place","home"].includes(panelType)?townBuildingDetailScreen(character,selectedPlace,selectedHome,items,audiences):panelType?`<aside class="panel form town-editor-panel"><div class="mobile-town-sheet-head"><span><small>${panelType==="world"?"TOWN SETTINGS":panelType==="info"?"TOWN INFO":"TOWN DECORATIONS"}</small><b>${panelType==="world"?t("마을 정보 편집","마을 정보 편집"):panelType==="info"?esc(state.world.name):t("마을 장식","마을 장식")}</b></span><button type="button" data-mobile-town-close aria-label="${esc(t("편집 창 닫기","편집 창 닫기"))}">×</button></div>${generalEditor}</aside>`:"";
-  return `<section class="mobile-town-shell ${mobileTownMode?`${mobileTownMode}-editing`:""} ${panelType?`sheet-open ${panelType}-panel`:""}" data-town-mode="${mobileTownMode}" data-town-id="${esc(state.activeTownId)}" style="${homeUiThemeStyle(character||active())}">${desktopTabs}${townHeader}${townSwitcher}<div class="town-edit"><div class="town-map-scroll"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${townHomes().map(homeMapCard).join("")}${townDecorationsMarkup()}${state.world.places.map(peopleAtPlaceCard).join("")}${townHomes().map(peopleAtHomeCard).join("")}</div></div>${editorPanel}</div>${townPlacementToolbar()}${buildingDetailDialogs()}</section>`;
+  const editorPanel=panelType==="world"?townInformationScreen(character):panelType==="buildings"?townBuildingBrowser(character):["place","home"].includes(panelType)?townBuildingDetailScreen(character,selectedPlace,selectedHome,items,audiences):panelType?`<aside class="panel form town-editor-panel"><div class="mobile-town-sheet-head"><span><small>${panelType==="info"?"TOWN INFO":"TOWN DECORATIONS"}</small><b>${panelType==="info"?esc(state.world.name):t("마을 장식","마을 장식")}</b></span><button type="button" data-mobile-town-close aria-label="${esc(t("편집 창 닫기","편집 창 닫기"))}">×</button></div>${generalEditor}</aside>`:"";
+  return `<section class="mobile-town-shell ${mobileTownMode?`${mobileTownMode}-editing`:""} ${panelType?`sheet-open ${panelType}-panel`:""}" data-town-mode="${mobileTownMode}" data-town-id="${esc(state.activeTownId)}" style="${homeUiThemeStyle(character||active())}">${desktopTabs}${townHeader}${townSwitcher}<div class="town-edit"><div class="town-map-scroll"><div class="world"><img src="${state.world.bg}" class="world-bg">${state.world.places.map(placeCard).join("")}${townHomes().map(homeMapCard).join("")}${townDecorationsMarkup()}${state.world.places.map(peopleAtPlaceCard).join("")}${townHomes().map(peopleAtHomeCard).join("")}</div></div></div>${editorPanel}${townPlacementToolbar()}${buildingDetailDialogs()}</section>`;
 }
 Object.assign(UI_TEXT.en,{
-  "마을 이동":"Switch town","현재 마을":"Current town","이 마을로 이동":"Go to this town","마을 추가":"Add town","현재 마을 삭제":"Delete current town","마을 정보 편집":"Edit town information","도시화 정도":"Urbanization","마을 평판":"Town reputation","마을 사진":"Town photo","마을 소개":"Town description","장식 검색":"Search decorations","장식 유형":"Decoration categories","전체":"All","휴식":"Seating","조명":"Lighting","자연":"Nature","시설":"Facilities","조형물":"Sculptures","건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.":"Tap a building to edit it, or drag it directly on the grid.",
+  "마을 이동":"Switch town","현재 마을":"Current town","이 마을로 이동":"Go to this town","마을 추가":"Add town","현재 마을 삭제":"Delete current town","마을 정보 편집":"Edit town information","마을 유형":"Town type","마을 밀집도":"Town density","도시화 정도":"Urbanization","마을 평판":"Town reputation","마을 규모":"Town size","마을 지형·기후":"Terrain · climate","마을 사진":"Town photo","마을 사진 바꾸기":"Change town photo","마을 소개":"Town description","이 마을의 분위기와 특징을 적어 주세요.":"Describe the atmosphere and defining features of this town.","장식 검색":"Search decorations","장식 유형":"Decoration categories","전체":"All","휴식":"Seating","조명":"Lighting","자연":"Nature","시설":"Facilities","조형물":"Sculptures","건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.":"Tap a building to edit it, or drag it directly on the grid.",
+  "생활 중심 마을":"Everyday-life town","주거 중심 마을":"Residential town","상업 중심 마을":"Commercial town","관광 마을":"Tourist town","산업 도시":"Industrial city","학원 도시":"Academic city","휴양 마을":"Resort town","매우 한적함":"Very secluded","한적함":"Secluded","여유로움":"Uncrowded","보통":"Moderate","붐빔":"Busy","매우 붐빔":"Very busy","작은 정착지":"Small settlement","작은 마을":"Small village","보통 마을":"Medium town","큰 마을":"Large town","광역 도시":"Metropolitan city","평야·온대":"Plains · temperate","해안·해양성":"Coastal · maritime","산지·서늘함":"Mountain · cool","분지·온난함":"Basin · mild","사막·건조":"Desert · dry","설원·한랭":"Snowfield · cold","열대·다우":"Tropical · rainy",
   "외딴 정착지":"Remote settlement","한적한 시골":"Quiet countryside","마을":"Village","소도시":"Small town","중소 도시":"Regional city","대도시":"Large city","초고밀도 도시":"High-density metropolis","알려지지 않음":"Unknown","조용하고 평화로움":"Quiet and peaceful","살기 좋음":"A good place to live","관광지로 유명함":"Known as a tourist destination","기회의 도시":"A city of opportunity","위험하다는 소문":"Rumored to be dangerous","폐쇄적인 곳":"Known to be insular","화려하고 번화함":"Vibrant and bustling","역사가 깊음":"Rich in history"
 });
 Object.assign(UI_TEXT.ja,{
-  "마을 이동":"村を移動","현재 마을":"現在の村","이 마을로 이동":"この村へ移動","마을 추가":"村を追加","현재 마을 삭제":"現在の村を削除","마을 정보 편집":"村情報を編集","도시화 정도":"都市化の程度","마을 평판":"村の評判","마을 사진":"村の写真","마을 소개":"村の紹介","장식 검색":"装飾を検索","장식 유형":"装飾カテゴリ","전체":"すべて","휴식":"休憩","조명":"照明","자연":"自然","시설":"設備","조형물":"造形物","건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.":"建物をタップして設定するか、グリッド上でそのまま移動できます。",
+  "마을 이동":"村を移動","현재 마을":"現在の村","이 마을로 이동":"この村へ移動","마을 추가":"村を追加","현재 마을 삭제":"現在の村を削除","마을 정보 편집":"村情報を編集","마을 유형":"村の種類","마을 밀집도":"村の密集度","도시화 정도":"都市化の程度","마을 평판":"村の評判","마을 규모":"村の規模","마을 지형·기후":"地形・気候","마을 사진":"村の写真","마을 사진 바꾸기":"村の写真を変更","마을 소개":"村の紹介","이 마을의 분위기와 특징을 적어 주세요.":"この村の雰囲気や特徴を書いてください。","장식 검색":"装飾を検索","장식 유형":"装飾カテゴリ","전체":"すべて","휴식":"休憩","조명":"照明","자연":"自然","시설":"設備","조형물":"造形物","건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.":"建物をタップして設定するか、グリッド上でそのまま移動できます。",
+  "생활 중심 마을":"暮らし中心の村","주거 중심 마을":"住宅中心の村","상업 중심 마을":"商業中心の村","관광 마을":"観光の村","산업 도시":"産業都市","학원 도시":"学園都市","휴양 마을":"保養の村","매우 한적함":"とても静か","한적함":"静か","여유로움":"ゆったり","보통":"普通","붐빔":"混雑","매우 붐빔":"とても混雑","작은 정착지":"小さな集落","작은 마을":"小さな村","보통 마을":"中規模の村","큰 마을":"大きな村","광역 도시":"広域都市","평야·온대":"平野・温帯","해안·해양성":"海岸・海洋性","산지·서늘함":"山地・冷涼","분지·온난함":"盆地・温暖","사막·건조":"砂漠・乾燥","설원·한랭":"雪原・寒冷","열대·다우":"熱帯・多雨",
   "외딴 정착지":"人里離れた集落","한적한 시골":"静かな田舎","마을":"村","소도시":"小都市","중소 도시":"地方都市","대도시":"大都市","초고밀도 도시":"超高密度都市","알려지지 않음":"知られていない","조용하고 평화로움":"静かで平和","살기 좋음":"暮らしやすい","관광지로 유명함":"観光地として有名","기회의 도시":"機会の街","위험하다는 소문":"危険だという噂","폐쇄적인 곳":"閉鎖的な場所","화려하고 번화함":"華やかで賑やか","역사가 깊음":"歴史が深い"
 });
 Object.assign(UI_TEXT.en,{
