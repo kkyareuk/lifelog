@@ -15,7 +15,7 @@ function filesUnder(directory){
 
 const preparedFiles=filesUnder(wwwRoot);
 const required=[
-  "index.html","app.css","character-book.css","app.js","views.js","state.js","simulation.js","auth.js",
+  "index.html","app.css","character-book.css","shop.css","app.js","views.js","state.js","simulation.js","auth.js",
   "icons/drawer-village-logo.png","assets/character-ui/paper.webp",
   "assets/character-ui/wallet.png","world-assets/cozy-town-optimized.jpg","fonts/KCC-Hanbit.ttf"
 ];

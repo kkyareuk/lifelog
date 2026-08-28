@@ -67,7 +67,7 @@ const checks=[
   [state.includes('medications:[]')&&state.includes('normalizeMedications')&&views.includes('data-body-medication-action="add"')&&views.includes('data-body-medication-field="purpose"'),"복용약 추가·제거와 목적·주기 상세 설정"],
   [app.includes('function chooseCharacterImageSource(')&&app.includes('data-image-source="device"')&&app.includes('data-image-source="link"'),"사진 슬롯마다 기기 업로드·링크 추가 방식 선택"],
   [views.includes('서사·인지 특성 선택사항')&&views.includes('실제 장면에 반영할 표현')&&bookCss.includes('.personality-detail-actions'),"성격 9쪽의 서사·인지와 장면 표현 큰 선택 버튼"],
-  [gradle.includes('versionCode 178')&&gradle.includes('versionName "1.0.165"'),"Android 개발 버전 178 / 1.0.165"]
+  [gradle.includes('versionCode 179')&&gradle.includes('versionName "1.0.166"'),"Android 개발 버전 178 / 1.0.165"]
 ];
 
 let failed=0;

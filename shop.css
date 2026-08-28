@@ -1,0 +1,170 @@
+/* SVG-reference shop: the supplied 412×917 artwork is kept as a lightweight
+   raster plate while real Play Billing controls remain accessible HTML. */
+html[data-active-tab="shop"]:has(.drawer-shop-shell),
+html[data-active-tab="shop"]:has(.drawer-shop-shell) body,
+html[data-active-tab="shop"]:has(.drawer-shop-shell) #app,
+html[data-active-tab="shop"]:has(.drawer-shop-shell) #app>main{
+  width:100%;
+  height:100%;
+  min-height:100%;
+  margin:0;
+  overflow:hidden;
+  background:#1c0b03;
+}
+html[data-active-tab="shop"]:has(.drawer-shop-shell) body>header,
+html[data-active-tab="shop"]:has(.drawer-shop-shell) #app>header,
+html[data-active-tab="shop"]:has(.drawer-shop-shell) .native-sub-header,
+html[data-active-tab="shop"]:has(.drawer-shop-shell) .site-footer{display:none!important}
+html[data-active-tab="shop"]:has(.drawer-shop-shell) #app>main{display:grid;place-items:start center;padding:0!important}
+.drawer-shop-shell{
+  display:grid;
+  width:100%;
+  height:100%;
+  place-items:start center;
+  background:#1c0b03;
+  color:#fff;
+}
+.drawer-shop-stage{
+  position:relative;
+  width:min(100vw,calc(100dvh * 412 / 917));
+  height:min(100dvh,calc(100vw * 917 / 412));
+  min-height:0;
+  overflow:hidden;
+  background:#1c0b03;
+  isolation:isolate;
+}
+.drawer-shop-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;display:block;z-index:0}
+.drawer-shop-hit{
+  position:absolute;
+  z-index:3;
+  border:0;
+  background:transparent;
+  color:transparent;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.drawer-shop-back{left:5.1%;top:4.8%;width:14.9%;height:6.7%;border-radius:50%!important;background:transparent!important;box-shadow:none!important;padding:0!important}
+.drawer-shop-tab{
+  top:28.95%;
+  width:21.1%;
+  height:5.75%;
+  border:1px solid #050302;
+  border-radius:13px;
+  display:grid;
+  place-items:center;
+  padding:2px 5px;
+  background:#5d5651!important;
+  color:#fff!important;
+  font-family:var(--font-ui);
+  font-size:clamp(13px,4.6vw,19px);
+  font-weight:900;
+  line-height:1.02;
+  text-align:center;
+  text-shadow:-1px -1px 0 #111,1px -1px 0 #111,-1px 1px 0 #111,1px 1px 0 #111;
+}
+.drawer-shop-tab[data-drawer-shop-tab="bundle"]{left:2.7%}
+.drawer-shop-tab[data-drawer-shop-tab="base"]{left:26.7%}
+.drawer-shop-tab[data-drawer-shop-tab="skin"]{left:50.8%}
+.drawer-shop-tab[data-drawer-shop-tab="expansion"]{left:76.3%}
+.drawer-shop-stage[data-shop-section="bundle"] .drawer-shop-tab[data-drawer-shop-tab="bundle"],
+.drawer-shop-stage[data-shop-section="base"] .drawer-shop-tab[data-drawer-shop-tab="base"],
+.drawer-shop-stage[data-shop-section="skin"] .drawer-shop-tab[data-drawer-shop-tab="skin"],
+.drawer-shop-stage[data-shop-section="expansion"] .drawer-shop-tab[data-drawer-shop-tab="expansion"]{
+  background:#fdcb4d!important;
+  color:#fff8dc!important;
+}
+.drawer-shop-purchase{
+  position:absolute;
+  z-index:4;
+  display:grid;
+  place-items:center;
+  border:0;
+  border-radius:13px;
+  padding:0 5px;
+  background:linear-gradient(180deg,#ffd65b 0%,#e6a824 55%,#ad6818 100%)!important;
+  box-shadow:inset 0 1px 0 #fff0a8,0 3px 7px #05020066;
+  color:#fff;
+  font-family:var(--font-ui);
+  font-size:clamp(17px,5vw,22px);
+  font-weight:900;
+  line-height:1;
+  text-shadow:-1px -1px 0 #15100c,1px -1px 0 #15100c,-1px 1px 0 #15100c,1px 1px 0 #15100c;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.drawer-shop-purchase:disabled{cursor:wait;filter:saturate(.7);opacity:1!important}
+.drawer-shop-purchase[data-purchase-state="unavailable"]{cursor:not-allowed;filter:grayscale(.85);opacity:.82}
+.drawer-shop-purchase span{pointer-events:none;color:inherit!important;-webkit-text-fill-color:currentColor!important}
+.drawer-shop-buy-left{left:9.95%;top:54.63%;width:33.25%;height:4.65%}
+.drawer-shop-buy-right{left:56.55%;top:54.63%;width:33.25%;height:4.65%}
+.drawer-shop-buy-bundle{left:60.2%;top:49.3%;width:30%;height:4.8%}
+.drawer-shop-sr{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  padding:0!important;
+  margin:-1px!important;
+  overflow:hidden!important;
+  clip:rect(0,0,0,0)!important;
+  white-space:nowrap!important;
+  border:0!important;
+}
+.drawer-shop-bundle-copy{
+  position:absolute;
+  z-index:3;
+  top:58.2%;
+  left:6%;
+  width:88%;
+  margin:0;
+  color:#f3d5a5!important;
+  -webkit-text-fill-color:#f3d5a5!important;
+  font-size:clamp(10px,2.9vw,13px);
+  font-weight:800;
+  line-height:1.45;
+  text-align:center;
+}
+.drawer-shop-restore{
+  position:absolute;
+  z-index:4;
+  left:27%;
+  bottom:2.4%;
+  width:46%;
+  min-height:34px;
+  border:1px solid #e7be84;
+  border-radius:999px;
+  background:#3e2517e6;
+  color:#f6dfb8;
+  font-family:var(--font-ui);
+  font-weight:900;
+}
+.drawer-shop-coming{
+  position:absolute;
+  z-index:2;
+  left:4%;
+  right:4%;
+  top:37%;
+  min-height:22%;
+  display:grid;
+  place-content:center;
+  gap:8px;
+  border:2px solid #e7be84;
+  border-radius:14px;
+  padding:24px;
+  background:radial-gradient(circle at 50% 0,#73492788,transparent 65%),#210d05f2;
+  color:#f4dcb7;
+  text-align:center;
+}
+.drawer-shop-coming b{font-size:clamp(22px,7vw,30px);color:#fff6e8!important;-webkit-text-fill-color:#fff6e8!important}
+.drawer-shop-coming span{font-size:13px;color:#e7be84!important;-webkit-text-fill-color:#e7be84!important}
+.drawer-shop-stage:not([data-shop-section="skin"]):not([data-shop-section="expansion"]) .drawer-shop-coming{display:none}
+.drawer-shop-stage:not([data-shop-section="bundle"]) .drawer-shop-bundle-copy,
+.drawer-shop-stage:not([data-shop-section="bundle"]) .drawer-shop-buy-bundle{display:none}
+.drawer-shop-stage:not([data-shop-section="base"]) :is(.drawer-shop-buy-left,.drawer-shop-buy-right){display:none}
+@media(min-width:700px) and (orientation:landscape){
+  .drawer-shop-stage{height:100dvh;width:calc(100dvh * 412 / 917)}
+  .drawer-shop-tab{font-size:min(2.1vh,19px)}
+  .drawer-shop-purchase{font-size:min(2.35vh,22px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .drawer-shop-purchase,.drawer-shop-tab{transition:none!important}
+}

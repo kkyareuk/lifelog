@@ -94,7 +94,10 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             @Override
             public void onBillingSetupFinished(@NonNull BillingResult result) {
                 if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) action.run();
-                else call.reject(billingError("결제 서비스에 연결하지 못했습니다.", result), String.valueOf(result.getResponseCode()));
+                else {
+                    if (pendingPurchaseCall == call) pendingPurchaseCall = null;
+                    call.reject(billingError("결제 서비스에 연결하지 못했습니다.", result), String.valueOf(result.getResponseCode()));
+                }
             }
 
             @Override
@@ -190,6 +193,11 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
             call.reject("구매할 Google Play 상품 ID가 없습니다.");
             return;
         }
+        if (pendingPurchaseCall != null) {
+            call.reject("이미 다른 결제를 진행하고 있습니다.", "PURCHASE_IN_PROGRESS");
+            return;
+        }
+        pendingPurchaseCall = call;
         withBilling(call, () -> {
             QueryProductDetailsParams.Product query = QueryProductDetailsParams.Product.newBuilder()
                 .setProductId(productId)
@@ -199,10 +207,12 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
                 QueryProductDetailsParams.newBuilder().setProductList(Collections.singletonList(query)).build(),
                 (result, queryResult) -> {
                     if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                        pendingPurchaseCall = null;
                         call.reject(billingError("상품을 불러오지 못했습니다.", result), String.valueOf(result.getResponseCode()));
                         return;
                     }
                     if (queryResult.getProductDetailsList().isEmpty()) {
+                        pendingPurchaseCall = null;
                         call.reject(unavailableProductMessage(queryResult.getUnfetchedProductList()), "PRODUCT_UNAVAILABLE");
                         return;
                     }
@@ -211,11 +221,11 @@ public class PlayBillingPlugin extends Plugin implements PurchasesUpdatedListene
                         .setProductDetails(details);
                     List<ProductDetails.OneTimePurchaseOfferDetails> offers = details.getOneTimePurchaseOfferDetailsList();
                     if (offers == null || offers.isEmpty()) {
+                        pendingPurchaseCall = null;
                         call.reject("이 계정에서 구매할 수 있는 가격 정보가 없습니다.", "NO_ELIGIBLE_OFFER");
                         return;
                     }
                     if (offers.get(0).getOfferToken() != null) detailParams.setOfferToken(offers.get(0).getOfferToken());
-                    pendingPurchaseCall = call;
                     Activity activity = getActivity();
                     activity.runOnUiThread(() -> {
                         BillingResult launch = billingClient.launchBillingFlow(

@@ -1,12 +1,12 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828town178b";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260828town178b";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828town178b";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828town178b";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260828town178b";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_TERRAINS,TOWN_TRANSPORTS,townIllustrationsFor} from "./town-profile.js?v=20260828town178b";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828shop179";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260828shop179";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828shop179";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828shop179";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260828shop179";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_TERRAINS,TOWN_TRANSPORTS,townIllustrationsFor} from "./town-profile.js?v=20260828shop179";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -794,6 +794,7 @@ let mobileTownMode="";
 let mobileTownPanel="";
 let mobileTownPlacement=null;
 let settingsPane="home";
+let nativeShopSection="base";
 export function setMobileTownMode(value=""){
   const next=["town","buildings","decorations"].includes(String(value||""))?String(value):"";
   mobileTownMode=next;
@@ -805,6 +806,10 @@ export function setMobileTownPlacement(kind="",id=""){mobileTownPlacement=kind&&
 export function setSettingsPane(value="home"){
   const next=String(value||"home");
   settingsPane=["home","gameplay","sound","notifications","display","account","support"].includes(next)?next:"home";
+}
+export function setNativeShopSection(value="base"){
+  const next=String(value||"base");
+  nativeShopSection=["bundle","base","skin","expansion"].includes(next)?next:"base";
 }
 function gameHudSideMenu(side,character){
   return `<nav class="game-hud-side game-hud-side-${side}" aria-label="${esc(t(side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴",side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴"))}">${GAME_HUD_SIDE_TABS[side].map(({key,labelKey,label,asset,icon})=>`<button type="button" class="game-hud-button" data-tab="${key}">${asset?`<img class="game-hud-menu-art" src="${esc(homeUiAsset(character,asset))}" alt="">`:`<span data-menu-icon="${key}" aria-hidden="true">${icon}</span>`}<small><span>${gameHudLabel(labelKey,label)}</span></small></button>`).join("")}</nav>`;
@@ -4070,6 +4075,7 @@ export function setAccountEntitlements(value){accountEntitlements={backgroundPac
 
 const CART_KEY="drawer-village-cart";
 const SHOP_PRODUCTS={
+  open_celebration_bundle:{label:"오픈 기념",title:"오픈 축하 패키지",description:"캐릭터 슬롯 10명, 마을 슬롯 2개, 사진 저장 공간 50MB와 응원 선물 1개를 한 번에 받는 영구 패키지입니다.",price:12000},
   character_slots_5:{label:"캐릭터 슬롯",title:"캐릭터 5명 추가",description:"캐릭터 슬롯 5개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.",price:1200},
   town_slot_1:{label:"마을 슬롯",title:"마을 1개 추가",description:"마을 슬롯 1개가 결제 즉시 계정에 영구 적용됩니다. 결제일부터 최소 6개월간 이용을 보장하며, 이후에도 서비스 운영 기간 동안 유지됩니다.",price:1900},
   storage_50mb:{label:"사진 저장 공간",title:"사진 저장 공간 50MB 추가",description:"구매하면 계정의 사진 저장 공간이 50MB로 늘어납니다.",price:2900},
@@ -4081,16 +4087,21 @@ const shopProductBadge=(id,item)=>id==="character_slots_5"
 const jobExpansionCard=()=>`<section class="shop-coming shop-expansion-showcase" data-product-id="job_expansion"><div class="expansion-art"><img src="./shop-assets/resume-expansion.png" alt="이력서를 제출해요 확장팩 이미지"></div><div class="expansion-copy"><span>확장팩 · 출시 준비 중</span><small>직업 확장팩</small><h2>이력서를 제출해요</h2><p>기존 직업에 더 세밀한 위계와 직급, 직장 내 관계, 실제 근무 장소와 구체적인 근무 내용을 더합니다. 상사와 부하 직원, 동료 사이의 역할과 업무 흐름이 생활 장면과 주간 일정에 이어지는 대규모 직업 확장팩이에요.</p><ul><li>직업별 위계·직급과 승진 흐름</li><li>상사·동료·부하 직원의 직장 내 관계</li><li>근무 장소·부서·담당 업무와 전용 생활 장면</li></ul><div><b>가격 미정</b><button type="button" disabled>출시 준비 중</button></div></div></section>`;
 const readCart=()=>{try{const value=JSON.parse(localStorage.getItem(CART_KEY)||"{}");return value&&typeof value==="object"?value:{}}catch{return {}}};
 function nativePlayShop(){
-  const products=Object.entries(SHOP_PRODUCTS).map(([id,item])=>{
-    const owned=id==="character_slots_5"?Number(accountEntitlements.characterSlotPacks)||0:id==="town_slot_1"?Number(accountEntitlements.townSlotPacks)||0:id==="storage_50mb"&&accountEntitlements.storage50?1:0;
-    const unavailable=id==="storage_50mb"&&owned;
-    const purchaseButton=unavailable?`<button class="premium-buy" disabled>이미 적용 중</button>`:`<button class="primary premium-buy" data-play-purchase="${id}" disabled>구매 정보 확인 중</button>`;
-    return `<article class="premium-product one-time-product" data-product-id="${id}"><div class="premium-product-heading">${shopProductBadge(id,item)}<div><small>${item.label}</small><h2>${item.title}</h2></div><b data-play-price="${id}">가격 불러오는 중</b></div><p>${item.description}</p>${owned?`<div class="premium-current"><b>${id==="storage_50mb"?"50MB 적용 중":`${owned}회 구매 · 현재 적용 중`}</b></div>`:""}${purchaseButton}</article>`;
-  }).join("");
-  return `<section class="panel form dlc-store shop-store native-play-store"><div class="title"><div><h1>상점</h1><p>원하는 상품을 골라 구매할 수 있어요.</p></div></div><section class="preview-notice play-billing-notice"><b>안전한 결제</b><p>구매가 확인된 뒤 선택한 상품이 계정에 바로 적용됩니다.</p></section><div class="shop-product-grid">${products}</div><div class="shop-expansion-heading"><small>COMING NEXT</small><h2>확장팩</h2></div>${jobExpansionCard()}<section class="shop-coming native-purchase-restore"><h2>구매 내역 복원</h2><p>이미 구매했는데 상품이 보이지 않을 때 확인해 주세요.</p><button data-play-restore>구매 내역 확인</button></section></section>`;
+  const language=state.uiLanguage||"ko";
+  const copies={
+    ko:{back:"메인으로 돌아가기",bundle:"번들",base:"기본상점",skin:"스킨상점",expansion:"확장팩상점",checking:"상품 확인 중",restore:"구매 내역 복원",bundleContents:"구성: 캐릭터 슬롯 +10 · 마을 슬롯 +2 · 사진 저장 50MB · 응원 선물 1개",skinSoon:"스킨 상점 준비 중",expansionSoon:"확장팩 상점 준비 중",soonDetail:"새 상품이 준비되면 이곳에서 확인할 수 있어요."},
+    en:{back:"Back to home",bundle:"Bundles",base:"Base shop",skin:"Skins",expansion:"Expansions",checking:"Checking product",restore:"Restore purchases",bundleContents:"Includes: +10 character slots · +2 town slots · 50MB photo storage · 1 support gift",skinSoon:"Skin shop coming soon",expansionSoon:"Expansion shop coming soon",soonDetail:"New products will appear here when they are ready."},
+    ja:{back:"メインへ戻る",bundle:"バンドル",base:"基本ショップ",skin:"スキン",expansion:"拡張パック",checking:"商品を確認中",restore:"購入を復元",bundleContents:"内容：キャラクター枠+10・村枠+2・写真保存50MB・応援ギフト1個",skinSoon:"スキンショップ準備中",expansionSoon:"拡張パック準備中",soonDetail:"新しい商品はこちらに表示されます。"}
+  };
+  const copy=copies[language]||copies.ko;
+  const section=nativeShopSection;
+  const artwork=section==="bundle"?"./assets/shop/drawer-shop-bundle.png":"./assets/shop/drawer-shop-base.png";
+  const tab=(key,label)=>`<button type="button" class="drawer-shop-hit drawer-shop-tab" data-drawer-shop-tab="${key}" aria-pressed="${section===key}">${esc(label)}</button>`;
+  const buy=(id,className,fallback)=>`<button type="button" class="drawer-shop-purchase ${className}" data-play-purchase="${id}" data-purchase-state="checking" disabled aria-label="${esc(SHOP_PRODUCTS[id].title)} · ${esc(copy.checking)}"><span data-play-price="${id}">${fallback}</span><small class="drawer-shop-sr" data-play-label>${esc(copy.checking)}</small></button>`;
+  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><img class="drawer-shop-art" src="${artwork}" alt=""><button type="button" class="drawer-shop-hit drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"></button>${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}${buy("character_slots_5","drawer-shop-buy-left","₩1,200")}${buy("character_slots_5","drawer-shop-buy-right","₩1,200")}${buy("open_celebration_bundle","drawer-shop-buy-bundle","₩12,000")}<p class="drawer-shop-bundle-copy">${esc(copy.bundleContents)}</p><div class="drawer-shop-coming" role="status"><b>${esc(section==="skin"?copy.skinSoon:copy.expansionSoon)}</b><span>${esc(copy.soonDetail)}</span></div><button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button></div></section>`;
 }
 function shop(){
-  if(window.PARALLEL_CITY_CONFIG?.nativeApp)return nativePlayShop();
+  if(window.PARALLEL_CITY_CONFIG?.nativeApp||new URLSearchParams(location.search).has("native-preview"))return nativePlayShop();
   const cart=readCart();
   const lines=Object.entries(cart).filter(([id,qty])=>SHOP_PRODUCTS[id]&&!SHOP_PRODUCTS[id].disabled&&Number(qty)>0);
   const total=lines.reduce((sum,[id,qty])=>sum+SHOP_PRODUCTS[id].price*Number(qty),0);

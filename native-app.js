@@ -24,6 +24,7 @@ if(isNative){
   const productIds=()=>Object.values(playConfig().products||{}).filter(Boolean);
   const consumableProducts=new Set(["character_slots_5","town_slot_1","green_tea"]);
   const pendingPurchaseKey="drawer-village.pending-play-purchases.v1";
+  let purchaseInFlight=false;
 
   // Google Play 결제 직후 서버 확인이 잠시 실패해도 영수증 토큰을 잃지
   // 않는다. 이 값만으로는 상품을 지급하지 않고, 서버 검증 재시도에만 쓴다.
@@ -125,29 +126,35 @@ if(isNative){
   };
 
   const purchase=async productId=>{
+    if(purchaseInFlight)throw new Error("이미 다른 결제를 진행하고 있습니다.");
     requireBilling();
     if(!window.ParallelCityAuth?.getInfo?.().user)throw new Error("Google 로그인 후 구매해 주세요.");
+    purchaseInFlight=true;
     const storeProductId=playConfig().products?.[productId]||productId;
-    let purchaseResult;
     try{
-      purchaseResult=await PlayBilling.purchase({productId:storeProductId});
-    }catch(error){
-      if(String(error?.code||"")==="7"){
-        const restored=await restorePurchases();
-        if(restored.restored)return {restored:true};
+      let purchaseResult;
+      try{
+        purchaseResult=await PlayBilling.purchase({productId:storeProductId});
+      }catch(error){
+        if(String(error?.code||"")==="7"){
+          const restored=await restorePurchases();
+          if(restored.restored)return {restored:true};
+        }
+        throw error;
       }
-      throw error;
+      if(Number(purchaseResult?.purchaseState)!==1){
+        if(Number(purchaseResult?.purchaseState)===2)throw new Error("결제가 보류 중입니다. Google Play에서 완료한 뒤 다시 확인해 주세요.");
+        throw new Error("결제가 완료되지 않았습니다.");
+      }
+      rememberPurchase(purchaseResult,storeProductId);
+      const verification=await verifyPurchase({...purchaseResult,products:[storeProductId]});
+      if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
+      forgetPurchase(purchaseResult.purchaseToken);
+      await window.ParallelCityAuth?.download?.({automatic:false});
+      return purchaseResult;
+    }finally{
+      purchaseInFlight=false;
     }
-    if(Number(purchaseResult?.purchaseState)!==1){
-      if(Number(purchaseResult?.purchaseState)===2)throw new Error("결제가 보류 중입니다. Google Play에서 완료한 뒤 다시 확인해 주세요.");
-      throw new Error("결제가 완료되지 않았습니다.");
-    }
-    rememberPurchase(purchaseResult,storeProductId);
-    const verification=await verifyPurchase({...purchaseResult,products:[storeProductId]});
-    if(!verification.purchaseFinished)await finishVerifiedPurchase(purchaseResult,productId);
-    forgetPurchase(purchaseResult.purchaseToken);
-    await window.ParallelCityAuth?.download?.({automatic:false});
-    return purchaseResult;
   };
 
   const restorePurchases=async()=>{

@@ -36,6 +36,7 @@
     "test:hotfix-schedule-deletion": "node scripts/check-schedule-deletion-sync.mjs",
     "test:town-grid": "node scripts/check-town-grid-editor.mjs",
     "test:town-profile": "node scripts/check-town-profile-bugfixes.mjs",
+    "test:shop-billing": "node scripts/check-native-shop-billing.mjs",
     "test:reported-bugs": "node scripts/check-reported-bug-fixes.mjs"
   },
   "dependencies": {
