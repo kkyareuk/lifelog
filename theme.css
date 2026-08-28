@@ -171,8 +171,8 @@ html[data-color-mode][data-visual-theme].native-app .native-sub-header{
   box-shadow:0 10px 32px var(--theme-shadow)!important;
 }
 
-html[data-color-mode][data-visual-theme] header :is(h1,h2,h3,small,#save-state),
-html[data-color-mode][data-visual-theme] header .brand :is(h1,small){
+html[data-color-mode][data-visual-theme] body>header :is(h1,h2,h3,small,#save-state),
+html[data-color-mode][data-visual-theme] body>header .brand :is(h1,small){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }

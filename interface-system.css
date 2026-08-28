@@ -26,18 +26,18 @@ html[data-color-mode][data-visual-theme] .native-sub-header{
   color:var(--ink)!important;
   box-shadow:0 9px 28px var(--theme-shadow)!important;
 }
-html[data-color-mode][data-visual-theme] header :is(h1,h2,h3,b,small,#save-state),
+html[data-color-mode][data-visual-theme] body>header :is(h1,h2,h3,b,small,#save-state),
 html[data-color-mode][data-visual-theme] .native-sub-header :is(b,span){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] header nav button:not(.home-native-pill){
+html[data-color-mode][data-visual-theme] body>header nav button:not(.home-native-pill){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] header nav button:not(.home-native-pill):is(.on,:hover,:focus-visible),
+html[data-color-mode][data-visual-theme] body>header nav button:not(.home-native-pill):is(.on,:hover,:focus-visible),
 html[data-color-mode][data-visual-theme] button.primary,
 html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button):not(.character-pane-ribbon):not(.character-wallet-selected):not(.character-roster-entry):not(.character-full-tab):not(.character-overview-section-tab):not(.character-overview-next-bookmark):not(.home-native-pill),
 html[data-color-mode][data-visual-theme] [aria-pressed="true"]{

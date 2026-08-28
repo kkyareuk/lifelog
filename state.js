@@ -438,6 +438,7 @@ function normalizeHomes(x){
       if(["유사가족","가족","보호·피보호"].includes(originalType))relation.stage="유사가족 같은 동거인";
     }
     relation.interactions=Array.isArray(relation.interactions)?relation.interactions:[];
+    relation.tags=[...new Set((Array.isArray(relation.tags)?relation.tags:[]).map(tag=>String(tag||"").trim().replace(/^#+/,"").replace(/\s+/g," ").slice(0,30)).filter(Boolean))].slice(0,30);
     relation.interactionsAll=Boolean(relation.interactionsAll);
     relation.stayTogether=Boolean(relation.stayTogether);
     relation.temporalStatus=relation.temporalStatus==="past"?"past":"current";

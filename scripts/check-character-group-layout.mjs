@@ -27,7 +27,12 @@ const checks=[
   [css.includes('.official-relation-fields>[hidden]{display:none!important}')&&app.includes('f.querySelector(".official-fault").hidden=f.temporalStatus.value!=="past"'),"관계가 끝난 이유는 과거 관계에서만 표시"],
   [css.includes('@media(min-width:721px)')&&css.includes('max-width:1180px')&&css.includes('max-width:1100px'),"태블릿·넓은 화면에서 관계 무대와 목록을 화면 폭에 맞게 재배치"],
   [views.includes('relationship-motion-${relationshipMotion}')&&css.includes('@keyframes relationship-close-left')&&css.includes('@keyframes relationship-flash'),"관계 감정에 맞춘 캐릭터와 화면 효과"],
-  [views.includes('data-relationship-map-content')&&app.includes('content.dataset.loaded!=="1"')&&app.includes('relationshipMapMarkup()'),"무거운 관계도는 실제로 열 때만 생성"]
+  [views.includes('data-relationship-map-content')&&app.includes('content.dataset.loaded!=="1"')&&app.includes('relationshipMapMarkup(ids)'),"무거운 관계도는 실제로 열 때만 생성"],
+  [views.includes('data-relationship-map-scope')&&views.includes('data-relationship-map-character')&&app.includes('kind==="town"')&&app.includes('kind==="group"'),"관계도 표시 캐릭터를 전체·마을·그룹·개별 단위로 선택"],
+  [views.includes('legend:["강한 사랑"')&&views.includes('stroke-width="5"')&&!views.includes('class="map-official"')&&!views.includes('class="map-heart'),"관계도는 공식관계·요약 문구 없이 감정별 화살표 색과 범례만 표시"],
+  [app.includes('window.Capacitor?.Plugins?.ProfileExport')&&app.includes('document.body.append(link)')&&app.includes('서랍마을-인물관계도-'),"Android 네이티브와 브라우저에서 관계도 PNG 저장 지원"],
+  [app.includes('data-new-relation-tag')&&app.includes('data-add-relation-tag')&&!app.includes('const relationTagOptions='),"관계 태그를 정해진 목록이 아니라 사용자 직접 입력으로 생성"],
+  [css.includes('relationship-map-node')&&css.includes('overflow:visible')&&css.includes('object-fit:contain!important'),"관계도 캐릭터 아이콘 윗부분이 잘리지 않게 표시"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);

@@ -1,11 +1,11 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828relationship175";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260828relationship175";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828relationship175";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship175";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260828relationship175";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828relationship176";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260828relationship176";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828relationship176";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828relationship176";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260828relationship176";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -3039,8 +3039,9 @@ function relationshipReality(a,b,official=[]){
   if(official.some(relation=>relation.type==="동거인"))return"생활을 함께 나누는 사이";
   return official.length?"관계에 맞춰 지내는 사이":"서로를 알아가는 중";
 }
-function relationshipMap(relations){
-  let characters=state.order.map(id=>state.characters[id]).filter(Boolean);
+function relationshipMap(relations,characterIds=[]){
+  const requestedIds=Array.isArray(characterIds)?new Set(characterIds.map(String)):null;
+  let characters=state.order.map(id=>state.characters[id]).filter(character=>character&&(!requestedIds||!requestedIds.size||requestedIds.has(String(character.id))));
   if(characters.length<2)return"";
   if(characters.length===2){
     const ids=characters.map(character=>character.id);
@@ -3052,7 +3053,7 @@ function relationshipMap(relations){
   const positions=new Map(characters.map((character,index)=>{
     if(characters.length===2)return [character.id,{x:index===0?235:765,y:500}];
     const angle=(Math.PI*2*index/characters.length)-Math.PI/2;
-    return [character.id,{x:500+400*Math.cos(angle),y:500+400*Math.sin(angle)}];
+    return [character.id,{x:500+350*Math.cos(angle),y:500+350*Math.sin(angle)}];
   }));
   const emotionColor=value=>{
     const text=String(value||"");
@@ -3066,12 +3067,6 @@ function relationshipMap(relations){
     if(/존경|동경/.test(text))return"#4f77b8";
     return"#7d756d";
   };
-  const loveTier=value=>{
-    const text=String(value||"");
-    if(/없어서는 안 될|깊이 사랑|사랑함|애틋|강한 사랑/.test(text))return"strong";
-    if(/연애 감정|연심|끌림|싹틈|약한 사랑/.test(text))return"weak";
-    return"";
-  };
   const edges=[];
   for(let i=0;i<characters.length;i++)for(let j=i+1;j<characters.length;j++){
     const a=characters[i].id,b=characters[j].id;
@@ -3081,19 +3076,6 @@ function relationshipMap(relations){
   }
   if(!edges.length)return"";
   const viewLabel=(source,target)=>characterViewFor(source,target).overall;
-  const occupiedLabels=[];
-  const placeLabel=(x,y,nx,ny)=>{
-    let point={x,y};
-    for(let attempt=0;attempt<8;attempt++){
-      const hitsLabel=occupiedLabels.some(other=>Math.abs(other.x-point.x)<105&&Math.abs(other.y-point.y)<30);
-      const hitsNode=[...positions.values()].some(node=>Math.hypot(node.x-point.x,node.y-point.y)<82);
-      if(!hitsLabel&&!hitsNode)break;
-      const direction=attempt%2===0?1:-1,distance=(Math.floor(attempt/2)+1)*34;
-      point={x:Math.max(70,Math.min(930,x+nx*distance*direction)),y:Math.max(70,Math.min(930,y+ny*distance*direction))};
-    }
-    occupiedLabels.push(point);
-    return point;
-  };
   const lines=edges.map((edge,index)=>{
     const a=positions.get(edge.a),b=positions.get(edge.b);
     const forwardLabel=viewLabel(edge.a,edge.b),backwardLabel=viewLabel(edge.b,edge.a);
@@ -3114,27 +3096,22 @@ function relationshipMap(relations){
     const backward=curved?`M ${startB.x} ${startB.y} Q ${backwardControl.x} ${backwardControl.y} ${backwardBase.x} ${backwardBase.y}`:`M ${startB.x} ${startB.y} L ${backwardBase.x} ${backwardBase.y}`;
     const forwardArrow=`${endB.x},${endB.y} ${forwardBase.x+fn.x*arrowHalfWidth},${forwardBase.y+fn.y*arrowHalfWidth} ${forwardBase.x-fn.x*arrowHalfWidth},${forwardBase.y-fn.y*arrowHalfWidth}`;
     const backwardArrow=`${endA.x},${endA.y} ${backwardBase.x+bn.x*arrowHalfWidth},${backwardBase.y+bn.y*arrowHalfWidth} ${backwardBase.x-bn.x*arrowHalfWidth},${backwardBase.y-bn.y*arrowHalfWidth}`;
-    const pathPoint=(start,control,end)=>curved?{x:start.x*.25+control.x*.5+end.x*.25,y:start.y*.25+control.y*.5+end.y*.25}:{x:(start.x+end.x)/2,y:(start.y+end.y)/2};
-    const forwardHeart=pathPoint(startA,forwardControl,forwardBase),backwardHeart=pathPoint(startB,backwardControl,backwardBase);
-    const hearts=`${loveTier(forwardLabel)?`<text class="map-heart ${loveTier(forwardLabel)}" x="${forwardHeart.x}" y="${forwardHeart.y+7}" text-anchor="middle" style="fill:${forwardColor}">♥</text>`:""}${loveTier(backwardLabel)?`<text class="map-heart ${loveTier(backwardLabel)}" x="${backwardHeart.x}" y="${backwardHeart.y+7}" text-anchor="middle" style="fill:${backwardColor}">♥</text>`:""}`;
-    const compactMapLabel=(value,max)=>String(value||"").length>max?`${String(value).slice(0,max-1)}…`:String(value||"");
-    const relationText=compactMapLabel(edge.official.length?[...new Set(edge.official.map(currentOfficialLabel))].join(" · "):"이방인",14);
-    const stageText=compactMapLabel(relationshipReality(edge.a,edge.b,edge.official),19);
-    const labelOffset=curved?Math.min(128,bend*.58):58;
-    const officialPoint=placeLabel(midX+normalX*labelOffset,midY+normalY*labelOffset,normalX,normalY);
-    const boxWidth=Math.min(220,Math.max(100,(Math.max(relationText.length,stageText.length)*13)+24));
-    const officialMarkup=`<g class="map-official"><text class="map-relation" x="${officialPoint.x}" y="${officialPoint.y-5}" text-anchor="middle">${esc(relationText||"이방인")}</text><text class="map-stage" x="${officialPoint.x}" y="${officialPoint.y+14}" text-anchor="middle">${esc(stageText)}</text></g>`;
-    return `<g class="relationship-edge"><g class="map-arrows"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="3.5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/>${hearts}</g>${officialMarkup}</g>`;
+    return `<g class="relationship-edge"><g class="map-arrows"><path d="${forward}" fill="none" stroke="${forwardColor}" stroke-width="5" stroke-linecap="round"/><polygon points="${forwardArrow}" fill="${forwardColor}"/><path d="${backward}" fill="none" stroke="${backwardColor}" stroke-width="5" stroke-linecap="round"/><polygon points="${backwardArrow}" fill="${backwardColor}"/></g></g>`;
   }).join("");
-  const mapNodeSize=characters.length===2?180:136;
+  const mapNodeSize=characters.length===2?200:156;
   const nodes=characters.map(character=>{const pos=positions.get(character.id);return `<foreignObject x="${pos.x-mapNodeSize/2}" y="${pos.y-mapNodeSize/2}" width="${mapNodeSize}" height="${mapNodeSize}"><div xmlns="http://www.w3.org/1999/xhtml" class="relationship-map-node ${characters.length===2?"map-node-pair":""}">${avatar(character)}<b>${esc(character.name)}</b></div></foreignObject>`}).join("");
   return `<section class="relationship-map"><div class="relationship-map-scroll"><div class="relationship-map-canvas"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet">${lines}${nodes}</svg></div></div></section>`;
 }
-export function relationshipMapMarkup(){
-  return relationshipMap(Object.values(state.relationships||{}));
+export function relationshipMapMarkup(characterIds=[]){
+  return relationshipMap(Object.values(state.relationships||{}),characterIds);
 }
 function relationship(){
   const all=Object.values(state.relationships||{}),shownGroups=new Set(),copy=relationshipScreenCopy();
+  const mapCopy=({
+    en:{title:"Relationship map",hint:"Each arrow color shows how the character at its starting point feels about the character it points to.",scope:"Characters shown",all:"All characters",custom:"Custom selection",town:"Town",group:"Group",choose:"Choose characters",refresh:"Update map",save:"Save PNG",loading:"Preparing the map…",empty:"Choose at least two characters who have a relationship or viewpoint setting.",legend:["Strong love","Romantic interest","Friendly / positive","Trust / comfort","Respect / admiration","Guarded / annoyed","Fear","Hate / hostility","Neutral / undecided"]},
+    ja:{title:"人物関係図",hint:"矢印の色は、出発点の人物が相手に向ける感情を表します。",scope:"表示する人物",all:"すべての人物",custom:"個別選択",town:"タウン",group:"グループ",choose:"人物を選択",refresh:"関係図を更新",save:"PNGで保存",loading:"関係図を準備中…",empty:"関係または視線設定がある人物を2人以上選んでください。",legend:["強い愛","恋愛感情","友好・好意","信頼・安心","尊敬・憧れ","警戒・煩わしさ","恐れ","嫌悪・敵意","中立・未定"]},
+    ko:{title:"인물 관계도",hint:"화살표 색은 출발점의 캐릭터가 상대를 보는 감정을 나타냅니다.",scope:"표시할 캐릭터",all:"전체 캐릭터",custom:"개별 선택",town:"마을",group:"그룹",choose:"캐릭터 고르기",refresh:"관계도 갱신",save:"PNG로 저장",loading:"관계도를 준비하는 중이에요.",empty:"관계나 시선 설정이 있는 캐릭터를 두 명 이상 골라 주세요.",legend:["강한 사랑","연애 감정","친구·우호","신뢰·편안","존경·동경","경계·성가심","두려움","싫음·적의","중립·미정"]}
+  }[state.uiLanguage]||null)||null;
   const relationKind=relation=>relation.groupId?"groups":["부모·자녀","형제·자매","부부"].includes(relation.type)?"family":["연인","짝사랑"].includes(relation.type)?"romance":["혐관","라이벌","원수"].includes(relation.type)?"rivals":"friends";
   const cards=all.map(r=>{
     if(r.groupId){
@@ -3162,7 +3139,7 @@ function relationship(){
   return `<section class="panel form relationship-page relationship-redesign">${characterViewEditor()}
     <dialog class="official-relation-dialog relationship-fullscreen-dialog relationship-list-dialog" data-official-relation-dialog><form method="dialog"><header class="relationship-list-head"><button value="close" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><span><small>OFFICIAL RELATIONSHIPS</small><h2>${copy.officialTitle}</h2><p>${copy.officialHint}</p></span></header><div class="relationship-list-tools"><input type="search" data-relation-search placeholder="${copy.search}" aria-label="${copy.search}"><nav>${filterButtons("data-relation-filter")}</nav></div><div class="relationship-card-grid">${cards}<button type="button" data-add-rel class="relationship-list-create-card"><b>＋</b><span>${copy.addOfficial}</span></button><div class="empty-mini relationship-filter-empty" hidden><b>${copy.officialEmpty}</b></div></div></form></dialog>
     <dialog class="relationship-fullscreen-dialog relationship-list-dialog relationship-group-list-dialog" data-character-group-list-dialog><form method="dialog"><header class="relationship-list-head"><button value="close" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><span><small>CHARACTER GROUPS</small><h2>${copy.groupTitle}</h2><p>${copy.officialHint}</p></span></header><div class="relationship-list-tools"><input type="search" data-group-search placeholder="${copy.search}" aria-label="${copy.search}"><nav>${filterButtons("data-group-filter")}</nav></div><div class="relationship-group-card-list">${groupCards}<button type="button" data-add-character-group class="relationship-group-create-card"><b>＋</b><span>${copy.addGroup}</span></button><div class="empty-mini relationship-group-filter-empty" hidden><b>${copy.groupEmpty}</b></div></div></form></dialog>
-    <dialog class="relationship-map-dialog" data-relationship-map-dialog><form method="dialog"><div class="relationship-map-dialog-head"><span><small>RELATIONSHIP MAP</small><h2>인물 관계도</h2></span><button value="close" aria-label="닫기">×</button></div><p>화살표 색은 각 캐릭터가 상대를 보는 감정 방향을 나타냅니다. 사랑하는 감정의 화살표에는 하트가 표시돼요.</p><div class="relationship-color-legend"><span class="friendly">친구·우호</span><span class="romantic">약한 사랑</span><span class="love">강한 사랑</span></div><div class="relationship-map-actions"><button type="button" data-refresh-relationship-map>현재 설정으로 새로고침</button><button type="button" data-export-relationship-map>PNG로 저장</button></div><div data-relationship-map-content><div class="empty-mini">관계도를 여는 중이에요.</div></div></form></dialog>
+    <dialog class="relationship-map-dialog" data-relationship-map-dialog data-map-empty="${esc(mapCopy.empty)}"><form method="dialog"><div class="relationship-map-dialog-head"><span><small>RELATIONSHIP MAP</small><h2>${mapCopy.title}</h2></span><button value="close" aria-label="${copy.close}">×</button></div><p>${mapCopy.hint}</p><section class="relationship-map-filter"><label><b>${mapCopy.scope}</b><select data-relationship-map-scope><option value="all">${mapCopy.all}</option><option value="custom">${mapCopy.custom}</option>${state.towns.map(town=>`<option value="town:${esc(town.id)}">${mapCopy.town} · ${esc(town.name)}</option>`).join("")}${(state.characterGroups||[]).map(group=>`<option value="group:${esc(group.id)}">${mapCopy.group} · ${esc(group.name)}</option>`).join("")}</select></label><fieldset><legend>${mapCopy.choose}</legend><div class="relationship-map-character-list">${state.order.map(id=>{const character=state.characters[id];return character?`<button type="button" class="on" aria-pressed="true" data-relationship-map-character="${esc(id)}">${avatar(character)}<span>${esc(character.name)}</span></button>`:""}).join("")}</div></fieldset></section><div class="relationship-color-legend">${mapCopy.legend.map((label,index)=>`<span class="tone-${index}">${label}</span>`).join("")}</div><div class="relationship-map-actions"><button type="button" data-refresh-relationship-map>${mapCopy.refresh}</button><button type="button" data-export-relationship-map>${mapCopy.save}</button></div><div data-relationship-map-content><div class="empty-mini">${mapCopy.loading}</div></div></form></dialog>
   </section>`;
 }
 function routine(){
@@ -3766,6 +3743,8 @@ Object.assign(UI_TEXT.ja,{
   "천문학":"天文学","우주":"宇宙","의학":"医学","심리학":"心理学","철학":"哲学","정치":"政治","경제":"経済","법률":"法律","언어":"言語","외국어":"外国語","지도":"地図","지리":"地理","건축":"建築","영상 편집":"動画編集","소설":"小説","시":"詩",
   "베이킹":"お菓子作り","와인":"ワイン","원예":"園芸","자연":"自然","환경":"環境","러닝":"ランニング","헬스":"筋力トレーニング","요가":"ヨガ","e스포츠":"eスポーツ","보드게임":"ボードゲーム","퍼즐":"パズル","마술":"マジック","뜨개질":"編み物","재봉":"裁縫","목공":"木工","도예":"陶芸","수집":"収集","빈티지":"ヴィンテージ","전자기기":"電子機器","프로그래밍":"プログラミング","로봇":"ロボット","인공지능":"人工知能","오컬트":"オカルト","신화":"神話","종교":"宗教","범죄 사건":"犯罪事件","추리":"ミステリー","밀리터리":"ミリタリー","무기":"武器"
 });
+Object.assign(UI_TEXT.en,{"인물 관계도":"Relationship map","화살표 색은 출발점의 캐릭터가 상대를 보는 감정을 나타냅니다.":"Each arrow color shows how the character at its starting point feels about the character it points to.","표시할 캐릭터":"Characters shown","전체 캐릭터":"All characters","개별 선택":"Custom selection","마을":"Town","그룹":"Group","캐릭터 고르기":"Choose characters","관계도 갱신":"Update map","PNG로 저장":"Save PNG","관계도를 준비하는 중이에요.":"Preparing the map…","관계나 시선 설정이 있는 캐릭터를 두 명 이상 골라 주세요.":"Choose at least two characters who have a relationship or viewpoint setting.","강한 사랑":"Strong love","연애 감정":"Romantic interest","친구·우호":"Friendly / positive","신뢰·편안":"Trust / comfort","존경·동경":"Respect / admiration","경계·성가심":"Guarded / annoyed","두려움":"Fear","싫음·적의":"Hate / hostility","중립·미정":"Neutral / undecided"});
+Object.assign(UI_TEXT.ja,{"인물 관계도":"人物関係図","화살표 색은 출발점의 캐릭터가 상대를 보는 감정을 나타냅니다.":"矢印の色は、出発点の人物が相手に向ける感情を表します。","표시할 캐릭터":"表示する人物","전체 캐릭터":"すべての人物","개별 선택":"個別選択","마을":"タウン","그룹":"グループ","캐릭터 고르기":"人物を選択","관계도 갱신":"関係図を更新","PNG로 저장":"PNGで保存","관계도를 준비하는 중이에요.":"関係図を準備中…","관계나 시선 설정이 있는 캐릭터를 두 명 이상 골라 주세요.":"関係または視線設定がある人物を2人以上選んでください。","강한 사랑":"強い愛","연애 감정":"恋愛感情","친구·우호":"友好・好意","신뢰·편안":"信頼・安心","존경·동경":"尊敬・憧れ","경계·성가심":"警戒・煩わしさ","두려움":"恐れ","싫음·적의":"嫌悪・敵意","중립·미정":"中立・未定"});
 function settings(){return settingsContent().replace(/<\/section>$/,`${businessInformationFooter()}</section>`)}
 Object.assign(UI_TEXT.en,{
   "건물 층수":"Number of floors","층을 줄이면 위층 방은 남아 있는 가장 높은 층으로 이동해요.":"If you reduce the floor count, rooms above it move to the highest remaining floor.","방이 있는 층":"Room floor",
