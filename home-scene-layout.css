@@ -36,6 +36,7 @@
   object-position:center bottom!important;
   translate:-50% 0!important;
   scale:var(--character-render-scale,1)!important;
+  rotate:var(--character-art-rotation,0deg)!important;
   transform:translate3d(0,0,0);
   transform-origin:50% 100%!important;
   animation:home-ld-idle 4.8s ease-in-out infinite!important;
@@ -114,6 +115,7 @@
   left:var(--character-art-x,0%)!important;
   top:var(--character-art-y,0%)!important;
   scale:var(--character-render-scale,1)!important;
+  rotate:var(--character-art-rotation,0deg)!important;
 }
 .native-app .native-scene-action-prop{
   left:calc(55% + var(--character-action-x,0%))!important;
@@ -262,7 +264,9 @@
   box-shadow:0 18px 40px #0004;
   touch-action:none;
   user-select:none;
+  cursor:grab;
 }
+.home-layout-preview.is-gesturing{cursor:grabbing}
 .home-layout-preview-backdrop{
   position:absolute;z-index:0;inset:0;
   background:linear-gradient(#1017221c,#10172238),var(--layout-preview-bg) center/cover no-repeat;
@@ -293,6 +297,7 @@
   height:28%;
   translate:-50% 0;
   scale:var(--character-render-scale,1);
+  rotate:var(--character-art-rotation,0deg);
   transform-origin:50% 100%;
   cursor:grab;
   pointer-events:auto;
@@ -322,6 +327,7 @@
   height:100%;
   translate:0 0;
   scale:1;
+  rotate:0deg;
   filter:none;
   cursor:default;
   pointer-events:none;
@@ -343,6 +349,7 @@
   object-position:center bottom!important;
   translate:-50% 0!important;
   scale:var(--character-render-scale,1)!important;
+  rotate:var(--character-art-rotation,0deg)!important;
   transform-origin:50% 100%!important;
   filter:drop-shadow(0 9px 8px #0008)!important;
   cursor:grab!important;

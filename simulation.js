@@ -1,5 +1,5 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260826scheduledeletionhotfix161";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260826scheduledeletionhotfix161";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260828town177";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260828town177";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -172,14 +172,27 @@ const townFor=(c,date=new Date())=>{
 };
 const workplaceTown=c=>state.preventInterTownMovement?townFor(c):state.towns.find(t=>t.places?.some(p=>p.id===c.workplaceId));
 const scheduleDateKey=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
-const scheduledForDate=(c,date=new Date())=>[
-  ...(state.monthlyRoutines?.[c.id]||[]).filter(item=>item.date===scheduleDateKey(date)),
-  ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
-].slice().sort((a,b)=>mins(a.start)-mins(b.start));
+const routineEndMinute=item=>{
+  const start=mins(item?.start),rawEnd=mins(item?.end);
+  // 시작과 종료가 같은 일정은 24시간 일정이 아니라 시작 시각부터
+  // 30분 동안 유지되는 단일 일정으로 본다. 자정을 넘기는 일정만 다음 날로 잇는다.
+  return rawEnd===start?start+30:rawEnd<start?rawEnd+1440:rawEnd;
+};
+const scheduledForDate=(c,date=new Date())=>{
+  const seen=new Set();
+  return [
+    ...(state.monthlyRoutines?.[c.id]||[]).filter(item=>item.date===scheduleDateKey(date)),
+    ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
+  ].filter(item=>{
+    const key=String(item?.id||`${item?.start}|${item?.end}|${item?.title}|${item?.placeId||item?.visitHomeId||""}`);
+    if(seen.has(key))return false;
+    seen.add(key);return true;
+  }).sort((a,b)=>mins(a.start)-mins(b.start));
+};
 const activeScheduledRoutine=(c,date=new Date())=>{
   const minute=nowMin(date);
   return scheduledForDate(c,date).filter(item=>{
-    const start=mins(item.start),rawEnd=mins(item.end),end=rawEnd<=start?rawEnd+1440:rawEnd;
+    const start=mins(item.start),end=routineEndMinute(item);
     return start<=minute&&minute<end;
   }).at(-1)||null;
 };
@@ -245,8 +258,9 @@ const relationList=()=>Object.values(state.relationships||{});
 const relationPriority={"부모·자녀":10,"형제·자매":9,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,동거인:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const related=c=>{
   const grouped=new Map();
-  relationList().filter(r=>r.temporalStatus!=="past"&&(r.a===c.id||r.b===c.id)).forEach(relation=>{
+  relationList().filter(r=>r.temporalStatus!=="past"&&r.a!==r.b&&(r.a===c.id||r.b===c.id)).forEach(relation=>{
     const otherId=relation.a===c.id?relation.b:relation.a;
+    if(!otherId||otherId===c.id)return;
     if(!grouped.has(otherId))grouped.set(otherId,[]);
     grouped.get(otherId).push(relation);
   });
@@ -1047,7 +1061,6 @@ function workEvent(c,time,date){
 }
 
 function socialEvent(c,time,date){
-  // 실제 감정·거리감·갈등 설정이 적대적이면 친근한 동행으로 묶지 않는다.
   let pick=preferredRelation(c,{friendlyOnly:true,date});
   if(pick&&activityTown(pick.other,date)?.id!==activityTown(c,date)?.id)pick=null;
   if(pick&&mixedAdultMinor(c,pick.other)){
@@ -1739,7 +1752,7 @@ const EXPANDED_LIFE_ACTIVITY_POOL=[
   ["서재에서 취미 도구를 시험하는 중","본 작업을 시작하기 전에 작은 재료로 힘과 속도를 바꿔 보며 손에 맞는 방법을 찾았어요.","study"],
   ["욕실에서 세수하는 중","미지근한 물로 얼굴을 적시고 눈가를 세게 문지르지 않도록 손끝으로 부드럽게 씻었어요.","bath"],
   ["욕실에서 이를 닦는 중","너무 힘을 주지 않고 안쪽과 바깥쪽을 차례로 닦은 뒤 입안을 깨끗하게 헹궜어요.","bath"],
-  ["욕실에서 면도하는 중","피부가 당기지 않게 충분히 적신 뒤 털이 난 방향을 살피며 천천히 정돈했어요.","bath"],
+  ["욕실에서 세면대를 닦는 중","물방울과 비누 자국이 남은 곳을 부드러운 천으로 닦고 수도꼭지 주변까지 정돈했어요.","bath"],
   ["욕실에서 머리를 말리는 중","한곳에 뜨거운 바람이 오래 닿지 않게 거리를 두고 두피부터 차례로 말렸어요.","bath"],
   ["욕실에서 기초 화장품을 바르는 중","자기 피부에 평소 사용하던 제품만 필요한 만큼 덜어 순서대로 가볍게 발랐어요.","bath"],
   ["욕실에서 손톱을 정돈하는 중","걸리는 부분만 짧게 다듬고 날카로운 모서리가 남지 않도록 손톱줄로 부드럽게 다듬었어요.","bath"],
@@ -1752,10 +1765,40 @@ const EXPANDED_LIFE_ACTIVITY_POOL=[
   ["집에서 물 한 잔을 천천히 마시는 중","목이 마르기 전에 잔을 채워 두고 하던 일을 잠시 멈춘 채 몇 번 나누어 마셨어요.","living"],
   ["집에서 조용한 시간을 보내는 중","아무것도 급히 시작하지 않고 주변 소리를 들으며 생각이 자연스럽게 가라앉기를 기다렸어요.","living"]
 ];
+// 같은 집을 오래 보고 있어도 반복감이 적도록, 생활의 작은 동작을 세 언어로
+// 함께 보강한다. 이 묶음은 특정 취미가 없어도 누구나 자연스럽게 할 수 있는
+// 행동만 담아 캐릭터 설정과 충돌하지 않는다.
+const MULTILINGUAL_HOME_ACTIVITY_POOL=[
+  {room:"living",ko:["거실에서 오늘 들을 음악을 고르는 중","재생 목록을 넘기며 지금 기분에 맞는 곡 몇 개를 골라 순서를 바꾸고 있어요."],en:["Choosing music for the day","They are browsing playlists, picking songs that fit the moment, and changing their order."],ja:["今日聴く音楽を選んでいるところ","プレイリストを眺め、今の気分に合う曲を選んで順番を入れ替えています。"]},
+  {room:"living",ko:["거실에서 리모컨을 모아 두는 중","소파와 탁자 사이에 흩어진 리모컨을 찾아 작동을 확인하고 한곳에 모아 두었어요."],en:["Gathering the remotes","They are finding remotes around the sofa and table, checking them, and putting them together."],ja:["リモコンをまとめているところ","ソファやテーブルの間に散らばったリモコンを探し、動作を確かめて一か所にまとめました。"]},
+  {room:"living",ko:["거실에서 쿠션의 느슨한 실을 정리하는 중","튀어나온 실을 억지로 잡아당기지 않고 작은 가위로 다듬은 뒤 모양을 다시 잡았어요."],en:["Tidying a loose cushion thread","They carefully trimmed a loose thread without pulling it and reshaped the cushion."],ja:["クッションのほつれを整えているところ","飛び出した糸を引っ張らず、小さなはさみで整えて形を直しました。"]},
+  {room:"living",ko:["거실에서 오래된 공연 영상을 보는 중","좋아했던 장면을 다시 찾아 보며 익숙한 부분에서는 박자에 맞춰 손끝을 움직이고 있어요."],en:["Watching an old concert recording","They found a favorite part again and are tapping along with the familiar rhythm."],ja:["昔のライブ映像を見ているところ","好きだった場面を見つけ、知っている部分では指先でリズムを取っています。"]},
+  {room:"kitchen",ko:["주방에서 양념 맛을 확인하는 중","작은 숟가락으로 맛을 본 뒤 모자란 간을 아주 조금씩 더하며 균형을 맞추고 있어요."],en:["Checking the seasoning","They are tasting with a small spoon and adjusting the seasoning a little at a time."],ja:["味付けを確かめているところ","小さなスプーンで味見し、足りない味を少しずつ足して整えています。"]},
+  {room:"kitchen",ko:["주방에서 얼음 틀을 채우는 중","빈 칸마다 물을 넘치지 않게 붓고 냉동실 안에서 기울지 않을 자리를 골랐어요."],en:["Refilling an ice tray","They filled each section without spilling and found a level spot in the freezer."],ja:["製氷皿に水を入れているところ","こぼれないよう各マスに水を入れ、冷凍庫の平らな場所に置きました。"]},
+  {room:"kitchen",ko:["주방에서 주전자 안을 헹구는 중","남은 물을 비우고 안쪽을 깨끗한 물로 헹군 뒤 뚜껑을 열어 말리고 있어요."],en:["Rinsing the kettle","They emptied the old water, rinsed the inside, and left the lid open to dry."],ja:["やかんの中をすすいでいるところ","残った水を捨てて中をすすぎ、ふたを開けたまま乾かしています。"]},
+  {room:"kitchen",ko:["주방에서 남은 음식을 새 접시에 담는 중","먹을 만큼만 보기 좋게 옮겨 담고 나머지는 마르지 않도록 다시 밀폐했어요."],en:["Plating some leftovers","They arranged a small portion on a plate and resealed the rest so it would not dry out."],ja:["残り物を盛り付けているところ","食べる分だけ皿にきれいに盛り、残りは乾かないよう密閉し直しました。"]},
+  {room:"study",ko:["서재에서 충전 케이블을 구분하는 중","서로 비슷한 케이블의 용도를 하나씩 확인하고 꼬이지 않게 느슨하게 말아 두었어요."],en:["Sorting charging cables","They are checking similar cables one by one and loosely coiling each to prevent tangles."],ja:["充電ケーブルを分けているところ","似たケーブルの用途を一つずつ確かめ、絡まないよう緩くまとめています。"]},
+  {room:"study",ko:["서재에서 키보드 틈을 청소하는 중","전원을 끈 뒤 부드러운 솔로 틈의 먼지를 털고 자주 쓰는 키를 천으로 닦았어요."],en:["Cleaning between the keyboard keys","They turned it off, brushed dust from the gaps, and wiped the most-used keys."],ja:["キーボードの隙間を掃除しているところ","電源を切り、柔らかいブラシでほこりを払い、よく使うキーを拭きました。"]},
+  {room:"study",ko:["서재에서 지도에 가 보고 싶은 곳을 표시하는 중","궁금했던 장소를 찾아 작은 표시를 남기고 이동 경로를 천천히 이어 보고 있어요."],en:["Marking places to visit on a map","They are marking interesting places and slowly tracing possible routes between them."],ja:["地図に行きたい場所を記しているところ","気になっていた場所に印を付け、移動経路をゆっくりつないでいます。"]},
+  {room:"study",ko:["서재에서 필기구의 잉크를 시험하는 중","종이 한쪽에 짧은 선을 그어 보고 잘 나오는 것과 교체할 것을 나누고 있어요."],en:["Testing pens and pencils","They are making short marks on scrap paper and separating reliable pens from ones to replace."],ja:["筆記具の書き味を試しているところ","紙の端に短い線を書き、使える物と交換する物を分けています。"]},
+  {room:"bedroom",ko:["침실에서 양말 짝을 맞추는 중","마른 양말을 색과 길이별로 나눈 뒤 같은 짝을 찾아 서랍에 넣고 있어요."],en:["Pairing socks","They are sorting dry socks by color and length, matching pairs, and putting them away."],ja:["靴下の組み合わせをそろえているところ","乾いた靴下を色と長さで分け、同じ組を見つけて引き出しにしまっています。"]},
+  {room:"bedroom",ko:["침실에서 느슨해진 단추를 꿰매는 중","옷감과 비슷한 실을 골라 단추가 흔들리지 않을 만큼만 단단하게 고정했어요."],en:["Sewing on a loose button","They chose matching thread and secured the button firmly without pulling the fabric."],ja:["緩んだボタンを縫い直しているところ","布に合う糸を選び、生地を引っ張らないようしっかり留めました。"]},
+  {room:"bedroom",ko:["침실에서 안경을 닦는 중","렌즈의 먼지를 먼저 털고 부드러운 천으로 가장자리까지 천천히 닦고 있어요."],en:["Cleaning their glasses","They brushed dust from the lenses first and are polishing the edges with a soft cloth."],ja:["眼鏡を拭いているところ","レンズのほこりを先に払い、柔らかい布で端までゆっくり磨いています。"]},
+  {room:"bedroom",ko:["침실에서 전자기기를 충전하는 중","남은 배터리를 확인하고 자주 쓰는 기기부터 케이블을 연결해 안전한 곳에 두었어요."],en:["Charging personal devices","They checked the batteries and connected the most-used devices first in a safe spot."],ja:["電子機器を充電しているところ","残量を確認し、よく使う機器からケーブルにつないで安全な場所に置きました。"]},
+  {room:"bath",ko:["욕실에서 세면용품을 채우는 중","얼마 남지 않은 용기를 확인하고 필요한 것만 새로 채운 뒤 입구를 깨끗이 닦았어요."],en:["Refilling bathroom supplies","They checked nearly empty containers, refilled what was needed, and wiped the openings clean."],ja:["洗面用品を補充しているところ","残り少ない容器を確認し、必要な物だけ補充して口元をきれいに拭きました。"]},
+  {room:"bath",ko:["욕실에서 발매트를 말리는 중","젖은 부분이 겹치지 않게 펼쳐 걸고 바닥에 남은 물기를 닦고 있어요."],en:["Drying the bath mat","They hung it open so the wet parts do not overlap and wiped the remaining water from the floor."],ja:["バスマットを乾かしているところ","濡れた部分が重ならないよう広げて掛け、床の水気を拭いています。"]},
+  {room:"entry",ko:["현관에서 열쇠 자리를 정리하는 중","자주 쓰는 열쇠와 예비 열쇠를 나누고 급할 때 바로 찾을 수 있게 놓았어요."],en:["Organizing the key tray","They separated everyday keys from spares and placed them where they can be found quickly."],ja:["玄関の鍵置きを整えているところ","よく使う鍵と予備の鍵を分け、急いでいてもすぐ見つかるよう置きました。"]},
+  {room:"entry",ko:["현관에서 신발 바닥을 털어 내는 중","홈에 낀 작은 돌과 먼지를 솔로 털고 현관 바닥도 함께 쓸어 냈어요."],en:["Brushing dirt from shoe soles","They brushed small stones and dust from the treads and swept the entry floor too."],ja:["靴底の汚れを落としているところ","溝に入った小石やほこりをブラシで落とし、玄関の床も掃きました。"]},
+  {room:"entry",ko:["현관에서 우산 꽂이를 정리하는 중","완전히 마른 우산과 아직 젖은 우산을 나누고 손잡이가 엉키지 않게 방향을 맞췄어요."],en:["Organizing the umbrella stand","They separated dry umbrellas from damp ones and aligned the handles so they do not tangle."],ja:["傘立てを整えているところ","乾いた傘とまだ濡れた傘を分け、持ち手が絡まないよう向きをそろえました。"]}
+];
+const localizedHomeActivities=()=>MULTILINGUAL_HOME_ACTIVITY_POOL.map(item=>{
+  const copy=item[state.uiLanguage]||item.ko;
+  return[copy[0],copy[1],item.room];
+});
 const homeActivityPoolFor=(c,date=new Date())=>{
   const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
-  const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL].filter(([title])=>{
+  const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL,...localizedHomeActivities()].filter(([title])=>{
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
     if(title.includes("기초 화장품을 바르는"))return appearanceProfile(c).makeupLevel!=="하지 않음";
     if(title.includes("손톱을 정돈하는")){
@@ -2062,13 +2105,62 @@ function contextualDailyEvent(c,time,date){
     const scene=BODY_DETAIL_DAILY_SCENES[trait];
     if(scene)pool.push([scene[0],scene[1],"bedroom"]);
   });
+  const language=state.uiLanguage||"ko",local=(ko,en,ja)=>({ko,en,ja}[language]||ko);
+  const dailyHabitScenes=[
+    [/주머니|가방|잠겼|엘리베이터 버튼|뒤를 돌아/,local("나가기 전 확인을 한 번 더 하는 중","Double-checking before heading out","出かける前にもう一度確認するところ"),local("습관대로 빠뜨린 물건과 잠긴 문을 차례로 확인한 뒤에야 발걸음을 옮겼어요.","They followed their usual routine, checking belongings and the locked door before moving on.","いつもの習慣どおり忘れ物と戸締まりを順に確認してから歩き出しました。"),"entry"],
+    [/같은 자리에|같은 쪽|주변을 정돈|신발 방향/,local("늘 두는 자리로 물건을 정리하는 중","Putting things back in their usual places","物をいつもの場所へ戻すところ"),local("손이 기억하는 자리에 물건을 하나씩 맞춰 놓고 주변까지 가지런히 정리했어요.","They returned each item to its familiar spot and tidied the surrounding area.","手が覚えている場所へ物を一つずつ戻し、周りもきれいに整えました。"),"living"],
+    [/손을 씻|옷을 갈아입|물기를 바로 닦/,local("들어오자마자 몸을 정돈하는 중","Freshening up right after coming in","入ってすぐ身支度を整えるところ"),local("다른 일을 시작하기 전에 손과 옷차림부터 습관대로 깔끔하게 정리했어요.","Before doing anything else, they cleaned their hands and straightened their clothes as usual.","ほかのことを始める前に、手と服装をいつものように整えました。"),"bathroom"],
+    [/두드림|옷소매|머리카락|발끝|뭔가를 쥐/,local("손끝의 버릇이 드러난 중","Falling into a familiar fidget","指先の癖が出ているところ"),local("생각을 고르는 동안 무심코 손끝을 움직이다가 스스로 알아차리고 잠시 멈췄어요.","While gathering their thoughts, their hands moved out of habit until they noticed and paused.","考えをまとめる間、無意識に指先を動かし、自分で気づいて少し止めました。"),"living"],
+    [/혼잣말|콧노래/,local("작은 소리를 내며 할 일을 이어 가는 중","Keeping busy with a quiet sound","小さな音を口ずさみながら過ごすところ"),local("혼잣말과 짧은 콧노래가 자연스럽게 섞인 채 손에 잡은 일을 이어 갔어요.","They carried on, naturally mixing quiet self-talk with a short hum.","独り言と短い鼻歌を自然に交えながら、手元の作業を続けました。"),"living"],
+    [/메모|표시|알림/,local("잊지 않도록 짧게 표시하는 중","Leaving a quick reminder","忘れないよう短く印を残すところ"),local("나중에 다시 확인할 내용을 짧게 적고 눈에 잘 띄는 자리에 표시해 두었어요.","They wrote a brief reminder and left it somewhere easy to notice later.","あとで確認する内容を短く書き、目につきやすい場所に残しました。"),"study"],
+    [/환기|불을 바로 끔|소리가 나지 않게/,local("방을 나서기 전 주변을 살피는 중","Checking the room before leaving","部屋を出る前に周りを確かめるところ"),local("창문과 불, 문소리를 차례로 살펴 다음 사람이 불편하지 않게 정리했어요.","They checked the window, lights, and door so the next person would not be inconvenienced.","窓と照明、扉の音を順に確かめ、次の人が困らないよう整えました。"),"living"]
+  ];
+  const eatingHabitScenes=[
+    [/양치|가글/,local("식사를 마치고 바로 입안을 정리하는 중","Cleaning up right after the meal","食後すぐ口の中を整えるところ"),local("마지막 한입을 삼킨 뒤 미루지 않고 칫솔과 가글을 챙겨 평소 순서대로 마무리했어요.","After the last bite, they immediately reached for their toothbrush and rinse and finished their usual routine.","最後の一口を飲み込むと後回しにせず、歯ブラシとうがいをいつもの順番で済ませました。"),"bathroom"],
+    [/사진|냄새/,local("먹기 전에 음식부터 살펴보는 중","Taking in the meal before eating","食べる前に料理を確かめるところ"),local("접시에 손대기 전에 모양과 향을 충분히 확인하고 마음에 드는 장면을 남겼어요.","Before touching the plate, they took in its appearance and aroma and saved the view they liked.","皿に手をつける前に見た目と香りを確かめ、気に入った光景を残しました。"),"kitchen"],
+    [/비평|감탄/,local("한입마다 맛의 인상을 말하는 중","Commenting on every bite","一口ごとの味を言葉にするところ"),local("향과 식감, 간을 차례로 짚으며 좋았던 점과 아쉬운 점을 구체적으로 말했어요.","They described aroma, texture, and seasoning, naming exactly what worked and what did not.","香り、食感、味付けを順に挙げ、良かった点と惜しい点を具体的に話しました。"),"kitchen"],
+    [/다른 사람 몫|나눠 줌|대화를 즐김/,local("곁의 사람 몫을 먼저 챙기는 중","Serving the people nearby first","そばの人の分を先に用意するところ"),local("자기 접시보다 다른 사람의 빈 그릇을 먼저 보고 먹기 편한 만큼 나누어 건넸어요.","Before their own plate, they noticed someone else's empty dish and shared an easy portion.","自分の皿より先に相手の空いた器に気づき、食べやすい分だけ取り分けました。"),"kitchen"],
+    [/천천히|빠르게/,local("자기 속도로 식사를 이어 가는 중","Eating at their own pace","自分の速さで食事を続けるところ"),local("평소 씹는 속도를 그대로 유지하며 주변의 식사 속도에는 휩쓸리지 않았어요.","They kept their usual pace without being pulled along by how quickly others ate.","いつもの噛む速さを保ち、周りの食事の速さには流されませんでした。"),"kitchen"],
+    [/휴대폰|책을 읽|TV/,local("식사와 함께 볼거리를 챙긴 중","Pairing the meal with something to watch or read","食事と一緒に見る物を用意するところ"),local("자리에 앉기 전에 보던 화면과 읽을거리를 손 닿는 곳에 두고 식사를 시작했어요.","Before sitting down, they put the screen or reading material within reach and began eating.","座る前に見ていた画面や読み物を手の届く所へ置き、食事を始めました。"),"kitchen"],
+    [/소스|후추|간을 바꾸지/,local("익숙한 간으로 한입을 준비하는 중","Preparing each bite with familiar seasoning","慣れた味付けで一口を用意するところ"),local("먼저 맛을 확인한 뒤 평소 즐기는 방식에 맞춰 양념을 더하거나 그대로 두었어요.","They tasted first, then added seasoning or left it alone according to their usual preference.","まず味を確かめ、いつもの好みに合わせて調味料を足すか、そのままにしました。"),"kitchen"],
+    [/같은 자리|같은 식기|독특함|한입 크기/,local("익숙한 자리와 식기를 고르는 중","Choosing a familiar seat and utensils","慣れた席と食器を選ぶところ"),local("늘 편하게 느끼는 자리와 식기를 골라 한입씩 자기 방식대로 준비했어요.","They chose the seat and utensils that felt familiar and prepared each bite in their own way.","いつも落ち着く席と食器を選び、一口ずつ自分のやり方で整えました。"),"kitchen"],
+    [/깨끗이 비움|조금 남김|맨 마지막|맨 먼저|섞지 않고|번갈아/,local("정해 둔 순서대로 접시를 비우는 중","Eating through the plate in a set order","決めた順番で皿を食べ進めるところ"),local("좋아하는 것과 남길 양을 미리 정한 듯 익숙한 순서로 접시를 정리해 갔어요.","As if the favorites and leftovers were already decided, they worked through the plate in a familiar order.","好きな物と残す量を決めていたように、慣れた順番で皿を食べ進めました。"),"kitchen"]
+  ];
+  (c.dailyHabits||[]).forEach(habit=>{const scene=dailyHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
+  const behaviorHabitScenes=[
+    [/머리카락|손톱|입술|펜을 돌|주먹|입을 가림|몸이 먼저 굳|팔짱|기대어/,local("무심코 익숙한 몸짓을 하는 중","Falling into a familiar gesture","無意識にいつもの仕草をするところ"),local("생각에 잠긴 사이 몸이 먼저 익숙한 습관을 반복하다가 천천히 다음 행동으로 옮겨 갔어요.","While lost in thought, their body repeated a familiar habit before easing into the next task.","考え込む間に体がいつもの癖を繰り返し、ゆっくり次の行動へ移りました。"),"living"],
+    [/말끝|감탄사|별명|존댓말|답장|연락|통화|농담/,local("익숙한 방식으로 연락을 이어 가는 중","Communicating in their usual way","いつものやり方で連絡するところ"),local("상대와 상황을 살피면서도 평소의 말버릇과 연락 방식이 자연스럽게 드러났어요.","Their usual wording and communication rhythm showed naturally as they considered the person and situation.","相手と状況を見ながら、普段の口癖と連絡の取り方が自然に表れました。"),"study"],
+    [/스트레스|화나면|긴장|진정|산책하며/,local("마음을 가라앉히는 자기만의 순서를 따르는 중","Following a personal calming routine","自分なりの落ち着く手順をたどるところ"),local("감정이 커지기 전에 익숙한 행동을 하나씩 이어 가며 호흡과 생각을 정리했어요.","Before the feeling grew, they followed familiar steps to settle their breathing and thoughts.","感情が大きくなる前に慣れた行動を重ね、呼吸と思考を整えました。"),"living"],
+    [/몰아서|스포일러|운동|수집|버리지|일기|사진으로|메모/,local("좋아하는 방식으로 여가를 기록하는 중","Enjoying and recording free time their way","自分らしく余暇を楽しみ記録するところ"),local("자기에게 편한 속도로 취미를 이어 가며 남기고 싶은 장면만 골라 기록했어요.","They enjoyed the hobby at a comfortable pace and recorded only the moments they wanted to keep.","自分に合う速さで趣味を続け、残したい場面だけを記録しました。"),"study"],
+    [/눈인사|손을 흔들|선물|거리|스킨십|비 오는|따뜻한 음료|동물|식물|새벽/,local("상황에 맞는 익숙한 반응을 보이는 중","Responding with a familiar situational habit","状況に応じたいつもの反応をするところ"),local("주변과 상대를 확인한 뒤 평소 편하게 느끼는 방식으로 반응했어요.","After checking the surroundings and the other person, they responded in the way that felt most natural.","周囲と相手を確かめ、普段いちばん自然に感じる方法で反応しました。"),"living"]
+  ];
+  (c.behaviorHabits||[]).forEach(habit=>{const scene=behaviorHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
   if((c.hobbies||[]).length)pool.push(
     [`${c.hobbies[hash(`${c.id}:${dayKey(date)}:context-hobby`)%c.hobbies.length]}에 몰두하는 중`,"좋아하는 활동에 필요한 도구를 차분히 꺼내고 자기 방식대로 집중할 환경을 만들었어요.","study"]);
   if(!pool.length)pool.push(["잠깐 숨을 고르는 중","하던 일을 멈추고 물을 한 모금 마시며 다음에 무엇을 할지 천천히 생각하고 있어요.","living"]);
   const script=pool[hash(`${c.id}:${dayKey(date)}:contextual-daily`)%pool.length];
   return homeEntry(c,time,script[0],personalityFlavor(c,script[1],"contextual-daily",date),script[2]);
 }
+function eatingHabitEvent(c,time,date,meal="식사",location={home:true,room:"kitchen"}){
+  const habits=Array.isArray(c.eatingHabits)?c.eatingHabits:[];
+  if(!habits.length)return null;
+  const habit=habits[hash(`${c.id}:${dayKey(date)}:${meal}:eating-habit`)%habits.length];
+  const language=state.uiLanguage||"ko",local=(ko,en,ja)=>({ko,en,ja}[language]||ko);
+  const scenes=[
+    [/양치|가글/,local(`${meal} 뒤 입안을 정리하는 중`,`Cleaning up after ${meal}`,`${meal}のあと口の中を整えるところ`),local("식사를 마친 뒤 미루지 않고 칫솔이나 가글을 챙겨 평소 순서대로 마무리했어요.","After finishing the meal, they immediately followed their usual brushing or rinsing routine.","食事を終えると後回しにせず、歯磨きやうがいをいつもの順番で済ませました。"),"bathroom",15],
+    [/사진|냄새/,local(`${meal}을 먹기 전에 살펴보는 중`,`Taking in the meal before eating`,`食べる前に料理を確かめるところ`),local("접시에 손대기 전에 모양과 향을 확인하고 마음에 드는 장면을 남겼어요.","Before touching the plate, they checked its appearance and aroma and saved the view they liked.","皿に手をつける前に見た目と香りを確かめ、気に入った光景を残しました。"),"kitchen",0],
+    [/비평|감탄/,local(`${meal}의 맛을 이야기하는 중`,`Commenting on the meal`,`食事の味を言葉にするところ`),local("향과 식감, 간을 차례로 짚으며 느낀 점을 구체적으로 말했어요.","They described the aroma, texture, and seasoning in detail.","香り、食感、味付けを順に挙げ、感じたことを具体的に話しました。"),"kitchen",4],
+    [/쩝쩝|조용히|천천히|빠르게/,local(`평소 속도로 ${meal} 중`,`Eating at their usual pace`,`いつもの速さで食事中`),local("주변에 휩쓸리지 않고 평소의 소리와 속도로 식사를 이어 갔어요.","They ate with their usual pace and sound without being pulled along by others.","周りに流されず、普段の音と速さで食事を続けました。"),"kitchen",5],
+    [/다른 사람|나눠|대화/,local(`${meal} 자리에서 곁의 사람을 챙기는 중`,`Looking after others at the table`,`食卓でそばの人を気づかうところ`),local("자기 접시보다 곁의 사람을 먼저 살피고 먹기 편한 만큼 나누어 건넸어요.","They checked on the people nearby and shared an easy portion before tending to their own plate.","自分の皿より先に周りを見て、食べやすい分だけ取り分けました。"),"kitchen",3],
+    [/휴대폰|책을 읽|TV/,local(`${meal}과 함께 볼거리를 챙긴 중`,`Pairing the meal with something to watch or read`,`食事と一緒に見る物を用意するところ`),local("보던 화면이나 읽을거리를 손 닿는 곳에 두고 식사를 시작했어요.","They placed a screen or reading material within reach and began eating.","画面や読み物を手の届く所へ置き、食事を始めました。"),"kitchen",2],
+    [/소스|후추|간을 바꾸지/,local(`${meal}의 간을 맞추는 중`,`Seasoning the meal their way`,`自分好みに味を整えるところ`),local("먼저 맛을 확인한 뒤 평소 즐기는 방식대로 양념을 더하거나 그대로 두었어요.","They tasted first, then seasoned it or left it alone according to habit.","まず味を確かめ、いつもの好みに合わせて調味料を足すか、そのままにしました。"),"kitchen",2],
+    [/.*/,local(`익숙한 방식으로 ${meal} 중`,`Eating in their familiar way`,`いつものやり方で食事中`),local("자리와 식기, 먹는 순서를 자기에게 익숙한 방식으로 맞추며 식사했어요.","They ate with the seat, utensils, and order that felt familiar.","席と食器、食べる順番を自分になじむ形に整えて食事しました。"),"kitchen",4]
+  ];
+  const [,title,desc,room,offset]=scenes.find(([pattern])=>pattern.test(habit));
+  return location.home?homeEntry(c,time+offset,title,desc,room):entry(time+offset,title,desc,{...location,mood:"식사"});
+}
 function relationshipCombinationScenePool(c,relationship,date){
+  if(!relationship?.other||relationship.other.id===c.id)return[];
   if(!relationship?.other)return[];
   const language=state.uiLanguage||"ko",name=relationship.other.name;
   const local=(ko,en,ja)=>({ko,en,ja}[language]||ko);
@@ -2145,7 +2237,7 @@ function relationshipCombinationScenePool(c,relationship,date){
     scene("jealous-stepback",`${name}를 붙잡기 전에 혼자 진정하는 중`,"확인되지 않은 상상을 사실처럼 말하지 않으려고 창가로 가 숨을 고르고 보고 들은 것만 정리했어요.",`Calming down before confronting ${name}`,"To avoid treating imagination as fact, they stepped away, breathed, and listed only what they had actually seen or heard.",`${name}を問い詰める前に一人で落ち着くところ`,"想像を事実のように言わないため窓辺で呼吸を整え、実際に見聞きしたことだけ整理しました。","living");
   }
   if(flags.annoyed){
-    scene("annoyed-request",`${name}에게 반복되는 행동을 멈춰 달라고 말하는 중`,"사람 자체가 싫다고 몰아붙이지 않고 방금 반복된 행동과 원하는 변화를 짧게 말했어요.",`Asking ${name} to stop a repeated behavior`,"They named the repeated behavior and requested a concrete change without attacking the person.",`${name}に繰り返す行動をやめてほしいと伝えるところ`,"人そのものを責めず、繰り返された行動と望む変化を短く伝えました。","living");
+    scene("annoyed-request",`${name}에게 말을 세 번 끊지 말라고 따지는 중`,`${name}가 같은 설명 도중 말을 세 차례 끊자, 끝까지 듣고 나서 대답하라고 단호하게 몰아붙였어요.`,`Confronting ${name} for interrupting three times`,`${name} interrupted the same explanation three times, so they firmly demanded that ${name} listen to the end before answering.`,`${name}に三度も話を遮らないよう問い詰めるところ`,`${name}が同じ説明の途中で三度も話を遮ったため、最後まで聞いてから答えるよう強く迫りました。`,"living");
     scene("annoyed-break",`${name}와의 대화를 잠깐 멈추는 중`,"같은 설명을 다시 들으면 말이 거칠어질 것 같아 십 분 뒤에 이어 말하자고 하고 물러났어요.",`Taking a break from talking with ${name}`,"Feeling their words might turn harsh, they asked to continue in ten minutes and stepped away.",`${name}との話をいったん止めるところ`,"同じ説明を聞くと口調が荒くなりそうで、十分後に続けようと伝えて離れました。","living");
   }
   if(flags.distant){
@@ -2252,7 +2344,6 @@ function profileSettingScenePool(c,date){
     "외출 전 운전 준비를 확인하는 중","익숙하게 다닐 수 있는 길과 주차할 곳을 확인하고, 무리하지 않을 이동 계획을 세웠어요.",
     "Checking the drive before leaving","Based on their driving experience, they checked the route and parking and planned a manageable trip.",
     "外出前に運転の準備を確認するところ","運転経験に合わせて経路と駐車場所を確認し、無理のない移動計画を立てました。","entry",["driverLicense"]);
-  // 집 안 장면에는 실제로 같은 집에 사는 관계만 등장시킨다.
   const relationship=preferredRelation(c,{sameHome:true,date});
   if(relationship){
     const name=relationship.other.name;
@@ -2347,7 +2438,6 @@ function scheduledChoiceEntries(c,date){
       }
       if(choice.giveAt>=dayStart&&choice.giveAt<dayEnd){
         const actor=state.characters[choice.characterId],target=state.characters[choice.targetId],other=c.id===choice.characterId?target:actor,item=itemById(choice.itemId);
-        // 예약 당시 문구가 아니라 현재 사전의 항목 이름을 사용한다.
         const itemName=item?.name||"선물",language=state.uiLanguage||"ko";
         const title=language==="en"
           ?(c.id===choice.characterId?`Giving ${itemName} to ${other?.name}`:`Receiving ${itemName} from ${other?.name}`)
@@ -2376,6 +2466,13 @@ function canDrive(c){
   if(status===true)return true;
   return ["초보운전","가끔 운전함","운전에 익숙함","장거리·야간 운전도 익숙함"].includes(String(status||""));
 }
+function townDecorationEvent(c,date){
+  const town=townFor(c,date),decorations=town?.id===state.activeTownId?(state.world.decorations||[]):(town?.decorations||[]);
+  if(!decorations.length||hash(`${c.id}:${dayKey(date)}:town-decoration-use`)%3===0)return null;
+  const item=decorations[hash(`${c.id}:${dayKey(date)}:town-decoration`)%decorations.length],actions=item.interactions?.length?item.interactions:[`${item.name||"마을 장식"} 구경하기`];
+  const action=actions[hash(`${c.id}:${dayKey(date)}:${item.id}:interaction`)%actions.length],minute=960+hash(`${c.id}:${dayKey(date)}:${item.id}:minute`)%150;
+  return entry(minute,`${item.name}에서 ${action} 중`,`마을을 지나다 ${item.name}에 관심이 가서 잠시 멈췄어요. ${action}로 짧은 시간을 보내고 있어요.`,{townId:town.id,decorationId:item.id,mood:"여유"});
+}
 function build(c,date=new Date()){
   const currentHomeId=homeIdForDate(c,date);
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
@@ -2383,6 +2480,7 @@ function build(c,date=new Date()){
   const list=[entry(wake,"기상",wakeScene(c,date),{home:true,room:usableSleepRoom(c.sleepRoomId)||"bedroom",mood:"평온",stress:5})];
   list.push(...recordedInteractionEntries(c,date));
   list.push(...scheduledChoiceEntries(c,date));
+  const decorationScene=townDecorationEvent(c,date);if(decorationScene)list.push(decorationScene);
   const mobilityMorning=mobilityAidMorningEntry(c,wake+30,date);
   const morningAppearance=appearanceMorningEntry(c,wake+30,date);
   const morningCare=[mobilityMorning,morningAppearance].filter(Boolean);
@@ -2392,19 +2490,34 @@ function build(c,date=new Date()){
   const makeupLevel=appearanceProfile(c).makeupLevel||"하지 않음";
   const breakfastMinute=wake+65+({스킨케어만:4,"선크림·기초만":7,"가벼운 메이크업":10,"포인트 메이크업":14,"풀 메이크업":18}[makeupLevel]||0);
   list.push(homeEntry(c,breakfastMinute,"주방에서 아침 준비 중","냉장고를 열어 먹을 것을 고르고 식탁에 아침을 차리고 있어요.","kitchen"));
+  const breakfastHabit=eatingHabitEvent(c,breakfastMinute+18,date,"아침");
+  if(breakfastHabit)list.push(breakfastHabit);
   const morningRelation=related(c).filter(x=>homeIdForDate(x.other,date)===currentHomeId).sort((a,b)=>(relationPriority[b.r.type]||0)-(relationPriority[a.r.type]||0))[0];
   const morningTogether=morningRelation&&relationshipMorningEntry(c,morningRelation,breakfastMinute+30,date);
   if(morningTogether)list.push(morningTogether);
   const purpose=travelPurpose(c,date),destination=purpose.town,homeTown=townFor(c,date);
   const destinationPurpose=purpose.label;
   const work=purpose.kind==="birthday"&&workplaceTown(c)?.id!==destination.id?null:workEvent(c,Math.max(wake+90,540),date);
-  const homeCars=state.homes[currentHomeId]?.cars||[];
+  const homeCars=(state.homes[currentHomeId]?.cars||[]).filter(car=>!car.ownerCharacterId||car.ownerCharacterId===c.id);
   const rideablePet=(state.homes[currentHomeId]?.pets||[]).find(p=>p.rideable&&["드래곤","호랑이"].includes(p.species));
   const useMount=rideablePet&&(hash(`${c.id}:${dayKey(date)}:mount`)%2===0);
   const relation=preferredRelation(c),romantic=relation&&["부부","연인"].includes(relation.r.type)?relation.other:null;
-  const partnerCars=romantic?state.homes[homeIdForDate(romantic,date)]?.cars||[]:[];
+  const partnerCars=romantic?(state.homes[homeIdForDate(romantic,date)]?.cars||[]).filter(car=>!car.ownerCharacterId||car.ownerCharacterId===romantic.id):[];
   const partnerCanDrive=canDrive(romantic)&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
   const selfCanDrive=canDrive(c)&&homeCars.length;
+  const configuredCommuteModes=(c.commuteModes||[]).filter(mode=>mode!=="자차"||selfCanDrive);
+  const commuteMode=configuredCommuteModes.length
+    ?configuredCommuteModes[hash(`${c.id}:${dayKey(date)}:configured-commute`)%configuredCommuteModes.length]
+    :selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute-fallback`)%2===0)?"자차":"대중교통";
+  const commuteCopy={
+    자차:["차로 출근하는 중","소유주로 지정된 집의 자동차를 운전해 직장에 도착할 준비를 하고 있어요."],
+    대중교통:["대중교통으로 출근하는 중","버스나 지하철 노선을 확인하고 직장으로 이동하고 있어요."],
+    버스:["버스로 출근하는 중","정류장에서 버스를 타고 직장과 가까운 정류장으로 이동하고 있어요."],
+    지하철:["지하철로 출근하는 중","환승 경로와 하차역을 확인하며 지하철로 직장에 가고 있어요."],
+    택시:["택시로 출근하는 중","택시를 불러 목적지를 확인한 뒤 직장으로 이동하고 있어요."],
+    도보:["걸어서 출근하는 중","출근 시간을 맞춰 보행로를 따라 직장으로 걸어가고 있어요."],
+    자전거:["자전거로 출근하는 중","안전한 길을 골라 자전거를 타고 직장으로 이동하고 있어요."]
+  };
   // 사용자가 등록한 일정은 아래에서 실제 종료 시각에 맞춰 귀가 장면을 만든다.
   // 예전처럼 모든 외부 일정을 밤 8시에 한꺼번에 귀가시키지 않는다.
   if(destinationPurpose&&destination.id!==homeTown.id&&purpose.kind!=="routine"){
@@ -2434,18 +2547,24 @@ function build(c,date=new Date()){
   });
   if(work){
     if(!work.home){
-      const riding=rideablePet&&(hash(`${c.id}:${dayKey(date)}:ride-commute`)%3)===0,driving=!riding&&selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute`)%2)===0;
-      list.push(entry(work.minute-35,riding?`${rideablePet.name}을 타고 출근하는 중`:driving?"차로 출근하는 중":"대중교통으로 출근하는 중",riding?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로로 직장을 향하고 있어요.`:`${rideablePet.name}의 등에 올라 안전한 길을 따라 직장을 향하고 있어요.`):driving?"차를 운전해 직장에 도착할 준비를 하고 있어요.":"버스나 지하철을 이용해 직장에 도착할 준비를 하고 있어요.",away(c,{placeId:work.placeId,mood:"출근"})));
+      const riding=!configuredCommuteModes.length&&rideablePet&&(hash(`${c.id}:${dayKey(date)}:ride-commute`)%3)===0;
+      const [commuteTitle,commuteDesc]=commuteCopy[commuteMode]||commuteCopy.대중교통;
+      list.push(entry(work.minute-35,riding?`${rideablePet.name}을 타고 출근하는 중`:commuteTitle,riding?(rideablePet.species==="드래곤"?`${rideablePet.name}의 등에 올라 정해 둔 비행 경로로 직장을 향하고 있어요.`:`${rideablePet.name}의 등에 올라 안전한 길을 따라 직장을 향하고 있어요.`):commuteDesc,{...away(c,{placeId:work.placeId,mood:"출근"}),transit:true,transportMode:riding?"mount":commuteMode}));
     }
     list.push(work);
   }
   const lunchPlace=placeFor(["음식점"],`${c.id}:${dayKey(date)}:lunch`,c);
   const eatsOutForLunch=hash(`${c.id}:${dayKey(date)}:eats-out`)%4===0;
+  const lunchMinute=720+(hash(`${c.id}:${dayKey(date)}:lunch-minute`)%91);
   if(eatsOutForLunch&&lunchPlace?.type==="음식점"){
     const food=catalogChoice(c,lunchPlace,"food",`${c.id}:${dayKey(date)}:lunch-food`);
-    const lunchMinute=720+(hash(`${c.id}:${dayKey(date)}:lunch-minute`)%91);
     list.push(entry(lunchMinute,`${lunchPlace.name}에서 점심`,food?`${food.name}을 골라 식사하고 있어요.`:"점심을 먹으며 잠깐 쉬고 있어요.",away(c,{placeId:lunchPlace.id,itemId:food?.id,mood:"보통"})));
+    const lunchHabit=eatingHabitEvent(c,lunchMinute,date,"점심",away(c,{placeId:lunchPlace.id,itemId:food?.id}));if(lunchHabit)list.push(lunchHabit);
+  }else{
+    const lunchLocation=work&&!work.home?away(c,{placeId:work.placeId}):{home:true,room:"kitchen"};
+    const lunchHabit=eatingHabitEvent(c,lunchMinute,date,"점심",lunchLocation);if(lunchHabit)list.push(lunchHabit);
   }
+  const dinnerHabit=eatingHabitEvent(c,1110+(hash(`${c.id}:${dayKey(date)}:dinner-minute`)%46),date,"저녁");if(dinnerHabit)list.push(dinnerHabit);
   list.push(contextualDailyEvent(c,930,date));
   const profileTimes=[Math.max(wake+330,870),Math.max(wake+455,1035)].map(minute=>Math.min(minute,sleepMinute-105));
   list.push(...profileSettingEvents(c,profileTimes,date));
@@ -2560,7 +2679,7 @@ function build(c,date=new Date()){
     const companionText=companions.length?`${companions.map(x=>x.name).join(", ")}와 함께 `:"";
     const isDate=item.type==="데이트"&&Boolean(companions[0]);
     const purpose=isDate?String(item.title||item.notes||"함께 정한 약속").replace(/^데이트\s*[·:-]?\s*/,"").trim():"";
-    const rawEndMinute=mins(item.end),endMinute=rawEndMinute<=minute?rawEndMinute+1440:rawEndMinute;
+    const endMinute=routineEndMinute(item);
     const dateGroup=isDate?`date-${[c.id,companions[0].id].sort().join("-")}-${dayKey(date)}-${minute}-${hash(purpose).toString(36)}`:"";
     const routineMeta={routineId:item.id,routineStartMinute:minute,routineEndMinute:endMinute};
     const companionIds=companions.map(person=>person.id);
@@ -2598,7 +2717,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260825-relationship-location-catalog-hotfix";
+const ENGINE_VERSION="20260826-meal-habits-independent-movement";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -2614,7 +2733,7 @@ function signature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c.id);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),home?.cars?.length,home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a===c.id||r.b===c.id),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet]))});
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townEras:state.towns.map(t=>[t.id,t.era]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
   signatureCache.set(c.id,{character:c,revision,value});
   if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
   return value;
@@ -2754,6 +2873,7 @@ function cleanSelfCompanionEntries(c,entries){
   const ownName=String(c?.name||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
   const selfScene=ownName?new RegExp(`(?:${ownName})(?:이|가)?\\s*(?:${ownName})(?:와|과|에게|랑|하고)`):null;
   return entries.map(item=>{
+    if(item?.withId===c.id)return null;
     const withIds=[...new Set((item.withIds||[]).filter(id=>id&&id!==c.id&&state.characters[id]))];
     const participantOrder=[...new Set((item.participantOrder||[]).filter(id=>id&&state.characters[id]))];
     const withId=item.withId&&item.withId!==c.id&&state.characters[item.withId]?item.withId:withIds[0];
@@ -2762,8 +2882,17 @@ function cleanSelfCompanionEntries(c,entries){
     const repaired=selfScene?.test(`${item?.title||""} ${item?.desc||""}`)&&partner
       ?{title:repairSelfNamedPartnerText(c,partner,item.title),desc:repairSelfNamedPartnerText(c,partner,item.desc)}
       :{};
+    if(selfScene?.test(`${item?.title||""} ${item?.desc||""}`)&&!partner)return null;
     return {...item,...repaired,withId,withIds,participantOrder};
-  }).filter(item=>item?.withId!==c.id);
+  }).filter(Boolean);
+}
+function cleanScheduledRoutineEntries(entries){
+  const normalized=entries.map(item=>{
+    const start=Number(item?.routineStartMinute);
+    if(!item?.routineId||!item.groupInteraction||!Number.isFinite(start))return item;
+    return {...item,minute:start,time:clock(start)};
+  });
+  return cleanSameMinuteEntries(cleanExactRepeatedEntries(normalized));
 }
 function cleanCharacterBreakingCheeringEntries(entries){
   // 초기 스크립트 팩에 있던 막연한 “하루를 응원” 문장은 상대별 시선과 무관하게
@@ -2812,7 +2941,7 @@ export function timeline(c,date=new Date()){
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
   if(old&&Array.isArray(old.entries)&&old.cleanupVersion!==ENGINE_VERSION){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanSameMinuteEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
+    const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanScheduledRoutineEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
     const changed=JSON.stringify(cleaned)!==JSON.stringify(old.entries);
     if(changed)old.entries=cleaned;
     old.cleanupVersion=ENGINE_VERSION;
@@ -2876,6 +3005,12 @@ function commitLiveEntry(c,date,item){
     if(changed){day.entries=nextEntries;save(false,false)}
     return changed;
   };
+  // 수면은 현재 화면과 로그가 반드시 같은 한 사건을 가리켜야 한다. 같은 시각에
+  // 예전 엔진이 만든 일반 장면이 남아 있어도 중복으로 거부하지 않고 수면으로 교체한다.
+  if(item.mood==="수면"){
+    applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)),[item]));
+    return item;
+  }
   if(item.forcedReturn){
     applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]));
     return item;
@@ -3015,7 +3150,8 @@ function liveGapEvent(c,last,n,date){
     ["주방에서 간단한 간식을 챙기는 중","배가 고프지 않을 정도로 간단한 먹을 것과 마실 것을 준비하고 있어요.","kitchen"],
     ["집 안을 정돈하는 중","눈에 띄는 물건 몇 개를 제자리로 옮기고 주변을 가볍게 정리하고 있어요.","living"]
   ];
-  const recentTitles=new Set((c.days?.[dayKey(date)]?.entries||[]).filter(item=>minute-Number(item.minute)<=360).map(item=>item.title));
+  const recentDayKeys=Object.keys(c.days||{}).sort().slice(-3);
+  const recentTitles=new Set(recentDayKeys.flatMap(key=>(c.days?.[key]?.entries||[]).map(item=>item.title)));
   const freshScripts=scripts.filter(script=>!recentTitles.has(script[0]));
   const pool=freshScripts.length?freshScripts:scripts;
   const script=pool[hash(`${c.id}:${dayKey(date)}:${Math.floor(n/90)}:live`)%pool.length];
@@ -3037,9 +3173,15 @@ function forcedHomeEventFor(c,date=new Date()){
 }
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
+  const list=timeline(c,date);
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
-  if(sleepingNow(c,date))return withResidenceLocation(c,entry(n,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0}),date);
-  const list=timeline(c,date),activeRoutine=activeScheduledRoutine(c,date);
+  if(sleepingNow(c,date)){
+    const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
+    const existing=[...list].reverse().find(item=>Number(item.minute)===sleepMinute&&/자는 중|잠든|수면/.test(`${item.title||""} ${item.mood||""}`));
+    if(existing)return withResidenceLocation(c,existing,date);
+    return commitLiveEntry(c,date,withResidenceLocation(c,entry(sleepMinute,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0,holdMinutes:Math.max(30,(n<wake?wake:1440)-sleepMinute)}),date));
+  }
+  const activeRoutine=activeScheduledRoutine(c,date);
   const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
@@ -3362,14 +3504,41 @@ function placeObjectScene(place,first,second,relation,date){
   }
   return null;
 }
-function interactionPair(group){
+function visionSideScore(character,side){
+  const appearance=appearanceProfile(character),direct=String(appearance?.[`${side}Vision`]||"");
+  const legacy=character?.bodyProfile?.vision||{};
+  const value=direct||((legacy.side==="양쪽"||legacy.side===(side==="right"?"오른쪽":"왼쪽"))?String(legacy.level||""):"");
+  if(/보이지 않음|맹/.test(value))return .03;
+  if(/거의/.test(value))return .16;
+  if(/저시력|낮은 시력|약함/.test(value))return .42;
+  return 1;
+}
+function relationshipAwareness(first,second,relation){
+  const firstView=characterViewFor(first.id,second.id)||{},secondView=characterViewFor(second.id,first.id)||{};
+  const text=[...Object.values(firstView),...Object.values(secondView),relation?.type,relation?.stage].join(" ");
+  let score=(RELATION_CLOSENESS[relation?.type]||0)/100;
+  if(/신뢰|믿|편안|소중|사랑|호감|가까운/.test(text))score+=.3;
+  if(/불신|못 믿|숨 막|불편|어색|낯선/.test(text))score-=.22;
+  return Math.max(0,Math.min(1,score));
+}
+function interactionPair(group,date=new Date(),placeKey=""){
   const people=[...new Map(group.filter(Boolean).map(person=>[person.id,person])).values()].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
   const candidates=[];
   for(let i=0;i<people.length;i++){
     for(let j=i+1;j<people.length;j++){
       const first=people[i],second=people[j];
       const relation=relationList().find(r=>(r.a===first.id&&r.b===second.id)||(r.a===second.id&&r.b===first.id))||null;
-      candidates.push({first,second,relation,score:relationImportance(first,second,relation),key:`${first.id}:${second.id}`});
+      const key=`${first.id}:${second.id}`,relativeSide=hash(`${key}:${placeKey}:${dayKey(date)}:side`)%2?"right":"left";
+      const inverseSide=relativeSide==="right"?"left":"right";
+      const perception=Math.max(visionSideScore(first,relativeSide),visionSideScore(second,inverseSide));
+      const familiarity=relationshipAwareness(first,second,relation);
+      const initiative=Math.max(interactionInitiativeScore(first),interactionInitiativeScore(second));
+      const explicit=Object.keys(explicitCharacterViewFor(first.id,second.id)).length||Object.keys(explicitCharacterViewFor(second.id,first.id)).length;
+      const willingness=Math.max(4,Math.min(92,12+familiarity*56+initiative*3+explicit*18))*perception;
+      // 모르는 사람은 같은 장소에 있다는 이유만으로 매번 대화하지 않는다.
+      // 관계·편안함·신뢰와 실제로 보이는 방향을 통과했을 때만 먼저 다가간다.
+      if(hash(`${key}:${placeKey}:${dayKey(date)}:${Math.floor(nowMin(date)/30)}:notice`)%100>=willingness)continue;
+      candidates.push({first,second,relation,score:relationImportance(first,second,relation)+familiarity*35+perception*18,key,perceptionSide:relativeSide});
     }
   }
   candidates.sort((a,b)=>b.score-a.score||a.key.localeCompare(b.key));
@@ -3961,9 +4130,15 @@ function sharedParticipantOrder(characters,relation){
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
   const committed=committedSharedSceneFor(c,date,current);
+  const routineCanInclude=(other,partnerId)=>{
+    const routine=activeScheduledRoutine(other,date);
+    return !routine||(routine.withIds||[]).includes(partnerId);
+  };
+  const committedHasSoloRoutine=committed&&[...(committed.withIds||[]),committed.withId]
+    .filter(Boolean).some(id=>state.characters[id]&&!routineCanInclude(state.characters[id],c.id));
   // 한 번 성립한 공동 장면은 같은 장소·30분 구간에서 다시 짝을 뽑지 않는다.
   // 화면을 여는 순서가 달라도 한 인물이 다른 장소의 두 장면에 중복 배정되지 않는다.
-  if(!sharedContext&&committed)return committed;
+  if(!sharedContext&&committed&&!committedHasSoloRoutine)return committed;
   const sceneIsSleeping=value=>/자는 중|잠든|수면/.test(`${value?.title||""} ${value?.desc||""} ${value?.mood||""}`);
   const sharedSourceOwner=sharedContext?.sourceOwnerId?state.characters[sharedContext.sourceOwnerId]:null;
   if(sharedContext?.sourceEvent&&sharedSourceOwner&&sharedSourceOwner.id!==c.id){
@@ -4038,7 +4213,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const explicitSharedPartner=sharedContext?.interactionId&&forcedPartner&&!current.dateGroup?forcedPartner:null;
   const configuredCompanion=!current.dateGroup&&current.forcedCompanionId?state.characters[current.forcedCompanionId]:null;
   const namedCurrentPartner=!current.dateGroup?(configuredCompanion||namedSharedPartner(current,c)):null;
-  const namedPartnerIsPresent=configuredCompanion||namedCurrentPartner&&sameLiveLocation(current,baseEventFor(namedCurrentPartner,date));
+  const namedPartnerIsPresent=(configuredCompanion&&routineCanInclude(configuredCompanion,c.id))
+    ||(namedCurrentPartner&&routineCanInclude(namedCurrentPartner,c.id)&&sameLiveLocation(current,baseEventFor(namedCurrentPartner,date)));
   // An old/generated sentence can name somebody who is currently in another
   // room or town. Never keep that claim: show a neutral solo continuation at
   // the actor's real location until both base timelines place them together.
@@ -4058,6 +4234,9 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     ?[explicitDatePartner||explicitSharedPartner||explicitCurrentPartner]
     :state.order.map(id=>state.characters[id]).filter(other=>{
       if(!other||other.id===c.id)return false;
+      // 상대에게 동행자가 없는 고정 일정이 활성화되어 있으면, 같은 장소에
+      // 우연히 있다는 이유로 다른 인물의 대화 장면에 끌어오지 않는다.
+      if(!routineCanInclude(other,c.id))return false;
       const otherEvent=baseEventFor(other,date);
       if(otherEvent.transit||sceneIsSleeping(current)!==sceneIsSleeping(otherEvent))return false;
       const reservedScene=committedSharedSceneFor(other,date,otherEvent);
@@ -4094,7 +4273,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const lockedPartner=explicitDatePartner||explicitSharedPartner||explicitCurrentPartner;
   const group=[c,...together],preferred=lockedPartner
     ?{first:c,second:lockedPartner,relation:relationList().find(r=>(r.a===c.id&&r.b===lockedPartner.id)||(r.b===c.id&&r.a===lockedPartner.id))}
-    :interactionPair(group);
+    :interactionPair(group,date,place.id);
   if(!preferred)return current;
   // 같은 방에 세 명 이상 있어도 한 캐릭터가 같은 시각에 두 개의 2인 장면에
   // 동시에 끼지 않도록, 장소 전체에서 하나의 결정적인 짝만 선택한다.
@@ -4174,21 +4353,20 @@ function companionAlignedBaseEvent(c,current,date){
   const candidate=relationList().filter(relation=>
     relation?.stayTogether&&relation.temporalStatus!=="past"&&(relation.a===c.id||relation.b===c.id)
   ).map(relation=>({relation,other:state.characters[relation.a===c.id?relation.b:relation.a]}))
-    .filter(({other})=>other&&!activeScheduledRoutine(other,date))
+    .filter(({other})=>other&&other.id!==c.id&&!activeScheduledRoutine(other,date))
     .sort((first,second)=>(relationPriority[second.relation.type]||0)-(relationPriority[first.relation.type]||0))[0];
   if(!candidate)return current;
-  const {other}=candidate,ownerIndex=state.order.indexOf(c.id),otherIndex=state.order.indexOf(other.id);
-  const anchor=ownerIndex>=0&&otherIndex>=0&&ownerIndex<=otherIndex?c:other;
-  const anchorEvent=anchor.id===c.id?current:baseEventFor(anchor,date);
+  const {other}=candidate,otherEvent=baseEventFor(other,date);
   const sleeping=value=>/자는 중|잠든|수면/.test(`${value?.title||""} ${value?.desc||""} ${value?.mood||""}`);
-  if(!anchorEvent||anchorEvent.transit||current.transit||sleeping(anchorEvent)!==sleeping(current))return current;
-  const location={
-    home:Boolean(anchorEvent.home),room:anchorEvent.home?anchorEvent.room:undefined,
-    visitHomeId:anchorEvent.home?(anchorEvent.visitHomeId||anchor.homeId):undefined,
-    placeId:anchorEvent.home?undefined:anchorEvent.placeId,
-    townId:anchorEvent.townId||anchor.townId,transit:false
-  };
-  return {...current,...location,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
+  if(!otherEvent||otherEvent.transit||current.transit||sleeping(otherEvent)!==sleeping(current))return current;
+  const currentHomeId=current.visitHomeId||c.homeId,otherHomeId=otherEvent.visitHomeId||other.homeId;
+  const sameLocation=current.home&&otherEvent.home
+    ?currentHomeId===otherHomeId&&Boolean(current.room)&&current.room===otherEvent.room
+    :!current.home&&!otherEvent.home&&Boolean(current.placeId)&&current.placeId===otherEvent.placeId&&(current.townId||c.townId)===(otherEvent.townId||other.townId);
+  // 동행 관계는 같은 장소에 있을 때 상호작용 우선순위만 높인다.
+  // 한쪽의 방/건물 좌표를 다른 쪽에 복사해 서로 다른 방을 같은 방처럼 만들지 않는다.
+  if(!sameLocation)return current;
+  return {...current,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
 }
 export function eventFor(c,date=new Date()){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);
@@ -4214,7 +4392,11 @@ export function eventFor(c,date=new Date()){
     }
   }
   if(current?.groupInteraction){
-    const sharedMinute=nowMin(date);
+    // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한
+    // 시작 시각을 보존한다. 같은 일정을 다시 열어도 새 시각의 로그가 생기지 않는다.
+    const sharedMinute=current.routineId&&Number.isFinite(Number(current.routineStartMinute))
+      ?Number(current.routineStartMinute)
+      :nowMin(date);
     current.minute=sharedMinute;
     current.time=clock(sharedMinute);
     commitLiveEntry(c,date,current);

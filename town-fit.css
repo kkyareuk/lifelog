@@ -20,6 +20,11 @@
   scrollbar-width:thin!important;
   background:color-mix(in srgb,#d9e9df 78%,var(--bg))!important;
 }
+html.native-app[data-active-tab="town"] .town-map-scroll{scroll-behavior:auto!important}
+html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label{
+  transform:translate(-50%,var(--town-label-offset,129px))!important;
+}
+html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{display:none!important}
 :is(.town-map-scroll,.standard-observe-view .viewport)>.world{
   position:relative!important;
   display:block!important;
@@ -214,10 +219,10 @@
     min-height:var(--town-canvas-height)!important;
     touch-action:pan-x pan-y!important;
   }
-  html.native-app[data-active-tab="town"] .mobile-town-shell:not(.editing) .town-map-scroll .place{
+  html.native-app[data-active-tab="town"] .mobile-town-shell:not(.buildings-editing):not(.decorations-editing) .town-map-scroll .place{
     touch-action:manipulation!important;
   }
-  html.native-app[data-active-tab="town"] .mobile-town-shell.editing .town-map-scroll .place{
+  html.native-app[data-active-tab="town"] .mobile-town-shell:is(.buildings-editing,.decorations-editing) .town-map-scroll .place{
     touch-action:none!important;
   }
 }

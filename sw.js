@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260826-schedule-deletion-hotfix-161";
+const CACHE_VERSION="drawer-village-v20260828-town-177";
 const CORE=[
   "./",
   "./index.html",
@@ -20,6 +20,8 @@ const CORE=[
   "./local-media.js",
   "./speech-styles.js",
   "./character-notifications.js",
+  "./audio.js",
+  "./character-book.css",
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",
   "./fonts/DoHyeon-Regular.ttf",
@@ -49,6 +51,7 @@ const CORE=[
   ,"./assets/home-ui/town.png"
   ,"./assets/home-ui/back.png"
   ,"./assets/home-ui/wood-top.png"
+  ,"./assets/home-ui/relationship-mosaic.png"
   ,"./assets/character-ui/paper.webp"
   ,"./assets/character-ui/wallet.png"
   ,"./assets/character-ui/registration-card.png"
@@ -60,6 +63,8 @@ const CORE=[
   ,"./assets/character-ui/ribbon-manage.png"
   ,"./assets/character-ui/add.png"
   ,"./assets/character-ui/back.png"
+  ,"./assets/audio/shoe-walking.m4a"
+  ,"./assets/audio/shoe-running.m4a"
   ,"./world-assets/building-types/restaurant-handdrawn.png"
 ];
 

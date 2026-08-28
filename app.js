@@ -1,14 +1,15 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260826scheduledeletionhotfix161";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260826scheduledeletionhotfix161";
-import {renderApp, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownEditing, setMobileTownPanel, setSettingsPane, translateDynamicInterface} from "./views.js?v=20260826scheduledeletionhotfix161";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260826mediarestorehotfix134";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260826scheduledeletionhotfix161";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260826scheduledeletionhotfix161";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260826scheduledeletionhotfix161";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260826scheduledeletionhotfix161";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260826scheduledeletionhotfix161";
-import {HOME_SURFACE_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260826scheduledeletionhotfix161";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260826scheduledeletionhotfix161";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260828town177";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260828town177";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260828town177";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260828town177";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260828town177";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260828town177";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260828town177";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260828town177";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260828town177";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828town177";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260828town177";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260828town177";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -52,6 +53,49 @@ let mobileCharacterEditorDetailsCaptured=false;
 let resetScrollAfterRender=false;
 let navigationTabIntent="";
 let pendingFurnitureSelection=null;
+const townMapPositions=new Map();
+const townPlacementHistories=new Map();
+const townPlacementSnapshot=()=>JSON.stringify({
+  places:(state.world.places||[]).map(({id,x,y,imageScale,flipX,mapZ})=>({id,x,y,imageScale,flipX,mapZ})),
+  homes:Object.values(state.homes||{}).filter(home=>home?.townId===state.activeTownId).map(({id,mapX,mapY,mapScale,mapFlipX,mapZ})=>({id,mapX,mapY,mapScale,mapFlipX,mapZ})),
+  decorations:(state.world.decorations||[]).map(({id,x,y,scale,flipX,mapZ})=>({id,x,y,scale,flipX,mapZ}))
+});
+const townPlacementHistory=()=>{
+  if(!townPlacementHistories.has(state.activeTownId))townPlacementHistories.set(state.activeTownId,{undo:[],redo:[]});
+  return townPlacementHistories.get(state.activeTownId);
+};
+function recordTownPlacementSnapshot(snapshot=townPlacementSnapshot()){
+  const history=townPlacementHistory();
+  if(history.undo.at(-1)!==snapshot)history.undo.push(snapshot);
+  if(history.undo.length>60)history.undo.shift();
+  history.redo.length=0;
+}
+function restoreTownPlacementSnapshot(snapshot){
+  const layout=JSON.parse(snapshot||"{}");
+  const assign=(items,values)=>values?.forEach(value=>{const item=items.find(entry=>entry?.id===value.id);if(item)Object.assign(item,value)});
+  assign(state.world.places||[],layout.places);
+  assign(Object.values(state.homes||{}),layout.homes);
+  assign(state.world.decorations||[],layout.decorations);
+  save(true);render();
+}
+function undoTownPlacement(){
+  const history=townPlacementHistory(),snapshot=history.undo.pop();
+  if(!snapshot){showToast({en:"Nothing to undo",ja:"元に戻す配置はありません",ko:"되돌릴 배치가 없어요"}[state.uiLanguage]||"되돌릴 배치가 없어요");return}
+  history.redo.push(townPlacementSnapshot());restoreTownPlacementSnapshot(snapshot);
+}
+function redoTownPlacement(){
+  const history=townPlacementHistory(),snapshot=history.redo.pop();
+  if(!snapshot){showToast({en:"Nothing to redo",ja:"やり直す配置はありません",ko:"다시 실행할 배치가 없어요"}[state.uiLanguage]||"다시 실행할 배치가 없어요");return}
+  history.undo.push(townPlacementSnapshot());restoreTownPlacementSnapshot(snapshot);
+}
+document.addEventListener("keydown",event=>{
+  if(state.activeTab!=="town"||!document.querySelector('.mobile-town-shell[data-town-mode="buildings"],.mobile-town-shell[data-town-mode="decorations"]'))return;
+  if(event.target?.matches?.("input,textarea,select,[contenteditable=true]"))return;
+  const modifier=event.ctrlKey||event.metaKey,key=event.key.toLowerCase();
+  if(!modifier||(key!=="z"&&key!=="y"))return;
+  event.preventDefault();
+  if(key==="y"||(key==="z"&&event.shiftKey))redoTownPlacement();else undoTownPlacement();
+});
 const closeHomeOccupantSheet=()=>{
   document.querySelector("[data-home-occupant-sheet]")?.remove();
   document.querySelector("[data-home-occupant-dismiss]")?.remove();
@@ -147,19 +191,22 @@ function openAudienceDialog(placeId){
   dialog.onclose=()=>{if(dialog.returnValue==="apply"){updatePlace(placeId,{audiences:[...selected]},true);render();showToast("주요 이용층을 적용했습니다")}dialog.remove()};
   document.body.append(dialog);dialog.showModal();
 }
+function openTownHomeResidentsDialog(homeId){
+  const home=state.homes[homeId];if(!home)return;
+  const selected=new Set(state.order.filter(id=>{const character=state.characters[id];return character&&(character.homeId===homeId||(character.residences||[]).some(residence=>residence.homeId===homeId))}));
+  const copy={
+    en:{title:`${home.name} residents`,help:"Choose every character who uses this home.",cancel:"Cancel",apply:"Apply",close:"Close",empty:"No characters yet"},
+    ja:{title:`${home.name}の住人`,help:"この家を利用するキャラクターをすべて選んでください。",cancel:"キャンセル",apply:"適用",close:"閉じる",empty:"キャラクターがまだいません"},
+    ko:{title:`${home.name} 구성원`,help:"이 집을 사용하는 캐릭터를 모두 선택해 주세요.",cancel:"취소",apply:"선택 적용",close:"닫기",empty:"아직 만든 캐릭터가 없어요"}
+  }[state.uiLanguage]||{title:`${home.name} 구성원`,help:"이 집을 사용하는 캐릭터를 모두 선택해 주세요.",cancel:"취소",apply:"선택 적용",close:"닫기",empty:"아직 만든 캐릭터가 없어요"};
+  const dialog=document.createElement("dialog");dialog.className="audience-dialog town-home-residents-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${htmlEsc(copy.title)}</h2><small>${copy.help}</small></div><button value="cancel" aria-label="${copy.close}">×</button></div><div class="audience-dialog-list">${state.order.map(id=>{const character=state.characters[id];return `<button type="button" data-town-home-resident="${htmlEsc(id)}" class="${selected.has(id)?"on":""}">${htmlEsc(character?.name||"")}</button>`}).join("")||`<p>${copy.empty}</p>`}</div><div class="crop-actions"><button value="cancel">${copy.cancel}</button><button class="primary" value="apply">${copy.apply}</button></div></form>`;
+  dialog.querySelectorAll("[data-town-home-resident]").forEach(button=>button.onclick=()=>{const id=button.dataset.townHomeResident;selected.has(id)?selected.delete(id):selected.add(id);button.classList.toggle("on",selected.has(id))});
+  dialog.onclose=()=>{if(dialog.returnValue==="apply"){setHomeResidents(homeId,[...selected]);render()}dialog.remove()};
+  document.body.append(dialog);dialog.showModal();
+}
 const FALLBACK_BUILDING_SHAPES=[
-  {id:"type-generic",name:"기본 건물",src:"world-assets/building-types/generic.png",types:["기타","쇼핑몰"]},
-  {id:"type-cafe",name:"카페",src:"world-assets/building-types/cafe.png",types:["카페"]},
   {id:"type-restaurant",name:"음식점",src:"world-assets/building-types/restaurant-handdrawn.png",types:["음식점"]},
-  {id:"type-hospital",name:"병원",src:"world-assets/building-types/hospital.png",types:["병원"]},
-  {id:"type-office",name:"사무실·관공서",src:"world-assets/building-types/office.png",types:["사무실","관공서"]},
-  {id:"type-shop",name:"옷가게·상점",src:"world-assets/building-types/shop.png",types:["옷가게","쇼핑몰"]},
-  {id:"type-school",name:"학교",src:"world-assets/building-types/school.png",types:["학교"]},
-  {id:"type-lodging",name:"숙박·여관",src:"world-assets/building-types/lodging.png",types:["숙박"]},
-  {id:"type-library",name:"도서관",src:"world-assets/building-types/library.png",types:["도서관"]},
-  {id:"type-theater",name:"공연장",src:"world-assets/building-types/theater.png",types:["공연장"]},
-  {id:"type-park",name:"공원",src:"world-assets/building-types/park.png",types:["공원"]},
-  {id:"type-home",name:"작은 집",src:"world-assets/building-types/home.png",types:[]},
   {id:"drawer-building",name:"쌍둥이 서랍 건물",src:"world-assets/drawer-building.png"},
   {id:"drawer-home",name:"빨간 지붕 건물",src:"world-assets/drawer-home.png"},
   {id:"medieval-castle",name:"중세 성채",src:"world-assets/medieval-castle.svg"},
@@ -242,16 +289,19 @@ function openOutfitEditor(outfitId=""){
   dialog.onclose=()=>{if(dialog.returnValue==="save"){outfit.name=String(new FormData(dialog.querySelector("form")).get("name")||"저장 코디");const index=(character.savedOutfits||[]).findIndex(value=>value.id===outfit.id);index<0?character.savedOutfits.push(outfit):character.savedOutfits.splice(index,1,outfit);save(true)}dialog.remove();render()};
   document.body.append(dialog);dialog.showModal();
 }
-function openBuildingShapeDialog(placeId){
-  const place=state.world.places.find(item=>item.id===placeId);if(!place)return;
+function openBuildingShapeDialog(targetId,targetKind="place"){
+  const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
+  const buildingType=isHome?"집":target.type;
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
-  const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(place.type));
+  const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(buildingType)||isHome&&shape.id==="drawer-home");
   const ordered=[...recommended,...BUILDING_SHAPES.filter(shape=>!recommended.includes(shape))];
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${place.type}</b> 유형에 어울리는 모양을 먼저 보여드려요. 보유한 건물 아이콘 팩의 그림도 이곳에 나타나요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${place.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${buildingType}</b> 유형에 어울리는 모양을 먼저 보여드려요. 보유한 건물 아이콘 팩의 그림도 이곳에 나타나요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${target.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
     if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
-    const shape=BUILDING_SHAPES.find(item=>item.id===button.dataset.buildingShape);
-    updatePlace(placeId,{iconPreset:button.dataset.buildingShape,image:""},true);dialog.close();render();showToast("건물 모양을 바꿨습니다");
+    const iconPreset=button.dataset.buildingShape;
+    if(isHome)updateHome(targetId,{iconPreset,exteriorImage:""},true);
+    else updatePlace(targetId,{iconPreset,image:""},true);
+    dialog.close();render();showToast("건물 모양을 바꿨습니다");
   });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
@@ -259,18 +309,56 @@ const STRUCTURED_APPEARANCE_TAGS=["검은 머리","갈색 머리","금발","백�
 const HAIR_STYLE_ATTRACTION_TAGS=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","시스루 앞머리","일자 앞머리","처피뱅","커튼뱅","옆으로 넘긴 앞머리","앞머리가 한쪽 눈을 가림","앞머리가 양쪽 눈을 가림","올백","슬릭백","보브컷","픽시컷","댄디컷","리프컷","레이어드컷","허쉬컷","샤기컷","울프컷","투블럭","언더컷","모히칸","리젠트","포니테일","사이드 포니테일","트윈테일","양갈래","반묶음","하프업 번","땋은 머리","프렌치 브레이드","피시테일 브레이드","콘로우","박스 브레이드","로우번","하이번","스페이스 번","브레이드 업두","드레드록","히메컷","롱 스트레이트","단발 웨이브","웨이브 스타일","베이비펌","히피펌","가르마펌","고데기 스타일링"];
 const APPEARANCE_TAGS=["안경을 씀","안대","특이동공","세로동공","삼백안","날카로운 눈매","처진 눈매","속눈썹이 김","두꺼운 눈썹","중성적인 인상","부드러운 인상","날카로운 인상","아름다움","잘생김","귀여움","우아함","위압적인 분위기","단정한 분위기","퇴폐적인 분위기","신비로운 분위기","소년미","성숙미"];
 const WEALTH_OPTIONS=["생계가 빠듯함","여유가 적음","평범한 형편","경제적으로 여유로움","부유함","대부호","재산을 알 수 없음"];
+const DAILY_HABIT_OPTIONS=["외출 전 주머니와 가방을 두 번 확인함","문이 잠겼는지 되돌아가 확인함","물건을 늘 같은 자리에 둠","방에 들어오면 바로 손을 씻음","귀가하면 먼저 옷을 갈아입음","신발 방향을 가지런히 맞춤","앉으면 다리를 꼼","생각할 때 손가락이나 펜을 두드림","긴장하면 옷소매를 만짐","혼잣말을 자주 함","콧노래를 흥얼거림","알림을 확인하면 바로 지움","읽던 곳을 접거나 표시함","컵과 휴대폰을 늘 같은 쪽에 둠","이동할 때 벽과 가구에서 거리를 둠","엘리베이터 버튼을 다시 확인함","계단 수를 세며 오르내림","창문을 자주 열어 환기함","빈 방의 불을 바로 끔","방을 나설 때 뒤를 돌아봄","옷깃과 소매를 자주 정리함","머리카락을 귀 뒤로 넘김","대화할 때 눈을 오래 마주침","대화할 때 시선을 자주 피함","해야 할 말을 짧게 메모함","씻고 나면 물기를 바로 닦음","손에 뭔가를 쥐고 있어야 편함","자리에 앉기 전에 주변을 정돈함","문을 닫을 때 소리가 나지 않게 잡음","기다릴 때 발끝으로 박자를 탐"];
+const BEHAVIOR_HABIT_GROUPS={
+  "무의식적인 몸짓":["생각할 때 엄지손가락 마디를 문지름","머리카락 끝을 손가락에 감음","소매 끝을 손안에 말아 쥠","대답을 고를 때 입술 안쪽을 깨묾","기분이 좋으면 발뒤꿈치를 가볍게 들썩임","경계하면 출입구 쪽으로 몸을 틀어 둠","의자에 앉기 전 등받이를 한 번 짚음","집중하면 숨을 잠깐 멈췄다가 내쉼"],
+  "표정과 시선":["웃음을 참을 때 한쪽 입꼬리만 올라감","당황하면 눈을 빠르게 두 번 깜박임","생각에 잠기면 시선이 왼쪽 위로 향함","속마음을 숨길 때 턱에 힘이 들어감","호기심이 생기면 상대 쪽으로 고개를 기울임","불편하면 상대의 눈보다 손을 바라봄","진지한 이야기를 들을 때 눈썹 사이가 좁아짐","안심하면 어깨와 눈매가 함께 풀림"],
+  "말과 반응":["대답하기 전에 짧게 숨을 고름","확신이 없으면 문장을 중간에 고쳐 말함","기뻐도 목소리가 크게 높아지지 않음","흥분하면 설명 순서가 앞뒤로 섞임","장난을 들으면 한 박자 늦게 웃음","진심을 말한 뒤 가벼운 농담을 덧붙임","낯선 사람의 이름을 속으로 한 번 되뇌임","고마울 때 말보다 작은 행동으로 먼저 답함"],
+  "감정이 새는 순간":["불안하면 주변 물건의 모서리를 맞춤","화가 나면 목소리보다 말수가 먼저 줄어듦","서운하면 혼자 있을 자리를 찾음","긴장이 풀리면 갑자기 말이 많아짐","부끄러우면 귀나 목덜미를 만짐","걱정할 때 같은 화면이나 문장을 다시 확인함","기쁜 일을 들으면 가장 먼저 챙길 사람을 떠올림","마음이 복잡하면 손을 씻으며 생각을 정리함"]
+};
+const BEHAVIOR_HABIT_OPTIONS=Object.values(BEHAVIOR_HABIT_GROUPS).flat();
+const DAILY_HABIT_GROUPS={
+  "정리·위생":["물건을 늘 같은 자리에 둠","방에 들어오면 바로 손을 씻음","신발 방향을 가지런히 맞춤","창문을 자주 열어 환기함","빈 방의 불을 바로 끔","씻고 나면 물기를 바로 닦음","자리에 앉기 전에 주변을 정돈함"],
+  "확인·시간":["외출 전 주머니와 가방을 두 번 확인함","문이 잠겼는지 되돌아가 확인함","알림을 확인하면 바로 지움","엘리베이터 버튼을 다시 확인함","계단 수를 세며 오르내림","해야 할 말을 짧게 메모함"],
+  "사소한 몸짓":["앉으면 다리를 꼼","생각할 때 손가락이나 펜을 두드림","긴장하면 옷소매를 만짐","혼잣말을 자주 함","콧노래를 흥얼거림","방을 나설 때 뒤를 돌아봄","옷깃과 소매를 자주 정리함","머리카락을 귀 뒤로 넘김","대화할 때 눈을 오래 마주침","대화할 때 시선을 자주 피함","손에 뭔가를 쥐고 있어야 편함","문을 닫을 때 소리가 나지 않게 잡음","기다릴 때 발끝으로 박자를 탐"],
+  "공간·물건":["귀가하면 먼저 옷을 갈아입음","읽던 곳을 접거나 표시함","컵과 휴대폰을 늘 같은 쪽에 둠","이동할 때 벽과 가구에서 거리를 둠"]
+};
+const EATING_HABIT_OPTIONS=["식사 후 꼭 양치함","식사 후 가글함","쩝쩝거리며 먹음","소리 없이 조용히 먹음","음식 사진부터 찍음","먹기 전 냄새부터 맡음","맛을 꼼꼼히 비평함","맛있으면 감탄을 크게 표현함","접시를 깨끗이 비움","늘 조금 남김","좋아하는 음식은 맨 마지막에 먹음","좋아하는 음식은 맨 먼저 먹음","음식끼리 섞지 않고 따로 먹음","반찬을 한입씩 번갈아 먹음","휴대폰을 보며 먹음","책을 읽으며 먹음","TV를 보며 먹음","식사 중 대화를 즐김","물이나 음료를 많이 마심","식사 중에는 거의 마시지 않음","소스나 후추를 꼭 더함","나온 간을 바꾸지 않고 먹음","천천히 오래 씹음","아주 빠르게 먹음","다른 사람 몫을 먼저 챙김","음식을 자주 나눠 줌","늘 같은 자리에 앉음","같은 식기만 골라 씀","젓가락질이나 식기 사용이 독특함","음식을 한입 크기로 잘라 먹음"];
+const HABIT_TRANSLATIONS={
+  en:Object.fromEntries([...DAILY_HABIT_OPTIONS,...EATING_HABIT_OPTIONS].map((value,index)=>[value,["Checks pockets and bag twice before leaving","Goes back to check whether the door is locked","Always keeps belongings in the same place","Washes hands immediately after entering a room","Changes clothes first after coming home","Lines shoes up neatly","Crosses legs when seated","Taps fingers or a pen while thinking","Touches sleeves when nervous","Often talks to themself","Hums frequently","Clears notifications immediately","Folds or marks the page being read","Keeps cup and phone on the same side","Keeps distance from walls and furniture while moving","Checks the elevator button again","Counts steps on stairs","Opens windows often to air the room","Turns off lights in empty rooms immediately","Looks back when leaving a room","Frequently straightens collar and sleeves","Tucks hair behind the ear","Maintains eye contact for a long time","Frequently avoids eye contact","Writes short notes for things to say","Wipes up water immediately after washing","Feels comfortable holding something","Tidies the area before sitting down","Holds the door so it closes quietly","Taps a beat with toes while waiting","Always brushes teeth after meals","Gargles after meals","Chews noisily","Eats silently","Takes food photos first","Smells food before eating","Habitually critiques the taste","Expresses delight loudly when food is good","Cleans the plate","Always leaves a little","Saves favorite food for last","Eats favorite food first","Keeps foods separate","Alternates side dishes one bite at a time","Uses the phone while eating","Reads while eating","Watches TV while eating","Enjoys conversation during meals","Drinks a lot of water or beverages","Rarely drinks during meals","Always adds sauce or pepper","Does not alter the seasoning","Chews slowly and thoroughly","Eats very quickly","Serves others first","Often shares food","Always sits in the same seat","Chooses the same utensils","Uses chopsticks or utensils in a distinctive way","Cuts food into bite-size pieces"][index]])),
+  ja:Object.fromEntries([...DAILY_HABIT_OPTIONS,...EATING_HABIT_OPTIONS].map((value,index)=>[value,["外出前にポケットとかばんを二度確認する","鍵をかけたか戻って確認する","物をいつも同じ場所に置く","部屋に入るとすぐ手を洗う","帰宅するとまず着替える","靴の向きをきれいにそろえる","座ると脚を組む","考える時に指やペンで音を立てる","緊張すると袖を触る","独り言が多い","よく鼻歌を歌う","通知を確認したらすぐ消す","読んだ所を折る・印を付ける","コップとスマホをいつも同じ側に置く","移動時に壁や家具から距離を取る","エレベーターのボタンを再確認する","階段の段数を数える","よく窓を開けて換気する","空室の照明をすぐ消す","部屋を出る時に振り返る","襟や袖をよく整える","髪を耳にかける","会話中に長く目を合わせる","会話中によく視線をそらす","言うことを短くメモする","洗った後すぐ水気を拭く","何かを握っていると落ち着く","座る前に周りを整える","音がしないよう扉を押さえる","待つ間つま先で拍子を取る","食後は必ず歯を磨く","食後にうがいをする","音を立てて食べる","静かに食べる","まず料理の写真を撮る","食べる前に香りを嗅ぐ","味を細かく批評する","おいしいと大きく感嘆する","皿をきれいに空ける","いつも少し残す","好きな物を最後に食べる","好きな物を最初に食べる","料理を混ぜず別々に食べる","おかずを一口ずつ交互に食べる","スマホを見ながら食べる","本を読みながら食べる","テレビを見ながら食べる","食事中の会話を楽しむ","水や飲み物をたくさん飲む","食事中はほとんど飲まない","必ずソースや胡椒を足す","出された味付けを変えない","ゆっくりよく噛む","とても速く食べる","他人の分を先に用意する","よく料理を分ける","いつも同じ席に座る","同じ食器だけを選ぶ","箸や食器の使い方が独特","一口大に切って食べる"][index]]))
+};
+const BEHAVIOR_TRANSLATION_VALUES={
+  en:["Rubs the thumb joint while thinking","Twists the ends of their hair around a finger","Rolls a sleeve edge into the palm","Bites the inside of the lip while choosing an answer","Lightly bounces on the heels when pleased","Turns the body toward an exit when wary","Touches the chair back before sitting","Briefly holds a breath while concentrating","Only one corner of the mouth rises when suppressing laughter","Blinks twice quickly when flustered","Looks up and left while thinking","Tenses the jaw when hiding feelings","Tilts the head toward something curious","Looks at the other person's hands instead of their eyes when uncomfortable","Draws the brows together during serious conversations","Shoulders and eyes relax together when reassured","Takes a short breath before answering","Restarts a sentence when uncertain","Voice barely rises even when delighted","Explanations lose their order when excited","Laughs a beat late at jokes","Adds a light joke after saying something sincere","Repeats an unfamiliar name silently once","Answers gratitude with a small action before words","Aligns nearby object corners when anxious","Goes quiet before the voice rises when angry","Looks for a place to be alone when hurt","Suddenly becomes talkative once tension lifts","Touches the ear or nape when embarrassed","Rechecks the same screen or sentence when worried","Thinks first of someone to care for after good news","Sorts out tangled thoughts while washing hands"],
+  ja:["考える時に親指の関節をなでる","毛先を指に巻き付ける","袖口を手のひらに丸め込む","答えを選ぶ時に唇の内側を噛む","嬉しいと踵を軽く弾ませる","警戒すると出口側へ体を向ける","座る前に椅子の背へ一度触れる","集中すると一瞬息を止めてから吐く","笑いをこらえると片方の口角だけ上がる","戸惑うと素早く二度まばたきする","考え込むと左上を見る","本音を隠す時に顎へ力が入る","興味を持つと相手側へ首を傾ける","居心地が悪いと相手の目より手を見る","真剣な話では眉間が狭くなる","安心すると肩と目元が一緒に緩む","答える前に短く息を整える","自信がないと文を途中で言い直す","嬉しくても声があまり高くならない","興奮すると説明の順番が前後する","冗談に一拍遅れて笑う","本音の後に軽い冗談を添える","知らない名前を心の中で一度繰り返す","感謝には言葉より小さな行動で先に返す","不安になると周囲の物の角をそろえる","怒ると声より先に口数が減る","傷つくと一人になれる場所を探す","緊張が解けると急に話が増える","恥ずかしいと耳やうなじに触れる","心配すると同じ画面や文を確認し直す","良い知らせにはまず世話をしたい人を思う","手を洗いながら複雑な考えを整える"]
+};
+for(const language of ["en","ja"])BEHAVIOR_HABIT_OPTIONS.forEach((value,index)=>{HABIT_TRANSLATIONS[language][value]=BEHAVIOR_TRANSLATION_VALUES[language][index]||value});
+const HABIT_CATEGORY_TRANSLATIONS={
+  en:{"정리·위생":"Tidying & hygiene","확인·시간":"Checking & time","사소한 몸짓":"Small gestures","공간·물건":"Spaces & objects","무의식적인 몸짓":"Unconscious gestures","표정과 시선":"Expression & gaze","말과 반응":"Speech & response","감정이 새는 순간":"When emotions show"},
+  ja:{"정리·위생":"整理・衛生","확인·시간":"確認・時間","사소한 몸짓":"小さな仕草","공간·물건":"空間・持ち物","무의식적인 몸짓":"無意識の仕草","표정과 시선":"表情・視線","말과 반응":"言葉・反応","감정이 새는 순간":"感情が漏れる瞬間"}
+};
 const PROFILE_TAG_OPTIONS={
   attractedGenders:["남성","여성","그외","없음"],
   appearanceTags:APPEARANCE_TAGS,
-  attractionTraits:[...new Set([...STRUCTURED_APPEARANCE_TAGS,...HAIR_STYLE_ATTRACTION_TAGS,...APPEARANCE_TAGS,"단정한 사람","자기 관리를 잘함","전문직","예술가 기질","제복이 어울림","지적인 분위기","말투가 다정함","목소리가 좋음","능력 있는 사람","성실한 사람","책임감이 강함","리더십이 있음","침착한 사람","유머 감각이 있음","자신감이 있음","수줍은 사람","상냥한 사람","강단 있는 사람","신비로운 사람","위험한 분위기","연상","연하","동갑",...WEALTH_OPTIONS])]
+  attractionTraits:[...new Set([...STRUCTURED_APPEARANCE_TAGS,...HAIR_STYLE_ATTRACTION_TAGS,...APPEARANCE_TAGS,"단정한 사람","자기 관리를 잘함","전문직","예술가 기질","제복이 어울림","지적인 분위기","말투가 다정함","목소리가 좋음","능력 있는 사람","성실한 사람","책임감이 강함","리더십이 있음","침착한 사람","유머 감각이 있음","자신감이 있음","수줍은 사람","상냥한 사람","강단 있는 사람","신비로운 사람","위험한 분위기","연상","연하","동갑",...WEALTH_OPTIONS])],
+  dailyHabits:DAILY_HABIT_OPTIONS,
+  behaviorHabits:BEHAVIOR_HABIT_OPTIONS,
+  eatingHabits:EATING_HABIT_OPTIONS
 };
 PROFILE_TAG_OPTIONS.dislikedAttractionTraits=PROFILE_TAG_OPTIONS.attractionTraits;
 function openProfileTagsDialog(field){
   const character=active(),options=PROFILE_TAG_OPTIONS[field];if(!character||!options)return;
   let selected=[...(character[field]||[])].filter(value=>field!=="appearanceTags"||options.includes(value));
-  const titles={attractedGenders:"성지향 설정",appearanceTags:"외모 태그 정하기",attractionTraits:"끌리는 특징 정하기",dislikedAttractionTraits:"비선호하는 특징 정하기"};
+  const language=state.uiLanguage||"ko";
+  const titles={ko:{attractedGenders:"성지향 설정",appearanceTags:"외모 태그 정하기",attractionTraits:"끌리는 특징 정하기",dislikedAttractionTraits:"비선호하는 특징 정하기",dailyHabits:"생활습관 정하기",behaviorHabits:"행동 습관 정하기",eatingHabits:"식습관 정하기"},en:{attractedGenders:"Orientation",appearanceTags:"Appearance tags",attractionTraits:"Attractive traits",dislikedAttractionTraits:"Disliked traits",dailyHabits:"Everyday habits",behaviorHabits:"Behavior habits",eatingHabits:"Eating habits"},ja:{attractedGenders:"性的指向",appearanceTags:"外見タグ",attractionTraits:"惹かれる特徴",dislikedAttractionTraits:"苦手な特徴",dailyHabits:"生活習慣",behaviorHabits:"行動の癖",eatingHabits:"食習慣"}};
+  const copy={ko:{multi:"여러 개를 선택할 수 있어요.",none:" ‘없음’을 고르면 다른 선택은 해제돼요.",cancel:"취소",save:"저장"},en:{multi:"You can select multiple items.",none:" Selecting ‘None’ clears the other choices.",cancel:"Cancel",save:"Save"},ja:{multi:"複数選択できます。",none:"「なし」を選ぶと他の選択は解除されます。",cancel:"キャンセル",save:"保存"}}[language]||null;
+  const localized=value=>HABIT_TRANSLATIONS[language]?.[value]||value;
   const dialog=document.createElement("dialog");dialog.className="profile-tags-dialog";
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${titles[field]}</h2><small>여러 개를 선택할 수 있어요.${field==="attractedGenders"?" ‘없음’을 고르면 다른 선택은 해제돼요.":""}</small></div><button value="cancel">×</button></div><div class="profile-tag-grid">${options.map(value=>`<button type="button" data-profile-tag="${value}" class="${selected.includes(value)?"on":""}">${value}</button>`).join("")}</div><div class="crop-actions"><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  const categoryGroups=field==="dailyHabits"?DAILY_HABIT_GROUPS:field==="behaviorHabits"?BEHAVIOR_HABIT_GROUPS:null;
+  const optionsMarkup=categoryGroups
+    ?Object.entries(categoryGroups).map(([category,values])=>`<section class="profile-tag-category"><h3>${HABIT_CATEGORY_TRANSLATIONS[language]?.[category]||category}</h3><div>${values.map(value=>`<button type="button" data-profile-tag="${value}" class="${selected.includes(value)?"on":""}">${localized(value)}</button>`).join("")}</div></section>`).join("")
+    :options.map(value=>`<button type="button" data-profile-tag="${value}" class="${selected.includes(value)?"on":""}">${localized(value)}</button>`).join("");
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${titles[language]?.[field]||titles.ko[field]}</h2><small>${copy?.multi||"여러 개를 선택할 수 있어요."}${field==="attractedGenders"?(copy?.none||" ‘없음’을 고르면 다른 선택은 해제돼요."):""}</small></div><button value="cancel">×</button></div><div class="profile-tag-grid ${categoryGroups?"has-categories":""}">${optionsMarkup}</div><div class="crop-actions"><button value="cancel">${copy?.cancel||"취소"}</button><button class="primary" value="save">${copy?.save||"저장"}</button></div></form>`;
   dialog.querySelectorAll("[data-profile-tag]").forEach(button=>button.onclick=()=>{
     const value=button.dataset.profileTag;
     if(field==="attractedGenders"){
@@ -297,10 +385,10 @@ function profileExportLines(character){
   const leftEye=exportValue(appearance.leftEyeColor),rightEye=exportValue(appearance.rightEyeColor);
   const eyeColor=leftEye&&rightEye&&leftEye!==rightEye?`왼쪽 ${leftEye} · 오른쪽 ${rightEye}`:leftEye||rightEye;
   const sections=[
-    exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["끌리는 대상",character.attractionTarget],["새로운 사람에게 끌리는 정도",character.relationshipOpenness],["직업",character.jobTitle||character.job],["생일",character.birthday?`${character.birthday.slice(0,2)}월 ${character.birthday.slice(2)}일`:""],["재산",character.wealth],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 특징",listText(character.attractionTraits)]]),
+    exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["끌리는 대상",character.attractionTarget],["새로운 사람에게 끌리는 정도",character.relationshipOpenness],["직업",character.jobTitle||character.job],["교육 수준",character.educationLevel],["생활 환경 적응도",character.lifeAdaptation],["생일",character.birthday?`${character.birthday.slice(0,2)}월 ${character.birthday.slice(2)}일`:""],["재산",character.wealth],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 특징",listText(character.attractionTraits)]]),
     exportSection("성격",[["전체적인 유형",listText(character.personalityTypes)],["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["패션 감각",character.fashionSense],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm],["유머·장난 성향",character.humorStyle],["감정 표현의 크기",character.emotionalExpression],["충동을 참는 정도",character.impulseControl],["서사·인지 특성",listText(character.characterTraits)],["장면에 반영할 특성 표현",listText(character.traitExpressions)],["특성 표현 메모",character.traitNotes],["메모를 로그에 반영",character.traitNotesInScripts?"사용":""]]),
-    exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["머리 결",appearance.hairTexture],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
-    exportSection("건강·장애·접근성",[["만성질환·건강 관리",listText(body.healthConditions)],["기타 건강 상태",body.healthOther],["휠체어",wheelchair.type],["휠체어 이용 방식",wheelchair.pattern],["의수 사용 부위",arm.side],["의수 종류",arm.custom||arm.type],["의족 사용 부위",leg.side],["의족 종류",leg.custom||leg.type],["청각장애·난청 부위",hearing.side],["청각 특성",hearing.level],["청각 접근 방식",listText(hearing.supports)],["시각장애·저시력 부위",vision.side],["시각 특성",vision.level],["시각 접근 방식",listText(vision.supports)],["상호작용에서 지킬 방식",listText(body.accessibilityPreferences)],["표현 메모",body.notes]]),
+    exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["자기 외형에 대한 인식",body.appearanceAwareness],["총평",listText(body.appearanceSummaries)],["분위기",listText(body.overallImpressions)],["피부색",body.skinTone],["피부 특징",listText(body.skinFeatures)],["흉터",listText((body.scars||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["문신",listText((body.tattoos||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["곱슬기",appearance.hairTexture],["머릿결",appearance.hairCondition],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
+    exportSection("건강·장애·접근성",[["만성질환·건강 관리",listText(body.healthConditions)],["기타 건강 상태",body.healthOther],["휠체어",wheelchair.type],["휠체어 이용 방식",wheelchair.pattern],["의수 사용 부위",arm.side],["의수 종류",arm.custom||arm.type],["의족 사용 부위",leg.side],["의족 종류",leg.custom||leg.type],["청각장애·난청 부위",hearing.side],["청각 특성",hearing.level],["청각 접근 방식",listText(hearing.supports)],["시각장애·저시력 부위",vision.side],["시각 특성",vision.level],["시각 접근 방식",listText(vision.supports)],["병원 방문 빈도",body.hospitalVisitFrequency],["병원 방문 목적",body.hospitalVisitPurpose],["복용중인 약",listText((body.medications||[]).map(item=>`${item.name} · ${item.purpose} · ${item.frequency}`))],["상호작용에서 지킬 방식",listText(body.accessibilityPreferences)],["표현 메모",body.notes]]),
     exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]])
   ];
   return sections.filter(Boolean);
@@ -690,26 +778,55 @@ function openRoomIllustrations(homeId,roomKey){
   dialog.querySelectorAll("[data-room-illustration]").forEach(button=>button.onclick=()=>{setHomeImage(homeId,roomKey,roomIllustration(room.type,Number(button.dataset.roomIllustration)));dialog.close();render()});
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
+const buildingInteriorIllustration=(building,index=0)=>{
+  const type=String(building?.type||"기타"),roomType=/음식점|카페/.test(type)?"kitchen":/병원|사무실|학교|도서관|관공서/.test(type)?"study":/숙박|집/.test(type)?"living":"other";
+  return roomIllustration(roomType,index);
+};
+function openBuildingInteriorIllustrations(targetKind,targetId){
+  const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
+  const building=isHome?{...target,type:"집"}:target;
+  const copy={en:{title:"Choose a game illustration",warm:"Warm interior",calm:"Calm interior",close:"Close"},ja:{title:"ゲーム内イラストを選ぶ",warm:"あたたかな内観",calm:"落ち着いた内観",close:"閉じる"},ko:{title:"게임 기본 일러스트 선택",warm:"포근한 내부",calm:"차분한 내부",close:"닫기"}}[state.uiLanguage]||{title:"게임 기본 일러스트 선택",warm:"포근한 내부",calm:"차분한 내부",close:"닫기"};
+  const dialog=document.createElement("dialog");dialog.className="room-illustration-dialog place-interior-illustration-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><h2>${copy.title}</h2><button value="close" aria-label="${copy.close}">×</button></div><div class="room-illustration-grid">${[0,1].map(index=>`<button type="button" data-building-interior-illustration="${index}" style="background-image:url('${buildingInteriorIllustration(building,index)}')"><span>${index?copy.calm:copy.warm}</span></button>`).join("")}</div></form>`;
+  dialog.querySelectorAll("[data-building-interior-illustration]").forEach(button=>button.onclick=()=>{const image=buildingInteriorIllustration(building,Number(button.dataset.buildingInteriorIllustration));if(isHome)setHomeBackground(targetId,image);else setPlaceInteriorImage(targetId,image);dialog.close();render()});
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+}
+function openBuildingInteriorImageMenu(targetKind,targetId){
+  const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
+  const copy={
+    en:{eyebrow:"Interior image",title:"How would you like to add it?",game:"Game illustration",gameHelp:"Choose a built-in interior",link:"Add a link",linkHelp:"Use a public image URL",device:"Upload from device",deviceHelp:"Choose a photo on this device",close:"Close"},
+    ja:{eyebrow:"内観画像",title:"追加方法を選んでください",game:"ゲーム内イラスト",gameHelp:"用意された内観から選択",link:"リンクを追加",linkHelp:"公開画像URLを使用",device:"端末からアップロード",deviceHelp:"この端末の写真を選択",close:"閉じる"},
+    ko:{eyebrow:"내부 사진",title:"어떤 방식으로 추가할까요?",game:"게임 기본 일러 선택",gameHelp:"게임에 준비된 내부 그림",link:"링크 추가",linkHelp:"공개 이미지 주소 사용",device:"기기에서 업로드",deviceHelp:"이 기기에 저장된 사진",close:"닫기"}
+  }[state.uiLanguage]||{eyebrow:"내부 사진",title:"어떤 방식으로 추가할까요?",game:"게임 기본 일러 선택",gameHelp:"게임에 준비된 내부 그림",link:"링크 추가",linkHelp:"공개 이미지 주소 사용",device:"기기에서 업로드",deviceHelp:"이 기기에 저장된 사진",close:"닫기"};
+  const dialog=document.createElement("dialog");dialog.className="room-image-dialog place-interior-image-dialog";
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.close}">×</button></div><div class="room-image-choice"><button type="button" data-building-interior-source="game">🎨<b>${copy.game}</b><small>${copy.gameHelp}</small></button><button type="button" data-building-interior-source="link">🔗<b>${copy.link}</b><small>${copy.linkHelp}</small></button><button type="button" data-building-interior-source="device">🖼️<b>${copy.device}</b><small>${copy.deviceHelp}</small></button></div></form>`;
+  dialog.querySelector('[data-building-interior-source="game"]').onclick=()=>{dialog.close();openBuildingInteriorIllustrations(targetKind,targetId)};
+  dialog.querySelector('[data-building-interior-source="link"]').onclick=()=>{dialog.close();useImageUrl(isHome?"home":"placeInterior",targetId)};
+  dialog.querySelector('[data-building-interior-source="device"]').onclick=()=>{dialog.close();pickImage(isHome?"home":"placeInterior",targetId)};
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+}
+const openPlaceInteriorImageMenu=placeId=>openBuildingInteriorImageMenu("place",placeId);
 function openRoomEditor(homeId,roomKey){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
   const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
   const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
   const currentFloorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
   const currentWallMaterial=normalizeWallSurface(room.wallMaterial,currentFloorMaterial,room.type);
-  const surfaceOptions=HOME_SURFACE_KEYS.map(value=>`<option value="${value}" ${currentFloorMaterial===value?"selected":""}>${homeSurfaceLabel(value,"ko")}</option>`).join("");
-  const wallOptions=HOME_SURFACE_KEYS.map(value=>`<option value="${value}" ${currentWallMaterial===value?"selected":""}>${homeSurfaceLabel(value,"ko")}</option>`).join("");
+  const surfaceOptions=HOME_SURFACE_KEYS.map(value=>`<option value="${value}" ${currentFloorMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
+  const wallOptions=HOME_WALL_KEYS.map(value=>`<option value="${value}" ${currentWallMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
   const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>방 사진 표시<select name="imageFit"><option value="contain" ${room.imageFit!=="cover"?"selected":""}>전체 보기 · 자르지 않음</option><option value="cover" ${room.imageFit==="cover"?"selected":""}>공간 채우기 · 가장자리 잘림</option></select><small>침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
   const floorField=document.createElement("label");
-  floorField.innerHTML=`바닥재<select name="floorMaterial">${surfaceOptions}<option value="custom" ${currentFloorMaterial==="custom"?"selected":""}>${homeSurfaceLabel("custom","ko")}</option></select><small>보내 주신 다섯 재질 중 하나를 고르거나 직접 그린 바닥을 넣을 수 있어요.</small>`;
+  const floorHelp={ko:"바닥 타일은 반복하며 벽을 유지하고, 방 전체 그림은 자르거나 반복하지 않고 벽을 숨겨요.",en:"Floor tiles repeat and keep the wall. A full-room illustration is not cropped or repeated and hides the wall.",ja:"床タイルは繰り返して壁を残します。部屋全体のイラストは切り抜きや繰り返しをせず、壁を非表示にします。"}[state.uiLanguage]||"";
+  floorField.innerHTML=`바닥재<select name="floorMaterial">${surfaceOptions}<option value="customTile" ${currentFloorMaterial==="customTile"?"selected":""}>${homeSurfaceLabel("customTile",state.uiLanguage)}</option><option value="custom" ${currentFloorMaterial==="custom"?"selected":""}>${homeSurfaceLabel("custom",state.uiLanguage)}</option></select><small>${floorHelp}</small>`;
   dialog.querySelector(".room-editor-fields").insertBefore(floorField,dialog.querySelector('[name="imageFit"]').closest("label"));
   const wallField=document.createElement("label");
-  wallField.innerHTML=`벽 재질<select name="wallMaterial"><option value="same" ${currentWallMaterial==="same"?"selected":""}>${homeSurfaceLabel("same","ko")}</option>${wallOptions}</select><small>방 위쪽에 벽면을 세우고 짙은 갈색 테두리로 바닥과 구분해요.</small>`;
+  wallField.innerHTML=`벽지<select name="wallMaterial">${wallOptions}</select><small>직접 그린 벽지 7종 가운데 방에 어울리는 무늬를 골라 주세요.</small>`;
   floorField.after(wallField);
   const floorButton=document.createElement("button");
   floorButton.type="button";floorButton.className="room-editor-photo room-editor-floor";floorButton.dataset.editRoomFloor="";
   const floorSource=()=>homeSurfaceImage(dialog.querySelector('[name="floorMaterial"]').value,room.floorImage,room.type);
-  const drawFloorButton=()=>{const custom=dialog.querySelector('[name="floorMaterial"]').value==="custom";floorButton.innerHTML=`<span style="background-image:url('${floorSource()}')"></span><b>${custom&&room.floorImage?"직접 그린 바닥 변경":"직접 그린 바닥 첨부"}</b>`};
+  const drawFloorButton=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value,custom=["custom","customTile"].includes(mode);floorButton.innerHTML=`<span style="background-image:url('${floorSource()}')"></span><b>${custom&&room.floorImage?(mode==="custom"?"방 전체 그림 변경":"바닥 타일 변경"):"바닥 이미지 첨부"}</b>`};
   drawFloorButton();dialog.querySelector("[data-edit-room-photo]").before(floorButton);
   dialog.querySelector("[data-edit-room-photo] b").textContent=room.image?"방 사진 변경":"방 사진 추가하기";
   dialog.querySelector("[data-edit-room-photo]").setAttribute("aria-label","관찰·집 정보용 방 사진");
@@ -723,7 +840,7 @@ function openRoomEditor(homeId,roomKey){
   dialog.querySelector('[name="floorMaterial"]').onchange=drawFloorButton;
   dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
-  floorButton.onclick=()=>{dialog.querySelector('[name="floorMaterial"]').value="custom";sync();dialog.returnValue="floor";dialog.close();pickImage("roomFloor",homeId,roomKey)};
+  floorButton.onclick=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value==="customTile"?"customTile":"custom";dialog.querySelector('[name="floorMaterial"]').value=mode;sync();dialog.returnValue="floor";dialog.close();pickImage(mode==="customTile"?"roomFloor":"roomScene",homeId,roomKey)};
   dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
   dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
   dialog.onclose=()=>{if(dialog.returnValue==="save"){sync();save(true);render()}dialog.remove()};
@@ -907,8 +1024,8 @@ function bindFurniturePlacementEditors(){
     const patch=command==="smaller"?{scale:current.scale-.25}
       :command==="larger"?{scale:current.scale+.25}
       :command==="rotate"?{rotation:current.rotation+15}
-      :command==="back"?{layer:current.layer-1}
-      :command==="front"?{layer:current.layer+1}:{};
+      :command==="back"?{layerAction:"back"}
+      :command==="front"?{layerAction:"front"}:{};
     const next=updateFurniturePlacement(homeId,roomKey,placementId,patch,true);if(next&&selected)setFurniturePlacementStyle(selected,next);
   });
   if(pendingFurnitureSelection){
@@ -1158,11 +1275,22 @@ function render({force=false}={}){
   // and made the entire app untappable. Always recover from that stale state
   // before rebuilding the screen; navigation no longer disables pointer input.
   document.documentElement.classList.remove("page-switching");
-  const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender;
+  // 전체설정 책은 main의 스크롤 위치와 무관한 412×917 고정 무대다.
+  // 팝업이 포커스를 옮기며 main.scrollTop을 바꿔도 그 값을 책 화면에
+  // 복원하지 않아야 상단 메뉴와 책 전체가 함께 위로 튕기지 않는다.
+  const fullCharacterBookActive=state.activeTab==="character"&&state.characterSettingsView==="full";
+  const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender&&!fullCharacterBookActive;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
   // 앱에서는 window가 아니라 main이 실제 세로 스크롤을 담당한다. 이 값을
   // 따로 보존하지 않으면 취향 도감의 모든 재렌더가 화면을 맨 위로 보낸다.
   const previousMain=document.querySelector("#app>main"),previousMainLeft=previousMain?.scrollLeft||0,previousMainTop=previousMain?.scrollTop||0;
+  // 마을 지도는 main이 아니라 전용 양방향 스크롤러가 좌표를 가진다.
+  // 건물/장식 편집으로 DOM을 다시 만들 때 이 좌표를 잃으면 지도가 항상
+  // 좌상단으로 튀므로, 동일 탭 재렌더에서는 지도 자체의 좌표도 보존한다.
+  const previousTownScroller=document.querySelector(".town-map-scroll");
+  const previousTownId=previousTownScroller?.closest(".mobile-town-shell")?.dataset.townId||state.activeTownId;
+  if(previousTownScroller&&previousTownId)townMapPositions.set(previousTownId,{left:previousTownScroller.scrollLeft,top:previousTownScroller.scrollTop});
+  const previousTownPosition=state.activeTab==="town"?(townMapPositions.get(state.activeTownId)||null):null;
   const openCatalogKeys=[...document.querySelectorAll(".catalog-dex-card[open]")].map(card=>{
     const field=card.querySelector("[data-catalog-field][data-kind][data-item]");
     return field?`${field.dataset.kind}:${field.dataset.item}`:"";
@@ -1220,6 +1348,7 @@ function render({force=false}={}){
     }
     bind();
     applyTheme();
+    requestAnimationFrame(()=>syncMovementAudio(state));
     requestAnimationFrame(bindRelationshipRoulette);
     requestAnimationFrame(restoreMobileCharacterDialogs);
     requestAnimationFrame(showOnboarding);
@@ -1229,12 +1358,24 @@ function render({force=false}={}){
     // The desktop observation map is already positioned by CSS. Smoothly
     // scrolling its large canvas after every render made the whole site feel
     // delayed and could briefly place an invisible scroll layer over the nav.
-    if(state.activeTab==="town")centerMobileTownMap();
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
+    if(fullCharacterBookActive){
+      const main=document.querySelector("#app>main");
+      if(main){main.scrollLeft=0;main.scrollTop=0}
+      window.scrollTo(0,0);
+    }
     if(preservePageScroll){
       restoreWindowScroll(previousPageX,previousPageY);
       restoreMainScroll(previousMainLeft,previousMainTop,openCatalogKeys);
+      if(previousTownPosition){
+        const restoreTown=()=>{
+          const scroller=document.querySelector(".town-map-scroll");
+          if(scroller){scroller.scrollLeft=previousTownPosition.left;scroller.scrollTop=previousTownPosition.top}
+        };
+        requestAnimationFrame(()=>{restoreTown();requestAnimationFrame(restoreTown)});
+        setTimeout(restoreTown,60);setTimeout(restoreTown,180);
+      }
     }
   }catch(error){
     console.error("화면 복구 필요",error);
@@ -1443,8 +1584,9 @@ function openHomeOccupantSheet(button){
   dialog.setAttribute("role","status");
   const character=button.dataset.characterId?state.characters[button.dataset.characterId]:null,now=new Date(),minute=now.getHours()*60+now.getMinutes();
   const recent=character?timeline(character,now).filter(entry=>Number(entry?.minute)<=minute).slice(-3).reverse():[];
-  const copy={ko:{who:"지금 이 방에 있는 캐릭터",pet:"반려생물",recent:"최근 생활 로그",empty:"아직 표시할 로그가 없어요."},en:{who:"Character in this room",pet:"Companion",recent:"Recent life log",empty:"No life log to show yet."},ja:{who:"この部屋にいる人物",pet:"ペット",recent:"最近の生活ログ",empty:"表示できるログはまだありません。"}}[state.uiLanguage]||null;
-  dialog.innerHTML=`<button class="home-occupant-popover-close" type="button" aria-label="닫기">×</button><div class="home-occupant-sheet-content"><div class="home-occupant-visual"></div><span><small>${button.dataset.homeOccupant==="pet"?copy.pet:copy.who} · ${htmlEsc(button.dataset.occupantRoom||"집 안")}</small><h2></h2><b></b><p></p></span></div>${character?`<section class="home-occupant-recent"><h3>${copy.recent}</h3>${recent.length?`<ol>${recent.map(entry=>`<li><time>${htmlEsc(entry.time||"")}</time><span><b>${htmlEsc(entry.title||"")}</b><small>${htmlEsc(entry.desc||"")}</small></span></li>`).join("")}</ol>`:`<p>${copy.empty}</p>`}</section>`:""}`;
+  const copy={ko:{who:"지금 이 방에 있는 캐릭터",town:"마을에 있는 캐릭터",pet:"반려생물",recent:"최근 생활 로그",empty:"아직 표시할 로그가 없어요."},en:{who:"Character in this room",town:"Character in town",pet:"Companion",recent:"Recent life log",empty:"No life log to show yet."},ja:{who:"この部屋にいる人物",town:"村にいる人物",pet:"ペット",recent:"最近の生活ログ",empty:"表示できるログはまだありません。"}}[state.uiLanguage]||null;
+  const contextLabel=button.dataset.homeOccupant==="pet"?copy.pet:button.dataset.homeOccupant==="town"?copy.town:copy.who;
+  dialog.innerHTML=`<button class="home-occupant-popover-close" type="button" aria-label="닫기">×</button><div class="home-occupant-sheet-content"><div class="home-occupant-visual"></div><span><small>${contextLabel} · ${htmlEsc(button.dataset.occupantRoom||"집 안")}</small><h2></h2><b></b><p></p></span></div>${character?`<section class="home-occupant-recent"><h3>${copy.recent}</h3>${recent.length?`<ol>${recent.map(entry=>`<li><time>${htmlEsc(entry.time||"")}</time><span><b>${htmlEsc(entry.title||"")}</b><small>${htmlEsc(entry.desc||"")}</small></span></li>`).join("")}</ol>`:`<p>${copy.empty}</p>`}</section>`:""}`;
   const sourceVisual=button.querySelector(".avatar,.sprite,.room-pet-icon,.room-pet-photo,.room-pet-emoji");
   if(sourceVisual)dialog.querySelector(".home-occupant-visual").append(sourceVisual.cloneNode(true));
   dialog.querySelector("h2").textContent=button.dataset.occupantName||"이름 없음";
@@ -1460,6 +1602,20 @@ function openHomeOccupantSheet(button){
   requestAnimationFrame(()=>dialog.classList.add("show"));
   dialog.querySelector(".home-occupant-popover-close").onclick=close;
   clearTimeout(openHomeOccupantSheet.timer);
+}
+
+function openTownCharacterSheet(button){
+  const character=state.characters[button?.dataset?.person];if(!character)return;
+  const scene=eventFor(character),place=scene?.placeId?state.world.places.find(item=>item.id===scene.placeId):null;
+  const home=scene?.home?state.homes[scene.visitHomeId||character.homeId]:null;
+  const proxy=button.cloneNode(true);
+  proxy.dataset.characterId=character.id;
+  proxy.dataset.homeOccupant="town";
+  proxy.dataset.occupantName=character.name||"이름 없음";
+  proxy.dataset.occupantTitle=scene?.title||"마을에서 시간을 보내는 중";
+  proxy.dataset.occupantDesc=scene?.desc||"마을을 돌아다니며 자기 시간을 보내고 있어요.";
+  proxy.dataset.occupantRoom=place?.name||home?.name||state.world.name||"마을";
+  openHomeOccupantSheet(proxy);
 }
 
 function setHomeUiHidden(page,hidden){
@@ -1511,10 +1667,11 @@ function openCarEditor(homeId,carId){
   if(!car)return;
   document.querySelector("[data-home-car-dialog]")?.remove();
   const types=["경차","승용차","SUV","승합차","스포츠카","전기차","오토바이","기타"];
+  const ownerOptions=state.order.map(id=>`<option value="${id}" ${id===car.ownerCharacterId?"selected":""}>${htmlEsc(state.characters[id]?.name||"")}</option>`).join("");
   const dialog=document.createElement("dialog");
   dialog.className="home-car-dialog";
   dialog.dataset.homeCarDialog="";
-  dialog.innerHTML=`<form method="dialog"><div class="mobile-editor-head"><span><small>CAR SETTING</small><b>${htmlEsc(car.name)}</b></span><button value="cancel" aria-label="닫기">×</button></div><div class="home-car-preview">${car.image?`<img src="${htmlEsc(car.image)}" alt="">`:"<span>🚙</span>"}</div><div class="fields"><label>차량 이름<input name="name" value="${htmlEsc(car.name)}"></label><label>종류<select name="type">${types.map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>색상<input name="color" value="${htmlEsc(car.color||"")}"></label><label>좌석 수<input name="seats" type="number" min="1" max="12" value="${Number(car.seats)||5}"></label></div><div class="image-actions"><button type="button" data-dialog-car-image>차 사진 선택</button><button type="button" data-dialog-car-url>사진 링크</button></div><div class="crop-actions"><button type="button" class="danger" data-dialog-delete-car>자동차 삭제</button><button value="cancel">취소</button><button class="primary" value="save">편집 완료</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="mobile-editor-head"><span><small>CAR SETTING</small><b>${htmlEsc(car.name)}</b></span><button value="cancel" aria-label="닫기">×</button></div><div class="home-car-preview">${car.image?`<img src="${htmlEsc(car.image)}" alt="">`:"<span>🚙</span>"}</div><div class="fields"><label>차량 이름<input name="name" value="${htmlEsc(car.name)}"></label><label>종류<select name="type">${types.map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>차 소유주<select name="ownerCharacterId"><option value="">가족 공동 차량</option>${ownerOptions}</select></label><label>색상<input name="color" value="${htmlEsc(car.color||"")}"></label><label>좌석 수<input name="seats" type="number" min="1" max="12" value="${Number(car.seats)||5}"></label></div><div class="image-actions"><button type="button" data-dialog-car-image>차 사진 선택</button><button type="button" data-dialog-car-url>사진 링크</button></div><div class="crop-actions"><button type="button" class="danger" data-dialog-delete-car>자동차 삭제</button><button value="cancel">취소</button><button class="primary" value="save">편집 완료</button></div></form>`;
   dialog.querySelector("[data-dialog-car-image]").onclick=()=>{
     dialog.close("cancel");
     pickImage("car",homeId,carId);
@@ -1535,6 +1692,7 @@ function openCarEditor(homeId,carId){
       updateCar(homeId,carId,{
         name:form.name.value.trim()||"이름 없는 자동차",
         type:form.type.value,
+        ownerCharacterId:form.ownerCharacterId.value,
         color:form.color.value.trim(),
         seats:Math.max(1,Math.min(12,Number(form.seats.value)||5))
       });
@@ -1575,14 +1733,27 @@ function applyTheme(){
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content",bg);
 }
 
-async function explicitSave(label="저장 완료"){
-  save(true);
-  render();
+async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfter=true}={}){
+  const copy=({
+    en:{characterSaving:"Saving character…",characterDone:"Character saved",deviceDone:"Saved on this device",syncing:"Saved on this device · syncing account",syncFailed:"Saved on this device, but account sync did not finish"},
+    ja:{characterSaving:"キャラクターを保存中…",characterDone:"キャラクターを保存しました",deviceDone:"端末に保存しました",syncing:"端末に保存しました・アカウント同期中",syncFailed:"端末には保存しましたが、アカウント同期は完了しませんでした"},
+    ko:{characterSaving:"캐릭터 저장 중…",characterDone:"캐릭터 저장 완료",deviceDone:"기기에 저장되었습니다",syncing:"기기에 저장했습니다 · 계정 동기화 중",syncFailed:"기기에는 저장했지만 계정 동기화는 완료하지 못했어요"}
+  }[state.uiLanguage||"ko"]);
+  const characterSave=label==="캐릭터 저장";
+  if(characterSave&&!alreadySaved){
+    showToast(copy.characterSaving);
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  }
+  if(!alreadySaved)save(true);
+  if(renderAfter)render();
   const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
+  showToast(characterSave?copy.characterDone:info?.user?copy.syncing:copy.deviceDone);
   if(info?.user){
-    const synced=await auth.upload({reason:label});
-    if(!synced)showToast("기기에는 저장했지만 계정 동기화는 완료하지 못했어요");
-  }else showToast("기기에 저장되었습니다");
+    Promise.resolve(auth.upload({reason:label})).then(synced=>{
+      if(!synced)showToast(copy.syncFailed);
+    }).catch(()=>showToast(copy.syncFailed));
+  }
+  return true;
 }
 
 function openCharacterDeleteDialog(characterId){
@@ -1607,7 +1778,7 @@ function openCharacterDeleteDialog(characterId){
   dialog.showModal();
 }
 
-const defaultCharacterSceneLayout=()=>({x:0,y:0,scale:1,actionX:0,actionY:0});
+const defaultCharacterSceneLayout=()=>({x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0});
 const characterSceneLayout=(character,mode)=>({
   ...defaultCharacterSceneLayout(),
   ...(character?.homeSceneLayout?.[mode]||{})
@@ -1616,6 +1787,7 @@ const clampSceneLayout=(layout,mode="sd")=>({
   x:Math.max(mode==="ld"?-50:-45,Math.min(mode==="ld"?50:45,Number(layout.x)||0)),
   y:Math.max(mode==="ld"?-90:-45,Math.min(mode==="ld"?90:45,Number(layout.y)||0)),
   scale:Math.max(.45,Math.min(2.5,Number(layout.scale)||1)),
+  rotation:((Number(layout.rotation)||0)+540)%360-180,
   actionX:Math.max(-45,Math.min(45,Number(layout.actionX)||0)),
   actionY:Math.max(-45,Math.min(45,Number(layout.actionY)||0))
 });
@@ -1626,6 +1798,7 @@ function applyCharacterSceneLayoutPreview(characterId,mode,layout){
     layer.style.setProperty("--character-art-y",`${layout.y}%`);
     layer.style.setProperty("--character-art-scale",String(layout.scale));
     layer.style.setProperty("--character-render-scale",String(globalScale*layout.scale));
+    layer.style.setProperty("--character-art-rotation",`${layout.rotation||0}deg`);
     layer.style.setProperty("--character-action-x",`${layout.actionX}%`);
     layer.style.setProperty("--character-action-y",`${layout.actionY}%`);
   });
@@ -1669,81 +1842,74 @@ function bindCharacterSceneLayoutEditors(){
       if(note)note.textContent=copy.note;
       showToast(copy.toast);
     });
-    editor.querySelectorAll('[data-home-layout-nudge]').forEach(button=>button.addEventListener("click",()=>{
-      const mode=editor.dataset.mode==="ld"?"ld":"sd";
-      const current=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode),mode);
-      const target=button.dataset.homeLayoutTarget==="action"?"action":"art";
-      const dx=Number(button.dataset.homeLayoutDx)||0;
-      const dy=Number(button.dataset.homeLayoutDy)||0;
-      const scale=Number(button.dataset.homeLayoutScale)||0;
-      const next={...current};
-      if(target==="action"){
-        next.actionX+=dx;
-        next.actionY+=dy;
-      }else{
-        next.x+=dx;
-        next.y+=dy;
-        next.scale+=scale;
+    const canvas=editor.querySelector('[data-home-layout-gesture-surface]');
+    if(!canvas)return;
+    const pointers=new Map();
+    let gesture=null,frame=0;
+    const activeMode=()=>editor.dataset.mode==="ld"?"ld":"sd";
+    const activeLayer=()=>editor.querySelector(`[data-home-layout-layer="${activeMode()}"]`);
+    const pendingLayout=()=>{
+      const layer=activeLayer();
+      if(layer?.dataset.pendingLayout){try{return JSON.parse(layer.dataset.pendingLayout)}catch{}}
+      return clampSceneLayout(characterSceneLayout(state.characters[characterId],activeMode()),activeMode());
+    };
+    const pointPair=()=>[...pointers.values()].slice(0,2);
+    const measurePair=pair=>{
+      const [a,b]=pair;
+      return {centerX:(a.x+b.x)/2,centerY:(a.y+b.y)/2,distance:Math.max(12,Math.hypot(b.x-a.x,b.y-a.y)),angle:Math.atan2(b.y-a.y,b.x-a.x)*180/Math.PI};
+    };
+    const beginGesture=kind=>{
+      const pair=pointPair(),starting=pendingLayout();
+      gesture=pair.length>=2?{kind:"art",starting,...measurePair(pair)}:pair.length===1?{kind,starting,startX:pair[0].x,startY:pair[0].y}:null;
+    };
+    const preview=layout=>{
+      const mode=activeMode(),layer=activeLayer(),clamped=clampSceneLayout(layout,mode);
+      if(layer)layer.dataset.pendingLayout=JSON.stringify(clamped);
+      cancelAnimationFrame(frame);
+      frame=requestAnimationFrame(()=>applyCharacterSceneLayoutPreview(characterId,mode,clamped));
+    };
+    canvas.addEventListener("pointerdown",event=>{
+      if(event.button!==undefined&&event.button!==0)return;
+      event.preventDefault();
+      pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      try{canvas.setPointerCapture(event.pointerId)}catch{}
+      beginGesture(event.target.closest('[data-home-layout-action]')?"action":"art");
+      canvas.classList.add("is-gesturing");
+    },{passive:false});
+    canvas.addEventListener("pointermove",event=>{
+      if(!pointers.has(event.pointerId)||!gesture)return;
+      event.preventDefault();
+      pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+      const rect=canvas.getBoundingClientRect(),pair=pointPair(),next={...gesture.starting};
+      if(pair.length>=2){
+        const measured=measurePair(pair);
+        next.x=gesture.starting.x+(measured.centerX-gesture.centerX)/Math.max(1,rect.width)*100;
+        next.y=gesture.starting.y+(measured.centerY-gesture.centerY)/Math.max(1,rect.height)*100;
+        next.scale=gesture.starting.scale*(measured.distance/gesture.distance);
+        next.rotation=gesture.starting.rotation+(measured.angle-gesture.angle);
+      }else if(pair.length===1){
+        const dx=(pair[0].x-gesture.startX)/Math.max(1,rect.width)*100;
+        const dy=(pair[0].y-gesture.startY)/Math.max(1,rect.height)*100;
+        if(gesture.kind==="action"){next.actionX=gesture.starting.actionX+dx;next.actionY=gesture.starting.actionY+dy}
+        else{next.x=gesture.starting.x+dx;next.y=gesture.starting.y+dy}
       }
-      persistCharacterSceneLayout(characterId,mode,next);
+      preview(next);
+    },{passive:false});
+    const finishPointer=event=>{
+      if(!pointers.has(event.pointerId))return;
+      pointers.delete(event.pointerId);
+      try{canvas.releasePointerCapture(event.pointerId)}catch{}
+      if(pointers.size){beginGesture(gesture?.kind||"art");return}
+      canvas.classList.remove("is-gesturing");
+      const mode=activeMode(),layer=activeLayer(),pending=pendingLayout();
+      if(layer)delete layer.dataset.pendingLayout;
+      persistCharacterSceneLayout(characterId,mode,pending);
       const note=editor.querySelector('.home-layout-save-note');
       if(note)note.textContent=`${mode.toUpperCase()} 배치를 저장했습니다.`;
-    }));
-    editor.querySelectorAll('[data-home-layout-layer]').forEach(layer=>{
-      const mode=layer.dataset.homeLayoutLayer;
-      const canvas=editor.querySelector('.home-layout-preview');
-      const art=layer.querySelector('[data-home-layout-drag="art"]');
-      const action=layer.querySelector('[data-home-layout-drag="action"]');
-      const resizeHandle=layer.querySelector('[data-home-layout-resize]');
-      const startDrag=(event,kind)=>{
-        if(event.button!==undefined&&event.button!==0)return;
-        event.preventDefault();event.stopPropagation();
-        const starting=clampSceneLayout(characterSceneLayout(state.characters[characterId],mode),mode);
-        // Always measure against the whole preview. The old SD implementation
-        // measured its small art layer, making a short finger movement jump all
-        // the way to the +/-45% limit on Android.
-        const canvasRect=(mode==="ld"?layer:canvas).getBoundingClientRect();
-        const visualArt=mode==="ld"?(art.querySelector(".scene-ld-art")||art.querySelector(".home-layout-fallback")||art):art;
-        const artRect=visualArt.getBoundingClientRect();
-        const startDistance=Math.max(20,Math.hypot(event.clientX-(artRect.left+artRect.width/2),event.clientY-(artRect.top+artRect.height/2)));
-        const pointerId=event.pointerId;
-        event.currentTarget.setPointerCapture?.(pointerId);
-        const move=moveEvent=>{
-          if(moveEvent.pointerId!==pointerId)return;
-          moveEvent.preventDefault();
-          const dx=(moveEvent.clientX-event.clientX)/Math.max(1,canvasRect.width)*100;
-          const dy=(moveEvent.clientY-event.clientY)/Math.max(1,canvasRect.height)*100;
-          const next={...starting};
-          if(kind==="art"){next.x=starting.x+dx;next.y=starting.y+dy}
-          else if(kind==="action"){next.actionX=starting.actionX+dx;next.actionY=starting.actionY+dy}
-          else{
-            const distance=Math.max(12,Math.hypot(moveEvent.clientX-(artRect.left+artRect.width/2),moveEvent.clientY-(artRect.top+artRect.height/2)));
-            next.scale=starting.scale*(distance/startDistance);
-          }
-          const clamped=clampSceneLayout(next,mode);
-          layer.dataset.pendingLayout=JSON.stringify(clamped);
-          applyCharacterSceneLayoutPreview(characterId,mode,clamped);
-        };
-        const finish=finishEvent=>{
-          if(finishEvent.pointerId!==pointerId)return;
-          window.removeEventListener("pointermove",move);
-          window.removeEventListener("pointerup",finish);
-          window.removeEventListener("pointercancel",finish);
-          try{event.currentTarget.releasePointerCapture?.(pointerId)}catch{}
-          const pending=layer.dataset.pendingLayout?JSON.parse(layer.dataset.pendingLayout):starting;
-          delete layer.dataset.pendingLayout;
-          persistCharacterSceneLayout(characterId,mode,pending);
-          const note=editor.querySelector('.home-layout-save-note');
-          if(note)note.textContent=`${mode.toUpperCase()} 배치를 저장했습니다.`;
-        };
-        window.addEventListener("pointermove",move,{passive:false});
-        window.addEventListener("pointerup",finish);
-        window.addEventListener("pointercancel",finish);
-      };
-      art?.addEventListener("pointerdown",event=>{if(!event.target.closest('[data-home-layout-resize]'))startDrag(event,"art")},{passive:false});
-      action?.addEventListener("pointerdown",event=>startDrag(event,"action"),{passive:false});
-      resizeHandle?.addEventListener("pointerdown",event=>startDrag(event,"resize"),{passive:false});
-    });
+      gesture=null;
+    };
+    canvas.addEventListener("pointerup",finishPointer);
+    canvas.addEventListener("pointercancel",finishPointer);
   });
 }
 
@@ -1813,9 +1979,48 @@ function bindNativeObserveCharacterSwipe(){
   hud.addEventListener("pointercancel",()=>{start=null},{passive:true});
 }
 
+function moveCharacterBookPage(direction){
+  const pages=["visual","overview-basic","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","taste-categories","taste-catalog","worldTaste"];
+  const current=state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane==="taste"?`taste-${state.characterTastePane||"categories"}`:state.characterPane;
+  const currentIndex=pages.indexOf(current),next=pages[currentIndex+direction];
+  if(currentIndex<0||!next)return false;
+  if(next.startsWith("overview-")){
+    state.characterPane="profile";
+    state.characterOverviewPane=next.endsWith("life")?"life":"basic";
+  }else if(next.startsWith("body-")){
+    state.characterPane="body";
+    state.characterBodyPane=next.endsWith("accessibility")?"accessibility":next.endsWith("appearance")?"appearance":"figure";
+  }else if(next.startsWith("personality-")){
+    state.characterPane="personality";
+    state.characterPersonalityPane=next.endsWith("details")?"details":"core";
+  }else if(next.startsWith("taste-")){
+    state.characterPane="taste";
+    state.characterTastePane=next.endsWith("catalog")?"catalog":"categories";
+  }else state.characterPane=next;
+  save(true);render();return true;
+}
+function bindCharacterBookSwipe(){
+  const page=document.querySelector(".character-book-v8.is-open .character-book-v8-page");
+  if(!page)return;
+  let start=null;
+  page.addEventListener("pointerdown",event=>{
+    if(event.pointerType==="mouse"&&event.button!==0)return;
+    if(event.target.closest("button,input,select,textarea,dialog,details,a,[contenteditable]"))return;
+    start={x:event.clientX,y:event.clientY,id:event.pointerId};
+  },{passive:true});
+  page.addEventListener("pointerup",event=>{
+    if(!start||start.id!==event.pointerId)return;
+    const dx=event.clientX-start.x,dy=event.clientY-start.y;start=null;
+    if(Math.abs(dx)<46||Math.abs(dx)<Math.abs(dy)*1.35)return;
+    moveCharacterBookPage(dx<0?1:-1);
+  },{passive:true});
+  page.addEventListener("pointercancel",()=>{start=null},{passive:true});
+}
+
 function bind(){
   bindHorizontalWheelNavigation();
   bindNativeObserveCharacterSwipe();
+  bindCharacterBookSwipe();
   bindFurniturePlacementEditors();
   // Cloud sync intentionally does not copy device-only photos. If an old
   // device URL is unavailable, replace the broken image with the character's
@@ -1908,13 +2113,54 @@ function bind(){
     render();
     requestAnimationFrame(()=>{const nextPicker=document.querySelector(".native-character-picker,.game-hud-roster-options");if(nextPicker)nextPicker.scrollLeft=homeCharacterPickerScroll});
   });
-  $("[data-mobile-town-edit-toggle]")?.addEventListener("click",()=>{
-    const editing=document.querySelector(".mobile-town-shell")?.classList.contains("editing");
-    setMobileTownEditing(!editing);
+  $$('[data-mobile-town-open-settings]').forEach(button=>button.addEventListener("click",()=>{
+    setMobileTownMode("town");
+    render();
+  }));
+  $("[data-mobile-town-layout-mode]")?.addEventListener("click",()=>{
+    setMobileTownMode("town");
+    render();
+  });
+  $("[data-mobile-town-decoration-mode]")?.addEventListener("click",()=>{
+    setMobileTownMode(currentTownMode()==="decorations"?"":"decorations");
+    render();
+  });
+  $("[data-mobile-building-edit-mode]")?.addEventListener("click",()=>{
+    setMobileTownMode("buildings");
     render();
   });
   $("[data-mobile-town-settings]")?.addEventListener("click",()=>{setMobileTownPanel("world");render()});
-  $("[data-mobile-town-close]")?.addEventListener("click",()=>{setMobileTownPanel("");render()});
+  $("[data-mobile-town-close]")?.addEventListener("click",()=>{setMobileTownMode("");render()});
+  $("[data-building-browser-back]")?.addEventListener("click",()=>{setMobileTownPanel("buildings");setMobileTownPlacement();render()});
+  $$('[data-building-browser-open]').forEach(button=>button.addEventListener("click",()=>{
+    const townId=button.dataset.buildingBrowserTown;
+    if(townId&&townId!==state.activeTownId)switchTown(townId);
+    setMobileTownMode("buildings");
+    setMobileTownPanel(button.dataset.buildingBrowserOpen);
+    render();
+  }));
+  let buildingTownFilter="all",buildingTypeFilter="전체";
+  const filterTownBuildings=()=>{
+    const query=String($("[data-building-search]")?.value||"").trim().toLocaleLowerCase();
+    $$('[data-building-browser-card]').forEach(card=>{
+      const townMatches=buildingTownFilter==="all"||card.dataset.buildingBrowserTown===buildingTownFilter;
+      const typeMatches=buildingTypeFilter==="전체"||card.dataset.buildingBrowserType===buildingTypeFilter;
+      const nameMatches=!query||String(card.dataset.buildingBrowserName||"").toLocaleLowerCase().includes(query);
+      card.hidden=!(townMatches&&typeMatches&&nameMatches);
+    });
+  };
+  $("[data-building-search]")?.addEventListener("input",filterTownBuildings);
+  $$('[data-building-town-filter]').forEach(button=>button.addEventListener("click",()=>{
+    buildingTownFilter=button.dataset.buildingTownFilter||"all";
+    $$('[data-building-town-filter]').forEach(item=>item.classList.toggle("on",item===button));
+    filterTownBuildings();
+  }));
+  $$('[data-building-type-filter]').forEach(button=>button.addEventListener("click",()=>{
+    buildingTypeFilter=button.dataset.buildingTypeFilter||"전체";
+    $$('[data-building-type-filter]').forEach(item=>item.classList.toggle("on",item===button));
+    filterTownBuildings();
+  }));
+  $("[data-open-town-switcher]")?.addEventListener("click",()=>$("[data-town-switch-dialog]")?.showModal());
   $$("[data-mobile-town-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.mobileTownCharacter);render();centerMobileTownMap(el.dataset.mobileTownCharacter)});
   try{
     enhanceDynamicForms();
@@ -2040,14 +2286,16 @@ function bind(){
   });
   $("[data-open-full-character-settings]")?.addEventListener("click",()=>{
     state.characterSettingsView="full";
-    state.characterPane="profile";
-    save(true);
+    state.characterPane="visual";
     render();
   });
   $("[data-close-full-character-settings]")?.addEventListener("click",()=>{
     state.characterSettingsView="hub";
-    save(true);
     render();
+  });
+  $("[data-open-character-layout]")?.addEventListener("click",()=>{
+    const dialog=$("[data-character-layout-dialog]");
+    if(dialog&&!dialog.open)dialog.showModal();
   });
   $$("[data-open-character-pane]").forEach(el=>el.onclick=()=>{
     state.characterPane=el.dataset.openCharacterPane;
@@ -2072,7 +2320,8 @@ function bind(){
     }));
     stabilizeInteractiveScroll(mobileCharacterDialog,()=>document.querySelector("[data-mobile-character-editor-dialog][open] .mobile-character-editor-body")||body);
     mobileCharacterDialog.onclose=()=>{
-      flushMobileCharacterDraft();
+      if(mobileCharacterDialog.returnValue!=="save")flushMobileCharacterDraft();
+      else{mobileCharacterDraftDirty=false;mobileCharacterEditorPane=""}
       render();
     };
   }
@@ -2087,9 +2336,9 @@ function bind(){
       // 있으므로 다음 이벤트 묶음이 끝난 뒤 최종 값을 한 번 더 읽는다.
       await new Promise(resolve=>setTimeout(resolve,64));
       syncOpenCharacterEditorDraft();
-      flushMobileCharacterDraft({closeEditor:false});
+      flushMobileCharacterDraft({closeEditor:true});
       mobileCharacterDialog?.close(shouldSync?"save":"close");
-      if(shouldSync){await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}
+      if(shouldSync){await explicitSave("캐릭터 저장",{alreadySaved:true,renderAfter:false});advanceFirstSetupAfterCharacter()}
     };
   });
   const mobileReorderDialog=$("[data-mobile-character-reorder-dialog]");
@@ -2111,6 +2360,10 @@ function bind(){
   });
   $$("[data-person]").forEach(el=>el.onclick=event=>{
     event.stopPropagation();
+    if(state.activeTab==="town"){
+      openTownCharacterSheet(el);
+      return;
+    }
     activateCharacterInObservedTown(el.dataset.person);
     render();
   });
@@ -2150,7 +2403,7 @@ function bind(){
     if(continueFirstSetup){
       localStorage.setItem(SETUP_COACH_KEY,"done");
       setNavigationTabIntent("town");
-      setMobileTownEditing(true);
+      setMobileTownMode("buildings");
     }
     render();
     if(was){
@@ -2305,16 +2558,29 @@ function bind(){
   });
   $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 반려생물을 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
   $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
-  $$("[data-home-name]").forEach(el=>el.oninput=()=>updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"}));
+  $$("[data-home-name]").forEach(el=>el.oninput=()=>{
+    const townShell=el.closest(".mobile-town-shell");
+    if(townShell&&townShell.dataset.townMode!=="buildings")return;
+    updateHome(el.dataset.homeId,{name:el.value.trim()||"이름 없는 집"});
+  });
   $$("[data-home-field]").forEach(el=>{
-    const apply=()=>updateHome(el.dataset.homeId,{[el.dataset.homeField]:el.value});
+    const apply=()=>{
+      const townShell=el.closest(".mobile-town-shell");
+      if(townShell&&townShell.dataset.townMode!=="buildings")return;
+      updateHome(el.dataset.homeId,{[el.dataset.homeField]:el.value});
+    };
     el.oninput=apply;el.onchange=apply;
   });
   $$("[data-home-floor-count]").forEach(el=>el.onchange=()=>{setHomeFloorCount(el.dataset.homeId,el.value);render();showToast(`${el.value}층 집으로 바꿨어요`)});
   $$("[data-delete-home]").forEach(el=>el.onclick=()=>{
     const home=state.homes[el.dataset.deleteHome];if(!home)return;
-    if(confirm(`‘${home.name}’을 삭제할까요?\n\n이 집의 방·사진·반려생물·자동차도 함께 삭제됩니다. 연결된 캐릭터는 삭제되지 않고 다른 집 연결은 유지됩니다.`)){
-      deleteHome(home.id);render();showToast("집을 삭제하고 삭제 기록을 보관했습니다");
+    const copy=state.uiLanguage==="en"
+      ?{question:`Delete “${home.name}”?\n\nIts rooms, images, pets, and cars will also be deleted. Characters remain, along with their other home links.`,done:"Home deleted. Its deletion record was retained."}
+      :state.uiLanguage==="ja"
+        ?{question:`「${home.name}」を削除しますか？\n\n部屋・画像・ペット・車も削除されます。人物とほかの家への接続は残ります。`,done:"家を削除し、削除記録を保持しました。"}
+        :{question:`‘${home.name}’을 삭제할까요?\n\n이 집의 방·사진·반려생물·자동차도 함께 삭제됩니다. 연결된 캐릭터는 삭제되지 않고 다른 집 연결은 유지됩니다.`,done:"집을 삭제하고 삭제 기록을 보관했습니다"};
+    if(confirm(copy.question)){
+      deleteHome(home.id);render();showToast(copy.done);
     }
   });
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
@@ -2415,6 +2681,10 @@ function bind(){
       const character=active(),bodyProfile=structuredClone(character.bodyProfile||{});
       const previousLeft=bodyProfile.appearance?.leftEyeColor||"설정하지 않음",previousRight=bodyProfile.appearance?.rightEyeColor||"설정하지 않음";
       setNestedObjectValue(bodyProfile,el.dataset.bodyField,el.value);
+      const appearance=bodyProfile.appearance||{};
+      if(el.dataset.bodyField==="appearance.hairColorOrigin"&&el.value==="자연 모발")appearance.naturalHairColor=appearance.hairColor;
+      if(el.dataset.bodyField==="appearance.hairColor"&&appearance.hairColorOrigin==="자연 모발")appearance.naturalHairColor=el.value;
+      if(el.dataset.bodyField==="appearance.naturalHairColor"&&appearance.hairColorOrigin==="자연 모발")appearance.hairColor=el.value;
       if(["appearance.leftEyeColor","appearance.rightEyeColor"].includes(el.dataset.bodyField)&&previousLeft==="설정하지 않음"&&previousRight==="설정하지 않음"&&el.value!=="설정하지 않음"){
         bodyProfile.appearance.leftEyeColor=el.value;
         bodyProfile.appearance.rightEyeColor=el.value;
@@ -2422,9 +2692,101 @@ function bind(){
       const mobileDraft=markMobileCharacterDraft(el);
       updateCharacter(character.id,{bodyProfile},false);
       syncCharacterControls(el,"data-body-field");
+      if(el.dataset.bodyField==="appearance.leftEyeColor"||el.dataset.bodyField==="appearance.rightEyeColor"){
+        const side=el.dataset.bodyField.includes("left")?"left":"right";
+        document.querySelector(`[data-eye-color-preview="${side}"]`)?.setAttribute("fill",appearancePreviewColor(el.value));
+      }
+      if(el.dataset.bodyField==="appearance.hairTexture"){
+        const guide=document.querySelector("[data-hair-curl-preview]");
+        guide?.setAttribute("data-hair-curl-preview",el.value);
+        guide?.querySelector("[data-hair-shape-preview]")?.setAttribute("d",hairCurlPreviewPath(el.value));
+      }
+      if(el.dataset.bodyField==="appearance.hairColor")document.querySelector("[data-hair-shape-preview]")?.setAttribute("stroke",appearancePreviewColor(el.value,"#7F0000"));
+      if(["appearance.hairColor","appearance.hairColorOrigin","appearance.naturalHairColor"].includes(el.dataset.bodyField)){
+        document.querySelectorAll('[data-body-field="appearance.hairColor"],[data-body-field="appearance.naturalHairColor"]').forEach(control=>{
+          const path=control.dataset.bodyField.split(".").pop();
+          if(control!==el&&control.value!==appearance[path])control.value=appearance[path];
+          control.disabled=appearance.hairColorOrigin==="자연 모발"&&path==="naturalHairColor";
+        });
+      }
       if(!mobileDraft)save(el.tagName==="SELECT");
     };
     el.addEventListener(eventName,apply);
+  });
+  $$('[data-body-measurement]').forEach(el=>el.addEventListener('input',()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),raw=Number(el.value),imperial=state.measurementUnits==="imperial";
+    bodyProfile[el.dataset.bodyMeasurement]=el.value===""?"":String(Math.round((el.dataset.bodyMeasurement==="heightCm"&&imperial?raw*2.54:el.dataset.bodyMeasurement==="weightKg"&&imperial?raw/2.2046226218:raw)*10)/10);
+    updateCharacter(character.id,{bodyProfile},false);save();
+  }));
+  $$('[data-open-body-mark]').forEach(button=>button.onclick=()=>{
+    const dialog=document.querySelector(`[data-body-mark-dialog="${button.dataset.openBodyMark}-${button.dataset.bodyMarkIndex}"]`);
+    if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
+  });
+  $$('[data-body-mark-field]').forEach(el=>el.addEventListener(el.tagName==="INPUT"?'change':'change',()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),collection=el.dataset.bodyMarkCollection,index=Number(el.dataset.bodyMarkIndex)||0;
+    const values=Array.isArray(bodyProfile[collection])?[...bodyProfile[collection]]:[];
+    if(!values[index]||typeof values[index]!=="object")values[index]={name:`${collection==="scars"?"흉터":"문신"} ${index+1}`,location:"기타 위치",type:"설정하지 않음",attitude:"설정하지 않음"};
+    values[index]={...values[index],[el.dataset.bodyMarkField]:el.value.slice(0,80)};
+    bodyProfile[collection]=values.slice(0,8);updateCharacter(character.id,{bodyProfile},false);save(true);
+    if(el.dataset.bodyMarkField==="name"){
+      document.querySelector(`[data-open-body-mark="${collection}"][data-body-mark-index="${index}"] span`)?.replaceChildren(document.createTextNode(el.value||`${collection==="scars"?"흉터":"문신"} ${index+1}`));
+      el.closest('dialog')?.querySelector('header b')?.replaceChildren(document.createTextNode(el.value||`${collection==="scars"?"흉터":"문신"} ${index+1}`));
+    }
+  }));
+  $$('[data-open-body-medication]').forEach(button=>button.onclick=()=>{
+    const dialog=document.querySelector(`[data-body-medication-dialog="${button.dataset.openBodyMedication}"]`);
+    if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
+  });
+  $$('[data-body-medication-field]').forEach(el=>el.addEventListener('change',()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),index=Number(el.dataset.bodyMedicationIndex)||0;
+    const medications=Array.isArray(bodyProfile.medications)?[...bodyProfile.medications]:[];
+    if(!medications[index])return;
+    medications[index]={...medications[index],[el.dataset.bodyMedicationField]:el.value.slice(0,160)};
+    bodyProfile.medications=medications;updateCharacter(character.id,{bodyProfile},false);save(true);
+    if(el.dataset.bodyMedicationField==="name"){
+      document.querySelector(`[data-open-body-medication="${index}"] span`)?.replaceChildren(document.createTextNode(el.value||`복용약 ${index+1}`));
+      el.closest('dialog')?.querySelector('header b')?.replaceChildren(document.createTextNode(el.value||`복용약 ${index+1}`));
+    }
+  }));
+  $$('[data-body-medication-action]').forEach(button=>button.onclick=()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),medications=Array.isArray(bodyProfile.medications)?[...bodyProfile.medications]:[];
+    let openIndex=-1;
+    if(button.dataset.bodyMedicationAction==="add"){
+      if(medications.length>=12){showToast("복용약은 최대 12개까지 추가할 수 있어요");return}
+      medications.push({name:`복용약 ${medications.length+1}`,purpose:"설정하지 않음",frequency:"설정하지 않음",notes:""});openIndex=medications.length-1;
+    }else medications.pop();
+    bodyProfile.medications=medications;updateCharacter(character.id,{bodyProfile},false);save(true);render();
+    if(openIndex>=0)requestAnimationFrame(()=>document.querySelector(`[data-body-medication-dialog="${openIndex}"]`)?.showModal());
+  });
+  $$('[data-body-array-action]').forEach(button=>button.onclick=()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),field=button.dataset.bodyArrayField;
+    const values=Array.isArray(bodyProfile[field])?[...bodyProfile[field]]:[];
+    let openIndex=-1;
+    if(button.dataset.bodyArrayAction==="add"){
+      if(values.length>=8){showToast("최대 8개까지 추가할 수 있어요");return}
+      const label=button.dataset.bodyArrayLabel|| (field==="scars"?"흉터":"문신");
+      values.push({name:`${label} ${values.length+1}`,location:"기타 위치",type:"설정하지 않음",attitude:"설정하지 않음"});
+      openIndex=values.length-1;
+    }else values.pop();
+    bodyProfile[field]=values;
+    updateCharacter(character.id,{bodyProfile},false);save(true);render();
+    if(openIndex>=0)requestAnimationFrame(()=>{
+      const dialog=document.querySelector(`[data-body-mark-dialog="${field}-${openIndex}"]`);
+      if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
+    });
+  });
+  $$('[data-open-skin-tone]').forEach(el=>el.onclick=()=>{
+    const dialog=document.querySelector('[data-skin-tone-dialog]');
+    if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
+  });
+  $$('[data-skin-tone-choice]').forEach(el=>el.onclick=()=>{
+    const character=active(),bodyProfile=structuredClone(character.bodyProfile||{});
+    bodyProfile.skinTone=el.dataset.skinToneChoice;
+    updateCharacter(character.id,{bodyProfile},false);save(true);
+    document.querySelectorAll('[data-skin-tone-choice]').forEach(button=>button.classList.toggle('on',button===el));
+    const preview=document.querySelector('.body-skin-tone>button>i'),label=document.querySelector('.body-skin-tone>button>span');
+    if(preview)preview.style.setProperty('--skin-tone',getComputedStyle(el).getPropertyValue('--skin-tone'));
+    if(label)label.textContent=el.getAttribute('aria-label')||el.dataset.skinToneChoice;
   });
   $$("[data-body-list]").forEach(el=>el.onclick=()=>{
     const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),bodyPath=el.dataset.bodyList.split(":")[0],parts=bodyPath.split("."),last=parts.pop();
@@ -2440,6 +2802,70 @@ function bind(){
     updateCharacter(character.id,patch,false);
     if(!mobileDraft)save(true);
     document.querySelectorAll(`[data-body-list="${CSS.escape(el.dataset.bodyList)}"][data-value="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",!selected));
+  });
+  $$("[data-open-body-choice]").forEach(el=>el.onclick=()=>{
+    const dialog=document.querySelector("[data-body-choice-dialog]");
+    if(!dialog||typeof dialog.showModal!=="function")return;
+    const path=el.dataset.openBodyChoice;
+    let activePanel=null;
+    dialog.querySelectorAll("[data-body-choice-panel]").forEach(panel=>{
+      const isActive=panel.dataset.bodyChoicePanel===path;
+      panel.hidden=!isActive;
+      if(isActive)activePanel=panel;
+    });
+    const title=activePanel?.dataset.bodyChoiceTitle||"";
+    dialog.querySelector("[data-body-choice-dialog-title]")?.replaceChildren(document.createTextNode(title));
+    dialog.showModal();
+  });
+  $$("[data-open-book-list]").forEach(el=>el.onclick=()=>{
+    const dialog=document.querySelector("[data-book-list-dialog]");
+    if(!dialog||typeof dialog.showModal!=="function")return;
+    const field=el.dataset.openBookList;
+    let activePanel=null;
+    dialog.querySelectorAll("[data-book-list-panel]").forEach(panel=>{
+      const isActive=panel.dataset.bookListPanel===field;
+      panel.hidden=!isActive;
+      if(isActive)activePanel=panel;
+    });
+    dialog.querySelector("[data-book-list-title]")?.replaceChildren(document.createTextNode(el.closest(".book-form-field")?.querySelector("b")?.textContent||"여러 개 선택 가능"));
+    if(activePanel)dialog.showModal();
+  });
+  $$('[data-book-list-choice]').forEach(button=>button.onclick=()=>{
+    const character=active(),path=button.dataset.bookListPath||button.dataset.bookListChoice,value=button.dataset.value;
+    const parts=path.split('.'),root=parts.shift();
+    const rootValue=structuredClone(character[root]??(parts.length?{}:[]));
+    let cursor=rootValue;
+    if(parts.length){
+      const last=parts.pop();
+      parts.forEach(part=>{if(!cursor[part]||typeof cursor[part]!=="object"||Array.isArray(cursor[part]))cursor[part]={};cursor=cursor[part]});
+      const values=Array.isArray(cursor[last])?cursor[last]:[];
+      cursor[last]=values.includes(value)?values.filter(item=>item!==value):[...values,value];
+    }
+    const next=parts.length===0&&Array.isArray(rootValue)?(rootValue.includes(value)?rootValue.filter(item=>item!==value):[...rootValue,value]):rootValue;
+    updateCharacter(character.id,{[root]:next},false);save(true);
+    const selected=path.split('.').reduce((current,key)=>current?.[key],active())?.includes(value);
+    document.querySelectorAll(`[data-book-list-path="${CSS.escape(path)}"][data-value="${CSS.escape(value)}"]`).forEach(el=>el.classList.toggle("on",Boolean(selected)));
+  });
+  $$("[data-open-book-catalog]").forEach(el=>el.onclick=()=>{
+    const dialog=document.querySelector("[data-book-catalog-dialog]");
+    if(!dialog||typeof dialog.showModal!=="function")return;
+    const kind=el.dataset.openBookCatalog,mode=el.dataset.bookCatalogMode==="inventory"?"inventory":"favorites";
+    dialog.dataset.bookCatalogMode=mode;
+    dialog.querySelectorAll("[data-book-catalog-panel]").forEach(panel=>{
+      const activePanel=panel.dataset.bookCatalogPanel===kind;
+      panel.hidden=!activePanel;
+      if(activePanel)panel.querySelectorAll("[data-book-catalog-item]").forEach(button=>{
+        const selected=(active()?.[mode]?.[kind]||[]).includes(button.dataset.bookCatalogItem);
+        button.classList.toggle("on",selected);
+      });
+    });
+    dialog.querySelector("[data-book-catalog-title]")?.replaceChildren(document.createTextNode(el.closest(".book-form-field")?.querySelector("b")?.textContent||"사전에서 고르기"));
+    dialog.showModal();
+  });
+  $$("[data-book-catalog-item]").forEach(el=>el.onclick=()=>{
+    const dialog=el.closest("[data-book-catalog-dialog]"),mode=dialog?.dataset.bookCatalogMode==="inventory"?"inventory":"favorites",kind=el.dataset.bookCatalogKind,itemId=el.dataset.bookCatalogItem;
+    if(mode==="inventory")toggleOwned(active().id,kind,itemId,true);else toggleFavorite(active().id,kind,itemId,true);
+    el.classList.toggle("on",(active()?.[mode]?.[kind]||[]).includes(itemId));
   });
   $$("[data-field]").forEach(el=>{
     if(isDeferredMobileTextControl(el)){
@@ -2477,7 +2903,7 @@ function bind(){
     });
   });
   $$("[data-birthday-part]").forEach(el=>el.addEventListener("change",()=>{
-    const scope=el.closest("[data-mobile-character-editor-dialog]")||document;
+    const scope=el.closest("[data-mobile-character-editor-dialog],.character-overview-basic")||document;
     const month=scope.querySelector('[data-birthday-part="month"]')?.value||"";
     const dayControl=scope.querySelector('[data-birthday-part="day"]');
     let day=dayControl?.value||"";
@@ -2494,6 +2920,7 @@ function bind(){
     updateCharacter(active().id,{theme:{...active().theme,[el.dataset.color]:el.value}},false);
     if(!mobileDraft)save();
     applyTheme();
+    el.closest(".character-full-theme-swatch")?.style.setProperty("--swatch",el.value);
     const hexInput=document.querySelector(`[data-theme-hex="${CSS.escape(el.dataset.color)}"]`);
     if(hexInput)hexInput.value=String(el.value||"").toUpperCase();
   });
@@ -2507,8 +2934,10 @@ function bind(){
       updateCharacter(active().id,{theme:{...active().theme,[field]:value.toUpperCase()}},false);
       if(!mobileDraft)save();
       applyTheme();
-      const colorInput=document.querySelector(`[data-color="${CSS.escape(field)}"]`);
-      if(colorInput)colorInput.value=value;
+      document.querySelectorAll(`[data-color="${CSS.escape(field)}"]`).forEach(colorInput=>{
+        colorInput.value=value;
+        colorInput.closest(".character-full-theme-swatch")?.style.setProperty("--swatch",value);
+      });
     };
     el.onchange=apply;
     el.onkeydown=event=>{if(event.key==="Enter"){event.preventDefault();apply()}};
@@ -2571,7 +3000,6 @@ function bind(){
       if(key==="image")patch.imageSource="user";
       updateCatalogItem(kind,itemId,patch);
       const card=field.closest(".catalog-dex-card");if(card)card.open=true;
-      // 네이티브 선택창이 닫히는 동안 DOM 전체를 갈아 끼우지 않는다.
       if(["category","subtype"].includes(key))refreshCatalogCardFields(card,kind,state.catalog?.[kind]?.find(item=>item.id===itemId));
       else if(key==="image")replaceCatalogCard(kind,itemId,{open:true});
       else if(key==="name")card?.querySelector("summary b")?.replaceChildren(document.createTextNode(value||"새 항목"));
@@ -2613,6 +3041,7 @@ function bind(){
     });
   }
   $$("[data-place-stock]").forEach(el=>el.onclick=()=>{
+    const shell=el.closest(".mobile-town-shell");if(shell&&shell.dataset.townMode!=="buildings")return;
     togglePlaceStock(el.dataset.placeStock,el.dataset.itemId);
     const place=state.world.places.find(p=>p.id===el.dataset.placeStock);
     el.classList.toggle("on",Boolean(place?.stock?.includes(el.dataset.itemId)));
@@ -2637,13 +3066,20 @@ function bind(){
     showToast(direction==="front"?layerCopy.frontDone:layerCopy.backDone);
   });
   $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
+    const shell=el.closest(".mobile-town-shell");if(shell&&shell.dataset.townMode!=="buildings")return;
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });
-  $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{await explicitSave("캐릭터 저장");advanceFirstSetupAfterCharacter()}));
+  $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{
+    if(button.dataset.saving==="1")return;
+    button.dataset.saving="1";
+    const fullBook=Boolean(button.closest(".character-book-v8"));
+    try{await explicitSave("캐릭터 저장",{renderAfter:!fullBook});advanceFirstSetupAfterCharacter()}
+    finally{delete button.dataset.saving}
+  }));
   $("[data-catalog-save]")?.addEventListener("click",()=>explicitSave("사전 저장"));
-  $("[data-town-save]")?.addEventListener("click",()=>explicitSave("마을 저장"));
+  $("[data-town-save]")?.addEventListener("click",event=>{const shell=event.currentTarget.closest(".mobile-town-shell");if(shell&&shell.dataset.townMode!=="town")return;explicitSave("마을 저장")});
   $$(".place-editor details").forEach(details=>{
-    const audienceTitle=[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
+    const audienceTitle=details.querySelector(".town-audience-field h4")||[...details.querySelectorAll("h4")].find(title=>title.textContent.trim()==="주요 이용층");
     const oldPicker=audienceTitle?.nextElementSibling,placeId=oldPicker?.querySelector("[data-place-audience]")?.dataset.placeAudience;
     if(audienceTitle&&oldPicker&&placeId){
       const place=state.world.places.find(item=>item.id===placeId),button=document.createElement("button");
@@ -2654,19 +3090,48 @@ function bind(){
   });
   $$('[data-edit-audiences]').forEach(button=>button.onclick=()=>openAudienceDialog(button.dataset.editAudiences));
   $$('[data-building-shape-open]').forEach(button=>button.onclick=()=>openBuildingShapeDialog(button.dataset.buildingShapeOpen));
+  $$('[data-home-building-shape]').forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
+    openBuildingShapeDialog(button.dataset.homeBuildingShape,"home");
+  });
   $$('[data-building-detail-open]').forEach(button=>button.onclick=event=>{
-    if(button.closest('.mobile-town-shell')?.classList.contains('editing'))return;
+    const shell=button.closest('.mobile-town-shell'),mode=shell?.dataset.townMode||"";
+    if(mode==="town"||mode==="decorations")return;
     event.preventDefault();
     event.stopPropagation();
+    if(mode==="buildings"){
+      const detail=button.dataset.buildingDetailOpen,home=detail.startsWith("home:");
+      setMobileTownPanel(detail);setMobileTownPlacement(home?"home":"place",home?detail.slice(5):detail);
+      render();
+      return;
+    }
+    if(button.dataset.suppressBuildingClick==="true"){
+      delete button.dataset.suppressBuildingClick;
+      return;
+    }
     const dialog=document.querySelector(`[data-building-detail-dialog="${CSS.escape(button.dataset.buildingDetailOpen)}"]`);
     if(dialog&&!dialog.open)dialog.showModal();
+  });
+  $$('[data-open-place-editor]').forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
+    const shell=document.querySelector('.mobile-town-shell');
+    if(shell?.dataset.townMode!=="buildings")return;
+    setMobileTownPanel(button.dataset.openPlaceEditor);setMobileTownPlacement("place",button.dataset.openPlaceEditor);render();
+  });
+  $$('[data-open-home-residents]').forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
+    openTownHomeResidentsDialog(button.dataset.openHomeResidents);
+  });
+  $$('[data-open-home-editor]').forEach(button=>button.onclick=event=>{
+    event.preventDefault();event.stopPropagation();button.closest("dialog")?.close();
+    setActiveHome(button.dataset.openHomeEditor);state.activeTab="home";setHomeEditMode(true);render();
   });
   $$('[data-home-visual-mode]').forEach(button=>button.onclick=()=>{
     state.homeVisualMode=button.dataset.homeVisualMode==="ld"?"ld":"sd";
     save(true);
     render();
   });
-  $$("[data-image]").forEach(el=>el.onclick=()=>pickImage(el.dataset.image,active().id));
+  $$("[data-image]").forEach(el=>el.onclick=()=>chooseCharacterImageSource(el.dataset.image,active().id));
   $$('[data-clear-character-image]').forEach(button=>button.onclick=()=>{
     setCharacterImage(active().id,button.dataset.clearCharacterImage,"");
     render();
@@ -2674,12 +3139,42 @@ function bind(){
   bindCharacterSceneLayoutEditors();
   $$("[data-room-bg]").forEach(el=>el.onclick=()=>pickImage("room",el.dataset.homeId,el.dataset.room));
   $$("[data-home-bg]").forEach(el=>el.onclick=()=>pickImage("home",el.dataset.homeBg));
-  $$("[data-place-interior-image]").forEach(el=>el.onclick=()=>pickImage("placeInterior",el.dataset.placeInteriorImage));
+  $$("[data-place-interior-image]").forEach(el=>el.onclick=()=>openPlaceInteriorImageMenu(el.dataset.placeInteriorImage));
+  $$("[data-home-interior-image]").forEach(el=>el.onclick=()=>openBuildingInteriorImageMenu("home",el.dataset.homeInteriorImage));
   $$("[data-image-url]").forEach(el=>el.onclick=()=>useImageUrl(el.dataset.imageUrl,el.dataset.id,el.dataset.room||""));
   $$("[data-clear-room-bg]").forEach(el=>el.onclick=()=>{setHomeImage(el.dataset.homeId,el.dataset.room,"");render()});
   $$("[data-clear-home-bg]").forEach(el=>el.onclick=()=>{setHomeBackground(el.dataset.clearHomeBg,"");render()});
   $$("[data-clear-place-interior-image]").forEach(el=>el.onclick=()=>{setPlaceInteriorImage(el.dataset.clearPlaceInteriorImage,"");render()});
-  $$("[data-character-pane]").forEach(el=>el.onclick=()=>{setCharacterPane(el.dataset.characterPane);renderPreservingPageScroll(el)});
+  $$("[data-character-pane]").forEach(el=>el.onclick=()=>{
+    const pane=el.dataset.characterPane;
+    if(pane==="profile") state.characterOverviewPane=el.dataset.characterOverviewTarget==="life"?"life":"basic";
+    if(pane==="body") state.characterBodyPane="figure";
+    if(pane==="personality") state.characterPersonalityPane=el.dataset.characterPersonalityPane==="details"?"details":"core";
+    if(pane==="taste") state.characterTastePane=el.dataset.characterTastePane==="catalog"?"catalog":"categories";
+    setCharacterPane(pane);
+    el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
+  });
+  $$("[data-character-overview-pane]").forEach(el=>el.onclick=()=>{
+    state.characterOverviewPane=el.dataset.characterOverviewPane==="life"?"life":"basic";
+    save(true);
+    el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
+  });
+  $$("[data-character-body-pane]").forEach(el=>el.onclick=()=>{
+    state.characterPane="body";
+    state.characterBodyPane=["figure","appearance","accessibility"].includes(el.dataset.characterBodyPane)?el.dataset.characterBodyPane:"figure";
+    save(true);
+    el.closest('.character-book-v8')?render():renderPreservingPageScroll(el);
+  });
+  $$("[data-character-personality-pane]").forEach(el=>el.onclick=()=>{
+    state.characterPane="personality";
+    state.characterPersonalityPane=el.dataset.characterPersonalityPane==="details"?"details":"core";
+    save(true);render();
+  });
+  $$("[data-character-taste-pane]").forEach(el=>el.onclick=()=>{
+    state.characterPane="taste";
+    state.characterTastePane=el.dataset.characterTastePane==="catalog"?"catalog":"categories";
+    save(true);render();
+  });
   $$("[data-profile-tags]").forEach(el=>el.onclick=()=>openProfileTagsDialog(el.dataset.profileTags));
   $$("[data-export-profile]").forEach(el=>el.addEventListener("click",openProfileExportDialog));
   $("[data-character-notification-toggle]")?.addEventListener("click",async event=>{
@@ -2725,6 +3220,26 @@ function bind(){
     state.order.forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=Date.now()});
     save(true);event.currentTarget.blur();showToast(state.preventInterTownMovement?"캐릭터의 마을 사이 이동을 막았어요":"캐릭터가 다시 마을 사이를 이동할 수 있어요");
   });
+  $('[data-sound-muted]')?.addEventListener('change',event=>{
+    state.soundMuted=event.currentTarget.checked;
+    save(true);
+    if(state.soundMuted)stopMovementAudio();
+    renderPreservingPageScroll(event.currentTarget);
+  });
+  $('[data-sound-volume]')?.addEventListener('input',event=>{
+    state.soundEffectsVolume=Math.max(0,Math.min(100,Number(event.currentTarget.value)||0));
+    event.currentTarget.closest('label')?.querySelector('output')?.replaceChildren(document.createTextNode(`${Math.round(state.soundEffectsVolume)}%`));
+    save();
+    syncMovementAudio(state);
+  });
+  $('[data-sound-volume]')?.addEventListener('change',event=>{
+    save(true);
+    previewFootstep(state);
+    event.currentTarget.blur();
+  });
+  $$('[data-sound-preview]').forEach(button=>button.addEventListener('click',()=>{
+    if(!previewFootstep(state,button.dataset.soundPreview||'walk'))showToast('음소거를 해제하면 미리 들을 수 있어요.');
+  }));
   $("[data-character-notification-test]")?.addEventListener("click",sendCharacterNotificationTest);
   $$('[data-open-character-contact]').forEach(button=>button.onclick=()=>{
     const dialog=$('[data-character-contact-dialog]');
@@ -2740,7 +3255,7 @@ function bind(){
     state[key]=["homeSdScale","homeLdScale"].includes(key)?Math.max(70,Math.min(150,Number(el.value)||100)):el.value;
     if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
     save(true);
-    if(key==="uiLanguage"){renderPreservingPageScroll(el);return}
+    if(key==="uiLanguage"||key==="measurementUnits"){renderPreservingPageScroll(el);return}
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(["homeSdScale","homeLdScale"].includes(key))el.closest("label")?.querySelector("output")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
     el.blur();
@@ -2761,9 +3276,41 @@ function bind(){
   });
   $("[data-cloud-upload]")?.addEventListener("click",async()=>window.ParallelCityAuth?.upload());
   $("[data-cloud-download]")?.addEventListener("click",async()=>window.ParallelCityAuth?.download());
+  const currentTownMode=()=>document.querySelector(".mobile-town-shell")?.dataset.townMode||"";
   $$("[data-place-field]").forEach(el=>{
+    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="buildings")return;
+    const field=el.dataset.placeField;
+    if(field==="imageScale"){
+      let previewing=false;
+      const preview=()=>{
+        updatePlace(el.dataset.placeId,{imageScale:Number(el.value)},false);
+        const card=document.querySelector(`.place[data-place="${CSS.escape(el.dataset.placeId)}"]`);
+        card?.style.setProperty("--place-scale",el.value);
+        el.closest("label")?.style.setProperty("--live-building-scale",`"${Math.round(Number(el.value)*100)}%"`);
+      };
+      const finish=()=>{
+        if(!previewing)return;
+        previewing=false;
+        window.removeEventListener("pointerup",finish);
+        window.removeEventListener("pointercancel",finish);
+        preview();
+        document.body.classList.remove("is-building-size-preview");
+        save(true);
+      };
+      const begin=()=>{
+        if(previewing)return;
+        previewing=true;
+        document.body.classList.add("is-building-size-preview");
+        window.addEventListener("pointerup",finish);
+        window.addEventListener("pointercancel",finish);
+      };
+      el.addEventListener("pointerdown",begin);
+      el.addEventListener("input",()=>{begin();preview()});
+      el.addEventListener("change",finish);
+      el.addEventListener("blur",finish);
+      return;
+    }
     const apply=()=>{
-      const field=el.dataset.placeField;
       const numeric=["imageScale","spicy","sweet"].includes(field);
       updatePlace(el.dataset.placeId,{[field]:numeric?Number(el.value):el.value},false);
       if(field==="type"){
@@ -2772,15 +3319,12 @@ function bind(){
         renderPreservingPageScroll(el);
         return;
       }
-      if(field==="imageScale"){
-        const card=document.querySelector(`.place[data-place="${CSS.escape(el.dataset.placeId)}"]`);
-        card?.style.setProperty("--place-scale",el.value);
-      }
       save(el.tagName==="SELECT");
     };
     if(el.tagName==="SELECT")el.onchange=apply;else el.oninput=apply;
   });
   $$("[data-place-audience]").forEach(el=>el.onclick=()=>{
+    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="buildings")return;
     const p=state.world.places.find(x=>x.id===el.dataset.placeAudience);
     const value=el.dataset.value, current=p?.audiences||[];
     const next=current.includes(value)?current.filter(x=>x!==value):[...current,value];
@@ -2797,32 +3341,118 @@ function bind(){
     }
     setWorldBackground(e.target.value);render();
   });
-  $("[data-world-name]")?.addEventListener("input",e=>{state.world.name=e.target.value;save()});
+  $("[data-world-name]")?.addEventListener("input",e=>{if(currentTownMode()!=="town")return;state.world.name=e.target.value;document.querySelector("[data-town-information-title]")?.replaceChildren(document.createTextNode(e.target.value||"마을"));save()});
+  $("[data-world-town-type]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.townType=e.target.value;save(true)});
+  $("[data-world-density]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.density=e.target.value;save(true)});
+  $("[data-world-urbanization]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.urbanization=e.target.value;save(true)});
+  $("[data-world-reputation]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.reputation=e.target.value;save(true)});
+  $("[data-world-size]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.size=e.target.value;save(true)});
+  $("[data-world-terrain-climate]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.terrainClimate=e.target.value;save(true)});
+  $("[data-world-description]")?.addEventListener("input",e=>{if(currentTownMode()!=="town")return;state.world.description=e.target.value;save()});
   $("[data-world-era]")?.addEventListener("change",e=>{
-    if(e.target.value==="medieval"&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){
-      e.target.value=state.world.era||"modern";showToast("중세의 하루 DLC를 구매한 계정에서 사용할 수 있어요");return;
+    if(currentTownMode()!=="town")return;
+    const requestedEra=["medieval","중세"].includes(e.target.value)?"medieval":"modern";
+    if(requestedEra==="medieval"&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){
+      e.target.value=state.world.era==="medieval"?"중세":"현대";showToast("중세의 하루 DLC를 구매한 계정에서 사용할 수 있어요");return;
     }
-    state.world.era=e.target.value;save(true);render();showToast(e.target.value==="medieval"?"이 마을에 중세 생활 스크립트가 적용됩니다":"이 마을을 현대 시대로 바꿨습니다");
+    state.world.era=requestedEra;save(true);render();showToast(requestedEra==="medieval"?"이 마을에 중세 생활 스크립트가 적용됩니다":"이 마을을 현대 시대로 바꿨습니다");
   });
-  $$("[data-town-select]").forEach(el=>el.onclick=()=>{setMobileTownPanel("");switchTown(el.dataset.townSelect);render();centerMobileTownMap()});
+  $("[data-town-photo]")?.addEventListener("click",()=>{if(currentTownMode()==="town")chooseCharacterImageSource("townPhoto",state.activeTownId)});
+  $("[data-clear-town-photo]")?.addEventListener("click",()=>{if(currentTownMode()!=="town")return;state.world.photo="";save(true);render()});
+  $$("[data-town-select]").forEach(el=>el.onclick=()=>{el.closest("dialog")?.close();setMobileTownMode("");switchTown(el.dataset.townSelect);render();centerMobileTownMap()});
   $$("[data-add-town]").forEach(el=>el.addEventListener("click",()=>{
+    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="town")return;
     const limit=townLimit();
     if(!addTown(limit))showToast(`현재 마을 슬롯은 ${limit}개까지예요`);
     render();
   }));
   $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
   $$("[data-add-place]").forEach(el=>el.addEventListener("click",()=>{
+    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="buildings")return;
     const before=new Set(state.world.places.map(place=>place.id));
     addPlace();
     const added=state.world.places.find(place=>!before.has(place.id));
     if(added)setMobileTownPanel(added.id);
     render();
   }));
+  $$('[data-add-town-decoration]').forEach(button=>button.addEventListener("click",()=>{
+    if(currentTownMode()!=="decorations")return;
+    const id=addTownDecoration(button.dataset.addTownDecoration);
+    setMobileTownPanel("decorations");setMobileTownPlacement("decoration",id);render();
+    showToast("장식을 추가했어요. 격자 위에서 원하는 곳으로 옮겨 주세요");
+  }));
+  let decorationCategory="전체";
+  const filterDecorations=()=>{
+    const query=String($("[data-decoration-search]")?.value||"").trim().toLocaleLowerCase();
+    $$('[data-decoration-choice]').forEach(choice=>{
+      const category=choice.dataset.decorationGroup||"",label=choice.dataset.decorationLabel||"";
+      choice.hidden=(decorationCategory!=="전체"&&category!==decorationCategory)||Boolean(query&&!label.toLocaleLowerCase().includes(query));
+    });
+  };
+  $("[data-decoration-search]")?.addEventListener("input",filterDecorations);
+  $$('[data-decoration-category]').forEach(button=>button.onclick=()=>{
+    decorationCategory=button.dataset.decorationCategory||"전체";
+    $$('[data-decoration-category]').forEach(item=>item.classList.toggle("on",item===button));
+    filterDecorations();
+  });
+  $("[data-toggle-decoration-catalog]")?.addEventListener("click",event=>{
+    const catalog=event.currentTarget.closest(".town-decoration-catalog"),collapsed=catalog?.classList.toggle("collapsed");
+    event.currentTarget.setAttribute("aria-expanded",String(!collapsed));
+  });
+  $$('[data-town-placement-command]').forEach(button=>button.onclick=()=>{
+    const command=button.dataset.townPlacementCommand,selected=document.querySelector('.town-map-scroll .placement-selected');
+    const kind=selected?.dataset.place?"place":selected?.dataset.homeMap?"home":selected?.dataset.townDecoration?"decoration":"";
+    const id=selected?.dataset.place||selected?.dataset.homeMap||selected?.dataset.townDecoration;if(!kind||!id)return;
+    const item=kind==="place"?state.world.places.find(entry=>entry.id===id):kind==="home"?state.homes[id]:(state.world.decorations||[]).find(entry=>entry.id===id);if(!item)return;
+    if(command==="undo"){undoTownPlacement();return}
+    if(command==="redo"){redoTownPlacement();return}
+    if(command==="done"){setMobileTownPlacement();render();return}
+    if(command==="delete"){
+      if(!confirm(`${item.name||"선택 항목"}을(를) 마을에서 삭제할까요?`))return;
+      if(kind==="place")deletePlace(id);else if(kind==="home")deleteHome(id);else deleteTownDecoration(id);
+      setMobileTownPlacement();render();return;
+    }
+    recordTownPlacementSnapshot();
+    if(command==="smaller"||command==="larger"){
+      const delta=command==="larger" ? .1 : -.1;
+      if(kind==="place")updatePlace(id,{imageScale:(Number(item.imageScale)||1)+delta},false);
+      else if(kind==="home")updateHome(id,{mapScale:Math.max(.45,Math.min(2,(Number(item.mapScale)||1.08)+delta))},false);
+      else updateTownDecoration(id,{scale:(Number(item.scale)||1)+delta},false);
+    }else if(command==="flip"){
+      if(kind==="place")updatePlace(id,{flipX:!item.flipX},false);
+      else if(kind==="home")updateHome(id,{mapFlipX:!item.mapFlipX},false);
+      else updateTownDecoration(id,{flipX:!item.flipX},false);
+    }else if(command==="back"||command==="front"){
+      const delta=command==="front"?1:-1;
+      if(kind==="place")updatePlace(id,{mapZ:(Number(item.mapZ)||10)+delta},false);
+      else if(kind==="home")updateHome(id,{mapZ:(Number(item.mapZ)||12)+delta},false);
+      else updateTownDecoration(id,{mapZ:(Number(item.mapZ)||20)+delta},false);
+    }
+    save(true);setMobileTownPlacement(kind,id);render();
+  });
   const addPlaceButton=$("[data-add-place]");
-  $("[data-add-rel]")?.addEventListener("click",()=>openRelationDialog());
+  $$("[data-add-rel]").forEach(button=>button.addEventListener("click",()=>{
+    button.closest("[data-official-relation-dialog]")?.close();
+    openRelationDialog();
+  }));
   $$("[data-edit-rel]").forEach(el=>el.onclick=()=>{
     el.closest("[data-official-relation-dialog]")?.close();
     openRelationDialog(el.dataset.editRel);
+  });
+  $$("[data-toggle-relationship-roster]").forEach(button=>button.onclick=()=>{
+    const role=button.dataset.toggleRelationshipRoster,roster=document.querySelector(`[data-relationship-roster="${CSS.escape(role)}"]`);
+    if(!roster)return;
+    $$("[data-relationship-roster]").forEach(item=>{if(item!==roster)item.hidden=true});
+    roster.hidden=!roster.hidden;
+  });
+  $$("[data-relationship-character]").forEach(button=>button.onclick=()=>{
+    const role=button.dataset.relationshipCharacter,id=button.dataset.characterId;
+    if(!state.characters[id])return;
+    if(role==="source"){
+      state.characterViewSource=id;setActive(id);
+      if(state.characterViewTarget===id||!state.characters[state.characterViewTarget])state.characterViewTarget=state.order.find(cid=>cid!==id)||"";
+    }else if(role==="target"&&id!==state.characterViewSource)state.characterViewTarget=id;
+    save(true);render();
   });
   $$("[data-view-source]").forEach(control=>control.onchange=()=>{
     state.characterViewSource=control.value;
@@ -2851,14 +3481,41 @@ function bind(){
     dialog?.showModal();
   });
   $("[data-open-relationship-map]")?.addEventListener("click",openRelationshipMap);
-  $("[data-open-official-relations]")?.addEventListener("click",()=>{
-    const dialog=$("[data-official-relation-dialog]");
-    if(dialog&&!dialog.open)dialog.showModal();
+  $("[data-open-official-relations]")?.addEventListener("click",()=>{const dialog=$("[data-official-relation-dialog]");if(dialog&&!dialog.open)dialog.showModal()});
+  const bindRelationshipListFilter=(dialog,cardSelector,inputSelector,buttonSelector,kindAttribute,emptySelector)=>{
+    if(!dialog)return;
+    let kind="all",query="";
+    const update=()=>{
+      let visible=0;
+      dialog.querySelectorAll(cardSelector).forEach(card=>{
+        const matchesKind=kind==="all"||card.getAttribute(kindAttribute)===kind,matchesQuery=!query||String(card.dataset.relationSearch||card.dataset.groupSearch||"").includes(query);
+        card.hidden=!(matchesKind&&matchesQuery);if(!card.hidden)visible++;
+      });
+      const empty=dialog.querySelector(emptySelector);if(empty)empty.hidden=visible!==0;
+    };
+    dialog.querySelector(inputSelector)?.addEventListener("input",event=>{query=String(event.currentTarget.value||"").trim().toLocaleLowerCase();update()});
+    dialog.querySelectorAll(buttonSelector).forEach(button=>button.onclick=()=>{kind=button.value||button.dataset.relationFilter||button.dataset.groupFilter||"all";dialog.querySelectorAll(buttonSelector).forEach(item=>item.classList.toggle("on",item===button));update()});
+  };
+  bindRelationshipListFilter($("[data-official-relation-dialog]"),"[data-official-card]","[data-relation-search]","[data-relation-filter]","data-relation-kind",".relationship-filter-empty");
+  bindRelationshipListFilter($("[data-character-group-list-dialog]"),"[data-group-card]","[data-group-search]","[data-group-filter]","data-group-kind",".relationship-group-filter-empty");
+  $("[data-open-character-groups]")?.addEventListener("click",()=>{const dialog=$("[data-character-group-list-dialog]");if(dialog&&!dialog.open)dialog.showModal()});
+  const mapDialog=$("[data-relationship-map-dialog]");
+  mapDialog?.querySelector("[data-relationship-map-scope]")?.addEventListener("change",event=>{
+    const [kind,id=""]=String(event.currentTarget.value||"all").split(":");
+    const group=kind==="group"?(state.characterGroups||[]).find(item=>String(item.id)===id):null;
+    mapDialog.querySelectorAll("[data-relationship-map-character]").forEach(button=>{
+      const character=state.characters[button.dataset.relationshipMapCharacter];
+      const selected=kind==="all"?true:kind==="town"?String(character?.townId||state.activeTownId||"")===id:kind==="group"?Boolean(group?.memberIds?.includes(button.dataset.relationshipMapCharacter)):button.classList.contains("on");
+      button.classList.toggle("on",selected);button.setAttribute("aria-pressed",String(selected));
+    });
+    refreshRelationshipMap(mapDialog);
   });
-  $("[data-refresh-relationship-map]")?.addEventListener("click",()=>{
-    render();
-    requestAnimationFrame(openRelationshipMap);
-  });
+  mapDialog?.querySelectorAll("[data-relationship-map-character]").forEach(button=>button.addEventListener("click",()=>{
+    const selected=!button.classList.contains("on");button.classList.toggle("on",selected);button.setAttribute("aria-pressed",String(selected));
+    const scope=mapDialog.querySelector("[data-relationship-map-scope]");if(scope)scope.value="custom";
+    refreshRelationshipMap(mapDialog);
+  }));
+  $("[data-refresh-relationship-map]")?.addEventListener("click",()=>refreshRelationshipMap(mapDialog));
   $("[data-export-relationship-map]")?.addEventListener("click",exportRelationshipMapPng);
   $$("[data-character-view]").forEach(select=>select.onchange=()=>{
     const source=select.dataset.source,target=select.dataset.target,field=select.dataset.viewField;
@@ -2869,9 +3526,8 @@ function bind(){
     updateCharacterView(source,target,field,select.value);
     if(field==="overall"){
       const summary=$$("[data-view-summary]").find(item=>item.dataset.viewSummary===`${source}:${target}`);
-      if(summary){
-        summary.textContent=overallViewPhrase(select.value);
-      }
+      const phrase=summary?.querySelector("[data-view-summary-phrase]");
+      if(phrase)phrase.textContent=overallViewPhrase(select.value);
     }
     const dialog=select.closest("[data-view-dialog]");
     if(dialog)dialog.dataset.dirty="1";
@@ -2898,8 +3554,8 @@ function bind(){
     Object.values(state.relationships).filter(r=>r.groupId===el.dataset.deleteGroup).forEach(r=>deleteRelationship(r.id));
     render();explicitSave("그룹 관계 삭제");
   });
-  $("[data-add-character-group]")?.addEventListener("click",()=>openCharacterGroupDialog());
-  $$("[data-edit-character-group]").forEach(button=>button.onclick=()=>openCharacterGroupDialog(button.dataset.editCharacterGroup));
+  $$("[data-add-character-group]").forEach(button=>button.addEventListener("click",()=>{button.closest("[data-character-group-list-dialog]")?.close();openCharacterGroupDialog()}));
+  $$("[data-edit-character-group]").forEach(button=>button.onclick=()=>{button.closest("[data-character-group-list-dialog]")?.close();openCharacterGroupDialog(button.dataset.editCharacterGroup)});
   $$("[data-delete-character-group]").forEach(button=>button.onclick=()=>{
     const group=(state.characterGroups||[]).find(item=>item.id===button.dataset.deleteCharacterGroup);
     if(!group||!confirm(`‘${group.name}’ 그룹을 삭제할까요?\n캐릭터와 관계는 삭제되지 않습니다.`))return;
@@ -2967,15 +3623,21 @@ function bind(){
     maybeShowPageGuide();
   });
   $("[data-reset]")?.addEventListener("click",()=>{if(confirm("모든 기기 저장 데이터를 지울까요?")){resetAll();render()}});
-  if(state.activeTab==="town")bindPlaceDrag();
+  if(state.activeTab==="town"){
+    bindTownBuildingHold();
+    bindPlaceDrag();
+  }
 }
 
 async function applyImage(type,id,room,data){
   data=await persistLocalImage(data);
   if(type==="room")setHomeImage(id,room,data);
-  else if(type==="roomFloor")setRoomFloorImage(id,room,data);
+  else if(type==="roomFloor")setRoomFloorImage(id,room,data,"customTile");
+  else if(type==="roomScene")setRoomFloorImage(id,room,data,"custom");
   else if(type==="home")setHomeBackground(id,data);
+  else if(type==="homeExterior")setHomeExteriorImage(id,data);
   else if(type==="placeInterior")setPlaceInteriorImage(id,data);
+  else if(type==="townPhoto"){state.world.photo=data;save(true)}
   else if(type==="petPhoto")setPetImage(id,room,"photo",data);
   else if(type==="petIcon")setPetImage(id,room,"icon",data);
   else if(type==="car")updateCar(id,room,{image:data});
@@ -3014,10 +3676,12 @@ function navigateToTab(tab,{recordHistory=true}={}){
   if(!APP_TABS.includes(tab))return;
   if(tab!=="home")closeHomeOccupantSheet();
   if(tab==="character"&&state.activeTab!=="character")state.characterSettingsView="hub";
+  if(tab!=="character")state.characterSettingsView="hub";
   const returningToObserve=tab==="observe"&&state.activeTab!=="observe";
   if(returningToObserve)armObserveProfileInputShield();
   document.querySelector(".page-guide[open]")?.close("navigate");
   if(tab!=="home")state.homeEditMode=false;
+  if(tab!=="town")setMobileTownMode("");
   if(tab!=="character"){
     flushMobileCharacterDraft();
     mobileCharacterReorderOpen=false;
@@ -3203,9 +3867,22 @@ function bindRelationshipRoulette(){
   });
 }
 
+function selectedRelationshipMapCharacterIds(dialog){
+  return [...dialog.querySelectorAll("[data-relationship-map-character].on")].map(button=>button.dataset.relationshipMapCharacter).filter(Boolean);
+}
+function refreshRelationshipMap(dialog=document.querySelector("[data-relationship-map-dialog]")){
+  if(!dialog)return;
+  const content=dialog.querySelector("[data-relationship-map-content]"),ids=selectedRelationshipMapCharacterIds(dialog);
+  if(!content)return;
+  const markup=ids.length>=2?relationshipMapMarkup(ids):"";
+  content.innerHTML=markup||`<div class="empty-mini">${dialog.dataset.mapEmpty||"관계나 시선 설정이 있는 캐릭터를 두 명 이상 골라 주세요."}</div>`;
+  content.dataset.loaded="1";
+}
 function openRelationshipMap(){
   const dialog=document.querySelector("[data-relationship-map-dialog]");
   if(!dialog)return;
+  const content=dialog.querySelector("[data-relationship-map-content]");
+  if(content&&content.dataset.loaded!=="1")refreshRelationshipMap(dialog);
   if(!dialog.open)dialog.showModal();
   requestAnimationFrame(()=>{
     const scroller=dialog.querySelector(".relationship-map-scroll");
@@ -3280,9 +3957,6 @@ async function exportRelationshipMapPng(){
     group.append(label);
     foreign.replaceWith(group);
   }
-  const style=document.createElementNS(svgNs,"style");
-  style.textContent=`.map-official rect{display:none}.map-relation{font:800 15px sans-serif;fill:#33261f;paint-order:stroke;stroke:#fffdf9;stroke-width:5px;stroke-linejoin:round}.map-stage{font:600 11px sans-serif;fill:#6f625a;paint-order:stroke;stroke:#fffdf9;stroke-width:4px;stroke-linejoin:round}.map-heart{font:900 24px sans-serif;stroke:#fff;stroke-width:4;paint-order:stroke}`;
-  defs.after(style);
   const serialized=new XMLSerializer().serializeToString(clone);
   const blob=new Blob([serialized],{type:"image/svg+xml;charset=utf-8"});
   const url=URL.createObjectURL(blob),image=new Image();
@@ -3294,14 +3968,32 @@ async function exportRelationshipMapPng(){
     context.drawImage(image,0,0,canvas.width,canvas.height);
     const png=await new Promise(resolve=>canvas.toBlob(resolve,"image/png",1));
     if(!png)throw new Error("png-encode-failed");
-    const link=document.createElement("a"),pngUrl=URL.createObjectURL(png);
-    link.href=pngUrl;link.download=`서랍마을-인물관계도-${new Date().toISOString().slice(0,10)}.png`;link.click();
-    setTimeout(()=>URL.revokeObjectURL(pngUrl),1000);
-    showToast("인물 관계도를 PNG로 저장했습니다");
+    const filename=`서랍마을-인물관계도-${new Date().toISOString().slice(0,10)}.png`;
+    const nativePlugin=window.Capacitor?.Plugins?.ProfileExport;
+    if(window.Capacitor?.isNativePlatform?.()&&nativePlugin){
+      await nativePlugin.savePng({filename,data:canvas.toDataURL("image/png")});
+      showToast("사진의 DrawerVillage 폴더에 인물 관계도를 저장했어요");
+    }else{
+      const link=document.createElement("a"),pngUrl=URL.createObjectURL(png);
+      link.href=pngUrl;link.download=filename;link.hidden=true;document.body.append(link);link.click();
+      setTimeout(()=>{link.remove();URL.revokeObjectURL(pngUrl)},1500);
+      showToast("인물 관계도를 PNG로 저장했습니다");
+    }
   }catch(error){
     console.error("관계도 PNG 저장 실패",error);
     showToast("이미지 보안 제한으로 관계도 PNG를 만들지 못했어요");
   }finally{URL.revokeObjectURL(url)}
+}
+
+function chooseCharacterImageSource(type,id,room=""){
+  const dialog=document.createElement("dialog");
+  dialog.className="character-image-source-dialog";
+  dialog.innerHTML=`<form method="dialog"><header><b>사진 추가하기</b><button type="submit" value="close" aria-label="닫기">×</button></header><p>추가할 방법을 골라 주세요.</p><div><button type="button" data-image-source="device"><b>기기에서 업로드하기</b><small>휴대폰이나 컴퓨터에 저장된 사진</small></button><button type="button" data-image-source="link"><b>링크로 추가하기</b><small>웹에 있는 이미지 주소</small></button></div></form>`;
+  document.body.append(dialog);
+  dialog.addEventListener("close",()=>dialog.remove(),{once:true});
+  dialog.querySelector('[data-image-source="device"]').onclick=()=>{dialog.close();pickImage(type,id,room)};
+  dialog.querySelector('[data-image-source="link"]').onclick=()=>{dialog.close();useImageUrl(type,id,room)};
+  dialog.showModal();
 }
 
 async function useImageUrl(type,id,room){
@@ -3499,7 +4191,8 @@ function cropImage(file,type){
   if(type==="catalogImage")return prepareCatalogIllustration(file);
   if(type==="icon"||type==="petIcon")return prepareTransparentIcon(file);
   if(type==="ldImage"||/^ld(?:Neutral|Joy|Sad|Angry|Tired)$/.test(type))return prepareLargeArt(file);
-  const ratios={photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,roomFloor:1,home:16/9,place:1,placeInterior:16/9};
+  if(type==="roomScene")return prepareLargeArt(file);
+  const ratios={photo:4/3,icon:1,petIcon:1,petPhoto:4/3,catalogImage:4/3,room:16/9,roomFloor:1,home:16/9,place:1,placeInterior:16/9,townPhoto:4/3};
   const ratio=ratios[type]||16/9;
   const output=ratio<1?600:ratio===1?500:800;
   return new Promise((resolve,reject)=>{
@@ -3726,6 +4419,7 @@ const RELATION_STAGES={
   "부모·자녀":["연락이 끊긴 사이","서먹한 부모와 자녀","필요할 때만 연락함","무난한 부모와 자녀","서로 의지하는 가족","무척 각별한 부모와 자녀"],
   "형제·자매":["연락이 끊긴 형제자매","서로 불편한 형제자매","필요할 때만 연락함","무난한 형제자매","친구 같은 형제자매","서로를 가장 잘 아는 형제자매"],
   동거인:["서로 거의 모르는 동거인","생활만 공유하는 동거인","어색한 동거인","무난한 동거인","편한 동거인","친구 같은 동거인","유사가족 같은 동거인"],
+  라이벌:["서로 무관심한 라이벌","경계하는 라이벌","경쟁하며 의식함","서로 실력을 인정함","좋은 자극을 주는 라이벌"],
   default:["매우 불편함","서먹함","조금 가까움","편안함","가까움","매우 가까움"]
 };
 const PAST_RELATION_STAGES={
@@ -3737,173 +4431,126 @@ const PAST_RELATION_STAGES={
   default:["관계가 끝난 직후","아직 감정이 남아 있음","서로 피하는 중","필요할 때만 연락함","완전히 정리된 과거 관계"]
 };
 const stagesFor=(type,temporalStatus="current")=>temporalStatus==="past"?(PAST_RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","친구 모임","산악회"].includes(type)?PAST_RELATION_STAGES.친구:PAST_RELATION_STAGES.default)):(RELATION_STAGES[type]||(["소꿉친구","학창 시절 친구들","친구 모임","산악회"].includes(type)?RELATION_STAGES.친구:RELATION_STAGES.default));
+const RELATION_DEFAULT_STAGE={연인:"편안한 연인",부부:"생활 동반자",친구:"편한 친구","부모·자녀":"무난한 부모와 자녀","형제·자매":"무난한 형제자매",동거인:"무난한 동거인",소꿉친구:"편한 친구","학창 시절 친구들":"편한 친구","친구 모임":"편한 친구",라이벌:"경쟁하며 의식함",혐관:"서로 못마땅함",default:"편안함"};
+const defaultRelationStage=(type,temporalStatus="current")=>{
+  const values=stagesFor(type,temporalStatus);
+  if(temporalStatus==="past")return values[Math.min(2,values.length-1)]||values[0];
+  const wanted=RELATION_DEFAULT_STAGE[type]||(["산악회","동아리 동료","직장 동료"].includes(type)?"편안함":RELATION_DEFAULT_STAGE.default);
+  return values.includes(wanted)?wanted:(values[Math.floor(values.length/2)]||values[0]);
+};
 const FAULT_REASONS=["정하지 않음","누구의 잘못도 아님","성격 차이","신뢰를 깨뜨림","거짓말과 은폐","금전 문제","빚·과소비","재산·수입 갈등","약속·책임을 지키지 않음","일방적인 연락 단절","지나친 통제와 간섭","반복된 갈등","가족·주변인의 개입","생활 방식·미래 계획 차이","거리·이사·환경 변화","직장·학교 등 여건 변화","서로 자연스럽게 멀어짐","기타"];
 function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
-  const old=id?state.relationships[id]:null,dialog=document.createElement("dialog");dialog.className="relation-dialog relation-editor-dialog";
-  const oldGroup=old?.groupId?Object.values(state.relationships).filter(relation=>relation.groupId===old.groupId):old?[old]:[];
-  const oldMembers=old?.groupMembers?.length?old.groupMembers:[old?.a,old?.b].filter(Boolean);
-  const oldMothers=[...new Set(oldGroup.filter(relation=>relation.parentRole==="엄마").map(relation=>relation.parentId||relation.a))];
-  const oldFathers=[...new Set(oldGroup.filter(relation=>relation.parentRole==="아빠").map(relation=>relation.parentId||relation.a))];
-  const oldChildren=[...new Set(oldGroup.filter(relation=>relation.type==="부모·자녀").map(relation=>relation.childId||relation.b))];
-  const oldKinshipByPair=Object.assign({},...oldGroup.map(relation=>relation.kinshipByPair||{[[relation.a,relation.b].sort().join("~")]:relation.kinship||"blood"}));
-  const oldSiblingKinshipByPair=Object.assign({},...oldGroup.map(relation=>relation.siblingKinshipByPair||{}));
-  const characterChecks=(name,selected=[])=>state.order.map(cid=>`<label class="relation-character-chip" data-role-character="${cid}"><input type="checkbox" name="${name}" value="${cid}" ${selected.includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("");
-  const miniAvatar=cid=>{const c=state.characters[cid],src=c?.icon||c?.photo;return src?`<img class="relation-mini-avatar" src="${src}" alt="">`:`<span class="relation-mini-avatar fallback">${String(c?.name||"?").slice(0,1)}</span>`};
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${old?"관계 편집":"관계 추가"}</h2><p>함께할 캐릭터와 관계 종류부터 정해 주세요.</p></div><button value="cancel">×</button></div>
-    <section class="relationship-basic-settings relation-official-basic"><div class="settings-section-heading compact"><span><small>BASIC RELATIONSHIP</small><h3>기본 설정</h3></span><p>관계를 만드는 데 꼭 필요한 항목만 보여요.</p></div>
-    <fieldset class="relation-member-picker"><legend>관계에 포함할 캐릭터 · 두 명 이상</legend><div>${characterChecks("member",oldMembers.length?oldMembers:[state.activeId,state.order.find(cid=>cid!==state.activeId)].filter(Boolean))}</div><small>여기서 바로 캐릭터를 더하거나 뺄 수 있어요. 여러 명의 연인·부부 관계도 가능해요.</small></fieldset>
-    <label>관계 종류<select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select><small class="relation-type-help" data-relation-type-help></small></label>
-    <label><span data-stage-label>현재 관계 단계</span><select name="stage"></select></label></section>
-    <details class="settings-advanced-group relation-official-advanced"><summary><span><small>DETAILS</small><b>고급 설정</b><em>과거 관계·표시 순서·가족 역할·공개 범위·동거</em></span><i aria-hidden="true">＋</i></summary><div class="settings-advanced-body">
-    <label class="relation-temporal"><input type="checkbox" name="temporalStatus" value="past" ${old?.temporalStatus==="past"?"checked":""}><span><b>과거의 관계</b><small>체크하면 ‘헤어진 연인·이혼한 부부·절연한 친구’처럼 바뀝니다.</small></span></label>
-    <section class="relation-order-control"><b>관계 구성원 표시 순서</b><span data-relation-order-label></span><div class="relation-member-order-list" data-relation-member-order-list></div><button type="button" data-swap-relation-order>↔ 두 사람 좌우 바꾸기</button><small>두 명 관계의 왼쪽·오른쪽과 여러 명이 함께 만날 때의 배치를 이 순서대로 유지해요.</small></section>
-    <fieldset class="parent-direction" hidden><legend>선택한 구성원의 부모와 자녀 역할</legend><div class="parent-columns"><section><b>엄마 역할 · 여러 명 가능</b><div>${characterChecks("mother",oldMothers)}</div></section><section><b>아빠 역할 · 여러 명 가능</b><div>${characterChecks("father",oldFathers)}</div></section><span>→</span><section><b>자녀 · 여러 명 가능</b><div>${characterChecks("child",oldChildren)}</div></section></div><div class="parent-kinship-grid" data-parent-kinship></div><small>위에서 선택한 관계 구성원만 표시됩니다. 부모와 자녀 조합마다 혈연 여부를 따로 정할 수 있어요.</small></fieldset>
-    <fieldset class="sibling-direction" hidden><legend>선택한 구성원의 형제·자매 순서와 혈연</legend><div class="sibling-role-list">${state.order.map((cid,index)=>`<label data-role-character="${cid}"><b>${state.characters[cid].name}</b><span>순서<select name="siblingOrder" data-sibling-id="${cid}">${state.order.map((_,order)=>`<option value="${order+1}" ${(old?.siblingOrder?.[cid]||index+1)===order+1?"selected":""}>${order+1}번째</option>`).join("")}</select></span></label>`).join("")}</div><div class="sibling-kinship-grid" data-sibling-kinship></div><small>혈연은 사람 한 명이 아니라 두 사람의 조합마다 정합니다. 셋이 모두 비혈연이면 성별 구성에 따라 의형제·의자매·의남매로 표시돼요.</small></fieldset>
-    <fieldset class="past-fault" hidden><legend>관계가 끝난 책임과 이유</legend><label>주된 책임이 있는 쪽<select name="faultParty"></select></label><label>무슨 일이 있었나요?<select name="faultReason">${FAULT_REASONS.map(value=>`<option ${old?.faultReason===value?"selected":""}>${value}</option>`).join("")}</select></label><small>속마음이나 호감과는 별개예요. 관계가 끝난 사건과 이후 장면의 긴장에 사용됩니다.</small></fieldset>
-    <label class="relation-officiality">관계가 밖에서 다뤄지는 방식<select name="legalStatus">${["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함","법적으로 관계가 등록됨"].map(value=>`<option>${value}</option>`).join("")}</select><small data-officiality-help>감정을 뜻하는 항목이 아니에요. 맨 위는 밖에서 관계 이름을 쓰지 않는 상태이고, 아래로 갈수록 공개 범위가 넓어집니다.</small></label>
-    <label class="cohabit"><input type="checkbox" name="cohabit"> 함께 살기</label>
-    <label class="cohabit relation-stay-together"><input type="checkbox" name="stayTogether"><span><b>함께 다니기</b><small>둘 다 별도 일정이 없을 때 같은 장소에서 함께 행동하고, 생활 로그에도 함께 표시해요.</small></span></label>
-    <p class="hint">공식 관계와 관계 단계, 각 캐릭터의 성격과 신체 접촉 반응을 함께 분석해 상호작용을 자동으로 만들어요.</p></div></details>
-    <div><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
+  const old=id?state.relationships[id]:null,dialog=document.createElement("dialog");dialog.className="relation-dialog relation-editor-dialog relationship-fullscreen-dialog";
+  const language=state.uiLanguage||"ko",copy=({
+    en:{title:old?"Edit official relationship":"Set official relationship",name:"Relationship name",nameHint:"Name this relationship",back:"Back",list:"Official relationships",members:"Characters in this relationship · two or more",type:"Relationship type",stage:"Current relationship stage",past:"Past relationship",pastHint:"Examples: former partners, estranged spouses, or severed friendships.",order:"Character display order",orderActual:"Set practical order",outside:"How others treat the relationship",tags:"Relationship tags",tagCount:n=>`${n} tags`,tagPlaceholder:"Type your own tag",tagAdd:"Add",tagHint:"Create any tag you need, such as Dream couple or a community name. Select a saved tag to remove it.",parentRole:"Parent role",kinship:"Family link",sibling:"Sibling link",fault:"Why it ended",cohabit:"Live together",together:"Travel together",cancel:"Cancel",save:"Save",swap:"Swap the two characters"},
+    ja:{title:old?"公式関係を編集":"公式関係を設定",name:"関係名",nameHint:"この関係に名前を付ける",back:"戻る",list:"公式関係一覧",members:"関係に含める人物・2人以上",type:"関係の種類",stage:"現在の関係段階",past:"過去の関係",pastHint:"別れた恋人、離婚した夫婦、絶縁した友人などに使います。",order:"人物の表示順",orderActual:"実際の順序を設定",outside:"外部での関係の扱われ方",tags:"関係タグを追加",tagCount:n=>`${n}個のタグ`,tagPlaceholder:"自由なタグを入力",tagAdd:"追加",tagHint:"「ドリームカップル」やコミュニティ名など、必要なタグを自由に作れます。保存済みタグを押すと削除します。",parentRole:"親の役割",kinship:"家族関係",sibling:"きょうだい関係",fault:"関係が終わった理由",cohabit:"一緒に住む",together:"一緒に行動",cancel:"取消",save:"保存",swap:"2人の左右を入れ替え"},
+    ko:{title:old?"공식 관계 편집":"공식 관계 설정",name:"관계 이름",nameHint:"여기에 관계 이름을 써 주세요",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderActual:"실질적 순서 설정하기",outside:"관계가 밖에서 다뤄지는 방식",tags:"관계 태그 추가하기",tagCount:n=>`${n}개 태그`,tagPlaceholder:"원하는 태그를 직접 입력",tagAdd:"추가",tagHint:"드림 커플이나 커뮤니티 이름처럼 필요한 태그를 자유롭게 만들 수 있어요. 저장된 태그를 누르면 삭제됩니다.",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"두 사람 좌우 바꾸기"}
+  }[language]||null)||{title:old?"공식 관계 편집":"공식 관계 설정",name:"관계 이름",nameHint:"여기에 관계 이름을 써 주세요",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderActual:"실질적 순서 설정하기",outside:"관계가 밖에서 다뤄지는 방식",tags:"관계 태그 추가하기",tagCount:n=>`${n}개 태그`,tagPlaceholder:"원하는 태그를 직접 입력",tagAdd:"추가",tagHint:"드림 커플이나 커뮤니티 이름처럼 필요한 태그를 자유롭게 만들 수 있어요. 저장된 태그를 누르면 삭제됩니다.",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"두 사람 좌우 바꾸기"};
+  const aId=state.characters[old?.a]?old.a:(state.characters[state.activeId]?state.activeId:state.order[0]),bId=state.characters[old?.b]&&old.b!==aId?old.b:state.order.find(cid=>cid!==aId);
+  const characterOptions=selected=>state.order.map(cid=>`<option value="${htmlEsc(cid)}" ${cid===selected?"selected":""}>${htmlEsc(state.characters[cid]?.name||"")}</option>`).join("");
+  const officialValues=["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함","법적으로 관계가 등록됨"];
+  const defaultAcceptance=language==="en"?"Accepted":language==="ja"?"受け入れられている":"두루 받아들여짐";
+  const selectedRelationTags=new Set(Array.isArray(old?.tags)?old.tags:[]);
+  dialog.innerHTML=`<form method="dialog"><header class="relationship-editor-head official-editor-head"><button value="save" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select></label></header>
+    <label class="official-name-field"><span>${copy.name}</span><input name="name" maxlength="50" value="${htmlEsc(old?.name||"")}" placeholder="${copy.nameHint}"></label>
+    <section class="official-member-section"><b>${copy.members}</b><div class="official-member-picker">${state.order.map(cid=>`<button type="button" data-official-member="${htmlEsc(cid)}">${htmlEsc(state.characters[cid]?.name||"")}</button>`).join("")}</div><select name="a" hidden>${characterOptions(aId)}</select><select name="b" hidden>${characterOptions(bId)}</select></section>
+    <div class="official-relation-fields">
+      <label class="official-stage-field"><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
+      <label class="official-past-toggle"><b>${copy.past}</b><input type="checkbox" name="temporalPast"><small>${copy.pastHint}</small><input type="hidden" name="temporalStatus" value="current"></label>
+      <section class="official-order-card"><b>${copy.order}</b><div><span data-official-order-label></span><span class="official-order-avatars"><i data-official-avatar="a"></i><button type="button" data-swap-official-pair aria-label="${copy.swap}">↔</button><i data-official-avatar="b"></i></span></div><button type="button" data-swap-official-pair>${copy.swap}</button><button type="button" data-set-official-order>${copy.orderActual}</button></section>
+      <label class="official-outside-field"><b>${copy.outside}</b><select name="legalStatus">${officialValues.map(value=>`<option>${value}</option>`).join("")}</select></label>
+      <label class="official-tags-field"><b>${copy.tags}</b><button type="button" data-toggle-relation-tags><span data-relation-tag-count>${copy.tagCount(selectedRelationTags.size)}</span></button><input type="hidden" name="socialAcceptance" value="${htmlEsc(old?.socialAcceptance||defaultAcceptance)}"></label>
+      <label class="official-parent-role" hidden><b>${copy.parentRole}</b><select name="parentRole"><option>엄마</option><option>아빠</option><option>부모</option></select></label>
+      <label class="official-kinship" hidden><b>${copy.kinship}</b><select name="kinship"><option value="blood">혈연</option><option value="nonblood">비혈연·입양</option></select></label>
+      <label class="official-sibling-link" hidden><b>${copy.sibling}</b><select name="siblingKinship"><option value="full">양쪽 부모가 같은 혈연</option><option value="half">한쪽 부모만 같은 혈연</option><option value="nonblood">비혈연 형제·자매</option></select></label>
+      <label class="official-fault" hidden><b>${copy.fault}</b><select name="faultReason">${FAULT_REASONS.map(value=>`<option ${old?.faultReason===value?"selected":""}>${value}</option>`).join("")}</select></label>
+    </div>
+    <section class="official-tag-panel" hidden><div><b>${copy.tags}</b><button type="button" data-close-relation-tags aria-label="${copy.close||copy.back}">×</button></div><div class="official-tag-entry"><input type="text" maxlength="30" data-new-relation-tag placeholder="${htmlEsc(copy.tagPlaceholder)}"><button type="button" data-add-relation-tag>${copy.tagAdd}</button></div><small>${copy.tagHint}</small><div class="official-tag-list" data-relation-tag-list></div></section>
+    <div class="official-relation-toggles"><label><span>${copy.cohabit}</span><input type="checkbox" name="cohabit"></label><label><span>${copy.together}</span><input type="checkbox" name="stayTogether"></label></div>
+    <div class="relationship-editor-actions"><button value="cancel">${copy.cancel}</button><button class="primary" value="save">${copy.save}</button></div>
   </form>`;
   document.body.append(dialog);const f=dialog.querySelector("form");
-  let memberOrder=Array.isArray(old?.displayOrder)&&old.displayOrder.length===oldMembers.length
-    ?[...old.displayOrder]:[...oldMembers];
-  const checkedMembers=()=>[...f.querySelectorAll('[name="member"]:checked')].map(input=>input.value);
-  const syncPairOrder=()=>{
-    const selected=checkedMembers();
-    memberOrder=[...memberOrder.filter(member=>selected.includes(member)),...selected.filter(member=>!memberOrder.includes(member))];
-    const orderAvailable=selected.length>=2&&!["부모·자녀","형제·자매"].includes(f.type.value);
-    f.querySelector(".relation-order-control").hidden=!orderAvailable;
-    f.querySelector("[data-relation-order-label]").textContent=orderAvailable?memberOrder.map(id=>state.characters[id]?.name||"").join(" × "):"구성원을 두 명 이상 선택하면 순서를 정할 수 있어요.";
-    const list=f.querySelector("[data-relation-member-order-list]");
-    if(list)list.innerHTML=memberOrder.map((id,index)=>`<span>${miniAvatar(id)}<b>${state.characters[id]?.name||""}</b><button type="button" data-relation-order-move="${id}" data-direction="-1" ${index===0?"disabled":""}>←</button><button type="button" data-relation-order-move="${id}" data-direction="1" ${index===memberOrder.length-1?"disabled":""}>→</button></span>`).join("");
-    const swap=f.querySelector("[data-swap-relation-order]");
-    if(swap)swap.hidden=memberOrder.length!==2;
-    [".parent-direction",".sibling-direction"].forEach(selector=>f.querySelector(selector)?.querySelectorAll("[data-role-character]").forEach(label=>{
-      const visible=selected.includes(label.dataset.roleCharacter);
-      label.hidden=!visible;
-      if(!visible)label.querySelectorAll('input[type="checkbox"]').forEach(input=>input.checked=false);
-    }));
-    refreshParentKinship();
-    refreshSiblingKinship();
-    refreshFaultParties();
-  };
-  const kinshipKey=(a,b)=>[a,b].sort().join("~");
-  const refreshParentKinship=()=>{
-    const box=f.querySelector("[data-parent-kinship]");if(!box)return;
-    const parents=[...f.querySelectorAll('[name="mother"]:checked,[name="father"]:checked')].map(input=>input.value),children=[...f.querySelectorAll('[name="child"]:checked')].map(input=>input.value);
-    box.innerHTML=parents.flatMap(parent=>children.filter(child=>child!==parent).map(child=>{const key=kinshipKey(parent,child),blood=oldKinshipByPair[key]!=="nonblood";return `<label><span><b>${state.characters[parent]?.name} ↔ ${state.characters[child]?.name}</b><small>이 부모와 자녀 사이</small></span><input type="checkbox" data-parent-blood="${key}" ${blood?"checked":""}> 혈연</label>`})).join("");
-  };
-  const refreshSiblingKinship=()=>{
-    const box=f.querySelector("[data-sibling-kinship]");if(!box)return;
-    const members=checkedMembers();
-    box.innerHTML=members.flatMap((a,index)=>members.slice(index+1).map(b=>{
-      const key=kinshipKey(a,b);
-      let selected=oldSiblingKinshipByPair[key];
-      if(!selected&&old?.siblingBlood)selected=old.siblingBlood[a]!==false&&old.siblingBlood[b]!==false?(old.siblingBloodType?.[a]==="half"||old.siblingBloodType?.[b]==="half"?"half":"full"):"nonblood";
-      selected=selected||"full";
-      return `<label class="sibling-pair-card"><span class="sibling-pair-people">${miniAvatar(a)}<b>${state.characters[a]?.name}</b><i>↔</i>${miniAvatar(b)}<b>${state.characters[b]?.name}</b></span><select data-sibling-kinship-pair="${key}"><option value="full" ${selected==="full"?"selected":""}>양쪽 부모가 같은 혈연</option><option value="half" ${selected==="half"?"selected":""}>한쪽 부모만 같은 혈연</option><option value="nonblood" ${selected==="nonblood"?"selected":""}>비혈연 · 서로를 형제로 선택함</option></select></label>`;
-    })).join("");
-  };
-  const temporalStatus=()=>f.querySelector('[name="temporalStatus"]:checked')?.value||"current";
-  const refreshFaultParties=()=>{
-    const select=f.faultParty;if(!select)return;
-    const members=checkedMembers(),values=[["","정하지 않음"],["none","누구의 잘못도 아님"],["both","양쪽 모두"],...members.map(id=>[id,state.characters[id]?.name||id])];
-    select.innerHTML=values.map(([value,label])=>`<option value="${value}" ${old?.faultParty===value?"selected":""}>${label}</option>`).join("");
-    f.querySelector(".past-fault").hidden=temporalStatus()!=="past";
-  };
-  const pastTypeLabels={연인:"헤어진 연인",부부:"이혼한 부부",친구:"절연한 친구","소꿉친구":"멀어진 소꿉친구","학창 시절 친구들":"멀어진 학창 시절 친구","직장 동료":"전 직장 동료","형제·자매":"절연한 형제·자매","부모·자녀":"절연한 부모·자녀",동거인:"옛 동거인",라이벌:"과거의 라이벌",혐관:"과거의 악연"};
-  const refreshTemporalLabels=()=>{
-    const past=temporalStatus()==="past";
-    [...f.type.options].forEach(option=>option.textContent=past?(pastTypeLabels[option.value]||`과거의 ${option.value}`):option.value);
-    f.querySelector("[data-stage-label]").textContent=past?"과거 관계 단계":"현재 관계 단계";
-  };
-  const refreshStages=()=>{refreshTemporalLabels();const values=stagesFor(f.type.value,temporalStatus()),selected=old?.stage&&values.includes(old.stage)?old.stage:values[0];f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("")};
-  const relationTypeHelp={
-    "부모·자녀":"누가 부모이고 누가 자녀인지 역할이 있는 관계예요. 혈연·입양·법적 등록 여부는 아래 공개·공적 기록 항목으로 따로 정합니다.",
-    "형제·자매":"선택한 구성원마다 첫째·둘째 순서와 혈연·이복·이부·비혈연 여부를 따로 정하는 관계예요.",
-    동거인:"같은 집에서 생활을 공유하는 관계예요. 거의 모르는 사이부터 친구, 유사가족 같은 동거인까지 단계로 표현합니다."
-  };
-  const updateType=()=>{
-    refreshStages();
-    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매";
-    const advanced=f.querySelector(".relation-official-advanced");
-    if(advanced&&(parent||sibling))advanced.open=true;
-    f.querySelector(".parent-direction").hidden=!parent;
-    f.querySelector(".sibling-direction").hidden=!sibling;
-    f.querySelector(".relation-member-picker").hidden=false;
-    f.querySelector("[data-relation-type-help]").textContent=relationTypeHelp[f.type.value]||"두 사람 사이를 밖에서 어떤 관계라고 부르는지 정합니다. 속마음과 신뢰는 캐릭터별 시선에서 따로 설정해요.";
-    f.querySelector("[data-officiality-help]").textContent=["부모·자녀","형제·자매"].includes(f.type.value)?"마지막 ‘법적으로 관계가 등록됨’은 가족관계·입양처럼 이 가족 역할이 공적 서류에 기록된 경우예요. 혈연 여부와는 별개입니다.":"맨 위는 밖에서 관계 이름을 쓰지 않는 상태이고, 아래로 갈수록 공개 범위가 넓어집니다. 마지막은 이 관계와 관련된 공적 서류가 있는 경우예요.";
-    if(f.type.value==="동거인")f.cohabit.checked=true;
-    f.cohabit.disabled=f.type.value==="동거인";
-    const married=f.type.value==="부부";
-    if(married)f.legalStatus.value="법적으로 관계가 등록됨";
-    f.legalStatus.disabled=married;
-    syncPairOrder();
-    refreshFaultParties();
-  };
   const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
   f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";
+  f.temporalStatus.value=old?.temporalStatus==="past"?"past":"current";f.temporalPast.checked=f.temporalStatus.value==="past";
   f.legalStatus.value=f.type.value==="부부"?"법적으로 관계가 등록됨":officialityMigration[old?.legalStatus]||old?.legalStatus||"가까운 사람에게만 알림";
-  updateType();f.type.onchange=updateType;f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
-  f.querySelectorAll('[name="member"]').forEach(input=>input.onchange=syncPairOrder);
-  f.querySelectorAll('[name="temporalStatus"]').forEach(input=>input.onchange=()=>{refreshStages();refreshFaultParties()});
-  f.querySelectorAll('[name="mother"],[name="father"],[name="child"]').forEach(input=>input.onchange=refreshParentKinship);
-  f.querySelector("[data-swap-relation-order]").onclick=()=>{if(memberOrder.length===2){memberOrder.reverse();syncPairOrder()}};
-  f.querySelector("[data-relation-member-order-list]").onclick=event=>{
-    const button=event.target.closest("[data-relation-order-move]");if(!button)return;
-    const index=memberOrder.indexOf(button.dataset.relationOrderMove),next=index+Number(button.dataset.direction);
-    if(index<0||next<0||next>=memberOrder.length)return;
-    [memberOrder[index],memberOrder[next]]=[memberOrder[next],memberOrder[index]];
-    syncPairOrder();
+  f.parentRole.value=old?.parentRole||"부모";f.kinship.value=old?.kinship||"blood";
+  const oldSiblingKey=[aId,bId].sort().join("~");f.siblingKinship.value=old?.siblingKinshipByPair?.[oldSiblingKey]||"full";
+  f.socialAcceptance.value=old?.socialAcceptance||defaultAcceptance;f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
+  let initial=true;
+  const avatarMarkup=cid=>{const c=state.characters[cid],src=c?.icon||c?.photo;return src?`<img src="${htmlEsc(src)}" alt="">`:`<i>${htmlEsc(String(c?.name||"?").slice(0,1))}</i>`};
+  const refreshPair=()=>{
+    if(f.a.value===f.b.value)f.b.value=state.order.find(cid=>cid!==f.a.value)||f.b.value;
+    f.querySelector('[data-official-avatar="a"]').innerHTML=avatarMarkup(f.a.value);
+    f.querySelector('[data-official-avatar="b"]').innerHTML=avatarMarkup(f.b.value);
+    f.querySelector('[data-official-order-label]').textContent=`${state.characters[f.a.value]?.name||""} × ${state.characters[f.b.value]?.name||""}`;
+    f.querySelectorAll('[data-official-member]').forEach(button=>button.classList.toggle("on",[f.a.value,f.b.value].includes(button.dataset.officialMember)));
   };
+  const refreshStages=()=>{
+    const values=stagesFor(f.type.value,f.temporalStatus.value),selected=initial&&old?.stage&&values.includes(old.stage)?old.stage:defaultRelationStage(f.type.value,f.temporalStatus.value);
+    f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("");
+    f.querySelector("[data-stage-label]").textContent=f.temporalStatus.value==="past"?(language==="en"?"Past relationship stage":language==="ja"?"過去の関係段階":"과거 관계 단계"):copy.stage;
+    f.querySelector(".official-fault").hidden=f.temporalStatus.value!=="past";
+    initial=false;
+  };
+  const refreshType=()=>{
+    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매",married=f.type.value==="부부",roommate=f.type.value==="동거인";
+    f.querySelector(".official-parent-role").hidden=!parent;f.querySelector(".official-kinship").hidden=!parent;f.querySelector(".official-sibling-link").hidden=!sibling;
+    if(married)f.legalStatus.value="법적으로 관계가 등록됨";f.legalStatus.disabled=married;
+    if(roommate)f.cohabit.checked=true;f.cohabit.disabled=roommate;
+    refreshStages();
+  };
+  refreshPair();refreshType();
+  const tagPanel=f.querySelector(".official-tag-panel"),tagCount=f.querySelector("[data-relation-tag-count]");
+  const refreshTagCount=()=>{if(tagCount)tagCount.textContent=copy.tagCount(selectedRelationTags.size)};
+  const tagList=f.querySelector("[data-relation-tag-list]"),tagInput=f.querySelector("[data-new-relation-tag]");
+  const renderRelationTags=()=>{
+    tagList.innerHTML=[...selectedRelationTags].map(tag=>`<button type="button" data-relation-tag="${htmlEsc(tag)}" aria-label="#${htmlEsc(tag)}">#${htmlEsc(tag)} <i aria-hidden="true">×</i></button>`).join("")||`<span class="empty-mini">${copy.tagHint}</span>`;
+    tagList.querySelectorAll("[data-relation-tag]").forEach(button=>button.onclick=()=>{selectedRelationTags.delete(button.dataset.relationTag);refreshTagCount();renderRelationTags()});
+  };
+  const addRelationTag=()=>{
+    const tag=String(tagInput.value||"").trim().replace(/^#+/,"").replace(/\s+/g," ").slice(0,30);
+    if(!tag)return;
+    selectedRelationTags.add(tag);tagInput.value="";refreshTagCount();renderRelationTags();tagInput.focus();
+  };
+  f.querySelector("[data-toggle-relation-tags]").onclick=()=>{tagPanel.hidden=false};
+  f.querySelector("[data-close-relation-tags]").onclick=()=>{tagPanel.hidden=true};
+  f.querySelector("[data-add-relation-tag]").onclick=addRelationTag;
+  tagInput.addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();addRelationTag()}});
+  renderRelationTags();
+  f.querySelectorAll('[data-official-member]').forEach(button=>button.onclick=()=>{const cid=button.dataset.officialMember;if([f.a.value,f.b.value].includes(cid))return;f.b.value=cid;refreshPair()});
+  f.a.onchange=refreshPair;f.b.onchange=refreshPair;
+  f.type.onchange=refreshType;f.temporalPast.onchange=()=>{f.temporalStatus.value=f.temporalPast.checked?"past":"current";refreshStages()};
+  f.querySelectorAll("[data-swap-official-pair]").forEach(button=>button.onclick=()=>{const a=f.a.value;f.a.value=f.b.value;f.b.value=a;refreshPair()});
+  f.querySelector("[data-set-official-order]").onclick=()=>{const a=f.a.value;f.a.value=f.b.value;f.b.value=a;refreshPair();showToast(copy.orderActual)};
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
-      const members=checkedMembers();
-      const mothers=[...f.querySelectorAll('[name="mother"]:checked')].map(input=>input.value),fathers=[...f.querySelectorAll('[name="father"]:checked')].map(input=>input.value),children=[...f.querySelectorAll('[name="child"]:checked')].map(input=>input.value);
-      const parentPairs=f.type.value==="부모·자녀"?[...mothers.map(id=>[id,"엄마"]),...fathers.map(id=>[id,"아빠"])].flatMap(([parent,role])=>children.filter(child=>child!==parent).map(child=>[parent,child,role])):[];
-      const kinshipByPair=Object.fromEntries([...f.querySelectorAll("[data-parent-blood]")].map(input=>[input.dataset.parentBlood,input.checked?"blood":"nonblood"]));
-      const siblingOrder=Object.fromEntries(members.map(id=>[id,Number(f.querySelector(`[data-sibling-id="${CSS.escape(id)}"]`)?.value)||1]));
-      const siblingKinshipByPair=Object.fromEntries([...f.querySelectorAll("[data-sibling-kinship-pair]")].map(select=>[select.dataset.siblingKinshipPair,select.value]));
-      const duplicateSiblingOrder=f.type.value==="형제·자매"&&new Set(Object.values(siblingOrder)).size!==members.length;
-      if(f.type.value==="부모·자녀"&&!parentPairs.length)alert("엄마 또는 아빠와 자녀를 한 명 이상씩 골라 주세요.");
-      else if(duplicateSiblingOrder)alert("형제·자매의 첫째·둘째·셋째 순서는 서로 겹치지 않게 골라 주세요.");
-      else if(f.type.value!=="부모·자녀"&&members.length<2)alert("관계에 포함할 캐릭터를 두 명 이상 골라 주세요.");
-      else{
-        const temporal=temporalStatus(),levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1);
-        const hostile=f.type.value==="혐관",base={type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:temporal==="past"?f.faultParty.value:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,kinshipByPair,siblingOrder,siblingKinshipByPair,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now()};
-        if(old?.groupId)Object.values(state.relationships).filter(r=>r.groupId===old.groupId).forEach(r=>deleteRelationship(r.id));
-        else if(old&&(f.type.value==="부모·자녀"||members.length!==2))deleteRelationship(id);
-        if(f.type.value==="부모·자녀"){
-          const groupId=parentPairs.length>1?`family-${Date.now()}`:"";
-          parentPairs.forEach(([parent,child,parentRole])=>addRelationship({...base,a:parent,b:child,parentId:parent,childId:child,parentRole,kinship:kinshipByPair[kinshipKey(parent,child)]||"blood",directional:true,groupId,groupMembers:[...new Set([...mothers,...fathers,...children])]}));
-        }else if(members.length===2){
-          const ordered=memberOrder.length===2&&memberOrder.every(member=>members.includes(member))?memberOrder:members;
-          const patch={...base,a:ordered[0],b:ordered[1],displayOrder:[...ordered],directional:false,groupId:"",groupMembers:[]};
-          old&&!old.groupId&&state.relationships[id]?updateRelationship(id,patch):addRelationship(patch);
-        }
-        else{
-          const groupId=`group-${members.slice().sort().join("-")}-${Date.now()}`;
-          const ordered=memberOrder.length===members.length&&memberOrder.every(member=>members.includes(member))?memberOrder:members;
-          for(let i=0;i<members.length;i++)for(let j=i+1;j<members.length;j++)addRelationship({...base,a:members[i],b:members[j],groupId,groupMembers:[...members],displayOrder:[...ordered]});
-        }
-        render();explicitSave("관계 저장");
-      }
+      const a=f.a.value,b=f.b.value,temporal=f.temporalStatus.value,levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1),hostile=f.type.value==="혐관",pairKey=[a,b].sort().join("~");
+      const patch={a,b,name:f.name.value.trim(),tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[a,b],directional:f.type.value==="부모·자녀",groupId:"",groupMembers:[]};
+      if(f.type.value==="부모·자녀")Object.assign(patch,{parentId:a,childId:b,parentRole:f.parentRole.value,kinship:f.kinship.value,kinshipByPair:{[pairKey]:f.kinship.value}});
+      if(f.type.value==="형제·자매")Object.assign(patch,{siblingOrder:{[a]:1,[b]:2},siblingKinshipByPair:{[pairKey]:f.siblingKinship.value}});
+      old&&state.relationships[id]?updateRelationship(id,patch):addRelationship(patch);
+      render();explicitSave("관계 저장",{alreadySaved:true,renderAfter:false});
     }
     dialog.remove();
   };
   dialog.showModal();
 }
 
+function bindTownBuildingHold(){
+  // 편집 모드는 상단의 명시적인 버튼으로만 연다. 일반 화면에서 길게 눌러
+  // 우연히 건물 설정이 바뀌던 진입 경로는 사용하지 않는다.
+}
+
 function bindPlaceDrag(){
   const mobile=document.documentElement.classList.contains("native-app");
-  const editing=document.querySelector(".mobile-town-shell")?.classList.contains("editing");
-  if(mobile&&!editing)return;
-  $$(".town-edit .place").forEach(el=>el.onpointerdown=e=>{
+  const mode=document.querySelector(".mobile-town-shell")?.dataset.townMode||"";
+  if(mobile&&!["buildings","decorations"].includes(mode))return;
+  $$(".town-edit .place").filter(el=>!mobile||(mode==="decorations"?Boolean(el.dataset.place||el.dataset.homeMap||el.dataset.townDecoration):Boolean(el.dataset.place||el.dataset.homeMap))).forEach(el=>el.onpointerdown=e=>{
     e.preventDefault();
     let moved=false;
+    const startingLayout=townPlacementSnapshot();
     const pointerStart={x:e.clientX,y:e.clientY};
     const startRect=el.getBoundingClientRect();
     const grabX=(e.clientX-(startRect.left+startRect.width/2))/startRect.width;
@@ -3914,20 +4561,23 @@ function bindPlaceDrag(){
       if(Math.hypot(ev.clientX-pointerStart.x,ev.clientY-pointerStart.y)>5)moved=true;
       const box=el.parentElement.getBoundingClientRect();
       const currentRect=el.getBoundingClientRect();
-      const x=Math.max(4,Math.min(96,(ev.clientX-grabX*currentRect.width-box.left)/box.width*100));
-      const y=Math.max(5,Math.min(95,(ev.clientY-grabY*currentRect.height-box.top)/box.height*100));
-      const homeId=el.dataset.homeMap,placeId=el.dataset.place;
-      if(homeId)moveHomeOnTown(homeId,x,y,false);else movePlace(placeId,x,y,false);
-      const target=homeId?state.homes[homeId]:state.world.places.find(item=>item.id===placeId);
+      const x=Math.round(Math.max(4,Math.min(96,(ev.clientX-grabX*currentRect.width-box.left)/box.width*100)));
+      const y=Math.round(Math.max(5,Math.min(95,(ev.clientY-grabY*currentRect.height-box.top)/box.height*100)));
+      const homeId=el.dataset.homeMap,placeId=el.dataset.place,decorationId=el.dataset.townDecoration;
+      if(homeId)moveHomeOnTown(homeId,x,y,false);else if(decorationId)moveTownDecoration(decorationId,x,y,false);else movePlace(placeId,x,y,false);
+      const target=homeId?state.homes[homeId]:decorationId?(state.world.decorations||[]).find(item=>item.id===decorationId):state.world.places.find(item=>item.id===placeId);
       if(target){el.style.left=(homeId?target.mapX:target.x)+"%";el.style.top=(homeId?target.mapY:target.y)+"%"}
     };
     const finish=()=>{
       el.onpointermove=null;
       el.classList.remove("dragging");
+      if(moved)recordTownPlacementSnapshot(startingLayout);
       save();
       if(!moved){
-        if(mobile&&el.dataset.place){
-          setMobileTownPanel(el.dataset.place);
+        if(mobile){
+          const kind=el.dataset.homeMap?"home":el.dataset.townDecoration?"decoration":"place";
+          const id=el.dataset.homeMap||el.dataset.townDecoration||el.dataset.place;
+          setMobileTownPanel(mode==="decorations"?"decorations":kind==="home"?`home:${id}`:id);setMobileTownPlacement(kind,id);
           render();
         }else{
           const detailKey=el.dataset.homeMap?`home:${el.dataset.homeMap}`:el.dataset.place;
@@ -4450,7 +5100,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-  import("./auth.js?v=20260826scheduledeletionhotfix161").catch(error=>{
+import("./auth.js?v=20260828town177").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -4465,7 +5115,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260826scheduledeletionhotfix161",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260828town177",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

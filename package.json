@@ -4,8 +4,6 @@
   "private": true,
   "description": "서랍마을 Android 앱 패키지",
   "scripts": {
-    "build": "node scripts/prepare-web.mjs",
-    "pages:build": "node scripts/prepare-web.mjs",
     "postinstall": "patch-package",
     "app:prepare": "node scripts/prepare-app.mjs && node scripts/check-native-module-closure.mjs && node scripts/check-android-build-assets.mjs",
     "cap:sync:android": "node --require ./scripts/windows-userinfo-shim.cjs ./node_modules/@capacitor/cli/bin/capacitor sync android",
@@ -33,8 +31,9 @@
     "test:performance": "node scripts/check-performance-stability.mjs",
     "test:home-life": "node scripts/check-home-life-simulation.mjs",
     "test:home-surfaces": "node scripts/check-home-surfaces.mjs",
-    "test:hotfix-relationship-catalog": "node scripts/check-hotfix-relationship-catalog.mjs",
-    "test:hotfix-schedule-deletion": "node scripts/check-schedule-deletion-sync.mjs"
+    "test:hotfix-schedule-deletion": "node scripts/check-schedule-deletion-sync.mjs",
+    "test:town-grid": "node scripts/check-town-grid-editor.mjs",
+    "test:reported-bugs": "node scripts/check-reported-bug-fixes.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

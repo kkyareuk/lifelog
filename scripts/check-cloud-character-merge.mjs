@@ -40,14 +40,13 @@ const restoreCloud={
   interactions:[{id:"cloud-copy",type:"request",actorId:"cloud",requestTitle:"책 정리",createdAt:1234}]
 };
 const restored=mergeCloudRestoreState(restoreDevice,restoreCloud);
-assert.equal(restored.characters.cloud.name,"복구된 캐릭터");
-assert.equal(restored.characters.cloud.days["2026-08-23"].entries.length,1);
-assert.equal(restored.homes["home-cloud"].name,"복구된 집");
-assert.equal(restored.deletedCharacterIds.includes("cloud"),false);
-assert.equal(restored.deletedHomeIds.includes("home-cloud"),false);
-assert.equal(restored.interactions.length,1);
-console.log("PASS 수동 불러오기는 원격의 실제 캐릭터를 오래된 기기 삭제표보다 우선합니다");
-console.log("PASS 같은 원격 로그와 상호작용을 불러올 때 중복으로 늘리지 않습니다");
+assert.equal(restored.characters.cloud,undefined);
+assert.equal(restored.homes["home-cloud"],undefined);
+assert.equal(restored.deletedCharacterIds.includes("cloud"),true);
+assert.equal(restored.deletedHomeIds.includes("home-cloud"),true);
+assert.equal(restored.interactions.length,0);
+console.log("PASS 수동 불러오기도 현재 기기의 삭제표를 보존해 삭제한 캐릭터와 집을 되살리지 않습니다");
+console.log("PASS 삭제한 캐릭터에 연결된 원격 상호작용도 함께 제거합니다");
 const authSource=fs.readFileSync(new URL("../auth.js",import.meta.url),"utf8");
 assert.match(authSource,/const tombstoneSafeState=previousGameState\s*\?mergeDeviceAndCloudState\(localState,previousGameState\)/);
 assert.match(authSource,/const imported=automatic\s*\?differentCharacters\?mergeDeviceAndCloudState\(localState,remote\):applyLocalTombstones\(remote,localState\)\s*:mergeCloudRestoreState\(localState,remote\)/);

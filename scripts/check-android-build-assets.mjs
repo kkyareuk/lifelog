@@ -15,12 +15,14 @@ function filesUnder(directory){
 
 const preparedFiles=filesUnder(wwwRoot);
 const required=[
-  "index.html","app.js","views.js","state.js","simulation.js","auth.js",
+  "index.html","app.css","character-book.css","app.js","views.js","state.js","simulation.js","auth.js",
   "icons/drawer-village-logo.png","assets/character-ui/paper.webp",
   "assets/character-ui/wallet.png","world-assets/cozy-town-optimized.jpg","fonts/KCC-Hanbit.ttf"
 ];
 const excluded=["world-assets/cozy-town.png","world-assets/downtown.png","assets/character-ui/paper.png"];
 const failures=[];
+const preparedIndex=readFileSync(resolve(wwwRoot,"index.html"),"utf8");
+const preparedAppCss=readFileSync(resolve(wwwRoot,"app.css"),"utf8");
 
 if(!gradle.includes("'-WebSource', rootProject.file('../www').absolutePath")){
   failures.push("Gradle is not staging the prepared www directory directly");
@@ -30,6 +32,12 @@ if(!copier.includes("$publicDestination = Join-Path $destinationRoot 'public'"))
 }
 if(!copier.includes("Android web asset staging is incomplete")){
   failures.push("The external asset copier does not reject incomplete staging");
+}
+if(preparedIndex.includes('href="character-book.css')){
+  failures.push("Prepared Android index still depends on a separately loaded character-book stylesheet");
+}
+if(!preparedAppCss.includes("/* bundled: character-book.css */")||!preparedAppCss.includes(".character-book-v8{display:none!important}")){
+  failures.push("Prepared app.css does not contain the required character-book style bundle");
 }
 for(const path of required){
   const absolute=resolve(wwwRoot,path);

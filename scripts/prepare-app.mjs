@@ -18,7 +18,7 @@ const excludedAndroidAssets=new Set([
 ]);
 const excludedAndroidAssetPrefixes=[];
 const includedFiles=new Set([
-  "index.html","app.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
+  "index.html","app.css","character-book.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","speech-styles.js","character-notifications.js","sw.js","views.js",
@@ -97,8 +97,23 @@ async function copyModuleClosure(){
 }
 await copyModuleClosure();
 
+// The character book used to be a separately requested stylesheet. Because it
+// was missing from the manually maintained Android asset list, WebView rendered
+// the full-settings artwork at its intrinsic size (the giant wood-only screen).
+// Bundle it into the already-required app.css so the native shell cannot start
+// with only half of the character UI styles, and keep a source copy for audits.
+const appCssPath=new URL("app.css",output);
+const characterBookCssPath=new URL("character-book.css",output);
+const appCss=await readFile(appCssPath,"utf8");
+const characterBookCss=await readFile(characterBookCssPath,"utf8");
+if(!characterBookCss.includes(".character-book-v8{display:none!important}")){
+  throw new Error("character-book.css is missing the native character-book visibility contract");
+}
+await writeFile(appCssPath,`${appCss}\n\n/* bundled: character-book.css */\n${characterBookCss}\n`,"utf8");
+
 const indexPath=new URL("index.html",output);
 let index=await readFile(indexPath,"utf8");
+index=index.replace(/\s*<link rel="stylesheet" href="character-book\.css[^>]*>/,"\n");
 index=index.replace(/\s*<footer class="site-footer"[\s\S]*?<\/footer>/,"\n");
 index=index.replace(
   '<div id="app"></div>',
@@ -113,7 +128,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-    window.DRAWER_VILLAGE_NATIVE_BUILD="20260826scheduledeletionhotfix161";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260828town177";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

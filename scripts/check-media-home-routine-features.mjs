@@ -8,6 +8,7 @@ const {normalizeRoomLayout}=await import("../room-layout.js");
 const {furnitureCapacity,furnitureFootprint,furnitureGridForRoom,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,snapFurniturePosition,supportsFurnitureProps}=await import("../furniture-layout.js");
 const smallRoom={x:83.3333333333,y:87.5,w:16.6666666667,h:12.5};
 const normalizedOnce=normalizeRoomLayout(smallRoom),normalizedRepeated=normalizeRoomLayout(normalizedOnce);
+const restartLayouts=Array.from({length:20}).reduce(layout=>normalizeRoomLayout(layout),smallRoom);
 
 const checks=[
   [media.includes("return {found:jobs.length,resolved,pending")&&app.includes("refreshLocalMedia")&&app.includes('window.addEventListener("pageshow",restoreForegroundState)'),"앱 복귀 시 기기 사진 복원 재시도"],
@@ -26,9 +27,9 @@ const checks=[
   [views.includes("const scene=event;")&&app.includes("const sceneKey=")&&app.includes("timeline(character,now)"),"집·관찰·생활 로그가 동일한 장면 타임라인을 사용"],
   [views.includes('<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small>')&&app.includes("home-occupant-recent"),"집 캐릭터 카드에 이름·현재 행동을 표시하고 클릭 시 상태·최근 로그 시트 제공"],
   [views.includes("room-furniture-props")&&views.includes("--furniture-grid-cols")&&css.includes(".home.is-editing .room-furniture-layer::before"),"편집 중 방 칸 그리드와 가구에 붙는 소품 표시"],
-  [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱 재시작·테두리 픽셀과 무관한 방 크기 보존"],
+  [JSON.stringify(normalizedOnce)===JSON.stringify(normalizedRepeated)&&JSON.stringify(normalizedOnce)===JSON.stringify(restartLayouts)&&normalizedOnce.h===12.5&&app.includes('room.style.getPropertyValue("--mobile-room-h")')&&!app.includes("rect.height/box.height*100"),"앱을 반복 재시작해도 테두리 픽셀과 무관하게 방 크기 보존"],
   [views.includes('data-room-resize=')&&css.includes(".room-resize-handle"),"방 크기 조절 손잡이"],
-  [state.includes('floorMaterial:"cream"')&&state.includes('wallMaterial:"same"')&&state.includes("export function setRoomFloorImage")&&views.includes("wallSurfaceImage")&&views.includes("room-wall-shell")&&css.includes("var(--room-floor-size,260px)")&&app.includes('pickImage("roomFloor"'),"집 화면의 사용자 바닥 5종·벽면·직접 그린 바닥재"],
+  [state.includes('floorMaterial:"cream"')&&state.includes('wallMaterial:"same"')&&state.includes('mode==="customTile"?"customTile":"custom"')&&views.includes('fullRoomIllustration=floorMaterial==="custom"')&&views.includes('room-custom-tile')&&views.includes('room-custom-floor')&&css.includes('.room.room-custom-floor .room-wall-shell::before{display:none!important')&&app.includes('pickImage(mode==="customTile"?"roomFloor":"roomScene"')&&app.includes('if(type==="roomScene")return prepareLargeArt(file)'),"반복 바닥 타일과 자르지 않는 방 전체 그림을 분리하고 전체 그림에서만 벽면을 숨김"],
   [state.includes("export function updateRoutineDays")&&app.includes('name="day"')&&app.includes("여러 개 선택 가능")&&app.includes('data-routine-day-preset="weekdays"'),"주간 일정 여러 요일과 평일·주말·매일 빠른 선택"],
   [state.includes("monthlyRoutines:{}")&&app.includes("newMonthlyRoutineDraft")&&views.includes('class="monthly-calendar"')&&views.includes('data-routine-view="monthly"'),"주간·월간 일정 분리와 날짜별 월간 일정"],
   [app.includes('openRoutineDialog("",newRoutineDraft())')&&app.includes('openMonthlyRoutineDialog("",newMonthlyRoutineDraft())'),"일정 추가 취소 시 저장되지 않는 초안 흐름"],
@@ -61,12 +62,18 @@ const checks=[
   ,[css.includes('.home-native-side{position:absolute;z-index:8;right:8px;top:85px')&&css.includes('.home-native-side .home-native-pill{--home-pill-height:32px')&&css.includes('.home-native-ui-toggle{--home-pill-height:32px;left:7px'),"수정 SVG 기준 우측 메뉴와 UI 숨김 버튼 크기·위치"]
   ,[css.includes('html:not(.native-app) .room-heading.room-title-dark')&&css.includes('.room-heading .room-edit-hint{color:#fff!important;-webkit-text-fill-color:#fff!important'),"집 방 이름과 층·격자 편집 문구를 흰색으로 고정"]
   ,[views.includes('--life-dx:${fromX-x}cqw')&&views.includes('class="home-life-roaming-layer"')&&views.includes('agent.fromRoomKey')&&css.includes('@keyframes home-life-walk{from{transform:translate')&&!css.includes('@keyframes home-life-walk{from{left:'),"캐릭터가 방 경계 위에서 잘리지 않고 transform으로 방 사이를 걸음"]
-  ,[views.includes('class="room-pet home-pet-roaming')&&views.includes('motion.sleeping?"is-sleeping"')&&css.includes('steps(10,end)')&&css.includes('.home-pet-roaming.is-sleeping{animation:none!important'),"반려생물의 걷는 듯한 저발열 이동과 수면 중 완전 정지"]
+  ,[views.includes('class="room-pet home-pet-roaming')&&views.includes('motion.sleeping?"is-sleeping"')&&css.includes('linear var(--pet-roam-delay')&&css.includes('.home-pet-roaming.is-sleeping{animation:none!important'),"반려생물의 자연스러운 저발열 transform 이동과 수면 중 완전 정지"]
   ,[views.includes('home-person-chat-bubble')&&css.includes('@keyframes home-talk-bubble')&&views.includes('conversation-slot-${Number(options.slot)||1}'),"각자 활동 중 대화 말풍선과 안정된 좌우 배치"]
   ,[app.includes('data-home-room-hold')&&app.includes('setTimeout(()=>')&&app.includes('openRoomEditor(homeId,roomKey)')&&app.includes('},560)'),"방을 길게 눌러 바로 방 편집 열기"]
   ,[css.includes('@keyframes home-activity-watch')&&css.includes('@keyframes home-activity-cook')&&css.includes('@keyframes home-activity-rhythm'),"행동 종류별 생활 애니메이션 다양화"]
   ,[css.includes('background:#fffdf9c9!important')&&css.includes('max-height:min(210px,30dvh)')&&css.includes('.home-occupant-popover h2{font-size:14px!important'),"캐릭터 정보창을 작고 반투명한 하단 시트로 조정"]
   ,[views.includes('floorUp:"Go up one floor"')&&views.includes('floorUp:"一つ上の階へ"')&&views.includes('floorLabel:n=>`F${n}`')&&views.includes('floorLabel:n=>`${n}階`'),"층 이동 영어·일본어 번역"]
+  ,[css.includes('.room{isolation:auto}.room:hover,.room:focus-within{z-index:auto}')&&views.includes('room-has-occupants'),"방 클릭·포커스가 방 전체를 인물 위로 올리지 않음"]
+  ,[views.includes('walkStyleClassFor')&&views.includes('walk-style-striding')&&css.includes('@keyframes home-life-careful-step')&&css.includes('@keyframes home-life-light-step'),"걸음걸이 설정을 집·관찰 이동 속도와 보폭 애니메이션에 반영"]
+  ,[simulation.includes("MULTILINGUAL_HOME_ACTIVITY_POOL")&&simulation.includes("localizedHomeActivities")&&simulation.includes("recentDayKeys")&&simulation.includes("slice(-3)"),"세 언어 집 활동을 보강하고 최근 3일 같은 행동 반복을 억제"]
+  ,[views.includes('data-home-building-shape="${home.id}"')&&views.includes('townBuildingBrowser(character)')&&views.includes('data-building-browser-open')&&views.includes('townBuildingDetailScreen'),"마을 건물 정보 목록에서 집·일반 건물 상세 편집 진입 제공"]
+  ,[app.includes("function bindTownBuildingHold()")&&app.includes("편집 모드는 상단의 명시적인 버튼으로만 연다")&&views.includes('data-mobile-building-edit-mode')&&views.includes('data-mobile-town-decoration-mode'),"우발적인 길게 누르기 대신 상단 건물 정보·편집모드로만 진입"]
+  ,[views.includes('"집 외형 바꾸기":"Change home exterior"')&&views.includes('"집 외형 바꾸기":"家の外観を変更"')&&views.includes('"이 건물 편집하기":"Edit this building"')&&views.includes('"이 건물 편집하기":"この建物を編集"'),"마을 건물 편집 기능 영어·일본어 번역"]
 ];
 
 const failed=checks.filter(([ok])=>!ok);

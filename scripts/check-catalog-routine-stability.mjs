@@ -12,9 +12,9 @@ const checks=[
   [app.includes('button.classList.toggle("on",selected)')&&!app.includes('stabilizeInteractiveScroll(document.querySelector(".catalog-shell")'),"향수·옷 다중 선택은 전체 화면을 다시 그리지 않음"],
   [simulationSource.includes("routineEndMinute")&&simulationSource.includes("routineReturned:true"),"일정 종료·귀가 메타데이터"],
   [simulationSource.includes('purpose.kind!=="routine"'),"등록 일정을 밤 8시 일괄 귀가에서 제외"],
-  [simulationSource.includes('ENGINE_VERSION="20260825-relationship-location-catalog-hotfix"'),"관계·장소·사전 변경 시 미래 타임라인 재계산"],
+  [simulationSource.includes('ENGINE_VERSION="20260825-character-book-choices-relationship-catalog"'),"일정·공동 장면 무결성 변경 시 기존 당일 타임라인 재계산"],
   [simulationSource.includes("Heading home after")&&simulationSource.includes("を終えて帰宅中"),"귀가 장면 영어·일본어 번역"],
-  [simulationSource.includes(":interactionPair(group)")&&simulationSource.includes("preferred.first.id!==c.id&&preferred.second.id!==c.id"),"같은 장소의 결정적 2인 짝 선택"],
+  [simulationSource.includes("interactionPair(group,date,place.id)")&&simulationSource.includes("preferredRelation(c,{friendlyOnly:true,date})"),"같은 장소에서 우호 관계를 반영한 결정적 2인 짝 선택"],
   [simulationSource.includes("otherEvent.groupInteraction&&!otherInteractionIds.includes(c.id)"),"이미 다른 장면에 참여한 캐릭터 중복 방지"],
   [simulationSource.includes("committedSharedSceneFor")&&simulationSource.includes("reservedScene")&&simulationSource.includes("sameLiveLocation"),"같은 시각 공동 장면의 인물 점유 예약"],
   [views.includes("entry?.groupInteraction&&declaredPartnerIds.length?[]")&&views.includes("inferredPartnerIds"),"명시된 장면에 제3자 아이콘을 덧붙이지 않음"]
