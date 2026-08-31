@@ -1,20 +1,22 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831town181";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260831town181";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831town181";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831town181";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260831town181";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260831town181";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260831town181";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831town181";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831restore182";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260831restore182";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831restore182";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831restore182";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260831restore182";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260831restore182";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260831restore182";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
   ja:{brandName:"ひきだし村",observe:"観察",mailbox:"郵便箱",home:"家",character:"人物",catalog:"辞典",relationship:"関係",routine:"予定",statistics:"統計",town:"村",shop:"店",settings:"設定",saved:"端末に保存済み",brandTagline:"引き出しの中のキャラクター生活観察ゲーム",currentMoment:"今この瞬間",todayLog:"今日の記録",expand:"開く",collapse:"閉じる",viewAll:"すべて見る",viewHome:"家を見る",gridEdit:"グリッド編集",floorUp:"一つ上の階へ",floorDown:"一つ下の階へ",floorLabel:n=>`${n}階`,language:"言語",languageHelp:"日本語は基本画面に対応し、生活シーンや関係文もアップデートごとに翻訳を増やしています。",languageNote:"日本語ベータ・基本画面と一部の生活シーンに対応。翻訳範囲を継続して拡大します。",mailArrived:"手紙が届きました",mailReady:"準備ができたら手紙を開いてください。選択は実際の生活予定に反映されます。",mailEmpty:"届いた手紙はまだありません",mailEmptyHelp:"キャラクターからの質問・選択・悩み・近況はここに届きます。",mailboxHelp:"キャラクターからの手紙をここでまとめて確認できます。",openLetter:"手紙を開く",characterPicker:"観察する人物を選ぶ",currentTownResidents:"この村の人物",moveToAnotherTown:"別の村へ移動",close:"閉じる",noSleepingRoom:"その他・なし（宿泊しない）",locationExterior:"現在の建物の外観",inTransit:"移動中",outAndAbout:"外出中",emptyTownTitle:"この村にはまだキャラクターが住んでいません",emptyTownHelp:"キャラクター画面で生活する村を選んでください。",openCharacterSettings:"キャラクター設定を開く"}
 };
+Object.assign(I18N.en,{"작은 서랍 속,":"Inside a little drawer,","너만의 이야기":"a story of your own","캐릭터의 하루가 모이는 곳":"A home for your characters’ everyday stories","이름과 모습을 정하면, 이 마을에서 첫 하루가 시작돼요.":"Choose a name and a face. Their first day in this village begins with you.","첫 캐릭터 만들기":"Create your first character","내 마을 불러오기":"Load my village","이미 마을이 있다면, 먼저 불러와 주세요.":"Already have a village? Load it before starting a new one.","캐릭터의 하루":"Everyday life","함께 쌓는 관계":"Growing relationships","꾸미는 집과 마을":"Homes and villages","계정 기록을 확인하는 중…":"Checking your account save…","설정 열기":"Open settings"});
+Object.assign(I18N.ja,{"작은 서랍 속,":"小さな引き出しに、","너만의 이야기":"あなただけの物語","캐릭터의 하루가 모이는 곳":"キャラクターたちの日々が集まる場所","이름과 모습을 정하면, 이 마을에서 첫 하루가 시작돼요.":"名前と姿を決めたら、この村で最初の一日が始まります。","첫 캐릭터 만들기":"最初のキャラクターを作る","내 마을 불러오기":"自分の村を読み込む","이미 마을이 있다면, 먼저 불러와 주세요.":"すでに村がある場合は、先に読み込んでください。","캐릭터의 하루":"キャラクターの日々","함께 쌓는 관계":"育んでいく関係","꾸미는 집과 마을":"彩る家と村","계정 기록을 확인하는 중…":"アカウントの記録を確認中…","설정 열기":"設定を開く"});
 Object.assign(I18N.en,{"현실 시간":"Local real time","건물 불빛":"Building lights","조명 방식":"Lighting mode","설정한 시간에 켜기":"Scheduled lighting","항상 켜기":"Always on","항상 끄기":"Always off","켜지는 시간":"Lights on at","꺼지는 시간":"Lights off at","기기의 현실 시간 기준 · 같은 시각으로 설정하면 24시간 켜져요.":"Uses device local time. Matching times keep lights on for 24 hours.","이 건물 그림에는 아직 불빛 레이어가 없어요.":"This building artwork does not have a light layer yet.","계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요":"Could not switch account data. Please sign in again."});
 Object.assign(I18N.ja,{"현실 시간":"端末の現在時刻","건물 불빛":"建物の明かり","조명 방식":"照明モード","설정한 시간에 켜기":"時間を指定","항상 켜기":"常に点灯","항상 끄기":"常に消灯","켜지는 시간":"点灯時刻","꺼지는 시간":"消灯時刻","기기의 현실 시간 기준 · 같은 시각으로 설정하면 24시간 켜져요.":"端末の現在時刻に従います。同じ時刻なら24時間点灯します。","이 건물 그림에는 아직 불빛 레이어가 없어요.":"この建物の絵には照明レイヤーがまだありません。","계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요":"アカウントを切り替えられませんでした。再ログインしてください。"});
 Object.assign(I18N.en,{"같이 TV 보는 중":"Watching TV together","조깅 · 이동 중":"Jogging · moving","집 메뉴":"Home menu","아침 조깅을 마치고 집으로 돌아가는 중":"Heading home after a morning jog","욕실에서 손톱을 정돈하는 중":"Trimming their nails in the bathroom"});
@@ -3401,7 +3403,7 @@ function settingsContent(){
     sound,
     notifications,
     display:`${measurement}${colorMode}${visualThemeSettings()}${screenScaleSettings()}${ownerNameSettings()}`,
-    account:`${language}${backup}`,
+    account:`${sync}${language}${backup}`,
     support:`${feedback}${guide}<section class="setting-card reset-setting-card"><h2>데이터 초기화</h2><p>기기의 서랍마을 데이터를 모두 지울 때만 사용하세요.</p><button class="danger" data-reset>모든 데이터 초기화</button></section>`
   };
   const paneNames={gameplay:"게임플레이",sound:"소리",notifications:"알림",display:"화면·표시",account:"계정·백업",support:"도움말·오류 신고"};
@@ -4062,11 +4064,26 @@ Object.assign(UI_TEXT.en,{"마을 장식":"Town decorations","마을 정보":"To
 Object.assign(UI_TEXT.ja,{"마을 장식":"村の装飾","마을 정보":"村情報","마을 이름":"村の名前","마을 시대":"村の時代","현대":"現代","중세":"中世","기본 배경":"背景","건물 추가":"建物を追加","집 유형":"住居タイプ","세부 유형":"詳細タイプ","층":"階数","방 수":"部屋数","구성원":"住人","현재 집 안":"在宅中","청결도":"清潔度","마을 미지정":"村未指定","단독주택":"一戸建て","아파트":"アパート","빌라":"ヴィラ","연립주택":"連棟住宅","오피스텔":"オフィステル","타운하우스":"タウンハウス","농가":"農家","저택":"邸宅","성":"城","궁전":"宮殿","기숙사":"寮","사택":"社宅","공동주택":"共同住宅","이동식 주택":"移動式住宅","집 외관 스타일":"家の外観スタイル","매우 소박함":"とても質素","소박함":"質素","평범함":"普通","보기 좋음":"感じがよい","아름다움":"美しい","눈에 띄게 아름다움":"ひときわ美しい","현대적":"現代的","유럽풍":"ヨーロッパ風","한옥풍":"韓屋風","일본식":"和風","지중해풍":"地中海風","전원주택풍":"田園住宅風","미래적":"未来的"});
 Object.assign(UI_TEXT.en,{"건물 정보":"Building info","편집모드":"Edit mode","편집완료":"Finish editing","마을 메뉴":"Town menu","현재 {current}명 · 거주 {resident}명":"{current} here · {resident} residents","마을로 돌아가기":"Back to town","건물 검색":"Search buildings","검색":"Search","마을 선택":"Choose town","건물 목록으로 돌아가기":"Back to building list","내부 사진을 등록해 주세요":"Add an interior image"});
 Object.assign(UI_TEXT.ja,{"건물 정보":"建物情報","편집모드":"編集モード","편집완료":"編集完了","마을 메뉴":"村メニュー","현재 {current}명 · 거주 {resident}명":"現在{current}人・居住{resident}人","마을로 돌아가기":"村に戻る","건물 검색":"建物を検索","검색":"検索","마을 선택":"村を選択","건물 목록으로 돌아가기":"建物一覧に戻る","내부 사진을 등록해 주세요":"内観画像を登録してください"});
+function welcome(){
+  const busy=Boolean(window.ParallelCityAuth?.getInfo?.().busy);
+  return `<section class="village-welcome" aria-labelledby="welcome-title">
+    <img class="welcome-landscape" src="./world-assets/owner-forest-town.webp" alt="" fetchpriority="high" loading="eager">
+    <div class="welcome-top"><span class="welcome-brand">${esc(t("brandName","서랍마을"))}</span><button type="button" data-tab="settings">${esc(t("설정 열기","설정 열기"))}</button></div>
+    <div class="welcome-note"><p class="welcome-eyebrow">${esc(t("캐릭터의 하루가 모이는 곳","캐릭터의 하루가 모이는 곳"))}</p>
+      <h1 id="welcome-title">${esc(t("작은 서랍 속,","작은 서랍 속,"))}<br><em>${esc(t("너만의 이야기","너만의 이야기"))}</em></h1>
+      <p class="welcome-intro">${esc(t("이름과 모습을 정하면, 이 마을에서 첫 하루가 시작돼요.","이름과 모습을 정하면, 이 마을에서 첫 하루가 시작돼요."))}</p>
+      <div class="welcome-actions"><button type="button" data-welcome-create ${busy?"disabled":""}>${esc(t("첫 캐릭터 만들기","첫 캐릭터 만들기"))}<span aria-hidden="true"> →</span></button><button type="button" data-welcome-restore ${busy?"disabled":""}>${esc(t("내 마을 불러오기","내 마을 불러오기"))}</button></div>
+      <p class="welcome-restore-hint" role="status">${esc(busy?t("계정 기록을 확인하는 중…","계정 기록을 확인하는 중…"):t("이미 마을이 있다면, 먼저 불러와 주세요.","이미 마을이 있다면, 먼저 불러와 주세요."))}</p>
+      <div class="welcome-details">${[["profile-placeholder.png","캐릭터의 하루"],["relationship.png","함께 쌓는 관계"],["home.png","꾸미는 집과 마을"]].map(([asset,label])=>`<span><img src="./assets/home-ui/${asset}" alt="">${esc(t(label,label))}</span>`).join("")}</div>
+    </div>
+    <div class="welcome-language" aria-label="Language">${[["ko","한국어"],["en","English"],["ja","日本語"]].map(([code,label])=>`<button type="button" data-welcome-language="${code}" aria-pressed="${(state.uiLanguage||"ko")===code}">${label}</button>`).join("")}</div>
+  </section>`;
+}
 function view(){
   if(!state.order.length){
     if(state.activeTab==="settings")return settings();
     if(state.activeTab==="mailbox")return mailbox();
-    return `<section class="panel empty"><h1>아직 만든 캐릭터가 없어요</h1><p>캐릭터를 만들기 전에도 Google 계정 연결, 동기화, 화면 모드 같은 설정을 먼저 확인할 수 있어요.</p><div class="sync-actions"><button class="primary" data-new>+ 캐릭터 만들기</button><button data-tab="settings">설정 먼저 열기</button></div></section>`;
+    return welcome();
   }
   return ({observe,mailbox,home,character,catalog,relationship,routine,statistics,town:townMobile,shop,settings}[state.activeTab]||observe)();
 }
@@ -4079,8 +4096,11 @@ export function renderApp(next){
     content=`<section class="panel empty view-error"><h1>이 화면의 일부 데이터를 읽지 못했어요</h1><p>저장 데이터는 지우거나 바꾸지 않았습니다. 다른 화면은 계속 사용할 수 있어요.</p><div class="sync-actions"><button class="primary" data-tab="observe">관찰 화면으로 이동</button><button data-tab="settings">설정 열기</button></div></section>`;
   }
   const appRoot=document.querySelector("#app");
-  document.documentElement.dataset.activeTab=state.activeTab;
-  appRoot.innerHTML=`${header()}<main>${content}</main>`;
+  const showingWelcome=!state.order.length&&!["settings","mailbox"].includes(state.activeTab);
+  // The empty-world landing page is scrollable, unlike the fixed game HUD.
+  document.documentElement.dataset.activeTab=showingWelcome?"welcome":state.activeTab;
+  appRoot.classList.toggle("is-welcome",showingWelcome);
+  appRoot.innerHTML=`${showingWelcome?"":header()}<main>${content}</main>`;
   scheduleTownLighting(document);
   appRoot.querySelectorAll("img").forEach((image,index)=>{
     image.decoding="async";
@@ -4099,7 +4119,15 @@ export function renderApp(next){
     });
   }
 }
-export function setAccountLabel(text){accountText=text;const el=document.querySelector("#account-status");if(el)el.textContent=translatedUiText(text)}
+export function setAccountLabel(text=accountText){
+  accountText=text;const el=document.querySelector("#account-status");if(el)el.textContent=translatedUiText(text);
+  const welcomeRoot=document.querySelector(".village-welcome");
+  if(welcomeRoot){
+    const busy=Boolean(window.ParallelCityAuth?.getInfo?.().busy);
+    welcomeRoot.querySelectorAll("[data-welcome-create],[data-welcome-restore]").forEach(button=>button.disabled=busy);
+    const hint=welcomeRoot.querySelector("[role=status]");if(hint)hint.textContent=busy?t("계정 기록을 확인하는 중…","계정 기록을 확인하는 중…"):t("이미 마을이 있다면, 먼저 불러와 주세요.","이미 마을이 있다면, 먼저 불러와 주세요.");
+  }
+}
 export function setAccountEntitlements(value){accountEntitlements={backgroundPacks:Array.isArray(value?.backgroundPacks)?value.backgroundPacks:[],iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks:[],dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks:[],purchases:Array.isArray(value?.purchases)?value.purchases:[],characterSlotPacks:Math.max(0,Number(value?.characterSlotPacks)||0),townSlotPacks:Math.max(0,Number(value?.townSlotPacks)||0),storage50:Boolean(value?.storage50),teaSupportMonth:String(value?.teaSupportMonth||"")}}
 
 const CART_KEY="drawer-village-cart";

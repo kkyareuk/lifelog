@@ -3,11 +3,15 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {mergeCloudRestoreState,mergeDeviceAndCloudState} from '../sync-merge.js';
 const memory=new Map();
-globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
+let storageLimit=Infinity;
+globalThis.localStorage={get length(){return memory.size},key:i=>[...memory.keys()][i]??null,getItem:k=>memory.get(k)??null,setItem:(k,v)=>{
+  const size=[...memory].reduce((sum,[key,value])=>sum+(key===k?0:key.length+value.length),0)+k.length+String(v).length;
+  if(size>storageLimit)throw new DOMException('quota','QuotaExceededError');memory.set(k,String(v));
+},removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
 const game=await import('../state.js');
-const {accountStorage}=await import('../account-storage.js?v=20260831town181');
+const {accountStorage}=await import('../account-storage.js?v=20260831restore182');
 const character=(id)=>({id,name:id,days:{}});
 const cloud=new Map([['A',{syncFormat:1,gameState:{schema:31,characters:{a:character('a')},order:['a'],lastSaved:100}}],['B',{}]]);
 let callback,hold=null;const writes=[];
@@ -60,4 +64,13 @@ assert(!writes.some(write=>write.path.includes('/B/')&&write.data.character?.id=
 assert(memory.has('drawer-account:A:drawer-village-game-v1'));
 assert(memory.has('drawer-account:B:drawer-village-game-v1'));
 assert(memory.has('drawer-village-game-v1'),'Legacy guest save is retained separately');
+// Replay the real download handler with device quota already almost exhausted.
+cloud.set('A',{syncFormat:1,gameState:{schema:31,characters:{a:{...character('a'),name:'복원한 A',notes:'삭제하지 않을 기록 '.repeat(20000)}},order:['a'],lastSaved:Date.now()+60000}});
+storageLimit=[...memory].reduce((n,[key,value])=>n+key.length+value.length,0)+100;
+await callback({uid:'A',email:'a@test'});
+assert.equal(game.state.characters.a.name,'복원한 A');assert.equal(auth.getInfo().busy,false);
+assert.equal(await auth.download(),true,'Manual cloud restore must succeed after lossless device compaction');
+assert.equal(accountStorage.getItem('drawer-village-game-v1').includes('복원한 A'),true);
+assert(memory.get('drawer-account:B:drawer-village-game-v1'),'B save remains present after A restoration');
 console.log('PASS account switch/reset/reload isolation, guest preservation, stale download and upload rejection, same-account upload');
+console.log('PASS actual automatic and manual download handlers under simulated full device storage');

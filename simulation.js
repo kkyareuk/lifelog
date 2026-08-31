@@ -1,6 +1,6 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831town181";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260831town181";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260831town181";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831restore182";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260831restore182";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260831restore182";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2396,6 +2396,54 @@ function financialStressEvent(c,time,date){
   ],script=scripts[hash(`${c.id}:${dayKey(date)}:financial-script`)%scripts.length];
   return homeEntry(c,time,script[0],script[1],"study");
 }
+// A gift is a directed event, not a random co-location conversation. Both
+// participants resolve the same source record and location in either view order.
+function giftSources(date){
+  const start=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();
+  return [
+    ...(state.scheduledChoices||[]).filter(x=>x.kind==="gift").map(x=>({...x,actorId:x.characterId,stamp:x.giveAt,interactionId:`choice:${x.id}:give`,scheduledChoiceId:x.id})),
+    ...(state.interactions||[]).filter(x=>x.type==="gift").map(x=>({...x,stamp:x.createdAt,interactionId:x.id}))
+  ].filter(x=>x.stamp>=start&&x.stamp<start+86400000&&x.actorId!==x.targetId&&state.characters[x.actorId]&&state.characters[x.targetId]&&itemById(x.itemId));
+}
+function giftEntryFor(source,c,date){
+  const actor=state.characters[source.actorId],target=state.characters[source.targetId],item=itemById(source.itemId);
+  if(!actor||!target||actor.id===target.id||!item||![actor.id,target.id].includes(c.id))return null;
+  const language=state.uiLanguage||"ko",giving=c.id===actor.id,name=item.name,other=giving?target:actor;
+  const view=characterViewFor(target.id,actor.id),feeling=String(view.overall||"");
+  const guarded=/싫어|미워|증오/.test(feeling)||/전혀 믿지|의심/.test(view.trust||"");
+  const loving=!guarded&&/사랑|연애 감정/.test(feeling),close=!guarded&&/소중|친근|좋아/.test(feeling);
+  const tags=[item.category,...(Array.isArray(item.tags)?item.tags:[]),...(Array.isArray(item.scentNotes)?item.scentNotes:[])].filter(Boolean).join(" ");
+  const liked=(target.favorites?.[source.itemKind]||[]).includes(item.id)||source.itemKind==="perfume"&&(target.favoriteScentNotes||[]).some(note=>tags.includes(note));
+  const reaction={
+    ko:liked?`${topic(target.name)} 평소 좋아하던 ${object(name)} 알아보고 표정이 밝아졌어요.`:`${topic(target.name)} ${object(name)} 천천히 살펴보며 자기 취향에 맞을지 확인했어요.`,
+    en:liked?`Recognizing a favorite, ${target.name} brightened at the sight of ${name}.`:`${target.name} examined ${name}, curious whether it would suit their tastes.`,
+    ja:liked?`好きな${name}だと気づき、${target.name}の表情が明るくなりました。`:`${target.name}は${name}を眺め、自分の好みに合うか確かめました。`
+  };
+  const relationReaction={
+    ko:guarded?`${actor.name}의 의도는 아직 경계하며, 선물과는 별개로 조심스럽게 짧은 인사를 건넸어요.`:loving?`${actor.name}의 얼굴을 마주 보며 자신을 생각해 골라 준 마음이 더 기쁘다고 다정하게 고마움을 전했어요.`:close?`자신을 기억해 준 ${actor.name}에게 반가운 미소와 함께 고맙다고 말했어요.`:`아직 ${actor.name} 앞에서는 조금 조심스럽지만, 챙겨 준 마음에 예의를 갖춰 고맙다고 말했어요.`,
+    en:guarded?`Still wary of ${actor.name}'s intentions, they kept their acknowledgment brief and cautious.`:loving?`Looking warmly at ${actor.name}, they said that being thought of meant even more than the gift.`:close?`They smiled at ${actor.name} and thanked them for thinking of them.`:`Still a little reserved around ${actor.name}, they politely thanked them for the thought.`,
+    ja:guarded?`${actor.name}の意図にはまだ警戒し、慎重に短く挨拶しました。`:loving?`${actor.name}を優しく見つめ、自分を思って選んでくれた気持ちが何よりうれしいと伝えました。`:close?`自分を思ってくれた${actor.name}に笑顔でお礼を言いました。`:`${actor.name}にはまだ少し緊張しながらも、心遣いに丁寧にお礼を言いました。`
+  };
+  const received=`${reaction[language]||reaction.ko} ${relationReaction[language]||relationReaction.ko}`;
+  const titles={ko:giving?`${target.name}에게 ${object(name)} 건네는 중`:`${actor.name}에게서 ${object(name)} 받는 중`,en:giving?`Giving ${name} to ${target.name}`:`Receiving ${name} from ${actor.name}`,ja:giving?`${target.name}に${name}を渡すところ`:`${actor.name}から${name}を受け取るところ`};
+  const delivery={ko:`${subject(actor.name)} 직접 고른 ${object(name)} ${target.name}에게 건넸어요.`,en:`${actor.name} handed the carefully chosen ${name} to ${target.name}.`,ja:`${actor.name}が自分で選んだ${name}を${target.name}に渡しました。`};
+  const place=source.placeType?placeFor([source.placeType],`${source.id}:gift-place`,actor,date):null;
+  const homeId=homeIdForDate(actor,date);
+  const location=place?{townId:townFor(actor,date).id,placeId:place.id}:state.homes[homeId]?{home:true,visitHomeId:homeId,room:"living",townId:state.homes[homeId].townId||actor.townId}:{townId:townFor(actor,date).id,placeId:""};
+  const stamp=new Date(source.stamp),minute=stamp.getHours()*60+stamp.getMinutes();
+  return entry(minute,titles[language]||titles.ko,giving?`${delivery[language]||delivery.ko} ${received}`:received,{...location,giftExchange:true,giftRole:giving?"giver":"receiver",giftActorId:actor.id,giftTargetId:target.id,holdMinutes:20,withId:other.id,withIds:[other.id],participantOrder:[actor.id,target.id],groupInteraction:true,interactionId:source.interactionId,scheduledChoiceId:source.scheduledChoiceId,itemId:item.id,itemKind:source.itemKind,mood:"선물"});
+}
+function currentGiftFor(c,date){
+  // Reserve both people together so overlapping gifts cannot split the pair.
+  const busy=new Set(),minute=nowMin(date);
+  for(const source of giftSources(date).sort((a,b)=>b.stamp-a.stamp||String(a.id).localeCompare(String(b.id)))){
+    const stamp=new Date(source.stamp),start=stamp.getHours()*60+stamp.getMinutes();
+    if(minute<start||minute>=start+20||busy.has(source.actorId)||busy.has(source.targetId))continue;
+    busy.add(source.actorId);busy.add(source.targetId);
+    if(c.id===source.actorId||c.id===source.targetId)return giftEntryFor(source,c,date);
+  }
+  return null;
+}
 function recordedInteractionEntries(c,date){
   const start=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime();
   return (state.interactions||[]).filter(action=>action&&(action.actorId===c.id||action.targetId===c.id)&&action.createdAt>=start&&action.createdAt<start+86400000).map(action=>{
@@ -2414,15 +2462,11 @@ function recordedInteractionEntries(c,date){
       return homeEntry(c,minute,`${item?.name||"새 물건"}을 구매해 살펴보는 중`,liked?"마음에 두고 있던 물건을 손에 넣어 바로 즐겨 보고 있어요.":"새로 산 물건이 자기 취향에 맞는지 직접 사용하며 천천히 판단하고 있어요.","living",{itemId:action.itemId,itemKind:action.itemKind,interactionId:action.id});
     }
     if(action.type==="gift"){
-      const liked=(target?.favorites?.[action.itemKind]||[]).includes(action.itemId);
-      const title=c.id===action.actorId?`${other?.name}에게 ${item?.name||"선물"}을 건네는 중`:`${other?.name}에게 ${item?.name||"선물"}을 받는 중`;
-      const itemName=item?.name||"선물";
-      const desc=c.id===action.actorId?`${other?.name}의 반응을 살피며 직접 고른 ${itemName}을(를) 건넸어요.`:liked?`평소 좋아하던 ${itemName}이라 표정이 밝아지고 바로 가까이 두었어요.`:`예상하지 못한 ${itemName}을(를) 받아 고맙다고 말하고 자기 취향에 어떻게 맞을지 살펴보고 있어요.`;
-      return entry(minute,title,desc,{home:true,room:"living",withId:other?.id,itemId:action.itemId,itemKind:action.itemKind,interactionId:action.id});
+      return giftEntryFor({...action,stamp:action.createdAt,interactionId:action.id},c,date);
     }
     if(action.type==="exercise")return entry(minute,`${other?.name}와 함께 운동하는 중`,(c.hobbies||[]).includes("운동")?"익숙한 동작과 호흡을 맞추며 서로의 속도에 맞춰 즐겁게 몸을 움직이고 있어요.":"익숙하지 않은 동작은 조심스럽게 따라 하며 왜 이걸 즐기는지 조금씩 알아가고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원"],`${action.id}:exercise`,c,date)?.id,withId:other?.id,interactionId:action.id});
     return entry(minute,`${other?.name}와 함께 나들이하는 중`,"둘이 가고 싶던 장소를 골라 주변을 천천히 둘러보고 눈에 띄는 풍경 앞에서 이야기를 나누고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원","카페"],`${action.id}:outing`,c,date)?.id,withId:other?.id,interactionId:action.id});
-  });
+  }).filter(Boolean);
 }
 function scheduledChoiceEntries(c,date){
   const dayStart=new Date(date.getFullYear(),date.getMonth(),date.getDate()).getTime(),dayEnd=dayStart+86400000;
@@ -2438,22 +2482,12 @@ function scheduledChoiceEntries(c,date){
     if(choice.kind==="gift"){
       if(choice.characterId===c.id&&choice.buyAt>=dayStart&&choice.buyAt<dayEnd){
         const shop=placeFor(["상점","백화점","옷가게"],`${choice.id}:shop`,c,date),item=itemById(choice.itemId);
-        entries.push(entry(atMinute(choice.buyAt),localized(choice,"buyTitle")||`${item?.name||"선물"}을 사러 가는 중`,localized(choice,"buyDesc")||"고른 선물을 직접 확인하고 포장해 달라고 부탁했어요.",shop?{...shared,townId:townFor(c,date).id,placeId:shop.id,itemId:choice.itemId,itemKind:choice.itemKind}:away(c,{...shared,itemId:choice.itemId,itemKind:choice.itemKind})));
+        const shopping={...shared,withId:undefined,choicePhase:"buy",itemId:choice.itemId,itemKind:choice.itemKind};
+        entries.push(entry(atMinute(choice.buyAt),localized(choice,"buyTitle")||`${item?.name||"선물"}을 사러 가는 중`,localized(choice,"buyDesc")||"고른 선물을 직접 확인하고 포장해 달라고 부탁했어요.",shop?{...shopping,townId:townFor(c,date).id,placeId:shop.id}:away(c,shopping)));
       }
       if(choice.giveAt>=dayStart&&choice.giveAt<dayEnd){
-        const actor=state.characters[choice.characterId],target=state.characters[choice.targetId],other=c.id===choice.characterId?target:actor,item=itemById(choice.itemId);
-        const itemName=item?.name||"선물",language=state.uiLanguage||"ko";
-        const title=language==="en"
-          ?(c.id===choice.characterId?`Giving ${itemName} to ${other?.name}`:`Receiving ${itemName} from ${other?.name}`)
-          :language==="ja"
-            ?(c.id===choice.characterId?`${other?.name}に${itemName}を渡すところ`:`${other?.name}から${itemName}を受け取るところ`)
-            :(c.id===choice.characterId?`${other?.name}에게 ${itemName}을(를) 건네는 중`:`${other?.name}에게 ${itemName}을(를) 받는 중`);
-        const desc=c.id===choice.characterId?(localized(choice,"giveDesc")||"상대의 반응을 살피며 직접 고른 선물을 건넸어요."):(localized(choice,"receiveDesc")||"선물을 받아 포장을 풀고 고맙다고 이야기했어요.");
-        const place=choice.placeType?placeFor([choice.placeType],`${choice.id}:gift-place`,actor,date):null;
-        const location=place
-          ?{townId:townFor(actor,date).id,placeId:place.id}
-          :{home:true,visitHomeId:homeIdForDate(actor,date),room:"living"};
-        entries.push(entry(atMinute(choice.giveAt),title,desc,{...shared,...location,withId:other?.id,itemId:choice.itemId,itemKind:choice.itemKind,interactionId:`choice:${choice.id}:give`}));
+        const gift=giftEntryFor({...choice,actorId:choice.characterId,stamp:choice.giveAt,interactionId:`choice:${choice.id}:give`,scheduledChoiceId:choice.id},c,date);
+        if(gift)entries.push(gift);
       }
       return;
     }
@@ -2744,7 +2778,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260828-town-profile-shared-log";
+const ENGINE_VERSION="20260831-directed-gift-182";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -2968,7 +3002,15 @@ export function timeline(c,date=new Date()){
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
   if(old&&Array.isArray(old.entries)&&old.cleanupVersion!==ENGINE_VERSION){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    const cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanScheduledRoutineEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
+    let cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanScheduledRoutineEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
+    // Correct only gifts identified by their saved source IDs, never by names
+    // guessed from prose. Other historical scenes retain their original text.
+    for(const source of giftSources(date).filter(x=>x.actorId===c.id||x.targetId===c.id)){
+      const gift=giftEntryFor(source,c,date);
+      if(!gift)continue;
+      const wrong=cleaned.some(item=>item.interactionId===gift.interactionId&&!item.giftExchange);
+      if(wrong)cleaned=mergeImmutableEntries(cleaned.filter(item=>item.interactionId!==gift.interactionId),[gift]);
+    }
     const changed=JSON.stringify(cleaned)!==JSON.stringify(old.entries);
     if(changed)old.entries=cleaned;
     old.cleanupVersion=ENGINE_VERSION;
@@ -3040,6 +3082,14 @@ function commitLiveEntry(c,date,item){
   }
   if(item.forcedReturn){
     applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]));
+    return item;
+  }
+  if(item.giftExchange){
+    // Reconcile only this directed event and its overlapping automatic scenes;
+    // unrelated older history and user-authored schedule records stay intact.
+    const retained=entries.filter(existing=>existing.interactionId!==item.interactionId&&
+      !(Number(existing.minute)>=item.minute&&Number(existing.minute)<item.minute+item.holdMinutes&&!existing.routineId&&!existing.monthlyRoutineId));
+    applyEntries(mergeImmutableEntries(retained,[item]));
     return item;
   }
   // 공동 장면 직전에 baseEventFor가 만든 일반 장면이 같은 표시 시각에 남아 있으면
@@ -3201,6 +3251,7 @@ function forcedHomeEventFor(c,date=new Date()){
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
   const list=timeline(c,date);
+  const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   if(sleepingNow(c,date)){
     const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
@@ -3213,7 +3264,8 @@ function baseEventFor(c,date=new Date()){
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
   if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);
-  const past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n);
+  const sources=giftSources(date);
+  const past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){
@@ -4129,7 +4181,7 @@ function committedSharedSceneFor(c,date,current){
   if(!Array.isArray(entries))return null;
   const minute=nowMin(date);
   return entries.slice().reverse().find(item=>{
-    if(!item?.groupInteraction||!item.interactionId||Number(item.minute)>minute||minute-Number(item.minute)>=30||!sameLiveLocation(item,current))return false;
+    if(item?.giftExchange||!item?.groupInteraction||!item.interactionId||Number(item.minute)>minute||minute-Number(item.minute)>=30||!sameLiveLocation(item,current))return false;
     const participantIds=[...(item.participantOrder||[]),...(item.withIds||[]),item.withId].filter(id=>id&&id!==c.id);
     if(!participantIds.length)return false;
     // A cached shared entry is valid only while every named participant's own
@@ -4398,6 +4450,12 @@ function companionAlignedBaseEvent(c,current,date){
 }
 export function eventFor(c,date=new Date()){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);
+  if(rawCurrent.giftExchange){
+    const other=state.characters[rawCurrent.withId];
+    if(other){timeline(other,date);const counterpart=currentGiftFor(other,date);if(counterpart?.interactionId===rawCurrent.interactionId)commitLiveEntry(other,date,counterpart)}
+    return rawCurrent;
+  }
+  if(rawCurrent.choicePhase==="buy")return rawCurrent;
   const routineCompanionIds=((rawCurrent?.routineId===activeRoutine?.id?rawCurrent.withIds:activeRoutine?.withIds)||[]).filter(id=>id&&id!==c.id&&state.characters[id]);
   const baseCurrent=companionAlignedBaseEvent(c,rawCurrent,date);
   // 동행자를 지정하지 않은 일정에는 우연히 같은 장소에 있다는 이유만으로

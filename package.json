@@ -40,7 +40,9 @@
     "test:reported-bugs": "node scripts/check-reported-bug-fixes.mjs",
     "test:layout180": "node scripts/check-layout-180.mjs",
     "test:account-isolation": "node scripts/check-account-isolation.mjs",
-    "test:town-lighting": "node scripts/check-town-lighting.mjs"
+    "test:town-lighting": "node scripts/check-town-lighting.mjs",
+    "test:restore-storage": "node scripts/check-restore-storage.mjs",
+    "test:directed-gifts": "node scripts/check-directed-gifts.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

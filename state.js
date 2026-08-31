@@ -1,12 +1,12 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831town181";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831town181";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831town181";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260831town181";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831town181";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831town181";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831town181";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831town181";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831town181";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831restore182";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831restore182";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260831restore182";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831restore182";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831restore182";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831restore182";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831restore182";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831restore182";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1188,6 +1188,7 @@ export function scheduleCharacterChoice(choice){
   const character=state.characters[choice?.characterId];
   if(!character)return null;
   const targetId=state.characters[choice.targetId]&&String(choice.targetId)!==String(character.id)?String(choice.targetId):"";
+  if(choice.kind==="gift"&&!targetId)return null;
   const itemKind=String(choice.itemKind||""),itemId=String(choice.itemId||"");
   if(itemId&&!state.catalog?.[itemKind]?.some(item=>item.id===itemId))return null;
   const scheduled={
@@ -1209,6 +1210,7 @@ export function settleScheduledChoices(now=Date.now()){
   (state.scheduledChoices||[]).forEach(choice=>{
     if(choice.settledAt||choice.kind!=="gift"||!choice.giveAt||now<choice.giveAt)return;
     const target=state.characters[choice.targetId];
+    if(!state.characters[choice.characterId]||choice.characterId===choice.targetId||!target)return;
     if(target&&state.catalog?.[choice.itemKind]?.some(item=>item.id===choice.itemId)){
       target.inventory=target.inventory&&typeof target.inventory==="object"?target.inventory:{};
       target.inventory[choice.itemKind]=Array.isArray(target.inventory[choice.itemKind])?target.inventory[choice.itemKind]:[];
@@ -1847,20 +1849,12 @@ export function replaceState(next){
     // 상태가 되어, 불러오기 직후 캐릭터가 전부 사라진 것처럼 보일 수 있었다.
     localStorage.setItem(KEY,serialized);
     preserveLastNonempty(prepared,serialized,true);
-  }catch(firstError){
-    // 이미 새 저장 키로 이관이 끝난 구버전 복사본만 정리하고 한 번 재시도한다.
-    // 현재 저장본과 클라우드 복구본은 절대 지우지 않는다.
-    ["parallel-city-game-v4","parallel-city-game-v3",oldKey].forEach(key=>{
-      if(key&&key!==KEY)try{localStorage.removeItem(key)}catch{}
-    });
-    try{
-      localStorage.setItem(KEY,serialized);
-      preserveLastNonempty(prepared,serialized,true);
-    }catch(error){
-      const failure=new Error("backup-storage-full",{cause:error||firstError});
-      failure.code="backup-storage-full";
-      throw failure;
-    }
+  }catch(error){
+    // accountStorage already attempts lossless compression. Never delete old
+    // snapshots here: they may be the only surviving copy of another world.
+    const failure=new Error("backup-storage-full",{cause:error});
+    failure.code="backup-storage-full";
+    throw failure;
   }
   state=prepared;
   return true;

@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831town181";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260831town181";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260831restore182";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -160,6 +160,7 @@ const digestBlob=async blob=>{
 
 function shortError(error){
   const code=String(error?.code||"unknown").replace(/^firebase\//,"");
+  if(code.includes("backup-storage-full"))return ({en:"Not enough device save space. Your existing save is unchanged. Export a backup before trying again; do not clear app data.",ja:"端末の保存領域が不足しています。既存の記録は変更していません。先にバックアップを書き出してください。アプリのデータは削除しないでください。"}[window.ParallelCity?.getState?.()?.uiLanguage]||"기기 저장 공간 부족 · 기존 기록은 유지했어요. 백업을 내보낸 뒤 다시 시도해 주세요. 앱 데이터는 지우지 마세요.");
   if(code.includes("character-slot-limit"))return `캐릭터 슬롯 초과 (${error?.detail||""}) · 초과 인원을 정리한 뒤 다시 저장해 주세요`;
   if(code.includes("legacy-document-too-large"))return "동기화 데이터가 너무 큼 · 사진을 줄이거나 Firebase 프로젝트 권한을 확인해 주세요";
   if(code.includes("permission-denied")||code.includes("unauthorized"))return "저장 권한 확인 필요";
@@ -599,7 +600,7 @@ async function upload({silent=false,reason=""}={}){
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
     if(!silent)toast(`동기화 실패 · ${shortError(error)}`);
     return false;
-  }finally{busy=false;finishSync()}
+  }finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }
 
 async function download({automatic=false,accountTransition=false}={}){
@@ -659,7 +660,7 @@ async function download({automatic=false,accountTransition=false}={}){
       ?`기기와 클라우드 인물을 합쳐 ${Object.keys(imported.characters||{}).length}명 불러왔습니다`
       :automatic?"자동으로 불러왔습니다":"불러왔습니다");
     return true;
-  }catch(error){if(error?.code==="sync/account-changed")return false;console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false;finishSync()}
+  }catch(error){if(error?.code==="sync/account-changed")return false;console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }
 
 async function submitFeedback({category,message,allowReply=false}={}){
@@ -703,7 +704,7 @@ if(ready){
           await download({automatic:true,accountTransition:true});
         }
       }catch(error){console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
-      finally{if(epoch===accountEpoch)switchingAccount=false}
+      finally{if(epoch===accountEpoch){switchingAccount=false;window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
     });
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}
 }else status("Firebase 설정 필요");

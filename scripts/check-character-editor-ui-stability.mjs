@@ -31,7 +31,9 @@ for(const marker of ['$$("[data-chip]")','$$("[data-favorite-kind]")','$$("[data
 
 assert(views.includes("DRAWER_VILLAGE_APP_VERSION"),"설정 화면에서 앱 버전을 표시해야 합니다.");
 assert(views.includes('settingsPane==="home"?`${sync}${appInfo}${menu}`'),"앱 버전은 하위 메뉴가 아니라 설정 첫 화면에 표시해야 합니다.");
-assert(views.includes('account:`${language}${backup}`'),"계정 하위 메뉴에 앱 버전을 중복 표시하면 안 됩니다.");
+const accountPane=views.match(/account:`([^`]+)`/)?.[1]||"";
+assert(accountPane.includes('${sync}')&&accountPane.includes('${backup}'),"계정·백업에서 Google 불러오기와 파일 백업에 접근할 수 있어야 합니다.");
+assert(!accountPane.includes('${appInfo}'),"계정 하위 메뉴에 앱 버전을 중복 표시하면 안 됩니다.");
 assert(prepare.includes("window.DRAWER_VILLAGE_APP_VERSION"),"Android 앱에 버전 이름을 주입해야 합니다.");
 assert(prepare.includes("window.DRAWER_VILLAGE_VERSION_CODE"),"Android 앱에 빌드 번호를 주입해야 합니다.");
 

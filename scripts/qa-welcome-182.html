@@ -1,0 +1,35 @@
+<!doctype html><html lang="ko" class="native-app native-platform"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>Welcome 182 isolated QA</title>
+<link rel="stylesheet" href="font-preferences.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="town-fit.css"><link rel="stylesheet" href="interface-system.css"><link rel="stylesheet" href="home-scene-layout.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="character-book.css"><link rel="stylesheet" href="shop.css">
+<script>
+// Entirely synthetic, session-only storage. Never loads a real user account.
+const memory=new Map();Object.defineProperty(window,'localStorage',{value:{get length(){return memory.size},key:i=>[...memory.keys()][i]??null,getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)}});
+window.DRAWER_VILLAGE_NATIVE=true;
+for(const tab of ['town','observe','settings','character'])localStorage.setItem('drawer-village-guide-'+tab,'1');
+</script></head><body><div id="app"></div><input id="image-picker" type="file" hidden>
+<script type="module">
+import '../app.js?v=20260831restore182';
+import * as game from '../state.js?v=20260831restore182';
+const params=new URLSearchParams(location.search);
+if(params.has('gift')){
+  const a=game.createCharacter(),b=game.createCharacter();
+  Object.assign(game.state.characters[a],{name:'네리네',createdAt:1,wake:'00:01',sleep:'23:59'});
+  Object.assign(game.state.characters[b],{name:'크로',createdAt:1,wake:'00:01',sleep:'23:59',favorites:{perfume:['qa-perfume']}});
+  game.state.catalog.perfume.push({id:'qa-perfume',kind:'perfume',name:'데 로스 산토스'});
+  game.updateCharacterView(b,a,'overall','깊이 사랑함');
+  game.scheduleCharacterChoice({kind:'gift',characterId:a,targetId:b,itemKind:'perfume',itemId:'qa-perfume',giveAt:Date.now()-60000});
+  game.state.activeTab='observe';game.state.activeId=b;
+  window.ParallelCity.replaceState(game.cloneState());
+  const controls=document.createElement('aside');controls.style='position:fixed;bottom:0;left:0;z-index:999999;background:white';
+  controls.innerHTML='<button id="qa-giver">검수: 네리네</button><button id="qa-receiver">검수: 크로</button>';
+  document.body.append(controls);
+  controls.querySelector('#qa-giver').onclick=()=>{game.state.activeId=a;window.ParallelCity.replaceState(game.cloneState())};
+  controls.querySelector('#qa-receiver').onclick=()=>{game.state.activeId=b;window.ParallelCity.replaceState(game.cloneState())};
+}
+if(params.has('busy')){
+  await import('../auth.js?v=20260831restore182');
+  const auth=window.ParallelCityAuth;let busy=false;
+  window.ParallelCityAuth={...auth,getInfo:()=>({...auth.getInfo(),busy})};
+  const button=document.createElement('button');button.textContent='검수: 불러오기 대기 전환';button.style='position:fixed;bottom:0;z-index:99999';
+  button.onclick=()=>{busy=!busy;window.dispatchEvent(new Event('drawer-village-auth-busy'))};document.body.append(button);
+}
+</script></body></html>

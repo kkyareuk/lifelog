@@ -1,20 +1,20 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260831town181";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260831town181";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260831town181";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260831town181";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260831town181";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260831town181";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260831town181";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260831town181";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260831town181";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831town181";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260831town181";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260831town181";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260831town181";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831town181";
-import {switchAccountState} from "./state.js?v=20260831town181";
-import {translateText} from "./views.js?v=20260831town181";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260831town181";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260831restore182";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260831restore182";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260831restore182";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260831restore182";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260831restore182";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260831restore182";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260831restore182";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260831restore182";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260831restore182";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831restore182";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260831restore182";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260831restore182";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260831restore182";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
+import {switchAccountState} from "./state.js?v=20260831restore182";
+import {translateText} from "./views.js?v=20260831restore182";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260831restore182";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -1044,48 +1044,6 @@ function bindFurniturePlacementEditors(){
   }
 }
 
-function showOnboarding(){
-  if(state.activeTab==="settings"||state.order.length||localStorage.getItem(ONBOARDING_KEY)==="done"||document.querySelector(".onboarding-dialog"))return;
-  const openDialog=document.querySelector("dialog[open]");
-  if(openDialog){
-    if(openDialog.dataset.waitingForOnboarding!=="1"){
-      openDialog.dataset.waitingForOnboarding="1";
-      openDialog.addEventListener("close",()=>requestAnimationFrame(showOnboarding),{once:true});
-    }
-    return;
-  }
-  let step=0,userName=localStorage.getItem("drawer-village-user-name")||"";
-  const dialog=document.createElement("dialog");dialog.className="onboarding-dialog";
-  const pages=[
-    ()=>`<div class="onboarding-welcome-art"><img src="./icons/drawer-village-logo.png" alt="서랍 속에 담긴 서랍마을"></div><small>캐릭터 생활 시뮬레이션</small><h1>서랍을 열면,<br><em>나만의 마을이 시작돼요</em></h1><p>내가 만든 캐릭터들이 집과 관계, 일정을 이어 가며<br>각자의 하루를 살아갑니다.</p><div class="onboarding-welcome-points" aria-label="서랍마을 핵심 기능"><span>캐릭터</span><span>집과 마을</span><span>관계와 하루</span></div><div class="onboarding-actions"><button type="button" data-onboarding-settings>설정 먼저 보기</button><button class="primary onboarding-start" type="button" data-onboarding-next>서랍마을 시작하기</button></div>`,
-    ()=>`<div class="onboarding-hero-icon">✦</div><small>STEP 1 · 마을의 주인</small><h1>어떻게 불러드릴까요?</h1><p>게임 안내에서만 사용할 이름이에요. 캐릭터 이름과는 별개이고 나중에도 바꿀 수 있어요.</p><label class="onboarding-name">내 이름 또는 별명<input name="userName" value="${userName.replace(/"/g,"&quot;")}" maxlength="20" autocomplete="nickname" placeholder="예: 꺄륵"></label><button class="primary" type="button" data-onboarding-next>다음</button>`,
-    ()=>`<div class="onboarding-hero-icon">◇</div><small>STEP 2 · 저장 방식</small><h1>${userName||"마을 주인"}님의 기록은<br>먼저 이 기기에 저장돼요</h1><p>계정을 연결해도 드롭다운 하나를 바꿀 때마다 자동 업로드하지 않아요. 설정에서 <b>동기화</b>를 눌렀을 때만 올리고, <b>불러오기</b>를 눌렀을 때만 다른 기기의 기록을 가져와요.</p><div class="onboarding-safe-note"><b>캐릭터·관계·집을 자동으로 만들지 않습니다.</b><span>백업 파일은 설정에서 언제든 내보낼 수 있어요.</span></div><div class="onboarding-actions"><button type="button" data-onboarding-login>Google 계정 연결</button><button class="primary" type="button" data-onboarding-next>지금은 기기에만 저장</button></div>`,
-    ()=>`<div class="onboarding-hero-icon">＋</div><small>STEP 3 · 첫 주민</small><h1>첫 캐릭터부터<br>직접 만들어 볼까요?</h1><p>캐릭터를 만든 뒤에는 설정 화면에서 이름과 사진을 정하고, 이어서 집과 마을을 차례로 편집해요.</p><div class="onboarding-route"><span><b>1</b>캐릭터 만들기</span><i>→</i><span><b>2</b>캐릭터 설정</span><i>→</i><span><b>3</b>집 편집</span><i>→</i><span><b>4</b>마을 편집</span></div><button class="primary" type="button" data-onboarding-create>첫 캐릭터 만들기</button>`
-  ];
-  const paint=()=>{
-    dialog.innerHTML=`<form method="dialog" class="${step===0?"onboarding-first":""}"><div class="onboarding-progress" aria-label="${step+1} / ${pages.length} 단계">${pages.map((_,index)=>`<i class="${index<=step?"on":""}"></i>`).join("")}</div><section class="${step===0?"onboarding-welcome":""}">${pages[step]()}</section>${step?`<button type="button" class="onboarding-back" data-onboarding-back>← 이전</button>`:""}</form>`;
-    dialog.querySelector("[data-onboarding-back]")?.addEventListener("click",()=>{step=Math.max(0,step-1);paint()});
-    dialog.querySelector("[data-onboarding-next]")?.addEventListener("click",()=>{
-      const input=dialog.querySelector('[name="userName"]');if(input){if(!input.value.trim()){input.focus();return}userName=input.value.trim();localStorage.setItem("drawer-village-user-name",userName);state.ownerName=userName;save(true)}
-      step=Math.min(pages.length-1,step+1);paint();
-    });
-    dialog.querySelector("[data-onboarding-login]")?.addEventListener("click",async event=>{const auth=window.ParallelCityAuth;if(!auth)return showToast("로그인 기능을 불러오는 중이에요");const button=event.currentTarget;button.disabled=true;button.textContent="Google 로그인 여는 중…";const connected=await auth.login();if(connected){step=3;paint()}else{button.disabled=false;button.textContent="Google 계정 연결"}});
-    dialog.querySelector("[data-onboarding-settings]")?.addEventListener("click",()=>{setNavigationTabIntent("settings");dialog.close();save();render()});
-    dialog.querySelector("[data-onboarding-create]")?.addEventListener("click",()=>{if(createCharacter(characterLimit())){localStorage.setItem(ONBOARDING_KEY,"done");localStorage.setItem(SETUP_COACH_KEY,"character");dialog.close();setNavigationTabIntent("character");setCharacterPane("profile");save();render();showToast("첫 캐릭터의 이름부터 정해 볼까요?")}});
-  };
-  dialog.onclose=()=>dialog.remove();
-  dialog.setAttribute("aria-label","첫 시작 안내");
-  document.body.append(dialog);
-  paint();
-  // iPhone Safari에서 전체 화면 dialog를 modal로 연 직후 다른 렌더가 겹치면
-  // 배경만 흐려진 채 내용이 눌리지 않는 경우가 있어 모바일은 자체 전체화면으로 연다.
-  try{
-    if(document.documentElement.classList.contains("native-app"))dialog.show();
-    else dialog.showModal();
-  }catch(error){
-    dialog.setAttribute("open","");
-  }
-}
 function showSetupCoach(){
   const step=localStorage.getItem(SETUP_COACH_KEY);
   if(!state.order.length||!["character","home","town"].includes(step)||document.querySelector("dialog[open]"))return;
@@ -1342,7 +1300,7 @@ function render({force=false}={}){
     // 로고를 제외한 아래쪽 이미지는 브라우저의 지연 디코딩에 맡긴다.
     document.querySelectorAll("#app img").forEach(image=>{
       image.decoding="async";
-      if(!image.matches(".native-observe-background,.native-main-character,.native-scene-lineup-person img,.app-loading-logo")){
+      if(!image.matches(".welcome-landscape,.native-observe-background,.native-main-character,.native-scene-lineup-person img,.app-loading-logo")){
         image.loading="lazy";
         image.fetchPriority="low";
       }
@@ -1360,7 +1318,6 @@ function render({force=false}={}){
     requestAnimationFrame(()=>syncMovementAudio(state));
     requestAnimationFrame(bindRelationshipRoulette);
     requestAnimationFrame(restoreMobileCharacterDialogs);
-    requestAnimationFrame(showOnboarding);
     requestAnimationFrame(showSetupCoach);
     requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
     requestAnimationFrame(maybeShowPageGuide);
@@ -2259,6 +2216,18 @@ function bind(){
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
   $$("[data-edit-outfit]").forEach(el=>el.onclick=()=>openOutfitEditor(el.dataset.editOutfit));
   $$("[data-new]").forEach(el=>el.onclick=()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`현재 캐릭터 슬롯은 ${limit}명까지예요`);render()});
+  $("[data-welcome-create]")?.addEventListener("click",()=>{
+    if(window.ParallelCityAuth?.getInfo?.().busy||state.order.length)return;
+    if(!createCharacter(characterLimit()))return;
+    localStorage.setItem(ONBOARDING_KEY,"done");
+    localStorage.setItem(SETUP_COACH_KEY,"character-editing");
+    setNavigationTabIntent("character");setCharacterPane("profile");save();render();
+  });
+  $("[data-welcome-restore]")?.addEventListener("click",()=>{
+    if(window.ParallelCityAuth?.getInfo?.().busy)return;
+    setNavigationTabIntent("settings");openSettingsPane("account");
+  });
+  $$("[data-welcome-language]").forEach(button=>button.addEventListener("click",()=>{state.uiLanguage=button.dataset.welcomeLanguage;save();render()}));
   $$("[data-edit]").forEach(el=>el.onclick=()=>{setActive(el.dataset.edit);setCharacterPane("profile");render()});
   $$("[data-mobile-character-select]").forEach(el=>el.onclick=()=>{
     mobileCharacterStripScroll=el.closest(".mobile-character-strip")?.scrollLeft||0;
@@ -4634,6 +4603,7 @@ function bindPlaceDrag(){
   });
 }
 
+window.addEventListener("drawer-village-auth-busy",()=>setAccountLabel());
 window.ParallelCity={
   getState:cloneState,
   switchAccount:uid=>{
@@ -5156,7 +5126,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260831town181").catch(error=>{
+import("./auth.js?v=20260831restore182").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5171,7 +5141,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260831town181",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260831restore182",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
