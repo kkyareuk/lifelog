@@ -41,10 +41,11 @@ html[data-color-mode][data-visual-theme] body>header nav button:not(.home-native
 html[data-color-mode][data-visual-theme] button.primary,
 html[data-color-mode][data-visual-theme] button.on:not(.routine-shell *):not(.roster-card):not(.place-person-face):not(.theme-swatch):not(.character-picker-button):not(.character-pane-ribbon):not(.character-wallet-selected):not(.character-roster-entry):not(.character-full-tab):not(.character-overview-section-tab):not(.character-overview-next-bookmark):not(.home-native-pill),
 html[data-color-mode][data-visual-theme] [aria-pressed="true"]{
-  border-color:color-mix(in srgb,var(--p) 72%,var(--line))!important;
-  background:linear-gradient(135deg,var(--p),var(--s))!important;
-  color:var(--on-grad)!important;
-  -webkit-text-fill-color:var(--on-grad)!important;
+  border-color:#b48930!important;
+  background:linear-gradient(145deg,#fff0a6,#efd15e)!important;
+  color:#3c2b16!important;
+  -webkit-text-fill-color:#3c2b16!important;
+  box-shadow:inset 0 1px #fff8d2,0 3px 0 #997535!important;
 }
 
 html[data-color-mode][data-visual-theme] :is(

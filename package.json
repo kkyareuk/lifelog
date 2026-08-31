@@ -44,7 +44,8 @@
     "test:restore-storage": "node scripts/check-restore-storage.mjs",
     "test:directed-gifts": "node scripts/check-directed-gifts.mjs",
     "test:management183": "node scripts/check-management-183.mjs",
-    "test:dictionary184": "node scripts/check-dictionary-mail-184.mjs"
+    "test:dictionary184": "node scripts/check-dictionary-mail-184.mjs",
+    "test:village185": "node scripts/check-village-185.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

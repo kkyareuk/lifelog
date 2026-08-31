@@ -1,6 +1,7 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831dictionary184";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260831dictionary184";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260831dictionary184";
+import {environmentConversation} from "./character-mood.js?v=20260831village185";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831village185";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260831village185";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260831village185";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -4430,7 +4431,8 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const sharedActionText=cleanRepeatedSceneText(`${scene.title||""} ${scene.first||""} ${scene.second||""}`);
   const participantNames=participantOrder.map(id=>state.characters[id]?.name).filter(Boolean).join(" · ");
   const sharedCanonicalTitle=sharedContext?.sharedCanonicalTitle||resolveEntityParticles(`${participantNames} · ${scene.title||combinedTitle}`);
-  const sharedCanonicalDesc=sharedContext?.sharedCanonicalDesc||resolveEntityParticles(compactLogDescription(sharedActionText));
+  const topic=/싸움|다툼|입맞춤|포옹|키스|갈등/.test(sharedActionText)?"":environmentConversation(c,{...current,home:isHomeScene,visitHomeId:currentHomeId},state);
+  const sharedCanonicalDesc=sharedContext?.sharedCanonicalDesc||resolveEntityParticles([compactLogDescription(sharedActionText),topic].filter(Boolean).join(" "));
   return {...current,baseTitle,baseDesc,title:sharedCanonicalTitle,desc:sharedCanonicalDesc,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 function companionAlignedBaseEvent(c,current,date){

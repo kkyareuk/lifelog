@@ -1,12 +1,13 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831dictionary184";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831dictionary184";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831dictionary184";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260831dictionary184";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831dictionary184";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831dictionary184";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831dictionary184";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831dictionary184";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831dictionary184";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831village185";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831village185";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831village185";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260831village185";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831village185";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831village185";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831village185";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831village185";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831village185";
+import {missingBuildings} from "./building-recovery.js?v=20260831village185";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -539,7 +540,15 @@ function normalizeHomes(x){
     for(let suffix=1;x.deletedTownIds.includes(initialId);suffix++)initialId=`initial-town-${suffix}`;
     x.towns=[{...clone(x.world),id:initialId}];
   }
-  x.towns.forEach((town,index)=>{town.id=String(town.id||`legacy-town-${index}`);town.places=(town.places||[]).filter(place=>!x.deletedPlaceIds.includes(String(place?.id)))});
+  x.towns.forEach((town,index)=>{
+    town.id=String(town.id||`legacy-town-${index}`);
+    const places=Array.isArray(town.places)?town.places:[];
+    // The editable active-world copy may contain additions not yet mirrored in towns.
+    const activePlaces=town.id===x.activeTownId&&(!x.world.id||x.world.id===town.id)?x.world.places:[];
+    const merged=new Map();
+    [...places,...activePlaces].forEach(place=>{if(place&&typeof place==="object"&&!x.deletedPlaceIds.includes(String(place.id)))merged.set(String(place.id||uid()),place)});
+    town.places=[...merged.values()];
+  });
   x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),...normalizeTownProfile(t),photo:"",density:String(t.density||"여유로움"),urbanization:String(t.urbanization||"소도시"),size:String(t.size||"보통 마을"),description:String(t.description||"").slice(0,600),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
@@ -884,6 +893,23 @@ function clearDeferredTextSave(){
   deferredTextSaveHandler=null;
 }
 export const active=()=>state.characters[state.activeId];
+const BUILDING_RECOVERY_KEY="drawer-village-building-recovery-v1";
+const parseRecovery=key=>{try{return JSON.parse(localStorage.getItem(key)||"null")}catch{return null}};
+export function recoverableBuildings(){
+  syncTown();
+  return missingBuildings(state,[parseRecovery(BUILDING_RECOVERY_KEY),parseRecovery(LAST_NONEMPTY_KEY),parseRecovery("drawer-village-recovery-before-cloud")].filter(Boolean));
+}
+export function restoreBuildings(ids){
+  const chosen=new Set(ids),candidates=recoverableBuildings().filter(item=>chosen.has(item.place.id));
+  for(const item of candidates){
+    const town=state.towns.find(town=>town.id===item.townId);
+    if(town)town.places.push(clone(item.place));
+  }
+  const town=state.towns.find(town=>town.id===state.activeTownId);
+  if(town)state.world=clone(town);
+  if(candidates.length)save(true);
+  return candidates.length;
+}
 const hasCharacters=value=>Array.isArray(value?.order)&&value.order.some(id=>value.characters?.[id]);
 function preserveLastNonempty(value,serialized="",force=false){
   if(!hasCharacters(value))return false;
@@ -895,7 +921,15 @@ function preserveLastNonempty(value,serialized="",force=false){
   if(!force&&lastRecoveryBackupAt&&now-lastRecoveryBackupAt<60_000)return true;
   try{
     const payload=serialized||stringifyLocalMediaState(value);
-    if(payload!==lastRecoveryBackupSerialized)localStorage.setItem(LAST_NONEMPTY_KEY,payload);
+    if(payload!==lastRecoveryBackupSerialized){
+      const candidates=missingBuildings(value,[parseRecovery(BUILDING_RECOVERY_KEY),parseRecovery(LAST_NONEMPTY_KEY),parseRecovery("drawer-village-recovery-before-cloud")].filter(Boolean));
+      if(candidates.length){
+        const towns=value.towns.map(town=>({id:town.id,places:candidates.filter(item=>item.townId===town.id).map(item=>item.place)}));
+        // Keep only missing building records, not another full photo-heavy save.
+        localStorage.setItem(BUILDING_RECOVERY_KEY,JSON.stringify({towns,lastSaved:now}));
+      }
+      localStorage.setItem(LAST_NONEMPTY_KEY,payload);
+    }
     lastRecoveryBackupSerialized=payload;
     lastRecoveryBackupAt=now;
     return true;

@@ -28,7 +28,7 @@ assert.match(simulation,/deleted\.has\(key\)\|\|seen\.has\(key\)/);
 assert.match(simulation,/sharedCanonicalTitle:current\.sharedCanonicalTitle/);
 assert.match(simulation,/function townProfileEvent/);
 assert.match(simulation,/transportSceneCopy/);
-assert.match(gradle,/versionCode 184/);
-assert.match(gradle,/versionName "1\.0\.171"/);
+assert.match(gradle,/versionCode 185/);
+assert.match(gradle,/versionName "1\.0\.172"/);
 
 console.log("PASS town profile, illustration, relationship-name, salon, schedule deletion, and shared-log regressions");

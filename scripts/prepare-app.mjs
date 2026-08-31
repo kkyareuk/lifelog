@@ -129,7 +129,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260831dictionary184";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260831village185";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

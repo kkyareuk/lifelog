@@ -1,11 +1,12 @@
-import {state,addCatalogItem,updateCatalogItem,deleteCatalogItem,save} from './state.js?v=20260831dictionary184';
+import {state,addCatalogItem,updateCatalogItem,deleteCatalogItem,save} from './state.js?v=20260831village185';
 
 const esc=(x='')=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const itemEffects={none:'없음',glow:'은은한 빛',sparkle:'반짝임',float:'둥실둥실',sway:'살랑살랑'};
 export const normalizeRating=value=>Math.round(Math.max(0,Math.min(5,Number(value)||0))*2)/2;
 export function itemArt(item,icon='📦'){
   const effect=Object.hasOwn(itemEffects,item.animation)?item.animation:'none';
-  return `<span class="dictionary-art" data-item-effect="${effect}">${item.image?`<img src="${esc(item.image)}" alt="" loading="lazy" decoding="async" draggable="false">`:`<span>${icon}</span>`}<i aria-hidden="true">✦</i></span>`;
+  const source=item.imageSource==='app'?'app':'photo';
+  return `<span class="dictionary-art" data-image-kind="${source}" data-item-effect="${effect}">${item.image?`<img src="${esc(item.image)}" alt="" loading="lazy" decoding="async" draggable="false">`:`<span>${icon}</span>`}<i aria-hidden="true">✦</i></span>`;
 }
 export function ratingStars(value){
   const rating=normalizeRating(value);

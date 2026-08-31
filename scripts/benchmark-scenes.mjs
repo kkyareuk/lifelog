@@ -3,8 +3,8 @@ const memory=new Map();
 globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js?v=20260831dictionary184');
-const sim=await import('../simulation.js?v=20260831dictionary184');
+const game=await import('../state.js?v=20260831village185');
+const sim=await import('../simulation.js?v=20260831village185');
 game.resetAll();
 for(let i=0;i<12;i++){const id=game.createCharacter(20);Object.assign(game.state.characters[id],{name:`시험 인물 ${i}`,createdAt:1,wake:'07:00',sleep:'23:00'})}
 for(let i=0;i<300;i++)game.state.catalog.perfume.push({id:`perf-${i}`,name:`시험 향수 ${i}`,kind:'perfume',category:'우디'});

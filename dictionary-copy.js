@@ -1,4 +1,13 @@
 const copy=[
+ ['애니메이션 위치','Animation placement','アニメーションの配置'],
+ ['같은 방향을 고른 인물이 여러 명이면 그 안에서는 기존 순서를 유지해요.','If multiple characters choose the same side, their existing order is kept within that side.','同じ側を選んだキャラクターが複数いる場合、その中では元の順番を保ちます。'],
+ ['현재 기분','Current mood','今の気分'],
+ ['현재 머무는 환경과 사건을 반영한 기분이에요. 화면을 다시 열어도 점수가 쌓이지 않아요.','Mood reflects the current environment and events. Opening this screen does not accumulate points.','今いる環境や出来事を反映した気分です。画面を開き直しても点数は加算されません。'],
+ ['특별한 기분 변화 없음','No particular mood changes','特に気分の変化なし'],
+ ['건물 복구','Recover buildings','建物の復元'],
+ ['이 계정의 기기 저장본에서 찾은 건물이에요. 직접 삭제한 건물은 제외돼요.','Buildings found in this account’s device backups. Buildings you deleted are excluded.','このアカウントの端末内の保存データにある建物です。削除した建物は除外されます。'],
+ ['선택한 건물 복구','Restore selected buildings','選択した建物を復元'],
+ ['기기에 복구 가능한 건물이 없어요. 이전 백업 파일이나 클라우드 저장본을 확인해 주세요.','No recoverable buildings on this device. Please check an earlier backup file or cloud save.','端末内に復元できる建物がありません。以前のバックアップファイルやクラウドの保存データをご確認ください。'],
  ['태그','Tags','タグ'],['빵','Bread','パン'],['면','Noodles','麺'],['밥','Rice','ご飯'],
  ['옷·패션','Clothing','服・ファッション'],['아이돌·밴드','Idols · bands','アイドル・バンド'],['책·작품','Books · works','本・作品'],['취미 물품','Hobby items','趣味の品物'],['향수','Perfume','香水'],['전자기기','Electronics','電子機器'],['무기','Weapons','武器'],
  ['사전 목록으로 돌아가기','Back to dictionary','辞典の一覧に戻る'],['메인 화면으로 돌아가기','Back to main screen','メイン画面に戻る'],

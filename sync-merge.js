@@ -94,10 +94,17 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
     const towns=Array.isArray(value.towns)&&value.towns.length?clone(value.towns):value.world?[{...clone(value.world),id:value.activeTownId||"initial-town"}]:[];
     return towns.map((town,index)=>{
       const id=String(town.id||`legacy-town-${index}`);
-      return id===value.activeTownId&&value.world?{...town,...clone(value.world),id}:{...town,id};
+      return id===value.activeTownId&&value.world?{...town,...clone(value.world),id,places:mergedListById(value.world.places,town.places)}:{...town,id};
     });
   };
-  next.towns=mergedListById(townsFor(preferred),townsFor(fallback)).filter(town=>!deletedTowns.has(town.id)).map(town=>({...town,places:(town.places||[]).filter(place=>!deletedPlaces.has(String(place.id)))}));
+  const preferredTowns=townsFor(preferred),fallbackTowns=townsFor(fallback);
+  next.towns=mergedListById(preferredTowns,fallbackTowns).filter(town=>!deletedTowns.has(town.id)).map(town=>{
+    const older=fallbackTowns.find(candidate=>candidate.id===town.id);
+    // Buildings are independently created entities, not one replaceable town field.
+    // A newer save with fewer buildings must not erase another device's additions.
+    const places=mergedListById(town.places,older?.places).filter(place=>!deletedPlaces.has(String(place.id)));
+    return {...town,places};
+  });
   // Never merge buildings from two different selected villages into one world.
   next.activeTownId=next.towns.some(town=>town.id===device.activeTownId)?device.activeTownId:next.towns.some(town=>town.id===preferred.activeTownId)?preferred.activeTownId:next.towns[0]?.id||null;
   next.world=clone(next.towns.find(town=>town.id===next.activeTownId)||{});

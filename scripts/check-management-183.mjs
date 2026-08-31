@@ -5,7 +5,7 @@ const memory=new Map();
 globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js?v=20260831dictionary184');
+const game=await import('../state.js?v=20260831village185');
 game.resetAll();const first=game.createCharacter(),original=game.cloneState();
 const firstTown=game.state.activeTownId,secondTown=game.addTown(5);
 game.state.world.places=[{id:'removed-building',name:'삭제할 병원',type:'병원'}];game.save(true,false);

@@ -1,0 +1,32 @@
+<!doctype html><html lang="ko" class="native-app native-platform"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>185 isolated UI QA</title>
+<link rel="stylesheet" href="font-preferences.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="town-fit.css"><link rel="stylesheet" href="interface-system.css"><link rel="stylesheet" href="home-scene-layout.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="character-book.css"><link rel="stylesheet" href="shop.css"><link rel="stylesheet" href="dictionary.css">
+<script>
+function qaError(error){const node=document.createElement('pre');node.textContent=String(error?.stack||error);node.style.cssText='position:fixed;z-index:2147483647;inset:0;background:white;color:black;overflow:auto';document.body.append(node)}
+addEventListener('error',e=>qaError(e.error||e.message));addEventListener('unhandledrejection',e=>qaError(e.reason));
+const memory=new Map();Object.defineProperty(window,'localStorage',{value:{get length(){return memory.size},key:i=>[...memory.keys()][i]??null,getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)}});
+window.DRAWER_VILLAGE_NATIVE=true;
+window.PARALLEL_CITY_CONFIG={nativeApp:true};
+for(const tab of ['town','observe','settings','catalog','character','home','shop'])localStorage.setItem('drawer-village-guide-'+tab,'1');
+const worlds=[{id:'first',name:'숲속 마을',reputation:'조용하고 평화로움',places:[{id:'cafe',name:'카페',type:'카페',iconPreset:'cafe',stock:['qa-food'],x:35,y:38,reputation:'좋음',atmosphere:'조용함'},{id:'park',name:'공원',type:'공원',iconPreset:'park',x:60,y:60}]},{id:'second',name:'연못 마을',places:[{id:'hospital',name:'병원',type:'병원',iconPreset:'hospital',x:60,y:45}]}];
+localStorage.setItem('drawer-village-game-v1',JSON.stringify({schema:31,uiLanguage:new URLSearchParams(location.search).get('lang')||'ko',activeTownId:'first',activeTab:'observe',activeId:'qa',characters:{qa:{id:'qa',name:'검수 주민',createdAt:1,townId:'first',homeId:'qa-house'}},order:['qa'],homes:{'qa-house':{id:'qa-house',name:'검수 가족의 집',townId:'first',rooms:{living:{name:'거실',type:'living'}}}},towns:worlds,world:worlds[0]}));
+</script></head><body><div id="app">검수 앱 불러오는 중</div><input id="image-picker" type="file" hidden>
+<script>
+const recovery=JSON.parse(localStorage.getItem('drawer-village-game-v1'));
+recovery.lastSaved=Date.now()-1000;
+recovery.towns[0].places.push({id:'lost-library',name:'복구 도서관',type:'도서관',x:70,y:35});
+localStorage.setItem('drawer-village-last-nonempty-state-v1',JSON.stringify(recovery));
+</script>
+<script type="module">
+try{
+  const game=await import('./state.js?v=20260831village185');
+  if(new URLSearchParams(location.search).has('full')){
+    const ids=['qa',...Array.from({length:8},()=>game.createCharacter(20))],house=game.createHome();
+    game.setHomeResidents(house,ids);game.setActiveHome(house);
+    for(const id of ids){const c=game.state.characters[id];if(c){c.homeId=house;c.residences=c.residences.filter(r=>r.homeId===house);c.residences.forEach(r=>r.isPrimary=true)}}
+    const sim=await import('./simulation.js?v=20260831village185');sim.forceCharactersHome(ids);
+  }
+  game.state.catalog.food.push({id:'qa-food',kind:'food',name:'사진 물품',category:'이탈리아 음식',image:'assets/home-ui/shop.png',imageSource:'user',rating:3.5,animation:'glow',tags:['카페']},{id:'qa-app',kind:'food',name:'인게임 물품',image:'assets/home-ui/shop.png',imageSource:'app'});
+  game.save(true,false);
+  await import('./app.js?v=20260831village185');
+}catch(error){qaError(error)}
+</script></body></html>
