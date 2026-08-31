@@ -1,6 +1,6 @@
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831restore182";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260831restore182";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260831restore182";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831village183";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260831village183";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260831village183";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -28,18 +28,23 @@ const entityNames=()=>[
   ...(state.towns||[]).flatMap(town=>[town?.name,...(town?.places||[]).map(place=>place?.name)]),
   ...Object.values(state.catalog||{}).flatMap(items=>(items||[]).map(item=>item?.name))
 ].filter(Boolean).map(String).sort((a,b)=>b.length-a.length);
+let entityPatternCache={};
+function entityPattern(){
+  const revision=state.lastSaved;
+  if(entityPatternCache.characters!==state.characters||entityPatternCache.revision!==revision){
+    const names=[...new Set(entityNames())];
+    entityPatternCache={characters:state.characters,revision,pattern:names.length?new RegExp(`(${names.map(regexEscape).join("|")})(은|는|이|가|을|를|과|와)(?=[\\s,.!?·'\"’”)]|$)`,"g"):null};
+  }
+  return entityPatternCache.pattern;
+}
 const resolveEntityParticles=text=>{
-  let result=resolveParticles(text);
-  entityNames().forEach(name=>{
-    const pattern=new RegExp(`${regexEscape(name)}(은|는|이|가|을|를|과|와)(?=[\\s,.!?·'\"’”)]|$)`,"g");
-    result=result.replace(pattern,(_,particle)=>{
+  const result=resolveParticles(text),pattern=entityPattern();
+  return pattern?result.replace(pattern,(_,name,particle)=>{
       if(["은","는"].includes(particle))return topic(name);
       if(["이","가"].includes(particle))return subject(name);
       if(["을","를"].includes(particle))return object(name);
       return togetherWith(name);
-    });
-  });
-  return result;
+  }):result;
 };
 const dayKey=(d=new Date())=>`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 const nowMin=(d=new Date())=>d.getHours()*60+d.getMinutes();
@@ -3260,7 +3265,7 @@ function baseEventFor(c,date=new Date()){
     return commitLiveEntry(c,date,withResidenceLocation(c,entry(sleepMinute,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0,holdMinutes:Math.max(30,(n<wake?wake:1440)-sleepMinute)}),date));
   }
   const activeRoutine=activeScheduledRoutine(c,date);
-  const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
+  const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&!item.routineReturned&&Number(item.minute)<=n&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
   if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);

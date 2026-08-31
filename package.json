@@ -42,7 +42,8 @@
     "test:account-isolation": "node scripts/check-account-isolation.mjs",
     "test:town-lighting": "node scripts/check-town-lighting.mjs",
     "test:restore-storage": "node scripts/check-restore-storage.mjs",
-    "test:directed-gifts": "node scripts/check-directed-gifts.mjs"
+    "test:directed-gifts": "node scripts/check-directed-gifts.mjs",
+    "test:management183": "node scripts/check-management-183.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

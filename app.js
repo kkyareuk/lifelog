@@ -1,20 +1,21 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260831restore182";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260831restore182";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260831restore182";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260831restore182";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260831restore182";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260831restore182";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260831restore182";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260831restore182";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260831restore182";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831restore182";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260831restore182";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260831restore182";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260831restore182";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
-import {switchAccountState} from "./state.js?v=20260831restore182";
-import {translateText} from "./views.js?v=20260831restore182";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260831restore182";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260831village183";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260831village183";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260831village183";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260831village183";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260831village183";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260831village183";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260831village183";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260831village183";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260831village183";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260831village183";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831village183";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260831village183";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260831village183";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260831village183";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831village183";
+import {switchAccountState} from "./state.js?v=20260831village183";
+import {translateText} from "./views.js?v=20260831village183";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260831village183";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -606,16 +607,18 @@ function enhanceCatalogCards(root=document){
     input.closest("label").insertAdjacentElement("beforebegin",box);
   });
 }
-function catalogCardElement(kind,item){
+function catalogCardElement(kind,item,editor=false){
   const template=document.createElement("template");
-  template.innerHTML=catalogCardMarkup(kind,item).trim();
+  template.innerHTML=catalogCardMarkup(kind,item,{editor}).trim();
   return template.content.firstElementChild;
 }
 function replaceCatalogCard(kind,itemId,{open=true}={}){
   const item=state.catalog?.[kind]?.find(value=>value.id===itemId);
+  const tile=document.querySelector(`.catalog-tile[data-kind="${CSS.escape(kind)}"][data-open-catalog="${CSS.escape(itemId)}"]`);
+  if(item&&tile)tile.replaceWith(catalogCardElement(kind,item));
   const current=document.querySelector(`.catalog-dex-card[data-kind="${CSS.escape(kind)}"][data-catalog-card="${CSS.escape(itemId)}"]`);
   if(!item||!current)return null;
-  const next=catalogCardElement(kind,item);if(!next)return null;
+  const next=catalogCardElement(kind,item,true);if(!next)return null;
   next.open=open||current.open;
   current.replaceWith(next);
   enhanceCatalogCards(next);
@@ -640,8 +643,34 @@ function appendCatalogCard(kind,itemId){
   if(!item||!grid)return null;
   grid.querySelector("[data-catalog-empty]")?.remove();
   const card=catalogCardElement(kind,item);if(!card)return null;
-  card.open=true;grid.append(card);enhanceCatalogCards(card);translateDynamicInterface(card);
+  grid.insertBefore(card,grid.querySelector("[data-add-catalog]"));translateDynamicInterface(card);
+  refreshCatalogCount(kind);
+  openCatalogItem(kind,itemId);
   return card;
+}
+function refreshCatalogCount(kind){
+  const count=document.querySelector(`[data-catalog-section="${CSS.escape(kind)}"]>.title>small`);
+  if(count)count.textContent=String(state.catalog?.[kind]?.length||0);
+}
+function openCatalogItem(kind,itemId){
+  const item=state.catalog?.[kind]?.find(value=>value.id===itemId),shell=document.querySelector(".catalog-shell");
+  if(!item||!shell)return;
+  shell.querySelector(".catalog-item-dialog")?.remove();
+  const dialog=document.createElement("dialog");dialog.className="catalog-item-dialog";
+  const close=document.createElement("button");close.type="button";close.className="catalog-dialog-close";close.textContent=translateText("닫기");close.onclick=()=>dialog.close();
+  const card=catalogCardElement(kind,item,true);card.open=true;
+  dialog.append(close,card);shell.append(dialog);enhanceCatalogCards(card);translateDynamicInterface(dialog);
+  dialog.addEventListener("close",()=>{
+    // Android can close a dialog before a focused text field emits change.
+    // Commit that field once here, not on every keystroke.
+    const current=state.catalog?.[kind]?.find(value=>value.id===itemId),patch={};
+    if(current){dialog.querySelectorAll("[data-catalog-field]").forEach(field=>{
+      const key=field.dataset.catalogField,value=["spicy","sweet"].includes(key)?Number(field.value):field.value;
+      if(value!==(current[key]??""))patch[key]=value;
+    });if(Object.keys(patch).length)updateCatalogItem(kind,itemId,patch)}
+    replaceCatalogCard(kind,itemId,{open:false});dialog.remove();refreshCatalogCount(kind);
+  },{once:true});
+  dialog.showModal();
 }
 function enhanceDynamicForms(){
   document.querySelectorAll(".profile-license").forEach(profile=>{
@@ -1326,6 +1355,7 @@ function render({force=false}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
+    requestAnimationFrame(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
       if(main){main.scrollLeft=0;main.scrollTop=0}
@@ -1334,6 +1364,7 @@ function render({force=false}={}){
     if(preservePageScroll){
       restoreWindowScroll(previousPageX,previousPageY);
       restoreMainScroll(previousMainLeft,previousMainTop,openCatalogKeys);
+      if(state.activeTab==="catalog"&&openCatalogKeys.length){const [kind,itemId]=openCatalogKeys[0].split(":");openCatalogItem(kind,itemId)}
       if(previousTownPosition){
         const restoreTown=()=>{
           const scroller=document.querySelector(".town-map-scroll");
@@ -1711,6 +1742,7 @@ async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfte
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   }
   if(!alreadySaved)save(true);
+  if(characterSave)queueCharacterNotificationSchedule();
   if(renderAfter)render();
   const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
   showToast(characterSave?copy.characterDone:info?.user?copy.syncing:copy.deviceDone);
@@ -2990,6 +3022,7 @@ function bind(){
     });
     catalogShell.addEventListener("click",event=>{
       const button=event.target.closest?.("button");if(!button||!catalogShell.contains(button))return;
+      if(button.dataset.openCatalog){openCatalogItem(button.dataset.kind,button.dataset.openCatalog);return}
       if(button.dataset.addCatalog){
         event.preventDefault();
         const kind=button.dataset.addCatalog,itemId=addCatalogItem(kind,{name:"새 항목",category:"기타"});
@@ -3007,9 +3040,10 @@ function bind(){
       if(button.dataset.deleteCatalog){
         event.preventDefault();
         if(!confirm("이 항목을 삭제할까요?"))return;
-        const card=button.closest(".catalog-dex-card"),grid=card?.parentElement;
-        deleteCatalogItem(button.dataset.kind,button.dataset.deleteCatalog);card?.remove();
-        if(grid&&!grid.querySelector(".catalog-dex-card")){const empty=document.createElement("p");empty.dataset.catalogEmpty="";empty.textContent="아직 등록된 항목이 없어요.";grid.append(empty)}
+        const itemId=button.dataset.deleteCatalog,kind=button.dataset.kind;
+        deleteCatalogItem(kind,itemId);
+        document.querySelector(`.catalog-tile[data-kind="${CSS.escape(kind)}"][data-open-catalog="${CSS.escape(itemId)}"]`)?.remove();
+        button.closest("dialog")?.close();
         return;
       }
       if(button.dataset.catalogImage){event.preventDefault();openCatalogIllustrationPicker(button.dataset.catalogImage,button.dataset.kind);return}
@@ -3049,7 +3083,7 @@ function bind(){
     showToast(direction==="front"?layerCopy.frontDone:layerCopy.backDone);
   });
   $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
-    const shell=el.closest(".mobile-town-shell");if(shell&&shell.dataset.townMode!=="buildings")return;
+    const shell=el.closest(".mobile-town-shell");if(shell&&!el.closest(".town-building-screen")&&shell.dataset.townMode!=="buildings")return;
     if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
   });
   $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{
@@ -3362,13 +3396,14 @@ function bind(){
   $$('[data-town-illustration]').forEach(button=>button.addEventListener("click",()=>{if(setWorldBackground(button.dataset.townIllustration)){button.closest("dialog")?.close();render();showToast("마을 전체 배경 일러스트를 바꿨어요")}}));
   $$('[data-town-illustration-locked]').forEach(button=>button.addEventListener("click",()=>showToast("기후 확장 DLC에서 제공될 마을 일러스트예요")));
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{el.closest("dialog")?.close();setMobileTownMode("");switchTown(el.dataset.townSelect);render();centerMobileTownMap()});
+  $("[data-town-browse]")?.addEventListener("change",event=>{switchTown(event.target.value);setMobileTownMode("town");render()});
   $$("[data-add-town]").forEach(el=>el.addEventListener("click",()=>{
     if(el.closest(".mobile-town-shell")&&currentTownMode()!=="town")return;
     const limit=townLimit();
     if(!addTown(limit))showToast(`현재 마을 슬롯은 ${limit}개까지예요`);
     render();
   }));
-  $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm("이 마을을 삭제할까요?")){deleteTown(el.dataset.deleteTown);render()}});
+  $$("[data-delete-town]").forEach(el=>el.onclick=()=>{if(confirm(translateText("이 마을의 건물과 배치를 삭제할까요? 주민과 집은 남은 마을로 옮겨집니다."))){deleteTown(el.dataset.deleteTown);render()}});
   $$("[data-add-place]").forEach(el=>el.addEventListener("click",()=>{
     if(el.closest(".mobile-town-shell")&&currentTownMode()!=="buildings")return;
     const before=new Set(state.world.places.map(place=>place.id));
@@ -4896,7 +4931,7 @@ function notificationTopicsFor(character){
 function buildQuestionNotification(character,at,seed){
   const language=state.uiLanguage||"ko",copy=questionCopy(language),context=notificationContextFor(character,seed),kinds=availableDailyQuestionKinds(character);
   const kind=kinds[seed%kinds.length],base=kind==="gift"?copy.gift(context.target):copy[kind],mode=state.characterNotificationSettings?.voiceMode||"mixed";
-  const body=mode==="character"||(mode==="mixed"&&seed%3===0)?characterQuestionPrompt(character,{kind,target:context.target,language,base}):base;
+  const body=characterQuestionPrompt(character,{kind,target:context.target,language,base});
   const titles={ko:["선택을 물어봤어요","잠깐 상의하고 싶대요","결정을 기다리고 있어요","오늘의 질문이 도착했어요"],en:["A question for you","A quick decision","Waiting for your choice","Today's question"],ja:["選んでほしいことがあります","少し相談したいようです","選択を待っています","今日の質問が届きました"]};
   const title=characterContactTitle(character,titles[language]?.[seed%4]||titles.ko[seed%4],{language});
   return {title:`${character.name} · ${title}`,body,signature:`question:${kind}:${seed%7}:${character.id}`,extra:{mode:"question",characterId:character.id,targetId:kind==="gift"?context.targetId:"",questionKind:kind,scheduledAt:at.toISOString()}};
@@ -4914,7 +4949,7 @@ function buildMomentNotification(character,topic,at,seed){
     tastes:{ko:["오늘 생각난 취향","이게 당기는 날이에요","좋아하는 것 이야기"],en:["Something I like today","I'm craving this today","A favorite thing"],ja:["今日思い出した好み","今日はこれが気になります","好きなものの話"]}
   };
   const titlePool=titles[topic]?.[language]||titles[topic]?.ko||titles.checkins.ko,mode=state.characterNotificationSettings?.voiceMode||"mixed";
-  const neutral=`${action} ${ending}`,body=mode==="concise"?neutral:mode==="character"||seed%3!==0?characterContactSpeech(character,neutral,{language}):neutral;
+  const neutral=mode==="concise"?action:`${action} ${ending}`,body=characterMomentSpeech(character,neutral,{topic,context,language,seed});
   const title=characterContactTitle(character,titlePool[seed%titlePool.length],{language});
   return {title:`${character.name} · ${title}`,body,signature:`${topic}:${seed%phrases.actions.length}:${Math.floor(seed/7)%phrases.endings.length}:${character.id}:${context.targetId}`,extra:{mode:"moment",characterId:character.id,topic,scheduledAt:at.toISOString()}};
 }
@@ -4985,7 +5020,7 @@ function buildCharacterContactSchedule(now=new Date()){
       generated.push({id:820000000+(Number(dayKey.replaceAll("-",""))%100000)*100+slot,title:item.title,body:item.body,summaryText:language==="en"?"Drawer Village":language==="ja"?"ひきだし村":"서랍마을",at,extra:item.extra});newSignatures.push(item.signature);
     }
   }
-  settings.recentSignatures=[...(settings.recentSignatures||[]),...newSignatures].slice(-24);settings.lastScheduledAt=Date.now();
+  settings.recentSignatures=[...(settings.recentSignatures||[]),...newSignatures].slice(-24);settings.lastScheduledAt=Date.now();settings.voiceVersion=CONTACT_VOICE_VERSION;
   return generated;
 }
 let characterNotificationScheduleTimer=0;
@@ -5054,7 +5089,7 @@ let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;
 function scheduleLiveSceneRefresh(){
   clearTimeout(liveSceneRefreshTimer);
-  if(document.visibilityState==="hidden"){liveSceneRefreshTimer=0;return}
+  if(document.visibilityState==="hidden"||!["observe","home"].includes(state.activeTab)){liveSceneRefreshTimer=0;return}
   const now=new Date();
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
   const delay=[...characters.map(character=>nextSceneRefreshDelay(character,now)),10*60*1000].reduce((soonest,value)=>Math.min(soonest,value),10*60*1000);
@@ -5069,10 +5104,10 @@ function scheduleLiveSceneRefresh(){
     scheduleLiveSceneRefresh();
   },Math.max(1000,delay));
 }
-scheduleLiveSceneRefresh();
+setTimeout(scheduleLiveSceneRefresh,0);
 ensureDailyQuestionSchedule();
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
-  if(Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
+  if(state.characterNotificationSettings?.voiceVersion!==CONTACT_VOICE_VERSION||Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
 });
 const restoreForegroundState=()=>{
   scheduleTownLighting(document);
@@ -5126,7 +5161,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260831restore182").catch(error=>{
+import("./auth.js?v=20260831village183").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5141,7 +5176,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260831restore182",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260831village183",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

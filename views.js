@@ -1,14 +1,14 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831restore182";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260831restore182";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831restore182";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831restore182";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260831restore182";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260831restore182";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260831restore182";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831village183";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260831village183";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831village183";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831village183";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260831village183";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260831village183";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260831village183";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831village183";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2910,8 +2910,9 @@ function wardrobe(){
 export function catalogSubgenreOptions(kind,category){
   return kind==="movie"?(VIDEO_GENRES[category]||[]):kind==="perfume"?PERFUME_NOTES:kind==="weapon"?(WEAPON_SUBTYPES[category]||[]):(DETAIL_OPTIONS[kind]||[]);
 }
-export function catalogCardMarkup(kind,item){
+export function catalogCardMarkup(kind,item,{editor=false}={}){
   const label=CATALOG_LABELS[kind]||"항목";
+  if(!editor)return `<button type="button" class="catalog-tile" data-open-catalog="${esc(item.id)}" data-kind="${esc(kind)}" aria-label="${esc(item.name)}"><span class="catalog-tile-art">${item.image?`<img loading="lazy" decoding="async" src="${esc(item.image)}" alt="">`:`<span>${CATALOG_ICONS[kind]||"📦"}</span>`}</span><b>${esc(item.name)}</b></button>`;
   const categories=kind==="movie"?Object.keys(VIDEO_GENRES):(CATALOG_CATEGORIES[kind]||[]);
   const custom=item.category&&!categories.includes(item.category)?[item.category]:[];
   const subgenres=catalogSubgenreOptions(kind,item.category);
@@ -2921,8 +2922,8 @@ export function catalogCardMarkup(kind,item){
 }
 function catalog(){
   const sections=Object.entries(CATALOG_LABELS).map(([kind,label])=>{
-    const cards=(state.catalog?.[kind]||[]).map(item=>catalogCardMarkup(kind,item)).join("")||"<p data-catalog-empty>아직 등록된 항목이 없어요.</p>";
-    return `<section class="catalog-kind catalog-section" data-catalog-section="${kind}"><div class="title"><h2>${label}</h2><button type="button" data-add-catalog="${kind}">+ 추가</button></div><div class="catalog-dex-grid" data-catalog-grid="${kind}">${cards}</div></section>`;
+    const items=state.catalog?.[kind]||[],cards=items.map(item=>catalogCardMarkup(kind,item)).join("");
+    return `<section class="catalog-kind catalog-section" data-catalog-section="${kind}"><div class="title"><h2>${CATALOG_ICONS[kind]||"📦"} ${label}</h2><small>${items.length}</small></div><div class="catalog-icon-grid" data-catalog-grid="${kind}">${cards}<button type="button" class="catalog-tile catalog-add-tile" data-add-catalog="${kind}"><span class="catalog-tile-art">＋</span><b>${t("물품 추가","물품 추가")}</b></button></div></section>`;
   }).join("");
   return `<section class="panel form catalog-shell"><div class="title"><div><h1>세계관 사전</h1><p>아이콘을 누르면 세부 정보와 편집 항목이 열려요.</p></div><button type="button" class="primary" data-catalog-save>사전 저장</button></div>${sections}</section>`;
 }
@@ -3937,7 +3938,7 @@ function townHomeEditor(home,selected){
   const subtype=home.buildingSubtype||"단독주택";
   const residents=state.order.map(id=>state.characters[id]).filter(character=>character&&(character.homeId===home.id||(character.residences||[]).some(residence=>residence.homeId===home.id)));
   const residentLabel=state.uiLanguage==="en"?`${residents.length} members`:state.uiLanguage==="ja"?`${residents.length}人`: `${residents.length}명`;
-  return `<details class="town-home-building ${selected?"mobile-selected":""}" ${selected?"open":""}><summary><b>🏠 ${esc(home.name)}</b></summary><div class="town-building-editor-card"><label class="town-building-name">${t("건물 이름","건물 이름")}<input data-home-name data-home-id="${home.id}" value="${esc(home.name)}"></label><div class="town-building-grid"><label>${t("건물 유형","건물 유형")}<select aria-label="${esc(t("건물 유형","건물 유형"))}"><option selected>${t("집","집")}</option></select></label><label class="town-building-action">${t("구성원","구성원")}<button type="button" data-open-home-residents="${home.id}" title="${esc(residents.map(character=>character.name).join(" · "))}">${residentLabel}</button></label><label>${t("세부 유형","세부 유형")}<select data-home-field="buildingSubtype" data-home-id="${home.id}">${HOME_BUILDING_SUBTYPES.map(value=>`<option ${value===subtype?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label>${t("집 외관 스타일","집 외관 스타일")}<select data-home-field="exteriorStyle" data-home-id="${home.id}">${HOME_EXTERIOR_STYLES.map(value=>`<option ${value===(home.exteriorStyle||"설정하지 않음")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label class="town-building-action">${t("건물 모양","건물 모양")}<button type="button" data-home-building-shape="${home.id}">${home.exteriorImage||home.iconPreset&&home.iconPreset!=="drawer-home"?t("건물 모양 변경","건물 모양 변경"):t("건물 모양 선택","건물 모양 선택")}</button></label><label class="town-building-action">${t("내부 사진","내부 사진")}<span><button type="button" data-home-interior-image="${home.id}">${home.image?t("사진 변경","사진 변경"):t("내부 사진 업로드","내부 사진 업로드")}</button>${home.image?`<button type="button" data-clear-home-bg="${home.id}">${t("지우기","지우기")}</button>`:""}</span></label><label>${t("건물 평판","건물 평판")}<select data-home-field="reputation" data-home-id="${home.id}">${BUILDING_REPUTATION_OPTIONS.map(value=>`<option ${value===(home.reputation||"지정 안 함")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label>${t("건물 분위기","건물 분위기")}<select data-home-field="atmosphere" data-home-id="${home.id}">${BUILDING_ATMOSPHERE_OPTIONS.map(value=>`<option ${value===(home.atmosphere||"지정 안 함")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label class="town-home-beauty">${t("집의 아름다운 정도","집의 아름다운 정도")}<select data-home-field="beautyLevel" data-home-id="${home.id}">${HOME_BEAUTY_LEVELS.map(value=>`<option ${value===(home.beautyLevel||"평범함")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label></div></div></details>`;
+  return `<details class="town-home-building ${selected?"mobile-selected":""}" ${selected?"open":""}><summary><b>🏠 ${esc(home.name)}</b></summary><div class="town-building-editor-card"><label class="town-building-name">${t("건물 이름","건물 이름")}<input data-home-name data-home-id="${home.id}" value="${esc(home.name)}"></label><div class="town-building-grid"><label>${t("건물 유형","건물 유형")}<select aria-label="${esc(t("건물 유형","건물 유형"))}"><option selected>${t("집","집")}</option></select></label><label class="town-building-action">${t("구성원","구성원")}<button type="button" data-open-home-residents="${home.id}" title="${esc(residents.map(character=>character.name).join(" · "))}">${residentLabel}</button></label><label>${t("세부 유형","세부 유형")}<select data-home-field="buildingSubtype" data-home-id="${home.id}">${HOME_BUILDING_SUBTYPES.map(value=>`<option ${value===subtype?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label>${t("집 외관 스타일","집 외관 스타일")}<select data-home-field="exteriorStyle" data-home-id="${home.id}">${HOME_EXTERIOR_STYLES.map(value=>`<option ${value===(home.exteriorStyle||"설정하지 않음")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label class="town-building-action">${t("건물 모양","건물 모양")}<button type="button" data-home-building-shape="${home.id}">${home.exteriorImage||home.iconPreset&&home.iconPreset!=="drawer-home"?t("건물 모양 변경","건물 모양 변경"):t("건물 모양 선택","건물 모양 선택")}</button></label><label class="town-building-action">${t("집 사진","집 사진")}<span><button type="button" data-home-interior-image="${home.id}">${home.image?t("사진 변경","사진 변경"):t("집 사진 등록","집 사진 등록")}</button>${home.image?`<button type="button" data-clear-home-bg="${home.id}">${t("지우기","지우기")}</button>`:""}</span><small>${t("집 일러스트나 가족사진을 넣어 주세요.","집 일러스트나 가족사진을 넣어 주세요.")}</small></label><label>${t("건물 평판","건물 평판")}<select data-home-field="reputation" data-home-id="${home.id}">${BUILDING_REPUTATION_OPTIONS.map(value=>`<option ${value===(home.reputation||"지정 안 함")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label>${t("건물 분위기","건물 분위기")}<select data-home-field="atmosphere" data-home-id="${home.id}">${BUILDING_ATMOSPHERE_OPTIONS.map(value=>`<option ${value===(home.atmosphere||"지정 안 함")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label><label class="town-home-beauty">${t("집의 아름다운 정도","집의 아름다운 정도")}<select data-home-field="beautyLevel" data-home-id="${home.id}">${HOME_BEAUTY_LEVELS.map(value=>`<option ${value===(home.beautyLevel||"평범함")?"selected":""}>${t(value,value)}</option>`).join("")}</select></label></div></div></details>`;
 }
 function townBuildingEntries(){
   const towns=(state.towns||[]).map(town=>town.id===state.activeTownId?state.world:town);
@@ -3955,8 +3956,8 @@ function townBuildingBrowser(character){
 function townBuildingDetailScreen(character,place,home,items,audiences){
   const building=place||home,name=building?.name||t("건물 정보","건물 정보"),exterior=place?buildingExteriorSource(place):homeExteriorSource(home);
   const interior=place?.interiorImage||place?.image||home?.image||"";
-  const editor=place?townPlaceEditor(place,items,audiences,true):home?townHomeEditor(home,true):"";
-  return `<aside class="town-building-screen town-building-detail-screen" aria-label="${esc(name)}"><div class="town-building-detail-head"><button type="button" class="town-building-screen-back" data-building-browser-back aria-label="${esc(t("건물 목록으로 돌아가기","건물 목록으로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><b>${esc(name)}</b></div><div class="town-building-detail-scroll"><section class="town-building-hero">${interior?`<img class="town-building-interior" src="${esc(interior)}" alt="${esc(name)} ${esc(t("내부 사진","내부 사진"))}">`:`<div class="town-building-interior town-building-interior-empty"><span>${esc(place?.emoji||"🏠")}</span><small>${t("내부 사진을 등록해 주세요","내부 사진을 등록해 주세요")}</small></div>`}<img class="town-building-exterior" src="${esc(exterior)}" alt="${esc(name)} ${esc(t("건물 모양","건물 모양"))}"></section><div class="place-editor town-building-detail-form">${editor}</div></div></aside>`;
+  const editor=place?townPlaceEditor(place,items,audiences,true):home?`${townHomeEditor(home,true)}<button type="button" class="danger town-building-delete" data-delete-home="${esc(home.id)}">${t("이 건물 삭제","이 건물 삭제")}</button>`:"";
+  return `<aside class="town-building-screen town-building-detail-screen" aria-label="${esc(name)}"><div class="town-building-detail-head"><button type="button" class="town-building-screen-back" data-building-browser-back aria-label="${esc(t("건물 목록으로 돌아가기","건물 목록으로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><b>${esc(name)}</b></div><div class="town-building-detail-scroll"><section class="town-building-hero">${interior?`<img class="town-building-interior" src="${esc(interior)}" alt="${esc(name)} ${esc(t(home?"집 사진":"내부 사진",home?"집 사진":"내부 사진"))}">`:`<div class="town-building-interior town-building-interior-empty"><span>${esc(place?.emoji||"🏠")}</span><small>${t(home?"집 일러스트나 가족사진을 넣어 주세요.":"내부 사진을 등록해 주세요",home?"집 일러스트나 가족사진을 넣어 주세요.":"내부 사진을 등록해 주세요")}</small></div>`}<img class="town-building-exterior" src="${esc(exterior)}" alt="${esc(name)} ${esc(t("건물 모양","건물 모양"))}"></section><div class="place-editor town-building-detail-form">${editor}</div></div></aside>`;
 }
 const TOWN_DECORATION_CHOICES=[
   ["bench","🪑","벤치","휴식"],["lamp","💡","가로등","조명"],["fountain","⛲","분수","조형물"],["tree","🌳","나무","자연"],
@@ -3969,6 +3970,14 @@ function townPlacementToolbar(){
   if(!item||!valid)return "";
   return `<nav class="town-placement-toolbar" aria-label="${esc(t("배치 조절","배치 조절"))}"><b>${esc(item.name||"선택 항목")}</b><div><button type="button" data-town-placement-command="undo">↶<small>${t("실행 취소","실행 취소")}</small></button><button type="button" data-town-placement-command="redo">↷<small>${t("다시 실행","다시 실행")}</small></button><button type="button" data-town-placement-command="smaller">−<small>${t("작게","작게")}</small></button><button type="button" data-town-placement-command="larger">＋<small>${t("크게","크게")}</small></button><button type="button" data-town-placement-command="flip">↔<small>${t("좌우반전","좌우반전")}</small></button><button type="button" data-town-placement-command="back">↓<small>${t("뒤로","뒤로")}</small></button><button type="button" data-town-placement-command="front">↑<small>${t("앞으로","앞으로")}</small></button><button type="button" data-town-placement-command="delete" class="danger">${t("삭제","삭제")}</button><button type="button" data-town-placement-command="done" class="primary">${t("완료","완료")}</button></div></nav>`;
 }
+Object.assign(I18N.en,{"열람할 마을":"Village to view","현재 마을 삭제":"Delete this village","물품 추가":"Add item","마을 삭제 시 주민과 집은 남은 마을로 옮겨져요. 마지막 마을은 삭제할 수 없어요.":"Residents and homes move to a remaining village. The last village cannot be deleted."});
+Object.assign(I18N.ja,{"열람할 마을":"閲覧する村","현재 마을 삭제":"この村を削除","물품 추가":"品物を追加","마을 삭제 시 주민과 집은 남은 마을로 옮겨져요. 마지막 마을은 삭제할 수 없어요.":"住民と家は残った村へ移ります。最後の村は削除できません。"});
+Object.assign(UI_TEXT.en,{"과묵한 직설체":"Terse and direct","냉정한 격식체":"Cool and formal","이 마을의 건물과 배치를 삭제할까요? 주민과 집은 남은 마을로 옮겨집니다.":"Delete this village's buildings and layout? Residents and homes will move to a remaining village.","세계관 사전":"World dictionary","아이콘을 누르면 세부 정보와 편집 항목이 열려요.":"Tap an icon to view or edit an item."});
+Object.assign(UI_TEXT.ja,{"과묵한 직설체":"寡黙で率直","냉정한 격식체":"冷静で格式的","이 마을의 건물과 배치를 삭제할까요? 주민과 집은 남은 마을로 옮겨집니다.":"この村の建物と配置を削除しますか？住民と家は残った村へ移ります。","세계관 사전":"世界観辞典","아이콘을 누르면 세부 정보와 편집 항목이 열려요.":"アイコンを押すと詳細の閲覧・編集ができます。"});
+Object.assign(I18N.en,{"집 사진":"Home picture","집 사진 등록":"Add a home picture","집 일러스트나 가족사진을 넣어 주세요.":"Add an illustration of the home or a family picture."});
+Object.assign(I18N.ja,{"집 사진":"家の写真","집 사진 등록":"家の写真を登録","집 일러스트나 가족사진을 넣어 주세요.":"家のイラストや家族写真を入れてください。"});
+Object.assign(UI_TEXT.en,{"가격":"Price","가공식품":"Processed foods","과일":"Fruit","곡물":"Grains","구두":"Dress shoes","기술":"Skills","기타 식재료":"Other ingredients"});
+Object.assign(UI_TEXT.ja,{"가격":"価格","가공식품":"加工食品","과일":"果物","곡물":"穀物","구두":"革靴","기술":"技術","기타 식재료":"その他の食材"});
 function townInformationScreen(character){
   const optionList=(values,current)=>values.map(value=>`<option value="${esc(value)}" ${value===current?"selected":""}>${t(value,value)}</option>`).join("");
   const selectField=(label,dataName,values,current)=>`<label><b>${t(label,label)}</b><select ${dataName}>${optionList(values,current)}</select></label>`;
@@ -3979,6 +3988,7 @@ function townInformationScreen(character){
     <div class="town-information-content">
       <section class="town-information-hero"><img src="${esc(state.world.bg)}" alt="${esc(t("숲과 연못 마을","숲과 연못 마을"))}"></section>
       <div class="town-information-form">
+        <label><b>${t("열람할 마을","열람할 마을")}</b><select data-town-browse>${state.towns.map(town=>`<option value="${esc(town.id)}" ${town.id===state.activeTownId?"selected":""}>${esc(town.name)}</option>`).join("")}</select></label>
         <label class="town-information-name"><b>${t("마을 이름","마을 이름")}</b><input data-world-name maxlength="40" value="${esc(state.world.name)}"></label>
         <div class="town-information-grid">
           ${selectField("마을 유형","data-world-town-type",TOWN_TYPES,state.world.townType||TOWN_TYPES[0])}
@@ -3994,6 +4004,8 @@ function townInformationScreen(character){
         <p class="town-climate-dlc-note"><b>🔒 ${t("기후","기후")}</b><span>${t("기후 설정과 기후별 생활 로그는 기후 확장 DLC에서 제공할 예정이에요.","기후 설정과 기후별 생활 로그는 기후 확장 DLC에서 제공할 예정이에요.")}</span></p>
         <label class="town-information-description"><b>${t("마을 소개","마을 소개")}</b><textarea data-world-description rows="4" maxlength="600" placeholder="${esc(t("이 마을의 분위기와 특징을 적어 주세요.","이 마을의 분위기와 특징을 적어 주세요."))}">${esc(state.world.description||"")}</textarea></label>
         <button type="button" class="town-information-save" data-town-save>${t("저장","저장")}</button>
+        <button type="button" class="danger" data-delete-town="${esc(state.activeTownId)}" ${state.towns.length<=1?"disabled":""}>${t("현재 마을 삭제","현재 마을 삭제")}</button>
+        <small>${t("마을 삭제 시 주민과 집은 남은 마을로 옮겨져요. 마지막 마을은 삭제할 수 없어요.","마을 삭제 시 주민과 집은 남은 마을로 옮겨져요. 마지막 마을은 삭제할 수 없어요.")}</small>
       </div>
     </div>
   </aside>`;

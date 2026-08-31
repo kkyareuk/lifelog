@@ -52,6 +52,8 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   next.deletedRelationshipIds=union(device.deletedRelationshipIds,cloud.deletedRelationshipIds);
   next.deletedRelationshipKeys=union(device.deletedRelationshipKeys,cloud.deletedRelationshipKeys);
   next.deletedHomeIds=union(device.deletedHomeIds,cloud.deletedHomeIds);
+  next.deletedTownIds=union(device.deletedTownIds,cloud.deletedTownIds);
+  next.deletedPlaceIds=union(device.deletedPlaceIds,cloud.deletedPlaceIds);
   next.deletedRoutineIds=union(device.deletedRoutineIds,cloud.deletedRoutineIds);
   next.deletedMonthlyRoutineIds=union(device.deletedMonthlyRoutineIds,cloud.deletedMonthlyRoutineIds);
   const deletedCharacters=new Set(next.deletedCharacterIds),deletedHomes=new Set(next.deletedHomeIds);
@@ -87,9 +89,23 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
     memberIds:union(group.memberIds,[]).filter(id=>next.characters[id])
   }));
 
-  next.towns=mergedListById(preferred.towns,fallback.towns);
-  const preferredPlaces=preferred.world?.places||[],fallbackPlaces=fallback.world?.places||[];
-  next.world={...clone(fallback.world),...clone(preferred.world),places:mergedListById(preferredPlaces,fallbackPlaces)};
+  const deletedTowns=new Set(next.deletedTownIds),deletedPlaces=new Set(next.deletedPlaceIds);
+  const townsFor=value=>{
+    const towns=Array.isArray(value.towns)&&value.towns.length?clone(value.towns):value.world?[{...clone(value.world),id:value.activeTownId||"initial-town"}]:[];
+    return towns.map((town,index)=>{
+      const id=String(town.id||`legacy-town-${index}`);
+      return id===value.activeTownId&&value.world?{...town,...clone(value.world),id}:{...town,id};
+    });
+  };
+  next.towns=mergedListById(townsFor(preferred),townsFor(fallback)).filter(town=>!deletedTowns.has(town.id)).map(town=>({...town,places:(town.places||[]).filter(place=>!deletedPlaces.has(String(place.id)))}));
+  // Never merge buildings from two different selected villages into one world.
+  next.activeTownId=next.towns.some(town=>town.id===device.activeTownId)?device.activeTownId:next.towns.some(town=>town.id===preferred.activeTownId)?preferred.activeTownId:next.towns[0]?.id||null;
+  next.world=clone(next.towns.find(town=>town.id===next.activeTownId)||{});
+  Object.values(next.characters).forEach(character=>{
+    if(deletedTowns.has(character.townId))character.townId=next.activeTownId;
+    if(deletedPlaces.has(character.workplaceId))character.workplaceId="";
+  });
+  Object.values(next.homes).forEach(home=>{if(deletedTowns.has(home.townId))home.townId=next.activeTownId});
   next.interactions=mergedInteractions(preferred.interactions,fallback.interactions).filter(item=>
     (!item.actorId||next.characters[item.actorId])&&(!item.characterId||next.characters[item.characterId])&&(!item.targetId||next.characters[item.targetId])
   ).slice(-300);

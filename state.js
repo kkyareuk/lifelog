@@ -1,12 +1,12 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831restore182";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831restore182";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260831restore182";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831restore182";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831restore182";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831restore182";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831restore182";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831restore182";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831village183";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831village183";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831village183";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260831village183";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831village183";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831village183";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831village183";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831village183";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831village183";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -361,7 +361,8 @@ function normalizeHomes(x){
     // true 값도 복원 시 false로 고정해 구버전 설정이 다시 살아나지 않게 한다.
     updateNotices:false,
     recentSignatures:Array.isArray(notificationSource.recentSignatures)?notificationSource.recentSignatures.map(String).slice(-24):[],
-    lastScheduledAt:Number(notificationSource.lastScheduledAt)||0
+    lastScheduledAt:Number(notificationSource.lastScheduledAt)||0,
+    voiceVersion:Number(notificationSource.voiceVersion)||0
   };
   if(x.characterNotificationSettings.endHour<=x.characterNotificationSettings.startHour)x.characterNotificationSettings.endHour=Math.min(21,x.characterNotificationSettings.startHour+4);
   if(!x.characterNotificationSettings.contentKinds.length)x.characterNotificationSettings.contentKinds=["questions","checkins","comfort","lifeLogs"];
@@ -526,7 +527,17 @@ function normalizeHomes(x){
   x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
   x.world.decorations=Array.isArray(x.world.decorations)?x.world.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[];
   x.towns=Array.isArray(x.towns)?x.towns.filter(t=>t&&typeof t==="object"&&!Array.isArray(t)):[];
-  if(!x.towns.length)x.towns=[{id:uid(),...clone(x.world)}];
+  x.deletedTownIds=[...new Set((x.deletedTownIds||[]).map(String))];
+  x.deletedPlaceIds=[...new Set((x.deletedPlaceIds||[]).map(String))];
+  x.towns=x.towns.filter((town,index,list)=>!x.deletedTownIds.includes(String(town.id))&&(!town.id||list.findIndex(other=>other.id===town.id)===index));
+  // Legacy world-only saves must acquire the same identity on each device.
+  // A new random ID on each load made one initial village look like many.
+  if(!x.towns.length){
+    let initialId=x.activeTownId&&!x.deletedTownIds.includes(x.activeTownId)?x.activeTownId:"initial-town";
+    for(let suffix=1;x.deletedTownIds.includes(initialId);suffix++)initialId=`initial-town-${suffix}`;
+    x.towns=[{...clone(x.world),id:initialId}];
+  }
+  x.towns.forEach((town,index)=>{town.id=String(town.id||`legacy-town-${index}`);town.places=(town.places||[]).filter(place=>!x.deletedPlaceIds.includes(String(place?.id)))});
   x.towns=x.towns.map(t=>({id:String(t.id||uid()),name:String(t.name||"이름 없는 마을"),...normalizeTownProfile(t),photo:"",density:String(t.density||"여유로움"),urbanization:String(t.urbanization||"소도시"),size:String(t.size||"보통 마을"),description:String(t.description||"").slice(0,600),era:t.era==="medieval"?"medieval":"modern",places:Array.isArray(t.places)?t.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):[],decorations:Array.isArray(t.decorations)?t.decorations.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)):[]}));
   x.towns.forEach(t=>t.places.forEach(p=>{
     p.id=String(p.id||uid());p.name=String(p.name||"이름 없는 건물");p.type=String(p.type||"기타");
@@ -854,7 +865,7 @@ function load(){
       return candidates[0];
     }
   }
-  return primary||fresh();
+  return primary||normalizeHomes(fresh());
 }
 
 export let state=load();
@@ -1393,12 +1404,15 @@ export function reorderPlace(placeId,direction){
   return true;
 }
 export function deletePlace(placeId){
+  if(!state.world.places.some(place=>place.id===placeId))return false;
+  state.deletedPlaceIds=[...new Set([...(state.deletedPlaceIds||[]),placeId])];
   state.world.places=state.world.places.filter(place=>place.id!==placeId);
   Object.values(state.characters).forEach(character=>{
     if(character.workplaceId===placeId)character.workplaceId="";
   });
   touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));
   save(true);
+  return true;
 }
 export function addFurniturePlacement(homeId,roomKey,item){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return "";
@@ -1771,7 +1785,7 @@ export function setWorldBackground(value){
 function syncTown(){
   if(!state.activeTownId)return;
   const index=state.towns.findIndex(t=>t.id===state.activeTownId);
-  if(index>=0)state.towns[index]={id:state.activeTownId,...clone(state.world)};
+  if(index>=0)state.towns[index]={...clone(state.world),id:state.activeTownId};
 }
 export function addTown(limit=2){
   if(state.towns.length>=limit)return null;
@@ -1794,12 +1808,19 @@ export function switchTown(id,{activeId}={}){
   return {id,activeId:state.activeId,hasCharacters:Boolean(localCharacter)};
 }
 export function deleteTown(id){
-  if(state.towns.length<=1)return;
+  if(state.towns.length<=1||!state.towns.some(town=>town.id===id))return false;
+  syncTown();
+  state.deletedTownIds=[...new Set([...(state.deletedTownIds||[]),id])];
+  const removedPlaces=state.towns.find(town=>town.id===id)?.places||[];
+  state.deletedPlaceIds=[...new Set([...(state.deletedPlaceIds||[]),...removedPlaces.map(place=>place.id)])];
   state.towns=state.towns.filter(t=>t.id!==id);
   Object.values(state.characters).forEach(c=>{if(c.townId===id)c.townId=state.towns[0].id});
   Object.values(state.homes).forEach(home=>{if(home.townId===id)home.townId=state.towns[0].id});
   if(state.activeTownId===id){state.activeTownId=state.towns[0].id;state.world=clone(state.towns[0])}
+  Object.values(state.characters).forEach(c=>{if(removedPlaces.some(place=>place.id===c.workplaceId))c.workplaceId=""});
+  touchCharacterTimelines(Object.keys(state.characters));
   save(true);
+  return true;
 }
 export function addPlace(){
   const name=prompt("건물 이름","새 건물");if(!name)return;
@@ -1861,7 +1882,7 @@ export function replaceState(next){
 }
 export function resetAll(){
   clearTimeout(timer);timer=undefined;clearDeferredTextSave();pendingNotify=false;
-  state=fresh();
+  state=normalizeHomes(fresh());
   state.gameResetAt=Date.now();
   lastRecoveryBackupAt=0;
   lastRecoveryBackupSerialized="";

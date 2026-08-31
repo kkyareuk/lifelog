@@ -1,0 +1,15 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>183 isolated UI QA</title>
+<link rel="stylesheet" href="font-preferences.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="town-fit.css"><link rel="stylesheet" href="interface-system.css"><link rel="stylesheet" href="home-scene-layout.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="character-book.css"><link rel="stylesheet" href="shop.css">
+<script>
+const memory=new Map();Object.defineProperty(window,'localStorage',{value:{get length(){return memory.size},key:i=>[...memory.keys()][i]??null,getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)}});
+window.DRAWER_VILLAGE_NATIVE=true;
+for(const tab of ['town','observe','settings','catalog','character'])localStorage.setItem('drawer-village-guide-'+tab,'1');
+const worlds=[{id:'first',name:'숲속 마을',places:[{id:'cafe',name:'카페',type:'카페',iconPreset:'cafe',x:35,y:38}]},{id:'second',name:'연못 마을',places:[{id:'hospital',name:'병원',type:'병원',iconPreset:'hospital',x:60,y:45}]}];
+localStorage.setItem('drawer-village-game-v1',JSON.stringify({schema:31,activeTownId:'first',activeTab:'observe',activeId:'qa',characters:{qa:{id:'qa',name:'검수 주민',createdAt:1,townId:'first',homeId:'qa-house'}},order:['qa'],homes:{'qa-house':{id:'qa-house',name:'검수 가족의 집',townId:'first',rooms:{living:{name:'거실',type:'living'}}}},towns:worlds,world:worlds[0]}));
+</script></head><body><div id="app"></div><input id="image-picker" type="file" hidden>
+<script type="module">
+import '../app.js?v=20260831village183';
+import * as game from '../state.js?v=20260831village183';
+for(let i=0;i<15;i++)game.state.catalog.food.push({id:'qa-food-'+i,kind:'food',name:['사과','샌드위치','아이스크림','케이크','국수'][i%5],category:'기타'});
+game.save(true,false);
+</script></body></html>

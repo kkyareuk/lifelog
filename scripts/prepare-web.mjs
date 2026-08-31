@@ -47,6 +47,7 @@ const includedFiles=new Set([
   "room-layout.js",
   "simulation.js",
   "speech-styles.js",
+  "contact-voice.js",
   "state.js",
   "account-storage.js",
   "town-lighting.js",
@@ -105,8 +106,8 @@ for(const file of requiredFiles)await readFile(new URL(file,output));
 const index=await readFile(new URL("index.html",output),"utf8");
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
-if(!index.includes("20260831restore182"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
-if(!app.includes("20260831restore182"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260831-restore-182"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!index.includes("20260831village183"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
+if(!app.includes("20260831village183"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260831-village-183"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log("Cloudflare Pages용 최신 웹 파일을 dist 폴더에 준비했습니다.");

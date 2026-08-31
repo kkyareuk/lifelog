@@ -6,6 +6,8 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "격식 있는 존댓말 · 하십시오체",
   "극존칭",
   "무뚝뚝한 단답",
+  "과묵한 직설체",
+  "냉정한 격식체",
   "기계적인 말투",
   "사무적인 말투 · 직장 메일체",
   "판교어 · 스타트업 업무체",
@@ -52,6 +54,8 @@ function questionSubject(kind,target,language){
 
 export function characterQuestionPrompt(character,{kind="everyday",target="",language="ko",base=""}={}){
   const style=effectiveSpeechStyle(character),subject=questionSubject(kind,target,language);
+  if(style==="과묵한 직설체")return language==="en"?`${subject}. Choose what works. No need to dress it up.`:language==="ja"?`${subject}か。役に立つほうを選べ。飾った言葉はいらない。`:`${subject} 말인가. 필요한 쪽을 골라. 돌려 말할 것 없어.`;
+  if(style==="냉정한 격식체")return language==="en"?`Regarding ${subject}, which option serves the purpose? I would like a clear reason.`:language==="ja"?`${subject}について、目的に合うのはどちらですか。理由も明確にしてください。`:`${subject}에 관해 묻겠습니다. 목적에 맞는 쪽은 무엇입니까? 이유도 명확히 해 주십시오.`;
   if(language==="en"){
     const lines={
       "무뚝뚝한 단답":`${subject}. Pick one.`,"기계적인 말투":`INPUT REQUIRED: select ${subject}.`,"사무적인 말투 · 직장 메일체":`Please reply with your preferred option regarding ${subject}.`,"판교어 · 스타트업 업무체":`Could we align on the action item for ${subject}?`,"소심하고 머뭇거리는 말투":`Um… if it's okay, could you choose ${subject}?`,"열정적인 말투":`Let's make ${subject} amazing! What should we pick?`,"중2병 말투":`The seal is weakening. Choose the destiny of ${subject}.`,"하드보일드 누아르체":`${subject}. In this town, a choice always leaves a mark.`,"마왕의 말투":`Mortal, choose the fate of ${subject}.`,"군주의 말투":`Declare your decision regarding ${subject}.`,"신탁을 내리는 신의 말투":`Choose, and the path of ${subject} shall be revealed.`,"옛날 번역기체":`It is necessary that you select the action of ${subject}.`,"귀엽고 애교 있는 말투":`Can you pick ${subject} for me, pretty please?`
@@ -103,6 +107,7 @@ export function characterQuestionPrompt(character,{kind="everyday",target="",lan
 // 생활로그 알림은 관찰 기록이므로 호출부에서 이 변환을 사용하지 않는다.
 function koreanCasual(value){
   return value
+    .replace(/저는/g,"나는").replace(/제가/g,"내가").replace(/제 /g,"내 ").replace(/당신/g,"너")
     .replace(/하실래요\?/g,"할래?").replace(/해 줄래요\?/g,"해 줄래?").replace(/해 주세요/g,"해 줘")
     .replace(/괜찮아요/g,"괜찮아").replace(/돼요/g,"돼").replace(/있어요/g,"있어").replace(/없어요/g,"없어")
     .replace(/이에요/g,"이야").replace(/예요/g,"야").replace(/했어요/g,"했어").replace(/해요/g,"해")
@@ -111,6 +116,8 @@ function koreanCasual(value){
 
 function koreanPlain(value){
   return value
+    .replace(/줄게요/g,"주겠다").replace(/을게요/g,"겠다").replace(/볼래요\?/g,"보겠느냐?")
+    .replace(/싶어요/g,"싶다").replace(/먹었어요/g,"먹었다").replace(/생겼어요/g,"생겼다").replace(/들었어요/g,"들었다").replace(/지나왔어요/g,"지나왔다")
     .replace(/당신/g,"그대").replace(/해 주세요/g,"해 달라").replace(/쉬어요/g,"쉰다")
     .replace(/지 않아도 돼요/g,"지 않아도 된다").replace(/수 있어요/g,"수 있다").replace(/고 있어요/g,"고 있다")
     .replace(/중이에요/g,"중이다").replace(/괜찮아요/g,"괜찮다").replace(/편안해요/g,"편안하다").replace(/분명해요/g,"분명하다")
@@ -121,6 +128,9 @@ function koreanPlain(value){
 
 function koreanFormal(value){
   return value
+    .replace(/줄게요/g,"드리겠습니다").replace(/을게요/g,"겠습니다").replace(/볼래요\?/g,"보시겠습니까?")
+    .replace(/싶어요/g,"싶습니다").replace(/먹었어요/g,"먹었습니다").replace(/생겼어요/g,"생겼습니다").replace(/들었어요/g,"들었습니다").replace(/지나왔어요/g,"지나왔습니다")
+    .replace(/쉬어요/g,"쉬십시오").replace(/골라요/g,"고르십시오").replace(/좋아요/g,"좋습니다").replace(/가까워요/g,"가깝습니까")
     .replace(/해 주세요/g,"해 주십시오").replace(/괜찮아요/g,"괜찮습니다").replace(/돼요/g,"됩니다")
     .replace(/있어요/g,"있습니다").replace(/없어요/g,"없습니다").replace(/이에요/g,"입니다").replace(/예요/g,"입니다")
     .replace(/했어요/g,"했습니다").replace(/해요/g,"합니다").replace(/나요\?/g,"습니까?").replace(/까요\?/g,"겠습니까?");
@@ -147,6 +157,8 @@ const CONTACT_TITLES={
 export function characterContactTitle(character,base,{language="ko"}={}){
   const text=String(base||"").trim(),style=effectiveSpeechStyle(character),localized=CONTACT_TITLES[language]||CONTACT_TITLES.ko;
   if(!text)return text;
+  if(style==="과묵한 직설체")return language==="en"?"A word.":language==="ja"?"話がある。":"할 말이 있다.";
+  if(style==="냉정한 격식체")return language==="en"?"A matter to clarify":language==="ja"?"確認したいことがあります":"확인할 사항이 있습니다";
   if(style==="반말"&&language==="ko")return koreanCasual(text);
   return localized[style]||text;
 }
@@ -154,6 +166,8 @@ export function characterContactTitle(character,base,{language="ko"}={}){
 export function characterContactSpeech(character,base,{language="ko"}={}){
   const text=String(base||"").trim(),style=effectiveSpeechStyle(character);
   if(!text)return text;
+  if(style==="과묵한 직설체")return language==="en"?`Listen. ${text.replace(/Would you like to/g,"Will you").replace(/I would like to/g,"I'll")}`:language==="ja"?`話がある。${text.replace(/大丈夫です/g,"問題ない").replace(/しましょう/g,"しよう").replace(/しています/g,"している").replace(/です/g,"だ")}`:`들어. ${koreanCasual(text)}`;
+  if(style==="냉정한 격식체")return language==="en"?`To be clear: ${text.replace(/I'm/g,"I am").replace(/I'll/g,"I will").replace(/Let's/g,"Let us")}`:language==="ja"?`確認しておきます。${text.replace(/だよ/g,"です").replace(/してね/g,"してください")}`:`명확히 말씀드리겠습니다. ${koreanFormal(text)}`;
   if(language==="en"){
     const wrappers={
       "반말":value=>`Hey—${value}`,"했다체 · 건조한 서술":value=>`A message was sent. ${value}`,"존댓말 · 해요체":value=>value,"격식 있는 존댓말 · 하십시오체":value=>`Please note: ${value}`,"극존칭":value=>`With the utmost respect, please receive these words: ${value}`,"무뚝뚝한 단답":value=>`Briefly: ${value.replace(/\bI am\b/g,"I'm").replace(/\bI have\b/g,"I've")}`,"기계적인 말투":value=>`STATUS MESSAGE: ${value}`,"사무적인 말투 · 직장 메일체":value=>`Quick update: ${value}`,"판교어 · 스타트업 업무체":value=>`A quick check-in—${value}`,"다정하고 부드러운 말투":value=>`I thought of you, so I wanted to say this gently: ${value}`,"상냥하고 배려하는 말투":value=>`There's no need to hurry. ${value}`,"소심하고 머뭇거리는 말투":value=>`Um… sorry to message out of nowhere. ${value}`,"열정적인 말투":value=>`Hey! ${value}`,"능글맞고 여유로운 말투":value=>`No rush, but hear me out. ${value}`,"냉소적인 말투":value=>`The world won't answer for us, so here it is. ${value}`,"걸걸한 아저씨 말투":value=>`Hey, let's talk this through. ${value}`,"거칠고 상스러운 말투 · 순화":value=>`Look, no need to overcomplicate it. ${value}`,"중2병 말투":value=>`A message crossed the sealed boundary: ${value}`,"귀여니체 · 2000년대 인터넷소설체":value=>`hey… i suddenly thought of u T_T ${value}`,"하드보일드 누아르체":value=>`${value} That's how the day goes in this town.`,"고풍스러운 말투":value=>`My thoughts turned to thee. ${value}`,"사극 선비 말투":value=>`May I ask for thy counsel? ${value}`,"군인식 말투":value=>`Contact report. ${value}`,"마왕의 말투":value=>`Mortal, heed my decree. ${value}`,"군주의 말투":value=>`Hear the words of your sovereign. ${value}`,"신탁을 내리는 신의 말투":value=>`Receive this oracle. ${value}`,"옛날 번역기체":value=>`It is informed to you that ${value.charAt(0).toLowerCase()}${value.slice(1)}`,"귀엽고 애교 있는 말투":value=>`${value} Tell me, pleeease?`,"수다스럽고 말이 많은 말투":value=>`It's nothing urgent, and I was just thinking of you, but ${value}`
@@ -202,6 +216,8 @@ export function characterContactSpeech(character,base,{language="ko"}={}){
 
 export function characterPlanSpeech(character,language="ko"){
   const style=effectiveSpeechStyle(character);
+  if(style==="과묵한 직설체")return language==="en"?"The order is set. I'll get it done.":language==="ja"?"順番は決まった。片づける。":"순서는 정했다. 하나씩 끝낸다.";
+  if(style==="냉정한 격식체")return language==="en"?"I will proceed in this order. There is a reason for each step.":language==="ja"?"この順番で進めます。それぞれに理由があります。":"이 순서로 진행하겠습니다. 각 단계에는 이유가 있습니다.";
   if(language==="en")return characterQuestionPrompt(character,{kind:"everyday",language,base:"I'll do things in this order today."}).replace(/\?$/,".");
   if(language==="ja")return characterQuestionPrompt(character,{kind:"everyday",language,base:"今日はこの順番でやってみます。"}).replace(/？$/,"。");
   const lines={

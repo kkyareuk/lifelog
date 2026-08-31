@@ -38,7 +38,7 @@ const checks=[
   [views.includes("❓ 질문과 실제 선택")&&views.includes("🤔 캐릭터의 고민")&&views.includes("📖 구체적인 생활로그"),"구체적인 알림 종류 안내"],
   [app.includes("confirmCharacterNotificationConsent")&&app.indexOf("confirmCharacterNotificationConsent")<app.indexOf("requestCharacterNotificationPermission()"),"앱 설명 후 Android 권한 요청"],
   [app.includes("recentSignatures")&&app.includes("daySerial+slot")&&app.includes('voiceMode||"mixed"'),"최근 문구·날짜별 캐릭터 순환·말투 반복 방지"],
-  [app.includes("buildLifeLogNotification")&&app.includes("characterContactSpeech(character,neutral"),"생활로그와 말투 적용 연락 분리"],
+  [app.includes("buildLifeLogNotification")&&app.includes("characterMomentSpeech(character,neutral"),"생활로그와 말투 적용 연락 분리"],
   [app.includes("dayOffset<15")&&app.includes("replaceCharacterNotifications(items)"),"2주 단위 기기 예약 갱신"],
   [notifications.includes('CHANNEL_ID="character-contact-v2"')&&notifications.includes("checkPermissions()")&&notifications.includes("requestPermissions()"),"Android 알림 채널과 런타임 권한"],
   [notifications.includes("localNotificationActionPerformed")&&app.includes("drawer-village-character-notification-open"),"알림 터치 후 캐릭터 화면 연결"],
@@ -48,7 +48,7 @@ const checks=[
   [demonSample==="필멸자여, 짐의 말을 들으라. 마음이 복잡하면 답을 바로 정하지 않아도 된다. 먼저 숨을 천천히 고르라. 오늘의 그대 편은 여기에도 있다.","마왕 말투에서 해요체가 섞이지 않는 완성 문장"],
   [nativeApp.includes("normalizeNativeViewport")&&nativeApp.includes('appStateChange')&&views.includes('aria-pressed="${selected}"')&&css.includes('.notification-kind-grid button{')&&!views.includes('type="checkbox" data-character-notification-kind'),"권한 복귀 레이아웃과 연락 종류 버튼 포커스 안정화"],
   [activity.includes("WindowInsetsCompat.Type.statusBars()")&&activity.includes("BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE"),"상단 상태바 숨김과 스와이프 임시 표시"],
-  [gradle.includes("versionCode 182")&&gradle.includes('versionName "1.0.169"'),"관계·마을 화면 개선 개발 빌드 번호"],
+  [gradle.includes("versionCode 183")&&gradle.includes('versionName "1.0.170"'),"관계·마을 화면 개선 개발 빌드 번호"],
   [views.includes("Character contact notifications")&&views.includes("キャラクターからの連絡通知"),"영어·일본어 설정 번역"],
   [app.includes("How was your day?")&&app.includes("今日はどうでしたか？"),"영어·일본어 알림 본문 번역"]
 ];

@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831restore182";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831village183";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260831restore182";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260831village183";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -60,6 +60,12 @@ const relationshipIdentity=relation=>{
 };
 const applyLocalTombstones=(remote,local)=>{
   const next=clone(remote||{});
+  // Automatic restore (same character IDs) bypasses the full merge. Carry the
+  // village/building deletion records through this path as well.
+  next.deletedTownIds=[...new Set([...(local?.deletedTownIds||[]),...(next.deletedTownIds||[])].map(String))];
+  next.deletedPlaceIds=[...new Set([...(local?.deletedPlaceIds||[]),...(next.deletedPlaceIds||[])].map(String))];
+  const mergedTowns=mergeDeviceAndCloudState(local,next);
+  next.towns=mergedTowns.towns;next.activeTownId=mergedTowns.activeTownId;next.world=mergedTowns.world;
   const deletedCharacters=new Set([...(local?.deletedCharacterIds||[]),...(next.deletedCharacterIds||[])].map(String));
   const deletedRelationships=new Set([...(local?.deletedRelationshipIds||[]),...(next.deletedRelationshipIds||[])].map(String));
   const deletedRelationshipKeys=new Set([...(local?.deletedRelationshipKeys||[]),...(next.deletedRelationshipKeys||[])].map(normalizeRelationshipTombstoneKey).filter(Boolean));
