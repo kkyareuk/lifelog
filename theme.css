@@ -219,7 +219,7 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
   color:var(--ink)!important;
 }
 
-html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.character-book-v8 *):not(.town-building-screen *),
+html[data-color-mode][data-visual-theme] :is(input,select,textarea):not(.dictionary-shell *):not(.character-book-v8 *):not(.town-building-screen *),
 html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.shop-store,.relationship-page:not(.relationship-redesign),.editor,.home-page) button:not(.character-book-v8 *):not(.game-hud-button):not(.game-hud-profile-toggle):not(.primary):not(.place):not(.person):not(.home-person):not(.room-pet):not(.home-interaction-avatar):not(.character-draft-back):not(.character-draft-action):not(.character-pane-ribbon):not(.character-pane-add):not(.character-wallet-selected):not(.character-registration-photo):not(.character-roster-entry):not(.character-roster-add):not(.character-roster-reorder):not(.character-setting-choice):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-full-tab):not(.character-full-save):not(.home-native-pill):not(.home-native-back):not(.home-native-info-link):not(.home-native-house-name):not(.room-furniture-item){
   border-color:var(--theme-border)!important;
   background:var(--theme-surface)!important;

@@ -43,6 +43,10 @@ export async function initializeCharacterNotifications(){
     if(extra.kind!==NOTIFICATION_KIND)return;
     window.dispatchEvent(new CustomEvent("drawer-village-character-notification-open",{detail:extra}));
   });
+  await notifications.addListener("localNotificationReceived",notification=>{
+    const extra=notification?.extra||{};
+    if(extra.kind===NOTIFICATION_KIND)window.dispatchEvent(new CustomEvent("drawer-village-character-notification-received",{detail:extra}));
+  });
   return true;
 }
 

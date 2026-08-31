@@ -7,8 +7,8 @@ window.DRAWER_VILLAGE_NATIVE=true;
 for(const tab of ['town','observe','settings','character'])localStorage.setItem('drawer-village-guide-'+tab,'1');
 </script></head><body><div id="app"></div><input id="image-picker" type="file" hidden>
 <script type="module">
-import '../app.js?v=20260831village183';
-import * as game from '../state.js?v=20260831village183';
+import '../app.js?v=20260831dictionary184';
+import * as game from '../state.js?v=20260831dictionary184';
 const params=new URLSearchParams(location.search);
 if(params.has('gift')){
   const a=game.createCharacter(),b=game.createCharacter();
@@ -26,7 +26,7 @@ if(params.has('gift')){
   controls.querySelector('#qa-receiver').onclick=()=>{game.state.activeId=b;window.ParallelCity.replaceState(game.cloneState())};
 }
 if(params.has('busy')){
-  await import('../auth.js?v=20260831village183');
+  await import('../auth.js?v=20260831dictionary184');
   const auth=window.ParallelCityAuth;let busy=false;
   window.ParallelCityAuth={...auth,getInfo:()=>({...auth.getInfo(),busy})};
   const button=document.createElement('button');button.textContent='검수: 불러오기 대기 전환';button.style='position:fixed;bottom:0;z-index:99999';

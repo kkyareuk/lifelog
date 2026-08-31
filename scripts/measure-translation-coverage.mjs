@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import vm from "node:vm";
+import {dictionaryCopy} from "../dictionary-copy.js";
 
 const source=fs.readFileSync(new URL("../views.js",import.meta.url),"utf8");
 const mapStart=source.indexOf("const UI_TEXT=");
@@ -7,7 +8,7 @@ const dynamicStart=source.indexOf("const UI_DYNAMIC_TEXT=");
 const prelude=source.slice(mapStart,dynamicStart)
   .replace("const UI_TEXT=","UI_TEXT=")
   .replace("const UI_TEXT_MORE=","UI_TEXT_MORE=");
-const context=vm.createContext({UI_TEXT:undefined,UI_TEXT_MORE:undefined,I18N:undefined});
+const context=vm.createContext({UI_TEXT:undefined,UI_TEXT_MORE:undefined,I18N:undefined,dictionaryCopy});
 // The direct t() dictionary and the DOM translation dictionary are both used
 // at runtime. Counting only UI_TEXT falsely reports translated labels missing.
 const directEnd=source.indexOf("const t=");
@@ -18,7 +19,7 @@ for(const match of source.slice(dynamicStart).matchAll(/Object\.assign\(UI_TEXT\
   vm.runInContext(match[0],context);
 }
 
-let runtimeSource=source.slice(dynamicStart);
+let runtimeSource=source.slice(dynamicStart)+"\n"+fs.readFileSync(new URL("../dictionary.js",import.meta.url),"utf8");
 runtimeSource=runtimeSource.replace(/Object\.assign\(UI_TEXT\.(?:en|ja),\{[\s\S]*?\}\);/g,"");
 runtimeSource=runtimeSource.replace(/\/\*[\s\S]*?\*\//g,"").replace(/\/\/.*$/gm,"");
 const candidates=new Set();
@@ -88,6 +89,8 @@ function scanCode(end=""){
   }
 }
 scanCode();
+// Include the independently loaded dictionary module's exact UI labels.
+Object.keys(dictionaryCopy.en).forEach(add);
 const translations={en:{...context.UI_TEXT.en,...context.I18N.en},ja:{...context.UI_TEXT.ja,...context.I18N.ja}};
 for(const language of ["en","ja"]){
   const translated=[...candidates].filter(text=>translations[language][text]);

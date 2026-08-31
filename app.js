@@ -1,21 +1,29 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260831village183";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260831village183";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260831village183";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260831village183";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260831village183";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260831village183";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260831village183";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260831village183";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260831village183";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260831village183";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831village183";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260831village183";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260831village183";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260831village183";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831village183";
-import {switchAccountState} from "./state.js?v=20260831village183";
-import {translateText} from "./views.js?v=20260831village183";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260831village183";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260831dictionary184";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260831dictionary184";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260831dictionary184";
+import {buildingDetailDialogs} from "./views.js?v=20260831dictionary184";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260831dictionary184";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260831dictionary184";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260831dictionary184";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260831dictionary184";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260831dictionary184";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260831dictionary184";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260831dictionary184";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260831dictionary184";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260831dictionary184";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831dictionary184";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260831dictionary184";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260831dictionary184";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260831dictionary184";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831dictionary184";
+const contactMailbox=createContactMailbox(localStorage);
+let mailboxRefreshTimer=0;
+document.addEventListener("contextmenu",event=>{
+  if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
+});
+import {switchAccountState} from "./state.js?v=20260831dictionary184";
+import {translateText} from "./views.js?v=20260831dictionary184";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260831dictionary184";
 
 // IndexedDB 사진 복원은 화면 부팅과 독립적으로 진행한다. 저장소가 느리거나
 // 잠겨 있어도 render()와 버튼 이벤트 연결은 즉시 끝나야 한다.
@@ -612,7 +620,15 @@ function catalogCardElement(kind,item,editor=false){
   template.innerHTML=catalogCardMarkup(kind,item,{editor}).trim();
   return template.content.firstElementChild;
 }
+function getBuildingDetailDialog(key){
+  const existing=document.querySelector(`[data-building-detail-dialog="${CSS.escape(key)}"]`);
+  if(existing)return existing;
+  const template=document.createElement("template");template.innerHTML=buildingDetailDialogs(key);
+  const dialog=template.content.firstElementChild;if(!dialog)return null;
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);translateDynamicInterface(dialog);return dialog;
+}
 function replaceCatalogCard(kind,itemId,{open=true}={}){
+  refreshDictionaryImage(kind,itemId);
   const item=state.catalog?.[kind]?.find(value=>value.id===itemId);
   const tile=document.querySelector(`.catalog-tile[data-kind="${CSS.escape(kind)}"][data-open-catalog="${CSS.escape(itemId)}"]`);
   if(item&&tile)tile.replaceWith(catalogCardElement(kind,item));
@@ -1253,6 +1269,11 @@ function scheduleHomeLifeRefresh(){
   },homeLifeNextDelay(simulation));
 }
 function render({force=false}={}){
+  clearTimeout(mailboxRefreshTimer);
+  if(state.activeTab==="mailbox"&&document.visibilityState!=="hidden"){
+    const due=contactMailbox.nextAt();
+    if(Number.isFinite(due))mailboxRefreshTimer=setTimeout(()=>{if(state.activeTab==="mailbox")render()},Math.max(50,Math.min(2147483647,due-Date.now()+50)));
+  }
   // Samsung 천지인처럼 여러 단계로 한 글자를 조합하는 키보드는 포커스된
   // input 노드가 교체되는 순간 직전 음절을 다시 확정할 수 있다. 사진 복원,
   // 로그인, 시뮬레이션 타이머 등 외부 갱신도 타이핑 중에는 화면을 교체하지
@@ -2595,7 +2616,9 @@ function bind(){
         ?{question:`「${home.name}」を削除しますか？\n\n部屋・画像・ペット・車も削除されます。人物とほかの家への接続は残ります。`,done:"家を削除し、削除記録を保持しました。"}
         :{question:`‘${home.name}’을 삭제할까요?\n\n이 집의 방·사진·반려생물·자동차도 함께 삭제됩니다. 연결된 캐릭터는 삭제되지 않고 다른 집 연결은 유지됩니다.`,done:"집을 삭제하고 삭제 기록을 보관했습니다"};
     if(confirm(copy.question)){
-      deleteHome(home.id);render();showToast(copy.done);
+      deleteHome(home.id);
+      if(el.closest(".town-building-screen")){setMobileTownMode("buildings");setMobileTownPanel("buildings")}
+      render();showToast(copy.done);
     }
   });
   $$("[data-room-name]").forEach(el=>el.oninput=()=>updateRoom(el.dataset.homeId,el.dataset.roomName,{name:el.value.trim()||"방"}));
@@ -3003,6 +3026,7 @@ function bind(){
     }else showToast("상대와 물건을 먼저 골라 주세요");
   });
   const catalogShell=document.querySelector(".catalog-shell");
+  mountDictionary({illustration:openCatalogIllustrationPicker,upload:pickImage,translate:translateDynamicInterface,toast:showToast,home:()=>navigateToTab("observe")});
   if(catalogShell){
     // 취향사전은 카드 단위로만 갱신한다. 선택 하나 때문에 header/main과
     // 도감 전체를 다시 만들지 않으므로 스크롤과 열린 카드가 그대로 남는다.
@@ -3084,7 +3108,11 @@ function bind(){
   });
   $$("[data-delete-place]").forEach(el=>el.onclick=()=>{
     const shell=el.closest(".mobile-town-shell");if(shell&&!el.closest(".town-building-screen")&&shell.dataset.townMode!=="buildings")return;
-    if(confirm("이 건물을 삭제할까요?")){deletePlace(el.dataset.deletePlace);render()}
+    if(confirm("이 건물을 삭제할까요?")){
+      deletePlace(el.dataset.deletePlace);
+      if(el.closest(".town-building-screen")||shell){setMobileTownMode("buildings");setMobileTownPanel("buildings")}
+      render();
+    }
   });
   $$("[data-save]").forEach(button=>button.addEventListener("click",async()=>{
     if(button.dataset.saving==="1")return;
@@ -3126,7 +3154,7 @@ function bind(){
       delete button.dataset.suppressBuildingClick;
       return;
     }
-    const dialog=document.querySelector(`[data-building-detail-dialog="${CSS.escape(button.dataset.buildingDetailOpen)}"]`);
+    const dialog=getBuildingDetailDialog(button.dataset.buildingDetailOpen);
     if(dialog&&!dialog.open)dialog.showModal();
   });
   $$('[data-open-place-editor]').forEach(button=>button.onclick=event=>{
@@ -3271,6 +3299,7 @@ function bind(){
     const question=ensureDailyQuestionSchedule();
     if(question&&!question.answered)requestAnimationFrame(()=>openDailyCharacterQuestion({...question,shown:true}));
   });
+  $$('[data-open-contact-mail]').forEach(button=>button.onclick=()=>openContactMail(button.dataset.openContactMail));
   $$("[data-setting]").forEach(el=>el.onchange=()=>{
     const key=el.dataset.setting;
     state[key]=["homeSdScale","homeLdScale"].includes(key)?Math.max(70,Math.min(150,Number(el.value)||100)):el.value;
@@ -4629,7 +4658,7 @@ function bindPlaceDrag(){
           render();
         }else{
           const detailKey=el.dataset.homeMap?`home:${el.dataset.homeMap}`:el.dataset.place;
-          const dialog=document.querySelector(`[data-building-detail-dialog="${CSS.escape(detailKey)}"]`);
+          const dialog=getBuildingDetailDialog(detailKey);
           if(dialog&&!dialog.open)dialog.showModal();
         }
       }
@@ -4771,13 +4800,16 @@ function openDailyCharacterQuestion(question,now=new Date()){
   if(!options.length)options=everydayOptions(character,now);
   const kind=question.kind==="gift"&&target?"gift":question.kind==="work"?"work":question.kind==="weekend"?"weekend":"everyday";
   const basePrompt=kind==="gift"?copy.gift(target.name):copy[kind];
-  const prompt=characterQuestionPrompt(character,{kind,target:target?.name||"",language,base:basePrompt});
+  const prompt=question.mailBody||characterQuestionPrompt(character,{kind,target:target?.name||"",language,base:basePrompt});
   const dialog=document.createElement("dialog"),image=character.icon||character.photo;
   dialog.className="character-question-dialog";
   dialog.innerHTML=`<form method="dialog"><div class="character-question-speaker">${image?`<img src="${htmlEsc(image)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1))}</span>`}<div><small>${copy.label}</small><b>${htmlEsc(character.name)}</b></div></div><h2>${htmlEsc(prompt)}</h2><p>${copy.saved}</p><div class="character-question-options">${options.map((option,index)=>`<button type="button" data-character-question-option="${index}">${htmlEsc(option.label[language]||option.label.ko)}</button>`).join("")}</div><button value="later" class="character-question-later">${copy.later}</button></form>`;
   dialog.querySelectorAll("[data-character-question-option]").forEach(button=>button.onclick=()=>{
     const option=options[Number(button.dataset.characterQuestionOption)];
-    if(scheduleCharacterChoice(option)){dialog.close("answered");showToast(copy.saved);render()}
+    if(scheduleCharacterChoice(option)){
+      if(question.mailId)contactMailbox.mark(question.mailId,{answered:true,read:true});
+      dialog.close("answered");showToast(copy.saved);render();
+    }
   });
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
@@ -5033,13 +5065,19 @@ async function syncCharacterNotificationSchedule(){
   if(!state.characterNotificationsEnabled||!characterNotificationsAvailable())return false;
   const permission=await characterNotificationPermission();
   if(permission!=="granted"){state.characterNotificationsEnabled=false;state.characterNotificationConsent="denied";save(true);return false}
-  const items=buildCharacterContactSchedule(),icons=new Map();
+  const owner=localStorage.scope;
+  const items=buildCharacterContactSchedule().map(item=>mailEnvelope(item,owner)),icons=new Map();
   await Promise.all(items.map(async item=>{
     const character=state.characters[item.extra?.characterId],source=character?.icon||character?.photo||"";
     if(!icons.has(source))icons.set(source,characterNotificationLargeIcon(source));
     item.largeIcon=await icons.get(source);
   }));
-  await replaceCharacterNotifications(items);save(true);return true;
+  if(owner!==localStorage.scope)return false;
+  await replaceCharacterNotifications(items);
+  if(owner!==localStorage.scope)return false;
+  contactMailbox.record(items,{replaceFuture:true});
+  state.characterNotificationSettings.mailVersion=1;
+  save(true);return true;
 }
 function notificationConsentCopy(){
   const language=state.uiLanguage||"ko";
@@ -5067,23 +5105,44 @@ async function enableCharacterNotificationsWithConsent(source){
   save(true);updateCharacterNotificationControls();return permission==="granted";
 }
 async function sendCharacterNotificationTest(){
+  const owner=localStorage.scope;
   const testCharacters=notificationSelectedCharacters();
   const previousTestId=localStorage.getItem("drawer-village-last-test-notification-character")||"";
   const previousIndex=testCharacters.findIndex(character=>character.id===previousTestId);
   const character=testCharacters.length?testCharacters[(previousIndex+1)%testCharacters.length]:active();if(!character)return showToast("알림을 보낼 캐릭터가 없어요");
   localStorage.setItem("drawer-village-last-test-notification-character",character.id);
   const at=new Date(Date.now()+5000),seed=notificationHash(String(Date.now())),topics=notificationTopicsFor(character),topic=topics[seed%Math.max(1,topics.length)]||"checkins",item=topic==="questions"?buildQuestionNotification(character,at,seed):topic==="lifeLogs"?buildLifeLogNotification(character,at,seed):buildMomentNotification(character,topic,at,seed),largeIcon=await characterNotificationLargeIcon(character.icon||character.photo||"");
-  await scheduleCharacterNotification({id:829999999,title:item.title,body:item.body,largeIcon,at,extra:item.extra});showToast("5초 뒤 시험 알림이 도착해요");
+  if(owner!==localStorage.scope)return;
+  const message=mailEnvelope({id:829999999,title:item.title,body:item.body,largeIcon,at,extra:item.extra},owner);
+  await scheduleCharacterNotification(message);
+  if(owner!==localStorage.scope)return;
+  contactMailbox.record([message]);showToast("5초 뒤 시험 알림이 도착해요");
+}
+function openContactMail(id){
+  const letter=contactMailbox.get(id);if(!letter||!state.characters[letter.extra.characterId])return;
+  contactMailbox.mark(id,{read:true});
+  const e=letter.extra;
+  if(e.mode==="question"&&!letter.answered){
+    if(e.questionKind==="gift"&&!state.characters[e.targetId]){showToast("선물을 받을 캐릭터가 없어 이 질문에 답할 수 없어요.");return}
+    const now=new Date();
+    const question={day:localDateKey(now),minute:now.getHours()*60+now.getMinutes(),characterId:e.characterId,targetId:e.targetId||"",kind:e.questionKind||"everyday",shown:true,answered:false};
+    setDailyQuestion({...question,mailId:id});
+    openDailyCharacterQuestion({...question,mailId:id,mailBody:letter.body});return;
+  }
+  const dialog=document.createElement("dialog");dialog.className="character-question-dialog";
+  dialog.innerHTML=`<form method="dialog"><h2>${htmlEsc(letter.title)}</h2><p>${htmlEsc(letter.body)}</p><button>${translateText("닫기")}</button></form>`;
+  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 window.addEventListener("drawer-village-character-notification-open",event=>{
-  const extra=event.detail||{},character=state.characters[extra.characterId];if(!character)return;
-  setActive(character.id);
-  if(extra.mode==="question"){
-    const now=new Date(extra.scheduledAt||Date.now());
-    setDailyQuestion({day:localDateKey(now),minute:now.getHours()*60+now.getMinutes(),characterId:character.id,targetId:extra.targetId||"",kind:extra.questionKind||"everyday",shown:true,answered:false});
-    navigateToTab("mailbox");return;
-  }
-  navigateToTab("observe");
+  const extra=event.detail||{};
+  if(extra.mailOwner&&extra.mailOwner!==localStorage.scope)return;
+  const character=state.characters[extra.characterId];if(!character)return;
+  const letter=contactMailbox.accept(extra);setActive(character.id);
+  navigateToTab("mailbox");
+  if(letter)requestAnimationFrame(()=>openContactMail(letter.id));
+});
+window.addEventListener("drawer-village-character-notification-received",event=>{
+  if(contactMailbox.accept(event.detail||{})&&state.activeTab==="mailbox")render();
 });
 let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;
@@ -5107,7 +5166,7 @@ function scheduleLiveSceneRefresh(){
 setTimeout(scheduleLiveSceneRefresh,0);
 ensureDailyQuestionSchedule();
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
-  if(state.characterNotificationSettings?.voiceVersion!==CONTACT_VOICE_VERSION||Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
+  if(state.characterNotificationSettings?.mailVersion!==1||state.characterNotificationSettings?.voiceVersion!==CONTACT_VOICE_VERSION||Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
 });
 const restoreForegroundState=()=>{
   scheduleTownLighting(document);
@@ -5161,7 +5220,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260831village183").catch(error=>{
+import("./auth.js?v=20260831dictionary184").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5176,7 +5235,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260831village183",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260831dictionary184",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

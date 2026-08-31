@@ -1,12 +1,12 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260831village183";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831village183";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831village183";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260831village183";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831village183";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831village183";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831village183";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831village183";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831village183";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831dictionary184";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831dictionary184";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831dictionary184";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260831dictionary184";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831dictionary184";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831dictionary184";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831dictionary184";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831dictionary184";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831dictionary184";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -362,7 +362,8 @@ function normalizeHomes(x){
     updateNotices:false,
     recentSignatures:Array.isArray(notificationSource.recentSignatures)?notificationSource.recentSignatures.map(String).slice(-24):[],
     lastScheduledAt:Number(notificationSource.lastScheduledAt)||0,
-    voiceVersion:Number(notificationSource.voiceVersion)||0
+    voiceVersion:Number(notificationSource.voiceVersion)||0,
+    mailVersion:Number(notificationSource.mailVersion)||0
   };
   if(x.characterNotificationSettings.endHour<=x.characterNotificationSettings.startHour)x.characterNotificationSettings.endHour=Math.min(21,x.characterNotificationSettings.startHour+4);
   if(!x.characterNotificationSettings.contentKinds.length)x.characterNotificationSettings.contentKinds=["questions","checkins","comfort","lifeLogs"];
@@ -392,6 +393,7 @@ function normalizeHomes(x){
     characterId:x.characters?.[x.dailyQuestion.characterId]?String(x.dailyQuestion.characterId):"",
     targetId:x.characters?.[x.dailyQuestion.targetId]?String(x.dailyQuestion.targetId):"",
     kind:String(x.dailyQuestion.kind||""),shown:Boolean(x.dailyQuestion.shown),answered:Boolean(x.dailyQuestion.answered)
+    ,mailId:String(x.dailyQuestion.mailId||"")
   }:null;
   x.scheduledChoices=Array.isArray(x.scheduledChoices)?x.scheduledChoices.filter(item=>item&&typeof item==="object"&&!Array.isArray(item)&&x.characters?.[item.characterId]).slice(-120).map(item=>({
     ...item,id:String(item.id||uid()),characterId:String(item.characterId),targetId:x.characters?.[item.targetId]?String(item.targetId):"",
@@ -950,11 +952,12 @@ export function save(immediate=false,notify=true){
     timer=undefined;
     const shouldNotify=pendingNotify;
     pendingNotify=false;
-    writeState(shouldNotify);
+    return writeState(shouldNotify);
   };
   // 큰 캐릭터·사진 상태를 복제하는 작업이므로 타이핑 사이에는 실행하지 않는다.
   // 명시적인 저장과 화면 종료는 여전히 즉시 저장한다.
-  immediate?run():timer=setTimeout(run,1400);
+  if(immediate)return run();
+  timer=setTimeout(run,1400);
 }
 export function flushSave(notify=false){
   if(!timer)return false;
@@ -1191,6 +1194,7 @@ export function setDailyQuestion(question){
     characterId:state.characters[question.characterId]?String(question.characterId):"",
     targetId:state.characters[question.targetId]?String(question.targetId):"",
     kind:String(question.kind||"everyday"),shown:Boolean(question.shown),answered:Boolean(question.answered)
+    ,mailId:String(question.mailId||"")
   }:null;
   save(true,false);
   return state.dailyQuestion;

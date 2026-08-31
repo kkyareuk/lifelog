@@ -1,0 +1,18 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><base href="../"><title>184 isolated dictionary QA</title>
+<link rel="stylesheet" href="font-preferences.css"><link rel="stylesheet" href="app.css"><link rel="stylesheet" href="town-fit.css"><link rel="stylesheet" href="interface-system.css"><link rel="stylesheet" href="home-scene-layout.css"><link rel="stylesheet" href="theme.css"><link rel="stylesheet" href="character-book.css"><link rel="stylesheet" href="shop.css"><link rel="stylesheet" href="dictionary.css">
+<script>
+const memory=new Map();Object.defineProperty(window,'localStorage',{value:{get length(){return memory.size},key:i=>[...memory.keys()][i]??null,getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)}});
+window.DRAWER_VILLAGE_NATIVE=true;
+for(const tab of ['town','observe','settings','catalog','character'])localStorage.setItem('drawer-village-guide-'+tab,'1');
+const worlds=[{id:'first',name:'숲속 마을',places:[{id:'cafe',name:'카페',type:'카페',iconPreset:'cafe',stock:['qa-food'],x:35,y:38}]},{id:'second',name:'연못 마을',places:[{id:'hospital',name:'병원',type:'병원',iconPreset:'hospital',x:60,y:45}]}];
+localStorage.setItem('drawer-village-game-v1',JSON.stringify({schema:31,uiLanguage:new URLSearchParams(location.search).get('lang')||'ko',activeTownId:'first',activeTab:'observe',activeId:'qa',characters:{qa:{id:'qa',name:'검수 주민',createdAt:1,townId:'first',homeId:'qa-house'}},order:['qa'],homes:{'qa-house':{id:'qa-house',name:'검수 가족의 집',townId:'first',rooms:{living:{name:'거실',type:'living'}}}},towns:worlds,world:worlds[0]}));
+</script></head><body><div id="app"></div><input id="image-picker" type="file" hidden>
+<script type="module">
+import '../app.js?v=20260831dictionary184';
+import * as game from '../state.js?v=20260831dictionary184';
+import {mailEnvelope,createContactMailbox} from '../notification-mail.js?v=20260831dictionary184';
+import {accountStorage} from '../account-storage.js?v=20260831dictionary184';
+game.state.catalog.food.unshift({id:'qa-food',kind:'food',name:'토마토 스파게티',category:'이탈리아 음식',image:'assets/home-ui/shop.png',rating:3.5,animation:'glow',tags:['카페','파스타'],memo:'직접 만드는 토마토 파스타'});
+const letter=mailEnvelope({id:12345,title:'검수 주민 · 같은 문장 확인',body:'알림에 보낸 바로 이 문장이 우편에도 그대로 남아요.',at:new Date(Date.now()-1000),extra:{mode:'moment',characterId:'qa'}},accountStorage.scope);
+createContactMailbox(accountStorage).record([letter]);game.save(true,false);
+</script></body></html>

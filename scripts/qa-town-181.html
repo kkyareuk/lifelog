@@ -10,10 +10,10 @@ for(const tab of ['town','observe','settings'])localStorage.setItem('drawer-vill
 </script></head><body><div id="app"></div><aside id="qa"><button data-hour="12">낮 검수</button><button data-hour="18">노을 검수</button><button data-hour="22">밤 검수</button><button id="qa-en">EN</button><button id="qa-ja">JA</button></aside>
 <input id="image-picker" type="file" hidden>
 <script type="module">
-import '../app.js?v=20260831village183';
-import {refreshTownLighting} from '../town-lighting.js?v=20260831village183';
-import {state} from '../state.js?v=20260831village183';
-import {renderApp} from '../views.js?v=20260831village183';
+import '../app.js?v=20260831dictionary184';
+import {refreshTownLighting} from '../town-lighting.js?v=20260831dictionary184';
+import {state} from '../state.js?v=20260831dictionary184';
+import {renderApp} from '../views.js?v=20260831dictionary184';
 document.querySelectorAll('[data-hour]').forEach(button=>button.onclick=()=>refreshTownLighting(document,new Date(2026,7,31,Number(button.dataset.hour),0)));
 document.querySelector('#qa-en').onclick=()=>{state.uiLanguage='en';renderApp(state)};
 document.querySelector('#qa-ja').onclick=()=>{state.uiLanguage='ja';renderApp(state)};

@@ -8,8 +8,8 @@ const worlds=[{id:'first',name:'숲속 마을',places:[{id:'cafe',name:'카페',
 localStorage.setItem('drawer-village-game-v1',JSON.stringify({schema:31,activeTownId:'first',activeTab:'observe',activeId:'qa',characters:{qa:{id:'qa',name:'검수 주민',createdAt:1,townId:'first',homeId:'qa-house'}},order:['qa'],homes:{'qa-house':{id:'qa-house',name:'검수 가족의 집',townId:'first',rooms:{living:{name:'거실',type:'living'}}}},towns:worlds,world:worlds[0]}));
 </script></head><body><div id="app"></div><input id="image-picker" type="file" hidden>
 <script type="module">
-import '../app.js?v=20260831village183';
-import * as game from '../state.js?v=20260831village183';
+import '../app.js?v=20260831dictionary184';
+import * as game from '../state.js?v=20260831dictionary184';
 for(let i=0;i<15;i++)game.state.catalog.food.push({id:'qa-food-'+i,kind:'food',name:['사과','샌드위치','아이스크림','케이크','국수'][i%5],category:'기타'});
 game.save(true,false);
 </script></body></html>
