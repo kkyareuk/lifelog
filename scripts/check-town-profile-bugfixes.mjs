@@ -11,8 +11,8 @@ assert(TOWN_TERRAINS.length>=15,"지형 선택지가 충분하지 않습니다")
 const migrated=normalizeTownProfile({townType:"관광 마을",terrainClimate:"해안·해양성",transportModes:["철도"],bg:"world-assets/downtown-optimized.jpg"});
 assert.equal(migrated.townType,"관광 중심");
 assert.equal(migrated.terrain,"해안");
-assert.equal(migrated.bg,"");
-assert.deepEqual(townIllustrationsFor(migrated),[]);
+assert.equal(migrated.bg,"world-assets/owner-forest-town.webp");
+assert.equal(townIllustrationsFor(migrated).length,1);
 assert.equal(transportBetween({transportModes:["철도"]},{transportModes:["철도"]}),"철도");
 assert.equal(canTravelBetween({id:"a",travelAllowed:false},{id:"b",travelAllowed:true}),false);
 
@@ -28,7 +28,7 @@ assert.match(simulation,/deleted\.has\(key\)\|\|seen\.has\(key\)/);
 assert.match(simulation,/sharedCanonicalTitle:current\.sharedCanonicalTitle/);
 assert.match(simulation,/function townProfileEvent/);
 assert.match(simulation,/transportSceneCopy/);
-assert.match(gradle,/versionCode 180/);
-assert.match(gradle,/versionName "1\.0\.167"/);
+assert.match(gradle,/versionCode 181/);
+assert.match(gradle,/versionName "1\.0\.168"/);
 
 console.log("PASS town profile, illustration, relationship-name, salon, schedule deletion, and shared-log regressions");

@@ -1,10 +1,12 @@
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260828layout180";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260828layout180";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260828layout180";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260828layout180";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260828layout180";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260828layout180";
-import {normalizeTownProfile} from "./town-profile.js?v=20260828layout180";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831town181";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260831town181";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260831town181";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260831town181";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260831town181";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260831town181";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260831town181";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260831town181";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260831town181";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -251,7 +253,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:31,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"",illustrationId:"",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
+const fresh=()=>({schema:31,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -536,6 +538,7 @@ function normalizeHomes(x){
     p.subtype=String(p.subtype||"");p.interiorImage=String(p.interiorImage||"");p.stock=Array.isArray(p.stock)?p.stock.map(String):[];
     p.audiences=Array.isArray(p.audiences)?p.audiences.map(String):[];p.priceRange=String(p.priceRange||"보통");p.servicePrice=String(p.servicePrice||p.priceRange);
     p.reputation=String(p.reputation||"지정 안 함");p.atmosphere=String(p.atmosphere||"지정 안 함");
+    Object.assign(p,normalizeBuildingLighting(p));
     p.imageScale=Number.isFinite(+p.imageScale)?Math.max(.45,Math.min(2,+p.imageScale)):1;
     p.spicy=Number.isFinite(+p.spicy)?Math.max(0,Math.min(5,+p.spicy)):0;p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
     p.x=Number.isFinite(+p.x)?Math.max(0,Math.min(100,+p.x)):50;p.y=Number.isFinite(+p.y)?Math.max(0,Math.min(100,+p.y)):50;
@@ -828,7 +831,7 @@ function load(){
   const parse=raw=>{try{return raw?migrate(JSON.parse(raw)):null}catch{return null}};
   const count=value=>Object.keys(value?.characters||{}).length;
   const primary=parse(localStorage.getItem(KEY));
-  if(count(primary)>0)return primary;
+  if(count(primary)>0||primary?.gameResetAt)return primary;
   // 클라우드의 빈 계정 문서가 기기 데이터를 덮었던 구버전에서 복구한다.
   // 사용자가 실제로 캐릭터를 삭제한 기록이 있으면 오래된 데이터를
   // 임의로 되살리지 않는다.
@@ -1367,12 +1370,13 @@ export function setPlaceInteriorImage(placeId,data){const p=state.world.places.f
 export function updatePlace(placeId,patch,persist=true){
   const p=state.world.places.find(x=>x.id===placeId);if(!p)return;
   Object.assign(p,patch||{});
+  Object.assign(p,normalizeBuildingLighting(p));
   p.imageScale=Math.max(.45,Math.min(2,Number(p.imageScale)||1));
   p.spicy=Math.max(0,Math.min(5,Number(p.spicy)||0));
   p.sweet=Math.max(0,Math.min(5,Number(p.sweet)||0));
   p.stock=Array.isArray(p.stock)?[...p.stock]:[];
   p.audiences=Array.isArray(p.audiences)?[...p.audiences]:[];
-  touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));
+  if(Object.keys(patch||{}).some(key=>!["lightingMode","lightOnTime","lightOffTime","imageScale","flipX","mapZ"].includes(key)))touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));
   if(persist)save(true);
 }
 export function reorderPlace(placeId,direction){
@@ -1758,10 +1762,9 @@ function applyCohabit(r){
   b.townId=state.homes[target].townId||a.townId;
 }
 export function setWorldBackground(value){
-  // No generated or placeholder art can be selected. This entry point stays in
-  // place for future owner-supplied illustration packs.
-  void value;
-  return false;
+  const art=TOWN_ILLUSTRATIONS.find(item=>item.src===value&&item.pack==="base");
+  if(!art)return false;
+  state.world.bg=art.src;state.world.illustrationId=art.id;save(true);return true;
 }
 function syncTown(){
   if(!state.activeTownId)return;
@@ -1863,7 +1866,9 @@ export function replaceState(next){
   return true;
 }
 export function resetAll(){
+  clearTimeout(timer);timer=undefined;clearDeferredTextSave();pendingNotify=false;
   state=fresh();
+  state.gameResetAt=Date.now();
   lastRecoveryBackupAt=0;
   lastRecoveryBackupSerialized="";
   localStorage.removeItem(KEY);
@@ -1871,5 +1876,17 @@ export function resetAll(){
   localStorage.removeItem("parallel-city-game-v3");
   localStorage.removeItem(oldKey);
   localStorage.removeItem(LAST_NONEMPTY_KEY);
+  localStorage.removeItem("drawer-village-recovery-before-cloud");
+  localStorage.setItem(KEY,stringifyLocalMediaState(state));
+}
+export function switchAccountState(uid){
+  if(localStorage.scope===String(uid||"guest"))return false;
+  // Flush only the departing account, then cancel every deferred write.
+  save(true,false);clearTimeout(timer);timer=undefined;
+  clearDeferredTextSave();pendingNotify=false;
+  localStorage.switchScope(uid);
+  lastRecoveryBackupAt=0;lastRecoveryBackupSerialized="";
+  state=migrate(load());
+  return true;
 }
 export const cloneState=()=>({...clone(state),characterSettingsView:"hub"});

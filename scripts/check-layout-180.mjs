@@ -21,10 +21,10 @@ assert.doesNotMatch(views,/bookPageControls\(11/);
 assert.doesNotMatch(views,/bookPageControls\(12/);
 assert.match(bookCss,/Merged character settings page 10/);
 
-assert.deepEqual(TOWN_ILLUSTRATIONS,[]);
-assert.equal(normalizeTownProfile({bg:"world-assets/generated.png"}).bg,"");
+assert.equal(TOWN_ILLUSTRATIONS.length,1);
+assert.equal(normalizeTownProfile({bg:"world-assets/generated.png"}).bg,"world-assets/owner-forest-town.webp");
 assert.doesNotMatch(views,/data-town-illustration-open/);
-assert.match(views,/town-information-hero-empty/);
+assert.match(views,/townBackgroundMarkup/);
 
 assert.doesNotMatch(config,/open_celebration_bundle/);
 assert.doesNotMatch(backend,/open_celebration_bundle/);
@@ -34,6 +34,6 @@ assert.doesNotMatch(shopCss,/:has\(/);
 for(const asset of ["assets/shop/drawer-shop-wood.jpg","assets/shop/drawer-shop-seller.png"]){
   const info=await stat(new URL(`../${asset}`,import.meta.url));assert.ok(info.size>100_000&&info.size<1_000_000);
 }
-assert.match(gradle,/versionCode 180/);
-assert.match(gradle,/versionName "1\.0\.167"/);
+assert.match(gradle,/versionCode 181/);
+assert.match(gradle,/versionName "1\.0\.168"/);
 console.log("PASS layout 180 relationship, shop, town-art removal, and merged character settings checks");

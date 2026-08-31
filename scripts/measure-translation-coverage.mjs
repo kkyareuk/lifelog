@@ -7,7 +7,12 @@ const dynamicStart=source.indexOf("const UI_DYNAMIC_TEXT=");
 const prelude=source.slice(mapStart,dynamicStart)
   .replace("const UI_TEXT=","UI_TEXT=")
   .replace("const UI_TEXT_MORE=","UI_TEXT_MORE=");
-const context=vm.createContext({UI_TEXT:undefined,UI_TEXT_MORE:undefined});
+const context=vm.createContext({UI_TEXT:undefined,UI_TEXT_MORE:undefined,I18N:undefined});
+// The direct t() dictionary and the DOM translation dictionary are both used
+// at runtime. Counting only UI_TEXT falsely reports translated labels missing.
+const directEnd=source.indexOf("const t=");
+vm.runInContext(source.slice(source.indexOf("const I18N="),directEnd).replace("const I18N=","I18N="),context);
+for(const match of source.slice(directEnd).matchAll(/Object\.assign\(I18N\.(?:en|ja),\{[\s\S]*?\}\);/g))vm.runInContext(match[0],context);
 vm.runInContext(`${prelude}\nObject.assign(UI_TEXT.en,UI_TEXT_MORE.en);Object.assign(UI_TEXT.ja,UI_TEXT_MORE.ja);`,context);
 for(const match of source.slice(dynamicStart).matchAll(/Object\.assign\(UI_TEXT\.(?:en|ja),\{[\s\S]*?\}\);/g)){
   vm.runInContext(match[0],context);
@@ -83,7 +88,7 @@ function scanCode(end=""){
   }
 }
 scanCode();
-const translations={en:context.UI_TEXT.en,ja:context.UI_TEXT.ja};
+const translations={en:{...context.UI_TEXT.en,...context.I18N.en},ja:{...context.UI_TEXT.ja,...context.I18N.ja}};
 for(const language of ["en","ja"]){
   const translated=[...candidates].filter(text=>translations[language][text]);
   const missing=[...candidates].filter(text=>!translations[language][text]).sort((a,b)=>a.localeCompare(b,"ko"));

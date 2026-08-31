@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260828-layout-180";
+const CACHE_VERSION="drawer-village-v20260831-town-181";
 const CORE=[
   "./",
   "./index.html",
@@ -12,6 +12,13 @@ const CORE=[
   "./theme.css",
   "./app.js",
   "./state.js",
+  "./account-storage.js",
+  "./town-lighting.js",
+  "./world-assets/owner-forest-town.webp",
+  "./world-assets/building-types/cafe-handdrawn.png",
+  "./world-assets/building-types/cafe-light.png",
+  "./world-assets/building-types/hospital-handdrawn.png",
+  "./world-assets/building-types/hospital-light.png",
   "./town-profile.js",
   "./simulation.js",
   "./views.js",

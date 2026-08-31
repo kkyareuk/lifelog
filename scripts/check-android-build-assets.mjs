@@ -15,6 +15,9 @@ function filesUnder(directory){
 
 const preparedFiles=filesUnder(wwwRoot);
 const required=[
+  "account-storage.js","town-lighting.js","world-assets/owner-forest-town.webp",
+  "world-assets/building-types/cafe-handdrawn.png","world-assets/building-types/cafe-light.png",
+  "world-assets/building-types/hospital-handdrawn.png","world-assets/building-types/hospital-light.png",
   "index.html","app.css","character-book.css","shop.css","app.js","views.js","state.js","simulation.js","auth.js",
   "icons/drawer-village-logo.png","assets/character-ui/paper.webp",
   "assets/character-ui/wallet.png","assets/shop/drawer-shop-wood.jpg","assets/shop/drawer-shop-seller.png","fonts/KCC-Hanbit.ttf"

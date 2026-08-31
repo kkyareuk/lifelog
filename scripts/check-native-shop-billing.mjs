@@ -10,7 +10,7 @@ for(const asset of ["assets/shop/drawer-shop-wood.jpg","assets/shop/drawer-shop-
   const info=await stat(new URL(`../${asset}`,import.meta.url));
   assert.ok(info.size>100_000&&info.size<1_500_000,`${asset}는 고해상도 상점 헤더 에셋 크기를 유지해야 합니다.`);
 }
-assert.match(index,/shop\.css\?v=20260828layout180b/);
+assert.match(index,/shop\.css\?v=20260831town181b/);
 assert.match(prepareApp,/"shop\.css"/);
 assert.match(views,/drawer-shop-wood\.jpg/);
 assert.match(views,/drawer-shop-seller\.png/);
@@ -29,8 +29,8 @@ assert.doesNotMatch(config,/open_celebration_bundle/);
 assert.doesNotMatch(backend,/open_celebration_bundle/);
 assert.match(backend,/PRODUCTS=new Set\(\["character_slots_5"/);
 assert.match(backend,/next\.storage50=true/);
-assert.match(gradle,/versionCode 180/);
-assert.match(gradle,/versionName "1\.0\.167"/);
+assert.match(gradle,/versionCode 181/);
+assert.match(gradle,/versionName "1\.0\.168"/);
 assert.match(gradle,/com\.android\.billingclient:billing:9\.1\.0/);
 assert.match(plugin,/PURCHASE_IN_PROGRESS/);
 assert.match(plugin,/pendingPurchaseCall = call/);

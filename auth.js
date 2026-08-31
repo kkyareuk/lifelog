@@ -1,9 +1,10 @@
+import {accountStorage as localStorage} from "./account-storage.js?v=20260831town181";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260828layout180";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260831town181";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -112,7 +113,13 @@ const accountName=()=>String(
 ).trim().slice(0,20)||"계정";
 let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false,teaSupportMonth:""};
 let guideState={loaded:!ready,seen:[]};
-let autoLoadStarted=false;
+let accountEpoch=0,switchingAccount=false,activeSyncDone=Promise.resolve();
+const captureSession=()=>({uid:user?.uid,epoch:accountEpoch});
+const assertSession=session=>{
+  if(!session?.uid||session.uid!==user?.uid||session.epoch!==accountEpoch||localStorage.scope!==session.uid){
+    throw Object.assign(new Error("account-changed"),{code:"sync/account-changed"});
+  }
+};
 const REFRESH_GUARD_MS=30*60*1000;
 const sessionStamp=key=>Number(localStorage.getItem(key)||0);
 const stampSession=key=>localStorage.setItem(key,String(Date.now()));
@@ -170,15 +177,15 @@ function shortError(error){
   if(code.includes("network"))return "인터넷 연결 확인";
   return code;
 }
-const cloudDoc=()=>doc(db,"users",user.uid);
-const cloudCoreDoc=()=>doc(db,"users",user.uid,"sync","core");
-const cloudCharacters=()=>collection(db,"users",user.uid,"characters");
+const cloudDoc=(uid=user?.uid)=>doc(db,"users",uid);
+const cloudCoreDoc=(uid=user?.uid)=>doc(db,"users",uid,"sync","core");
+const cloudCharacters=(uid=user?.uid)=>collection(db,"users",uid,"characters");
 const safeDocumentId=value=>encodeURIComponent(String(value||"unknown")).replaceAll("/","%2F");
-const cloudCharacterDoc=id=>doc(db,"users",user.uid,"characters",safeDocumentId(id));
-const cloudDays=id=>collection(db,"users",user.uid,"characters",safeDocumentId(id),"days");
-const cloudDayDoc=(id,dateKey)=>doc(db,"users",user.uid,"characters",safeDocumentId(id),"days",safeDocumentId(dateKey));
+const cloudCharacterDoc=(id,uid=user?.uid)=>doc(db,"users",uid,"characters",safeDocumentId(id));
+const cloudDays=(id,uid=user?.uid)=>collection(db,"users",uid,"characters",safeDocumentId(id),"days");
+const cloudDayDoc=(id,dateKey,uid=user?.uid)=>doc(db,"users",uid,"characters",safeDocumentId(id),"days",safeDocumentId(dateKey));
 
-async function readCloudGameState(rootData,{fresh=false}={}){
+async function readCloudGameState(rootData,{fresh=false,uid=user?.uid}={}){
   // 호환 형식으로 저장된 완전한 루트 상태가 있으면, 중간에 끊긴 v2
   // 하위 문서보다 이것을 우선한다.
   if(rootData?.syncFormat===1&&rootData?.gameStateGzip)return decodeCompressedLegacyState(rootData.gameStateGzip);
@@ -186,7 +193,7 @@ async function readCloudGameState(rootData,{fresh=false}={}){
   let coreSnapshot;
   const readDocument=fresh?getDocFromServer:getDoc;
   const readDocuments=fresh?getDocsFromServer:getDocs;
-  try{coreSnapshot=await readDocument(cloudCoreDoc())}
+  try{coreSnapshot=await readDocument(cloudCoreDoc(uid))}
   catch(error){
     // 아직 하위 문서 규칙을 배포하지 않은 기존 Firebase 프로젝트도
     // 루트 문서 백업은 계속 읽고 쓸 수 있어야 한다.
@@ -200,13 +207,13 @@ async function readCloudGameState(rootData,{fresh=false}={}){
     :decodeFirestoreState(rootData?.gameState||null);
   const coreData=decodeFirestoreState(coreSnapshot.data()?.state||{});
   const characters={};
-  const characterSnapshots=await readDocuments(cloudCharacters());
+  const characterSnapshots=await readDocuments(cloudCharacters(uid));
   for(const characterSnapshot of characterSnapshots.docs){
     const documentData=characterSnapshot.data()||{};
     const character=decodeFirestoreState(documentData.character||{});
     const characterId=String(documentData.characterId||character.id||characterSnapshot.id);
     const days={};
-    const daySnapshots=await readDocuments(cloudDays(characterId));
+    const daySnapshots=await readDocuments(cloudDays(characterId,uid));
     daySnapshots.forEach(daySnapshot=>{
       const dayData=daySnapshot.data()||{};
       const dateKey=String(dayData.dateKey||daySnapshot.id);
@@ -217,13 +224,15 @@ async function readCloudGameState(rootData,{fresh=false}={}){
   return {...coreData,characters};
 }
 
-async function writeCloudGameState(gameState){
+async function writeCloudGameState(gameState,session){
+  const {uid}=session;assertSession(session);
   const next=clone(gameState||{});
   const characters=next.characters&&typeof next.characters==="object"?next.characters:{};
   delete next.characters;
   const wantedCharacterIds=new Set(Object.keys(characters).map(String));
-  const existingCharacters=await getDocs(cloudCharacters());
+  const existingCharacters=await getDocs(cloudCharacters(uid));
   for(const existing of existingCharacters.docs){
+    assertSession(session);
     const existingId=String(existing.data()?.characterId||existing.id);
     if(wantedCharacterIds.has(existingId))continue;
     const oldDays=await getDocs(collection(existing.ref,"days"));
@@ -232,24 +241,26 @@ async function writeCloudGameState(gameState){
   }
 
   for(const [characterId,source] of Object.entries(characters)){
+    assertSession(session);
     const character=clone(source||{});
     const days=character.days&&typeof character.days==="object"?character.days:{};
     delete character.days;
-    await setDoc(cloudCharacterDoc(characterId),{
+    await setDoc(cloudCharacterDoc(characterId,uid),{
       characterId:String(characterId),
       character:encodeFirestoreState(character),
       updatedAt:serverTimestamp()
     });
     const wantedDays=new Set(Object.keys(days).map(String));
-    const existingDays=await getDocs(cloudDays(characterId));
+    const existingDays=await getDocs(cloudDays(characterId,uid));
     await Promise.all(existingDays.docs.filter(day=>!wantedDays.has(String(day.data()?.dateKey||day.id))).map(day=>deleteDoc(day.ref)));
-    await Promise.all(Object.entries(days).map(([dateKey,day])=>setDoc(cloudDayDoc(characterId,dateKey),{
+    await Promise.all(Object.entries(days).map(([dateKey,day])=>setDoc(cloudDayDoc(characterId,dateKey,uid),{
       dateKey:String(dateKey),day:encodeFirestoreState(day),updatedAt:serverTimestamp()
     })));
   }
   // core 문서는 모든 하위 문서 저장이 끝났다는 완료 표식이기도 하다.
   // 마지막에 기록해야 다운로드가 부분 저장본을 완성본으로 오인하지 않는다.
-  await setDoc(cloudCoreDoc(),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
+  assertSession(session);
+  await setDoc(cloudCoreDoc(uid),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
 }
 
 const canUseLegacySync=error=>{
@@ -279,40 +290,45 @@ async function decodeCompressedLegacyState(value){
     :ungzipBytes(bytes,{to:"string"});
   return decodeFirestoreState(JSON.parse(json));
 }
-async function writeLegacyCloudGameState(gameState,mediaManifest){
+async function writeLegacyCloudGameState(gameState,mediaManifest,session){
+  assertSession(session);
+  const reference=cloudDoc(session.uid),profile={name:accountName(),email:user.email||""};
   const encoded=encodeFirestoreState(gameState);
   const encodedText=JSON.stringify(encoded);
   const byteLength=new TextEncoder().encode(encodedText).byteLength;
   if(byteLength<=700000){
-    await setDoc(cloudDoc(),{
+    await setDoc(reference,{
       gameState:encoded,
       gameStateGzip:deleteField(),
       gameStateCompression:deleteField(),
       syncFormat:1,
       mediaManifest,
       updatedAt:serverTimestamp(),
-      profile:{name:accountName(),email:user.email||""}
+      profile
     },{merge:true});
     return;
   }
   const compressed=await encodeCompressedLegacyState(gameState);
   if(!compressed||new TextEncoder().encode(compressed).byteLength>780000)throw Object.assign(new Error("legacy-document-too-large"),{code:"sync/legacy-document-too-large"});
-  await setDoc(cloudDoc(),{
+  assertSession(session);
+  await setDoc(reference,{
     gameState:deleteField(),
     gameStateGzip:compressed,
     gameStateCompression:"gzip-base64-v1",
     syncFormat:1,
     mediaManifest,
     updatedAt:serverTimestamp(),
-    profile:{name:accountName(),email:user.email||""}
+    profile
   },{merge:true});
 }
 async function registerSignedInUser(){
   if(!user)return;
+  const session=captureSession();
   const guardKey=`drawer-village-login-write-${user.uid}`;
   if(Date.now()-sessionStamp(guardKey)<REFRESH_GUARD_MS)return;
   const reference=cloudDoc();
   const snapshot=await getDoc(reference);
+  assertSession(session);
   const profile={
     name:accountName(),
     email:user.email||"",
@@ -330,7 +346,7 @@ async function registerSignedInUser(){
   };
   if(!snapshot.exists())presence.createdAt=serverTimestamp();
   await setDoc(reference,presence,{merge:true});
-  stampSession(guardKey);
+  assertSession(session);stampSession(guardKey);
 }
 const normalizeEntitlements=value=>{
   const purchases=Array.isArray(value?.purchases)?value.purchases.filter(x=>typeof x==="string"):[];
@@ -412,17 +428,20 @@ async function optimizeCloudImage(original){
   throw Object.assign(new Error("image-too-large"),{code:"storage/image-too-large"});
 }
 
-async function uploadDataUrl(dataUrl,manifest){
-  if(uploadedCache.has(dataUrl))return uploadedCache.get(dataUrl);
+async function uploadDataUrl(dataUrl,manifest,session){
+  assertSession(session);
+  const cacheKey=`${session.uid}:${dataUrl}`;
+  if(uploadedCache.has(cacheKey))return uploadedCache.get(cacheKey);
   const sourceBlob=await (await fetch(dataUrl)).blob();
   const blob=await optimizeCloudImage(sourceBlob);
   const hash=await digestBlob(blob),known=manifest.items.find(item=>item.hash===hash);
-  if(known){uploadedCache.set(dataUrl,known.url);return known.url}
+  if(known){assertSession(session);uploadedCache.set(cacheKey,known.url);return known.url}
   if(manifest.items.length+manifest.legacyCount>=maxPhotos())throw Object.assign(new Error("photo-limit"),{code:"storage/photo-limit"});
   const usedBytes=manifest.items.reduce((sum,item)=>sum+(Number(item.size)||0),0);
   if(usedBytes+blob.size>maxTotalBytes())throw Object.assign(new Error("total-size-limit"),{code:"storage/total-size-limit"});
   const ext=blob.type==="image/png"?"png":"webp";
-  const target=ref(storage,`users/${user.uid}/media/${hash}.${ext}`);
+  assertSession(session);
+  const target=ref(storage,`users/${session.uid}/media/${hash}.${ext}`);
   await Promise.race([
     uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000,immutable"}),
     new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),30000))
@@ -431,12 +450,13 @@ async function uploadDataUrl(dataUrl,manifest){
     getDownloadURL(target),
     new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),10000))
   ]);
+  assertSession(session);
   manifest.items.push({hash,size:blob.size,url});
-  uploadedCache.set(dataUrl,url);
+  uploadedCache.set(cacheKey,url);
   return url;
 }
 
-async function prepareState(local,manifest,previousState){
+async function prepareState(local,manifest,previousState,session){
   const next=clone(local),jobs=[];
   const walk=(node,path=[])=>{
     if(!node||typeof node!=="object")return;
@@ -450,8 +470,9 @@ async function prepareState(local,manifest,previousState){
   let photoFailures=0;
   for(let i=0;i<jobs.length;i+=1){
     status(`${accountName()} · 사진 ${i+1}/${jobs.length} 올리는 중`);
-    try{jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest)}
+    try{assertSession(session);jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest,session)}
     catch(error){
+      if(error?.code==="sync/account-changed")throw error;
       console.warn("사진 업로드에 실패했지만 기존 클라우드 사진과 정보 동기화를 유지합니다",error);
       photoFailures+=1;
       const previousValue=jobs[i].path.reduce((value,key)=>value&&typeof value==="object"?value[key]:undefined,previousState);
@@ -517,14 +538,18 @@ async function login(){
 }
 
 async function upload({silent=false,reason=""}={}){
+  if(switchingAccount)return false;
+  const session=captureSession();
   await window.DrawerVillageLocalMedia?.ready;
+  if(session.epoch!==accountEpoch||session.uid!==user?.uid)return false;
   if(!user){if(!silent)toast("Google 로그인이 필요합니다");return false}
   if(busy){
     const started=Date.now();
     while(busy&&Date.now()-started<30000)await new Promise(resolve=>setTimeout(resolve,80));
     if(busy)return false;
   }
-  busy=true;
+  try{assertSession(session)}catch{return false}
+  busy=true;let finishSync;activeSyncDone=new Promise(resolve=>{finishSync=resolve});
   try{
     status(`${accountName()} · 올리는 중`);
     const localState=window.ParallelCity.getState();
@@ -538,25 +563,29 @@ async function upload({silent=false,reason=""}={}){
         detail:`${localCharacterCount}/${allowedCharacters}`
       });
     }
-    const previousSnapshot=await getDoc(cloudDoc()),previous=previousSnapshot.exists()?previousSnapshot.data():null;
-    const previousGameState=await readCloudGameState(previous);
+    const previousSnapshot=await getDoc(cloudDoc(session.uid)),previous=previousSnapshot.exists()?previousSnapshot.data():null;
+    const previousGameState=await readCloudGameState(previous,{uid:session.uid});
+    assertSession(session);
     // 오래된 기기가 전체 상태를 다시 올리더라도 클라우드에 이미 남은 삭제 기록이
     // 캐릭터·관계·집·방보다 우선한다. 이 병합이 없으면 다른 기기의 낡은 배열이
     // 삭제한 관계를 같은 ID 또는 다른 ID로 되살릴 수 있다.
     const tombstoneSafeState=previousGameState
       ?mergeDeviceAndCloudState(localState,previousGameState)
       :localState;
-    const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState),previousGameState);
+    const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState),previousGameState,session);
+    assertSession(session);
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
     let compatibilityMode=false;
     try{
-      await writeCloudGameState(gameState);
-      await setDoc(cloudDoc(),{gameState:deleteField(),syncFormat:2,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
+      await writeCloudGameState(gameState,session);
+      assertSession(session);
+      await setDoc(cloudDoc(session.uid),{gameState:deleteField(),syncFormat:2,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
     }catch(error){
       if(!canUseLegacySync(error))throw error;
-      await writeLegacyCloudGameState(gameState,mediaManifest);
+      await writeLegacyCloudGameState(gameState,mediaManifest,session);
       compatibilityMode=true;
     }
+    assertSession(session);
     publishStorageUsage(mediaManifest,gameState);
     status(`${accountName()} · ${reason||"계정 저장"} 완료`);
     toast(photoFailures
@@ -566,27 +595,34 @@ async function upload({silent=false,reason=""}={}){
           :"사진과 정보가 동기화되었습니다");
     return true;
   }catch(error){
+    if(error?.code==="sync/account-changed")return false;
     console.error(error);status(`저장 실패 · ${shortError(error)}`);
     if(!silent)toast(`동기화 실패 · ${shortError(error)}`);
     return false;
-  }finally{busy=false}
+  }finally{busy=false;finishSync()}
 }
 
-async function download({automatic=false}={}){
+async function download({automatic=false,accountTransition=false}={}){
+  if(switchingAccount&&!accountTransition)return false;
+  const session=captureSession();
   if(!user){if(!automatic)toast("Google 로그인이 필요합니다");return}
-  if(busy)return;busy=true;
+  if(busy)return false;
+  try{assertSession(session)}catch{return false}
+  busy=true;let finishSync;activeSyncDone=new Promise(resolve=>{finishSync=resolve});
   try{
     status(`${accountName()} · 불러오는 중`);
     // 사용자가 누른 '불러오기'는 브라우저의 Firestore 로컬 캐시가 아니라
     // 앱이 방금 올린 서버 저장본을 직접 읽는다. 자동 불러오기는 오프라인
     // 복구를 위해 기존 Firestore 동작을 유지한다.
-    const snapshot=automatic?await getDoc(cloudDoc()):await getDocFromServer(cloudDoc());
+    const snapshot=automatic?await getDoc(cloudDoc(session.uid)):await getDocFromServer(cloudDoc(session.uid));
+    assertSession(session);
     const documentData=snapshot.exists()?snapshot.data():null;
     const remoteGuides=Array.isArray(documentData?.uiPreferences?.pageGuides)?documentData.uiPreferences.pageGuides:[];
     const mergedGuides=[...new Set([...remoteGuides,...localGuideKeys()])];
     publishGuideState(mergedGuides);
     if(user&&mergedGuides.length!==remoteGuides.length)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:mergedGuides}},{merge:true});
-    const remote=await readCloudGameState(documentData,{fresh:!automatic});
+    const remote=await readCloudGameState(documentData,{fresh:!automatic,uid:session.uid});
+    assertSession(session);
     publishStorageUsage(documentData?.mediaManifest,remote);
     publishEntitlements(documentData?.entitlements);
     if(!remote){status(`${accountName()} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
@@ -623,7 +659,7 @@ async function download({automatic=false}={}){
       ?`기기와 클라우드 인물을 합쳐 ${Object.keys(imported.characters||{}).length}명 불러왔습니다`
       :automatic?"자동으로 불러왔습니다":"불러왔습니다");
     return true;
-  }catch(error){console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false}
+  }catch(error){if(error?.code==="sync/account-changed")return false;console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false;finishSync()}
 }
 
 async function submitFeedback({category,message,allowReply=false}={}){
@@ -650,19 +686,24 @@ if(ready){
     await setPersistence(auth,browserLocalPersistence);
     try{await getRedirectResult(auth)}catch(error){console.warn(error)}
     onAuthStateChanged(auth,async next=>{
-      user=next;
-      if(!user){publishEntitlements(null);publishGuideState(localGuideKeys())}
-      status(user?`Google 계정 연결됨 · ${user.email||accountName()} · 설정에서 동기화/불러오기`:"Google 로그인 안 됨");
-      if(user){
-        try{await registerSignedInUser()}
-        catch(error){console.error(error);status(`${accountName()} · 사용자 등록 실패 · ${shortError(error)}`)}
-        const loadKey=`drawer-village-auto-load-${user.uid}`;
-        if(!autoLoadStarted&&Date.now()-sessionStamp(loadKey)>=REFRESH_GUARD_MS){
-          autoLoadStarted=true;
-          const loaded=await download({automatic:true});
-          if(loaded!==false)stampSession(loadKey);
+      const epoch=++accountEpoch;switchingAccount=true;user=next;
+      try{
+        await activeSyncDone;
+        if(epoch!==accountEpoch)return;
+        window.ParallelCity.switchAccount(next?.uid||null);
+        uploadedCache.clear();
+        publishEntitlements(null);
+        storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
+        publishGuideState(localGuideKeys());
+        status(user?`Google 계정 연결됨 · ${user.email||accountName()}`:"Google 로그인 안 됨");
+        if(user){
+          try{await registerSignedInUser()}catch(error){if(epoch!==accountEpoch)return;console.warn(error)}
+          if(epoch!==accountEpoch)return;
+          // Always load this account, even when it was used minutes ago.
+          await download({automatic:true,accountTransition:true});
         }
-      }
+      }catch(error){console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
+      finally{if(epoch===accountEpoch)switchingAccount=false}
     });
   }catch(error){status(`로그인 초기화 실패 · ${shortError(error)}`)}
 }else status("Firebase 설정 필요");
@@ -671,11 +712,12 @@ try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-vil
 window.ParallelCityAuth={
   login,upload,download,submitFeedback,markGuideSeen,resetGuides,
   logout:async()=>{
-    if(user)await signOut(auth);
+    accountEpoch+=1;switchingAccount=true;
+    try{if(user)await signOut(auth)}catch(error){switchingAccount=false;throw error}
     if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
       await window.Capacitor.Plugins.FirebaseAuthentication.signOut().catch(()=>{});
     }
   },
   getIdToken:async()=>user?user.getIdToken():null,
-  getInfo:()=>({ready,user,busy,entitlements,storageUsage,guideState})
+  getInfo:()=>({ready,user,busy:busy||switchingAccount,entitlements,storageUsage,guideState})
 };

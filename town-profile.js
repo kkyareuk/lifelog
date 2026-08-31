@@ -26,9 +26,8 @@ export const TOWN_REPUTATIONS=[
 export const TOWN_TERRAINS=["평야","구릉","산지","분지","고원","해안","섬","강가","호숫가","삼각주","숲","습지","사막","설원","화산 지대","협곡","동굴·지하"];
 export const TOWN_TRANSPORTS=["도보길","자전거도로","일반 도로","시외버스","철도","지하철","노면전차","여객선","공항","케이블카"];
 
-// The town illustration catalog intentionally starts empty. Illustration packs
-// are added only from artwork supplied and approved by the project owner.
-export const TOWN_ILLUSTRATIONS=[];
+// Only owner-supplied artwork belongs in the selectable illustration catalog.
+export const TOWN_ILLUSTRATIONS=[{id:"owner-forest",name:"숲과 연못 마을",pack:"base",src:"world-assets/owner-forest-town.webp",types:[],terrains:[]}];
 
 const LEGACY_TOWN_TYPES={"생활 중심 마을":"생활 중심","주거 중심 마을":"주거 중심","상업 중심 마을":"상업 중심","관광 마을":"관광 중심","산업 도시":"산업 중심","학원 도시":"학원·연구 중심","휴양 마을":"휴양 중심"};
 const LEGACY_TERRAINS={"평야·온대":"평야","해안·해양성":"해안","산지·서늘함":"산지","분지·온난함":"분지","사막·건조":"사막","설원·한랭":"설원","열대·다우":"습지"};
@@ -38,7 +37,7 @@ export function normalizeTownProfile(value={}){
   const safeType=TOWN_TYPES.includes(townType)?townType:"생활 중심";
   const subtypes=TOWN_TYPE_SUBTYPES[safeType];
   const terrain=LEGACY_TERRAINS[value.terrainClimate]||value.terrain||String(value.terrainClimate||"").split("·")[0]||"평야";
-  const selected=TOWN_ILLUSTRATIONS.find(item=>item.pack==="base"&&item.src===value.bg);
+  const selected=TOWN_ILLUSTRATIONS.find(item=>item.pack==="base"&&(item.src===value.bg||item.id===value.illustrationId))||TOWN_ILLUSTRATIONS[0];
   const bg=selected?.src||"";
   return {
     townType:safeType,
