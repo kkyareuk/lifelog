@@ -50,7 +50,8 @@
     "test:village187": "node scripts/check-village-187.mjs",
     "test:village188": "node scripts/check-village-188.mjs",
     "test:village189": "node scripts/check-village-189.mjs",
-    "test:character190": "node scripts/check-character-emotion-190.mjs"
+    "test:character190": "node scripts/check-character-emotion-190.mjs",
+    "test:statistics191": "node scripts/check-statistics-emotion-191.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

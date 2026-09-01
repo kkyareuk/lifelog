@@ -325,7 +325,7 @@ function openClothingEditor(itemId=""){
   const character=active();if(!character)return;
   const isNew=!itemId;let item=state.catalog.fashion.find(value=>value.id===itemId);
   if(!item){
-    const id=addCatalogItem("fashion",{name:"새 옷",category:"의상",image:"",iconImage:"",ldImage:"",materials:[],colors:[],flairs:[],occasionTags:["일상복"],moodTags:["모든 기분"],ordinary:"무난함",warmth:"보통",formality:"캐주얼",comfort:"편안함",requiredUniform:false,ownerId:character.id});
+    const id=addCatalogItem("fashion",{name:"새 옷",category:"의상",image:"",iconImage:"",ldImage:"",sceneLayout:{sd:{x:0,y:0,scale:1,rotation:0},ld:{x:0,y:0,scale:1,rotation:0}},materials:[],colors:[],flairs:[],occasionTags:["일상복"],moodTags:["모든 기분"],ordinary:"무난함",warmth:"보통",formality:"캐주얼",comfort:"편안함",requiredUniform:false,ownerId:character.id});
     character.inventory.fashion=[...new Set([...(character.inventory.fashion||[]),id])];
     item=state.catalog.fashion.find(value=>value.id===id);save(true);
   }
@@ -334,8 +334,9 @@ function openClothingEditor(itemId=""){
   const pickerLabel=(field,label)=>`<button type="button" class="clothing-multi-open" data-open-clothing-picker="${field}"><b>${label}</b><small data-clothing-picker-summary="${field}">${esc((item[field]||[]).join(" · ")||"선택하지 않음")}</small><i>＋</i></button>`;
   const select=(name,values,current)=>`<select name="${name}">${values.map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>`;
   const imageField=(name,label,value)=>`<label class="clothing-art-field"><b>${label}</b>${value?`<img src="${esc(value)}" alt="">`:`<span>${name==="ldImage"?"LD":"SD"}</span>`}<input type="file" accept="image/*" data-clothing-file="${name}"><input name="${name}" value="${esc(value||"")}" placeholder="이미지 링크 또는 기기에서 선택"></label>`;
+  const layout=item.sceneLayout||{},layoutControl=(mode,label)=>{const value=layout[mode]||{};return `<fieldset class="clothing-layout-controls"><legend>${label} 화면 배치</legend><label>가로 위치<input type="range" name="${mode}X" min="-50" max="50" value="${Number(value.x)||0}"></label><label>세로 위치<input type="range" name="${mode}Y" min="-90" max="90" value="${Number(value.y)||0}"></label><label>크기<input type="range" name="${mode}Scale" min="0.45" max="2.5" step="0.05" value="${Number(value.scale)||1}"></label></fieldset>`};
   dialog.innerHTML=`<form method="dialog">
-    <div class="title"><div><h2>옷 등록·편집</h2><small>상황·기분·온도·격식 정보를 바탕으로 홈의 아이콘과 LD가 자동으로 바뀝니다.</small></div><button value="cancel">×</button></div>
+    <div class="title"><div><h2>옷 등록·편집</h2><small>여기에 등록한 SD·LD는 옷만 겹치는 레이어가 아니라, 해당 상황에서 캐릭터 그림 전체를 통째로 바꿉니다.</small></div><button value="cancel">×</button></div>
     <div class="clothing-editor-grid"><section class="clothing-preview"><div class="clothing-art-pair">${imageField("iconImage","아이콘",item.iconImage||item.image)}${imageField("ldImage","LD",item.ldImage)}</div></section><section class="clothing-fields">
       <label>이름<input name="name" value="${esc(item.name||"")}"></label>
       <label>평범한 정도${select("ordinary",ORDINARY_LEVELS,item.ordinary||"무난함")}</label>
@@ -345,6 +346,7 @@ function openClothingEditor(itemId=""){
       <label class="book-check-field"><span>필수 유니폼</span><input type="checkbox" name="requiredUniform" ${item.requiredUniform?"checked":""}></label>
       <h3>입는 상황 · 중복 선택</h3>${chips("occasionTags",OCCASION_TAGS)}<h3>기분 태그 · 중복 선택</h3>${chips("moodTags",CLOTHING_MOODS)}
       <div class="clothing-multi-grid">${pickerLabel("colors","색 선택하기")}${pickerLabel("materials","재질 선택하기")}${pickerLabel("flairs","분위기 중복 선택하기")}</div>
+      <div class="clothing-layout-grid">${layoutControl("sd","SD 아이콘")}${layoutControl("ld","LD 사진")}</div>
     </section></div><div class="crop-actions"><button type="button" class="danger" data-delete-clothing>옷 삭제</button><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
   </form>`;
   dialog.querySelectorAll("[data-clothing-chip]").forEach(button=>button.onclick=()=>{const field=button.dataset.clothingChip,value=button.dataset.value,list=item[field]||[];item[field]=list.includes(value)?list.filter(entry=>entry!==value):[...list,value];button.classList.toggle("on",item[field].includes(value))});
@@ -359,7 +361,7 @@ function openClothingEditor(itemId=""){
   });
   dialog.querySelector("[data-delete-clothing]").onclick=()=>{state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);character.savedOutfits=(character.savedOutfits||[]).map(outfit=>({...outfit,itemIds:outfit.itemIds.filter(id=>id!==item.id)}));save(true);dialog.close("deleted")};
   dialog.querySelectorAll("[data-clothing-file]").forEach(input=>input.onchange=()=>{const file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const name=input.dataset.clothingFile,url=String(reader.result||"");dialog.querySelector(`[name="${name}"]`).value=url;const holder=input.closest(".clothing-art-field"),old=holder.querySelector("img,span");old.outerHTML=`<img src="${url}" alt="">`};reader.readAsDataURL(file)});
-  dialog.onclose=()=>{if(dialog.returnValue==="save"){const form=new FormData(dialog.querySelector("form")),iconImage=String(form.get("iconImage")||"");Object.assign(item,{name:String(form.get("name")||"새 옷"),image:iconImage,iconImage,ldImage:String(form.get("ldImage")||""),category:"의상",ordinary:String(form.get("ordinary")||"무난함"),warmth:String(form.get("warmth")||"보통"),formality:String(form.get("formality")||"캐주얼"),comfort:String(form.get("comfort")||"편안함"),requiredUniform:form.get("requiredUniform")==="on",ownerId:character.id});save(true)}else if(isNew&&dialog.returnValue!=="deleted"){state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);save(true)}dialog.remove();render()};
+  dialog.onclose=()=>{if(dialog.returnValue==="save"){const form=new FormData(dialog.querySelector("form")),iconImage=String(form.get("iconImage")||""),number=(name,fallback)=>Number.isFinite(Number(form.get(name)))?Number(form.get(name)):fallback;Object.assign(item,{name:String(form.get("name")||"새 옷"),image:iconImage,iconImage,ldImage:String(form.get("ldImage")||""),sceneLayout:{sd:{x:number("sdX",0),y:number("sdY",0),scale:number("sdScale",1),rotation:0},ld:{x:number("ldX",0),y:number("ldY",0),scale:number("ldScale",1),rotation:0}},category:"의상",ordinary:String(form.get("ordinary")||"무난함"),warmth:String(form.get("warmth")||"보통"),formality:String(form.get("formality")||"캐주얼"),comfort:String(form.get("comfort")||"편안함"),requiredUniform:form.get("requiredUniform")==="on",ownerId:character.id});save(true)}else if(isNew&&dialog.returnValue!=="deleted"){state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);save(true)}dialog.remove();render()};
   document.body.append(dialog);translateDynamicInterface(dialog);dialog.showModal();
 }
 function openOutfitEditor(outfitId=""){
@@ -1643,6 +1645,11 @@ function downloadCharacterStatisticsReport(dialog){
   if(!dialog)return;
   const clean=value=>String(value||"").replace(/\s+/g," ").trim();
   const escapeHtml=value=>clean(value).replace(/[&<>"']/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[character]);
+  if(dialog.classList.contains("statistics-report")){
+    const copy=dialog.cloneNode(true);copy.querySelectorAll("button,.character-stat-actions").forEach(node=>node.remove());
+    const created=new Date(),report=`<!doctype html><html lang="${escapeHtml(state.uiLanguage||"ko")}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(clean(copy.querySelector("h1")?.textContent)||"서랍마을 통계 보고서")}</title><style>body{margin:0;background:#f4efe5;color:#2e2118;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:920px;margin:auto;padding:38px 22px}.statistics-report{display:grid;gap:16px}.statistics-report-head{padding:20px;border-radius:22px;background:#6a4b36;color:#fff}.statistics-report-head small{letter-spacing:.12em}.statistics-summary,.statistics-lifestyle,.statistics-social>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.statistics-summary article,.statistics-lifestyle article,.statistics-card,.statistics-social article{padding:16px;border:1px solid #cbb58c;border-radius:18px;background:#fffaf0}.statistics-summary b,.statistics-lifestyle b{display:block;margin-top:5px;font-size:25px}.population-row{display:grid;grid-template-columns:1fr 76px 1fr;align-items:center;gap:7px;margin:5px 0}.population-row>span{text-align:center;font-size:12px;font-weight:700}.population-row i{display:block;width:var(--population);height:17px;border-radius:5px}.population-row i.male{justify-self:end;background:#5c8fd0}.population-row i.female{justify-self:start;background:#df77ae}.population-legend{display:grid;grid-template-columns:1fr auto 1fr;text-align:center}.statistics-personality{display:grid;grid-template-columns:190px 1fr;gap:20px}.personality-donut{display:grid;place-items:center;aspect-ratio:1;border-radius:50%;background:var(--personality-chart)}.personality-donut:before{content:"";grid-area:1/1;width:62%;aspect-ratio:1;border-radius:50%;background:#fffaf0}.personality-donut span{grid-area:1/1;z-index:1}.personality-top ol{padding-left:22px}.statistics-scope-tabs{display:none}footer{margin-top:24px;color:#74685f;font-size:12px}@media(max-width:600px){.statistics-personality{grid-template-columns:1fr}.personality-donut{max-width:220px;margin:auto}}</style></head><body><main>${copy.outerHTML}<footer>${escapeHtml(created.toLocaleString())} · ${escapeHtml("기기에 저장된 현재 데이터로 생성했습니다.")}</footer></main></body></html>`;
+    const blob=new Blob([report],{type:"text/html;charset=utf-8"}),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download=`서랍마을-통계-${created.toISOString().slice(0,10)}.html`;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);showToast("통계 보고서를 저장했습니다");return;
+  }
   const total=clean(dialog.querySelector(".character-stat-summary b")?.textContent)||"0";
   const highlights=[...dialog.querySelectorAll(".character-stat-highlights article")].map(card=>({
     label:clean(card.querySelector("small")?.textContent),value:clean(card.querySelector("b")?.textContent)
@@ -2171,6 +2178,10 @@ function bind(){
     event.stopPropagation();
     downloadCharacterStatisticsReport(event.currentTarget.closest("[data-character-stats-dialog],[data-character-statistics-page]"));
   });
+  $$("[data-statistics-scope]").forEach(button=>button.addEventListener("click",()=>{
+    state.statisticsTownId=button.dataset.statisticsScope||"all";
+    save(true);render();
+  }));
   $$('[data-home-display-field]').forEach(field=>{
     const apply=(persist=false)=>{
       const characterId=field.dataset.characterId,property=field.dataset.homeDisplayField;
@@ -2417,6 +2428,16 @@ function bind(){
   $("[data-open-character-layout]")?.addEventListener("click",()=>{
     const dialog=$("[data-character-layout-dialog]");
     if(dialog&&!dialog.open)dialog.showModal();
+  });
+  $("[data-open-advanced-ld]")?.addEventListener("click",()=>{
+    state.characterSettingsView="full";
+    state.characterPane="closet";
+    save(true);render();
+  });
+  $("[data-character-theme]")?.addEventListener("click",()=>{
+    const character=active();if(!character)return;
+    character.characterMenuTheme="drawer-default";
+    save(true);showToast("기본 테마 · 서랍마을을 사용 중이에요");
   });
   $("[data-character-scene-images]")?.addEventListener("click",openCharacterSceneImages);
   $$("[data-open-character-pane]").forEach(el=>el.onclick=()=>{
@@ -3749,8 +3770,9 @@ function bind(){
   }));
   $("[data-add-monthly-routine]")?.addEventListener("click",()=>openMonthlyRoutineDialog("",newMonthlyRoutineDraft()));
   $("[data-add-anniversary]")?.addEventListener("click",()=>openAnniversaryDialog());
-  $$("[data-routine-view]").forEach(el=>el.onclick=()=>{state.routineView=el.dataset.routineView==="monthly"?"monthly":"weekly";if(!state.routineMonth)state.routineMonth=currentMonthKey();save();render()});
+  $$("[data-routine-view]").forEach(el=>el.onclick=()=>{state.routineView=el.dataset.routineView==="monthly"?"monthly":"weekly";if(state.routineView==="monthly")state.routineMonth=currentMonthKey();save();render()});
   $$("[data-routine-month-step]").forEach(el=>el.onclick=()=>{const [year,month]=(state.routineMonth||currentMonthKey()).split("-").map(Number),next=new Date(year,month-1+Number(el.dataset.routineMonthStep),1);state.routineMonth=`${next.getFullYear()}-${String(next.getMonth()+1).padStart(2,"0")}`;save();render()});
+  $("[data-routine-month-today]")?.addEventListener("click",()=>{state.routineMonth=currentMonthKey();save();render()});
   $$("[data-edit-routine]").forEach(el=>el.onclick=()=>openRoutineDialog(el.dataset.editRoutine));
   $$("[data-edit-monthly-routine]").forEach(el=>el.onclick=()=>openMonthlyRoutineDialog(el.dataset.editMonthlyRoutine));
   $$("[data-edit-anniversary]").forEach(el=>el.onclick=()=>openAnniversaryDialog(el.dataset.editAnniversary));

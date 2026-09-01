@@ -15,12 +15,13 @@ export function moodContext(character,entry,world){
 }
 
 export function characterMood(character,entry,world,language=world.uiLanguage||'ko'){
-  const {town,place}=moodContext(character,entry,world),reasons=[],supports=[],traits=traitsOf(character),copy=`${entry?.baseTitle||entry?.title||''} ${entry?.desc||''}`,baseline=character.emotionalBaseline||'',volatility=character.moodVolatility||'상황에 따라 달라짐',positiveResponse=character.positiveMoodResponse||'',stressResponse=character.stressMoodResponse||'',recoveryStyle=character.moodRecoveryStyle||'',restrained=/과묵|냉정|무뚝뚝|엄격|표정 변화가 거의 없음|감정을 잘 드러내지 않음|절제/.test(traits)||positiveResponse==='조용히 만족함',outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),optimistic=/낙천|대체로 밝/.test(baseline)||/낙천|긍정|밝고|명랑|쾌활/.test(traits),resilient=optimistic||/온화|다정|느긋|침착|강인|무던|인내/.test(traits),sensitive=/걱정|비관/.test(baseline)||/예민|불안|걱정|신경질|감정 기복|까칠|성급|충동/.test(traits);
+  const {town,place}=moodContext(character,entry,world),reasons=[],supports=[],traits=traitsOf(character),copy=`${entry?.baseTitle||entry?.title||''} ${entry?.desc||''}`,baseline=character.emotionalBaseline||'',volatility=character.moodVolatility||'상황에 따라 달라짐',positiveResponse=character.positiveMoodResponse||'',stressResponse=character.stressMoodResponse||'',recoveryStyle=character.moodRecoveryStyle||'',angerResponse=character.angerResponse||'차분히 이유를 확인함',flirtResponse=character.flirtResponse||'알아도 모른 척함',restrained=/과묵|냉정|무뚝뚝|엄격|표정 변화가 거의 없음|감정을 잘 드러내지 않음|절제/.test(traits)||positiveResponse==='조용히 만족함',outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),optimistic=/낙천|대체로 밝/.test(baseline)||/낙천|긍정|밝고|명랑|쾌활/.test(traits),resilient=optimistic||/온화|다정|느긋|침착|강인|무던|인내/.test(traits),sensitive=/걱정|비관/.test(baseline)||/예민|불안|걱정|신경질|감정 기복|까칠|성급|충동/.test(traits);
   const positiveEvent=/성공|칭찬|선물|맛있|즐거|데이트|웃|success|praise|gift|delicious|enjoy|date|laugh|成功|褒め|贈り物|おいし|楽しい|デート|笑/i;
   const angryEvent=/싸우|다투|불편|분노|화가|갈등|짜증|fight|argu|anger|conflict|upset|irritat|喧嘩|争|怒|衝突|不快/i;
   const sadEvent=/실패|거절|상실|울었|슬프|속상|fail|reject|loss|cry|sad|失敗|拒絶|喪失|泣|悲/i;
   const tiredEvent=/피곤|지쳤|야근|밤샘|졸리|tired|exhaust|overtime|all.nighter|sleepy|疲|夜更|眠い/i;
   const restEvent=/자는 중|잠든|휴식|쉬는 중|sleep|rest|眠って|睡眠|休ん/i;
+  const flirtEvent=/유혹|플러팅|호감 신호|눈빛을 보냄|flirt|come.?on|誘惑|好意のサイン/i;
   const add=(value,ko,en,ja)=>reasons.push({value,text:text(language,ko,en,ja)});
   const support=(value,ko,en,ja)=>supports.push({value,text:text(language,ko,en,ja)});
   const day=entry?.date||new Date().toISOString().slice(0,10),moment=entry?.interactionId||entry?.minute||entry?.placeId||entry?.room||'scene',rawVariation=(hash(`${character.id}:${day}:${moment}`)%22)-14,volatilityScale=({"거의 흔들리지 않음":.35,"안정적인 편":.65,"상황에 따라 달라짐":1,"변화가 잦은 편":1.2,"변화 폭이 큼":1.45}[volatility]||1),temperVariation=rawVariation<0?(resilient?Math.round(rawVariation*.55):sensitive?Math.round(rawVariation*1.15):rawVariation):rawVariation,variation=Math.round((restrained?temperVariation*.7:temperVariation)*volatilityScale),baselineBias=({"낙천적인 편":5,"대체로 밝은 편":3,"현실적인 편":0,"무덤덤한 편":0,"걱정이 많은 편":-2,"비관적인 편":-4}[baseline]||0);
@@ -66,11 +67,15 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   if(hasAngryEvent)add(-28,'불편하거나 화나는 사건','An upsetting event','不快な出来事');
   if(hasSadEvent)add(-24,'마음이 가라앉는 사건','A saddening event','悲しい出来事');
   if(hasTiredEvent)add(-16,'피로가 쌓임','Fatigue has built up','疲れがたまっている');
+  if(flirtEvent.test(copy)){
+    if(/당황|거리|경계/.test(flirtResponse))add(-8,'호감 신호를 받아 경계하거나 당황함','A flirtatious signal made them wary or flustered','好意のサインを受けて警戒したり戸惑ったりしている');
+    else if(/은근히|장난스럽게|직접 호응/.test(flirtResponse))add(10,'호감 신호를 자기 방식으로 받아들임','They welcomed the signal in their own way','好意のサインを自分らしく受け止めた');
+  }
   if(restEvent.test(copy))add(recoveryStyle==='쉬거나 자면서 회복'?7:3,'쉬면서 조금씩 회복 중','Recovering gradually through rest','休みながら少しずつ回復している');
   const score=Math.max(-100,Math.min(100,reasons.reduce((number,reason)=>number+reason.value,0)));
   let label,icon,tone;
   if(hasTiredEvent){label=text(language,'피곤함','Tired','疲れている');icon='☾';tone='tired'}
-  else if(hasAngryEvent&&stressResponse==='화부터 남'){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
+  else if(hasAngryEvent&&(/목소리가 커짐|즉시 잘못을 따짐|해결책을 분명히 요구함/.test(angerResponse)||stressResponse==='화부터 남')){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
   else if(hasAngryEvent&&(stressResponse==='말수가 줄어듦'||stressResponse==='아무렇지 않은 척함')){label=text(language,'가라앉음','Subdued','沈んでいる');icon='◒';tone='calm'}
   else if(hasAngryEvent){label=text(language,stressResponse==='걱정이 많아짐'?'걱정스러움':'긴장함',stressResponse==='걱정이 많아짐'?'Worried':'Tense',stressResponse==='걱정이 많아짐'?'心配している':'緊張している');icon='☁';tone='tense'}
   else if(score>=30&&!restrained&&positiveResponse==='기쁨이 크게 드러남'){label=text(language,'들뜸','Excited','浮き立っている');icon='✦';tone='excited'}
@@ -79,7 +84,7 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   else if(score>=11){label=text(language,'기분 좋음','Feeling good','ご機嫌');icon='☀';tone='good'}
   else if(score<=-24){label=text(language,'슬픔','Sad','悲しい');icon='☂';tone='sad'}
   else if(score<=-8){
-    if(stressResponse==='화부터 남'&&hasAngryEvent){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
+    if((stressResponse==='화부터 남'||/목소리가 커짐|즉시 잘못을 따짐|해결책을 분명히 요구함/.test(angerResponse))&&hasAngryEvent){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
     else if(stressResponse==='말수가 줄어듦'||stressResponse==='아무렇지 않은 척함'){label=text(language,'가라앉음','Subdued','沈んでいる');icon='◒';tone='calm'}
     else if(stressResponse==='걱정이 많아짐'){label=text(language,'걱정스러움','Worried','心配している');icon='☁';tone='tense'}
     else {label=text(language,'긴장함','Tense','緊張している');icon='☁';tone='tense'}

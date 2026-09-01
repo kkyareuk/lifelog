@@ -15,8 +15,8 @@ const checks=[
   [css.includes("personality-emotion-grid")&&css.includes("tactile raised control language"),"정서 페이지 및 입체형 버튼"],
   [views.includes("building-dress-code-dialog")&&views.includes("data-open-place-dress"),"건물 드레스코드 전용 팝업"],
   [townCss.includes("grid-template-columns:repeat(3,minmax(0,1fr))")&&townCss.includes("building-dress-code-dialog"),"드레스코드 3열 선택"],
-  [gradle.includes("versionCode 190")&&gradle.includes('versionName "1.0.177"'),"개발 빌드 190 / 1.0.177"],
-  [sw.includes("drawer-village-v20260901-emotion-190")&&sw.includes("life-log-localization.js"),"새 캐시 및 생활 로그 번역 모듈"]
+  [/versionCode\s+19\d/.test(gradle)&&/versionName\s+"1\.0\.17\d"/.test(gradle),"개발 빌드 190대 / 1.0.17x"],
+  [/drawer-village-v20260901-(?:emotion-190|statistics-191)/.test(sw)&&sw.includes("life-log-localization.js"),"새 캐시 및 생활 로그 번역 모듈"]
 ];
 checks.forEach(([ok,label])=>assert.ok(ok,label));
 

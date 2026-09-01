@@ -197,48 +197,11 @@ const normalizedBodyProfile=value=>{
     notes:String(source.notes||"").slice(0,600)
   };
 };
-const defaultCatalog=()=>({
-  food:[
-    {id:"food-omurice",kind:"food",name:"오므라이스",category:"일본 음식",image:"",spicy:0,sweet:2},
-    {id:"food-malatang",kind:"food",name:"마라탕",category:"중국 음식",image:"",spicy:5,sweet:0},
-    {id:"food-tiramisu",kind:"food",name:"티라미수",category:"디저트",image:"",spicy:0,sweet:5}
-  ],
-  drink:[
-    {id:"drink-ein",kind:"drink",name:"아인슈페너",category:"커피",image:"",sweet:3},
-    {id:"drink-matcha",kind:"drink",name:"말차 라테",category:"라테",image:"",sweet:4}
-  ],
-  fashion:[
-    {id:"fashion-cardigan",kind:"fashion",name:"빈티지 가디건",category:"상의",image:"",style:"빈티지"},
-    {id:"fashion-coat",kind:"fashion",name:"롱 코트",category:"아우터",image:"",style:"클래식"}
-  ],
-  music:[
-    {id:"music-night",kind:"music",name:"한밤의 산책",category:"재즈",image:"",creator:"달빛 트리오"},
-    {id:"music-blue",kind:"music",name:"Blue Window",category:"인디",image:"",creator:"유리새"}
-  ],
-  idol:[
-    {id:"idol-lumen",kind:"idol",name:"LUMEN",category:"아이돌",image:"",creator:"보이그룹"},
-    {id:"idol-meteor",kind:"idol",name:"METEOR CLUB",category:"밴드",image:"",creator:"록 밴드"}
-  ],
-  book:[
-    {id:"book-midnight",kind:"book",name:"새벽의 도서관",category:"추리 소설",image:"",creator:"한여름"}
-  ],
-  movie:[
-    {id:"movie-starlight",kind:"movie",name:"별빛 극장",category:"판타지 영화",image:"",creator:"서랍 스튜디오"}
-  ],
-  game:[
-    {id:"game-pocket",kind:"game",name:"포켓 아케이드",category:"RPG",image:"",creator:"민트 게임즈"}
-  ],
-  perfume:[
-    {id:"perfume-garden",kind:"perfume",name:"비 온 뒤 정원",category:"우디 플로럴",image:""}
-  ],
-  hobby:[
-    {id:"hobby-perfume",kind:"hobby",name:"달빛 향수 키트",category:"조향",image:""},
-    {id:"hobby-figure",kind:"hobby",name:"한정판 피규어",category:"수집",image:""}
-  ],
-  electronics:[],
-  ingredient:[],
-  weapon:[]
-});
+// New worlds start with a genuinely blank dictionary. Existing worlds keep
+// every item already stored in their own catalog during normalization.
+const defaultCatalog=()=>Object.fromEntries([
+  "food","drink","fashion","music","idol","book","movie","game","perfume","hobby","electronics","ingredient","weapon"
+].map(kind=>[kind,[]]));
 const defaultHomeSceneLayout=()=>({
   sd:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0},
   ld:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0}
@@ -261,9 +224,9 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:32,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],anniversaries:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"평판 정보 없음",fameLevel:"거의 알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
-  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
-  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
+const fresh=()=>({schema:33,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",statisticsTownId:"all",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],anniversaries:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"평판 정보 없음",fameLevel:"거의 알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
+  {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
+  {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
   {id:"clinic",name:"새봄 의원",type:"병원",emoji:"🩺",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:21,y:68,color:"#6db7e8"},
   {id:"park",name:"별꼬리 공원",type:"공원",emoji:"🌳",image:"",imageScale:1,stock:[],priceRange:"무료",servicePrice:"무료",audiences:[],spicy:0,sweet:0,x:64,y:76,color:"#66c68a"}
@@ -296,7 +259,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=31;
+  x.schema=33;
   x.activeTab=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
@@ -584,6 +547,7 @@ function normalizeHomes(x){
     item.interactions=Array.isArray(item.interactions)?item.interactions.map(String).filter(Boolean):[];
   }));
   x.activeTownId=x.towns.some(t=>t.id===x.activeTownId)?x.activeTownId:x.towns[0].id;
+  x.statisticsTownId=x.statisticsTownId==="all"||x.towns.some(t=>t.id===x.statisticsTownId)?String(x.statisticsTownId||"all"):"all";
   x.world=clone(x.towns.find(t=>t.id===x.activeTownId));
   const defaultsCatalog=defaultCatalog();
   x.catalog=x.catalog&&typeof x.catalog==="object"&&!Array.isArray(x.catalog)?x.catalog:{};
@@ -594,6 +558,7 @@ function normalizeHomes(x){
     item.materials=Array.isArray(item.materials)?item.materials:(item.material?[item.material]:[]);
     item.colors=Array.isArray(item.colors)?item.colors:(item.color?[item.color]:[]);
     item.flairs=Array.isArray(item.flairs)?item.flairs:(item.flair?[item.flair]:[]);
+    item.sceneLayout=normalizeHomeSceneLayout(item.sceneLayout);
   });
   (x.world?.places||[]).forEach(p=>{
     if(p.type==="회사")p.type="사무실";
@@ -746,6 +711,8 @@ function normalizeHomes(x){
     c.positiveMoodResponse=["조용히 만족함","미소와 말로 표현함","주변과 기쁨을 나눔","기쁨이 크게 드러남","좋은 일도 먼저 의심함"].includes(c.positiveMoodResponse)?c.positiveMoodResponse:"미소와 말로 표현함";
     c.stressMoodResponse=["잠시 거리를 둠","말수가 줄어듦","걱정이 많아짐","예민해짐","화부터 남","도움을 요청함","아무렇지 않은 척함"].includes(c.stressMoodResponse)?c.stressMoodResponse:"잠시 거리를 둠";
     c.moodRecoveryStyle=["혼자 정리하며 회복","가까운 사람과 이야기하며 회복","쉬거나 자면서 회복","취미에 몰두하며 회복","문제를 해결해야 회복","시간이 지나야 회복"].includes(c.moodRecoveryStyle)?c.moodRecoveryStyle:"혼자 정리하며 회복";
+    c.angerResponse=["차분히 이유를 확인함","말수가 차갑게 줄어듦","즉시 잘못을 따짐","목소리가 커짐","자리를 피해 식힘","울컥하지만 말을 고름","해결책을 분명히 요구함"].includes(c.angerResponse)?c.angerResponse:"차분히 이유를 확인함";
+    c.flirtResponse=["눈치채지 못함","알아도 모른 척함","당황해 거리를 둠","은근히 받아줌","장난스럽게 맞받음","직접 호응함","상대를 경계함"].includes(c.flirtResponse)?c.flirtResponse:"알아도 모른 척함";
      c.characterTraits=Array.isArray(c.characterTraits)?[...new Set(c.characterTraits.map(String))].slice(0,8):[];
      c.traitExpressions=Array.isArray(c.traitExpressions)?[...new Set(c.traitExpressions.map(String))].slice(0,8):[];
      c.traitNotes=String(c.traitNotes||"").slice(0,1200);
@@ -798,6 +765,7 @@ function normalizeHomes(x){
     const legacyLd=[c.ldNeutral,c.ldJoy,c.ldSad,c.ldAngry,c.ldTired].find(value=>typeof value==="string"&&value.trim());
     c.ldImage=typeof c.ldImage==="string"&&c.ldImage.trim()?c.ldImage:legacyLd||"";
     c.sceneImageVariants=normalizeSceneImageVariants(c.sceneImageVariants);
+    c.characterMenuTheme=String(c.characterMenuTheme||"drawer-default")==="drawer-default"?"drawer-default":"drawer-default";
     ["ldNeutral","ldJoy","ldSad","ldAngry","ldTired"].forEach(field=>delete c[field]);
     c.homeVisualMode=c.homeVisualMode==="ld"?"ld":"sd";
     // 홈 UI 팩은 전역 기본값을 상속할 수 있고, 이후 판매/다운로드 팩을
@@ -1029,7 +997,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",educationLevel:"설정하지 않음",lifeAdaptation:"설정하지 않음",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",sceneImageVariants:normalizeSceneImageVariants(),homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",emotionalBaseline:"현실적인 편",moodVolatility:"상황에 따라 달라짐",moodPersistence:"보통",positiveMoodResponse:"미소와 말로 표현함",stressMoodResponse:"잠시 거리를 둠",moodRecoveryStyle:"혼자 정리하며 회복",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",educationLevel:"설정하지 않음",lifeAdaptation:"설정하지 않음",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",sceneImageVariants:normalizeSceneImageVariants(),characterMenuTheme:"drawer-default",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",emotionalBaseline:"현실적인 편",moodVolatility:"상황에 따라 달라짐",moodPersistence:"보통",positiveMoodResponse:"미소와 말로 표현함",stressMoodResponse:"잠시 거리를 둠",moodRecoveryStyle:"혼자 정리하며 회복",angerResponse:"차분히 이유를 확인함",flirtResponse:"알아도 모른 척함",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.characters[id].commuteModes=[];
   state.characters[id].dailyHabits=[];
   state.characters[id].behaviorHabits=[];
@@ -1073,7 +1041,7 @@ export function deleteCharacter(id){
   state.activeId=state.order[0]||null;
   save(true);
 }
-const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle"]);
+const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse"]);
 const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
   [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});
