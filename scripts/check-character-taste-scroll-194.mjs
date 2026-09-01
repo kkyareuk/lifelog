@@ -4,10 +4,10 @@ import assert from "node:assert/strict";
 const read=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),"utf8");
 const views=read("views.js"),css=read("character-book.css"),gradle=read("android/app/build.gradle"),index=read("index.html"),sw=read("sw.js");
 
-assert.match(gradle,/versionCode\s+(?:194|195)/);
-assert.match(gradle,/versionName\s+["']1\.0\.(?:181|182)["']/);
-assert.match(index,/20260902(?:taste194|personality195)/);
-assert.match(sw,/(?:taste-scroll-194|personality-home-195)/);
+assert.match(gradle,/versionCode\s+(?:194|195|196)/);
+assert.match(gradle,/versionName\s+["']1\.0\.(?:181|182|183)["']/);
+assert.match(index,/20260902(?:taste194|personality195|emotion196)/);
+assert.match(sw,/(?:taste-scroll-194|personality-home-195|emotion-tastes-196)/);
 
 assert.match(views,/<div class="personality-emotion-heading">/);
 assert.doesNotMatch(views,/<header class="personality-emotion-heading">/);

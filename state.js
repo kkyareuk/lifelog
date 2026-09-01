@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902personality195";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260902personality195";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902personality195";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260902personality195";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902personality195";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260902personality195";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260902personality195";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260902personality195";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260902personality195";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260902emotion196";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260902emotion196";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902emotion196";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260902emotion196";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902emotion196";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260902emotion196";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260902emotion196";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260902emotion196";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260902emotion196";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260902personality195";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260902personality195";
+import {missingBuildings} from "./building-recovery.js?v=20260902emotion196";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260902emotion196";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -714,7 +714,7 @@ function normalizeHomes(x){
     c.personalityTypes=Array.isArray(c.personalityTypes)?[...new Set(c.personalityTypes.map(String))].slice(0,4):[];
     const personalityProfile=[...c.personalityTypes,...(Array.isArray(c.characterTraits)?c.characterTraits:[]),c.energyRhythm,c.emotionalExpression].filter(Boolean).join(" ");
     const inferredEmotionalBaseline=/낙천|긍정|밝고|명랑|쾌활/.test(personalityProfile)?"낙천적인 편":/온화|다정|느긋|여유/.test(personalityProfile)?"대체로 밝은 편":/냉정|무덤덤|무심|과묵|감정을 잘 드러내지/.test(personalityProfile)?"무덤덤한 편":/걱정|불안|예민/.test(personalityProfile)?"걱정이 많은 편":"현실적인 편";
-    c.emotionalBaseline=["낙천적인 편","대체로 밝은 편","현실적인 편","무덤덤한 편","걱정이 많은 편","비관적인 편"].includes(c.emotionalBaseline)?c.emotionalBaseline:inferredEmotionalBaseline;
+    c.emotionalBaseline=["매우 낙천적임","낙천적인 편","대체로 밝은 편","쾌활한 편","열정적인 편","다정한 편","유혹적인 편","호기심 많은 편","차분한 편","현실적인 편","무덤덤한 편","냉소적인 편","까칠한 편","예민한 편","걱정이 많은 편","불안한 편","침울한 편","비관적인 편","분노를 품은 편"].includes(c.emotionalBaseline)?c.emotionalBaseline:inferredEmotionalBaseline;
     c.moodVolatility=["거의 흔들리지 않음","안정적인 편","상황에 따라 달라짐","변화가 잦은 편","변화 폭이 큼"].includes(c.moodVolatility)?c.moodVolatility:"상황에 따라 달라짐";
     c.moodPersistence=["금방 지나감","짧게 남음","보통","오래 남음","매우 오래 남음"].includes(c.moodPersistence)?c.moodPersistence:"보통";
     c.positiveMoodResponse=["조용히 만족함","미소와 말로 표현함","주변과 기쁨을 나눔","기쁨이 크게 드러남","좋은 일도 먼저 의심함"].includes(c.positiveMoodResponse)?c.positiveMoodResponse:"미소와 말로 표현함";
@@ -722,6 +722,8 @@ function normalizeHomes(x){
     c.moodRecoveryStyle=["혼자 정리하며 회복","가까운 사람과 이야기하며 회복","쉬거나 자면서 회복","취미에 몰두하며 회복","문제를 해결해야 회복","시간이 지나야 회복"].includes(c.moodRecoveryStyle)?c.moodRecoveryStyle:"혼자 정리하며 회복";
     c.angerResponse=["차분히 이유를 확인함","말수가 차갑게 줄어듦","즉시 잘못을 따짐","목소리가 커짐","자리를 피해 식힘","울컥하지만 말을 고름","해결책을 분명히 요구함"].includes(c.angerResponse)?c.angerResponse:"차분히 이유를 확인함";
     c.flirtResponse=["눈치채지 못함","알아도 모른 척함","당황해 거리를 둠","은근히 받아줌","장난스럽게 맞받음","직접 호응함","상대를 경계함"].includes(c.flirtResponse)?c.flirtResponse:"알아도 모른 척함";
+    c.emotionalSensitivity=["매우 둔감함","둔감한 편","보통","예민한 편","매우 예민함"].includes(c.emotionalSensitivity)?c.emotionalSensitivity:"보통";
+    c.emotionalContagion=["거의 물들지 않음","가까운 사람에게만 물듦","상황에 따라 물듦","쉽게 물드는 편","매우 쉽게 물듦"].includes(c.emotionalContagion)?c.emotionalContagion:"상황에 따라 물듦";
      c.characterTraits=Array.isArray(c.characterTraits)?[...new Set(c.characterTraits.map(String))].slice(0,8):[];
      c.traitExpressions=Array.isArray(c.traitExpressions)?[...new Set(c.traitExpressions.map(String))].slice(0,8):[];
      c.traitNotes=String(c.traitNotes||"").slice(0,1200);
@@ -760,9 +762,14 @@ function normalizeHomes(x){
       ? [...c.foodPreferences]
       : [...new Set([...c.tastes,...c.foodTypes])];
     c.drinks=Array.isArray(c.drinks)?[...c.drinks]:[];
+    ["favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks"].forEach(field=>c[field]=Array.isArray(c[field])?[...new Set(c[field])]:[]);
+    ["dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks"].forEach(field=>c[field]=Array.isArray(c[field])?[...new Set(c[field])]:[]);
     c.favorites=c.favorites&&typeof c.favorites==="object"&&!Array.isArray(c.favorites)?c.favorites:{};
     Object.entries(c.favorites).forEach(([kind,ids])=>c.favorites[kind]=Array.isArray(ids)?[...new Set(ids.map(String))]:[]);
     Object.keys(defaultsCatalog).forEach(kind=>c.favorites[kind]=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[]);
+    c.dislikes=c.dislikes&&typeof c.dislikes==="object"&&!Array.isArray(c.dislikes)?c.dislikes:{};
+    Object.entries(c.dislikes).forEach(([kind,ids])=>c.dislikes[kind]=Array.isArray(ids)?[...new Set(ids.map(String))]:[]);
+    Object.keys(defaultsCatalog).forEach(kind=>c.dislikes[kind]=Array.isArray(c.dislikes[kind])?[...c.dislikes[kind]]:[]);
     c.inventory=c.inventory&&typeof c.inventory==="object"&&!Array.isArray(c.inventory)?c.inventory:{};
     Object.entries(c.inventory).forEach(([kind,ids])=>c.inventory[kind]=Array.isArray(ids)?[...new Set(ids.map(String))]:[]);
     Object.keys(defaultsCatalog).forEach(kind=>c.inventory[kind]=Array.isArray(c.inventory[kind])?[...c.inventory[kind]]:[]);
@@ -1006,7 +1013,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",educationLevel:"설정하지 않음",lifeAdaptation:"설정하지 않음",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",sceneImageVariants:normalizeSceneImageVariants(),characterMenuTheme:"drawer-default",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",emotionalBaseline:"현실적인 편",moodVolatility:"상황에 따라 달라짐",moodPersistence:"보통",positiveMoodResponse:"미소와 말로 표현함",stressMoodResponse:"잠시 거리를 둠",moodRecoveryStyle:"혼자 정리하며 회복",angerResponse:"차분히 이유를 확인함",flirtResponse:"알아도 모른 척함",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favorites:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",educationLevel:"설정하지 않음",lifeAdaptation:"설정하지 않음",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",sceneImageVariants:normalizeSceneImageVariants(),characterMenuTheme:"drawer-default",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",emotionalBaseline:"현실적인 편",moodVolatility:"상황에 따라 달라짐",moodPersistence:"보통",positiveMoodResponse:"미소와 말로 표현함",stressMoodResponse:"잠시 거리를 둠",moodRecoveryStyle:"혼자 정리하며 회복",angerResponse:"차분히 이유를 확인함",flirtResponse:"알아도 모른 척함",emotionalSensitivity:"보통",emotionalContagion:"상황에 따라 물듦",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favoriteAnimals:[],favoriteElectronics:[],favoriteWeapons:[],favoriteBooks:[],dislikedStoryGenres:[],dislikedFoodPreferences:[],dislikedDrinks:[],dislikedMusicGenres:[],dislikedVideoGenres:[],dislikedGameGenres:[],dislikedScentNotes:[],dislikedAnimals:[],dislikedElectronics:[],dislikedWeapons:[],dislikedBooks:[],favorites:{},dislikes:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.characters[id].commuteModes=[];
   state.characters[id].dailyHabits=[];
   state.characters[id].behaviorHabits=[];
@@ -1050,7 +1057,7 @@ export function deleteCharacter(id){
   state.activeId=state.order[0]||null;
   save(true);
 }
-const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse"]);
+const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
 SIMULATION_FIELDS.add("diligence");
 const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
@@ -1574,6 +1581,7 @@ export function updateCatalogItem(kind,id,patch){
 export function deleteCatalogItem(kind,id){
   state.catalog[kind]=(state.catalog[kind]||[]).filter(x=>x.id!==id);
   Object.values(state.characters).forEach(c=>{if(c.favorites?.[kind])c.favorites[kind]=c.favorites[kind].filter(x=>x!==id)});
+  Object.values(state.characters).forEach(c=>{if(c.dislikes?.[kind])c.dislikes[kind]=c.dislikes[kind].filter(x=>x!==id)});
   Object.values(state.characters).forEach(c=>{if(c.inventory?.[kind])c.inventory[kind]=c.inventory[kind].filter(x=>x!==id)});
   state.world.places.forEach(p=>p.stock=(p.stock||[]).filter(x=>x!==id));
   save(true);
@@ -1581,7 +1589,12 @@ export function deleteCatalogItem(kind,id){
 export function toggleFavorite(characterId,kind,itemId,persist=true){
   const c=state.characters[characterId];if(!c)return;
   c.favorites=c.favorites||{};const list=Array.isArray(c.favorites[kind])?[...c.favorites[kind]]:[];
-  c.favorites[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);
+  c.favorites[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];c.timelineResetAt=Date.now();if(persist)save(true);
+}
+export function toggleDislike(characterId,kind,itemId,persist=true){
+  const c=state.characters[characterId];if(!c)return;
+  c.dislikes=c.dislikes||{};const list=Array.isArray(c.dislikes[kind])?[...c.dislikes[kind]]:[];
+  c.dislikes[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];c.timelineResetAt=Date.now();if(persist)save(true);
 }
 export function togglePlaceStock(placeId,itemId){
   const p=state.world.places.find(x=>x.id===placeId);if(!p)return;

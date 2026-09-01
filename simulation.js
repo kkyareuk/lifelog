@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260902personality195";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260902personality195";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902personality195";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260902personality195";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260902personality195";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260902emotion196";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260902emotion196";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902emotion196";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260902emotion196";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260902emotion196";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2378,6 +2378,49 @@ function profileSettingScenePool(c,date){
     "욱한 마음을 뒤늦게 가라앉히는 중","감정이 먼저 튀어나온 뒤 상황을 다시 보고, 더 커지기 전에 자리를 정리하며 숨을 골랐어요.",
     "Cooling down after a quick reaction","Their feelings came out first, then they reassessed the situation and stepped back before it grew.",
     "とっさの反応をあとから落ち着かせるところ","感情が先に出たあと状況を見直し、大きくなる前に距離を取って呼吸を整えました。","living",["impulseControl"]);
+  const baseline=String(c.emotionalBaseline||"");
+  if(/유혹적인/.test(baseline))add("emotional-baseline",
+    "상대의 반응을 살피며 여유 있게 말을 건네는 중","가까이 있던 사람의 표정을 먼저 살핀 뒤, 부담스럽지 않은 칭찬을 한마디 건네고 상대가 받아들이는 만큼만 대화를 이어 갔어요.",
+    "Speaking with a quietly flirtatious air","They read the other person's expression first, offered one light compliment, and continued only as far as it was welcomed.",
+    "相手の反応を見ながら余裕をもって話すところ","相手の表情を先に確かめ、重くならない褒め言葉を一つ伝え、受け入れられた分だけ会話を続けました。","living",["emotionalBaseline","flirtResponse"]);
+  else if(/분노를 품은/.test(baseline))add("emotional-baseline",
+    "마음에 남은 분노를 안전하게 풀어내는 중","화를 아무에게나 퍼붓지 않으려고 불편했던 사실을 종이에 적고, 지금 바꿀 수 있는 것과 당장 건드리지 않을 것을 나누었어요.",
+    "Working through anger without lashing out","Rather than taking the anger out on someone, they wrote down what happened and separated what could be changed now from what should wait.",
+    "残った怒りを安全に整理するところ","誰かに怒りをぶつけず、気になった事実を書き出し、今変えられることと後に回すことを分けました。","study",["emotionalBaseline","angerResponse","impulseControl"]);
+  else if(/까칠한|냉소적인/.test(baseline))add("emotional-baseline",
+    "거슬리는 부분을 짧고 분명하게 짚는 중","에둘러 괜찮은 척하지 않고 무엇이 마음에 들지 않는지 한 문장으로 말한 뒤, 불필요하게 상대를 몰아세우지는 않았어요.",
+    "Pointing out what bothered them","They stated exactly what bothered them in one sentence instead of pretending it was fine, without needlessly cornering anyone.",
+    "気になる点を短くはっきり伝えるところ","平気なふりをせず、何が気に入らないのか一文で伝え、必要以上に相手を追い詰めませんでした。","living",["emotionalBaseline","stressMoodResponse"]);
+  else if(/쾌활한|열정적인|낙천적/.test(baseline))add("emotional-baseline",
+    "작은 재미를 찾아 분위기를 바꾸는 중","뜻대로 되지 않은 일은 잠시 내려놓고 지금 해낼 수 있는 작은 일을 골라, 자기다운 속도로 다시 기운을 끌어올렸어요.",
+    "Finding a small spark to reset the mood","They set aside what had gone wrong, picked one small thing they could finish, and rebuilt their energy in their own way.",
+    "小さな楽しみを見つけて気分を変えるところ","うまくいかなかったことはいったん置き、今できる小さなことを選んで自分らしく元気を取り戻しました。","living",["emotionalBaseline","positiveMoodResponse"]);
+  else if(/불안한|걱정이 많은|예민한/.test(baseline))add("emotional-baseline",
+    "신경 쓰이는 단서를 하나씩 확인하는 중","막연한 걱정을 키우지 않으려고 실제로 본 것과 추측을 나누어 적고, 먼저 확인할 한 가지부터 차분히 살폈어요.",
+    "Checking one worrying detail at a time","To keep worry from snowballing, they separated facts from guesses and calmly checked the first thing they could verify.",
+    "気になる手がかりを一つずつ確かめるところ","不安を膨らませないよう事実と推測を分けて書き、まず確認できる一つから落ち着いて確かめました。","study",["emotionalBaseline","emotionalSensitivity"]);
+  if(/매우 예민|예민한 편/.test(c.emotionalSensitivity||""))add("emotion-sensitivity",
+    "작은 분위기 변화를 먼저 알아차린 중","말끝과 방 안의 소리가 평소와 조금 달라진 것을 알아차리고, 바로 단정하지 않은 채 무엇이 달라졌는지 조용히 살폈어요.",
+    "Noticing a subtle change in the atmosphere","They caught a small change in tone and room noise, then quietly observed without jumping to a conclusion.",
+    "小さな空気の変化に先に気づいたところ","声の調子と部屋の音がいつもと少し違うことに気づき、決めつけず静かに様子を見ました。","living",["emotionalSensitivity"]);
+  if(/쉽게 물드는|매우 쉽게/.test(c.emotionalContagion||""))add("emotion-contagion",
+    "주변의 기분에 휩쓸리지 않게 호흡을 고르는 중","가까운 사람의 표정에 자기 기분까지 흔들린 것을 알아차리고, 상대의 감정과 자기 마음을 잠시 나누어 생각했어요.",
+    "Separating their mood from someone else's","They noticed another person's expression shifting their own mood, breathed, and separated the other person's feelings from their own.",
+    "周りの感情と自分の気持ちを分けるところ","近くの人の表情で自分の気分まで揺れたことに気づき、相手の感情と自分の気持ちを分けて考えました。","living",["emotionalContagion"]);
+  const catalogName=(kind,id)=>state.catalog?.[kind]?.find(item=>item.id===id)?.name||"";
+  const catalogSelections=selection=>Object.entries(selection||{}).flatMap(([kind,ids])=>(ids||[]).map(id=>catalogName(kind,id))).filter(Boolean);
+  const likedThings=[...(c.interests||[]),...(c.hobbies||[]),...(c.foodPreferences||[]),...(c.musicGenres||[]),...(c.favoriteStoryGenres||[]),...catalogSelections(c.favorites)].filter(Boolean);
+  const dislikedThings=[...(c.dislikedFoodPreferences||[]),...(c.dislikedDrinks||[]),...(c.dislikedMusicGenres||[]),...(c.dislikedStoryGenres||[]),...(c.dislikedVideoGenres||[]),...(c.dislikedGameGenres||[]),...(c.dislikedScentNotes||[]),...(c.dislikedAnimals||[]),...(c.dislikedElectronics||[]),...(c.dislikedWeapons||[]),...(c.dislikedBooks||[]),...catalogSelections(c.dislikes)].filter(Boolean);
+  const likedThing=likedThings[hash(`${c.id}:${dayKey(date)}:liked-profile`)%Math.max(1,likedThings.length)];
+  const dislikedThing=dislikedThings[hash(`${c.id}:${dayKey(date)}:disliked-profile`)%Math.max(1,dislikedThings.length)];
+  if(likedThing)add("preference-liked",
+    `${likedThing}을(를) 골라 기분을 바꾸는 중`,`평소 좋아하는 ${likedThing}을(를) 발견하고 잠시 하던 일을 멈췄어요. 자기 취향에 맞는 부분을 충분히 즐긴 뒤 표정이 한결 부드러워졌어요.`,
+    `Enjoying a favorite: ${likedThing}`,`They noticed ${likedThing}, something they genuinely like, paused what they were doing, and relaxed as they enjoyed it.`,
+    `好きな${likedThing}を選んで気分を変えるところ`,`普段から好きな${likedThing}に気づいて手を止め、好みの部分をじっくり楽しむうち表情がやわらぎました。`,`living`,["interests","hobbies","foodPreferences","musicGenres","favorites"]);
+  if(dislikedThing)add("preference-disliked",
+    `${dislikedThing}을(를) 피할 방법을 찾는 중`,`싫어하는 ${dislikedThing}을(를) 억지로 참지 않고 다른 선택으로 바꿀 수 있는지 확인했어요. 당장 피할 수 없다면 머무는 시간을 줄이기로 했어요.`,
+    `Finding a way around ${dislikedThing}`,`Rather than forcing themselves to endure something they dislike, they looked for an alternative and planned to limit the exposure if there was none.`,
+    `苦手な${dislikedThing}を避ける方法を探すところ`,`嫌いな${dislikedThing}を無理に我慢せず、別の選択へ変えられるか確かめ、避けられなければ接する時間を短くしました。`,`living`,["dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedStoryGenres","dislikes"]);
   const favoriteFood=(c.foodPreferences||[])[0]||(c.foodTypes||[])[0];
   if(favoriteFood||Number.isFinite(Number(c.spiceTolerance))||Number.isFinite(Number(c.sweetPreference)))add("taste",
     "입맛에 맞게 간을 조절하는 중",`${favoriteFood?`${favoriteFood}을(를) 준비하며 `:""}한 입씩 맛을 보고 좋아하는 매운맛과 단맛이 될 때까지 양념을 조금씩 더했어요.`,
@@ -2847,7 +2890,7 @@ function signature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c.id);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
   signatureCache.set(c.id,{character:c,revision,value});
   if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
   return value;
@@ -3336,6 +3379,36 @@ function liveGapEvent(c,last,n,date){
       ko:["하던 일을 바꾸어 새 자극을 찾는 중","같은 일이 길어져 흥미가 떨어지자 자리를 옮기고 짧게 몰입할 다른 일을 고르고 있어요.","study"],
       en:["Switching activities for a change of pace","As the same task grew dull, they moved spots and chose something different to focus on for a while.","study"],
       ja:["気分転換に別のことを探しているところ","同じことが続いて飽きてきたため場所を移し、短く集中できる別のことを選んでいます。","study"]
+    },
+    furious:{
+      ko:["사람이 없는 곳에서 거칠어진 숨을 고르는 중","당장 상대를 찾아가지 않고 손에 힘을 풀며, 무슨 행동이 분노를 일으켰는지 사실부터 적고 있어요.","study"],
+      en:["Cooling down away from other people","Instead of confronting anyone immediately, they loosened their grip and wrote down the exact action that triggered the anger.","study"],
+      ja:["人のいない場所で荒い呼吸を整えるところ","すぐ相手の所へ行かず手の力を抜き、どの行動が怒りを引き起こしたか事実から書いています。","study"]
+    },
+    irritated:{
+      ko:["거슬리는 일을 짧게 끝내는 중","말이 더 날카로워지기 전에 꼭 필요한 부분만 처리하고, 나머지는 기분이 가라앉은 뒤 다시 보기로 했어요.","study"],
+      en:["Finishing only the necessary part","Before their words grew sharper, they handled only what was necessary and left the rest until their mood settled.","study"],
+      ja:["気になる作業を必要な分だけ終えるところ","言葉がさらに尖る前に必要な部分だけ済ませ、残りは気分が落ち着いてから見ることにしました。","study"]
+    },
+    disgusted:{
+      ko:["불쾌한 자극에서 잠시 벗어나는 중","억지로 참고 머물지 않고 원인을 치운 뒤 창문을 열어 공기를 바꾸고 손을 씻었어요.","bath"],
+      en:["Stepping away from an unpleasant stimulus","They removed the cause instead of forcing themselves to endure it, opened a window, and washed their hands.","bath"],
+      ja:["不快な刺激からいったん離れるところ","無理に我慢せず原因を片づけ、窓を開けて空気を入れ替え、手を洗いました。","bath"]
+    },
+    flirty:{
+      ko:["거울을 보며 표정과 옷매무새를 다듬는 중","지금의 여유로운 기분에 어울리도록 옷깃을 정리하고, 상대에게 건넬 말이 부담스럽지 않을지 한 번 생각했어요.","bedroom"],
+      en:["Adjusting their expression and outfit","Matching their poised mood, they straightened their clothes and considered whether the words they wanted to say would feel welcome.","bedroom"],
+      ja:["鏡を見ながら表情と服装を整えるところ","今の余裕ある気分に合わせて襟元を整え、相手への言葉が負担にならないか一度考えました。","bedroom"]
+    },
+    curious:{
+      ko:["궁금해진 것을 직접 확인하는 중","떠오른 질문을 메모한 뒤 관련된 자료를 찾아, 막연한 추측 대신 확인할 수 있는 단서부터 살피고 있어요.","study"],
+      en:["Following up on a new question","They wrote down the question and looked for relevant material, starting with clues they could verify rather than guesses.","study"],
+      ja:["気になったことを自分で確かめるところ","浮かんだ疑問をメモし、関連資料を探して、推測ではなく確認できる手がかりから調べています。","study"]
+    },
+    excited:{
+      ko:["넘치는 기운을 작은 일에 쏟는 중","들뜬 채 여러 일을 벌이지 않도록 바로 끝낼 수 있는 한 가지를 골라 즐겁게 집중하고 있어요.","living"],
+      en:["Channeling their excitement into one small task","To avoid starting too many things at once, they picked one quick task and focused on it with bright energy.","living"],
+      ja:["高まった気分を小さな作業に向けるところ","勢いで多くを始めないよう、すぐ終えられる一つを選び、楽しく集中しています。","living"]
     }
   };
   const moodAction=moodActions[currentMood.tone]?.[state.uiLanguage]||moodActions[currentMood.tone]?.ko;

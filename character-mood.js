@@ -14,8 +14,19 @@ export function moodContext(character,entry,world){
   return {town,place};
 }
 
+const preferenceTerms=(character,world,mode="likes")=>{
+  const fields=mode==="dislikes"
+    ?["dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks"]
+    :["interests","hobbies","foodPreferences","drinks","musicGenres","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteScentNotes","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks"];
+  const direct=fields.flatMap(field=>values(character[field]));
+  const collection=mode==="dislikes"?character.dislikes:character.favorites;
+  const catalog=Object.entries(collection||{}).flatMap(([kind,ids])=>values(ids).map(id=>(world.catalog?.[kind]||[]).find(item=>String(item.id)===String(id))?.name));
+  return [...new Set([...direct,...catalog].map(value=>String(value||"").trim()).filter(value=>value.length>=2))];
+};
+const termsInCopy=(terms,copy)=>terms.filter(term=>copy.includes(term)).slice(0,3);
+
 export function characterMood(character,entry,world,language=world.uiLanguage||'ko'){
-  const {town,place}=moodContext(character,entry,world),reasons=[],supports=[],traits=traitsOf(character),copy=`${entry?.baseTitle||entry?.title||''} ${entry?.desc||''}`,baseline=character.emotionalBaseline||'',volatility=character.moodVolatility||'상황에 따라 달라짐',positiveResponse=character.positiveMoodResponse||'',stressResponse=character.stressMoodResponse||'',recoveryStyle=character.moodRecoveryStyle||'',angerResponse=character.angerResponse||'차분히 이유를 확인함',flirtResponse=character.flirtResponse||'알아도 모른 척함',restrained=/과묵|냉정|무뚝뚝|엄격|표정 변화가 거의 없음|감정을 잘 드러내지 않음|절제/.test(traits)||positiveResponse==='조용히 만족함',outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),optimistic=/낙천|대체로 밝/.test(baseline)||/낙천|긍정|밝고|명랑|쾌활/.test(traits),resilient=optimistic||/온화|다정|느긋|침착|강인|무던|인내/.test(traits),sensitive=/걱정|비관/.test(baseline)||/예민|불안|걱정|신경질|감정 기복|까칠|성급|충동/.test(traits);
+  const {town,place}=moodContext(character,entry,world),reasons=[],supports=[],traits=traitsOf(character),copy=`${entry?.baseTitle||entry?.title||''} ${entry?.desc||''}`,baseline=character.emotionalBaseline||'',volatility=character.moodVolatility||'상황에 따라 달라짐',positiveResponse=character.positiveMoodResponse||'',stressResponse=character.stressMoodResponse||'',recoveryStyle=character.moodRecoveryStyle||'',angerResponse=character.angerResponse||'차분히 이유를 확인함',flirtResponse=character.flirtResponse||'알아도 모른 척함',emotionalSensitivity=character.emotionalSensitivity||'보통',emotionalContagion=character.emotionalContagion||'상황에 따라 물듦',restrained=/과묵|냉정|무뚝뚝|엄격|표정 변화가 거의 없음|감정을 잘 드러내지 않음|절제/.test(traits)||positiveResponse==='조용히 만족함',outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),optimistic=/낙천|밝은|쾌활/.test(baseline)||/낙천|긍정|밝고|명랑|쾌활/.test(traits),resilient=optimistic||/온화|다정|느긋|침착|강인|무던|인내/.test(traits),sensitive=/예민|걱정|불안|침울|비관|까칠|분노/.test(baseline)||/예민|불안|걱정|신경질|감정 기복|까칠|성급|충동/.test(traits);
   const positiveEvent=/성공|칭찬|선물|맛있|즐거|데이트|웃|success|praise|gift|delicious|enjoy|date|laugh|成功|褒め|贈り物|おいし|楽しい|デート|笑/i;
   const angryEvent=/싸우|다투|불편|분노|화가|갈등|짜증|fight|argu|anger|conflict|upset|irritat|喧嘩|争|怒|衝突|不快/i;
   const sadEvent=/실패|거절|상실|울었|슬프|속상|fail|reject|loss|cry|sad|失敗|拒絶|喪失|泣|悲/i;
@@ -24,7 +35,8 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const flirtEvent=/유혹|플러팅|호감 신호|눈빛을 보냄|flirt|come.?on|誘惑|好意のサイン/i;
   const add=(value,ko,en,ja)=>reasons.push({value,text:text(language,ko,en,ja)});
   const support=(value,ko,en,ja)=>supports.push({value,text:text(language,ko,en,ja)});
-  const day=entry?.date||new Date().toISOString().slice(0,10),moment=entry?.interactionId||entry?.minute||entry?.placeId||entry?.room||'scene',rawVariation=(hash(`${character.id}:${day}:${moment}`)%22)-14,volatilityScale=({"거의 흔들리지 않음":.35,"안정적인 편":.65,"상황에 따라 달라짐":1,"변화가 잦은 편":1.2,"변화 폭이 큼":1.45}[volatility]||1),temperVariation=rawVariation<0?(resilient?Math.round(rawVariation*.55):sensitive?Math.round(rawVariation*1.15):rawVariation):rawVariation,variation=Math.round((restrained?temperVariation*.7:temperVariation)*volatilityScale),baselineBias=({"낙천적인 편":5,"대체로 밝은 편":3,"현실적인 편":0,"무덤덤한 편":0,"걱정이 많은 편":-2,"비관적인 편":-4}[baseline]||0);
+  const sensitivityScale=({"매우 둔감함":.55,"둔감한 편":.75,"보통":1,"예민한 편":1.25,"매우 예민함":1.55}[emotionalSensitivity]||1),eventValue=value=>Math.round(value*sensitivityScale);
+  const day=entry?.date||new Date().toISOString().slice(0,10),moment=entry?.interactionId||entry?.minute||entry?.placeId||entry?.room||'scene',rawVariation=(hash(`${character.id}:${day}:${moment}`)%22)-14,volatilityScale=({"거의 흔들리지 않음":.35,"안정적인 편":.65,"상황에 따라 달라짐":1,"변화가 잦은 편":1.2,"변화 폭이 큼":1.45}[volatility]||1),temperVariation=rawVariation<0?(resilient?Math.round(rawVariation*.55):sensitive?Math.round(rawVariation*1.15):rawVariation):rawVariation,variation=Math.round((restrained?temperVariation*.7:temperVariation)*volatilityScale),baselineBias=({"매우 낙천적임":7,"낙천적인 편":5,"대체로 밝은 편":3,"쾌활한 편":4,"열정적인 편":2,"다정한 편":2,"유혹적인 편":1,"호기심 많은 편":1,"차분한 편":1,"현실적인 편":0,"무덤덤한 편":0,"냉소적인 편":-2,"까칠한 편":-2,"예민한 편":-2,"걱정이 많은 편":-3,"불안한 편":-4,"침울한 편":-5,"비관적인 편":-5,"분노를 품은 편":-5}[baseline]||0);
   if(baselineBias)add(baselineBias,baselineBias>0?'평소 정서가 밝은 쪽으로 기울어 있음':'평소 걱정과 부정적인 가능성을 먼저 살피는 편',baselineBias>0?'Their usual outlook leans bright':'They tend to notice worries and negative possibilities first',baselineBias>0?'普段の気持ちは明るい方へ傾きやすい':'普段は心配や悪い可能性を先に考えやすい');
   if(Math.abs(variation)>=4)add(variation,variation>0?'오늘의 생활 리듬이 평소보다 가벼움':'오늘의 생활 리듬이 평소보다 무거움',variation>0?'Today’s rhythm feels lighter than usual':'Today’s rhythm feels heavier than usual',variation>0?'今日は普段より生活のリズムが軽い':'今日は普段より生活のリズムが重い');
   if(goodTown.has(town?.reputation))support(1,'마을의 좋은 생활 환경이 마음을 받쳐 줌','The village environment provides a little reassurance','暮らしやすい村の環境が少し心を支える');
@@ -71,42 +83,86 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const clockMinute=value=>{const match=String(value||'').match(/^(\d{1,2}):(\d{2})$/);return match?Math.max(0,Math.min(1439,Number(match[1])*60+Number(match[2]))):null},sceneMinute=Number.isFinite(Number(entry?.minute))?Number(entry.minute):null,wakeMinute=clockMinute(character.wake),sleepMinute=clockMinute(character.sleep);
   if(sceneMinute!==null&&wakeMinute!==null){const afterWake=(sceneMinute-wakeMinute+1440)%1440;if(afterWake<75&&/천천히|여러 번|뒹굶|비몽사몽|깨워/.test(character.wakeHabit||''))add(-5,'아직 잠이 덜 깨 몸과 생각이 무거움','Still groggy after waking up','まだ目が覚めきらず体も頭も重い')}
   if(sceneMinute!==null&&sleepMinute!==null){const untilSleep=(sleepMinute-sceneMinute+1440)%1440;if(untilSleep<90&&!restEvent.test(copy))add(-5,'평소 잘 시간이 가까워져 집중력이 떨어짐','Focus is fading near the usual bedtime','いつもの就寝時刻が近づき集中力が落ちている')}
+  const likedMatches=termsInCopy(preferenceTerms(character,world,"likes"),copy),dislikedMatches=termsInCopy(preferenceTerms(character,world,"dislikes"),copy);
+  if(likedMatches.length)add(eventValue(11),`${likedMatches.join('·')}처럼 좋아하는 것을 접해 기분이 움직임`,`Encountering a favorite (${likedMatches.join(', ')}) lifted their mood`,`${likedMatches.join('・')}のような好きなものに触れて気持ちが上向いた`);
+  if(dislikedMatches.length)add(eventValue(-15),`${dislikedMatches.join('·')}처럼 싫어하는 것을 마주해 불쾌함`,`Encountering a disliked thing (${dislikedMatches.join(', ')}) upset them`,`${dislikedMatches.join('・')}のような苦手なものに触れて不快になった`);
+  const contagionScale=({"거의 물들지 않음":0,"가까운 사람에게만 물듦":companion?0.7:0,"상황에 따라 물듦":companion?1:0,"쉽게 물드는 편":companion?1.3:0,"매우 쉽게 물듦":companion?1.65:0}[emotionalContagion]||0);
+  if(contagionScale&&positiveEvent.test(copy))add(Math.round(5*contagionScale),'함께 있는 사람의 밝은 감정에 조금 물듦','They picked up some of the other person’s positive emotion','一緒にいる人の明るい感情に少し影響された');
+  if(contagionScale&&(angryEvent.test(copy)||sadEvent.test(copy)))add(Math.round(-6*contagionScale),'함께 있는 사람의 거친 감정이나 침울함이 전해짐','The other person’s anger or sadness rubbed off on them','一緒にいる人の怒りや沈んだ気分が伝わった');
   // A comfortable town, home, relationship, and outfit are buffers. They must not
   // stack into automatic happiness: keep only the strongest supports, capped at +5.
   supports.sort((a,b)=>b.value-a.value);let supportTotal=0;
   for(const item of supports){const value=Math.min(item.value,5-supportTotal);if(value>0){reasons.push({...item,value});supportTotal+=value}if(supportTotal>=5)break}
   const angerNegated=/불편.{0,12}(없|않)|문제.{0,12}(없|않)|갈등.{0,12}(없|않)|다투지|싸우지|no (discomfort|problem|conflict)|without (arguing|conflict)|問題.{0,10}(ない|なく)|不快.{0,10}(ない|なく)|争わず|喧嘩せず/i.test(copy),hasPositiveEvent=positiveEvent.test(copy),hasAngryEvent=angryEvent.test(copy)&&!angerNegated,hasSadEvent=sadEvent.test(copy),hasTiredEvent=tiredEvent.test(copy);
-  if(hasPositiveEvent)add(22,'기쁜 사건이 있었음','Something uplifting happened','うれしい出来事があった');
-  if(hasAngryEvent)add(-28,'불편하거나 화나는 사건','An upsetting event','不快な出来事');
-  if(hasSadEvent)add(-24,'마음이 가라앉는 사건','A saddening event','悲しい出来事');
-  if(hasTiredEvent)add(-16,'피로가 쌓임','Fatigue has built up','疲れがたまっている');
+  if(hasPositiveEvent)add(eventValue(22),'기쁜 사건이 있었음','Something uplifting happened','うれしい出来事があった');
+  if(hasAngryEvent)add(eventValue(-28),'불편하거나 화나는 사건','An upsetting event','不快な出来事');
+  if(hasSadEvent)add(eventValue(-24),'마음이 가라앉는 사건','A saddening event','悲しい出来事');
+  if(hasTiredEvent)add(eventValue(-16),'피로가 쌓임','Fatigue has built up','疲れがたまっている');
   if(flirtEvent.test(copy)){
-    if(/당황|거리|경계/.test(flirtResponse))add(-8,'호감 신호를 받아 경계하거나 당황함','A flirtatious signal made them wary or flustered','好意のサインを受けて警戒したり戸惑ったりしている');
-    else if(/은근히|장난스럽게|직접 호응/.test(flirtResponse))add(10,'호감 신호를 자기 방식으로 받아들임','They welcomed the signal in their own way','好意のサインを自分らしく受け止めた');
+    if(/당황|거리|경계/.test(flirtResponse))add(eventValue(-8),'호감 신호를 받아 경계하거나 당황함','A flirtatious signal made them wary or flustered','好意のサインを受けて警戒したり戸惑ったりしている');
+    else if(/은근히|장난스럽게|직접 호응/.test(flirtResponse))add(eventValue(10),'호감 신호를 자기 방식으로 받아들임','They welcomed the signal in their own way','好意のサインを自分らしく受け止めた');
   }
   if(restEvent.test(copy))add(recoveryStyle==='쉬거나 자면서 회복'?7:3,'쉬면서 조금씩 회복 중','Recovering gradually through rest','休みながら少しずつ回復している');
   const score=Math.max(-100,Math.min(100,reasons.reduce((number,reason)=>number+reason.value,0)));
+  const praiseOrSuccess=/성공|칭찬|해냈|완성|success|praise|complete|成功|褒め|完成/i.test(copy),giftOrFavorite=/선물|맛있|좋아하는|favorite|gift|delicious|贈り物|好き|おいし/i.test(copy),playful=/웃|농담|장난|즐거|laugh|joke|playful|笑|冗談|楽しい/i.test(copy),rejection=/거절|무시|외면|reject|ignore|拒絶|無視/i.test(copy),loss=/상실|잃어|떠나|이별|loss|lost|leave|喪失|失く|別れ/i.test(copy),lonely=/외롭|혼자 남|고립|lonely|isolat|寂し|孤立/i.test(copy),embarrassed=/당황|민망|실수|embarrass|awkward|mistake|戸惑|気まず|失敗/i.test(copy),disgusted=dislikedMatches.length&&/냄새|맛|음식|향|혐오|역겨|smell|taste|disgust|臭|味|嫌悪/i.test(copy);
   let label,icon,tone;
-  if(hasTiredEvent){label=text(language,'피곤함','Tired','疲れている');icon='☾';tone='tired'}
-  else if(hasAngryEvent&&(/목소리가 커짐|즉시 잘못을 따짐|해결책을 분명히 요구함/.test(angerResponse)||stressResponse==='화부터 남')){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
-  else if(hasAngryEvent&&(stressResponse==='말수가 줄어듦'||stressResponse==='아무렇지 않은 척함')){label=text(language,'가라앉음','Subdued','沈んでいる');icon='◒';tone='calm'}
-  else if(hasAngryEvent){label=text(language,stressResponse==='걱정이 많아짐'?'걱정스러움':'긴장함',stressResponse==='걱정이 많아짐'?'Worried':'Tense',stressResponse==='걱정이 많아짐'?'心配している':'緊張している');icon='☁';tone='tense'}
-  else if(score>=30&&!restrained&&positiveResponse==='기쁨이 크게 드러남'){label=text(language,'들뜸','Excited','浮き立っている');icon='✦';tone='excited'}
-  else if(score>=30&&!restrained){label=text(language,'기분 좋음','Feeling good','ご機嫌');icon='☀';tone='good'}
-  else if(score>=24&&restrained){label=text(language,'만족함','Satisfied','満足');icon='◆';tone='good'}
-  else if(score>=11){label=text(language,'기분 좋음','Feeling good','ご機嫌');icon='☀';tone='good'}
+  if(hasTiredEvent&&/졸리|잠|sleepy|眠/.test(copy)){label=text(language,'졸림','Sleepy','眠い');icon='☾';tone='tired'}
+  else if(hasTiredEvent&&/야근|밤샘|지쳤|exhaust|overtime|all.nighter|夜更|疲れ切/.test(copy)){label=text(language,'지침','Exhausted','疲れ切っている');icon='☾';tone='tired'}
+  else if(hasTiredEvent){label=text(language,'피곤함','Tired','疲れている');icon='☾';tone='tired'}
+  else if(flirtEvent.test(copy)&&/당황|거리/.test(flirtResponse)){label=text(language,'당황함','Flustered','戸惑っている');icon='◇';tone='tense'}
+  else if(flirtEvent.test(copy)&&/경계/.test(flirtResponse)){label=text(language,'경계함','Wary','警戒している');icon='△';tone='tense'}
+  else if(flirtEvent.test(copy)&&(/유혹적인/.test(baseline)||/장난스럽게|직접 호응/.test(flirtResponse))){label=text(language,'유혹적임','Flirtatious','誘惑的');icon='✧';tone='flirty'}
+  else if(flirtEvent.test(copy)&&/은근히 받아줌/.test(flirtResponse)){label=text(language,'설렘','Fluttery','ときめいている');icon='♥';tone='flirty'}
+  else if(disgusted){label=text(language,'혐오감','Disgusted','嫌悪感');icon='×';tone='disgusted'}
+  else if(dislikedMatches.length){label=text(language,score<=-20?'불쾌함':'짜증남',score<=-20?'Upset':'Irritated',score<=-20?'不快':'いら立っている');icon='!';tone='irritated'}
+  else if(hasAngryEvent&&(/분노를 품은/.test(baseline)||score<=-45)&&/쉽게 욱함|거의 참지 않음|목소리가 커짐|즉시 잘못을 따짐/.test(`${character.impulseControl||''} ${angerResponse}`)){label=text(language,'격분함','Furious','激怒している');icon='⚡';tone='furious'}
+  else if(hasAngryEvent&&(/목소리가 커짐|즉시 잘못을 따짐|해결책을 분명히 요구함/.test(angerResponse)||stressResponse==='화부터 남'||/분노를 품은/.test(baseline))){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
+  else if(hasAngryEvent&&(stressResponse==='말수가 줄어듦'||stressResponse==='아무렇지 않은 척함')){label=text(language,'서운함','Hurt','傷ついている');icon='◒';tone='sad'}
+  else if(hasAngryEvent&&/까칠|냉소/.test(baseline)){label=text(language,'까칠함','Prickly','とげとげしい');icon='◇';tone='irritated'}
+  else if(hasAngryEvent){label=text(language,stressResponse==='걱정이 많아짐'?'불안함':'긴장함',stressResponse==='걱정이 많아짐'?'Anxious':'Tense',stressResponse==='걱정이 많아짐'?'不安':'緊張している');icon='☁';tone='tense'}
+  else if(hasSadEvent&&loss){label=text(language,'상실감','Grief','喪失感');icon='☂';tone='sad'}
+  else if(hasSadEvent&&lonely){label=text(language,'외로움','Lonely','寂しい');icon='☂';tone='sad'}
+  else if(hasSadEvent&&rejection){label=text(language,'상처받음','Hurt','傷ついている');icon='◒';tone='sad'}
+  else if(hasSadEvent&&embarrassed){label=text(language,'실망함','Disappointed','がっかりしている');icon='◒';tone='sad'}
+  else if(hasSadEvent&&/침울/.test(baseline)){label=text(language,'침울함','Gloomy','沈鬱');icon='☂';tone='sad'}
+  else if(hasSadEvent){label=text(language,'슬픔','Sad','悲しい');icon='☂';tone='sad'}
+  else if(score>=45&&positiveResponse==='기쁨이 크게 드러남'){label=text(language,'황홀함','Elated','有頂天');icon='✦';tone='excited'}
+  else if(score>=30&&praiseOrSuccess){label=text(language,'뿌듯함','Proud','誇らしい');icon='◆';tone='good'}
+  else if(score>=26&&giftOrFavorite){label=text(language,'기쁨','Joyful','うれしい');icon='☀';tone='good'}
+  else if(score>=24&&playful){label=text(language,/쾌활/.test(baseline)?'신남':'즐거움',/쾌활/.test(baseline)?'Energized':'Cheerful',/쾌활/.test(baseline)?'はしゃいでいる':'楽しい');icon='✦';tone='excited'}
+  else if(score>=24&&!restrained&&positiveResponse==='기쁨이 크게 드러남'){label=text(language,'들뜸','Excited','浮き立っている');icon='✦';tone='excited'}
+  else if(score>=18&&/열정적인/.test(baseline)){label=text(language,'의욕적임','Motivated','意欲的');icon='↑';tone='good'}
+  else if(score>=18&&/다정한/.test(baseline)&&companion){label=text(language,'다정함','Affectionate','優しい気持ち');icon='♥';tone='good'}
+  else if(score>=18&&!restrained){label=text(language,'기분 좋음','Feeling good','ご機嫌');icon='☀';tone='good'}
+  else if(score>=12&&restrained){label=text(language,'만족함','Satisfied','満足');icon='◆';tone='good'}
+  else if(score>=11){label=text(language,'안도함','Relieved','ほっとしている');icon='◇';tone='good'}
+  else if(score<=-30&&/침울|비관/.test(baseline)){label=text(language,'침울함','Gloomy','沈鬱');icon='☂';tone='sad'}
   else if(score<=-24){label=text(language,'슬픔','Sad','悲しい');icon='☂';tone='sad'}
   else if(score<=-8){
-    if((stressResponse==='화부터 남'||/목소리가 커짐|즉시 잘못을 따짐|해결책을 분명히 요구함/.test(angerResponse))&&hasAngryEvent){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
+    if(/분노를 품은/.test(baseline)){label=text(language,'분노를 삭이는 중','Simmering','怒りをこらえている');icon='⚡';tone='angry'}
+    else if(/까칠/.test(baseline)){label=text(language,'까칠함','Prickly','とげとげしい');icon='◇';tone='irritated'}
+    else if(/냉소/.test(baseline)){label=text(language,'냉소적임','Cynical','皮肉っぽい');icon='—';tone='irritated'}
     else if(stressResponse==='말수가 줄어듦'||stressResponse==='아무렇지 않은 척함'){label=text(language,'가라앉음','Subdued','沈んでいる');icon='◒';tone='calm'}
-    else if(stressResponse==='걱정이 많아짐'){label=text(language,'걱정스러움','Worried','心配している');icon='☁';tone='tense'}
+    else if(stressResponse==='걱정이 많아짐'||/걱정/.test(baseline)){label=text(language,'걱정스러움','Worried','心配している');icon='☁';tone='tense'}
+    else if(/불안|예민/.test(baseline)){label=text(language,'불안함','Anxious','不安');icon='☁';tone='tense'}
     else {label=text(language,'긴장함','Tense','緊張している');icon='☁';tone='tense'}
   }
   else if(quiet&&outgoing){label=text(language,'지루함','Bored','退屈');icon='…';tone='bored'}
   // 낙천성은 같은 사건을 덜 오래 끌게 하는 완충 성향이지, 음수인 최종
   // 점수를 양수 감정으로 뒤집는 표지가 아니다. 표시 점수와 감정 이름은
   // 반드시 같은 최종 score 구간에서 결정한다.
+  else if(/호기심 많은/.test(baseline)&&/새|처음|발견|궁금|new|first|discover|新し|初めて|発見/.test(copy)){label=text(language,'호기심','Curious','好奇心');icon='?';tone='curious'}
+  else if(/유혹적인/.test(baseline)&&companion){label=text(language,'여유로움','Poised','余裕がある');icon='✧';tone='flirty'}
+  else if(/분노를 품은/.test(baseline)){label=text(language,'날이 서 있음','On edge','気が立っている');icon='!';tone='irritated'}
+  else if(/까칠/.test(baseline)){label=text(language,'까칠함','Prickly','とげとげしい');icon='◇';tone='irritated'}
+  else if(/냉소/.test(baseline)){label=text(language,'냉소적임','Cynical','皮肉っぽい');icon='—';tone='irritated'}
+  else if(/침울/.test(baseline)){label=text(language,'침울함','Gloomy','沈鬱');icon='☂';tone='sad'}
+  else if(/불안/.test(baseline)){label=text(language,'경계함','Wary','警戒している');icon='△';tone='tense'}
+  else if(/쾌활/.test(baseline)&&score>=0){label=text(language,'명랑함','Cheerful','朗らか');icon='☀';tone='good'}
+  else if(/열정/.test(baseline)&&score>=0){label=text(language,'의욕적임','Motivated','意欲的');icon='↑';tone='good'}
+  else if(/다정/.test(baseline)&&companion){label=text(language,'다정함','Affectionate','優しい気持ち');icon='♥';tone='good'}
   else if(optimistic&&score>=0){label=text(language,'기분 좋음','Feeling good','ご機嫌');icon='☀';tone='good'}
+  else if(baseline==='차분한 편'){label=text(language,'차분함','Composed','落ち着いている');icon='◇';tone='calm'}
   else if(baseline==='무덤덤한 편'){label=text(language,'무덤덤함','Unruffled','淡々としている');icon='—';tone='calm'}
   else if((hash(`${character.id}:${day}:neutral`)%2)===0){label=text(language,'차분함','Composed','落ち着いている');icon='◇';tone='calm'}
   else {label=text(language,'평온함','Feeling calm','穏やか');icon='◌';tone='calm'}
