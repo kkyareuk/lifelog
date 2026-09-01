@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260901-mood-189";
+const CACHE_VERSION="drawer-village-v20260901-emotion-190";
 const CORE=[
   "./",
   "./index.html",
@@ -21,6 +21,7 @@ const CORE=[
   "./world-assets/building-types/hospital-light.png",
   "./town-profile.js",
   "./simulation.js",
+  "./life-log-localization.js",
   "./views.js",
   "./furniture-layout.js",
   "./home-simulation.js",
