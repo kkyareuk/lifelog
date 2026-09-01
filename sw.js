@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260901-direct-layout-meals-192";
+const CACHE_VERSION="drawer-village-v20260901-play-games-achievements-193";
 const CORE=[
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const CORE=[
   "./theme.css",
   "./app.js",
   "./state.js",
+  "./achievements.js",
   "./account-storage.js",
   "./town-lighting.js",
   "./world-assets/owner-forest-town.webp",

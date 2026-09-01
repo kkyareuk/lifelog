@@ -1,19 +1,20 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901emotion190";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260901emotion190";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260901emotion190";
-import {characterMood} from "./character-mood.js?v=20260901directlayout192";
-import {createContactMailbox} from "./notification-mail.js?v=20260901emotion190";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260901emotion190";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260901directlayout192";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260901emotion190";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260901emotion190";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260901emotion190";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260901emotion190";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260901emotion190";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260901emotion190";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901achievements193";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260901achievements193";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260901achievements193";
+import {characterMood} from "./character-mood.js?v=20260901achievements193";
+import {createContactMailbox} from "./notification-mail.js?v=20260901achievements193";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260901achievements193";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260901achievements193";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260901achievements193";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260901achievements193";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260901achievements193";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260901achievements193";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260901achievements193";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260901achievements193";
+import {achievementRows} from "./achievements.js?v=20260901achievements193";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -848,7 +849,7 @@ export function setMobileTownPanel(value=""){mobileTownPanel=String(value||"")}
 export function setMobileTownPlacement(kind="",id=""){mobileTownPlacement=kind&&id?{kind:String(kind),id:String(id)}:null}
 export function setSettingsPane(value="home"){
   const next=String(value||"home");
-  settingsPane=["home","gameplay","sound","notifications","display","account","support"].includes(next)?next:"home";
+  settingsPane=["home","gameplay","sound","notifications","display","achievements","account","support"].includes(next)?next:"home";
 }
 export function setNativeShopSection(value="base"){
   const next=String(value||"base");
@@ -3511,16 +3512,25 @@ function settingsContent(){
   const buildLabel=state.uiLanguage==="en"?"Build":state.uiLanguage==="ja"?"ビルド":"빌드";
   const versionText=appVersion?`${appVersion}${versionCode?` · ${buildLabel} ${versionCode}`:""}`:"웹 버전 · 자동 업데이트";
   const appInfo=`<section class="setting-card app-version-card"><h2>앱 정보</h2><p><b>현재 버전</b> <span>${esc(versionText)}</span></p><small>오류를 제보할 때 이 버전과 빌드 번호를 함께 알려 주세요.</small></section>`;
-  const menu=`<nav class="settings-category-grid" aria-label="설정 메뉴"><button type="button" data-tab="settings" data-settings-pane="gameplay"><span>🎮</span><b>게임플레이</b><small>홈 화면과 마을 표시</small></button><button type="button" data-tab="settings" data-settings-pane="sound"><span>🔊</span><b>소리</b><small>이동과 생활 효과음</small></button><button type="button" data-tab="settings" data-settings-pane="notifications"><span>🔔</span><b>알림</b><small>캐릭터 연락과 일정 종료 알림</small></button><button type="button" data-tab="settings" data-settings-pane="display"><span>🖥️</span><b>화면·표시</b><small>화면 모드, 색상 테마, 글자와 조작 크기</small></button><button type="button" data-tab="settings" data-settings-pane="account"><span>☁️</span><b>계정·백업</b><small>언어와 백업 파일</small></button><button type="button" data-tab="settings" data-settings-pane="support"><span>🛟</span><b>도움말·오류 신고</b><small>피드백, 페이지 안내, 초기화</small></button></nav>`;
+  const achievementCopy=({
+    en:{heading:"Achievements",intro:"Progress is saved in this world first, then synced to the signed-in Google Play Games profile on Android.",unlocked:"Unlocked",progress:"In progress",local:"Saved in this world",open:"Open Google Play achievements",signIn:"Connect Play Games",setup:"Google Play achievement IDs have not been connected to this build yet. Local progress is still recorded."},
+    ja:{heading:"実績",intro:"この世界で進捗を先に保存し、Androidではログイン中のGoogle Play Gamesプロフィールへ同期します。",unlocked:"達成済み",progress:"進行中",local:"この世界に保存済み",open:"Google Playの実績を開く",signIn:"Play Gamesに接続",setup:"このビルドにはGoogle Play実績IDがまだ接続されていません。端末内の進捗は記録されます。"},
+    ko:{heading:"업적",intro:"이 월드에서 먼저 달성 여부를 저장하고, Android에서는 로그인된 Google Play 게임즈 프로필에 동기화해요.",unlocked:"달성",progress:"진행 중",local:"이 월드에 기록됨",open:"Google Play 업적 열기",signIn:"Play 게임즈 연결",setup:"아직 이 빌드에 Google Play 업적 ID가 연결되지 않았어요. 게임 안의 달성 기록은 계속 저장됩니다."}
+  }[state.uiLanguage]||null);
+  const achievementList=achievementRows(state,state.uiLanguage),achievementUnlocked=achievementList.filter(item=>item.unlocked).length;
+  const achievementItems=achievementList.map(item=>`<article class="achievement-card ${item.unlocked?"is-unlocked":""}"><span class="achievement-icon" aria-hidden="true">${item.icon}</span><div><small>${item.unlocked?achievementCopy.unlocked:achievementCopy.progress}</small><h3>${esc(item.title)}</h3><p>${esc(item.description)}</p><progress max="${item.goal}" value="${item.value}"></progress><b>${item.value} / ${item.goal}</b></div></article>`).join("");
+  const achievements=`<section class="setting-card achievements-setting-card"><header><span><small>GOOGLE PLAY GAMES</small><h2>${achievementCopy.heading}</h2></span><b>${achievementUnlocked} / ${achievementList.length}</b></header><p>${achievementCopy.intro}</p><p class="achievement-platform-status" data-achievement-platform-status>${achievementCopy.local}</p><div class="achievement-grid">${achievementItems}</div><div class="achievement-actions"><button type="button" data-achievement-sign-in>${achievementCopy.signIn}</button><button type="button" class="primary" data-open-google-achievements>${achievementCopy.open}</button></div><small data-achievement-setup-note hidden>${achievementCopy.setup}</small></section>`;
+  const menu=`<nav class="settings-category-grid" aria-label="설정 메뉴"><button type="button" data-tab="settings" data-settings-pane="gameplay"><span>🎮</span><b>게임플레이</b><small>홈 화면과 마을 표시</small></button><button type="button" data-tab="settings" data-settings-pane="sound"><span>🔊</span><b>소리</b><small>이동과 생활 효과음</small></button><button type="button" data-tab="settings" data-settings-pane="notifications"><span>🔔</span><b>알림</b><small>캐릭터 연락과 일정 종료 알림</small></button><button type="button" data-tab="settings" data-settings-pane="display"><span>🖥️</span><b>화면·표시</b><small>화면 모드, 색상 테마, 글자와 조작 크기</small></button><button type="button" data-tab="settings" data-settings-pane="achievements"><span>🏆</span><b>${achievementCopy.heading}</b><small>${achievementUnlocked} / ${achievementList.length} ${achievementCopy.unlocked}</small></button><button type="button" data-tab="settings" data-settings-pane="account"><span>☁️</span><b>계정·백업</b><small>언어와 백업 파일</small></button><button type="button" data-tab="settings" data-settings-pane="support"><span>🛟</span><b>도움말·오류 신고</b><small>피드백, 페이지 안내, 초기화</small></button></nav>`;
   const paneContent={
     gameplay:`${homeCharacterDisplay}${map}${movement}`,
     sound,
     notifications,
     display:`${measurement}${colorMode}${visualThemeSettings()}${screenScaleSettings()}${ownerNameSettings()}`,
+    achievements,
     account:`${sync}${language}${backup}`,
     support:`${feedback}${guide}<section class="setting-card reset-setting-card"><h2>데이터 초기화</h2><p>기기의 서랍마을 데이터를 모두 지울 때만 사용하세요.</p><button class="danger" data-reset>모든 데이터 초기화</button></section>`
   };
-  const paneNames={gameplay:"게임플레이",sound:"소리",notifications:"알림",display:"화면·표시",account:"계정·백업",support:"도움말·오류 신고"};
+  const paneNames={gameplay:"게임플레이",sound:"소리",notifications:"알림",display:"화면·표시",achievements:achievementCopy.heading,account:"계정·백업",support:"도움말·오류 신고"};
   const body=settingsPane==="home"?`${sync}${appInfo}${menu}`:`<div class="settings-pane-heading"><button type="button" data-tab="settings" data-settings-pane="home" aria-label="설정 메뉴로 돌아가기">‹</button><span><small>SETTINGS</small><h2>${paneNames[settingsPane]}</h2></span></div>${paneContent[settingsPane]||menu}`;
   return `<section class="panel form settings-shell ${settingsPane==="home"?"settings-home":"settings-subpage"}"><h1>${t("settings","설정")}</h1>${body}</section>`;
 }

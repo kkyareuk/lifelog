@@ -22,7 +22,7 @@ const includedFiles=new Set([
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
-  "privacy.html","terms.html","simulation.js","state.js","local-media.js","speech-styles.js","character-notifications.js","sw.js","views.js",
+  "privacy.html","terms.html","simulation.js","state.js","local-media.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
   "town-fit.css"
 ]);
 const relativeModuleImports=source=>{

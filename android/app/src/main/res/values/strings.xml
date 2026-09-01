@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">서랍마을</string>
+    <string name="title_activity_main">서랍마을</string>
+    <string name="package_name">com.drawervillage.app</string>
+    <string name="custom_url_scheme">com.drawervillage.app</string>
+    <!-- Play Console > Play Games Services에서 생성한 값으로 교체한 뒤
+         play_games_configured를 true로 바꿉니다. 빈 ID인 동안에도 게임 안
+         업적은 안전하게 기록되며 네이티브 호출은 실행되지 않습니다. -->
+    <bool name="play_games_configured">false</bool>
+    <string name="game_services_project_id" translatable="false">0</string>
+    <string name="achievement_first_character" translatable="false"></string>
+    <string name="achievement_first_building" translatable="false"></string>
+    <string name="achievement_first_relationship" translatable="false"></string>
+    <string name="achievement_first_dictionary_item" translatable="false"></string>
+    <string name="achievement_five_characters" translatable="false"></string>
+    <string name="achievement_ten_buildings" translatable="false"></string>
+    <string name="achievement_profile_complete" translatable="false"></string>
+    <string name="achievement_three_towns" translatable="false"></string>
+</resources>
