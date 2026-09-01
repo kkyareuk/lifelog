@@ -1,34 +1,34 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260901closet187";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260901closet187";
-import {setCharacterSceneImage} from "./state.js?v=20260901closet187";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260901closet187";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260901closet187";
-import {buildingDetailDialogs} from "./views.js?v=20260901closet187";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260901closet187";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260901closet187";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260901closet187";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260901closet187";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260901closet187";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260901closet187";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260901closet187";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260901closet187";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260901closet187";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260901closet187";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260901closet187";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260901closet187";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260901closet187";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260901closet187";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260901wardrobe188";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260901wardrobe188";
+import {setCharacterSceneImage} from "./state.js?v=20260901wardrobe188";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260901wardrobe188";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260901wardrobe188";
+import {buildingDetailDialogs} from "./views.js?v=20260901wardrobe188";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260901wardrobe188";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260901wardrobe188";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260901wardrobe188";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260901wardrobe188";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260901wardrobe188";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260901wardrobe188";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260901wardrobe188";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260901wardrobe188";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260901wardrobe188";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260901wardrobe188";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260901wardrobe188";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260901wardrobe188";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260901wardrobe188";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260901wardrobe188";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260901closet187";
-import {translateText} from "./views.js?v=20260901closet187";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260901closet187";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260901closet187";
-import {characterMood} from "./character-mood.js?v=20260901closet187";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260901closet187";
+import {switchAccountState} from "./state.js?v=20260901wardrobe188";
+import {translateText} from "./views.js?v=20260901wardrobe188";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260901wardrobe188";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260901wardrobe188";
+import {characterMood} from "./character-mood.js?v=20260901wardrobe188";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260901wardrobe188";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -266,7 +266,6 @@ const FALLBACK_BUILDING_SHAPES=[
   {id:"red-roof-home",name:"빨간 지붕 집",src:"world-assets/building-types/red-roof-home-handdrawn.png",types:["집","숙박"]},
   {id:"type-restaurant",name:"음식점",src:"world-assets/building-types/restaurant-handdrawn.png",types:["음식점"]},
   {id:"drawer-building",name:"쌍둥이 서랍 건물",src:"world-assets/drawer-building.png"},
-  {id:"drawer-home",name:"빨간 지붕 건물",src:"world-assets/drawer-home.png"},
   {id:"medieval-castle",name:"중세 성채",src:"world-assets/medieval-castle.svg"},
   {id:"medieval-tavern",name:"중세 여관",src:"world-assets/medieval-tavern.svg"},
   {id:"medieval-market",name:"중세 시장",src:"world-assets/medieval-market.svg"}
@@ -286,7 +285,7 @@ const FASHION_FLAIRS=["무지","미니멀","단정함","편안함","캐주얼","
 const OCCASION_TAGS=["모든 상황","일상복","아침 준비","욕실·목욕","출근복","유니폼","정장","데이트룩","파티복","잠옷","운동복","외출복","실내복","여행복","공연","집안일","휴식","격식 있는 자리"];
 const ORDINARY_LEVELS=["아주 무난함","무난함","적당히 개성 있음","눈에 띔","매우 독특함"];
 const CLOTHING_CATEGORIES=["상의","하의","아우터","원피스","세트","신발","가방","액세서리","모자"];
-const CLOTHING_MOODS=["모든 기분","들뜸","기쁨","평온함","지루함","긴장함","화남","슬픔","피곤함"];
+const CLOTHING_MOODS=["모든 기분","만족함","기분 좋음","유혹적임","들뜸","평온함","지루함","긴장함","화남","슬픔","피곤함"];
 const CLOTHING_WARMTH=["매우 시원함","시원함","보통","따뜻함","매우 따뜻함"];
 const CLOTHING_FORMALITY=["매우 편한 차림","캐주얼","단정한 차림","격식 있음","최고 격식"];
 const CLOTHING_COMFORT=["불편함","조금 불편함","보통","편안함","매우 편안함"];
@@ -304,6 +303,8 @@ function currentOutfit(character){
   const suitable=items.filter(item=>(item.occasionTags||[]).some(tag=>wanted.includes(tag)));
   const sense=["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"].indexOf(character.fashionSense);
   const pool=suitable.length&&(sense>=2||work||sleep)?[...suitable,...items.filter(item=>["신발","가방","액세서리","모자"].includes(item.category))]:items;
+  const wholeOutfit=stablePick(pool.filter(item=>item.category==="의상"),`${character.id}:${new Date().toDateString()}:${event.title}:outfit`);
+  if(wholeOutfit)return {event,work,items:[wholeOutfit]};
   const categories=["상의","하의","아우터","원피스","신발","가방","액세서리"],seed=`${character.id}:${new Date().toDateString()}:${event.title}`;
   let chosen=categories.map(category=>stablePick(pool.filter(item=>item.category===category),`${seed}:${category}`)).filter(Boolean);
   const onePiece=stablePick(pool.filter(item=>["원피스","세트"].includes(item.category)),`${seed}:onepiece`);
@@ -324,31 +325,41 @@ function openClothingEditor(itemId=""){
   const character=active();if(!character)return;
   const isNew=!itemId;let item=state.catalog.fashion.find(value=>value.id===itemId);
   if(!item){
-    const id=addCatalogItem("fashion",{name:"새 옷",category:"상의",image:"",iconImage:"",ldImage:"",materials:[],colors:[],flairs:[],occasionTags:["일상복"],moodTags:["모든 기분"],ordinary:"무난함",warmth:"보통",formality:"캐주얼",comfort:"편안함",requiredUniform:false,ownerId:character.id});
+    const id=addCatalogItem("fashion",{name:"새 옷",category:"의상",image:"",iconImage:"",ldImage:"",materials:[],colors:[],flairs:[],occasionTags:["일상복"],moodTags:["모든 기분"],ordinary:"무난함",warmth:"보통",formality:"캐주얼",comfort:"편안함",requiredUniform:false,ownerId:character.id});
     character.inventory.fashion=[...new Set([...(character.inventory.fashion||[]),id])];
     item=state.catalog.fashion.find(value=>value.id===id);save(true);
   }
   const dialog=document.createElement("dialog");dialog.className="clothing-editor-dialog";
   const chips=(field,values)=>`<div class="closet-chip-grid">${values.map(value=>`<button type="button" data-clothing-chip="${field}" data-value="${value}" class="${(item[field]||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div>`;
+  const pickerLabel=(field,label)=>`<button type="button" class="clothing-multi-open" data-open-clothing-picker="${field}"><b>${label}</b><small data-clothing-picker-summary="${field}">${esc((item[field]||[]).join(" · ")||"선택하지 않음")}</small><i>＋</i></button>`;
   const select=(name,values,current)=>`<select name="${name}">${values.map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>`;
   const imageField=(name,label,value)=>`<label class="clothing-art-field"><b>${label}</b>${value?`<img src="${esc(value)}" alt="">`:`<span>${name==="ldImage"?"LD":"SD"}</span>`}<input type="file" accept="image/*" data-clothing-file="${name}"><input name="${name}" value="${esc(value||"")}" placeholder="이미지 링크 또는 기기에서 선택"></label>`;
   dialog.innerHTML=`<form method="dialog">
     <div class="title"><div><h2>옷 등록·편집</h2><small>상황·기분·온도·격식 정보를 바탕으로 홈의 아이콘과 LD가 자동으로 바뀝니다.</small></div><button value="cancel">×</button></div>
     <div class="clothing-editor-grid"><section class="clothing-preview"><div class="clothing-art-pair">${imageField("iconImage","아이콘",item.iconImage||item.image)}${imageField("ldImage","LD",item.ldImage)}</div></section><section class="clothing-fields">
       <label>이름<input name="name" value="${esc(item.name||"")}"></label>
-      <label>분류${select("category",CLOTHING_CATEGORIES,item.category||"상의")}</label>
       <label>평범한 정도${select("ordinary",ORDINARY_LEVELS,item.ordinary||"무난함")}</label>
       <label>따뜻함${select("warmth",CLOTHING_WARMTH,item.warmth||"보통")}</label>
       <label>격식 정도${select("formality",CLOTHING_FORMALITY,item.formality||"캐주얼")}</label>
       <label>편안함${select("comfort",CLOTHING_COMFORT,item.comfort||"편안함")}</label>
       <label class="book-check-field"><span>필수 유니폼</span><input type="checkbox" name="requiredUniform" ${item.requiredUniform?"checked":""}></label>
-      <h3>입는 상황 · 중복 선택</h3>${chips("occasionTags",OCCASION_TAGS)}<h3>기분 태그 · 중복 선택</h3>${chips("moodTags",CLOTHING_MOODS)}<h3>색 · 중복 선택</h3>${chips("colors",FASHION_COLORS)}<h3>재질 · 중복 선택</h3>${chips("materials",FASHION_MATERIALS)}<h3>분위기 · 중복 선택</h3>${chips("flairs",FASHION_FLAIRS)}
+      <h3>입는 상황 · 중복 선택</h3>${chips("occasionTags",OCCASION_TAGS)}<h3>기분 태그 · 중복 선택</h3>${chips("moodTags",CLOTHING_MOODS)}
+      <div class="clothing-multi-grid">${pickerLabel("colors","색 선택하기")}${pickerLabel("materials","재질 선택하기")}${pickerLabel("flairs","분위기 중복 선택하기")}</div>
     </section></div><div class="crop-actions"><button type="button" class="danger" data-delete-clothing>옷 삭제</button><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
   </form>`;
   dialog.querySelectorAll("[data-clothing-chip]").forEach(button=>button.onclick=()=>{const field=button.dataset.clothingChip,value=button.dataset.value,list=item[field]||[];item[field]=list.includes(value)?list.filter(entry=>entry!==value):[...list,value];button.classList.toggle("on",item[field].includes(value))});
+  const pickerValues={colors:FASHION_COLORS,materials:FASHION_MATERIALS,flairs:FASHION_FLAIRS};
+  dialog.querySelectorAll("[data-open-clothing-picker]").forEach(button=>button.onclick=()=>{
+    const field=button.dataset.openClothingPicker,labels={colors:"색 선택하기",materials:"재질 선택하기",flairs:"분위기 중복 선택하기"},picker=document.createElement("dialog");
+    picker.className="clothing-picker-dialog dictionary-picker";
+    picker.innerHTML=`<form method="dialog"><header><h2>${labels[field]}</h2><button value="close" aria-label="닫기">×</button></header><p>여러 개 선택할 수 있어요.</p><div class="closet-chip-grid">${pickerValues[field].map(value=>`<button type="button" data-picker-value="${value}" class="${(item[field]||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div><div class="crop-actions"><button value="done" class="primary">선택 완료</button></div></form>`;
+    picker.querySelectorAll("[data-picker-value]").forEach(choice=>choice.onclick=()=>{const value=choice.dataset.pickerValue,list=item[field]||[];item[field]=list.includes(value)?list.filter(entry=>entry!==value):[...list,value];choice.classList.toggle("on",item[field].includes(value))});
+    picker.onclose=()=>{dialog.querySelector(`[data-clothing-picker-summary="${field}"]`).textContent=(item[field]||[]).join(" · ")||"선택하지 않음";picker.remove()};
+    document.body.append(picker);translateDynamicInterface(picker);picker.showModal();
+  });
   dialog.querySelector("[data-delete-clothing]").onclick=()=>{state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);character.savedOutfits=(character.savedOutfits||[]).map(outfit=>({...outfit,itemIds:outfit.itemIds.filter(id=>id!==item.id)}));save(true);dialog.close("deleted")};
   dialog.querySelectorAll("[data-clothing-file]").forEach(input=>input.onchange=()=>{const file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const name=input.dataset.clothingFile,url=String(reader.result||"");dialog.querySelector(`[name="${name}"]`).value=url;const holder=input.closest(".clothing-art-field"),old=holder.querySelector("img,span");old.outerHTML=`<img src="${url}" alt="">`};reader.readAsDataURL(file)});
-  dialog.onclose=()=>{if(dialog.returnValue==="save"){const form=new FormData(dialog.querySelector("form")),iconImage=String(form.get("iconImage")||"");Object.assign(item,{name:String(form.get("name")||"새 옷"),image:iconImage,iconImage,ldImage:String(form.get("ldImage")||""),category:String(form.get("category")||"상의"),ordinary:String(form.get("ordinary")||"무난함"),warmth:String(form.get("warmth")||"보통"),formality:String(form.get("formality")||"캐주얼"),comfort:String(form.get("comfort")||"편안함"),requiredUniform:form.get("requiredUniform")==="on",ownerId:character.id});save(true)}else if(isNew&&dialog.returnValue!=="deleted"){state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);save(true)}dialog.remove();render()};
+  dialog.onclose=()=>{if(dialog.returnValue==="save"){const form=new FormData(dialog.querySelector("form")),iconImage=String(form.get("iconImage")||"");Object.assign(item,{name:String(form.get("name")||"새 옷"),image:iconImage,iconImage,ldImage:String(form.get("ldImage")||""),category:"의상",ordinary:String(form.get("ordinary")||"무난함"),warmth:String(form.get("warmth")||"보통"),formality:String(form.get("formality")||"캐주얼"),comfort:String(form.get("comfort")||"편안함"),requiredUniform:form.get("requiredUniform")==="on",ownerId:character.id});save(true)}else if(isNew&&dialog.returnValue!=="deleted"){state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);save(true)}dialog.remove();render()};
   document.body.append(dialog);translateDynamicInterface(dialog);dialog.showModal();
 }
 function openOutfitEditor(outfitId=""){
@@ -370,7 +381,7 @@ function openBuildingShapeDialog(targetId,targetKind="place"){
   const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
   const buildingType=isHome?"집":target.type;
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
-  const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(buildingType)||isHome&&["drawer-home","red-roof-home"].includes(shape.id));
+  const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(buildingType)||isHome&&shape.id==="red-roof-home");
   const ordered=[...recommended,...BUILDING_SHAPES.filter(shape=>!recommended.includes(shape))];
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${buildingType}</b> 유형에 어울리는 모양을 먼저 보여드려요. 보유한 건물 아이콘 팩의 그림도 이곳에 나타나요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${target.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
@@ -819,7 +830,8 @@ function enhanceDynamicForms(){
   }
 }
 const newId=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
-const newRoutineDraft=()=>{const id=newId();return {id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",visitHomeId:"",withIds:[],notes:""}};
+const emptyDressCode=()=>({enabled:false,colors:[],materials:[],flairs:[],formality:"지정 안 함",requiredUniform:false});
+const newRoutineDraft=()=>{const id=newId();return {id,seriesId:id,day:1,start:"09:00",end:"10:00",type:"개인 일정",title:"새 일정",placeId:"",visitHomeId:"",withIds:[],notes:"",dressCode:emptyDressCode()}};
 const updateRoutine=(characterId,id,patch)=>{const item=state.routines[characterId]?.find(r=>r.id===id);if(item){Object.assign(item,patch);save(true)}};
 const deleteRoutine=(characterId,id)=>deleteStateRoutine(characterId,id);
 const currentMonthKey=()=>{const date=new Date();return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}`};
@@ -2330,6 +2342,15 @@ function bind(){
   $$("[data-wardrobe-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.wardrobeCharacter);setNavigationTabIntent("catalog");save();render()});
   $$("[data-new-clothing]").forEach(el=>el.onclick=()=>openClothingEditor());
   $$("[data-edit-clothing]").forEach(el=>el.onclick=event=>{event.stopPropagation();openClothingEditor(el.dataset.editClothing)});
+  const closetCards=$$("[data-closet-card]"),closetNoResults=$(".closet-book-no-results");
+  let closetFilter="all";
+  const applyClosetFilter=()=>{
+    const query=String($("[data-closet-search]")?.value||"").trim().toLowerCase();let visible=0;
+    closetCards.forEach(card=>{const categoryOk=closetFilter==="all"||closetFilter==="uniform"&&card.dataset.uniform==="true"||closetFilter==="formal"&&card.dataset.formal==="true",searchOk=!query||card.dataset.closetSearchText.includes(query),show=categoryOk&&searchOk;card.hidden=!show;if(show)visible++});
+    if(closetNoResults)closetNoResults.hidden=visible!==0;
+  };
+  $("[data-closet-search]")?.addEventListener("input",applyClosetFilter);
+  $$("[data-closet-filter]").forEach(button=>button.onclick=()=>{closetFilter=button.dataset.closetFilter;$$("[data-closet-filter]").forEach(value=>value.classList.toggle("on",value===button));applyClosetFilter()});
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
   $$("[data-edit-outfit]").forEach(el=>el.onclick=()=>openOutfitEditor(el.dataset.editOutfit));
   $$("[data-new]").forEach(el=>el.onclick=()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`현재 캐릭터 슬롯은 ${limit}명까지예요`);render()});
@@ -3466,6 +3487,11 @@ function bind(){
     }
     setWorldBackground(e.target.value);render();
   });
+  const placeDressCode=id=>{const place=state.world.places.find(value=>value.id===id);if(!place)return null;place.dressCode=place.dressCode&&typeof place.dressCode==="object"?place.dressCode:{enabled:false,colors:[],materials:[],flairs:[],formality:"지정 안 함",requiredUniform:false};return place};
+  $$("[data-place-dress-enabled]").forEach(el=>el.onchange=()=>{const place=placeDressCode(el.dataset.placeDressEnabled);if(place){place.dressCode.enabled=el.checked;updatePlace(place.id,{dressCode:place.dressCode},false);save(true)}});
+  $$("[data-place-dress-formality]").forEach(el=>el.onchange=()=>{const place=placeDressCode(el.dataset.placeDressFormality);if(place){place.dressCode.formality=el.value;updatePlace(place.id,{dressCode:place.dressCode},false);save(true)}});
+  $$("[data-place-dress-uniform]").forEach(el=>el.onchange=()=>{const place=placeDressCode(el.dataset.placeDressUniform);if(place){place.dressCode.requiredUniform=el.checked;updatePlace(place.id,{dressCode:place.dressCode},false);save(true)}});
+  $$("[data-place-dress-code]").forEach(el=>el.onclick=()=>{const place=placeDressCode(el.dataset.placeDressCode);if(!place)return;const field=el.dataset.dressField,value=el.dataset.value,current=Array.isArray(place.dressCode[field])?place.dressCode[field]:[],next=current.includes(value)?current.filter(entry=>entry!==value):[...current,value];place.dressCode[field]=next;updatePlace(place.id,{dressCode:place.dressCode},false);save();el.classList.toggle("on",next.includes(value))});
   $("[data-world-name]")?.addEventListener("input",e=>{if(currentTownMode()!=="town")return;state.world.name=e.target.value;document.querySelector("[data-town-information-title]")?.replaceChildren(document.createTextNode(e.target.value||"마을"));save()});
   const saveTownProfile=()=>{const changedAt=Date.now();state.order.forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=changedAt});save(true)};
   $("[data-world-town-type]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.townType=e.target.value;state.world.townSubtype=TOWN_TYPE_SUBTYPES[e.target.value]?.[0]||"";saveTownProfile();renderPreservingPageScroll(e.target)});
@@ -4512,6 +4538,14 @@ function wireRoutineGroupShortcuts(sheet,excludedId){
     boxes.forEach(box=>{box.checked=select});button.classList.toggle("on",select);
   });
 }
+function routineDressCodeFields(item){
+  const code=item.dressCode||emptyDressCode(),checks=(name,values,current)=>`<div class="routine-dress-chips">${values.map(value=>`<label><input type="checkbox" name="${name}" value="${value}" ${(current||[]).includes(value)?"checked":""}><span>${value}</span></label>`).join("")}</div>`;
+  return `<details class="routine-dress-code"><summary>드레스코드 · ${code.enabled?"사용 중":"사용 안 함"}</summary><div><label class="routine-inline-check"><input type="checkbox" name="dressEnabled" ${code.enabled?"checked":""}> 이 일정의 드레스코드 사용</label><label>격식 정도<select name="dressFormality">${["지정 안 함",...CLOTHING_FORMALITY].map(value=>`<option ${value===code.formality?"selected":""}>${value}</option>`).join("")}</select></label><label class="routine-inline-check"><input type="checkbox" name="dressUniform" ${code.requiredUniform?"checked":""}> 필수 유니폼</label><h4>허용 색</h4>${checks("dressColors",FASHION_COLORS,code.colors)}<h4>권장 재질</h4>${checks("dressMaterials",FASHION_MATERIALS,code.materials)}<h4>분위기</h4>${checks("dressFlairs",FASHION_FLAIRS,code.flairs)}</div></details>`;
+}
+function routineDressCodePatch(dialog){
+  const selected=name=>[...dialog.querySelectorAll(`[name="${name}"]:checked`)].map(input=>input.value);
+  return {dressCode:{enabled:Boolean(dialog.querySelector('[name="dressEnabled"]')?.checked),formality:dialog.querySelector('[name="dressFormality"]')?.value||"지정 안 함",requiredUniform:Boolean(dialog.querySelector('[name="dressUniform"]')?.checked),colors:selected("dressColors"),materials:selected("dressMaterials"),flairs:selected("dressFlairs")}};
+}
 
 function openRoutineDialog(id,draft=null){
   const c=active(),item=draft||state.routines[c.id]?.find(r=>r.id===id);if(!item)return;
@@ -4522,7 +4556,7 @@ function openRoutineDialog(id,draft=null){
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
     <label>일정 이름<input name="title" value="${htmlEsc(item.title)}"></label>
-    <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>
+    <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>${routineDressCodeFields(item)}
     ${routineGroupShortcuts(c.id)}<fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}> ${state.characters[cid].name}</label>`).join("")}</fieldset>
     <label>메모<textarea name="notes">${htmlEsc(item.notes||"")}</textarea></label>
     <div class="routine-sheet-actions"><button type="button" data-routine-cancel>취소</button><button type="button" class="primary" data-routine-save>저장</button></div>`);
@@ -4535,7 +4569,7 @@ function openRoutineDialog(id,draft=null){
     const days=[...dialog.querySelectorAll('[name="day"]:checked')].map(input=>Number(input.value));
     if(!days.length){showToast("일정을 적용할 요일을 하나 이상 골라 주세요");return}
     if(isNew){state.routines[c.id]=Array.isArray(state.routines[c.id])?state.routines[c.id]:[];state.routines[c.id].push(item)}
-    const saved=updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    const saved=updateRoutineDays(c.id,item.id,days,{start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),...routineDressCodePatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
     if(saved)closeRoutineSheet(dialog,"save",()=>render());
   };
 }
@@ -4549,7 +4583,7 @@ function openMonthlyRoutineDialog(id,draft=null){
     <label>종료 시각<input type="time" name="end" value="${item.end}"></label>
     <label>일정 종류<select name="type">${["회사 일정","수업","데이트","친구 약속","가족 일정","병원","운동","취미","개인 일정","휴식"].map(type=>`<option ${item.type===type?"selected":""}>${type}</option>`).join("")}</select></label>
     <label>일정 이름<input name="title" value="${htmlEsc(item.title)}"></label>
-    <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>
+    <label>장소<select name="destination">${routineDestinationOptions(item)}</select></label>${routineDressCodeFields(item)}
     ${routineGroupShortcuts(c.id)}<fieldset class="group-members"><legend>함께하는 캐릭터</legend>${state.order.filter(id=>id!==c.id).map(cid=>`<label><input type="checkbox" name="withId" value="${cid}" ${(item.withIds||[]).includes(cid)?"checked":""}><span>${state.characters[cid].name}</span></label>`).join("")}</fieldset>
     <label>메모<textarea name="notes">${htmlEsc(item.notes||"")}</textarea></label>
     <div class="routine-sheet-actions"><button type="button" data-routine-cancel>취소</button><button type="button" class="primary" data-routine-save>저장</button></div>`);
@@ -4558,7 +4592,7 @@ function openMonthlyRoutineDialog(id,draft=null){
   dialog.querySelector("[data-routine-save]").onclick=()=>{
     if(!dialog.querySelector("[name=date]").value){showToast("날짜를 선택해 주세요");return}
     if(isNew){state.monthlyRoutines[c.id]=Array.isArray(state.monthlyRoutines[c.id])?state.monthlyRoutines[c.id]:[];state.monthlyRoutines[c.id].push(item)}
-    updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
+    updateMonthlyRoutine(c.id,item.id,{date:dialog.querySelector("[name=date]").value,start:dialog.querySelector("[name=start]").value,end:dialog.querySelector("[name=end]").value,type:dialog.querySelector("[name=type]").value,title:dialog.querySelector("[name=title]").value.trim()||"일정",...routineDestinationPatch(dialog),...routineDressCodePatch(dialog),withIds:[...dialog.querySelectorAll("[name=withId]:checked")].map(x=>x.value),notes:dialog.querySelector("[name=notes]").value.trim()});
     closeRoutineSheet(dialog,"save",()=>render());
   };
 }
@@ -5322,7 +5356,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260901closet187").catch(error=>{
+import("./auth.js?v=20260901wardrobe188").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5337,7 +5371,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260901closet187",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260901wardrobe188",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
