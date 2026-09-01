@@ -1,20 +1,20 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901achievements193";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260901achievements193";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260901achievements193";
-import {characterMood} from "./character-mood.js?v=20260901achievements193";
-import {createContactMailbox} from "./notification-mail.js?v=20260901achievements193";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260901achievements193";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260901achievements193";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260901achievements193";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260901achievements193";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260901achievements193";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260901achievements193";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260901achievements193";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260901achievements193";
-import {achievementRows} from "./achievements.js?v=20260901achievements193";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902taste194";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260902taste194";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260902taste194";
+import {characterMood} from "./character-mood.js?v=20260902taste194";
+import {createContactMailbox} from "./notification-mail.js?v=20260902taste194";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260902taste194";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260902taste194";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902taste194";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902taste194";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260902taste194";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260902taste194";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260902taste194";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260902taste194";
+import {achievementRows} from "./achievements.js?v=20260902taste194";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2884,7 +2884,7 @@ function character(){
     ["분노할 때 보이는 반응","angerResponse",["차분히 이유를 확인함","말수가 차갑게 줄어듦","즉시 잘못을 따짐","목소리가 커짐","자리를 피해 식힘","울컥하지만 말을 고름","해결책을 분명히 요구함"]],
     ["유혹·호감 신호를 받을 때","flirtResponse",["눈치채지 못함","알아도 모른 척함","당황해 거리를 둠","은근히 받아줌","장난스럽게 맞받음","직접 호응함","상대를 경계함"]]
   ];
-  const personalityEmotionPane=`<section class="character-book-form-page personality-emotion-book-page"><header class="personality-emotion-heading"><small>EMOTIONAL TEMPERAMENT</small><h2>${t("기분과 정서 성향","기분과 정서 성향")}</h2><p>${t("현재 기분을 고정하는 설정이 아니라, 같은 일을 겪어도 이 캐릭터답게 받아들이고 회복하도록 만드는 기준이에요.","현재 기분을 고정하는 설정이 아니라, 같은 일을 겪어도 이 캐릭터답게 받아들이고 회복하도록 만드는 기준이에요.")}</p></header><div class="book-form-grid personality-emotion-grid">${personalityEmotionFields.map(([label,field,options])=>bookField(label,field,options,c[field]||options[0])).join("")}</div><aside class="personality-emotion-note"><b>${t("기분 계산에 함께 쓰여요","기분 계산에 함께 쓰여요")}</b><span>${t("행동·장소·관계·피로·옷차림의 영향은 그대로 받고, 여기서는 반응의 방향과 세기만 조절합니다.","행동·장소·관계·피로·옷차림의 영향은 그대로 받고, 여기서는 반응의 방향과 세기만 조절합니다.")}</span></aside>${bookPageControls(9,'data-character-personality-pane="core"','data-character-personality-pane="details"')}</section>`;
+  const personalityEmotionPane=`<section class="character-book-form-page personality-emotion-book-page"><div class="personality-emotion-heading"><small>EMOTIONAL TEMPERAMENT</small><h2>${t("기분과 정서 성향","기분과 정서 성향")}</h2><p>${t("현재 기분을 고정하는 설정이 아니라, 같은 일을 겪어도 이 캐릭터답게 받아들이고 회복하도록 만드는 기준이에요.","현재 기분을 고정하는 설정이 아니라, 같은 일을 겪어도 이 캐릭터답게 받아들이고 회복하도록 만드는 기준이에요.")}</p></div><div class="book-form-grid personality-emotion-grid">${personalityEmotionFields.map(([label,field,options])=>bookField(label,field,options,c[field]||options[0])).join("")}</div>${bookPageControls(9,'data-character-personality-pane="core"','data-character-personality-pane="details"')}</section>`;
   const personalityDirectChoices=(title,values,selected,attribute)=>`<section class="personality-direct-choice"><header><b>${t(title,title)}</b><small>${selected.length}/8</small></header><div>${values.map(value=>`<button type="button" ${attribute}="${esc(value)}" class="${selected.includes(value)?"on":""}" aria-pressed="${selected.includes(value)}">${esc(t(value,value))}</button>`).join("")}</div></section>`;
   const personalityDetailsPane=`<section class="character-book-form-page personality-detail-book-page"><div class="personality-detail-top book-form-grid">${bookField("감정 표현의 크기","emotionalExpression",["표정 변화가 거의 없음","감정을 잘 드러내지 않음","상황에 따라 표현함","표현이 풍부함","감정이 바로 드러남"],c.emotionalExpression||"상황에 따라 표현함")}${bookField("충동을 참는 정도","impulseControl",["매우 잘 참음","대체로 참음","가끔 욱하지만 멈춤","쉽게 욱함","거의 참지 않음"],c.impulseControl||"가끔 욱하지만 멈춤")}</div><div class="personality-detail-actions">${personalityDirectChoices("서사·인지 특성 선택사항",CHARACTER_TRAITS,c.characterTraits||[],"data-character-trait")}${personalityDirectChoices("실제 장면에 반영할 표현",TRAIT_EXPRESSIONS,c.traitExpressions||[],"data-trait-expression")}</div>${bookPageControls(10,'data-character-personality-pane="emotion"','data-character-pane="taste" data-character-taste-pane="categories"')}</section>`;
   const personalityBookPane=state.characterPersonalityPane==="details"?personalityDetailsPane:state.characterPersonalityPane==="emotion"?personalityEmotionPane:personalityCorePane;

@@ -4,8 +4,8 @@ import assert from "node:assert/strict";
 const read=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),"utf8");
 const achievementsSource=read("achievements.js"),stateSource=read("state.js"),views=read("views.js"),app=read("app.js"),css=read("app.css"),gradle=read("android/app/build.gradle"),manifest=read("android/app/src/main/AndroidManifest.xml"),strings=read("android/app/src/main/res/values/strings.xml"),main=read("android/app/src/main/java/com/drawervillage/app/MainActivity.java"),plugin=read("android/app/src/main/java/com/drawervillage/app/PlayGamesAchievementsPlugin.java"),application=read("android/app/src/main/java/com/drawervillage/app/DrawerVillageApplication.java"),sw=read("sw.js");
 
-assert.match(gradle,/versionCode\s+193/);
-assert.match(gradle,/versionName\s+["']1\.0\.180["']/);
+assert.match(gradle,/versionCode\s+194/);
+assert.match(gradle,/versionName\s+["']1\.0\.181["']/);
 assert.match(gradle,/play-services-games-v2:21\.0\.0/);
 assert.match(manifest,/com\.google\.android\.gms\.games\.APP_ID/);
 assert.match(manifest,/android:name="\.DrawerVillageApplication"/);
@@ -22,7 +22,7 @@ assert.match(views,/data-settings-pane="achievements"/);
 assert.match(views,/data-open-google-achievements/);
 assert.match(app,/parallel-city-saved/);
 assert.match(css,/\.achievement-grid/);
-assert.match(sw,/play-games-achievements-193/);
+assert.match(sw,/taste-scroll-194/);
 assert.match(stateSource,/userCreated:true/);
 assert.match(achievementsSource,/profile_complete/);
 
@@ -39,4 +39,4 @@ assert.equal(evaluated.unlockedAt.profile_complete,1234);
 assert.equal(evaluated.unlockedAt.first_building,1234);
 assert.equal(evaluated.unlockedAt.three_towns,1234);
 
-console.log("v1.0.180 / 193 Google Play 게임즈 업적 판정·저장·네이티브 연결 검증 완료");
+console.log("Google Play 게임즈 업적 판정·저장·네이티브 연결 회귀 검증 완료");

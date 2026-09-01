@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko" data-color-mode="light" data-visual-theme="drawer-default">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="stylesheet" href="../../app.css?v=20260902taste194">
+  <link rel="stylesheet" href="../../character-book.css?v=20260902taste194">
+  <style>
+    :root{--character-accent:#a97043}*{box-sizing:border-box}body{margin:0;background:#5a4032;font-family:sans-serif}#app{min-height:100dvh}.character-book-v8{display:block!important;min-height:100dvh}
+    .fixture-book{position:relative;width:min(100vw,430px);height:100dvh;margin:auto;background:#f7efdf;container-type:inline-size}
+  </style>
+</head>
+<body>
+<div id="app"><main class="character-book-v8"><section class="fixture-book" data-case="dialog">
+  <dialog class="character-body-choice-dialog taste-category-dialog" data-fixture-dialog>
+    <form method="dialog">
+      <header><span><small>TASTE MENU</small><b>좋아하는 것 · 사전 선택</b></span><button value="close" aria-label="닫기">×</button></header>
+      <div class="taste-category-list">
+        <div class="book-form-field"><b>좋아하는 음식 · 사전</b><button type="button"><span>1개 선택됨</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 음료 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 음악 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 밴드 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 책 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 영화 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 게임 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 향수 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 취미용품 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 전자기기 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 무기 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+        <div class="book-form-field"><b>좋아하는 동물 · 사전</b><button type="button"><span>정하지 않음</span><i>＋</i></button></div>
+      </div>
+      <footer><button value="close">닫기</button></footer>
+    </form>
+  </dialog>
+</section></main></div>
+<script>document.querySelector('[data-fixture-dialog]').showModal()</script>
+</body>
+</html>

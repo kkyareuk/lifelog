@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260901-play-games-achievements-193";
+const CACHE_VERSION="drawer-village-v20260902-taste-scroll-194";
 const CORE=[
   "./",
   "./index.html",
