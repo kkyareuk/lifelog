@@ -1,7 +1,7 @@
-import {environmentConversation} from "./character-mood.js?v=20260831village185";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260831village185";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260831village185";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260831village185";
+import {environmentConversation} from "./character-mood.js?v=20260901scene186";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901scene186";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260901scene186";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260901scene186";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;

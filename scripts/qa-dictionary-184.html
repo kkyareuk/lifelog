@@ -8,10 +8,10 @@ const worlds=[{id:'first',name:'숲속 마을',places:[{id:'cafe',name:'카페',
 localStorage.setItem('drawer-village-game-v1',JSON.stringify({schema:31,uiLanguage:new URLSearchParams(location.search).get('lang')||'ko',activeTownId:'first',activeTab:'observe',activeId:'qa',characters:{qa:{id:'qa',name:'검수 주민',createdAt:1,townId:'first',homeId:'qa-house'}},order:['qa'],homes:{'qa-house':{id:'qa-house',name:'검수 가족의 집',townId:'first',rooms:{living:{name:'거실',type:'living'}}}},towns:worlds,world:worlds[0]}));
 </script></head><body><div id="app"></div><input id="image-picker" type="file" hidden>
 <script type="module">
-import '../app.js?v=20260831village185';
-import * as game from '../state.js?v=20260831village185';
-import {mailEnvelope,createContactMailbox} from '../notification-mail.js?v=20260831village185';
-import {accountStorage} from '../account-storage.js?v=20260831village185';
+import '../app.js?v=20260901scene186';
+import * as game from '../state.js?v=20260901scene186';
+import {mailEnvelope,createContactMailbox} from '../notification-mail.js?v=20260901scene186';
+import {accountStorage} from '../account-storage.js?v=20260901scene186';
 game.state.catalog.food.unshift({id:'qa-food',kind:'food',name:'토마토 스파게티',category:'이탈리아 음식',image:'assets/home-ui/shop.png',rating:3.5,animation:'glow',tags:['카페','파스타'],memo:'직접 만드는 토마토 파스타'});
 const letter=mailEnvelope({id:12345,title:'검수 주민 · 같은 문장 확인',body:'알림에 보낸 바로 이 문장이 우편에도 그대로 남아요.',at:new Date(Date.now()-1000),extra:{mode:'moment',characterId:'qa'}},accountStorage.scope);
 createContactMailbox(accountStorage).record([letter]);game.save(true,false);

@@ -33,7 +33,7 @@ assert.notEqual(characterMood(person,event,world,'en').label,positive.label);
 assert.equal(characterMood(person,{...event,title:'자는 중'},world).score,characterMood(person,{...event,title:'Sleeping'},world,'en').score);
 const memory=new Map();globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js?v=20260831village185');
+const game=await import('../state.js?v=20260901scene186');
 game.replaceState({...cloud,schema:31,characters:{x:{id:'x',name:'Test',townId:'a'}},order:['x'],activeId:'x'});
 memory.set('drawer-village-last-nonempty-state-v1',JSON.stringify(device));
 assert.deepEqual(game.recoverableBuildings().map(i=>i.place.id),['two']);

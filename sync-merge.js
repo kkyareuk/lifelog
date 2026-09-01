@@ -91,19 +91,54 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
 
   const deletedTowns=new Set(next.deletedTownIds),deletedPlaces=new Set(next.deletedPlaceIds);
   const townsFor=value=>{
-    const towns=Array.isArray(value.towns)&&value.towns.length?clone(value.towns):value.world?[{...clone(value.world),id:value.activeTownId||"initial-town"}]:[];
-    return towns.map((town,index)=>{
-      const id=String(town.id||`legacy-town-${index}`);
-      return id===value.activeTownId&&value.world?{...town,...clone(value.world),id,places:mergedListById(value.world.places,town.places)}:{...town,id};
-    });
+    // `world` is only an editable mirror of the selected village. Once a save has
+    // a real towns array, treating that mirror as another source of buildings can
+    // copy every selected-village building into a different village during restore.
+    const hasTownList=Array.isArray(value.towns)&&value.towns.length;
+    const towns=hasTownList?clone(value.towns):value.world?[{...clone(value.world),id:value.activeTownId||"initial-town"}]:[];
+    return towns.map((town,index)=>({...town,id:String(town.id||`legacy-town-${index}`),places:Array.isArray(town.places)?town.places:[]}));
   };
   const preferredTowns=townsFor(preferred),fallbackTowns=townsFor(fallback);
-  next.towns=mergedListById(preferredTowns,fallbackTowns).filter(town=>!deletedTowns.has(town.id)).map(town=>{
-    const older=fallbackTowns.find(candidate=>candidate.id===town.id);
-    // Buildings are independently created entities, not one replaceable town field.
-    // A newer save with fewer buildings must not erase another device's additions.
-    const places=mergedListById(town.places,older?.places).filter(place=>!deletedPlaces.has(String(place.id)));
-    return {...town,places};
+  const validTownIds=new Set([...preferredTowns,...fallbackTowns].map(town=>town.id).filter(id=>!deletedTowns.has(id)));
+  const occurrences=(towns,source)=>{
+    const result=new Map();
+    towns.forEach(town=>(town.places||[]).forEach(place=>{
+      const id=String(place?.id||"");if(!id||deletedPlaces.has(id))return;
+      const list=result.get(id)||[];list.push({townId:town.id,place,source});result.set(id,list);
+    }));
+    return result;
+  };
+  const preferredPlaces=occurrences(preferredTowns,"preferred"),fallbackPlaces=occurrences(fallbackTowns,"fallback");
+  const allPlaceIds=new Set([...preferredPlaces.keys(),...fallbackPlaces.keys()]);
+  const placesByTown=new Map([...validTownIds].map(id=>[id,[]]));
+  allPlaceIds.forEach(placeId=>{
+    const preferredEntries=preferredPlaces.get(placeId)||[],fallbackEntries=fallbackPlaces.get(placeId)||[];
+    const entries=[...preferredEntries,...fallbackEntries];
+    const explicitOwners=[...new Set(entries.map(entry=>String(entry.place?.townId||"")).filter(id=>validTownIds.has(id)))];
+    const preferredOwners=[...new Set(preferredEntries.map(entry=>entry.townId))];
+    const fallbackOwners=[...new Set(fallbackEntries.map(entry=>entry.townId))];
+    // A clean snapshot that contains a building in exactly one village repairs an
+    // older contaminated snapshot that contains the same ID in several villages.
+    let owner=explicitOwners.length===1?explicitOwners[0]:"";
+    if(!owner&&preferredOwners.length===1&&fallbackOwners.length!==1)owner=preferredOwners[0];
+    if(!owner&&fallbackOwners.length===1&&preferredOwners.length!==1)owner=fallbackOwners[0];
+    if(!owner&&preferredOwners.length===1)owner=preferredOwners[0];
+    if(!owner&&fallbackOwners.length===1)owner=fallbackOwners[0];
+    if(!owner){
+      const workplaceOwner=Object.values(next.characters||{}).find(character=>character?.workplaceId===placeId&&validTownIds.has(String(character.townId||"")))?.townId;
+      owner=String(workplaceOwner||entries[0]?.townId||"");
+    }
+    if(!validTownIds.has(owner))return;
+    const preferredPlace=preferredEntries.find(entry=>entry.townId===owner)?.place;
+    const fallbackPlace=fallbackEntries.find(entry=>entry.townId===owner)?.place;
+    const place={...clone(fallbackPlace||{}),...clone(preferredPlace||fallbackPlace||entries[0]?.place||{}),id:placeId,townId:owner};
+    placesByTown.get(owner).push(place);
+  });
+  const townIds=union(preferredTowns.map(town=>town.id),fallbackTowns.map(town=>town.id)).filter(id=>validTownIds.has(id));
+  next.towns=townIds.map(id=>{
+    const newer=preferredTowns.find(town=>town.id===id)||{},older=fallbackTowns.find(town=>town.id===id)||{};
+    const decorations=mergedListById(newer.decorations,older.decorations);
+    return {...clone(older),...clone(newer),id,places:placesByTown.get(id)||[],decorations};
   });
   // Never merge buildings from two different selected villages into one world.
   next.activeTownId=next.towns.some(town=>town.id===device.activeTownId)?device.activeTownId:next.towns.some(town=>town.id===preferred.activeTownId)?preferred.activeTownId:next.towns[0]?.id||null;

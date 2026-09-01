@@ -18,15 +18,15 @@ localStorage.setItem('drawer-village-last-nonempty-state-v1',JSON.stringify(reco
 </script>
 <script type="module">
 try{
-  const game=await import('./state.js?v=20260831village185');
+  const game=await import('./state.js?v=20260901scene186');
   if(new URLSearchParams(location.search).has('full')){
     const ids=['qa',...Array.from({length:8},()=>game.createCharacter(20))],house=game.createHome();
     game.setHomeResidents(house,ids);game.setActiveHome(house);
     for(const id of ids){const c=game.state.characters[id];if(c){c.homeId=house;c.residences=c.residences.filter(r=>r.homeId===house);c.residences.forEach(r=>r.isPrimary=true)}}
-    const sim=await import('./simulation.js?v=20260831village185');sim.forceCharactersHome(ids);
+    const sim=await import('./simulation.js?v=20260901scene186');sim.forceCharactersHome(ids);
   }
   game.state.catalog.food.push({id:'qa-food',kind:'food',name:'사진 물품',category:'이탈리아 음식',image:'assets/home-ui/shop.png',imageSource:'user',rating:3.5,animation:'glow',tags:['카페']},{id:'qa-app',kind:'food',name:'인게임 물품',image:'assets/home-ui/shop.png',imageSource:'app'});
   game.save(true,false);
-  await import('./app.js?v=20260831village185');
+  await import('./app.js?v=20260901scene186');
 }catch(error){qaError(error)}
 </script></body></html>

@@ -15,7 +15,19 @@ async function main(){
       await sharp(file).extract(crop).resize({width:640}).png({compressionLevel:9}).toFile(path.join(out,`${name}-${suffix}.png`));
     }
   }
+  const newBase=path.join(source,'일러스트 20260830 (6).png');
+  const newLight=path.join(source,'일러스트 20260830 (7).png');
+  const newCrops={
+    'piano-hall':{left:1680,top:0,width:1120,height:1050},
+    park:{left:1550,top:1780,width:1180,height:980},
+    'red-roof-home':{left:5140,top:1000,width:1145,height:930}
+  };
+  for(const [name,crop] of Object.entries(newCrops)){
+    for(const [file,suffix] of [[newBase,'handdrawn'],[newLight,'light']]){
+      await sharp(file).extract(crop).resize({width:640}).png({compressionLevel:9}).toFile(path.join(out,`${name}-${suffix}.png`));
+    }
+  }
   await sharp(path.join(source,'일러스트 20260809 (3).png')).resize({width:2400}).webp({quality:92}).toFile(path.join(out,'../owner-forest-town.webp'));
-  console.log('Extracted cafe/hospital art and registered matching light layers; restored owner forest background.');
+  console.log('Extracted cafe, hospital, piano hall, park and red-roof home art with matching light layers; restored owner forest background.');
 }
 main().catch(error=>{console.error(error);process.exitCode=1});

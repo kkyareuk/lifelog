@@ -35,6 +35,6 @@ assert.doesNotMatch(shopCss,/:has\(/);
 for(const asset of ["assets/shop/drawer-shop-wood.jpg","assets/shop/drawer-shop-seller.png"]){
   const info=await stat(new URL(`../${asset}`,import.meta.url));assert.ok(info.size>100_000&&info.size<1_000_000);
 }
-assert.match(gradle,/versionCode 185/);
+assert.match(gradle,/versionCode 186/);
 assert.match(gradle,/versionName "1\.0\.172"/);
 console.log("PASS layout 180 relationship, shop, town-art removal, and merged character settings checks");
