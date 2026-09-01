@@ -159,16 +159,20 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     if(target)occupied.set(target.id,(occupied.get(target.id)||0)+1);
     const old=current.agents[characterId],sameScene=old?.sceneKey===sceneKey&&(!old.furnitureId||placementById.has(old.furnitureId));
     const sceneStartAt=Math.max(0,Number(context.startedAt)||now),sceneEndAt=Math.max(now+60_000,Number(context.endsAt)||now+homeActivityDurationMinutes(target?.item||scene.title,`${characterId}:${sceneKey}`)*60_000);
+    const hydrateInPlace=context.animateMovement===false;
     if(sameScene){
       old.endsAt=sceneEndAt;
-      if(old.phase==="walking"&&old.arrivesAt<=now){old.phase="using";old.startedAt=old.arrivesAt||now;old.fromRoomKey=old.roomKey}
+      if(hydrateInPlace&&target){Object.assign(old,{phase:"using",startedAt:now,arrivesAt:now,fromRoomKey:target.roomKey,fromX:target.x,fromY:target.y})}
+      else if(old.phase==="walking"&&old.arrivesAt<=now){old.phase="using";old.startedAt=old.arrivesAt||now;old.fromRoomKey=old.roomKey}
       if(target){if(!context.interactionId){old.x=target.x;old.y=target.y}old.roomKey=target.roomKey;old.item=target.item;old.furnitureId=target.id;old.actionKind=furnitureUseProfile(target.item).kind}
     }else{
       const fallback={roomKey,...safeHomePoint(18+(hash(`${characterId}:${sceneKey}:x`)%65),35+(hash(`${characterId}:${sceneKey}:y`)%48))};
       const destination=target||fallback,currentPoint=currentAgentPoint(old,now),fromRoom=roomKeys.includes(currentPoint.roomKey)?currentPoint.roomKey:roomKey,fromX=old?(Number(currentPoint.x)||12):14+(hash(`${characterId}:spawn-x`)%66),fromY=old?(Number(currentPoint.y)||82):48+(hash(`${characterId}:spawn-y`)%38);
-      const movementStartsAt=target?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):sceneStartAt;
+      // Opening a home hydrates the current scene at its destination. Walking is
+      // reserved for a scene change observed while this home remains on screen.
+      const shouldWalk=Boolean(target&&old&&!hydrateInPlace),movementStartsAt=shouldWalk?now+180+(hash(`${characterId}:${sceneKey}:movement-start`)%4200):now;
       const arrivesAt=movementStartsAt+walkingDuration({roomKey:fromRoom,x:fromX,y:fromY},destination);
-      current.agents[characterId]=normalizeAgent({characterId,phase:target?"walking":"using",roomKey,fromRoomKey:fromRoom,x:destination.x,y:destination.y,fromX,fromY,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:target?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
+      current.agents[characterId]=normalizeAgent({characterId,phase:shouldWalk?"walking":"using",roomKey,fromRoomKey:shouldWalk?fromRoom:destination.roomKey,x:destination.x,y:destination.y,fromX:shouldWalk?fromX:destination.x,fromY:shouldWalk?fromY:destination.y,furnitureId:target?.id||"",item:target?.item||"",actionKind:target?furnitureUseProfile(target.item).kind:"use",sceneKey,startedAt:movementStartsAt,arrivesAt:shouldWalk?arrivesAt:now,endsAt:sceneEndAt,sequence:(old?.sequence||0)+1},characterId,roomKeys);
     }
     const agent=current.agents[characterId];
     if(!context.interactionId){agent.interactionId="";agent.approachingInteraction=false}
@@ -196,12 +200,14 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     if(agents.some(agent=>agent.roomKey!==roomKey))return;
     const anchor=safeHomePoint(clamp(agents.reduce((sum,agent)=>sum+Number(agent.x||50),0)/agents.length,22,78,50),clamp(agents.reduce((sum,agent)=>sum+Number(agent.y||58),0)/agents.length,24,82,58)),anchorX=anchor.x,anchorY=anchor.y;
     const text=ordered.map(id=>`${contexts?.[id]?.scene?.title||""} ${contexts?.[id]?.scene?.desc||""}`).join(" "),close=/뽀뽀|입맞춤|키스|포옹|껴안/.test(text),gap=close?9:17;
+    const hydrateInteraction=ordered.some(characterId=>contexts?.[characterId]?.animateMovement===false);
     ordered.forEach((characterId,index)=>{
       // participantOrder의 첫 인물은 항상 화면 왼쪽, 두 번째 인물은 오른쪽에
       // 둔다. 관계 설정에서 정한 좌우 순서가 집 장면에서도 뒤집히지 않는다.
       const agent=current.agents[characterId],point=currentAgentPoint(agent,now),destination={roomKey,...safeHomePoint(anchorX+(index?gap:-gap),anchorY+(index?2:-2))};
       const alreadyHeading=agent.interactionId===interactionId&&agent.roomKey===roomKey&&Math.hypot(Number(agent.x)-destination.x,Number(agent.y)-destination.y)<1;
       agent.interactionId=interactionId;
+      if(hydrateInteraction){Object.assign(agent,{phase:"using",fromRoomKey:roomKey,roomKey,fromX:destination.x,fromY:destination.y,x:destination.x,y:destination.y,startedAt:now,arrivesAt:now,interactionId,approachingInteraction:false});return}
       if(alreadyHeading){if(agent.phase==="walking"&&agent.arrivesAt<=now)agent.phase="using";if(agent.phase!=="walking")agent.approachingInteraction=false;return}
       const duration=Math.max(1500,Math.round(walkingDuration(point,destination)*.72)),startsAt=now+120+(hash(`${characterId}:${interactionId}:movement-start`)%1800);
       Object.assign(agent,{phase:"walking",fromRoomKey:point.roomKey||roomKey,roomKey,fromX:point.x,fromY:point.y,x:destination.x,y:destination.y,startedAt:startsAt,arrivesAt:startsAt+duration,endsAt:Math.max(agent.endsAt,startsAt+duration+5_000),interactionId,approachingInteraction:true});

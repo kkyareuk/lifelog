@@ -4,7 +4,7 @@ const badTown=new Set(['나쁜 평판','매우 나쁜 평판','치안이 불안�
 const text=(language,ko,en,ja)=>language==='en'?en:language==='ja'?ja:ko;
 const values=value=>Array.isArray(value)?value:typeof value==='string'?[value]:[];
 const hash=value=>[...String(value)].reduce((number,char)=>(number*31+char.charCodeAt(0))>>>0,2166136261);
-const traitsOf=character=>[...values(character.personalityTypes),...values(character.characterTraits),...values(character.interests),...values(character.hobbies),character.socialStyle,character.energyRhythm,character.emotionalExpression].filter(Boolean).join(' ');
+const traitsOf=character=>[...values(character.personalityTypes),...values(character.characterTraits),...values(character.interests),...values(character.hobbies),character.socialStyle,character.perceptionStyle,character.decisionStyle,character.planningStyle,character.activityTempo,character.interference,character.neatness,character.diligence,character.conflictStyle,character.affectionStyle,character.energyRhythm,character.humorStyle,character.emotionalExpression].filter(Boolean).join(' ');
 
 export function moodContext(character,entry,world){
   const home=entry?.home?world.homes?.[entry.visitHomeId||character.homeId]:null;
@@ -36,8 +36,9 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   if(busy)(outgoing?support(3,'주변 사람들의 활기에서 조금 힘을 얻음','The surrounding bustle gives a little energy','周囲のにぎわいから少し元気をもらう'):add(-8,'소란한 공간에 오래 있어 기가 빨림','The busy space is draining','にぎやかな空間に長くいて疲れる'));
   const home=entry?.home?world.homes?.[entry.visitHomeId||character.homeId]:null;
   if(home){
-    if(Number(home.cleanliness)>=75)support(2,'정돈된 집이라 덜 신경 쓰임','A tidy home removes a small source of stress','整った家で気がかりが少し減る');
-    if(Number(home.cleanliness)<35)add(-10,'집 안의 어수선함이 신경 쓰임','The untidy home is distracting','家の散らかりが気になる');
+    const tidy=/정돈을 좋아함|흐트러짐을 못 참음/.test(character.neatness||'');
+    if(Number(home.cleanliness)>=75)support(tidy?3:2,'정돈된 집이라 덜 신경 쓰임','A tidy home removes a small source of stress','整った家で気がかりが少し減る');
+    if(Number(home.cleanliness)<35)add(tidy?-14:-8,tidy?'정돈을 중시하는 성향이라 집 안의 어수선함이 더 신경 쓰임':'집 안의 어수선함이 신경 쓰임',tidy?'Their need for order makes the untidy home especially distracting':'The untidy home is distracting',tidy?'整頓を重視するため、家の散らかりがいっそう気になる':'家の散らかりが気になる');
     if(/아름다움|매우 아름다움|근사/.test(home.beautyLevel||''))support(1,'마음에 드는 집의 분위기가 작은 위안이 됨','The atmosphere at home offers a little comfort','気に入った家の雰囲気が小さな慰めになる');
   }
   const companionIds=[entry?.withId,...values(entry?.withIds),...values(entry?.participantOrder)].filter(id=>id&&id!==character.id),companionId=companionIds[0],companion=world.characters?.[companionId];
@@ -46,10 +47,22 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
     if(/연인|사랑|친구|가족|배우자|신뢰|친밀/.test(relationText))support(3,`${companion.name}와 함께라 평소보다 마음이 놓임`,`Being with ${companion.name} feels reassuring`,`${companion.name}と一緒なので普段より安心する`);
     else if(/적대|불신|갈등|싫어|경계/.test(relationText))add(-12,`${companion.name}와의 관계 때문에 긴장함`,`Tense because of the relationship with ${companion.name}`,`${companion.name}との関係で緊張している`);
     else if(outgoing)support(1,`${companion.name}와 함께라 혼자일 때보다 덜 심심함`,`Company makes the moment less dull`,`${companion.name}と一緒なので一人より退屈しない`);
+    if(/조용히 곁에 있음|말로 표현|행동으로 표현|적극적으로 챙김/.test(character.affectionStyle||'')&&/연인|사랑|친구|가족|배우자|신뢰|친밀/.test(relationText))support(1,'자기 방식으로 애정을 주고받아 관계가 작은 버팀목이 됨','Giving and receiving affection in their own way offers support','自分なりに愛情を交わすことが小さな支えになる');
   }
   const workEvent=/출근|업무|근무|회사|직장|회의|보고서|마감|work|office|shift|meeting|deadline/i.test(copy),hardWork=/야근|마감|초과|압박|바쁨|실수|overtime|deadline|pressure|busy|mistake/i.test(copy);
   if(workEvent)add(hardWork?-17:-6,hardWork?'업무량과 압박이 커서 스트레스가 쌓임':'일하는 동안 긴장을 유지해 조금 피로함',hardWork?'Workload and pressure are causing stress':'Staying focused at work is tiring',hardWork?'仕事量と圧力でストレスがたまる':'仕事中の緊張で少し疲れている');
-  const dressCodes=[place?.dressCode,[...(world.routines?.[character.id]||[]),...(world.monthlyRoutines?.[character.id]||[])].find(value=>String(value.id)===String(entry?.routineId))?.dressCode].filter(code=>code?.enabled);
+  if(workEvent&&/부지런함|쉴 새 없이 움직임/.test(character.diligence||''))support(2,'맡은 일을 진행하고 있다는 감각이 마음을 받쳐 줌','Making progress on their responsibilities offers reassurance','任されたことを進めている実感が心を支える');
+  if(workEvent&&/매우 느긋함|필요할 때만 움직임/.test(character.diligence||''))add(-3,'일의 속도를 계속 유지하는 것이 평소 리듬보다 버거움','Keeping up the work pace feels heavier than their usual rhythm','仕事のペースを保つことが普段のリズムより負担に感じる');
+  const activeEvent=/운동|달리|산책|이동|돌아다|여러 일을|exercise|run|walk|moving|運動|走|散歩|移動/i.test(copy);
+  if(activeEvent&&/활동적인 편|가만히 못 있음/.test(character.energyRhythm||''))support(2,'몸을 움직이는 일이 생활 에너지와 잘 맞음','Moving around suits their energy rhythm','体を動かすことが生活のエネルギーに合っている');
+  if(activeEvent&&/집에서 충전|느긋한 편/.test(character.energyRhythm||'')&&/바쁘|여러 일을|오래|계속/.test(copy))add(-5,'활동이 오래 이어져 혼자 충전할 시간이 부족함','Prolonged activity leaves too little time to recharge','活動が長く続き、一人で充電する時間が足りない');
+  const changedPlan=/갑자기|예정.{0,8}(바뀌|변경)|일정.{0,8}(바뀌|변경)|늦었|지연|unexpected|schedule change|delay|急に|予定.{0,8}変更|遅れ/i.test(copy);
+  if(changedPlan&&/미리 정리함|계획적/.test(character.planningStyle||''))add(-7,'예정이 바뀌어 다시 순서를 세워야 함','A changed plan means rebuilding the order of the day','予定が変わり、順序を組み直す必要がある');
+  if(changedPlan&&/즉흥적|유연한 편/.test(character.planningStyle||''))support(2,'예상 밖의 변화에도 비교적 유연하게 방향을 바꿈','They adapt relatively easily to the unexpected change','予想外の変化にも比較的柔軟に方向を変えられる');
+  const routineCode=[...(world.routines?.[character.id]||[]),...(world.monthlyRoutines?.[character.id]||[])].find(value=>String(value.id)===String(entry?.routineId))?.dressCode;
+  // Buildings no longer require uniforms. A uniform can still be mandatory for
+  // an individual schedule, where that choice is explicit.
+  const dressCodes=[place?.dressCode?{...place.dressCode,requiredUniform:false}:null,routineCode].filter(code=>code?.enabled);
   if(dressCodes.length){
     const owned=new Set(character.inventory?.fashion||[]),clothes=(world.catalog?.fashion||[]).filter(item=>owned.has(item.id)),matches=clothes.some(item=>dressCodes.some(code=>(!code.requiredUniform||item.requiredUniform)&&(!code.formality||code.formality==='지정 안 함'||item.formality===code.formality)&&((code.colors||[]).length===0||(item.colors||[]).some(color=>(code.colors||[]).includes(color)))));
     if(matches)support(2,'장소와 일정에 어울리는 옷이라 덜 신경 쓰임','The outfit fits the dress code','服装がドレスコードに合って気が楽になる');

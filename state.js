@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902taste194";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260902taste194";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902taste194";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260902taste194";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902taste194";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260902taste194";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260902taste194";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260902taste194";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260902taste194";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260902personality195";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260902personality195";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902personality195";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260902personality195";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902personality195";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260902personality195";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260902personality195";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260902personality195";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260902personality195";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260902taste194";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260902taste194";
+import {missingBuildings} from "./building-recovery.js?v=20260902personality195";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260902personality195";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -541,7 +541,9 @@ function normalizeHomes(x){
     p.audiences=Array.isArray(p.audiences)?p.audiences.map(String):[];p.priceRange=String(p.priceRange||"보통");p.servicePrice=String(p.servicePrice||p.priceRange);
     p.reputation=String(p.reputation||"지정 안 함");p.fameLevel=String(p.fameLevel||"거의 알려지지 않음");p.atmosphere=String(p.atmosphere||"지정 안 함");
     Object.assign(p,normalizeBuildingLighting(p));
-    p.dressCode=normalizeDressCode(p.dressCode);
+    // Uniform requirements belong to schedules. Legacy building values are
+    // cleared so restoring an older backup cannot silently re-enable them.
+    p.dressCode={...normalizeDressCode(p.dressCode),requiredUniform:false};
     p.imageScale=Number.isFinite(+p.imageScale)?Math.max(.45,Math.min(2,+p.imageScale)):1;
     p.spicy=Number.isFinite(+p.spicy)?Math.max(0,Math.min(5,+p.spicy)):0;p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
     p.x=Number.isFinite(+p.x)?Math.max(0,Math.min(100,+p.x)):50;p.y=Number.isFinite(+p.y)?Math.max(0,Math.min(100,+p.y)):50;
@@ -1049,6 +1051,7 @@ export function deleteCharacter(id){
   save(true);
 }
 const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","musicGenres","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse"]);
+SIMULATION_FIELDS.add("diligence");
 const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
   [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});

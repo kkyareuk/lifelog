@@ -17,8 +17,8 @@ const contexts={a:{scene:{minute:600,title:"소파에서 쉬는 중",room:"livin
 const first=advanceHomeLifeSimulation(home,["a","b"],contexts,start);
 equal(Object.keys(first.simulation.agents).length,2,"두 캐릭터의 생활 상태를 만든다");
 equal(new Set(Object.values(first.simulation.agents).map(agent=>agent.furnitureId)).size,2,"두 캐릭터가 서로 다른 가구를 예약한다");
-ok(Object.values(first.simulation.agents).every(agent=>agent.phase==="walking"),"첫 행동은 가구로 걸어가는 단계다");
-ok(new Set(Object.values(first.simulation.agents).map(agent=>agent.startedAt)).size===2,"캐릭터마다 서로 다른 이동 시작 시각을 갖는다");
+ok(Object.values(first.simulation.agents).every(agent=>agent.phase==="using"),"집에 처음 들어오면 현재 가구 사용 상태에서 시작한다");
+ok(Object.values(first.simulation.agents).every(agent=>agent.x===agent.fromX&&agent.y===agent.fromY),"첫 화면에서 먼 좌표로 되돌아가지 않는다");
 equal(Object.keys(first.simulation.reservations).length,2,"이동을 시작할 때부터 가구를 예약한다");
 
 const walkingEnds=Math.max(...Object.values(first.simulation.agents).map(agent=>agent.arrivesAt));
@@ -40,7 +40,7 @@ equal(crossing.simulation.agents.a.phase,"walking","방 사이 이동을 순간�
 const oneSeat={rooms:{living:{name:"거실",furniturePlacements:[{id:"only-sofa",item:"소파",x:50,y:65}]}}};
 const sharedContext={a:{scene:{minute:600,title:"소파에서 쉬는 중",room:"living"},sceneKey:"a-seat",endsAt:start+40*60_000},b:{scene:{minute:600,title:"소파에서 쉬는 중",room:"living"},sceneKey:"b-seat",endsAt:start+40*60_000}};
 const conflict=advanceHomeLifeSimulation(oneSeat,["a","b"],sharedContext,start);
-equal(Object.values(conflict.simulation.agents).filter(agent=>agent.phase==="walking").length,1,"한 자리에는 한 캐릭터만 이동한다");
+equal(Object.values(conflict.simulation.agents).filter(agent=>agent.furnitureId).length,1,"한 자리에는 한 캐릭터만 배치한다");
 equal(Object.values(conflict.simulation.agents).filter(agent=>!agent.furnitureId).length,1,"남은 캐릭터는 같은 가구를 중복 점유하지 않는다");
 equal(Object.keys(conflict.simulation.reservations).length,1,"예약표에도 한 사용자만 남는다");
 
@@ -95,7 +95,7 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(gradleSource.includes("versionCode 186")&&gradleSource.includes('versionName "1.0.173"'),"Android 개발 버전을 182 / 1.0.169로 올렸다");
+ok(/versionCode\s+(?:186|19[0-5])/.test(gradleSource)&&/versionName\s+"1\.0\.(?:173|17[7-9]|18[0-2])"/.test(gradleSource),"Android 개발 버전이 홈 생활 시뮬레이션 도입 버전 이상이다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),

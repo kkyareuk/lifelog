@@ -54,7 +54,8 @@
     "test:statistics191": "node scripts/check-statistics-emotion-191.mjs",
     "test:layout-meals192": "node scripts/check-direct-layout-meals-192.mjs",
     "test:achievements193": "node scripts/check-play-games-achievements-193.mjs",
-    "test:taste-scroll194": "node scripts/check-character-taste-scroll-194.mjs"
+    "test:taste-scroll194": "node scripts/check-character-taste-scroll-194.mjs",
+    "test:personality-home195": "node scripts/check-personality-home-195.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

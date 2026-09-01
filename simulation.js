@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260902taste194";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260902taste194";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902taste194";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260902taste194";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260902taste194";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260902personality195";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260902personality195";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902personality195";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260902personality195";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260902personality195";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -457,7 +457,7 @@ function personalityFlavor(c,desc,seed="",date=new Date()){
   if(c.interference==="방관자")variants.push("주변에서 무슨 일이 벌어지는지 알면서도 직접 부탁받기 전에는 끼어들지 않았어요.","상대가 스스로 해결할 일이라 여기고 별다른 참견 없이 자기 하던 일을 이어갔어요.");
   if(c.energyRhythm==="가만히 못 있음")variants.push("한 가지를 끝내자마자 다음에 할 일을 찾아 바로 몸을 움직였어요.");
   if(c.activityTempo==="생각나면 바로 움직임")variants.push("해야 할 일이 떠오르자 머뭇거리지 않고 곧바로 손을 뻗었어요.");
-  if(c.activityTempo==="부산스럽게 여러 일을 오감")variants.push("하던 일을 붙잡고 있으면서도 눈에 들어온 다른 일까지 손대느라 집 안을 몇 번이나 오가고 있어요.");
+  if(c.activityTempo==="여러 일을 오감"||c.activityTempo==="부산스럽게 여러 일을 오감")variants.push("하던 일을 붙잡고 있으면서도 눈에 들어온 다른 일까지 손대느라 집 안을 몇 번이나 오가고 있어요.");
   if(c.activityTempo==="허둥대며 주의가 자주 옮겨감")variants.push("무언가를 가지러 움직였다가 옆에 놓인 다른 것이 눈에 들어와 그것부터 만지고, 다시 원래 할 일을 떠올렸어요.");
   if(c.activityTempo==="한 가지씩 차분히")variants.push("지금 하던 일을 끝까지 마무리한 뒤 다음 일로 넘어가고 있어요.");
   if(c.energyRhythm==="집에서 충전")variants.push("사람이 적은 편안한 자리를 골라 조용히 기운을 되찾고 있어요.");
@@ -469,6 +469,18 @@ function personalityFlavor(c,desc,seed="",date=new Date()){
   if(c.planningStyle==="무계획")variants.push("앞일을 미리 정하지 않고 지금 눈앞에서 가장 손쉬운 것부터 건드리고 있어요.","무엇을 할지 정하지 않은 채 돌아다니다가 흥미가 생긴 일에 자연스럽게 빠져들었어요.","정해 둔 종료 시각 없이 기분과 상황이 바뀌는 대로 다음 행동을 골랐어요.");
   if(c.decisionStyle==="공감 우선")variants.push("장면의 감정선과 마음에 걸리는 부분을 지나치지 않고 세심하게 살펴보고 있어요.");
   if(c.decisionStyle==="논리 우선")variants.push("가장 합리적인 방법이 무엇인지 따져 보고 군더더기 없이 움직였어요.");
+  if(c.diligence==="부지런함")variants.push("미뤄 둔 일을 하나 더 골라 끝내고 나서야 편하게 손을 놓았어요.");
+  if(c.diligence==="쉴 새 없이 움직임")variants.push("한 가지가 끝나자 쉬는 대신 바로 다음 할 일을 찾아 움직였어요.");
+  if(c.diligence==="매우 느긋함")variants.push("서두르지 않고 중간중간 쉬어 가며 자기 속도로 이어 갔어요.");
+  if(c.diligence==="필요할 때만 움직임")variants.push("꼭 필요한 몫부터 마친 뒤 나머지는 무리해서 늘리지 않았어요.");
+  if(socialScene&&c.affectionStyle==="조용히 곁에 있음")variants.push("길게 표현하지 않아도 상대가 편해질 때까지 조용히 곁을 지켰어요.");
+  if(socialScene&&c.affectionStyle==="행동으로 표현")variants.push("말을 보태기보다 상대에게 실제로 필요한 일을 먼저 도왔어요.");
+  if(socialScene&&c.affectionStyle==="말로 표현")variants.push("상대가 오해하지 않도록 고마움과 마음을 말로 분명히 전했어요.");
+  if(socialScene&&c.affectionStyle==="적극적으로 챙김")variants.push("상대가 놓친 부분까지 먼저 확인하고 필요한 것을 가까이 챙겨 두었어요.");
+  if(socialScene&&c.conflictStyle==="피하는 편")variants.push("불편한 기색이 보여도 바로 맞서기보다 충돌하지 않을 거리를 먼저 만들었어요.");
+  if(socialScene&&c.conflictStyle==="대화로 해결")variants.push("뜻이 엇갈린 부분은 짐작으로 넘기지 않고 차분히 확인했어요.");
+  if(socialScene&&c.conflictStyle==="바로 따짐")variants.push("납득하기 어려운 부분을 지나치지 않고 그 자리에서 이유를 물었어요.");
+  if(socialScene&&/장난을 즐김|유머로 분위기를 이끎/.test(c.humorStyle||""))variants.push("상대의 반응을 살피며 분위기에 맞는 짧은 농담을 섞었어요.");
   if((c.socialEnergy??3)<=1)variants.push("사람이 드문 조용한 자리를 골라 자기 속도대로 움직이고 있어요.");
   if((c.socialEnergy??3)>=5)variants.push("마주친 사람에게 먼저 반갑게 인사를 건네며 분위기를 자연스럽게 이끌고 있어요.");
   if(socialScene&&c.socialStyle==="혼자가 편함")variants.push("필요한 말은 짧게 나누고 서로의 시간을 방해하지 않는 거리를 지켰어요.","함께 있는 동안에도 각자의 일에 집중할 수 있는 조용한 분위기를 편안해했어요.");
@@ -2819,7 +2831,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260901-scene-time-192";
+const ENGINE_VERSION="20260902-personality-home-195";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -3445,11 +3457,13 @@ function dateLikePair(first,second,relation,current={}){
   return Boolean(current.dateGroup&&current.datePurpose&&current.mood==="데이트"&&[first.id,second.id].includes(current.withId));
 }
 function interactionInitiativeScore(character){
-  const profile=[...(character.personalityTypes||[]),character.socialStyle,character.activityTempo,character.conflictStyle,character.interference,character.decisionStyle].filter(Boolean).join(" ");
+  const profile=[...(character.personalityTypes||[]),character.socialStyle,character.activityTempo,character.conflictStyle,character.interference,character.decisionStyle,character.planningStyle,character.diligence,character.energyRhythm,character.affectionStyle,character.humorStyle].filter(Boolean).join(" ");
   let score=Number(character.socialEnergy??3);
   if(/외향|활발|사교|무리의 중심|먼저 다가감|바로 따짐|주도/.test(profile))score+=4;
   if(/내향|낯을 가림|혼자가 편함|수줍|조용|피하는 편|시간을 두고 말함|거리/.test(profile))score-=4;
   if(/생각나면 바로|즉흥|직접/.test(profile))score+=1;
+  if(/부지런|쉴 새 없이|활동적인 편|가만히 못|적극적으로 챙김|유머로 분위기/.test(profile))score+=1;
+  if(/매우 느긋|필요할 때만|집에서 충전|장난을 거의 하지 않음/.test(profile))score-=1;
   if(/관여하지 않|간섭하지 않|신중|관찰/.test(profile))score-=1;
   return score;
 }
