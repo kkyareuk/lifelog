@@ -90,7 +90,10 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
     else {label=text(language,'긴장함','Tense','緊張している');icon='☁';tone='tense'}
   }
   else if(quiet&&outgoing){label=text(language,'지루함','Bored','退屈');icon='…';tone='bored'}
-  else if(optimistic){label=text(language,'기분 좋음','Feeling good','ご機嫌');icon='☀';tone='good'}
+  // 낙천성은 같은 사건을 덜 오래 끌게 하는 완충 성향이지, 음수인 최종
+  // 점수를 양수 감정으로 뒤집는 표지가 아니다. 표시 점수와 감정 이름은
+  // 반드시 같은 최종 score 구간에서 결정한다.
+  else if(optimistic&&score>=0){label=text(language,'기분 좋음','Feeling good','ご機嫌');icon='☀';tone='good'}
   else if(baseline==='무덤덤한 편'){label=text(language,'무덤덤함','Unruffled','淡々としている');icon='—';tone='calm'}
   else if((hash(`${character.id}:${day}:neutral`)%2)===0){label=text(language,'차분함','Composed','落ち着いている');icon='◇';tone='calm'}
   else {label=text(language,'평온함','Feeling calm','穏やか');icon='◌';tone='calm'}
