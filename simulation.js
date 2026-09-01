@@ -1,7 +1,7 @@
-import {environmentConversation} from "./character-mood.js?v=20260901scene186";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901scene186";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260901scene186";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260901scene186";
+import {environmentConversation} from "./character-mood.js?v=20260901closet187";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901closet187";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260901closet187";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260901closet187";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2223,7 +2223,11 @@ function relationshipCombinationScenePool(c,relationship,date){
   if(types.has("부모·자녀"))scene("role-family",`${name}가 스스로 할 부분을 기다리는 중`,"먼저 대신 처리하지 않고 막힌 부분을 말해 달라고 한 뒤, 요청받은 단계만 옆에서 도왔어요.",`Waiting for ${name} to handle their part`,"They did not take over, asked which step was difficult, and helped only where requested.",`${name}が自分でする部分を待つところ`,"先回りせず、難しい部分を聞いて頼まれた段階だけ隣で手伝いました。","living");
   if(types.has("형제·자매"))scene("role-sibling",`${name}와 오래된 물건의 주인을 확인하는 중`,"서로 자기 것이라고 우기기 전에 사진과 기억을 맞춰 보고, 함께 쓰던 물건은 보관할 사람을 정했어요.",`Working out who owns an old item with ${name}`,"Before arguing over it, they checked photos and memories and decided who would keep shared items.",`${name}と昔の物の持ち主を確かめるところ`,"互いに自分の物だと言い張る前に写真と記憶を照らし合わせ、共有物を保管する人を決めました。","study");
   if(types.has("친구")||types.has("소꿉친구"))scene("role-friend",`${name}에게 듣고 싶은 답의 종류를 묻는 중`,"해결책이 필요한지 그냥 들어 주길 바라는지 먼저 물은 뒤, 상대가 고른 방식으로 대화를 이어 갔어요.",`Asking what kind of response ${name} wants`,"They asked whether advice or simple listening was wanted and continued in the way ${name} chose.",`${name}にどんな返事がほしいか尋ねるところ`,"解決策が必要か、ただ聞いてほしいかを先に尋ね、相手が選んだ形で話を続けました。","living");
-  if(types.has("연인")||types.has("부부"))scene("role-partner",`${name}와 미뤄 둔 약속의 조건을 다시 맞추는 중`,"좋아한다는 말로 덮지 않고 시간과 비용, 각자 원하지 않는 부분을 하나씩 다시 정했어요.",`Reworking a postponed plan with ${name}`,"They did not cover the issue with affection and instead clarified time, cost, and each person's limits.",`${name}と先延ばしにした約束の条件を決め直すところ`,"好意の言葉で済ませず、時間と費用、互いに望まないことを一つずつ決め直しました。","study");
+  if(types.has("연인")||types.has("부부")){
+    scene("role-partner-time",`${name}와 주말 외출 시간을 다시 정하는 중`,"한쪽은 오전 출발을, 다른 쪽은 오후 출발을 원해 말이 높아졌어요. 서로 포기하기 어려운 일정을 확인하고 점심 뒤 출발하기로 다시 정했어요.",`Rescheduling a weekend outing with ${name}`,"They disagreed over leaving in the morning or afternoon, checked the commitments neither could move, and settled on leaving after lunch.",`${name}と週末の外出時間を決め直すところ`,"午前出発と午後出発で意見がぶつかり、動かせない予定を確認して昼食後に出ることに決め直しました。","study");
+    scene("role-partner-cost",`${name}와 저녁 식사 예산을 두고 의견을 맞추는 중`,"예약하려던 식당의 가격이 예상보다 높아 한쪽이 불편하다고 말했어요. 메뉴와 교통비까지 다시 계산한 뒤 둘 다 부담 없는 식당으로 바꿨어요.",`Discussing the dinner budget with ${name}`,"One of them objected when the planned restaurant cost more than expected. They recalculated the meal and travel costs and chose somewhere comfortable for both.",`${name}と夕食の予算を相談しているところ`,"予約予定の店が予想より高く、一方が負担だと伝えました。食事代と交通費を計算し直し、二人とも無理のない店に変えました。","study");
+    scene("role-partner-cancel",`${name}와 취소된 약속을 언제 다시 잡을지 정하는 중`,"연락 없이 약속이 미뤄진 점 때문에 서운했다는 말을 먼저 꺼냈어요. 다음에는 늦어도 두 시간 전에 알리고, 이번 약속은 다음 휴일에 다시 잡기로 했어요.",`Rescheduling a cancelled plan with ${name}`,"They first explained why the unannounced delay had hurt. They agreed to give at least two hours' notice next time and rescheduled for the next day off.",`${name}と中止になった約束を取り直すところ`,"連絡なく延期されたことが悲しかったと伝え、次は遅くとも二時間前に知らせ、今回の約束は次の休日に取り直すことにしました。","study");
+  }
   if(types.has("동아리 동료")||types.has("학창 시절 친구들")||types.has("친구 모임"))scene("role-group",`${name}와 모임에서 맡을 일을 조정하는 중`,"친한 정도와 상관없이 할 수 있는 시간과 익숙한 일을 기준으로 역할을 다시 나눴어요.",`Adjusting group duties with ${name}`,"They reassigned tasks by availability and experience rather than closeness.",`${name}と集まりで担当することを調整するところ`,"親しさではなく、使える時間と慣れている作業を基準に役割を分け直しました。","study");
 
   if(flags.distrust){
@@ -2784,7 +2788,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260831-directed-gift-182";
+const ENGINE_VERSION="20260901-closet-log-187";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -2974,6 +2978,19 @@ function cleanLegacyProfileMetaEntries(entries){
   const metaCopy=/갈등 대응과 애정 표현 설정을 떠올리며|마음을 표현할 방법을 고르는 중|프로필에 정해 둔|좋아하는 장르로 설정한|운전 경험 설정에 맞춰/;
   return entries.filter(item=>!metaCopy.test(`${item?.title||""} ${item?.desc||""}`));
 }
+function clarifyLegacyPromiseConflicts(c,entries){
+  return entries.map(item=>{
+    if(!/미뤄 둔 약속의 조건/.test(`${item?.title||""} ${item?.desc||""}`))return item;
+    const partner=state.characters[item.withId],name=partner?.name||"상대";
+    const variants=[
+      [`${name}와 주말 외출 시간을 다시 정하는 중`,`오전 출발을 원한 쪽과 늦게 준비하고 싶었던 쪽의 의견이 달랐어요. 준비 시간을 감안해 점심 식사 뒤 출발하기로 합의했어요.`],
+      [`${name}와 저녁 약속의 예산을 조정하는 중`,`예약한 식당의 비용이 예상보다 커서 언성이 높아졌어요. 이번에는 예산 안의 다른 식당으로 바꾸고, 다음부터 예약 전에 가격을 함께 확인하기로 했어요.`],
+      [`${name}와 취소된 약속을 다시 잡는 중`,`연락 없이 약속이 미뤄진 점이 서운했다고 분명히 말했어요. 다음에는 늦어도 두 시간 전에 알리고, 이번 약속은 다음 휴일에 다시 잡기로 했어요.`]
+    ];
+    const [title,desc]=variants[hash(`${item.interactionId||item.minute}:${c.id}:promise`)%variants.length];
+    return {...item,title,desc};
+  });
+}
 function companionWasActuallyThere(c,item,date){
   if(!item?.withId)return true;
   const other=state.characters[item.withId],otherDay=other?.days?.[dayKey(date)];
@@ -3008,7 +3025,7 @@ export function timeline(c,date=new Date()){
   const engineChanged=Boolean(old&&old.engineVersion!==ENGINE_VERSION);
   if(old&&Array.isArray(old.entries)&&old.cleanupVersion!==ENGINE_VERSION){
     old.entries=old.entries.filter(item=>item&&typeof item==="object"&&!Array.isArray(item));
-    let cleaned=cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanScheduledRoutineEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries))))))))));
+    let cleaned=clarifyLegacyPromiseConflicts(c,cleanLegacyProfileMetaEntries(cleanCharacterBreakingCheeringEntries(cleanAccumulatedGroupEntries(cleanSelfCompanionEntries(c,cleanInvalidRoomAndHobbyEntries(c,cleanShadowedBaseEntries(cleanScheduledRoutineEntries(cleanRoutineCleanupRest(cleanExactRepeatedEntries(cleanLegacyDateEntries(old.entries)))))))))));
     // Correct only gifts identified by their saved source IDs, never by names
     // guessed from prose. Other historical scenes retain their original text.
     for(const source of giftSources(date).filter(x=>x.actorId===c.id||x.targetId===c.id)){
@@ -4202,6 +4219,21 @@ function committedSharedSceneFor(c,date,current){
     });
   })||null;
 }
+function incomingCommittedSharedSceneFor(c,date,current){
+  const minute=nowMin(date),key=dayKey(date);
+  for(const ownerId of state.order){
+    if(ownerId===c.id)continue;
+    const owner=state.characters[ownerId],entries=owner?.days?.[key]?.entries;
+    if(!Array.isArray(entries))continue;
+    const source=entries.slice().reverse().find(item=>{
+      if(!item?.groupInteraction||!item.interactionId||Number(item.minute)>minute||minute-Number(item.minute)>=30||!sameLiveLocation(item,current))return false;
+      const ids=[...(item.participantOrder||[]),...(item.withIds||[]),item.withId,ownerId].filter(Boolean);
+      return ids.includes(c.id);
+    });
+    if(source)return {owner,source};
+  }
+  return null;
+}
 function sharedParticipantOrder(characters,relation){
   const available=new Set(characters.map(character=>character.id));
   const configured=Array.isArray(relation?.displayOrder)?relation.displayOrder:Array.isArray(relation?.groupMembers)?relation.groupMembers:[];
@@ -4431,9 +4463,10 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const sharedActionText=cleanRepeatedSceneText(`${scene.title||""} ${scene.first||""} ${scene.second||""}`);
   const participantNames=participantOrder.map(id=>state.characters[id]?.name).filter(Boolean).join(" · ");
   const sharedCanonicalTitle=sharedContext?.sharedCanonicalTitle||resolveEntityParticles(`${participantNames} · ${scene.title||combinedTitle}`);
-  const topic=/싸움|다툼|입맞춤|포옹|키스|갈등/.test(sharedActionText)?"":environmentConversation(c,{...current,home:isHomeScene,visitHomeId:currentHomeId},state);
+  const topic=/싸움|다툼|입맞춤|포옹|키스|갈등/.test(sharedActionText)||hash(`${interactionId}:${c.id}:topic`)%3!==0?"":environmentConversation(c,{...current,home:isHomeScene,visitHomeId:currentHomeId},state);
   const sharedCanonicalDesc=sharedContext?.sharedCanonicalDesc||resolveEntityParticles([compactLogDescription(sharedActionText),topic].filter(Boolean).join(" "));
-  return {...current,baseTitle,baseDesc,title:sharedCanonicalTitle,desc:sharedCanonicalDesc,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
+  const perspectiveDesc=resolveEntityParticles([compactLogDescription(detail),topic].filter(Boolean).join(" "));
+  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(title),desc:perspectiveDesc,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose};
 }
 function companionAlignedBaseEvent(c,current,date){
   if(!c||activeScheduledRoutine(c,date))return current;
@@ -4465,11 +4498,25 @@ export function eventFor(c,date=new Date()){
   if(rawCurrent.choicePhase==="buy")return rawCurrent;
   const routineCompanionIds=((rawCurrent?.routineId===activeRoutine?.id?rawCurrent.withIds:activeRoutine?.withIds)||[]).filter(id=>id&&id!==c.id&&state.characters[id]);
   const baseCurrent=companionAlignedBaseEvent(c,rawCurrent,date);
+  const incomingShared=!activeRoutine?incomingCommittedSharedSceneFor(c,date,baseCurrent):null;
   // 동행자를 지정하지 않은 일정에는 우연히 같은 장소에 있다는 이유만으로
   // 다른 캐릭터의 대화나 공동 행동을 끼워 넣지 않는다.
   let current=adaptAccessibilityWording(c,activeRoutine&&!routineCompanionIds.length
     ?baseCurrent
-    :(committedSharedSceneFor(c,date,baseCurrent)||sharedPlaceScene(c,baseCurrent,date)));
+    :incomingShared
+      ?sharedPlaceScene(c,baseCurrent,date,{
+        interactionId:incomingShared.source.interactionId,
+        participantOrder:incomingShared.source.participantOrder,
+        forcedPartnerId:incomingShared.owner.id,
+        dateGroup:incomingShared.source.dateGroup,
+        datePurpose:incomingShared.source.datePurpose,
+        location:{home:Boolean(incomingShared.source.home),room:incomingShared.source.room,visitHomeId:incomingShared.source.visitHomeId,placeId:incomingShared.source.placeId,townId:incomingShared.source.townId,transit:false},
+        sourceEvent:incomingShared.source,
+        sourceOwnerId:incomingShared.owner.id,
+        sharedCanonicalTitle:incomingShared.source.sharedCanonicalTitle,
+        sharedCanonicalDesc:incomingShared.source.sharedCanonicalDesc
+      })
+      :(committedSharedSceneFor(c,date,baseCurrent)||sharedPlaceScene(c,baseCurrent,date)));
   if(current?.dateGroup&&current?.datePurpose){
     const dateIds=dateGroupParticipantIds(current);
     const partnerId=dateIds.find(id=>id!==c.id);
@@ -4483,6 +4530,17 @@ export function eventFor(c,date=new Date()){
         participantOrder:[...(current.participantOrder||[]).filter(id=>id===c.id||id===partnerId),c.id,partnerId].filter((id,index,list)=>list.indexOf(id)===index)
       };
     }
+  }
+  if(current?.groupInteraction&&!current.dateGroup){
+    const participants=(current.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
+    const everyoneActuallyHere=participants.length>0&&participants.every(other=>{
+      const live=companionAlignedBaseEvent(other,baseEventFor(other,date),date);
+      return !activeScheduledRoutine(other,date)&&sameLiveLocation(current,live);
+    });
+    // 일반 공동 행동은 양쪽 캐릭터의 실제 집·방·건물이 모두 일치할 때만
+    // 확정한다. 상대를 강제로 첫 캐릭터의 방으로 복사해 한쪽 화면에만
+    // 만남이 생기던 오류를 이 경계에서 차단한다.
+    if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,baseEventFor(c,date));
   }
   if(current?.groupInteraction){
     // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한

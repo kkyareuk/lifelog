@@ -1,20 +1,19 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901scene186";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260901scene186";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260901scene186";
-import {characterMood} from "./character-mood.js?v=20260901scene186";
-import {createContactMailbox} from "./notification-mail.js?v=20260901scene186";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260901scene186";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260901scene186";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260901scene186";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260901scene186";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260901scene186";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260901scene186";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260901scene186";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260901scene186";
-import {SCENE_IMAGE_VARIANTS,sceneImageFor} from "./character-scene-image.js?v=20260901scene186";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260901closet187";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260901closet187";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260901closet187";
+import {characterMood} from "./character-mood.js?v=20260901closet187";
+import {createContactMailbox} from "./notification-mail.js?v=20260901closet187";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260901closet187";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260901closet187";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260901closet187";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260901closet187";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260901closet187";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260901closet187";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260901closet187";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260901closet187";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -751,9 +750,19 @@ function profileAvatar(c,cls=""){
   if(c.icon)return `<img class="sprite ${cls}" src="${esc(c.icon)}" alt="" data-avatar-fallback="${fallback}" onerror="window.DrawerVillageAvatarFallback?.(this)">`;
   return `<span class="avatar ${cls}">${fallback}</span>`;
 }
-const ldArtSource=(c,entry)=>sceneImageFor(c,entry,"ldImage",entry?.mood).src;
+function wardrobeSceneArt(c,entry,field){
+  const owned=new Set(c.inventory?.fashion||[]),items=(state.catalog?.fashion||[]).filter(item=>owned.has(item.id)&&item[field]);
+  if(!items.length)return"";
+  const scene=entry||eventFor(c)||{},copy=`${scene.title||""} ${scene.desc||""}`,work=/출근|업무|근무|회사|직장/.test(copy),sleep=/자는 중|취침|잠/.test(copy),date=/데이트|연인/.test(copy),party=/파티|연회|공연/.test(copy);
+  const occasions=work?["출근복","유니폼","정장"]:sleep?["잠옷","실내복"]:date?["데이트룩","외출복"]:party?["파티복","격식 있는 자리"]:["일상복","외출복"];
+  const mood=characterMood(c,scene,state).label,moodTag=/들뜸|신남/.test(mood)?"들뜸":/기분 좋|기쁨/.test(mood)?"기쁨":/지루/.test(mood)?"지루함":/긴장/.test(mood)?"긴장함":/화/.test(mood)?"화남":/슬픔|가라앉/.test(mood)?"슬픔":/피곤/.test(mood)?"피곤함":"평온함";
+  const month=new Date().getMonth()+1,warmth=[12,1,2].includes(month)?["따뜻함","매우 따뜻함"]:[6,7,8].includes(month)?["시원함","매우 시원함"]:["보통","따뜻함","시원함"];
+  const score=item=>((item.occasionTags||[]).some(tag=>tag==="모든 상황"||occasions.includes(tag))?8:0)+((item.moodTags||["모든 기분"]).some(tag=>tag==="모든 기분"||tag===moodTag)?3:0)+(warmth.includes(item.warmth||"보통")?2:0)+(work&&item.requiredUniform?12:0);
+  return [...items].sort((a,b)=>score(b)-score(a)||String(a.id).localeCompare(String(b.id)))[0]?.[field]||"";
+}
+const ldArtSource=(c,entry)=>wardrobeSceneArt(c,entry,"ldImage")||String(c?.ldImage||"");
 const hasLdArt=(c,entry)=>Boolean(ldArtSource(c,entry));
-const sdArtSource=(c,entry)=>sceneImageFor(c,entry,"icon",entry?.mood).src;
+const sdArtSource=(c,entry)=>wardrobeSceneArt(c,entry,"iconImage")||String(c?.icon||c?.photo||"");
 const hasSdArt=(c,entry)=>Boolean(sdArtSource(c,entry));
 const homeSceneLayoutFor=(c,mode)=>{
   const source=c?.homeSceneLayout?.[mode]||{};
@@ -866,7 +875,7 @@ function buildingMapArt(p){
 }
 function buildingLightingControls(p){
   const config=normalizeBuildingLighting(p);
-  return `<fieldset class="building-lighting-settings"><legend>${t("건물 불빛","건물 불빛")}</legend><label>${t("조명 방식","조명 방식")}<select data-place-field="lightingMode" data-place-id="${p.id}">${[["schedule","설정한 시간에 켜기"],["always","항상 켜기"],["off","항상 끄기"]].map(([value,label])=>`<option value="${value}" ${config.lightingMode===value?"selected":""}>${t(label,label)}</option>`).join("")}</select></label><div><label>${t("켜지는 시간","켜지는 시간")}<input type="time" data-place-field="lightOnTime" data-place-id="${p.id}" value="${config.lightOnTime}"></label><label>${t("꺼지는 시간","꺼지는 시간")}<input type="time" data-place-field="lightOffTime" data-place-id="${p.id}" value="${config.lightOffTime}"></label></div><small>${t("기기의 현실 시간 기준 · 같은 시각으로 설정하면 24시간 켜져요.","기기의 현실 시간 기준 · 같은 시각으로 설정하면 24시간 켜져요.")}${buildingLightSource(p)?"":` ${t("이 건물 그림에는 아직 불빛 레이어가 없어요.","이 건물 그림에는 아직 불빛 레이어가 없어요.")}`}</small></fieldset>`;
+  return `<label class="building-fame-setting">${t("건물 인지도","건물 인지도")}<select data-place-field="fameLevel" data-place-id="${p.id}">${["거의 알려지지 않음","동네 안에서 알려짐","마을 전체에 알려짐","다른 마을에도 알려짐","전국적으로 알려짐"].map(value=>`<option ${value===(p.fameLevel||"거의 알려지지 않음")?"selected":""}>${t(value,value)}</option>`).join("")}</select><small>${t("인지도는 얼마나 널리 알려졌는지, 평판은 좋고 나쁜 평가를 뜻해요.","인지도는 얼마나 널리 알려졌는지, 평판은 좋고 나쁜 평가를 뜻해요.")}</small></label><fieldset class="building-lighting-settings"><legend>${t("건물 불빛","건물 불빛")}</legend><label>${t("조명 방식","조명 방식")}<select data-place-field="lightingMode" data-place-id="${p.id}">${[["schedule","설정한 시간에 켜기"],["always","항상 켜기"],["off","항상 끄기"]].map(([value,label])=>`<option value="${value}" ${config.lightingMode===value?"selected":""}>${t(label,label)}</option>`).join("")}</select></label><div><label>${t("켜지는 시간","켜지는 시간")}<input type="time" data-place-field="lightOnTime" data-place-id="${p.id}" value="${config.lightOnTime}"></label><label>${t("꺼지는 시간","꺼지는 시간")}<input type="time" data-place-field="lightOffTime" data-place-id="${p.id}" value="${config.lightOffTime}"></label></div><small>${t("기기의 현실 시간 기준 · 같은 시각으로 설정하면 24시간 켜져요.","기기의 현실 시간 기준 · 같은 시각으로 설정하면 24시간 켜져요.")}${buildingLightSource(p)?"":` ${t("이 건물 그림에는 아직 불빛 레이어가 없어요.","이 건물 그림에는 아직 불빛 레이어가 없어요.")}`}</small></fieldset>`;
 }
 function placeCard(p,editable=false){
   const mode=state.buildingLabelMode||"full";
@@ -1309,6 +1318,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   if(tenseInteraction)emotionScores.fear+=2;
   const sceneEmotion=explicitNegative?explicitEmotion:strongestSceneEmotion(emotionScores);
   const sceneEmotionScore=emotionScores[sceneEmotion]||0;
+  const ambientMood=characterMood(c,entry,state).tone;
   const tone=sleeping?"sleep"
     :drowsy?"drowsy"
       :sceneEmotion==="shock"&&sceneEmotionScore>=2?"shock"
@@ -1319,7 +1329,12 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
                 ?(dating?"date-romantic":ownRomanceInterest&&reverseRomanceInterest?"crush-mutual":"crush-one-sided")
                 :sceneEmotion==="playful"&&sceneEmotionScore>=2?"interaction-playful"
                   :sceneEmotion==="warm"&&sceneEmotionScore>=1?"interaction-warm"
-                    :dating?"date-neutral":partner&&entry?.groupInteraction?"interaction-neutral":"neutral";
+                    :dating?"date-neutral":partner&&entry?.groupInteraction?"interaction-neutral"
+                      :ambientMood==="angry"?"fight-fire"
+                        :ambientMood==="sad"?"sad"
+                          :ambientMood==="tense"?"interaction-tense"
+                            :ambientMood==="excited"?"interaction-playful"
+                              :ambientMood==="good"?"interaction-warm":"neutral";
   const homeId=entry?.visitHomeId||c.homeId;
   const coResidentConversation=Boolean(
     partner
@@ -2571,7 +2586,6 @@ function characterFullOverview(c){
     <span class="character-full-slot-label ld">${t("LD 사진 추가하기","LD 사진 추가하기")}</span>
     <button type="button" class="character-full-image-slot icon ${c.icon?"has-image":"is-empty"}" data-image="icon">${currentIcon}</button>
     <span class="character-full-slot-label icon">${t("아이콘 추가하기","아이콘 추가하기")}</span>
-    <button type="button" class="character-scene-image-opener" data-character-scene-images><b>${t("상태별 아이콘·LD","상태별 아이콘·LD")}</b><small>${t("기본 이미지로 자동 대체","기본 이미지로 자동 대체")}</small></button>
     <label class="character-full-theme-chooser" aria-label="${esc(t("테마 고르기","테마 고르기"))}"><input type="color" data-color="primary" value="${esc(primary)}"><span>${t("테마 고르기","테마 고르기")}</span></label>
     <nav class="character-book-cover-controls" aria-label="${esc(t("표지에서 개요로 이동","표지에서 개요로 이동"))}"><button type="button" disabled aria-label="${esc(t("이전 페이지 없음","이전 페이지 없음"))}">◀</button><b>1</b><button type="button" data-character-pane="profile" aria-label="${esc(t("개요 첫 페이지","개요 첫 페이지"))}">▶</button></nav></div>
   </section>`;
@@ -2809,7 +2823,9 @@ function character(){
   const catalogTasteKinds=[['좋아하는 음식 · 사전','food'],['좋아하는 음료 · 사전','drink'],['좋아하는 음악 · 사전','music'],['좋아하는 밴드 · 사전','idol'],['좋아하는 책 · 사전','book'],['좋아하는 영화 · 사전','movie'],['좋아하는 게임 · 사전','game'],['좋아하는 향수 · 사전','perfume'],['좋아하는 취미용품 · 사전','hobby'],['좋아하는 전자기기 · 사전','electronics'],['좋아하는 무기 · 사전','weapon'],['좋아하는 동물 · 사전','animal']];
   const catalogSelectionButton=(label,kind,collection)=>`<div class="book-form-field"><b>${t(label,label)}</b><button type="button" data-open-book-catalog="${kind}" data-book-catalog-mode="${collection}"><span>${bookListSummary(c[collection]?.[kind]||[])}</span><i aria-hidden="true">＋</i></button></div>`;
   const tasteMenuButton=(label,attrs,summary="")=>`<button type="button" class="taste-menu-action" ${attrs}><span><b>${t(label,label)}</b>${summary?`<small>${esc(summary)}</small>`:""}</span><i aria-hidden="true">＋</i></button>`;
-  const tasteBookPane=`<section class="character-book-form-page taste-book-page taste-menu-page"><div class="taste-menu-grid">${tasteMenuButton("관심사 선택",'data-open-book-list="interests"',bookListSummary(c.interests||[]))}${tasteMenuButton("취미 선택",'data-open-book-list="hobbies"',bookListSummary(c.hobbies||[]))}${tasteMenuButton("기술 숙련 선택",'data-open-book-list="skills"',bookListSummary(c.skills||[]))}${tasteMenuButton("좋아하는 것 선택",'data-open-taste-group="favorites"')}${tasteMenuButton("좋아하는 것 · 사전 선택",'data-open-taste-group="catalog"')}${tasteMenuButton("소지품 선택",'data-open-taste-group="inventory"')}</div>${bookPageControls(10,'data-character-personality-pane="details" data-character-pane="personality"','disabled')}</section>`;
+  const tasteBookPane=`<section class="character-book-form-page taste-book-page taste-menu-page"><div class="taste-menu-grid">${tasteMenuButton("관심사 선택",'data-open-book-list="interests"',bookListSummary(c.interests||[]))}${tasteMenuButton("취미 선택",'data-open-book-list="hobbies"',bookListSummary(c.hobbies||[]))}${tasteMenuButton("기술 숙련 선택",'data-open-book-list="skills"',bookListSummary(c.skills||[]))}${tasteMenuButton("좋아하는 것 선택",'data-open-taste-group="favorites"')}${tasteMenuButton("좋아하는 것 · 사전 선택",'data-open-taste-group="catalog"')}${tasteMenuButton("소지품 선택",'data-open-taste-group="inventory"')}</div>${bookPageControls(10,'data-character-personality-pane="details" data-character-pane="personality"','data-character-pane="closet"')}</section>`;
+  const closetOwned=new Set(c.inventory?.fashion||[]),closetItems=(state.catalog?.fashion||[]).filter(item=>closetOwned.has(item.id));
+  const closetBookPane=`<section class="character-book-form-page closet-book-page"><header><div><small>SMART WARDROBE</small><h2>${t("옷장","옷장")}</h2></div><button type="button" data-new-clothing aria-label="${esc(t("옷 추가","옷 추가"))}">＋</button></header><p>${t("상황·기분·온도·격식에 따라 홈의 아이콘과 LD를 자동으로 골라요.","상황·기분·온도·격식에 따라 홈의 아이콘과 LD를 자동으로 골라요.")}</p><div class="closet-book-grid">${closetItems.map(item=>`<button type="button" data-edit-clothing="${item.id}">${item.iconImage||item.image?`<img src="${esc(item.iconImage||item.image)}" alt="">`:`<span>👕</span>`}<b>${esc(item.name)}</b><small>${esc([item.category,item.warmth,item.formality,item.comfort].filter(Boolean).join(" · "))}</small></button>`).join("")}${closetItems.length?"":`<button type="button" class="closet-book-empty" data-new-clothing><span>＋</span><b>${t("첫 옷 추가하기","첫 옷 추가하기")}</b></button>`}</div>${bookPageControls(11,'data-character-pane="taste"','disabled')}</section>`;
   const tasteCategoryDialog=(mode,title,buttons)=>`<dialog class="character-body-choice-dialog taste-category-dialog" data-taste-category-dialog="${mode}"><form method="dialog"><header><span><small>TASTE MENU</small><b>${t(title,title)}</b></span><button value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><div class="taste-category-list">${buttons}</div><footer><button value="close">${t("닫기","닫기")}</button></footer></form></dialog>`;
   const tasteDialogs=`${tasteCategoryDialog("favorites","좋아하는 것 선택",tasteCategories.map(([label,field])=>bookListButton(label,field,c[field]||[])).join(""))}${tasteCategoryDialog("catalog","좋아하는 것 · 사전 선택",catalogTasteKinds.map(([label,kind])=>catalogSelectionButton(label,kind,"favorites")).join(""))}${tasteCategoryDialog("inventory","소지품 선택",catalogTasteKinds.map(([label,kind])=>catalogSelectionButton(label.replace("좋아하는","보유한"),kind,"inventory")).join(""))}`;
   const bookListSources={
@@ -2840,8 +2856,8 @@ function character(){
   const homeVisualChoice=`<section class="character-manage-theme"><div><h3>캐릭터 테마색</h3><p>색상표에서 직접 고르거나 6자리 HEX 코드를 입력해요. 캐릭터 선택 효과와 강조색에 함께 적용됩니다.</p></div><div class="theme-color-groups">${themeColorField("primary","주 색상",c.theme?.primary||"#176B60")}${themeColorField("secondary","보조 색상",c.theme?.secondary||"#D4A373")}</div><label class="theme-gradient-toggle"><input type="checkbox" data-gradient ${c.theme?.gradient!==false?"checked":""}><span>두 색상을 그라데이션으로 사용</span></label></section>`;
   const managePane=`<section class="character-manage-pane" style="--own:var(--p);--own-secondary:var(--s)"><div class="traits-pane-heading"><h2>${esc(c.name)}의 사진·색상·배치</h2><p>프로필·SD·LD 이미지와 캐릭터 테마색, 홈 화면 배치를 한곳에서 설정해요.</p></div><div class="character-manage-grid">${homeVisualChoice}<section><span>${c.photo?`<img class="profile-photo-fallback" src="${esc(c.photo)}" alt="${esc(c.name)} 프로필 사진">`:`<span class="character-image-empty-preview"><i>사진</i><small>미등록</small></span>`}</span><div><h3>프로필 사진</h3><p>프로필 자리에서만 여백 없이 동그랗게 보여요. SD 아이콘으로 복사되지 않습니다.</p><div class="image-actions"><button type="button" data-image="photo">사진 파일</button><button type="button" data-image-url="photo" data-id="${c.id}">사진 링크</button>${c.photo?`<button type="button" data-clear-character-image="photo">지우기</button>`:""}</div></div></section><section><span>${c.icon?`<img class="sprite" src="${esc(c.icon)}" alt="${esc(c.name)} 투명 SD 아이콘">`:`<span class="character-image-empty-preview icon"><i>PNG</i><small>SD 미등록</small></span>`}</span><div><h3>투명 SD 아이콘</h3><p>별도로 등록했을 때만 사용해요. 투명 PNG 전체가 잘리지 않도록 원본 비율을 유지합니다.</p><div class="image-actions"><button type="button" data-image="icon">SD PNG 파일</button><button type="button" data-image-url="icon" data-id="${c.id}">SD 링크</button>${c.icon?`<button type="button" data-clear-character-image="icon">지우기</button>`:""}</div></div></section><section class="character-ld-settings"><div><h3>홈화면 LD 일러스트</h3><p>LD 일러스트는 캐릭터마다 한 장만 등록합니다. 감정은 장면의 배경 효과로 표현해요. LD 일러스트는 자르지 않고 원본 비율 전체를 사용하며, 위에서 선택한 표현 방식으로 홈화면에 표시합니다.</p></div><div class="character-ld-grid character-ld-single-grid">${ldCard}</div></section>${characterHomeLayoutEditor(c)}<section class="character-manage-files"><h3>캐릭터 삭제</h3><p>삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.</p><button type="button" class="danger" data-delete-character="${c.id}">캐릭터 삭제</button></section></div></section>`;
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?personalityPane:state.characterPane==="taste"?taste:state.characterPane==="manage"?managePane:profileWithLicense;
-  const fullActivePane=["visual","profile","body","wardrobe","personality","taste"].includes(state.characterPane)?state.characterPane:"visual";
-  const fullPane=fullActivePane==="visual"?characterFullOverview(c):fullActivePane==="profile"?profileOverviewPane:fullActivePane==="body"?bodyPane:fullActivePane==="wardrobe"?wardrobePane:fullActivePane==="personality"?personalityBookPane:tasteBookPane;
+  const fullActivePane=["visual","profile","body","wardrobe","personality","taste","closet"].includes(state.characterPane)?state.characterPane:"visual";
+  const fullPane=fullActivePane==="visual"?characterFullOverview(c):fullActivePane==="profile"?profileOverviewPane:fullActivePane==="body"?bodyPane:fullActivePane==="wardrobe"?wardrobePane:fullActivePane==="personality"?personalityBookPane:fullActivePane==="closet"?closetBookPane:tasteBookPane;
   const layoutDialog=fullActivePane==="visual"?`<dialog class="character-layout-dialog" data-character-layout-dialog><form method="dialog" class="character-layout-dialog-shell"><header><span><small>HOME SCENE LAYOUT</small><b>${t("배치 조정하기","배치 조정하기")}</b></span><button value="close" aria-label="${t("배치 편집 닫기","배치 편집 닫기")}">×</button></header>${characterHomeLayoutEditor(c)}</form></dialog>`:"";
   const unknown=t("미설정","미설정");
   const birthdayLabel=c.birthday?`${Number(c.birthday.slice(0,2))}${t("월","월")} ${Number(c.birthday.slice(2))}${t("일","일")}`:unknown;
@@ -2875,7 +2891,7 @@ function character(){
   </section>`;
   const draftActions=`<nav class="character-draft-actions" aria-label="${esc(t("캐릭터 관리","캐릭터 관리"))}"><button type="button" class="character-draft-action" data-export-profile><span>${t("프로필 내보내기","프로필 내보내기")}</span></button><button type="button" class="character-draft-action" data-save><span>${t("캐릭터 저장","캐릭터 저장")}</span></button><button type="button" class="character-draft-action danger" data-delete-character="${c.id}"><span>${t("캐릭터 삭제","캐릭터 삭제")}</span></button></nav>`;
   const hubActions=`<section class="character-setting-choices" aria-label="${esc(t("캐릭터 설정 방식","캐릭터 설정 방식"))}"><span class="character-setting-cloth" aria-hidden="true"><img src="./assets/character-ui/character-cloth-white.png" alt=""></span><img class="character-setting-book" src="./assets/character-ui/book.png" alt=""><img class="character-setting-tape" src="./assets/character-ui/tape.png" alt=""><img class="character-setting-key" src="./assets/character-ui/key.png" alt=""><span class="character-favorite-preview" aria-label="${esc(t("선호 물품 미리보기","선호 물품 미리보기"))}">${favoriteSlots}</span><button type="button" class="character-setting-choice character-quick-choice" data-open-quick-character-settings><span><b>${t("빠른설정","빠른설정")}</b><small>${t("바로가기","바로가기")}</small></span></button><button type="button" class="character-setting-choice character-full-choice" data-open-full-character-settings><span><b>${t("전체설정","전체설정")}</b><small>${t("바로가기","바로가기")}</small></span></button></section>`;
-  const fullPaneMeta=[["visual","사진·색상·배치"],["profile","개요"],["body","신체"],["wardrobe","옷장"],["personality","성격"],["taste","취향·소지품"]];
+  const fullPaneMeta=[["visual","사진·색상·배치"],["profile","개요"],["body","신체"],["wardrobe","의상 취향"],["personality","성격"],["taste","취향·소지품"],["closet","옷장"]];
   const fullPaneTitle=fullPaneMeta.find(([key])=>key===fullActivePane)?.[1]||"전체 설정";
   const fullNavigation=`<details class="character-book-v9-menu"><summary class="character-book-v9-composite"><i class="character-book-v9-fill" aria-hidden="true"></i><span aria-hidden="true">☰</span><b>${t(fullPaneTitle,fullPaneTitle)}</b></summary><nav aria-label="${esc(t("전체 설정 메뉴","전체 설정 메뉴"))}">${fullPaneMeta.map(([key,label])=>`<button type="button" class="character-book-v9-composite ${key===fullActivePane?"on":""}" data-character-pane="${key}" ${key===fullActivePane?'aria-current="page"':""}><i class="character-book-v9-fill" aria-hidden="true"></i><span>${t(label,label)}</span></button>`).join("")}</nav></details>`;
   const cornerInk='<img class="character-book-v8-ink" src="./assets/home-ui/ink.png" alt="" aria-hidden="true">';
@@ -3948,7 +3964,8 @@ Object.assign(UI_TEXT.en,{
 Object.assign(UI_TEXT.ja,{
   "뽀뽀하는 중":"キスしているところ","포옹하는 중":"抱きしめているところ","함께 식사하는 중":"一緒に食事中","대화하는 중":"会話中","함께 노는 중":"一緒に遊んでいるところ","함께 시간을 보내는 중":"一緒に過ごしているところ"
 });
-const BUILDING_REPUTATION_OPTIONS=["지정 안 함","지역 주민에게 사랑받음","평이 좋음","무난함","호불호가 갈림","악평이 있음","유명한 명소"];
+const BUILDING_REPUTATION_OPTIONS=["지정 안 함","매우 좋은 평판","좋은 평판","무난함","호불호가 갈림","나쁜 평판","매우 나쁜 평판"];
+const BUILDING_FAME_OPTIONS=["거의 알려지지 않음","동네 안에서 알려짐","마을 전체에 알려짐","다른 마을에도 알려짐","전국적으로 알려짐"];
 const BUILDING_ATMOSPHERE_OPTIONS=["지정 안 함","아늑하고 편안함","활기차고 북적임","조용하고 차분함","세련되고 고급스러움","오래되고 정겨움","어둡고 음침함","독특하고 신비로움"];
 function townPlaceEditor(p,items,audiences,selected){
   const stockCount=(p.stock||[]).length,audienceCount=(p.audiences||[]).length;
@@ -4001,6 +4018,10 @@ Object.assign(I18N.en,{"집 사진":"Home picture","집 사진 등록":"Add a ho
 Object.assign(I18N.ja,{"집 사진":"家の写真","집 사진 등록":"家の写真を登録","집 일러스트나 가족사진을 넣어 주세요.":"家のイラストや家族写真を入れてください。"});
 Object.assign(UI_TEXT.en,{"가격":"Price","가공식품":"Processed foods","과일":"Fruit","곡물":"Grains","구두":"Dress shoes","기술":"Skills","기타 식재료":"Other ingredients"});
 Object.assign(UI_TEXT.ja,{"가격":"価格","가공식품":"加工食品","과일":"果物","곡물":"穀物","구두":"革靴","기술":"技術","기타 식재료":"その他の食材"});
+Object.assign(I18N.en,{"옷장":"Wardrobe","옷 추가":"Add clothing","첫 옷 추가하기":"Add the first outfit","의상 취향":"Clothing preferences","마을 인지도":"Town recognition","건물 인지도":"Building recognition","인지도는 얼마나 널리 알려졌는지, 평판은 좋고 나쁜 평가를 뜻해요.":"Recognition describes how widely a place is known; reputation describes whether people view it positively or negatively.","평판 정보 없음":"No reputation information","매우 좋은 평판":"Excellent reputation","좋은 평판":"Good reputation","대체로 무난한 평판":"Mostly neutral reputation","호불호가 갈림":"Mixed reputation","나쁜 평판":"Bad reputation","매우 나쁜 평판":"Very bad reputation","거의 알려지지 않음":"Almost unknown","동네 안에서 알려짐":"Known locally","마을 전체에 알려짐":"Known across town","다른 마을에도 알려짐":"Known in other towns","전국적으로 알려짐":"Known nationwide","상황·기분·온도·격식에 따라 홈의 아이콘과 LD를 자동으로 골라요.":"Home icons and LD art are selected automatically based on situation, mood, temperature, and formality."});
+Object.assign(I18N.ja,{"옷장":"クローゼット","옷 추가":"服を追加","첫 옷 추가하기":"最初の服を追加","의상 취향":"服装の好み","마을 인지도":"村の知名度","건물 인지도":"建物の知名度","인지도는 얼마나 널리 알려졌는지, 평판은 좋고 나쁜 평가를 뜻해요.":"知名度はどれほど広く知られているか、評判は好意的・否定的な評価を表します。","평판 정보 없음":"評判情報なし","매우 좋은 평판":"とても良い評判","좋은 평판":"良い評判","대체로 무난한 평판":"おおむね普通の評判","호불호가 갈림":"評価が分かれる","나쁜 평판":"悪い評判","매우 나쁜 평판":"とても悪い評判","거의 알려지지 않음":"ほとんど知られていない","동네 안에서 알려짐":"近所で知られている","마을 전체에 알려짐":"村全体で知られている","다른 마을에도 알려짐":"ほかの村にも知られている","전국적으로 알려짐":"全国的に知られている","상황·기분·온도·격식에 따라 홈의 아이콘과 LD를 자동으로 골라요.":"状況・気分・気温・格式に合わせてホームのアイコンとLDを自動選択します。"});
+Object.assign(I18N.en,{"옷 등록·편집":"Add or edit clothing","상황·기분·온도·격식 정보를 바탕으로 홈의 아이콘과 LD가 자동으로 바뀝니다.":"The home icon and LD art change automatically based on situation, mood, temperature, and formality.","아이콘":"Icon","이미지 링크 또는 기기에서 선택":"Image link or choose from device","이름":"Name","분류":"Category","평범한 정도":"Ordinariness","따뜻함":"Warmth","격식 정도":"Formality","편안함":"Comfort","필수 유니폼":"Required uniform","입는 상황 · 중복 선택":"Situations · select multiple","기분 태그 · 중복 선택":"Mood tags · select multiple","색 · 중복 선택":"Colors · select multiple","재질 · 중복 선택":"Materials · select multiple","분위기 · 중복 선택":"Style · select multiple","옷 삭제":"Delete clothing","취소":"Cancel","저장":"Save","모든 상황":"All situations","모든 기분":"All moods","아침 준비":"Morning routine","욕실·목욕":"Bathing","출근복":"Workwear","데이트룩":"Date outfit","잠옷":"Sleepwear","집안일":"Housework","휴식":"Rest","들뜸":"Excited","기쁨":"Happy","평온함":"Calm","지루함":"Bored","긴장함":"Tense","화남":"Angry","슬픔":"Sad","피곤함":"Tired"});
+Object.assign(I18N.ja,{"옷 등록·편집":"服の追加・編集","상황·기분·온도·격식 정보를 바탕으로 홈의 아이콘과 LD가 자동으로 바뀝니다.":"状況・気分・気温・格式に合わせてホームのアイコンとLDが自動で変わります。","아이콘":"アイコン","이미지 링크 또는 기기에서 선택":"画像リンクまたは端末から選択","이름":"名前","분류":"分類","평범한 정도":"普段らしさ","따뜻함":"暖かさ","격식 정도":"格式","편안함":"快適さ","필수 유니폼":"必須ユニフォーム","입는 상황 · 중복 선택":"着用状況・複数選択","기분 태그 · 중복 선택":"気分タグ・複数選択","색 · 중복 선택":"色・複数選択","재질 · 중복 선택":"素材・複数選択","분위기 · 중복 선택":"雰囲気・複数選択","옷 삭제":"服を削除","취소":"キャンセル","저장":"保存","모든 상황":"すべての状況","모든 기분":"すべての気分","아침 준비":"朝の支度","욕실·목욕":"入浴","출근복":"仕事着","데이트룩":"デート服","잠옷":"寝間着","집안일":"家事","휴식":"休息","들뜸":"浮き立つ","기쁨":"喜び","평온함":"穏やか","지루함":"退屈","긴장함":"緊張","화남":"怒り","슬픔":"悲しみ","피곤함":"疲れ"});
 function townInformationScreen(character){
   const optionList=(values,current)=>values.map(value=>`<option value="${esc(value)}" ${value===current?"selected":""}>${t(value,value)}</option>`).join("");
   const selectField=(label,dataName,values,current)=>`<label><b>${t(label,label)}</b><select ${dataName}>${optionList(values,current)}</select></label>`;
@@ -4018,7 +4039,8 @@ function townInformationScreen(character){
           ${selectField("세부 유형","data-world-town-subtype",subtypes,state.world.townSubtype||subtypes[0])}
           ${selectField("마을 밀집도","data-world-density",["매우 한적함","한적함","여유로움","보통","붐빔","매우 붐빔"],state.world.density||"여유로움")}
           ${selectField("도시화 정도","data-world-urbanization",["외딴 정착지","한적한 시골","마을","소도시","중소 도시","대도시","초고밀도 도시"],state.world.urbanization||"소도시")}
-          ${selectField("마을 평판","data-world-reputation",TOWN_REPUTATIONS,state.world.reputation||"알려지지 않음")}
+          ${selectField("마을 평판","data-world-reputation",TOWN_REPUTATIONS,state.world.reputation||"평판 정보 없음")}
+          ${selectField("마을 인지도","data-world-fame-level",TOWN_FAME_LEVELS,state.world.fameLevel||"거의 알려지지 않음")}
           ${selectField("마을 규모","data-world-size",["작은 정착지","작은 마을","보통 마을","큰 마을","광역 도시"],state.world.size||"보통 마을")}
           ${selectField("지형","data-world-terrain",TOWN_TERRAINS,state.world.terrain||"평야")}
           <label><b>${t("마을 시대","마을 시대")}</b><select data-world-era><option value="modern" ${state.world.era!=="medieval"?"selected":""}>${t("현대","현대")}</option><option value="medieval" ${state.world.era==="medieval"?"selected":""}>${t("중세","중세")}</option></select></label>
@@ -4052,7 +4074,7 @@ function townMobile(){
   const townSwitcher=`<dialog class="town-switch-dialog" data-town-switch-dialog><form method="dialog"><header><span><small>TOWN SELECT</small><b>${t("마을 이동","마을 이동")}</b></span><button value="cancel" aria-label="${esc(t("닫기","닫기"))}">×</button></header><div>${state.towns.map(town=>`<button type="button" data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}"><i aria-hidden="true"></i><span><b>${esc(town.name)}</b><small>${town.id===state.activeTownId?t("현재 마을","현재 마을"):t("이 마을로 이동","이 마을로 이동")}</small></span></button>`).join("")}</div></form></dialog>`;
   const categories=["전체",...[...new Set(TOWN_DECORATION_CHOICES.map(item=>item[3]))]];
   const decorationCatalog=`<section class="town-decoration-catalog"><div class="town-decoration-theme-row"><button type="button" class="town-decoration-collapse" data-toggle-decoration-catalog aria-expanded="true" aria-label="${esc(t("편집 목록 접기","편집 목록 접기"))}">⌄</button><button type="button" class="town-decoration-theme-button">${t("모든 테마 보기","모든 테마 보기")}</button></div><div class="town-decoration-catalog-body"><nav>${categories.map((category,index)=>`<button type="button" data-decoration-category="${category}" class="${index===0?"on":""}">${t(category,category)}</button>`).join("")}</nav><div class="town-decoration-results">${TOWN_DECORATION_CHOICES.map(([kind,icon,label,category])=>`<button type="button" data-add-town-decoration="${kind}" data-decoration-choice data-decoration-label="${esc(label)}" data-decoration-group="${esc(category)}"><span>${icon}</span><small>${t(label,label)}</small></button>`).join("")}</div></div></section>`;
-  const townInfo=`<div class="town-info-card"><img class="town-info-art" src="${esc(state.world.bg)}" alt=""><dl><div><dt>${t("마을 유형","마을 유형")}</dt><dd>${t(state.world.townSubtype||state.world.townType,state.world.townSubtype||state.world.townType)}</dd></div><div><dt>${t("도시화 정도","도시화 정도")}</dt><dd>${t(state.world.urbanization||"소도시",state.world.urbanization||"소도시")}</dd></div><div><dt>${t("마을 평판","마을 평판")}</dt><dd>${t(state.world.reputation||"알려지지 않음",state.world.reputation||"알려지지 않음")}</dd></div><div><dt>${t("지형","지형")}</dt><dd>${t(state.world.terrain||"평야",state.world.terrain||"평야")}</dd></div><div><dt>${t("교통편","교통편")}</dt><dd>${(state.world.transportModes||[]).map(value=>t(value,value)).join(" · ")||t("없음","없음")}</dd></div><div><dt>${t("마을 시대","마을 시대")}</dt><dd>${state.world.era==="medieval"?t("중세","중세"):t("현대","현대")}</dd></div></dl>${state.world.description?`<p>${esc(state.world.description)}</p>`:""}</div>`;
+  const townInfo=`<div class="town-info-card"><img class="town-info-art" src="${esc(state.world.bg)}" alt=""><dl><div><dt>${t("마을 유형","마을 유형")}</dt><dd>${t(state.world.townSubtype||state.world.townType,state.world.townSubtype||state.world.townType)}</dd></div><div><dt>${t("도시화 정도","도시화 정도")}</dt><dd>${t(state.world.urbanization||"소도시",state.world.urbanization||"소도시")}</dd></div><div><dt>${t("마을 평판","마을 평판")}</dt><dd>${t(state.world.reputation||"평판 정보 없음",state.world.reputation||"평판 정보 없음")}</dd></div><div><dt>${t("마을 인지도","마을 인지도")}</dt><dd>${t(state.world.fameLevel||"거의 알려지지 않음",state.world.fameLevel||"거의 알려지지 않음")}</dd></div><div><dt>${t("지형","지형")}</dt><dd>${t(state.world.terrain||"평야",state.world.terrain||"평야")}</dd></div><div><dt>${t("교통편","교통편")}</dt><dd>${(state.world.transportModes||[]).map(value=>t(value,value)).join(" · ")||t("없음","없음")}</dd></div><div><dt>${t("마을 시대","마을 시대")}</dt><dd>${state.world.era==="medieval"?t("중세","중세"):t("현대","현대")}</dd></div></dl>${state.world.description?`<p>${esc(state.world.description)}</p>`:""}</div>`;
   const generalEditor=panelType==="world"?townInformationScreen(character):panelType==="info"?townInfo:panelType==="buildings"?`<div class="town-general-editor town-building-start"><p>${t("건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.","건물을 눌러 설정하거나 격자 위에서 바로 옮길 수 있어요.")}</p><button data-add-place>+ ${t("건물 추가","건물 추가")}</button></div>`:panelType==="decorations"?`<div class="town-general-editor town-decoration-editor">${decorationCatalog}</div>`:"";
   const placeEditors=mobileTownMode==="buildings"&&selectedPlace?townPlaceEditor(selectedPlace,items,audiences,true):mobileTownMode==="buildings"&&selectedHome?townHomeEditor(selectedHome,true):"";
   const selectedBuildingName=selectedPlace?.name||selectedHome?.name||t("건물 편집","건물 편집");

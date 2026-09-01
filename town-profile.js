@@ -21,8 +21,9 @@ export const TOWN_TYPE_SUBTYPES={
 
 export const TOWN_TYPES=Object.keys(TOWN_TYPE_SUBTYPES);
 export const TOWN_REPUTATIONS=[
-  "알려지지 않음","조용하고 평화로움","살기 좋음","가족 친화적","교육 환경이 좋음","의료·복지가 좋음","일자리가 많음","창업이 활발함","상권이 유명함","음식으로 유명함","축제로 유명함","관광지로 유명함","예술과 문화로 유명함","역사가 깊음","자연 경관이 아름다움","교통이 편리함","부유한 동네","물가가 비쌈","밤문화가 활발함","주민들이 친절함","외지인을 환영함","폐쇄적인 곳","치안이 불안함","사건 사고가 잦음","환경 오염이 심함","쇠퇴 중인 곳","신비한 소문이 도는 곳"
+  "평판 정보 없음","매우 좋은 평판","좋은 평판","대체로 무난한 평판","호불호가 갈림","나쁜 평판","매우 나쁜 평판"
 ];
+export const TOWN_FAME_LEVELS=["거의 알려지지 않음","동네 안에서 알려짐","마을 전체에 알려짐","다른 마을에도 알려짐","전국적으로 알려짐"];
 export const TOWN_TERRAINS=["평야","구릉","산지","분지","고원","해안","섬","강가","호숫가","삼각주","숲","습지","사막","설원","화산 지대","협곡","동굴·지하"];
 export const TOWN_TRANSPORTS=["도보길","자전거도로","일반 도로","시외버스","철도","지하철","노면전차","여객선","공항","케이블카"];
 
@@ -42,7 +43,8 @@ export function normalizeTownProfile(value={}){
   return {
     townType:safeType,
     townSubtype:subtypes.includes(value.townSubtype)?value.townSubtype:subtypes[0],
-    reputation:TOWN_REPUTATIONS.includes(value.reputation)?value.reputation:"알려지지 않음",
+    reputation:TOWN_REPUTATIONS.includes(value.reputation)?value.reputation:(value.reputation==="알려지지 않음"?"평판 정보 없음":/위험|폐쇄|사건|오염|쇠퇴/.test(value.reputation||"")?"나쁜 평판":/살기 좋|친절|환영|아름다움|복지|평화/.test(value.reputation||"")?"좋은 평판":"대체로 무난한 평판"),
+    fameLevel:TOWN_FAME_LEVELS.includes(value.fameLevel)?value.fameLevel:(/유명/.test(value.reputation||"")?"다른 마을에도 알려짐":"거의 알려지지 않음"),
     terrain:TOWN_TERRAINS.includes(terrain)?terrain:"평야",
     transportModes:[...new Set((Array.isArray(value.transportModes)?value.transportModes:["일반 도로","시외버스"]).filter(item=>TOWN_TRANSPORTS.includes(item)))],
     travelAllowed:value.travelAllowed!==false,

@@ -3,11 +3,7 @@ export const SCENE_IMAGE_VARIANTS=[
   {id:"morning",ko:"아침 준비",en:"Morning routine",ja:"朝の支度"},
   {id:"bath",ko:"목욕·욕실",en:"Bath time",ja:"入浴・洗面"},
   {id:"work",ko:"근무·일하는 중",en:"Working",ja:"仕事中"},
-  {id:"outing",ko:"외출",en:"Going out",ja:"外出"},
-  {id:"happy",ko:"기쁨",en:"Happy",ja:"喜び"},
-  {id:"sad",ko:"슬픔",en:"Sad",ja:"悲しみ"},
-  {id:"angry",ko:"화남",en:"Angry",ja:"怒り"},
-  {id:"tired",ko:"피곤함",en:"Tired",ja:"疲れ"}
+  {id:"outing",ko:"외출",en:"Going out",ja:"外出"}
 ];
 
 export function normalizeSceneImageVariants(value={}){
@@ -25,10 +21,6 @@ export function sceneImageVariantKey(entry,mood=""){
   if(/아침.{0,8}(준비|단장)|기상|일어나|양치|출근 준비|morning/i.test(text))return"morning";
   if(entry?.work||/출근|근무|업무|일하는 중|직장|근무지|working|at work/i.test(text))return"work";
   if(entry?.transit||/외출|산책|쇼핑|나들이|이동 중|going out|outing/i.test(text))return"outing";
-  if(/화가|분노|짜증|격앙|성남|angry/i.test(text))return"angry";
-  if(/슬프|우울|속상|눈물|침울|sad/i.test(text))return"sad";
-  if(/피곤|졸리|지침|기진맥진|tired|sleepy/i.test(text))return"tired";
-  if(/기쁘|행복|즐거|신나|웃는|웃었|happy|joy/i.test(text))return"happy";
   return"";
 }
 

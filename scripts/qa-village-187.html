@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="stylesheet" href="../app.css?v=20260901closet187">
+  <link rel="stylesheet" href="../interface-system.css?v=20260901closet187">
+  <link rel="stylesheet" href="../theme.css?v=20260901closet187">
+  <link rel="stylesheet" href="../character-book.css?v=20260901closet187">
+  <title>서랍마을 187 옷장 QA</title>
+</head>
+<body><div id="app"></div><script type="module">
+globalThis.ParallelCityAuth={getInfo:()=>({ready:true,busy:false})};
+const game=await import('../state.js?v=20260901closet187');
+const {renderApp}=await import('../views.js?v=20260901closet187');
+game.resetAll();
+const id=game.createCharacter();
+game.updateCharacter(id,{name:'옷장 테스트',icon:'',ldImage:''});
+game.state.activeTab='character';
+game.state.characterSettingsView='full';
+game.setCharacterPane('closet');
+renderApp(game.state);
+</script></body>
+</html>

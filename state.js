@@ -1,14 +1,14 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260901scene186";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260901scene186";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260901scene186";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260901scene186";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260901scene186";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260901scene186";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260901scene186";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260901scene186";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260901scene186";
-import {missingBuildings} from "./building-recovery.js?v=20260901scene186";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260901scene186";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260901closet187";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260901closet187";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260901closet187";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260901closet187";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260901closet187";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260901closet187";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260901closet187";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260901closet187";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260901closet187";
+import {missingBuildings} from "./building-recovery.js?v=20260901closet187";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260901closet187";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -255,7 +255,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:31,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],characterViews:{},routines:{},monthlyRoutines:{},anniversaries:[],dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
+const fresh=()=>({schema:31,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],anniversaries:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"평판 정보 없음",fameLevel:"거의 알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:["drink-ein","drink-matcha","food-tiramisu"],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:["food-omurice","food-malatang"],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -320,7 +320,7 @@ function normalizeHomes(x){
   x.observeHomeId=x.homes?.[x.observeHomeId]?x.observeHomeId:null;
   if(x.characterPane==="traits")x.characterPane="personality";
   if(x.characterPane==="worldTaste")x.characterPane="taste";
-  x.characterPane=["visual","profile","body","wardrobe","personality","taste","manage"].includes(x.characterPane)?x.characterPane:"profile";
+  x.characterPane=["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(x.characterPane)?x.characterPane:"profile";
   x.characterOverviewPane=x.characterOverviewPane==="basic"?"basic":"life";
   x.characterBodyPane=["figure","appearance","accessibility"].includes(x.characterBodyPane)?x.characterBodyPane:"figure";
   x.characterPersonalityPane=x.characterPersonalityPane==="details"?"details":"core";
@@ -525,7 +525,7 @@ function normalizeHomes(x){
   Object.assign(x.world,normalizeTownProfile(x.world));
   x.world.density=String(x.world.density||"여유로움");
   x.world.urbanization=String(x.world.urbanization||"소도시");
-  x.world.reputation=String(x.world.reputation||"알려지지 않음");
+  x.world.reputation=String(x.world.reputation||"평판 정보 없음");
   x.world.size=String(x.world.size||"보통 마을");
   x.world.description=String(x.world.description||"").slice(0,600);
   x.world.places=Array.isArray(x.world.places)?x.world.places.filter(p=>p&&typeof p==="object"&&!Array.isArray(p)):clone(defaultWorld.places);
@@ -563,7 +563,7 @@ function normalizeHomes(x){
     }[p.type]||"shop");
     p.subtype=String(p.subtype||"");p.interiorImage=String(p.interiorImage||"");p.stock=Array.isArray(p.stock)?p.stock.map(String):[];
     p.audiences=Array.isArray(p.audiences)?p.audiences.map(String):[];p.priceRange=String(p.priceRange||"보통");p.servicePrice=String(p.servicePrice||p.priceRange);
-    p.reputation=String(p.reputation||"지정 안 함");p.atmosphere=String(p.atmosphere||"지정 안 함");
+    p.reputation=String(p.reputation||"지정 안 함");p.fameLevel=String(p.fameLevel||"거의 알려지지 않음");p.atmosphere=String(p.atmosphere||"지정 안 함");
     Object.assign(p,normalizeBuildingLighting(p));
     p.imageScale=Number.isFinite(+p.imageScale)?Math.max(.45,Math.min(2,+p.imageScale)):1;
     p.spicy=Number.isFinite(+p.spicy)?Math.max(0,Math.min(5,+p.spicy)):0;p.sweet=Number.isFinite(+p.sweet)?Math.max(0,Math.min(5,+p.sweet)):0;
@@ -608,7 +608,7 @@ function normalizeHomes(x){
     h.name=String(h.name||"이름 없는 집");
     h.kind=["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"].includes(h.kind)?h.kind:"일반 주거";
     h.exteriorStyle=String(h.exteriorStyle||"설정하지 않음");
-    h.reputation=String(h.reputation||"지정 안 함");
+    h.reputation=String(h.reputation||"지정 안 함");h.fameLevel=String(h.fameLevel||"거의 알려지지 않음");
     h.atmosphere=String(h.atmosphere||"지정 안 함");
     Object.assign(h,normalizeBuildingLighting(h));
     h.beautyLevel=String(h.beautyLevel||"평범함");
@@ -1029,7 +1029,7 @@ export function createCharacter(limit=5){
   state.activeId=id;state.activeTab="character";save(true);return id;
 }
 export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
-export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","manage"].includes(value)?value:"profile");save()}
+export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(value)?value:"profile");save()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;

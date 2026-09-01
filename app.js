@@ -1,34 +1,34 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260901scene186";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260901scene186";
-import {setCharacterSceneImage} from "./state.js?v=20260901scene186";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260901scene186";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260901scene186";
-import {buildingDetailDialogs} from "./views.js?v=20260901scene186";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260901scene186";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260901scene186";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260901scene186";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260901scene186";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260901scene186";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260901scene186";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260901scene186";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260901scene186";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260901scene186";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260901scene186";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260901scene186";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260901scene186";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260901scene186";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260901scene186";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260901closet187";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260901closet187";
+import {setCharacterSceneImage} from "./state.js?v=20260901closet187";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260901closet187";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260901closet187";
+import {buildingDetailDialogs} from "./views.js?v=20260901closet187";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260901closet187";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260901closet187";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260901closet187";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260901closet187";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260901closet187";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260901closet187";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260901closet187";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260901closet187";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260901closet187";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260901closet187";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260901closet187";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260901closet187";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260901closet187";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260901closet187";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260901scene186";
-import {translateText} from "./views.js?v=20260901scene186";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260901scene186";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260901scene186";
-import {characterMood} from "./character-mood.js?v=20260901scene186";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260901scene186";
+import {switchAccountState} from "./state.js?v=20260901closet187";
+import {translateText} from "./views.js?v=20260901closet187";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260901closet187";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260901closet187";
+import {characterMood} from "./character-mood.js?v=20260901closet187";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260901closet187";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -256,7 +256,7 @@ function openTownHomeResidentsDialog(homeId){
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>${htmlEsc(copy.title)}</h2><small>${copy.help}</small></div><button value="cancel" aria-label="${copy.close}">×</button></div><div class="audience-dialog-list">${state.order.map(id=>{const character=state.characters[id];return `<button type="button" data-town-home-resident="${htmlEsc(id)}" class="${selected.has(id)?"on":""}">${htmlEsc(character?.name||"")}</button>`}).join("")||`<p>${copy.empty}</p>`}</div><div class="crop-actions"><button value="cancel">${copy.cancel}</button><button class="primary" value="apply">${copy.apply}</button></div></form>`;
   dialog.querySelectorAll("[data-town-home-resident]").forEach(button=>button.onclick=()=>{const id=button.dataset.townHomeResident;selected.has(id)?selected.delete(id):selected.add(id);button.classList.toggle("on",selected.has(id))});
   dialog.onclose=()=>{if(dialog.returnValue==="apply"){setHomeResidents(homeId,[...selected]);render()}dialog.remove()};
-  document.body.append(dialog);dialog.showModal();
+  document.body.append(dialog);translateDynamicInterface(dialog);dialog.showModal();
 }
 const FALLBACK_BUILDING_SHAPES=[
   {id:"type-cafe",name:"카페",src:"world-assets/building-types/cafe-handdrawn.png",types:["카페"]},
@@ -283,9 +283,13 @@ const BUILDING_SHAPES=[...catalogBuildingShapes,...(state.buildingShapes||[]).fi
 const FASHION_MATERIALS=["면","데님","니트","울","가죽","스웨이드","실크","린넨","폴리에스터","나일론","벨벳","레이스"];
 const FASHION_COLORS=["검정","흰색","아이보리","회색","갈색","베이지","빨강","주황","노랑","초록","파랑","남색","보라","분홍","은색","금색","여러 색"];
 const FASHION_FLAIRS=["무지","미니멀","단정함","편안함","캐주얼","스포티","빈티지","스트리트","러블리","우아함","화려함","개성적","정장","유니폼","파티용"];
-const OCCASION_TAGS=["일상복","출근복","유니폼","정장","데이트룩","파티복","잠옷","운동복","외출복","실내복","여행복","격식 있는 자리"];
+const OCCASION_TAGS=["모든 상황","일상복","아침 준비","욕실·목욕","출근복","유니폼","정장","데이트룩","파티복","잠옷","운동복","외출복","실내복","여행복","공연","집안일","휴식","격식 있는 자리"];
 const ORDINARY_LEVELS=["아주 무난함","무난함","적당히 개성 있음","눈에 띔","매우 독특함"];
 const CLOTHING_CATEGORIES=["상의","하의","아우터","원피스","세트","신발","가방","액세서리","모자"];
+const CLOTHING_MOODS=["모든 기분","들뜸","기쁨","평온함","지루함","긴장함","화남","슬픔","피곤함"];
+const CLOTHING_WARMTH=["매우 시원함","시원함","보통","따뜻함","매우 따뜻함"];
+const CLOTHING_FORMALITY=["매우 편한 차림","캐주얼","단정한 차림","격식 있음","최고 격식"];
+const CLOTHING_COMFORT=["불편함","조금 불편함","보통","편안함","매우 편안함"];
 const stablePick=(list,seed)=>list.length?list[[...seed].reduce((sum,char)=>sum+char.charCodeAt(0),0)%list.length]:null;
 function currentOutfit(character){
   const event=eventFor(character),owned=new Set(character.inventory?.fashion||[]),items=(state.catalog?.fashion||[]).filter(item=>owned.has(item.id));
@@ -320,17 +324,32 @@ function openClothingEditor(itemId=""){
   const character=active();if(!character)return;
   const isNew=!itemId;let item=state.catalog.fashion.find(value=>value.id===itemId);
   if(!item){
-    const id=addCatalogItem("fashion",{name:"새 옷",category:"상의",image:"",materials:[],colors:[],flairs:[],occasionTags:["일상복"],ordinary:"무난함",ownerId:character.id});
+    const id=addCatalogItem("fashion",{name:"새 옷",category:"상의",image:"",iconImage:"",ldImage:"",materials:[],colors:[],flairs:[],occasionTags:["일상복"],moodTags:["모든 기분"],ordinary:"무난함",warmth:"보통",formality:"캐주얼",comfort:"편안함",requiredUniform:false,ownerId:character.id});
     character.inventory.fashion=[...new Set([...(character.inventory.fashion||[]),id])];
     item=state.catalog.fashion.find(value=>value.id===id);save(true);
   }
   const dialog=document.createElement("dialog");dialog.className="clothing-editor-dialog";
   const chips=(field,values)=>`<div class="closet-chip-grid">${values.map(value=>`<button type="button" data-clothing-chip="${field}" data-value="${value}" class="${(item[field]||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div>`;
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>옷 등록·편집</h2><small>상황 태그는 여러 개를 골라도 돼요. 자동 코디가 이 정보를 사용합니다.</small></div><button value="cancel">×</button></div><div class="clothing-editor-grid"><section class="clothing-preview">${item.image?`<img src="${item.image}" alt="">`:"<span>👕</span>"}<label>이미지 주소<input name="image" value="${item.image||""}" placeholder="https://..."></label></section><section class="clothing-fields"><label>이름<input name="name" value="${item.name||""}"></label><label>분류<select name="category">${CLOTHING_CATEGORIES.map(value=>`<option ${item.category===value?"selected":""}>${value}</option>`).join("")}</select></label><label>평범한 정도<select name="ordinary">${ORDINARY_LEVELS.map(value=>`<option ${item.ordinary===value?"selected":""}>${value}</option>`).join("")}</select><h3>입는 상황 · 중복 선택</h3>${chips("occasionTags",OCCASION_TAGS)}<h3>색 · 중복 선택</h3>${chips("colors",FASHION_COLORS)}<h3>재질 · 중복 선택</h3>${chips("materials",FASHION_MATERIALS)}<h3>분위기 · 중복 선택</h3>${chips("flairs",FASHION_FLAIRS)}</section></div><div class="crop-actions"><button type="button" class="danger" data-delete-clothing>옷 삭제</button><button value="cancel">취소</button><button class="primary" value="save">저장</button></div></form>`;
+  const select=(name,values,current)=>`<select name="${name}">${values.map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select>`;
+  const imageField=(name,label,value)=>`<label class="clothing-art-field"><b>${label}</b>${value?`<img src="${esc(value)}" alt="">`:`<span>${name==="ldImage"?"LD":"SD"}</span>`}<input type="file" accept="image/*" data-clothing-file="${name}"><input name="${name}" value="${esc(value||"")}" placeholder="이미지 링크 또는 기기에서 선택"></label>`;
+  dialog.innerHTML=`<form method="dialog">
+    <div class="title"><div><h2>옷 등록·편집</h2><small>상황·기분·온도·격식 정보를 바탕으로 홈의 아이콘과 LD가 자동으로 바뀝니다.</small></div><button value="cancel">×</button></div>
+    <div class="clothing-editor-grid"><section class="clothing-preview"><div class="clothing-art-pair">${imageField("iconImage","아이콘",item.iconImage||item.image)}${imageField("ldImage","LD",item.ldImage)}</div></section><section class="clothing-fields">
+      <label>이름<input name="name" value="${esc(item.name||"")}"></label>
+      <label>분류${select("category",CLOTHING_CATEGORIES,item.category||"상의")}</label>
+      <label>평범한 정도${select("ordinary",ORDINARY_LEVELS,item.ordinary||"무난함")}</label>
+      <label>따뜻함${select("warmth",CLOTHING_WARMTH,item.warmth||"보통")}</label>
+      <label>격식 정도${select("formality",CLOTHING_FORMALITY,item.formality||"캐주얼")}</label>
+      <label>편안함${select("comfort",CLOTHING_COMFORT,item.comfort||"편안함")}</label>
+      <label class="book-check-field"><span>필수 유니폼</span><input type="checkbox" name="requiredUniform" ${item.requiredUniform?"checked":""}></label>
+      <h3>입는 상황 · 중복 선택</h3>${chips("occasionTags",OCCASION_TAGS)}<h3>기분 태그 · 중복 선택</h3>${chips("moodTags",CLOTHING_MOODS)}<h3>색 · 중복 선택</h3>${chips("colors",FASHION_COLORS)}<h3>재질 · 중복 선택</h3>${chips("materials",FASHION_MATERIALS)}<h3>분위기 · 중복 선택</h3>${chips("flairs",FASHION_FLAIRS)}
+    </section></div><div class="crop-actions"><button type="button" class="danger" data-delete-clothing>옷 삭제</button><button value="cancel">취소</button><button class="primary" value="save">저장</button></div>
+  </form>`;
   dialog.querySelectorAll("[data-clothing-chip]").forEach(button=>button.onclick=()=>{const field=button.dataset.clothingChip,value=button.dataset.value,list=item[field]||[];item[field]=list.includes(value)?list.filter(entry=>entry!==value):[...list,value];button.classList.toggle("on",item[field].includes(value))});
   dialog.querySelector("[data-delete-clothing]").onclick=()=>{state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);character.savedOutfits=(character.savedOutfits||[]).map(outfit=>({...outfit,itemIds:outfit.itemIds.filter(id=>id!==item.id)}));save(true);dialog.close("deleted")};
-  dialog.onclose=()=>{if(dialog.returnValue==="save"){const form=new FormData(dialog.querySelector("form"));Object.assign(item,{name:String(form.get("name")||"새 옷"),image:String(form.get("image")||""),category:String(form.get("category")||"상의"),ordinary:String(form.get("ordinary")||"무난함"),ownerId:character.id});save(true)}else if(isNew&&dialog.returnValue!=="deleted"){state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);save(true)}dialog.remove();render()};
-  document.body.append(dialog);dialog.showModal();
+  dialog.querySelectorAll("[data-clothing-file]").forEach(input=>input.onchange=()=>{const file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const name=input.dataset.clothingFile,url=String(reader.result||"");dialog.querySelector(`[name="${name}"]`).value=url;const holder=input.closest(".clothing-art-field"),old=holder.querySelector("img,span");old.outerHTML=`<img src="${url}" alt="">`};reader.readAsDataURL(file)});
+  dialog.onclose=()=>{if(dialog.returnValue==="save"){const form=new FormData(dialog.querySelector("form")),iconImage=String(form.get("iconImage")||"");Object.assign(item,{name:String(form.get("name")||"새 옷"),image:iconImage,iconImage,ldImage:String(form.get("ldImage")||""),category:String(form.get("category")||"상의"),ordinary:String(form.get("ordinary")||"무난함"),warmth:String(form.get("warmth")||"보통"),formality:String(form.get("formality")||"캐주얼"),comfort:String(form.get("comfort")||"편안함"),requiredUniform:form.get("requiredUniform")==="on",ownerId:character.id});save(true)}else if(isNew&&dialog.returnValue!=="deleted"){state.catalog.fashion=state.catalog.fashion.filter(value=>value.id!==item.id);character.inventory.fashion=(character.inventory.fashion||[]).filter(id=>id!==item.id);save(true)}dialog.remove();render()};
+  document.body.append(dialog);translateDynamicInterface(dialog);dialog.showModal();
 }
 function openOutfitEditor(outfitId=""){
   const character=active();if(!character)return;
@@ -2039,7 +2058,7 @@ function bindNativeObserveCharacterSwipe(){
 }
 
 function moveCharacterBookPage(direction){
-  const pages=["visual","overview-basic","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","taste"];
+  const pages=["visual","overview-basic","overview-life","body-figure","body-appearance","body-accessibility","wardrobe","personality-core","personality-details","taste","closet"];
   const current=state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane;
   const currentIndex=pages.indexOf(current),next=pages[currentIndex+direction];
   if(currentIndex<0||!next)return false;
@@ -2309,7 +2328,7 @@ function bind(){
   $$("[data-cart-minus]").forEach(el=>el.onclick=()=>{const cart=readCart(),id=el.dataset.cartMinus,next=(Number(cart[id])||0)-1;if(next>0)cart[id]=next;else delete cart[id];writeCart(cart)});
   $$("[data-cart-remove]").forEach(el=>el.onclick=()=>{const cart=readCart();delete cart[el.dataset.cartRemove];writeCart(cart)});
   $$("[data-wardrobe-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.wardrobeCharacter);setNavigationTabIntent("catalog");save();render()});
-  $("[data-new-clothing]")?.addEventListener("click",()=>openClothingEditor());
+  $$("[data-new-clothing]").forEach(el=>el.onclick=()=>openClothingEditor());
   $$("[data-edit-clothing]").forEach(el=>el.onclick=event=>{event.stopPropagation();openClothingEditor(el.dataset.editClothing)});
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
   $$("[data-edit-outfit]").forEach(el=>el.onclick=()=>openOutfitEditor(el.dataset.editOutfit));
@@ -3454,6 +3473,7 @@ function bind(){
   $("[data-world-density]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.density=e.target.value;save(true)});
   $("[data-world-urbanization]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.urbanization=e.target.value;save(true)});
   $("[data-world-reputation]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.reputation=e.target.value;saveTownProfile()});
+  $("[data-world-fame-level]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.fameLevel=e.target.value;saveTownProfile()});
   $("[data-world-size]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.size=e.target.value;save(true)});
   $("[data-world-terrain]")?.addEventListener("change",e=>{if(currentTownMode()!=="town")return;state.world.terrain=e.target.value;saveTownProfile()});
   $$('[data-world-transport]').forEach(button=>button.addEventListener("click",()=>{
@@ -4111,14 +4131,15 @@ async function exportRelationshipMapPng(){
   }finally{URL.revokeObjectURL(url)}
 }
 
-function chooseCharacterImageSource(type,id,room=""){
+function chooseCharacterImageSource(type,id,room="",options={}){
   const dialog=document.createElement("dialog");
   dialog.className="character-image-source-dialog";
   dialog.innerHTML=`<form method="dialog"><header><b>사진 추가하기</b><button type="submit" value="close" aria-label="닫기">×</button></header><p>추가할 방법을 골라 주세요.</p><div><button type="button" data-image-source="device"><b>기기에서 업로드하기</b><small>휴대폰이나 컴퓨터에 저장된 사진</small></button><button type="button" data-image-source="link"><b>링크로 추가하기</b><small>웹에 있는 이미지 주소</small></button></div></form>`;
   document.body.append(dialog);
   dialog.addEventListener("close",()=>dialog.remove(),{once:true});
-  dialog.querySelector('[data-image-source="device"]').onclick=()=>{dialog.close();pickImage(type,id,room)};
-  dialog.querySelector('[data-image-source="link"]').onclick=()=>{dialog.close();useImageUrl(type,id,room)};
+  const choose=callback=>{dialog.close();options.onChoose?.();callback()};
+  dialog.querySelector('[data-image-source="device"]').onclick=()=>choose(()=>pickImage(type,id,room));
+  dialog.querySelector('[data-image-source="link"]').onclick=()=>choose(()=>useImageUrl(type,id,room));
   dialog.showModal();
 }
 
@@ -4130,7 +4151,7 @@ function openCharacterSceneImages(){
   const thumb=(src,fallback)=>src?`<img src="${esc(src)}" alt="">`:`<span>${fallback}</span>`;
   const dialog=document.createElement("dialog");
   dialog.className="character-scene-images-dialog";
-  dialog.innerHTML=`<form method="dialog"><header><span><small>${translateText("상태별 아이콘·LD")}</small><b>${character.name}</b></span><button value="close" aria-label="${translateText("닫기")}">×</button></header><p>${translateText("수면·아침 준비·욕실·근무·외출·기분에 맞는 그림을 사용할 수 있어요. 비워 둔 칸은 기본 이미지로 자동 대체됩니다.")}</p><div class="character-scene-image-list">${SCENE_IMAGE_VARIANTS.map(item=>{
+  dialog.innerHTML=`<form method="dialog"><header><span><small>${translateText("상태별 아이콘·LD")}</small><b>${character.name}</b></span><button value="close" aria-label="${translateText("닫기")}">×</button></header><p>${translateText("수면·아침 준비·욕실·근무·외출 상황에 맞는 그림을 사용할 수 있어요. 비워 둔 칸은 옷장 또는 기본 이미지로 자동 대체됩니다.")}</p><div class="character-scene-image-list">${SCENE_IMAGE_VARIANTS.map(item=>{
     const value=variants[item.id];
     return `<section><h3>${label(item)}</h3><div><button type="button" data-scene-image="icon" data-scene-key="${item.id}">${thumb(value.icon,"SD")}<b>${translateText("아이콘")}</b></button><button type="button" data-scene-image="ldImage" data-scene-key="${item.id}">${thumb(value.ldImage,"LD")}<b>LD</b></button></div><footer><button type="button" data-clear-scene-image="icon" data-scene-key="${item.id}" ${value.icon?"":"disabled"}>${translateText("아이콘 비우기")}</button><button type="button" data-clear-scene-image="ldImage" data-scene-key="${item.id}" ${value.ldImage?"":"disabled"}>${translateText("LD 비우기")}</button></footer></section>`;
   }).join("")}</div><button class="primary" value="close">${translateText("완료")}</button></form>`;
@@ -4138,7 +4159,7 @@ function openCharacterSceneImages(){
   dialog.addEventListener("close",()=>dialog.remove(),{once:true});
   dialog.querySelectorAll("[data-scene-image]").forEach(button=>button.onclick=()=>{
     const type=button.dataset.sceneImage==="icon"?"sceneVariantIcon":"sceneVariantLd";
-    dialog.close();chooseCharacterImageSource(type,character.id,button.dataset.sceneKey);
+    chooseCharacterImageSource(type,character.id,button.dataset.sceneKey,{onChoose:()=>dialog.close()});
   });
   dialog.querySelectorAll("[data-clear-scene-image]").forEach(button=>button.onclick=()=>{
     setCharacterSceneImage(character.id,button.dataset.sceneKey,button.dataset.clearSceneImage,"");
@@ -5301,7 +5322,7 @@ recordTabHistory(state.activeTab,true);
 render();
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260901scene186").catch(error=>{
+import("./auth.js?v=20260901closet187").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5316,7 +5337,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260901scene186",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260901closet187",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
