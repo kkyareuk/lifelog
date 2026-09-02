@@ -59,7 +59,8 @@
     "test:emotion-tastes196": "node scripts/check-emotion-tastes-196.mjs",
     "test:assets197": "node scripts/check-bed-buildings-197.mjs",
     "test:visual200": "node scripts/check-bed-buildings-197.mjs",
-    "test:settings199": "node scripts/check-character-settings-199.mjs"
+    "test:settings199": "node scripts/check-character-settings-199.mjs",
+    "test:hotfix201": "node scripts/check-buttons-love-hotfix-201.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

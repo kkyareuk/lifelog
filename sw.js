@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260902-bed-buildings-statistics-200";
+const CACHE_VERSION="drawer-village-v20260902-buttons-love-hotfix-201";
 const CORE=[
   "./",
   "./index.html",

@@ -28,7 +28,9 @@ const termsInCopy=(terms,copy)=>terms.filter(term=>copy.includes(term)).slice(0,
 export function characterMood(character,entry,world,language=world.uiLanguage||'ko'){
   const {town,place}=moodContext(character,entry,world),reasons=[],supports=[],traits=traitsOf(character),copy=`${entry?.baseTitle||entry?.title||''} ${entry?.desc||''}`,baseline=character.emotionalBaseline||'',volatility=character.moodVolatility||'상황에 따라 달라짐',positiveResponse=character.positiveMoodResponse||'',stressResponse=character.stressMoodResponse||'',recoveryStyle=character.moodRecoveryStyle||'',angerResponse=character.angerResponse||'차분히 이유를 확인함',flirtResponse=character.flirtResponse||'알아도 모른 척함',emotionalSensitivity=character.emotionalSensitivity||'보통',emotionalContagion=character.emotionalContagion||'상황에 따라 물듦',restrained=/과묵|냉정|무뚝뚝|엄격|표정 변화가 거의 없음|감정을 잘 드러내지 않음|절제/.test(traits)||positiveResponse==='조용히 만족함',outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),optimistic=/낙천|밝은|쾌활/.test(baseline)||/낙천|긍정|밝고|명랑|쾌활/.test(traits),resilient=optimistic||/온화|다정|느긋|침착|강인|무던|인내/.test(traits),sensitive=/예민|걱정|불안|침울|비관|까칠|분노/.test(baseline)||/예민|불안|걱정|신경질|감정 기복|까칠|성급|충동/.test(traits);
   const positiveEvent=/성공|칭찬|선물|맛있|즐거|데이트|웃|success|praise|gift|delicious|enjoy|date|laugh|成功|褒め|贈り物|おいし|楽しい|デート|笑/i;
-  const angryEvent=/싸우|다투|불편|분노|화가|갈등|짜증|fight|argu|anger|conflict|upset|irritat|喧嘩|争|怒|衝突|不快/i;
+  // 단순한 신체·공간의 '불편'이나 "불편하지 않도록" 같은 배려 문장은
+  // 분노 사건이 아니다. 실제 충돌이나 감정 손상을 드러낸 말만 분노로 본다.
+  const angryEvent=/싸우|다투|분노|화가|갈등|짜증|불쾌|모욕|무시당|배신|fight|argu|anger|conflict|upset|irritat|insult|betray|喧嘩|争|怒|衝突|不快|侮辱|裏切/i;
   const sadEvent=/실패|거절|상실|울었|슬프|속상|fail|reject|loss|cry|sad|失敗|拒絶|喪失|泣|悲/i;
   const tiredEvent=/피곤|지쳤|야근|밤샘|졸리|tired|exhaust|overtime|all.nighter|sleepy|疲|夜更|眠い/i;
   const restEvent=/자는 중|잠든|휴식|쉬는 중|sleep|rest|眠って|睡眠|休ん/i;
@@ -54,10 +56,17 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
     if(/아름다움|매우 아름다움|근사/.test(home.beautyLevel||''))support(1,'마음에 드는 집의 분위기가 작은 위안이 됨','The atmosphere at home offers a little comfort','気に入った家の雰囲気が小さな慰めになる');
   }
   const companionIds=[entry?.withId,...values(entry?.withIds),...values(entry?.participantOrder)].filter(id=>id&&id!==character.id),companionId=companionIds[0],companion=world.characters?.[companionId];
+  const relationship=companion?Object.values(world.relationships||{}).find(value=>{
+    const members=[value?.a,value?.b,...values(value?.memberIds),...values(value?.characterIds),...values(value?.members)].filter(Boolean);
+    return members.includes(character.id)&&members.includes(companionId);
+  }):null;
+  const directedView=companion?world.characterViews?.[character.id]?.[companionId]:null;
+  const relationText=`${JSON.stringify(relationship||{})} ${JSON.stringify(directedView||{})}`;
+  const strongLove=Boolean(companion&&/연인|부부|연애 감정으로 좋아함|깊이 사랑함|없어서는 안 될 사람|사랑함/.test(relationText));
   if(companion){
-    const relationship=Object.values(world.relationships||{}).find(value=>values(value?.memberIds||value?.characterIds||value?.members).includes(character.id)&&values(value?.memberIds||value?.characterIds||value?.members).includes(companionId)),relationText=JSON.stringify(relationship||{});
-    if(/연인|사랑|친구|가족|배우자|신뢰|친밀/.test(relationText))support(3,`${companion.name}와 함께라 평소보다 마음이 놓임`,`Being with ${companion.name} feels reassuring`,`${companion.name}と一緒なので普段より安心する`);
-    else if(/적대|불신|갈등|싫어|경계/.test(relationText))add(-12,`${companion.name}와의 관계 때문에 긴장함`,`Tense because of the relationship with ${companion.name}`,`${companion.name}との関係で緊張している`);
+    if(strongLove)support(5,`${companion.name}를 사랑하고 함께 있는 관계가 든든한 버팀목이 됨`,`Loving ${companion.name} and being together provides strong emotional support`,`${companion.name}を愛し一緒にいる関係が心強い支えになっている`);
+    else if(/친구|가족|배우자|신뢰|친밀|소중/.test(relationText))support(3,`${companion.name}와 함께라 평소보다 마음이 놓임`,`Being with ${companion.name} feels reassuring`,`${companion.name}と一緒なので普段より安心する`);
+    else if(/적대|불신|싫어|경계/.test(relationText))add(-12,`${companion.name}와의 관계 때문에 긴장함`,`Tense because of the relationship with ${companion.name}`,`${companion.name}との関係で緊張している`);
     else if(outgoing)support(1,`${companion.name}와 함께라 혼자일 때보다 덜 심심함`,`Company makes the moment less dull`,`${companion.name}と一緒なので一人より退屈しない`);
     if(/조용히 곁에 있음|말로 표현|행동으로 표현|적극적으로 챙김/.test(character.affectionStyle||'')&&/연인|사랑|친구|가족|배우자|신뢰|친밀/.test(relationText))support(1,'자기 방식으로 애정을 주고받아 관계가 작은 버팀목이 됨','Giving and receiving affection in their own way offers support','自分なりに愛情を交わすことが小さな支えになる');
   }
@@ -95,12 +104,16 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   for(const item of supports){const value=Math.min(item.value,5-supportTotal);if(value>0){reasons.push({...item,value});supportTotal+=value}if(supportTotal>=5)break}
   const sourceTitle=String(entry?.baseTitle||entry?.title||'').trim(),sourceDesc=String(entry?.desc||'').trim(),eventDetail=[sourceTitle,sourceDesc].filter(Boolean).join(' — ').slice(0,220),eventReason=kind=>({
     positive:[`“${eventDetail}”에서 기쁨을 느낌`,`“${eventDetail}” lifted their mood`,`「${eventDetail}」で気持ちが明るくなった`],
-    angry:[`“${eventDetail}” 때문에 불편하거나 화가 남`,`“${eventDetail}” made them upset or angry`,`「${eventDetail}」が原因で不快または腹立たしく感じた`],
+    angry:[`“${eventDetail}” 때문에 화가 남`,`“${eventDetail}” made them angry`,`「${eventDetail}」が原因で腹が立った`],
     sad:[`“${eventDetail}” 때문에 마음이 가라앉음`,`“${eventDetail}” brought their mood down`,`「${eventDetail}」で気持ちが沈んだ`]
   }[kind]);
-  const angerNegated=/불편.{0,12}(없|않)|문제.{0,12}(없|않)|갈등.{0,12}(없|않)|다투지|싸우지|no (discomfort|problem|conflict)|without (arguing|conflict)|問題.{0,10}(ない|なく)|不快.{0,10}(ない|なく)|争わず|喧嘩せず/i.test(copy),hasPositiveEvent=positiveEvent.test(copy),hasAngryEvent=angryEvent.test(copy)&&!angerNegated,hasSadEvent=sadEvent.test(copy),hasTiredEvent=tiredEvent.test(copy);
+  const angerNegated=/문제.{0,12}(없|않)|갈등.{0,12}(없|않)|다투지|싸우지|no (problem|conflict)|without (arguing|conflict)|問題.{0,10}(ない|なく)|争わず|喧嘩せず/i.test(copy),hasPositiveEvent=positiveEvent.test(copy),hasAngryEvent=angryEvent.test(copy)&&!angerNegated,hasSadEvent=sadEvent.test(copy),hasTiredEvent=tiredEvent.test(copy);
+  const severeRelationshipHarm=/폭력|폭행|협박|배신|외도|바람을 피|이별 통보|이혼 통보|모욕|심한 거짓말|assault|violence|threat|betray|cheat|break.?up|divorce|侮辱|暴力|脅迫|裏切|浮気|別れ|離婚/i.test(copy);
+  const conflictNamesCompanion=Boolean(companion?.name&&copy.includes(companion.name));
+  const loveBufferedConflict=strongLove&&conflictNamesCompanion&&hasAngryEvent&&!severeRelationshipHarm;
   if(hasPositiveEvent){const reason=eventReason('positive');add(eventValue(22),...reason)}
-  if(hasAngryEvent){const reason=eventReason('angry');add(eventValue(-28),...reason)}
+  if(loveBufferedConflict)add(eventValue(-10),`“${eventDetail}” 때문에 ${companion.name}에게 서운하지만 사랑하는 마음이 사라진 것은 아님`,`“${eventDetail}” hurt, but it did not erase their love for ${companion.name}`,`「${eventDetail}」で${companion.name}に寂しさを感じたが、愛情が消えたわけではない`);
+  else if(hasAngryEvent){const reason=eventReason('angry');add(eventValue(-28),...reason)}
   if(hasSadEvent){const reason=eventReason('sad');add(eventValue(-24),...reason)}
   if(hasTiredEvent)add(eventValue(-16),'피로가 쌓임','Fatigue has built up','疲れがたまっている');
   if(flirtEvent.test(copy)){
@@ -120,6 +133,7 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   else if(flirtEvent.test(copy)&&/은근히 받아줌/.test(flirtResponse)){label=text(language,'설렘','Fluttery','ときめいている');icon='♥';tone='flirty'}
   else if(disgusted){label=text(language,'혐오감','Disgusted','嫌悪感');icon='×';tone='disgusted'}
   else if(dislikedMatches.length){label=text(language,score<=-20?'불쾌함':'짜증남',score<=-20?'Upset':'Irritated',score<=-20?'不快':'いら立っている');icon='!';tone='irritated'}
+  else if(loveBufferedConflict){label=text(language,'서운함','Hurt, but still loving','寂しいが愛情は変わらない');icon='♥';tone='sad'}
   else if(hasAngryEvent&&(/분노를 품은/.test(baseline)||score<=-45)&&/쉽게 욱함|거의 참지 않음|목소리가 커짐|즉시 잘못을 따짐/.test(`${character.impulseControl||''} ${angerResponse}`)){label=text(language,'격분함','Furious','激怒している');icon='⚡';tone='furious'}
   else if(hasAngryEvent&&(/목소리가 커짐|즉시 잘못을 따짐|해결책을 분명히 요구함/.test(angerResponse)||stressResponse==='화부터 남'||/분노를 품은/.test(baseline))){label=text(language,'화남','Angry','怒っている');icon='⚡';tone='angry'}
   else if(hasAngryEvent&&(stressResponse==='말수가 줄어듦'||stressResponse==='아무렇지 않은 척함')){label=text(language,'서운함','Hurt','傷ついている');icon='◒';tone='sad'}

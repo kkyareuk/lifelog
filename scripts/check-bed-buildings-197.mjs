@@ -83,8 +83,8 @@ assert.ok(mood.includes("sourceEntry")&&mood.includes("eventReason=kind")&&!mood
 assert.ok(app.includes("mood-source-log")&&app.includes("연결된 행동 로그"),"mood dialog shows its source activity log");
 assert.ok(views.includes('bookField("액세서리 착용","accessoryUse"')&&state.includes('c.accessoryUse=["착용하지 않음","착용함"]'),"page 7 stores the simple accessory on/off choice");
 assert.ok(app.includes("respectAccessoryUse")&&simulation.includes('c.accessoryUse==="착용함"'),"outfits and life scenes respect the accessory choice");
-assert.match(gradle,/versionCode\s+200/);
-assert.match(gradle,/versionName\s+"1\.0\.187"/);
-assert.ok(sw.includes("drawer-village-v20260902-bed-buildings-statistics-200"),"service worker cache is separated for build 200");
+assert.match(gradle,/versionCode\s+(?:200|201)/);
+assert.match(gradle,/versionName\s+"1\.0\.187(?:\.1)?"/);
+assert.ok(/drawer-village-v20260902-(?:bed-buildings-statistics-200|buttons-love-hotfix-201)/.test(sw),"service worker cache is separated for build 200+");
 
 console.log("v1.0.187 / 200 bed, supplied buildings, additive lights, and fixed statistics layout checks passed");
