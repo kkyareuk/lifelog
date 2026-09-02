@@ -1,4 +1,6 @@
-import {mkdir,readFile,readdir,rm,writeFile} from "node:fs/promises";
+import {access,mkdir,readFile,readdir,rm,writeFile} from "node:fs/promises";
+import {relative} from "node:path";
+import {fileURLToPath} from "node:url";
 
 const root=new URL("../",import.meta.url);
 const output=new URL("../dist/",import.meta.url);
@@ -15,7 +17,7 @@ const includedDirectories=new Set([
 ]);
 
 const includedFiles=new Set([
-  "character-placement.js","character-mood.js","life-log-localization.js","building-recovery.js",
+  "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js",
   "dictionary.js","dictionary.css","dictionary-copy.js","notification-mail.js",
   "_headers",
   "index.html",
@@ -106,6 +108,29 @@ const requiredFiles=[
 ];
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
+const outputPath=fileURLToPath(output);
+const relativeImports=source=>{
+  const found=[];
+  const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
+  let match;
+  while((match=pattern.exec(source)))found.push(match[1]);
+  return found;
+};
+const moduleQueue=["app.js"],visitedModules=new Set();
+while(moduleQueue.length){
+  const name=moduleQueue.shift();
+  if(visitedModules.has(name))continue;
+  visitedModules.add(name);
+  const moduleUrl=new URL(name,output),source=await readFile(moduleUrl,"utf8");
+  for(const specifier of relativeImports(source)){
+    const dependencyUrl=new URL(specifier,moduleUrl);dependencyUrl.search="";dependencyUrl.hash="";
+    const dependencyName=relative(outputPath,fileURLToPath(dependencyUrl)).replaceAll("\\","/");
+    if(dependencyName.startsWith("../"))throw new Error(`${name}이 웹 배포 폴더 밖의 모듈을 참조합니다: ${specifier}`);
+    await access(dependencyUrl);
+    if(dependencyName.endsWith(".js"))moduleQueue.push(dependencyName);
+  }
+}
+
 const index=await readFile(new URL("index.html",output),"utf8");
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
@@ -113,4 +138,4 @@ if(!index.includes("20260902visual200"))throw new Error("최신 웹 UI 캐시 �
 if(!app.includes("20260902visual200"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
 if(!serviceWorker.includes("drawer-village-v20260902-bed-buildings-statistics-200"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
-console.log("Cloudflare Pages용 최신 웹 파일을 dist 폴더에 준비했습니다.");
+console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);
