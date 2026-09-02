@@ -6814,7 +6814,7 @@ html.native-platform[data-active-tab="observe"],
 html.native-platform[data-active-tab="observe"] :is(body,#app,main){height:100dvh;min-height:0!important;overflow:hidden!important;overscroll-behavior:none!important}
 html.native-platform[data-active-tab="observe"] #app>main{padding:0!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"]{
-  --home-ui-font:"KCCHanbit",var(--ui-font);--hud-side-row:10.05dvh;--hud-label-h:3.71dvh;
+  --home-ui-font:var(--ui-font);--hud-side-row:10.05dvh;--hud-label-h:3.71dvh;
   position:relative!important;display:block!important;width:100%!important;height:100dvh!important;min-height:0!important;
   margin:0!important;padding:0!important;overflow:hidden!important;border:0!important;border-radius:0!important;box-shadow:none!important;touch-action:none!important;font-family:var(--home-ui-font)!important
 }

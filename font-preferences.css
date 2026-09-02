@@ -12,10 +12,10 @@
 @font-face{font-family:"KoPubWorldBatangPro";src:url("./fonts/KoPubWorldBatangPro-Light.otf") format("opentype");font-weight:300;font-style:normal;font-display:swap}
 @font-face{font-family:"KoPubWorldBatangPro";src:url("./fonts/KoPubWorldBatangPro-Bold.otf") format("opentype");font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:"PuradakGentleGothic";src:url("./fonts/PuradakGentleGothic.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
-:root{--ui-font:"KCCHanbit","MPlusRounded1cLocal",system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--ui-font:"KCCHanbit","MPlusRounded1cLocal",system-ui,-apple-system,"Segoe UI",sans-serif;--home-ui-font:var(--ui-font)}
 html[data-ui-font="system"]{--ui-font:system-ui,-apple-system,"Segoe UI","MPlusRounded1cLocal",sans-serif}
 html[data-ui-font="hanbit"]{--ui-font:"KCCHanbit","MPlusRounded1cLocal",system-ui,sans-serif}
-html[data-ui-font="mplus-rounded"]{--ui-font:"MPlusRounded1cLocal","KCCHanbit",system-ui,sans-serif}
+html[data-ui-font="mplus-rounded"]{--ui-font:"ChangwonDangamRound","MPlusRounded1cLocal","KCCHanbit",system-ui,sans-serif}
 html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","MPlusRounded1cLocal",system-ui,sans-serif}
 html[data-ui-font="haeong"]{--ui-font:"HaeongSans","MPlusRounded1cLocal",system-ui,sans-serif}
 html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","MPlusRounded1cLocal",system-ui,sans-serif}
