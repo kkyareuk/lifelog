@@ -1,20 +1,20 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902emotion196";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260902emotion196";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260902emotion196";
-import {characterMood} from "./character-mood.js?v=20260902emotion196";
-import {createContactMailbox} from "./notification-mail.js?v=20260902emotion196";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260902emotion196";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260902emotion196";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902emotion196";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902emotion196";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260902emotion196";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260902emotion196";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260902emotion196";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902emotion196";
-import {achievementRows} from "./achievements.js?v=20260902emotion196";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902assets197";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260902assets197";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260902assets197";
+import {characterMood} from "./character-mood.js?v=20260902assets197";
+import {createContactMailbox} from "./notification-mail.js?v=20260902assets197";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260902assets197";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260902assets197";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902assets197";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902assets197";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260902assets197";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260902assets197";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260902assets197";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260902assets197";
+import {achievementRows} from "./achievements.js?v=20260902assets197";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -744,7 +744,15 @@ const backgroundOptions=()=>"";
 const TOWN_BACKGROUND="";
 const townBackgroundMarkup=(src,className="world-bg")=>src?`<img src="${esc(src)}" class="${className}" alt="">${className==="world-bg"?`<span class="town-sky-wash" aria-hidden="true"></span><span class="town-clock" aria-label="${esc(t("현실 시간","현실 시간"))}"></span>`:""}`:"";
 const BUILDING_ICONS=[["cafe","카페"],["restaurant","식당"],["office","사무실"],["hospital","병원"],["park","공원"],["school","학교"],["clothing","옷가게"],["theater","공연장"],["hotel","호텔"],["department","백화점"],["library","도서관"],["shop","상점"]];
-const BUILDING_PRESET_SOURCES={"cafe":"world-assets/building-types/cafe-handdrawn.png","type-cafe":"world-assets/building-types/cafe-handdrawn.png","hospital":"world-assets/building-types/hospital-handdrawn.png","type-hospital":"world-assets/building-types/hospital-handdrawn.png","type-piano-hall":"world-assets/building-types/piano-hall-handdrawn.png","theater":"world-assets/building-types/piano-hall-handdrawn.png","type-park":"world-assets/building-types/park-handdrawn.png","park":"world-assets/building-types/park-handdrawn.png","red-roof-home":"world-assets/building-types/red-roof-home-handdrawn.png","type-restaurant":"world-assets/building-types/restaurant-handdrawn.png","drawer-building":"world-assets/drawer-building.png","medieval-castle":"world-assets/medieval-castle.svg","medieval-tavern":"world-assets/medieval-tavern.svg","medieval-market":"world-assets/medieval-market.svg"};
+const BUILDING_PRESET_SOURCES={"cafe":"world-assets/building-types/cafe-handdrawn.png","type-cafe":"world-assets/building-types/cafe-handdrawn.png","hospital":"world-assets/building-types/hospital-handdrawn.png","type-hospital":"world-assets/building-types/hospital-handdrawn.png","type-piano-hall":"world-assets/building-types/piano-hall-handdrawn.png","theater":"world-assets/building-types/piano-hall-handdrawn.png","type-dress-shop":"world-assets/building-types/dress-shop-handdrawn.png","type-stadium":"world-assets/building-types/stadium-handdrawn.png","type-office":"world-assets/building-types/office-handdrawn.png","type-graduation-school":"world-assets/building-types/graduation-school-handdrawn.png","type-suitcase-hotel":"world-assets/building-types/suitcase-hotel-handdrawn.png","type-clock-school":"world-assets/building-types/clock-school-handdrawn.png","type-library":"world-assets/building-types/library-handdrawn.png","type-generic-building":"world-assets/building-types/generic-building-handdrawn.png","type-park":"world-assets/building-types/park-handdrawn.png","park":"world-assets/building-types/park-handdrawn.png","red-roof-home":"world-assets/building-types/red-roof-home-handdrawn.png","type-restaurant":"world-assets/building-types/restaurant-handdrawn.png","drawer-building":"world-assets/drawer-building.png","medieval-castle":"world-assets/medieval-castle.svg","medieval-tavern":"world-assets/medieval-tavern.svg","medieval-market":"world-assets/medieval-market.svg"};
+const BUILDING_LIGHT_SOURCES={
+  "world-assets/building-types/cafe-handdrawn.png":"world-assets/building-types/cafe-light.png",
+  "world-assets/building-types/hospital-handdrawn.png":"world-assets/building-types/hospital-light.png",
+  "world-assets/building-types/piano-hall-handdrawn.png":"world-assets/building-types/piano-hall-light.png",
+  "world-assets/building-types/office-handdrawn.png":"world-assets/building-types/office-light.png",
+  "world-assets/building-types/park-handdrawn.png":"world-assets/building-types/park-light.png",
+  "world-assets/building-types/red-roof-home-handdrawn.png":"world-assets/building-types/red-roof-home-light.png"
+};
 const buildingExteriorSource=place=>state.buildingShapes?.find(shape=>shape.id===place?.iconPreset)?.src||BUILDING_PRESET_SOURCES[place?.iconPreset]||BUILDING_PRESET_SOURCES["drawer-building"];
 const homeExteriorSource=home=>String(home?.exteriorImage||state.buildingShapes?.find(shape=>shape.id===home?.iconPreset)?.src||BUILDING_PRESET_SOURCES[home?.iconPreset]||BUILDING_PRESET_SOURCES["red-roof-home"]);
 const buildingIconOptions=p=>BUILDING_ICONS.map(([id,label])=>`<option value="${id}" ${p.iconPreset===id?"selected":""}>${label}</option>`).join("");
@@ -875,11 +883,11 @@ function roster(){
 }
 function buildingLightSource(p){
   const src=buildingExteriorSource(p);
-  return /\/(cafe|hospital|piano-hall|park|red-roof-home)-handdrawn\.png$/.test(src)?src.replace("-handdrawn.png","-light.png"):"";
+  return BUILDING_LIGHT_SOURCES[src]||"";
 }
 function homeBuildingLightSource(home){
   const src=homeExteriorSource(home);
-  return /\/(red-roof-home)-handdrawn\.png$/.test(src)?src.replace("-handdrawn.png","-light.png"):"";
+  return BUILDING_LIGHT_SOURCES[src]||"";
 }
 function homeBuildingMapArt(home){
   const src=homeExteriorSource(home),light=homeBuildingLightSource(home),config=normalizeBuildingLighting(home);
@@ -1988,10 +1996,24 @@ function roomStyle(h,key,layout,mobileLayout){
   ];
   return `style="${parts.join(";")}"`;
 }
-function roomFurnitureMarkup(homeId,roomKey,room,edit){
+const COUPLE_BED_ASSET_ROOT="assets/furniture/couple-bed";
+const furniturePlacementStyle=(placement,footprint)=>`--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.rotation}deg;--furniture-layer:${placement.layer};--furniture-grid-width:${footprint.columns};--furniture-grid-height:${footprint.rows}`;
+const coupleBedImage=(layer,extra="")=>`<img class="couple-bed-layer couple-bed-${layer} ${extra}" src="${COUPLE_BED_ASSET_ROOT}/couple-bed-${layer}.png" alt="" aria-hidden="true">`;
+function roomFurnitureMarkup(homeId,roomKey,room,edit,bedStates=new Map()){
   const placements=normalizeFurniturePlacements(room.furniturePlacements);
   if(!placements.length&&!edit)return "";
-  return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{const label=furnitureLabel(placement.item,state.uiLanguage),props=placement.props||[],footprint=furnitureFootprint(placement.item);return `<button type="button" class="room-furniture-item" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" data-furniture-supports-props="${supportsFurnitureProps(placement.item)}" data-furniture-columns="${footprint.columns}" data-furniture-rows="${footprint.rows}" style="--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.rotation}deg;--furniture-layer:${placement.layer};--furniture-grid-width:${footprint.columns};--furniture-grid-height:${footprint.rows}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}><span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>${props.length?`<span class="room-furniture-props" aria-hidden="true">${props.map((prop,index)=>`<i style="--prop-slot:${index}">${furniturePropIcon(prop.item)}</i>`).join("")}</span>`:""}${edit?`<small>${esc(label)} · ${footprint.columns}×${footprint.rows}</small>`:""}</button>`}).join("")}</div>`;
+  return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{
+    const label=furnitureLabel(placement.item,state.uiLanguage),props=placement.props||[],footprint=furnitureFootprint(placement.item),coupleBed=placement.item==="커플 침대",bedState=edit?"default":bedStates.get(placement.id)||"default";
+    const art=coupleBed?`<span class="room-furniture-art room-couple-bed-art" data-bed-layer-state="${bedState}" aria-hidden="true">${coupleBedImage("base")}${bedState!=="under-cover"?coupleBedImage("quilt"):""}${bedState==="default"?coupleBedImage("footboard"):""}</span>`:`<span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>`;
+    return `<button type="button" class="room-furniture-item ${coupleBed?"is-couple-bed":""}" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" data-furniture-supports-props="${supportsFurnitureProps(placement.item)}" data-furniture-columns="${footprint.columns}" data-furniture-rows="${footprint.rows}" style="${furniturePlacementStyle(placement,footprint)}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}>${art}${props.length?`<span class="room-furniture-props" aria-hidden="true">${props.map((prop,index)=>`<i style="--prop-slot:${index}">${furniturePropIcon(prop.item)}</i>`).join("")}</span>`:""}${edit?`<small>${esc(label)} · ${footprint.columns}×${footprint.rows}</small>`:""}</button>`;
+  }).join("")}</div>`;
+}
+function roomFurnitureOverlayMarkup(room,bedStates=new Map()){
+  const overlays=normalizeFurniturePlacements(room.furniturePlacements).filter(placement=>placement.item==="커플 침대"&&["on-bed","under-cover"].includes(bedStates.get(placement.id))).map(placement=>{
+    const footprint=furnitureFootprint(placement.item),bedState=bedStates.get(placement.id);
+    return `<span class="room-couple-bed-overlay" data-bed-layer-state="${bedState}" style="${furniturePlacementStyle(placement,footprint)}">${bedState==="under-cover"?coupleBedImage("quilt"):""}${coupleBedImage("footboard")}</span>`;
+  });
+  return overlays.length?`<div class="room-furniture-overlay-layer" aria-hidden="true">${overlays.join("")}</div>`:"";
 }
 function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-1,options={}){
   // 집 화면도 관찰 화면·로그와 같은 장면 객체를 그대로 사용한다. 가구
@@ -2002,9 +2024,10 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   const actionKind=walking?"walking":conversing&&agent?.actionKind?agent.actionKind:presentation.actionKind,actionProp=nativeSceneActionProp(character,scene,actionKind,text,true);
   const duration=Math.max(1,Number(agent?.endsAt||0)-Number(agent?.startedAt||0)),elapsed=Math.max(0,Math.min(duration,now-Number(agent?.startedAt||0)));
   const walkStyleClass=walkStyleClassFor(character);
-  const visualPhase=scheduledWalk&&!walking?"waiting-to-walk":agent?.phase,coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}${agent?.approachingInteraction?" is-approaching-conversation":""}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${visualPhase} ${walkStyleClass}${coupleBedClass}${conversationClass}${canvasClass}`:"";
-  const x=agent?Math.max(5,Math.min(95,Number(agent.x)+(bedSlot===0?-22:bedSlot===1?22:0))):50;
-  const y=agent?Math.max(5,Math.min(95,Number(agent.y)+(bedSlot===0?-10:bedSlot===1?10:0))):50;
+  const visualPhase=scheduledWalk&&!walking?"waiting-to-walk":agent?.phase,bedUsing=bedSlot>=0&&agent?.phase==="using",coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}${bedUsing?" is-using-couple-bed":""}${options.bedState==="under-cover"?" is-under-cover":""}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}${agent?.approachingInteraction?" is-approaching-conversation":""}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${visualPhase} ${walkStyleClass}${coupleBedClass}${conversationClass}${canvasClass}`:"";
+  const bedRotation=Number(options.bedPlacement?.rotation)||0,bedRadians=bedRotation*Math.PI/180,localBedX=bedSlot===0?-7:bedSlot===1?7:0,localBedY=bedSlot>=0?-7:0,bedOffsetX=localBedX*Math.cos(bedRadians)-localBedY*Math.sin(bedRadians),bedOffsetY=localBedX*Math.sin(bedRadians)+localBedY*Math.cos(bedRadians);
+  const x=agent?Math.max(5,Math.min(95,Number(agent.x)+bedOffsetX)):50;
+  const y=agent?Math.max(5,Math.min(95,Number(agent.y)+bedOffsetY)):50;
   const fromX=agent?Math.max(5,Math.min(95,Number(agent.fromX)||x)):x,fromY=agent?Math.max(5,Math.min(95,Number(agent.fromY)||y)):y;
   const lifeStyle=agent?`--life-x:${x}%;--life-y:${y}%;--life-dx:${fromX-x}cqw;--life-dy:${fromY-y}cqh;--life-duration:${Math.max(1,Number(agent.arrivesAt||agent.endsAt)-Number(agent.startedAt||0))}ms;--life-delay:-${elapsed}ms;`:"";
   const sceneActivity=String(title).replace(`${room.name||roomKey}에서 `,"").replace(`${room.name||roomKey} `,"");
@@ -2247,7 +2270,7 @@ function homeCard(id,chars){
     const shownPeople=roomPeople.filter(character=>!isCrossRoomWalker(character)),shownPets=roomPets;
     const editAttributes=`data-home-id="${id}" data-room-key="${key}" data-home-room-hold="${key}"${edit?` data-open-room-editor="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`:""}`;
     const roomLayout=packedRooms.items[key]||{},peopleDirection=Number(roomLayout.w)>Number(roomLayout.h)?"is-horizontal":"is-vertical";
-    const renderedPeople=new Set(),peopleMarkup=[],coupleBedSlots=new Map(),coupleBedUsers=new Map();
+    const renderedPeople=new Set(),peopleMarkup=[],coupleBedSlots=new Map(),coupleBedUsers=new Map(),coupleBedPlacements=new Map(),bedStates=new Map();
     shownPeople.forEach(character=>{
       const agent=lifeAgents[character.id],bed=agent?.furnitureId?(room.furniturePlacements||[]).find(item=>item.id===agent.furnitureId):null;
       if(bed?.item!=="커플 침대")return;
@@ -2255,8 +2278,21 @@ function homeCard(id,chars){
     });
     coupleBedUsers.forEach((users,bedId)=>{
       const bed=(room.furniturePlacements||[]).find(item=>item.id===bedId),assigned=bed?.assignedCharacterIds||[];
-      users.sort((a,b)=>{const ai=assigned.indexOf(a.id),bi=assigned.indexOf(b.id);return (ai<0?99:ai)-(bi<0?99:bi)||String(a.id).localeCompare(String(b.id))});
+      const placementWeights={"always-left":-20,"prefer-left":-10,random:0,"prefer-right":10,"always-right":20};
+      users.sort((a,b)=>{
+        const leftPlacement=characterPlacement(a,state.relationships),rightPlacement=characterPlacement(b,state.relationships),placementDifference=placementWeights[leftPlacement]-placementWeights[rightPlacement];
+        if(placementDifference)return placementDifference;
+        const sceneSeed=`${bedId}:${sceneFor(a)?.minute||""}:${sceneFor(b)?.minute||""}`;
+        if(leftPlacement===rightPlacement)return nativeVisualSeed(`${sceneSeed}:${a.id}`)-nativeVisualSeed(`${sceneSeed}:${b.id}`);
+        const ai=assigned.indexOf(a.id),bi=assigned.indexOf(b.id);return (ai<0?99:ai)-(bi<0?99:bi)||String(a.id).localeCompare(String(b.id));
+      });
       users.slice(0,2).forEach((character,slot)=>coupleBedSlots.set(character.id,slot));
+      users.forEach(character=>coupleBedPlacements.set(character.id,bed));
+      const activeUsers=users.filter(character=>lifeAgents[character.id]?.phase==="using");
+      if(activeUsers.length){
+        const underCover=activeUsers.some(character=>nativeScenePresentation(character,sceneFor(character),"sd").actionKind==="sleep");
+        bedStates.set(bedId,underCover?"under-cover":"on-bed");
+      }
     });
     const tvGroups=new Map();
     shownPeople.forEach(character=>{
@@ -2283,20 +2319,23 @@ function homeCard(id,chars){
           const orderedPartners=homeOrderedCharacters(partners,partners.map(sceneFor));
           orderedPartners.slice(0,2).forEach((person,slot)=>{
             const paired=lifeAgents[person.id]||{};
-            peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),paired,room,key,index+slot,coupleBedSlots.get(person.id)??-1,{conversing:true,slot:slot+1}));
+            const personBed=coupleBedPlacements.get(person.id);
+            peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),paired,room,key,index+slot,coupleBedSlots.get(person.id)??-1,{conversing:true,slot:slot+1,bedPlacement:personBed,bedState:personBed?bedStates.get(personBed.id):""}));
           });
         }else peopleMarkup.push(homeLifeInteractionMarkup(partners,partners.map(sceneFor),lifeAgents,room,key,index));
         return;
       }
       renderedPeople.add(character.id);
-      peopleMarkup.push(homeLifePersonMarkup(character,scene,lifeAgents[character.id],room,key,index,coupleBedSlots.get(character.id)??-1));
+      const characterBed=coupleBedPlacements.get(character.id);
+      peopleMarkup.push(homeLifePersonMarkup(character,scene,lifeAgents[character.id],room,key,index,coupleBedSlots.get(character.id)??-1,{bedPlacement:characterBed,bedState:characterBed?bedStates.get(characterBed.id):""}));
     });
     const hasOccupants=shownPeople.length>0||shownPets.length>0;
     return `<div class="room room-${esc(room.type||key)} ${customFloor?"room-custom-floor":""} ${customTile?"room-custom-tile":""} ${hasOccupants?"room-has-occupants":""} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
       <span class="room-wall-shell" aria-hidden="true"></span>
       <div class="room-heading room-title-${room.titleTone==="dark"?"dark":"light"}"><span><b>${esc(room.name||key)}</b>${edit?`<small class="room-edit-hint">${activeFloor}층 · ${t("gridEdit","격자 편집")}</small>`:""}</span>${edit?`<button type="button" class="room-drag-handle" data-room-drag="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 위치 옮기기">✥</button>`:""}</div>${edit?`<button type="button" class="room-resize-handle" data-room-resize="${key}" data-home-id="${id}" aria-label="${esc(room.name||key)} 크기 조절">↘</button>`:""}
-      ${roomFurnitureMarkup(id,key,room,edit)}
+      ${roomFurnitureMarkup(id,key,room,edit,bedStates)}
       <div class="room-people ${shownPeople.some(c=>lifeAgents[c.id])?"has-home-life":""} ${peopleDirection}">${peopleMarkup.join("")}</div>
+      ${edit?"":roomFurnitureOverlayMarkup(room,bedStates)}
       <div class="room-pets">${shownPets.map((p,petIndex)=>{const motion=petMotion(p,petIndex);return `<div class="room-pet home-pet-roaming pet-motion-${motion.motion} ${motion.sleeping?"is-sleeping":""}" style="--pet-x:${motion.x}%;--pet-y:${motion.y}%;--pet-dx:${motion.dx}cqw;--pet-dy:${motion.dy}cqh;--pet-roam-duration:${motion.duration}s;--pet-roam-delay:${motion.delay}s" role="button" tabindex="0" aria-label="${esc(`${p.name} · ${petScenes[p.id].title}`)}" data-home-occupant="pet" data-pet-id="${p.id}" data-pet-species="${esc(p.species)}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></div>`}).join("")}</div>
     </div>`;
   }).join("");
@@ -4341,3 +4380,6 @@ function shop(){
   const limitDetail=state.uiLanguage==="en"?(isOverLimit?"Reduce the quantity until the total is below KRW 50,000.":`Current total: KRW ${total.toLocaleString("en-US")} · Products that would reach the limit cannot be added.`):state.uiLanguage==="ja"?(isOverLimit?"合計が5万ウォン未満になるまで数量を減らしてください。":`現在 ${total.toLocaleString("ko-KR")}ウォン・上限に達する商品は追加できません。`):(isOverLimit?"수량을 줄여 결제금액을 50,000원 미만으로 맞춰 주세요.":`현재 ${total.toLocaleString("ko-KR")}원 · 한도에 닿는 상품은 더 담을 수 없어요.`);
   return `<section class="panel form dlc-store shop-store"><div class="title"><div><h1>상점</h1><p>원하는 상품과 수량을 장바구니에 담아 한 번에 결제할 수 있어요.</p></div></div>${previewMode()?`<section class="preview-notice"><b>${esc(previewConfig().label||"사전 체험")} 기간이에요</b><p>${esc(previewConfig().message||"현재 기능을 점검하고 있어 실제 결제는 진행되지 않아요.")}</p></section>`:""}<div class="shop-product-grid">${product("character_slots_5",SHOP_PRODUCTS.character_slots_5,Number(accountEntitlements.characterSlotPacks)||0)}${product("town_slot_1",SHOP_PRODUCTS.town_slot_1,Number(accountEntitlements.townSlotPacks)||0)}${product("storage_50mb",SHOP_PRODUCTS.storage_50mb,accountEntitlements.storage50?1:0)}${product("green_tea",SHOP_PRODUCTS.green_tea,0)}</div><div class="shop-expansion-heading"><small>COMING NEXT</small><h2>확장팩</h2></div>${jobExpansionCard()}<section class="shop-cart"><div class="title"><div><h2>장바구니</h2><p>${previewMode()?"사전 체험이 끝난 뒤 이용할 수 있어요.":"같은 상품도 여러 개 담을 수 있어요."}</p></div><b>${count}개</b></div><div class="premium-current"><b>한 번 결제 금액은 5만원 미만이어야 해요.</b><small>${limitDetail}</small></div><div class="cart-lines">${cartHtml}</div><div class="cart-total"><span>총 결제금액</span><b>${total.toLocaleString("ko-KR")}원</b></div>${previewMode()?`<span class="premium-buy disabled" aria-disabled="true">사전 체험 중에는 결제하지 않아요</span>`:`<a class="primary premium-buy ${lines.length&&!isOverLimit?"":"disabled"}" ${lines.length&&!isOverLimit?'href="./payment.html?cart=1" aria-disabled="false"':'aria-disabled="true"'}>${isOverLimit?"수량을 줄여 주세요":"장바구니 결제하기"}</a>`}</section><div class="dlc-hidden" hidden>${dlc()}</div></section>`;
 }
+
+Object.assign(UI_TEXT.en,{"웨딩드레스 부티크":"Wedding dress boutique","원형 경기장":"Circular stadium","도심 오피스":"City office","학사모 학교":"Graduation school","여행가방 호텔":"Suitcase hotel","시계탑 학교":"Clock school","책더미 도서관":"Book-stack library","옥상 정원 건물":"Rooftop garden building","직접 그린 건물":"Hand-drawn building","시간별 조명":"Scheduled lighting","원화의 흰색 유지":"Original white artwork preserved"});
+Object.assign(UI_TEXT.ja,{"웨딩드레스 부티크":"ウェディングドレス・ブティック","원형 경기장":"円形スタジアム","도심 오フィス":"都心オフィス","학사모 학교":"卒業帽の学校","여행가방 호텔":"スーツケースホテル","시계탑 학교":"時計台の学校","책더미 도서관":"本の山の図書館","옥상 정원 건물":"屋上庭園の建物","직접 그린 건물":"手描きの建物","시간별 조명":"時間指定の照明","원화의 흰색 유지":"原画の白色を保持"});

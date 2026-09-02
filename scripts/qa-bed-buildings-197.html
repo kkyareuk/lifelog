@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<title>서랍마을 197 침대·건물 시각 검수</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;padding:28px;background:#e9e1d3;color:#29231d;font:15px/1.45 system-ui,sans-serif}h1,h2{margin:0 0 14px}.section{margin-bottom:34px}.bed-grid,.building-grid{display:grid;gap:18px}.bed-grid{grid-template-columns:repeat(3,minmax(240px,1fr))}.building-grid{grid-template-columns:repeat(4,minmax(180px,1fr))}.card{background:#fffaf1;border:2px solid #463b31;border-radius:18px;padding:12px;box-shadow:0 5px 0 #c9bda9}.card h3{margin:0 0 8px;font-size:14px}.stage{position:relative;aspect-ratio:640/684;border-radius:12px;overflow:hidden;background:repeating-conic-gradient(#a99f91 0 25%,#c8bfb2 0 50%) 0/24px 24px}.stage img,.person{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.person{z-index:5}.person:before,.person:after{content:"";position:absolute;border:4px solid #28231f;background:#f3ba83}.person:before{width:11%;aspect-ratio:1;border-radius:50%;top:19%;left:var(--x);transform:translateX(-50%)}.person:after{width:9%;height:36%;border-radius:45%;top:28%;left:var(--x);transform:translateX(-50%);background:var(--shirt)}.base{z-index:1}.quilt{z-index:2}.foot{z-index:3}.default .person{z-index:6}.on-bed .foot,.under-cover .quilt,.under-cover .foot{z-index:7}.on-bed .person,.under-cover .person{z-index:5}.building{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:repeating-conic-gradient(#ac9f8c 0 25%,#d3c8b5 0 50%) 0/20px 20px}.building img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.building.night:after{content:"";position:absolute;inset:0;background:#10244788;mix-blend-mode:multiply;pointer-events:none}.building .light{z-index:2}.building.night .light{filter:drop-shadow(0 0 10px #ffd867);z-index:3}.legend{margin:0;color:#60564c}.night-label{color:#66531f}
+</style>
+<body>
+<section class="section">
+  <h1>v1.0.184 / 197 시각 검수</h1>
+  <p class="legend">체커보드는 투명 영역을 보여 줍니다. 건물 안쪽 흰 면은 체커보드가 비치지 않아야 합니다.</p>
+</section>
+<section class="section">
+  <h2>2인 침대 레이어 순서</h2>
+  <div class="bed-grid">
+    <article class="card"><h3>이동·일반: 캐릭터가 3겹 위</h3><div class="stage default">
+      <img class="base" src="../assets/furniture/couple-bed/couple-bed-base.png"><img class="quilt" src="../assets/furniture/couple-bed/couple-bed-quilt.png"><img class="foot" src="../assets/furniture/couple-bed/couple-bed-footboard.png"><i class="person" style="--x:41%;--shirt:#7eb8df"></i><i class="person" style="--x:59%;--shirt:#e58ca4"></i>
+    </div></article>
+    <article class="card"><h3>침대 위: 발판만 캐릭터 앞</h3><div class="stage on-bed">
+      <img class="base" src="../assets/furniture/couple-bed/couple-bed-base.png"><img class="quilt" src="../assets/furniture/couple-bed/couple-bed-quilt.png"><i class="person" style="--x:41%;--shirt:#7eb8df"></i><i class="person" style="--x:59%;--shirt:#e58ca4"></i><img class="foot" src="../assets/furniture/couple-bed/couple-bed-footboard.png">
+    </div></article>
+    <article class="card"><h3>이불 안: 이불·발판이 캐릭터 앞</h3><div class="stage under-cover">
+      <img class="base" src="../assets/furniture/couple-bed/couple-bed-base.png"><i class="person" style="--x:41%;--shirt:#7eb8df"></i><i class="person" style="--x:59%;--shirt:#e58ca4"></i><img class="quilt" src="../assets/furniture/couple-bed/couple-bed-quilt.png"><img class="foot" src="../assets/furniture/couple-bed/couple-bed-footboard.png">
+    </div></article>
+  </div>
+</section>
+<section class="section">
+  <h2>건물 외형·조명·흰 면 보존</h2>
+  <div class="building-grid" id="buildings"></div>
+</section>
+<script>
+const buildings=[
+  ["카페","cafe",1],["병원","hospital",1],["피아노 홀","piano-hall",1],["웨딩드레스 부티크","dress-shop",0],
+  ["원형 경기장","stadium",0],["도심 오피스","office",1],["학사모 학교","graduation-school",0],["여행가방 호텔","suitcase-hotel",0],
+  ["시계탑 학교","clock-school",0],["책더미 도서관","library",0],["옥상 정원 건물","generic-building",0],["붉은 지붕 집","red-roof-home",1],["공원","park",1]
+];
+document.querySelector("#buildings").innerHTML=buildings.map(([label,id,lit],index)=>`<article class="card"><h3>${label}${lit&&index%2?` <span class="night-label">· 야간 조명</span>`:""}</h3><div class="building ${lit&&index%2?"night":""}"><img src="../world-assets/building-types/${id}-handdrawn.png">${lit?`<img class="light" src="../world-assets/building-types/${id}-light.png">`:""}</div></article>`).join("");
+</script>
+</body>
+</html>

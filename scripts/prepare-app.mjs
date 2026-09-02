@@ -17,6 +17,7 @@ const excludedAndroidAssets=new Set([
   "assets/character-ui/paper.png"
 ]);
 const excludedAndroidAssetPrefixes=[];
+const stableAndroidBackupPrefixes=["assets/audio/"];
 const includedFiles=new Set([
   "dictionary.css",
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
@@ -45,10 +46,16 @@ async function copyPortable(source,target){
     else{
       const relativePath=relative(fileURLToPath(root),fileURLToPath(from)).replaceAll("\\","/");
       if(excludedAndroidAssets.has(relativePath)||excludedAndroidAssetPrefixes.some(prefix=>relativePath.startsWith(prefix)))continue;
+      if(process.env.DRAWER_BUILD_TRACE)console.log(`Android 자산 준비: ${relativePath}`);
+      const backupPath=join(fileURLToPath(root),"android","app","src","main","assets","public",relativePath);
+      if(stableAndroidBackupPrefixes.some(prefix=>relativePath.startsWith(prefix))){
+        if(incrementalOneDriveStage)continue;
+        await writeFile(to,await readFile(backupPath));
+        continue;
+      }
       try{await writeFile(to,await readFile(from));}
       catch(error){
         if(error?.code!=="EPERM")throw error;
-        const backupPath=join(fileURLToPath(root),"android","app","src","main","assets","public",relativePath);
         try{
           await writeFile(to,await readFile(backupPath));
           console.warn(`OneDrive 원본 대신 이전 Android 자산에서 복구: ${relativePath}`);
@@ -60,7 +67,13 @@ async function copyPortable(source,target){
   }
 }
 
-await rm(output,{recursive:true,force:true});
+// Removing an entire generated tree inside OneDrive can block indefinitely
+// while sync holds any one media file. In that environment update the staging
+// tree in place; the closure and packaged-asset checks below still verify every
+// runtime dependency. Other environments keep the clean rebuild behavior.
+const outputPath=fileURLToPath(output);
+const incrementalOneDriveStage=process.platform==="win32"&&outputPath.toLowerCase().includes("onedrive");
+if(!incrementalOneDriveStage)await rm(output,{recursive:true,force:true,maxRetries:8,retryDelay:250});
 await mkdir(output,{recursive:true});
 
 const entries=await (await import("node:fs/promises")).readdir(root,{withFileTypes:true});
@@ -129,7 +142,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260901emotion190";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260902assets197";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

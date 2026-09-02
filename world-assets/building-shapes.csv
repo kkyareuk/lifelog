@@ -1,9 +1,17 @@
 id,name,src,types,features
-type-cafe,카페,world-assets/building-types/cafe-handdrawn.png,카페,직접 그린 건물|시간별 조명
-type-hospital,병원,world-assets/building-types/hospital-handdrawn.png,병원,직접 그린 건물|시간별 조명
-type-piano-hall,피아노 음악당,world-assets/building-types/piano-hall-handdrawn.png,공연장,직접 그린 건물|시간별 조명
-type-park,마을 공원,world-assets/building-types/park-handdrawn.png,공원,직접 그린 건물|시간별 조명
-red-roof-home,빨간 지붕 집,world-assets/building-types/red-roof-home-handdrawn.png,집|숙박,직접 그린 건물|시간별 조명
+type-cafe,카페,world-assets/building-types/cafe-handdrawn.png,카페,직접 그린 건물|시간별 조명|원화의 흰색 유지
+type-hospital,병원,world-assets/building-types/hospital-handdrawn.png,병원,직접 그린 건물|시간별 조명|원화의 흰색 유지
+type-piano-hall,피아노 음악당,world-assets/building-types/piano-hall-handdrawn.png,공연장,직접 그린 건물|시간별 조명|원화의 흰색 유지
+type-dress-shop,웨딩드레스 부티크,world-assets/building-types/dress-shop-handdrawn.png,옷가게,직접 그린 건물|원화의 흰색 유지
+type-stadium,원형 경기장,world-assets/building-types/stadium-handdrawn.png,공연장|기타,직접 그린 건물|원화의 흰색 유지
+type-office,도심 오피스,world-assets/building-types/office-handdrawn.png,사무실|관공서,직접 그린 건물|시간별 조명|원화의 흰색 유지
+type-graduation-school,학사모 학교,world-assets/building-types/graduation-school-handdrawn.png,학교,직접 그린 건물|원화의 흰색 유지
+type-suitcase-hotel,여행가방 호텔,world-assets/building-types/suitcase-hotel-handdrawn.png,숙박,직접 그린 건물|원화의 흰색 유지
+type-clock-school,시계탑 학교,world-assets/building-types/clock-school-handdrawn.png,학교,직접 그린 건물|원화의 흰색 유지
+type-library,책더미 도서관,world-assets/building-types/library-handdrawn.png,도서관,직접 그린 건물|원화의 흰색 유지
+type-generic-building,옥상 정원 건물,world-assets/building-types/generic-building-handdrawn.png,집|사무실|기타,직접 그린 건물|원화의 흰색 유지
+type-park,마을 공원,world-assets/building-types/park-handdrawn.png,공원,직접 그린 건물|시간별 조명|원화의 흰색 유지
+red-roof-home,빨간 지붕 집,world-assets/building-types/red-roof-home-handdrawn.png,집|숙박,직접 그린 건물|시간별 조명|원화의 흰색 유지
 type-restaurant,음식점,world-assets/building-types/restaurant-handdrawn.png,음식점,식사|외식
 drawer-building,쌍둥이 서랍 건물,world-assets/drawer-building.png,기타|카페|음식점|사무실|관공서|쇼핑몰,서랍마을|범용
 medieval-castle,중세 성채,world-assets/medieval-castle.svg,관공서|기타,중세|성채
