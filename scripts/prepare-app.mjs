@@ -50,7 +50,11 @@ async function copyPortable(source,target){
       const backupPath=join(fileURLToPath(root),"android","app","src","main","assets","public",relativePath);
       if(stableAndroidBackupPrefixes.some(prefix=>relativePath.startsWith(prefix))){
         if(incrementalOneDriveStage)continue;
-        await writeFile(to,await readFile(backupPath));
+        try{await writeFile(to,await readFile(backupPath));}
+        catch(error){
+          if(error?.code!=="ENOENT")throw error;
+          await writeFile(to,await readFile(from));
+        }
         continue;
       }
       try{await writeFile(to,await readFile(from));}
