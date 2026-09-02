@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import {readFile} from "node:fs/promises";
+import {readFile,stat} from "node:fs/promises";
 import {characterMood,environmentConversation} from "../character-mood.js";
 import {localizeLifeLog} from "../life-log-localization.js";
 
@@ -57,14 +57,39 @@ assert.ok(!nerineEvent.groupInteraction,"혼자 집중하는 현재 행동을 �
 assert.ok(!kroEvent.groupInteraction,"상대 쪽에만 남은 오래된 공동 장면을 재사용하지 않는다");
 assert.equal(kroEvent.withId,undefined,"크로 화면에서도 네리네가 함께 있다고 표시하지 않는다");
 
-const [gradle,worker,simulation,townCss]=await Promise.all([
+const [gradle,worker,simulation,townCss,views,app,appCss,bookCss,fontCss,stateSource,promo,licenses,regularFont,boldFont]=await Promise.all([
   readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8"),
   readFile(new URL("../sw.js",import.meta.url),"utf8"),
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),
-  readFile(new URL("../town-fit.css",import.meta.url),"utf8")
+  readFile(new URL("../town-fit.css",import.meta.url),"utf8"),
+  readFile(new URL("../views.js",import.meta.url),"utf8"),
+  readFile(new URL("../app.js",import.meta.url),"utf8"),
+  readFile(new URL("../app.css",import.meta.url),"utf8"),
+  readFile(new URL("../character-book.css",import.meta.url),"utf8"),
+  readFile(new URL("../font-preferences.css",import.meta.url),"utf8"),
+  readFile(new URL("../state.js",import.meta.url),"utf8"),
+  readFile(new URL("../Play-스토어-문구-한영일.md",import.meta.url),"utf8"),
+  readFile(new URL("../FONT-LICENSES.md",import.meta.url),"utf8"),
+  stat(new URL("../fonts/rounded-mplus-1c/RoundedMplus1c-Regular.ttf",import.meta.url)),
+  stat(new URL("../fonts/rounded-mplus-1c/RoundedMplus1c-Bold.ttf",import.meta.url))
 ]);
 assert.match(gradle,/versionCode\s+203/);assert.match(gradle,/versionName\s+"1\.0\.189"/);
 assert.ok(worker.includes("drawer-village-v20260902-language-scene-203"));
 assert.ok(simulation.includes('ENGINE_VERSION="20260902-language-scene-203"'));
 assert.ok(!townCss.includes("mix-blend-mode:plus-lighter")&&townCss.includes(".building-light-core{filter:brightness(1.3)"),"과한 발광 닷지를 제거하고 기존의 은은한 건물 조명을 복원한다");
-console.log("v1.0.189 / 203 언어 왕복·혼자 집중 장면·조용한 장소 감정 검증 완료");
+assert.ok(views.includes("const heroLeft=source,heroRight=target;"),"관계 화면은 선택 순서 그대로 왼쪽·오른쪽 인물을 고정한다");
+assert.match(appCss,/relationship-choice-arrow\{[^}]*var\(--relationship-own\)/);
+assert.match(appCss,/relationship-choice-arrow::after\{[^}]*var\(--relationship-own\)/);
+assert.ok(views.includes('"서로 믿지 않고 거리를 두는 사이":"They do not trust each other and keep their distance."'));
+assert.ok(views.includes('"서로 믿지 않고 거리를 두는 사이":"互いを信頼せず、距離を置いている関係"'));
+assert.ok(views.includes("data-add-town-switcher")&&app.includes('!el.hasAttribute("data-add-town-switcher")'),"마을 이동 창에서 새 마을을 추가할 수 있다");
+assert.ok(bookCss.includes('html:is([lang="en"],[lang="ja"]) .character-overview-life')&&bookCss.includes('html:is([lang="en"],[lang="ja"]) .body-accessibility-chips>button'),"영어·일본어 캐릭터 설정의 긴 문구를 위한 레이아웃이 적용된다");
+assert.ok(views.includes('"심혈관 질환":"Cardiovascular condition"')&&views.includes('"화면읽기":"スクリーンリーダー"'),"신체·접근성 선택값을 영어와 일본어로 모두 번역한다");
+assert.ok(fontCss.includes("MPlusRounded1cLocal")&&fontCss.includes('data-ui-font="mplus-rounded"'));
+assert.ok(stateSource.includes('uiFont:"hanbit"')&&stateSource.includes('"mplus-rounded"'));
+assert.ok(app.includes('document.documentElement.dataset.uiFont=state.uiFont||"hanbit"'));
+assert.ok(views.includes('data-setting="uiFont"'));
+assert.ok(regularFont.size>3_000_000&&boldFont.size>3_000_000,"일본어·한자 글꼴 원본 파일을 앱에 포함한다");
+assert.ok(licenses.includes("SIL Open Font License 1.1")&&licenses.includes("RoundedMplus1c-Regular.ttf"));
+assert.ok(promo.includes("Relationships are more than a label")&&promo.includes("関係は、ひと言では語れない"),"스토어 스크린샷 문구를 한·영·일로 기록한다");
+console.log("v1.0.189 / 203 언어·관계·외국어 UI·마을 추가·글꼴 설정 검증 완료");

@@ -1456,7 +1456,7 @@ function render({force=false}={}){
     document.documentElement.classList.toggle("mobile-site",!nativePlatform&&mobileSite);
     document.documentElement.lang=({en:"en",ja:"ja"}[state.uiLanguage]||"ko");
     document.title=({en:"Drawer Village",ja:"ひきだし村"}[state.uiLanguage]||"서랍마을");
-    delete document.documentElement.dataset.uiFont;
+    document.documentElement.dataset.uiFont=state.uiFont||"hanbit";
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
@@ -3520,6 +3520,7 @@ function bind(){
     if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
     save(true);
     if(key==="uiLanguage"||key==="measurementUnits"){renderPreservingPageScroll(el);return}
+    document.documentElement.dataset.uiFont=state.uiFont||"hanbit";
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(["homeSdScale","homeLdScale"].includes(key))el.closest("label")?.querySelector("output")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
     el.blur();
@@ -3666,7 +3667,7 @@ function bind(){
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{el.closest("dialog")?.close();setMobileTownMode("");switchTown(el.dataset.townSelect);render();centerMobileTownMap()});
   $("[data-town-browse]")?.addEventListener("change",event=>{switchTown(event.target.value);setMobileTownMode("town");render()});
   $$("[data-add-town]").forEach(el=>el.addEventListener("click",()=>{
-    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="town")return;
+    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="town"&&!el.hasAttribute("data-add-town-switcher"))return;
     const limit=townLimit();
     if(!addTown(limit))showToast(`현재 마을 슬롯은 ${limit}개까지예요`);
     render();

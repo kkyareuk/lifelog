@@ -7,8 +7,19 @@
 @font-face{font-family:"SBAggro";src:url("fonts/SB_Aggro/SB 어그로 B.ttf") format("truetype");font-weight:700 900;font-display:swap}
 @font-face{font-family:"GriunSimsimche";src:url("./fonts/GriunSimsimche-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
 @font-face{font-family:"KCCHanbit";src:url("./fonts/KCC-Hanbit.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"MPlusRounded1cLocal";src:url("./fonts/rounded-mplus-1c/RoundedMplus1c-Regular.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"MPlusRounded1cLocal";src:url("./fonts/rounded-mplus-1c/RoundedMplus1c-Bold.ttf") format("truetype");font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:"KoPubWorldBatangPro";src:url("./fonts/KoPubWorldBatangPro-Light.otf") format("opentype");font-weight:300;font-style:normal;font-display:swap}
 @font-face{font-family:"KoPubWorldBatangPro";src:url("./fonts/KoPubWorldBatangPro-Bold.otf") format("opentype");font-weight:700;font-style:normal;font-display:swap}
 @font-face{font-family:"PuradakGentleGothic";src:url("./fonts/PuradakGentleGothic.ttf") format("truetype");font-weight:400;font-style:normal;font-display:swap}
-:root{--ui-font:"KCCHanbit",system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--ui-font:"KCCHanbit","MPlusRounded1cLocal",system-ui,-apple-system,"Segoe UI",sans-serif}
+html[data-ui-font="system"]{--ui-font:system-ui,-apple-system,"Segoe UI","MPlusRounded1cLocal",sans-serif}
+html[data-ui-font="hanbit"]{--ui-font:"KCCHanbit","MPlusRounded1cLocal",system-ui,sans-serif}
+html[data-ui-font="mplus-rounded"]{--ui-font:"MPlusRounded1cLocal","KCCHanbit",system-ui,sans-serif}
+html[data-ui-font="dangam"]{--ui-font:"ChangwonDangamRound","MPlusRounded1cLocal",system-ui,sans-serif}
+html[data-ui-font="haeong"]{--ui-font:"HaeongSans","MPlusRounded1cLocal",system-ui,sans-serif}
+html[data-ui-font="dohyeon"]{--ui-font:"DoHyeonLocal","MPlusRounded1cLocal",system-ui,sans-serif}
+html[data-ui-font="corncorn"]{--ui-font:"OwnglyphCorncorn","MPlusRounded1cLocal",system-ui,sans-serif}
+html[data-ui-font="griun"]{--ui-font:"GriunSimsimche","MPlusRounded1cLocal",system-ui,sans-serif}
+html[data-ui-font="aggro"]{--ui-font:"SBAggro","MPlusRounded1cLocal",system-ui,sans-serif}
 html,body,button,input,select,textarea{font-family:var(--ui-font)}

@@ -1,5 +1,16 @@
 # 포함 글꼴 출처와 이용 조건
 
+## M PLUS Rounded 1c
+
+- 제작·배포: M+ FONTS Project / Google Fonts
+- 적용 파일: `fonts/rounded-mplus-1c/RoundedMplus1c-Regular.ttf`, `fonts/rounded-mplus-1c/RoundedMplus1c-Bold.ttf`
+- 용도: 일본어·한자를 포함한 앱 UI의 가독성 좋은 둥근 고딕 선택 글꼴 및 다른 선택 글꼴의 일본어 대체 글꼴
+- 공식 출처: https://github.com/google/fonts/tree/main/ofl/roundedmplus1c
+- 라이선스: SIL Open Font License 1.1
+- 라이선스 전문: `fonts/rounded-mplus-1c/OFL.txt`
+
+공식 배포본을 수정하지 않고 앱에 포함하며, 글꼴 파일 자체를 단독 판매하지 않습니다.
+
 ## 창원단감둥근체
 
 - 제작·저작권: 창원특례시
