@@ -43,6 +43,6 @@ home.lifeSimulation=hydrated.simulation;
 const changed=advanceHomeLifeSimulation(home,["c1"],{c1:{...context.c1,scene:{minute:610,title:"소파를 정리하러 이동 중",room:"living"},sceneKey:"next",animateMovement:true}},now+1_000);
 equal(changed.simulation.agents.c1.phase,"walking","화면을 보는 중 실제 행동이 바뀔 때만 걷는다");
 ok(app.includes('animateMovement=homeLifeObservationKey===observationKey')&&app.includes("homeLifeObservationKey=\"\""),"집을 새로 연 경우와 계속 보고 있는 경우를 구분한다");
-ok(/versionCode\s+(?:19[5-8])/.test(gradle)&&/versionName\s+"1\.0\.18[2-5]"/.test(gradle),"Android 버전은 1.0.182 / 195 이상이다");
+ok(/versionCode\s+(?:19[5-9])/.test(gradle)&&/versionName\s+"1\.0\.18[2-6]"/.test(gradle),"Android 버전은 1.0.182 / 195 이상이다");
 
 console.log(`v1.0.182 / 195 personality, dress code and home hydration checks passed: ${checks}`);

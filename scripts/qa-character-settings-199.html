@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ko" class="native-app">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>v199 character settings QA</title>
+  <link rel="stylesheet" href="../app.css">
+  <link rel="stylesheet" href="../character-book.css">
+  <style>
+    body{margin:0}.qa-spacer{height:24px}.qa-label{margin:16px;font:700 16px sans-serif}.qa-book{position:relative;height:917px}.qa-book:target{position:fixed!important;z-index:999!important;inset:0!important;width:100vw!important;height:100dvh!important;margin:0!important}
+  </style>
+</head>
+<body>
+  <main>
+    <section class="statistics-report" data-character-statistics-page>
+      <button type="button" class="statistics-back-button" aria-label="뒤로가기"></button>
+      <header class="statistics-report-head"><small>DRAWER VILLAGE REPORT</small><h1>통계 보고서</h1><p>마을과 캐릭터의 생활을 한눈에 살펴봐요.</p></header>
+      <nav class="statistics-scope-tabs" aria-label="통계 범위"><button class="on">전체</button><button>서랍마을 <small>12</small></button><button>두번째 마을 <small>4</small></button></nav>
+      <div class="statistics-summary"><article><small>마을 수</small><b>2<em>곳</em></b></article><article><small>건물 수</small><b>14<em>개</em></b></article><article><small>캐릭터 수</small><b>12<em>명</em></b></article></div>
+      <section class="statistics-card"><header><span><small>AGE · GENDER</small><h2>연령대와 성비</h2></span><p>전체 마을</p></header><div style="height:420px"></div></section>
+      <div class="character-stat-actions"><button type="button" class="primary">보고서 다운로드</button></div>
+    </section>
+  </main>
+  <p class="qa-label">7페이지 배치</p>
+  <div id="app" class="qa-book">
+    <section class="character-book-v8 is-open" style="position:absolute!important;height:917px!important">
+      <div class="character-book-v8-canvas" style="--character-accent:#5c4234">
+        <span class="character-book-v8-stage"><img class="character-book-v8-wood" src="../assets/character-ui/character-book-stage-v15.png" alt=""></span>
+        <section class="character-book-v8-page" data-book-page="wardrobe">
+          <section class="character-book-form-page wardrobe-book-page"><div class="book-form-grid">
+            <div class="book-form-stack book-form-combined"><label class="book-form-field"><b>화장 정도</b><select><option>스킨케어만</option></select></label><div class="book-form-field book-form-continuation"><button><span>정하지 않음</span><i>선택</i></button></div></div>
+            <div class="book-form-stack book-form-combined"><label class="book-form-field"><b>성형·외형 의료 시술</b><select><option>설정하지 않음</option></select></label><div class="book-form-field book-form-continuation"><button><span>정하지 않음</span><i>선택</i></button></div></div>
+            <div class="book-form-stack book-form-combined"><label class="book-form-field"><b>패션</b><select><option>스타일링에 능숙함</option></select></label><div class="book-form-field book-form-continuation"><button><span>의상 태그 선택</span><i>선택</i></button></div></div>
+            <label class="book-form-field"><b>평소 외모 관리</b><select><option>기본적으로 단정하게</option></select></label>
+            <label class="book-form-field"><b>액세서리 착용</b><select><option>착용함</option></select></label>
+            <label class="book-form-field"><b>미용실 방문 빈도</b><select><option>자동 · 설정에 맞춤</option></select></label>
+            <label class="book-form-field"><b>옷을 고르는 기준</b><select><option>가격</option></select></label>
+            <label class="book-form-field"><b>옷가게 방문 빈도</b><select><option>자동 · 설정에 맞춤</option></select></label>
+            <label class="book-form-field"><b>유행 민감도</b><select><option>필요한 것만 따름</option></select></label>
+            <label class="book-form-field"><b>신발</b><select><option>구두</option></select></label>
+          </div></section>
+        </section>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

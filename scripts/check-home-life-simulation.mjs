@@ -95,7 +95,7 @@ ok(stateSource.includes("advanceHomeLifeSimulation(homeId"),"상태 저장 계�
 ok(viewsSource.includes("homeLifePersonMarkup")&&viewsSource.includes("has-home-life"),"방 안 좌표에 생활 캐릭터를 렌더링한다");
 ok(appSource.includes("scheduleHomeLifeRefresh")&&appSource.includes('document.visibilityState==="hidden"'),"화면이 보일 때만 저빈도 갱신을 예약한다");
 ok(cssSource.includes("@keyframes home-life-walk")&&cssSource.includes("prefers-reduced-motion"),"걷기와 모션 감소 환경을 모두 지원한다");
-ok(/versionCode\s+(?:186|19[0-8])/.test(gradleSource)&&/versionName\s+"1\.0\.(?:173|17[7-9]|18[0-5])"/.test(gradleSource),"Android 개발 버전이 홈 생활 시뮬레이션 도입 버전 이상이다");
+ok(/versionCode\s+(?:186|19\d)/.test(gradleSource)&&/versionName\s+"1\.0\.(?:173|17[7-9]|18[0-6])"/.test(gradleSource),"Android 개발 버전이 홈 생활 시뮬레이션 도입 버전 이상이다");
 
 const [simulationSource,homeSimulationSource]=await Promise.all([
   readFile(new URL("../simulation.js",import.meta.url),"utf8"),

@@ -56,10 +56,10 @@ assert.ok(css.includes("scale(1.22)")&&css.includes("scale(calc(var(--furniture-
 assert.ok(css.includes(".town-action-idle")&&css.includes("@keyframes town-action-idle")&&css.includes(".town-action-shop")&&css.includes("@keyframes town-action-shop"),"stationary town actions keep a visible idle animation");
 assert.ok(mood.includes("sourceEntry")&&mood.includes("eventReason=kind")&&!mood.includes("'불편하거나 화나는 사건'"),"mood reasons name the actual linked activity instead of a generic upsetting event");
 assert.ok(app.includes("mood-source-log")&&app.includes("연결된 행동 로그"),"mood dialog shows its source activity log");
-assert.ok(views.includes('bookField("액세서리 착용 성향","accessoryPreference"')&&state.includes('accessoryPreference:"상황에 따라"'),"page 7 stores a character-specific accessory preference");
-assert.ok(app.includes("respectAccessoryPreference")&&simulation.includes('c.accessoryPreference!=="착용하지 않음"'),"outfits and life scenes respect characters who do not wear accessories");
-assert.match(gradle,/versionCode\s+198/);
-assert.match(gradle,/versionName\s+"1\.0\.185"/);
-assert.ok(sw.includes("drawer-village-v20260902-life-assets-198"),"service worker cache is separated for build 198");
+assert.ok(views.includes('bookField("액세서리 착용","accessoryUse"')&&state.includes('c.accessoryUse=["착용하지 않음","착용함"]'),"page 7 stores the simple accessory on/off choice");
+assert.ok(app.includes("respectAccessoryUse")&&simulation.includes('c.accessoryUse==="착용함"'),"outfits and life scenes respect the accessory choice");
+assert.match(gradle,/versionCode\s+199/);
+assert.match(gradle,/versionName\s+"1\.0\.186"/);
+assert.ok(sw.includes("drawer-village-v20260902-character-settings-199"),"service worker cache is separated for build 199");
 
-console.log("v1.0.185 / 198 life, mood, bed, and building asset checks passed");
+console.log("v1.0.186 / 199 life, mood, bed, and building asset checks passed");
