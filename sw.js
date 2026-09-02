@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260902-relationship-emotion-202";
+const CACHE_VERSION="drawer-village-v20260902-language-scene-203";
 const CORE=[
   "./",
   "./index.html",

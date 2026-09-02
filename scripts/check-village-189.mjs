@@ -10,7 +10,7 @@ const gradle=read("android/app/build.gradle"),sw=read("sw.js"),moodSource=read("
 
 assert.match(gradle,/versionCode\s+(?:19\d|20[0-2])/);
 assert.match(gradle,/versionName\s+["']1\.0\.(?:17\d|18[0-8])["']/);
-assert.match(sw,/drawer-village-v(?:20260901-(?:mood-189|emotion-190)|20260902-relationship-emotion-202)/);
+assert.match(sw,/drawer-village-v(?:20260901-(?:mood-189|emotion-190)|20260902-(?:relationship-emotion-202|language-scene-203))/);
 assert.match(moodSource,/supportTotal>=5/);
 assert.match(moodSource,/rawVariation=.*%22\)-14/);
 

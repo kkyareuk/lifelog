@@ -141,6 +141,6 @@ const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
 if(!index.includes("20260902relationship202"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
 if(!app.includes("20260902relationship202"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260902-relationship-emotion-202"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260902-language-scene-203"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

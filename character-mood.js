@@ -121,7 +121,17 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   if(/좋|훌륭|친절|사랑받음/.test(place?.reputation||''))support(2,'평판이 좋은 장소라 조금 안심됨','This well-regarded place feels reassuring','評判のよい場所で少し安心する');
   if(/나쁨|불친절|악평|위험/.test(place?.reputation||''))add(-11,'장소의 평판이 신경 쓰임','Uneasy about this place’s reputation','場所の評判が気になる');
   const quiet=/조용|평온|차분|아늑|편안/.test(place?.atmosphere||''),busy=/시끌|소란|붐비|북적|활기/.test(place?.atmosphere||'');
-  if(quiet)(outgoing?add(-7,'너무 잔잔한 공간이 오래 이어져 지루함','The prolonged quiet feels boring','静かすぎる時間が続いて退屈している'):support(3,'조용한 공간이라 긴장이 조금 풀림','The quiet space eases some tension','静かな空間で少し緊張がほどける'));
+  const activityProfile=`${traits} ${(character.hobbies||[]).join(' ')} ${(character.interests||[]).join(' ')} ${character.energyRhythm||''} ${character.socialStyle||''}`;
+  const quietAffinity=/조용|차분|내향|혼자가 편|독서|읽기|글쓰기|연구|공부|집중|식물|원예|명상/.test(activityProfile);
+  const focusedInQuiet=/집중|읽|독서|공부|연구|작업|업무|정리|기록|메모|글을 쓰|필기|그림|관찰|생각|휴식|쉬는|차를 마시|커피를 마시|focus|read|study|research|work|writ|organize|rest|集中|読書|勉強|研究|作業|仕事|整理|記録|休憩/i.test(copy);
+  const idlingWithoutPurpose=/할 일 없이|무료하게|심심해|멍하니 기다|가만히 기다|시간을 때우|nothing to do|killing time|waiting idly|退屈しながら|何もせず|暇を持て余/i.test(copy);
+  const stimulationSeeking=/가만히 못|활동적인 편|무리의 중심|늘 사람을 찾|자극을 찾/.test(activityProfile);
+  const quietBored=quiet&&stimulationSeeking&&idlingWithoutPurpose&&!focusedInQuiet&&!quietAffinity;
+  if(quiet){
+    if(quietBored)add(-6,'할 일 없이 기다리는 동안 필요한 자극이 없어 무료함','Waiting without anything to do feels understimulating','何もすることなく待つ間、刺激が足りず退屈している');
+    else if(focusedInQuiet)support(4,'조용한 환경이 지금 하는 일에 집중하는 데 도움 됨','The quiet setting supports their current focus','静かな環境が今の作業への集中を助けている');
+    else support(3,'조용한 공간이라 긴장이 조금 풀림','The quiet space eases some tension','静かな空間で少し緊張がほどける');
+  }
   if(busy)(outgoing?support(3,'주변 사람들의 활기에서 조금 힘을 얻음','The surrounding bustle gives a little energy','周囲のにぎわいから少し元気をもらう'):add(-8,'소란한 공간에 오래 있어 기가 빨림','The busy space is draining','にぎやかな空間に長くいて疲れる'));
   const home=entry?.home?world.homes?.[entry.visitHomeId||character.homeId]:null;
   if(home){
@@ -242,7 +252,7 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
     else if(/불안|예민/.test(baseline)){label=text(language,'불안함','Anxious','不安');icon='☁';tone='tense'}
     else {label=text(language,'긴장함','Tense','緊張している');icon='☁';tone='tense'}
   }
-  else if(quiet&&outgoing){label=text(language,'지루함','Bored','退屈');icon='…';tone='bored'}
+  else if(quietBored){label=text(language,'무료함','Understimulated','手持ち無沙汰');icon='…';tone='bored'}
   // 낙천성은 같은 사건을 덜 오래 끌게 하는 완충 성향이지, 음수인 최종
   // 점수를 양수 감정으로 뒤집는 표지가 아니다. 표시 점수와 감정 이름은
   // 반드시 같은 최종 score 구간에서 결정한다.
@@ -265,9 +275,12 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
 }
 
 export function environmentConversation(character,entry,world){
-  const {town,place}=moodContext(character,entry,world),language=world.uiLanguage||'ko',traits=traitsOf(character),outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),nature=/자연|식물|산책|조용|내향|혼자가 편/.test(traits);
+  const {town,place}=moodContext(character,entry,world),language=world.uiLanguage||'ko',traits=traitsOf(character),outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),nature=/자연|식물|산책|조용|내향|혼자가 편/.test(traits),copy=`${entry?.title||''} ${entry?.desc||''}`,focused=/집중|읽|독서|공부|연구|작업|업무|정리|기록|메모|글을 쓰|필기|그림|관찰|생각|휴식|쉬는|focus|read|study|research|work|writ|organize|rest|集中|読書|勉強|研究|作業|仕事|整理|記録|休憩/i.test(copy),idle=/할 일 없이|무료하게|심심해|멍하니 기다|가만히 기다|시간을 때우|nothing to do|waiting idly|何もせず|暇を持て余/i.test(copy),stimulationSeeking=/가만히 못|활동적인 편|무리의 중심|늘 사람을 찾|자극을 찾/.test(`${traits} ${character.energyRhythm||''} ${character.socialStyle||''}`);
   if(place?.atmosphere&&!/지정|설정|정하지/.test(place.atmosphere)){
-    if(/조용|차분|아늑/.test(place.atmosphere))return text(language,nature?`${place.name}의 소리가 낮아 생각을 정리하기 좋다고 말했어요.`:`${place.name}은 너무 조용해서 시간이 느리게 가는 것 같다고 말했어요.`,nature?`They said the quiet at ${place.name} made it easy to collect their thoughts.`:`They said ${place.name} felt so quiet that time seemed to slow down.`,nature?`${place.name}は静かで考えを整理しやすいと話しました。`:`${place.name}は静かすぎて時間がゆっくり進むようだと話しました。`);
+    if(/조용|차분|아늑/.test(place.atmosphere)){
+      const bored=stimulationSeeking&&idle&&!focused&&!nature;
+      return text(language,bored?`${place.name}에서 할 일 없이 기다리니 자극이 부족해 무료하다고 말했어요.`:focused?`${place.name}이 조용해서 지금 하던 일에 집중하기 좋다고 말했어요.`:`${place.name}의 낮은 소리 덕분에 생각을 정리하기 좋다고 말했어요.`,bored?`They said waiting at ${place.name} with nothing to do left them understimulated.`:focused?`They said the quiet at ${place.name} helped them focus on what they were doing.`:`They said the low noise at ${place.name} made it easier to collect their thoughts.`,bored?`${place.name}で何もせず待っていると刺激が足りず手持ち無沙汰だと話しました。`:focused?`${place.name}は静かで、今していることに集中しやすいと話しました。`:`${place.name}は音が静かで考えを整理しやすいと話しました。`);
+    }
     if(/활기|북적|시끌/.test(place.atmosphere))return text(language,outgoing?`${place.name}의 북적이는 소리를 들으니 덩달아 신이 난다고 말했어요.`:`${place.name}은 오래 머물면 기가 빨릴 것 같다고 말했어요.`,outgoing?`They said the bustle at ${place.name} lifted their energy.`:`They said staying at busy ${place.name} for long would be draining.`,outgoing?`${place.name}のにぎわいで自分まで楽しくなると話しました。`:`${place.name}に長くいると疲れそうだと話しました。`);
   }
   const reputation=town?.reputation||'';

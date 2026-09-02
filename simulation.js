@@ -2898,7 +2898,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260902-relationship-emotion-202";
+const ENGINE_VERSION="20260902-language-scene-203";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -3177,7 +3177,11 @@ export function timeline(c,date=new Date()){
   }
   return Array.isArray(c.days[key]?.entries)?c.days[key].entries:[];
 }
-export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))}
+export function visibleTimeline(c,date=new Date()){
+  return timeline(c,date)
+    .filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))
+    .map(item=>localizeLifeLog(item,state.uiLanguage,state,c.id));
+}
 
 export function nextSceneRefreshDelay(c,date=new Date()){
   if(!c)return 10*60*1000;
@@ -4412,8 +4416,21 @@ function baseSceneFrom(value){
     title:value.baseTitle||String(value.title||"").split(" · ")[0],
     desc:value.baseDesc||cleanRepeatedSceneText(value.desc),
     groupInteraction:false,
-    withIds:[]
+    withId:undefined,
+    withIds:[],
+    participantOrder:[],
+    interactionId:undefined,
+    forcedCompanionId:undefined,
+    stayTogetherScene:false
   };
+}
+function isProtectedSoloActivity(value){
+  return !value?.groupInteraction&&!value?.dateGroup&&!value?.withId&&/혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業/i.test(`${value?.title||""} ${value?.desc||""}`);
+}
+function soloSceneFrom(value){
+  const base=baseSceneFrom(value)||value;
+  if(!base)return base;
+  return {...base,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined,forcedCompanionId:undefined,stayTogetherScene:false,sharedActionText:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined};
 }
 function sameLiveLocation(first,second){
   if(!first||!second)return false;
@@ -4450,8 +4467,10 @@ function committedSharedSceneFor(c,date,current){
     return participantIds.every(id=>{
       const participant=state.characters[id];
       if(!participant)return false;
+      const routine=activeScheduledRoutine(participant,date);
+      if(routine&&!(routine.withIds||[]).includes(c.id))return false;
       const participantCurrent=companionAlignedBaseEvent(participant,baseEventFor(participant,date),date);
-      return sameLiveLocation(item,participantCurrent);
+      return participantCurrent?.interactionId===item.interactionId&&sameLiveLocation(item,participantCurrent);
     });
   })||null;
 }
@@ -4464,7 +4483,10 @@ function incomingCommittedSharedSceneFor(c,date,current){
     const source=entries.slice().reverse().find(item=>{
       if(!item?.groupInteraction||!item.interactionId||Number(item.minute)>minute||minute-Number(item.minute)>=30||!sameLiveLocation(item,current))return false;
       const ids=[...(item.participantOrder||[]),...(item.withIds||[]),item.withId,ownerId].filter(Boolean);
-      return ids.includes(c.id);
+      if(!ids.includes(c.id)||current?.interactionId!==item.interactionId)return false;
+      const ownerCurrent=baseEventFor(owner,date),ownerRoutine=activeScheduledRoutine(owner,date);
+      if(ownerRoutine&&!(ownerRoutine.withIds||[]).includes(c.id))return false;
+      return ownerCurrent?.interactionId===item.interactionId&&sameLiveLocation(ownerCurrent,current);
     });
     if(source)return {owner,source};
   }
@@ -4482,6 +4504,9 @@ function sharedParticipantOrder(characters,relation){
 }
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
+  // 명시적으로 혼자 집중하고 있는 현재 행동은 같은 장소에 있다는 이유만으로
+  // 다른 캐릭터의 자동 대화에 끌어오지 않는다. 등록된 동행·데이트만 예외다.
+  if(!sharedContext&&isProtectedSoloActivity(current))return current;
   if(!sharedContext&&Number(current?.interactionCooldownUntil)>nowMin(date))return current;
   const committed=committedSharedSceneFor(c,date,current);
   const routineCanInclude=(other,partnerId)=>{
@@ -4593,6 +4618,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       if(!routineCanInclude(other,c.id))return false;
       const otherEvent=baseEventFor(other,date);
       if(otherEvent.transit||sceneIsSleeping(current)!==sceneIsSleeping(otherEvent))return false;
+      if(isProtectedSoloActivity(otherEvent))return false;
       const reservedScene=committedSharedSceneFor(other,date,otherEvent);
       if(reservedScene){
         const reservedIds=[other.id,...(reservedScene.participantOrder||[]),...(reservedScene.withIds||[]),reservedScene.withId].filter(Boolean);
@@ -4707,7 +4733,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   return {...current,baseTitle,baseDesc,title:resolveEntityParticles(title),desc:perspectiveDesc,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose,holdMinutes:dating?current.holdMinutes:(shortConflict?12:25)};
 }
 function companionAlignedBaseEvent(c,current,date){
-  if(!c||activeScheduledRoutine(c,date))return current;
+  if(!c||activeScheduledRoutine(c,date)||isProtectedSoloActivity(current))return current;
   const candidate=relationList().filter(relation=>
     relation?.stayTogether&&relation.temporalStatus!=="past"&&(relation.a===c.id||relation.b===c.id)
   ).map(relation=>({relation,other:state.characters[relation.a===c.id?relation.b:relation.a]}))
@@ -4731,9 +4757,9 @@ export function eventFor(c,date=new Date()){
   if(rawCurrent.giftExchange){
     const other=state.characters[rawCurrent.withId];
     if(other){timeline(other,date);const counterpart=currentGiftFor(other,date);if(counterpart?.interactionId===rawCurrent.interactionId)commitLiveEntry(other,date,counterpart)}
-    return rawCurrent;
+    return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
   }
-  if(rawCurrent.choicePhase==="buy")return rawCurrent;
+  if(rawCurrent.choicePhase==="buy")return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
   const routineCompanionIds=((rawCurrent?.routineId===activeRoutine?.id?rawCurrent.withIds:activeRoutine?.withIds)||[]).filter(id=>id&&id!==c.id&&state.characters[id]);
   const baseCurrent=companionAlignedBaseEvent(c,rawCurrent,date);
   const incomingShared=!activeRoutine?incomingCommittedSharedSceneFor(c,date,baseCurrent):null;
@@ -4771,14 +4797,15 @@ export function eventFor(c,date=new Date()){
   }
   if(current?.groupInteraction&&!current.dateGroup){
     const participants=(current.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
+    const reusingStoredInteraction=Boolean(baseCurrent?.groupInteraction&&baseCurrent.interactionId===current.interactionId);
     const everyoneActuallyHere=participants.length>0&&participants.every(other=>{
       const live=companionAlignedBaseEvent(other,baseEventFor(other,date),date);
-      return !activeScheduledRoutine(other,date)&&sameLiveLocation(current,live);
+      return !activeScheduledRoutine(other,date)&&sameLiveLocation(current,live)&&(!reusingStoredInteraction||live?.interactionId===current.interactionId);
     });
     // 일반 공동 행동은 양쪽 캐릭터의 실제 집·방·건물이 모두 일치할 때만
     // 확정한다. 상대를 강제로 첫 캐릭터의 방으로 복사해 한쪽 화면에만
     // 만남이 생기던 오류를 이 경계에서 차단한다.
-    if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,baseEventFor(c,date));
+    if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,soloSceneFrom(baseEventFor(c,date)));
   }
   if(current?.groupInteraction){
     // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한
@@ -4831,7 +4858,7 @@ export function eventFor(c,date=new Date()){
       commitLiveEntry(other,date,synchronizedCounterpart);
     });
   }
-  return {...current,coLocatedIds:coLocatedCharacterIds(c,current,date)};
+  return localizeLifeLog({...current,coLocatedIds:coLocatedCharacterIds(c,current,date)},state.uiLanguage,state,c.id);
 }
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(Boolean).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(!c)return;(c.residences||[]).forEach(item=>{if(state.homes[item.homeId])(out[item.homeId]??=[]).push(c)})});return out}
