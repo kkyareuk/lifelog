@@ -1,20 +1,20 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902assets197";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260902assets197";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260902assets197";
-import {characterMood} from "./character-mood.js?v=20260902assets197";
-import {createContactMailbox} from "./notification-mail.js?v=20260902assets197";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260902assets197";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260902assets197";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902assets197";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902assets197";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260902assets197";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260902assets197";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260902assets197";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902assets197";
-import {achievementRows} from "./achievements.js?v=20260902assets197";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902life198";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260902life198";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260902life198";
+import {characterMood} from "./character-mood.js?v=20260902life198";
+import {createContactMailbox} from "./notification-mail.js?v=20260902life198";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260902life198";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260902life198";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902life198";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902life198";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260902life198";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260902life198";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260902life198";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260902life198";
+import {achievementRows} from "./achievements.js?v=20260902life198";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -77,6 +77,9 @@ Object.assign(I18N.ja,{"페이지 이동":"ページ移動","옷장":"衣装","�
 Object.assign(I18N.en,{"기분과 정서 성향":"Mood & emotional disposition","현재 기분을 고정하는 설정이 아니라, 같은 일을 겪어도 이 캐릭터답게 받아들이고 회복하도록 만드는 기준이에요.":"These settings do not lock the current mood. They shape how this character interprets and recovers from the same experience.","기분 계산에 함께 쓰여요":"Used in mood calculation","행동·장소·관계·피로·옷차림의 영향은 그대로 받고, 여기서는 반응의 방향과 세기만 조절합니다.":"Actions, places, relationships, fatigue, and clothing still matter. These choices tune the direction and strength of the response.","평소 정서의 방향":"Usual emotional outlook","기분 변화 폭":"Mood variability","감정이 남는 시간":"How long feelings linger","좋은 일이 있을 때":"Response to good events","힘들 때 보이는 반응":"Response under stress","기분을 회복하는 방식":"Recovery style","낙천적인 편":"Optimistic","대체로 밝은 편":"Generally upbeat","현실적인 편":"Realistic","무덤덤한 편":"Reserved","걱정이 많은 편":"Prone to worry","비관적인 편":"Pessimistic","거의 흔들리지 않음":"Hardly changes","안정적인 편":"Generally steady","상황에 따라 달라짐":"Depends on the situation","변화가 잦은 편":"Changes often","변화 폭이 큼":"Changes strongly","금방 지나감":"Passes quickly","짧게 남음":"Lingers briefly","오래 남음":"Lingers a long time","매우 오래 남음":"Lingers very long","조용히 만족함":"Quietly satisfied","미소와 말로 표현함":"Shows it with smiles and words","주변과 기쁨을 나눔":"Shares joy with others","기쁨이 크게 드러남":"Shows joy openly","좋은 일도 먼저 의심함":"Questions good news first","잠시 거리를 둠":"Takes some distance","말수가 줄어듦":"Becomes quiet","걱정이 많아짐":"Worries more","예민해짐":"Becomes sensitive","화부터 남":"Gets angry first","도움을 요청함":"Asks for help","아무렇지 않은 척함":"Pretends to be fine","혼자 정리하며 회복":"Recovers by processing alone","가까운 사람과 이야기하며 회복":"Recovers by talking to someone close","쉬거나 자면서 회복":"Recovers through rest or sleep","취미에 몰두하며 회복":"Recovers through a hobby","문제를 해결해야 회복":"Recovers after solving the problem","시간이 지나야 회복":"Needs time to recover"});
 Object.assign(I18N.ja,{"기분과 정서 성향":"気分・感情傾向","현재 기분을 고정하는 설정이 아니라, 같은 일을 겪어도 이 캐릭터답게 받아들이고 회복하도록 만드는 기준이에요.":"現在の気分を固定する設定ではなく、同じ出来事でもその人物らしく受け止め、回復するための基準です。","기분 계산에 함께 쓰여요":"気分の計算に使われます","행동·장소·관계·피로·옷차림의 영향은 그대로 받고, 여기서는 반응의 방향과 세기만 조절합니다.":"行動・場所・関係・疲労・服装の影響はそのまま受け、ここでは反応の方向と強さだけを調整します。","평소 정서의 방향":"普段の感情傾向","기분 변화 폭":"気分の変化幅","감정이 남는 시간":"感情が残る時間","좋은 일이 있을 때":"良いことへの反応","힘들 때 보이는 반응":"つらい時の反応","기분을 회복하는 방식":"気分の回復方法","낙천적인 편":"楽観的","대체로 밝은 편":"おおむね明るい","현실적인 편":"現実的","무덤덤한 편":"淡々としている","걱정이 많은 편":"心配性","비관적인 편":"悲観的","거의 흔들리지 않음":"ほとんど揺れない","안정적인 편":"安定している","상황에 따라 달라짐":"状況による","변화가 잦은 편":"変化が多い","변화 폭이 큼":"変化幅が大きい","금방 지나감":"すぐに過ぎる","짧게 남음":"少し残る","오래 남음":"長く残る","매우 오래 남음":"とても長く残る","조용히 만족함":"静かに満足する","미소와 말로 표현함":"笑顔と言葉で表す","주변과 기쁨을 나눔":"周りと喜びを分かち合う","기쁨이 크게 드러남":"喜びが大きく表れる","좋은 일도 먼저 의심함":"良いこともまず疑う","잠시 거리를 둠":"少し距離を置く","말수가 줄어듦":"口数が減る","걱정이 많아짐":"心配が増える","예민해짐":"敏感になる","화부터 남":"先に怒る","도움을 요청함":"助けを求める","아무렇지 않은 척함":"平気なふりをする","혼자 정리하며 회복":"一人で整理して回復","가까운 사람과 이야기하며 회복":"親しい人と話して回復","쉬거나 자면서 회복":"休息や睡眠で回復","취미에 몰두하며 회복":"趣味に没頭して回復","문제를 해결해야 회복":"問題を解決して回復","시간이 지나야 회복":"時間をかけて回復"});
 Object.assign(I18N.en,{"개 선택":" selected"});Object.assign(I18N.ja,{"개 선택":"個選択"});
+Object.assign(I18N.en,{"액세서리 착용 성향":"Accessory preference","착용하지 않음":"Never wears accessories","하나만 착용":"One accessory only","여러 개 즐겨 착용":"Enjoys several accessories"});
+Object.assign(I18N.ja,{"액세서리 착용 성향":"アクセサリーの着用傾向","착용하지 않음":"着用しない","하나만 착용":"一つだけ着用","여러 개 즐겨 착용":"複数を楽しんで着用"});
+Object.assign(I18N.en,{"연결된 행동 로그":"Linked activity log"});Object.assign(I18N.ja,{"연결된 행동 로그":"関連する行動ログ"});
 const t=(key,fallback)=>I18N[state.uiLanguage]?.[key]||fallback;
 export const translateText=key=>t(key,key);
 Object.assign(I18N.en,{"현재 계정의 기기 저장 데이터를 초기화할까요? 다른 계정의 데이터는 유지됩니다.":"Reset this account's data on this device? Other accounts will be kept."});
@@ -2025,7 +2028,7 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   const duration=Math.max(1,Number(agent?.endsAt||0)-Number(agent?.startedAt||0)),elapsed=Math.max(0,Math.min(duration,now-Number(agent?.startedAt||0)));
   const walkStyleClass=walkStyleClassFor(character);
   const visualPhase=scheduledWalk&&!walking?"waiting-to-walk":agent?.phase,bedUsing=bedSlot>=0&&agent?.phase==="using",coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}${bedUsing?" is-using-couple-bed":""}${options.bedState==="under-cover"?" is-under-cover":""}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}${agent?.approachingInteraction?" is-approaching-conversation":""}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${visualPhase} ${walkStyleClass}${coupleBedClass}${conversationClass}${canvasClass}`:"";
-  const bedRotation=Number(options.bedPlacement?.rotation)||0,bedRadians=bedRotation*Math.PI/180,localBedX=bedSlot===0?-7:bedSlot===1?7:0,localBedY=bedSlot>=0?-7:0,bedOffsetX=localBedX*Math.cos(bedRadians)-localBedY*Math.sin(bedRadians),bedOffsetY=localBedX*Math.sin(bedRadians)+localBedY*Math.cos(bedRadians);
+  const bedRotation=Number(options.bedPlacement?.rotation)||0,bedRadians=bedRotation*Math.PI/180,localBedX=bedSlot===0?-8.5:bedSlot===1?8.5:0,localBedY=bedSlot>=0?-8.5:0,bedOffsetX=localBedX*Math.cos(bedRadians)-localBedY*Math.sin(bedRadians),bedOffsetY=localBedX*Math.sin(bedRadians)+localBedY*Math.cos(bedRadians);
   const x=agent?Math.max(5,Math.min(95,Number(agent.x)+bedOffsetX)):50;
   const y=agent?Math.max(5,Math.min(95,Number(agent.y)+bedOffsetY)):50;
   const fromX=agent?Math.max(5,Math.min(95,Number(agent.fromX)||x)):x,fromY=agent?Math.max(5,Math.min(95,Number(agent.fromY)||y)):y;
@@ -2891,6 +2894,7 @@ function character(){
       <div class="book-form-stack book-form-combined"><label class="book-form-field"><b>${t("화장 정도","화장 정도")}</b>${bodySelect("appearance.makeupLevel",MAKEUP_LEVELS,bodyAppearance.makeupLevel||"하지 않음")}</label>${bookListContinuation("화장 스타일","makeupStyles",bodyAppearance.makeupStyles||[],"bodyProfile.appearance.makeupStyles")}</div>
       <div class="book-form-stack book-form-combined">${bookField("성형·외형 의료 시술","cosmeticSurgery",["설정하지 않음","하지 않음","상담만 받음","비수술 시술","수술 경험 있음"],c.cosmeticSurgery||bodyAppearance.cosmeticSurgery||"설정하지 않음")}${bookListContinuation("시술 부위","cosmeticSurgeryAreas",bodyAppearance.cosmeticSurgeryAreas||[],"bodyProfile.appearance.cosmeticSurgeryAreas")}</div>
       <div class="book-form-stack book-form-combined">${bookField("패션","fashionSense",["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"],c.fashionSense||"무난하게 입음")}${bookListContinuation("의상 태그","favoriteFashionStyles",c.favoriteFashionStyles||[])}</div>
+      ${bookField("액세서리 착용 성향","accessoryPreference",["착용하지 않음","필요할 때만","하나만 착용","상황에 따라","여러 개 즐겨 착용"],c.accessoryPreference||"상황에 따라")}
       <div class="book-form-stack book-form-combined"><label class="book-form-field"><b>${t("미용실 방문 빈도","미용실 방문 빈도")}</b>${bodySelect("appearance.salonFrequency",SALON_FREQUENCIES,bodyAppearance.salonFrequency||"자동 · 설정에 맞춤")}</label>${bookFieldContinuation("미용실에서 하는 일","salonPurpose",["설정하지 않음","커트","커트·염색","커트·염색·펌","두피·모발 관리까지"],c.salonPurpose||"설정하지 않음")}</div>
       ${bookField("옷을 고르는 기준","clothingPriority",["가격","편안함","실용성","상황에 맞춤","디자인","브랜드","유행"],c.clothingPriority||"가격")}
       <div class="book-form-stack">${bookField("옷가게 방문 빈도","clothingShopFrequency",["자동 · 설정에 맞춤","거의 가지 않음","계절마다","매달","월 2회 이상"],c.clothingShopFrequency||"자동 · 설정에 맞춤")}<label class="book-check-field"><span>${t("구매한 옷을 실제로 입고 다님","구매한 옷을 실제로 입고 다님")}</span><input type="checkbox" data-field="wearsPurchasedClothes" ${c.wearsPurchasedClothes!==false?"checked":""}></label></div>

@@ -93,10 +93,15 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   // stack into automatic happiness: keep only the strongest supports, capped at +5.
   supports.sort((a,b)=>b.value-a.value);let supportTotal=0;
   for(const item of supports){const value=Math.min(item.value,5-supportTotal);if(value>0){reasons.push({...item,value});supportTotal+=value}if(supportTotal>=5)break}
+  const sourceTitle=String(entry?.baseTitle||entry?.title||'').trim(),sourceDesc=String(entry?.desc||'').trim(),eventDetail=[sourceTitle,sourceDesc].filter(Boolean).join(' — ').slice(0,220),eventReason=kind=>({
+    positive:[`“${eventDetail}”에서 기쁨을 느낌`,`“${eventDetail}” lifted their mood`,`「${eventDetail}」で気持ちが明るくなった`],
+    angry:[`“${eventDetail}” 때문에 불편하거나 화가 남`,`“${eventDetail}” made them upset or angry`,`「${eventDetail}」が原因で不快または腹立たしく感じた`],
+    sad:[`“${eventDetail}” 때문에 마음이 가라앉음`,`“${eventDetail}” brought their mood down`,`「${eventDetail}」で気持ちが沈んだ`]
+  }[kind]);
   const angerNegated=/불편.{0,12}(없|않)|문제.{0,12}(없|않)|갈등.{0,12}(없|않)|다투지|싸우지|no (discomfort|problem|conflict)|without (arguing|conflict)|問題.{0,10}(ない|なく)|不快.{0,10}(ない|なく)|争わず|喧嘩せず/i.test(copy),hasPositiveEvent=positiveEvent.test(copy),hasAngryEvent=angryEvent.test(copy)&&!angerNegated,hasSadEvent=sadEvent.test(copy),hasTiredEvent=tiredEvent.test(copy);
-  if(hasPositiveEvent)add(eventValue(22),'기쁜 사건이 있었음','Something uplifting happened','うれしい出来事があった');
-  if(hasAngryEvent)add(eventValue(-28),'불편하거나 화나는 사건','An upsetting event','不快な出来事');
-  if(hasSadEvent)add(eventValue(-24),'마음이 가라앉는 사건','A saddening event','悲しい出来事');
+  if(hasPositiveEvent){const reason=eventReason('positive');add(eventValue(22),...reason)}
+  if(hasAngryEvent){const reason=eventReason('angry');add(eventValue(-28),...reason)}
+  if(hasSadEvent){const reason=eventReason('sad');add(eventValue(-24),...reason)}
   if(hasTiredEvent)add(eventValue(-16),'피로가 쌓임','Fatigue has built up','疲れがたまっている');
   if(flirtEvent.test(copy)){
     if(/당황|거리|경계/.test(flirtResponse))add(eventValue(-8),'호감 신호를 받아 경계하거나 당황함','A flirtatious signal made them wary or flustered','好意のサインを受けて警戒したり戸惑ったりしている');
@@ -166,7 +171,8 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   else if(baseline==='무덤덤한 편'){label=text(language,'무덤덤함','Unruffled','淡々としている');icon='—';tone='calm'}
   else if((hash(`${character.id}:${day}:neutral`)%2)===0){label=text(language,'차분함','Composed','落ち着いている');icon='◇';tone='calm'}
   else {label=text(language,'평온함','Feeling calm','穏やか');icon='◌';tone='calm'}
-  return {score,label,icon,reasons,placeName:place?.name||town?.name||'',tone};
+  const minute=Number(entry?.minute),sourceTime=String(entry?.time||'').trim()||(Number.isFinite(minute)?`${String(Math.floor(minute/60)%24).padStart(2,'0')}:${String(minute%60).padStart(2,'0')}`:'');
+  return {score,label,icon,reasons,placeName:place?.name||town?.name||'',tone,sourceEntry:sourceTitle?{time:sourceTime,title:sourceTitle,desc:sourceDesc}:null};
 }
 
 export function environmentConversation(character,entry,world){

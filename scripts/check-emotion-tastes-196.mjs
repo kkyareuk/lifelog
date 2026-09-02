@@ -40,7 +40,7 @@ for(const tone of ["furious","irritated","disgusted","flirty","curious","excited
   ok(simulation.includes(`${tone}:{`),`${tone} 감정은 배지만 바뀌지 않고 다음 행동을 실제로 바꾼다`);
 }
 ok(simulation.includes('"preference-liked"')&&simulation.includes('"preference-disliked"'),"좋아함·싫어함에 맞춘 생활 행동과 로그를 생성한다");
-ok(/versionCode\s+196/.test(gradle)&&/versionName\s+"1\.0\.183"/.test(gradle),"Android 버전은 1.0.183 / 196이다");
-ok(sw.includes("drawer-village-v20260902-emotion-tastes-196"),"서비스워커 캐시가 새 빌드로 분리된다");
+ok(/versionCode\s+(?:19[6-8])/.test(gradle)&&/versionName\s+"1\.0\.18[3-5]"/.test(gradle),"Android 버전은 1.0.183 / 196 이상이다");
+ok(/drawer-village-v20260902-(?:emotion-tastes-196|bed-buildings-197|life-assets-198)/.test(sw),"서비스워커 캐시가 새 빌드로 분리된다");
 
 console.log(`v1.0.183 / 196 emotion and taste checks passed: ${checks}`);

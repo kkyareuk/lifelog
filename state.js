@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902assets197";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260902assets197";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902assets197";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260902assets197";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902assets197";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260902assets197";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260902assets197";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260902assets197";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260902assets197";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260902life198";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260902life198";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902life198";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260902life198";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902life198";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260902life198";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260902life198";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260902life198";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260902life198";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260902assets197";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260902assets197";
+import {missingBuildings} from "./building-recovery.js?v=20260902life198";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260902life198";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -739,7 +739,8 @@ function normalizeHomes(x){
     c.affectionStyle=c.affectionStyle||"행동으로 표현";
     c.energyRhythm=c.energyRhythm||"상황에 따라";
     c.activityTempo=c.activityTempo||"상황에 따라";
-    c.fashionSense=c.fashionSense||"보통";
+    c.fashionSense=["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"].includes(c.fashionSense)?c.fashionSense:"무난하게 입음";
+    c.accessoryPreference=["착용하지 않음","필요할 때만","하나만 착용","상황에 따라","여러 개 즐겨 착용"].includes(c.accessoryPreference)?c.accessoryPreference:(/전혀 관심 없음|조합을 자주 틀림/.test(c.fashionSense)?"착용하지 않음":"상황에 따라");
     c.savedOutfits=Array.isArray(c.savedOutfits)?c.savedOutfits.filter(outfit=>outfit&&typeof outfit==="object"&&!Array.isArray(outfit)).map(outfit=>({
       id:outfit.id||uid(),name:outfit.name||"저장 코디",layout:outfit.layout||"cluster-1",
       itemIds:Array.isArray(outfit.itemIds)?outfit.itemIds:[],
@@ -1013,7 +1014,7 @@ export function createCharacter(limit=5){
   if(state.order.length>=Math.max(1,Number(limit)||5))return null;
   const id=uid();
   state.deletedCharacterIds=(state.deletedCharacterIds||[]).filter(value=>value!==id);
-  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",educationLevel:"설정하지 않음",lifeAdaptation:"설정하지 않음",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",sceneImageVariants:normalizeSceneImageVariants(),characterMenuTheme:"drawer-default",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"보통",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",emotionalBaseline:"현실적인 편",moodVolatility:"상황에 따라 달라짐",moodPersistence:"보통",positiveMoodResponse:"미소와 말로 표현함",stressMoodResponse:"잠시 거리를 둠",moodRecoveryStyle:"혼자 정리하며 회복",angerResponse:"차분히 이유를 확인함",flirtResponse:"알아도 모른 척함",emotionalSensitivity:"보통",emotionalContagion:"상황에 따라 물듦",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favoriteAnimals:[],favoriteElectronics:[],favoriteWeapons:[],favoriteBooks:[],dislikedStoryGenres:[],dislikedFoodPreferences:[],dislikedDrinks:[],dislikedMusicGenres:[],dislikedVideoGenres:[],dislikedGameGenres:[],dislikedScentNotes:[],dislikedAnimals:[],dislikedElectronics:[],dislikedWeapons:[],dislikedBooks:[],favorites:{},dislikes:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
+  state.characters[id]={id,name:"새 캐릭터",createdAt:Date.now(),ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",attractedGenders:[],touchReaction:"상황에 따라 자연스럽게 받아들임",appearanceLevel:"보통",appearanceInterest:"보통",appearanceTags:[],attractionTraits:[],dislikedAttractionTraits:[],personalityTypes:[],characterTraits:[],traitExpressions:[],traitNotes:"",traitNotesInScripts:false,bodyProfile:defaultBodyProfile(),timelineResetAt:0,job:"무직",jobTitle:"",workplaceId:"",educationLevel:"설정하지 않음",lifeAdaptation:"설정하지 않음",birthday:"",driverLicense:"면허 없음",smokingStatus:"설정하지 않음",alcoholTolerance:"설정하지 않음",photo:"",icon:"",ldImage:"",sceneImageVariants:normalizeSceneImageVariants(),characterMenuTheme:"drawer-default",homeUiTheme:state.homeUiTheme||"drawer-classic",homeVisualMode:"sd",homeVisualScale:100,homeSdScale:100,homeLdScale:100,homeSceneLayout:defaultHomeSceneLayout(),wake:"07:30",wakeHabit:"알람을 듣고 천천히 일어남",sleep:"00:30",sleepHabit:"이불을 단정히 덮고 잠",foodHabit:"규칙적으로 식사함",walkingStyle:"보통 속도로 자연스럽게",income:"필요한 만큼 소비",wealth:"평범한 형편",spiceTolerance:2,sweetPreference:2,socialEnergy:3,sensingIntuition:3,thinkingFeeling:3,perceivingJudging:3,fashionSense:"무난하게 입음",accessoryPreference:"상황에 따라",humorStyle:"건조한 농담만 함",emotionalExpression:"상황에 따라 표현함",impulseControl:"가끔 욱하지만 멈춤",emotionalBaseline:"현실적인 편",moodVolatility:"상황에 따라 달라짐",moodPersistence:"보통",positiveMoodResponse:"미소와 말로 표현함",stressMoodResponse:"잠시 거리를 둠",moodRecoveryStyle:"혼자 정리하며 회복",angerResponse:"차분히 이유를 확인함",flirtResponse:"알아도 모른 척함",emotionalSensitivity:"보통",emotionalContagion:"상황에 따라 물듦",savedOutfits:[],theme:{primary:"#176b60",secondary:"#6fd0ae",gradient:true},tastes:[],interests:[],hobbies:[],musicGenres:[],foodTypes:[],foodPreferences:[],drinks:[],favoriteAnimals:[],favoriteElectronics:[],favoriteWeapons:[],favoriteBooks:[],dislikedStoryGenres:[],dislikedFoodPreferences:[],dislikedDrinks:[],dislikedMusicGenres:[],dislikedVideoGenres:[],dislikedGameGenres:[],dislikedScentNotes:[],dislikedAnimals:[],dislikedElectronics:[],dislikedWeapons:[],dislikedBooks:[],favorites:{},dislikes:{},inventory:{},homeId:id,sleepRoomId:"bedroom",residences:[{homeId:id,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:"bedroom"}]};
   state.characters[id].commuteModes=[];
   state.characters[id].dailyHabits=[];
   state.characters[id].behaviorHabits=[];
@@ -1057,7 +1058,7 @@ export function deleteCharacter(id){
   state.activeId=state.order[0]||null;
   save(true);
 }
-const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
+const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","accessoryPreference","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
 SIMULATION_FIELDS.add("diligence");
 const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
