@@ -3,7 +3,7 @@ import {readFile} from "node:fs/promises";
 import {characterMood} from "../character-mood.js";
 
 const root=new URL("../",import.meta.url);
-const marker="20260902hotfix201";
+const marker="20260902relationship202";
 const imports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
@@ -61,9 +61,9 @@ for(const language of ["en","ja"]){
 const [gradle,serviceWorker,index]=await Promise.all([
   readFile(new URL("android/app/build.gradle",root),"utf8"),readFile(new URL("sw.js",root),"utf8"),readFile(new URL("index.html",root),"utf8")
 ]);
-assert.match(gradle,/versionCode\s+201/);
-assert.match(gradle,/versionName\s+"1\.0\.187\.1"/);
-assert.ok(serviceWorker.includes("drawer-village-v20260902-buttons-love-hotfix-201"));
+assert.match(gradle,/versionCode\s+202/);
+assert.match(gradle,/versionName\s+"1\.0\.188"/);
+assert.ok(serviceWorker.includes("drawer-village-v20260902-relationship-emotion-202"));
 assert.ok(index.includes(marker));
 
-console.log(`v1.0.187.1 / 201 버튼 상태·애정 관계 감정 핫픽스 검증 완료 (${visited.size} modules)`);
+console.log(`v1.0.188 / 202 버튼 상태·애정 관계 감정 회귀 검증 완료 (${visited.size} modules)`);

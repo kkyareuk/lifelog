@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>관계 감정 202 화면 검수</title>
+<style>
+  *{box-sizing:border-box}body{margin:0;background:#493327;color:#33261f;font-family:system-ui,sans-serif}.sheet{width:min(720px,calc(100% - 28px));margin:28px auto;padding:24px;background:#fff8eb;border:5px solid #6b4937;border-radius:26px}.scene{padding:18px;background:#f2e4cd;border-radius:18px}.scene h1{margin:0 0 8px;font-size:24px}.scene p{margin:0;line-height:1.65}.people{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}.card{min-width:0;padding:18px;background:white;border:2px solid #c7ab83;border-radius:18px}.card h2{margin:0 0 10px;font-size:19px}.mood{display:inline-block;padding:7px 12px;background:#6b4937;color:white;border-radius:999px;font-weight:800}.reason{margin:12px 0 0;line-height:1.55;font-size:14px}.same{grid-column:1/-1;padding:14px;border-radius:14px;background:#e8d5b5;font-weight:700}@media(max-width:540px){.people{grid-template-columns:1fr}.same{grid-column:auto}}
+</style>
+<main class="sheet">
+  <section class="scene"><h1>젠할린과 집소필라가 대화를 이어 가는 중</h1><p>젠할린은 퉁명스러운 말을 삼키고 자리를 피하지 않았어요. 집소필라도 다른 일을 시작하지 않고 같은 주제의 대답을 기다렸어요.</p></section>
+  <section class="people">
+    <article class="card"><h2>젠할린</h2><strong class="mood" id="jen-mood"></strong><p class="reason" id="jen-reason"></p></article>
+    <article class="card"><h2>집소필라</h2><strong class="mood" id="gyp-mood"></strong><p class="reason" id="gyp-reason"></p></article>
+    <div class="same" id="sync"></div>
+  </section>
+</main>
+<script type="module">
+  import {characterMood} from "../character-mood.js?v=20260902relationship202";
+  const characters={jen:{id:"jen",name:"젠할린",emotionalBaseline:"까칠한 편",personalityTypes:[],characterTraits:[],interests:[],hobbies:[],favorites:{},dislikes:{}},gyp:{id:"gyp",name:"집소필라",emotionalBaseline:"차분한 편",personalityTypes:[],characterTraits:[],interests:[],hobbies:[],favorites:{},dislikes:{}}};
+  const world={uiLanguage:"ko",world:{id:"town",places:[]},characters,homes:{},towns:[],catalog:{},relationships:{bond:{a:"jen",b:"gyp",type:"동거인"}},characterViews:{jen:{gyp:{overall:"연애 감정으로 좋아함",awareness:"감정을 불편함으로 착각함",closeness:"가장 가까운 사람",annoyance:"많이 귀찮아함",aggression:"거친 말을 하고 싶은 충동"}},gyp:{jen:{overall:"친구로 좋아함",closeness:"편한 사이",comfort:"말없이 함께 있어도 편안함"}}}};
+  const id="shared:qa:jen~gyp",scene={date:"2026-09-02",minute:900,title:"같은 대화를 이어 가는 중",desc:"두 사람 모두 같은 주제의 대화를 계속하고 있어요.",interactionId:id,withIds:["gyp"],participantOrder:["jen","gyp"]};
+  const jen=characterMood(characters.jen,{...scene,withId:"gyp"},world),gyp=characterMood(characters.gyp,{...scene,withId:"jen",withIds:["jen"]},world);
+  document.querySelector("#jen-mood").textContent=`${jen.icon} ${jen.label}`;document.querySelector("#jen-reason").textContent=jen.reasons.find(reason=>reason.text.includes("집소필라"))?.text||jen.reasons[0]?.text||"";
+  document.querySelector("#gyp-mood").textContent=`${gyp.icon} ${gyp.label}`;document.querySelector("#gyp-reason").textContent=gyp.reasons.find(reason=>reason.text.includes("젠할린"))?.text||gyp.reasons[0]?.text||"";
+  document.querySelector("#sync").textContent=`같은 사건 ID · ${id}`;
+</script>
+</html>

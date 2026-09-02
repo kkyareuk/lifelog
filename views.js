@@ -1,20 +1,20 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902hotfix201";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260902hotfix201";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260902hotfix201";
-import {characterMood} from "./character-mood.js?v=20260902hotfix201";
-import {createContactMailbox} from "./notification-mail.js?v=20260902hotfix201";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260902hotfix201";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260902hotfix201";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902hotfix201";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902hotfix201";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260902hotfix201";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260902hotfix201";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260902hotfix201";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902hotfix201";
-import {achievementRows} from "./achievements.js?v=20260902hotfix201";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902relationship202";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260902relationship202";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260902relationship202";
+import {characterMood} from "./character-mood.js?v=20260902relationship202";
+import {createContactMailbox} from "./notification-mail.js?v=20260902relationship202";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260902relationship202";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260902relationship202";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260902relationship202";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260902relationship202";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260902relationship202";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260902relationship202";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260902relationship202";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260902relationship202";
+import {achievementRows} from "./achievements.js?v=20260902relationship202";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={

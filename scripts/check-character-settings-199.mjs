@@ -35,6 +35,6 @@ assert.ok(appCss.includes(".statistics-report>.character-stat-actions{position:r
 assert.match(gradle,/versionCode\s+(?:199|200|201)/);
 assert.match(gradle,/versionName\s+"1\.0\.(?:186|187(?:\.1)?)"/);
 assert.ok(/drawer-village-v20260902-(?:character-settings-199|bed-buildings-statistics-200|buttons-love-hotfix-201)/.test(sw),"service worker cache is unique to build 199+");
-assert.ok(index.includes("20260902hotfix201"),"browser cache marker is updated");
+assert.ok(index.includes("20260902relationship202"),"browser cache marker is updated");
 
 console.log("v1.0.186 / 199 character settings and statistics checks passed");

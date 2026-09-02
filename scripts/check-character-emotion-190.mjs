@@ -15,8 +15,8 @@ const checks=[
   [css.includes("personality-emotion-grid")&&css.includes("tactile raised control language"),"정서 페이지 및 입체형 버튼"],
   [views.includes("building-dress-code-dialog")&&views.includes("data-open-place-dress"),"건물 드레스코드 전용 팝업"],
   [townCss.includes("grid-template-columns:repeat(3,minmax(0,1fr))")&&townCss.includes("building-dress-code-dialog"),"드레스코드 3열 선택"],
-  [/versionCode\s+(?:19\d|20[01])/.test(gradle)&&/versionName\s+"1\.0\.1[78]\d(?:\.\d+)?"/.test(gradle),"개발 빌드 190 이상 / 1.0.17x~1.0.18x"],
-  [/drawer-village-v2026090[12]-(?:emotion-190|statistics-191|taste-scroll-194|personality-home-195|emotion-tastes-196|bed-buildings-197|life-assets-198|character-settings-199|bed-buildings-statistics-200|buttons-love-hotfix-201)/.test(sw)&&sw.includes("life-log-localization.js"),"새 캐시 및 생활 로그 번역 모듈"]
+  [/versionCode\s+(?:19\d|20[0-2])/.test(gradle)&&/versionName\s+"1\.0\.1[78]\d(?:\.\d+)?"/.test(gradle),"개발 빌드 190 이상 / 1.0.17x~1.0.18x"],
+  [/drawer-village-v2026090[12]-(?:emotion-190|statistics-191|taste-scroll-194|personality-home-195|emotion-tastes-196|bed-buildings-197|life-assets-198|character-settings-199|bed-buildings-statistics-200|buttons-love-hotfix-201|relationship-emotion-202)/.test(sw)&&sw.includes("life-log-localization.js"),"새 캐시 및 생활 로그 번역 모듈"]
 ];
 checks.forEach(([ok,label])=>assert.ok(ok,label));
 
