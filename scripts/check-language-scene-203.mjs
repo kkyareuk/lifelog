@@ -73,8 +73,8 @@ const [gradle,worker,simulation,townCss,views,app,appCss,bookCss,fontCss,stateSo
   stat(new URL("../fonts/rounded-mplus-1c/RoundedMplus1c-Regular.ttf",import.meta.url)),
   stat(new URL("../fonts/rounded-mplus-1c/RoundedMplus1c-Bold.ttf",import.meta.url))
 ]);
-assert.match(gradle,/versionCode\s+(?:203|204)/);assert.match(gradle,/versionName\s+"1\.0\.(?:189|190)"/);
-assert.ok(/drawer-village-v20260902-(?:language-scene-203|font-204)/.test(worker));
+assert.match(gradle,/versionCode\s+(?:203|204|205)/);assert.match(gradle,/versionName\s+"1\.0\.(?:189|190|191)"/);
+assert.ok(/drawer-village-v20260902-(?:language-scene-203|font-204|cognitive-205)/.test(worker));
 assert.ok(simulation.includes('ENGINE_VERSION="20260902-language-scene-203"'));
 assert.ok(!townCss.includes("mix-blend-mode:plus-lighter")&&townCss.includes(".building-light-core{filter:brightness(1.3)"),"과한 발광 닷지를 제거하고 기존의 은은한 건물 조명을 복원한다");
 assert.ok(views.includes("const heroLeft=source,heroRight=target;"),"관계 화면은 선택 순서 그대로 왼쪽·오른쪽 인물을 고정한다");

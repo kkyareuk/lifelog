@@ -142,6 +142,7 @@ const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
 if(!index.includes("20260902relationship202"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
 if(!app.includes("20260902relationship202"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
 if(!index.includes("20260902font204"))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260902-font-204"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!index.includes("20260902cognitive205")||!app.includes("20260902cognitive205"))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260902-cognitive-205"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

@@ -526,9 +526,10 @@ function profileExportLines(character){
   const eyeColor=leftEye&&rightEye&&leftEye!==rightEye?`왼쪽 ${leftEye} · 오른쪽 ${rightEye}`:leftEye||rightEye;
   const sections=[
     exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["끌리는 대상",character.attractionTarget],["새로운 사람에게 끌리는 정도",character.relationshipOpenness],["직업",character.jobTitle||character.job],["교육 수준",character.educationLevel],["생활 환경 적응도",character.lifeAdaptation],["생일",character.birthday?`${character.birthday.slice(0,2)}월 ${character.birthday.slice(2)}일`:""],["재산",character.wealth],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 특징",listText(character.attractionTraits)]]),
-    exportSection("성격",[["전체적인 유형",listText(character.personalityTypes)],["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["패션 감각",character.fashionSense],["평소 외모 관리",character.appearanceCareLevel],["액세서리 착용",character.accessoryUse],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm],["유머·장난 성향",character.humorStyle],["감정 표현의 크기",character.emotionalExpression],["충동을 참는 정도",character.impulseControl],["서사·인지 특성",listText(character.characterTraits)],["장면에 반영할 특성 표현",listText(character.traitExpressions)],["특성 표현 메모",character.traitNotes],["메모를 로그에 반영",character.traitNotesInScripts?"사용":""]]),
+    exportSection("성격",[["전체적인 유형",listText(character.personalityTypes)],["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["패션 감각",character.fashionSense],["평소 외모 관리",character.appearanceCareLevel],["액세서리 착용",character.accessoryUse],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm],["유머·장난 성향",character.humorStyle],["감정 표현의 크기",character.emotionalExpression],["충동을 참는 정도",character.impulseControl]]),
     exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["자기 외형에 대한 인식",body.appearanceAwareness],["총평",listText(body.appearanceSummaries)],["분위기",listText(body.overallImpressions)],["피부색",body.skinTone],["피부 특징",listText(body.skinFeatures)],["흉터",listText((body.scars||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["문신",listText((body.tattoos||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["곱슬기",appearance.hairTexture],["머릿결",appearance.hairCondition],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
     exportSection("건강·장애·접근성",[["만성질환·건강 관리",listText(body.healthConditions)],["기타 건강 상태",body.healthOther],["휠체어",wheelchair.type],["휠체어 이용 방식",wheelchair.pattern],["의수 사용 부위",arm.side],["의수 종류",arm.custom||arm.type],["의족 사용 부위",leg.side],["의족 종류",leg.custom||leg.type],["청각장애·난청 부위",hearing.side],["청각 특성",hearing.level],["청각 접근 방식",listText(hearing.supports)],["시각장애·저시력 부위",vision.side],["시각 특성",vision.level],["시각 접근 방식",listText(vision.supports)],["병원 방문 빈도",body.hospitalVisitFrequency],["병원 방문 목적",body.hospitalVisitPurpose],["복용중인 약",listText((body.medications||[]).map(item=>`${item.name} · ${item.purpose} · ${item.frequency}`))],["상호작용에서 지킬 방식",listText(body.accessibilityPreferences)],["표현 메모",body.notes]]),
+    exportSection("인지·감각·상호작용",[["생활 장면에 반영할 특성",listText(character.traitExpressions)]]),
     exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]])
   ];
   return sections.filter(Boolean);
@@ -2878,20 +2879,29 @@ function bind(){
       button.setAttribute("aria-pressed",String(selected));
     });
   });
-  const toggleTraitSetting=(key,value,element)=>{
-    const character=active(),current=Array.isArray(character[key])?character[key]:[];
+  const toggleTraitSetting=(value,element)=>{
+    const character=active(),current=Array.isArray(character.traitExpressions)?character.traitExpressions:[];
     let next;
     if(current.includes(value))next=current.filter(item=>item!==value);
     else if(current.length<8)next=[...current,value];
-    else return showToast("서사·인지 특성은 각 영역에서 최대 8개까지 고를 수 있어요");
+    else return showToast("인지·감각·상호작용 특성은 최대 8개까지 고를 수 있어요");
     const mobileDraft=markMobileCharacterDraft(element);
-    updateCharacter(character.id,{[key]:next},false);
+    updateCharacter(character.id,{traitExpressions:next},false);
     if(!mobileDraft)save(true);
-    const attribute=key==="characterTraits"?"data-character-trait":"data-trait-expression";
-    document.querySelectorAll(`[${attribute}="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",next.includes(value)));
+    document.querySelectorAll(`[data-trait-expression="${CSS.escape(value)}"]`).forEach(button=>{
+      const selected=next.includes(value);
+      button.classList.toggle("on",selected);
+      button.setAttribute("aria-pressed",String(selected));
+    });
+    document.querySelectorAll("[data-trait-expression-count]").forEach(label=>label.textContent=String(next.length));
+    const summary=state.uiLanguage==="en"?`${next.length} selected`:state.uiLanguage==="ja"?`${next.length}個選択`:`${next.length}개 선택됨`;
+    document.querySelectorAll("[data-cognitive-trait-summary]").forEach(label=>label.textContent=summary);
   };
-  $$("[data-character-trait]").forEach(el=>el.onclick=()=>toggleTraitSetting("characterTraits",el.dataset.characterTrait,el));
-  $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting("traitExpressions",el.dataset.traitExpression,el));
+  $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting(el.dataset.traitExpression,el));
+  $$("[data-open-cognitive-traits]").forEach(el=>el.onclick=()=>{
+    const dialog=document.querySelector("[data-cognitive-traits-dialog]");
+    if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
+  });
   $$("[data-trait-notes]").forEach(el=>{
     if(isDeferredMobileTextControl(el)){
       el.oninput=()=>markMobileCharacterDraft(el);
@@ -3407,7 +3417,7 @@ function bind(){
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{
     const pane=el.dataset.characterPane;
     if(pane==="profile") state.characterOverviewPane=el.dataset.characterOverviewTarget==="life"?"life":"basic";
-    if(pane==="body") state.characterBodyPane="figure";
+    if(pane==="body") state.characterBodyPane=el.dataset.characterBodyTarget==="accessibility"?"accessibility":"figure";
     if(pane==="personality") state.characterPersonalityPane=["core","emotion","details"].includes(el.dataset.characterPersonalityPane)?el.dataset.characterPersonalityPane:"core";
     if(pane==="taste") state.characterTastePane=el.dataset.characterTastePane==="catalog"?"catalog":"categories";
     setCharacterPane(pane);
@@ -5517,7 +5527,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260902relationship202",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260902cognitive205",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

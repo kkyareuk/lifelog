@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko" data-ui-font="hanbit">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>인지·감각 특성 205 시각 검증</title>
+  <link rel="stylesheet" href="../font-preferences.css?v=20260902font204">
+  <link rel="stylesheet" href="../character-book.css?v=20260902cognitive205">
+  <style>
+    html,body,#app{width:100%;height:100%;margin:0}body{overflow:hidden;background:#5c4234}
+    .qa-page{position:absolute;inset:18cqw 4.5cqw 8cqw;border:1.2cqw solid #241811;border-radius:8cqw;background:#fffaf0;overflow:hidden}
+    .qa-page::before{position:absolute;inset:0;content:"";background:linear-gradient(90deg,#e7dfcf55,#fff0 18%,#fff0 82%,#d9ccb955);pointer-events:none}
+    .qa-languages{position:fixed;z-index:2147482000;right:8px;top:8px;display:flex;gap:4px}.qa-languages button{padding:6px 9px;border:1px solid #6b4e3d;border-radius:999px;background:#fffaf0;color:#2b1d16}
+    .qa-heading{position:absolute;left:10.2cqw;right:10.2cqw;top:10.5cqw;text-align:center;color:#fff5dd;font:700 4cqw/1 sans-serif}
+    .body-accessibility-device{opacity:.85}.body-hearing,.body-prosthetic-arm,.body-prosthetic-leg{display:none!important}
+    .character-body-accessibility-page{position:absolute!important;inset:0!important}
+  </style>
+</head>
+<body><div id="app"><article class="character-book-v8 is-open" style="--character-accent:#3d776c"><div class="character-book-v8-canvas">
+  <div class="qa-heading">HEALTH · ACCESSIBILITY</div><div class="qa-page"></div>
+  <section class="character-book-v8-page character-body-svg-page character-body-accessibility-page" data-book-page="body">
+    <section class="body-cognitive-entry"><button type="button" data-open-cognitive-traits><span><b data-copy="title"></b><small data-summary>2개 선택됨</small></span><i aria-hidden="true">＋</i></button></section>
+    <section class="body-accessibility-device body-wheelchair"><b data-copy="next"></b><select><option>사용하지 않음</option></select><select><option>설정하지 않음</option></select></section>
+    <dialog class="character-body-choice-dialog cognitive-access-dialog"><form method="dialog">
+      <header><span><small>COGNITION · SENSORY · ACCESS</small><b data-copy="title"></b></span><button type="submit" value="close" aria-label="닫기">×</button></header>
+      <section class="character-body-choice-panel cognitive-access-options" data-options></section>
+      <footer><span><b data-count>2</b>/8</span><button type="submit" value="apply" data-copy="done"></button></footer>
+    </form></dialog>
+  </section>
+</div></article></div><nav class="qa-languages"><button data-language="ko">KO</button><button data-language="en">EN</button><button data-language="ja">JA</button></nav>
+<script>
+const copy={
+ko:{title:"인지·감각·상호작용 특성",summary:"{n}개 선택됨",next:"휠체어",done:"선택 완료",options:["주의가 쉽게 전환됨","관심 대상에 과집중함","감각 자극에 민감함","익숙한 순서가 바뀌면 힘듦","사회적 신호를 해석하는 데 시간이 필요함"]},
+en:{title:"Cognitive, sensory & interaction traits",summary:"{n} selected",next:"Wheelchair",done:"Done",options:["Attention shifts easily","Hyperfocuses on subjects of interest","Sensitive to sensory input","Struggles when familiar routines change","Needs time to interpret social cues"]},
+ja:{title:"認知・感覚・関わり方の特性",summary:"{n}個選択",next:"車いす",done:"選択完了",options:["注意が移りやすい","関心対象に過集中する","感覚刺激に敏感","慣れた順序が変わるとつらい","社会的な合図の解釈に時間が必要"]}}
+let language="ko",selected=new Set([0,2]);const dialog=document.querySelector("dialog"),options=document.querySelector("[data-options]");
+function render(){const text=copy[language];document.documentElement.lang=language;document.querySelectorAll("[data-copy]").forEach(el=>el.textContent=text[el.dataset.copy]);document.querySelector("[data-summary]").textContent=text.summary.replace("{n}",selected.size);document.querySelector("[data-count]").textContent=selected.size;options.innerHTML=text.options.map((label,index)=>`<button type="button" data-option="${index}" class="${selected.has(index)?"on":""}" aria-pressed="${selected.has(index)}"><span>${label}</span><i aria-hidden="true">✓</i></button>`).join("");options.querySelectorAll("button").forEach(button=>button.onclick=()=>{const index=Number(button.dataset.option);selected.has(index)?selected.delete(index):selected.add(index);render()})}
+document.querySelector("[data-open-cognitive-traits]").onclick=()=>dialog.showModal();document.querySelectorAll("[data-language]").forEach(button=>button.onclick=()=>{language=button.dataset.language;render()});render();
+</script></body></html>

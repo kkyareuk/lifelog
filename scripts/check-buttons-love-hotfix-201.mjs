@@ -61,9 +61,9 @@ for(const language of ["en","ja"]){
 const [gradle,serviceWorker,index]=await Promise.all([
   readFile(new URL("android/app/build.gradle",root),"utf8"),readFile(new URL("sw.js",root),"utf8"),readFile(new URL("index.html",root),"utf8")
 ]);
-assert.match(gradle,/versionCode\s+(?:202|203|204)/);
-assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|190)"/);
-assert.ok(/drawer-village-v20260902-(?:relationship-emotion-202|language-scene-203|font-204)/.test(serviceWorker));
+assert.match(gradle,/versionCode\s+(?:202|203|204|205)/);
+assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|19[01])"/);
+assert.ok(/drawer-village-v20260902-(?:relationship-emotion-202|language-scene-203|font-204|cognitive-205)/.test(serviceWorker));
 assert.ok(index.includes(marker));
 
 console.log(`v1.0.188 / 202 버튼 상태·애정 관계 감정 회귀 검증 완료 (${visited.size} modules)`);

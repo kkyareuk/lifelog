@@ -713,7 +713,7 @@ function normalizeHomes(x){
     c.ageGroup=c.ageGroup||"성인";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
     c.personalityTypes=Array.isArray(c.personalityTypes)?[...new Set(c.personalityTypes.map(String))].slice(0,4):[];
-    const personalityProfile=[...c.personalityTypes,...(Array.isArray(c.characterTraits)?c.characterTraits:[]),c.energyRhythm,c.emotionalExpression].filter(Boolean).join(" ");
+    const personalityProfile=[...c.personalityTypes,c.energyRhythm,c.emotionalExpression].filter(Boolean).join(" ");
     const inferredEmotionalBaseline=/낙천|긍정|밝고|명랑|쾌활/.test(personalityProfile)?"낙천적인 편":/온화|다정|느긋|여유/.test(personalityProfile)?"대체로 밝은 편":/냉정|무덤덤|무심|과묵|감정을 잘 드러내지/.test(personalityProfile)?"무덤덤한 편":/걱정|불안|예민/.test(personalityProfile)?"걱정이 많은 편":"현실적인 편";
     c.emotionalBaseline=["매우 낙천적임","낙천적인 편","대체로 밝은 편","쾌활한 편","열정적인 편","다정한 편","유혹적인 편","호기심 많은 편","차분한 편","현실적인 편","무덤덤한 편","냉소적인 편","까칠한 편","예민한 편","걱정이 많은 편","불안한 편","침울한 편","비관적인 편","분노를 품은 편"].includes(c.emotionalBaseline)?c.emotionalBaseline:inferredEmotionalBaseline;
     c.moodVolatility=["거의 흔들리지 않음","안정적인 편","상황에 따라 달라짐","변화가 잦은 편","변화 폭이 큼"].includes(c.moodVolatility)?c.moodVolatility:"상황에 따라 달라짐";
