@@ -58,6 +58,7 @@
     "test:personality-home195": "node scripts/check-personality-home-195.mjs",
     "test:emotion-tastes196": "node scripts/check-emotion-tastes-196.mjs",
     "test:assets197": "node scripts/check-bed-buildings-197.mjs",
+    "test:visual200": "node scripts/check-bed-buildings-197.mjs",
     "test:settings199": "node scripts/check-character-settings-199.mjs"
   },
   "dependencies": {

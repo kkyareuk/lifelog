@@ -20,8 +20,8 @@
 .town-clock{position:absolute;right:18px;top:18px;z-index:3;padding:8px 13px;border-radius:20px;background:#243228bb;color:#fff;font:600 16px/1.3 sans-serif;pointer-events:none}
 .building-art{position:relative;display:block;width:100%;height:100%;overflow:visible;transform:scaleX(var(--place-flip,1));pointer-events:none}
 .building-light{position:absolute;inset:0;display:block;width:100%;height:100%;object-fit:contain;pointer-events:none;opacity:0;transition:opacity 1.5s ease}
-.building-light-core{filter:brightness(1.3) drop-shadow(0 0 2px #ffe4a3)}
-.building-light-halo{filter:blur(4px) brightness(1.7);mix-blend-mode:screen}
+.building-light-core{filter:brightness(1.38) saturate(1.08) drop-shadow(0 0 3px #ffe4a3);mix-blend-mode:screen;mix-blend-mode:plus-lighter}
+.building-light-halo{filter:blur(4px) brightness(1.75) saturate(1.12);mix-blend-mode:screen;mix-blend-mode:plus-lighter}
 [data-lights-on="true"]>.building-light-core{opacity:.96}
 [data-lights-on="true"]>.building-light-halo{opacity:.85}
 .building-lighting-settings{display:grid;gap:10px;margin:12px 0;padding:12px;border:1px solid #bda782;border-radius:15px;min-width:0;background:#fff9ed}

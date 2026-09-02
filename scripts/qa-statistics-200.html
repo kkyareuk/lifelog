@@ -1,0 +1,26 @@
+<!doctype html>
+<html class="native-app native-platform" data-active-tab="statistics" data-color-mode="light" data-visual-theme="classic" lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>통계 화면 QA</title>
+  <link rel="stylesheet" href="../app.css">
+</head>
+<body>
+  <div id="app">
+    <div class="native-sub-header"><button type="button" aria-label="메인 화면으로 돌아가기">‹</button><b>통계</b><span>서랍마을</span></div>
+    <main>
+      <section class="statistics-report" data-character-statistics-page>
+        <header class="statistics-report-head"><small>DRAWER VILLAGE REPORT</small><h1>통계 보고서</h1><p>마을과 캐릭터의 생활을 한눈에 살펴봐요.</p></header>
+        <nav class="statistics-scope-tabs" aria-label="통계 범위"><button class="on">전체</button><button>서랍마을 <small>12</small></button><button>두 번째 마을 <small>4</small></button></nav>
+        <div class="statistics-summary"><article><small>마을 수</small><b>2<em>곳</em></b></article><article><small>건물 수</small><b>14<em>개</em></b></article><article><small>캐릭터 수</small><b>12<em>명</em></b></article></div>
+        <section class="statistics-card statistics-population"><header><span><small>AGE · GENDER</small><h2>연령대와 성비</h2></span><p>전체 마을</p></header><div class="population-legend"><span class="male">남성</span><span class="other">그 외·미설정</span><span class="female">여성</span></div><div class="population-pyramid"><div class="population-row"><i class="male" style="--population:58%"><b>2</b></i><span>장년</span><i class="female" style="--population:0%"></i></div><div class="population-row"><i class="male" style="--population:86%"><b>3</b></i><span>성인 <small>+5</small></span><i class="female" style="--population:58%"><b>2</b></i></div><div class="population-row"><i class="male" style="--population:30%"><b>1</b></i><span>청년</span><i class="female" style="--population:30%"><b>1</b></i></div></div></section>
+        <section class="statistics-lifestyle"><article><small>평균 기상 시각</small><b>07:10</b></article><article><small>평균 취침 시각</small><b>23:40</b></article><article><small>평균 키</small><b>168 cm</b></article><article><small>평균 몸무게</small><b>58 kg</b></article></section>
+        <section class="statistics-card statistics-personality"><div class="personality-donut" style="--personality-chart:conic-gradient(#d6ad2f 0 45%,#7d5d9b 45% 72%,#5c8fb5 72% 100%)"><span><b>12</b><small>명</small></span></div><div class="personality-top"><small>PERSONALITY TOP 3</small><h2>가장 많은 성격</h2><ol><li><em>1</em><b>다정함</b><span>5명</span></li><li><em>2</em><b>신중함</b><span>4명</span></li><li><em>3</em><b>활발함</b><span>3명</span></li></ol></div></section>
+        <section class="statistics-card statistics-social"><header><small>SOCIAL SNAPSHOT</small><h2>생활과 사회 지표</h2></header><div><article><b>75%</b><span>직업이 있는 캐릭터</span></article><article><b>25%</b><span>오전 7시 전 기상</span></article><article><b>3.8 / 6</b><span>평균 사회 에너지</span></article><article><b>8</b><span>연결된 관계 수</span></article></div></section>
+        <div class="character-stat-actions"><button type="button" class="primary">보고서 다운로드</button></div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
