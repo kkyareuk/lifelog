@@ -11,7 +11,7 @@ const normalizedOnce=normalizeRoomLayout(smallRoom),normalizedRepeated=normalize
 const restartLayouts=Array.from({length:20}).reduce(layout=>normalizeRoomLayout(layout),smallRoom);
 
 const checks=[
-  [media.includes("return {found:jobs.length,resolved,pending")&&app.includes("refreshLocalMedia")&&app.includes('window.addEventListener("pageshow",restoreForegroundState)'),"앱 복귀 시 기기 사진 복원 재시도"],
+  [media.includes("return {found,resolved,pending")&&media.includes("let found=0")&&app.includes("refreshLocalMedia")&&app.includes('window.addEventListener("pageshow",restoreForegroundState)'),"앱 복귀 시 실제 기기 사진 참조만 복원·재렌더"],
   [app.includes("isPendingLocalImage(image.getAttribute")&&css.includes('img[src^="local-media://"]{visibility:hidden}'),"복원 전 내부 사진 참조의 깨진 이미지 차단"],
   [app.includes("Media restore: found")&&app.includes("pending ${lastLocalMediaResult.pending}"),"피드백 진단에 사진 복원 상태 포함"],
   [media.includes("estimatedDataUrlBytes")&&media.includes("cloudCount:cloud.size")&&app.includes("기기 원본 ${usage.count}장")&&app.includes("클라우드 사본 ${cloudCount}장"),"기존 사진과 클라우드 사본을 구분한 저장 공간 집계"],

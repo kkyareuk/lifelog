@@ -32,9 +32,9 @@ for(const key of ["평소 외모 관리","거의 신경 쓰지 않음","필요�
 
 assert.ok(appCss.includes('./assets/character-ui/back.png')&&appCss.includes(".statistics-scope-tabs{position:relative"),"statistics uses the wooden back button and protected scope row");
 assert.ok(appCss.includes(".statistics-report>.character-stat-actions{position:relative"),"report download action no longer floats over report content");
-assert.match(gradle,/versionCode\s+(?:199|200|201)/);
-assert.match(gradle,/versionName\s+"1\.0\.(?:186|187(?:\.1)?)"/);
-assert.ok(/drawer-village-v20260902-(?:character-settings-199|bed-buildings-statistics-200|buttons-love-hotfix-201)/.test(sw),"service worker cache is unique to build 199+");
-assert.ok(index.includes("20260902hotfix201"),"browser cache marker is updated");
+assert.match(gradle,/versionCode\s+(?:199|200|201|207)/);
+assert.match(gradle,/versionName\s+"1\.0\.(?:186|187(?:\.[12])?)"/);
+assert.ok(/drawer-village-v2026090[23]-(?:character-settings-199|bed-buildings-statistics-200|buttons-love-hotfix-201|food-image-hotfix-207)/.test(sw),"service worker cache is unique to build 199+");
+assert.ok(index.includes("20260903foodimage207"),"browser cache marker is updated");
 
 console.log("v1.0.186 / 199 character settings and statistics checks passed");

@@ -93,16 +93,23 @@ export const isPendingLocalImage=value=>isLocalRef(value);
 export async function initializeLocalMediaState(root){
   navigator.storage?.persist?.().catch(()=>{});
   const jobs=[];
+  let found=0;
   const walk=node=>{
     if(!node||typeof node!=="object")return;
     Object.keys(node).forEach(key=>{
       const value=node[key];
-      if(isLocalRef(value))jobs.push(async()=>{
+      if(isLocalRef(value)){
+        found+=1;
+        jobs.push(async()=>{
         const resolved=await resolveLocalRef(value);
         if(isData(resolved))node[key]=resolved;
         return isData(resolved);
-      });
-      else if(isData(value))jobs.push(async()=>{await persistLocalImage(value);return true});
+        });
+      }
+      // A data URL is already usable. It still needs an IndexedDB copy for the
+      // next compact save, but it must not be reported as a newly restored image
+      // or trigger a foreground render after Android's photo picker closes.
+      else if(isData(value))jobs.push(async()=>{await persistLocalImage(value);return false});
       else if(value&&typeof value==="object")walk(value);
     });
   };
@@ -117,7 +124,7 @@ export async function initializeLocalMediaState(root){
     }
   });
   await Promise.allSettled(workers);
-  return {found:jobs.length,resolved,pending:Math.max(0,jobs.length-resolved)};
+  return {found,resolved,pending:Math.max(0,found-resolved)};
 }
 
 export function serializeLocalMediaState(root){

@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260902-buttons-love-hotfix-201";
+const CACHE_VERSION="drawer-village-v20260903-food-image-hotfix-207";
 const CORE=[
   "./",
   "./index.html",

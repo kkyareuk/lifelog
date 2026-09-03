@@ -109,7 +109,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260902hotfix201";
+const expectedModuleCache="20260903foodimage207";
 const relativeImports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
@@ -139,8 +139,8 @@ while(moduleQueue.length){
 const index=await readFile(new URL("index.html",output),"utf8");
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
-if(!index.includes("20260902hotfix201"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
-if(!app.includes("20260902hotfix201"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260902-buttons-love-hotfix-201"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!index.includes("20260903foodimage207"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
+if(!app.includes("20260903foodimage207"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260903-food-image-hotfix-207"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);
