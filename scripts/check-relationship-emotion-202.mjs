@@ -54,7 +54,7 @@ globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
 globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
 const [{state:runtimeState},{timeline,eventFor}]=await Promise.all([
-  import(`../state.js?v=20260903sync206`),
+  import(`../state.js?v=20260903foodimage208`),
   import(`../simulation.js?relationship-sync=${Date.now()}`)
 ]);
 const runtimeCharacter=(id,name)=>({...basic(id,name),createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",homeId:"shared-home",residences:[{homeId:"shared-home",isPrimary:true,stayPattern:"상시 거주"}],wake:"00:01",sleep:"23:59",job:"무직",jobTitle:"",traitExpressions:[],bodyProfile:{},theme:{primary:"#76513e"}});
@@ -100,9 +100,9 @@ assert.doesNotMatch(simulation,/청춘을\(를\) 골라 기분을 바꾸는 중|
 assert.match(simulation,/\$\{likedThing\} 장르의 책을 골라 읽는 중/);
 assert.match(simulation,/synchronizedCounterpart/);
 assert.match(simulation,/coLocatedIds:coLocatedCharacterIds/);
-assert.match(gradle,/versionCode\s+(?:202|203|204|205|206)/);
-assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|19[0-2])"/);
-assert.ok(/drawer-village-v(?:20260902-(?:relationship-emotion-202|language-scene-203|font-204|cognitive-205)|20260903-sync-home-character-206)/.test(worker));
-assert.ok(index.includes("20260903sync206"));
+assert.match(gradle,/versionCode\s+(?:202|203|204|205|206|208)/);
+assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|19[0-3])"/);
+assert.ok(/drawer-village-v(?:20260902-(?:relationship-emotion-202|language-scene-203|font-204|cognitive-205)|20260903-(?:sync-home-character-206|food-image-dev-208))/.test(worker));
+assert.ok(index.includes("20260903foodimage208"));
 
 console.log("v1.0.188 / 202 관계 동기화·복합 감정·구체 행동 로그 검증 완료");

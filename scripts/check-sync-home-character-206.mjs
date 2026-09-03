@@ -31,8 +31,8 @@ assert.ok(css.includes("grid-template-columns:repeat(3,minmax(0,1fr))")&&css.inc
 assert.ok(app.includes("data-furniture-search")&&app.includes("data-furniture-search-label"),"the furniture bottom sheet has localized search filtering");
 assert.ok(app.includes("furniture-picker-couple-bed")&&app.includes("couple-bed-quilt.png")&&app.includes("couple-bed-footboard.png"),"the couple bed uses its layered illustration in the furniture picker");
 assert.ok(appCss.includes("inset:auto 0 0!important")&&appCss.includes("grid-template-columns:repeat(3,minmax(0,1fr))"),"the mobile furniture catalog opens from the bottom in a three-column grid");
-assert.ok(worker.includes("drawer-village-v20260903-sync-home-character-206"),"release 206 uses an isolated offline cache");
-assert.match(gradle,/versionCode\s+206/);
-assert.match(gradle,/versionName\s+"1\.0\.192"/);
+assert.ok(worker.includes("drawer-village-v20260903-food-image-dev-208"),"release 206 uses an isolated offline cache");
+assert.match(gradle,/versionCode\s+208/);
+assert.match(gradle,/versionName\s+"1\.0\.193"/);
 
-console.log("v1.0.192 / 206 delta sync, shared scenes, beds, and character book checks passed");
+console.log("v1.0.193 / 208 delta sync, shared scenes, beds, character book, and food image checks passed");

@@ -1,20 +1,20 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260903sync206";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260903sync206";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260903sync206";
-import {characterMood} from "./character-mood.js?v=20260903sync206";
-import {createContactMailbox} from "./notification-mail.js?v=20260903sync206";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260903sync206";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260903sync206";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260903sync206";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260903sync206";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260903sync206";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260903sync206";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260903sync206";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260903sync206";
-import {achievementRows} from "./achievements.js?v=20260903sync206";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260903foodimage208";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260903foodimage208";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260903foodimage208";
+import {characterMood} from "./character-mood.js?v=20260903foodimage208";
+import {createContactMailbox} from "./notification-mail.js?v=20260903foodimage208";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260903foodimage208";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,charactersAtPlace,homeGroups} from "./simulation.js?v=20260903foodimage208";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260903foodimage208";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260903foodimage208";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260903foodimage208";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260903foodimage208";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260903foodimage208";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260903foodimage208";
+import {achievementRows} from "./achievements.js?v=20260903foodimage208";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -4266,7 +4266,7 @@ Object.assign(UI_TEXT.ja,{
   "건물 평판":"建物の評判","건물 분위기":"建物の雰囲気","지정 안 함":"未指定","지역 주민에게 사랑받음":"地域の住民に愛されている","평이 좋음":"評判が良い","무난함":"無難","호불호가 갈림":"好みが分かれる","악평이 있음":"悪評がある","유명한 명소":"有名な名所","아늑하고 편안함":"居心地がよく快適","활기차고 북적임":"活気があり賑やか","조용하고 차분함":"静かで落ち着いている","세련되고 고급스러움":"洗練され高級感がある","오래되고 정겨움":"古く懐かしい","어둡고 음침함":"暗く陰気","독특하고 신비로움":"個性的で神秘的","모든 테마 보기":"すべてのテーマを見る","편집 목록 접기":"編集リストを閉じる","마을에 있는 캐릭터":"村にいる人物"
 });
 Object.assign(UI_TEXT.en,{
-  "사진 추가하기":"Add photo","추가할 방법을 골라 주세요.":"Choose how to add it.","기기에서 업로드하기":"Upload from device","휴대폰이나 컴퓨터에 저장된 사진":"A photo saved on your phone or computer","링크로 추가하기":"Add by link","웹에 있는 이미지 주소":"An image URL on the web",
+  "사진 추가하기":"Add photo","추가할 방법을 골라 주세요.":"Choose how to add it.","기기에서 업로드하기":"Upload from device","휴대폰이나 컴퓨터에 저장된 사진":"A photo saved on your phone or computer","링크로 추가하기":"Add by link","웹에 있는 이미지 주소":"An image URL on the web","사진을 저장하지 못했어요. 다른 사진으로 다시 시도해 주세요.":"The picture could not be saved. Please try another one.",
   "약 이름":"Medication name","복용중인 약":"Current medications","복용 목적·특성":"Purpose · properties","복용 주기":"Schedule","복용량·주의사항 등":"Dose, precautions, and notes","추가":"Add","제거":"Remove","설정 완료":"Done",
   "병원 방문":"Hospital visits","상담·경과 확인":"Consultation · follow-up","정기 검진 · 상담 포함":"Routine exam · includes consultation","검사·영상 촬영 · 검진·상담 포함":"Tests · imaging · includes exam and consultation","외래 처치·치료 · 검사 이하 포함":"Outpatient treatment · includes lower levels","통원 시술 · 외래 치료 이하 포함":"Day procedure · includes outpatient treatment","입원 치료 · 통원 치료 이하 포함":"Inpatient care · includes day treatment","수술·집중 치료 · 입원 치료 이하 포함":"Surgery · intensive care · includes inpatient care","재활·회복 관리":"Rehabilitation · recovery","처방·복약 조정":"Prescription · medication adjustment","예방접종":"Vaccination","정신건강 진료":"Mental health care","치과 진료":"Dental care","기타 진료":"Other care",
   "통증 조절":"Pain management","알레르기 관리":"Allergy management","호흡기 관리":"Respiratory care","심혈관 관리":"Cardiovascular care","혈압 관리":"Blood-pressure management","혈당 관리":"Blood-sugar management","호르몬 관리":"Hormone management","면역 관리":"Immune-system care","소화기 관리":"Digestive care","감염 치료":"Infection treatment","수면 관리":"Sleep management","불안 완화":"Anxiety relief","기분 조절":"Mood regulation","집중력 관리":"Attention management","피임·생식 건강":"Contraception · reproductive health","성별확정 의료 과정":"Gender-affirming care","비타민·영양 보충":"Vitamins · supplements",
@@ -4275,7 +4275,7 @@ Object.assign(UI_TEXT.en,{
   "의상 태그":"Outfit tags","의상 태그 선택":"Choose outfit tags","개 선택됨":" selected","분류별로 살펴보고 여러 개를 선택할 수 있어요.":"Browse by category and select multiple options.","서사·인지 특성 선택사항":"Optional narrative · cognitive traits","실제 장면에 반영할 표현":"Expressions used in scenes"
 });
 Object.assign(UI_TEXT.ja,{
-  "사진 추가하기":"写真を追加","추가할 방법을 골라 주세요.":"追加方法を選んでください。","기기에서 업로드하기":"端末からアップロード","휴대폰이나 컴퓨터에 저장된 사진":"スマートフォンやパソコンに保存された写真","링크로 추가하기":"リンクで追加","웹에 있는 이미지 주소":"ウェブ上の画像URL",
+  "사진 추가하기":"写真を追加","추가할 방법을 골라 주세요.":"追加方法を選んでください。","기기에서 업로드하기":"端末からアップロード","휴대폰이나 컴퓨터에 저장된 사진":"スマートフォンやパソコンに保存された写真","링크로 추가하기":"リンクで追加","웹에 있는 이미지 주소":"ウェブ上の画像URL","사진을 저장하지 못했어요. 다른 사진으로 다시 시도해 주세요.":"画像を保存できませんでした。別の画像でもう一度お試しください。",
   "약 이름":"薬の名前","복용중인 약":"服用中の薬","복용 목적·특성":"服用目的・特性","복용 주기":"服用頻度","복용량·주의사항 등":"用量・注意事項など","추가":"追加","제거":"削除","설정 완료":"設定完了",
   "병원 방문":"通院","상담·경과 확인":"相談・経過確認","정기 검진 · 상담 포함":"定期検診・相談を含む","검사·영상 촬영 · 검진·상담 포함":"検査・画像撮影・検診と相談を含む","외래 처치·치료 · 검사 이하 포함":"外来処置・治療・検査以下を含む","통원 시술 · 외래 치료 이하 포함":"通院施術・外来治療以下を含む","입원 치료 · 통원 치료 이하 포함":"入院治療・通院治療以下を含む","수술·집중 치료 · 입원 치료 이하 포함":"手術・集中治療・入院治療以下を含む","재활·회복 관리":"リハビリ・回復管理","처방·복약 조정":"処方・服薬調整","예방접종":"予防接種","정신건강 진료":"メンタルヘルス診療","치과 진료":"歯科診療","기타 진료":"その他の診療",
   "통증 조절":"疼痛管理","알레르기 관리":"アレルギー管理","호흡기 관리":"呼吸器管理","심혈관 관리":"心血管管理","혈압 관리":"血圧管理","혈당 관리":"血糖管理","호르몬 관리":"ホルモン管理","면역 관리":"免疫管理","소화기 관리":"消化器管理","감염 치료":"感染治療","수면 관리":"睡眠管理","불안 완화":"不安緩和","기분 조절":"気分調整","집중력 관리":"集中力管理","피임·생식 건강":"避妊・生殖健康","성별확정 의료 과정":"ジェンダー肯定医療","비타민·영양 보충":"ビタミン・栄養補給",
