@@ -64,7 +64,8 @@
     "test:emotion202": "node scripts/check-relationship-emotion-202.mjs",
     "test:language-scene203": "node scripts/check-language-scene-203.mjs",
     "test:font204": "node scripts/check-font-preference-204.mjs",
-    "test:cognitive205": "node scripts/check-cognitive-traits-205.mjs"
+    "test:cognitive205": "node scripts/check-cognitive-traits-205.mjs",
+    "test:sync-rules-hotfix": "node scripts/check-sync-rules-hotfix.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
