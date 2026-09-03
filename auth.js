@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902relationship202";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260903sync206";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260902relationship202";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260903sync206";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -192,6 +192,33 @@ const safeDocumentId=value=>encodeURIComponent(String(value||"unknown")).replace
 const cloudCharacterDoc=(id,uid=user?.uid)=>doc(db,"users",uid,"characters",safeDocumentId(id));
 const cloudDays=(id,uid=user?.uid)=>collection(db,"users",uid,"characters",safeDocumentId(id),"days");
 const cloudDayDoc=(id,dateKey,uid=user?.uid)=>doc(db,"users",uid,"characters",safeDocumentId(id),"days",safeDocumentId(dateKey));
+const SYNC_MANIFEST_VERSION=1;
+const syncRevisionKey=uid=>`drawer-village-sync-revision:${uid}`;
+const validSyncManifest=value=>Number(value?.version)===SYNC_MANIFEST_VERSION&&value.characters&&typeof value.characters==="object"&&typeof value.coreHash==="string";
+const digestState=async value=>digestBlob(new Blob([JSON.stringify(encodeFirestoreState(value))],{type:"application/json"}));
+async function createSyncManifest(gameState){
+  const next=clone(gameState||{}),characters=next.characters&&typeof next.characters==="object"?next.characters:{};
+  delete next.characters;
+  const manifest={version:SYNC_MANIFEST_VERSION,coreHash:await digestState(next),characters:{}};
+  await Promise.all(Object.entries(characters).map(async([characterId,source])=>{
+    const character=clone(source||{}),days=character.days&&typeof character.days==="object"?character.days:{};
+    delete character.days;
+    const record={characterId:String(characterId),hash:await digestState(character),days:{}};
+    await Promise.all(Object.entries(days).map(async([dateKey,day])=>{
+      record.days[safeDocumentId(dateKey)]={dateKey:String(dateKey),hash:await digestState(day)};
+    }));
+    manifest.characters[safeDocumentId(characterId)]=record;
+  }));
+  return manifest;
+}
+const stateHasPendingDataImages=value=>{
+  let found=false;
+  const walk=node=>{
+    if(found||!node||typeof node!=="object")return;
+    Object.values(node).forEach(item=>{if(isData(item))found=true;else if(item&&typeof item==="object")walk(item)});
+  };
+  walk(value);return found;
+};
 
 async function readCloudGameState(rootData,{fresh=false,uid=user?.uid}={}){
   // 호환 형식으로 저장된 완전한 루트 상태가 있으면, 중간에 끊긴 v2
@@ -232,20 +259,30 @@ async function readCloudGameState(rootData,{fresh=false,uid=user?.uid}={}){
   return {...coreData,characters};
 }
 
-async function writeCloudGameState(gameState,session){
+async function writeCloudGameState(gameState,session,previousManifest){
   const {uid}=session;assertSession(session);
   const next=clone(gameState||{});
   const characters=next.characters&&typeof next.characters==="object"?next.characters:{};
   delete next.characters;
+  const manifest=await createSyncManifest(gameState),canUseManifest=validSyncManifest(previousManifest);
   const wantedCharacterIds=new Set(Object.keys(characters).map(String));
-  const existingCharacters=await getDocs(cloudCharacters(uid));
-  for(const existing of existingCharacters.docs){
-    assertSession(session);
-    const existingId=String(existing.data()?.characterId||existing.id);
-    if(wantedCharacterIds.has(existingId))continue;
-    const oldDays=await getDocs(collection(existing.ref,"days"));
-    await Promise.all(oldDays.docs.map(day=>deleteDoc(day.ref)));
-    await deleteDoc(existing.ref);
+  if(canUseManifest){
+    for(const oldRecord of Object.values(previousManifest.characters||{})){
+      const existingId=String(oldRecord?.characterId||"");
+      if(!existingId||wantedCharacterIds.has(existingId))continue;
+      await Promise.all(Object.values(oldRecord.days||{}).map(day=>deleteDoc(cloudDayDoc(existingId,day.dateKey,uid))));
+      await deleteDoc(cloudCharacterDoc(existingId,uid));
+    }
+  }else{
+    const existingCharacters=await getDocs(cloudCharacters(uid));
+    for(const existing of existingCharacters.docs){
+      assertSession(session);
+      const existingId=String(existing.data()?.characterId||existing.id);
+      if(wantedCharacterIds.has(existingId))continue;
+      const oldDays=await getDocs(collection(existing.ref,"days"));
+      await Promise.all(oldDays.docs.map(day=>deleteDoc(day.ref)));
+      await deleteDoc(existing.ref);
+    }
   }
 
   for(const [characterId,source] of Object.entries(characters)){
@@ -253,22 +290,30 @@ async function writeCloudGameState(gameState,session){
     const character=clone(source||{});
     const days=character.days&&typeof character.days==="object"?character.days:{};
     delete character.days;
-    await setDoc(cloudCharacterDoc(characterId,uid),{
-      characterId:String(characterId),
-      character:encodeFirestoreState(character),
-      updatedAt:serverTimestamp()
-    });
+    const manifestKey=safeDocumentId(characterId),record=manifest.characters[manifestKey],oldRecord=canUseManifest?previousManifest.characters?.[manifestKey]:null;
+    if(!oldRecord||oldRecord.hash!==record.hash)await setDoc(cloudCharacterDoc(characterId,uid),{
+        characterId:String(characterId),
+        character:encodeFirestoreState(character),
+        updatedAt:serverTimestamp()
+      });
     const wantedDays=new Set(Object.keys(days).map(String));
-    const existingDays=await getDocs(cloudDays(characterId,uid));
-    await Promise.all(existingDays.docs.filter(day=>!wantedDays.has(String(day.data()?.dateKey||day.id))).map(day=>deleteDoc(day.ref)));
-    await Promise.all(Object.entries(days).map(([dateKey,day])=>setDoc(cloudDayDoc(characterId,dateKey,uid),{
-      dateKey:String(dateKey),day:encodeFirestoreState(day),updatedAt:serverTimestamp()
-    })));
+    if(canUseManifest){
+      await Promise.all(Object.values(oldRecord?.days||{}).filter(day=>!wantedDays.has(String(day.dateKey))).map(day=>deleteDoc(cloudDayDoc(characterId,day.dateKey,uid))));
+    }else{
+      const existingDays=await getDocs(cloudDays(characterId,uid));
+      await Promise.all(existingDays.docs.filter(day=>!wantedDays.has(String(day.data()?.dateKey||day.id))).map(day=>deleteDoc(day.ref)));
+    }
+    await Promise.all(Object.entries(days).filter(([dateKey])=>{
+      const key=safeDocumentId(dateKey);
+      return !oldRecord?.days?.[key]||oldRecord.days[key].hash!==record.days[key].hash;
+    }).map(([dateKey,day])=>setDoc(cloudDayDoc(characterId,dateKey,uid),{
+        dateKey:String(dateKey),day:encodeFirestoreState(day),updatedAt:serverTimestamp()
+      })));
   }
-  // core 문서는 모든 하위 문서 저장이 끝났다는 완료 표식이기도 하다.
-  // 마지막에 기록해야 다운로드가 부분 저장본을 완성본으로 오인하지 않는다.
+  // 루트의 syncRevision이 최종 완료 표식이다. core도 달라졌을 때만 쓴다.
   assertSession(session);
-  await setDoc(cloudCoreDoc(uid),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
+  if(!canUseManifest||previousManifest.coreHash!==manifest.coreHash)await setDoc(cloudCoreDoc(uid),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
+  return manifest;
 }
 
 const canUseLegacySync=error=>{
@@ -310,6 +355,8 @@ async function writeLegacyCloudGameState(gameState,mediaManifest,session){
       gameStateGzip:deleteField(),
       gameStateCompression:deleteField(),
       syncFormat:1,
+      syncManifest:deleteField(),
+      syncRevision:deleteField(),
       mediaManifest,
       updatedAt:serverTimestamp(),
       profile
@@ -324,6 +371,8 @@ async function writeLegacyCloudGameState(gameState,mediaManifest,session){
     gameStateGzip:compressed,
     gameStateCompression:"gzip-base64-v1",
     syncFormat:1,
+    syncManifest:deleteField(),
+    syncRevision:deleteField(),
     mediaManifest,
     updatedAt:serverTimestamp(),
     profile
@@ -572,7 +621,15 @@ async function upload({silent=false,reason=""}={}){
       });
     }
     const previousSnapshot=await getDoc(cloudDoc(session.uid)),previous=previousSnapshot.exists()?previousSnapshot.data():null;
-    const previousGameState=await readCloudGameState(previous,{uid:session.uid});
+    // 우리가 마지막으로 내려받거나 올린 revision과 서버 revision이 같고
+    // 새 data URL 사진도 없다면 로컬은 서버의 정확한 후속 상태다. 이 경우
+    // 수백 개의 과거 날짜 문서를 다시 읽지 않는다.
+    const knownRevision=localStorage.getItem(syncRevisionKey(session.uid));
+    const canUseDelta=validSyncManifest(previous?.syncManifest)
+      &&Boolean(previous?.syncRevision)
+      &&String(previous.syncRevision)===String(knownRevision||"")
+      &&!stateHasPendingDataImages(localState);
+    const previousGameState=canUseDelta?null:await readCloudGameState(previous,{uid:session.uid});
     assertSession(session);
     // 오래된 기기가 전체 상태를 다시 올리더라도 클라우드에 이미 남은 삭제 기록이
     // 캐릭터·관계·집·방보다 우선한다. 이 병합이 없으면 다른 기기의 낡은 배열이
@@ -585,12 +642,15 @@ async function upload({silent=false,reason=""}={}){
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
     let compatibilityMode=false;
     try{
-      await writeCloudGameState(gameState,session);
+      const syncManifest=await writeCloudGameState(gameState,session,previous?.syncManifest);
       assertSession(session);
-      await setDoc(cloudDoc(session.uid),{gameState:deleteField(),syncFormat:2,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
+      const syncRevision=`${Date.now()}-${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;
+      await setDoc(cloudDoc(session.uid),{gameState:deleteField(),syncFormat:2,syncManifest,syncRevision,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
+      localStorage.setItem(syncRevisionKey(session.uid),syncRevision);
     }catch(error){
       if(!canUseLegacySync(error))throw error;
       await writeLegacyCloudGameState(gameState,mediaManifest,session);
+      localStorage.removeItem(syncRevisionKey(session.uid));
       compatibilityMode=true;
     }
     assertSession(session);
@@ -661,6 +721,8 @@ async function download({automatic=false,accountTransition=false}={}){
       ?differentCharacters?mergeDeviceAndCloudState(localState,remote):applyLocalTombstones(remote,localState)
       :mergeCloudRestoreState(localState,remote);
     window.ParallelCity.replaceState(imported);
+    if(documentData?.syncRevision)localStorage.setItem(syncRevisionKey(session.uid),String(documentData.syncRevision));
+    else localStorage.removeItem(syncRevisionKey(session.uid));
     window.dispatchEvent(new Event("drawer-village-cloud-loaded"));
     status(`${accountName()} · ${accessLabel()} · 불러오기 완료`);
     toast(differentCharacters

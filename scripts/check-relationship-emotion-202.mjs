@@ -54,7 +54,7 @@ globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
 globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
 const [{state:runtimeState},{timeline,eventFor}]=await Promise.all([
-  import(`../state.js?v=20260902relationship202`),
+  import(`../state.js?v=20260903sync206`),
   import(`../simulation.js?relationship-sync=${Date.now()}`)
 ]);
 const runtimeCharacter=(id,name)=>({...basic(id,name),createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",homeId:"shared-home",residences:[{homeId:"shared-home",isPrimary:true,stayPattern:"상시 거주"}],wake:"00:01",sleep:"23:59",job:"무직",jobTitle:"",traitExpressions:[],bodyProfile:{},theme:{primary:"#76513e"}});
@@ -84,6 +84,15 @@ assert.ok(!/각자 메모를 정리/.test(gypEvent.title),"대화 상대가 동�
 assert.equal(characterMood(runtimeJen,jenEvent,runtimeState).label,"복잡한 끌림");
 assert.equal(characterMood(runtimeGyp,gypEvent,runtimeState).label,"편안함","같은 사건이어도 방향별 관계 설정에 따라 서로 다른 감정을 계산한다");
 
+const soloMinute=Math.max(0,minute-1);
+const runtimeDayKey=Object.keys(runtimeState.characters["runtime-jen"].days)[0];
+runtimeState.characters["runtime-jen"].days[runtimeDayKey].entries=[{date:runtimeDayKey,minute:soloMinute,time:"",title:"거실에서 차를 마시는 중",desc:"거실 탁자에서 차를 천천히 마시고 있어요.",home:true,visitHomeId:"shared-home",room:"living",townId:"",mood:"차분"}];
+runtimeState.characters["runtime-gyp"].days[runtimeDayKey].entries=[{date:runtimeDayKey,minute:soloMinute,time:"",title:"연구 결과를 정리하는 중",desc:"혼자 연구 기록을 대조하며 다음 실험 순서를 적고 있어요.",home:true,visitHomeId:"shared-home",room:"living",townId:"",mood:"집중"}];
+const protectedGypEvent=eventFor(runtimeState.characters["runtime-gyp"],now);
+const nearbyJenEvent=eventFor(runtimeState.characters["runtime-jen"],now);
+assert.ok(!protectedGypEvent.groupInteraction&&!protectedGypEvent.withId,"연구·집중 중인 캐릭터는 실제 단독 행동을 유지한다");
+assert.ok(!nearbyJenEvent.groupInteraction&&nearbyJenEvent.withId!=="runtime-gyp","같은 방의 다른 캐릭터도 연구자를 대화 상대로 잘못 표시하지 않는다");
+
 const [simulation,gradle,worker,index]=await Promise.all([
   readFile(new URL("simulation.js",root),"utf8"),readFile(new URL("android/app/build.gradle",root),"utf8"),readFile(new URL("sw.js",root),"utf8"),readFile(new URL("index.html",root),"utf8")
 ]);
@@ -91,9 +100,9 @@ assert.doesNotMatch(simulation,/청춘을\(를\) 골라 기분을 바꾸는 중|
 assert.match(simulation,/\$\{likedThing\} 장르의 책을 골라 읽는 중/);
 assert.match(simulation,/synchronizedCounterpart/);
 assert.match(simulation,/coLocatedIds:coLocatedCharacterIds/);
-assert.match(gradle,/versionCode\s+(?:202|203|204|205)/);
-assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|19[01])"/);
-assert.ok(/drawer-village-v20260902-(?:relationship-emotion-202|language-scene-203|font-204|cognitive-205)/.test(worker));
-assert.ok(index.includes("20260902relationship202"));
+assert.match(gradle,/versionCode\s+(?:202|203|204|205|206)/);
+assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|19[0-2])"/);
+assert.ok(/drawer-village-v(?:20260902-(?:relationship-emotion-202|language-scene-203|font-204|cognitive-205)|20260903-sync-home-character-206)/.test(worker));
+assert.ok(index.includes("20260903sync206"));
 
 console.log("v1.0.188 / 202 관계 동기화·복합 감정·구체 행동 로그 검증 완료");

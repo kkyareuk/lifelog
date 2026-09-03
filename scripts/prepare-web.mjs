@@ -1,9 +1,22 @@
 import {access,mkdir,readFile,readdir,rm,writeFile} from "node:fs/promises";
+import {execFile} from "node:child_process";
 import {relative} from "node:path";
 import {fileURLToPath} from "node:url";
+import {promisify} from "node:util";
 
 const root=new URL("../",import.meta.url);
 const output=new URL("../dist/",import.meta.url);
+const rootPath=fileURLToPath(root),execFileAsync=promisify(execFile);
+
+async function readSource(source,encoding=null){
+  try{return await readFile(source,encoding??undefined)}catch(error){
+    if(error?.code!=="EPERM")throw error;
+    const sourcePath=fileURLToPath(source),repoPath=relative(rootPath,sourcePath).replaceAll("\\","/");
+    const {stdout}=await execFileAsync("git",["show",`HEAD:${repoPath}`],{cwd:rootPath,encoding:null,maxBuffer:64*1024*1024});
+    console.warn(`OneDrive 원본 대신 Git 기록에서 읽음: ${repoPath}`);
+    return encoding?stdout.toString(encoding):stdout;
+  }
+}
 
 const includedDirectories=new Set([
   "assets",
@@ -68,7 +81,7 @@ async function copyDirectory(source,target){
     const from=new URL(`${entry.name}${entry.isDirectory()?"/":""}`,source);
     const to=new URL(`${entry.name}${entry.isDirectory()?"/":""}`,target);
     if(entry.isDirectory())await copyDirectory(from,to);
-    else await writeFile(to,await readFile(from));
+    else await writeFile(to,await readSource(from));
   }
 }
 
@@ -83,7 +96,7 @@ for(const entry of await readdir(root,{withFileTypes:true})){
     continue;
   }
   if(includedFiles.has(entry.name)){
-    await writeFile(new URL(entry.name,output),await readFile(new URL(entry.name,root)));
+    await writeFile(new URL(entry.name,output),await readSource(new URL(entry.name,root)));
   }
 }
 
@@ -109,7 +122,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260902relationship202";
+const expectedModuleCache="20260903sync206";
 const relativeImports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
@@ -139,10 +152,10 @@ while(moduleQueue.length){
 const index=await readFile(new URL("index.html",output),"utf8");
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
-if(!index.includes("20260902relationship202"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
-if(!app.includes("20260902relationship202"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
-if(!index.includes("20260902font204"))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
-if(!index.includes("20260902cognitive205")||!app.includes("20260902cognitive205"))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260902-cognitive-205"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!index.includes("20260903sync206"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
+if(!app.includes("20260903sync206"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
+if(!index.includes("20260903sync206"))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
+if(!index.includes("20260903sync206")||!app.includes("20260903sync206"))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260903-sync-home-character-206"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

@@ -115,7 +115,10 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const sensitivityScale=({"매우 둔감함":.55,"둔감한 편":.75,"보통":1,"예민한 편":1.25,"매우 예민함":1.55}[emotionalSensitivity]||1),eventValue=value=>Math.round(value*sensitivityScale);
   const day=entry?.date||new Date().toISOString().slice(0,10),moment=entry?.interactionId||entry?.minute||entry?.placeId||entry?.room||'scene',rawVariation=(hash(`${character.id}:${day}:${moment}`)%22)-14,volatilityScale=({"거의 흔들리지 않음":.35,"안정적인 편":.65,"상황에 따라 달라짐":1,"변화가 잦은 편":1.2,"변화 폭이 큼":1.45}[volatility]||1),temperVariation=rawVariation<0?(resilient?Math.round(rawVariation*.55):sensitive?Math.round(rawVariation*1.15):rawVariation):rawVariation,variation=Math.round((restrained?temperVariation*.7:temperVariation)*volatilityScale),baselineBias=({"매우 낙천적임":7,"낙천적인 편":5,"대체로 밝은 편":3,"쾌활한 편":4,"열정적인 편":2,"다정한 편":2,"유혹적인 편":1,"호기심 많은 편":1,"차분한 편":1,"현실적인 편":0,"무덤덤한 편":0,"냉소적인 편":-2,"까칠한 편":-2,"예민한 편":-2,"걱정이 많은 편":-3,"불안한 편":-4,"침울한 편":-5,"비관적인 편":-5,"분노를 품은 편":-5}[baseline]||0);
   if(baselineBias)add(baselineBias,baselineBias>0?'평소 정서가 밝은 쪽으로 기울어 있음':'평소 걱정과 부정적인 가능성을 먼저 살피는 편',baselineBias>0?'Their usual outlook leans bright':'They tend to notice worries and negative possibilities first',baselineBias>0?'普段の気持ちは明るい方へ傾きやすい':'普段は心配や悪い可能性を先に考えやすい');
-  if(Math.abs(variation)>=4)add(variation,variation>0?'오늘의 생활 리듬이 평소보다 가벼움':'오늘의 생활 리듬이 평소보다 무거움',variation>0?'Today’s rhythm feels lighter than usual':'Today’s rhythm feels heavier than usual',variation>0?'今日は普段より生活のリズムが軽い':'今日は普段より生活のリズムが重い');
+  if(Math.abs(variation)>=4)add(variation,
+    variation>0?'오늘은 몸이 가볍고 평소보다 행동이 수월함':'오늘은 쉽게 지치고 평소보다 행동 속도가 느려짐',
+    variation>0?'They feel physically light today, so everyday tasks come more easily':'They tire more easily today and move more slowly than usual',
+    variation>0?'今日は体が軽く、普段より動きやすい':'今日は疲れやすく、普段より動きがゆっくりしている');
   if(goodTown.has(town?.reputation))support(1,'마을의 좋은 생활 환경이 마음을 받쳐 줌','The village environment provides a little reassurance','暮らしやすい村の環境が少し心を支える');
   if(badTown.has(town?.reputation))add(-10,'마을 환경에 대한 걱정','Concerns about the village','村の環境への不安');
   if(/좋|훌륭|친절|사랑받음/.test(place?.reputation||''))support(2,'평판이 좋은 장소라 조금 안심됨','This well-regarded place feels reassuring','評判のよい場所で少し安心する');

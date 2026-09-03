@@ -1,6 +1,8 @@
 const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
 
-export const HOUSE_FURNITURE_GRID=Object.freeze({columns:12,rows:16});
+// 세로 화면에서는 같은 높이 안에서도 더 세밀하게 놓을 수 있도록 세로
+// 스냅만 촘촘하게 한다. 저장 좌표는 비율값이라 기존 배치도 유지된다.
+export const HOUSE_FURNITURE_GRID=Object.freeze({columns:12,rows:24});
 export const FURNITURE_PROPS=Object.freeze(["책","화분","향수","액자","컵","인형","수집품","조명"]);
 const footprint=(columns,rows)=>Object.freeze({columns,rows});
 export const FURNITURE_FOOTPRINTS=Object.freeze({
@@ -8,7 +10,7 @@ export const FURNITURE_FOOTPRINTS=Object.freeze({
   "냉장고":footprint(1,2),"조리대":footprint(3,1),"식탁":footprint(3,2),"오븐":footprint(1,2),"커피머신":footprint(1,1),"식기세척기":footprint(1,2),"에스프레소 머신":footprint(1,1),"티 세트":footprint(1,1),"제빵 도구":footprint(2,1),"칵테일 바":footprint(2,2),"와인 냉장고":footprint(1,2),"향신료 선반":footprint(2,1),"요리책 선반":footprint(2,2),
   "신발장":footprint(2,1),"전신거울":footprint(1,2),"우산꽂이":footprint(1,1),"반려동물 산책용품":footprint(1,1),"자전거 보관대":footprint(2,2),"운동 장비 선반":footprint(2,2),"운동 장비":footprint(2,2),"캠핑 장비":footprint(2,2),
   "샤워부스":footprint(2,2),"욕조":footprint(3,1),"세면대":footprint(2,1),"세탁기":footprint(1,2),"건조기":footprint(1,2),"입욕제 선반":footprint(2,1),"향수 선반":footprint(2,1),"스킨케어 선반":footprint(2,1),
-  "침대":footprint(2,2),"커플 침대":footprint(2,2),"아기 침대":footprint(2,2),"옷장":footprint(2,2),"화장대":footprint(2,2),"협탁":footprint(1,1),"빔프로젝터":footprint(1,1),"독서등":footprint(1,2),"향수 진열대":footprint(2,1),"레코드 플레이어":footprint(1,1),"작은 게임기":footprint(1,1),"봉제인형":footprint(1,1),
+  "침대":footprint(2,3),"커플 침대":footprint(3,4),"아기 침대":footprint(2,3),"옷장":footprint(2,3),"화장대":footprint(2,3),"협탁":footprint(1,2),"빔프로젝터":footprint(1,2),"독서등":footprint(1,3),"향수 진열대":footprint(2,2),"레코드 플레이어":footprint(1,2),"작은 게임기":footprint(1,2),"봉제인형":footprint(1,2),
   "책상":footprint(2,2),"작은 책상":footprint(2,1),"컴퓨터":footprint(2,1),"피아노":footprint(3,2),"기타":footprint(1,2),"그림 도구":footprint(2,2),"재봉틀":footprint(2,2),"운동기구":footprint(2,2),"디지털 드로잉 장비":footprint(2,2),"촬영 장비":footprint(2,2),"보드게임 선반":footprint(2,2),"공예 도구":footprint(2,2),"뜨개 도구":footprint(1,1),"프라모델 작업대":footprint(2,2),"천체망원경":footprint(2,2),"악기":footprint(3,2),
   "의자":footprint(1,1),"야외 의자":footprint(1,1),"캠핑 의자":footprint(1,1),"찬장":footprint(2,2),"티 테이블":footprint(2,1),"와인장":footprint(2,2),"수납장":footprint(2,1),"선반":footprint(2,2),"보관 상자":footprint(2,1),"수집품 상자":footprint(2,1),"옷걸이":footprint(2,2),"놀이 매트":footprint(2,2),"기저귀 교환대":footprint(2,2),"작업대":footprint(2,2),"화분":footprint(1,2),"작은 테이블":footprint(1,1),"빨래 건조대":footprint(3,1),"원예 도구":footprint(1,1)
 });

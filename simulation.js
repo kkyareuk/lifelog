@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260902relationship202";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260902relationship202";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260902relationship202";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260902relationship202";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260902relationship202";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260903sync206";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260903sync206";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260903sync206";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260903sync206";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260903sync206";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -4618,7 +4618,10 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       if(!routineCanInclude(other,c.id))return false;
       const otherEvent=baseEventFor(other,date);
       if(otherEvent.transit||sceneIsSleeping(current)!==sceneIsSleeping(otherEvent))return false;
-      if(isProtectedSoloActivity(otherEvent))return false;
+      // 이미 잘못 만들어진 공동 장면이라도 baseTitle/baseDesc에는 원래의
+      // 연구·업무·집중 행동이 남는다. 그것까지 확인해야 다른 인물이 그
+      // 캐릭터를 대화 상대라고 다시 끌어오는 순환이 끊긴다.
+      if(isProtectedSoloActivity(otherEvent)||isProtectedSoloActivity(baseSceneFrom(otherEvent)))return false;
       const reservedScene=committedSharedSceneFor(other,date,otherEvent);
       if(reservedScene){
         const reservedIds=[other.id,...(reservedScene.participantOrder||[]),...(reservedScene.withIds||[]),reservedScene.withId].filter(Boolean);
@@ -4800,7 +4803,11 @@ export function eventFor(c,date=new Date()){
     const reusingStoredInteraction=Boolean(baseCurrent?.groupInteraction&&baseCurrent.interactionId===current.interactionId);
     const everyoneActuallyHere=participants.length>0&&participants.every(other=>{
       const live=companionAlignedBaseEvent(other,baseEventFor(other,date),date);
-      return !activeScheduledRoutine(other,date)&&sameLiveLocation(current,live)&&(!reusingStoredInteraction||live?.interactionId===current.interactionId);
+      const soloBase=baseSceneFrom(live);
+      return !activeScheduledRoutine(other,date)
+        &&!isProtectedSoloActivity(soloBase)
+        &&sameLiveLocation(current,live)
+        &&(!reusingStoredInteraction||live?.interactionId===current.interactionId);
     });
     // 일반 공동 행동은 양쪽 캐릭터의 실제 집·방·건물이 모두 일치할 때만
     // 확정한다. 상대를 강제로 첫 캐릭터의 방으로 복사해 한쪽 화면에만

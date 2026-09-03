@@ -1,36 +1,36 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260902relationship202";
-import {toggleDislike} from "./state.js?v=20260902relationship202";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260902relationship202";
-import {setCharacterSceneImage} from "./state.js?v=20260902relationship202";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260902relationship202";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260902relationship202";
-import {buildingDetailDialogs} from "./views.js?v=20260902relationship202";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260902relationship202";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260902relationship202";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260902relationship202";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260902relationship202";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260902relationship202";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260902relationship202";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260902relationship202";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260902relationship202";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260902relationship202";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260902relationship202";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260902relationship202";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260902relationship202";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260902relationship202";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260902relationship202";
-import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260902relationship202";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260903sync206";
+import {toggleDislike} from "./state.js?v=20260903sync206";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260903sync206";
+import {setCharacterSceneImage} from "./state.js?v=20260903sync206";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260903sync206";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260903sync206";
+import {buildingDetailDialogs} from "./views.js?v=20260903sync206";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260903sync206";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260903sync206";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260903sync206";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260903sync206";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260903sync206";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260903sync206";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260903sync206";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260903sync206";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260903sync206";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260903sync206";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260903sync206";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260903sync206";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260903sync206";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260903sync206";
+import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260903sync206";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260902relationship202";
-import {translateText} from "./views.js?v=20260902relationship202";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260902relationship202";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260902relationship202";
-import {characterMood} from "./character-mood.js?v=20260902relationship202";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260902relationship202";
+import {switchAccountState} from "./state.js?v=20260903sync206";
+import {translateText} from "./views.js?v=20260903sync206";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260903sync206";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260903sync206";
+import {characterMood} from "./character-mood.js?v=20260903sync206";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260903sync206";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -1048,12 +1048,15 @@ function openFurniturePlacementDialog(homeId,initialRoomKey=""){
   const roomKeys=Object.keys(home.rooms||{}).sort((a,b)=>(Number(home.rooms[a]?.order)||0)-(Number(home.rooms[b]?.order)||0));
   let roomKey=home.rooms?.[initialRoomKey]?initialRoomKey:roomKeys.find(key=>(Number(home.rooms[key]?.floor)||1)===(Number(home.activeFloor)||1))||roomKeys[0];
   if(!roomKey){showToast("먼저 방을 추가해 주세요");return}
-  const copy={ko:{eyebrow:"집 편집 · 독립 도구",title:"가구 배치",help:"방을 고르고 가구를 추가하세요. 창을 닫으면 방 화면에서 격자에 맞춰 위치·크기·각도를 조절할 수 있어요.",placed:"배치된 가구",catalog:"추가할 가구",empty:"아직 배치한 가구가 없어요.",assign:"침대 지정",done:"방에서 위치 조정하기"},en:{eyebrow:"Home edit · Separate tool",title:"Furniture placement",help:"Choose a room and add furniture. Close this panel to position it on the room grid.",placed:"Placed furniture",catalog:"Add furniture",empty:"No furniture placed yet.",assign:"Assign bed",done:"Position in room"},ja:{eyebrow:"家の編集・独立ツール",title:"家具の配置",help:"部屋を選び家具を追加してください。閉じると部屋のグリッド上で位置を調整できます。",placed:"配置済み家具",catalog:"追加する家具",empty:"配置した家具はまだありません。",assign:"ベッド指定",done:"部屋で位置を調整"}}[state.uiLanguage]||null;
+  const copy={ko:{eyebrow:"집 편집",title:"가구 배치",help:"방을 고른 뒤 가구를 검색해 추가하세요. 추가한 가구는 방 안에서 바로 옮길 수 있어요.",placed:"배치된 가구",catalog:"추가할 가구",search:"가구 검색",emptySearch:"검색 결과가 없어요.",empty:"아직 배치한 가구가 없어요.",assign:"침대 지정",done:"방에서 위치 조정하기"},en:{eyebrow:"Home edit",title:"Furniture",help:"Choose a room, then search for furniture to add. Move placed furniture directly in the room.",placed:"Placed furniture",catalog:"Add furniture",search:"Search furniture",emptySearch:"No furniture matches your search.",empty:"No furniture placed yet.",assign:"Assign bed",done:"Position in room"},ja:{eyebrow:"家の編集",title:"家具の配置",help:"部屋を選び、家具を検索して追加してください。追加した家具は部屋の中でそのまま移動できます。",placed:"配置済み家具",catalog:"追加する家具",search:"家具を検索",emptySearch:"検索結果がありません。",empty:"配置した家具はまだありません。",assign:"ベッド指定",done:"部屋で位置を調整"}}[state.uiLanguage]||null;
   const dialog=document.createElement("dialog");dialog.className="furniture-placement-dialog";
+  const pickerArt=item=>item==="커플 침대"?`<span class="furniture-picker-couple-bed" aria-hidden="true"><img src="assets/furniture/couple-bed/couple-bed-base.png" alt=""><img src="assets/furniture/couple-bed/couple-bed-quilt.png" alt=""><img src="assets/furniture/couple-bed/couple-bed-footboard.png" alt=""></span>`:`<span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span>`;
   const draw=()=>{
     const room=state.homes[homeId]?.rooms?.[roomKey],placements=room?.furniturePlacements||[];
-    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><section><h3>${copy.placed}</h3><div class="furniture-placement-current">${placements.length?placements.map(placement=>{const size=furnitureFootprint(placement.item);return `<article><span aria-hidden="true">${furnitureIcon(placement.item)}</span><b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b><small>${size.columns}×${size.rows}</small>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`}).join(""):`<p>${copy.empty}</p>`}</div></section><section><h3>${copy.catalog}</h3><div class="room-editor-furniture">${furnitureCatalogForRoom(room.type).map(item=>{const size=furnitureFootprint(item);return `<button type="button" data-add-room-furniture="${htmlEsc(item)}"><span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span><b>${htmlEsc(furnitureLabel(item,state.uiLanguage))}</b><small>${size.columns}×${size.rows} · ＋</small></button>`}).join("")}</div></section><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><label class="furniture-search"><span aria-hidden="true">⌕</span><input type="search" data-furniture-search autocomplete="off" placeholder="${copy.search}" aria-label="${copy.search}"></label><section class="furniture-catalog-section"><h3>${copy.catalog}</h3><div class="room-editor-furniture">${furnitureCatalogForRoom(room.type).map(item=>{const size=furnitureFootprint(item),label=furnitureLabel(item,state.uiLanguage);return `<button type="button" data-add-room-furniture="${htmlEsc(item)}" data-furniture-choice data-furniture-search-label="${htmlEsc(`${item} ${label}`.toLocaleLowerCase())}">${pickerArt(item)}<b>${htmlEsc(label)}</b><small>${size.columns}×${size.rows} · ＋</small></button>`}).join("")}</div><p class="furniture-search-empty" data-furniture-search-empty hidden>${copy.emptySearch}</p></section><details class="furniture-current-section" ${placements.length?"":"open"}><summary>${copy.placed} · ${placements.length}</summary><div class="furniture-placement-current">${placements.length?placements.map(placement=>{const size=furnitureFootprint(placement.item);return `<article>${pickerArt(placement.item)}<b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b><small>${size.columns}×${size.rows}</small>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`}).join(""):`<p>${copy.empty}</p>`}</div></details><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
     dialog.querySelectorAll("[data-furniture-room]").forEach(button=>button.onclick=()=>{roomKey=button.dataset.furnitureRoom;draw()});
+    const search=dialog.querySelector("[data-furniture-search]"),empty=dialog.querySelector("[data-furniture-search-empty]");
+    search?.addEventListener("input",()=>{const query=search.value.trim().toLocaleLowerCase(),choices=[...dialog.querySelectorAll("[data-furniture-choice]")];let visible=0;choices.forEach(button=>{const matches=!query||button.dataset.furnitureSearchLabel.includes(query);button.hidden=!matches;if(matches)visible++});if(empty)empty.hidden=visible>0});
     dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
       const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
     });
@@ -5512,7 +5515,7 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260902relationship202").catch(error=>{
+import("./auth.js?v=20260903sync206").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5527,7 +5530,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260902cognitive205",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260903sync206",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});

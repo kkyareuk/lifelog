@@ -1,9 +1,13 @@
-import {mkdir, readFile, readdir, rm, writeFile} from "node:fs/promises";
+import {mkdir, readFile, readdir, rename, rm, writeFile} from "node:fs/promises";
+import {execFile} from "node:child_process";
 import {relative,join,dirname} from "node:path";
 import {fileURLToPath} from "node:url";
+import {promisify} from "node:util";
+import {tmpdir} from "node:os";
 
 const root=new URL("../",import.meta.url);
 const output=new URL("../www/",import.meta.url);
+const rootPath=fileURLToPath(root),execFileAsync=promisify(execFile);
 const androidGradle=await readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8");
 const appVersionName=androidGradle.match(/versionName\s+["']([^"']+)["']/)?.[1]||"";
 const appVersionCode=androidGradle.match(/versionCode\s+(\d+)/)?.[1]||"";
@@ -61,10 +65,18 @@ async function copyPortable(source,target){
       catch(error){
         if(error?.code!=="EPERM")throw error;
         try{
+          await rm(to,{force:true,maxRetries:4,retryDelay:100});
           await writeFile(to,await readFile(backupPath));
           console.warn(`OneDrive 원본 대신 이전 Android 자산에서 복구: ${relativePath}`);
         }catch{
-          console.warn(`OneDrive에서 읽을 수 없어 건너뜀: ${decodeURIComponent(from.pathname)}`);
+          try{
+            const {stdout}=await execFileAsync("git",["show",`HEAD:${relativePath}`],{cwd:rootPath,encoding:null,maxBuffer:64*1024*1024});
+            await rm(to,{force:true,maxRetries:4,retryDelay:100});
+            await writeFile(to,stdout);
+            console.warn(`OneDrive 원본 대신 Git 기록에서 복구: ${relativePath}`);
+          }catch{
+            console.warn(`OneDrive에서 읽을 수 없어 건너뜀: ${decodeURIComponent(from.pathname)}`);
+          }
         }
       }
     }
@@ -77,6 +89,16 @@ async function copyPortable(source,target){
 // runtime dependency. Other environments keep the clean rebuild behavior.
 const outputPath=fileURLToPath(output);
 const incrementalOneDriveStage=process.platform==="win32"&&outputPath.toLowerCase().includes("onedrive");
+if(incrementalOneDriveStage){
+  try{await readFile(new URL("assets/character-ui/book-right-page.png",output))}
+  catch(error){
+    if(error?.code==="EPERM"){
+      const stalePath=join(tmpdir(),`drawer-village-www-stale-${Date.now()}`);
+      await rename(outputPath,stalePath);
+      console.warn(`잠긴 OneDrive 앱 자산을 임시 폴더로 옮기고 새로 준비합니다: ${stalePath}`);
+    }else if(error?.code!=="ENOENT")throw error;
+  }
+}
 if(!incrementalOneDriveStage)await rm(output,{recursive:true,force:true,maxRetries:8,retryDelay:250});
 await mkdir(output,{recursive:true});
 
@@ -95,7 +117,7 @@ for(const entry of entries){
 // 상대 import를 끝까지 따라가며 필요한 모듈을 자동으로 복사한다. 새 모듈을
 // 추가하고 목록 갱신을 빼먹더라도 앱이 로딩 화면에서 멈추는 빌드는 만들지 않는다.
 async function copyModuleClosure(){
-  const rootPath=fileURLToPath(root),queue=[...includedFiles].filter(name=>name.endsWith(".js")),visited=new Set();
+  const queue=[...includedFiles].filter(name=>name.endsWith(".js")),visited=new Set();
   while(queue.length){
     const moduleName=queue.shift();
     if(visited.has(moduleName))continue;
@@ -146,7 +168,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260902cognitive205";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260903sync206";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

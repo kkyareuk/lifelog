@@ -65,7 +65,8 @@
     "test:language-scene203": "node scripts/check-language-scene-203.mjs",
     "test:font204": "node scripts/check-font-preference-204.mjs",
     "test:cognitive205": "node scripts/check-cognitive-traits-205.mjs",
-    "test:sync-rules-hotfix": "node scripts/check-sync-rules-hotfix.mjs"
+    "test:sync-rules-hotfix": "node scripts/check-sync-rules-hotfix.mjs",
+    "test:release206": "node scripts/check-sync-home-character-206.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

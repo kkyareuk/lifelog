@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko" class="native-app" data-active-tab="home" data-color-mode="light" data-ui-font="hanbit">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>서랍마을 206 시각 검증</title>
+  <link rel="stylesheet" href="../font-preferences.css?v=20260903sync206">
+  <link rel="stylesheet" href="../app.css?v=20260903sync206">
+  <link rel="stylesheet" href="../character-book.css?v=20260903sync206">
+  <style>
+    *{box-sizing:border-box}html,body,#app{width:100%;height:100%;margin:0}body{overflow:hidden;background:#d8cdbd;color:#241810}.qa-only{display:none}.qa-book .qa-book,.qa-furniture .qa-furniture,.qa-bed .qa-bed{display:block}
+    .qa-book{position:absolute;inset:0}.qa-book .character-book-v8{position:absolute;inset:0}.qa-book .character-book-v8-canvas{position:absolute;inset:0;container-type:size}.qa-book .character-book-v8-page{z-index:3}.qa-page-title{position:absolute;z-index:4;left:14%;right:12%;top:11%;text-align:center;color:#fff5dd;font-weight:900}.qa-page-fields{position:absolute;z-index:5;left:13%;right:11%;top:21%;bottom:13%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:10px;overflow:auto}.qa-field{display:grid;gap:4px;padding:10px;border-radius:12px;background:#f7f0df;border:1px solid #d7c8b5}.qa-field b{font-size:13px}.qa-field span{font-size:11px;color:#6c5d50}.qa-cognitive{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;border:2px solid #6a4b3c;box-shadow:0 4px 0 #9c806c}.qa-cognitive i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#6a4b3c;color:white;font-style:normal}
+    .qa-furniture{position:absolute;inset:0;background:linear-gradient(#6e5849,#bda78f)}.qa-furniture .furniture-placement-dialog{display:block}
+    .qa-bed{position:absolute;inset:0;padding:58px 18px;background:#a58262}.qa-room{position:relative;width:100%;height:390px;overflow:hidden;border:4px solid #21150e;border-radius:20px;background:#a9805e}.qa-room::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000 0 42px,#4a2d1b55 43px 45px)}.qa-couple-bed{position:absolute;left:50%;top:52%;width:62%;height:68%;transform:translate(-50%,-50%)}.qa-couple-bed>img,.qa-sleeper{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.qa-sleeper{z-index:2}.qa-sleeper::before{content:"";position:absolute;top:20%;left:var(--x);width:20%;aspect-ratio:1;border:4px solid #201a17;border-radius:50%;background:var(--skin);transform:translateX(-50%)}.qa-sleeper::after{content:"";position:absolute;top:34%;left:var(--x);width:16%;height:28%;border:4px solid #201a17;border-radius:40%;background:var(--shirt);transform:translateX(-50%)}.qa-bed-base{z-index:1}.qa-bed-quilt{z-index:3}.qa-bed-foot{z-index:4}.qa-bed-caption{margin:16px 0 0;text-align:center;font-weight:900;color:#fff5dd}
+  </style>
+</head>
+<body><div id="app">
+  <section class="qa-only qa-book"><article class="character-book-v8 is-open"><div class="character-book-v8-canvas">
+    <img class="character-book-v8-wood" src="../assets/character-ui/character-wood-background.png" alt=""><img class="character-book-v8-book" src="../assets/character-ui/book-right-page.png" alt="">
+    <div class="qa-page-title">감정 · 특성</div><div class="qa-page-fields">
+      <div class="qa-field"><b>감정 표현의 크기</b><span>상황에 따라 달라짐</span></div><div class="qa-field"><b>충동을 참는 정도</b><span>대체로 참는 편</span></div>
+      <div class="qa-field"><b>감정 알아차림</b><span>천천히 알아차림</span></div><div class="qa-field"><b>감정 전환 속도</b><span>오래 남는 편</span></div>
+      <div class="qa-field qa-cognitive"><span><b>인지·감각·상호작용 특성</b><br>감각 자극에 민감함 · 관심 대상에 과집중함</span><i>＋</i></div>
+    </div>
+  </div></article></section>
+  <section class="qa-only qa-furniture"><dialog class="furniture-placement-dialog" open><form method="dialog">
+    <div class="title"><div><small>집 편집</small><h2>가구 배치</h2></div><button>×</button></div><p>방을 고른 뒤 가구를 검색해 추가하세요.</p>
+    <nav class="furniture-room-tabs"><button class="on">침실</button><button>거실</button><button>서재·취미방</button></nav>
+    <label class="furniture-search"><span>⌕</span><input type="search" value="" placeholder="가구 검색"></label>
+    <section class="furniture-catalog-section"><h3>추가할 가구</h3><div class="room-editor-furniture">
+      <button><span class="room-editor-furniture-icon">🛏️</span><b>침대</b><small>2×3 · ＋</small></button>
+      <button><span class="furniture-picker-couple-bed"><img src="../assets/furniture/couple-bed/couple-bed-base.png"><img src="../assets/furniture/couple-bed/couple-bed-quilt.png"><img src="../assets/furniture/couple-bed/couple-bed-footboard.png"></span><b>커플 침대</b><small>3×4 · ＋</small></button>
+      <button><span class="room-editor-furniture-icon">👗</span><b>옷장</b><small>2×3 · ＋</small></button><button><span class="room-editor-furniture-icon">💄</span><b>화장대</b><small>2×3 · ＋</small></button><button><span class="room-editor-furniture-icon">🗄️</span><b>협탁</b><small>1×2 · ＋</small></button><button><span class="room-editor-furniture-icon">💡</span><b>독서등</b><small>1×3 · ＋</small></button>
+    </div></section><details class="furniture-current-section"><summary>배치된 가구 · 2</summary></details><button class="primary furniture-placement-done">방에서 위치 조정하기</button>
+  </form></dialog></section>
+  <section class="qa-only qa-bed"><div class="qa-room"><div class="qa-couple-bed"><img class="qa-bed-base" src="../assets/furniture/couple-bed/couple-bed-base.png"><span class="qa-sleeper" style="--x:43%;--skin:#edbd9c;--shirt:#253c50"></span><span class="qa-sleeper" style="--x:57%;--skin:#f1c2b1;--shirt:#26534c"></span><img class="qa-bed-quilt" src="../assets/furniture/couple-bed/couple-bed-quilt.png"><img class="qa-bed-foot" src="../assets/furniture/couple-bed/couple-bed-footboard.png"></div></div><p class="qa-bed-caption">이름표·자는 중·ZZ 없이 두 사람의 몸 절반 이상이 이불 안</p></section>
+</div><script>document.body.classList.add(`qa-${new URLSearchParams(location.search).get("mode")||"book"}`)</script></body></html>
