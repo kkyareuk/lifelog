@@ -1,21 +1,21 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260904home210";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260904home210";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260904home210";
-import {characterMood} from "./character-mood.js?v=20260904home210";
-import {createContactMailbox} from "./notification-mail.js?v=20260904home210";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260904home210";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260904home210";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260904home210";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260904home210";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260904home210";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260904home210";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260904home210";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260904home210";
-import {achievementRows} from "./achievements.js?v=20260904home210";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260904home210";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260904home211";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260904home211";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260904home211";
+import {characterMood} from "./character-mood.js?v=20260904home211";
+import {createContactMailbox} from "./notification-mail.js?v=20260904home211";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260904home211";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260904home211";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260904home211";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260904home211";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260904home211";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260904home211";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260904home211";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260904home211";
+import {achievementRows} from "./achievements.js?v=20260904home211";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260904home211";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2433,8 +2433,8 @@ function homeCard(id,chars){
     <div class="rooms ${visibleRoomKeys.length>6?"has-extra":""}" data-room-canvas data-home-id="${id}" data-room-floor="${activeFloor}" data-room-grid-cols="12" data-room-grid-rows="16" style="--room-count:${visibleRoomKeys.length};--room-cols:4;--room-rows:${packedRooms.rows}">${roomHtml||`<button type="button" class="empty-floor-room" data-add-room>+ ${activeFloor}층에 방 추가</button>`}${canvasWalkers?`<div class="home-life-roaming-layer" aria-label="방 사이를 이동하는 캐릭터">${canvasWalkers}</div>`:""}</div>${edit?homeFurnitureDrawer(h,state.uiLanguage):""}${furnitureToolbar}
     ${homeInfo}<section class="pets home-feature-panel" data-home-feature="pets"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>반려생물</h2><button data-add-pet>+ 반려생물 추가</button></div><div class="pet-grid">${petCards||"<p>아직 등록된 반려생물이 없어요.</p>"}</div></section>
     <section class="cars home-feature-panel" data-home-feature="cars"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>자동차</h2><button data-add-car>+ 자동차 추가</button></div><div class="car-grid">${cars||"<p>등록된 자동차가 없어요.</p>"}</div><small>운전면허가 있는 구성원만 운전하며, 음주한 날에는 자동차를 이용하지 않아요.</small></section>
-    <section class="resident-scenes home-feature-panel" data-home-feature="scenes"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div class="title"><h2>${homeCopy.summary}</h2></div><div>${residentScenes}</div></section>
-    <div class="home-feature-panel" data-home-feature="house-log"><button type="button" class="home-feature-close" data-close-home-feature aria-label="닫기">×</button><div data-lazy-home-log="${esc(id)}"></div></div>
+    <section class="resident-scenes home-feature-panel home-design-page home-journal-page" data-home-feature="scenes"><header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${homeCopy.back}"></button><h2>${homeCopy.summary}</h2></header><div class="home-journal-content">${residentScenes}</div></section>
+    <div class="home-feature-panel home-design-page home-journal-page" data-home-feature="house-log"><header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${homeCopy.back}"></button><h2>${homeCopy.logs}</h2></header><div class="home-journal-content" data-lazy-home-log="${esc(id)}"></div></div>
     ${nativeHome?"":`<nav class="home-feature-menu" aria-label="집 세부 메뉴"><button type="button" data-open-home-feature="pets">반려생물</button><button type="button" data-open-home-feature="cars">자동차</button><button type="button" data-open-home-feature="scenes">구성원</button><button type="button" data-open-home-feature="house-log">로그</button></nav>`}
   </article>`;
 }
@@ -3053,7 +3053,7 @@ function character(){
   const fullBookDialogs=`${layoutDialog}${["body","wardrobe","taste"].includes(fullActivePane)?bookListDialog:""}${fullActivePane==="taste"?`${bookCatalogDialog}${tasteDialogs}`:""}`;
   const fullBook=`<section class="character-book-v8 is-open" data-character-full-ui-version="9" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
     <div class="character-book-v8-canvas">
-      <span class="character-book-v8-stage" aria-hidden="true"><img class="character-book-v8-wood" src="./assets/character-ui/character-wood-background.png" alt=""><img class="character-book-v8-book" src="./assets/character-ui/book-right-page.png" alt=""></span>
+      <span class="character-book-v8-stage" aria-hidden="true"><img class="character-book-v8-wood" src="./assets/character-ui/character-wood-background.png" alt=""><span class="character-book-v8-book"></span></span>
       <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
       <button type="button" class="character-book-v8-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 페이지로 돌아가기","캐릭터 페이지로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
       ${fullNavigation}

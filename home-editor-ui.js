@@ -1,4 +1,4 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon} from "./furniture-layout.js?v=20260904home210";
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon} from "./furniture-layout.js?v=20260904home211";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -22,7 +22,7 @@ export function homeFurnitureDrawer(home,locale){
   return `<section class="home-furniture-drawer ${ui.collapsed?"is-collapsed":""}" data-home-furniture-drawer data-home-id="${escape(home.id)}">
     <button type="button" class="home-drawer-toggle" data-home-drawer-toggle aria-expanded="${!ui.collapsed}" aria-label="${ui.collapsed?copy.expand:copy.collapse}">${ui.collapsed?"▲":"▼"}</button>
     <div class="home-drawer-content" ${ui.collapsed?"inert":""}>
-      <details class="home-drawer-search-panel"><summary>${copy.allThemes}</summary><div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"><select data-home-furniture-room aria-label="${copy.rooms}">${Object.entries(home.rooms||{}).filter(([,room])=>(Number(room.floor)||1)===(Number(home.activeFloor)||1)).map(([key,room])=>`<option value="${escape(key)}" ${key===ui.room?"selected":""}>${escape(room.name||key)}</option>`).join("")}</select></div></details>
+      <details class="home-drawer-search-panel"><summary><span>${copy.allThemes}</span></summary><div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"><select data-home-furniture-room aria-label="${copy.rooms}">${Object.entries(home.rooms||{}).filter(([,room])=>(Number(room.floor)||1)===(Number(home.activeFloor)||1)).map(([key,room])=>`<option value="${escape(key)}" ${key===ui.room?"selected":""}>${escape(room.name||key)}</option>`).join("")}</select></div></details>
       <nav class="home-drawer-categories" aria-label="${copy.allThemes}">${["all",...Object.keys(FURNITURE_CATALOG)].map(key=>`<button type="button" data-home-furniture-category="${key}" aria-pressed="${ui.category===key}" class="${ui.category===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
       <div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden>${copy.empty}</p>
     </div>
@@ -33,17 +33,17 @@ export function homeRoomBrowser(home,locale,translateLabel=value=>value){
   return `<section class="home-room-browser home-feature-panel" data-home-feature="room-info">
     <header><button type="button" class="home-feature-close" data-close-home-feature aria-label="${copy.back}">←</button><input type="search" data-room-search placeholder="${copy.searchRooms}" aria-label="${copy.searchRooms}"></header>
     <nav class="home-room-filters">${[0,...Array.from({length:Math.max(1,Number(home.floorCount)||1)},(_,i)=>i+1)].map(floor=>`<button type="button" data-room-filter="${floor}" class="${floor===0?"on":""}" aria-pressed="${floor===0}">${floor?copy.floor(floor):copy.all}</button>`).join("")}</nav>
-    <div class="home-room-cards">${Object.entries(home.rooms||{}).map(([key,room])=>`<button type="button" class="home-room-card" data-room-info-edit="${escape(key)}" data-home-id="${escape(home.id)}" data-room-name="${escape(`${room.name||key} ${translateLabel(room.name||key)} ${copy[room.type]||""}`)}" data-room-floor="${Number(room.floor)||1}">${room.image||room.floorImage?`<img src="${escape(room.image||room.floorImage)}" alt="" loading="lazy">`:`<span class="home-room-preview" aria-hidden="true">${({living:"🛋️",bedroom:"🛏️",bath:"🛁",kitchen:"🍳",study:"📚"})[room.type]||"🚪"}</span>`}<b>${escape(room.name||key)}</b></button>`).join("")}</div>
+    <div class="home-catalog-paper"><div class="home-room-cards">${Object.entries(home.rooms||{}).map(([key,room])=>`<button type="button" class="home-room-card" data-room-info-edit="${escape(key)}" data-home-id="${escape(home.id)}" data-room-name="${escape(`${room.name||key} ${translateLabel(room.name||key)} ${copy[room.type]||""}`)}" data-room-floor="${Number(room.floor)||1}"><span class="home-catalog-photo">${room.image||room.floorImage?`<img src="${escape(room.image||room.floorImage)}" alt="" loading="lazy">`:`<span class="home-room-preview" aria-hidden="true">${({living:"🛋️",bedroom:"🛏️",bath:"🛁",kitchen:"🍳",study:"📚"})[room.type]||"🚪"}</span>`}</span><b>${escape(translateLabel(room.name||key))}</b></button>`).join("")}</div>
     <button type="button" class="home-room-add" data-add-room><img src="assets/character-ui/add.png" alt=""><span>${copy.addRoom}</span></button>
-  </section>`;
+  </div></section>`;
 }
 export function homeMemberMenu(home,characters,locale){
-  const c=homeEditorCopy(locale),card=(kind,item,art)=>`<button type="button" class="home-member-card" data-member-edit="${kind}" data-member-id="${escape(item.id)}" data-home-id="${escape(home.id)}">${art?`<img src="${escape(art)}" alt="">`:`<span aria-hidden="true">${kind==="resident"?escape(item.name?.slice(0,1)||"?"):kind==="pet"?"🐾":"🚙"}</span>`}<b>${escape(item.name)}</b></button>`;
+  const c=homeEditorCopy(locale),card=(kind,item,art)=>`<button type="button" class="home-member-card" data-member-edit="${kind}" data-member-id="${escape(item.id)}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo">${art&&(/^(?:https?:|data:image\/|blob:|\.?\.?\/|assets\/|theme-assets\/)/i.test(art)||/^[^:\s]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:[?#].*)?$/i.test(art))?`<img src="${escape(art)}" alt="" loading="lazy">`:`<span aria-hidden="true">${kind==="resident"?escape(item.name?.slice(0,1)||"?"):kind==="pet"?"🐾":"🚙"}</span>`}</span><b>${escape(item.name)}</b></button>`;
   return `<section class="home-feature-panel home-design-page home-members" data-home-feature="members"><header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${c.members}</h2></header>${[
     ["resident",c.members,characters.map(p=>card("resident",p,p.icon||p.photo)).join("")],
-    ["pet",c.pets,(home.pets||[]).map(p=>card("pet",p,p.photo||p.icon)).join("")],
+    ["pet",c.pets,(home.pets||[]).map(p=>card("pet",p,p.icon||p.photo)).join("")],
     ["car",c.cars,(home.cars||[]).map(p=>card("car",p,p.image)).join("")]
-  ].map(([kind,label,cards])=>`<section class="home-member-section"><h3>${label}</h3><div class="home-member-grid">${cards}<button type="button" class="home-member-card home-member-add" data-member-add="${kind}" data-home-id="${escape(home.id)}"><span>＋</span><b>${c.add}</b></button></div></section>`).join("")}</section>`;
+  ].map(([kind,label,cards])=>`<section class="home-member-section"><h3>${label}</h3><div class="home-member-grid">${cards}<button type="button" class="home-member-card home-member-add" data-member-add="${kind}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo home-add-symbol">＋</span><b>${c.add}</b></button></div></section>`).join("")}</section>`;
 }
 export function homeInformationMarkup(home,photo,state,t){
   const c=homeEditorCopy(state.uiLanguage),id=escape(home.id);
@@ -66,6 +66,10 @@ export function homeInformationMarkup(home,photo,state,t){
 
 export function bindHomeEditorUI(root,{state,addFurniture,openRoom,selectAdded}){
   const copy=homeEditorCopy(state.uiLanguage);
+  root.querySelectorAll('.home-catalog-photo img').forEach(image=>{
+    const fallback=()=>{const marker=document.createElement('span');marker.textContent=image.closest('[data-member-edit="car"]')?'🚙':image.closest('[data-member-edit="pet"]')?'🐾':image.closest('[data-member-edit="resident"]')?'?':'🚪';marker.setAttribute('aria-hidden','true');image.replaceWith(marker)};
+    image.onerror=fallback;if(image.complete&&!image.naturalWidth)fallback();
+  });
   root.querySelectorAll("[data-room-info-edit]").forEach(button=>button.onclick=()=>openRoom(button.dataset.homeId,button.dataset.roomInfoEdit));
   root.querySelectorAll(".home-room-browser").forEach(panel=>{
     let floor=0;const search=panel.querySelector("[data-room-search]");
