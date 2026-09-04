@@ -23,6 +23,8 @@ for(const file of ["index.html","audio.js","assets/audio/shoe-walking.m4a","room
 }
 assert.ok(read("ios/App/App/public/index.html").includes('name="drawer-village-app" content="ios"'));
 assert.ok(read("ios/App/App/public/config.js").includes("iosPreview=true"));
+assert.ok(read("ios/App/App/public/auth.js").includes("ready:true"),"Local preview must settle without network login");
+assert.ok(!read("ios/App/App/public/auth.js").includes("gstatic.com"),"Local preview must not load external auth SDK");
 assert.ok(read("ios/App/App/public/config.js").includes("playBilling||{}),enabled:false"));
 assert.ok(!read("ios/App/Podfile").includes("FirebaseAuthentication"));
 console.log("PASS iOS preparation: Xcode project, version, six native plugins, bundled modules/audio, disabled unconfigured login and purchase paths.");

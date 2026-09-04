@@ -41,6 +41,7 @@ jobs:
         run: |
           node scripts/check-ios-cloud.mjs
           node scripts/check-native-platforms.mjs
+          node scripts/check-ios-preview-auth.mjs
       - name: Prepare iOS assets and CocoaPods
         run: npm run app:sync:ios
       - name: Build simulator app (no Apple credentials)

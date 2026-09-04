@@ -128,6 +128,10 @@ async function copyModuleClosure(){
   return visited;
 }
 await copyModuleClosure();
+// The local-only iOS preview must not wait for external Firebase module loads
+// or restore an account that this preview cannot sign into. Android/web retain
+// the original auth implementation; no saved data or storage scope is changed.
+if(platform==="ios")await writeFile(new URL("auth.js",output),await readFile(new URL("scripts/ios-preview-auth.mjs",root)));
 
 // The character book used to be a separately requested stylesheet. Because it
 // was missing from the manually maintained Android asset list, WebView rendered
