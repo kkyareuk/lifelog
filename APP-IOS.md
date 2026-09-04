@@ -1,6 +1,6 @@
-# 서랍마을 iOS 준비 — v1.0.198 / iOS build 3
+# 서랍마을 iOS 준비 — v1.0.198 / iOS build 4
 
-현재 상태: **클라우드 Xcode 빌드 및 iPhone/iPad 시뮬레이터 설치·실행 검사 통과. iOS 준비판 시작 대기 수정 완료. App Store 제출 가능 상태 아님.**
+현재 상태: **build 3 시뮬레이터 설치·실행 검사 통과. build 4는 서명된 내부 TestFlight 업로드 준비 중. App Store 제출 가능 상태 아님.**
 Android 대응 버전은 1.0.198 / code 213이다. 집 메뉴 버튼과 가구 편집창 개선은 웹·Android·iOS가 공유한다.
 
 ## 준비된 것
@@ -36,7 +36,7 @@ Apple 계정의 소유권/등록 상태를 확인한다. ID 변경은 프로젝�
 
 생성 후에는 앱 설명·스크린샷·지원 URL·개인정보·연령등급·가격/배포 지역을 준비한다.
 EU 배포 관련 거래자 정보는 실제 사업 상태에 맞춰 제출하며 추측해서 선택하지 않는다.
-등록 화면은 사용자 제공 캡처로 확인했다. 인증서·프로비저닝·업로드 권한은 아직 연결하지 않았다.
+등록 화면은 사용자 제공 캡처로 확인했다. 인증서·프로비저닝과 API 키는 GitHub Actions Secrets에 저장 완료. 실제 Mac 서명과 Apple 업로드 결과는 docs/ios-cloud-preview.md의 최신 실행 기록을 따른다.
 
 공식 안내:
 - https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app/

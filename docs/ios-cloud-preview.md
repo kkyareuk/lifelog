@@ -1,4 +1,4 @@
-# 맥 없이 iOS 빌드 준비 — 1.0.198 / iOS build 3
+# 맥 없이 iOS 빌드 준비 — 1.0.198 / iOS build 4
 
 Android code 213 유지. 앱 dev에서만 준비하며 운영 main·사이트·스토어 배포는 변경하지 않는다.
 
@@ -108,3 +108,14 @@ build 2: CocoaPods/Xcode 빌드 통과, iPhone 17 Pro / iOS 26.2 설치·프로�
 - 비밀값은 표준입력으로만 전달했으며 공개 Git, 문서, 채팅, 작업판에 넣지 않음. 로컬 암호화 자료 보존.
 - 이 완료 상태는 secret 저장까지만 뜻함. Apple API 인증, Mac 키체인 가져오기/신뢰 체인, 실제 서명 빌드, TestFlight 업로드는 후속 검증 대상. 기존 미리보기 workflow는 그대로 유지되어 서명 자료를 사용하거나 자동 업로드하지 않음.
 - 앱 1.0.198 / Android 213 / iOS build 3 및 운영 main 유지. 게임 UI 변경이 없어 신규 번역 대상 없음.
+
+## build 4: 내부 TestFlight 업로드 경로
+
+- 사용자 TestFlight 설치 후, dev 전용 `.github/workflows/ios-testflight.yml` 추가. `.github/ios-testflight-request.json` 변경 시에만 실행한다. 기존 미서명 simulator workflow는 별개로 유지한다.
+- 빌드 전 App Store Connect API로 com.drawervillage.app 접근과 미사용 빌드 번호를 확인한다. 이미 등록된 번호면 중단하며 덮어쓰거나 자동 증가하지 않는다.
+- 표준 macos-15/Xcode 26.3, 30분 제한. 종속성 설치 단계에 서명 secret을 제공하지 않는다. 임시 키체인과 프로파일은 검사 후 정리한다.
+- 앱 타깃에만 수동 서명을 적용하고 Archive → codesign 확인 → 내부 전용 export → Apple validate → upload 순서로 실행한다. `testFlightInternalTestingOnly=true`, `manageAppVersionAndBuildNumber=false`.
+- IPA·P12·프로파일·API 키를 공개 GitHub artifact에 올리지 않는다. 공개 artifact는 비밀값 없는 상태 JSON만 3일 보관한다.
+- Apple 처리 상태는 최대 3분 확인한다. 업로드 수락, 처리 완료, 실제 설치 가능은 구분한다. 암호화 신고/초대/공개 링크/외부 심사/App Store 심사 제출은 자동 처리하지 않는다.
+- build 4도 기존 로컬 준비판이다. 로그인·클라우드 동기화·구매는 미연결이며 기존 데이터 삭제나 구매 권한 부여는 하지 않는다. appStoreReady는 false 유지.
+- 최초 iOS 내부 테스트 안내: docs/ios-testflight-notes.md. 신규 게임 UI 변경 없음, 안내문 영어·일본어 제공. 전체 게임/로그 번역률은 재측정하지 않음.

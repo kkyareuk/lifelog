@@ -1,0 +1,64 @@
+name: iOS internal TestFlight
+
+# A dedicated request change on dev is the only automatic trigger.
+# Do not enable PR, scheduled, tag, or ordinary source-change deployments.
+on:
+  push:
+    branches: [dev]
+    paths: [.github/ios-testflight-request.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-internal-testflight
+  cancel-in-progress: false
+
+jobs:
+  internal-testflight:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      COCOAPODS_DISABLE_STATS: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check explicit internal-only request
+        run: node scripts/check-ios-testflight.mjs
+      - name: Verify Apple upload access and unused build number
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: node scripts/ios-asc-status.mjs preflight
+      - name: Install locked dependencies (no signing secrets in this step)
+        run: npm ci --no-audit --no-fund
+      - name: Prepare and verify isolated iOS preview
+        run: |
+          node scripts/check-native-platforms.mjs
+          node scripts/check-ios-preview-auth.mjs
+          npm run app:sync:ios
+      - name: Archive, sign and upload internal-only TestFlight build
+        env:
+          IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}
+          IOS_DISTRIBUTION_P12_PASSWORD: ${{ secrets.IOS_DISTRIBUTION_P12_PASSWORD }}
+          IOS_PROVISION_PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: node scripts/ios-testflight.mjs
+      - name: Keep small non-secret status only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-testflight-status-${{ github.run_id }}
+          path: ios/build/testflight-reports/*.json
+          retention-days: 3
+          if-no-files-found: ignore
