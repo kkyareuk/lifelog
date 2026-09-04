@@ -119,3 +119,16 @@ build 2: CocoaPods/Xcode 빌드 통과, iPhone 17 Pro / iOS 26.2 설치·프로�
 - Apple 처리 상태는 최대 3분 확인한다. 업로드 수락, 처리 완료, 실제 설치 가능은 구분한다. 암호화 신고/초대/공개 링크/외부 심사/App Store 심사 제출은 자동 처리하지 않는다.
 - build 4도 기존 로컬 준비판이다. 로그인·클라우드 동기화·구매는 미연결이며 기존 데이터 삭제나 구매 권한 부여는 하지 않는다. appStoreReady는 false 유지.
 - 최초 iOS 내부 테스트 안내: docs/ios-testflight-notes.md. 신규 게임 UI 변경 없음, 안내문 영어·일본어 제공. 전체 게임/로그 번역률은 재측정하지 않음.
+
+### 실제 build 4 업로드 결과
+
+- https://github.com/kkyareuk/lifelog/actions/runs/33881610964 — success, 6분 40초, 실행 소스 485a366.
+- Apple API 접근/미사용 build 4 확인, Mac 배포 키체인 가져오기 및 신뢰 가능한 서명 identity 확인, Release Archive, codesign strict 검사, 내부 전용 IPA export, Apple validate 및 upload 모두 통과.
+- 업로드 대상: com.drawervillage.app, iOS 1.0.198 (4). Apple 업로드 수락 확인. App Store 심사/외부 테스터 초대/공개 링크 생성 없음.
+- 업로드 직후 3분 상태 조회에서는 build 레코드가 아직 없었음. 이는 설치 가능 판정이 아니다. 내부 audience도 명시해 조회하는 Linux 읽기 전용 상태 workflow를 별도로 추가했고 재빌드/재업로드 없이 확인한다.
+- 상태 조회 요청은 `.github/ios-testflight-status-request.json`만 변경하며 macOS 업로드 요청 파일은 건드리지 않는다. 5분 상한, Apple API GET만 사용, P12/프로파일은 읽지 않는다.
+- 실행 기록은 비밀값 없는 JSON만 3일 보관. 서명 자료와 IPA는 공개 artifact에 포함하지 않고 runner의 임시 키체인/프로파일/파일을 정리함.
+- 로컬 iOS/플랫폼 분리/미리보기 auth/JWT·workflow 안전성 검사 통과. Android 자산 213개 및 auth 원본 바이트 일치 확인. 정식 출시 검사는 미완료 항목을 유지하므로 의도적으로 실패함.
+- 첫 iOS 테스트 안내 영어·일본어 각 100%. 게임 UI 수정 없음, 전체 게임/로그 번역률은 재측정하지 않음. 실기기 동작 검증은 사용자 TestFlight 설치 이후 진행한다.
+- 추가 조회 https://github.com/kkyareuk/lifelog/actions/runs/33882470681 — success. 내부/일반 audience를 모두 명시한 API 조회도 build=null. 업로드 수락 이후 Apple 처리 완료/설치 가능 여부는 아직 확인되지 않음. 자동 재업로드/반복 빌드를 하지 않음.
+- 사용자 다음 단계: App Store Connect → 서랍마을 → TestFlight에서 1.0.198 (4)가 나타나는지 확인. 처리 완료 뒤 내부 테스트 그룹을 만들고 본인 계정과 해당 빌드를 추가한 다음 아이패드의 초대 이메일에서 TestFlight 설치. 수출 규정 준수 질문이 표시되면 해당 빌드에 맞는 신고를 완료해야 하며 이 작업은 자동 제출하지 않았다.

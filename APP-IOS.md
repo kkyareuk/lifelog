@@ -1,6 +1,6 @@
 # 서랍마을 iOS 준비 — v1.0.198 / iOS build 4
 
-현재 상태: **build 3 시뮬레이터 설치·실행 검사 통과. build 4는 서명된 내부 TestFlight 업로드 준비 중. App Store 제출 가능 상태 아님.**
+현재 상태: **build 3 시뮬레이터 설치·실행 검사 통과. build 4는 Mac 서명·Apple 검증·내부 TestFlight 업로드 수락 완료. Apple 처리와 테스트 접근 설정/실기기 확인은 별도. App Store 제출 가능 상태 아님.**
 Android 대응 버전은 1.0.198 / code 213이다. 집 메뉴 버튼과 가구 편집창 개선은 웹·Android·iOS가 공유한다.
 
 ## 준비된 것
