@@ -1,7 +1,7 @@
-# 서랍마을 iOS 준비 — v1.0.197 / iOS build 1
+# 서랍마을 iOS 준비 — v1.0.198 / iOS build 2
 
 현재 상태: **Xcode 프로젝트와 로컬 플레이 준비용 자산 생성 완료. App Store 제출 가능 상태 아님.**
-Android 대응 버전은 1.0.197 / code 212이며, 이번 작업에서 Android 번호는 올리지 않았다.
+Android 대응 버전은 1.0.198 / code 213이다. 집 메뉴 버튼과 가구 편집창 개선은 웹·Android·iOS가 공유한다.
 
 ## 준비된 것
 
@@ -12,6 +12,34 @@ Android 대응 버전은 1.0.197 / code 212이며, 이번 작업에서 Android �
 - 미설정 Firebase iOS 플러그인은 제외. 로그인/동기화와 구매는 준비 중으로 표시하며 Google Play/웹 결제로 우회하지 않는다.
 - 한국어·영어·일본어 준비 상태 문구
 - 사진 선택 시 필요한 기본 카메라/사진 권한 설명(영문). iOS 시스템 권한 문구의 한국어·일본어 현지화는 출시 전 후속 항목.
+
+## App Store Connect에서 신규 앱 등록
+
+앱 레코드를 만드는 단계이며, 생성만으로 앱이 공개되거나 심사에 제출되지는 않는다.
+2026-09-04 현재 사용자가 보내 준 신규 앱 화면에서 다음 값으로 진행한다.
+
+| 항목 | 입력 / 선택 |
+| --- | --- |
+| 플랫폼 | iOS |
+| 이름 | 서랍마을: 캐릭터 생활 시뮬레이터 |
+| 기본 언어 | 한국어 |
+| 번들 ID | com.drawervillage.app |
+| SKU | drawervillage-ios (계정 내에서 사용하지 않은 내부 관리용 식별자) |
+| 사용자 액세스 권한 | 전체 액세스 (개발팀 사용자의 접근 권한이며 일반 이용자 공개 여부가 아님) |
+
+번들 ID가 목록에 없으면 Certificates, Identifiers & Profiles → Identifiers → + →
+App IDs → App → 설명 Drawer Village → Explicit Bundle ID com.drawervillage.app →
+Continue → Register 순서로 등록한 뒤 돌아와 목록을 새로 고친다.
+같은 ID가 이미 다른 용도로 등록되어 있거나 등록이 거절되면 임의의 ID를 고르지 말고,
+Apple 계정의 소유권/등록 상태를 확인한다. ID 변경은 프로젝트 설정과 함께 해야 한다.
+
+생성 후에는 앱 설명·스크린샷·지원 URL·개인정보·연령등급·가격/배포 지역을 준비한다.
+EU 배포 관련 거래자 정보는 실제 사업 상태에 맞춰 제출하며 추측해서 선택하지 않는다.
+이 문서는 입력 안내일 뿐, Apple 계정의 등록 완료를 확인한 기록은 아니다.
+
+공식 안내:
+- https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app/
+- https://developer.apple.com/help/account/identifiers/register-an-app-id/
 
 ## Mac에서 이어서 실행
 

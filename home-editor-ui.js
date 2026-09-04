@@ -1,15 +1,31 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon} from "./furniture-layout.js?v=20260904audio212";
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon} from "./furniture-layout.js?v=20260904home213";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
-  ko:{back:"뒤로",add:"추가",homePhoto:"집 사진 변경",terrain:"마을 지형 · 기후",owner:"소유 캐릭터/단체",rooms:"방 정보",searchRooms:"방 검색",all:"전체",addRoom:"방 추가",editRoom:"방 편집",searchFurniture:"가구 검색",allThemes:"전체 테마 설정",defaultTheme:"서랍마을 기본 테마",save:"저장",collapse:"가구창 접기",expand:"가구창 펼치기",members:"구성원",residents:"구성원",pets:"반려생물",cars:"차",editHome:"집 정보 편집하기",summary:"요약",logs:"로그",front:"정면",left:"왼쪽",right:"오른쪽",flip:"좌우반전",direction:"방향",missingSide:"옆모습 그림 준비 중 · 정면 그림 표시",assign:"침대 지정",empty:"검색 결과가 없어요.",floor:n=>`${n}층`,living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재",dining:"식당",nursery:"아기방",guest:"손님방",hobby:"취미방",balcony:"발코니",storage:"창고",other:"기타"},
-  en:{back:"Back",add:"Add",homePhoto:"Change home photo",terrain:"Town terrain · climate",owner:"Owner / group",rooms:"Rooms",searchRooms:"Search rooms",all:"All",addRoom:"Add room",editRoom:"Edit room",searchFurniture:"Search furniture",allThemes:"Furniture theme",defaultTheme:"Drawer Village default",save:"Save",collapse:"Collapse furniture",expand:"Expand furniture",members:"Members",residents:"Resident list",pets:"Pets",cars:"Cars",editHome:"Edit home information",summary:"Summary",logs:"Logs",front:"Front",left:"Left",right:"Right",flip:"Flip",direction:"Facing",missingSide:"Side artwork pending · showing front",assign:"Assign bed",empty:"No results.",floor:n=>`Floor ${n}`,living:"Living",kitchen:"Kitchen",entry:"Entry",bath:"Bath",bedroom:"Bedroom",study:"Study",dining:"Dining",nursery:"Nursery",guest:"Guest",hobby:"Hobby",balcony:"Balcony",storage:"Storage",other:"Other"},
-  ja:{back:"戻る",add:"追加",homePhoto:"家の写真を変更",terrain:"村の地形・気候",owner:"所有者・団体",rooms:"部屋情報",searchRooms:"部屋を検索",all:"すべて",addRoom:"部屋を追加",editRoom:"部屋を編集",searchFurniture:"家具を検索",allThemes:"家具テーマ設定",defaultTheme:"ひきだし村の基本テーマ",save:"保存",collapse:"家具一覧を閉じる",expand:"家具一覧を開く",members:"メンバー",residents:"住人一覧",pets:"ペット",cars:"車",editHome:"家の情報を編集",summary:"まとめ",logs:"記録",front:"正面",left:"左向き",right:"右向き",flip:"左右反転",direction:"向き",missingSide:"横向きの絵は準備中・正面の絵を表示",assign:"ベッド指定",empty:"見つかりませんでした。",floor:n=>`${n}階`,living:"居間",kitchen:"キッチン",entry:"玄関",bath:"浴室",bedroom:"寝室",study:"書斎",dining:"食堂",nursery:"子供部屋",guest:"客室",hobby:"趣味の部屋",balcony:"バルコニー",storage:"物置",other:"その他"}
+  ko:{editFurniture:"선택한 가구 편집",furniture:"가구",smaller:"가구 작게",larger:"가구 크게",backward:"가구 뒤로",forward:"가구 앞으로",remove:"삭제",done:"완료",categoryFilter:"방 종류",typeFilter:"가구 종류",beds:"침대",sinks:"세면대",tables:"식탁·책상",seating:"의자·소파",cabinets:"수납",appliances:"가전",decor:"장식",misc:"기타",back:"뒤로",add:"추가",homePhoto:"집 사진 변경",terrain:"마을 지형 · 기후",owner:"소유 캐릭터/단체",rooms:"방 정보",searchRooms:"방 검색",all:"전체",addRoom:"방 추가",editRoom:"방 편집",searchFurniture:"가구 검색",save:"저장",collapse:"가구창 접기",expand:"가구창 펼치기",members:"구성원",residents:"구성원",pets:"반려생물",cars:"차",editHome:"집 정보 편집하기",summary:"요약",logs:"로그",front:"정면",left:"왼쪽",right:"오른쪽",flip:"좌우반전",direction:"방향",missingSide:"옆모습 그림 준비 중 · 정면 그림 표시",assign:"침대 지정",empty:"검색 결과가 없어요.",floor:n=>`${n}층`,living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재",dining:"식당",nursery:"아기방",guest:"손님방",hobby:"취미방",balcony:"발코니",storage:"창고",other:"기타"},
+  en:{editFurniture:"Edit selected furniture",furniture:"Furniture",smaller:"Make smaller",larger:"Make larger",backward:"Send backward",forward:"Bring forward",remove:"Delete",done:"Done",categoryFilter:"Room categories",typeFilter:"Furniture types",beds:"Beds",sinks:"Sinks",tables:"Tables",seating:"Seating",cabinets:"Storage",appliances:"Appliances",decor:"Decor",misc:"Other",back:"Back",add:"Add",homePhoto:"Change home photo",terrain:"Town terrain · climate",owner:"Owner / group",rooms:"Rooms",searchRooms:"Search rooms",all:"All",addRoom:"Add room",editRoom:"Edit room",searchFurniture:"Search furniture",save:"Save",collapse:"Collapse furniture",expand:"Expand furniture",members:"Members",residents:"Resident list",pets:"Pets",cars:"Cars",editHome:"Edit home information",summary:"Summary",logs:"Logs",front:"Front",left:"Left",right:"Right",flip:"Flip",direction:"Facing",missingSide:"Side artwork pending · showing front",assign:"Assign bed",empty:"No results.",floor:n=>`Floor ${n}`,living:"Living",kitchen:"Kitchen",entry:"Entry",bath:"Bath",bedroom:"Bedroom",study:"Study",dining:"Dining",nursery:"Nursery",guest:"Guest",hobby:"Hobby",balcony:"Balcony",storage:"Storage",other:"Other"},
+  ja:{editFurniture:"選んだ家具を編集",furniture:"家具",smaller:"小さくする",larger:"大きくする",backward:"奥に移動",forward:"手前に移動",remove:"削除",done:"完了",categoryFilter:"部屋の種類",typeFilter:"家具の種類",beds:"ベッド",sinks:"洗面台",tables:"テーブル・机",seating:"椅子・ソファ",cabinets:"収納",appliances:"家電",decor:"装飾",misc:"その他",back:"戻る",add:"追加",homePhoto:"家の写真を変更",terrain:"村の地形・気候",owner:"所有者・団体",rooms:"部屋情報",searchRooms:"部屋を検索",all:"すべて",addRoom:"部屋を追加",editRoom:"部屋を編集",searchFurniture:"家具を検索",save:"保存",collapse:"家具一覧を閉じる",expand:"家具一覧を開く",members:"メンバー",residents:"住人一覧",pets:"ペット",cars:"車",editHome:"家の情報を編集",summary:"まとめ",logs:"記録",front:"正面",left:"左向き",right:"右向き",flip:"左右反転",direction:"向き",missingSide:"横向きの絵は準備中・正面の絵を表示",assign:"ベッド指定",empty:"見つかりませんでした。",floor:n=>`${n}階`,living:"居間",kitchen:"キッチン",entry:"玄関",bath:"浴室",bedroom:"寝室",study:"書斎",dining:"食堂",nursery:"子供部屋",guest:"客室",hobby:"趣味の部屋",balcony:"バルコニー",storage:"物置",other:"その他"}
 };
 export const homeEditorCopy=locale=>COPY[locale]||COPY.ko;
+export const FURNITURE_TYPES=Object.freeze(["all","beds","sinks","tables","seating","cabinets","appliances","decor","misc"]);
+export function furnitureType(item){
+  if(/침대/.test(item))return "beds";
+  if(item==="세면대")return "sinks";
+  if(/식탁|책상|테이블|작업대|조리대|칵테일 바/.test(item))return "tables";
+  if(/의자|소파/.test(item))return "seating";
+  if(/선반|책장|진열|수납장|신발장|찬장|와인장|상자|옷장|옷걸이|협탁/.test(item))return "cabinets";
+  if(/TV|오디오|냉장고|오븐|머신|세척기|세탁기|건조기|프로젝터|컴퓨터|게임기|플레이어|턴테이블|홈시어터/.test(item))return "appliances";
+  if(/화분|인형|거울|독서등/.test(item))return "decor";
+  return "misc";
+}
+export function filteredFurniture({category="all",type="all",query=""}={},locale="ko"){
+  const catalog=category==="all"?[...new Set(Object.values(FURNITURE_CATALOG).flat())]:FURNITURE_CATALOG[category]||[];
+  const search=query.trim().toLocaleLowerCase();
+  return catalog.filter(item=>(type==="all"||furnitureType(item)===type)&&`${item} ${furnitureLabel(item,locale)}`.toLocaleLowerCase().includes(search));
+}
 const drawerStates=new Map();
 const drawerState=home=>{
-  if(!drawerStates.has(home.id))drawerStates.set(home.id,{collapsed:false,query:"",category:"all",room:""});
+  if(!drawerStates.has(home.id))drawerStates.set(home.id,{collapsed:false,query:"",category:"all",type:"all",room:""});
   const state=drawerStates.get(home.id),keys=Object.keys(home.rooms||{}).filter(key=>(Number(home.rooms[key].floor)||1)===(Number(home.activeFloor)||1));
   if(!keys.includes(state.room))state.room=keys[0]||"";
   return state;
@@ -22,9 +38,10 @@ export function homeFurnitureDrawer(home,locale){
   return `<section class="home-furniture-drawer ${ui.collapsed?"is-collapsed":""}" data-home-furniture-drawer data-home-id="${escape(home.id)}">
     <button type="button" class="home-drawer-toggle" data-home-drawer-toggle aria-expanded="${!ui.collapsed}" aria-label="${ui.collapsed?copy.expand:copy.collapse}">${ui.collapsed?"▲":"▼"}</button>
     <div class="home-drawer-content" ${ui.collapsed?"inert":""}>
-      <details class="home-drawer-search-panel"><summary><span>${copy.allThemes}</span></summary><div class="home-drawer-theme-options"><label><input type="radio" aria-label="${copy.defaultTheme}" name="furnitureTheme" value="drawer-default" checked>${copy.defaultTheme}</label></div></details><div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"><select data-home-furniture-room aria-label="${copy.rooms}">${Object.entries(home.rooms||{}).filter(([,room])=>(Number(room.floor)||1)===(Number(home.activeFloor)||1)).map(([key,room])=>`<option value="${escape(key)}" ${key===ui.room?"selected":""}>${escape(room.name||key)}</option>`).join("")}</select></div>
-      <nav class="home-drawer-categories" aria-label="${copy.allThemes}">${["all",...Object.keys(FURNITURE_CATALOG)].map(key=>`<button type="button" data-home-furniture-category="${key}" aria-pressed="${ui.category===key}" class="${ui.category===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
-      <div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden>${copy.empty}</p>
+      <div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"><select data-home-furniture-room aria-label="${copy.rooms}">${Object.entries(home.rooms||{}).filter(([,room])=>(Number(room.floor)||1)===(Number(home.activeFloor)||1)).map(([key,room])=>`<option value="${escape(key)}" ${key===ui.room?"selected":""}>${escape(room.name||key)}</option>`).join("")}</select></div>
+      <nav class="home-drawer-categories" aria-label="${copy.categoryFilter}">${["all",...Object.keys(FURNITURE_CATALOG)].map(key=>`<button type="button" data-home-furniture-category="${key}" aria-pressed="${ui.category===key}" class="${ui.category===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
+      <nav class="home-drawer-categories home-drawer-types" aria-label="${copy.typeFilter}">${FURNITURE_TYPES.map(key=>`<button type="button" data-home-furniture-type="${key}" aria-pressed="${ui.type===key}" class="${ui.type===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
+      <div class="home-drawer-results"><div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden role="status">${copy.empty}</p></div>
     </div>
   </section>`;
 }
@@ -81,8 +98,7 @@ export function bindHomeEditorUI(root,{state,addFurniture,openRoom,selectAdded})
   const home=state.homes[drawer.dataset.homeId];if(!home)return;
   const ui=drawerState(home),items=drawer.querySelector("[data-home-furniture-items]"),content=drawer.querySelector(".home-drawer-content");
   const draw=()=>{
-    const catalog=ui.category==="all"?[...new Set(Object.values(FURNITURE_CATALOG).flat())]:FURNITURE_CATALOG[ui.category]||[];
-    const query=ui.query.trim().toLocaleLowerCase(),matches=catalog.filter(item=>`${item} ${furnitureLabel(item,state.uiLanguage)}`.toLocaleLowerCase().includes(query));
+    const matches=filteredFurniture(ui,state.uiLanguage);
     items.innerHTML=matches.map(item=>`<button type="button" data-home-add-furniture="${escape(item)}" ${ui.room?"":"disabled"}>${furniturePickerArt(item)}<b>${escape(furnitureLabel(item,state.uiLanguage))}</b></button>`).join("");
     drawer.querySelector("[data-home-furniture-empty]").hidden=matches.length>0;
     items.querySelectorAll("[data-home-add-furniture]").forEach(button=>button.onclick=()=>{const id=addFurniture(home.id,ui.room,button.dataset.homeAddFurniture);if(id)selectAdded(home.id,ui.room,id)});
@@ -94,8 +110,13 @@ export function bindHomeEditorUI(root,{state,addFurniture,openRoom,selectAdded})
   drawer.querySelector("[data-home-furniture-search]").oninput=event=>{ui.query=event.target.value;draw()};
   drawer.querySelector("[data-home-furniture-room]").onchange=event=>{ui.room=event.target.value;draw()};
   drawer.querySelectorAll("[data-home-furniture-category]").forEach(button=>button.onclick=()=>{
-    ui.category=button.dataset.homeFurnitureCategory;
+    ui.category=button.dataset.homeFurnitureCategory;ui.type="all";
+    drawer.querySelectorAll("[data-home-furniture-type]").forEach(item=>{const on=item.dataset.homeFurnitureType==="all";item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});
     drawer.querySelectorAll("[data-home-furniture-category]").forEach(item=>{const on=item===button;item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});draw();
+  });
+  drawer.querySelectorAll("[data-home-furniture-type]").forEach(button=>button.onclick=()=>{
+    ui.type=button.dataset.homeFurnitureType;
+    drawer.querySelectorAll("[data-home-furniture-type]").forEach(item=>{const on=item===button;item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});draw();
   });
   draw();
 }

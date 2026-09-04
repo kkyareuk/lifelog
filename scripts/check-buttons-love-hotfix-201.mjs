@@ -3,7 +3,7 @@ import {readFile} from "node:fs/promises";
 import {characterMood} from "../character-mood.js";
 
 const root=new URL("../",import.meta.url);
-const marker="20260904audio212";
+const marker="20260904home213";
 const imports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
@@ -61,9 +61,9 @@ for(const language of ["en","ja"]){
 const [gradle,serviceWorker,index]=await Promise.all([
   readFile(new URL("android/app/build.gradle",root),"utf8"),readFile(new URL("sw.js",root),"utf8"),readFile(new URL("index.html",root),"utf8")
 ]);
-assert.match(gradle,/versionCode\s+212/);
-assert.match(gradle,/versionName\s+"1\.0\.197"/);
-assert.ok(serviceWorker.includes("drawer-village-v20260904-footsteps-dev-212"));
+assert.match(gradle,/versionCode\s+213/);
+assert.match(gradle,/versionName\s+"1\.0\.198"/);
+assert.ok(serviceWorker.includes("drawer-village-v20260904-home-drawer-dev-213"));
 assert.ok(index.includes(marker));
 
 console.log(`v1.0.188 / 202 버튼 상태·애정 관계 감정 회귀 검증 완료 (${visited.size} modules)`);

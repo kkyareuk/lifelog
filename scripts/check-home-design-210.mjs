@@ -34,5 +34,5 @@ assert.ok(app.includes('refreshHomeMemberEditor()'));
 assert.ok(views.includes('homeInformationMarkup(h,homeExteriorSource(h),state,t)'));
 assert.ok(css.includes('.home-native-bottom .home-native-pill{position:relative!important'));
 assert.ok(css.includes('building-info-wood.png')&&css.includes('town.webp'));
-assert.match(gradle,/versionCode\s+212/);assert.match(gradle,/versionName\s+"1\.0\.197"/);
+assert.match(gradle,/versionCode\s+213/);assert.match(gradle,/versionName\s+"1\.0\.198"/);
 console.log('PASS home design 210: three member sections/add/edit, shared home state/photo, escaped data, removed controls preserve metadata, three-language key parity, navigation and version.');

@@ -1,21 +1,21 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260904audio212";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260904audio212";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260904audio212";
-import {characterMood} from "./character-mood.js?v=20260904audio212";
-import {createContactMailbox} from "./notification-mail.js?v=20260904audio212";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260904audio212";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260904audio212";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260904audio212";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260904audio212";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260904audio212";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260904audio212";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260904audio212";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260904audio212";
-import {achievementRows} from "./achievements.js?v=20260904audio212";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260904audio212";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260904home213";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260904home213";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260904home213";
+import {characterMood} from "./character-mood.js?v=20260904home213";
+import {createContactMailbox} from "./notification-mail.js?v=20260904home213";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260904home213";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260904home213";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260904home213";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260904home213";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260904home213";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260904home213";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260904home213";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260904home213";
+import {achievementRows} from "./achievements.js?v=20260904home213";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260904home213";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2424,7 +2424,7 @@ function homeCard(id,chars){
   const homeInfo=homeInformationMarkup(h,homeExteriorSource(h),state,t);
   const editToolbar=edit?(nativeHome?`<nav class="home-edit-toolbar home-native-edit-tools" style="${homeUiThemeStyle(hudCharacter)}" aria-label="집 편집 도구">${homeNativePill(t("집 설정","집 설정"),'data-open-home-feature="house-settings"')}${homeNativePill(t("방 구성","방 구성"),'data-open-home-feature="room-plan"')}${homeNativePill(t("가구 배치","가구 배치"),`data-open-furniture-layout="${esc(id)}"`)}${homeNativePill(t("거주 설정","거주 설정"),'data-open-home-feature="residents"')}</nav>`:`<nav class="home-edit-toolbar" aria-label="집 편집 도구"><button type="button" data-open-home-feature="house-settings">집 설정</button><button type="button" data-open-home-feature="room-plan">방 추가·구성</button><button type="button" data-open-furniture-layout="${esc(id)}">가구 배치</button><button type="button" data-open-home-feature="residents">구성원</button><button type="button" class="primary" data-home-edit>완료</button></nav>`):"";
   const propToolbarLabel=state.uiLanguage==="en"?"Props +":state.uiLanguage==="ja"?"小物＋":"소품 +";
-  const furnitureToolbar=edit?`<nav class="furniture-edit-toolbar" data-furniture-edit-toolbar hidden aria-label="선택한 가구 편집"><strong data-furniture-edit-name>가구</strong><div class="furniture-edit-actions"><button type="button" data-furniture-command="smaller" aria-label="가구 작게">−</button><button type="button" data-furniture-command="larger" aria-label="가구 크게">＋</button><button type="button" data-furniture-command="rotate" aria-label="${homeCopy.direction}">↻ <span data-furniture-facing-label>${homeCopy.front}</span></button><button type="button" data-furniture-command="flip">${homeCopy.flip}</button><button type="button" data-furniture-command="assign">${homeCopy.assign}</button><button type="button" data-furniture-command="back" aria-label="가구 뒤로">↓</button><button type="button" data-furniture-command="front" aria-label="가구 앞으로">↑</button><button type="button" data-furniture-command="props">${propToolbarLabel}</button><button type="button" class="danger" data-furniture-command="delete">삭제</button><button type="button" class="primary" data-furniture-command="done">완료</button></div></nav>`:"";
+  const furnitureToolbar=edit?`<nav class="furniture-edit-toolbar" data-furniture-edit-toolbar hidden aria-label="${homeCopy.editFurniture}"><strong data-furniture-edit-name>${homeCopy.furniture}</strong><div class="furniture-edit-actions"><button type="button" data-furniture-command="smaller" aria-label="${homeCopy.smaller}">−</button><button type="button" data-furniture-command="larger" aria-label="${homeCopy.larger}">＋</button><button type="button" data-furniture-command="rotate" aria-label="${homeCopy.direction}">↻ <span data-furniture-facing-label>${homeCopy.front}</span></button><button type="button" data-furniture-command="flip">${homeCopy.flip}</button><button type="button" data-furniture-command="assign">${homeCopy.assign}</button><button type="button" data-furniture-command="back" aria-label="${homeCopy.backward}">↓</button><button type="button" data-furniture-command="front" aria-label="${homeCopy.forward}">↑</button><button type="button" data-furniture-command="props">${propToolbarLabel}</button><button type="button" class="danger" data-furniture-command="delete">${homeCopy.remove}</button><button type="button" class="primary" data-furniture-command="done">${homeCopy.done}</button></div></nav>`:"";
   return `<article class="home panel ${edit?"is-editing":""}" data-home-card="${id}">
     ${nativeHud}${tabletHomeInfo}
     <div class="title"><div>${edit?`<input class="home-name" data-home-name data-home-id="${id}" value="${esc(h.name)}">`:`<h2>🏠 ${esc(h.name)}</h2>`}<small>${chars.length?`${chars.map(c=>c.name).join(" · ")} 연결됨`:"아직 연결된 캐릭터가 없는 집"}</small></div><b>${inside.length}명 머무는 중</b></div>

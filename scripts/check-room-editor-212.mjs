@@ -15,8 +15,8 @@ for(const uiLanguage of ["ko","en","ja"]){
  for(const key of ["all","ownersOnly","delivery","repair","cats","custom"])assert.ok(markup.includes(c[key]));
  if(uiLanguage!=="ko")assert.ok(!/[가-힣]/.test(Object.values(c).join("")));
  const drawer=homeFurnitureDrawer(home,uiLanguage);
- assert.equal((drawer.match(/name="furnitureTheme"/g)||[]).length,1);
- assert.ok(drawer.includes(homeEditorCopy(uiLanguage).defaultTheme));
+ assert.ok(!drawer.includes('name="furnitureTheme"'));
+ assert.ok(drawer.includes(homeEditorCopy(uiLanguage).typeFilter));
 }
 const inputs={ownerAll:{checked:true},accessMode:{value:"selected"},accessCustom:{value:"Guest\nGuest\n  Technician  \n"}};
 const checked={ownerCharacterIds:["a","b"],accessGroups:["delivery","cats"],accessCharacterIds:["outside"],accessPetIds:["cat"]};
