@@ -1,4 +1,4 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260905home214";
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260905home215";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -94,13 +94,16 @@ export function fitCoupleBedOccupants(root){
     const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio;
     const style=getComputedStyle(bed),flip=Number(style.getPropertyValue('--furniture-flip'))||1;
     const x=width/2+(Number(person.dataset.bedSlot)===0?-.2:.2)*paintedWidth*1.05*flip;
-    const y=height/2-.29*paintedHeight*1.05;
+    // Sleeping occupants sit across the quilt edge: the upper part stays on
+    // the pillow and the lower part is actually covered by the foreground quilt.
+    const underCover=person.classList.contains('is-under-cover');
+    const y=height/2-(underCover?.23:.29)*paintedHeight*1.05;
     const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
     const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy));
     const parent=person.offsetParent,layer=bed.offsetParent;
     person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
     person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    person.style.setProperty('--bed-face-size',`${Math.max(20,Math.min(64,paintedWidth*.28*(Number(style.getPropertyValue('--furniture-scale'))||1)))}px`);
+    person.style.setProperty('--bed-face-size',`${Math.max(underCover?24:20,Math.min(underCover?76:64,paintedWidth*(underCover?.33:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)))}px`);
   });
   if(!people.length)return;
   bedLayoutObserver=new ResizeObserver(layout);

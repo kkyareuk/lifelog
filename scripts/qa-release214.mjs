@@ -50,7 +50,7 @@ export async function checkRelease214(page,navigate,output,width){
  const fixture=await bed.evaluate(async bed=>{
   const room=bed.closest('.room'),people=room.querySelector('.room-people');people.classList.add('has-home-life');people.replaceChildren();
   for(let slot=0;slot<2;slot++){
-   const person=document.createElement('div');person.className='home-person home-life-person home-life-using is-couple-bed-user is-using-couple-bed is-under-cover';person.dataset.coupleBedId=bed.dataset.furniturePlacement;person.dataset.bedSlot=slot;
+   const person=document.createElement('div');person.className='home-person home-life-person home-life-using scene-action-sleep is-sleeping is-couple-bed-user is-using-couple-bed is-under-cover';person.dataset.coupleBedId=bed.dataset.furniturePlacement;person.dataset.bedSlot=slot;person.dataset.sleepStyle='tidy';
    person.innerHTML=`<span class="home-person-visual"><span class="avatar" style="background:${slot?'#a9cdad':'#e7b6b0'};border-radius:50%;color:#30251e;display:grid;place-items:center;font-size:16px">${slot?'B':'A'}</span></span>`;people.append(person);
   }
   bed.querySelector('.couple-bed-quilt')?.remove();
@@ -61,7 +61,23 @@ export async function checkRelease214(page,navigate,output,width){
  const faces=page.locator(`[data-couple-bed-id="${fixture.id}"] .avatar`);assert.equal(await faces.count(),2);
  const a=await faces.nth(0).boundingBox(),b=await faces.nth(1).boundingBox(),bedBox=await bed.boundingBox();
  assert.ok(a.width>=20&&b.width>=20&&a.x+a.width<=b.x,`${width}: bed faces overlap`);
- assert.ok(a.y+a.height<bedBox.y+bedBox.height*.45,`${width}: bed faces hidden under quilt`);
+ const covered=await faces.evaluateAll(async faces=>{
+  const quilt=faces[0].closest('.room').querySelector('.room-furniture-overlay-layer .couple-bed-quilt');await quilt.decode();
+  const canvas=document.createElement('canvas');canvas.width=quilt.naturalWidth;canvas.height=quilt.naturalHeight;const ctx=canvas.getContext('2d');ctx.drawImage(quilt,0,0);
+  const rect=quilt.getBoundingClientRect(),scale=Math.min(rect.width/canvas.width,rect.height/canvas.height),left=rect.x+(rect.width-canvas.width*scale)/2,top=rect.y+(rect.height-canvas.height*scale)/2;
+  const alpha=(x,y)=>ctx.getImageData(Math.floor((x-left)/scale),Math.floor((y-top)/scale),1,1).data[3];
+  return faces.map(face=>{const f=face.getBoundingClientRect();return {upper:alpha(f.x+f.width/2,f.y+f.height*.15),lower:alpha(f.x+f.width/2,f.y+f.height*.85),front:Number(getComputedStyle(quilt.closest('.room-furniture-overlay-layer')).zIndex)>Number(getComputedStyle(face.closest('.room-people')).zIndex)}});
+ });
+ for(const face of covered){assert.ok(face.upper<30,`${width}: face must remain visible above quilt`);assert.ok(face.lower>220&&face.front,`${width}: lower character must be underneath opaque foreground quilt`)}
+ const person=faces.first().locator('..').locator('..');
+ for(const style of ['tidy','kick','curl','stretch','hug','talk','restless','still','light','snore']){
+  await person.evaluate((el,style)=>el.dataset.sleepStyle=style,style);
+  assert.equal(await person.locator('.home-person-visual').evaluate(el=>getComputedStyle(el).animationName),`sleep-${style}`,`${width}: habit ${style}`);
+ }
+ await page.emulateMedia({reducedMotion:'reduce'});
+ assert.equal(await person.locator('.home-person-visual').evaluate(el=>getComputedStyle(el).animationName),'none');
+ await page.emulateMedia({reducedMotion:'no-preference'});
+ await person.evaluate(el=>el.dataset.sleepStyle='tidy');
  await bed.locator('..').locator('..').screenshot({path:resolve(output,`bed-faces-${width}.png`)});
  return {homeIcon:true,bookPaginationInsidePaper:true,officialCards:true,twoBedFaces:true,firstCharacterSaved:true};
 }

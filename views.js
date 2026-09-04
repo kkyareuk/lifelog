@@ -1,21 +1,22 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905home214";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260905home214";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260905home214";
-import {characterMood} from "./character-mood.js?v=20260905home214";
-import {createContactMailbox} from "./notification-mail.js?v=20260905home214";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260905home214";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260905home214";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905home214";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905home214";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260905home214";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260905home214";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260905home214";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905home214";
-import {achievementRows} from "./achievements.js?v=20260905home214";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260905home214";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905home215";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260905home215";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260905home215";
+import {characterMood} from "./character-mood.js?v=20260905home215";
+import {createContactMailbox} from "./notification-mail.js?v=20260905home215";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260905home215";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260905home215";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905home215";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905home215";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260905home215";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260905home215";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260905home215";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905home215";
+import {achievementRows} from "./achievements.js?v=20260905home215";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260905home215";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260905home215";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -2063,7 +2064,8 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   const activity=conversing&&itemLabel?state.uiLanguage==="en"?`${itemLabel} · chatting`:state.uiLanguage==="ja"?`${itemLabel}を使いながら会話中`:`${itemLabel}을 사용하며 대화 중`:sceneActivity;
   const speech=conversing?`<i class="home-person-chat-bubble" aria-hidden="true">${agent?.approachingInteraction?"!":"•••"}</i>`:"";
   const quietBedSleep=bedSlot>=0&&sleeping;
-  return `<div class="home-person ${lifeClass} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" style="${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-couple-bed-id="${esc(options.bedPlacement?.id||"")}" data-bed-slot="${bedSlot}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${speech}${sleeping&&!quietBedSleep?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span>${quietBedSleep?"":`<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small></span>`}</div>`;
+  const sleepMotion=homeSleepAnimation(character.sleepHabit);
+  return `<div class="home-person ${lifeClass} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" data-sleep-style="${sleeping?sleepMotion.style:""}" style="--sleep-duration:${sleepMotion.duration}s;--sleep-delay:-${(now/1000+index*.71)%sleepMotion.duration}s;${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-couple-bed-id="${esc(options.bedPlacement?.id||"")}" data-bed-slot="${bedSlot}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${speech}${sleeping&&!quietBedSleep?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span>${quietBedSleep?"":`<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small></span>`}</div>`;
 }
 function homeInteractionSummary(scene){
   const text=`${scene?.title||""} ${scene?.desc||""} ${scene?.sharedActionText||""}`;
