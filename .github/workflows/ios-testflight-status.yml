@@ -1,0 +1,31 @@
+name: iOS TestFlight status
+on:
+  push:
+    branches: [dev]
+    paths: [.github/ios-testflight-status-request.json]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  status:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Read Apple processing status only (no build or upload)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: node scripts/ios-asc-status.mjs status
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-testflight-status-${{ github.run_id }}
+          path: ios/build/testflight-reports/*.json
+          retention-days: 3

@@ -27,7 +27,7 @@ export async function findApp() {
 }
 export async function findBuild(appId) {
   const {version,build} = release();
-  const query = new URLSearchParams({'filter[app]':appId,'filter[version]':String(build),include:'preReleaseVersion,buildBetaDetail',limit:'100'});
+  const query = new URLSearchParams({'filter[app]':appId,'filter[version]':String(build),'filter[buildAudienceType]':'INTERNAL_ONLY,APP_STORE_ELIGIBLE',include:'preReleaseVersion,buildBetaDetail',limit:'100'});
   const result = await appleGet(`/v1/builds?${query}`);
   const record = result.data.find(item => result.included?.some(v=>v.type==='preReleaseVersions' && v.id===item.relationships?.preReleaseVersion?.data?.id && v.attributes.version===version));
   if (!record) return null;
