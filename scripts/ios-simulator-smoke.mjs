@@ -21,9 +21,12 @@ async function main() {
   const app = `${root}ios/build/DerivedData/Build/Products/Debug-iphonesimulator/App.app`;
   if (!existsSync(app)) throw new Error('Build the simulator App.app first');
   mkdirSync(reports, {recursive:true});
-  const simctl = args => execFileSync('xcrun', ['simctl', ...args], {
-    encoding:'utf8', timeout:180_000, maxBuffer:8*1024*1024
-  }).trim();
+  const simctl = (args, timeout = 180_000) => {
+    console.log(`simctl ${args[0]} ${args[1] || ''}`);
+    return execFileSync('xcrun', ['simctl', ...args], {
+      encoding:'utf8', timeout, killSignal:'SIGKILL', maxBuffer:8*1024*1024
+    }).trim();
+  };
   const devices = selectDevices(JSON.parse(simctl(['list', '--json'])));
   const results = [];
   for (const device of devices) {
@@ -44,7 +47,7 @@ async function main() {
       if (!running) throw new Error('App exited before the launch screenshot');
       results.push({...device, launch, running, screenshot:`${device.family}.png`});
     } finally {
-      try { simctl(['shutdown', device.udid]); } catch { /* preserve original error */ }
+      try { simctl(['shutdown', device.udid], 30_000); } catch { /* preserve original error */ }
       writeFileSync(`${reports}/launch-results.json`, JSON.stringify({
         commit:process.env.GITHUB_SHA || null, results,
         scope:'Launch/process check only; screenshots require visual review. Not functional, signing, TestFlight or device QA.'

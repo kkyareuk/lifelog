@@ -6,7 +6,7 @@ Android 대응 버전은 1.0.198 / code 213이다. 집 메뉴 버튼과 가구 �
 ## 준비된 것
 
 - 기존 게임 코드와 그림을 사용하는 Capacitor 7.6.8 iOS 프로젝트: ios/App/App.xcworkspace
-- bundle ID 후보: com.drawervillage.app (Apple 계정에서 사용 가능 여부/등록은 아직 미확인)
+- bundle ID: com.drawervillage.app (2026-09-04 사용자 제공 화면에서 App ID 및 App Store Connect 앱 레코드 생성 확인)
 - App/Browser/Network/Local Notifications/Splash Screen/Status Bar 연결
 - iOS용 웹 자산 준비, 버전 동기화, 잘못된 Android 자산 혼입 검사
 - 미설정 Firebase iOS 플러그인은 제외. 로그인/동기화와 구매는 준비 중으로 표시하며 Google Play/웹 결제로 우회하지 않는다.
@@ -35,13 +35,16 @@ Apple 계정의 소유권/등록 상태를 확인한다. ID 변경은 프로젝�
 
 생성 후에는 앱 설명·스크린샷·지원 URL·개인정보·연령등급·가격/배포 지역을 준비한다.
 EU 배포 관련 거래자 정보는 실제 사업 상태에 맞춰 제출하며 추측해서 선택하지 않는다.
-이 문서는 입력 안내일 뿐, Apple 계정의 등록 완료를 확인한 기록은 아니다.
+등록 화면은 사용자 제공 캡처로 확인했다. 인증서·프로비저닝·업로드 권한은 아직 연결하지 않았다.
 
 공식 안내:
 - https://developer.apple.com/help/app-store-connect/create-an-app-record/add-a-new-app/
 - https://developer.apple.com/help/account/identifiers/register-an-app-id/
 
 ## Mac에서 이어서 실행
+
+맥이 없는 경우에는 아래 클라우드 빌드 절차를 사용한다. 아이패드만으로 이 Capacitor 프로젝트를 빌드하는 절차는 아니다.
+실행 방식, 비용 제한, TestFlight 서명 자료를 한 번에 준비하는 목록은 [iOS 클라우드 빌드 안내](docs/ios-cloud-preview.md)에 정리했다.
 
 Xcode 26 이상과 iOS 26 SDK 이상, Node.js 22, CocoaPods를 준비한다.
 Windows에서 만든 ios 폴더만이 아니라 이 저장소 전체를 Mac에 가져온다.
@@ -58,7 +61,7 @@ Xcode에서 App 타깃의 Signing & Capabilities → 본인 Team 선택.
 
 ## 출시 전에 남은 항목 — 자동 완료로 취급하지 말 것
 
-1. Apple Developer Program 가입, App ID 및 App Store Connect 앱 등록, 서명 Team 설정.
+1. App ID/App Store Connect 앱 레코드 생성은 사용자 화면 확인. Apple Developer Program 유효 상태 및 계약, 서명 인증서/프로파일과 업로드 권한 연결은 별도 확인 필요.
 2. 기본 Capacitor 자리표시 아이콘/스플래시를 실제 앱 아이콘/시작 화면으로 교체. 최종 아이콘은 1024px 비투명 원본으로 검증.
 3. Firebase에 iOS 앱 등록, GoogleService-Info.plist 및 URL scheme 설정. 현재 제외한 authentication 플러그인은 이 설정과 함께 다시 연결.
 4. Google 로그인 유지 시 Apple 로그인 등 4.8 요건 검토/구현, 계정 연결 및 앱 내 계정 삭제 테스트.
