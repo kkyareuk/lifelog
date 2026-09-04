@@ -7065,6 +7065,9 @@ html.native-app[data-active-tab="home"] .home-native-pill{--home-pill-height:44p
   html.native-app[data-active-tab="home"] .home-native-tablet-info dt{font-size:12px!important;font-weight:800!important}
   html.native-app[data-active-tab="home"] .home-native-tablet-info dd{min-width:0!important;margin:0!important;padding:7px 10px!important;overflow:hidden!important;border-radius:999px!important;background:#d8cfbb!important;font-size:13px!important;text-overflow:ellipsis!important;white-space:nowrap!important}
 
+}
+/* Native town navigation and map geometry apply in BOTH tablet orientations. */
+@media(min-width:721px){
   html.native-app[data-active-tab="town"] .native-sub-header{display:none!important}
   html.native-app[data-active-tab="town"] #app>main{width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important}
   html.native-app[data-active-tab="town"] .mobile-town-shell{position:fixed!important;z-index:1!important;inset:0!important;display:block!important;width:100vw!important;height:100dvh!important;overflow:hidden!important;background:#89aa72!important}

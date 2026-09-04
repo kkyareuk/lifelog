@@ -65,6 +65,21 @@ try{
   assert.ok(search.height<=56&&search.width<700,`${width}: oversized search`);
   assert.ok(await page.locator('.home-room-browser [data-close-home-feature]').isVisible(),`${width}: missing back`);
   await page.screenshot({path:resolve(output,`rooms-${width}.png`)});
+  await page.locator('[data-room-info-edit]').first().click();
+  const editor=page.locator('dialog.home-room-editor');
+  const editorBounds=await editor.boundingBox();
+  assert.ok(editorBounds.width<=680&&editorBounds.x>=0,`${width}: room editor too wide`);
+  await editor.locator('input[name="name"]').fill('테스트 방');
+  if(width===1366){
+   await page.setViewportSize({width:1024,height:1366});await page.waitForTimeout(250);
+   assert.equal(await editor.locator('input[name="name"]').inputValue(),'테스트 방');
+   assert.ok((await editor.boundingBox()).width<=680);
+   await page.screenshot({path:resolve(output,'rotate-room-editor-portrait.png')});
+  }
+  await editor.locator('.home-design-back').click();
+  await page.waitForFunction(()=>!document.querySelector('dialog.home-room-editor[open]'));
+  assert.ok(await page.locator('.home-room-browser').isVisible(),'Room edit back must return to room list');
+  if(width===1366)await page.setViewportSize({width,height});
   await page.locator('.home-room-browser [data-close-home-feature]').click();
   assert.equal(await page.locator('.home-feature-panel:visible').count(),0);
   await page.locator('[data-open-home-feature="house-info"]').click();
@@ -72,13 +87,52 @@ try{
   assert.equal(await page.locator('.home-design-info .home-design-photo img').evaluate(el=>getComputedStyle(el).objectFit),'contain');
   await page.screenshot({path:resolve(output,`info-${width}.png`)});
   await page.locator('.home-design-info [data-close-home-feature]').click();
+  await page.locator('[data-open-home-feature="members"]').click();
+  assert.ok(await page.locator('.home-members').isVisible());
+  await page.locator('.home-members [data-close-home-feature]').click();
+  assert.equal(await page.locator('.home-feature-panel:visible').count(),0,'Member list must stay hidden after closing');
+  if(width>height){
+   assert.equal(await page.locator('.home-native-tablet-photo img').evaluate(el=>getComputedStyle(el).objectFit),'contain');
+  }
   await navigate('relationship');
   assert.ok(await page.locator('.relationship-empty-back').isVisible());
   await page.screenshot({path:resolve(output,`relationship-${width}.png`)});
   await page.locator('.relationship-empty-back').click();
   await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='observe');
   await page.screenshot({path:resolve(output,`observe-${width}.png`)});
+  await navigate('town');
+  const townMap=await page.locator('.town-map-scroll').boundingBox();
+  assert.ok(townMap.x===0&&townMap.y===0&&townMap.width===width&&townMap.height===height,`${width}: town must fill screen`);
+  await page.screenshot({path:resolve(output,`town-${width}.png`)});
   if(width===1366){
+   for(const tab of ['town','home','observe','relationship']){
+    await page.setViewportSize({width,height});await navigate(tab);
+    await page.setViewportSize({width:1024,height:1366});await page.waitForTimeout(250);
+    await page.screenshot({path:resolve(output,`rotate-${tab}-portrait.png`)});
+    if(tab==='town'){
+     const map=await page.locator('.town-map-scroll').boundingBox();
+     assert.ok(map.x===0&&map.y===0&&map.width===1024&&map.height===1366,'Town must fill portrait after rotation');
+     assert.ok(await page.locator('.town-native-back').isVisible());
+     await page.locator('.town-native-back').click();
+     await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='observe');
+    }
+    if(tab==='home'){
+     assert.equal(await page.locator('.home-feature-panel:visible,.home-native-tablet-info:visible').count(),0);
+     await page.locator('[data-open-home-feature="room-info"]').click();
+     await page.setViewportSize({width,height});await page.waitForTimeout(250);
+     assert.ok((await page.locator('[data-room-search]').boundingBox()).height<=56);
+     await page.locator('.home-room-browser [data-close-home-feature]').click();
+     assert.equal(await page.locator('.home-feature-panel:visible').count(),0);
+    }
+    if(tab==='relationship'){
+     await page.locator('.relationship-empty-back').click();
+     await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='observe');
+    }
+    await page.setViewportSize({width,height});await page.waitForTimeout(250);
+   }
+  }
+  if(width===1366){
+   await navigate('observe');
    for(const [language,title] of [['en','A story to share'],['ja','一緒に紡ぐ物語を待っています']]){
     await page.evaluate(async language=>{
      const url=performance.getEntriesByType('resource').find(r=>/\/state\.js\?/.test(r.name)).name;
