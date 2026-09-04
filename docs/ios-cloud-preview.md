@@ -89,3 +89,13 @@ build 2: CocoaPods/Xcode 빌드 통과, iPhone 17 Pro / iOS 26.2 설치·프로�
 - 이어 Profiles → + → Distribution의 App Store Connect → com.drawervillage.app → 방금 만든 배포 인증서 → 이름 DrawerVillage AppStore → Generate → Download로 프로파일(.mobileprovision)을 받는다.
 - 기존 인증서를 임의로 폐기하지 않는다. 다운로드한 두 파일을 확인한 후 인증서-개인키 일치, Team/Bundle ID, 만료 및 배포 유형을 검사하고 P12/서명 작업을 연결한다.
 - 아직 Apple 인증서 발급·프로파일 발급·서명 IPA·TestFlight 업로드는 완료하지 않았다. 버전 1.0.198 / Android 213 / iOS build 3 유지.
+
+### 같은 날 인증서 수령 후 로컬 검사
+
+- 사용자가 발급받은 Apple Distribution 인증서와 App Store Connect 프로파일 확인 완료.
+- 인증서와 로컬 개인키 공개키 일치, 프로파일 내 인증서 일치, Team 및 com.drawervillage.app 일치, 배포 유형 및 유효기간 검사 통과. 인증서/프로파일 만료일은 2027-09-04.
+- 프로파일 CMS 서명 무결성 검사 통과. 이 로컬 검사의 `-noverify`는 CA 체인 신뢰 검사를 생략하므로 Apple/Xcode의 배포 신뢰 검증 완료를 뜻하지 않는다.
+- 암호화된 P12 생성 및 암호/MAC 검증 완료. 파일과 암호는 기존 사용자 전용 로컬 폴더에만 보관한다.
+- `scripts/prepare-ios-signing.ps1`은 기본적으로 로컬 검사/생성만 하며, 기존 P12/암호를 덮어쓰지 않는다. `-PublishSecrets`는 별도의 명시적 업로드 승인이 필요하다. 암호를 명령 인자나 출력에 쓰지 않는다.
+- GitHub 서명 secret 세 항목 전송은 자동 보안 검토에서 승인 범위 부족으로 차단됨. 외부 전송하지 않았으며 사용자에게 P12/암호/프로파일의 Actions Secrets 저장 승인을 요청한다. 기존 ASC API secret 세 항목은 변경하지 않음.
+- IPA 빌드·TestFlight 업로드는 아직 미실행. 앱 코드/버전/번역은 변경하지 않음.
