@@ -3224,7 +3224,10 @@ const characterViewEditor=()=>{
     const legacy=current!=="선택하지 않음"&&!options.includes(current)?[current]:[];
     return `<label class="relationship-view-field view-${key}" title="${esc(help)}"><b>${esc(translatedFieldLabels[label]||label)}</b><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${[...legacy,...options].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select></label>`;
   };
-  if(!source||!target)return `<section class="character-view-editor"><h2>관계와 캐릭터별 시선</h2><p>시선을 설정하려면 캐릭터가 두 명 이상 필요해요.</p><button data-add-rel>+ 공식 관계 설정</button></section>`;
+  if(!source||!target){
+    const emptyCopy=({ko:{title:"함께할 이야기를 기다리고 있어요",hint:"캐릭터가 두 명 이상이면 서로의 관계와 마음을 정할 수 있어요.",create:"캐릭터 만들기"},en:{title:"A story to share",hint:"Add a second character to set their relationship and feelings toward each other.",create:"Create character"},ja:{title:"一緒に紡ぐ物語を待っています",hint:"キャラクターが2人以上になると、関係や相手への気持ちを設定できます。",create:"キャラクターを作る"}})[state.uiLanguage]||{title:"함께할 이야기를 기다리고 있어요",hint:"캐릭터가 두 명 이상이면 서로의 관계와 마음을 정할 수 있어요.",create:"캐릭터 만들기"};
+    return `<section class="relationship-empty"><button type="button" class="relationship-empty-back" data-tab="observe" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><div class="relationship-empty-card"><img src="./assets/home-ui/relationship.png" alt=""><h2>${emptyCopy.title}</h2><p>${emptyCopy.hint}</p><button type="button" data-tab="character">${emptyCopy.create}</button></div></section>`;
+  }
   const official=Object.values(state.relationships||{}).filter(relation=>{const members=relation.groupMembers?.length?relation.groupMembers:[relation.a,relation.b];return members.includes(sourceId)&&members.includes(targetId)});
   const officialText=[...new Set(official.map(relation=>currentOfficialLabel(relation)))].join(" · ");
   const overall=characterViewFor(sourceId,targetId).overall;

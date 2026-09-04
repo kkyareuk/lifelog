@@ -6,7 +6,10 @@ const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const workflow=read('.github/workflows/ios-testflight.yml');
 const request=JSON.parse(read('.github/ios-testflight-request.json'));
 const release=JSON.parse(read('ios-release.json'));
-assert.equal(request.version,release.version);assert.equal(request.build,release.build);
+assert.equal(request.version,release.version);
+// Preparing local fixes must not mutate the explicit upload trigger.
+if(process.argv.includes('--prepared'))assert.ok(request.build<=release.build);
+else assert.equal(request.build,release.build);
 assert.equal(request.internalOnly,true);assert.equal(request.uploadToTestFlight,true);assert.equal(request.submitForReview,false);
 assert.equal(release.appStoreReady,false);
 assert.match(workflow,/branches: \[dev\]/);
