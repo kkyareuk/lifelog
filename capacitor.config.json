@@ -3,6 +3,18 @@
   "appName": "서랍마을",
   "webDir": "www",
   "backgroundColor": "#ffffff",
+  "ios": {
+    "contentInset": "never",
+    "preferredContentMode": "mobile",
+    "includePlugins": [
+      "@capacitor/app",
+      "@capacitor/browser",
+      "@capacitor/local-notifications",
+      "@capacitor/network",
+      "@capacitor/splash-screen",
+      "@capacitor/status-bar"
+    ]
+  },
   "android": {
     "allowMixedContent": false,
     "captureInput": false,

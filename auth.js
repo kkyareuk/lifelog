@@ -543,6 +543,11 @@ async function prepareState(local,manifest,previousState,session){
 }
 
 async function login(){
+  if(window.PARALLEL_CITY_CONFIG?.iosPreview){
+    const language=window.DrawerVillageState?.uiLanguage||document.documentElement.lang||"ko";
+    alert(language.startsWith("ja")?"iOS版のログインと同期は準備中です。端末内でのプレイは利用できます。":language.startsWith("en")?"Login and sync are not connected in this iOS preview. You can play locally.":"iOS 준비 버전은 로그인·동기화 연결 전이에요. 기기 안에서 플레이할 수 있어요.");
+    return false;
+  }
   if(!ready){alert("Google 로그인 설정을 불러오지 못했습니다. 앱을 완전히 종료한 뒤 다시 열어 주세요.");return false}
   const provider=new GoogleAuthProvider();
   provider.setCustomParameters({prompt:"select_account"});

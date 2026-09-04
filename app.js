@@ -1302,7 +1302,7 @@ function replaceFeedbackFormWithEmailLink(){
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Version: ${appVersion} / code ${versionCode}`,
-    `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
+    `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?(window.DRAWER_VILLAGE_PLATFORM==="ios"?"iOS app":"Android app"):"Web"})`,
     `Device/model: ${deviceModel}`,
     `User agent: ${navigator.userAgent||"unknown"}`,
     `Platform: ${navigator.userAgentData?.platform||navigator.platform||"unknown"}`,

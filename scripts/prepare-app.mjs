@@ -6,11 +6,13 @@ import {promisify} from "node:util";
 import {tmpdir} from "node:os";
 
 const root=new URL("../",import.meta.url);
+const platform=process.argv.includes("--ios")?"ios":"android";
+const iosRelease=platform==="ios"?JSON.parse(await readFile(new URL("../ios-release.json",import.meta.url),"utf8")):null;
 const output=new URL("../www/",import.meta.url);
 const rootPath=fileURLToPath(root),execFileAsync=promisify(execFile);
 const androidGradle=await readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8");
-const appVersionName=androidGradle.match(/versionName\s+["']([^"']+)["']/)?.[1]||"";
-const appVersionCode=androidGradle.match(/versionCode\s+(\d+)/)?.[1]||"";
+const appVersionName=iosRelease?.version||androidGradle.match(/versionName\s+["']([^"']+)["']/)?.[1]||"";
+const appVersionCode=String(iosRelease?.build||androidGradle.match(/versionCode\s+(\d+)/)?.[1]||"");
 const includedDirectories=new Set(["fonts","icons","assets","world-assets","vendor","shop-assets","theme-assets"]);
 // Keep high-resolution source artwork in the repository without shipping it
 // in every APK. Runtime state and selectors use the optimized town JPEG; the
@@ -149,7 +151,7 @@ index=index.replace(
   '<div id="app"></div>',
   '<div id="app"><main class="native-startup" data-native-startup><span>서랍마을</span><b>마을을 여는 중이에요</b><small>잠시만 기다려 주세요.</small></main></div>'
 );
-index=index.replace("</head>",`  <meta name="drawer-village-app" content="android">
+index=index.replace("</head>",`  <meta name="drawer-village-app" content="${platform}">
   <style>
     html.native-platform .site-footer{display:none!important}
     .native-startup{position:fixed;inset:0;display:grid;place-content:center;gap:10px;padding:28px;background:#fff;color:#2b2321;text-align:center;font-family:sans-serif}
@@ -158,6 +160,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
+    window.DRAWER_VILLAGE_PLATFORM="${platform}";
 window.DRAWER_VILLAGE_NATIVE_BUILD="20260904audio212";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
@@ -176,7 +179,8 @@ config=config.replace(
   /window\.PARALLEL_CITY_CONFIG\.paymentsEnabled=[^;]+;/,
   "window.PARALLEL_CITY_CONFIG.paymentsEnabled=false;window.PARALLEL_CITY_CONFIG.nativeApp=true;window.PARALLEL_CITY_CONFIG.beta={...(window.PARALLEL_CITY_CONFIG.beta||{}),enabled:false};"
 );
-config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:true};\n`;
+config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:${platform==="android"}};\n`;
+if(platform==="ios")config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=true;\n";
 await writeFile(configPath,config,"utf8");
 
-console.log("Android 앱용 웹 파일을 www 폴더에 준비했습니다.");
+console.log(`${platform} 앱용 웹 파일을 www 폴더에 준비했습니다.`);

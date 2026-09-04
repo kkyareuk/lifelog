@@ -4413,6 +4413,10 @@ function nativePlayShop(){
   return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-seller.png" alt=""><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button><h1><small>DRAWER VILLAGE</small><span>${esc(copy.title)}</span><i aria-hidden="true">✦</i></h1></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${content}</div><button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button></div></section>`;
 }
 function shop(){
+  if(window.PARALLEL_CITY_CONFIG?.iosPreview){
+    const copy=state.uiLanguage==="ja"?["ショップ","iOS版の購入機能は準備中です。","戻る"]:state.uiLanguage==="en"?["Shop","Purchases are not connected in this iOS preview.","Back"]:["상점","iOS 준비 버전은 구매 기능 연결 전이에요.","뒤로"];
+    return `<section class="panel"><button type="button" data-tab="observe">${copy[2]}</button><h2>${copy[0]}</h2><p>${copy[1]}</p></section>`;
+  }
   if(window.PARALLEL_CITY_CONFIG?.nativeApp||new URLSearchParams(location.search).has("native-preview"))return nativePlayShop();
   const cart=readCart();
   const lines=Object.entries(cart).filter(([id,qty])=>SHOP_PRODUCTS[id]&&!SHOP_PRODUCTS[id].disabled&&Number(qty)>0);

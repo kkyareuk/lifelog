@@ -22,3 +22,18 @@ android/upload-key.jks
 
 # Locally built Play Store bundles
 Google-Play-업로드-*/
+
+# iOS generated output and local credentials
+ios/App/Pods/
+ios/App/App/public/
+ios/App/App/capacitor.config.json
+ios/App/App/config.xml
+ios/capacitor-cordova-ios-plugins/
+ios/**/xcuserdata/
+ios/**/GoogleService-Info.plist
+ios/build/
+*.ipa
+*.xcarchive/
+*.p12
+*.mobileprovision
+AuthKey_*.p8
