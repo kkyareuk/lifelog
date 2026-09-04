@@ -55,9 +55,16 @@ export async function checkFurnitureAndPhoto(page,navigate,width){
  await page.screenshot({path:`ios/build/tablet-qa/furniture-move-${width}.png`});
  await page.locator('[data-furniture-command="done"]').click();
  const toggle=page.locator('[data-home-drawer-toggle]');if(await toggle.getAttribute('aria-expanded')==='false')await toggle.click();
- await page.locator('[data-home-furniture-room]').selectOption(fixture.to);
- await page.locator('[data-home-furniture-category="bedroom"]').click();
- await page.locator('[data-home-add-furniture="침대"]').click();
+ await page.evaluate(f=>{window.furnitureTest.setActiveHomeFloor(f.home,1);window.ParallelCity.mediaChanged()},fixture);
+ assert.equal(await page.locator('[data-home-furniture-room],[data-home-furniture-category]').count(),0);
+ await page.locator('[data-home-furniture-type="beds"]').click();
+ const catalog=await page.locator('[data-home-add-furniture="침대"]').boundingBox();
+ const destination=await page.locator(`.room[data-room-key="${fixture.to}"]`).boundingBox();
+ await page.mouse.move(catalog.x+catalog.width/2,catalog.y+catalog.height/2);await page.mouse.down();
+ await page.mouse.move(destination.x+destination.width*.5,destination.y+destination.height*.55,{steps:12});
+ assert.equal(await page.locator('.furniture-catalog-drag-preview').count(),1);
+ await page.mouse.up();
+ assert.equal(await page.locator('.furniture-catalog-drag-preview').count(),0);
  assert.equal(await page.evaluate(f=>window.furnitureTest.state.homes[f.home].activeFloor,fixture),1);
  assert.ok(await page.evaluate(f=>window.furnitureTest.state.homes[f.home].rooms[f.to].furniturePlacements.some(p=>p.item==='침대'),fixture));
  await page.evaluate(()=>{const m=window.furnitureTest;m.setHomeEditMode(false);m.state.uiLanguage='ko';const c=m.state.characters[m.state.activeId];c.icon='';c.ldImage='';m.state.homeVisualMode='sd';m.save(true)});
@@ -76,6 +83,7 @@ export async function checkFurnitureAndPhoto(page,navigate,width){
   await page.evaluate(language=>{window.furnitureTest.state.uiLanguage=language},language);
   await navigate('home');await navigate('shop');
   await page.locator('[data-drawer-shop-tab="base"]').click();
+  assert.equal(await page.locator('[data-drawer-shop-tab="base"]').evaluate(el=>getComputedStyle(el).textShadow),'none');
   assert.equal(await page.locator('.drawer-shop-product').count(),4);
   assert.equal(await page.locator('.drawer-shop-shell [data-play-purchase],.drawer-shop-shell [data-play-restore],.drawer-shop-shell [data-cart-add],.drawer-shop-shell a[href*="payment"]').count(),0);
   assert.equal(await page.locator('.drawer-shop-purchase:disabled').count(),4);

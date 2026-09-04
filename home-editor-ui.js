@@ -1,4 +1,4 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon} from "./furniture-layout.js?v=20260904home213";
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260905home214";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -38,8 +38,7 @@ export function homeFurnitureDrawer(home,locale){
   return `<section class="home-furniture-drawer ${ui.collapsed?"is-collapsed":""}" data-home-furniture-drawer data-home-id="${escape(home.id)}">
     <button type="button" class="home-drawer-toggle" data-home-drawer-toggle aria-expanded="${!ui.collapsed}" aria-label="${ui.collapsed?copy.expand:copy.collapse}">${ui.collapsed?"▲":"▼"}</button>
     <div class="home-drawer-content" ${ui.collapsed?"inert":""}>
-      <div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"><select data-home-furniture-room aria-label="${copy.destination}" title="${copy.destination}">${Object.entries(home.rooms||{}).map(([key,room])=>`<option value="${escape(key)}" ${key===ui.room?"selected":""}>${escape(room.name||key)} · ${copy.floor(Number(room.floor)||1)}</option>`).join("")}</select></div>
-      <nav class="home-drawer-categories" aria-label="${copy.categoryFilter}">${["all",...Object.keys(FURNITURE_CATALOG)].map(key=>`<button type="button" data-home-furniture-category="${key}" aria-pressed="${ui.category===key}" class="${ui.category===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
+      <div class="home-drawer-search"><input type="search" data-home-furniture-search value="${escape(ui.query)}" placeholder="${copy.searchFurniture}" aria-label="${copy.searchFurniture}"></div>
       <nav class="home-drawer-categories home-drawer-types" aria-label="${copy.typeFilter}">${FURNITURE_TYPES.map(key=>`<button type="button" data-home-furniture-type="${key}" aria-pressed="${ui.type===key}" class="${ui.type===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
       <div class="home-drawer-results"><div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden role="status">${copy.empty}</p></div>
     </div>
@@ -81,7 +80,39 @@ export function homeInformationMarkup(home,photo,state,t){
     </div><div class="editor-save-actions"><button type="button" class="primary" data-editor-save>${c.save}</button></div></section>`;
 }
 
-export function bindHomeEditorUI(root,{state,addFurniture,openRoom,selectAdded}){
+let bedLayoutObserver;
+// Pillow positions use the painted contain-image, not percentages of the room.
+// Recalculate only on layout/image changes (including tablet rotation).
+export function fitCoupleBedOccupants(root){
+  bedLayoutObserver?.disconnect();
+  const people=[...root.querySelectorAll('.is-using-couple-bed[data-couple-bed-id]')];
+  const layout=()=>people.forEach(person=>{
+    if(!person.isConnected)return;
+    const room=person.closest('.room'),bed=room?.querySelector(`[data-furniture-placement="${CSS.escape(person.dataset.coupleBedId)}"]`),image=bed?.querySelector('.couple-bed-base');
+    if(!image?.naturalWidth||!bed.clientWidth||!bed.clientHeight)return;
+    const width=bed.clientWidth,height=bed.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
+    const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio;
+    const style=getComputedStyle(bed),flip=Number(style.getPropertyValue('--furniture-flip'))||1;
+    const x=width/2+(Number(person.dataset.bedSlot)===0?-.2:.2)*paintedWidth*1.05*flip;
+    const y=height/2-.29*paintedHeight*1.05;
+    const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
+    const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy));
+    const parent=person.offsetParent,layer=bed.offsetParent;
+    person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
+    person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
+    person.style.setProperty('--bed-face-size',`${Math.max(20,Math.min(64,paintedWidth*.28*(Number(style.getPropertyValue('--furniture-scale'))||1)))}px`);
+  });
+  if(!people.length)return;
+  bedLayoutObserver=new ResizeObserver(layout);
+  new Set(people.map(person=>person.closest('.room'))).forEach(room=>{
+    if(!room)return;bedLayoutObserver.observe(room);
+    room.querySelectorAll('.couple-bed-base').forEach(image=>{if(!image.complete)image.addEventListener('load',layout,{once:true})});
+  });
+  layout();
+}
+
+export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded}){
+  fitCoupleBedOccupants(root);
   const copy=homeEditorCopy(state.uiLanguage);
   root.querySelectorAll('.home-catalog-photo img').forEach(image=>{
     const fallback=()=>{const marker=document.createElement('span');marker.textContent=image.closest('[data-member-edit="car"]')?'🚙':image.closest('[data-member-edit="pet"]')?'🐾':image.closest('[data-member-edit="resident"]')?'?':'🚪';marker.setAttribute('aria-hidden','true');image.replaceWith(marker)};
@@ -98,22 +129,56 @@ export function bindHomeEditorUI(root,{state,addFurniture,openRoom,selectAdded})
   const home=state.homes[drawer.dataset.homeId];if(!home)return;
   const ui=drawerState(home),items=drawer.querySelector("[data-home-furniture-items]"),content=drawer.querySelector(".home-drawer-content");
   const draw=()=>{
-    const matches=filteredFurniture(ui,state.uiLanguage);
+    const matches=filteredFurniture({...ui,category:"all"},state.uiLanguage);
     items.innerHTML=matches.map(item=>`<button type="button" data-home-add-furniture="${escape(item)}" ${ui.room?"":"disabled"}>${furniturePickerArt(item)}<b>${escape(furnitureLabel(item,state.uiLanguage))}</b></button>`).join("");
     drawer.querySelector("[data-home-furniture-empty]").hidden=matches.length>0;
-    items.querySelectorAll("[data-home-add-furniture]").forEach(button=>button.onclick=()=>{const id=addFurniture(home.id,ui.room,button.dataset.homeAddFurniture);if(id)selectAdded(home.id,ui.room,id)});
+    items.querySelectorAll("[data-home-add-furniture]").forEach(button=>{
+      let pointer=null,start=null,dragging=false,ghost=null,target=null,suppressClick=false;
+      const canvas=root.querySelector('[data-room-canvas]');
+      const clear=()=>{ghost?.remove();ghost=null;canvas?.querySelectorAll('.is-furniture-drop-target').forEach(el=>el.classList.remove('is-furniture-drop-target'))};
+      const place=(roomKey,position)=>{
+        const id=addFurniture(home.id,roomKey,button.dataset.homeAddFurniture);
+        if(id){if(position)updateFurniture(home.id,roomKey,id,position);selectAdded(home.id,roomKey,id)}
+      };
+      button.onclick=()=>{
+        if(suppressClick){suppressClick=false;return}
+        // Keyboard/tap fallback: start in a visible room, never a hidden floor.
+        const room=canvas?.querySelector('.room[data-room-key]');if(room)place(room.dataset.roomKey);
+      };
+      button.onpointerdown=event=>{
+        if(event.button!==0||pointer!==null)return;
+        pointer=event.pointerId;start={x:event.clientX,y:event.clientY};dragging=false;target=null;suppressClick=false;
+        button.setPointerCapture(pointer);
+      };
+      button.onpointermove=event=>{
+        if(event.pointerId!==pointer||!canvas)return;
+        if(!dragging&&Math.hypot(event.clientX-start.x,event.clientY-start.y)<8)return;
+        dragging=true;event.preventDefault();target?.classList.remove('is-furniture-drop-target');
+        if(!ghost){ghost=document.createElement('div');ghost.className='furniture-catalog-drag-preview';ghost.innerHTML=furniturePickerArt(button.dataset.homeAddFurniture);ghost.setAttribute('aria-hidden','true');document.body.append(ghost)}
+        ghost.style.left=`${event.clientX}px`;ghost.style.top=`${event.clientY}px`;
+        target=document.elementFromPoint(event.clientX,event.clientY)?.closest('.room[data-room-key]');
+        if(!target||!canvas.contains(target)){target=null;return}
+        target.classList.add('is-furniture-drop-target');
+      };
+      const finish=event=>{
+        if(event.pointerId!==pointer)return;
+        const captured=pointer;pointer=null;suppressClick=dragging;
+        if(button.hasPointerCapture(captured))button.releasePointerCapture(captured);
+        const destination=target;clear();target=null;
+        if(event.type==='pointerup'&&dragging&&destination){
+          const rect=destination.getBoundingClientRect();
+          const position=snapFurniturePosition((event.clientX-rect.left)/rect.width*100,(event.clientY-rect.top)/rect.height*100,furnitureGridForRoom(rect,canvas.getBoundingClientRect()),furnitureFootprint(button.dataset.homeAddFurniture));
+          place(destination.dataset.roomKey,position);
+        }
+      };
+      button.onpointerup=finish;button.onpointercancel=finish;button.onlostpointercapture=finish;
+    });
   };
   drawer.querySelector("[data-home-drawer-toggle]").onclick=event=>{
     ui.collapsed=!ui.collapsed;drawer.classList.toggle("is-collapsed",ui.collapsed);content.inert=ui.collapsed;
     event.currentTarget.textContent=ui.collapsed?"▲":"▼";event.currentTarget.setAttribute("aria-expanded",String(!ui.collapsed));event.currentTarget.setAttribute("aria-label",ui.collapsed?copy.expand:copy.collapse);
   };
   drawer.querySelector("[data-home-furniture-search]").oninput=event=>{ui.query=event.target.value;draw()};
-  drawer.querySelector("[data-home-furniture-room]").onchange=event=>{ui.room=event.target.value;draw()};
-  drawer.querySelectorAll("[data-home-furniture-category]").forEach(button=>button.onclick=()=>{
-    ui.category=button.dataset.homeFurnitureCategory;ui.type="all";
-    drawer.querySelectorAll("[data-home-furniture-type]").forEach(item=>{const on=item.dataset.homeFurnitureType==="all";item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});
-    drawer.querySelectorAll("[data-home-furniture-category]").forEach(item=>{const on=item===button;item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});draw();
-  });
   drawer.querySelectorAll("[data-home-furniture-type]").forEach(button=>button.onclick=()=>{
     ui.type=button.dataset.homeFurnitureType;
     drawer.querySelectorAll("[data-home-furniture-type]").forEach(item=>{const on=item===button;item.classList.toggle("on",on);item.setAttribute("aria-pressed",String(on))});draw();

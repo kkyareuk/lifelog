@@ -1,6 +1,7 @@
 // Offline, isolated browser fixture. Never reads a user's browser profile or account.
 import assert from 'node:assert/strict';
 import {checkFurnitureAndPhoto} from './qa-furniture-photo.mjs';
+import {checkRelease214,checkFirstCharacter214} from './qa-release214.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
@@ -10,6 +11,7 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 const exec=promisify(execFile);
 const root=resolve(fileURLToPath(new URL('..',import.meta.url)));
+const webRoot=process.env.QA_WEB_ROOT?resolve(root,process.env.QA_WEB_ROOT):root;
 const require=createRequire(import.meta.url);
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const output=resolve(root,'ios/build/tablet-qa');await mkdir(output,{recursive:true});
@@ -27,8 +29,8 @@ async function source(file,pathname){
 const server=createServer(async(req,res)=>{
   try{
     const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
-    const file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));
-    if(!file.startsWith(root+sep)||!mime[extname(file)]){res.writeHead(404).end();return}
+    const file=resolve(webRoot,'.'+(pathname==='/'?'/index.html':pathname));
+    if(!file.startsWith(webRoot+sep)||!mime[extname(file)]){res.writeHead(404).end();return}
     const body=pathname==='/auth.js'?auth:await source(file,pathname);
     res.writeHead(200,{'Content-Type':mime[extname(file)],'Cache-Control':'no-store'}).end(body);
   }catch{res.writeHead(404).end()}
@@ -44,6 +46,10 @@ try{
   const page=await context.newPage();
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto(origin+'/?native-preview=1');await page.waitForFunction(()=>window.ParallelCity);
+  const firstContext=await browser.newContext({viewport:{width,height},hasTouch:true,deviceScaleFactor:1,serviceWorkers:'block'});
+  await firstContext.route('**/*',route=>route.request().url().startsWith(origin)?route.continue():route.abort());
+  const firstPage=await firstContext.newPage();await firstPage.goto(origin+'/?native-preview=1');await firstPage.waitForFunction(()=>window.ParallelCity);
+  await checkFirstCharacter214(firstPage,output,width);await firstContext.close();
   await page.evaluate(async()=>{
    const url=performance.getEntriesByType('resource').find(r=>/\/state\.js\?/.test(r.name)).name;
    const mod=await import(url);mod.createCharacter();
@@ -146,7 +152,8 @@ try{
    }
   }
   const furniture=await checkFurnitureAndPhoto(page,navigate,width);
-  report.push({width,height,closedPanelsHidden:true,search,photo,backWorks:true,furniture,errors});
+  const release214=await checkRelease214(page,navigate,output,width);
+  report.push({width,height,platform:process.env.QA_WEB_ROOT||'source',closedPanelsHidden:true,search,photo,backWorks:true,furniture,release214,errors});
   assert.deepEqual(errors,[],`${width}: runtime errors`);
   await context.close();
  }

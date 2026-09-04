@@ -3,7 +3,7 @@ import {readFile} from "node:fs/promises";
 import {characterMood} from "../character-mood.js";
 
 const root=new URL("../",import.meta.url);
-const marker="20260904home213";
+const marker="20260905home214";
 const imports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
@@ -63,7 +63,7 @@ const [gradle,serviceWorker,index]=await Promise.all([
 ]);
 assert.match(gradle,/versionCode\s+213/);
 assert.match(gradle,/versionName\s+"1\.0\.198"/);
-assert.ok(serviceWorker.includes("drawer-village-v20260904-home-drawer-dev-213"));
+assert.ok(serviceWorker.includes("drawer-village-v20260905-home-android-dev-214"));
 assert.ok(index.includes(marker));
 
 console.log(`v1.0.188 / 202 버튼 상태·애정 관계 감정 회귀 검증 완료 (${visited.size} modules)`);

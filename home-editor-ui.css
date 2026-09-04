@@ -1,11 +1,11 @@
-/* Shared height keeps the furniture toolbar clear of the four drawer rows. */
-.home{--home-drawer-height:calc(224px + max(8px,env(safe-area-inset-bottom)))}
+/* Shared height keeps the furniture toolbar clear of the three drawer rows. */
+.home{--home-drawer-height:calc(184px + max(8px,env(safe-area-inset-bottom)))}
 .home-furniture-drawer{position:fixed;z-index:680;left:0;right:0;bottom:0;max-width:100%;color:#392b21;background:linear-gradient(180deg,#fff9ed,#efe0c7);border-top:2px solid #bba27b;border-radius:20px 20px 0 0;box-shadow:0 -5px 18px #20170b33;transition:transform .18s ease;transform:translateY(0)}
 .home-furniture-drawer.is-collapsed{transform:translateY(100%)}
 .home-drawer-toggle{position:absolute!important;bottom:calc(100% + 6px);left:16px;display:grid;place-items:center;width:38px;height:38px;padding:0!important;border:2px solid #b49a72!important;border-radius:50%!important;background:#fff8e9!important;color:#513d29!important;-webkit-text-fill-color:#513d29!important;font-size:18px!important;box-shadow:0 2px 5px #261a1733}
-.home-drawer-content{position:relative;padding:8px max(16px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-right));display:grid;grid-template-rows:36px 34px 34px 94px;gap:6px;height:var(--home-drawer-height);box-sizing:border-box}
+.home-drawer-content{position:relative;padding:8px max(16px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-right));display:grid;grid-template-rows:36px 34px 94px;gap:6px;height:var(--home-drawer-height);box-sizing:border-box}
 .home-drawer-content>*{min-width:0;min-height:0;margin:0}
-.home-drawer-search{display:grid;grid-template-columns:minmax(0,1fr) 100px;gap:8px;min-width:0}
+.home-drawer-search{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
 html body #app .home-furniture-drawer .home-drawer-search :is(input,select){display:block;box-sizing:border-box;width:100%;min-width:0;max-width:none;margin:0!important;height:36px!important;min-height:0!important;padding:4px 12px!important;border:1px solid #baa47b;border-radius:18px;background:#fffdf6;color:#382b22;-webkit-text-fill-color:#382b22;font:inherit;font-size:13px;line-height:1.2}
 .home-drawer-categories{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 24px)/4);align-items:stretch;gap:8px;padding:2px 4px;box-sizing:border-box;height:34px;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none;scroll-snap-type:x mandatory;scroll-padding-inline:4px}
 html body #app .home-furniture-drawer .home-drawer-categories button{display:grid!important;place-items:center;box-sizing:border-box;width:100%;scroll-snap-align:start;max-width:none!important;min-width:0!important;height:30px!important;min-height:0!important;margin:0!important;padding:2px 5px!important;border:1px solid #cdb695!important;border-radius:15px!important;background:#fff9ee!important;color:#59432b!important;-webkit-text-fill-color:#59432b!important;font-size:12px!important;white-space:normal;overflow-wrap:anywhere;line-height:1.05;box-shadow:none!important}
@@ -14,12 +14,19 @@ html body #app .home-furniture-drawer .home-drawer-types button{border-color:tra
 html body #app .home-furniture-drawer .home-drawer-types button.on{background:#e3d1b0!important;border-color:#bc9b65!important;color:#37291c!important;-webkit-text-fill-color:#37291c!important}
 .home-drawer-results{position:relative}
 .home-drawer-items{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 24px)/4);align-items:stretch;gap:8px;padding:3px 4px 5px;box-sizing:border-box;height:94px;min-height:94px;max-height:94px;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none;scroll-snap-type:x mandatory;scroll-padding-inline:4px}
-html body #app .home-furniture-drawer .home-drawer-items>button{box-sizing:border-box;width:100%;height:86px!important;min-height:0!important;margin:0!important;scroll-snap-align:start;display:grid!important;grid-template-rows:44px 28px;place-items:center;min-width:0!important;padding:6px 4px!important;border:1px solid #d8c4a4!important;border-radius:12px!important;background:#fffaf0!important;color:#392b21!important;-webkit-text-fill-color:#392b21!important;box-shadow:none!important}
+html body #app .home-furniture-drawer .home-drawer-items>button{touch-action:pan-x;user-select:none;-webkit-user-select:none;box-sizing:border-box;width:100%;height:86px!important;min-height:0!important;margin:0!important;scroll-snap-align:start;display:grid!important;grid-template-rows:44px 28px;place-items:center;min-width:0!important;padding:6px 4px!important;border:1px solid #d8c4a4!important;border-radius:12px!important;background:#fffaf0!important;color:#392b21!important;-webkit-text-fill-color:#392b21!important;box-shadow:none!important}
 .home-drawer-items>button>span{display:grid;place-items:center;position:relative;width:48px;height:44px;font-size:30px}
 html body #app .home-furniture-drawer .home-drawer-items b{display:grid;place-items:center;font-size:11px!important;line-height:1.15!important;color:#392b21!important;-webkit-text-fill-color:#392b21!important;text-shadow:none;max-width:100%;height:28px;overflow:hidden;overflow-wrap:anywhere}
 .home-furniture-drawer [data-home-furniture-empty]{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:8px;text-align:center;font-size:13px;color:#392b21!important;-webkit-text-fill-color:#392b21!important;pointer-events:none}
 .home-furniture-drawer [data-home-furniture-empty][hidden]{display:none}
 .home-drawer-items .furniture-picker-couple-bed img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.furniture-catalog-drag-preview{position:fixed;z-index:2147482000;display:grid;place-items:center;width:72px;height:72px;transform:translate(-50%,-50%);border:2px solid #9e7d47;border-radius:16px;background:#fff7e5e8;box-shadow:0 5px 18px #291a1940;pointer-events:none;font-size:44px}
+.furniture-catalog-drag-preview>span{position:relative;width:60px;height:60px;display:grid;place-items:center}
+.furniture-catalog-drag-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.room.is-furniture-drop-target{outline:3px solid #f4d17e;outline-offset:-4px}
+html.native-app[data-active-tab="home"] .home-native-house-name>img{display:block;flex:0 0 30px;width:30px;height:30px;object-fit:contain;filter:none}
+html.native-app[data-active-tab="home"] .home-native-house-name>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #app .is-using-couple-bed .home-person-visual>:is(.sprite,.avatar){width:var(--bed-face-size,36px)!important;height:var(--bed-face-size,36px)!important;max-width:none!important;object-fit:contain}
 
 .home-native-bottom{position:absolute;z-index:35;right:14px;bottom:max(22px,env(safe-area-inset-bottom));display:grid;grid-template-rows:30px 30px;gap:10px;width:70px;height:70px;pointer-events:auto}
 html.native-app[data-active-tab="home"] .home-native-bottom .home-native-pill{position:relative!important;inset:auto!important;width:70px!important;--home-pill-height:30px}
