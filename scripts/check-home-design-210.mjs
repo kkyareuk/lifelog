@@ -27,12 +27,12 @@ const [app,css,views,gradle]=await Promise.all(['app.js','home-editor-ui.css','v
 const roomEditor=app.match(/function openRoomEditor[\s\S]*?(?=function openBedAssignmentDialog)/)[0];
 for(const name of ['titleTone','size','floor'])assert.ok(!roomEditor.includes(`name="${name}"`),`removed ${name} control`);
 assert.ok(!roomEditor.includes('titleTone:')&&!roomEditor.includes('size:')&&!roomEditor.includes('floor:'),'hidden geometry and title values are not overwritten');
-for(const name of ['cleanliness','ownerCharacterIds','accessCharacterIds','usePhoto','usage'])assert.ok(roomEditor.includes(name));
+for(const name of ['cleanliness','ownerCharacterIds','accessCharacterIds','usePhoto','usage'])assert.ok((roomEditor+await read('room-permissions.js')).includes(name));
 assert.ok(app.includes('$$("[data-member-edit]").forEach'));
 assert.ok(app.includes('showHomeFeature(\'members\')')&&app.includes('showHomeFeature("members")'));
 assert.ok(app.includes('refreshHomeMemberEditor()'));
 assert.ok(views.includes('homeInformationMarkup(h,homeExteriorSource(h),state,t)'));
 assert.ok(css.includes('.home-native-bottom .home-native-pill{position:relative!important'));
 assert.ok(css.includes('building-info-wood.png')&&css.includes('town.webp'));
-assert.match(gradle,/versionCode\s+211/);assert.match(gradle,/versionName\s+"1\.0\.196"/);
+assert.match(gradle,/versionCode\s+212/);assert.match(gradle,/versionName\s+"1\.0\.197"/);
 console.log('PASS home design 210: three member sections/add/edit, shared home state/photo, escaped data, removed controls preserve metadata, three-language key parity, navigation and version.');

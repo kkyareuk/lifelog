@@ -62,6 +62,8 @@ const includedFiles=new Set([
   "home-simulation.js",
   "home-surfaces.js",
   "room-layout.js",
+  "room-permissions.js",
+  "mood-event-causes.js",
   "simulation.js",
   "speech-styles.js",
   "contact-voice.js",
@@ -122,7 +124,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260904home209";
+const expectedModuleCache="20260904audio212";
 const relativeImports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;

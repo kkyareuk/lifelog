@@ -1,3 +1,4 @@
+import {observedMoodEvents} from "./mood-event-causes.js?v=20260904audio212";
 // Mood is derived from the scene. Opening a screen never accumulates or mutates it.
 const goodTown=new Set(['매우 좋은 평판','좋은 평판','조용하고 평화로움','살기 좋음','주민들이 친절함','외지인을 환영함','자연 경관이 아름다움','의료·복지가 좋음']);
 const badTown=new Set(['나쁜 평판','매우 나쁜 평판','치안이 불안함','사건 사고가 잦음','환경 오염이 심함','폐쇄적인 곳']);
@@ -102,11 +103,8 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const {town,place}=moodContext(character,entry,world),reasons=[],supports=[],traits=traitsOf(character),copy=`${entry?.baseTitle||entry?.title||''} ${entry?.desc||''}`,baseline=character.emotionalBaseline||'',volatility=character.moodVolatility||'상황에 따라 달라짐',positiveResponse=character.positiveMoodResponse||'',stressResponse=character.stressMoodResponse||'',recoveryStyle=character.moodRecoveryStyle||'',angerResponse=character.angerResponse||'차분히 이유를 확인함',flirtResponse=character.flirtResponse||'알아도 모른 척함',emotionalSensitivity=character.emotionalSensitivity||'보통',emotionalContagion=character.emotionalContagion||'상황에 따라 물듦',restrained=/과묵|냉정|무뚝뚝|엄격|표정 변화가 거의 없음|감정을 잘 드러내지 않음|절제/.test(traits)||positiveResponse==='조용히 만족함',outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),optimistic=/낙천|밝은|쾌활/.test(baseline)||/낙천|긍정|밝고|명랑|쾌활/.test(traits),resilient=optimistic||/온화|다정|느긋|침착|강인|무던|인내/.test(traits),sensitive=/예민|걱정|불안|침울|비관|까칠|분노/.test(baseline)||/예민|불안|걱정|신경질|감정 기복|까칠|성급|충동/.test(traits);
   const sourceTitle=String(entry?.baseTitle||entry?.title||'').trim(),sourceDesc=String(entry?.desc||'').trim(),minute=Number(entry?.minute),sourceTime=String(entry?.time||'').trim()||(Number.isFinite(minute)?`${String(Math.floor(minute/60)%24).padStart(2,'0')}:${String(minute%60).padStart(2,'0')}`:'');
   if(/자는 중|잠든|수면 중|sleeping|asleep|眠って|睡眠中/i.test(copy))return {score:0,label:text(language,'수면 중','Sleeping','睡眠中'),icon:'☾',reasons:[],placeName:place?.name||town?.name||'',tone:'sleeping',sourceEntry:sourceTitle?{time:sourceTime,title:sourceTitle,desc:sourceDesc}:null};
-  const positiveEvent=/성공|칭찬|선물|맛있|즐거|데이트|웃|success|praise|gift|delicious|enjoy|date|laugh|成功|褒め|贈り物|おいし|楽しい|デート|笑/i;
-  // 단순한 신체·공간의 '불편'이나 "불편하지 않도록" 같은 배려 문장은
-  // 분노 사건이 아니다. 실제 충돌이나 감정 손상을 드러낸 말만 분노로 본다.
-  const angryEvent=/싸우|다투|분노|화가|갈등|짜증|불쾌|모욕|무시당|배신|fight|argu|anger|conflict|upset|irritat|insult|betray|喧嘩|争|怒|衝突|不快|侮辱|裏切/i;
-  const sadEvent=/실패|거절|상실|울었|슬프|속상|fail|reject|loss|cry|sad|失敗|拒絶|喪失|泣|悲/i;
+  const observed=observedMoodEvents(copy);
+  const positiveEvent={test:()=>Boolean(observed.positive)},angryEvent={test:()=>Boolean(observed.angry)},sadEvent={test:()=>Boolean(observed.sad)};
   const tiredEvent=/피곤|지쳤|야근|밤샘|졸리|tired|exhaust|overtime|all.nighter|sleepy|疲|夜更|眠い/i;
   const restEvent=/자는 중|잠든|휴식|쉬는 중|sleep|rest|眠って|睡眠|休ん/i;
   const flirtEvent=/유혹|플러팅|호감 신호|눈빛을 보냄|flirt|come.?on|誘惑|好意のサイン/i;
@@ -116,9 +114,9 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const day=entry?.date||new Date().toISOString().slice(0,10),moment=entry?.interactionId||entry?.minute||entry?.placeId||entry?.room||'scene',rawVariation=(hash(`${character.id}:${day}:${moment}`)%22)-14,volatilityScale=({"거의 흔들리지 않음":.35,"안정적인 편":.65,"상황에 따라 달라짐":1,"변화가 잦은 편":1.2,"변화 폭이 큼":1.45}[volatility]||1),temperVariation=rawVariation<0?(resilient?Math.round(rawVariation*.55):sensitive?Math.round(rawVariation*1.15):rawVariation):rawVariation,variation=Math.round((restrained?temperVariation*.7:temperVariation)*volatilityScale),baselineBias=({"매우 낙천적임":7,"낙천적인 편":5,"대체로 밝은 편":3,"쾌활한 편":4,"열정적인 편":2,"다정한 편":2,"유혹적인 편":1,"호기심 많은 편":1,"차분한 편":1,"현실적인 편":0,"무덤덤한 편":0,"냉소적인 편":-2,"까칠한 편":-2,"예민한 편":-2,"걱정이 많은 편":-3,"불안한 편":-4,"침울한 편":-5,"비관적인 편":-5,"분노를 품은 편":-5}[baseline]||0);
   if(baselineBias)add(baselineBias,baselineBias>0?'평소 정서가 밝은 쪽으로 기울어 있음':'평소 걱정과 부정적인 가능성을 먼저 살피는 편',baselineBias>0?'Their usual outlook leans bright':'They tend to notice worries and negative possibilities first',baselineBias>0?'普段の気持ちは明るい方へ傾きやすい':'普段は心配や悪い可能性を先に考えやすい');
   if(Math.abs(variation)>=4)add(variation,
-    variation>0?'오늘은 몸이 가볍고 평소보다 행동이 수월함':'오늘은 쉽게 지치고 평소보다 행동 속도가 느려짐',
-    variation>0?'They feel physically light today, so everyday tasks come more easily':'They tire more easily today and move more slowly than usual',
-    variation>0?'今日は体が軽く、普段より動きやすい':'今日は疲れやすく、普段より動きがゆっくりしている');
+    variation>0?'일상적인 기분 변동으로 마음이 평소보다 가벼움':'일상적인 기분 변동으로 마음이 평소보다 가라앉음',
+    variation>0?'Everyday mood variation leaves them feeling lighter than usual':'Everyday mood variation leaves them feeling lower than usual',
+    variation>0?'日常的な気分の揺れで、普段より気持ちが軽い':'日常的な気分の揺れで、普段より気持ちが沈んでいる');
   if(goodTown.has(town?.reputation))support(1,'마을의 좋은 생활 환경이 마음을 받쳐 줌','The village environment provides a little reassurance','暮らしやすい村の環境が少し心を支える');
   if(badTown.has(town?.reputation))add(-10,'마을 환경에 대한 걱정','Concerns about the village','村の環境への不安');
   if(/좋|훌륭|친절|사랑받음/.test(place?.reputation||''))support(2,'평판이 좋은 장소라 조금 안심됨','This well-regarded place feels reassuring','評判のよい場所で少し安心する');
@@ -159,7 +157,7 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const activeEvent=/운동|달리|산책|이동|돌아다|여러 일을|exercise|run|walk|moving|運動|走|散歩|移動/i.test(copy);
   if(activeEvent&&/활동적인 편|가만히 못 있음/.test(character.energyRhythm||''))support(2,'몸을 움직이는 일이 생활 에너지와 잘 맞음','Moving around suits their energy rhythm','体を動かすことが生活のエネルギーに合っている');
   if(activeEvent&&/집에서 충전|느긋한 편/.test(character.energyRhythm||'')&&/바쁘|여러 일을|오래|계속/.test(copy))add(-5,'활동이 오래 이어져 혼자 충전할 시간이 부족함','Prolonged activity leaves too little time to recharge','活動が長く続き、一人で充電する時間が足りない');
-  const changedPlan=/갑자기|예정.{0,8}(바뀌|변경)|일정.{0,8}(바뀌|변경)|늦었|지연|unexpected|schedule change|delay|急に|予定.{0,8}変更|遅れ/i.test(copy);
+  const changedPlan=/갑자기|예정 밖의 변화|예상 밖의 변화|예정.{0,8}(바뀌|변경)|일정.{0,8}(바뀌|변경)|늦었|지연|unexpected|schedule change|delay|急に|予定.{0,8}変更|遅れ/i.test(copy);
   if(changedPlan&&/미리 정리함|계획적/.test(character.planningStyle||''))add(-7,'예정이 바뀌어 다시 순서를 세워야 함','A changed plan means rebuilding the order of the day','予定が変わり、順序を組み直す必要がある');
   if(changedPlan&&/즉흥적|유연한 편/.test(character.planningStyle||''))support(2,'예상 밖의 변화에도 비교적 유연하게 방향을 바꿈','They adapt relatively easily to the unexpected change','予想外の変化にも比較的柔軟に方向を変えられる');
   const routineCode=[...(world.routines?.[character.id]||[]),...(world.monthlyRoutines?.[character.id]||[])].find(value=>String(value.id)===String(entry?.routineId))?.dressCode;
@@ -184,17 +182,13 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   // stack into automatic happiness: keep only the strongest supports, capped at +5.
   supports.sort((a,b)=>b.value-a.value);let supportTotal=0;
   for(const item of supports){const value=Math.min(item.value,5-supportTotal);if(value>0){reasons.push({...item,value});supportTotal+=value}if(supportTotal>=5)break}
-  const eventDetail=[sourceTitle,sourceDesc].filter(Boolean).join(' — ').slice(0,220),eventReason=kind=>({
-    positive:[`“${eventDetail}”에서 기쁨을 느낌`,`“${eventDetail}” lifted their mood`,`「${eventDetail}」で気持ちが明るくなった`],
-    angry:[`“${eventDetail}” 때문에 화가 남`,`“${eventDetail}” made them angry`,`「${eventDetail}」が原因で腹が立った`],
-    sad:[`“${eventDetail}” 때문에 마음이 가라앉음`,`“${eventDetail}” brought their mood down`,`「${eventDetail}」で気持ちが沈んだ`]
-  }[kind]);
-  const angerNegated=/문제.{0,12}(없|않)|갈등.{0,12}(없|않)|다투지|싸우지|no (problem|conflict)|without (arguing|conflict)|問題.{0,10}(ない|なく)|争わず|喧嘩せず/i.test(copy),hasPositiveEvent=positiveEvent.test(copy),hasAngryEvent=angryEvent.test(copy)&&!angerNegated,hasSadEvent=sadEvent.test(copy),hasTiredEvent=tiredEvent.test(copy);
+  const eventReason=kind=>observed[kind]?.description;
+  const hasPositiveEvent=Boolean(observed.positive),hasAngryEvent=Boolean(observed.angry),hasSadEvent=Boolean(observed.sad),hasTiredEvent=tiredEvent.test(copy);
   const severeRelationshipHarm=/폭력|폭행|협박|배신|외도|바람을 피|이별 통보|이혼 통보|모욕|심한 거짓말|assault|violence|threat|betray|cheat|break.?up|divorce|侮辱|暴力|脅迫|裏切|浮気|別れ|離婚/i.test(copy);
   const conflictNamesCompanion=Boolean(companion?.name&&copy.includes(companion.name));
   const loveBufferedConflict=strongLove&&conflictNamesCompanion&&hasAngryEvent&&!severeRelationshipHarm;
   if(hasPositiveEvent){const reason=eventReason('positive');add(eventValue(22),...reason)}
-  if(loveBufferedConflict)add(eventValue(-10),`“${eventDetail}” 때문에 ${companion.name}에게 서운하지만 사랑하는 마음이 사라진 것은 아님`,`“${eventDetail}” hurt, but it did not erase their love for ${companion.name}`,`「${eventDetail}」で${companion.name}に寂しさを感じたが、愛情が消えたわけではない`);
+  if(loveBufferedConflict)add(eventValue(-10),`${companion.name}와의 다툼으로 서운함이 남지만 애정이 충격을 완화함`,`A disagreement with ${companion.name} hurts, but affection softens the impact`,`${companion.name}との口論で寂しさが残るが、愛情が衝撃を和らげている`);
   else if(hasAngryEvent){const reason=eventReason('angry');add(eventValue(-28),...reason)}
   if(hasSadEvent){const reason=eventReason('sad');add(eventValue(-24),...reason)}
   if(hasTiredEvent)add(eventValue(-16),'피로가 쌓임','Fatigue has built up','疲れがたまっている');

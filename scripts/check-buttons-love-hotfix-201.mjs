@@ -3,7 +3,7 @@ import {readFile} from "node:fs/promises";
 import {characterMood} from "../character-mood.js";
 
 const root=new URL("../",import.meta.url);
-const marker="20260904home209";
+const marker="20260904audio212";
 const imports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
@@ -46,7 +46,7 @@ assert.ok(caring.reasons.some(reason=>reason.text.includes("사랑")&&reason.tex
 const disagreement=characterMood(nerine,scene("크로와 저녁 약속을 두고 다투는 중","늦은 연락 때문에 갈등이 생겨 어떤 점이 속상했는지 이야기했어요."),world);
 assert.equal(disagreement.label,"서운함","사랑하는 상대와의 가벼운 갈등을 격분으로 과장하지 않는다");
 assert.equal(disagreement.tone,"sad","가벼운 연인 갈등은 관계를 미워하는 분노가 아니라 서운함으로 연결한다");
-assert.ok(disagreement.reasons.some(reason=>reason.text.includes("늦은 연락")&&reason.text.includes("사랑하는 마음")),"기분 이유에 구체적인 행동 로그와 지속되는 애정을 함께 표시한다");
+assert.ok(disagreement.reasons.some(reason=>reason.text.includes("크로")&&reason.text.includes("다툼")&&reason.text.includes("애정")),"기분 이유는 로그 인용 대신 갈등과 애정의 완충 영향을 함께 표시한다");
 assert.ok(disagreement.reasons.every(reason=>!reason.text.includes("불편하거나 화가 남")),"모호한 분노 사유 문구를 만들지 않는다");
 
 const severe=characterMood(nerine,scene("크로의 배신을 알게 된 중","크로가 심한 거짓말로 신뢰를 깨뜨린 사실 때문에 크게 다투고 화가 났어요."),world);
@@ -61,9 +61,9 @@ for(const language of ["en","ja"]){
 const [gradle,serviceWorker,index]=await Promise.all([
   readFile(new URL("android/app/build.gradle",root),"utf8"),readFile(new URL("sw.js",root),"utf8"),readFile(new URL("index.html",root),"utf8")
 ]);
-assert.match(gradle,/versionCode\s+(?:202|203|204|205|208)/);
-assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|19[013])"/);
-assert.ok(/drawer-village-v2026090[23]-(?:relationship-emotion-202|language-scene-203|font-204|cognitive-205|food-image-dev-208)/.test(serviceWorker));
+assert.match(gradle,/versionCode\s+212/);
+assert.match(gradle,/versionName\s+"1\.0\.197"/);
+assert.ok(serviceWorker.includes("drawer-village-v20260904-footsteps-dev-212"));
 assert.ok(index.includes(marker));
 
 console.log(`v1.0.188 / 202 버튼 상태·애정 관계 감정 회귀 검증 완료 (${visited.size} modules)`);

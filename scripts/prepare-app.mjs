@@ -21,7 +21,6 @@ const excludedAndroidAssets=new Set([
   "assets/character-ui/paper.png"
 ]);
 const excludedAndroidAssetPrefixes=[];
-const stableAndroidBackupPrefixes=["assets/audio/"];
 const includedFiles=new Set([
   "dictionary.css","home-editor-ui.css",
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
@@ -52,15 +51,6 @@ async function copyPortable(source,target){
       if(excludedAndroidAssets.has(relativePath)||excludedAndroidAssetPrefixes.some(prefix=>relativePath.startsWith(prefix)))continue;
       if(process.env.DRAWER_BUILD_TRACE)console.log(`Android 자산 준비: ${relativePath}`);
       const backupPath=join(fileURLToPath(root),"android","app","src","main","assets","public",relativePath);
-      if(stableAndroidBackupPrefixes.some(prefix=>relativePath.startsWith(prefix))){
-        if(incrementalOneDriveStage)continue;
-        try{await writeFile(to,await readFile(backupPath));}
-        catch(error){
-          if(error?.code!=="ENOENT")throw error;
-          await writeFile(to,await readFile(from));
-        }
-        continue;
-      }
       try{await writeFile(to,await readFile(from));}
       catch(error){
         if(error?.code!=="EPERM")throw error;
@@ -168,7 +158,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260904home211";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260904audio212";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

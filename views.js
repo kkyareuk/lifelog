@@ -1,21 +1,21 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260904home211";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260904home211";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260904home211";
-import {characterMood} from "./character-mood.js?v=20260904home211";
-import {createContactMailbox} from "./notification-mail.js?v=20260904home211";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260904home211";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260904home211";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260904home211";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260904home211";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260904home211";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260904home211";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260904home211";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260904home211";
-import {achievementRows} from "./achievements.js?v=20260904home211";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260904home211";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260904audio212";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260904audio212";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260904audio212";
+import {characterMood} from "./character-mood.js?v=20260904audio212";
+import {createContactMailbox} from "./notification-mail.js?v=20260904audio212";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260904audio212";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260904audio212";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260904audio212";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260904audio212";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260904audio212";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260904audio212";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260904audio212";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260904audio212";
+import {achievementRows} from "./achievements.js?v=20260904audio212";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260904audio212";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -4174,7 +4174,7 @@ function townBuildingDetailScreen(character,place,home,items,audiences){
   const interior=place?.interiorImage||place?.image||home?.image||"";
   const homeLighting=home?`<fieldset class="building-lighting-settings home-building-lighting"><legend>${t("건물 불빛","건물 불빛")}</legend><label>${t("조명 방식","조명 방식")}<select data-home-field="lightingMode" data-home-id="${home.id}">${[["schedule","설정한 시간에 켜기"],["always","항상 켜기"],["off","항상 끄기"]].map(([value,label])=>`<option value="${value}" ${normalizeBuildingLighting(home).lightingMode===value?"selected":""}>${t(label,label)}</option>`).join("")}</select></label><div><label>${t("켜지는 시간","켜지는 시간")}<input type="time" data-home-field="lightOnTime" data-home-id="${home.id}" value="${normalizeBuildingLighting(home).lightOnTime}"></label><label>${t("꺼지는 시간","꺼지는 시간")}<input type="time" data-home-field="lightOffTime" data-home-id="${home.id}" value="${normalizeBuildingLighting(home).lightOffTime}"></label></div></fieldset>`:"";
   const editor=place?townPlaceEditor(place,items,audiences,true):home?`${townHomeEditor(home,true)}${homeLighting}<button type="button" class="danger town-building-delete" data-delete-home="${esc(home.id)}">${t("이 건물 삭제","이 건물 삭제")}</button>`:"";
-  return `<aside class="town-building-screen town-building-detail-screen" aria-label="${esc(name)}"><div class="town-building-detail-head"><button type="button" class="town-building-screen-back" data-building-browser-back aria-label="${esc(t("건물 목록으로 돌아가기","건물 목록으로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><b>${esc(name)}</b></div><div class="town-building-detail-scroll"><section class="town-building-hero">${interior?`<img class="town-building-interior" src="${esc(interior)}" alt="${esc(name)} ${esc(t(home?"집 사진":"내부 사진",home?"집 사진":"내부 사진"))}">`:`<div class="town-building-interior town-building-interior-empty"><span>${esc(place?.emoji||"🏠")}</span><small>${t(home?"집 일러스트나 가족사진을 넣어 주세요.":"내부 사진을 등록해 주세요",home?"집 일러스트나 가족사진을 넣어 주세요.":"내부 사진을 등록해 주세요")}</small></div>`}<img class="town-building-exterior" src="${esc(exterior)}" alt="${esc(name)} ${esc(t("건물 모양","건물 모양"))}"></section><div class="place-editor town-building-detail-form">${editor}</div></div></aside>`;
+  return `<aside class="town-building-screen town-building-detail-screen" aria-label="${esc(name)}"><div class="town-building-detail-head"><button type="button" class="town-building-screen-back" data-building-browser-back aria-label="${esc(t("건물 목록으로 돌아가기","건물 목록으로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><b>${esc(name)}</b></div><div class="town-building-detail-scroll"><section class="town-building-hero">${interior?`<img class="town-building-interior" src="${esc(interior)}" alt="${esc(name)} ${esc(t(home?"집 사진":"내부 사진",home?"집 사진":"내부 사진"))}">`:`<div class="town-building-interior town-building-interior-empty"><span>${esc(place?.emoji||"🏠")}</span><small>${t(home?"집 일러스트나 가족사진을 넣어 주세요.":"내부 사진을 등록해 주세요",home?"집 일러스트나 가족사진을 넣어 주세요.":"내부 사진을 등록해 주세요")}</small></div>`}<img class="town-building-exterior" src="${esc(exterior)}" alt="${esc(name)} ${esc(t("건물 모양","건물 모양"))}"></section><div class="place-editor town-building-detail-form">${editor}<div class="editor-save-actions"><button type="button" class="primary" data-editor-save>${t("저장","저장")}</button></div></div></div></aside>`;
 }
 const TOWN_DECORATION_CHOICES=[
   ["bench","🪑","벤치","휴식"],["lamp","💡","가로등","조명"],["fountain","⛲","분수","조형물"],["tree","🌳","나무","자연"],
