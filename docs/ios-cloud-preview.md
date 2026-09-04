@@ -78,4 +78,14 @@ build 2: CocoaPods/Xcode 빌드 통과, iPhone 17 Pro / iOS 26.2 설치·프로�
 - Actions 구버전 액션의 Node 20 런타임 경고가 있으나 실행은 Node 24 강제 전환으로 성공. npm 앱 빌드 런타임은 Node 22.
 - 두 번만 실행했으며 추가 자동 재시도 없음. 계정 과금 설정/저장소 공개 범위/운영 main은 변경하지 않음.
 - 로컬 진단 파일: ios/build/cloud-run-33866155299/ (Git 제외). 첫 실패/취소 기록은 삭제하지 않음.
-- Apple 서명 자료 GitHub secret 목록은 비어 있었음. 인증서/개인키/프로파일/API 키 연결 전이므로 IPA와 TestFlight 업로드는 아직 불가.
+- 당시 Apple 서명 자료 GitHub secret 목록은 비어 있었음. 이후 준비 상태는 아래 기록을 따른다.
+
+## 2026-09-04 서명 준비 진행
+
+- GitHub에서 ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY 이름 등록 확인. 값은 읽지 않았으며 API 인증 성공을 검사한 것은 아니다.
+- Windows에서 RSA 2048 / SHA-256 인증서 요청(CSR) 생성, CSR 자체 서명 및 개인키 유효성 검사 통과.
+- 개인키는 저장소와 OneDrive 밖의 사용자 전용 접근 폴더에 암호화해 보관한다. 암호 역시 Windows 사용자 보호 방식으로 저장하며 Git/채팅/작업판에 포함하지 않는다.
+- 사용자가 다운로드 폴더의 DrawerVillage-AppleDistribution.certSigningRequest를 Apple Developer의 Certificates → + → Apple Distribution에 업로드하고 인증서(.cer)를 다운로드해야 한다.
+- 이어 Profiles → + → Distribution의 App Store Connect → com.drawervillage.app → 방금 만든 배포 인증서 → 이름 DrawerVillage AppStore → Generate → Download로 프로파일(.mobileprovision)을 받는다.
+- 기존 인증서를 임의로 폐기하지 않는다. 다운로드한 두 파일을 확인한 후 인증서-개인키 일치, Team/Bundle ID, 만료 및 배포 유형을 검사하고 P12/서명 작업을 연결한다.
+- 아직 Apple 인증서 발급·프로파일 발급·서명 IPA·TestFlight 업로드는 완료하지 않았다. 버전 1.0.198 / Android 213 / iOS build 3 유지.
