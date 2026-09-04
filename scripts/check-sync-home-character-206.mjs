@@ -7,7 +7,7 @@ const [auth,views,app,css,appCss,simulation,mood,worker,gradle]=await Promise.al
   "../auth.js","../views.js","../app.js","../character-book.css","../app.css","../simulation.js","../character-mood.js","../sw.js","../android/app/build.gradle"
 ].map(read));
 
-assert.deepEqual(HOUSE_FURNITURE_GRID,{columns:12,rows:24},"portrait furniture placement uses a denser vertical grid");
+assert.deepEqual(HOUSE_FURNITURE_GRID,{columns:12,rows:24,subdivisions:4},"portrait furniture placement uses a denser vertical grid");
 assert.deepEqual(furnitureFootprint("커플 침대"),{columns:3,rows:4},"couple bed has a visibly larger footprint");
 assert.match(views,/const bedCharacterScale=\.68/,"bed placement scale does not enlarge sleepers");
 assert.ok(views.includes("quietBedSleep")&&views.includes('sleeping&&!quietBedSleep'),"couple-bed sleepers hide labels and sleep marks");
@@ -31,8 +31,8 @@ assert.ok(css.includes("grid-template-columns:repeat(3,minmax(0,1fr))")&&css.inc
 assert.ok(app.includes("data-furniture-search")&&app.includes("data-furniture-search-label"),"the furniture bottom sheet has localized search filtering");
 assert.ok(app.includes("furniture-picker-couple-bed")&&app.includes("couple-bed-quilt.png")&&app.includes("couple-bed-footboard.png"),"the couple bed uses its layered illustration in the furniture picker");
 assert.ok(appCss.includes("inset:auto 0 0!important")&&appCss.includes("grid-template-columns:repeat(3,minmax(0,1fr))"),"the mobile furniture catalog opens from the bottom in a three-column grid");
-assert.ok(worker.includes("drawer-village-v20260903-food-image-dev-208"),"release 206 uses an isolated offline cache");
-assert.match(gradle,/versionCode\s+208/);
-assert.match(gradle,/versionName\s+"1\.0\.193"/);
+assert.ok(worker.includes("drawer-village-v20260904-home-editor-dev-209"),"release 206 uses an isolated offline cache");
+assert.match(gradle,/versionCode\s+209/);
+assert.match(gradle,/versionName\s+"1\.0\.194"/);
 
-console.log("v1.0.193 / 208 delta sync, shared scenes, beds, character book, and food image checks passed");
+console.log("v1.0.194 / 209 delta sync, shared scenes, beds, character book, and food image checks passed");

@@ -23,7 +23,7 @@ const excludedAndroidAssets=new Set([
 const excludedAndroidAssetPrefixes=[];
 const stableAndroidBackupPrefixes=["assets/audio/"];
 const includedFiles=new Set([
-  "dictionary.css",
+  "dictionary.css","home-editor-ui.css",
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
@@ -168,7 +168,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260903foodimage208";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260904home209";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

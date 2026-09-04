@@ -1,0 +1,48 @@
+/* Home editor controls have their own layout, independent of the room canvas. */
+.home-furniture-drawer{position:fixed;z-index:680;left:0;right:0;bottom:0;max-width:100%;color:#fff5dd;background:#634734 url('./assets/character-ui/character-wood-background.png') center/cover;border-top:3px solid #372419;box-shadow:0 -3px 12px #20170b33;transition:transform .18s ease;transform:translateY(0)}
+.home-furniture-drawer.is-collapsed{transform:translateY(100%)}
+.home-drawer-toggle{position:absolute!important;bottom:100%;left:16px;display:grid;place-items:center;width:42px;height:42px;padding:0!important;border:3px solid #332115!important;border-radius:50%!important;background:#644a35!important;color:#fff0cb!important;font-size:21px!important}
+.home-drawer-content{padding:8px 10px max(8px,env(safe-area-inset-bottom));display:grid;gap:7px}
+.home-drawer-search{display:grid;grid-template-columns:minmax(0,1fr) minmax(85px,.65fr);gap:8px}
+html body #app .home-furniture-drawer .home-drawer-search :is(input,select){width:100%;min-width:0;height:36px!important;padding:4px 12px!important;border:1px solid #baa47b;border-radius:18px;background:#fff8e7;color:#382b22;font:inherit;font-size:13px}
+.home-drawer-categories{display:flex;gap:6px;overflow:auto;overscroll-behavior:contain;scrollbar-width:none}
+html body #app .home-furniture-drawer .home-drawer-categories button{flex:none;min-height:30px;padding:3px 12px!important;border:2px solid #302019!important;border-radius:16px!important;background:#71533d!important;color:#fff8e6!important;font-size:12px!important;white-space:nowrap}
+html body #app .home-furniture-drawer .home-drawer-categories button.on{background:#efcd70!important;color:#382915!important}
+.home-drawer-items{display:flex;gap:8px;overflow-x:auto;overscroll-behavior:contain;min-height:82px;scrollbar-width:thin}
+html body #app .home-furniture-drawer .home-drawer-items>button{flex:0 0 76px;display:grid!important;grid-template-rows:48px auto;place-items:center;min-width:0!important;padding:4px!important;border:2px solid #3c2818!important;border-radius:9px!important;background:#f9ecd5!important;color:#31251e!important;box-shadow:none!important}
+.home-drawer-items>button>span{display:grid;place-items:center;position:relative;width:52px;height:48px;font-size:32px}
+.home-drawer-items b{font-size:10px;line-height:1.2;overflow-wrap:anywhere;max-width:100%}
+.home-drawer-items .furniture-picker-couple-bed img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.home-native-bottom{position:absolute;right:8px;bottom:max(12px,env(safe-area-inset-bottom));display:grid;gap:8px;pointer-events:auto}
+.home-native-bottom .home-native-pill{width:72px;min-height:32px}
+.home.is-editing :is(.home-native-bottom,.home-native-ui-toggle),.home-ui-hidden .home-native-bottom{display:none!important}
+.home:has(.home-feature-panel.open) :is(.home-furniture-drawer,.furniture-edit-toolbar){visibility:hidden;pointer-events:none}
+.home-member-menu>button[data-open-home-feature]{display:block;width:100%;margin:12px 0;padding:14px;background:#664934;color:#fff4dc;border:2px solid #35251a;border-radius:22px}
+html.native-app[data-active-tab="home"] .home-room-browser.home-feature-panel.open{inset:0!important;max-height:none!important;z-index:2800;padding:24px 8% max(24px,env(safe-area-inset-bottom))!important;border:0!important;border-radius:0!important;background:#b58b63 url('./assets/character-ui/character-wood-background.png') center/cover!important;backdrop-filter:none!important;overscroll-behavior:contain}
+html body #app .home-room-browser header{display:flex!important;flex-direction:row!important;background:transparent!important;padding:0!important;position:static!important;width:100%!important;gap:20px;align-items:center;margin-bottom:20px}
+html body #app .home-room-browser header .home-feature-close{position:static!important;flex:none;width:48px;height:48px;margin:0!important;border-radius:50%;background:#654732;color:#fff1d2;border:3px solid #302016;font-size:28px}
+html body #app .home-room-browser header input{width:100%;min-width:0;border-radius:24px;background:#fff6df;color:#302219;padding:12px;border:2px solid #d4be8d;font-size:16px}
+.home-room-filters{display:flex;gap:8px;overflow-x:auto;margin-bottom:22px}
+html body #app .home-room-filters button{flex:none;min-width:56px;padding:8px 14px;border-radius:20px;background:#79583b;color:#fff6de;border:2px solid #50331f}
+html body #app .home-room-filters button.on{background:#ffe78c;color:#342312}
+.home-room-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 16px}
+html body #app .home-room-card{display:flex!important;flex-direction:column;gap:6px;align-items:stretch;padding:7px 7px 10px!important;border:3px solid #6f4f2c!important;border-radius:14px!important;background:#fff3ce!important;color:#302117!important;overflow:hidden;min-width:0!important}
+.home-room-card[hidden]{display:none!important}
+.home-room-card img,.home-room-preview{display:grid;place-items:center;width:100%;aspect-ratio:1.15;object-fit:contain;background:#dfcdb0;border-radius:8px;font-size:42px}
+.home-room-card b{font-size:16px;overflow-wrap:anywhere}.home-room-card small{font-size:11px}
+html body #app .home-room-add{margin-top:26px;padding:12px 20px;border:3px solid #4b321d;border-radius:25px;background:#6e5038;color:#fff0ce}
+/* Room detail is a wood-backed screen with a separate cream form, as in the SVG. */
+dialog.room-editor-dialog.home-room-editor{width:min(560px,100vw)!important;height:100dvh!important;max-height:100dvh!important;margin:0 auto!important;border:0!important;border-radius:0!important;background:#b88f67 url('./assets/character-ui/character-wood-background.png') center/cover!important;color:#302219!important;overflow:auto!important}
+.home-room-editor form{display:flex!important;flex-direction:column;gap:18px!important;padding:22px!important;min-width:0}
+.home-room-editor form>.title{order:0;min-height:52px}.home-room-editor form>.title h2{font-size:26px;color:#fff5de;text-shadow:0 2px #392619}
+.home-room-editor .room-editor-photo:not(.room-editor-floor){order:1;display:flex;flex-direction:column;padding:0;gap:0;border:4px solid #fff5dd;border-radius:26px;overflow:hidden;min-height:190px;background:#eadcc5}
+.home-room-editor .room-editor-photo:not(.room-editor-floor)>span{display:grid;place-items:center;width:100%;height:220px;background-position:center;background-size:contain;background-repeat:no-repeat;font-size:42px}
+.home-room-editor .room-editor-photo:not(.room-editor-floor)>b{padding:8px;font-size:14px}
+.home-room-editor .room-editor-fields{order:2;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px 12px!important;background:#fff2dbeF;padding:20px 16px;border-radius:26px;min-width:0}
+.home-room-editor .room-editor-fields label{min-width:0;font-size:14px!important;line-height:1.4}
+.home-room-editor .room-editor-fields label:has([name="name"]){grid-column:1/-1}
+.home-room-editor .room-editor-fields :is(input,select){width:100%;min-width:0;max-width:100%;font:inherit!important;height:auto;min-height:40px;padding:8px;border:1px solid #baa078;border-radius:18px;background:#fff9ed;color:#30251b}
+.home-room-editor .room-editor-fields small{font-size:11px!important;line-height:1.5;overflow-wrap:anywhere}
+.home-room-editor .room-editor-floor{order:3;background:#fff2df}.home-room-editor .crop-actions{order:4;position:sticky;bottom:0;padding:10px;background:#e8ceaa;display:flex;gap:8px;flex-wrap:wrap;border-radius:16px}
+.home-room-editor .crop-actions button{flex:1;min-width:88px;font-size:13px}
+@media(prefers-reduced-motion:reduce){.home-furniture-drawer{transition:none}}

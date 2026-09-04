@@ -2,7 +2,7 @@ const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
 
 // 세로 화면에서는 같은 높이 안에서도 더 세밀하게 놓을 수 있도록 세로
 // 스냅만 촘촘하게 한다. 저장 좌표는 비율값이라 기존 배치도 유지된다.
-export const HOUSE_FURNITURE_GRID=Object.freeze({columns:12,rows:24});
+export const HOUSE_FURNITURE_GRID=Object.freeze({columns:12,rows:24,subdivisions:4});
 export const FURNITURE_PROPS=Object.freeze(["책","화분","향수","액자","컵","인형","수집품","조명"]);
 const footprint=(columns,rows)=>Object.freeze({columns,rows});
 export const FURNITURE_FOOTPRINTS=Object.freeze({
@@ -66,7 +66,9 @@ export function furnitureGridForRoom(roomRect,canvasRect){
 export function snapFurniturePosition(x,y,grid={},itemFootprint={columns:1,rows:1}){
   const columns=Math.max(1,Math.round(Number(grid.columns)||4)),rows=Math.max(1,Math.round(Number(grid.rows)||4));
   const width=Math.max(1,Math.min(columns,Math.round(Number(itemFootprint.columns)||1))),height=Math.max(1,Math.min(rows,Math.round(Number(itemFootprint.rows)||1)));
-  const column=Math.round(clamp(x,0,100)/100*columns-width/2),row=Math.round(clamp(y,0,100)/100*rows-height/2);
+  // Subdivide movement only: footprint and existing furniture size stay unchanged.
+  const subdivisions=Math.max(1,Number(grid.subdivisions)||HOUSE_FURNITURE_GRID.subdivisions);
+  const column=Math.round((clamp(x,0,100)/100*columns-width/2)*subdivisions)/subdivisions,row=Math.round((clamp(y,0,100)/100*rows-height/2)*subdivisions)/subdivisions;
   const startColumn=clamp(column,0,columns-width),startRow=clamp(row,0,rows-height);
   return {
     x:Number((((startColumn+width/2)/columns)*100).toFixed(4)),
@@ -91,8 +93,8 @@ const LABELS={
   en:{"소파":"Sofa","TV":"TV","책장":"Bookcase","오디오":"Audio system","안마의자":"Massage chair","게임기":"Game console","캣타워":"Cat tower","턴테이블":"Turntable","보드게임장":"Board game table","홈시어터":"Home theater","프로젝터":"Projector","악기 진열장":"Instrument display","수집품 진열장":"Collection display","독서 의자":"Reading chair","반려동물 장난감":"Pet toys","러닝머신":"Treadmill","냉장고":"Refrigerator","조리대":"Kitchen counter","식탁":"Dining table","오븐":"Oven","커피머신":"Coffee machine","식기세척기":"Dishwasher","에스프레소 머신":"Espresso machine","티 세트":"Tea set","제빵 도구":"Baking tools","칵테일 바":"Cocktail bar","와인 냉장고":"Wine fridge","향신료 선반":"Spice rack","요리책 선반":"Cookbook shelf","신발장":"Shoe cabinet","전신거울":"Full-length mirror","우산꽂이":"Umbrella stand","반려동물 산책용품":"Pet walking gear","자전거 보관대":"Bike rack","운동 장비 선반":"Exercise rack","캠핑 장비":"Camping gear","샤워부스":"Shower","욕조":"Bathtub","세면대":"Sink","세탁기":"Washing machine","건조기":"Dryer","입욕제 선반":"Bath shelf","향수 선반":"Perfume shelf","스킨케어 선반":"Skincare shelf","침대":"Bed","옷장":"Wardrobe","화장대":"Vanity","협탁":"Bedside table","빔프로젝터":"Beam projector","독서등":"Reading lamp","향수 진열대":"Perfume display","레코드 플레이어":"Record player","작은 게임기":"Mini console","봉제인형":"Plush toy","책상":"Desk","컴퓨터":"Computer","피아노":"Piano","기타":"Guitar","그림 도구":"Art supplies","재봉틀":"Sewing machine","운동기구":"Exercise equipment","디지털 드로잉 장비":"Digital art setup","촬영 장비":"Camera gear","보드게임 선반":"Board game shelf","공예 도구":"Craft tools","뜨개 도구":"Knitting tools","프라모델 작업대":"Model workbench","천체망원경":"Telescope","악기":"Instrument","의자":"Chair","찬장":"Cupboard","티 테이블":"Tea table","와인장":"Wine cabinet","수납장":"Storage cabinet","놀이 매트":"Play mat","기저귀 교환대":"Changing table","옷걸이":"Clothes rack","작은 책상":"Small desk","작업대":"Workbench","화분":"Plant","야외 의자":"Outdoor chair","작은 테이블":"Small table","빨래 건조대":"Drying rack","원예 도구":"Gardening tools","캠핑 의자":"Camping chair","선반":"Shelf","보관 상자":"Storage box","수집품 상자":"Collection box","아기 침대":"Crib"},
   ja:{"소파":"ソファ","TV":"テレビ","책장":"本棚","오디오":"オーディオ","안마의자":"マッサージチェア","게임기":"ゲーム機","캣타워":"キャットタワー","턴테이블":"ターンテーブル","보드게임장":"ボードゲーム台","홈시어터":"ホームシアター","프로젝터":"プロジェクター","악기 진열장":"楽器ディスプレイ","수집품 진열장":"コレクション棚","독서 의자":"読書椅子","반려동물 장난감":"ペットのおもちゃ","러닝머신":"ランニングマシン","냉장고":"冷蔵庫","조리대":"調理台","식탁":"食卓","오븐":"オーブン","커피머신":"コーヒーメーカー","식기세척기":"食器洗い機","에스프레소 머신":"エスプレッソマシン","티 세트":"ティーセット","제빵 도구":"製菓道具","칵테일 바":"カクテルバー","와인 냉장고":"ワインセラー","향신료 선반":"スパイス棚","요리책 선반":"料理本棚","신발장":"靴箱","전신거울":"全身鏡","우산꽂이":"傘立て","반려동물 산책용품":"ペット散歩用品","자전거 보관대":"自転車ラック","운동 장비 선반":"運動用品棚","캠핑 장비":"キャンプ用品","샤워부스":"シャワー","욕조":"浴槽","세면대":"洗面台","세탁기":"洗濯機","건조기":"乾燥機","입욕제 선반":"入浴剤棚","향수 선반":"香水棚","스킨케어 선반":"スキンケア棚","침대":"ベッド","옷장":"クローゼット","화장대":"ドレッサー","협탁":"ベッドサイドテーブル","빔프로젝터":"プロジェクター","독서등":"読書灯","향수 진열대":"香水ディスプレイ","레코드 플레이어":"レコードプレーヤー","작은 게임기":"小型ゲーム機","봉제인형":"ぬいぐるみ","책상":"机","컴퓨터":"パソコン","피아노":"ピアノ","기타":"ギター","그림 도구":"画材","재봉틀":"ミシン","운동기구":"運動器具","디지털 드로잉 장비":"デジタル作画機材","촬영 장비":"撮影機材","보드게임 선반":"ボードゲーム棚","공예 도구":"工作道具","뜨개 도구":"編み物道具","프라모델 작업대":"模型作業台","천체망원경":"天体望遠鏡","악기":"楽器","의자":"椅子","찬장":"食器棚","티 테이블":"ティーテーブル","와인장":"ワイン棚","수납장":"収納棚","놀이 매트":"プレイマット","기저귀 교환대":"おむつ交換台","옷걸이":"衣類ラック","작은 책상":"小さな机","작업대":"作業台","화분":"鉢植え","야외 의자":"屋外椅子","작은 테이블":"小さなテーブル","빨래 건조대":"物干し台","원예 도구":"園芸道具","캠핑 의자":"キャンプ椅子","선반":"棚","보관 상자":"収納箱","수집품 상자":"コレクション箱","아기 침대":"ベビーベッド"}
 };
-Object.assign(LABELS.en,{"커플 침대":"Couple bed"});
-Object.assign(LABELS.ja,{"커플 침대":"ダブルベッド"});
+Object.assign(LABELS.en,{"커플 침대":"Couple bed","운동 장비":"Exercise gear"});
+Object.assign(LABELS.ja,{"커플 침대":"ダブルベッド","운동 장비":"運動用品"});
 export const furnitureLabel=(item,locale="ko")=>LABELS[locale]?.[String(item||"")]||String(item||"");
 export const isBedFurniture=item=>/침대/.test(String(item||""));
 export const furnitureCapacity=item=>String(item||"")==="커플 침대"?2:isBedFurniture(item)?1:0;
@@ -111,6 +113,8 @@ export function normalizeFurniturePlacement(value,index=0){
     scale:clamp(value.scale||1,.55,1.8),
     layer:Math.round(clamp(value.layer??index,0,20)),
     rotation:Number(rotation.toFixed(2)),
+    facing:["front","left","right"].includes(value.facing)?value.facing:"front",
+    flipped:value.flipped===true,
     props:supportsFurnitureProps(item)?normalizeFurnitureProps(value.props):[],
     assignedCharacterIds:isBedFurniture(item)?[...new Set((Array.isArray(value.assignedCharacterIds)?value.assignedCharacterIds:[]).map(String).filter(Boolean))].slice(0,furnitureCapacity(item)):[]
   };

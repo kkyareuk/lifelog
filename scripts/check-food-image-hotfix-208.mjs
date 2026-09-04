@@ -22,9 +22,9 @@ assert.deepEqual(missingResult,{found:1,resolved:0,pending:1});
 
 assert.ok(views.includes('"The picture could not be saved. Please try another one."'));
 assert.ok(views.includes('"画像を保存できませんでした。別の画像でもう一度お試しください。"'));
-assert.match(gradle,/versionCode\s+208/);
-assert.match(gradle,/versionName\s+"1\.0\.193"/);
-assert.ok(index.includes("20260903foodimage208"));
-assert.ok(serviceWorker.includes("drawer-village-v20260903-food-image-dev-208"));
+assert.match(gradle,/versionCode\s+209/);
+assert.match(gradle,/versionName\s+"1\.0\.194"/);
+assert.ok(index.includes("20260904home209"));
+assert.ok(serviceWorker.includes("drawer-village-v20260904-home-editor-dev-209"));
 
-console.log("v1.0.193 / 208 dev 음식 이미지 업로드 핫픽스 검증 완료");
+console.log("v1.0.194 / 209 dev 음식 이미지 업로드 핫픽스 검증 완료");

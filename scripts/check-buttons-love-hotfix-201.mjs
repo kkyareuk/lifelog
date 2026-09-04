@@ -3,7 +3,7 @@ import {readFile} from "node:fs/promises";
 import {characterMood} from "../character-mood.js";
 
 const root=new URL("../",import.meta.url);
-const marker="20260903foodimage208";
+const marker="20260904home209";
 const imports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
