@@ -1500,18 +1500,41 @@ export function updateFurniturePlacement(homeId,roomKey,placementId,patch,persis
   if(persist)save(true);
   return room.furniturePlacements.find(item=>item.id===placementId)||false;
 }
-export function deleteFurniturePlacement(homeId,roomKey,placementId){
-  const home=state.homes[homeId],room=home?.rooms?.[roomKey];if(!room)return false;
-  const placements=normalizeFurniturePlacements(room.furniturePlacements),removed=placements.find(item=>item.id===placementId);
-  if(!removed)return false;
-  room.furniturePlacements=placements.filter(item=>item.id!==placementId);
-  if(!room.furniturePlacements.some(item=>item.item===removed.item))room.furniture=(room.furniture||[]).filter(item=>item!==removed.item);
+// Transfer the existing object, not a newly-created copy: props and bed assignments
+// belong to this placement. A running interaction must release the old room.
+export function moveFurniturePlacement(homeId,fromRoomKey,toRoomKey,placementId,position={}){
+  const home=state.homes[homeId],from=home?.rooms?.[fromRoomKey],to=home?.rooms?.[toRoomKey];
+  if(!from||!to)return false;
+  const source=normalizeFurniturePlacements(from.furniturePlacements),current=source.find(item=>item.id===placementId);
+  if(!current)return false;
+  const patch={x:position.x??current.x,y:position.y??current.y};
+  if(fromRoomKey===toRoomKey)return updateFurniturePlacement(homeId,fromRoomKey,placementId,patch);
+  const target=normalizeFurniturePlacements(to.furniturePlacements);
+  if(target.some(item=>item.id===placementId))return false;
+  const moved=normalizeFurniturePlacement({...current,...patch,layer:target.length},target.length);
+  from.furniturePlacements=source.filter(item=>item.id!==placementId);
+  if(!from.furniturePlacements.some(item=>item.item===current.item))from.furniture=(from.furniture||[]).filter(item=>item!==current.item);
+  to.furniturePlacements=[...target,moved];
+  to.furniture=[...new Set([...(to.furniture||[]),current.item])];
+  releaseFurnitureInteraction(home,placementId);
+  touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
+  save(true);return moved;
+}
+function releaseFurnitureInteraction(home,placementId){
   const simulation=home.lifeSimulation;
   if(simulation?.reservations)delete simulation.reservations[placementId];
   Object.values(simulation?.agents||{}).forEach(agent=>{
     if(agent.furnitureId!==placementId)return;
     agent.phase="waiting";agent.furnitureId="";agent.item="";agent.startedAt=Date.now();agent.endsAt=Date.now();
   });
+}
+export function deleteFurniturePlacement(homeId,roomKey,placementId){
+  const home=state.homes[homeId],room=home?.rooms?.[roomKey];if(!room)return false;
+  const placements=normalizeFurniturePlacements(room.furniturePlacements),removed=placements.find(item=>item.id===placementId);
+  if(!removed)return false;
+  room.furniturePlacements=placements.filter(item=>item.id!==placementId);
+  if(!room.furniturePlacements.some(item=>item.item===removed.item))room.furniture=(room.furniture||[]).filter(item=>item!==removed.item);
+  releaseFurnitureInteraction(home,placementId);
   touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
   save(true);return true;
 }

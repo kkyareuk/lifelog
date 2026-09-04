@@ -1,4 +1,15 @@
-# 서랍마을 iOS 내부 테스트 — v1.0.198 / iOS build 5
+# 서랍마을 iOS — v1.0.198 / build 6 준비 · 최근 업로드 build 5
+
+## 2026-09-05 build 6 준비 (아직 업로드하지 않음)
+
+- 가구는 방 종류와 관계없이 설치하고, 편집 중 다른 방으로 끌어놓을 수 있다. 선택 가구의 방 선택 메뉴로 다른 층에도 이동한다.
+- 기존 ID·소품·침대 지정·크기·방향·반전을 유지하고, 원래 방의 사용 예약을 해제한다. 취소/잘못된 대상은 이동을 저장하지 않는다.
+- SD 대신 표시되는 프로필 사진만 원형으로 표시한다. SD/LD 원화는 자르지 않고, 사진/아이콘 원본 데이터도 바꾸지 않는다.
+- iOS 상점을 상품 목록과 분류 탭으로 열었다. 구매·복원은 아직 미연결이며 Play 결제/웹 결제로 우회하지 않는다. 가격도 iOS 확정 가격으로 표시하지 않는다.
+- 구글 로그인 연동 요청 접수. 프로젝트와 Downloads에서 GoogleService-Info.plist를 찾지 못했다. 기존 Firebase 프로젝트의 com.drawervillage.app iOS 설정 파일을 사용자에게 요청했다. 파일 확인 전 로컬 인증 대체 코드 및 로그인/동기화 잠금을 유지한다. 실제 로그인 연동 완료 아님.
+- 영어/일본어 신규 문구 각 100%; 전체 게임/기존 로그 번역률 미측정.
+- iOS/Android 자산 준비 및 플랫폼 분리, 생활 시뮬레이션 70개 검사 통과. Chrome 다섯 화면 크기에서 방/층 이동, 취소, 소품/침대 보존, 사진 원형/SD 무자름, 상점 분류와 결제 잠금을 검사한다. 실기기 iPad/WebView 검증은 별도다.
+- Android code 213 유지, dev 개발분. .github/ios-testflight-request.json은 이전 build 5 요청 그대로다. build 6 Mac 서명·IPA·TestFlight 업로드는 실행하지 않았다.
 
 현재 상태: **2026-09-05 build 5 내부 TestFlight 업로드 수락 완료. Actions 33888877404 success (7분 29초), Mac Archive·codesign·내부 IPA export·Apple validate/upload 통과. 업로드 보고서 uploadAccepted=true, submittedForReview=false. 종료 시 Apple 조회는 build=null이므로 처리 완료/설치 가능은 아직 미확인이다. 실제 iPad 재검증과 App Store 출시는 별도다.**
 

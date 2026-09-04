@@ -1381,12 +1381,16 @@ html[data-color-mode][data-visual-theme] .home-page button.room-furniture-item,
 .room-furniture-props i{display:block;font-style:normal;font-size:clamp(10px,1.65vw,17px);line-height:1;filter:drop-shadow(0 2px 2px #17203380);transform:translateY(calc((var(--prop-slot,0) % 2) * -2px))}
 html body #app .home .room-furniture-item small{display:none;position:absolute;left:50%;top:100%;max-width:92px;padding:3px 6px;border-radius:999px;background:#30251ef2;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:10px;line-height:1.2;text-shadow:none;white-space:normal;text-align:center;min-width:48px;overflow-wrap:anywhere;transform:translateX(-50%) rotate(calc(var(--furniture-rotation) * -1));pointer-events:none}
 .home.is-editing .room-furniture-item{pointer-events:auto!important;cursor:grab}
+.home.is-editing .room-furniture-item.furniture-drag-source{opacity:0}
+.home.is-editing .room-furniture-item.furniture-drag-preview{pointer-events:none!important;z-index:1000}
 html body #app .home.is-editing .room-furniture-item small{display:block}
 .home.is-editing .room-furniture-item.is-selected::after{content:"";position:absolute;inset:var(--selection-inset-y,-2px) var(--selection-inset-x,-2px);border:2px dashed #fff;border-radius:14px;box-shadow:0 0 0 2px var(--p),0 5px 14px #17203355;pointer-events:none}
 .home.is-editing .room-furniture-item.is-dragging{cursor:grabbing;opacity:.9}
 .furniture-edit-toolbar{position:fixed;left:calc(50% + 26px);bottom:max(18px,env(safe-area-inset-bottom));z-index:700;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;gap:6px;width:calc(100vw - 76px);max-width:520px;box-sizing:border-box;padding:8px;border:1px solid #bfa783;border-radius:16px;background:#fff5e4;box-shadow:0 4px 12px #24150b44;transform:translateX(-50%);overscroll-behavior:contain}
 .furniture-edit-toolbar[hidden]{display:none!important}.furniture-edit-toolbar strong{flex:0 0 auto;max-width:100px;padding:0 6px;color:#fff;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.furniture-edit-toolbar button{flex:0 0 auto;display:grid;place-items:center;min-width:42px;height:42px;padding:7px 10px;border-color:#ffffff38;background:#ffffff14;color:#fff;font-size:17px}.furniture-edit-toolbar button.danger{font-size:11px}.furniture-edit-toolbar button.primary{font-size:11px}
 .native-app .furniture-edit-toolbar{top:auto;bottom:12px}
+.furniture-edit-heading{display:flex;align-items:center;gap:8px;min-width:0}
+html body #app .furniture-edit-heading select{flex:1;min-width:0;width:100%;max-width:100%;height:32px;min-height:0;margin:0;padding:4px 10px;border:1px solid #bfa783;border-radius:10px;background:#fffdf6;color:#392b21;-webkit-text-fill-color:#392b21;font-size:12px}
 .furniture-edit-actions{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;min-width:0;max-width:100%}
 html body #app .furniture-edit-toolbar button{box-sizing:border-box;display:flex!important;flex-direction:column;justify-content:center;align-items:center;width:100%;min-width:0!important;min-height:0!important;height:44px!important;margin:0!important;padding:3px!important;font-size:11px!important;white-space:normal;overflow-wrap:anywhere;line-height:1.1;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;background:#75543d!important;border:1px solid #b39970!important;border-radius:10px!important;text-shadow:none!important}
 html body #app .furniture-edit-toolbar button span{color:inherit!important;-webkit-text-fill-color:inherit!important;font-size:inherit!important}
@@ -5974,6 +5978,7 @@ html[data-color-mode="light"].native-app[data-active-tab="character"] .character
 img.profile-photo-fallback{
   padding:0!important;
   border-radius:50%!important;
+  clip-path:circle(closest-side at 50% 50%);
   background:transparent!important;
   object-fit:cover!important;
   object-position:center!important;

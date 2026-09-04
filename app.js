@@ -1,6 +1,6 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260904home213";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260904home213";
 import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260904home213";
-import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection} from "./home-editor-ui.js?v=20260904home213";
+import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260904home213";
 import {toggleDislike} from "./state.js?v=20260904home213";
 import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260904home213";
 import {setCharacterSceneImage} from "./state.js?v=20260904home213";
@@ -1071,17 +1071,17 @@ function openFurniturePlacementDialog(homeId,initialRoomKey=""){
   const roomKeys=Object.keys(home.rooms||{}).sort((a,b)=>(Number(home.rooms[a]?.order)||0)-(Number(home.rooms[b]?.order)||0));
   let roomKey=home.rooms?.[initialRoomKey]?initialRoomKey:roomKeys.find(key=>(Number(home.rooms[key]?.floor)||1)===(Number(home.activeFloor)||1))||roomKeys[0];
   if(!roomKey){showToast("먼저 방을 추가해 주세요");return}
-  const copy={ko:{eyebrow:"집 편집",title:"가구 배치",help:"방을 고른 뒤 가구를 검색해 추가하세요. 추가한 가구는 방 안에서 바로 옮길 수 있어요.",placed:"배치된 가구",catalog:"추가할 가구",search:"가구 검색",emptySearch:"검색 결과가 없어요.",empty:"아직 배치한 가구가 없어요.",assign:"침대 지정",done:"방에서 위치 조정하기"},en:{eyebrow:"Home edit",title:"Furniture",help:"Choose a room, then search for furniture to add. Move placed furniture directly in the room.",placed:"Placed furniture",catalog:"Add furniture",search:"Search furniture",emptySearch:"No furniture matches your search.",empty:"No furniture placed yet.",assign:"Assign bed",done:"Position in room"},ja:{eyebrow:"家の編集",title:"家具の配置",help:"部屋を選び、家具を検索して追加してください。追加した家具は部屋の中でそのまま移動できます。",placed:"配置済み家具",catalog:"追加する家具",search:"家具を検索",emptySearch:"検索結果がありません。",empty:"配置した家具はまだありません。",assign:"ベッド指定",done:"部屋で位置を調整"}}[state.uiLanguage]||null;
+  const copy={ko:{eyebrow:"집 편집",title:"가구 배치",help:"방을 고른 뒤 가구를 검색해 추가하세요. 가구는 방 종류에 상관없이 놓고 다른 방으로도 옮길 수 있어요.",placed:"배치된 가구",catalog:"추가할 가구",search:"가구 검색",emptySearch:"검색 결과가 없어요.",empty:"아직 배치한 가구가 없어요.",assign:"침대 지정",done:"방에서 위치 조정하기"},en:{eyebrow:"Home edit",title:"Furniture",help:"Choose a room, then search for furniture to add. Place any furniture in any room and move it between rooms.",placed:"Placed furniture",catalog:"Add furniture",search:"Search furniture",emptySearch:"No furniture matches your search.",empty:"No furniture placed yet.",assign:"Assign bed",done:"Position in room"},ja:{eyebrow:"家の編集",title:"家具の配置",help:"部屋を選び、家具を検索して追加してください。家具は部屋の種類に関係なく置けて、別の部屋にも移動できます。",placed:"配置済み家具",catalog:"追加する家具",search:"家具を検索",emptySearch:"検索結果がありません。",empty:"配置した家具はまだありません。",assign:"ベッド指定",done:"部屋で位置を調整"}}[state.uiLanguage]||null;
   const dialog=document.createElement("dialog");dialog.className="furniture-placement-dialog";
   const pickerArt=item=>item==="커플 침대"?`<span class="furniture-picker-couple-bed" aria-hidden="true"><img src="assets/furniture/couple-bed/couple-bed-base.png" alt=""><img src="assets/furniture/couple-bed/couple-bed-quilt.png" alt=""><img src="assets/furniture/couple-bed/couple-bed-footboard.png" alt=""></span>`:`<span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span>`;
   const draw=()=>{
     const room=state.homes[homeId]?.rooms?.[roomKey],placements=room?.furniturePlacements||[];
-    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><label class="furniture-search"><span aria-hidden="true">⌕</span><input type="search" data-furniture-search autocomplete="off" placeholder="${copy.search}" aria-label="${copy.search}"></label><section class="furniture-catalog-section"><h3>${copy.catalog}</h3><div class="room-editor-furniture">${furnitureCatalogForRoom(room.type).map(item=>{const size=furnitureFootprint(item),label=furnitureLabel(item,state.uiLanguage);return `<button type="button" data-add-room-furniture="${htmlEsc(item)}" data-furniture-choice data-furniture-search-label="${htmlEsc(`${item} ${label}`.toLocaleLowerCase())}">${pickerArt(item)}<b>${htmlEsc(label)}</b><small>${size.columns}×${size.rows} · ＋</small></button>`}).join("")}</div><p class="furniture-search-empty" data-furniture-search-empty hidden>${copy.emptySearch}</p></section><details class="furniture-current-section" ${placements.length?"":"open"}><summary>${copy.placed} · ${placements.length}</summary><div class="furniture-placement-current">${placements.length?placements.map(placement=>{const size=furnitureFootprint(placement.item);return `<article>${pickerArt(placement.item)}<b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b><small>${size.columns}×${size.rows}</small>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`}).join(""):`<p>${copy.empty}</p>`}</div></details><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><label class="furniture-search"><span aria-hidden="true">⌕</span><input type="search" data-furniture-search autocomplete="off" placeholder="${copy.search}" aria-label="${copy.search}"></label><section class="furniture-catalog-section"><h3>${copy.catalog}</h3><div class="room-editor-furniture">${filteredFurniture().map(item=>{const size=furnitureFootprint(item),label=furnitureLabel(item,state.uiLanguage);return `<button type="button" data-add-room-furniture="${htmlEsc(item)}" data-furniture-choice data-furniture-search-label="${htmlEsc(`${item} ${label}`.toLocaleLowerCase())}">${pickerArt(item)}<b>${htmlEsc(label)}</b><small>${size.columns}×${size.rows} · ＋</small></button>`}).join("")}</div><p class="furniture-search-empty" data-furniture-search-empty hidden>${copy.emptySearch}</p></section><details class="furniture-current-section" ${placements.length?"":"open"}><summary>${copy.placed} · ${placements.length}</summary><div class="furniture-placement-current">${placements.length?placements.map(placement=>{const size=furnitureFootprint(placement.item);return `<article>${pickerArt(placement.item)}<b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b><small>${size.columns}×${size.rows}</small>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`}).join(""):`<p>${copy.empty}</p>`}</div></details><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
     dialog.querySelectorAll("[data-furniture-room]").forEach(button=>button.onclick=()=>{roomKey=button.dataset.furnitureRoom;draw()});
     const search=dialog.querySelector("[data-furniture-search]"),empty=dialog.querySelector("[data-furniture-search-empty]");
     search?.addEventListener("input",()=>{const query=search.value.trim().toLocaleLowerCase(),choices=[...dialog.querySelectorAll("[data-furniture-choice]")];let visible=0;choices.forEach(button=>{const matches=!query||button.dataset.furnitureSearchLabel.includes(query);button.hidden=!matches;if(matches)visible++});if(empty)empty.hidden=visible>0});
     dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
-      const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
+      const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);setActiveHomeFloor(homeId,home.rooms[roomKey].floor||1);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
     });
     dialog.querySelectorAll("[data-open-bed-assignment]").forEach(button=>button.onclick=()=>{const placementId=button.dataset.openBedAssignment;dialog.onclose=()=>dialog.remove();dialog.close();openBedAssignmentDialog(homeId,roomKey,placementId)});
   };
@@ -1193,38 +1193,66 @@ function bindFurniturePlacementEditors(){
     toolbar.dataset.homeId=element.dataset.homeId||"";
     toolbar.dataset.roomKey=element.dataset.roomKey||"";
     toolbar.dataset.placementId=element.dataset.furniturePlacement||"";
+    const destination=toolbar.querySelector('[data-furniture-move-room]');if(destination)destination.value=element.dataset.roomKey;
     const name=toolbar.querySelector("[data-furniture-edit-name]");if(name)name.textContent=element.dataset.furnitureName||"가구";
     const props=toolbar.querySelector('[data-furniture-command="props"]');if(props)props.hidden=element.dataset.furnitureSupportsProps!=="true";
   };
   document.querySelectorAll("[data-furniture-placement]").forEach(element=>{
-    let pointerId=null,roomRect=null,canvasRect=null,latest=null,dragged=false,startX=0,startY=0;
+    let pointerId=null,canvas=null,latest=null,ghost=null,dragged=false,startX=0,startY=0;
     element.onclick=event=>{event.preventDefault();event.stopPropagation();selectFurniture(element)};
     element.onpointerdown=event=>{
-      const room=element.closest(".room");if(!room)return;
+      const room=element.closest(".room");if(!room||pointerId!==null||event.button!==0)return;
       event.preventDefault();event.stopPropagation();selectFurniture(element);
-      pointerId=event.pointerId;roomRect=room.getBoundingClientRect();canvasRect=room.closest("[data-room-canvas]")?.getBoundingClientRect()||roomRect;latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
-      element.setPointerCapture(pointerId);element.classList.add("is-dragging");
+      pointerId=event.pointerId;canvas=room.closest("[data-room-canvas]");latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
+      element.setPointerCapture(pointerId);
     };
     element.onpointermove=event=>{
-      if(pointerId!==event.pointerId||!roomRect?.width||!roomRect?.height)return;
+      if(pointerId!==event.pointerId||!canvas)return;
       event.preventDefault();event.stopPropagation();
       if(Math.hypot(event.clientX-startX,event.clientY-startY)>4)dragged=true;
       if(!dragged)return;
-      const rawX=(event.clientX-roomRect.left)/roomRect.width*100,rawY=(event.clientY-roomRect.top)/roomRect.height*100;
-      const room=state.homes[element.dataset.homeId]?.rooms?.[element.dataset.roomKey];
-      const current=room?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);if(!current)return;
-      const snapped=snapFurniturePosition(rawX,rawY,furnitureGridForRoom(roomRect,canvasRect),furnitureFootprint(current.item));
-      latest=normalizeFurniturePlacement({...current,x:snapped.x,y:snapped.y});setFurniturePlacementStyle(element,latest);
+      if(!ghost){
+        ghost=element.cloneNode(true);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');
+        ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');
+        element.classList.add('furniture-drag-source');
+      }
+      // Pointer capture stays on the source; hit-testing chooses the actual room
+      // under the finger. Toolbars and gaps are not valid drop destinations.
+      const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('.room[data-room-key]');
+      const layer=target?.querySelector('.room-furniture-layer');
+      if(!target||!canvas.contains(target)||!layer){latest=null;ghost.remove();return}
+      const home=state.homes[element.dataset.homeId],current=home?.rooms?.[element.dataset.roomKey]?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);
+      if(!current)return;
+      const roomRect=target.getBoundingClientRect();
+      const snapped=snapFurniturePosition((event.clientX-roomRect.left)/roomRect.width*100,(event.clientY-roomRect.top)/roomRect.height*100,furnitureGridForRoom(roomRect,canvas.getBoundingClientRect()),furnitureFootprint(current.item));
+      latest={roomKey:target.dataset.roomKey,...snapped};
+      if(ghost.parentElement!==layer)layer.append(ghost);
+      setFurniturePlacementStyle(ghost,normalizeFurniturePlacement({...current,x:snapped.x,y:snapped.y}));
     };
     const finish=event=>{
       if(pointerId===null||event.pointerId!==pointerId)return;
-      if(element.hasPointerCapture(pointerId))element.releasePointerCapture(pointerId);
-      pointerId=null;element.classList.remove("is-dragging");
-      if(latest)updateFurniturePlacement(element.dataset.homeId,element.dataset.roomKey,element.dataset.furniturePlacement,{x:latest.x,y:latest.y},true);
+      const captured=pointerId;pointerId=null;
+      if(element.hasPointerCapture(captured))element.releasePointerCapture(captured);
+      ghost?.remove();ghost=null;element.classList.remove('furniture-drag-source');
+      if(latest&&event.type==='pointerup'){
+        const {homeId,roomKey,furniturePlacement:placementId}=element.dataset;
+        if(moveFurniturePlacement(homeId,roomKey,latest.roomKey,placementId,latest)){
+          pendingFurnitureSelection={homeId,roomKey:latest.roomKey,placementId};render();
+        }
+      }
+      latest=null;
       event.preventDefault();event.stopPropagation();
     };
-    element.onpointerup=finish;element.onpointercancel=finish;
+    element.onpointerup=finish;element.onpointercancel=finish;element.onlostpointercapture=finish;
   });
+  const destination=toolbar.querySelector('[data-furniture-move-room]');
+  if(destination)destination.onchange=()=>{
+    const {homeId,roomKey,placementId}=toolbar.dataset,toRoomKey=destination.value;
+    if(moveFurniturePlacement(homeId,roomKey,toRoomKey,placementId)){
+      setActiveHomeFloor(homeId,state.homes[homeId].rooms[toRoomKey].floor||1);
+      pendingFurnitureSelection={homeId,roomKey:toRoomKey,placementId};render();
+    }else destination.value=roomKey;
+  };
   toolbar.querySelectorAll("[data-furniture-command]").forEach(button=>button.onclick=event=>{
     event.preventDefault();event.stopPropagation();
     const command=button.dataset.furnitureCommand;
@@ -2285,7 +2313,7 @@ function bind(){
   bindNativeObserveCharacterSwipe();
   bindCharacterBookSwipe();
   bindFurniturePlacementEditors();
-  bindHomeEditorUI(document,{state,addFurniture:addFurniturePlacement,openRoom:openRoomEditor,selectAdded:(homeId,roomKey,placementId)=>{pendingFurnitureSelection={homeId,roomKey,placementId};render()}});
+  bindHomeEditorUI(document,{state,addFurniture:addFurniturePlacement,openRoom:openRoomEditor,selectAdded:(homeId,roomKey,placementId)=>{setActiveHomeFloor(homeId,state.homes[homeId].rooms[roomKey].floor||1);pendingFurnitureSelection={homeId,roomKey,placementId};render()}});
   // Cloud sync intentionally does not copy device-only photos. If an old
   // device URL is unavailable, replace the broken image with the character's
   // initial so the relationship screen stays readable and tappable.

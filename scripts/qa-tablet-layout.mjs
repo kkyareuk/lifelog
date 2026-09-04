@@ -1,5 +1,6 @@
 // Offline, isolated browser fixture. Never reads a user's browser profile or account.
 import assert from 'node:assert/strict';
+import {checkFurnitureAndPhoto} from './qa-furniture-photo.mjs';
 import {createServer} from 'node:http';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import {resolve,extname,sep} from 'node:path';
@@ -46,7 +47,7 @@ try{
   await page.evaluate(async()=>{
    const url=performance.getEntriesByType('resource').find(r=>/\/state\.js\?/.test(r.name)).name;
    const mod=await import(url);mod.createCharacter();
-   for(const tab of ['observe','home','relationship','town','character'])await window.ParallelCityAuth.markGuideSeen(tab);
+   for(const tab of ['observe','home','relationship','town','character','shop'])await window.ParallelCityAuth.markGuideSeen(tab);
    const c=mod.state.characters[mod.state.activeId];c.name='레이아웃 테스트';
    c.photo='assets/home-ui/profile-placeholder.png';
    mod.state.guideSeen={};mod.save(true);window.ParallelCity.mediaChanged();
@@ -144,7 +145,8 @@ try{
     await navigate('observe');
    }
   }
-  report.push({width,height,closedPanelsHidden:true,search,photo,backWorks:true,errors});
+  const furniture=await checkFurnitureAndPhoto(page,navigate,width);
+  report.push({width,height,closedPanelsHidden:true,search,photo,backWorks:true,furniture,errors});
   assert.deepEqual(errors,[],`${width}: runtime errors`);
   await context.close();
  }
