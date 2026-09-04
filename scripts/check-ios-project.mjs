@@ -29,5 +29,5 @@ assert.ok(read("ios/App/App/public/config.js").includes("playBilling||{}),enable
 assert.ok(!read("ios/App/Podfile").includes("FirebaseAuthentication"));
 console.log("PASS iOS preparation: Xcode project, version, six native plugins, bundled modules/audio, disabled unconfigured login and purchase paths.");
 if(process.argv.includes("--release")){
- assert.equal(release.appStoreReady,true,"NOT READY: Mac/Xcode build, signing, iPhone QA, final icon, Apple login, StoreKit/server verification, account deletion and privacy review remain. See APP-IOS.md.");
+ assert.equal(release.appStoreReady,true,"NOT READY: signing, device QA, final icon, Apple login, StoreKit/server verification, account deletion and privacy review remain. Simulator compilation alone is not release approval. See APP-IOS.md.");
 }

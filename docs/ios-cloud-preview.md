@@ -1,4 +1,4 @@
-# 맥 없이 iOS 빌드 준비 — 1.0.198 / iOS build 2
+# 맥 없이 iOS 빌드 준비 — 1.0.198 / iOS build 3
 
 Android code 213 유지. 앱 dev에서만 준비하며 운영 main·사이트·스토어 배포는 변경하지 않는다.
 
@@ -54,7 +54,7 @@ npm run app:sync:ios
 
 Windows의 sync 성공은 Xcode 컴파일 성공이 아니다. 실제 결과는 GitHub Actions 실행 기록으로 확인한다.
 Android 빌드 전에는 `npm run app:prepare` 또는 `npm run app:sync`로 www를 Android 설정으로 다시 만든다.
-이번 작업은 빌드 설정/문서만 변경하므로 새 게임 UI 번역 대상은 없다. 전체 영어·일본어 번역률은 재측정하지 않았다.
+build 3에서는 로컬 iOS 준비판이 외부 Firebase 로그인 모듈을 기다리지 않도록 별도 auth를 패키징한다. 저장 데이터 삭제/계정 전환/유료 권한 부여 없이 ready 상태를 알리고, 로그인/동기화는 기존 준비 중 안내만 표시한다. 해당 안내 영어·일본어 각 100%, 전체 게임/로그 번역률은 재측정하지 않았다.
 
 ## 공식 근거
 
@@ -67,4 +67,15 @@ Android 빌드 전에는 `npm run app:prepare` 또는 `npm run app:sync`로 www�
 ## 실행 결과
 
 첫 실행: https://github.com/kkyareuk/lifelog/actions/runs/33865160953
-결과 확인 중. 서명/IPA/TestFlight 업로드는 실행하지 않음.
+build 2: CocoaPods/Xcode 빌드 통과, iPhone 17 Pro / iOS 26.2 설치·프로세스 실행 확인. 스크린샷은 계정 기록 확인 화면으로 정상 플레이 확인은 아니다. iPad 실행 단계에서 수동 중단해 전체 workflow 결과는 cancelled. 9분 7초 소요. 서명/IPA/TestFlight 업로드는 실행하지 않음.
+실제 저장된 진단 화면을 보고 준비판도 외부 auth를 불러오던 초기화 구조를 확인했고, build 3에서 로컬 전용 모듈로 분리했다. 외부 로그인 스크립트 로딩을 기다리지 않으며 Android/웹은 기존 auth를 그대로 사용함을 바이트 비교했다. 재검사 결과는 아래에 추가한다.
+
+최종 재검사: https://github.com/kkyareuk/lifelog/actions/runs/33866155299 — **success**, 10분 3초, 실행 소스 0d1532c.
+- Xcode 26.3 / iOS Simulator 26.2, CocoaPods 및 Swift/Objective-C/리소스 빌드 통과.
+- iPhone 17 Pro 및 iPad Pro 13-inch(M5): 설치·실행·프로세스 생존 검사 통과, 양쪽 PNG 생성.
+- iPhone PNG 육안 검수: 계정 기록 로딩 대신 첫 캐릭터 만들기/내 마을 불러오기/언어 선택 화면 표시 확인. 실제 버튼 조작/게임 플레이/음원/사진 QA는 아님.
+- iPad PNG는 로컬 뷰어가 해석하지 못했으므로 생성과 프로세스 검사만 확인했으며 육안 검수는 남김.
+- Actions 구버전 액션의 Node 20 런타임 경고가 있으나 실행은 Node 24 강제 전환으로 성공. npm 앱 빌드 런타임은 Node 22.
+- 두 번만 실행했으며 추가 자동 재시도 없음. 계정 과금 설정/저장소 공개 범위/운영 main은 변경하지 않음.
+- 로컬 진단 파일: ios/build/cloud-run-33866155299/ (Git 제외). 첫 실패/취소 기록은 삭제하지 않음.
+- Apple 서명 자료 GitHub secret 목록은 비어 있었음. 인증서/개인키/프로파일/API 키 연결 전이므로 IPA와 TestFlight 업로드는 아직 불가.

@@ -1,6 +1,6 @@
-# 서랍마을 iOS 준비 — v1.0.198 / iOS build 2
+# 서랍마을 iOS 준비 — v1.0.198 / iOS build 3
 
-현재 상태: **Xcode 프로젝트와 로컬 플레이 준비용 자산 생성 완료. App Store 제출 가능 상태 아님.**
+현재 상태: **클라우드 Xcode 빌드 및 iPhone/iPad 시뮬레이터 설치·실행 검사 통과. iOS 준비판 시작 대기 수정 완료. App Store 제출 가능 상태 아님.**
 Android 대응 버전은 1.0.198 / code 213이다. 집 메뉴 버튼과 가구 편집창 개선은 웹·Android·iOS가 공유한다.
 
 ## 준비된 것
@@ -10,6 +10,7 @@ Android 대응 버전은 1.0.198 / code 213이다. 집 메뉴 버튼과 가구 �
 - App/Browser/Network/Local Notifications/Splash Screen/Status Bar 연결
 - iOS용 웹 자산 준비, 버전 동기화, 잘못된 Android 자산 혼입 검사
 - 미설정 Firebase iOS 플러그인은 제외. 로그인/동기화와 구매는 준비 중으로 표시하며 Google Play/웹 결제로 우회하지 않는다.
+- iOS build 3은 로컬 준비판용 auth를 패키징하여 외부 Firebase SDK나 계정 복구 응답 없이 시작한다. Android/웹 auth와 기존 저장 데이터·권한은 바꾸지 않는다.
 - 한국어·영어·일본어 준비 상태 문구
 - 사진 선택 시 필요한 기본 카메라/사진 권한 설명(영문). iOS 시스템 권한 문구의 한국어·일본어 현지화는 출시 전 후속 항목.
 
@@ -57,7 +58,7 @@ npm run app:open:ios
 
 Xcode에서 App 타깃의 Signing & Capabilities → 본인 Team 선택.
 먼저 iPhone 시뮬레이터와 실기기에서 실행한다. 위 명령은 업로드하지 않는다.
-현재 Windows에서는 pod install, Swift 컴파일, 서명, 실행을 검증하지 못했다.
+Windows 자체에서는 pod install/Swift 컴파일을 실행할 수 없지만 GitHub macOS runner에서 CocoaPods와 Xcode 컴파일은 통과했다. 서명·실기기 실행·TestFlight는 별도다.
 
 ## 출시 전에 남은 항목 — 자동 완료로 취급하지 말 것
 
@@ -100,6 +101,10 @@ Apple 계정 비밀번호/인증서 개인키는 채팅이나 Git에 올리지 �
 - https://capacitorjs.com/docs/v7/ios/privacy-manifest
 
 ## 이번 환경의 검증 기록
+
+- 2026-09-04 build 3: https://github.com/kkyareuk/lifelog/actions/runs/33866155299 — 전체 workflow 성공(10분 3초). Xcode 26.3 / iOS 26.2에서 iPhone 17 Pro와 iPad Pro 13-inch(M5) 설치·실행·프로세스 생존 확인. iPhone 스크린샷에서 첫 캐릭터 만들기 화면 시각 검수 완료. iPad PNG는 생성됐으나 로컬 이미지 뷰어가 해석하지 못해 육안 검수 완료로 표기하지 않음.
+- build 3 로컬 auth / 첫 캐릭터 화면 진입 ko/en/ja 검사, iOS 프로젝트/자산, native 플랫폼 분리, Android auth 원본 동일성 통과. 서명·IPA·TestFlight·실기기 기능 QA는 미실행.
+- 아래는 build 1/2의 Windows 준비 당시 기록이며, macOS 검증은 위 최신 기록을 따른다.
 
 - app:sync:ios 및 test:ios: 프로젝트/버전/필수 파일 검사 통과. CocoaPods 설치와 Xcode 빌드는 도구 부재로 건너뜀.
 - check-native-platforms: Android 결제/뒤로가기 유지, iOS Play API 차단, 웹 비영향 실행 테스트.
