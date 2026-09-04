@@ -6,7 +6,8 @@ param(
   [string]$BundleId = 'com.drawervillage.app',
   [string]$OpenSsl = 'C:\Program Files\Git\usr\bin\openssl.exe',
   [string]$GitHubCli = 'C:\Program Files\GitHub CLI\gh.exe',
-  [switch]$PublishSecrets
+  [switch]$PublishSecrets,
+  [switch]$ReuseExisting
 )
 $ErrorActionPreference = 'Stop'
 
@@ -59,8 +60,13 @@ $privateKey = Join-Path $SigningDirectory 'distribution-private-key.pem'
 $keyPassword = Join-Path $SigningDirectory 'private-key-password.dpapi.xml'
 $p12Path = Join-Path $SigningDirectory 'distribution.p12'
 $p12PasswordPath = Join-Path $SigningDirectory 'p12-password.dpapi.xml'
-Require (-not (Test-Path -LiteralPath $p12Path)) 'P12 already exists; refusing to overwrite.'
-Require (-not (Test-Path -LiteralPath $p12PasswordPath)) 'P12 password already exists; refusing to overwrite.'
+if ($ReuseExisting) {
+  Require (Test-Path -LiteralPath $p12Path -PathType Leaf) 'Existing P12 is missing.'
+  Require (Test-Path -LiteralPath $p12PasswordPath -PathType Leaf) 'Existing P12 password is missing.'
+} else {
+  Require (-not (Test-Path -LiteralPath $p12Path)) 'P12 already exists; refusing to overwrite.'
+  Require (-not (Test-Path -LiteralPath $p12PasswordPath)) 'P12 password already exists; refusing to overwrite.'
+}
 foreach ($path in @($CertificatePath,$ProfilePath,$privateKey,$keyPassword)) {
   Require (Test-Path -LiteralPath $path -PathType Leaf) 'A required signing file is missing.'
 }
@@ -101,18 +107,32 @@ try {
       Require (-not ($existing -contains $name)) ('Secret already exists; refusing to replace ' + $name)
     }
   }
-  $random = New-Object byte[] 48
-  $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
-  try { $rng.GetBytes($random) } finally { $rng.Dispose() }
-  $env:DRAWER_SIGNING_P12_PASSWORD = [Convert]::ToBase64String($random)
-  ConvertTo-SecureString $env:DRAWER_SIGNING_P12_PASSWORD -AsPlainText -Force | Export-Clixml -LiteralPath $p12PasswordPath
-  # OpenSSL accepts the DER certificate. Both the input key and P12 are encrypted.
-  $null = Invoke-Captured $OpenSsl @('pkcs12','-export','-inkey',$privateKey,'-passin','env:DRAWER_SIGNING_KEY_PASSWORD','-in',$CertificatePath,'-out',$p12Path,'-passout','env:DRAWER_SIGNING_P12_PASSWORD','-name','Drawer Village Apple Distribution')
+  if ($ReuseExisting) {
+    $env:DRAWER_SIGNING_P12_PASSWORD = Unlock-LocalPassword $p12PasswordPath
+  } else {
+    $random = New-Object byte[] 48
+    $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+    try { $rng.GetBytes($random) } finally { $rng.Dispose() }
+    $env:DRAWER_SIGNING_P12_PASSWORD = [Convert]::ToBase64String($random)
+    ConvertTo-SecureString $env:DRAWER_SIGNING_P12_PASSWORD -AsPlainText -Force | Export-Clixml -LiteralPath $p12PasswordPath
+    # OpenSSL accepts the DER certificate. Both the input key and P12 are encrypted.
+    $null = Invoke-Captured $OpenSsl @('pkcs12','-export','-inkey',$privateKey,'-passin','env:DRAWER_SIGNING_KEY_PASSWORD','-in',$CertificatePath,'-out',$p12Path,'-passout','env:DRAWER_SIGNING_P12_PASSWORD','-name','Drawer Village Apple Distribution')
+  }
   $null = Invoke-Captured $OpenSsl @('pkcs12','-in',$p12Path,'-passin','env:DRAWER_SIGNING_P12_PASSWORD','-info','-noout')
+  # Import only in memory: do not install the identity in a Windows key store.
+  $p12Identity = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($p12Path,$env:DRAWER_SIGNING_P12_PASSWORD,[Security.Cryptography.X509Certificates.X509KeyStorageFlags]::EphemeralKeySet)
+  try {
+    Require $p12Identity.HasPrivateKey 'P12 does not contain a private key.'
+    Require ($p12Identity.Thumbprint -eq $cert.Thumbprint) 'P12 contains a different certificate.'
+  } finally { $p12Identity.Dispose() }
   if ($PublishSecrets) {
     $null = Invoke-Captured $GitHubCli @('secret','set','IOS_DISTRIBUTION_P12_BASE64','--repo','kkyareuk/lifelog') ([Convert]::ToBase64String([IO.File]::ReadAllBytes($p12Path)))
     $null = Invoke-Captured $GitHubCli @('secret','set','IOS_DISTRIBUTION_P12_PASSWORD','--repo','kkyareuk/lifelog') $env:DRAWER_SIGNING_P12_PASSWORD
     $null = Invoke-Captured $GitHubCli @('secret','set','IOS_PROVISION_PROFILE_BASE64','--repo','kkyareuk/lifelog') ([Convert]::ToBase64String([IO.File]::ReadAllBytes($ProfilePath)))
+    $registered = @((Invoke-Captured $GitHubCli @('secret','list','--repo','kkyareuk/lifelog','--json','name') | ConvertFrom-Json) | ForEach-Object { $_.name })
+    foreach ($name in @('IOS_DISTRIBUTION_P12_BASE64','IOS_DISTRIBUTION_P12_PASSWORD','IOS_PROVISION_PROFILE_BASE64')) {
+      Require ($registered -contains $name) ('Secret registration not confirmed: ' + $name)
+    }
     Write-Output 'PASS: three signing secrets stored in GitHub Actions; no secret values printed.'
   }
   Write-Output ('PASS: certificate/private key/profile match; App Store profile for ' + $BundleId + '; encrypted P12 verified.')

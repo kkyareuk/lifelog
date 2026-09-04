@@ -99,3 +99,12 @@ build 2: CocoaPods/Xcode 빌드 통과, iPhone 17 Pro / iOS 26.2 설치·프로�
 - `scripts/prepare-ios-signing.ps1`은 기본적으로 로컬 검사/생성만 하며, 기존 P12/암호를 덮어쓰지 않는다. `-PublishSecrets`는 별도의 명시적 업로드 승인이 필요하다. 암호를 명령 인자나 출력에 쓰지 않는다.
 - GitHub 서명 secret 세 항목 전송은 자동 보안 검토에서 승인 범위 부족으로 차단됨. 외부 전송하지 않았으며 사용자에게 P12/암호/프로파일의 Actions Secrets 저장 승인을 요청한다. 기존 ASC API secret 세 항목은 변경하지 않음.
 - IPA 빌드·TestFlight 업로드는 아직 미실행. 앱 코드/버전/번역은 변경하지 않음.
+
+### 명시적 승인 후 GitHub 서명 자료 저장 완료
+
+- 사용자가 P12·암호·프로파일을 kkyareuk/lifelog의 Actions Secrets에 저장하도록 승인함.
+- 기존 P12를 재생성하지 않고 `-ReuseExisting -PublishSecrets`로 재검증하여 세 secret 저장 완료. P12의 개인키 포함 여부와 인증서 일치도 메모리 내 가져오기로 검사하며 Windows 인증서 저장소에는 설치하지 않음.
+- ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY 및 IOS_DISTRIBUTION_P12_BASE64, IOS_DISTRIBUTION_P12_PASSWORD, IOS_PROVISION_PROFILE_BASE64의 여섯 이름 등록 확인. 기존 ASC 키는 수정하지 않았고 값도 읽지 않음.
+- 비밀값은 표준입력으로만 전달했으며 공개 Git, 문서, 채팅, 작업판에 넣지 않음. 로컬 암호화 자료 보존.
+- 이 완료 상태는 secret 저장까지만 뜻함. Apple API 인증, Mac 키체인 가져오기/신뢰 체인, 실제 서명 빌드, TestFlight 업로드는 후속 검증 대상. 기존 미리보기 workflow는 그대로 유지되어 서명 자료를 사용하거나 자동 업로드하지 않음.
+- 앱 1.0.198 / Android 213 / iOS build 3 및 운영 main 유지. 게임 UI 변경이 없어 신규 번역 대상 없음.
