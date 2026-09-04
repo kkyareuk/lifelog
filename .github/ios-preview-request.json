@@ -1,0 +1,5 @@
+{
+  "request": "2026-09-04-preview-1",
+  "purpose": "Unsigned iPhone/iPad simulator build and launch check only",
+  "appStoreUpload": false
+}
