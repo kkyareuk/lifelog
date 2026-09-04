@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-04-internal-testflight-build4",
+  "request": "2026-09-05-internal-testflight-build5-tablet",
   "version": "1.0.198",
-  "build": 4,
+  "build": 5,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false
