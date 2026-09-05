@@ -150,7 +150,7 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
 .town-map-scroll .place-person-face img.profile-photo-fallback,
 .standard-observe-view .place-person-face img.profile-photo-fallback{border-radius:50%!important;object-fit:cover!important}
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html.native-app[data-active-tab="observe"] .native-observe-top{
     position:absolute!important;
     top:max(32px,calc(env(safe-area-inset-top) + 20px))!important;
@@ -235,7 +235,7 @@ html[data-color-mode="dark"] .home-page :is(.home-person-status,.room-pet-status
    always light regardless of the active color theme. */
 html[data-color-mode][data-visual-theme] .home-page .room-heading :is(b,.room-edit-hint){color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 2px 4px #000,0 0 3px #000!important}
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html.native-app[data-active-tab="home"] .home-person>.sprite{width:58px!important;min-width:58px!important;max-width:58px!important;height:58px!important;min-height:58px!important;max-height:58px!important}
   html.native-app[data-active-tab="home"] .home-person>.avatar{width:52px!important;min-width:52px!important;max-width:52px!important;height:52px!important;min-height:52px!important;max-height:52px!important}
   html.native-app[data-active-tab="home"] .room-pet>.room-pet-icon{width:54px!important;min-width:54px!important;max-width:54px!important;height:54px!important;min-height:54px!important;max-height:54px!important}
@@ -257,7 +257,7 @@ html[data-color-mode][data-visual-theme] .home-page .room-heading :is(b,.room-ed
 .home-page .pet-edit-fields>:is(fieldset,.pet-actions){grid-column:1/-1}
 .home-page .resident-pet-scene-card .resident-profile>:is(.resident-pet-photo,.resident-pet-icon){width:72px!important;height:72px!important;flex:0 0 72px!important}
 .home-page .resident-pet-scene-card .resident-profile>.resident-pet-emoji{display:grid;place-items:center;width:72px;height:72px;font-size:46px;line-height:1}
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   .home-page .pet-edit-fields{grid-template-columns:minmax(0,1fr)}
   .home-page .pet-edit-fields>*{grid-column:1!important;min-width:0!important}
   .home-page .resident-pet-scene-card .resident-profile>:is(.resident-pet-photo,.resident-pet-icon){width:58px!important;height:58px!important;flex-basis:58px!important}
@@ -281,7 +281,7 @@ html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion
 html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>small{color:#e8c98a!important;-webkit-text-fill-color:#e8c98a!important}
 html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>span,
 html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{color:#ffe6a2!important;-webkit-text-fill-color:#ffe6a2!important}
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html.native-app[data-active-tab="shop"] .shop-expansion-heading{
     display:flex!important;align-items:baseline!important;justify-content:flex-start!important;gap:12px!important;
     min-width:0!important;margin:26px 0 12px!important;padding-inline:4px!important;overflow:visible!important;
@@ -319,7 +319,7 @@ html[data-color-mode][data-visual-theme][data-active-tab="shop"] .shop-expansion
 .character-stat-rankings em{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--s));color:var(--on-grad)!important;-webkit-text-fill-color:var(--on-grad)!important;font-style:normal;font-weight:900}.character-stat-rankings li>b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.character-stat-rankings li>span{font-size:.82rem;color:var(--muted)!important}
 .character-statistics-page .character-stat-actions{position:static!important;margin:0!important;padding:14px 0 0!important;border-top:1px solid var(--theme-border)!important;background:transparent!important;grid-template-columns:minmax(180px,360px)!important}
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   .visual-theme-dialog .visual-theme-options-all{grid-template-columns:minmax(0,1fr)!important}
   .character-statistics-page{padding:16px 12px calc(24px + env(safe-area-inset-bottom))!important}
   .character-stat-gender{grid-template-columns:1fr!important;justify-items:center!important}.character-stat-gender>div:last-child{width:100%}
@@ -367,7 +367,7 @@ html.native-app[data-active-tab="observe"] .scene-action-tea .native-character-s
   animation:native-prop-eat 1.7s ease-in-out infinite!important;
 }
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   .character-manage-grid>.character-home-visual-choice{align-items:stretch!important;flex-direction:column!important}
   .character-home-visual-buttons{width:100%!important}.character-home-visual-buttons button{flex:1 1 0!important}
 }

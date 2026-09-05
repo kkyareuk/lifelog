@@ -129,7 +129,7 @@
 
 /* Mobile: the art owns one viewport-height frame behind the interface. A pair
    duplicates that exact frame and changes only the two X centers. */
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html.native-app[data-active-tab="observe"] .native-observe-home{--scene-frame-top:8.62dvh}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage.visual-mode-ld{
     --scene-frame-top:8.62dvh;
@@ -412,7 +412,7 @@ html.native-app[data-active-tab="character"] .mobile-character-full-settings>mai
 .home-layout-scale-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .home-layout-scale-buttons button{font-size:14px!important}
 .home-layout-save-note{justify-self:center;color:var(--muted)}
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   .character-home-layout-editor{padding:12px!important;border-radius:18px!important}
   .character-home-layout-heading{display:grid}.home-layout-mode-buttons{justify-content:stretch}.home-layout-mode-buttons button{flex:1 1 120px}
   .home-layout-preview{width:min(100%,360px);border-radius:22px}
