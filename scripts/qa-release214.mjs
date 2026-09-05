@@ -5,6 +5,11 @@ export async function checkFirstCharacter214(page,output,width){
  const language=width===1024?'en':width===820?'ja':'ko';
  if(language!=='ko')await page.locator(`[data-welcome-language="${language}"]`).click();
  await page.locator('[data-welcome-create]').click();
+ const book=page.locator('.character-book-v8:visible');
+ await book.waitFor({state:'visible'});
+ assert.equal(await page.locator('.mobile-character-dashboard').count(),0,'new characters open the lightweight full editor directly');
+ await book.locator('.character-book-v9-menu>summary').click();
+ await book.locator('[data-open-quick-character-settings]').click();
  const dialog=page.locator('.character-quick-settings-dialog');
  await dialog.waitFor({state:'visible'});
  assert.equal(await dialog.locator('.character-quick-paper').count(),0);
@@ -25,14 +30,16 @@ export async function checkRelease214(page,navigate,output,width){
  await navigate('home');
  const icon=page.locator('.home-native-house-name>img');
  await icon.evaluate(el=>el.decode());assert.ok((await icon.boundingBox()).width>=24);
- await navigate('character');await page.locator('[data-open-full-character-settings]:visible').click();
+ await navigate('character');
+ assert.equal(await page.locator('.mobile-character-dashboard').count(),0,`${width}: hidden character dashboard must not be built`);
  const book=page.locator('.character-book-v8-book');
  const paper=await book.evaluate(el=>{const b=el.getBoundingClientRect(),s=getComputedStyle(el);return {top:b.top+parseFloat(s.borderTopWidth),bottom:b.bottom-parseFloat(s.borderBottomWidth),left:b.left,right:b.right}});
  // The visual-page navigation lives inside the illustration's paper, not its edge.
  const controls=page.locator('.character-book-v8 :is(.character-book-page-controls,.character-book-cover-controls,.character-overview-page-controls):visible').first();
  const nav=await controls.boundingBox();assert.ok(nav&&nav.y>=paper.top&&nav.y+nav.height<=paper.bottom+1,`${width}: pagination outside book paper`);
  await page.screenshot({path:resolve(output,`book-${width}.png`)});
- await page.locator('[data-close-full-character-settings]').click();
+ await page.locator('.character-book-v8-back:visible').click();
+ await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='observe');
  await page.evaluate(()=>{const m=window.qa214,first=m.state.activeId;m.createCharacter();const second=m.state.activeId;m.addRelationship({a:first,b:second,type:'연인',stage:'연애 중'});m.save(true)});
  await navigate('relationship');
  if(await page.locator('dialog.page-guide[open]').count())await page.keyboard.press('Escape');

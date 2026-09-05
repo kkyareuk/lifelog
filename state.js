@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905gait219";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260905gait219";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905gait219";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260905gait219";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905gait219";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260905gait219";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905gait219";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260905gait219";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260905gait219";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905hotfix220";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260905hotfix220";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905hotfix220";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260905hotfix220";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905hotfix220";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260905hotfix220";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905hotfix220";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260905hotfix220";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260905hotfix220";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260905gait219";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905gait219";
+import {missingBuildings} from "./building-recovery.js?v=20260905hotfix220";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905hotfix220";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1039,7 +1039,7 @@ export function createCharacter(limit=5){
   state.activeHomeId=id;
   state.routines[id]=[];
   state.monthlyRoutines[id]=[];
-  state.activeId=id;state.activeTab="character";save(true);return id;
+  state.activeId=id;state.activeTab="character";state.characterSettingsView="full";save(true);return id;
 }
 export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
 export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(value)?value:"profile");save()}

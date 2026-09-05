@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260905gait219";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260905gait219";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905gait219";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260905gait219";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260905gait219";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260905hotfix220";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260905hotfix220";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905hotfix220";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260905hotfix220";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260905hotfix220";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;

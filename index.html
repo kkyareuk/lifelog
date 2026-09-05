@@ -30,17 +30,17 @@
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="preload" href="./fonts/ChangwonDangamRound-Regular.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="./fonts/GriunSimsimche-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="font-preferences.css?v=20260905gait219">
-  <link rel="stylesheet" href="app.css?v=20260905gait219">
-  <link rel="stylesheet" href="town-fit.css?v=20260905gait219">
-  <link rel="stylesheet" href="interface-system.css?v=20260905gait219">
-  <link rel="stylesheet" href="home-scene-layout.css?v=20260905gait219">
-  <link rel="stylesheet" href="theme.css?v=20260905gait219">
-  <link rel="stylesheet" href="character-book.css?v=20260905gait219">
-  <link rel="stylesheet" href="home-editor-ui.css?v=20260905gait219">
-  <link rel="stylesheet" href="shop.css?v=20260905gait219">
-  <link rel="stylesheet" href="dictionary.css?v=20260905gait219">
-  <script src="config.js?v=20260905gait219"></script>
+  <link rel="stylesheet" href="font-preferences.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="app.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="town-fit.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="interface-system.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="home-scene-layout.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="theme.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="character-book.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="home-editor-ui.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="shop.css?v=20260905hotfix220">
+  <link rel="stylesheet" href="dictionary.css?v=20260905hotfix220">
+  <script src="config.js?v=20260905hotfix220"></script>
 </head>
 <body>
   <div id="app-loading" class="app-loading-screen" aria-live="polite">
@@ -91,16 +91,20 @@
         }
       };
       window.addEventListener("error",event=>{
-        console.error("서랍마을 초기화 오류",event.error||event.message||"알 수 없는 스크립트 오류");
+        const reason=event.error?.stack||event.message||"알 수 없는 스크립트 오류";
+        document.documentElement.dataset.drawerBootError=String(reason).slice(0,1000);
+        console.error("서랍마을 초기화 오류",reason);
         setTimeout(fail,0);
       });
       window.addEventListener("unhandledrejection",event=>{
-        console.error("서랍마을 초기화 거부",event.reason||"알 수 없는 비동기 오류");
+        const reason=event.reason?.stack||event.reason||"알 수 없는 비동기 오류";
+        document.documentElement.dataset.drawerBootError=String(reason).slice(0,1000);
+        console.error("서랍마을 초기화 거부",reason);
         setTimeout(fail,0);
       });
       window.addEventListener("DOMContentLoaded",()=>setTimeout(fail,12000));
     })();
   </script>
-  <script type="module" src="app.js?v=20260905gait219"></script>
+  <script type="module" src="app.js?v=20260905hotfix220"></script>
 </body>
 </html>

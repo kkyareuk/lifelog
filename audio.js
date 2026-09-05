@@ -1,4 +1,4 @@
-import {walkingGaitForElement} from "./walking-gaits.js?v=20260905gait219";
+import {walkingGaitForElement} from "./walking-gaits.js?v=20260905hotfix220";
 
 const FOOTSTEP_URLS={
   walk:"./assets/audio/shoe-walking.m4a?v=20260826independent155",
@@ -13,8 +13,9 @@ let latestState=null;
 
 const hash=value=>[...String(value||"")].reduce((result,character)=>(result*31+character.charCodeAt(0))>>>0,2166136261);
 function visible(element){
-  const style=getComputedStyle(element),rect=element.getBoundingClientRect();
-  return style.display!=="none"&&style.visibility!=="hidden"&&Number(style.opacity)>0&&rect.width>0&&rect.height>0;
+  // Movement actors only exist in the currently rendered page. Avoid forcing
+  // layout and style calculation again on every individual footstep.
+  return element.isConnected&&!element.hidden&&!element.closest("[hidden],.is-hidden");
 }
 function actorId(element,index){
   return element.dataset.homePerson||element.dataset.person||element.dataset.characterId||element.closest("[data-character-id]")?.dataset.characterId||`visible-${index}`;

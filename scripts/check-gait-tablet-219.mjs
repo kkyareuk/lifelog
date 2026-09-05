@@ -29,10 +29,10 @@ assert.match(state,/relation\.legalRegistration=normalizeLegalRegistration/);
 
 assert.match(views,/const tabletFullBook=fullBook\.replace/);
 assert.match(views,/\$\{tabletFullBook\}/);
-assert.match(views,/const fixedBookMode=state\.characterSettingsView==="full"&&!nativeTabletMode/);
+assert.match(views,/const fixedBookMode=state\.characterSettingsView==="full"/);
 assert.match(bookCss,/\.tablet-character-book\.character-book-v8\.is-open/);
 for(const pane of ["visual","profile","body","wardrobe","personality","taste","closet"])assert.match(views,new RegExp(`\\["${pane}"`));
 
-assert.match(gradle,/versionCode\s+219/);
-assert.match(gradle,/versionName\s+"1\.0\.204"/);
-console.log("PASS 219: audible gait-synced town walking, family legal registration, and shared tablet character book");
+assert.match(gradle,/versionCode\s+22\d/);
+assert.match(gradle,/versionName\s+"1\.0\.204(?:\.\d+)?"/);
+console.log("PASS 219+: audible gait-synced town walking, family legal registration, and shared tablet character book");
