@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko" class="native-app native-platform" data-active-tab="observe" data-ui-font="hanbit">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>메인 화면 글꼴 QA 204</title>
+  <link rel="stylesheet" href="../font-preferences.css?v=20260902font204">
+  <link rel="stylesheet" href="../app.css?v=20260902font204">
+  <style>
+    body{margin:0;background:#80937c}
+    .qa-switch{position:fixed;z-index:999;right:8px;bottom:8px;padding:6px;border-radius:8px;background:#fff}
+  </style>
+</head>
+<body>
+  <div id="app"><main>
+    <section class="game-observe-hud" data-native-hud-version="4">
+      <header class="game-hud-top">
+        <div class="game-hud-profile"><button class="game-hud-profile-toggle"><span class="game-hud-profile-frame">🙂</span><span class="game-hud-profile-copy"><b>집소필라</b><small><em>교수</em></small></span></button></div>
+        <span class="game-hud-date">9월 2일 (수)</span><time>오후 01:56</time>
+      </header>
+      <nav class="game-hud-side game-hud-side-left"><button><span>♟</span><small><span>캐릭터</span></small></button><button><span>📖</span><small><span>사전</span></small></button><button><span>♥</span><small><span>관계</span></small></button></nav>
+      <nav class="game-hud-side game-hud-side-right"><button><span>🗓</span><small><span>일정</span></small></button><button><span>📊</span><small><span>통계</span></small></button><button><span>⚙</span><small><span>설정</span></small></button></nav>
+      <article class="game-hud-moment"><div class="game-hud-moment-head"><button class="game-hud-moment-title">지금 이 순간</button></div><div class="game-hud-moment-body"><h1>까륵의전당에서 시간을 보내는 중</h1><p>몸의 상태와 하루의 균형을 살피며 자기 속도로 움직이고 있어요.</p><span class="game-hud-location"><b>까륵의전당 · 서랍마을</b></span></div></article>
+    </section>
+  </main></div>
+  <select class="qa-switch" aria-label="글꼴" onchange="document.documentElement.dataset.uiFont=this.value">
+    <option value="hanbit">한빛</option><option value="dangam">단감</option><option value="mplus-rounded">M PLUS 둥근</option><option value="dohyeon">도현</option>
+  </select>
+  <span class="qa-japanese" style="position:fixed;left:-9999px;font:700 16px MPlusRounded1cLocal">日本語と漢字</span>
+</body>
+</html>

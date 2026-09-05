@@ -1,12 +1,18 @@
-import {mkdir, readFile, readdir, rm, writeFile} from "node:fs/promises";
+import {mkdir, readFile, readdir, rename, rm, writeFile} from "node:fs/promises";
+import {execFile} from "node:child_process";
 import {relative,join,dirname} from "node:path";
 import {fileURLToPath} from "node:url";
+import {promisify} from "node:util";
+import {tmpdir} from "node:os";
 
 const root=new URL("../",import.meta.url);
+const platform=process.argv.includes("--ios")?"ios":"android";
+const iosRelease=platform==="ios"?JSON.parse(await readFile(new URL("../ios-release.json",import.meta.url),"utf8")):null;
 const output=new URL("../www/",import.meta.url);
+const rootPath=fileURLToPath(root),execFileAsync=promisify(execFile);
 const androidGradle=await readFile(new URL("../android/app/build.gradle",import.meta.url),"utf8");
-const appVersionName=androidGradle.match(/versionName\s+["']([^"']+)["']/)?.[1]||"";
-const appVersionCode=androidGradle.match(/versionCode\s+(\d+)/)?.[1]||"";
+const appVersionName=iosRelease?.version||androidGradle.match(/versionName\s+["']([^"']+)["']/)?.[1]||"";
+const appVersionCode=String(iosRelease?.build||androidGradle.match(/versionCode\s+(\d+)/)?.[1]||"");
 const includedDirectories=new Set(["fonts","icons","assets","world-assets","vendor","shop-assets","theme-assets"]);
 // Keep high-resolution source artwork in the repository without shipping it
 // in every APK. Runtime state and selectors use the optimized town JPEG; the
@@ -17,9 +23,8 @@ const excludedAndroidAssets=new Set([
   "assets/character-ui/paper.png"
 ]);
 const excludedAndroidAssetPrefixes=[];
-const stableAndroidBackupPrefixes=["assets/audio/"];
 const includedFiles=new Set([
-  "dictionary.css",
+  "dictionary.css","home-editor-ui.css",
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
@@ -48,19 +53,22 @@ async function copyPortable(source,target){
       if(excludedAndroidAssets.has(relativePath)||excludedAndroidAssetPrefixes.some(prefix=>relativePath.startsWith(prefix)))continue;
       if(process.env.DRAWER_BUILD_TRACE)console.log(`Android 자산 준비: ${relativePath}`);
       const backupPath=join(fileURLToPath(root),"android","app","src","main","assets","public",relativePath);
-      if(stableAndroidBackupPrefixes.some(prefix=>relativePath.startsWith(prefix))){
-        if(incrementalOneDriveStage)continue;
-        await writeFile(to,await readFile(backupPath));
-        continue;
-      }
       try{await writeFile(to,await readFile(from));}
       catch(error){
         if(error?.code!=="EPERM")throw error;
         try{
+          await rm(to,{force:true,maxRetries:4,retryDelay:100});
           await writeFile(to,await readFile(backupPath));
           console.warn(`OneDrive 원본 대신 이전 Android 자산에서 복구: ${relativePath}`);
         }catch{
-          console.warn(`OneDrive에서 읽을 수 없어 건너뜀: ${decodeURIComponent(from.pathname)}`);
+          try{
+            const {stdout}=await execFileAsync("git",["show",`HEAD:${relativePath}`],{cwd:rootPath,encoding:null,maxBuffer:64*1024*1024});
+            await rm(to,{force:true,maxRetries:4,retryDelay:100});
+            await writeFile(to,stdout);
+            console.warn(`OneDrive 원본 대신 Git 기록에서 복구: ${relativePath}`);
+          }catch{
+            console.warn(`OneDrive에서 읽을 수 없어 건너뜀: ${decodeURIComponent(from.pathname)}`);
+          }
         }
       }
     }
@@ -73,6 +81,16 @@ async function copyPortable(source,target){
 // runtime dependency. Other environments keep the clean rebuild behavior.
 const outputPath=fileURLToPath(output);
 const incrementalOneDriveStage=process.platform==="win32"&&outputPath.toLowerCase().includes("onedrive");
+if(incrementalOneDriveStage){
+  try{await readFile(new URL("assets/character-ui/book-right-page.png",output))}
+  catch(error){
+    if(error?.code==="EPERM"){
+      const stalePath=join(tmpdir(),`drawer-village-www-stale-${Date.now()}`);
+      await rename(outputPath,stalePath);
+      console.warn(`잠긴 OneDrive 앱 자산을 임시 폴더로 옮기고 새로 준비합니다: ${stalePath}`);
+    }else if(error?.code!=="ENOENT")throw error;
+  }
+}
 if(!incrementalOneDriveStage)await rm(output,{recursive:true,force:true,maxRetries:8,retryDelay:250});
 await mkdir(output,{recursive:true});
 
@@ -91,7 +109,7 @@ for(const entry of entries){
 // 상대 import를 끝까지 따라가며 필요한 모듈을 자동으로 복사한다. 새 모듈을
 // 추가하고 목록 갱신을 빼먹더라도 앱이 로딩 화면에서 멈추는 빌드는 만들지 않는다.
 async function copyModuleClosure(){
-  const rootPath=fileURLToPath(root),queue=[...includedFiles].filter(name=>name.endsWith(".js")),visited=new Set();
+  const queue=[...includedFiles].filter(name=>name.endsWith(".js")),visited=new Set();
   while(queue.length){
     const moduleName=queue.shift();
     if(visited.has(moduleName))continue;
@@ -110,6 +128,10 @@ async function copyModuleClosure(){
   return visited;
 }
 await copyModuleClosure();
+// The local-only iOS preview must not wait for external Firebase module loads
+// or restore an account that this preview cannot sign into. Android/web retain
+// the original auth implementation; no saved data or storage scope is changed.
+if(platform==="ios")await writeFile(new URL("auth.js",output),await readFile(new URL("scripts/ios-preview-auth.mjs",root)));
 
 // The character book used to be a separately requested stylesheet. Because it
 // was missing from the manually maintained Android asset list, WebView rendered
@@ -133,7 +155,7 @@ index=index.replace(
   '<div id="app"></div>',
   '<div id="app"><main class="native-startup" data-native-startup><span>서랍마을</span><b>마을을 여는 중이에요</b><small>잠시만 기다려 주세요.</small></main></div>'
 );
-index=index.replace("</head>",`  <meta name="drawer-village-app" content="android">
+index=index.replace("</head>",`  <meta name="drawer-village-app" content="${platform}">
   <style>
     html.native-platform .site-footer{display:none!important}
     .native-startup{position:fixed;inset:0;display:grid;place-content:center;gap:10px;padding:28px;background:#fff;color:#2b2321;text-align:center;font-family:sans-serif}
@@ -142,7 +164,8 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="androi
   <script>
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260903foodimage207";
+    window.DRAWER_VILLAGE_PLATFORM="${platform}";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260905gait219";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){
@@ -160,7 +183,8 @@ config=config.replace(
   /window\.PARALLEL_CITY_CONFIG\.paymentsEnabled=[^;]+;/,
   "window.PARALLEL_CITY_CONFIG.paymentsEnabled=false;window.PARALLEL_CITY_CONFIG.nativeApp=true;window.PARALLEL_CITY_CONFIG.beta={...(window.PARALLEL_CITY_CONFIG.beta||{}),enabled:false};"
 );
-config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:true};\n`;
+config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:${platform==="android"}};\n`;
+if(platform==="ios")config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=true;\n";
 await writeFile(configPath,config,"utf8");
 
-console.log("Android 앱용 웹 파일을 www 폴더에 준비했습니다.");
+console.log(`${platform} 앱용 웹 파일을 www 폴더에 준비했습니다.`);

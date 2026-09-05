@@ -1,0 +1,33 @@
+import assert from "node:assert/strict";
+import {readFileSync} from "node:fs";
+import {FURNITURE_CATALOG} from "../furniture-layout.js";
+import {homeFurnitureDrawer,homeEditorCopy,FURNITURE_TYPES,furnitureType,filteredFurniture} from "../home-editor-ui.js";
+const home={id:"drawer-213",activeFloor:1,rooms:{living:{name:"Living",type:"living",floor:1}}};
+for(const locale of ["ko","en","ja"]){
+  const copy=homeEditorCopy(locale),html=homeFurnitureDrawer(home,locale);
+  assert.deepEqual(Object.keys(copy).sort(),Object.keys(homeEditorCopy("ko")).sort());
+  assert.ok(!html.includes("furnitureTheme")&&!html.includes("<details"));
+  for(const key of ["categoryFilter","typeFilter","searchFurniture","collapse","expand",...FURNITURE_TYPES])assert.ok(copy[key]);
+  assert.equal((html.match(/data-home-furniture-type=/g)||[]).length,FURNITURE_TYPES.length);
+  assert.equal((html.match(/data-home-furniture-category=/g)||[]).length,Object.keys(FURNITURE_CATALOG).length+1);
+  if(locale!=="ko")assert.ok(!/[가-힣]/.test(html),"new drawer UI is fully localized");
+  assert.deepEqual(filteredFurniture({type:"beds",query:locale==="en"?"couple":locale==="ja"?"ダブル":"커플"},locale),["커플 침대"]);
+}
+const all=[...new Set(Object.values(FURNITURE_CATALOG).flat())];
+assert.deepEqual(filteredFurniture(),all);
+assert.deepEqual(FURNITURE_TYPES.slice(1).flatMap(type=>filteredFurniture({type})).sort(),all.slice().sort(),"type filters form a complete, non-overlapping catalog");
+assert.equal(furnitureType("커플 침대"),"beds");
+assert.equal(furnitureType("세면대"),"sinks");
+assert.ok(filteredFurniture({category:"bedroom",type:"beds"}).includes("커플 침대"));
+assert.equal(filteredFurniture({category:"living",type:"beds"}).length,0);
+assert.deepEqual(filteredFurniture({query:"not-a-furniture-213"}),[]);
+const css=readFileSync(new URL("../home-editor-ui.css",import.meta.url),"utf8");
+const appCss=readFileSync(new URL("../app.css",import.meta.url),"utf8");
+assert.ok(css.includes("grid-template-rows:36px 34px 34px 94px"));
+assert.ok(css.includes("height:var(--home-drawer-height)"));
+assert.ok(css.includes("height:36px!important;min-height:0!important"),"global 48px form minimum must not overflow search row");
+assert.ok(!css.includes("home-drawer-search-panel"));
+assert.ok(appCss.includes("bottom:calc(var(--home-drawer-height) + 16px)"));
+assert.ok(!appCss.includes("--home-pill-cap:12px"),"caps must retain their artwork aspect ratio");
+assert.ok(!/\.home-native-side \.home-native-pill\{[^}]*width:71px!important/.test(appCss));
+console.log("PASS drawer 213: two filter rows, full catalog/search, ko/en/ja, no theme menu, explicit row sizing, matching toolbar offset and uncropped cap ratio.");

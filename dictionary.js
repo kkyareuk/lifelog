@@ -1,4 +1,4 @@
-import {state,addCatalogItem,updateCatalogItem,deleteCatalogItem,save} from './state.js?v=20260903foodimage207';
+import {state,addCatalogItem,updateCatalogItem,deleteCatalogItem,save} from './state.js?v=20260905gait219';
 
 const esc=(x='')=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const itemEffects={none:'없음',glow:'은은한 빛',sparkle:'반짝임',float:'둥실둥실',sway:'살랑살랑'};
@@ -103,9 +103,6 @@ export function mountDictionary(callbacks){
         d.close();const {kind,id}=ui.editing;
         if(e.dataset.source==='link'){const url=popup('이미지 링크',`<input type="url" placeholder="https://…" aria-label="${tr('이미지 링크')}"><p role="status"></p><button type="button" data-apply>${tr('적용')}</button>`);url.querySelector('[data-apply]').onclick=()=>{const value=url.querySelector('input').value.trim();if(!/^https?:\/\//i.test(value)){url.querySelector('[role=status]').textContent=tr('http 또는 https 이미지 링크를 넣어 주세요.');return}ui.draft.image=value;ui.draft.imageSource='user';url.close();redraw()}}
         else{
-          // Keep the edited fields, but do not make opening Android's picker
-          // depend on a second full-state save. The selected image performs its
-          // own durable save after cropping.
           updateCatalogItem(kind,id,ui.draft);
           e.dataset.source==='app'?actions.illustration(id,kind):actions.upload('catalogImage',id,kind);
         }

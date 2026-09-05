@@ -404,7 +404,7 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
     -webkit-text-fill-color:var(--on-grad)!important;
   }
 
-  html.native-platform[data-active-tab="character"] .mobile-character-editor-dialog{
+  html.native-platform[data-active-tab="character"] .mobile-character-editor-dialog:not(.character-quick-settings-dialog){
     position:fixed!important;
     inset:0!important;
     width:100vw!important;

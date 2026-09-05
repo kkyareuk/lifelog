@@ -20,7 +20,8 @@ if(isNative){
 
   const {App,Browser,Network,PlayBilling}=window.Capacitor.Plugins;
   App.addListener("appStateChange",({isActive})=>{if(isActive)requestAnimationFrame(normalizeNativeViewport)});
-  const playConfig=()=>window.PARALLEL_CITY_CONFIG?.playBilling||{};
+  const isAndroid=window.Capacitor?.getPlatform?.()==="android";
+  const playConfig=()=>isAndroid?(window.PARALLEL_CITY_CONFIG?.playBilling||{}):{};
   const productIds=()=>Object.values(playConfig().products||{}).filter(Boolean);
   const consumableProducts=new Set(["character_slots_5","town_slot_1","green_tea"]);
   const pendingPurchaseKey="drawer-village.pending-play-purchases.v1";
@@ -202,7 +203,7 @@ if(isNative){
     setTimeout(()=>restorePurchases().catch(error=>console.warn("보류 중인 Google Play 구매 재확인 대기",error)).finally(()=>{pendingRetryRunning=false}),1200);
   });
 
-  App.addListener("backButton",({canGoBack})=>{
+  if(isAndroid)App.addListener("backButton",({canGoBack})=>{
     const opened=document.querySelector("dialog[open]");
     if(opened){opened.close();return}
     const routineSheet=document.querySelector("[data-routine-sheet]");

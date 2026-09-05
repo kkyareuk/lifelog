@@ -1,9 +1,22 @@
 import {access,mkdir,readFile,readdir,rm,writeFile} from "node:fs/promises";
+import {execFile} from "node:child_process";
 import {relative} from "node:path";
 import {fileURLToPath} from "node:url";
+import {promisify} from "node:util";
 
 const root=new URL("../",import.meta.url);
 const output=new URL("../dist/",import.meta.url);
+const rootPath=fileURLToPath(root),execFileAsync=promisify(execFile);
+
+async function readSource(source,encoding=null){
+  try{return await readFile(source,encoding??undefined)}catch(error){
+    if(error?.code!=="EPERM")throw error;
+    const sourcePath=fileURLToPath(source),repoPath=relative(rootPath,sourcePath).replaceAll("\\","/");
+    const {stdout}=await execFileAsync("git",["show",`HEAD:${repoPath}`],{cwd:rootPath,encoding:null,maxBuffer:64*1024*1024});
+    console.warn(`OneDrive 원본 대신 Git 기록에서 읽음: ${repoPath}`);
+    return encoding?stdout.toString(encoding):stdout;
+  }
+}
 
 const includedDirectories=new Set([
   "assets",
@@ -18,7 +31,7 @@ const includedDirectories=new Set([
 
 const includedFiles=new Set([
   "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js",
-  "dictionary.js","dictionary.css","dictionary-copy.js","notification-mail.js",
+  "dictionary.js","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css",
   "_headers",
   "index.html",
   "login.html",
@@ -41,6 +54,7 @@ const includedFiles=new Set([
   "ui-theme-sample.css",
   "app.js",
   "audio.js",
+  "walking-gaits.js",
   "auth.js",
   "character-notifications.js",
   "config.js",
@@ -49,6 +63,8 @@ const includedFiles=new Set([
   "home-simulation.js",
   "home-surfaces.js",
   "room-layout.js",
+  "room-permissions.js",
+  "mood-event-causes.js",
   "simulation.js",
   "speech-styles.js",
   "contact-voice.js",
@@ -68,7 +84,7 @@ async function copyDirectory(source,target){
     const from=new URL(`${entry.name}${entry.isDirectory()?"/":""}`,source);
     const to=new URL(`${entry.name}${entry.isDirectory()?"/":""}`,target);
     if(entry.isDirectory())await copyDirectory(from,to);
-    else await writeFile(to,await readFile(from));
+    else await writeFile(to,await readSource(from));
   }
 }
 
@@ -83,7 +99,7 @@ for(const entry of await readdir(root,{withFileTypes:true})){
     continue;
   }
   if(includedFiles.has(entry.name)){
-    await writeFile(new URL(entry.name,output),await readFile(new URL(entry.name,root)));
+    await writeFile(new URL(entry.name,output),await readSource(new URL(entry.name,root)));
   }
 }
 
@@ -91,6 +107,7 @@ const requiredFiles=[
   "index.html",
   "app.js",
   "audio.js",
+  "walking-gaits.js",
   "character-book.css",
   "shop.css",
   "furniture-layout.js",
@@ -109,7 +126,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260903foodimage207";
+const expectedModuleCache="20260905gait219";
 const relativeImports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
@@ -139,8 +156,10 @@ while(moduleQueue.length){
 const index=await readFile(new URL("index.html",output),"utf8");
 const app=await readFile(new URL("app.js",output),"utf8");
 const serviceWorker=await readFile(new URL("sw.js",output),"utf8");
-if(!index.includes("20260903foodimage207"))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
-if(!app.includes("20260903foodimage207"))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260903-food-image-hotfix-207"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!index.includes(expectedModuleCache))throw new Error("최신 웹 UI 캐시 표식이 index.html에 없습니다.");
+if(!app.includes(expectedModuleCache))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
+if(!index.includes(expectedModuleCache))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
+if(!index.includes(expectedModuleCache)||!app.includes(expectedModuleCache))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260905-gait-android-dev-219"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

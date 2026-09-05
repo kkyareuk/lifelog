@@ -362,7 +362,11 @@ html.native-app[data-active-tab="character"] .mobile-character-full-settings>mai
   box-sizing:content-box!important;
 }
 [data-home-layout-layer="ld"] .home-layout-art>.home-layout-fallback{position:absolute;left:calc(50% + var(--character-art-x,0%));top:var(--character-art-y,0%);width:min(70%,280px);height:100%;translate:-50% 0;scale:var(--character-render-scale,1);transform-origin:50% 100%;pointer-events:auto}
-.home-layout-art>img.profile-photo-fallback{border-radius:50%;object-fit:cover}
+/* The photo fallback is circular even in a rectangular SD stage. SD and LD
+   artwork keep their transparent silhouette and their saved transforms. */
+.native-app .native-character-stage img.sprite.profile-photo-fallback,
+html.native-app[data-active-tab="character"] .mobile-character-full-settings>main .home-layout-art>img.profile-photo-fallback,
+.home-layout-art>img.profile-photo-fallback{border-radius:50%!important;object-fit:cover!important;object-position:center!important;clip-path:circle(closest-side at 50% 50%)!important}
 .home-layout-fallback{display:grid!important;place-items:center!important;border-radius:50%!important;background:var(--p)!important;color:#fff!important;font-size:42px;font-weight:900}
 .home-layout-fallback.is-ld{border-radius:18px!important;background:#101722c9!important;font-size:28px;text-align:center}.home-layout-fallback small{font-size:11px}
 .home-layout-resize-handle{position:absolute!important;right:-12px!important;bottom:-12px!important;z-index:5!important;display:grid!important;place-items:center!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;padding:0!important;border:2px solid #fff!important;border-radius:50%!important;background:var(--p)!important;color:#fff!important;font-size:15px!important;line-height:1!important;box-shadow:0 4px 12px #0007!important;cursor:nwse-resize!important;touch-action:none!important}

@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260903foodimage207";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260903foodimage207";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260903foodimage207";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260903foodimage207";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260903foodimage207";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260905gait219";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260905gait219";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905gait219";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260905gait219";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260905gait219";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2418,14 +2418,28 @@ function profileSettingScenePool(c,date){
     "周りの感情と自分の気持ちを分けるところ","近くの人の表情で自分の気分まで揺れたことに気づき、相手の感情と自分の気持ちを分けて考えました。","living",["emotionalContagion"]);
   const catalogName=(kind,id)=>state.catalog?.[kind]?.find(item=>item.id===id)?.name||"";
   const catalogSelections=selection=>Object.entries(selection||{}).flatMap(([kind,ids])=>(ids||[]).map(id=>catalogName(kind,id))).filter(Boolean);
-  const likedThings=[...(c.interests||[]),...(c.hobbies||[]),...(c.foodPreferences||[]),...(c.musicGenres||[]),...(c.favoriteStoryGenres||[]),...catalogSelections(c.favorites)].filter(Boolean);
+  const likedThings=[
+    ...(c.interests||[]).map(value=>({value,kind:"interest"})),
+    ...(c.hobbies||[]).map(value=>({value,kind:"hobby"})),
+    ...(c.foodPreferences||[]).map(value=>({value,kind:"food"})),
+    ...(c.musicGenres||[]).map(value=>({value,kind:"music"})),
+    ...(c.favoriteStoryGenres||[]).map(value=>({value,kind:"story"})),
+    ...catalogSelections(c.favorites).map(value=>({value,kind:"catalog"}))
+  ].filter(item=>item.value);
   const dislikedThings=[...(c.dislikedFoodPreferences||[]),...(c.dislikedDrinks||[]),...(c.dislikedMusicGenres||[]),...(c.dislikedStoryGenres||[]),...(c.dislikedVideoGenres||[]),...(c.dislikedGameGenres||[]),...(c.dislikedScentNotes||[]),...(c.dislikedAnimals||[]),...(c.dislikedElectronics||[]),...(c.dislikedWeapons||[]),...(c.dislikedBooks||[]),...catalogSelections(c.dislikes)].filter(Boolean);
-  const likedThing=likedThings[hash(`${c.id}:${dayKey(date)}:liked-profile`)%Math.max(1,likedThings.length)];
+  const likedChoice=likedThings[hash(`${c.id}:${dayKey(date)}:liked-profile`)%Math.max(1,likedThings.length)],likedThing=likedChoice?.value;
   const dislikedThing=dislikedThings[hash(`${c.id}:${dayKey(date)}:disliked-profile`)%Math.max(1,dislikedThings.length)];
-  if(likedThing)add("preference-liked",
-    `${likedThing}을(를) 골라 기분을 바꾸는 중`,`평소 좋아하는 ${likedThing}을(를) 발견하고 잠시 하던 일을 멈췄어요. 자기 취향에 맞는 부분을 충분히 즐긴 뒤 표정이 한결 부드러워졌어요.`,
-    `Enjoying a favorite: ${likedThing}`,`They noticed ${likedThing}, something they genuinely like, paused what they were doing, and relaxed as they enjoyed it.`,
-    `好きな${likedThing}を選んで気分を変えるところ`,`普段から好きな${likedThing}に気づいて手を止め、好みの部分をじっくり楽しむうち表情がやわらぎました。`,`living`,["interests","hobbies","foodPreferences","musicGenres","favorites"]);
+  if(likedThing){
+    const likedScene={
+      story:[`${likedThing} 장르의 책을 골라 읽는 중`,`책장에서 ${likedThing} 장르의 책을 한 권 골랐어요. 인물의 관계와 사건이 어떻게 변하는지 따라가며 마음에 든 대목에 책갈피를 끼웠어요.`,`Reading a ${likedThing} story`,`They chose a ${likedThing} book, followed how its characters and events changed, and marked a passage they liked.`,`${likedThing}ジャンルの本を選んで読んでいるところ`,`本棚から${likedThing}ジャンルの本を一冊選び、人物関係と出来事の変化を追いながら気に入った箇所にしおりを挟みました。`,"study"],
+      music:[`${likedThing} 음악을 골라 듣는 중`,`평소 즐겨 듣는 ${likedThing} 재생 목록을 열고 지금 하고 있는 일의 속도에 맞는 곡부터 들었어요.`,`Listening to ${likedThing}`,`They opened a familiar ${likedThing} playlist and chose a track that matched the pace of what they were doing.`,`${likedThing}の音楽を選んで聴いているところ`,`よく聴く${likedThing}のプレイリストを開き、今していることの速さに合う曲から聴きました。`,"bedroom"],
+      food:[`${likedThing}을(를) 준비해 맛보는 중`,`평소 좋아하는 ${likedThing}을(를) 먹기 좋게 준비한 뒤 온도와 간을 확인하며 천천히 맛보았어요.`,`Preparing and tasting ${likedThing}`,`They prepared ${likedThing}, a favorite, then checked its temperature and seasoning as they ate it slowly.`,`${likedThing}を用意して味わっているところ`,`好きな${likedThing}を食べやすく用意し、温度と味付けを確かめながらゆっくり味わいました。`,"kitchen"],
+      hobby:[`${likedThing}을(를) 하는 중`,`평소 즐기는 ${likedThing}에 필요한 도구를 꺼내고, 방해받지 않도록 자리를 정돈한 뒤 한 단계씩 집중했어요.`,`Spending time on ${likedThing}`,`They took out what they needed for ${likedThing}, cleared a place to focus, and worked through it one step at a time.`,`${likedThing}をしているところ`,`普段楽しんでいる${likedThing}に必要な道具を出し、集中できるよう場所を整えて一段階ずつ進めました。`,"study"],
+      interest:[`${likedThing}에 관한 내용을 찾아보는 중`,`관심 있는 ${likedThing}에 관해 궁금했던 한 가지를 정하고, 책과 기록에서 답이 되는 내용을 찾아 메모했어요.`,`Looking up ${likedThing}`,`They picked one question about ${likedThing}, then searched books and notes for an answer and wrote it down.`,`${likedThing}について調べているところ`,`関心のある${likedThing}について疑問を一つ決め、本や記録から答えになる内容を探してメモしました。`,"study"],
+      catalog:[`${likedThing}을(를) 살펴보는 중`,`가지고 있던 ${likedThing}을(를) 꺼내 상태와 쓰임을 확인하고, 지금 필요한 방식으로 직접 사용했어요.`,`Using ${likedThing}`,`They took out ${likedThing}, checked its condition and purpose, and used it for what they needed.`,`${likedThing}を確かめているところ`,`持っている${likedThing}を取り出して状態と用途を確かめ、今必要なやり方で実際に使いました。`,"living"]
+    }[likedChoice.kind];
+    add("preference-liked",...likedScene,["interests","hobbies","foodPreferences","musicGenres","favoriteStoryGenres","favorites"]);
+  }
   if(dislikedThing)add("preference-disliked",
     `${dislikedThing}을(를) 피할 방법을 찾는 중`,`싫어하는 ${dislikedThing}을(를) 억지로 참지 않고 다른 선택으로 바꿀 수 있는지 확인했어요. 당장 피할 수 없다면 머무는 시간을 줄이기로 했어요.`,
     `Finding a way around ${dislikedThing}`,`Rather than forcing themselves to endure something they dislike, they looked for an alternative and planned to limit the exposure if there was none.`,
@@ -2606,10 +2620,12 @@ function canDrive(c){
 }
 function townDecorationEvent(c,date){
   const town=townFor(c,date),decorations=town?.id===state.activeTownId?(state.world.decorations||[]):(town?.decorations||[]);
-  if(!decorations.length||hash(`${c.id}:${dayKey(date)}:town-decoration-use`)%3===0)return null;
+  // 장식이 하나뿐인 마을에서 주민 대부분이 매일 같은 장식에 몰리지 않게 한다.
+  // 나머지 주민은 아래의 마을 특성 산책 장면을 통해 마을 전체를 돌아다닌다.
+  if(!decorations.length||hash(`${c.id}:${dayKey(date)}:town-decoration-use`)%3!==0)return null;
   const item=decorations[hash(`${c.id}:${dayKey(date)}:town-decoration`)%decorations.length],actions=item.interactions?.length?item.interactions:[`${item.name||"마을 장식"} 구경하기`];
   const action=actions[hash(`${c.id}:${dayKey(date)}:${item.id}:interaction`)%actions.length],minute=960+hash(`${c.id}:${dayKey(date)}:${item.id}:minute`)%150;
-  return entry(minute,`${item.name}에서 ${action} 중`,`마을을 지나다 ${item.name}에 관심이 가서 잠시 멈췄어요. ${action}로 짧은 시간을 보내고 있어요.`,{townId:town.id,decorationId:item.id,mood:"여유"});
+  return entry(minute,`${item.name}에서 ${action} 중`,`마을을 지나다 ${item.name}에 관심이 가서 잠시 멈췄어요. ${action}로 짧은 시간을 보내고 있어요.`,{townId:town.id,decorationId:item.id,movementKind:"decoration-visit",mood:"여유"});
 }
 function townProfileEvent(c,date){
   const town=townFor(c,date);if(!town||hash(`${c.id}:${dayKey(date)}:town-profile-log`)%3===0)return null;
@@ -2630,7 +2646,7 @@ function townProfileEvent(c,date){
   const terrainNote=`${town.terrain||"평야"} 지형에 맞춰 난 길을 골랐고, ${town.reputation||"알려지지 않은 곳"}이라는 평판이 느껴지는 풍경을 마주했어요.`;
   const copies={ko:{title:base[0],desc:`${base[1]} ${terrainNote}`},en:{title:"Spending time around town",desc:`They are following a route shaped by the town's terrain, local identity, and reputation, noticing how people use the area.`},ja:{title:"村の中を見て回っているところ",desc:"地形や地域の特色、評判が暮らしに表れている道を歩きながら、人々の過ごし方を眺めています。"}};
   const copy=copies[language]||copies.ko;
-  return entry(minute,copy.title,copy.desc,{townId:town.id,placeId:"",mood:"관찰",townProfileLog:true});
+  return entry(minute,copy.title,copy.desc,{townId:town.id,placeId:"",movementKind:"village-walk",mood:"관찰",townProfileLog:true});
 }
 function build(c,date=new Date()){
   const currentHomeId=homeIdForDate(c,date);
@@ -2884,7 +2900,7 @@ function build(c,date=new Date()){
   return list.map(item=>withResidenceLocation(c,adaptAccessibilityWording(c,medievalize(c,item,date)),date)).sort((a,b)=>a.minute-b.minute);
 }
 
-const ENGINE_VERSION="20260902-personality-home-195";
+const ENGINE_VERSION="20260902-language-scene-203";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new Map();
@@ -3073,7 +3089,7 @@ function cleanLegacyProfileMetaEntries(entries){
   // “설정을 떠올리며”, “프로필에 정해 둔” 같은 내부 생성 기준이 그대로
   // 노출됐다. 엔진이 바뀌어도 지난 시각의 로그는 보존되므로, 해당 문장만
   // 기존 당일 기록에서 제거해 새 행동 장면이 다시 채워질 수 있게 한다.
-  const metaCopy=/갈등 대응과 애정 표현 설정을 떠올리며|마음을 표현할 방법을 고르는 중|프로필에 정해 둔|좋아하는 장르로 설정한|운전 경험 설정에 맞춰/;
+  const metaCopy=/갈등 대응과 애정 표현 설정을 떠올리며|마음을 표현할 방법을 고르는 중|프로필에 정해 둔|좋아하는 장르로 설정한|운전 경험 설정에 맞춰|골라 기분을 바꾸는 중|처럼 좋아하는 것을 접해 기분이 움직임/;
   return entries.filter(item=>!metaCopy.test(`${item?.title||""} ${item?.desc||""}`));
 }
 function clarifyLegacyPromiseConflicts(c,entries){
@@ -3163,7 +3179,11 @@ export function timeline(c,date=new Date()){
   }
   return Array.isArray(c.days[key]?.entries)?c.days[key].entries:[];
 }
-export function visibleTimeline(c,date=new Date()){return timeline(c,date).filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))}
+export function visibleTimeline(c,date=new Date()){
+  return timeline(c,date)
+    .filter(x=>x&&dateEntryBelongsTo(c,x)&&Number(x.minute)<=nowMin(date))
+    .map(item=>localizeLifeLog(item,state.uiLanguage,state,c.id));
+}
 
 export function nextSceneRefreshDelay(c,date=new Date()){
   if(!c)return 10*60*1000;
@@ -3569,6 +3589,35 @@ function viewDrivenInteraction(place,first,second,date){
   const attentive=/1순위|2순위|최우선|중요|자주 챙|늘 챙|많이 신경/.test(combined);
   const seed=hash(`${first.id}:${second.id}:${dayKey(date)}:${place.id}:view`);
   const pick=(items,offset=0)=>items[(seed+offset)%items.length];
+  const conflictedViewAction=(actor,target,view)=>{
+    const own=Object.values(view||{}).join(" "),ownLove=/연애 감정|사랑|소중|좋아함/.test(own),ownAnnoyed=/귀찮|성가|짜증|보기만 해도 피곤/.test(own),ownHarsh=/거친 말을 하고 싶은/.test(view?.aggression||""),ownMisread=/불편함으로 착각/.test(view?.awareness||"");
+    if(!(ownLove&&(ownAnnoyed||ownHarsh)&&ownMisread))return null;
+    return {
+      ko:`${target.name}의 사소한 행동이 거슬린다며 퉁명스럽게 한마디하려다가 멈췄어요. 거친 말은 삼켰지만 자리를 피하지 않고 ${target.name}이 하던 말을 끝까지 들었어요. ${actor.name}은(는) 소중히 여기고 끌리는 마음까지 단순히 불편해서 신경 쓰이는 것이라고 잘못 생각했어요.`,
+      en:`${actor.name} almost snapped that one of ${target.name}'s small habits was annoying, but stopped. They swallowed the harsh words, stayed, and listened to the end. They mistook even their protectiveness and attraction for simple discomfort.`,
+      ja:`${actor.name}は${target.name}の些細な行動が気に障るとぶっきらぼうに言いかけて止まりました。きつい言葉は飲み込み、立ち去らず最後まで話を聞きました。大切に思い惹かれる気持ちまで、ただ居心地が悪くて気になるだけだと勘違いしています。`
+    }[state.uiLanguage]||`${target.name}의 사소한 행동이 거슬린다며 퉁명스럽게 한마디하려다가 멈췄어요. 거친 말은 삼켰지만 자리를 피하지 않고 ${target.name}이 하던 말을 끝까지 들었어요. ${actor.name}은(는) 소중히 여기고 끌리는 마음까지 단순히 불편해서 신경 쓰이는 것이라고 잘못 생각했어요.`;
+  };
+  const firstConflict=conflictedViewAction(first,second,firstView),secondConflict=conflictedViewAction(second,first,secondView);
+  if(firstConflict||secondConflict){
+    const conflictedTitles={
+      ko:[`${second.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`,`${first.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`],
+      en:[`Staying in the conversation despite mixed feelings toward ${second.name}`,`Staying in the conversation despite mixed feelings toward ${first.name}`],
+      ja:[`${second.name}にぶっきらぼうに接しながらも会話を続けているところ`,`${first.name}にぶっきらぼうに接しながらも会話を続けているところ`]
+    }[state.uiLanguage]||[`${second.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`,`${first.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`];
+    const listeningTitles={
+      ko:[`${togetherWith(second.name)} 같은 대화를 이어 가는 중`,`${togetherWith(first.name)} 같은 대화를 이어 가는 중`],
+      en:[`Continuing the same conversation with ${second.name}`,`Continuing the same conversation with ${first.name}`],
+      ja:[`${second.name}と同じ会話を続けているところ`,`${first.name}と同じ会話を続けているところ`]
+    }[state.uiLanguage]||[`${togetherWith(second.name)} 같은 대화를 이어 가는 중`,`${togetherWith(first.name)} 같은 대화를 이어 가는 중`];
+    const titles=[firstConflict?conflictedTitles[0]:listeningTitles[0],secondConflict?conflictedTitles[1]:listeningTitles[1]];
+    const neutral=(actor,target)=>({
+      ko:`${target.name}의 말투가 거칠어진 것을 알아차렸지만 다른 일을 시작하지 않았어요. 방금 하던 대화의 쟁점을 하나씩 확인하며 ${actor.name}의 대답을 기다렸어요.`,
+      en:`${actor.name} noticed ${target.name}'s tone turn rough, but did not wander off to another activity. They stayed with the topic and waited for an answer.`,
+      ja:`${actor.name}は${target.name}の口調が荒くなったことに気づきましたが、別のことは始めませんでした。話していた要点を一つずつ確かめ、返事を待ちました。`
+    }[state.uiLanguage]);
+    return {title:titles[0],firstTitle:titles[0],secondTitle:titles[1],first:firstConflict||neutral(first,second),second:secondConflict||neutral(second,first)};
+  }
   if(romantic&&uncomfortable){
     const firstTitle=`${togetherWith(second.name)} 가까이 있지만 조심스럽게 시간을 보내는 중`;
     const secondTitle=`${togetherWith(first.name)} 가까이 있지만 조심스럽게 시간을 보내는 중`;
@@ -4369,8 +4418,21 @@ function baseSceneFrom(value){
     title:value.baseTitle||String(value.title||"").split(" · ")[0],
     desc:value.baseDesc||cleanRepeatedSceneText(value.desc),
     groupInteraction:false,
-    withIds:[]
+    withId:undefined,
+    withIds:[],
+    participantOrder:[],
+    interactionId:undefined,
+    forcedCompanionId:undefined,
+    stayTogetherScene:false
   };
+}
+function isProtectedSoloActivity(value){
+  return !value?.groupInteraction&&!value?.dateGroup&&!value?.withId&&/혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業/i.test(`${value?.title||""} ${value?.desc||""}`);
+}
+function soloSceneFrom(value){
+  const base=baseSceneFrom(value)||value;
+  if(!base)return base;
+  return {...base,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined,forcedCompanionId:undefined,stayTogetherScene:false,sharedActionText:undefined,sharedCanonicalTitle:undefined,sharedCanonicalDesc:undefined};
 }
 function sameLiveLocation(first,second){
   if(!first||!second)return false;
@@ -4381,6 +4443,15 @@ function sameLiveLocation(first,second){
   }
   return (first.placeId||"")===(second.placeId||"")
     &&(first.townId||"")===(second.townId||"");
+}
+function coLocatedCharacterIds(c,current,date){
+  if(!c||!current||current.transit)return[];
+  return state.order.filter(id=>id!==c.id).filter(id=>{
+    const other=state.characters[id];
+    if(!other)return false;
+    const otherCurrent=baseEventFor(other,date);
+    return !otherCurrent?.transit&&sameLiveLocation(current,otherCurrent);
+  });
 }
 function committedSharedSceneFor(c,date,current){
   const entries=c?.days?.[dayKey(date)]?.entries;
@@ -4398,8 +4469,10 @@ function committedSharedSceneFor(c,date,current){
     return participantIds.every(id=>{
       const participant=state.characters[id];
       if(!participant)return false;
+      const routine=activeScheduledRoutine(participant,date);
+      if(routine&&!(routine.withIds||[]).includes(c.id))return false;
       const participantCurrent=companionAlignedBaseEvent(participant,baseEventFor(participant,date),date);
-      return sameLiveLocation(item,participantCurrent);
+      return participantCurrent?.interactionId===item.interactionId&&sameLiveLocation(item,participantCurrent);
     });
   })||null;
 }
@@ -4412,7 +4485,10 @@ function incomingCommittedSharedSceneFor(c,date,current){
     const source=entries.slice().reverse().find(item=>{
       if(!item?.groupInteraction||!item.interactionId||Number(item.minute)>minute||minute-Number(item.minute)>=30||!sameLiveLocation(item,current))return false;
       const ids=[...(item.participantOrder||[]),...(item.withIds||[]),item.withId,ownerId].filter(Boolean);
-      return ids.includes(c.id);
+      if(!ids.includes(c.id)||current?.interactionId!==item.interactionId)return false;
+      const ownerCurrent=baseEventFor(owner,date),ownerRoutine=activeScheduledRoutine(owner,date);
+      if(ownerRoutine&&!(ownerRoutine.withIds||[]).includes(c.id))return false;
+      return ownerCurrent?.interactionId===item.interactionId&&sameLiveLocation(ownerCurrent,current);
     });
     if(source)return {owner,source};
   }
@@ -4430,6 +4506,9 @@ function sharedParticipantOrder(characters,relation){
 }
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
+  // 명시적으로 혼자 집중하고 있는 현재 행동은 같은 장소에 있다는 이유만으로
+  // 다른 캐릭터의 자동 대화에 끌어오지 않는다. 등록된 동행·데이트만 예외다.
+  if(!sharedContext&&isProtectedSoloActivity(current))return current;
   if(!sharedContext&&Number(current?.interactionCooldownUntil)>nowMin(date))return current;
   const committed=committedSharedSceneFor(c,date,current);
   const routineCanInclude=(other,partnerId)=>{
@@ -4541,6 +4620,10 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       if(!routineCanInclude(other,c.id))return false;
       const otherEvent=baseEventFor(other,date);
       if(otherEvent.transit||sceneIsSleeping(current)!==sceneIsSleeping(otherEvent))return false;
+      // 이미 잘못 만들어진 공동 장면이라도 baseTitle/baseDesc에는 원래의
+      // 연구·업무·집중 행동이 남는다. 그것까지 확인해야 다른 인물이 그
+      // 캐릭터를 대화 상대라고 다시 끌어오는 순환이 끊긴다.
+      if(isProtectedSoloActivity(otherEvent)||isProtectedSoloActivity(baseSceneFrom(otherEvent)))return false;
       const reservedScene=committedSharedSceneFor(other,date,otherEvent);
       if(reservedScene){
         const reservedIds=[other.id,...(reservedScene.participantOrder||[]),...(reservedScene.withIds||[]),reservedScene.withId].filter(Boolean);
@@ -4655,7 +4738,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   return {...current,baseTitle,baseDesc,title:resolveEntityParticles(title),desc:perspectiveDesc,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose,holdMinutes:dating?current.holdMinutes:(shortConflict?12:25)};
 }
 function companionAlignedBaseEvent(c,current,date){
-  if(!c||activeScheduledRoutine(c,date))return current;
+  if(!c||activeScheduledRoutine(c,date)||isProtectedSoloActivity(current))return current;
   const candidate=relationList().filter(relation=>
     relation?.stayTogether&&relation.temporalStatus!=="past"&&(relation.a===c.id||relation.b===c.id)
   ).map(relation=>({relation,other:state.characters[relation.a===c.id?relation.b:relation.a]}))
@@ -4679,9 +4762,9 @@ export function eventFor(c,date=new Date()){
   if(rawCurrent.giftExchange){
     const other=state.characters[rawCurrent.withId];
     if(other){timeline(other,date);const counterpart=currentGiftFor(other,date);if(counterpart?.interactionId===rawCurrent.interactionId)commitLiveEntry(other,date,counterpart)}
-    return rawCurrent;
+    return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
   }
-  if(rawCurrent.choicePhase==="buy")return rawCurrent;
+  if(rawCurrent.choicePhase==="buy")return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
   const routineCompanionIds=((rawCurrent?.routineId===activeRoutine?.id?rawCurrent.withIds:activeRoutine?.withIds)||[]).filter(id=>id&&id!==c.id&&state.characters[id]);
   const baseCurrent=companionAlignedBaseEvent(c,rawCurrent,date);
   const incomingShared=!activeRoutine?incomingCommittedSharedSceneFor(c,date,baseCurrent):null;
@@ -4719,14 +4802,19 @@ export function eventFor(c,date=new Date()){
   }
   if(current?.groupInteraction&&!current.dateGroup){
     const participants=(current.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
+    const reusingStoredInteraction=Boolean(baseCurrent?.groupInteraction&&baseCurrent.interactionId===current.interactionId);
     const everyoneActuallyHere=participants.length>0&&participants.every(other=>{
       const live=companionAlignedBaseEvent(other,baseEventFor(other,date),date);
-      return !activeScheduledRoutine(other,date)&&sameLiveLocation(current,live);
+      const soloBase=baseSceneFrom(live);
+      return !activeScheduledRoutine(other,date)
+        &&!isProtectedSoloActivity(soloBase)
+        &&sameLiveLocation(current,live)
+        &&(!reusingStoredInteraction||live?.interactionId===current.interactionId);
     });
     // 일반 공동 행동은 양쪽 캐릭터의 실제 집·방·건물이 모두 일치할 때만
     // 확정한다. 상대를 강제로 첫 캐릭터의 방으로 복사해 한쪽 화면에만
     // 만남이 생기던 오류를 이 경계에서 차단한다.
-    if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,baseEventFor(c,date));
+    if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,soloSceneFrom(baseEventFor(c,date)));
   }
   if(current?.groupInteraction){
     // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한
@@ -4765,13 +4853,21 @@ export function eventFor(c,date=new Date()){
         sharedCanonicalTitle:current.sharedCanonicalTitle,
         sharedCanonicalDesc:current.sharedCanonicalDesc
       }));
-      if(!counterpart?.groupInteraction)return;
-      counterpart.minute=sharedMinute;
-      counterpart.time=clock(sharedMinute);
-      commitLiveEntry(other,date,counterpart);
+      const synchronizedCounterpart=counterpart?.groupInteraction?counterpart:(()=>{
+        const copy={
+          ko:{title:`${togetherWith(c.name)} 같은 대화를 이어 가는 중`,desc:current.sharedCanonicalDesc||`${c.name}와 방금 시작한 대화의 같은 주제를 끝까지 이어 가고 있어요.`},
+          en:{title:`Continuing the same conversation with ${c.name}`,desc:current.sharedCanonicalDesc||`They are staying with the same topic they just began discussing with ${c.name}.`},
+          ja:{title:`${c.name}と同じ会話を続けているところ`,desc:current.sharedCanonicalDesc||`${c.name}と始めた会話の同じ話題を最後まで続けています。`}
+        }[state.uiLanguage]||{title:`${togetherWith(c.name)} 같은 대화를 이어 가는 중`,desc:current.sharedCanonicalDesc||`${c.name}와 방금 시작한 대화의 같은 주제를 끝까지 이어 가고 있어요.`};
+        return {...baseEventFor(other,date),...sharedLocation,...copy,baseTitle:baseEventFor(other,date)?.title,baseDesc:baseEventFor(other,date)?.desc,sharedActionText:current.sharedActionText,sharedCanonicalTitle:current.sharedCanonicalTitle,sharedCanonicalDesc:current.sharedCanonicalDesc,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
+      })();
+      synchronizedCounterpart.minute=sharedMinute;
+      synchronizedCounterpart.time=clock(sharedMinute);
+      synchronizedCounterpart.interactionStartedMinute=sharedMinute;
+      commitLiveEntry(other,date,synchronizedCounterpart);
     });
   }
-  return current;
+  return localizeLifeLog({...current,coLocatedIds:coLocatedCharacterIds(c,current,date)},state.uiLanguage,state,c.id);
 }
-export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(c=>{const e=baseEventFor(c);return e.placeId===id&&e.townId===townId})}
+export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(Boolean).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(!c)return;(c.residences||[]).forEach(item=>{if(state.homes[item.homeId])(out[item.homeId]??=[]).push(c)})});return out}

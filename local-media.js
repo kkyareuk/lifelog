@@ -106,9 +106,8 @@ export async function initializeLocalMediaState(root){
         return isData(resolved);
         });
       }
-      // A data URL is already usable. It still needs an IndexedDB copy for the
-      // next compact save, but it must not be reported as a newly restored image
-      // or trigger a foreground render after Android's photo picker closes.
+      // A data URL is already usable. Keep its IndexedDB copy current without
+      // reporting it as a newly restored image or repainting the active editor.
       else if(isData(value))jobs.push(async()=>{await persistLocalImage(value);return false});
       else if(value&&typeof value==="object")walk(value);
     });

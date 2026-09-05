@@ -3,6 +3,20 @@ const clamp=(value,min,max,fallback=min)=>{
   return Number.isFinite(number)?Math.max(min,Math.min(max,number)):fallback;
 };
 const hash=value=>[...String(value||"")].reduce((result,character)=>(result*31+character.charCodeAt(0))>>>0,2166136261);
+export function isHomeSleepScene(scene){
+  return scene?.actionKind==="sleep"||/자는 중|잠든|잠들어|낮잠|수면|sleeping|asleep|睡眠|眠って|睡觉/i.test(`${scene?.title||""} ${scene?.mood||""}`);
+}
+export function homeSleepAnimation(habit){
+  const styles={
+    "이불을 단정히 덮고 잠":["tidy",5.2],"이불을 걷어차며 잠":["kick",8],
+    "옆으로 웅크려 잠":["curl",6],"팔다리를 뻗고 잠":["stretch",7],
+    "베개를 끌어안고 잠":["hug",6.5],"잠꼬대를 자주 함":["talk",8.5],
+    "뒤척임이 많음":["restless",7.5],"아주 얌전히 잠":["still",7],
+    "새벽에 자주 깸":["light",12],"코를 골며 깊이 잠":["snore",3.8]
+  };
+  const [style,duration]=styles[habit]||styles["이불을 단정히 덮고 잠"];
+  return {style,duration};
+}
 const HOME_SAFE_BOUNDS={minX:8,maxX:91,minY:23,maxY:84};
 function safeHomePoint(x,y){
   let safeX=clamp(x,HOME_SAFE_BOUNDS.minX,HOME_SAFE_BOUNDS.maxX,50),safeY=clamp(y,HOME_SAFE_BOUNDS.minY,HOME_SAFE_BOUNDS.maxY,58);
@@ -147,20 +161,26 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
   eligible.forEach((characterId,index)=>{
     const context=contexts?.[characterId]&&typeof contexts[characterId]==="object"?contexts[characterId]:{};
     const scene=context.scene||{},roomKey=roomKeys.includes(scene.room)?scene.room:(roomKeys.includes(context.roomKey)?context.roomKey:roomKeys[index%Math.max(1,roomKeys.length)]||"");
-    const sceneKey=String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=furniturePatternForScene(scene),sleeping=/자는 중|잠들|낮잠|침구|이불/.test(`${scene.title||""} ${scene.desc||""}`);
+    const sleeping=isHomeSleepScene(scene),sceneKey=sleeping?`sleep:${roomKey}`:String(context.sceneKey||`${scene.minute??""}:${scene.title||""}:${roomKey}`),pattern=sleeping?/침대/:furniturePatternForScene(scene);
     let candidates=placements.filter(item=>item.roomKey===roomKey&&(!pattern||pattern.test(item.item)));
     if(sleeping){
       const assigned=candidates.filter(item=>item.assignedCharacterIds.includes(characterId));
       candidates=assigned.length?assigned:candidates.filter(item=>!item.assignedCharacterIds.length);
     }
     candidates=candidates.filter(item=>(occupied.get(item.id)||0)<item.capacity);
-    const rawTarget=candidates.length?candidates[hash(`${characterId}:${sceneKey}`)%candidates.length]:null;
+    const previous=current.agents[characterId];
+    // Midnight, translated descriptions and reloads do not start a new walk or
+    // pick another bed while the same sleep continues. Deleted/reassigned beds
+    // still use the normal destination selection.
+    const previousBed=sleeping&&previous?.actionKind==="sleep"?candidates.find(item=>item.id===previous.furnitureId):null;
+    const rawTarget=previousBed||(candidates.length?candidates[hash(`${characterId}:${sceneKey}`)%candidates.length]:null);
     const target=rawTarget?{...rawTarget,...safeHomePoint(rawTarget.x,rawTarget.y)}:null;
     if(target)occupied.set(target.id,(occupied.get(target.id)||0)+1);
-    const old=current.agents[characterId],sameScene=old?.sceneKey===sceneKey&&(!old.furnitureId||placementById.has(old.furnitureId));
+    const old=current.agents[characterId],sameScene=(old?.sceneKey===sceneKey||Boolean(previousBed))&&(!old.furnitureId||placementById.has(old.furnitureId));
     const sceneStartAt=Math.max(0,Number(context.startedAt)||now),sceneEndAt=Math.max(now+60_000,Number(context.endsAt)||now+homeActivityDurationMinutes(target?.item||scene.title,`${characterId}:${sceneKey}`)*60_000);
     const hydrateInPlace=context.animateMovement===false;
     if(sameScene){
+      old.sceneKey=sceneKey;
       old.endsAt=sceneEndAt;
       if(hydrateInPlace&&target){Object.assign(old,{phase:"using",startedAt:now,arrivesAt:now,fromRoomKey:target.roomKey,fromX:target.x,fromY:target.y})}
       else if(old.phase==="walking"&&old.arrivesAt<=now){old.phase="using";old.startedAt=old.arrivesAt||now;old.fromRoomKey=old.roomKey}

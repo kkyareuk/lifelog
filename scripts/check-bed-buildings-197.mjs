@@ -70,7 +70,7 @@ assert.ok(views.includes("anchorX=isBedPose?Number(options.bedPlacement?.x):Numb
 assert.ok(views.includes("--couple-bed-character-scale")&&views.includes("--couple-bed-character-rotation"),"bed users receive proportional size and rotation variables");
 assert.ok(css.includes("scale(1.3)")&&css.includes("scale(calc(var(--furniture-scale) * 1.3))"),"base and overlay bed layers use the same larger scale");
 assert.ok(css.includes("scale:var(--couple-bed-character-scale,1.08)"),"character artwork scales with the assigned bed");
-assert.ok((townCss.match(/mix-blend-mode:plus-lighter/g)||[]).length>=2,"both building light layers use additive compositing");
+assert.ok(!townCss.includes("mix-blend-mode:plus-lighter")&&townCss.includes(".building-light-core{filter:brightness(1.3) drop-shadow(0 0 2px #ffe4a3)}")&&townCss.includes(".building-light-halo{filter:blur(4px) brightness(1.7);mix-blend-mode:screen}"),"building lights use the original restrained core and halo compositing");
 
 assert.ok(!views.includes("statistics-back-button"),"statistics removes the duplicate floating back button from its scroll content");
 assert.ok(css.includes('html.native-app[data-active-tab="statistics"] #app>main')&&css.includes("overflow-y:auto!important"),"only the statistics content area scrolls");
@@ -83,8 +83,8 @@ assert.ok(mood.includes("sourceEntry")&&mood.includes("eventReason=kind")&&!mood
 assert.ok(app.includes("mood-source-log")&&app.includes("연결된 행동 로그"),"mood dialog shows its source activity log");
 assert.ok(views.includes('bookField("액세서리 착용","accessoryUse"')&&state.includes('c.accessoryUse=["착용하지 않음","착용함"]'),"page 7 stores the simple accessory on/off choice");
 assert.ok(app.includes("respectAccessoryUse")&&simulation.includes('c.accessoryUse==="착용함"'),"outfits and life scenes respect the accessory choice");
-assert.match(gradle,/versionCode\s+(?:200|201)/);
-assert.match(gradle,/versionName\s+"1\.0\.187(?:\.1)?"/);
-assert.ok(/drawer-village-v20260902-(?:bed-buildings-statistics-200|buttons-love-hotfix-201)/.test(sw),"service worker cache is separated for build 200+");
+assert.match(gradle,/versionCode\s+(?:20[0-5])/);
+assert.match(gradle,/versionName\s+"1\.0\.(?:187(?:\.1)?|188|189|190|191)"/);
+assert.ok(/drawer-village-v20260902-(?:bed-buildings-statistics-200|buttons-love-hotfix-201|relationship-emotion-202|language-scene-203|font-204|cognitive-205)/.test(sw),"service worker cache is separated for build 200+");
 
-console.log("v1.0.187 / 200 bed, supplied buildings, additive lights, and fixed statistics layout checks passed");
+console.log("v1.0.189 / 203 bed, supplied buildings, restrained lights, and fixed statistics layout checks passed");

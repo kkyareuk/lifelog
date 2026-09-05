@@ -1,5 +1,14 @@
 # 서랍마을 Google Play 스토어 문구
 
+## 스크린샷 홍보 문구
+
+| 화면 | 한국어 | English | 日本語 |
+| --- | --- | --- | --- |
+| 캐릭터 꾸미기 | 내 캐릭터를, 내 방식대로 | Create characters your way | キャラクターを、自分らしく |
+| 관계 설정 | 관계는 한 단어로 끝나지 않으니까 | Relationships are more than a label | 関係は、ひと言では語れない |
+| 집과 생활 | 한 사람의 집과 하루를 들여다봐요 | Step into their home and everyday life | その人の家と日常をのぞいてみよう |
+| 메인 화면 | 설정한 성격과 관계가 살아 움직이는 마을 | A village where every character and relationship comes alive | 性格も関係も、村の暮らしの中で動き出す |
+
 ## 한국어
 
 ### 앱 이름 (18/30자)

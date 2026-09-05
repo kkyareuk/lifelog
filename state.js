@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260903foodimage207";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260903foodimage207";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260903foodimage207";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260903foodimage207";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260903foodimage207";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260903foodimage207";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260903foodimage207";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260903foodimage207";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260903foodimage207";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905gait219";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260905gait219";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905gait219";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260905gait219";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905gait219";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260905gait219";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905gait219";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260905gait219";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260905gait219";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260903foodimage207";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260903foodimage207";
+import {missingBuildings} from "./building-recovery.js?v=20260905gait219";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905gait219";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -31,6 +31,12 @@ const renameBrand=value=>{
 };
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
+const RELATIONSHIP_OUTSIDE_STATUSES=new Set(["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함"]);
+const normalizeRelationshipLegalStatus=value=>RELATIONSHIP_OUTSIDE_STATUSES.has(value)?value:"가까운 사람에게만 알림";
+const LEGALLY_REGISTERABLE_RELATION_TYPES=new Set(["부부","부모·자녀","형제·자매"]);
+const normalizeLegalRegistration=(type,value,legacyValue="",legacyLegalStatus="")=>LEGALLY_REGISTERABLE_RELATION_TYPES.has(type)
+  ?(value==="unregistered"||legacyValue==="unregistered"||legacyLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered")
+  :"";
 const HOME_MAP_SLOTS=[[28,18],[70,18],[24,46],[72,48],[18,76],[48,78],[80,76],[50,33],[36,62],[64,64]];
 const homeMapPosition=index=>{
   const slot=HOME_MAP_SLOTS[Math.max(0,Number(index)||0)%HOME_MAP_SLOTS.length];
@@ -224,7 +230,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:35,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",statisticsTownId:"all",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),achievements:{version:1,progress:{},unlockedAt:{},lastGooglePlaySync:{}},lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],anniversaries:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"평판 정보 없음",fameLevel:"거의 알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
+const fresh=()=>({schema:35,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",statisticsTownId:"all",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiFont:"hanbit",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),achievements:{version:1,progress:{},unlockedAt:{},lastGooglePlaySync:{}},lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],anniversaries:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"평판 정보 없음",fameLevel:"거의 알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -273,7 +279,8 @@ function normalizeHomes(x){
   x.measurementUnits=x.measurementUnits==="imperial"?"imperial":"metric";
   x.buildingLabelMode=["full","name","none"].includes(x.buildingLabelMode)?x.buildingLabelMode:"full";
   x.mapCharacterLabelMode=["name","none"].includes(x.mapCharacterLabelMode)?x.mapCharacterLabelMode:"none";
-  delete x.uiFont;
+  if(x.uiFont==="memoment")x.uiFont="corncorn";
+  x.uiFont=["system","hanbit","mplus-rounded","dangam","haeong","dohyeon","corncorn","griun","aggro"].includes(x.uiFont)?x.uiFont:"hanbit";
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
   x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"light";
@@ -458,9 +465,10 @@ function normalizeHomes(x){
     delete relation.touchIntensity;
     delete relation.romanceStatus;
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
-    relation.legalStatus=relation.type==="부부"
-      ?"법적으로 관계가 등록됨"
-      :(officialityMigration[relation.legalStatus]||relation.legalStatus||"가까운 사람에게만 알림");
+    const legacyLegalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus;
+    relation.legalRegistration=normalizeLegalRegistration(relation.type,relation.legalRegistration,relation.marriageRegistration,legacyLegalStatus);
+    relation.marriageRegistration=relation.type==="부부"?relation.legalRegistration:"";
+    relation.legalStatus=normalizeRelationshipLegalStatus(legacyLegalStatus);
     delete relation.protectionRole;delete relation.caregiverIds;delete relation.careReceiverIds;
     // 정규화는 비어 있는 공식 관계 단계를 임의의 친밀한 단계로 채우지 않는다.
     // 사용자가 고른 적 없는 “편안한 연인/친구”가 다시 생기는 일을 막는다.
@@ -707,12 +715,12 @@ function normalizeHomes(x){
     c.eatingHabits=[...new Set(Array.isArray(c.eatingHabits)?c.eatingHabits.filter(value=>typeof value==="string"&&value.trim()):[])];
     c.lifeAdaptation=String(c.lifeAdaptation||"설정하지 않음");
     c.educationLevel=String(c.educationLevel||"설정하지 않음");
-    c.walkingStyle=["느리고 조심스럽게","차분하고 반듯하게","보통 속도로 자연스럽게","가볍고 경쾌하게","빠르고 성큼성큼"].includes(c.walkingStyle)?c.walkingStyle:"보통 속도로 자연스럽게";
+    c.walkingStyle=["느리고 조심스럽게","차분하고 반듯하게","보통 속도로 자연스럽게","가볍고 경쾌하게","빠르고 성큼성큼","그림자처럼 매우 민첩하게"].includes(c.walkingStyle)?c.walkingStyle:"보통 속도로 자연스럽게";
     c.speechStyle=SPEECH_STYLE_OPTIONS.includes(c.speechStyle)?c.speechStyle:"자동 · 성격에 맞춤";
     c.ageGroup=c.ageGroup||"성인";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
     c.personalityTypes=Array.isArray(c.personalityTypes)?[...new Set(c.personalityTypes.map(String))].slice(0,4):[];
-    const personalityProfile=[...c.personalityTypes,...(Array.isArray(c.characterTraits)?c.characterTraits:[]),c.energyRhythm,c.emotionalExpression].filter(Boolean).join(" ");
+    const personalityProfile=[...c.personalityTypes,c.energyRhythm,c.emotionalExpression].filter(Boolean).join(" ");
     const inferredEmotionalBaseline=/낙천|긍정|밝고|명랑|쾌활/.test(personalityProfile)?"낙천적인 편":/온화|다정|느긋|여유/.test(personalityProfile)?"대체로 밝은 편":/냉정|무덤덤|무심|과묵|감정을 잘 드러내지/.test(personalityProfile)?"무덤덤한 편":/걱정|불안|예민/.test(personalityProfile)?"걱정이 많은 편":"현실적인 편";
     c.emotionalBaseline=["매우 낙천적임","낙천적인 편","대체로 밝은 편","쾌활한 편","열정적인 편","다정한 편","유혹적인 편","호기심 많은 편","차분한 편","현실적인 편","무덤덤한 편","냉소적인 편","까칠한 편","예민한 편","걱정이 많은 편","불안한 편","침울한 편","비관적인 편","분노를 품은 편"].includes(c.emotionalBaseline)?c.emotionalBaseline:inferredEmotionalBaseline;
     c.moodVolatility=["거의 흔들리지 않음","안정적인 편","상황에 따라 달라짐","변화가 잦은 편","변화 폭이 큼"].includes(c.moodVolatility)?c.moodVolatility:"상황에 따라 달라짐";
@@ -1499,18 +1507,41 @@ export function updateFurniturePlacement(homeId,roomKey,placementId,patch,persis
   if(persist)save(true);
   return room.furniturePlacements.find(item=>item.id===placementId)||false;
 }
-export function deleteFurniturePlacement(homeId,roomKey,placementId){
-  const home=state.homes[homeId],room=home?.rooms?.[roomKey];if(!room)return false;
-  const placements=normalizeFurniturePlacements(room.furniturePlacements),removed=placements.find(item=>item.id===placementId);
-  if(!removed)return false;
-  room.furniturePlacements=placements.filter(item=>item.id!==placementId);
-  if(!room.furniturePlacements.some(item=>item.item===removed.item))room.furniture=(room.furniture||[]).filter(item=>item!==removed.item);
+// Transfer the existing object, not a newly-created copy: props and bed assignments
+// belong to this placement. A running interaction must release the old room.
+export function moveFurniturePlacement(homeId,fromRoomKey,toRoomKey,placementId,position={}){
+  const home=state.homes[homeId],from=home?.rooms?.[fromRoomKey],to=home?.rooms?.[toRoomKey];
+  if(!from||!to)return false;
+  const source=normalizeFurniturePlacements(from.furniturePlacements),current=source.find(item=>item.id===placementId);
+  if(!current)return false;
+  const patch={x:position.x??current.x,y:position.y??current.y};
+  if(fromRoomKey===toRoomKey)return updateFurniturePlacement(homeId,fromRoomKey,placementId,patch);
+  const target=normalizeFurniturePlacements(to.furniturePlacements);
+  if(target.some(item=>item.id===placementId))return false;
+  const moved=normalizeFurniturePlacement({...current,...patch,layer:target.length},target.length);
+  from.furniturePlacements=source.filter(item=>item.id!==placementId);
+  if(!from.furniturePlacements.some(item=>item.item===current.item))from.furniture=(from.furniture||[]).filter(item=>item!==current.item);
+  to.furniturePlacements=[...target,moved];
+  to.furniture=[...new Set([...(to.furniture||[]),current.item])];
+  releaseFurnitureInteraction(home,placementId);
+  touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
+  save(true);return moved;
+}
+function releaseFurnitureInteraction(home,placementId){
   const simulation=home.lifeSimulation;
   if(simulation?.reservations)delete simulation.reservations[placementId];
   Object.values(simulation?.agents||{}).forEach(agent=>{
     if(agent.furnitureId!==placementId)return;
     agent.phase="waiting";agent.furnitureId="";agent.item="";agent.startedAt=Date.now();agent.endsAt=Date.now();
   });
+}
+export function deleteFurniturePlacement(homeId,roomKey,placementId){
+  const home=state.homes[homeId],room=home?.rooms?.[roomKey];if(!room)return false;
+  const placements=normalizeFurniturePlacements(room.furniturePlacements),removed=placements.find(item=>item.id===placementId);
+  if(!removed)return false;
+  room.furniturePlacements=placements.filter(item=>item.id!==placementId);
+  if(!room.furniturePlacements.some(item=>item.item===removed.item))room.furniture=(room.furniture||[]).filter(item=>item!==removed.item);
+  releaseFurnitureInteraction(home,placementId);
   touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(entry=>entry.homeId===homeId)).map(c=>c.id));
   save(true);return true;
 }
@@ -1754,7 +1785,9 @@ export function addRelationship(data){
   data={
     ...data,
     stage:data?.stage||"관계 단계 미설정",
-    legalStatus:data?.type==="부부"?"법적으로 관계가 등록됨":(data?.legalStatus||"가까운 사람에게만 알림")
+    legalStatus:normalizeRelationshipLegalStatus(data?.legalStatus),
+    legalRegistration:normalizeLegalRegistration(data?.type,data?.legalRegistration,data?.marriageRegistration,data?.legalStatus),
+    marriageRegistration:data?.type==="부부"?normalizeLegalRegistration(data?.type,data?.legalRegistration,data?.marriageRegistration,data?.legalStatus):""
   };
   if(!data.a||!data.b||data.a===data.b)return null;
   const identity=relationshipIdentity(data);
@@ -1776,7 +1809,9 @@ export function updateRelationship(id,data){
   const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);
   Object.assign(relation,data);
-  relation.legalStatus=relation.type==="부부"?"법적으로 관계가 등록됨":(relation.legalStatus||"가까운 사람에게만 알림");
+  relation.legalRegistration=normalizeLegalRegistration(relation.type,relation.legalRegistration,relation.marriageRegistration,relation.legalStatus);
+  relation.marriageRegistration=relation.type==="부부"?relation.legalRegistration:"";
+  relation.legalStatus=normalizeRelationshipLegalStatus(relation.legalStatus);
   const nextIdentity=relationshipIdentity(relation);
   state.deletedRelationshipKeys=Array.isArray(state.deletedRelationshipKeys)?state.deletedRelationshipKeys:[];
   if(previousIdentity&&previousIdentity!==nextIdentity&&!state.deletedRelationshipKeys.includes(previousIdentity))state.deletedRelationshipKeys.push(previousIdentity);

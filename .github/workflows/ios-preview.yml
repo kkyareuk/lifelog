@@ -1,0 +1,68 @@
+name: iOS preview check
+
+# Only an explicit request-file change starts a build on dev. Ordinary game
+# commits do not consume runner time. No workflow changes on production main.
+on:
+  push:
+    branches: [dev]
+    paths: [.github/ios-preview-request.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  simulator:
+    if: github.ref == 'refs/heads/dev'
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      COCOAPODS_DISABLE_STATS: 'true'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check toolchain
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphonesimulator --show-sdk-version
+          pod --version
+      - name: Install locked JavaScript dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Check workflow safety and platform isolation
+        run: |
+          node scripts/check-ios-cloud.mjs
+          node scripts/check-native-platforms.mjs
+          node scripts/check-ios-preview-auth.mjs
+      - name: Prepare iOS assets and CocoaPods
+        run: npm run app:sync:ios
+      - name: Build simulator app (no Apple credentials)
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p ios/build/reports
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App \
+            -configuration Debug -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath ios/build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
+            build 2>&1 | tee ios/build/reports/build.log
+      - name: Launch on iPhone and iPad simulators
+        timeout-minutes: 10
+        run: node scripts/ios-simulator-smoke.mjs
+      - name: Keep small diagnostics only (not an installable IPA)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-preview-reports-${{ github.run_id }}
+          path: ios/build/reports/
+          retention-days: 3
+          if-no-files-found: ignore

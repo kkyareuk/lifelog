@@ -1,36 +1,38 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260903foodimage207";
-import {toggleDislike} from "./state.js?v=20260903foodimage207";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260903foodimage207";
-import {setCharacterSceneImage} from "./state.js?v=20260903foodimage207";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260903foodimage207";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260903foodimage207";
-import {buildingDetailDialogs} from "./views.js?v=20260903foodimage207";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260903foodimage207";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260903foodimage207";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260903foodimage207";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260903foodimage207";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260903foodimage207";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260903foodimage207";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260903foodimage207";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260903foodimage207";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260903foodimage207";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260903foodimage207";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260903foodimage207";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260903foodimage207";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260903foodimage207";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260903foodimage207";
-import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260903foodimage207";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260905gait219";
+import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260905gait219";
+import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260905gait219";
+import {toggleDislike} from "./state.js?v=20260905gait219";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260905gait219";
+import {setCharacterSceneImage} from "./state.js?v=20260905gait219";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905gait219";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260905gait219";
+import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260905gait219";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260905gait219";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260905gait219";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260905gait219";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260905gait219";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260905gait219";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260905gait219";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260905gait219";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260905gait219";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260905gait219";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905gait219";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260905gait219";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260905gait219";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260905gait219";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905gait219";
+import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260905gait219";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260903foodimage207";
-import {translateText} from "./views.js?v=20260903foodimage207";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260903foodimage207";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260903foodimage207";
-import {characterMood} from "./character-mood.js?v=20260903foodimage207";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260903foodimage207";
+import {switchAccountState} from "./state.js?v=20260905gait219";
+import {translateText} from "./views.js?v=20260905gait219";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260905gait219";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260905gait219";
+import {characterMood} from "./character-mood.js?v=20260905gait219";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260905gait219";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -52,8 +54,9 @@ function openCharacterPlacement(){
 function openCharacterMood(){
   const c=active();if(!c)return;
   const mood=characterMood(c,eventFor(c),state);
-  const source=mood.sourceEntry,sourceCard=source?`<article class="mood-source-log"><small>${esc(translateText("연결된 행동 로그"))} · ${esc(source.time||"")}</small><b>${esc(source.title||"")}</b>${source.desc?`<p>${esc(source.desc)}</p>`:""}</article>`:"";
-  featureDialog("현재 기분",`<h3>${esc(c.name)} · ${mood.icon} ${esc(mood.label)} (${mood.score>0?"+":""}${mood.score})</h3><p>${esc(translateText("현재 머무는 환경과 사건을 반영한 기분이에요. 화면을 다시 열어도 점수가 쌓이지 않아요."))}</p>${sourceCard}<ul>${mood.reasons.map(reason=>`<li>${esc(reason.text)} <b>${reason.value>0?"+":""}${reason.value}</b></li>`).join("")||`<li>${esc(translateText("특별한 기분 변화 없음"))}</li>`}</ul>`);
+  const heading=state.uiLanguage==="en"?"Mood breakdown":state.uiLanguage==="ja"?"気分の内訳":"기분 내역";
+  featureDialog("현재 기분",`<h3>${esc(c.name)} · ${mood.icon} ${esc(mood.label)} (${mood.score>0?"+":""}${mood.score})</h3><h4>${heading}</h4><ul class="mood-factor-list">${mood.reasons.map(reason=>`<li><span>${esc(reason.text)}</span><b class="${reason.value<0?"negative":"positive"}">${reason.value>0?"+":""}${reason.value}</b></li>`).join("")||`<li>${esc(translateText("특별한 기분 변화 없음"))}</li>`}</ul>`);
+
 }
 function openBuildingRecovery(){
   const candidates=recoverableBuildings();
@@ -424,6 +427,7 @@ function openOutfitEditor(outfitId=""){
   document.body.append(dialog);dialog.showModal();
 }
 function openBuildingShapeDialog(targetId,targetKind="place"){
+  const returnHomeInfo=Boolean(document.querySelector('.home-design-info.open'));
   const isHome=targetKind==="home",target=isHome?state.homes[targetId]:state.world.places.find(item=>item.id===targetId);if(!target)return;
   const buildingType=isHome?"집":target.type;
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
@@ -437,7 +441,7 @@ function openBuildingShapeDialog(targetId,targetKind="place"){
     else updatePlace(targetId,{iconPreset,image:""},true);
     dialog.close();render();showToast("건물 모양을 바꿨습니다");
   });
-  dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
+  dialog.onclose=()=>{dialog.remove();if(returnHomeInfo)showHomeFeature("house-info")};document.body.append(dialog);dialog.showModal();
 }
 const STRUCTURED_APPEARANCE_TAGS=["검은 머리","갈색 머리","금발","백발·은발","빨간 머리","분홍 머리","보라 머리","파란 머리","청록 머리","초록 머리","올백머리","장발","단발","숏컷","곱슬머리","웨이브머리","땋은 머리","포니테일","투톤 헤어","특이한 머리색","검은 눈","갈색 눈","호박색 눈","금색 눈","초록색 눈","파란색 눈","청회색 눈","회색 눈","보라색 눈","오드아이","문신","피어싱","흉터","주근깨","점이 있음","창백한 피부","구릿빛 피부","근육질","탄탄한 체형","마른 체형","통통한 체형","글래머","키가 큼","키가 작음","손이 큼"];
 const HAIR_STYLE_ATTRACTION_TAGS=["자연스럽게 풀어 둠","앞머리 있음","앞머리 없음","시스루 앞머리","일자 앞머리","처피뱅","커튼뱅","옆으로 넘긴 앞머리","앞머리가 한쪽 눈을 가림","앞머리가 양쪽 눈을 가림","올백","슬릭백","보브컷","픽시컷","댄디컷","리프컷","레이어드컷","허쉬컷","샤기컷","울프컷","투블럭","언더컷","모히칸","리젠트","포니테일","사이드 포니테일","트윈테일","양갈래","반묶음","하프업 번","땋은 머리","프렌치 브레이드","피시테일 브레이드","콘로우","박스 브레이드","로우번","하이번","스페이스 번","브레이드 업두","드레드록","히메컷","롱 스트레이트","단발 웨이브","웨이브 스타일","베이비펌","히피펌","가르마펌","고데기 스타일링"];
@@ -527,9 +531,10 @@ function profileExportLines(character){
   const eyeColor=leftEye&&rightEye&&leftEye!==rightEye?`왼쪽 ${leftEye} · 오른쪽 ${rightEye}`:leftEye||rightEye;
   const sections=[
     exportSection("기본 정보",[["이름",character.name],["나이대",character.ageGroup],["성별",character.gender==="그외"?"":character.gender],["끌리는 대상",character.attractionTarget],["새로운 사람에게 끌리는 정도",character.relationshipOpenness],["직업",character.jobTitle||character.job],["교육 수준",character.educationLevel],["생활 환경 적응도",character.lifeAdaptation],["생일",character.birthday?`${character.birthday.slice(0,2)}월 ${character.birthday.slice(2)}일`:""],["재산",character.wealth],["소비 유형",character.income],["기상 시각",character.wake],["기상 습관",character.wakeHabit],["취침 시각",character.sleep],["수면 습관",character.sleepHabit],["신체 접촉 반응",character.touchReaction],["외모가 눈에 띄는 정도",character.appearanceLevel==="보통"?"":character.appearanceLevel],["상대 외모를 보는 정도",character.appearanceInterest==="보통"?"":character.appearanceInterest],["끌리는 특징",listText(character.attractionTraits)]]),
-    exportSection("성격",[["전체적인 유형",listText(character.personalityTypes)],["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["패션 감각",character.fashionSense],["평소 외모 관리",character.appearanceCareLevel],["액세서리 착용",character.accessoryUse],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm],["유머·장난 성향",character.humorStyle],["감정 표현의 크기",character.emotionalExpression],["충동을 참는 정도",character.impulseControl],["서사·인지 특성",listText(character.characterTraits)],["장면에 반영할 특성 표현",listText(character.traitExpressions)],["특성 표현 메모",character.traitNotes],["메모를 로그에 반영",character.traitNotesInScripts?"사용":""]]),
+    exportSection("성격",[["전체적인 유형",listText(character.personalityTypes)],["사람과 어울리는 방식",character.socialStyle],["정보를 받아들이는 방식",character.perceptionStyle],["판단하는 방식",character.decisionStyle],["일정을 다루는 방식",character.planningStyle],["행동 전환",character.activityTempo],["깔끔함",character.neatness],["패션 감각",character.fashionSense],["평소 외모 관리",character.appearanceCareLevel],["액세서리 착용",character.accessoryUse],["간섭 성향",character.interference],["갈등 대응",character.conflictStyle],["애정 표현",character.affectionStyle],["생활 에너지",character.energyRhythm],["유머·장난 성향",character.humorStyle],["감정 표현의 크기",character.emotionalExpression],["충동을 참는 정도",character.impulseControl]]),
     exportSection("신체·외형",[["체형",body.bodySize],["신체 특성",listText(physicalTraits)],["자기 외형에 대한 인식",body.appearanceAwareness],["총평",listText(body.appearanceSummaries)],["분위기",listText(body.overallImpressions)],["피부색",body.skinTone],["피부 특징",listText(body.skinFeatures)],["흉터",listText((body.scars||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["문신",listText((body.tattoos||[]).map(item=>typeof item==="string"?item:`${item.name} · ${item.location} · ${item.type} · ${item.attitude}`))],["현재 머리색",appearance.hairColor],["머리색 설정",appearance.hairColorOrigin],["본래 머리색",appearance.naturalHairColor],["머리 기장",appearance.hairLength],["곱슬기",appearance.hairTexture],["머릿결",appearance.hairCondition],["머리 스타일",listText(appearance.hairStyles)],["눈 색",eyeColor],["화장 정도",appearance.makeupLevel],["화장 스타일",listText(appearance.makeupStyles)],["미용실 방문 빈도",appearance.salonFrequency],["성형·외형 의료 시술",appearance.cosmeticSurgery],["성형·외형 의료 시술 부위",listText(appearance.cosmeticSurgeryAreas)]]),
     exportSection("건강·장애·접근성",[["만성질환·건강 관리",listText(body.healthConditions)],["기타 건강 상태",body.healthOther],["휠체어",wheelchair.type],["휠체어 이용 방식",wheelchair.pattern],["의수 사용 부위",arm.side],["의수 종류",arm.custom||arm.type],["의족 사용 부위",leg.side],["의족 종류",leg.custom||leg.type],["청각장애·난청 부위",hearing.side],["청각 특성",hearing.level],["청각 접근 방식",listText(hearing.supports)],["시각장애·저시력 부위",vision.side],["시각 특성",vision.level],["시각 접근 방식",listText(vision.supports)],["병원 방문 빈도",body.hospitalVisitFrequency],["병원 방문 목적",body.hospitalVisitPurpose],["복용중인 약",listText((body.medications||[]).map(item=>`${item.name} · ${item.purpose} · ${item.frequency}`))],["상호작용에서 지킬 방식",listText(body.accessibilityPreferences)],["표현 메모",body.notes]]),
+    exportSection("인지·감각·상호작용",[["생활 장면에 반영할 특성",listText(character.traitExpressions)]]),
     exportSection("취향 선택",[["관심사",listText(character.interests)],["취미",listText(character.hobbies)],["음식",listText(character.foodPreferences)],["좋아하는 음료",listText(character.drinks)],["좋아하는 이야기 장르",listText(character.favoriteStoryGenres)],["음악 장르",listText(character.musicGenres)],["패션 스타일",listText(character.favoriteFashionStyles)],["영상 종류",listText(character.favoriteVideoGenres)],["게임 장르",listText(character.favoriteGameGenres)],["향 계열",listText(character.favoriteScentNotes)]])
   ];
   return sections.filter(Boolean);
@@ -986,18 +991,21 @@ function openBuildingInteriorImageMenu(targetKind,targetId){
 const openPlaceInteriorImageMenu=placeId=>openBuildingInteriorImageMenu("place",placeId);
 function openRoomEditor(homeId,roomKey){
   const room=state.homes[homeId]?.rooms?.[roomKey];if(!room)return;
-  const dialog=document.createElement("dialog");dialog.className="room-editor-dialog";
+  const dialog=document.createElement("dialog");dialog.className="room-editor-dialog home-room-editor home-design-page";
   const interiorStyles=["설정하지 않음","미니멀","모던","북유럽풍","유럽풍","클래식","빈티지","인더스트리얼","한옥풍","일본식","지중해풍","맥시멀","아기자기","자연친화","고딕","미래적","기타"];
   const currentFloorMaterial=normalizeHomeSurface(room.floorMaterial,room.type,{allowCustom:true,customImage:room.floorImage});
   const currentWallMaterial=normalizeWallSurface(room.wallMaterial,currentFloorMaterial,room.type);
   const surfaceOptions=HOME_SURFACE_KEYS.map(value=>`<option value="${value}" ${currentFloorMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
   const wallOptions=HOME_WALL_KEYS.map(value=>`<option value="${value}" ${currentWallMaterial===value?"selected":""}>${homeSurfaceLabel(value,state.uiLanguage)}</option>`).join("");
   const floorCount=Math.max(1,Number(state.homes[homeId]?.floorCount)||1);
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>방 편집</small><h2>${room.name||"방"}</h2></div><button value="close">×</button></div><div class="room-editor-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>방이 있는 층<select name="floor">${Array.from({length:floorCount},(_,index)=>index+1).map(value=>`<option value="${value}" ${value===(Number(room.floor)||1)?"selected":""}>${value}층</option>`).join("")}</select></label><label>방 크기<select name="size">${["작은 방","보통 방","큰 방","넓고 긴 방"].map(value=>`<option ${value===(room.size||"보통 방")?"selected":""}>${value}</option>`).join("")}</select><small>집 편집 모드에서 위치와 크기가 12×16 격자 칸에 자석처럼 맞춰져요.</small></label><label>방 사진 표시<select name="imageFit"><option value="contain" ${room.imageFit!=="cover"?"selected":""}>전체 보기 · 자르지 않음</option><option value="cover" ${room.imageFit==="cover"?"selected":""}>공간 채우기 · 가장자리 잘림</option></select><small>침실처럼 사진 전체가 중요한 방은 ‘전체 보기’를 권장해요.</small></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="crop-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">완료</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><header class="home-design-head"><button class="home-design-back" value="save" aria-label="${homeEditorCopy(state.uiLanguage).back}"></button><h2>${htmlEsc(room.name||"방")}</h2></header><div class="room-editor-fields home-design-fields"><label>방 이름<input name="name" value="${String(room.name||"방").replace(/"/g,"&quot;")}"></label><label>방 유형<select name="type">${Object.entries(ROOM_EDITOR_TYPES).map(([value,label])=>`<option value="${value}" ${room.type===value?"selected":""}>${label}</option>`).join("")}</select></label><label>인테리어 스타일<select name="interiorStyle">${interiorStyles.map(value=>`<option ${value===(room.interiorStyle||"설정하지 않음")?"selected":""}>${value}</option>`).join("")}</select><small>가끔 공간의 무드와 캐릭터의 기분 묘사에 반영돼요.</small></label></div><button type="button" class="room-editor-photo home-design-photo" data-edit-room-photo>${room.image?`<span style="background-image:url('${room.image}')"></span><b>방 사진 변경</b>`:"<span>＋</span><b>방 사진 추가하기</b>"}</button><div class="room-editor-actions editor-save-actions"><button type="button" data-room-layout-reset ${room.layout?"":"hidden"}>자동 배치로 되돌리기</button><button type="button" class="danger" data-room-delete>방 삭제</button><button class="primary" value="save">저장</button></div></form>`;
+  const usage=document.createElement("select");usage.name="usage";usage.setAttribute("aria-label","방 세부 유형");
+  usage.innerHTML=[...new Set([room.usage||"지정 안 함","지정 안 함","공용","개인용","손님용"])].map(value=>`<option value="${htmlEsc(value)}" ${value===(room.usage||"지정 안 함")?"selected":""}>${htmlEsc(value)}</option>`).join("");
+  dialog.querySelector('[name="type"]').after(usage);
   const floorField=document.createElement("label");
   const floorHelp={ko:"바닥 타일은 반복하며 벽을 유지하고, 방 전체 그림은 자르거나 반복하지 않고 벽을 숨겨요.",en:"Floor tiles repeat and keep the wall. A full-room illustration is not cropped or repeated and hides the wall.",ja:"床タイルは繰り返して壁を残します。部屋全体のイラストは切り抜きや繰り返しをせず、壁を非表示にします。"}[state.uiLanguage]||"";
   floorField.innerHTML=`바닥재<select name="floorMaterial">${surfaceOptions}<option value="customTile" ${currentFloorMaterial==="customTile"?"selected":""}>${homeSurfaceLabel("customTile",state.uiLanguage)}</option><option value="custom" ${currentFloorMaterial==="custom"?"selected":""}>${homeSurfaceLabel("custom",state.uiLanguage)}</option></select><small>${floorHelp}</small>`;
-  dialog.querySelector(".room-editor-fields").insertBefore(floorField,dialog.querySelector('[name="imageFit"]').closest("label"));
+  dialog.querySelector(".room-editor-fields").insertBefore(floorField,dialog.querySelector('[name="interiorStyle"]').closest("label"));
   const wallField=document.createElement("label");
   wallField.innerHTML=`벽지<select name="wallMaterial">${wallOptions}</select><small>직접 그린 벽지 7종 가운데 방에 어울리는 무늬를 골라 주세요.</small>`;
   floorField.after(wallField);
@@ -1008,20 +1016,35 @@ function openRoomEditor(homeId,roomKey){
   drawFloorButton();dialog.querySelector("[data-edit-room-photo]").before(floorButton);
   dialog.querySelector("[data-edit-room-photo] b").textContent=room.image?"방 사진 변경":"방 사진 추가하기";
   dialog.querySelector("[data-edit-room-photo]").setAttribute("aria-label","관찰·집 정보용 방 사진");
-  const titleToneField=document.createElement("label");
-  titleToneField.innerHTML=`방 제목 색<select name="titleTone"><option value="light" ${room.titleTone!=="dark"?"selected":""}>밝은 글자</option><option value="dark" ${room.titleTone==="dark"?"selected":""}>어두운 글자</option></select><small>사진 밝기에 맞춰 방 이름이 잘 보이는 쪽을 고르세요.</small>`;
-  dialog.querySelector(".room-editor-fields").insertBefore(titleToneField,dialog.querySelector('[name="type"]').closest("label"));
   const sync=()=>{
-    updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floor:Number(dialog.querySelector('[name="floor"]').value)||1,size:dialog.querySelector('[name="size"]').value,floorMaterial:dialog.querySelector('[name="floorMaterial"]').value,wallMaterial:dialog.querySelector('[name="wallMaterial"]').value,imageFit:dialog.querySelector('[name="imageFit"]').value==="cover"?"cover":"contain",interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,titleTone:dialog.querySelector('[name="titleTone"]').value});
+    if(!state.homes[homeId]?.rooms?.[roomKey])return;
+    updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floorMaterial:!dialog.querySelector('[name="usePhoto"]').checked&&dialog.querySelector('[name="floorMaterial"]').value==="custom"?"natural":dialog.querySelector('[name="floorMaterial"]').value,wallMaterial:dialog.querySelector('[name="wallMaterial"]').value,usage:dialog.querySelector('[name="usage"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,usePhoto:dialog.querySelector('[name="usePhoto"]').checked,cleanliness:Number(dialog.querySelector('[name="cleanliness"]').value),...readRoomPermissionEditor(dialog)});
     const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType);
   };
   dialog.querySelector('[name="floorMaterial"]').onchange=drawFloorButton;
-  dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close();openRoomEditor(homeId,roomKey)};
+  dialog.querySelector('[name="type"]').onchange=()=>{sync();dialog.close("reopen");openRoomEditor(homeId,roomKey)};
   dialog.querySelector("[data-edit-room-photo]").onclick=()=>{sync();dialog.returnValue="photo";dialog.close();openRoomImageMenu(homeId,roomKey,{returnToEditor:true})};
-  floorButton.onclick=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value==="customTile"?"customTile":"custom";dialog.querySelector('[name="floorMaterial"]').value=mode;sync();dialog.returnValue="floor";dialog.close();pickImage(mode==="customTile"?"roomFloor":"roomScene",homeId,roomKey)};
+  floorButton.onclick=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value==="customTile"?"customTile":"custom";dialog.querySelector('[name="floorMaterial"]').value=mode;dialog.querySelector('[name="usePhoto"]').checked=mode==="custom";sync();dialog.returnValue="floor";dialog.close();pickImage(mode==="customTile"?"roomFloor":"roomScene",homeId,roomKey)};
   dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
   dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
-  dialog.onclose=()=>{if(dialog.returnValue==="save"){sync();save(true);render()}dialog.remove()};
+  dialog.onclose=()=>{if(!["photo","floor","reopen"].includes(dialog.returnValue)){sync();save(true);render();showHomeFeature("room-info")}dialog.remove()};
+
+  const fields=dialog.querySelector(".room-editor-fields");
+  fields.before(dialog.querySelector("[data-edit-room-photo]"));
+  fields.querySelectorAll("small").forEach(node=>node.remove());
+  const extra=document.createElement("div");
+  extra.className="room-design-extra";
+  extra.innerHTML=`<label class="room-use-photo check">벽지·바닥 대신 사진 사용<input type="checkbox" name="usePhoto" ${room.usePhoto??(currentFloorMaterial==="custom")?"checked":""}></label><label class="room-cleanliness">청결도<select name="cleanliness">${[0,25,50,75,100].map(v=>`<option value="${v}" ${v===(room.cleanliness??100)?"selected":""}>${v}%</option>`).join("")}</select></label>${roomPermissionMarkup(state.homes[homeId],room,state)}`;
+  fields.append(extra);
+  bindRoomPermissionEditor(dialog);
+  const samples=document.createElement("div");samples.className="room-design-samples";
+  samples.innerHTML=`<button type="button" data-wall-sample aria-label="벽지"><img src="${wallSurfaceImage(currentWallMaterial,currentFloorMaterial,room.floorImage,room.type)}" alt=""></button><button type="button" data-floor-sample aria-label="바닥재"><img src="${floorSource()}" alt=""></button>`;
+  dialog.querySelector("[data-edit-room-photo]").after(samples);
+  samples.querySelector("[data-wall-sample]").onclick=()=>dialog.querySelector('[name="wallMaterial"]').focus();
+  samples.querySelector("[data-floor-sample]").onclick=()=>floorButton.click();
+  dialog.querySelector('[name="wallMaterial"]').onchange=()=>{samples.querySelector("[data-wall-sample] img").src=wallSurfaceImage(dialog.querySelector('[name="wallMaterial"]').value,dialog.querySelector('[name="floorMaterial"]').value,room.floorImage,room.type)};
+  const originalDrawFloor=dialog.querySelector('[name="floorMaterial"]').onchange;
+  dialog.querySelector('[name="floorMaterial"]').onchange=()=>{originalDrawFloor();samples.querySelector("[data-floor-sample] img").src=floorSource()};
   translateDynamicInterface(dialog);document.body.append(dialog);dialog.showModal();
 }
 
@@ -1048,14 +1071,17 @@ function openFurniturePlacementDialog(homeId,initialRoomKey=""){
   const roomKeys=Object.keys(home.rooms||{}).sort((a,b)=>(Number(home.rooms[a]?.order)||0)-(Number(home.rooms[b]?.order)||0));
   let roomKey=home.rooms?.[initialRoomKey]?initialRoomKey:roomKeys.find(key=>(Number(home.rooms[key]?.floor)||1)===(Number(home.activeFloor)||1))||roomKeys[0];
   if(!roomKey){showToast("먼저 방을 추가해 주세요");return}
-  const copy={ko:{eyebrow:"집 편집 · 독립 도구",title:"가구 배치",help:"방을 고르고 가구를 추가하세요. 창을 닫으면 방 화면에서 격자에 맞춰 위치·크기·각도를 조절할 수 있어요.",placed:"배치된 가구",catalog:"추가할 가구",empty:"아직 배치한 가구가 없어요.",assign:"침대 지정",done:"방에서 위치 조정하기"},en:{eyebrow:"Home edit · Separate tool",title:"Furniture placement",help:"Choose a room and add furniture. Close this panel to position it on the room grid.",placed:"Placed furniture",catalog:"Add furniture",empty:"No furniture placed yet.",assign:"Assign bed",done:"Position in room"},ja:{eyebrow:"家の編集・独立ツール",title:"家具の配置",help:"部屋を選び家具を追加してください。閉じると部屋のグリッド上で位置を調整できます。",placed:"配置済み家具",catalog:"追加する家具",empty:"配置した家具はまだありません。",assign:"ベッド指定",done:"部屋で位置を調整"}}[state.uiLanguage]||null;
+  const copy={ko:{eyebrow:"집 편집",title:"가구 배치",help:"방을 고른 뒤 가구를 검색해 추가하세요. 가구는 방 종류에 상관없이 놓고 다른 방으로도 옮길 수 있어요.",placed:"배치된 가구",catalog:"추가할 가구",search:"가구 검색",emptySearch:"검색 결과가 없어요.",empty:"아직 배치한 가구가 없어요.",assign:"침대 지정",done:"방에서 위치 조정하기"},en:{eyebrow:"Home edit",title:"Furniture",help:"Choose a room, then search for furniture to add. Place any furniture in any room and move it between rooms.",placed:"Placed furniture",catalog:"Add furniture",search:"Search furniture",emptySearch:"No furniture matches your search.",empty:"No furniture placed yet.",assign:"Assign bed",done:"Position in room"},ja:{eyebrow:"家の編集",title:"家具の配置",help:"部屋を選び、家具を検索して追加してください。家具は部屋の種類に関係なく置けて、別の部屋にも移動できます。",placed:"配置済み家具",catalog:"追加する家具",search:"家具を検索",emptySearch:"検索結果がありません。",empty:"配置した家具はまだありません。",assign:"ベッド指定",done:"部屋で位置を調整"}}[state.uiLanguage]||null;
   const dialog=document.createElement("dialog");dialog.className="furniture-placement-dialog";
+  const pickerArt=item=>item==="커플 침대"?`<span class="furniture-picker-couple-bed" aria-hidden="true"><img src="assets/furniture/couple-bed/couple-bed-base.png" alt=""><img src="assets/furniture/couple-bed/couple-bed-quilt.png" alt=""><img src="assets/furniture/couple-bed/couple-bed-footboard.png" alt=""></span>`:`<span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span>`;
   const draw=()=>{
     const room=state.homes[homeId]?.rooms?.[roomKey],placements=room?.furniturePlacements||[];
-    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><section><h3>${copy.placed}</h3><div class="furniture-placement-current">${placements.length?placements.map(placement=>{const size=furnitureFootprint(placement.item);return `<article><span aria-hidden="true">${furnitureIcon(placement.item)}</span><b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b><small>${size.columns}×${size.rows}</small>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`}).join(""):`<p>${copy.empty}</p>`}</div></section><section><h3>${copy.catalog}</h3><div class="room-editor-furniture">${furnitureCatalogForRoom(room.type).map(item=>{const size=furnitureFootprint(item);return `<button type="button" data-add-room-furniture="${htmlEsc(item)}"><span class="room-editor-furniture-icon" aria-hidden="true">${furnitureIcon(item)}</span><b>${htmlEsc(furnitureLabel(item,state.uiLanguage))}</b><small>${size.columns}×${size.rows} · ＋</small></button>`}).join("")}</div></section><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
+    dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${copy.eyebrow}</small><h2>${copy.title}</h2></div><button value="close" aria-label="${copy.done}">×</button></div><p>${copy.help}</p><nav class="furniture-room-tabs">${roomKeys.map(key=>`<button type="button" data-furniture-room="${htmlEsc(key)}" class="${key===roomKey?"on":""}">${htmlEsc(home.rooms[key]?.name||key)}</button>`).join("")}</nav><label class="furniture-search"><span aria-hidden="true">⌕</span><input type="search" data-furniture-search autocomplete="off" placeholder="${copy.search}" aria-label="${copy.search}"></label><section class="furniture-catalog-section"><h3>${copy.catalog}</h3><div class="room-editor-furniture">${filteredFurniture().map(item=>{const size=furnitureFootprint(item),label=furnitureLabel(item,state.uiLanguage);return `<button type="button" data-add-room-furniture="${htmlEsc(item)}" data-furniture-choice data-furniture-search-label="${htmlEsc(`${item} ${label}`.toLocaleLowerCase())}">${pickerArt(item)}<b>${htmlEsc(label)}</b><small>${size.columns}×${size.rows} · ＋</small></button>`}).join("")}</div><p class="furniture-search-empty" data-furniture-search-empty hidden>${copy.emptySearch}</p></section><details class="furniture-current-section" ${placements.length?"":"open"}><summary>${copy.placed} · ${placements.length}</summary><div class="furniture-placement-current">${placements.length?placements.map(placement=>{const size=furnitureFootprint(placement.item);return `<article>${pickerArt(placement.item)}<b>${htmlEsc(furnitureLabel(placement.item,state.uiLanguage))}</b><small>${size.columns}×${size.rows}</small>${isBedFurniture(placement.item)?`<small>${(placement.assignedCharacterIds||[]).map(id=>state.characters[id]?.name).filter(Boolean).join(" · ")||"—"}</small><button type="button" data-open-bed-assignment="${htmlEsc(placement.id)}">${copy.assign}</button>`:""}</article>`}).join(""):`<p>${copy.empty}</p>`}</div></details><button class="primary furniture-placement-done" value="close">${copy.done}</button></form>`;
     dialog.querySelectorAll("[data-furniture-room]").forEach(button=>button.onclick=()=>{roomKey=button.dataset.furnitureRoom;draw()});
+    const search=dialog.querySelector("[data-furniture-search]"),empty=dialog.querySelector("[data-furniture-search-empty]");
+    search?.addEventListener("input",()=>{const query=search.value.trim().toLocaleLowerCase(),choices=[...dialog.querySelectorAll("[data-furniture-choice]")];let visible=0;choices.forEach(button=>{const matches=!query||button.dataset.furnitureSearchLabel.includes(query);button.hidden=!matches;if(matches)visible++});if(empty)empty.hidden=visible>0});
     dialog.querySelectorAll("[data-add-room-furniture]").forEach(button=>button.onclick=()=>{
-      const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
+      const placementId=addFurniturePlacement(homeId,roomKey,button.dataset.addRoomFurniture);setActiveHomeFloor(homeId,home.rooms[roomKey].floor||1);pendingFurnitureSelection={homeId,roomKey,placementId};dialog.close("added");render();showToast("가구를 추가했어요 · 방 안에서 끌어 자리를 정해 주세요");
     });
     dialog.querySelectorAll("[data-open-bed-assignment]").forEach(button=>button.onclick=()=>{const placementId=button.dataset.openBedAssignment;dialog.onclose=()=>dialog.remove();dialog.close();openBedAssignmentDialog(homeId,roomKey,placementId)});
   };
@@ -1112,9 +1138,11 @@ function bindRoomGeometryHandle(handle,mode){
       setRoomLayoutStyle(room,snapRoomLayout({...startLayout,w:startLayout.w+dx,h:startLayout.h+dy}));
     }
   };
-  handle.onpointerup=finish;handle.onpointercancel=finish;
+  handle.onpointerup=finish;handle.onpointercancel=finish;handle.onlostpointercapture=()=>{if(pointerId!==null)finish()};
 }
 
+// Home editor widgets share one state owner with the simulation and save handlers.
+// (Imported at module scope so Android packages the same versioned module.)
 function setFurniturePlacementStyle(element,placement){
   if(!element||!placement)return;
   element.style.setProperty("--furniture-x",`${placement.x}%`);
@@ -1122,6 +1150,9 @@ function setFurniturePlacementStyle(element,placement){
   element.style.setProperty("--furniture-scale",String(placement.scale));
   element.style.setProperty("--furniture-rotation",`${placement.rotation}deg`);
   element.style.setProperty("--furniture-layer",String(placement.layer));
+  element.style.setProperty("--furniture-flip",placement.flipped?"-1":"1");
+  element.dataset.furnitureFacing=placement.facing||"front";
+  fitFurnitureSelection(element);
 }
 
 function openFurniturePropsDialog(homeId,roomKey,placementId){
@@ -1153,41 +1184,75 @@ function bindFurniturePlacementEditors(){
     if(!element)return;
     document.querySelectorAll("[data-furniture-placement].is-selected").forEach(item=>item.classList.remove("is-selected"));
     selected=element;element.classList.add("is-selected");toolbar.hidden=false;
+    fitFurnitureSelection(element);
+    const image=element.querySelector(".couple-bed-base");if(image&&!image.complete)image.addEventListener("load",()=>{if(element.isConnected)fitFurnitureSelection(element)},{once:true});
+    const placement=state.homes[element.dataset.homeId]?.rooms?.[element.dataset.roomKey]?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);
+    const copy=homeEditorCopy(state.uiLanguage),facing=toolbar.querySelector("[data-furniture-facing-label]");
+    if(facing){facing.textContent=copy[placement?.facing||"front"];facing.title=placement?.facing&&placement.facing!=="front"?copy.missingSide:""}
+    const assign=toolbar.querySelector('[data-furniture-command="assign"]');if(assign)assign.hidden=!isBedFurniture(placement?.item);
     toolbar.dataset.homeId=element.dataset.homeId||"";
     toolbar.dataset.roomKey=element.dataset.roomKey||"";
     toolbar.dataset.placementId=element.dataset.furniturePlacement||"";
+    const destination=toolbar.querySelector('[data-furniture-move-room]');if(destination)destination.value=element.dataset.roomKey;
     const name=toolbar.querySelector("[data-furniture-edit-name]");if(name)name.textContent=element.dataset.furnitureName||"가구";
     const props=toolbar.querySelector('[data-furniture-command="props"]');if(props)props.hidden=element.dataset.furnitureSupportsProps!=="true";
   };
   document.querySelectorAll("[data-furniture-placement]").forEach(element=>{
-    let pointerId=null,roomRect=null,canvasRect=null,latest=null,dragged=false,startX=0,startY=0;
+    let pointerId=null,canvas=null,latest=null,ghost=null,dragged=false,startX=0,startY=0;
     element.onclick=event=>{event.preventDefault();event.stopPropagation();selectFurniture(element)};
     element.onpointerdown=event=>{
-      const room=element.closest(".room");if(!room)return;
+      const room=element.closest(".room");if(!room||pointerId!==null||event.button!==0)return;
       event.preventDefault();event.stopPropagation();selectFurniture(element);
-      pointerId=event.pointerId;roomRect=room.getBoundingClientRect();canvasRect=room.closest("[data-room-canvas]")?.getBoundingClientRect()||roomRect;latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
-      element.setPointerCapture(pointerId);element.classList.add("is-dragging");
+      pointerId=event.pointerId;canvas=room.closest("[data-room-canvas]");latest=null;dragged=false;startX=event.clientX;startY=event.clientY;
+      element.setPointerCapture(pointerId);
     };
     element.onpointermove=event=>{
-      if(pointerId!==event.pointerId||!roomRect?.width||!roomRect?.height)return;
+      if(pointerId!==event.pointerId||!canvas)return;
       event.preventDefault();event.stopPropagation();
       if(Math.hypot(event.clientX-startX,event.clientY-startY)>4)dragged=true;
       if(!dragged)return;
-      const rawX=(event.clientX-roomRect.left)/roomRect.width*100,rawY=(event.clientY-roomRect.top)/roomRect.height*100;
-      const room=state.homes[element.dataset.homeId]?.rooms?.[element.dataset.roomKey];
-      const current=room?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);if(!current)return;
-      const snapped=snapFurniturePosition(rawX,rawY,furnitureGridForRoom(roomRect,canvasRect),furnitureFootprint(current.item));
-      latest=normalizeFurniturePlacement({...current,x:snapped.x,y:snapped.y});setFurniturePlacementStyle(element,latest);
+      if(!ghost){
+        ghost=element.cloneNode(true);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');
+        ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');
+        element.classList.add('furniture-drag-source');
+      }
+      // Pointer capture stays on the source; hit-testing chooses the actual room
+      // under the finger. Toolbars and gaps are not valid drop destinations.
+      const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('.room[data-room-key]');
+      const layer=target?.querySelector('.room-furniture-layer');
+      if(!target||!canvas.contains(target)||!layer){latest=null;ghost.remove();return}
+      const home=state.homes[element.dataset.homeId],current=home?.rooms?.[element.dataset.roomKey]?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);
+      if(!current)return;
+      const roomRect=target.getBoundingClientRect();
+      const snapped=snapFurniturePosition((event.clientX-roomRect.left)/roomRect.width*100,(event.clientY-roomRect.top)/roomRect.height*100,furnitureGridForRoom(roomRect,canvas.getBoundingClientRect()),furnitureFootprint(current.item));
+      latest={roomKey:target.dataset.roomKey,...snapped};
+      if(ghost.parentElement!==layer)layer.append(ghost);
+      setFurniturePlacementStyle(ghost,normalizeFurniturePlacement({...current,x:snapped.x,y:snapped.y}));
     };
     const finish=event=>{
       if(pointerId===null||event.pointerId!==pointerId)return;
-      if(element.hasPointerCapture(pointerId))element.releasePointerCapture(pointerId);
-      pointerId=null;element.classList.remove("is-dragging");
-      if(latest)updateFurniturePlacement(element.dataset.homeId,element.dataset.roomKey,element.dataset.furniturePlacement,{x:latest.x,y:latest.y},true);
+      const captured=pointerId;pointerId=null;
+      if(element.hasPointerCapture(captured))element.releasePointerCapture(captured);
+      ghost?.remove();ghost=null;element.classList.remove('furniture-drag-source');
+      if(latest&&event.type==='pointerup'){
+        const {homeId,roomKey,furniturePlacement:placementId}=element.dataset;
+        if(moveFurniturePlacement(homeId,roomKey,latest.roomKey,placementId,latest)){
+          pendingFurnitureSelection={homeId,roomKey:latest.roomKey,placementId};render();
+        }
+      }
+      latest=null;
       event.preventDefault();event.stopPropagation();
     };
-    element.onpointerup=finish;element.onpointercancel=finish;
+    element.onpointerup=finish;element.onpointercancel=finish;element.onlostpointercapture=finish;
   });
+  const destination=toolbar.querySelector('[data-furniture-move-room]');
+  if(destination)destination.onchange=()=>{
+    const {homeId,roomKey,placementId}=toolbar.dataset,toRoomKey=destination.value;
+    if(moveFurniturePlacement(homeId,roomKey,toRoomKey,placementId)){
+      setActiveHomeFloor(homeId,state.homes[homeId].rooms[toRoomKey].floor||1);
+      pendingFurnitureSelection={homeId,roomKey:toRoomKey,placementId};render();
+    }else destination.value=roomKey;
+  };
   toolbar.querySelectorAll("[data-furniture-command]").forEach(button=>button.onclick=event=>{
     event.preventDefault();event.stopPropagation();
     const command=button.dataset.furnitureCommand;
@@ -1195,16 +1260,18 @@ function bindFurniturePlacementEditors(){
     const {homeId,roomKey,placementId}=toolbar.dataset;
     const current=state.homes[homeId]?.rooms?.[roomKey]?.furniturePlacements?.find(item=>item.id===placementId);if(!current)return;
     if(command==="props"){openFurniturePropsDialog(homeId,roomKey,placementId);return}
+    if(command==="assign"){openBedAssignmentDialog(homeId,roomKey,placementId,{returnToFurniture:false});return}
     if(command==="delete"){
       if(confirm(`‘${current.item}’ 가구를 방에서 치울까요?`)){deleteFurniturePlacement(homeId,roomKey,placementId);pendingFurnitureSelection=null;render()}
       return;
     }
     const patch=command==="smaller"?{scale:current.scale-.25}
       :command==="larger"?{scale:current.scale+.25}
-      :command==="rotate"?{rotation:current.rotation+15}
+      :command==="rotate"?{facing:["front","left","right"][(["front","left","right"].indexOf(current.facing||"front")+1)%3]}
+      :command==="flip"?{flipped:!current.flipped}
       :command==="back"?{layerAction:"back"}
       :command==="front"?{layerAction:"front"}:{};
-    const next=updateFurniturePlacement(homeId,roomKey,placementId,patch,true);if(next&&selected)setFurniturePlacementStyle(selected,next);
+    const next=updateFurniturePlacement(homeId,roomKey,placementId,patch,true);if(next&&selected){setFurniturePlacementStyle(selected,next);selectFurniture(selected)}
   });
   if(pendingFurnitureSelection){
     const target=[...document.querySelectorAll("[data-furniture-placement]")].find(element=>element.dataset.homeId===pendingFurnitureSelection.homeId&&element.dataset.roomKey===pendingFurnitureSelection.roomKey&&element.dataset.furniturePlacement===pendingFurnitureSelection.placementId);
@@ -1263,7 +1330,7 @@ function replaceFeedbackFormWithEmailLink(){
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
     `Version: ${appVersion} / code ${versionCode}`,
-    `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?"Android app":"Web"})`,
+    `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?(window.DRAWER_VILLAGE_PLATFORM==="ios"?"iOS app":"Android app"):"Web"})`,
     `Device/model: ${deviceModel}`,
     `User agent: ${navigator.userAgent||"unknown"}`,
     `Platform: ${navigator.userAgentData?.platform||navigator.platform||"unknown"}`,
@@ -1373,7 +1440,7 @@ function prepareActiveHomeLife(now=new Date()){
     const character=state.characters[characterId];if(!character)return false;
     const scene=eventFor(character,now),sceneHomeId=scene?.visitHomeId||character.homeId;
     if(!scene?.home||sceneHomeId!==homeId)return false;
-    const entries=timeline(character,now),next=entries.find(entry=>Number(entry?.minute)>minute),sceneMinute=Math.max(0,Number(scene.minute)||minute);
+    const entries=timeline(character,now),next=entries.find(entry=>Number(entry?.minute)>minute),sceneMinute=Number.isFinite(Number(scene.minute))?Math.max(0,Number(scene.minute)):minute;
     const interactionId=scene.groupInteraction?scene.interactionId||"":"";
     // 같은 공동 장면의 표현 문구가 다시 계산되어도 이동 장면은 하나다.
     // 제목을 sceneKey에 넣으면 화면 재진입 때마다 새 행동으로 오인해 두 사람이
@@ -1457,7 +1524,7 @@ function render({force=false}={}){
     document.documentElement.classList.toggle("mobile-site",!nativePlatform&&mobileSite);
     document.documentElement.lang=({en:"en",ja:"ja"}[state.uiLanguage]||"ko");
     document.title=({en:"Drawer Village",ja:"ひきだし村"}[state.uiLanguage]||"서랍마을");
-    delete document.documentElement.dataset.uiFont;
+    document.documentElement.dataset.uiFont=state.uiFont||"hanbit";
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
@@ -1848,6 +1915,41 @@ function bindHomeCanvasGestures(){
   });
 }
 
+function showHomeFeature(name){
+  const card=document.querySelector('[data-home-card]');if(!card)return;
+  card.querySelectorAll('[data-home-feature].open').forEach(p=>p.classList.remove('open'));
+  card.querySelector('[data-home-feature="'+name+'"]')?.classList.add('open');
+}
+function openHomeMemberEditor(kind,homeId,itemId){
+  if(kind==='car'){openCarEditor(homeId,itemId);return}
+  const source=document.querySelector(kind==='pet'?'[data-pet-editor-id="'+CSS.escape(itemId)+'"]':'[data-resident-editor-id="'+CSS.escape(itemId)+'"]');if(!source)return;
+  const item=kind==='pet'?state.homes[homeId].pets.find(p=>p.id===itemId):state.characters[itemId],copy=homeEditorCopy(state.uiLanguage),dialog=document.createElement('dialog');
+  dialog.className='home-design-page home-member-editor';
+  dialog.dataset.memberKind=kind;dialog.dataset.memberId=itemId;dialog.dataset.memberHome=homeId;
+  const art=kind==='pet'?(item.photo||item.icon):(item.icon||item.photo);
+  dialog.innerHTML=`<header class="home-design-head"><button type="button" class="home-design-back" aria-label="${copy.back}"></button><h2>${htmlEsc(item.name)}</h2></header><div class="home-design-photo">${art?`<img src="${htmlEsc(art)}" alt="">`:''}</div><div class="home-design-fields"></div><div class="editor-save-actions"><button type="button" class="primary" data-member-save>${copy.save}</button></div>`;
+  dialog.querySelector('.home-design-fields').append(source);
+  const details=source.querySelector('details');if(details){details.open=true;details.querySelector('summary')?.remove();details.replaceWith(...details.childNodes)}
+  source.querySelectorAll('[data-pet-field="species"] option').forEach(option=>{if(option.value==="새")option.textContent=state.uiLanguage==="en"?"Bird":state.uiLanguage==="ja"?"鳥":"새"});
+  source.querySelectorAll('small,.pet-info,.pet-avatar').forEach(n=>n.hidden=true);
+  source.querySelectorAll('[data-residence-day]').forEach(button=>{const day=Number(button.dataset.residenceDay);button.textContent=({en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],ja:['日','月','火','水','木','金','土']}[state.uiLanguage]||['일','월','화','수','목','금','토'])[day]});
+  dialog.querySelector('.home-design-back').onclick=()=>dialog.close();
+  dialog.querySelector("[data-member-save]").onclick=()=>{document.activeElement?.blur();dialog.close()};
+  dialog.onclose=()=>{dialog.remove();save(true);render();showHomeFeature('members')};
+  document.body.append(dialog);dialog.showModal();
+}
+function refreshHomeMemberEditor(){
+  const dialog=document.querySelector('.home-member-editor');if(!dialog){render();return}
+  const {memberKind,memberHome,memberId}=dialog.dataset;
+  dialog.remove();render();showHomeFeature('members');openHomeMemberEditor(memberKind,memberHome,memberId);
+}
+function openHomeResidentPicker(homeId){
+  const c=homeEditorCopy(state.uiLanguage),dialog=document.createElement('dialog');dialog.className='home-resident-picker';
+  dialog.innerHTML=`<header><h2>${c.members}</h2><button type="button" data-close>${c.back}</button></header>${state.order.filter(id=>!state.characters[id]?.residences?.some(r=>r.homeId===homeId)).map(id=>`<button type="button" data-connect="${htmlEsc(id)}">${htmlEsc(state.characters[id].name)} ＋</button>`).join('')}`;
+  dialog.querySelector('[data-close]').onclick=()=>dialog.close();
+  dialog.querySelectorAll('[data-connect]').forEach(b=>b.onclick=()=>{addCharacterResidence(b.dataset.connect,homeId);dialog.close()});
+  dialog.onclose=()=>{dialog.remove();render();showHomeFeature('members')};document.body.append(dialog);dialog.showModal();
+}
 function openCarEditor(homeId,carId){
   const car=state.homes[homeId]?.cars?.find(item=>item.id===carId);
   if(!car)return;
@@ -1855,9 +1957,9 @@ function openCarEditor(homeId,carId){
   const types=["경차","승용차","SUV","승합차","스포츠카","전기차","오토바이","기타"];
   const ownerOptions=state.order.map(id=>`<option value="${id}" ${id===car.ownerCharacterId?"selected":""}>${htmlEsc(state.characters[id]?.name||"")}</option>`).join("");
   const dialog=document.createElement("dialog");
-  dialog.className="home-car-dialog";
+  dialog.className="home-car-dialog home-design-page home-car-design";
   dialog.dataset.homeCarDialog="";
-  dialog.innerHTML=`<form method="dialog"><div class="mobile-editor-head"><span><small>CAR SETTING</small><b>${htmlEsc(car.name)}</b></span><button value="cancel" aria-label="닫기">×</button></div><div class="home-car-preview">${car.image?`<img src="${htmlEsc(car.image)}" alt="">`:"<span>🚙</span>"}</div><div class="fields"><label>차량 이름<input name="name" value="${htmlEsc(car.name)}"></label><label>종류<select name="type">${types.map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>차 소유주<select name="ownerCharacterId"><option value="">가족 공동 차량</option>${ownerOptions}</select></label><label>색상<input name="color" value="${htmlEsc(car.color||"")}"></label><label>좌석 수<input name="seats" type="number" min="1" max="12" value="${Number(car.seats)||5}"></label></div><div class="image-actions"><button type="button" data-dialog-car-image>차 사진 선택</button><button type="button" data-dialog-car-url>사진 링크</button></div><div class="crop-actions"><button type="button" class="danger" data-dialog-delete-car>자동차 삭제</button><button value="cancel">취소</button><button class="primary" value="save">편집 완료</button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><header class="home-design-head"><button class="home-design-back" value="save" aria-label="${homeEditorCopy(state.uiLanguage).back}"></button><h2>${htmlEsc(car.name)}</h2></header><div class="home-car-preview home-design-photo">${car.image?`<img src="${htmlEsc(car.image)}" alt="">`:"<span>🚙</span>"}</div><div class="fields home-design-fields"><label>차량 이름<input name="name" value="${htmlEsc(car.name)}"></label><label>종류<select name="type">${types.map(type=>`<option ${type===car.type?"selected":""}>${type}</option>`).join("")}</select></label><label>차 소유주<select name="ownerCharacterId"><option value="">가족 공동 차량</option>${ownerOptions}</select></label><label>색상<input name="color" value="${htmlEsc(car.color||"")}"></label><label>좌석 수<input name="seats" type="number" min="1" max="12" value="${Number(car.seats)||5}"></label></div><div class="image-actions"><button type="button" data-dialog-car-image>차 사진 선택</button><button type="button" data-dialog-car-url>사진 링크</button></div><div class="crop-actions"><button type="button" class="danger" data-dialog-delete-car>자동차 삭제</button><button value="cancel">취소</button><button class="primary" value="save">편집 완료</button></div></form>`;
   dialog.querySelector("[data-dialog-car-image]").onclick=()=>{
     dialog.close("cancel");
     pickImage("car",homeId,carId);
@@ -1885,9 +1987,9 @@ function openCarEditor(homeId,carId){
       render();
       showToast("자동차 설정을 저장했습니다");
     }
-    dialog.remove();
+    dialog.remove();showHomeFeature("members");
   };
-  document.body.append(dialog);
+  translateDynamicInterface(dialog);document.body.append(dialog);
   dialog.showModal();
 }
 
@@ -2202,6 +2304,8 @@ function bindCharacterBookSwipe(){
 }
 
 function bind(){
+  $$("[data-member-edit]").forEach(b=>b.onclick=()=>openHomeMemberEditor(b.dataset.memberEdit,b.dataset.homeId,b.dataset.memberId));
+  $$("[data-member-add]").forEach(b=>b.onclick=()=>{const kind=b.dataset.memberAdd,homeId=b.dataset.homeId;if(kind==="resident"){openHomeResidentPicker(homeId);return}const id=kind==="pet"?addPet(homeId):addCar(homeId);render();showHomeFeature("members");openHomeMemberEditor(kind,homeId,id)});
   $("[data-character-placement-open]")?.addEventListener("click",openCharacterPlacement);
   $("[data-open-character-mood]")?.addEventListener("click",openCharacterMood);
   $("[data-building-recovery]")?.addEventListener("click",openBuildingRecovery);
@@ -2209,6 +2313,7 @@ function bind(){
   bindNativeObserveCharacterSwipe();
   bindCharacterBookSwipe();
   bindFurniturePlacementEditors();
+  bindHomeEditorUI(document,{state,addFurniture:addFurniturePlacement,updateFurniture:updateFurniturePlacement,openRoom:openRoomEditor,selectAdded:(homeId,roomKey,placementId)=>{setActiveHomeFloor(homeId,state.homes[homeId].rooms[roomKey].floor||1);pendingFurnitureSelection={homeId,roomKey,placementId};render()}});
   // Cloud sync intentionally does not copy device-only photos. If an old
   // device URL is unavailable, replace the broken image with the character's
   // initial so the relationship screen stays readable and tappable.
@@ -2323,6 +2428,7 @@ function bind(){
   $("[data-mobile-town-settings]")?.addEventListener("click",()=>{setMobileTownPanel("world");render()});
   $("[data-mobile-town-close]")?.addEventListener("click",()=>{setMobileTownMode("");render()});
   $("[data-building-browser-back]")?.addEventListener("click",()=>{setMobileTownPanel("buildings");setMobileTownPlacement();render()});
+  $$("[data-editor-save]").forEach(button=>button.onclick=async()=>{document.activeElement?.blur();await explicitSave("설정 저장")});
   $$('[data-building-browser-open]').forEach(button=>button.addEventListener("click",()=>{
     const townId=button.dataset.buildingBrowserTown;
     if(townId&&townId!==state.activeTownId)switchTown(townId);
@@ -2460,7 +2566,9 @@ function bind(){
     if(!createCharacter(characterLimit()))return;
     localStorage.setItem(ONBOARDING_KEY,"done");
     localStorage.setItem(SETUP_COACH_KEY,"character-editing");
-    setNavigationTabIntent("character");setCharacterPane("profile");save();render();
+    setNavigationTabIntent("character");setCharacterPane("profile");
+    mobileCharacterEditorPane="quick";mobileCharacterEditorScroll=0;mobileCharacterDraftDirty=false;
+    save();render();
   });
   $("[data-welcome-restore]")?.addEventListener("click",()=>{
     if(window.ParallelCityAuth?.getInfo?.().busy)return;
@@ -2498,19 +2606,19 @@ function bind(){
     }
     document.querySelectorAll("[data-toggle-character-roster]").forEach(button=>button.setAttribute("aria-expanded",String(open)));
   });
-  $("[data-open-quick-character-settings]")?.addEventListener("click",()=>{
+  $$("[data-open-quick-character-settings]").forEach(button=>button.addEventListener("click",()=>{
     mobileCharacterEditorPane="quick";
     mobileCharacterDraftDirty=false;
     mobileCharacterEditorScroll=0;
     mobileCharacterEditorOpenDetails=[];
     mobileCharacterEditorDetailsCaptured=false;
     render();
-  });
-  $("[data-open-full-character-settings]")?.addEventListener("click",()=>{
+  }));
+  $$("[data-open-full-character-settings]").forEach(button=>button.addEventListener("click",()=>{
     state.characterSettingsView="full";
     state.characterPane="visual";
     render();
-  });
+  }));
   $("[data-close-full-character-settings]")?.addEventListener("click",()=>{
     state.characterSettingsView="hub";
     render();
@@ -2685,6 +2793,8 @@ function bind(){
     card.querySelectorAll("[data-home-feature].open").forEach(item=>item.classList.remove("open"));
     card.querySelectorAll("[data-open-home-feature].on").forEach(item=>item.classList.remove("on"));
     if(!wasOpen){
+      const lazyLog=panel.querySelector("[data-lazy-home-log]");
+      if(lazyLog){lazyLog.innerHTML=homeLogMarkup(lazyLog.dataset.lazyHomeLog);translateDynamicInterface(lazyLog)}
       panel.classList.add("open");
       button.classList.add("on");
     }
@@ -2728,7 +2838,7 @@ function bind(){
     updateCharacter(el.dataset.characterCheck,{[el.dataset.field]:el.checked},!mobileDraft);
   });
   $$("[data-pet-field]").forEach(el=>{
-    const apply=()=>{const value=["neutered","needsWalk","rideable"].includes(el.dataset.petField)?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))render()};
+    const apply=()=>{const value=["neutered","needsWalk","rideable"].includes(el.dataset.petField)?el.checked:el.value;updatePet(el.dataset.homeId,el.dataset.petId,{[el.dataset.petField]:value});if(["species","room"].includes(el.dataset.petField))refreshHomeMemberEditor()};
     if(el.tagName==="SELECT")el.onchange=apply;else el.oninput=apply;
   });
   $$("[data-pet-trait-field]").forEach(el=>el.onclick=()=>{
@@ -2737,7 +2847,7 @@ function bind(){
     const field=el.dataset.petTraitField;
     const current=Array.isArray(pet[field])?pet[field]:[];
     updatePet(el.dataset.homeId,el.dataset.petId,{[field]:current.includes(el.dataset.value)?current.filter(value=>value!==el.dataset.value):[...current,el.dataset.value]});
-    render();
+    refreshHomeMemberEditor();
   });
   $("[data-feedback-form]")?.addEventListener("submit",async event=>{
     event.preventDefault();
@@ -2789,7 +2899,7 @@ function bind(){
       showToast("피드백 저장에 실패했어요 · 화면의 오류를 확인해 주세요");
     }finally{button.disabled=false;button.textContent="피드백 보내기"}
   });
-  $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 반려생물을 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);render()}});
+  $$("[data-delete-pet]").forEach(el=>el.onclick=()=>{if(confirm("이 반려생물을 삭제할까요?")){deletePet(el.dataset.homeId,el.dataset.deletePet);const editor=el.closest('.home-member-editor');if(editor)editor.close();else render()}});
   $$("[data-pet-image]").forEach(el=>el.onclick=()=>pickImage(`pet${el.dataset.petImage==="icon"?"Icon":"Photo"}`,el.dataset.homeId,el.dataset.petId));
   $$("[data-home-name]").forEach(el=>el.oninput=()=>{
     const townShell=el.closest(".mobile-town-shell");
@@ -2801,10 +2911,13 @@ function bind(){
       const townShell=el.closest(".mobile-town-shell");
       if(townShell&&townShell.dataset.townMode!=="buildings")return;
       updateHome(el.dataset.homeId,{[el.dataset.homeField]:el.value});
+      const info=el.closest('.home-design-info');
+      if(info&&el.dataset.homeField==='ownerKind'){info.querySelector('[data-home-field="ownerName"]').hidden=el.value==='캐릭터';info.querySelector('[data-home-field="ownerCharacterId"]').hidden=el.value!=='캐릭터'}
+      if(info&&el.dataset.homeField==='townId'){render();showHomeFeature('house-info')}
     };
     el.oninput=apply;el.onchange=apply;
   });
-  $$("[data-home-floor-count]").forEach(el=>el.onchange=()=>{setHomeFloorCount(el.dataset.homeId,el.value);render();showToast(`${el.value}층 집으로 바꿨어요`)});
+  $$("[data-home-floor-count]").forEach(el=>el.onchange=()=>{setHomeFloorCount(el.dataset.homeId,el.value);const info=el.closest(".home-design-info");render();if(info)showHomeFeature("house-info");showToast(`${el.value}층 집으로 바꿨어요`)});
   $$("[data-delete-home]").forEach(el=>el.onclick=()=>{
     const home=state.homes[el.dataset.deleteHome];if(!home)return;
     const copy=state.uiLanguage==="en"
@@ -2836,7 +2949,7 @@ function bind(){
     const homeId=el.dataset.homeId,id=el.dataset.homeResident;
     const connected=state.characters[id]?.residences?.some(item=>item.homeId===homeId);
     connected?removeCharacterResidence(id,homeId):addCharacterResidence(id,homeId);
-    renderPreservingPageScroll(el);
+    if(el.closest(".home-member-editor")){document.querySelector(".home-member-editor")?.close();return}renderPreservingPageScroll(el);
   });
   $$("[data-residence-field]").forEach(el=>{
     const apply=()=>{
@@ -2879,20 +2992,29 @@ function bind(){
       button.setAttribute("aria-pressed",String(selected));
     });
   });
-  const toggleTraitSetting=(key,value,element)=>{
-    const character=active(),current=Array.isArray(character[key])?character[key]:[];
+  const toggleTraitSetting=(value,element)=>{
+    const character=active(),current=Array.isArray(character.traitExpressions)?character.traitExpressions:[];
     let next;
     if(current.includes(value))next=current.filter(item=>item!==value);
     else if(current.length<8)next=[...current,value];
-    else return showToast("서사·인지 특성은 각 영역에서 최대 8개까지 고를 수 있어요");
+    else return showToast("인지·감각·상호작용 특성은 최대 8개까지 고를 수 있어요");
     const mobileDraft=markMobileCharacterDraft(element);
-    updateCharacter(character.id,{[key]:next},false);
+    updateCharacter(character.id,{traitExpressions:next},false);
     if(!mobileDraft)save(true);
-    const attribute=key==="characterTraits"?"data-character-trait":"data-trait-expression";
-    document.querySelectorAll(`[${attribute}="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",next.includes(value)));
+    document.querySelectorAll(`[data-trait-expression="${CSS.escape(value)}"]`).forEach(button=>{
+      const selected=next.includes(value);
+      button.classList.toggle("on",selected);
+      button.setAttribute("aria-pressed",String(selected));
+    });
+    document.querySelectorAll("[data-trait-expression-count]").forEach(label=>label.textContent=String(next.length));
+    const summary=state.uiLanguage==="en"?`${next.length} selected`:state.uiLanguage==="ja"?`${next.length}個選択`:`${next.length}개 선택됨`;
+    document.querySelectorAll("[data-cognitive-trait-summary]").forEach(label=>label.textContent=summary);
   };
-  $$("[data-character-trait]").forEach(el=>el.onclick=()=>toggleTraitSetting("characterTraits",el.dataset.characterTrait,el));
-  $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting("traitExpressions",el.dataset.traitExpression,el));
+  $$("[data-trait-expression]").forEach(el=>el.onclick=()=>toggleTraitSetting(el.dataset.traitExpression,el));
+  $$("[data-open-cognitive-traits]").forEach(el=>el.onclick=()=>{
+    const dialog=document.querySelector("[data-cognitive-traits-dialog]");
+    if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
+  });
   $$("[data-trait-notes]").forEach(el=>{
     if(isDeferredMobileTextControl(el)){
       el.oninput=()=>markMobileCharacterDraft(el);
@@ -3408,7 +3530,7 @@ function bind(){
   $$("[data-character-pane]").forEach(el=>el.onclick=()=>{
     const pane=el.dataset.characterPane;
     if(pane==="profile") state.characterOverviewPane=el.dataset.characterOverviewTarget==="life"?"life":"basic";
-    if(pane==="body") state.characterBodyPane="figure";
+    if(pane==="body") state.characterBodyPane=el.dataset.characterBodyTarget==="accessibility"?"accessibility":"figure";
     if(pane==="personality") state.characterPersonalityPane=["core","emotion","details"].includes(el.dataset.characterPersonalityPane)?el.dataset.characterPersonalityPane:"core";
     if(pane==="taste") state.characterTastePane=el.dataset.characterTastePane==="catalog"?"catalog":"categories";
     setCharacterPane(pane);
@@ -3515,12 +3637,35 @@ function bind(){
     if(question&&!question.answered)requestAnimationFrame(()=>openDailyCharacterQuestion({...question,shown:true}));
   });
   $$('[data-open-contact-mail]').forEach(button=>button.onclick=()=>openContactMail(button.dataset.openContactMail));
+  $$('[data-delete-contact-mail]').forEach(button=>button.onclick=()=>{
+    const language=state.uiLanguage||"ko",copy={
+      en:{confirm:"Delete this letter?",done:"Letter deleted"},
+      ja:{confirm:"この手紙を削除しますか？",done:"手紙を削除しました"},
+      ko:{confirm:"이 편지를 삭제할까요?",done:"편지를 삭제했어요"}
+    }[language];
+    const id=button.dataset.deleteContactMail;
+    if(!id||!confirm(copy.confirm))return;
+    if(state.dailyQuestion?.mailId===id)setDailyQuestion(null);
+    contactMailbox.remove(id);render();showToast(copy.done);
+  });
+  $('[data-delete-all-contact-mail]')?.addEventListener('click',()=>{
+    const language=state.uiLanguage||"ko",copy={
+      en:{confirm:"Delete every letter currently in the mailbox?",done:"All letters deleted"},
+      ja:{confirm:"郵便箱にある手紙をすべて削除しますか？",done:"すべての手紙を削除しました"},
+      ko:{confirm:"우편함에 도착한 편지를 모두 삭제할까요?",done:"편지를 모두 삭제했어요"}
+    }[language];
+    if(!confirm(copy.confirm))return;
+    const ids=$$('.character-mail-card[data-mail-id]').map(card=>card.dataset.mailId).filter(Boolean);
+    if(state.dailyQuestion?.mailId&&ids.includes(state.dailyQuestion.mailId))setDailyQuestion(null);
+    contactMailbox.removeMany(ids);render();showToast(copy.done);
+  });
   $$("[data-setting]").forEach(el=>el.onchange=()=>{
     const key=el.dataset.setting;
     state[key]=["homeSdScale","homeLdScale"].includes(key)?Math.max(70,Math.min(150,Number(el.value)||100)):el.value;
     if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
     save(true);
     if(key==="uiLanguage"||key==="measurementUnits"){renderPreservingPageScroll(el);return}
+    document.documentElement.dataset.uiFont=state.uiFont||"hanbit";
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(["homeSdScale","homeLdScale"].includes(key))el.closest("label")?.querySelector("output")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
     el.blur();
@@ -3667,7 +3812,7 @@ function bind(){
   $$("[data-town-select]").forEach(el=>el.onclick=()=>{el.closest("dialog")?.close();setMobileTownMode("");switchTown(el.dataset.townSelect);render();centerMobileTownMap()});
   $("[data-town-browse]")?.addEventListener("change",event=>{switchTown(event.target.value);setMobileTownMode("town");render()});
   $$("[data-add-town]").forEach(el=>el.addEventListener("click",()=>{
-    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="town")return;
+    if(el.closest(".mobile-town-shell")&&currentTownMode()!=="town"&&!el.hasAttribute("data-add-town-switcher"))return;
     const limit=townLimit();
     if(!addTown(limit))showToast(`현재 마을 슬롯은 ${limit}개까지예요`);
     render();
@@ -4810,27 +4955,35 @@ function openRelationDialog(id=""){
   if(state.order.length<2)return alert("캐릭터가 두 명 이상 필요해요.");
   const old=id?state.relationships[id]:null,dialog=document.createElement("dialog");dialog.className="relation-dialog relation-editor-dialog relationship-fullscreen-dialog";
   const language=state.uiLanguage||"ko",copy=({
-    en:{title:old?"Edit official relationship":"Set official relationship",name:"Relationship name",nameHint:"Name this relationship",back:"Back",list:"Official relationships",members:"Characters in this relationship · two or more",type:"Relationship type",stage:"Current relationship stage",past:"Past relationship",pastHint:"Examples: former partners, estranged spouses, or severed friendships.",order:"Character display order",orderActual:"Animation placement preferences",placementTitle:"Animation placement preferences",placementHint:"Choose how strongly each character prefers the left or right side. Ties keep the official member order.",outside:"How others treat the relationship",tags:"Relationship tags",tagCount:n=>`${n} tags`,tagPlaceholder:"Type your own tag",tagAdd:"Add",tagHint:"Create any tag you need, such as Dream couple or a community name. Select a saved tag to remove it.",parentRole:"Parent role",kinship:"Family link",sibling:"Sibling link",fault:"Why it ended",cohabit:"Live together",together:"Travel together",cancel:"Cancel",save:"Save",done:"Done",swap:"Swap the first two characters"},
-    ja:{title:old?"公式関係を編集":"公式関係を設定",name:"関係名",nameHint:"この関係に名前を付ける",back:"戻る",list:"公式関係一覧",members:"関係に含める人物・2人以上",type:"関係の種類",stage:"現在の関係段階",past:"過去の関係",pastHint:"別れた恋人、離婚した夫婦、絶縁した友人などに使います。",order:"人物の表示順",orderActual:"アニメーションの配置傾向",placementTitle:"アニメーションの配置傾向",placementHint:"各人物を左右のどちらへ、どの程度優先して配置するか選びます。同じ強さなら公式の表示順を保ちます。",outside:"外部での関係の扱われ方",tags:"関係タグを追加",tagCount:n=>`${n}個のタグ`,tagPlaceholder:"自由なタグを入力",tagAdd:"追加",tagHint:"「ドリームカップル」やコミュニティ名など、必要なタグを自由に作れます。保存済みタグを押すと削除します。",parentRole:"親の役割",kinship:"家族関係",sibling:"きょうだい関係",fault:"関係が終わった理由",cohabit:"一緒に住む",together:"一緒に行動",cancel:"取消",save:"保存",done:"完了",swap:"先頭の2人を入れ替え"},
-    ko:{title:old?"공식 관계 편집":"공식 관계 설정",name:"관계 이름",nameHint:"여기에 관계 이름을 써 주세요",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderActual:"애니메이션 배치 선호 설정",placementTitle:"애니메이션 배치 선호 설정",placementHint:"각 캐릭터를 어느 쪽에 얼마나 우선해 배치할지 정해요. 같은 강도끼리는 공식 구성원 순서를 유지합니다.",outside:"관계가 밖에서 다뤄지는 방식",tags:"관계 태그 추가하기",tagCount:n=>`${n}개 태그`,tagPlaceholder:"원하는 태그를 직접 입력",tagAdd:"추가",tagHint:"드림 커플이나 커뮤니티 이름처럼 필요한 태그를 자유롭게 만들 수 있어요. 저장된 태그를 누르면 삭제됩니다.",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",done:"완료",swap:"앞의 두 캐릭터 위치 바꾸기"}
-  }[language]||null)||{title:old?"공식 관계 편집":"공식 관계 설정",name:"관계 이름",nameHint:"여기에 관계 이름을 써 주세요",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderActual:"실질적 순서 설정하기",outside:"관계가 밖에서 다뤄지는 방식",tags:"관계 태그 추가하기",tagCount:n=>`${n}개 태그`,tagPlaceholder:"원하는 태그를 직접 입력",tagAdd:"추가",tagHint:"드림 커플이나 커뮤니티 이름처럼 필요한 태그를 자유롭게 만들 수 있어요. 저장된 태그를 누르면 삭제됩니다.",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",swap:"두 사람 좌우 바꾸기"};
+    en:{title:old?"Edit official relationship":"Set official relationship",name:"Relationship name",nameHint:"Name this relationship",back:"Back",list:"Official relationships",members:"Characters in this relationship · two or more",type:"Relationship type",stage:"Current relationship stage",past:"Past relationship",pastHint:"Examples: former partners, estranged spouses, or severed friendships.",order:"Character display order",orderHint:"Move every selected character into the order used in relationship scenes.",moveEarlier:"Move earlier",moveLater:"Move later",outside:"How others treat the relationship",registration:"Legal registration",legalRegistered:"Legally registered",legalUnregistered:"Not legally registered",tags:"Relationship tags",tagCount:n=>`${n} tags`,tagPlaceholder:"Type your own tag",tagAdd:"Add",tagHint:"Create any tag you need, such as Dream couple or a community name. Select a saved tag to remove it.",parentRole:"Parent role",kinship:"Family link",sibling:"Sibling link",fault:"Why it ended",cohabit:"Live together",together:"Travel together",cancel:"Cancel",save:"Save",done:"Done"},
+    ja:{title:old?"公式関係を編集":"公式関係を設定",name:"関係名",nameHint:"この関係に名前を付ける",back:"戻る",list:"公式関係一覧",members:"関係に含める人物・2人以上",type:"関係の種類",stage:"現在の関係段階",past:"過去の関係",pastHint:"別れた恋人、離婚した夫婦、絶縁した友人などに使います。",order:"人物の表示順",orderHint:"選択した全員を、関係シーンに使う順番に並べます。",moveEarlier:"前へ移動",moveLater:"後ろへ移動",outside:"外部での関係の扱われ方",registration:"法的登録の有無",legalRegistered:"法的に登録されている",legalUnregistered:"法的に登録されていない",tags:"関係タグを追加",tagCount:n=>`${n}個のタグ`,tagPlaceholder:"自由なタグを入力",tagAdd:"追加",tagHint:"「ドリームカップル」やコミュニティ名など、必要なタグを自由に作れます。保存済みタグを押すと削除します。",parentRole:"親の役割",kinship:"家族関係",sibling:"きょうだい関係",fault:"関係が終わった理由",cohabit:"一緒に住む",together:"一緒に行動",cancel:"取消",save:"保存",done:"完了"},
+    ko:{title:old?"공식 관계 편집":"공식 관계 설정",name:"관계 이름",nameHint:"여기에 관계 이름을 써 주세요",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderHint:"선택한 모든 캐릭터를 관계 장면에 표시할 순서로 정렬해요.",moveEarlier:"앞으로 이동",moveLater:"뒤로 이동",outside:"관계가 밖에서 다뤄지는 방식",registration:"법적 등록 여부",legalRegistered:"법적으로 등록됨",legalUnregistered:"법적으로 등록되지 않음",tags:"관계 태그 추가하기",tagCount:n=>`${n}개 태그`,tagPlaceholder:"원하는 태그를 직접 입력",tagAdd:"추가",tagHint:"드림 커플이나 커뮤니티 이름처럼 필요한 태그를 자유롭게 만들 수 있어요. 저장된 태그를 누르면 삭제됩니다.",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장",done:"완료"}
+  }[language]||null)||{title:old?"공식 관계 편집":"공식 관계 설정",name:"관계 이름",nameHint:"여기에 관계 이름을 써 주세요",back:"돌아가기",list:"공식 관계 목록",members:"관계에 포함할 캐릭터 · 두 명 이상",type:"관계 종류",stage:"현재 관계 단계",past:"과거의 관계",pastHint:"헤어진 연인, 이혼한 부부, 절연한 친구처럼 바뀝니다.",order:"관계 구성원 표시 순서",orderHint:"선택한 모든 캐릭터를 관계 장면에 표시할 순서로 정렬해요.",moveEarlier:"앞으로 이동",moveLater:"뒤로 이동",outside:"관계가 밖에서 다뤄지는 방식",registration:"법적 등록 여부",legalRegistered:"법적으로 등록됨",legalUnregistered:"법적으로 등록되지 않음",tags:"관계 태그 추가하기",tagCount:n=>`${n}개 태그`,tagPlaceholder:"원하는 태그를 직접 입력",tagAdd:"추가",tagHint:"드림 커플이나 커뮤니티 이름처럼 필요한 태그를 자유롭게 만들 수 있어요. 저장된 태그를 누르면 삭제됩니다.",parentRole:"부모 역할",kinship:"가족 연결",sibling:"형제·자매 관계",fault:"관계가 끝난 이유",cohabit:"함께 살기",together:"함께 다니기",cancel:"취소",save:"저장"};
   const aId=state.characters[old?.a]?old.a:(state.characters[state.activeId]?state.activeId:state.order[0]),bId=state.characters[old?.b]&&old.b!==aId?old.b:state.order.find(cid=>cid!==aId);
   let selectedMemberIds=[...new Set((old?.groupMembers?.length?old.groupMembers:old?.displayOrder?.length?old.displayOrder:[aId,bId]).filter(cid=>state.characters[cid]))];
   if(selectedMemberIds.length<2)selectedMemberIds=[aId,bId];
   const placementValues=new Set(["always-left","prefer-left","random","prefer-right","always-right"]);
   const animationPlacement=Object.fromEntries(selectedMemberIds.map(cid=>[cid,placementValues.has(old?.animationPlacement?.[cid])?old.animationPlacement[cid]:"random"]));
   const characterOptions=selected=>state.order.map(cid=>`<option value="${htmlEsc(cid)}" ${cid===selected?"selected":""}>${htmlEsc(state.characters[cid]?.name||"")}</option>`).join("");
-  const officialValues=["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함","법적으로 관계가 등록됨"];
+  const officialValues=["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함"];
+  const officialValueLabels={
+    en:{"관계를 따로 명명하지 않음":"Not explicitly named","당사자끼리만 관계를 인정함":"Recognized only by the people involved","가까운 사람에게만 알림":"Shared only with close people","누구에게나 공개함":"Publicly acknowledged","법적으로 관계가 등록됨":copy.legalRegistered,"법적으로 관계가 등록되지 않음":copy.legalUnregistered},
+    ja:{"관계를 따로 명명하지 않음":"関係を特に名付けない","당사자끼리만 관계를 인정함":"当事者間だけで認める","가까운 사람에게만 알림":"親しい人だけに知らせる","누구에게나 공개함":"誰にでも公表する","법적으로 관계가 등록됨":copy.legalRegistered,"법적으로 관계가 등록되지 않음":copy.legalUnregistered},
+    ko:Object.fromEntries(officialValues.map(value=>[value,value]))
+  }[language]||{};
+  const legalStatusOptions=values=>values.map(value=>`<option value="${htmlEsc(value)}">${htmlEsc(officialValueLabels[value]||value)}</option>`).join("");
   const defaultAcceptance=language==="en"?"Accepted":language==="ja"?"受け入れられている":"두루 받아들여짐";
   const selectedRelationTags=new Set(Array.isArray(old?.tags)?old.tags:[]);
-  dialog.innerHTML=`<form method="dialog"><header class="relationship-editor-head official-editor-head"><button value="save" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select></label></header>
+  dialog.innerHTML=`<form method="dialog"><header class="relationship-editor-head official-editor-head"><button value="save" class="relationship-back-button" aria-label="${copy.back}"><img src="./assets/home-ui/back.png" alt=""></button><span class="official-editor-heading"><small>OFFICIAL RELATIONSHIP</small><b>${copy.title}</b></span></header>
     <label class="official-name-field"><span>${copy.name}</span><input name="name" maxlength="50" value="${htmlEsc(old?.name||"")}" placeholder="${copy.nameHint}"></label>
     <section class="official-member-section"><b>${copy.members}</b><div class="official-member-picker">${state.order.map(cid=>`<button type="button" data-official-member="${htmlEsc(cid)}">${htmlEsc(state.characters[cid]?.name||"")}</button>`).join("")}</div><select name="a" hidden>${characterOptions(aId)}</select><select name="b" hidden>${characterOptions(bId)}</select></section>
     <div class="official-relation-fields">
+      <label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select></label>
       <label class="official-stage-field"><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
       <label class="official-past-toggle"><b>${copy.past}</b><input type="checkbox" name="temporalPast"><small>${copy.pastHint}</small><input type="hidden" name="temporalStatus" value="current"></label>
-      <section class="official-order-card"><b>${copy.order}</b><div><span data-official-order-label></span><span class="official-order-avatars"><i data-official-avatar="a"></i><button type="button" data-swap-official-pair aria-label="${copy.swap}">↔</button><i data-official-avatar="b"></i></span></div><button type="button" data-swap-official-pair>${copy.swap}</button></section>
-      <label class="official-outside-field"><b>${copy.outside}</b><select name="legalStatus">${officialValues.map(value=>`<option>${value}</option>`).join("")}</select></label>
+      <section class="official-order-card"><b>${copy.order}</b><small>${copy.orderHint}</small><div class="official-order-list" data-official-order-list></div></section>
+      <label class="official-outside-field"><b>${copy.outside}</b><select name="legalStatus">${legalStatusOptions(officialValues)}</select></label>
+      <fieldset class="official-legal-registration" hidden><legend>${copy.registration}</legend><label><input type="radio" name="legalRegistration" value="registered"><span>${copy.legalRegistered}</span></label><label><input type="radio" name="legalRegistration" value="unregistered"><span>${copy.legalUnregistered}</span></label></fieldset>
       <label class="official-tags-field"><b>${copy.tags}</b><button type="button" data-toggle-relation-tags><span data-relation-tag-count>${copy.tagCount(selectedRelationTags.size)}</span></button><input type="hidden" name="socialAcceptance" value="${htmlEsc(old?.socialAcceptance||defaultAcceptance)}"></label>
       <label class="official-parent-role" hidden><b>${copy.parentRole}</b><select name="parentRole"><option>엄마</option><option>아빠</option><option>부모</option></select></label>
       <label class="official-kinship" hidden><b>${copy.kinship}</b><select name="kinship"><option value="blood">혈연</option><option value="nonblood">비혈연·입양</option></select></label>
@@ -4845,18 +4998,20 @@ function openRelationDialog(id=""){
   const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
   f.type.value=old?.type==="폴리 관계"?"연인":old?.type==="절친"||old?.type==="대학 동기"||old?.type==="젊은 날의 친구들"?"친구":["유사가족","가족","보호·피보호"].includes(old?.type)?"동거인":old?.type||"친구";
   f.temporalStatus.value=old?.temporalStatus==="past"?"past":"current";f.temporalPast.checked=f.temporalStatus.value==="past";
-  f.legalStatus.value=f.type.value==="부부"?"법적으로 관계가 등록됨":officialityMigration[old?.legalStatus]||old?.legalStatus||"가까운 사람에게만 알림";
+  const savedLegalStatus=officialityMigration[old?.legalStatus]||old?.legalStatus||"";
+  f.legalStatus.value=officialValues.includes(savedLegalStatus)?savedLegalStatus:"가까운 사람에게만 알림";
+  f.legalRegistration.value=old?.legalRegistration==="unregistered"||old?.marriageRegistration==="unregistered"||savedLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered";
   f.parentRole.value=old?.parentRole||"부모";f.kinship.value=old?.kinship||"blood";
   const oldSiblingKey=[aId,bId].sort().join("~");f.siblingKinship.value=old?.siblingKinshipByPair?.[oldSiblingKey]||"full";
   f.socialAcceptance.value=old?.socialAcceptance||defaultAcceptance;f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
   let initial=true;
   const avatarMarkup=cid=>{const c=state.characters[cid],src=c?.icon||c?.photo;return src?`<img src="${htmlEsc(src)}" alt="">`:`<i>${htmlEsc(String(c?.name||"?").slice(0,1))}</i>`};
+  const orderList=f.querySelector("[data-official-order-list]");
+  const renderOfficialOrder=()=>{orderList.innerHTML=selectedMemberIds.map((cid,index)=>`<div class="official-order-person" data-official-order-person="${htmlEsc(cid)}"><em>${index+1}</em><span>${avatarMarkup(cid)}</span><b>${htmlEsc(state.characters[cid]?.name||"")}</b><nav><button type="button" data-move-official-member="up" aria-label="${copy.moveEarlier}" ${index===0?"disabled":""}>↑</button><button type="button" data-move-official-member="down" aria-label="${copy.moveLater}" ${index===selectedMemberIds.length-1?"disabled":""}>↓</button></nav></div>`).join("")};
   const refreshPair=()=>{
     f.a.value=selectedMemberIds[0];f.b.value=selectedMemberIds[1];
-    f.querySelector('[data-official-avatar="a"]').innerHTML=avatarMarkup(f.a.value);
-    f.querySelector('[data-official-avatar="b"]').innerHTML=avatarMarkup(f.b.value);
-    f.querySelector('[data-official-order-label]').textContent=selectedMemberIds.map(cid=>state.characters[cid]?.name||"").join(" × ");
     f.querySelectorAll('[data-official-member]').forEach(button=>button.classList.toggle("on",selectedMemberIds.includes(button.dataset.officialMember)));
+    renderOfficialOrder();
   };
   const refreshStages=()=>{
     const values=stagesFor(f.type.value,f.temporalStatus.value),selected=initial&&old?.stage&&values.includes(old.stage)?old.stage:defaultRelationStage(f.type.value,f.temporalStatus.value);
@@ -4866,9 +5021,13 @@ function openRelationDialog(id=""){
     initial=false;
   };
   const refreshType=()=>{
-    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매",married=f.type.value==="부부",roommate=f.type.value==="동거인";
+    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매",legallyRegisterable=["부부","부모·자녀","형제·자매"].includes(f.type.value),roommate=f.type.value==="동거인";
     f.querySelector(".official-parent-role").hidden=!parent;f.querySelector(".official-kinship").hidden=!parent;f.querySelector(".official-sibling-link").hidden=!sibling;
-    if(married)f.legalStatus.value="법적으로 관계가 등록됨";f.legalStatus.disabled=married;
+    f.querySelector(".official-legal-registration").hidden=!legallyRegisterable;
+    const currentLegalStatus=f.legalStatus.value;
+    f.legalStatus.innerHTML=legalStatusOptions(officialValues);
+    f.legalStatus.value=officialValues.includes(currentLegalStatus)?currentLegalStatus:"가까운 사람에게만 알림";
+    f.legalStatus.disabled=false;
     if(roommate)f.cohabit.checked=true;f.cohabit.disabled=roommate;
     refreshStages();
   };
@@ -4892,12 +5051,13 @@ function openRelationDialog(id=""){
   renderRelationTags();
   f.querySelectorAll('[data-official-member]').forEach(button=>button.onclick=()=>{const cid=button.dataset.officialMember;if(selectedMemberIds.includes(cid)){if(selectedMemberIds.length<=2){showToast(copy.members);return}selectedMemberIds=selectedMemberIds.filter(id=>id!==cid);delete animationPlacement[cid]}else{selectedMemberIds.push(cid);animationPlacement[cid]="random"}refreshPair()});
   f.type.onchange=refreshType;f.temporalPast.onchange=()=>{f.temporalStatus.value=f.temporalPast.checked?"past":"current";refreshStages()};
-  f.querySelectorAll("[data-swap-official-pair]").forEach(button=>button.onclick=()=>{[selectedMemberIds[0],selectedMemberIds[1]]=[selectedMemberIds[1],selectedMemberIds[0]];refreshPair()});
+  orderList.onclick=event=>{const button=event.target.closest("[data-move-official-member]");if(!button)return;const row=button.closest("[data-official-order-person]"),index=selectedMemberIds.indexOf(row?.dataset.officialOrderPerson),next=index+(button.dataset.moveOfficialMember==="up"?-1:1);if(index<0||next<0||next>=selectedMemberIds.length)return;[selectedMemberIds[index],selectedMemberIds[next]]=[selectedMemberIds[next],selectedMemberIds[index]];refreshPair()};
   dialog.onclose=()=>{
     if(dialog.returnValue==="save"){
       const a=f.a.value,b=f.b.value,temporal=f.temporalStatus.value,levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1),hostile=f.type.value==="혐관",pairKey=[a,b].sort().join("~");
       const relationshipName=String(f.elements.namedItem("name")?.value||"").trim();
-      const patch={a,b,name:relationshipName,tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.type.value==="부부"?"법적으로 관계가 등록됨":f.legalStatus.value,socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[...selectedMemberIds],animationPlacement:Object.fromEntries(selectedMemberIds.map(cid=>[cid,animationPlacement[cid]||"random"])),directional:f.type.value==="부모·자녀",groupId:old?.groupId||"",groupMembers:selectedMemberIds.length>2?[...selectedMemberIds]:[]};
+      const legalRegistration=["부부","부모·자녀","형제·자매"].includes(f.type.value)?f.legalRegistration.value:"";
+      const patch={a,b,name:relationshipName,tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.legalStatus.value,legalRegistration,marriageRegistration:f.type.value==="부부"?legalRegistration:"",socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[...selectedMemberIds],animationPlacement:Object.fromEntries(selectedMemberIds.map(cid=>[cid,animationPlacement[cid]||"random"])),directional:f.type.value==="부모·자녀",groupId:old?.groupId||"",groupMembers:selectedMemberIds.length>2?[...selectedMemberIds]:[]};
       if(f.type.value==="부모·자녀")Object.assign(patch,{parentId:a,childId:b,parentRole:f.parentRole.value,kinship:f.kinship.value,kinshipByPair:{[pairKey]:f.kinship.value}});
       if(f.type.value==="형제·자매")Object.assign(patch,{siblingOrder:{[a]:1,[b]:2},siblingKinshipByPair:{[pairKey]:f.siblingKinship.value}});
       old&&state.relationships[id]?updateRelationship(id,patch):addRelationship(patch);
@@ -5445,19 +5605,19 @@ let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;
 function scheduleLiveSceneRefresh(){
   clearTimeout(liveSceneRefreshTimer);
-  if(document.visibilityState==="hidden"||!["observe","home"].includes(state.activeTab)){liveSceneRefreshTimer=0;return}
+  if(document.visibilityState==="hidden"||!["observe","home"].includes(state.activeTab)||state.homeEditMode){liveSceneRefreshTimer=0;return}
   const now=new Date();
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
   const delay=[...characters.map(character=>nextSceneRefreshDelay(character,now)),10*60*1000].reduce((soonest,value)=>Math.min(soonest,value),10*60*1000);
   liveSceneRefreshTimer=setTimeout(()=>{
     liveSceneRefreshTimer=0;
-    if(document.visibilityState!=="hidden"&&["observe","home"].includes(state.activeTab)){
+    if(document.visibilityState!=="hidden"&&["observe","home"].includes(state.activeTab)&&!state.homeEditMode){
       const now=new Date();
       settleScheduledChoices(now.getTime());
       state.order.map(id=>state.characters[id]).filter(Boolean).forEach(character=>eventFor(character,now));
       render();
     }
-    scheduleLiveSceneRefresh();
+    // render() owns the next refresh; do not repeat all-character deadline work here.
   },Math.max(1000,delay));
 }
 setTimeout(scheduleLiveSceneRefresh,0);
@@ -5519,7 +5679,7 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260903foodimage207").catch(error=>{
+import("./auth.js?v=20260905gait219").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5534,9 +5694,14 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260903foodimage207",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260905gait219",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
-const lockPortrait=()=>screen.orientation?.lock?.("portrait").catch(()=>{});
+const lockPortrait=()=>{
+  // Tablets keep both orientations; re-locking on every rotation undoes their
+  // native landscape layout on Android even when the CSS is responsive.
+  if(Math.min(screen.width,screen.height)>=600){screen.orientation?.unlock?.();return}
+  screen.orientation?.lock?.("portrait")?.catch(()=>{});
+};
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
 window.addEventListener("orientationchange",lockPortrait);

@@ -1,0 +1,138 @@
+/* Shared height keeps the furniture toolbar clear of the three drawer rows. */
+.home{--home-drawer-height:calc(184px + max(8px,env(safe-area-inset-bottom)))}
+.home-furniture-drawer{position:fixed;z-index:680;left:0;right:0;bottom:0;max-width:100%;color:#392b21;background:linear-gradient(180deg,#fff9ed,#efe0c7);border-top:2px solid #bba27b;border-radius:20px 20px 0 0;box-shadow:0 -5px 18px #20170b33;transition:transform .18s ease;transform:translateY(0)}
+.home-furniture-drawer.is-collapsed{transform:translateY(100%)}
+.home-drawer-toggle{position:absolute!important;bottom:calc(100% + 6px);left:16px;display:grid;place-items:center;width:38px;height:38px;padding:0!important;border:2px solid #b49a72!important;border-radius:50%!important;background:#fff8e9!important;color:#513d29!important;-webkit-text-fill-color:#513d29!important;font-size:18px!important;box-shadow:0 2px 5px #261a1733}
+.home-drawer-content{position:relative;padding:8px max(16px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-right));display:grid;grid-template-rows:36px 34px 94px;gap:6px;height:var(--home-drawer-height);box-sizing:border-box}
+.home-drawer-content>*{min-width:0;min-height:0;margin:0}
+.home-drawer-search{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;min-width:0}
+html body #app .home-furniture-drawer .home-drawer-search :is(input,select){display:block;box-sizing:border-box;width:100%;min-width:0;max-width:none;margin:0!important;height:36px!important;min-height:0!important;padding:4px 12px!important;border:1px solid #baa47b;border-radius:18px;background:#fffdf6;color:#382b22;-webkit-text-fill-color:#382b22;font:inherit;font-size:13px;line-height:1.2}
+.home-drawer-categories{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 24px)/4);align-items:stretch;gap:8px;padding:2px 4px;box-sizing:border-box;height:34px;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none;scroll-snap-type:x mandatory;scroll-padding-inline:4px}
+html body #app .home-furniture-drawer .home-drawer-categories button{display:grid!important;place-items:center;box-sizing:border-box;width:100%;scroll-snap-align:start;max-width:none!important;min-width:0!important;height:30px!important;min-height:0!important;margin:0!important;padding:2px 5px!important;border:1px solid #cdb695!important;border-radius:15px!important;background:#fff9ee!important;color:#59432b!important;-webkit-text-fill-color:#59432b!important;font-size:12px!important;white-space:normal;overflow-wrap:anywhere;line-height:1.05;box-shadow:none!important}
+html body #app .home-furniture-drawer .home-drawer-categories button.on{background:#6b5036!important;color:#fff8e8!important;-webkit-text-fill-color:#fff8e8!important;border-color:#6b5036!important}
+html body #app .home-furniture-drawer .home-drawer-types button{border-color:transparent!important;background:transparent!important;border-radius:8px!important;font-size:11px!important}
+html body #app .home-furniture-drawer .home-drawer-types button.on{background:#e3d1b0!important;border-color:#bc9b65!important;color:#37291c!important;-webkit-text-fill-color:#37291c!important}
+.home-drawer-results{position:relative}
+.home-drawer-items{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 24px)/4);align-items:stretch;gap:8px;padding:3px 4px 5px;box-sizing:border-box;height:94px;min-height:94px;max-height:94px;overflow-x:auto;overflow-y:hidden;overscroll-behavior:contain;scrollbar-width:none;scroll-snap-type:x mandatory;scroll-padding-inline:4px}
+html body #app .home-furniture-drawer .home-drawer-items>button{touch-action:pan-x;user-select:none;-webkit-user-select:none;box-sizing:border-box;width:100%;height:86px!important;min-height:0!important;margin:0!important;scroll-snap-align:start;display:grid!important;grid-template-rows:44px 28px;place-items:center;min-width:0!important;padding:6px 4px!important;border:1px solid #d8c4a4!important;border-radius:12px!important;background:#fffaf0!important;color:#392b21!important;-webkit-text-fill-color:#392b21!important;box-shadow:none!important}
+.home-drawer-items>button>span{display:grid;place-items:center;position:relative;width:48px;height:44px;font-size:30px}
+html body #app .home-furniture-drawer .home-drawer-items b{display:grid;place-items:center;font-size:11px!important;line-height:1.15!important;color:#392b21!important;-webkit-text-fill-color:#392b21!important;text-shadow:none;max-width:100%;height:28px;overflow:hidden;overflow-wrap:anywhere}
+.home-furniture-drawer [data-home-furniture-empty]{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:8px;text-align:center;font-size:13px;color:#392b21!important;-webkit-text-fill-color:#392b21!important;pointer-events:none}
+.home-furniture-drawer [data-home-furniture-empty][hidden]{display:none}
+.home-drawer-items .furniture-picker-couple-bed img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.furniture-catalog-drag-preview{position:fixed;z-index:2147482000;display:grid;place-items:center;width:72px;height:72px;transform:translate(-50%,-50%);border:2px solid #9e7d47;border-radius:16px;background:#fff7e5e8;box-shadow:0 5px 18px #291a1940;pointer-events:none;font-size:44px}
+.furniture-catalog-drag-preview>span{position:relative;width:60px;height:60px;display:grid;place-items:center}
+.furniture-catalog-drag-preview img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.room.is-furniture-drop-target{outline:3px solid #f4d17e;outline-offset:-4px}
+html.native-app[data-active-tab="home"] .home-native-house-name>img{display:block;flex:0 0 30px;width:30px;height:30px;object-fit:contain;filter:none}
+html.native-app[data-active-tab="home"] .home-native-house-name>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html body #app .is-using-couple-bed .home-person-visual>:is(.sprite,.avatar){width:var(--bed-face-size,36px)!important;height:var(--bed-face-size,36px)!important;max-width:none!important;object-fit:contain}
+
+.home-native-bottom{position:absolute;z-index:35;right:14px;bottom:max(22px,env(safe-area-inset-bottom));display:grid;grid-template-rows:30px 30px;gap:10px;width:70px;height:70px;pointer-events:auto}
+html.native-app[data-active-tab="home"] .home-native-bottom .home-native-pill{position:relative!important;inset:auto!important;width:70px!important;--home-pill-height:30px}
+.home.is-editing :is(.home-native-bottom,.home-native-ui-toggle),.home-ui-hidden .home-native-bottom{display:none!important}
+.home:has(.home-feature-panel.open) :is(.home-furniture-drawer,.furniture-edit-toolbar){visibility:hidden;pointer-events:none}
+
+/* SVG coordinate space: 412 × 917. The page scrolls, the artwork keeps its ratio. */
+html.native-app[data-active-tab="home"] body #app .home-design-page.home-feature-panel.open,
+html.native-app[data-active-tab="home"] body #app .home-room-browser.home-feature-panel.open,
+html body :is(#app,dialog).home-design-page{
+ position:fixed!important;inset:0!important;z-index:2800!important;width:100%!important;max-width:680px!important;height:100dvh!important;max-height:100dvh!important;margin:0 auto!important;padding:0!important;overflow:auto!important;border:0!important;border-radius:0!important;background:#ad926e url('./assets/town-ui/building-info-wood.png') top center/100% auto repeat-y!important;box-shadow:0 0 0 100vmax #302419e8!important;backdrop-filter:none!important;container-type:inline-size;color:#fff!important
+}
+html.native-app[data-active-tab="home"] body #app .home-design-info.home-feature-panel.open{--home-photo-fit:contain;background-image:url('./assets/home-design/town.webp')!important}
+html body :is(#app .home-design-page,dialog.home-design-page) form{display:block!important;padding:0!important;margin:0!important;background:none!important;box-shadow:none!important;border:0!important}
+html body :is(#app,dialog.home-design-page) .home-design-head{position:relative!important;display:block!important;height:min(29.126cqw,124px)!important;min-height:0!important;margin:0!important;padding:0!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;border:0!important}
+html body :is(#app,dialog.home-design-page) .home-design-head h2{position:absolute!important;right:7.3cqw;top:min(15.5cqw,55px);margin:0!important;font-size:min(7.28cqw,30px)!important;line-height:1.15;max-width:69cqw;text-align:right;overflow-wrap:anywhere;color:white!important;-webkit-text-fill-color:white!important;-webkit-text-stroke:1px #16110e;paint-order:stroke fill;text-shadow:0 2px 1px #211710}
+html body :is(#app,dialog.home-design-page) .home-design-back,html body #app .home-room-browser .home-feature-close{position:absolute!important;left:5.34cqw!important;top:min(10.68cqw,36px)!important;width:min(15.05cqw,62px)!important;height:min(15.05cqw,62px)!important;min-width:0!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent url('./assets/home-ui/back.png') center/contain no-repeat!important;box-shadow:none!important;font-size:0!important;color:transparent!important}
+html body :is(#app,dialog.home-design-page) .home-design-photo{position:relative!important;display:block!important;width:89.32cqw!important;height:min(64.08cqw,340px)!important;margin:0 5.34cqw!important;padding:0!important;overflow:hidden!important;border:1.94cqw solid #fff!important;border-radius:8.5cqw!important;box-sizing:border-box;background:#d4c4a9!important;box-shadow:0 1.3cqw 1cqw #33221030!important}
+html body :is(#app,dialog.home-design-page) .home-design-photo img,html body :is(#app,dialog.home-design-page) .home-design-photo>span{display:block!important;width:100%!important;height:100%!important;object-fit:var(--home-photo-fit,cover)!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important;font-size:14cqw}
+html body :is(#app,dialog.home-design-page) .home-design-photo>b{position:absolute;bottom:12px;left:12px;right:12px;display:block!important;padding:6px 10px;border-radius:12px;background:#fff8eae8;color:#483222!important;-webkit-text-fill-color:#483222!important;font-size:14px;text-align:center}
+html body :is(#app,dialog.home-design-page) .home-design-photo>span{display:grid!important;place-items:center}
+html body :is(#app,dialog.home-design-page) .home-design-fields{position:relative;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:18px 14px!important;margin:28px 5.34cqw 28px!important;padding:22px 18px!important;border:4px double #b39970!important;border-radius:24px!important;background:#fff7e9!important;min-width:0;align-items:start;box-shadow:0 4px 0 #51382133}
+html body :is(#app,dialog.home-design-page) .home-design-fields label{display:block;min-width:0;margin:0!important;font-size:14px!important;line-height:1.4!important;color:#483222!important;-webkit-text-fill-color:#483222!important;-webkit-text-stroke:0!important;text-shadow:none!important;font-weight:700}
+html body :is(#app,dialog.home-design-page) .home-design-fields .wide,html body :is(#app,dialog.home-design-page) .home-design-fields label:has(>input[name="name"]){grid-column:1/-1}
+html body :is(#app,dialog.home-design-page) .home-design-fields :is(input:not([type="checkbox"]),select,summary,.home-design-readonly){display:block;width:100%!important;min-width:0!important;box-sizing:border-box;min-height:42px!important;height:auto!important;margin:1.3cqw 0 0!important;padding:min(2.5cqw,12px)!important;border:1px solid #cdbb9b!important;border-radius:12px!important;background:#fffdf7!important;color:#111!important;-webkit-text-fill-color:#111!important;-webkit-text-stroke:0!important;font:inherit!important;font-size:14px!important;line-height:1.2!important;text-shadow:none!important;box-shadow:0 1.3cqw 1.4cqw #3c291632}
+html body :is(#app,dialog.home-design-page) .home-design-fields input[type="checkbox"]{flex:none;width:4cqw!important;height:4cqw!important;accent-color:#755238}
+html body :is(#app,dialog.home-design-page) .home-design-fields .check{display:flex;align-items:center;gap:8px;white-space:normal!important;overflow-wrap:anywhere}
+html body :is(#app,dialog.home-design-page) .home-design-fields .check input{min-width:0!important;min-height:0!important;max-width:18px!important;max-height:18px!important;margin:0!important;padding:0!important}
+html body :is(#app,dialog.home-design-page) .home-design-fields [hidden]{display:none!important}
+html body :is(#app .home-room-editor,dialog.home-room-editor) .room-editor-floor{display:none!important}
+html body :is(#app,dialog.home-design-page) .room-design-samples{position:relative;top:auto;left:auto;right:auto;display:flex;justify-content:flex-end;gap:18px;margin:-25px 10cqw 0;z-index:2;pointer-events:none}
+html body :is(#app,dialog.home-design-page) .room-design-samples button{width:20cqw!important;height:18cqw!important;padding:0!important;border:4px solid white!important;border-radius:10px!important;transform:rotate(4deg);overflow:hidden;background:white!important;box-shadow:0 3px 8px #35211544;pointer-events:auto}
+html body :is(#app,dialog.home-design-page) .room-design-samples button:last-child{width:24cqw!important;height:18cqw!important;transform:rotate(-5deg)}
+html body :is(#app,dialog.home-design-page) .room-design-samples img{width:100%;height:100%;object-fit:cover}
+html body :is(#app .home-room-editor,dialog.home-room-editor) .home-design-fields{padding-top:24px!important;margin-top:22px!important;background:#fff7e9!important}
+html body :is(#app,dialog.home-design-page) .room-design-extra{display:contents}
+html body :is(#app,dialog.home-design-page) .room-permissions{grid-column:1/-1;min-width:0;margin:0;padding:14px;border:1px solid #cdb695;border-radius:14px;background:#f4ead7;color:#483222}
+.room-permissions legend{padding:0 6px;font-size:15px;font-weight:bold}
+.room-permission-options,.room-permissions [data-room-owner-list]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.room-permissions .check{min-height:36px}
+.room-permissions textarea{display:block;width:100%;min-height:84px!important;padding:10px;box-sizing:border-box;resize:vertical}
+html body :is(#app,dialog) .editor-save-actions{display:flex!important;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin:20px 5.34cqw max(30px,env(safe-area-inset-bottom));padding:0;background:none}
+html body :is(#app,dialog) .editor-save-actions button{min-height:44px;min-width:80px;padding:10px 18px;border:1px solid #b19a77;border-radius:16px;background:#fff6e3;color:#4e3822!important;-webkit-text-fill-color:#4e3822!important;font-size:15px!important}
+html body :is(#app,dialog) .editor-save-actions button.primary{background:#684b33!important;color:#fff8e8!important;-webkit-text-fill-color:#fff8e8!important}
+
+html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="type"]){grid-row:2;grid-column:1}
+html body :is(#app,dialog.home-design-page) .room-use-photo{grid-row:2;grid-column:2;align-self:center}
+html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="wallMaterial"]){grid-row:3;grid-column:1}
+html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="floorMaterial"]){grid-row:3;grid-column:2}
+html body :is(#app,dialog.home-design-page) .room-editor-fields>label:has([name="interiorStyle"]){grid-row:4;grid-column:1}
+html body :is(#app,dialog.home-design-page) .room-cleanliness{grid-row:4;grid-column:2}
+html body :is(#app,dialog.home-design-page) .home-room-browser header{height:min(26.7cqw,124px)!important;position:relative!important;background:none!important;margin:0!important}
+html body #app .home-room-browser header input{position:absolute;left:27cqw;top:min(13cqw,46px);width:66cqw;height:min(10.4cqw,48px);padding:8px 18px;border:0;border-radius:6cqw;background:#fff7ddd9;font-size:min(4cqw,20px)}
+.home-room-filters{display:flex;gap:8px;padding:6px 20px 16px;overflow-x:auto}
+html body #app .home-room-filters button{flex:none;min-width:48px;min-height:34px;padding:7px 14px!important;border:1px solid #bca078!important;border-radius:18px!important;background:#694a35!important;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;font-size:13px!important;text-shadow:none!important}
+html body #app .home-room-filters button.on{background:#fff1c9!important;color:#39291b!important;-webkit-text-fill-color:#39291b!important}
+.home-catalog-paper,.home-member-section{margin:0 14px 20px;padding:16px;border:5px double #a88958;border-radius:23px;background:#f5ecdc;box-shadow:0 4px 0 #513821}
+.home-room-cards,.home-member-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start}
+html body #app :is(.home-room-card,.home-member-card){display:flex!important;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:9px;width:100%;min-width:0;height:auto;min-height:148px;margin:0;padding:9px!important;border:1px solid #c9af88!important;border-radius:16px!important;background:#fff9ee!important;box-shadow:inset 0 1px #fff,0 3px 0 #c9b18a!important;color:#302116!important;-webkit-text-fill-color:#302116!important}
+.home-room-card[hidden]{display:none!important}
+html body #app .home-catalog-photo{display:grid;place-items:center;overflow:hidden;width:100%;height:110px;min-height:110px;border-radius:12px;background:#ede0c9;font-size:38px!important}
+html body #app .home-catalog-photo img{display:block;width:100%;height:100%;max-height:110px;min-height:0;border-radius:12px;object-fit:cover}
+html body #app .home-member-card .home-catalog-photo img{object-fit:contain;padding:5px;box-sizing:border-box}
+html body #app .home-catalog-photo>span{display:grid;place-items:center;width:100%;height:100%;font-size:36px}
+html body #app :is(.home-room-card,.home-member-card) b{display:block;min-width:0;font-size:14px!important;line-height:1.35!important;text-align:center;overflow-wrap:anywhere;color:#302116!important;-webkit-text-fill-color:#302116!important;-webkit-text-stroke:0!important;text-shadow:none!important}
+.home-room-card small{display:none}
+html body #app .home-room-add{display:flex;align-items:center;justify-content:center;gap:10px;margin:20px 0 4px;width:100%;min-height:48px;padding:10px!important;border:1px dashed #a4875a!important;border-radius:14px!important;background:#eadbbd!important;box-shadow:none!important;color:#513a22!important;-webkit-text-fill-color:#513a22!important;font-size:15px!important;text-shadow:none!important}
+.home-room-add img{width:32px;height:32px;object-fit:contain}
+html body #app .home-member-section h3{margin:0 0 14px;font-size:19px!important;color:#513a22!important;-webkit-text-fill-color:#513a22!important;-webkit-text-stroke:0!important;text-shadow:none!important}
+html body #app .home-member-add{border-style:dashed!important;background:#f0e4ce!important}
+html body #app .home-add-symbol{background:transparent;font-size:44px!important;color:#8e7040!important;-webkit-text-fill-color:#8e7040!important}
+html body :is(#app .home-member-editor,dialog.home-member-editor) .home-design-fields{display:block!important}
+.home-member-editor .pet-card,.home-member-editor .resident-setting{display:block!important;margin:0!important;padding:0!important;background:none!important;border:0!important}
+.home-member-editor .pet-edit-fields,.home-member-editor .residence-fields{display:grid;grid-template-columns:1fr 1fr;gap:4cqw}
+.home-member-editor .pet-edit-fields fieldset,.home-member-editor .pet-actions{grid-column:1/-1}
+.home-member-editor [data-home-resident]{display:block;width:100%;margin-bottom:3cqw}
+.home-member-editor .pet-edit{border:0;background:none}
+html body :is(#app,dialog.home-design-page) .home-car-design .crop-actions,html body :is(#app,dialog.home-design-page) .home-car-design .image-actions{padding:0 12.6cqw 5cqw;display:flex;gap:2cqw}
+html body :is(#app,dialog.home-design-page) .home-design-fields :is(button,textarea){min-height:40px;border:1px solid #c4aa83;border-radius:12px;background:#fffaf0;color:#483222!important;-webkit-text-fill-color:#483222!important;font:inherit;font-size:14px;text-shadow:none!important}
+html body :is(#app,dialog.home-design-page) .home-design-fields details{min-width:0}
+html body :is(#app,dialog.home-design-page) .home-design-fields details[open]{grid-column:1/-1}
+@media(min-width:680px){.home-room-cards,.home-member-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.home-catalog-paper,.home-member-section{max-width:900px;margin-left:auto;margin-right:auto}}
+/* A journal has one scroll owner; entries are compact paper cards. */
+html.native-app[data-active-tab="home"] body #app .home-design-page.home-journal-page.open{display:flex!important;flex-direction:column;overflow:hidden!important}
+.home-journal-page>.home-design-head{flex:0 0 auto}
+html body #app .home-journal-page>.home-journal-content{display:block!important;flex:1;min-width:0;min-height:0;padding:0 14px max(24px,env(safe-area-inset-bottom));overflow-y:auto;overscroll-behavior:contain}
+html body #app .home-journal-content .home-family-log{padding:0!important;margin:0!important;background:none!important;border:0!important;box-shadow:none!important}
+.home-journal-content .home-family-log>.title{display:none}
+html body #app .home-journal-content .home-family-log>ol{display:grid;gap:12px;max-height:none!important;overflow:visible!important;margin:0;padding:0;list-style:none}
+html body #app .home-journal-content .home-family-log li{display:flex;flex-direction:column;gap:10px;padding:16px!important;border:1px solid #c6ad86!important;border-radius:18px!important;background:#fff8ea!important;box-shadow:0 3px 0 #88694350!important}
+html body #app .home-journal-content .home-family-log li.important{border-left:4px solid var(--log-theme)!important}
+.home-journal-content time{align-self:flex-start;padding:4px 10px;border-radius:12px;background:#eadabf;color:#6d5235!important;-webkit-text-fill-color:#6d5235!important;font-size:12px!important;line-height:1.2}
+html body #app .home-journal-content .log-person{display:grid!important;grid-template-columns:44px minmax(0,1fr);align-items:start;gap:10px}
+html body #app .home-journal-content .log-person b{font-size:15px!important;line-height:1.45!important;color:#39291e!important;-webkit-text-fill-color:#39291e!important}
+html body #app .home-journal-content .log-person small{display:block;margin-top:6px;font-size:13px!important;line-height:1.6!important;color:#76634d!important;-webkit-text-fill-color:#76634d!important}
+html body #app .home-journal-content .resident-scene-card{display:block!important;width:100%!important;height:auto!important;min-height:0!important;min-width:0;margin:0 0 14px;padding:16px;box-sizing:border-box;border:1px solid #c6ad86;border-radius:20px;background:#fff8ea;box-shadow:0 3px 0 #88694350;color:#39291e}
+html body #app .home-journal-content .resident-profile{display:flex!important;align-items:center;gap:12px;margin-bottom:12px;min-height:0!important;height:auto!important;padding:0!important}
+html body #app .home-journal-content :is(.log-person>span,.resident-profile>span,.resident-current){min-width:0!important}
+html body #app .home-journal-content :is(b,small,h3,p){max-width:100%!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;word-break:normal!important}
+html body #app .home-journal-content .resident-current{min-height:0!important;height:auto!important;width:auto!important}
+html body #app .home-journal-content .resident-profile>:is(img,.avatar,.sprite,.resident-character-image){flex:0 0 56px;width:56px!important;height:64px!important;min-height:0!important;object-fit:contain}
+html body #app .home-journal-content .resident-profile h3{margin:0;font-size:17px;color:#39291e!important;-webkit-text-fill-color:#39291e!important}
+html body #app .home-journal-content .resident-current{padding:12px;border-radius:14px;background:#efe2cc}
+.home-journal-content .resident-current>small{display:none}
+html body #app .home-journal-content .resident-current h3{font-size:15px;line-height:1.4;color:#39291e!important;-webkit-text-fill-color:#39291e!important}
+html body #app .home-journal-content .resident-current p{font-size:14px;line-height:1.6;color:#76634d!important;-webkit-text-fill-color:#76634d!important}
+html body #app .home-journal-content .resident-current>b{font-size:12px;color:#6d5235!important;-webkit-text-fill-color:#6d5235!important}
+html body #app .home-journal-content .resident-current>img{width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:10px}
+@media(prefers-reduced-motion:reduce){.home-furniture-drawer{transition:none}}

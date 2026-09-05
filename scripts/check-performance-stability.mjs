@@ -17,7 +17,7 @@ const checks=[
   [app.includes("now-lastLocalMediaHydrationAt<30_000")&&app.includes('document.visibilityState==="hidden"'),"중복 사진 복원과 백그라운드 장면 타이머 중단"],
   [css.includes("content-visibility:auto")&&css.includes("animation:native-sleep-head 4.6s ease-in-out infinite")&&homeCss.includes("animation:home-ld-idle 4.8s ease-in-out infinite!important")&&!css.includes("html.native-platform .native-scene-atmosphere::before,\nhtml.native-platform .native-scene-atmosphere::after"),"비가시 영역 지연 렌더는 유지하고 장면·LD 애니메이션은 보존"],
   [!views.includes('world-assets/cozy-town')&&!state.includes('world-assets/cozy-town')&&prepare.includes('"assets/character-ui/paper.png"')&&prepare.includes("excludedAndroidAssets.has(relativePath)"),"생성 마을 배경을 런타임에서 제거하고 미사용 원본을 패키지에서 제외"],
-  [/versionCode\s+19\d/.test(gradle)&&/versionName\s+["']1\.0\.18\d["']/.test(gradle),"개발 빌드 190대 / 1.0.18x 버전"]
+  [Number(gradle.match(/versionCode\s+(\d+)/)?.[1])>=190&&/versionName\s+["']1\.0\.\d+["']/.test(gradle),"개발 빌드 190 이상"]
 ];
 
 checks.forEach(([ok,label])=>console.log(`${ok?"PASS":"FAIL"} ${label}`));
