@@ -33,6 +33,6 @@ assert.ok(views.includes('data-lazy-home-log')&&!views.includes('${homeDailyLog(
 assert.ok(views.includes('const charactersAtPlace=')&&!views.includes('simulateVisibleTimeline,charactersAtPlace'),'town cards use cached scene reads');
 assert.ok(app.includes('||state.homeEditMode){liveSceneRefreshTimer=0;return}'),'scene refresh pauses in edit mode');
 assert.ok(css.includes('top:53cqw;bottom:49cqw'),'closet ends above pagination');
-assert.ok(index.includes('home-editor-ui.css?v=20260905feedback216'));
+assert.ok(index.includes('home-editor-ui.css?v=20260905townwalk218'));
 assert.match(gradle,/versionCode\s+215/);assert.match(gradle,/versionName\s+"1\.0\.200"/);
 console.log('PASS home editor 209: snap precision, size preservation, orientation round-trip, placement order, three locales, selection bounds, lazy work, wardrobe and version.');

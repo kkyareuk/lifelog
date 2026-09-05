@@ -1,22 +1,22 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905feedback216";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260905feedback216";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260905feedback216";
-import {characterMood} from "./character-mood.js?v=20260905feedback216";
-import {createContactMailbox} from "./notification-mail.js?v=20260905feedback216";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260905feedback216";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260905feedback216";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905feedback216";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905feedback216";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260905feedback216";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260905feedback216";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260905feedback216";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905feedback216";
-import {achievementRows} from "./achievements.js?v=20260905feedback216";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260905feedback216";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260905feedback216";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905townwalk218";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260905townwalk218";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260905townwalk218";
+import {characterMood} from "./character-mood.js?v=20260905townwalk218";
+import {createContactMailbox} from "./notification-mail.js?v=20260905townwalk218";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260905townwalk218";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260905townwalk218";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905townwalk218";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905townwalk218";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260905townwalk218";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260905townwalk218";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260905townwalk218";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905townwalk218";
+import {achievementRows} from "./achievements.js?v=20260905townwalk218";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260905townwalk218";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260905townwalk218";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -1701,15 +1701,31 @@ function townTravelersMarkup(homeId=""){
     const scene=eventFor(character);
     return visibleTownId(character)===state.activeTownId&&!scene?.home&&!placeForEntry(scene)&&(!homeId||scene.destinationHomeId===homeId);
   });
+  const rows=travelers.map(character=>({character,scene:eventFor(character)}));
+  const decorationGroups=new Map();
+  rows.forEach(row=>{if(!row.scene.decorationId)return;const group=decorationGroups.get(row.scene.decorationId)||[];group.push(row.character.id);decorationGroups.set(row.scene.decorationId,group)});
+  const villageRoutes=[
+    [[16,25],[38,18],[70,24],[84,48],[68,76],[34,80]],
+    [[20,72],[18,42],[42,20],[76,18],[83,55],[58,79]],
+    [[14,48],[31,24],[61,18],[84,35],[78,72],[43,82]],
+    [[26,18],[67,20],[84,44],[72,78],[37,75],[16,52]]
+  ];
   return travelers.map((character,index)=>{
     const scene=eventFor(character),home=state.homes?.[scene.destinationHomeId||character.homeId];
     const decoration=(state.world.decorations||[]).find(item=>item.id===scene.decorationId);
     const conversation=Boolean(scene.groupInteraction&&scene.interactionId),seed=nativeVisualSeed(`${conversation?scene.interactionId:character.id}:${scene.minute}:${scene.movementKind||"roaming"}`);
-    const baseX=decoration?Number(decoration.x)||50:home?.townId===state.activeTownId?Number(home.mapX)||50:20+(seed%61),baseY=decoration?Number(decoration.y)||50:home?.townId===state.activeTownId?Number(home.mapY)||50:18+((seed>>>5)%61);
+    const decorationGroup=decorationGroups.get(scene.decorationId)||[],decorationIndex=Math.max(0,decorationGroup.indexOf(character.id));
+    const decorationRing=Math.floor(decorationIndex/6),decorationAngle=(decorationIndex%6)*Math.PI/3+(decorationRing%2?Math.PI/6:0),decorationRadius=decoration?16+decorationRing*12:0;
+    const decorationX=decoration?(Number(decoration.x)||50)+Math.cos(decorationAngle)*decorationRadius:0,decorationY=decoration?(Number(decoration.y)||50)+Math.sin(decorationAngle)*decorationRadius*.45:0;
+    const villageWalk=scene.movementKind==="village-walk"||scene.townProfileLog;
+    const route=villageRoutes[seed%villageRoutes.length],routeShift=(seed>>>4)%route.length,routePoints=route.map((_,routeIndex)=>route[(routeIndex+routeShift)%route.length]);
+    const baseX=decoration?decorationX:villageWalk?routePoints[0][0]:home?.townId===state.activeTownId?Number(home.mapX)||50:20+(seed%61),baseY=decoration?decorationY:villageWalk?routePoints[0][1]:home?.townId===state.activeTownId?Number(home.mapY)||50:18+((seed>>>5)%61);
     const participantIndex=Math.max(0,(scene.participantOrder||[]).indexOf(character.id));
     const x=Math.max(14,Math.min(86,baseX+(scene.returningHome?-13:0)+(conversation?(participantIndex%2?6:-6):0))),y=Math.max(17,Math.min(84,baseY+(scene.returningHome?10:0)));
     const action=townActionPresentation(scene),symbol=conversation?"💬":decoration?"✨":scene.movementKind==="jog"?"🏃":scene.transit?"➜":action.icon||"👣",label=conversation?t("마을에서 대화 중","마을에서 대화 중"):decoration?`${decoration.name} · ${scene.title}`:scene.movementKind==="jog"?t("조깅 · 이동 중","조깅 · 이동 중"):scene.transit?t("이동 중","이동 중"):action.label||t("마을 산책 중","마을 산책 중");
-    return `<button type="button" class="town-traveler town-action-${action.kind} ${conversation?"is-conversation":scene.movementKind==="jog"?"is-jogging":scene.transit?"is-transit":"is-roaming"}" data-person="${esc(character.id)}" style="left:${x}%;top:${y}%;--traveler-delay:${-(index%5)*.7}s" aria-label="${esc(`${character.name} · ${scene.title}`)}"><span class="town-traveler-visual">${avatar(character)}<i aria-hidden="true">${symbol}</i></span><span class="town-traveler-status"><b>${esc(character.name)}</b><small>${esc(label)}</small></span></button>`;
+    const routeStyle=villageWalk?routePoints.map((point,routeIndex)=>`--route-x${routeIndex}:${point[0]}%;--route-y${routeIndex}:${point[1]}%`).join(";"):"";
+    const movementClass=conversation?"is-conversation":decoration?"is-decoration-visit":villageWalk?"is-village-walk":scene.movementKind==="jog"?"is-jogging":scene.transit?"is-transit":"is-roaming";
+    return `<button type="button" class="town-traveler town-action-${action.kind} ${movementClass}" data-person="${esc(character.id)}" style="left:${x}%;top:${y}%;--traveler-delay:${-(index%7)*1.15}s;--route-duration:${24+(seed%9)}s;${routeStyle}" aria-label="${esc(`${character.name} · ${scene.title}`)}"><span class="town-traveler-visual">${avatar(character)}<i aria-hidden="true">${symbol}</i></span><span class="town-traveler-status"><b>${esc(character.name)}</b><small>${esc(label)}</small></span></button>`;
   }).join("");
 }
 export function buildingDetailDialogs(selectedKey=""){

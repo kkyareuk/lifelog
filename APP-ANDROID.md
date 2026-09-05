@@ -1,6 +1,6 @@
 # 서랍마을 Google Play 앱 배포 안내
 
-최신 준비 빌드: **1.0.201 / versionCode 216** — [캐릭터 취향·부부 관계·우편함 개선 및 Play 업로드 안내](docs/android-release-216.md). 서명된 AAB 생성 완료이며 Play Console 업로드/출시는 아직 하지 않았습니다.
+최신 준비 빌드: **1.0.203 / versionCode 218** — [관계 편집·마을 산책 동선 개선 및 Play 업로드 안내](docs/android-release-218.md). 서명된 AAB와 바로 설치할 수 있는 debug APK 생성 완료이며 Play Console 업로드/출시는 아직 하지 않았습니다.
 
 서랍마을의 Android 앱은 기존 웹 화면과 Firebase 계정 데이터를 사용하는 Capacitor 앱입니다. Google Play에 올리는 파일 확장자는 `.abb`가 아니라 **`.aab`(Android App Bundle)** 입니다.
 
@@ -63,7 +63,7 @@ C:\Users\Public\drawervillage-android-build\android\app\outputs\bundle\release\a
 
 명령으로 만든 release AAB가 서명되지 않았다면 Android Studio에서 `Build > Generate Signed App Bundle or APK > Android App Bundle`을 선택해 업로드 키로 서명합니다. 첫 출시라면 Play App Signing을 켜고 업로드 키를 안전하게 백업합니다. 기존 앱을 업데이트할 때는 같은 업로드 키와 더 높은 `versionCode`가 필요합니다.
 
-현재 앱은 `targetSdk 36`, `versionCode 3`, `versionName 1.0.1`로 설정되어 있습니다. 웹 화면을 고친 뒤에는 반드시 `npm.cmd run app:sync`를 먼저 실행해야 최신 HTML·CSS·JavaScript와 서비스 워커 캐시 버전이 앱에 들어갑니다.
+현재 준비판은 `targetSdk 36`, `versionCode 218`, `versionName 1.0.203`으로 설정되어 있습니다. 웹 화면을 고친 뒤에는 반드시 `npm.cmd run app:sync`를 먼저 실행해야 최신 HTML·CSS·JavaScript와 서비스 워커 캐시 버전이 앱에 들어갑니다.
 
 ## 3. Play Console 내부 테스트
 

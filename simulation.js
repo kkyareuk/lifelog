@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260905feedback216";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260905feedback216";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905feedback216";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260905feedback216";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260905feedback216";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260905townwalk218";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260905townwalk218";
+import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905townwalk218";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260905townwalk218";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260905townwalk218";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2620,10 +2620,12 @@ function canDrive(c){
 }
 function townDecorationEvent(c,date){
   const town=townFor(c,date),decorations=town?.id===state.activeTownId?(state.world.decorations||[]):(town?.decorations||[]);
-  if(!decorations.length||hash(`${c.id}:${dayKey(date)}:town-decoration-use`)%3===0)return null;
+  // 장식이 하나뿐인 마을에서 주민 대부분이 매일 같은 장식에 몰리지 않게 한다.
+  // 나머지 주민은 아래의 마을 특성 산책 장면을 통해 마을 전체를 돌아다닌다.
+  if(!decorations.length||hash(`${c.id}:${dayKey(date)}:town-decoration-use`)%3!==0)return null;
   const item=decorations[hash(`${c.id}:${dayKey(date)}:town-decoration`)%decorations.length],actions=item.interactions?.length?item.interactions:[`${item.name||"마을 장식"} 구경하기`];
   const action=actions[hash(`${c.id}:${dayKey(date)}:${item.id}:interaction`)%actions.length],minute=960+hash(`${c.id}:${dayKey(date)}:${item.id}:minute`)%150;
-  return entry(minute,`${item.name}에서 ${action} 중`,`마을을 지나다 ${item.name}에 관심이 가서 잠시 멈췄어요. ${action}로 짧은 시간을 보내고 있어요.`,{townId:town.id,decorationId:item.id,mood:"여유"});
+  return entry(minute,`${item.name}에서 ${action} 중`,`마을을 지나다 ${item.name}에 관심이 가서 잠시 멈췄어요. ${action}로 짧은 시간을 보내고 있어요.`,{townId:town.id,decorationId:item.id,movementKind:"decoration-visit",mood:"여유"});
 }
 function townProfileEvent(c,date){
   const town=townFor(c,date);if(!town||hash(`${c.id}:${dayKey(date)}:town-profile-log`)%3===0)return null;
@@ -2644,7 +2646,7 @@ function townProfileEvent(c,date){
   const terrainNote=`${town.terrain||"평야"} 지형에 맞춰 난 길을 골랐고, ${town.reputation||"알려지지 않은 곳"}이라는 평판이 느껴지는 풍경을 마주했어요.`;
   const copies={ko:{title:base[0],desc:`${base[1]} ${terrainNote}`},en:{title:"Spending time around town",desc:`They are following a route shaped by the town's terrain, local identity, and reputation, noticing how people use the area.`},ja:{title:"村の中を見て回っているところ",desc:"地形や地域の特色、評判が暮らしに表れている道を歩きながら、人々の過ごし方を眺めています。"}};
   const copy=copies[language]||copies.ko;
-  return entry(minute,copy.title,copy.desc,{townId:town.id,placeId:"",mood:"관찰",townProfileLog:true});
+  return entry(minute,copy.title,copy.desc,{townId:town.id,placeId:"",movementKind:"village-walk",mood:"관찰",townProfileLog:true});
 }
 function build(c,date=new Date()){
   const currentHomeId=homeIdForDate(c,date);

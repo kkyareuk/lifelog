@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905feedback216";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260905feedback216";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905feedback216";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260905feedback216";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905feedback216";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260905feedback216";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905feedback216";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260905feedback216";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260905feedback216";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905townwalk218";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260905townwalk218";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905townwalk218";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260905townwalk218";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905townwalk218";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260905townwalk218";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905townwalk218";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260905townwalk218";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260905townwalk218";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260905feedback216";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905feedback216";
+import {missingBuildings} from "./building-recovery.js?v=20260905townwalk218";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905townwalk218";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -31,10 +31,11 @@ const renameBrand=value=>{
 };
 const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
-const SPOUSE_LEGAL_STATUSES=new Set(["법적으로 관계가 등록됨","법적으로 관계가 등록되지 않음"]);
-const normalizeRelationshipLegalStatus=(type,value)=>type==="부부"
-  ?(SPOUSE_LEGAL_STATUSES.has(value)?value:"법적으로 관계가 등록됨")
-  :(String(value||"").trim()||"가까운 사람에게만 알림");
+const RELATIONSHIP_OUTSIDE_STATUSES=new Set(["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함"]);
+const normalizeRelationshipLegalStatus=value=>RELATIONSHIP_OUTSIDE_STATUSES.has(value)?value:"가까운 사람에게만 알림";
+const normalizeMarriageRegistration=(type,value,legacyLegalStatus="")=>type==="부부"
+  ?(value==="unregistered"||legacyLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered")
+  :"";
 const HOME_MAP_SLOTS=[[28,18],[70,18],[24,46],[72,48],[18,76],[48,78],[80,76],[50,33],[36,62],[64,64]];
 const homeMapPosition=index=>{
   const slot=HOME_MAP_SLOTS[Math.max(0,Number(index)||0)%HOME_MAP_SLOTS.length];
@@ -463,7 +464,9 @@ function normalizeHomes(x){
     delete relation.touchIntensity;
     delete relation.romanceStatus;
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
-    relation.legalStatus=normalizeRelationshipLegalStatus(relation.type,officialityMigration[relation.legalStatus]||relation.legalStatus);
+    const legacyLegalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus;
+    relation.marriageRegistration=normalizeMarriageRegistration(relation.type,relation.marriageRegistration,legacyLegalStatus);
+    relation.legalStatus=normalizeRelationshipLegalStatus(legacyLegalStatus);
     delete relation.protectionRole;delete relation.caregiverIds;delete relation.careReceiverIds;
     // 정규화는 비어 있는 공식 관계 단계를 임의의 친밀한 단계로 채우지 않는다.
     // 사용자가 고른 적 없는 “편안한 연인/친구”가 다시 생기는 일을 막는다.
@@ -1780,7 +1783,8 @@ export function addRelationship(data){
   data={
     ...data,
     stage:data?.stage||"관계 단계 미설정",
-    legalStatus:normalizeRelationshipLegalStatus(data?.type,data?.legalStatus)
+    legalStatus:normalizeRelationshipLegalStatus(data?.legalStatus),
+    marriageRegistration:normalizeMarriageRegistration(data?.type,data?.marriageRegistration,data?.legalStatus)
   };
   if(!data.a||!data.b||data.a===data.b)return null;
   const identity=relationshipIdentity(data);
@@ -1802,7 +1806,8 @@ export function updateRelationship(id,data){
   const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);
   Object.assign(relation,data);
-  relation.legalStatus=normalizeRelationshipLegalStatus(relation.type,relation.legalStatus);
+  relation.marriageRegistration=normalizeMarriageRegistration(relation.type,relation.marriageRegistration,relation.legalStatus);
+  relation.legalStatus=normalizeRelationshipLegalStatus(relation.legalStatus);
   const nextIdentity=relationshipIdentity(relation);
   state.deletedRelationshipKeys=Array.isArray(state.deletedRelationshipKeys)?state.deletedRelationshipKeys:[];
   if(previousIdentity&&previousIdentity!==nextIdentity&&!state.deletedRelationshipKeys.includes(previousIdentity))state.deletedRelationshipKeys.push(previousIdentity);
