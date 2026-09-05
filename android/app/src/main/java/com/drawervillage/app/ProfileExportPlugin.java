@@ -2,6 +2,8 @@ package com.drawervillage.app;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -16,6 +18,8 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.ActivityCallback;
+import androidx.activity.result.ActivityResult;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -94,16 +98,30 @@ public class ProfileExportPlugin extends Plugin {
 
     @PluginMethod
     public void saveJson(PluginCall call) {
-        String data = call.getString("data", "");
         String filename = call.getString("filename", "drawer-village-backup.json");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+        startActivityForResult(call, intent, "saveJsonResult");
+    }
+
+    @ActivityCallback
+    private void saveJsonResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
+            call.reject("backup-save-cancelled");
+            return;
+        }
         try {
-            Uri uri = destination(filename, "application/json", Environment.DIRECTORY_DOWNLOADS);
+            Uri uri = result.getData().getData();
+            String data = call.getString("data", "");
             try (OutputStream output = stream(uri)) {
                 output.write(data.getBytes(StandardCharsets.UTF_8));
             }
-            JSObject result = new JSObject();
-            result.put("uri", uri.toString());
-            call.resolve(result);
+            JSObject payload = new JSObject();
+            payload.put("uri", uri.toString());
+            call.resolve(payload);
         } catch (Exception error) {
             call.reject(error.getMessage(), error);
         }

@@ -50,7 +50,11 @@ const openFullCharacterSettings=async page=>{await page.locator(".tablet-charact
 
 try{
   const landscape=await preparedPage(1205,753),page=landscape.page;
-  await go(page,"character");await openFullCharacterSettings(page);
+  await go(page,"character");
+  const summary=page.locator(".character-editor-hub-only .tablet-character-summary");await summary.waitFor({state:"visible"});
+  const summaryBox=await summary.boundingBox();assert.ok(summaryBox.width>=500&&summaryBox.height>=400,"가로 태블릿 캐릭터 요약이 빈 패널 대신 표시된다");
+  await page.screenshot({path:resolve(output,"tablet-landscape-character-summary.png")});
+  await openFullCharacterSettings(page);
   const book=page.locator(".character-editor-tablet-landscape .character-book-v8-canvas");await book.waitFor({state:"visible"});
   const bookBox=await book.boundingBox();assert.ok(bookBox.width>=700&&bookBox.height>=700,"가로 태블릿 책이 화면 높이를 충분히 사용한다");
   assert.equal(await page.locator(".character-book-spread-leaf").count(),2,"가로 태블릿은 책 양쪽 두 페이지를 표시한다");
@@ -67,6 +71,9 @@ try{
   await relationDialog.locator(".relationship-back-button").click();
 
   await go(page,"observe");
+  const mapBox=await page.locator(".tablet-observe-map").boundingBox();assert.ok(mapBox.x<=1&&mapBox.y<=1&&mapBox.width>=1203&&mapBox.height>=751,"가로 태블릿 마을 배경이 화면 전체를 채운다");
+  const copyBox=await page.locator(".game-hud-profile-copy").boundingBox(),profileBox=await page.locator(".game-hud-profile").boundingBox();assert.ok(copyBox.x-profileBox.x>=82&&copyBox.x-profileBox.x<=94,"이름과 직업이 프로필 아이콘 바로 옆에 정렬된다");
+  assert.equal(await page.locator(".game-observe-hud > .native-observe-backdrop").evaluate(node=>getComputedStyle(node).display),"none");
   const decoration=page.locator(".tablet-observe-world .town-decoration").first();await decoration.waitFor({state:"visible"});
   const decorationStyle=await decoration.evaluate(node=>{const style=getComputedStyle(node);return {background:style.backgroundColor,border:style.borderTopWidth,outline:style.outlineWidth,shadow:style.boxShadow}});
   assert.equal(decorationStyle.background,"rgba(0, 0, 0, 0)");assert.equal(decorationStyle.border,"0px");assert.equal(decorationStyle.outline,"0px");assert.equal(decorationStyle.shadow,"none");
@@ -74,12 +81,19 @@ try{
   assert.equal(faceStyle.background,"rgba(0, 0, 0, 0)");assert.equal(faceStyle.border,"0px");assert.equal(faceStyle.shadow,"none");
   await page.locator(".game-hud-character-command").click();const activityMenu=page.locator(".home-occupant-popover.show");await activityMenu.waitFor({state:"visible"});assert.ok(await activityMenu.locator("[data-direct-activity]").count()>=6,"관찰 화면에서 깨우기와 활동 선택 메뉴를 연다");
   await page.screenshot({path:resolve(output,"tablet-landscape-observe.png")});
+  await go(page,"town");
+  const townMapBox=await page.locator(".mobile-town-shell .town-map-scroll").boundingBox();assert.ok(townMapBox.x<=1&&townMapBox.y<=1&&townMapBox.width>=1203&&townMapBox.height>=751,"가로 태블릿 마을 지도가 화면 전체를 채운다");
+  const townHeaderBox=await page.locator(".mobile-town-shell .town-native-header").boundingBox();assert.ok(townHeaderBox.x<=1&&townHeaderBox.width>=1203,"가로 태블릿 마을 상단바가 오른쪽 끝까지 이어진다");
+  const townDecoration=page.locator(".mobile-town-shell .town-decoration").first();await townDecoration.waitFor({state:"visible"});
+  const townDecorationStyle=await townDecoration.evaluate(node=>{const style=getComputedStyle(node);return {background:style.backgroundColor,border:style.borderTopWidth,outline:style.outlineWidth,shadow:style.boxShadow}});
+  assert.deepEqual(townDecorationStyle,{background:"rgba(0, 0, 0, 0)",border:"0px",outline:"0px",shadow:"none"});
+  await page.screenshot({path:resolve(output,"tablet-landscape-town.png")});
   assert.deepEqual(landscape.errors,[]);await landscape.context.close();
 
-  const portrait=await preparedPage(753,1205);await go(portrait.page,"character");await openFullCharacterSettings(portrait.page);
+  const portrait=await preparedPage(753,1205);await go(portrait.page,"character");await portrait.page.locator(".character-editor-hub-only .tablet-character-summary").waitFor({state:"visible"});await openFullCharacterSettings(portrait.page);
   const portraitBook=portrait.page.locator(".character-editor-tablet-portrait-full .character-book-v8-canvas");await portraitBook.waitFor({state:"visible"});
   const portraitBox=await portraitBook.boundingBox();assert.ok(portraitBox.height>=1120,"세로 태블릿 책이 목록에 눌리지 않고 화면 높이를 사용한다");
   assert.equal(await portrait.page.locator(".character-editor-tablet-portrait-full .desktop-character-list").count(),0,"세로 전체 설정에서 캐릭터 목록이 책을 축소하지 않는다");
   await portrait.page.screenshot({path:resolve(output,"tablet-portrait-book.png")});assert.deepEqual(portrait.errors,[]);await portrait.context.close();
-  console.log("PASS visual 230: tablet books, wide lists, transparent town art, and character activity menu");
+  console.log("PASS visual 233: visible character summary, large books, full-bleed town, aligned profile, transparent town art, and character activity menu");
 }finally{await browser.close();server.close()}

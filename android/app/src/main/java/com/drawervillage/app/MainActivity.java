@@ -44,9 +44,11 @@ public class MainActivity extends BridgeActivity {
             ViewGroup.LayoutParams rawParams = view.getLayoutParams();
             if (rawParams instanceof ViewGroup.MarginLayoutParams) {
                 ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) rawParams;
-                if (params.leftMargin != navigation.left || params.rightMargin != navigation.right || params.bottomMargin != navigation.bottom) {
-                    params.leftMargin = navigation.left;
-                    params.rightMargin = navigation.right;
+                if (params.leftMargin != 0 || params.rightMargin != 0 || params.bottomMargin != navigation.bottom) {
+                    // Keep the artwork full-bleed in landscape. Horizontal system-bar
+                    // insets previously shrank the WebView and exposed an empty strip.
+                    params.leftMargin = 0;
+                    params.rightMargin = 0;
                     params.bottomMargin = navigation.bottom;
                     view.setLayoutParams(params);
                 }
