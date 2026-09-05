@@ -34,5 +34,5 @@ assert.match(bookCss,/\.tablet-character-book\.character-book-v8\.is-open/);
 for(const pane of ["visual","profile","body","wardrobe","personality","taste","closet"])assert.match(views,new RegExp(`\\["${pane}"`));
 
 assert.match(gradle,/versionCode\s+22\d/);
-assert.match(gradle,/versionName\s+"1\.0\.20\d(?:\.\d+)?"/);
+assert.match(gradle,/versionName\s+"1\.0\.2\d\d(?:\.\d+)?"/);
 console.log("PASS 219+: audible gait-synced town walking, family legal registration, and shared tablet character book");

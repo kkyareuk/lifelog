@@ -79,7 +79,12 @@
     "test:hotfix220": "node scripts/check-hotfix-220.mjs",
     "test:hotfix221": "node scripts/check-hotfix-221.mjs",
     "test:dev223": "node scripts/check-dev-223.mjs",
-    "test:dev224": "node scripts/check-dev-224.mjs"
+    "test:dev224": "node scripts/check-dev-224.mjs",
+    "test:dev225": "node scripts/check-dev-225.mjs",
+    "test:dev226": "node scripts/check-dev-226.mjs",
+    "test:dev227": "node scripts/check-dev-227.mjs",
+    "test:dev228": "node scripts/check-dev-228.mjs",
+    "test:dev229": "node scripts/check-dev-229.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

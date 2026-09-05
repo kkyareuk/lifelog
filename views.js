@@ -1,23 +1,23 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905dev224";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260905dev224";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260905dev224";
-import {characterMood} from "./character-mood.js?v=20260905dev224";
-import {createContactMailbox} from "./notification-mail.js?v=20260905dev224";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260905dev224";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260905dev224";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905dev224";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905dev224";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260905dev224";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260905dev224";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260905dev224";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905dev224";
-import {achievementRows} from "./achievements.js?v=20260905dev224";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260905dev224";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260905dev224";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260905dev224";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260906dev229";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260906dev229";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260906dev229";
+import {characterMood} from "./character-mood.js?v=20260906dev229";
+import {createContactMailbox} from "./notification-mail.js?v=20260906dev229";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260906dev229";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260906dev229";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906dev229";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906dev229";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260906dev229";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260906dev229";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260906dev229";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev229";
+import {achievementRows} from "./achievements.js?v=20260906dev229";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260906dev229";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260906dev229";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260906dev229";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -2076,29 +2076,31 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   // 시뮬레이션은 위치와 애니메이션만 담당하며 행동 문장을 새로 만들지 않는다.
   const scene=event;
   const title=scene?.title||"집에서 시간을 보내는 중",text=`${title} ${scene?.desc||""} ${scene?.mood||""}`;
-  const now=Date.now(),scheduledWalk=agent?.phase==="walking",walking=scheduledWalk&&now>=Number(agent?.startedAt||0),presentation=nativeScenePresentation(character,scene,"sd"),sleeping=!scheduledWalk&&presentation.actionKind==="sleep",conversing=Boolean(options.conversing);
-  const actionKind=walking?"walking":conversing&&agent?.actionKind?agent.actionKind:presentation.actionKind,actionProp=nativeSceneActionProp(character,scene,actionKind,text,true);
+  const now=Date.now(),scheduledWalk=agent?.phase==="walking",walking=scheduledWalk&&now>=Number(agent?.startedAt||0),presentation=nativeScenePresentation(character,scene,"sd"),sleeping=!scheduledWalk&&presentation.actionKind==="sleep",conversing=Boolean(options.conversing),bedActivity=bedSlot>=0&&agent?.phase==="using",bedConversation=bedActivity&&Boolean(options.bedConversation);
+  const actionKind=walking?"walking":conversing&&agent?.actionKind?agent.actionKind:presentation.actionKind,actionProp=bedActivity?"":nativeSceneActionProp(character,scene,actionKind,text,true);
   const duration=Math.max(1,Number(agent?.endsAt||0)-Number(agent?.startedAt||0)),elapsed=Math.max(0,Math.min(duration,now-Number(agent?.startedAt||0)));
   const walkStyleClass=walkStyleClassFor(character);
-  const visualPhase=scheduledWalk&&!walking?"waiting-to-walk":agent?.phase,bedUsing=bedSlot>=0&&agent?.phase==="using",coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}${bedUsing?" is-using-couple-bed":""}${options.bedState==="under-cover"?" is-under-cover":""}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}${agent?.approachingInteraction?" is-approaching-conversation":""}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${visualPhase} ${walkStyleClass}${coupleBedClass}${conversationClass}${canvasClass}`:"";
+  const visualPhase=scheduledWalk&&!walking?"waiting-to-walk":agent?.phase,bedUsing=bedSlot>=0&&agent?.phase==="using",coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}${bedUsing?" is-using-couple-bed":""}${options.bedState==="under-cover"?" is-under-cover":""}${bedConversation?" is-bed-conversation":""}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}${agent?.approachingInteraction?" is-approaching-conversation":""}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${visualPhase} ${walkStyleClass}${coupleBedClass}${conversationClass}${canvasClass}`:"";
   const bedRotation=Number(options.bedPlacement?.rotation)||0,bedRadians=bedRotation*Math.PI/180,bedPlacementScale=Math.max(.55,Math.min(1.8,Number(options.bedPlacement?.scale)||1)),bedVisualScale=bedPlacementScale*COUPLE_BED_ART_SCALE;
-  // 가구 확대율은 침대에만 적용한다. 잠든 인물은 일정한 작은 크기로 두고
-  // 이불 쪽으로 내려 두 명의 상반신 절반 이상이 이불 아래에 들어가게 한다.
-  const localBedX=bedSlot===0?-5.5*bedVisualScale:bedSlot===1?5.5*bedVisualScale:0,localBedY=bedSlot>=0?2.8*bedVisualScale:0,bedOffsetX=localBedX*Math.cos(bedRadians)-localBedY*Math.sin(bedRadians),bedOffsetY=localBedX*Math.sin(bedRadians)+localBedY*Math.cos(bedRadians);
+  // 얼굴 중심을 침대 그림의 두 베개 중심에 맞춘다. 이 좌표에서 인물은
+  // 침대 바닥보다 위, 이불·하단 프레임보다 아래 레이어에 놓인다.
+  const localBedX=bedSlot===0?-4.6*bedVisualScale:bedSlot===1?4.6*bedVisualScale:0,localBedY=bedSlot>=0?-4.9*bedVisualScale:0,bedOffsetX=localBedX*Math.cos(bedRadians)-localBedY*Math.sin(bedRadians),bedOffsetY=localBedX*Math.sin(bedRadians)+localBedY*Math.cos(bedRadians);
   const isBedPose=bedSlot>=0&&agent?.phase==="using",anchorX=isBedPose?Number(options.bedPlacement?.x):Number(agent?.x),anchorY=isBedPose?Number(options.bedPlacement?.y):Number(agent?.y);
   const safeAnchorX=Number.isFinite(anchorX)?anchorX:Number.isFinite(Number(agent?.x))?Number(agent.x):50,safeAnchorY=Number.isFinite(anchorY)?anchorY:Number.isFinite(Number(agent?.y))?Number(agent.y):50;
   const x=agent?Math.max(5,Math.min(95,safeAnchorX+bedOffsetX)):50;
   const y=agent?Math.max(5,Math.min(95,safeAnchorY+bedOffsetY)):50;
   const fromX=agent?Math.max(5,Math.min(95,Number(agent.fromX)||x)):x,fromY=agent?Math.max(5,Math.min(95,Number(agent.fromY)||y)):y;
-  const bedCharacterScale=.68;
-  const lifeStyle=agent?`--life-x:${x}%;--life-y:${y}%;--life-dx:${fromX-x}cqw;--life-dy:${fromY-y}cqh;--life-duration:${Math.max(1,Number(agent.arrivesAt||agent.endsAt)-Number(agent.startedAt||0))}ms;--life-delay:-${elapsed}ms;${bedSlot>=0?`--couple-bed-character-scale:${bedCharacterScale};--couple-bed-character-rotation:${bedRotation}deg;`:""}`:"";
+  const bedCharacterScale=.76,bedFaceSize=Math.round(Math.max(46,Math.min(60,52*bedPlacementScale)));
+  const lifeStyle=agent?`--life-x:${x}%;--life-y:${y}%;--life-dx:${fromX-x}cqw;--life-dy:${fromY-y}cqh;--life-duration:${Math.max(1,Number(agent.arrivesAt||agent.endsAt)-Number(agent.startedAt||0))}ms;--life-delay:-${elapsed}ms;${bedSlot>=0?`--bed-face-size:${bedFaceSize}px;--couple-bed-character-scale:${bedCharacterScale};--couple-bed-character-rotation:${bedRotation}deg;`:""}`:"";
   const sceneActivity=String(title).replace(`${room.name||roomKey}에서 `,"").replace(`${room.name||roomKey} `,"");
   const itemLabel=agent?.item?furnitureLabel(agent.item,state.uiLanguage):"";
   const activity=conversing&&itemLabel?state.uiLanguage==="en"?`${itemLabel} · chatting`:state.uiLanguage==="ja"?`${itemLabel}を使いながら会話中`:`${itemLabel}을 사용하며 대화 중`:sceneActivity;
-  const speech=conversing?`<i class="home-person-chat-bubble" aria-hidden="true">${agent?.approachingInteraction?"!":"•••"}</i>`:"";
-  const quietBedSleep=bedSlot>=0&&sleeping;
+  // 침대 안에서는 잠든 자세처럼 얼굴과 이불의 작은 움직임만 보여 준다.
+  // 각자 말풍선을 띄우면 두 사람용 공유 카드와 겹쳐 침대가 가려진다.
+  const speech=conversing&&!bedConversation?`<i class="home-person-chat-bubble" aria-hidden="true">${agent?.approachingInteraction?"!":"•••"}</i>`:"";
+  const quietBedSleep=bedSlot>=0&&sleeping,hideStatus=quietBedSleep||Boolean(options.hideStatus);
   const sleepMotion=homeSleepAnimation(character.sleepHabit);
-  return `<div class="home-person ${lifeClass} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" data-sleep-style="${sleeping?sleepMotion.style:""}" style="--sleep-duration:${sleepMotion.duration}s;--sleep-delay:-${(now/1000+index*.71)%sleepMotion.duration}s;${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-couple-bed-id="${esc(options.bedPlacement?.id||"")}" data-bed-slot="${bedSlot}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${speech}${sleeping&&!quietBedSleep?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span>${quietBedSleep?"":`<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small></span>`}</div>`;
+  return `<div class="home-person ${lifeClass} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" data-sleep-style="${sleeping?sleepMotion.style:""}" style="--sleep-duration:${sleepMotion.duration}s;--sleep-delay:-${(now/1000+index*.71)%sleepMotion.duration}s;${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-couple-bed-id="${esc(options.bedPlacement?.id||"")}" data-bed-slot="${bedSlot}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${speech}${sleeping&&!quietBedSleep?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span>${hideStatus?"":`<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small></span>`}</div>`;
 }
 function homeInteractionSummary(scene){
   const text=`${scene?.title||""} ${scene?.desc||""} ${scene?.sharedActionText||""}`;
@@ -2116,6 +2118,15 @@ function homeOrderedCharacters(characters,scenes=[]){
     return configuredIndex>=0?configuredIndex:configured.length+Math.max(0,state.order.indexOf(id));
   };
   return [...characters].sort((a,b)=>rank(a.id)-rank(b.id));
+}
+function homeBedForegroundStatusMarkup(characters,scenes,room,roomKey,bedPlacement,index,{shared=false}={}){
+  const ordered=homeOrderedCharacters(characters,scenes).slice(0,2),names=ordered.map(character=>character.name).join(" · ");
+  const sceneTitles=[...new Set(scenes.map(scene=>String(scene?.title||"").replace(`${room.name||roomKey}에서 `,"").replace(`${room.name||roomKey} `,"").trim()).filter(Boolean))];
+  const activity=sceneTitles.length===1?sceneTitles[0]:homeInteractionSummary(scenes[0]||{}).label;
+  const bedRotation=Number(bedPlacement?.rotation)||0,bedRadians=bedRotation*Math.PI/180,bedScale=Math.max(.55,Math.min(1.8,Number(bedPlacement?.scale)||1))*COUPLE_BED_ART_SCALE;
+  const localY=9.5*bedScale,x=Math.max(10,Math.min(90,(Number(bedPlacement?.x)||50)-localY*Math.sin(bedRadians))),y=Math.max(12,Math.min(92,(Number(bedPlacement?.y)||50)+localY*Math.cos(bedRadians)));
+  const title=`${names} · ${activity}`;
+  return `<div class="home-bed-foreground-status ${shared?"is-shared":""}" style="--bed-status-x:${x}%;--bed-status-y:${y}%;--home-float-delay:${-(index%4)*.37}s" role="group" aria-label="${esc(title)}" data-bed-status-for="${esc(bedPlacement?.id||"")}"><span class="home-interaction-status"><b>${esc(names)}</b><small>${esc(activity)}</small></span></div>`;
 }
 function homeTvInteractionMarkup(characters,scenes,agents,room,roomKey,index){
   const sceneByCharacterId=new Map(characters.map((character,sceneIndex)=>[character.id,scenes[sceneIndex]]));
@@ -2334,7 +2345,7 @@ function homeCard(id,chars){
     const shownPeople=roomPeople.filter(character=>!isCrossRoomWalker(character)),shownPets=roomPets;
     const editAttributes=`data-home-id="${id}" data-room-key="${key}" data-home-room-hold="${key}"${edit?` data-open-room-editor="${key}" tabindex="0" role="button" aria-label="${esc(room.name||key)} 편집"`:""}`;
     const roomLayout=packedRooms.items[key]||{},peopleDirection=Number(roomLayout.w)>Number(roomLayout.h)?"is-horizontal":"is-vertical";
-    const renderedPeople=new Set(),peopleMarkup=[],coupleBedSlots=new Map(),coupleBedUsers=new Map(),coupleBedPlacements=new Map(),bedStates=new Map();
+    const renderedPeople=new Set(),peopleMarkup=[],foregroundMarkup=[],coupleBedSlots=new Map(),coupleBedUsers=new Map(),activeCoupleBedGroups=new Map(),coupleBedPlacements=new Map(),bedStates=new Map();
     shownPeople.forEach(character=>{
       const agent=lifeAgents[character.id],bed=agent?.furnitureId?(room.furniturePlacements||[]).find(item=>item.id===agent.furnitureId):null;
       if(bed?.item!=="커플 침대")return;
@@ -2353,10 +2364,10 @@ function homeCard(id,chars){
       users.slice(0,2).forEach((character,slot)=>coupleBedSlots.set(character.id,slot));
       users.forEach(character=>coupleBedPlacements.set(character.id,bed));
       const activeUsers=users.filter(character=>lifeAgents[character.id]?.phase==="using");
-      if(activeUsers.length){
-        const underCover=activeUsers.some(character=>nativeScenePresentation(character,sceneFor(character),"sd").actionKind==="sleep");
-        bedStates.set(bedId,underCover?"under-cover":"on-bed");
-      }
+      // 침대에서 하는 모든 생활 활동은 잠잘 때와 같은 레이어를 쓴다.
+      // 인물은 침대 바닥 위에, 이불과 하단 프레임 아래에 놓인다.
+      if(activeUsers.length)bedStates.set(bedId,"under-cover");
+      if(activeUsers.length>1)activeCoupleBedGroups.set(bedId,activeUsers.slice(0,2));
     });
     const tvGroups=new Map();
     shownPeople.forEach(character=>{
@@ -2366,7 +2377,20 @@ function homeCard(id,chars){
     });
     shownPeople.forEach((character,index)=>{
       if(renderedPeople.has(character.id))return;
-      const agent=lifeAgents[character.id],tvPartners=agent?.actionKind==="watch"?(tvGroups.get(agent.furnitureId||`${agent.roomKey}:watch`)||[]):[];
+      const agent=lifeAgents[character.id],bedPair=(activeCoupleBedGroups.get(agent?.furnitureId)||[]).filter(other=>!renderedPeople.has(other.id));
+      // 같은 커플 침대를 동시에 쓰는 두 사람은 장면 로그의 interactionId가
+      // 서로 달라도 하나의 침대 활동이다. 여기에서 먼저 묶어야 개별 상태 카드가
+      // 두 장 생기거나 한 사람만 과도하게 커지는 중간 렌더가 남지 않는다.
+      if(bedPair.length>1){
+        const pair=bedPair.slice(0,2),sharedBed=coupleBedPlacements.get(pair[0].id);
+        pair.forEach((person,slot)=>{
+          renderedPeople.add(person.id);
+          peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),lifeAgents[person.id]||{},room,key,index+slot,coupleBedSlots.get(person.id)??slot,{conversing:true,slot:slot+1,bedPlacement:sharedBed,bedState:"under-cover",bedConversation:true,hideStatus:true}));
+        });
+        foregroundMarkup.push(homeBedForegroundStatusMarkup(pair,pair.map(sceneFor),room,key,sharedBed,index,{shared:true}));
+        return;
+      }
+      const tvPartners=agent?.actionKind==="watch"?(tvGroups.get(agent.furnitureId||`${agent.roomKey}:watch`)||[]):[];
       const pendingTvPartners=tvPartners.filter(other=>!renderedPeople.has(other.id));
       if(pendingTvPartners.length>1){
         const tvPair=pendingTvPartners.slice(0,2);
@@ -2380,18 +2404,25 @@ function homeCard(id,chars){
         partners.forEach(other=>renderedPeople.add(other.id));
         const summary=homeInteractionSummary(scene);
         if(summary.kind==="talk"){
-          const orderedPartners=homeOrderedCharacters(partners,partners.map(sceneFor));
-          orderedPartners.slice(0,2).forEach((person,slot)=>{
+          const orderedPartners=homeOrderedCharacters(partners,partners.map(sceneFor)),pair=orderedPartners.slice(0,2);
+          const pairBeds=pair.map(person=>coupleBedPlacements.get(person.id));
+          const sharedBed=pair.length===2&&pairBeds[0]&&pairBeds.every(bed=>bed?.id===pairBeds[0].id)&&pair.every(person=>lifeAgents[person.id]?.phase==="using");
+          if(sharedBed)bedStates.set(sharedBed.id,"under-cover");
+          pair.forEach((person,slot)=>{
             const paired=lifeAgents[person.id]||{};
             const personBed=coupleBedPlacements.get(person.id);
-            peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),paired,room,key,index+slot,coupleBedSlots.get(person.id)??-1,{conversing:true,slot:slot+1,bedPlacement:personBed,bedState:personBed?bedStates.get(personBed.id):""}));
+            peopleMarkup.push(homeLifePersonMarkup(person,sceneFor(person),paired,room,key,index+slot,coupleBedSlots.get(person.id)??-1,{conversing:true,slot:slot+1,bedPlacement:personBed,bedState:sharedBed?"under-cover":personBed?bedStates.get(personBed.id):"",bedConversation:Boolean(sharedBed),hideStatus:Boolean(sharedBed)}));
           });
+          if(sharedBed)foregroundMarkup.push(homeBedForegroundStatusMarkup(pair,pair.map(sceneFor),room,key,sharedBed,index,{shared:true}));
         }else peopleMarkup.push(homeLifeInteractionMarkup(partners,partners.map(sceneFor),lifeAgents,room,key,index));
         return;
       }
       renderedPeople.add(character.id);
       const characterBed=coupleBedPlacements.get(character.id);
-      peopleMarkup.push(homeLifePersonMarkup(character,scene,lifeAgents[character.id],room,key,index,coupleBedSlots.get(character.id)??-1,{bedPlacement:characterBed,bedState:characterBed?bedStates.get(characterBed.id):""}));
+      const characterAgent=lifeAgents[character.id],activeBed=characterBed&&characterAgent?.phase==="using"?characterBed:null;
+      const sleepingInBed=activeBed&&nativeScenePresentation(character,scene,"sd").actionKind==="sleep";
+      peopleMarkup.push(homeLifePersonMarkup(character,scene,characterAgent,room,key,index,coupleBedSlots.get(character.id)??-1,{bedPlacement:characterBed,bedState:characterBed?bedStates.get(characterBed.id):"",hideStatus:Boolean(activeBed&&!sleepingInBed)}));
+      if(activeBed&&!sleepingInBed)foregroundMarkup.push(homeBedForegroundStatusMarkup([character],[scene],room,key,activeBed,index));
     });
     const hasOccupants=shownPeople.length>0||shownPets.length>0;
     return `<div class="room room-${esc(room.type||key)} ${customFloor?"room-custom-floor":""} ${customTile?"room-custom-tile":""} ${hasOccupants?"room-has-occupants":""} ${edit?"room-edit-target":""}" ${roomStyle(h,key,packedRooms.items[key],mobileRooms[key])} ${editAttributes}>
@@ -2400,6 +2431,7 @@ function homeCard(id,chars){
       ${roomFurnitureMarkup(id,key,room,edit,bedStates)}
       <div class="room-people ${shownPeople.some(c=>lifeAgents[c.id])?"has-home-life":""} ${peopleDirection}">${peopleMarkup.join("")}</div>
       ${edit?"":roomFurnitureOverlayMarkup(room,bedStates)}
+      ${edit||!foregroundMarkup.length?"":`<div class="room-foreground-layer">${foregroundMarkup.join("")}</div>`}
       <div class="room-pets">${shownPets.map((p,petIndex)=>{const motion=petMotion(p,petIndex);return `<div class="room-pet home-pet-roaming pet-motion-${motion.motion} ${motion.sleeping?"is-sleeping":""}" style="--pet-x:${motion.x}%;--pet-y:${motion.y}%;--pet-dx:${motion.dx}cqw;--pet-dy:${motion.dy}cqh;--pet-roam-duration:${motion.duration}s;--pet-roam-delay:${motion.delay}s" role="button" tabindex="0" aria-label="${esc(`${p.name} · ${petScenes[p.id].title}`)}" data-home-occupant="pet" data-pet-id="${p.id}" data-pet-species="${esc(p.species)}" data-occupant-name="${esc(p.name)}" data-occupant-title="${esc(petScenes[p.id].title)}" data-occupant-desc="${esc(petScenes[p.id].desc)}" data-occupant-room="${esc(room.name||key)}" title="${esc(petScenes[p.id].desc)}">${p.icon?`<img class="room-pet-icon" src="${esc(p.icon)}" alt="">`:p.photo?`<img class="room-pet-photo" src="${esc(p.photo)}" alt="">`:`<span class="room-pet-emoji">${petEmoji[p.species]||"🐾"}</span>`}<span class="room-pet-status"><b>${esc(p.name)}</b><small>${esc(petScenes[p.id].title.replace(`${h.rooms?.[key]?.name||"집 안"}에서 `,""))}</small></span></div>`}).join("")}</div>
     </div>`;
   }).join("");
@@ -2424,7 +2456,7 @@ function homeCard(id,chars){
     const e=eventFor(c),place=placeForEntry(e),image=sceneImage(c,e),sceneHome=state.homes[e.visitHomeId||c.homeId];
     const location=e.home?`🏠 ${sceneHome?.name||"집"} · ${sceneHome?.rooms?.[e.room]?.name||"집 안"}`:e.transit?"🚌 이동 중":place?`📍 ${place.name} · ${townForEntry(e).name}`:"📍 외출 중";
     return `<article class="resident-scene-card" style="--resident-theme:${esc(c.theme?.primary||"#176b60")}">
-      <div class="resident-profile">${profileAvatar(c,"resident-character-image")}<span><h3>${esc(c.name)}</h3><small>${esc(c.jobTitle||c.job)}</small></span></div>
+      <div class="resident-profile"><span class="resident-profile-picture">${profileAvatar(c,"resident-character-image")}</span><span><h3>${esc(c.name)}</h3><small>${esc(c.jobTitle||c.job)}</small></span></div>
       <div class="resident-current"><small>CURRENT SCENE</small><h3>${esc(e.title)}</h3><p>${esc(e.desc)}</p><b>${location}</b>${image?`<img src="${esc(image)}" alt="">`:""}</div>
     </article>`;
   }).join("");
@@ -2782,7 +2814,8 @@ function nativeCharacterHub(c){
   const mobileProfile=`<section class="mobile-character-profile-draft"><button type="button" class="character-draft-back" data-tab="observe" aria-label="${esc(t("돌아가기","돌아가기"))}"></button><button type="button" class="character-wallet-selected" data-toggle-character-roster aria-label="${esc(t("선택된 캐릭터 바꾸기","선택된 캐릭터 바꾸기"))}"><span>${selectedIcon}</span><b><em>${t("선택됨","선택됨")}</em></b></button><div class="character-wallet-art" aria-hidden="true"></div><img class="character-setting-clip" src="./assets/character-ui/clip.png" alt=""><section class="character-registration-card"><button type="button" class="character-registration-photo" data-image="photo" aria-label="${esc(t(c.photo?"프로필 사진 변경":"프로필 사진 추가",c.photo?"프로필 사진 변경":"프로필 사진 추가"))}">${profilePhoto}</button><img class="character-registration-paper" src="./assets/character-ui/registration-card.png" alt="" aria-hidden="true"><div class="character-registration-fields"><h2>${t("서랍마을 주민등록증","서랍마을 주민등록증")}</h2><dl>${draftRows.map(({key,label,value})=>`<div class="character-registration-field-${key}"><dt>${t(label,label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl></div></section><div class="character-wallet-roster" data-character-roster data-roster-count="${rosterItemCount}" style="--roster-visible:${rosterVisibleRows}" hidden><div class="mobile-character-strip">${mobileStrip}</div><span class="character-roster-actions"><button type="button" class="character-roster-reorder" data-open-character-reorder aria-label="${esc(t("위치 바꾸기","위치 바꾸기"))}">↕</button><button type="button" class="character-roster-close" data-toggle-character-roster aria-label="${esc(t("닫기","닫기"))}">×</button></span></div></section>`;
   const hubActions=`<section class="character-setting-choices" aria-label="${esc(t("캐릭터 설정 방식","캐릭터 설정 방식"))}"><span class="character-setting-cloth" aria-hidden="true"><img src="./assets/character-ui/character-cloth-white.png" alt=""></span><img class="character-setting-book" src="./assets/character-ui/book.png" alt=""><img class="character-setting-tape" src="./assets/character-ui/tape.png" alt=""><img class="character-setting-key" src="./assets/character-ui/key.png" alt=""><span class="character-favorite-preview" aria-label="${esc(t("선호 물품 미리보기","선호 물품 미리보기"))}">${favoriteSlots}</span><button type="button" class="character-setting-choice character-quick-choice" data-open-quick-character-settings><span><b>${t("빠른설정","빠른설정")}</b><small>${t("바로가기","바로가기")}</small></span></button><button type="button" class="character-setting-choice character-full-choice" data-open-full-character-settings><span><b>${t("전체설정","전체설정")}</b><small>${t("바로가기","바로가기")}</small></span></button></section>`;
   const draftActions=`<nav class="character-draft-actions" aria-label="${esc(t("캐릭터 관리","캐릭터 관리"))}"><button type="button" class="character-draft-action" data-export-profile><span>${t("프로필 내보내기","프로필 내보내기")}</span></button><button type="button" class="character-draft-action" data-save><span>${t("캐릭터 저장","캐릭터 저장")}</span></button><button type="button" class="character-draft-action danger" data-delete-character="${c.id}"><span>${t("캐릭터 삭제","캐릭터 삭제")}</span></button></nav>`;
-  return `<div class="editor character-editor character-editor-hub-only" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><aside class="panel desktop-character-list"><div class="title"><h2>${t("캐릭터 목록","캐릭터 목록")}</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside><section class="panel form character-hub-shell"><section class="mobile-character-dashboard" data-character-ui-version="8" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><img class="character-wood-background" src="./assets/character-ui/character-wood-background.png" alt="" aria-hidden="true">${mobileProfile}${hubActions}${draftActions}</section>${quickSettings}<dialog class="mobile-character-reorder-dialog" data-mobile-character-reorder-dialog><form method="dialog"><div class="mobile-editor-head"><span><small>CHARACTER ORDER</small><b>${t("캐릭터 위치 바꾸기","캐릭터 위치 바꾸기")}</b></span><button value="close">×</button></div><p>${t("화살표를 눌러 홈과 캐릭터 목록의 순서를 바꿔요.","화살표를 눌러 홈과 캐릭터 목록의 순서를 바꿔요.")}</p><div>${reorderRows}</div><button class="primary" value="close">${t("완료","완료")}</button></form></dialog></section></div>`;
+  const tabletSummary=`<section class="tablet-character-summary" aria-label="${esc(c.name)} ${esc(t("캐릭터 정보","캐릭터 정보"))}"><div class="tablet-character-summary-paper"><header><span class="tablet-character-summary-avatar">${selectedIcon}</span><span><small>${t("선택한 캐릭터","선택한 캐릭터")}</small><h2>${esc(c.name)}</h2><p>${esc(c.jobTitle||c.job||unknown)}</p></span><i class="tablet-character-theme" style="--primary:${esc(c.theme?.primary||"#176b60")};--secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}" aria-hidden="true"></i></header><dl>${draftRows.map(({label,value})=>`<div><dt>${t(label,label)}</dt><dd>${esc(value)}</dd></div>`).join("")}</dl><div class="tablet-character-setting-actions"><button type="button" data-open-quick-character-settings><b>${t("빠른설정","빠른설정")}</b><small>${t("기본 정보를 빠르게 수정","기본 정보를 빠르게 수정")}</small></button><button type="button" data-open-full-character-settings><b>${t("전체설정","전체설정")}</b><small>${t("설정책에서 자세히 수정","설정책에서 자세히 수정")}</small></button></div><nav><button type="button" data-export-profile>${t("프로필 내보내기","프로필 내보내기")}</button><button type="button" data-save>${t("캐릭터 저장","캐릭터 저장")}</button><button type="button" class="danger" data-delete-character="${c.id}">${t("캐릭터 삭제","캐릭터 삭제")}</button></nav></div></section>`;
+  return `<div class="editor character-editor character-editor-hub-only" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><aside class="panel desktop-character-list"><div class="title"><h2>${t("캐릭터 목록","캐릭터 목록")}</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside><section class="panel form character-hub-shell">${tabletSummary}<section class="mobile-character-dashboard" data-character-ui-version="8" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><img class="character-wood-background" src="./assets/character-ui/character-wood-background.png" alt="" aria-hidden="true">${mobileProfile}${hubActions}${draftActions}</section>${quickSettings}<dialog class="mobile-character-reorder-dialog" data-mobile-character-reorder-dialog><form method="dialog"><div class="mobile-editor-head"><span><small>CHARACTER ORDER</small><b>${t("캐릭터 위치 바꾸기","캐릭터 위치 바꾸기")}</b></span><button value="close">×</button></div><p>${t("화살표를 눌러 홈과 캐릭터 목록의 순서를 바꿔요.","화살표를 눌러 홈과 캐릭터 목록의 순서를 바꿔요.")}</p><div>${reorderRows}</div><button class="primary" value="close">${t("완료","완료")}</button></form></dialog></section></div>`;
 }
 function character(){
   const c=active();
@@ -2790,6 +2823,7 @@ function character(){
   // tablet's persistent roster + shared-book shell without losing its pane.
   const nativeApp=document.documentElement.classList.contains("native-app");
   const nativeTabletMode=nativeApp&&Boolean(window.matchMedia?.("(min-width:721px)")?.matches);
+  const nativeTabletLandscape=nativeTabletMode&&Boolean(window.matchMedia?.("(orientation:landscape)")?.matches);
   if(nativeApp&&state.characterSettingsView!=="full")return nativeCharacterHub(c);
   // Full settings use the same book content on phones and tablets. Keep the
   // legacy dashboard/catalog strings out of memory even when the tablet keeps
@@ -2879,11 +2913,14 @@ function character(){
     <div class="overview-field overview-attraction"><b>${t("선호하는 특성","선호하는 특성")}</b><button type="button" data-profile-tags="attractionTraits">${(c.attractionTraits||[]).length?esc(c.attractionTraits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
     <div class="overview-field overview-disliked-attraction"><b>${t("비선호하는 특성","비선호하는 특성")}</b><button type="button" data-profile-tags="dislikedAttractionTraits">${(c.dislikedAttractionTraits||[]).length?esc(c.dislikedAttractionTraits.slice(0,2).join(" · ")):t("정하지 않음","정하지 않음")}<i>＋</i></button></div>
   </section>`;
-  const overviewControls=overviewPane==="basic"
+  const overviewControlsFor=pane=>pane==="basic"
     ?`<nav class="character-overview-page-controls" aria-label="${esc(t("개요 페이지 이동","개요 페이지 이동"))}"><button type="button" data-character-pane="visual" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>2</b><button type="button" data-character-overview-pane="life" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>`
     :`<nav class="character-overview-page-controls" aria-label="${esc(t("개요 페이지 이동","개요 페이지 이동"))}"><button type="button" data-character-overview-pane="basic" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>3</b><button type="button" data-character-pane="body" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>`;
   const overviewPortrait=c.icon?`<img src="${esc(c.icon)}" alt="${esc(c.name)} 아이콘 미리보기">`:profileAvatar(c);
-  const profileOverviewPane=`<section class="character-profile-overview-page" data-overview-page="${overviewPane}"><div class="character-overview-portrait">${overviewPortrait}</div>${overviewControls}${overviewPane==="basic"?overviewBasic:overviewLife}</section>`;
+  const profileOverviewMarkup=pane=>`<section class="character-profile-overview-page" data-overview-page="${pane}"><div class="character-overview-portrait">${overviewPortrait}</div>${overviewControlsFor(pane)}${pane==="basic"?overviewBasic:overviewLife}</section>`;
+  const profileOverviewBasicPane=profileOverviewMarkup("basic");
+  const profileOverviewLifePane=profileOverviewMarkup("life");
+  const profileOverviewPane=overviewPane==="basic"?profileOverviewBasicPane:profileOverviewLifePane;
   const bodyAppearance=c.bodyProfile?.appearance||{};
   const bodyBasics=`<section class="profile-basic-settings body-basic-settings"><div class="settings-section-heading"><span><small>QUICK SETTINGS</small><h3>간단 설정</h3></span><p>캐릭터를 알아보는 데 중요한 외형만 먼저 골라요.</p></div><div class="health-field-grid"><label>외모가 눈에 띄는 정도<select data-field="appearanceLevel">${["매우 추함","못생김","눈에 띄지 않음","수수함","보통","매력적임","매우 아름답거나 잘생김","시선을 사로잡음"].map(value=>`<option ${value===(c.appearanceLevel||"보통")?"selected":""}>${value}</option>`).join("")}</select></label>${profileSelect("체형","bodySize",BODY_SIZES,c.bodyProfile?.bodySize||"설정하지 않음")}${profileSelect("현재 머리색","appearance.hairColor",HAIR_COLORS,bodyAppearance.hairColor||"설정하지 않음")}${profileSelect("머리 기장","appearance.hairLength",HAIR_LENGTHS,bodyAppearance.hairLength||"설정하지 않음")}${profileSelect("화장 정도","appearance.makeupLevel",MAKEUP_LEVELS,bodyAppearance.makeupLevel||"하지 않음")}</div></section>`;
   const bodySelect=(path,values,current,extra="")=>`<select data-body-field="${path}" ${extra}>${values.map(value=>overviewOption(value,current)).join("")}</select>`;
@@ -3083,7 +3120,8 @@ function character(){
   const pane=state.characterPane==="body"?bodyPane:state.characterPane==="personality"?personalityPane:state.characterPane==="taste"?taste:state.characterPane==="manage"?managePane:profileWithLicense;
   const fullActivePane=["visual","profile","body","wardrobe","personality","taste","closet"].includes(state.characterPane)?state.characterPane:"visual";
   const fullPane=fullActivePane==="visual"?characterFullOverview(c):fullActivePane==="profile"?profileOverviewPane:fullActivePane==="body"?bodyPane:fullActivePane==="wardrobe"?wardrobePane:fullActivePane==="personality"?personalityBookPane:fullActivePane==="closet"?closetBookPane:tasteBookPane;
-  const layoutDialog=fullActivePane==="visual"?`<dialog class="character-layout-dialog" data-character-layout-dialog><form method="dialog" class="character-layout-dialog-shell"><header><span><small>HOME SCENE LAYOUT</small><b>${t("배치 조정하기","배치 조정하기")}</b></span><button value="close" aria-label="${t("배치 편집 닫기","배치 편집 닫기")}">×</button></header>${characterHomeLayoutEditor(c)}</form></dialog>`:"";
+  const layoutDialogMarkup=`<dialog class="character-layout-dialog" data-character-layout-dialog><form method="dialog" class="character-layout-dialog-shell"><header><span><small>HOME SCENE LAYOUT</small><b>${t("배치 조정하기","배치 조정하기")}</b></span><button value="close" aria-label="${t("배치 편집 닫기","배치 편집 닫기")}">×</button></header>${characterHomeLayoutEditor(c)}</form></dialog>`;
+  const layoutDialog=fullActivePane==="visual"?layoutDialogMarkup:"";
   const unknown=t("미설정","미설정");
   const birthdayLabel=c.birthday?`${Number(c.birthday.slice(0,2))}${t("월","월")} ${Number(c.birthday.slice(2))}${t("일","일")}`:unknown;
   const draftRows=[
@@ -3122,6 +3160,26 @@ function character(){
   const cornerInk=`<button type="button" class="character-book-v8-ink" data-save aria-label="${esc(t("잉크병을 눌러 저장","잉크병을 눌러 저장"))}"><img src="./assets/home-ui/ink.png" alt=""></button>`;
   const fullSave=`<button type="button" class="character-book-v8-save character-book-v9-composite" data-save><i class="character-book-v9-fill" aria-hidden="true"></i><span>${t("저장","저장")}</span></button>`;
   const fullBookDialogs=`${layoutDialog}${["body","wardrobe","taste"].includes(fullActivePane)?bookListDialog:""}${fullActivePane==="taste"?`${bookCatalogDialog}${tasteDialogs}`:""}`;
+  const currentFullPageKey=fullActivePane==="profile"?`overview-${overviewPane}`:fullActivePane==="body"?`body-${state.characterBodyPane}`:fullActivePane==="personality"?`personality-${["details","emotion"].includes(state.characterPersonalityPane)?"details":"core"}`:fullActivePane;
+  const fullPageEntries=[
+    {key:"visual",pane:"visual",html:characterFullOverview(c)},
+    {key:"overview-basic",pane:"profile",html:profileOverviewBasicPane},
+    {key:"overview-life",pane:"profile",html:profileOverviewLifePane},
+    {key:"body-figure",pane:"body",html:bodyFigurePane},
+    {key:"body-appearance",pane:"body",html:bodyAppearancePane},
+    {key:"body-accessibility",pane:"body",html:bodyAccessibilityPane},
+    {key:"wardrobe",pane:"wardrobe",html:wardrobePane},
+    {key:"personality-core",pane:"personality",html:personalityCorePane},
+    {key:"personality-details",pane:"personality",html:personalityEmotionPane},
+    {key:"taste",pane:"taste",html:tasteBookPane},
+    {key:"closet",pane:"closet",html:closetBookPane}
+  ];
+  const currentFullPageIndex=Math.max(0,fullPageEntries.findIndex(page=>page.key===currentFullPageKey));
+  const fullSpreadStart=Math.floor(currentFullPageIndex/2)*2;
+  const fullSpreadPages=fullPageEntries.slice(fullSpreadStart,fullSpreadStart+2);
+  const fullSpreadEnd=fullSpreadStart+fullSpreadPages.length;
+  const fullSpreadContent=fullSpreadPages.map((page,index)=>`<section class="character-book-spread-leaf" data-spread-side="${index===0?"left":"right"}" data-spread-page="${page.key}"><main class="character-book-v8-page" data-book-page="${page.pane}">${page.html}</main></section>`).join("");
+  const fullSpreadDialogs=`${fullSpreadPages.some(page=>page.key==="visual")?layoutDialogMarkup:""}${bookListDialog}${bookCatalogDialog}${tasteDialogs}`;
   const fullBook=`<section class="character-book-v8 is-open" data-character-full-ui-version="9" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
     <div class="character-book-v8-canvas">
       <span class="character-book-v8-stage" aria-hidden="true"><img class="character-book-v8-wood" src="./assets/character-ui/character-wood-background.png" alt=""><span class="character-book-v8-book"></span></span>
@@ -3133,10 +3191,22 @@ function character(){
     </div>${fullBookDialogs}
   </section>`;
   const tabletFullBook=fullBook.replace('class="character-book-v8 is-open"','class="character-book-v8 is-open tablet-character-book"');
+  const tabletSpreadBook=`<section class="character-book-v8 is-open tablet-character-book character-book-spread-layout" data-character-full-ui-version="10" data-book-layout="spread" data-full-pane="${fullActivePane}" style="--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}">
+    <div class="character-book-v8-canvas">
+      <span class="character-book-v8-stage" aria-hidden="true"><img class="character-book-v8-wood" src="./assets/character-ui/character-wood-background.png" alt=""><span class="character-book-v8-book"></span></span>
+      <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
+      <button type="button" class="character-book-v8-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 화면으로 돌아가기","캐릭터 화면으로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
+      ${fullNavigation}
+      <div class="character-book-v8-spread">${fullSpreadContent}</div>
+      <nav class="character-book-spread-controls" aria-label="${esc(t("펼친 책 페이지 이동","펼친 책 페이지 이동"))}"><button type="button" data-character-spread-step="-1" ${fullSpreadStart===0?"disabled":""} aria-label="${esc(t("이전 두 페이지","이전 두 페이지"))}">◀</button><b>${fullSpreadStart+1}${fullSpreadPages.length>1?`–${fullSpreadEnd}`:""}</b><button type="button" data-character-spread-step="1" ${fullSpreadEnd>=fullPageEntries.length?"disabled":""} aria-label="${esc(t("다음 두 페이지","다음 두 페이지"))}">▶</button></nav>
+      ${cornerInk}${fullSave}
+    </div>${fullSpreadDialogs}
+  </section>`;
   // 전체설정에서는 보이지 않는 허브·구형 데스크톱 편집기·정렬창을 DOM에
   // 함께 만들지 않는다. 캐릭터 페이지 이동 때마다 세 화면을 통째로 파싱하던
   // 것이 Android WebView에서 가장 큰 지연과 터치 버벅임의 원인이었다.
   if(state.characterSettingsView==="full"){
+    if(nativeTabletLandscape)return `<div class="editor character-editor character-editor-tablet-full character-editor-tablet-landscape" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><section class="panel form character-tablet-full-shell">${tabletSpreadBook}</section></div>`;
     if(nativeTabletMode)return `<div class="editor character-editor character-editor-tablet-full" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><aside class="panel desktop-character-list"><div class="title"><h2>${t("캐릭터 목록","캐릭터 목록")}</h2><button data-new ${state.order.length>=limit?"disabled":""}>${slotLabel}</button></div>${list}</aside><section class="panel form character-tablet-full-shell">${tabletFullBook}</section></div>`;
     return `<div class="editor character-editor character-editor-full-only" style="--character-own:${esc(c.theme?.primary||"#176b60")};--character-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")};--character-accent:${esc(c.theme?.primary||"#176b60")};--character-accent-secondary:${esc(c.theme?.secondary||c.theme?.primary||"#176b60")}"><section class="panel form character-full-only-shell">${fullBook}</section></div>`;
   }
@@ -4414,10 +4484,15 @@ function accountLoading(){
   return `<section class="village-account-loading" role="status" aria-live="polite"><img src="./world-assets/owner-forest-town.webp" alt=""><div><span aria-hidden="true"></span><b>${esc(t("계정 기록을 확인하는 중…","계정 기록을 확인하는 중…"))}</b><p>${esc(t("저장된 마을을 확인한 뒤 이어서 열게요.","저장된 마을을 확인한 뒤 이어서 열게요."))}</p></div></section>`;
 }
 function view(){
+  const authInfo=window.ParallelCityAuth?.getInfo?.();
+  const configured=Boolean(window.PARALLEL_CITY_FIREBASE?.apiKey&&window.PARALLEL_CITY_FIREBASE?.projectId&&window.PARALLEL_CITY_FIREBASE?.authDomain);
+  // A remembered Google session must finish its account switch and initial
+  // cloud download before any local game screen is exposed.  Manual syncs do
+  // not use startupSyncing, so they never replace an already-open screen.
+  if(configured&&!window.DrawerVillageAuthStartupFailed&&(!authInfo||!authInfo.ready||authInfo.startupSyncing))return accountLoading();
   if(!state.order.length){
     if(state.activeTab==="settings")return settings();
     if(state.activeTab==="mailbox")return mailbox();
-    const authInfo=window.ParallelCityAuth?.getInfo?.();
     if(!authInfo||!authInfo.ready||authInfo.busy)return accountLoading();
     return welcome();
   }
@@ -4518,3 +4593,5 @@ function shop(){
 
 Object.assign(UI_TEXT.en,{"웨딩드레스 부티크":"Wedding dress boutique","원형 경기장":"Circular stadium","도심 오피스":"City office","학사모 학교":"Graduation school","여행가방 호텔":"Suitcase hotel","시계탑 학교":"Clock school","책더미 도서관":"Book-stack library","옥상 정원 건물":"Rooftop garden building","직접 그린 건물":"Hand-drawn building","시간별 조명":"Scheduled lighting","원화의 흰색 유지":"Original white artwork preserved"});
 Object.assign(UI_TEXT.ja,{"웨딩드레스 부티크":"ウェディングドレス・ブティック","원형 경기장":"円形スタジアム","도심 오フィス":"都心オフィス","학사모 학교":"卒業帽の学校","여행가방 호텔":"スーツケースホテル","시계탑 학교":"時計台の学校","책더미 도서관":"本の山の図書館","옥상 정원 건물":"屋上庭園の建物","직접 그린 건물":"手描きの建物","시간별 조명":"時間指定の照明","원화의 흰색 유지":"原画の白色を保持"});
+Object.assign(UI_TEXT.en,{"캐릭터 정보":"Character information","선택한 캐릭터":"Selected character","기본 정보를 빠르게 수정":"Quickly edit basic information","설정책에서 자세히 수정":"Edit every detail in the settings book","펼친 책 페이지 이동":"Turn open-book spreads","이전 두 페이지":"Previous two pages","다음 두 페이지":"Next two pages"});
+Object.assign(UI_TEXT.ja,{"캐릭터 정보":"人物情報","선택한 캐릭터":"選択中の人物","기본 정보를 빠르게 수정":"基本情報をすばやく編集","설정책에서 자세히 수정":"設定帳ですべての詳細を編集","펼친 책 페이지 이동":"見開きページを移動","이전 두 페이지":"前の2ページ","다음 두 페이지":"次の2ページ"});

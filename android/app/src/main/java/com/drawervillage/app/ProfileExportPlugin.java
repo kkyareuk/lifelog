@@ -20,6 +20,7 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 @CapacitorPlugin(name = "ProfileExport")
 public class ProfileExportPlugin extends Plugin {
@@ -36,9 +37,9 @@ public class ProfileExportPlugin extends Plugin {
             values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
             values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, directory + "/DrawerVillage");
-            Uri collection = mime.equals("application/pdf")
-                ? MediaStore.Downloads.EXTERNAL_CONTENT_URI
-                : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            Uri collection = mime.startsWith("image/")
+                ? MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                : MediaStore.Downloads.EXTERNAL_CONTENT_URI;
             Uri uri = resolver.insert(collection, values);
             if (uri == null) throw new Exception("저장 위치를 만들지 못했습니다.");
             return uri;
@@ -89,5 +90,22 @@ public class ProfileExportPlugin extends Plugin {
             document.close(); bitmap.recycle();
             JSObject result = new JSObject(); result.put("uri", uri.toString()); call.resolve(result);
         } catch (Exception error) { call.reject(error.getMessage(), error); }
+    }
+
+    @PluginMethod
+    public void saveJson(PluginCall call) {
+        String data = call.getString("data", "");
+        String filename = call.getString("filename", "drawer-village-backup.json");
+        try {
+            Uri uri = destination(filename, "application/json", Environment.DIRECTORY_DOWNLOADS);
+            try (OutputStream output = stream(uri)) {
+                output.write(data.getBytes(StandardCharsets.UTF_8));
+            }
+            JSObject result = new JSObject();
+            result.put("uri", uri.toString());
+            call.resolve(result);
+        } catch (Exception error) {
+            call.reject(error.getMessage(), error);
+        }
     }
 }

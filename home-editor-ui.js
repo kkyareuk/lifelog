@@ -1,4 +1,4 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260905dev224";
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260906dev229";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -85,7 +85,7 @@ let bedLayoutObserver;
 // Recalculate only on layout/image changes (including tablet rotation).
 export function fitCoupleBedOccupants(root){
   bedLayoutObserver?.disconnect();
-  const people=[...root.querySelectorAll('.is-using-couple-bed[data-couple-bed-id]')];
+  const people=[...root.querySelectorAll('.is-using-couple-bed[data-couple-bed-id]')],statuses=[...root.querySelectorAll('.home-bed-foreground-status[data-bed-status-for]')];
   const layout=()=>people.forEach(person=>{
     if(!person.isConnected)return;
     const room=person.closest('.room'),bed=room?.querySelector(`[data-furniture-placement="${CSS.escape(person.dataset.coupleBedId)}"]`),image=bed?.querySelector('.couple-bed-base');
@@ -93,25 +93,37 @@ export function fitCoupleBedOccupants(root){
     const width=bed.clientWidth,height=bed.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
     const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio;
     const style=getComputedStyle(bed),flip=Number(style.getPropertyValue('--furniture-flip'))||1;
-    const x=width/2+(Number(person.dataset.bedSlot)===0?-.2:.2)*paintedWidth*1.05*flip;
+    const x=width/2+(Number(person.dataset.bedSlot)===0?-.18:.18)*paintedWidth*1.05*flip;
     // Sleeping occupants sit across the quilt edge: the upper part stays on
     // the pillow and the lower part is actually covered by the foreground quilt.
     const underCover=person.classList.contains('is-under-cover');
-    const y=height/2-(underCover?.23:.29)*paintedHeight*1.05;
+    const y=height/2-(underCover?.225:.29)*paintedHeight*1.05;
     const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
     const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy));
     const parent=person.offsetParent,layer=bed.offsetParent;
     person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
     person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    person.style.setProperty('--bed-face-size',`${Math.max(underCover?24:20,Math.min(underCover?76:64,paintedWidth*(underCover?.33:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)))}px`);
+    person.style.setProperty('--bed-face-size',`${Math.max(underCover?46:36,Math.min(underCover?64:56,paintedWidth*(underCover?.32:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)))}px`);
   });
-  if(!people.length)return;
-  bedLayoutObserver=new ResizeObserver(layout);
-  new Set(people.map(person=>person.closest('.room'))).forEach(room=>{
+  const layoutStatuses=()=>statuses.forEach(status=>{
+    if(!status.isConnected)return;
+    const room=status.closest('.room'),bed=room?.querySelector(`[data-furniture-placement="${CSS.escape(status.dataset.bedStatusFor)}"]`),image=bed?.querySelector('.couple-bed-base');
+    if(!image?.naturalWidth||!bed.clientWidth||!bed.clientHeight)return;
+    const width=bed.clientWidth,height=bed.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
+    const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio,style=getComputedStyle(bed);
+    const x=width/2,y=height/2+.36*paintedHeight*1.05,[ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
+    const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy)),parent=status.offsetParent,layer=bed.offsetParent;
+    status.style.setProperty('--bed-status-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
+    status.style.setProperty('--bed-status-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
+  });
+  const fit=()=>{layout();layoutStatuses()};
+  if(!people.length&&!statuses.length)return;
+  bedLayoutObserver=new ResizeObserver(fit);
+  new Set([...people.map(person=>person.closest('.room')),...statuses.map(status=>status.closest('.room'))]).forEach(room=>{
     if(!room)return;bedLayoutObserver.observe(room);
-    room.querySelectorAll('.couple-bed-base').forEach(image=>{if(!image.complete)image.addEventListener('load',layout,{once:true})});
+    room.querySelectorAll('.couple-bed-base').forEach(image=>{if(!image.complete)image.addEventListener('load',fit,{once:true})});
   });
-  layout();
+  fit();
 }
 
 export function bindHomeEditorUI(root,{state,addFurniture,updateFurniture,openRoom,selectAdded}){

@@ -165,13 +165,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
-    const nativeTabletPhoneLayout="${platform}"==="android"&&Math.min(screen.width,screen.height)>=600;
-    if(nativeTabletPhoneLayout){
-      document.documentElement.classList.add("native-phone-layout");
-      document.querySelector('meta[name="viewport"]')?.setAttribute("content","width=480,viewport-fit=cover");
-    }
-    window.DRAWER_VILLAGE_TABLET_PHONE_LAYOUT=nativeTabletPhoneLayout;
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260905dev224";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260906dev229";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){
