@@ -6,17 +6,26 @@ const app=read("app.js"),views=read("views.js"),state=read("state.js");
 const css=read("app.css"),bookCss=read("character-book.css"),audio=read("audio.js");
 const native=read("native-app.js"),gradle=read("android/app/build.gradle");
 
-assert.match(gradle,/versionCode\s+220/);
-assert.match(gradle,/versionName\s+"1\.0\.204\.1"/);
+assert.match(gradle,/versionCode\s+22[01]/);
+assert.match(gradle,/versionName\s+"1\.0\.204\.[12]"/);
 
-assert.match(app,/if\(tab==="character"\)state\.characterSettingsView="full"/);
-assert.match(app,/if\(startupTab==="character"\)state\.characterSettingsView="full"/);
-assert.doesNotMatch(app,/\[data-close-full-character-settings\]/);
-assert.match(state,/state\.activeTab="character";state\.characterSettingsView="full"/);
-
-assert.match(views,/class="character-book-v8-back" data-tab="observe"/);
+const corrected221=/versionCode\s+221/.test(gradle);
+if(corrected221){
+  assert.match(app,/if\(tab==="character"\)state\.characterSettingsView="hub"/);
+  assert.match(app,/if\(startupTab==="character"\)state\.characterSettingsView="hub"/);
+  assert.match(app,/\[data-close-full-character-settings\]/);
+  assert.match(state,/state\.activeTab="character";state\.characterSettingsView="hub"/);
+  assert.match(views,/class="character-book-v8-back" data-close-full-character-settings/);
+}else{
+  assert.match(app,/if\(tab==="character"\)state\.characterSettingsView="full"/);
+  assert.match(app,/if\(startupTab==="character"\)state\.characterSettingsView="full"/);
+  assert.doesNotMatch(app,/\[data-close-full-character-settings\]/);
+  assert.match(state,/state\.activeTab="character";state\.characterSettingsView="full"/);
+  assert.match(views,/class="character-book-v8-back" data-tab="observe"/);
+}
 assert.match(views,/character-editor-tablet-full/);
-assert.match(views,/character-full-only-shell">\$\{fullBook\}\$\{quickSettings\}/);
+if(corrected221)assert.match(views,/character-full-only-shell">\$\{fullBook\}<\/section>/);
+else assert.match(views,/character-full-only-shell">\$\{fullBook\}\$\{quickSettings\}/);
 assert.match(views,/data-open-quick-character-settings/);
 assert.match(bookCss,/tablet-character-book \.character-book-v8-back\{display:block!important\}/);
 
@@ -34,4 +43,4 @@ for(const marker of ["character-draft-back","relationship-back-button","routine-
   assert.ok(line?.includes('data-tab="observe"'),`${marker} must use shared back navigation`);
 }
 
-console.log("PASS 220: character back navigation, direct full settings, stable quick-settings font, and composited town walking");
+console.log(corrected221?"PASS 220 baseline under 221: back navigation, stable quick-settings font, and composited town walking":"PASS 220: character back navigation, direct full settings, stable quick-settings font, and composited town walking");

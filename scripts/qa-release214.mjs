@@ -5,17 +5,18 @@ export async function checkFirstCharacter214(page,output,width){
  const language=width===1024?'en':width===820?'ja':'ko';
  if(language!=='ko')await page.locator(`[data-welcome-language="${language}"]`).click();
  await page.locator('[data-welcome-create]').click();
- const book=page.locator('.character-book-v8:visible');
- await book.waitFor({state:'visible'});
- assert.equal(await page.locator('.mobile-character-dashboard').count(),0,'new characters open the lightweight full editor directly');
- await book.locator('.character-book-v9-menu>summary').click();
- await book.locator('[data-open-quick-character-settings]').click();
+ const hub=page.locator('.mobile-character-dashboard:visible');
+ await hub.waitFor({state:'visible'});
+ assert.equal(await page.locator('.character-book-v8').count(),0,'new characters open the character hub without building full settings');
+ await hub.locator('[data-open-quick-character-settings]').click();
  const dialog=page.locator('.character-quick-settings-dialog');
  await dialog.waitFor({state:'visible'});
  assert.equal(await dialog.locator('.character-quick-paper').count(),0);
  const box=await dialog.boundingBox();assert.ok(box.width<=600&&box.x>=0);
  const nameLabel=await dialog.locator('label').filter({has:page.locator('[data-field="name"]')}).textContent();
  assert.ok(nameLabel.includes({ko:'이름',en:'Name',ja:'名前'}[language]),'translated first-character form');
+ assert.ok(await dialog.locator('.character-quick-back:visible').count(),'quick settings has a visible back button');
+ assert.ok(await dialog.locator('.character-quick-save:visible').count(),'quick settings has a visible save button');
  await dialog.locator('[data-field="name"]').fill('첫 캐릭터 테스트');
  await page.screenshot({path:resolve(output,`first-character-${width}.png`)});
  await dialog.locator('[data-save-mobile-character-editor]').click();
@@ -31,7 +32,12 @@ export async function checkRelease214(page,navigate,output,width){
  const icon=page.locator('.home-native-house-name>img');
  await icon.evaluate(el=>el.decode());assert.ok((await icon.boundingBox()).width>=24);
  await navigate('character');
- assert.equal(await page.locator('.mobile-character-dashboard').count(),0,`${width}: hidden character dashboard must not be built`);
+ const characterHub=page.locator('.mobile-character-dashboard:visible');
+ await characterHub.waitFor({state:'visible'});
+ assert.equal(await page.locator('.character-book-v8').count(),0,`${width}: hidden full settings must not be built on the hub`);
+ await characterHub.locator('[data-open-full-character-settings]').click();
+ await page.locator('.character-book-v8:visible').waitFor({state:'visible'});
+ assert.equal(await page.locator('.character-quick-settings-dialog').count(),0,`${width}: quick settings must not be nested in full settings`);
  const book=page.locator('.character-book-v8-book');
  const paper=await book.evaluate(el=>{const b=el.getBoundingClientRect(),s=getComputedStyle(el);return {top:b.top+parseFloat(s.borderTopWidth),bottom:b.bottom-parseFloat(s.borderBottomWidth),left:b.left,right:b.right}});
  // The visual-page navigation lives inside the illustration's paper, not its edge.
@@ -39,6 +45,8 @@ export async function checkRelease214(page,navigate,output,width){
  const nav=await controls.boundingBox();assert.ok(nav&&nav.y>=paper.top&&nav.y+nav.height<=paper.bottom+1,`${width}: pagination outside book paper`);
  await page.screenshot({path:resolve(output,`book-${width}.png`)});
  await page.locator('.character-book-v8-back:visible').click();
+ await page.waitForFunction(()=>Boolean(document.querySelector('.mobile-character-dashboard')));
+ await page.locator('.character-draft-back:visible').click();
  await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='observe');
  await page.evaluate(()=>{const m=window.qa214,first=m.state.activeId;m.createCharacter();const second=m.state.activeId;m.addRelationship({a:first,b:second,type:'연인',stage:'연애 중'});m.save(true)});
  await navigate('relationship');
