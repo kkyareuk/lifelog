@@ -1,4 +1,4 @@
-import {observedMoodEvents} from "./mood-event-causes.js?v=20260906dev229";
+import {observedMoodEvents} from "./mood-event-causes.js?v=20260906dev230";
 // Mood is derived from the scene. Opening a screen never accumulates or mutates it.
 const goodTown=new Set(['매우 좋은 평판','좋은 평판','조용하고 평화로움','살기 좋음','주민들이 친절함','외지인을 환영함','자연 경관이 아름다움','의료·복지가 좋음']);
 const badTown=new Set(['나쁜 평판','매우 나쁜 평판','치안이 불안함','사건 사고가 잦음','환경 오염이 심함','폐쇄적인 곳']);

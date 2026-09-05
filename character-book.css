@@ -143,8 +143,9 @@ body #app .character-book-v8 :is(.personality-type-book,.personality-direct-choi
 
 .character-editor-full-only,.character-full-only-shell{min-width:0!important;min-height:0!important}.character-full-only-shell{display:block!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important}
 
-/* Native tablets retain their character list and wide two-column shell, while
-   the right panel renders the exact same book pages and state bindings as phones. */
+/* Tablet hubs retain the roster, but full settings give the book the complete
+   viewport. Keeping the roster beside a portrait book was what forced controls
+   below phone size and clipped longer labels. */
 .tablet-character-book{display:none!important}
 .tablet-character-summary{display:none!important}
 @media(min-width:721px){
@@ -173,7 +174,9 @@ body #app .character-book-v8 :is(.personality-type-book,.personality-direct-choi
   html.native-app[data-active-tab="character"] .tablet-character-summary nav{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
   html.native-app[data-active-tab="character"] .tablet-character-summary nav button{min-width:0!important;min-height:48px!important;padding:10px!important;border-color:#bda887!important;background:#f3e8d5!important;color:#34261d!important;font-weight:850!important}.native-app[data-active-tab="character"] .tablet-character-summary nav button.danger{background:#a9453e!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
   html.native-app[data-active-tab="character"] .tablet-character-book.character-book-v8.is-open{position:relative!important;z-index:1!important;inset:auto!important;display:grid!important;width:100%!important;height:100%!important;margin:0!important;border-radius:22px!important;background:#5c4234 url("./assets/character-ui/character-wood-background.png") center/cover no-repeat!important;box-shadow:inset 0 0 0 1px #fff2!important}
-  html.native-app[data-active-tab="character"] .tablet-character-book .character-book-v8-canvas{width:min(calc(100% - 24px),calc(44.929117dvh - 48px),520px)!important;height:auto!important;max-height:calc(100% - 20px)!important}
+  html.native-app[data-active-tab="character"] .character-editor-tablet-portrait-full{position:fixed!important;z-index:95!important;inset:0!important;display:grid!important;grid-template-columns:minmax(0,1fr)!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:12px!important;background:#5c4234!important}
+  html.native-app[data-active-tab="character"] .character-editor-tablet-portrait-full>.character-tablet-full-shell{display:grid!important;place-items:center!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;background:#5c4234!important;overflow:hidden!important}
+  html.native-app[data-active-tab="character"] .tablet-character-book .character-book-v8-canvas{width:min(calc(100% - 24px),calc(44.929117dvh - 18px),760px)!important;height:auto!important;max-height:calc(100% - 12px)!important}
   html.native-app[data-active-tab="character"] .tablet-character-book .character-book-v8-back{display:block!important}
   html.native-app[data-active-tab="character"] .character-tablet-settings-entry{display:none!important}
 }

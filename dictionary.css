@@ -55,4 +55,11 @@ html.native-app[data-active-tab="catalog"] #app>main{padding:0!important;max-wid
 @keyframes dictionary-twinkle{0%,100%{opacity:.25;transform:scale(.7) rotate(-12deg)}50%{opacity:1;transform:scale(1.15) rotate(12deg)}}
 @keyframes dictionary-float{50%{transform:translateY(-5px)}}@keyframes dictionary-sway{25%{transform:rotate(-5deg)}75%{transform:rotate(5deg)}}
 @media(min-width:700px){.dictionary-results{grid-template-columns:repeat(6,minmax(0,1fr))}.dictionary-tile{min-height:158px}.dictionary-toolbar nav{left:16%;}.dictionary-kinds{top:130px}.dictionary-places{top:178px}.dictionary-toolbar input{top:65px}.dictionary-back{top:45px;width:72px}.dictionary-frame{bottom:20px}.dictionary-book .dictionary-back{width:14.8%;top:4.8%}}
+@media(min-width:721px) and (orientation:landscape){
+  html.native-app[data-active-tab="catalog"] .dictionary-shell{width:min(calc(100vw - 32px),1600px);max-width:none;margin:auto;border-radius:24px}
+  html.native-app[data-active-tab="catalog"] .dictionary-results{grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:12px}
+  html.native-app[data-active-tab="catalog"] .dictionary-frame{left:2%;right:2%}
+  html.native-app[data-active-tab="catalog"] .dictionary-toolbar input{left:20%;width:62%}
+  html.native-app[data-active-tab="catalog"] .dictionary-toolbar nav{left:8%;right:8%;justify-content:flex-start}
+}
 @media(prefers-reduced-motion:reduce){.dictionary-art::before,.dictionary-art>*{animation:none!important}.dictionary-shell button{transition:none}}

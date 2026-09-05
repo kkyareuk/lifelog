@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260906dev229";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260906dev229";
-import {state,save,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260906dev229";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260906dev229";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260906dev229";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260906dev230";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260906dev230";
+import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260906dev230";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260906dev230";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260906dev230";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -3200,6 +3200,8 @@ export function nextSceneRefreshDelay(c,date=new Date()){
   const wake=wakeAt(c,date),sleep=sleepAt(c,date);
   if(wake>n)candidates.push(wake);
   if(sleep>n)candidates.push(sleep);
+  const directiveEnd=Number(state.characterDirectives?.[c.id]?.endsAt);
+  if(directiveEnd>date.getTime())return Math.max(1000,Math.min(10*60*1000,directiveEnd-date.getTime()+250));
   const nextMinute=candidates.length?Math.min(...candidates):n+10;
   const minuteStart=new Date(date.getFullYear(),date.getMonth(),date.getDate(),Math.floor(nextMinute/60),nextMinute%60,1,0).getTime();
   return Math.max(1000,Math.min(10*60*1000,minuteStart-date.getTime()));
@@ -3223,6 +3225,10 @@ function commitLiveEntry(c,date,item){
   }
   if(item.forcedReturn){
     applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&!entry.forcedReturn),[item]));
+    return item;
+  }
+  if(item.manualDirective){
+    applyEntries(mergeImmutableEntries(entries.filter(entry=>entryMomentKey(entry)!==entryMomentKey(item)&&entry.manualDirectiveId!==item.manualDirectiveId&&!(entry.mood==="수면"&&Number(entry.minute)<=Number(item.minute))),[item]));
     return item;
   }
   if(item.giftExchange){
@@ -3252,7 +3258,8 @@ function commitLiveEntry(c,date,item){
           String(item.title||"").split(" · ").includes(String(entry.title||"")));
       return !shadowedBase;
     });
-    applyEntries(mergeImmutableEntries(withoutSameMoment,[item]));
+    const changed=applyEntries(mergeImmutableEntries(withoutSameMoment,[item]));
+    if(changed&&item.interactionId)recordAutomaticRelationshipMoment([c.id,...(item.withIds||[]),item.withId],`scene:${item.interactionId}`,1,true);
     return item;
   }
   const interactionIndex=item.interactionId?entries.findIndex(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute)):-1;
@@ -3467,10 +3474,21 @@ function forcedHomeEventFor(c,date=new Date()){
   }[state.uiLanguage]||{title:"집에서 시간을 보내는 중",desc:"귀환한 뒤 다음 등록 일정 전까지 집 안에서 편안하게 시간을 보내고 있어요."};
   return withResidenceLocation(c,homeEntry(c,Number(marker.minute),copy.title,copy.desc,"living",{forcedReturn:true,mood:"귀가"}),date);
 }
+function manualDirectiveEventFor(c,date=new Date()){
+  const directive=state.characterDirectives?.[c?.id],now=date.getTime();
+  if(!directive||now<Number(directive.startedAt)||now>=Number(directive.endsAt))return null;
+  const started=new Date(Number(directive.startedAt)),minute=started.getHours()*60+started.getMinutes();
+  const copy=directive.copy?.[state.uiLanguage]||directive.copy?.ko||{};
+  return withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
+    home:true,room:directive.room||"living",visitHomeId:homeIdForDate(c,date)||c.homeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
+    manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
+  }),date);
+}
 function baseEventFor(c,date=new Date()){
   const n=nowMin(date);
   const list=timeline(c,date);
   const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
+  const directed=manualDirectiveEventFor(c,date);if(directed)return commitLiveEntry(c,date,directed);
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   if(sleepingNow(c,date)){
     const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;

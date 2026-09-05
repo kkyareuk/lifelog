@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev229";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260906dev229";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906dev229";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260906dev229";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906dev229";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260906dev229";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906dev229";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260906dev229";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260906dev229";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev230";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260906dev230";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906dev230";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260906dev230";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906dev230";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260906dev230";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906dev230";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260906dev230";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260906dev230";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260906dev229";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906dev229";
+import {missingBuildings} from "./building-recovery.js?v=20260906dev230";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906dev230";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -230,7 +230,7 @@ const normalizeHomeSceneLayout=value=>{
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];
 const defaultCharacterNotificationSettings=()=>({characterIds:[],frequencyMode:"perDay",timesPerDay:1,intervalHours:4,startHour:10,endHour:18,voiceMode:"mixed",contentKinds:[...CHARACTER_NOTIFICATION_KINDS],scheduleEnds:false,updateNotices:false,recentSignatures:[],lastScheduledAt:0});
-const fresh=()=>({schema:35,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",statisticsTownId:"all",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiFont:"hanbit",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),achievements:{version:1,progress:{},unlockedAt:{},lastGooglePlaySync:{}},lastSaved:0,characters:{},order:[],homes:{},relationships:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],anniversaries:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"평판 정보 없음",fameLevel:"거의 알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
+const fresh=()=>({schema:36,activeTab:"observe",characterPane:"profile",characterOverviewPane:"basic",characterBodyPane:"figure",characterPersonalityPane:"core",characterTastePane:"categories",characterSettingsView:"hub",statisticsTownId:"all",activeId:null,activeHomeId:null,activeTownId:null,homeEditMode:false,homeVisualMode:"sd",homeSdScale:100,homeLdScale:100,homeUiTheme:"drawer-classic",buildingLabelMode:"full",preventInterTownMovement:false,soundMuted:false,soundEffectsVolume:45,measurementUnits:"metric",routineView:"weekly",routineMonth:"",uiLanguage:"ko",uiFont:"hanbit",uiScale:"normal",colorMode:"light",visualTheme:"drawer-default",ownerName:"",characterNotificationsEnabled:false,characterNotificationConsent:"unknown",characterNotificationSettings:defaultCharacterNotificationSettings(),achievements:{version:1,progress:{},unlockedAt:{},lastGooglePlaySync:{}},lastSaved:0,characters:{},order:[],homes:{},relationships:{},relationshipDevelopment:{},characterGroups:[],deletedCharacterIds:[],deletedRelationshipIds:[],deletedRelationshipKeys:[],deletedHomeIds:[],deletedRoutineIds:[],deletedMonthlyRoutineIds:[],anniversaries:[],characterViews:{},routines:{},monthlyRoutines:{},dailyPlans:{},interactions:[],dailyQuestion:null,scheduledChoices:[],characterDirectives:{},catalog:defaultCatalog(),towns:[],world:{name:"서랍마을",bg:"world-assets/owner-forest-town.webp",illustrationId:"owner-forest",photo:"",townType:"생활 중심",townSubtype:"골목 생활권",density:"여유로움",urbanization:"소도시",reputation:"평판 정보 없음",fameLevel:"거의 알려지지 않음",size:"보통 마을",terrain:"평야",transportModes:["일반 도로","시외버스"],travelAllowed:true,description:"",places:[
   {id:"cafe",name:"달무리 카페",type:"카페",emoji:"☕",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:3,x:15,y:34,color:"#74c7bd"},
   {id:"food",name:"달무리 식당",type:"음식점",emoji:"🍽️",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:["아재 입맛","어린이 입맛"],spicy:2,sweet:2,x:55,y:22,color:"#86ca7b"},
   {id:"office",name:"서랍 오피스",type:"사무실",subtype:"일반 회사",emoji:"🏢",image:"",imageScale:1,stock:[],priceRange:"보통",servicePrice:"보통",audiences:[],spicy:0,sweet:0,x:79,y:37,color:"#8c9df0"},
@@ -265,7 +265,7 @@ function normalizeHomes(x){
   if(!x||typeof x!=="object"||Array.isArray(x))x={};
   const previousSchema=Number(x?.schema)||0;
   if(x.activeTab==="wardrobe")x.activeTab="catalog";
-  x.schema=35;
+  x.schema=36;
   x.activeTab=["observe","mailbox","home","character","catalog","relationship","routine","statistics","town","shop","settings"].includes(x.activeTab)?x.activeTab:"observe";
   // 집 편집은 사용자가 현재 화면에서 직접 눌렀을 때만 켠다. 앱 재실행,
   // JSON 불러오기, 클라우드 복원으로 조절 손잡이가 자동 복원되지 않는다.
@@ -385,6 +385,17 @@ function normalizeHomes(x){
     kind:String(item.kind||"everyday"),startAt:Number(item.startAt)||Date.now(),buyAt:Number(item.buyAt)||0,giveAt:Number(item.giveAt)||0,
     itemKind:String(item.itemKind||""),itemId:String(item.itemId||""),settledAt:Number(item.settledAt)||0
   })):[];
+  x.characterDirectives=x.characterDirectives&&typeof x.characterDirectives==="object"&&!Array.isArray(x.characterDirectives)
+    ?Object.fromEntries(Object.entries(x.characterDirectives).filter(([characterId,item])=>x.characters?.[characterId]&&item&&typeof item==="object"&&!Array.isArray(item)).map(([characterId,item])=>[characterId,{
+      id:String(item.id||uid()),kind:String(item.kind||"wake"),startedAt:Number(item.startedAt)||Date.now(),endsAt:Number(item.endsAt)||Date.now(),
+      room:String(item.room||"living"),placeId:String(item.placeId||""),copy:item.copy&&typeof item.copy==="object"&&!Array.isArray(item.copy)?item.copy:{}
+    }]))
+    :{};
+  x.relationshipDevelopment=x.relationshipDevelopment&&typeof x.relationshipDevelopment==="object"&&!Array.isArray(x.relationshipDevelopment)
+    ?Object.fromEntries(Object.entries(x.relationshipDevelopment).map(([key,value])=>[key,{
+      points:Math.max(0,Number(value?.points)||0),moments:[...new Set((Array.isArray(value?.moments)?value.moments:[]).map(String).filter(Boolean))].slice(-40),updatedAt:Number(value?.updatedAt)||0
+    }]))
+    :{};
   x.characterViews=x.characterViews&&typeof x.characterViews==="object"?x.characterViews:{};
   x.buildingShapes=Array.isArray(x.buildingShapes)?x.buildingShapes.filter(shape=>shape&&shape.id&&shape.src).map(shape=>({
     id:String(shape.id),
@@ -1242,7 +1253,8 @@ export function recordCharacterInteraction({type,actorId,targetId="",itemKind=""
     if(!receiver.inventory[itemKind].includes(itemId))receiver.inventory[itemKind].push(itemId);
   }
   state.interactions=Array.isArray(state.interactions)?state.interactions:[];
-  state.interactions.push({id:uid(),type,actorId,targetId,itemKind,itemId,requestTitle:String(requestTitle||"").trim().slice(0,120),requestCategory:String(requestCategory||"").trim().slice(0,40),requestedBy:String(state.ownerName||"마을 주인").trim()||"마을 주인",createdAt:Date.now()});
+  const interactionId=uid();
+  state.interactions.push({id:interactionId,type,actorId,targetId,itemKind,itemId,requestTitle:String(requestTitle||"").trim().slice(0,120),requestCategory:String(requestCategory||"").trim().slice(0,40),requestedBy:String(state.ownerName||"마을 주인").trim()||"마을 주인",createdAt:Date.now()});
   state.interactions=state.interactions.slice(-120);
   // 오늘의 타임라인은 캐릭터별로 캐시된다. 사용자가 방금 부탁한 장면도
   // 즉시 현재 장면에 들어오도록 시뮬레이션 서명을 갱신한다.
@@ -1250,7 +1262,58 @@ export function recordCharacterInteraction({type,actorId,targetId="",itemKind=""
   if(target)target.timelineResetAt=Date.now();
   delete state.dailyPlans?.[actorId];
   if(targetId)delete state.dailyPlans?.[targetId];
+  if(targetId&&["gift","exercise","outing"].includes(type))recordAutomaticRelationshipMoment([actorId,targetId],`request:${interactionId}`,type==="gift"?2:1,false);
   save(true);return true;
+}
+
+const DIRECTIVE_COPY={
+  wake:{ko:["일어나 하루를 시작하는 중","잠에서 깨어 이불을 정리하고 세수할 준비를 하고 있어요."],en:["Waking up and starting the day","They got out of bed, straightened the covers, and are getting ready to wash up."],ja:["起きて一日を始めるところ","ベッドから起きて布団を整え、顔を洗う準備をしています。"],room:"bath",minutes:30},
+  wash:{ko:["세수하고 몸단장하는 중","잠기운을 씻어 내고 머리와 옷매무새를 차분히 정돈하고 있어요."],en:["Washing up and getting ready","They are washing off the sleepiness and calmly fixing their hair and clothes."],ja:["顔を洗って身支度をするところ","眠気を洗い流し、髪と服装を落ち着いて整えています。"],room:"bath",minutes:40},
+  meal:{ko:["간단한 식사를 챙기는 중","주방으로 가서 부담 없이 먹을 수 있는 음식과 마실 것을 준비하고 있어요."],en:["Making a simple meal","They went to the kitchen to prepare something easy to eat and drink."],ja:["簡単な食事を用意するところ","キッチンへ行き、気軽に食べられる物と飲み物を用意しています。"],room:"kitchen",minutes:50},
+  read:{ko:["읽고 싶던 것을 꺼내 보는 중","조용한 자리를 골라 궁금했던 책이나 자료를 펼치고 집중하고 있어요."],en:["Reading something they had in mind","They found a quiet spot, opened a book or reference they were curious about, and settled in."],ja:["読みたかったものを開くところ","静かな場所を選び、気になっていた本や資料を開いて集中しています。"],room:"study",minutes:60},
+  relax:{ko:["거실에서 느긋하게 쉬는 중","편한 자리에 앉아 음악이나 가벼운 영상을 즐기며 천천히 정신을 깨우고 있어요."],en:["Relaxing in the living room","They are sitting comfortably with music or a light video, waking up at an easy pace."],ja:["リビングでゆっくり休むところ","楽な場所に座り、音楽や軽い動画を楽しみながらゆっくり目を覚ましています。"],room:"living",minutes:55},
+  exercise:{ko:["가볍게 몸을 움직이는 중","무리하지 않는 동작부터 시작해 굳은 몸을 천천히 풀고 있어요."],en:["Doing some light exercise","They started with gentle movements and are slowly loosening up."],ja:["軽く体を動かすところ","無理のない動きから始め、固まった体をゆっくりほぐしています。"],room:"living",minutes:45}
+};
+export function directCharacterActivity(characterId,kind="wake"){
+  const character=state.characters?.[characterId],definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
+  if(!character)return false;
+  const startedAt=Date.now(),copy=Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:definition[language][0],desc:definition[language][1]}]));
+  state.characterDirectives=state.characterDirectives&&typeof state.characterDirectives==="object"?state.characterDirectives:{};
+  state.characterDirectives[characterId]={id:uid(),kind,startedAt,endsAt:startedAt+definition.minutes*60000,room:definition.room,copy};
+  character.timelineResetAt=startedAt;
+  delete state.dailyPlans?.[characterId];
+  save(true);
+  return true;
+}
+
+const AUTO_RELATION_STAGES=[[4,"아는 사이"],[8,"편한 친구"],[15,"가까운 친구"],[25,"서로 의지하는 친구"]];
+export function recordAutomaticRelationshipMoment(characterIds,momentId,points=1,persist=true){
+  const ids=[...new Set((characterIds||[]).map(String).filter(id=>state.characters?.[id]))].slice(0,2);
+  if(ids.length!==2||ids[0]===ids[1]||!momentId)return false;
+  const key=[...ids].sort().join("~");
+  state.relationshipDevelopment=state.relationshipDevelopment&&typeof state.relationshipDevelopment==="object"?state.relationshipDevelopment:{};
+  const record=state.relationshipDevelopment[key]||{points:0,moments:[],updatedAt:0};
+  if(record.moments.includes(String(momentId)))return false;
+  record.moments=[...record.moments,String(momentId)].slice(-40);
+  record.points=Math.max(0,Number(record.points)||0)+Math.max(1,Number(points)||1);
+  record.updatedAt=Date.now();
+  state.relationshipDevelopment[key]=record;
+  let relation=Object.values(state.relationships||{}).find(item=>item?.temporalStatus!=="past"&&[item.a,item.b].sort().join("~")===key);
+  if(!relation&&record.points>=4){
+    const id=uid();
+    relation={id,a:ids[0],b:ids[1],name:"",type:"친구",stage:"아는 사이",temporalStatus:"current",cohabit:false,stayTogether:false,interactions:[],interactionsAll:false,tags:[],intimacy:35,conflict:12,autoDeveloped:true,autoManagedStage:true,developmentPoints:record.points};
+    state.relationships[id]=relation;
+  }else if(relation){
+    relation.developmentPoints=record.points;
+    if(!relation.stage||relation.stage==="관계 단계 미설정")relation.autoManagedStage=true;
+    if(relation.autoManagedStage&&!(["혐관","라이벌"].includes(relation.type))){
+      relation.stage=(AUTO_RELATION_STAGES.filter(([threshold])=>record.points>=threshold).at(-1)||[0,"알아가는 사이"])[1];
+      relation.intimacy=Math.max(Number(relation.intimacy)||0,Math.min(88,28+record.points*3));
+    }
+  }
+  ids.forEach(id=>{state.characters[id].timelineResetAt=Date.now()});
+  if(persist)save(true);
+  return true;
 }
 export function setDailyQuestion(question){
   state.dailyQuestion=question&&typeof question==="object"?{
@@ -1808,7 +1871,9 @@ export function updateRelationship(id,data){
   const previousCharacterIds=[relation.a,relation.b];
   const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);
+  if(Object.prototype.hasOwnProperty.call(data||{},"stage")&&!(data?._automatic))relation.autoManagedStage=false;
   Object.assign(relation,data);
+  delete relation._automatic;
   relation.legalRegistration=normalizeLegalRegistration(relation.type,relation.legalRegistration,relation.marriageRegistration,relation.legalStatus);
   relation.marriageRegistration=relation.type==="부부"?relation.legalRegistration:"";
   relation.legalStatus=normalizeRelationshipLegalStatus(relation.legalStatus);

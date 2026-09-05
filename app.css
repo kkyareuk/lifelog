@@ -4518,7 +4518,7 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   right:max(12px,env(safe-area-inset-right));
   bottom:max(55px,calc(env(safe-area-inset-bottom) + 48px));
   width:min(360px,calc(100vw - 16px));
-  max-height:min(210px,30dvh);
+  max-height:min(430px,62dvh);
   padding:9px 34px 9px 9px;
   overflow:auto;
   border:1px solid #ffffff42;
@@ -4542,6 +4542,8 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
 .home-occupant-popover .home-occupant-visual :is(.avatar,.room-pet-photo){border-radius:50%;background:transparent;object-fit:cover}
 .home-occupant-popover small,.home-occupant-popover p{color:#d8e0e8}
 .home-occupant-popover-close{position:absolute;right:6px;top:6px;width:26px!important;height:26px!important;min-height:0!important;padding:0!important;border-color:#ffffff2b!important;background:#ffffff0d!important;color:#fff!important;font-size:12px!important}
+.home-occupant-command{display:grid;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid #ffffff25}.home-occupant-command h3{margin:0;font-size:11px}.home-occupant-command>div{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}.home-occupant-command button{min-width:0!important;min-height:34px!important;padding:6px 7px!important;border:1px solid #ffffff35!important;border-radius:10px!important;background:#ffffff12!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:9px!important;line-height:1.2!important;box-shadow:none!important;white-space:normal!important}
+html[data-color-mode="light"] .home-occupant-command{border-top-color:#3b2d241f}html[data-color-mode="light"] .home-occupant-command button{border-color:#cfc2b4!important;background:#f1e8de!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 
 .catalog-app-icon.catalog-user-photo{border-radius:50%!important;object-fit:cover!important}
 .catalog-app-icon.catalog-app-art{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important}
@@ -5776,6 +5778,8 @@ html[data-color-mode] .official-relation-dialog .relationship-card-grid [data-of
   html[data-active-tab="relationship"] .relationship-list-dialog>form{width:calc(100% - 48px)!important;max-width:1100px!important;padding:18px 28px 40px!important}
   html[data-active-tab="relationship"] .relationship-list-head{min-height:108px}
   html[data-active-tab="relationship"] .relationship-list-tools{grid-template-columns:minmax(220px,1fr) auto;align-items:center;gap:18px}
+  html.native-app[data-active-tab="relationship"] .relationship-list-dialog>form{width:calc(100% - 48px)!important;max-width:1600px!important;padding-inline:clamp(28px,4vw,64px)!important}
+  html.native-app[data-active-tab="relationship"] .official-relation-dialog .relationship-card-grid{grid-template-columns:repeat(auto-fit,minmax(250px,1fr))!important}
   html[data-active-tab="relationship"] .official-relation-dialog .relationship-card-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))!important}
   html[data-active-tab="relationship"] .relationship-group-card-list{grid-template-columns:repeat(2,minmax(0,1fr))}
   html[data-active-tab="relationship"] .relationship-group-create-card{grid-column:1/-1}
@@ -7017,6 +7021,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-location{display:flex!important;align-items:center!important;align-self:start!important;gap:2.2vw!important;min-width:0!important;margin-top:.15dvh!important;font-family:var(--home-ui-font)!important;font-size:clamp(11px,3.25vw,15px)!important;font-weight:400!important;line-height:1.2!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-location :is(img,i){width:6.55vw!important;height:3dvh!important;max-width:30px!important;max-height:30px!important;object-fit:cover!important;border:0!important;background:transparent!important;box-shadow:none!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-location>b{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-character-command{position:absolute!important;z-index:4!important;right:5.5vw!important;bottom:1.15dvh!important;width:auto!important;min-width:0!important;min-height:28px!important;margin:0!important;padding:5px 10px!important;border:1px solid #765b43!important;border-radius:999px!important;background:#6b4f3d!important;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;font:400 clamp(9px,2.7vw,12px)/1.1 var(--home-ui-font),sans-serif!important;box-shadow:0 2px 0 #2c1c14!important;white-space:nowrap!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment.expanded{
   top:auto!important;bottom:15.38dvh!important;height:auto!important;max-height:34dvh!important;overflow:visible!important
 }
@@ -7053,6 +7058,11 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 @media(min-width:721px) and (orientation:landscape){
   html.native-platform[data-active-tab="observe"] .tablet-observe-map{position:absolute!important;z-index:1!important;inset:112px 42% 132px 18px!important;display:block!important;overflow:hidden!important;border:2px solid #574330!important;border-radius:24px!important;background:#91ad77!important}
   html.native-platform[data-active-tab="observe"] .tablet-observe-world{position:relative!important;width:100%!important;height:100%!important;overflow:hidden!important}
+  html.native-platform[data-active-tab="observe"] .tablet-observe-world :is(.place-people-faces,.place-person-face,.town-traveler,.town-traveler-visual){min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}
+  html.native-platform[data-active-tab="observe"] .tablet-observe-world .place-person-face :is(.avatar,.sprite){margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;object-fit:contain!important}
+  html.native-platform[data-active-tab="observe"] .tablet-observe-world .place-person-face img.profile-photo-fallback{border-radius:50%!important;object-fit:cover!important}
+  html.native-platform[data-active-tab="observe"] .tablet-observe-world button.town-decoration{display:grid!important;place-items:center!important;width:clamp(38px,4.2vw,68px)!important;height:clamp(38px,4.2vw,68px)!important;min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;overflow:visible!important}
+  html.native-platform[data-active-tab="observe"] .tablet-observe-world button.town-decoration :is(.building-preset-image,.town-decoration-emoji){display:block!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;object-fit:contain!important}
   html.native-platform[data-active-tab="observe"] .tablet-observe-world>.world-bg{position:absolute!important;z-index:0!important;inset:0!important;width:100%!important;height:100%!important;object-fit:cover!important}
   html.native-platform[data-active-tab="observe"] .tablet-observe-world>.place,
   html.native-platform[data-active-tab="observe"] .tablet-observe-world>.map-place-label,
@@ -7075,6 +7085,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{left:60%!important;top:auto!important;bottom:152px!important;width:38%!important;height:auto!important;min-height:160px!important;max-height:30%!important;padding:25px 24px 20px!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment h1{font-size:19px!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment p{font-size:13px!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-character-command{right:22px!important;bottom:14px!important;font-size:11px!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side{top:auto!important;bottom:22px!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:1fr!important;gap:4px!important;width:18.5%!important;height:94px!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left{left:61.5%!important;right:auto!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{left:auto!important;right:1.5%!important}
