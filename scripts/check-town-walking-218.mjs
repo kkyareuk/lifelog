@@ -22,6 +22,6 @@ const points=Array.from({length:12},(_,index)=>{
   return [50+Math.cos(angle)*radius,50+Math.sin(angle)*radius*.45];
 });
 assert.equal(new Set(points.map(([x,y])=>`${x.toFixed(3)},${y.toFixed(3)}`)).size,12,"장식 방문자 12명의 위치가 중복되지 않는다");
-assert.match(gradle,/versionCode\s+218/);
-assert.match(gradle,/versionName\s+"1\.0\.203"/);
-console.log("PASS 218: decoration crowd spacing and whole-village walking routes");
+assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1]||0)>=218);
+assert.ok(Number(gradle.match(/versionName\s+"1\.0\.(\d+)"/)?.[1]||0)>=203);
+console.log("PASS town walking: decoration crowd spacing and whole-village walking routes");

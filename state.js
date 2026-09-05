@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905townwalk218";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260905townwalk218";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905townwalk218";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260905townwalk218";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905townwalk218";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260905townwalk218";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905townwalk218";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260905townwalk218";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260905townwalk218";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905gait219";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260905gait219";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905gait219";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260905gait219";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905gait219";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260905gait219";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905gait219";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260905gait219";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260905gait219";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260905townwalk218";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905townwalk218";
+import {missingBuildings} from "./building-recovery.js?v=20260905gait219";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905gait219";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -33,8 +33,9 @@ const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const RELATIONSHIP_OUTSIDE_STATUSES=new Set(["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함"]);
 const normalizeRelationshipLegalStatus=value=>RELATIONSHIP_OUTSIDE_STATUSES.has(value)?value:"가까운 사람에게만 알림";
-const normalizeMarriageRegistration=(type,value,legacyLegalStatus="")=>type==="부부"
-  ?(value==="unregistered"||legacyLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered")
+const LEGALLY_REGISTERABLE_RELATION_TYPES=new Set(["부부","부모·자녀","형제·자매"]);
+const normalizeLegalRegistration=(type,value,legacyValue="",legacyLegalStatus="")=>LEGALLY_REGISTERABLE_RELATION_TYPES.has(type)
+  ?(value==="unregistered"||legacyValue==="unregistered"||legacyLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered")
   :"";
 const HOME_MAP_SLOTS=[[28,18],[70,18],[24,46],[72,48],[18,76],[48,78],[80,76],[50,33],[36,62],[64,64]];
 const homeMapPosition=index=>{
@@ -465,7 +466,8 @@ function normalizeHomes(x){
     delete relation.romanceStatus;
     const officialityMigration={"법적으로 명시되지 않음":"관계를 따로 명명하지 않음","외부에는 숨김":"당사자끼리만 관계를 인정함","당사자 사이에서만 인정함":"당사자끼리만 관계를 인정함","남들 앞에서도 공개함":"누구에게나 공개함","법적으로 가족임":"법적으로 관계가 등록됨","법적으로 보호 관계임":"법적으로 관계가 등록됨"};
     const legacyLegalStatus=officialityMigration[relation.legalStatus]||relation.legalStatus;
-    relation.marriageRegistration=normalizeMarriageRegistration(relation.type,relation.marriageRegistration,legacyLegalStatus);
+    relation.legalRegistration=normalizeLegalRegistration(relation.type,relation.legalRegistration,relation.marriageRegistration,legacyLegalStatus);
+    relation.marriageRegistration=relation.type==="부부"?relation.legalRegistration:"";
     relation.legalStatus=normalizeRelationshipLegalStatus(legacyLegalStatus);
     delete relation.protectionRole;delete relation.caregiverIds;delete relation.careReceiverIds;
     // 정규화는 비어 있는 공식 관계 단계를 임의의 친밀한 단계로 채우지 않는다.
@@ -713,7 +715,7 @@ function normalizeHomes(x){
     c.eatingHabits=[...new Set(Array.isArray(c.eatingHabits)?c.eatingHabits.filter(value=>typeof value==="string"&&value.trim()):[])];
     c.lifeAdaptation=String(c.lifeAdaptation||"설정하지 않음");
     c.educationLevel=String(c.educationLevel||"설정하지 않음");
-    c.walkingStyle=["느리고 조심스럽게","차분하고 반듯하게","보통 속도로 자연스럽게","가볍고 경쾌하게","빠르고 성큼성큼"].includes(c.walkingStyle)?c.walkingStyle:"보통 속도로 자연스럽게";
+    c.walkingStyle=["느리고 조심스럽게","차분하고 반듯하게","보통 속도로 자연스럽게","가볍고 경쾌하게","빠르고 성큼성큼","그림자처럼 매우 민첩하게"].includes(c.walkingStyle)?c.walkingStyle:"보통 속도로 자연스럽게";
     c.speechStyle=SPEECH_STYLE_OPTIONS.includes(c.speechStyle)?c.speechStyle:"자동 · 성격에 맞춤";
     c.ageGroup=c.ageGroup||"성인";
     c.personalityChoices=c.personalityChoices&&typeof c.personalityChoices==="object"?c.personalityChoices:{};
@@ -1784,7 +1786,8 @@ export function addRelationship(data){
     ...data,
     stage:data?.stage||"관계 단계 미설정",
     legalStatus:normalizeRelationshipLegalStatus(data?.legalStatus),
-    marriageRegistration:normalizeMarriageRegistration(data?.type,data?.marriageRegistration,data?.legalStatus)
+    legalRegistration:normalizeLegalRegistration(data?.type,data?.legalRegistration,data?.marriageRegistration,data?.legalStatus),
+    marriageRegistration:data?.type==="부부"?normalizeLegalRegistration(data?.type,data?.legalRegistration,data?.marriageRegistration,data?.legalStatus):""
   };
   if(!data.a||!data.b||data.a===data.b)return null;
   const identity=relationshipIdentity(data);
@@ -1806,7 +1809,8 @@ export function updateRelationship(id,data){
   const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);
   Object.assign(relation,data);
-  relation.marriageRegistration=normalizeMarriageRegistration(relation.type,relation.marriageRegistration,relation.legalStatus);
+  relation.legalRegistration=normalizeLegalRegistration(relation.type,relation.legalRegistration,relation.marriageRegistration,relation.legalStatus);
+  relation.marriageRegistration=relation.type==="부부"?relation.legalRegistration:"";
   relation.legalStatus=normalizeRelationshipLegalStatus(relation.legalStatus);
   const nextIdentity=relationshipIdentity(relation);
   state.deletedRelationshipKeys=Array.isArray(state.deletedRelationshipKeys)?state.deletedRelationshipKeys:[];

@@ -1,38 +1,38 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260905townwalk218";
-import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260905townwalk218";
-import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260905townwalk218";
-import {toggleDislike} from "./state.js?v=20260905townwalk218";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260905townwalk218";
-import {setCharacterSceneImage} from "./state.js?v=20260905townwalk218";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905townwalk218";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260905townwalk218";
-import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260905townwalk218";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260905townwalk218";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260905townwalk218";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260905townwalk218";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260905townwalk218";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260905townwalk218";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260905townwalk218";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260905townwalk218";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260905townwalk218";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260905townwalk218";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905townwalk218";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260905townwalk218";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260905townwalk218";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260905townwalk218";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905townwalk218";
-import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260905townwalk218";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices} from "./state.js?v=20260905gait219";
+import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260905gait219";
+import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260905gait219";
+import {toggleDislike} from "./state.js?v=20260905gait219";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260905gait219";
+import {setCharacterSceneImage} from "./state.js?v=20260905gait219";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260905gait219";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260905gait219";
+import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260905gait219";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260905gait219";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260905gait219";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260905gait219";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260905gait219";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260905gait219";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260905gait219";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260905gait219";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260905gait219";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260905gait219";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260905gait219";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260905gait219";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260905gait219";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260905gait219";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905gait219";
+import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260905gait219";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260905townwalk218";
-import {translateText} from "./views.js?v=20260905townwalk218";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260905townwalk218";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260905townwalk218";
-import {characterMood} from "./character-mood.js?v=20260905townwalk218";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260905townwalk218";
+import {switchAccountState} from "./state.js?v=20260905gait219";
+import {translateText} from "./views.js?v=20260905gait219";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260905gait219";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260905gait219";
+import {characterMood} from "./character-mood.js?v=20260905gait219";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260905gait219";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -4983,7 +4983,7 @@ function openRelationDialog(id=""){
       <label class="official-past-toggle"><b>${copy.past}</b><input type="checkbox" name="temporalPast"><small>${copy.pastHint}</small><input type="hidden" name="temporalStatus" value="current"></label>
       <section class="official-order-card"><b>${copy.order}</b><small>${copy.orderHint}</small><div class="official-order-list" data-official-order-list></div></section>
       <label class="official-outside-field"><b>${copy.outside}</b><select name="legalStatus">${legalStatusOptions(officialValues)}</select></label>
-      <fieldset class="official-marriage-registration" hidden><legend>${copy.registration}</legend><label><input type="radio" name="marriageRegistration" value="registered"><span>${copy.legalRegistered}</span></label><label><input type="radio" name="marriageRegistration" value="unregistered"><span>${copy.legalUnregistered}</span></label></fieldset>
+      <fieldset class="official-legal-registration" hidden><legend>${copy.registration}</legend><label><input type="radio" name="legalRegistration" value="registered"><span>${copy.legalRegistered}</span></label><label><input type="radio" name="legalRegistration" value="unregistered"><span>${copy.legalUnregistered}</span></label></fieldset>
       <label class="official-tags-field"><b>${copy.tags}</b><button type="button" data-toggle-relation-tags><span data-relation-tag-count>${copy.tagCount(selectedRelationTags.size)}</span></button><input type="hidden" name="socialAcceptance" value="${htmlEsc(old?.socialAcceptance||defaultAcceptance)}"></label>
       <label class="official-parent-role" hidden><b>${copy.parentRole}</b><select name="parentRole"><option>엄마</option><option>아빠</option><option>부모</option></select></label>
       <label class="official-kinship" hidden><b>${copy.kinship}</b><select name="kinship"><option value="blood">혈연</option><option value="nonblood">비혈연·입양</option></select></label>
@@ -5000,7 +5000,7 @@ function openRelationDialog(id=""){
   f.temporalStatus.value=old?.temporalStatus==="past"?"past":"current";f.temporalPast.checked=f.temporalStatus.value==="past";
   const savedLegalStatus=officialityMigration[old?.legalStatus]||old?.legalStatus||"";
   f.legalStatus.value=officialValues.includes(savedLegalStatus)?savedLegalStatus:"가까운 사람에게만 알림";
-  f.marriageRegistration.value=old?.marriageRegistration==="unregistered"||savedLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered";
+  f.legalRegistration.value=old?.legalRegistration==="unregistered"||old?.marriageRegistration==="unregistered"||savedLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered";
   f.parentRole.value=old?.parentRole||"부모";f.kinship.value=old?.kinship||"blood";
   const oldSiblingKey=[aId,bId].sort().join("~");f.siblingKinship.value=old?.siblingKinshipByPair?.[oldSiblingKey]||"full";
   f.socialAcceptance.value=old?.socialAcceptance||defaultAcceptance;f.cohabit.checked=Boolean(old?.cohabit);f.stayTogether.checked=Boolean(old?.stayTogether);
@@ -5021,9 +5021,9 @@ function openRelationDialog(id=""){
     initial=false;
   };
   const refreshType=()=>{
-    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매",married=f.type.value==="부부",roommate=f.type.value==="동거인";
+    const parent=f.type.value==="부모·자녀",sibling=f.type.value==="형제·자매",legallyRegisterable=["부부","부모·자녀","형제·자매"].includes(f.type.value),roommate=f.type.value==="동거인";
     f.querySelector(".official-parent-role").hidden=!parent;f.querySelector(".official-kinship").hidden=!parent;f.querySelector(".official-sibling-link").hidden=!sibling;
-    f.querySelector(".official-marriage-registration").hidden=!married;
+    f.querySelector(".official-legal-registration").hidden=!legallyRegisterable;
     const currentLegalStatus=f.legalStatus.value;
     f.legalStatus.innerHTML=legalStatusOptions(officialValues);
     f.legalStatus.value=officialValues.includes(currentLegalStatus)?currentLegalStatus:"가까운 사람에게만 알림";
@@ -5056,7 +5056,8 @@ function openRelationDialog(id=""){
     if(dialog.returnValue==="save"){
       const a=f.a.value,b=f.b.value,temporal=f.temporalStatus.value,levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1),hostile=f.type.value==="혐관",pairKey=[a,b].sort().join("~");
       const relationshipName=String(f.elements.namedItem("name")?.value||"").trim();
-      const patch={a,b,name:relationshipName,tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.legalStatus.value,marriageRegistration:f.type.value==="부부"?f.marriageRegistration.value:"",socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[...selectedMemberIds],animationPlacement:Object.fromEntries(selectedMemberIds.map(cid=>[cid,animationPlacement[cid]||"random"])),directional:f.type.value==="부모·자녀",groupId:old?.groupId||"",groupMembers:selectedMemberIds.length>2?[...selectedMemberIds]:[]};
+      const legalRegistration=["부부","부모·자녀","형제·자매"].includes(f.type.value)?f.legalRegistration.value:"";
+      const patch={a,b,name:relationshipName,tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.legalStatus.value,legalRegistration,marriageRegistration:f.type.value==="부부"?legalRegistration:"",socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[...selectedMemberIds],animationPlacement:Object.fromEntries(selectedMemberIds.map(cid=>[cid,animationPlacement[cid]||"random"])),directional:f.type.value==="부모·자녀",groupId:old?.groupId||"",groupMembers:selectedMemberIds.length>2?[...selectedMemberIds]:[]};
       if(f.type.value==="부모·자녀")Object.assign(patch,{parentId:a,childId:b,parentRole:f.parentRole.value,kinship:f.kinship.value,kinshipByPair:{[pairKey]:f.kinship.value}});
       if(f.type.value==="형제·자매")Object.assign(patch,{siblingOrder:{[a]:1,[b]:2},siblingKinshipByPair:{[pairKey]:f.siblingKinship.value}});
       old&&state.relationships[id]?updateRelationship(id,patch):addRelationship(patch);
@@ -5678,7 +5679,7 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260905townwalk218").catch(error=>{
+import("./auth.js?v=20260905gait219").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     setAccountLabel("Google 로그인");
   });
@@ -5693,7 +5694,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260905townwalk218",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260905gait219",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>{

@@ -74,7 +74,8 @@
     "test:food-image-hotfix": "node scripts/check-food-image-hotfix-208.mjs",
     "test:feedback216": "node scripts/check-feedback-mail-relationship-216.mjs",
     "test:relationship217": "node scripts/check-relationship-editor-217.mjs",
-    "test:town-walking218": "node scripts/check-town-walking-218.mjs"
+    "test:town-walking218": "node scripts/check-town-walking-218.mjs",
+    "test:gait-tablet219": "node scripts/check-gait-tablet-219.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

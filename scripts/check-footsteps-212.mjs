@@ -23,7 +23,10 @@ const context=vm.createContext({
   setTimeout:(callback,delay)=>{const id=++sequence;timers.set(id,{callback,at:clock+delay});return id},
   clearTimeout:id=>timers.delete(id)
 });
-vm.runInContext(readFileSync(new URL("../audio.js",import.meta.url),"utf8").replaceAll("export function ","function "),context);
+const audioSource=readFileSync(new URL("../audio.js",import.meta.url),"utf8")
+  .replace(/^import .*walking-gaits.*;$/m,'const walkingGaitForElement=()=>({sound:"walk",playbackRate:.98,footstepInterval:940});')
+  .replaceAll("export function ","function ");
+vm.runInContext(audioSource,context);
 function tick(ms){
   const end=clock+ms;
   for(let steps=0;steps<100;steps++){

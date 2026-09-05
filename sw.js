@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260905-town-walk-android-dev-218";
+const CACHE_VERSION="drawer-village-v20260905-gait-android-dev-219";
 const CORE=[
   "./",
   "./index.html",
@@ -49,6 +49,7 @@ const CORE=[
   "./speech-styles.js",
   "./character-notifications.js",
   "./audio.js",
+  "./walking-gaits.js",
   "./character-book.css",
   "./shop.css",
   "./assets/shop/drawer-shop-wood.jpg",

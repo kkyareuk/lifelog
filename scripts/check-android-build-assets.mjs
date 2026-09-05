@@ -15,7 +15,7 @@ function filesUnder(directory){
 
 const preparedFiles=filesUnder(wwwRoot);
 const required=[
-  "audio.js","assets/audio/shoe-walking.m4a","assets/audio/shoe-running.m4a",
+  "audio.js","walking-gaits.js","assets/audio/shoe-walking.m4a","assets/audio/shoe-running.m4a",
   "account-storage.js","town-lighting.js","world-assets/owner-forest-town.webp",
   "world-assets/building-types/cafe-handdrawn.png","world-assets/building-types/cafe-light.png",
   "world-assets/building-types/hospital-handdrawn.png","world-assets/building-types/hospital-light.png",

@@ -1,7 +1,7 @@
 {
-  "version": "1.0.203",
-  "build": 9,
-  "sourceAndroidCode": 218,
+  "version": "1.0.204",
+  "build": 10,
+  "sourceAndroidCode": 219,
   "stage": "local-preview",
   "appStoreReady": false
 }
