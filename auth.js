@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev230";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev232";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906dev230";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906dev232";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -111,7 +111,7 @@ const applyLocalTombstones=(remote,local)=>{
   return next;
 };
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
-let auth,db,storage,user,busy=false;
+let auth,db,storage,user,busy=false,loginBusy=false;
 const FIRST_LOGIN_GUEST_HANDOFF="drawer-village-first-login-guest-handoff-v1";
 let pendingGuestHandoff=null;
 const characterCount=value=>Array.isArray(value?.characters)
@@ -164,6 +164,13 @@ const maxPhotos=()=>hasStorage50()?400:MAX_PHOTOS;
 const maxTotalBytes=()=>hasStorage50()?STORAGE_50_TOTAL_BYTES:FREE_TOTAL_BYTES;
 let storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
 const toast=text=>window.ParallelCity?.toast?.(text);
+const googleLoginCopy=()=>({
+  en:{opening:"Opening the Google account chooser…",cancelled:"Google sign-in was cancelled."},
+  ja:{opening:"Googleアカウント選択画面を開いています…",cancelled:"Googleログインをキャンセルしました。"},
+  ko:{opening:"Google 계정 선택창을 여는 중이에요…",cancelled:"Google 로그인을 취소했어요."}
+}[window.ParallelCity?.getState?.()?.uiLanguage]||{
+  opening:"Google 계정 선택창을 여는 중이에요…",cancelled:"Google 로그인을 취소했어요."
+});
 const storedPhotoUrls=value=>{
   const urls=new Set();
   const walk=node=>{
@@ -573,6 +580,11 @@ async function login(){
     return false;
   }
   if(!ready){alert("Google 로그인 설정을 불러오지 못했습니다. 앱을 완전히 종료한 뒤 다시 열어 주세요.");return false}
+  const copy=googleLoginCopy();
+  if(loginBusy){toast(copy.opening);return false}
+  loginBusy=true;
+  status(copy.opening);
+  toast(copy.opening);
   // 첫 캐릭터를 게스트 상태에서 만든 직후 사용자가 직접 로그인한 경우에만
   // 그 기기 저장본을 로그인 계정으로 넘긴다. 앱 시작 시 복원되는 기존 로그인은
   // 이 표식을 만들지 않으므로 공유 기기의 게스트 데이터를 임의로 가져가지 않는다.
@@ -581,23 +593,13 @@ async function login(){
   provider.setCustomParameters({prompt:"select_account"});
   try{
     if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
-      // 최신 Android 계정 선택창을 먼저 사용하고, 기기별 Play 서비스 문제로
-      // 열리지 않을 때만 기존 Google 계정 선택창으로 한 번 더 시도한다.
-      let result;
-      try{
-        result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle({
-          skipNativeAuth:true,
-          useCredentialManager:true
-        });
-      }catch(primaryError){
-        const primaryDetail=`${primaryError?.code||""} ${primaryError?.message||""}`;
-        if(/12501|cancel|canceled|cancelled/i.test(primaryDetail))throw primaryError;
-        console.warn("Credential Manager Google login failed; retrying legacy selector",primaryError);
-        result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle({
-          skipNativeAuth:true,
-          useCredentialManager:false
-        });
-      }
+      // Android 17 계열 일부 기기에서는 Credential Manager가 계정창도 띄우지
+      // 않은 채 응답하지 않는다. Activity 결과를 돌려주는 검증된 Google 계정
+      // 선택창을 직접 사용해 버튼이 무반응 상태에 빠지지 않게 한다.
+      const result=await window.Capacitor.Plugins.FirebaseAuthentication.signInWithGoogle({
+        skipNativeAuth:true,
+        useCredentialManager:false
+      });
       const idToken=String(result?.credential?.idToken||"").trim();
       if(!idToken)throw Object.assign(new Error("Google에서 로그인 토큰을 받지 못했습니다."),{code:"native-auth/missing-id-token"});
       const credential=GoogleAuthProvider.credential(idToken);
@@ -613,7 +615,7 @@ async function login(){
       return true;
     }
     const detail=`${error?.code||""} ${error?.message||""}`;
-    if(/12501|cancel|canceled|cancelled/i.test(detail)){clearGuestHandoffIntent();return false}
+    if(/12501|cancel|canceled|cancelled/i.test(detail)){status("Google 로그인 안 됨");toast(copy.cancelled);clearGuestHandoffIntent();return false}
     const message=/\b10\b|12500|DEVELOPER_ERROR|ApiException: 10/i.test(detail)
       ?"Google 로그인 인증서가 앱 서명과 맞지 않습니다. Firebase에 Google Play 앱 서명 SHA-1을 확인해 주세요."
       :/network|timeout|unavailable/i.test(detail)
@@ -625,6 +627,9 @@ async function login(){
     alert(message);
     clearGuestHandoffIntent();
     return false;
+  }finally{
+    loginBusy=false;
+    window.dispatchEvent(new Event("drawer-village-auth-busy"));
   }
 }
 
@@ -832,5 +837,5 @@ window.ParallelCityAuth={
     }
   },
   getIdToken:async()=>user?user.getIdToken():null,
-  getInfo:()=>({ready:authSettled,user,startupSyncing:switchingAccount,busy:busy||switchingAccount||!authSettled,entitlements,storageUsage,guideState})
+  getInfo:()=>({ready:authSettled,user,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,storageUsage,guideState})
 };

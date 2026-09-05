@@ -1,4 +1,4 @@
-import {effectiveSpeechStyle,characterContactSpeech} from './speech-styles.js?v=20260906dev230';
+import {effectiveSpeechStyle,characterContactSpeech} from './speech-styles.js?v=20260906dev232';
 
 // Complete messages, not a character-flavored greeting followed by a generic
 // comfort paragraph. Each pair keeps its register through the last sentence.
