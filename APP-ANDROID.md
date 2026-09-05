@@ -1,6 +1,6 @@
 # 서랍마을 Google Play 앱 배포 안내
 
-최신 준비 빌드: **1.0.200 / versionCode 215** — [수면 수정·검증·Play 업로드 안내](docs/android-release-215.md). 서명된 AAB 생성 완료이며 Play Console 업로드/출시는 아직 하지 않았습니다.
+최신 준비 빌드: **1.0.201 / versionCode 216** — [캐릭터 취향·부부 관계·우편함 개선 및 Play 업로드 안내](docs/android-release-216.md). 서명된 AAB 생성 완료이며 Play Console 업로드/출시는 아직 하지 않았습니다.
 
 서랍마을의 Android 앱은 기존 웹 화면과 Firebase 계정 데이터를 사용하는 Capacitor 앱입니다. Google Play에 올리는 파일 확장자는 `.abb`가 아니라 **`.aab`(Android App Bundle)** 입니다.
 

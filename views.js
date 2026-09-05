@@ -1,22 +1,22 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905home215";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260905home215";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260905home215";
-import {characterMood} from "./character-mood.js?v=20260905home215";
-import {createContactMailbox} from "./notification-mail.js?v=20260905home215";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260905home215";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260905home215";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905home215";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905home215";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260905home215";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260905home215";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260905home215";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260905home215";
-import {achievementRows} from "./achievements.js?v=20260905home215";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260905home215";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260905home215";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260905feedback216";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260905feedback216";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260905feedback216";
+import {characterMood} from "./character-mood.js?v=20260905feedback216";
+import {createContactMailbox} from "./notification-mail.js?v=20260905feedback216";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260905feedback216";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260905feedback216";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260905feedback216";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260905feedback216";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260905feedback216";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260905feedback216";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260905feedback216";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260905feedback216";
+import {achievementRows} from "./achievements.js?v=20260905feedback216";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260905feedback216";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260905feedback216";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const walkStyleClassFor=character=>({"느리고 조심스럽게":"walk-style-careful","차분하고 반듯하게":"walk-style-poised","보통 속도로 자연스럽게":"walk-style-natural","가볍고 경쾌하게":"walk-style-light","빠르고 성큼성큼":"walk-style-striding"}[character?.walkingStyle]||"walk-style-natural");
 const I18N={
@@ -38,6 +38,8 @@ Object.assign(I18N.en,{"빈집":"Empty home","빈집 삭제":"Delete empty home"
 Object.assign(I18N.ja,{"빈집":"空き家","빈집 삭제":"空き家を削除","빈집을 바로 삭제할 수 있어요.":"この空き家はここから削除できます。"});
 Object.assign(I18N.en,{"관심사 선택":"Select interests","취미 선택":"Select hobbies","기술 숙련 선택":"Select skill proficiency","좋아하는 것 선택":"Select favorites","좋아하는 것 · 사전 선택":"Favorites · Dictionary","소지품 선택":"Select belongings","마을 일러스트 준비 중":"Town illustration coming later","등록된 마을 일러스트가 없어요":"No town illustrations are registered","제공받은 일러스트를 하나씩 추가할 예정이에요.":"Illustrations supplied by the project owner will be added one at a time.","상점 메뉴":"Shop menu","이미 적용 중":"Already applied"});
 Object.assign(I18N.ja,{"관심사 선택":"関心事を選択","취미 선택":"趣味を選択","기술 숙련 선택":"技能習熟を選択","좋아하는 것 선택":"好きなものを選択","좋아하는 것 · 사전 선택":"好きなもの・辞典","소지품 선택":"所持品を選択","마을 일러스트 준비 중":"村のイラストは後日追加","등록된 마을 일러스트가 없어요":"登録済みの村イラストはありません","제공받은 일러스트를 하나씩 추가할 예정이에요.":"提供されたイラストを一つずつ追加する予定です。","상점 메뉴":"ショップメニュー","이미 적용 중":"適用済み"});
+Object.assign(I18N.en,{"법적으로 관계가 등록됨":"Legally registered","법적으로 관계가 등록되지 않음":"Not legally registered","편지 모두 삭제":"Delete all letters"});
+Object.assign(I18N.ja,{"법적으로 관계가 등록됨":"法的に登録されている","법적으로 관계가 등록되지 않음":"法的に登録されていない","편지 모두 삭제":"手紙をすべて削除"});
 Object.assign(I18N.en,{"싫어하는 것 선택":"Select dislikes","싫어하는 장르":"Disliked genres","싫어하는 음식":"Disliked foods","싫어하는 음료":"Disliked drinks","싫어하는 음악":"Disliked music","싫어하는 영상":"Disliked videos","싫어하는 게임":"Disliked games","싫어하는 향":"Disliked scents","싫어하는 동물":"Disliked animals","싫어하는 전자기기":"Disliked electronics","싫어하는 무기":"Disliked weapons","싫어하는 책":"Disliked books","감정 자극 민감도":"Emotional sensitivity","주변 감정에 물드는 정도":"Emotional contagion"});
 Object.assign(I18N.ja,{"싫어하는 것 선택":"苦手なものを選択","싫어하는 장르":"苦手なジャンル","싫어하는 음식":"苦手な食べ物","싫어하는 음료":"苦手な飲み物","싫어하는 음악":"苦手な音楽","싫어하는 영상":"苦手な映像","싫어하는 게임":"苦手なゲーム","싫어하는 향":"苦手な香り","싫어하는 동물":"苦手な動物","싫어하는 전자기기":"苦手な電子機器","싫어하는 무기":"苦手な武器","싫어하는 책":"苦手な本","감정 자극 민감도":"感情刺激への敏感さ","주변 감정에 물드는 정도":"周囲の感情に影響される程度"});
 Object.assign(I18N.en,{"매우 낙천적임":"Very optimistic","쾌활한 편":"Cheerful","열정적인 편":"Passionate","다정한 편":"Warmhearted","유혹적인 편":"Flirtatious","호기심 많은 편":"Curious","차분한 편":"Composed","냉소적인 편":"Cynical","까칠한 편":"Prickly","예민한 편":"Sensitive","불안한 편":"Anxious","침울한 편":"Gloomy","분노를 품은 편":"Carries anger","매우 둔감함":"Very insensitive","둔감한 편":"Rather insensitive","보통":"Moderate","매우 예민함":"Very sensitive","거의 물들지 않음":"Hardly affected","가까운 사람에게만 물듦":"Affected only by close people","상황에 따라 물듦":"Depends on the situation","쉽게 물드는 편":"Easily affected","매우 쉽게 물듦":"Very easily affected"});
@@ -2976,7 +2978,14 @@ function character(){
   const tasteCategories=[['좋아하는 장르','favoriteStoryGenres'],['좋아하는 음식','foodPreferences'],['좋아하는 음료','drinks'],['좋아하는 음악','musicGenres'],['좋아하는 영상','favoriteVideoGenres'],['좋아하는 게임','favoriteGameGenres'],['좋아하는 향','favoriteScentNotes'],['좋아하는 동물','favoriteAnimals'],['좋아하는 전자기기','favoriteElectronics'],['좋아하는 무기','favoriteWeapons'],['좋아하는 책','favoriteBooks']];
   const dislikedTasteCategories=[['싫어하는 장르','dislikedStoryGenres'],['싫어하는 음식','dislikedFoodPreferences'],['싫어하는 음료','dislikedDrinks'],['싫어하는 음악','dislikedMusicGenres'],['싫어하는 영상','dislikedVideoGenres'],['싫어하는 게임','dislikedGameGenres'],['싫어하는 향','dislikedScentNotes'],['싫어하는 동물','dislikedAnimals'],['싫어하는 전자기기','dislikedElectronics'],['싫어하는 무기','dislikedWeapons'],['싫어하는 책','dislikedBooks']];
   const catalogTasteKinds=[['좋아하는 음식 · 사전','food'],['좋아하는 음료 · 사전','drink'],['좋아하는 음악 · 사전','music'],['좋아하는 밴드 · 사전','idol'],['좋아하는 책 · 사전','book'],['좋아하는 영화 · 사전','movie'],['좋아하는 게임 · 사전','game'],['좋아하는 향수 · 사전','perfume'],['좋아하는 취미용품 · 사전','hobby'],['좋아하는 전자기기 · 사전','electronics'],['좋아하는 무기 · 사전','weapon'],['좋아하는 동물 · 사전','animal']];
-  const catalogSelectionButton=(label,kind,collection)=>`<div class="book-form-field"><b>${t(label,label)}</b><button type="button" data-open-book-catalog="${kind}" data-book-catalog-mode="${collection}"><span>${bookListSummary(c[collection]?.[kind]||[])}</span><i aria-hidden="true">＋</i></button></div>`;
+  const catalogSelectionSummary=(kind,ids)=>{
+    if(!Array.isArray(ids)||!ids.length)return t("정하지 않음","정하지 않음");
+    const byId=new Map((state.catalog?.[kind]||[]).map(item=>[String(item.id),String(item.name||"").trim()]));
+    const names=ids.map(id=>byId.get(String(id))).filter(Boolean),rest=ids.length-Math.min(2,names.length);
+    if(!names.length)return state.uiLanguage==="en"?`${ids.length} selected`:state.uiLanguage==="ja"?`${ids.length}個選択`:`${ids.length}개 선택됨`;
+    return `${names.slice(0,2).join(" · ")}${rest>0?` +${rest}`:""}`;
+  };
+  const catalogSelectionButton=(label,kind,collection)=>`<div class="book-form-field"><b>${t(label,label)}</b><button type="button" data-open-book-catalog="${kind}" data-book-catalog-mode="${collection}"><span>${esc(catalogSelectionSummary(kind,c[collection]?.[kind]||[]))}</span><i aria-hidden="true">＋</i></button></div>`;
   const tasteMenuButton=(label,attrs,summary="")=>`<button type="button" class="taste-menu-action" ${attrs}><span><b>${t(label,label)}</b>${summary?`<small>${esc(summary)}</small>`:""}</span><i aria-hidden="true">＋</i></button>`;
   const tasteBookPane=`<section class="character-book-form-page taste-book-page taste-menu-page"><div class="taste-menu-grid">${tasteMenuButton("관심사 선택",'data-open-book-list="interests"',bookListSummary(c.interests||[],"관심사"))}${tasteMenuButton("취미 선택",'data-open-book-list="hobbies"',bookListSummary(c.hobbies||[],"취미"))}${tasteMenuButton("기술 숙련 선택",'data-open-book-list="skills"',bookListSummary(c.skills||[],"기술 숙련"))}${tasteMenuButton("좋아하는 것 선택",'data-open-taste-group="favorites"')}${tasteMenuButton("싫어하는 것 선택",'data-open-taste-group="dislikes"')}${tasteMenuButton("소지품 선택",'data-open-taste-group="inventory"')}</div>${bookPageControls(10,'data-character-personality-pane="emotion" data-character-pane="personality"','data-character-pane="closet"')}</section>`;
   const closetOwned=new Set(c.inventory?.fashion||[]),closetItems=(state.catalog?.fashion||[]).filter(item=>closetOwned.has(item.id));
@@ -3087,7 +3096,12 @@ function character(){
 
 function mailbox(){
   const letters=createContactMailbox(localStorage).due(state.characters).filter(m=>m.extra.mode!=="scheduleEnd"||(state.routines[m.extra.characterId]||[]).some(r=>r.id===m.extra.routineId));
-  const mailCards=letters.map(m=>`<article class="character-mail-card has-mail" data-mail-id="${esc(m.id)}"><div><small>${esc(new Date(m.at).toLocaleString(state.uiLanguage||"ko"))}</small><h2>${esc(m.title)}</h2><p>${esc(m.body)}</p></div><button type="button" data-open-contact-mail="${esc(m.id)}">${m.answered?t("답변 완료","답변 완료"):t("openLetter","편지 열기")}</button></article>`).join("");
+  const mailActionCopy={
+    en:{delete:"Delete",deleteAll:"Delete all letters"},
+    ja:{delete:"削除",deleteAll:"手紙をすべて削除"},
+    ko:{delete:"삭제",deleteAll:"편지 모두 삭제"}
+  }[state.uiLanguage||"ko"];
+  const mailCards=letters.map(m=>`<article class="character-mail-card has-mail" data-mail-id="${esc(m.id)}"><div><small>${esc(new Date(m.at).toLocaleString(state.uiLanguage||"ko"))}</small><h2>${esc(m.title)}</h2><p>${esc(m.body)}</p></div><div class="mail-card-actions"><button type="button" data-open-contact-mail="${esc(m.id)}">${m.answered?t("답변 완료","답변 완료"):t("openLetter","편지 열기")}</button><button type="button" class="mail-delete-button" data-delete-contact-mail="${esc(m.id)}">${mailActionCopy.delete}</button></div></article>`).join("");
   const pending=state.dailyQuestion&&!state.dailyQuestion.answered&&!state.dailyQuestion.mailId?state.dailyQuestion:null;
   const sender=state.characters[pending?.characterId]||active()||state.characters[state.order[0]];
   const current=active()||sender,callCopy={
@@ -3105,7 +3119,7 @@ function mailbox(){
   const giftTargets=current?state.order.filter(id=>id!==current.id).map(id=>`<option value="${id}">${esc(state.characters[id].name)}</option>`).join(""):"";
   const giftItems=Object.entries(state.catalog||{}).flatMap(([kind,items])=>(items||[]).map(item=>`<option value="${kind}:${item.id}">${esc(item.name)}</option>`)).join("");
   const gift=current?`<section class="mailbox-gift" data-mailbox-gift><img src="./assets/home-ui/mailbox.png" alt=""><span><h2>${giftCopy.title}</h2><p>${giftCopy.help}</p></span><div class="fields"><label>${giftCopy.target}<select data-character-interaction-target>${giftTargets||`<option value="">${giftCopy.noTarget}</option>`}</select></label><label>${giftCopy.item}<select data-character-interaction-item>${giftItems||`<option value="">${giftCopy.noItem}</option>`}</select></label></div><button type="button" class="primary" data-character-interaction="gift">${giftCopy.send}</button></section>`:"";
-  return `<section class="mailbox-shell panel" style="--character-own:${esc(sender?.theme?.primary||"#176b60")}"><div class="mailbox-heading"><span aria-hidden="true"><img src="./assets/home-ui/mailbox.png" alt=""></span><div><small>CHARACTER MAIL</small><h1>${t("mailbox","우편함")}</h1><p>${t("mailboxHelp","캐릭터에게서 온 편지를 한곳에서 확인해요.")}</p></div></div>${mailCards}${pending||!letters.length?`<article class="character-mail-card ${pending?"has-mail":"is-empty"}">${sender?avatar(sender):'<span class="mailbox-empty-icon">✉</span>'}<div><small>${pending?esc(sender?.name||""):t("mailbox","우편함")}</small><h2>${esc(title)}</h2><p>${esc(description)}</p></div>${pending?`<button type="button" class="primary" data-open-daily-question>${t("openLetter","편지 열기")}</button>`:""}</article>`:""}${gift}<section class="mailbox-home-call"><img src="./assets/home-ui/home.png" alt=""><span><h2>${callCopy.title}</h2><p>${callCopy.help}</p></span><div><button type="button" data-force-home="current">${esc(callCopy.current)}</button><button type="button" data-force-home="all">${callCopy.all}</button></div></section></section>`;
+  return `<section class="mailbox-shell panel" style="--character-own:${esc(sender?.theme?.primary||"#176b60")}"><div class="mailbox-heading"><span aria-hidden="true"><img src="./assets/home-ui/mailbox.png" alt=""></span><div><small>CHARACTER MAIL</small><h1>${t("mailbox","우편함")}</h1><p>${t("mailboxHelp","캐릭터에게서 온 편지를 한곳에서 확인해요.")}</p></div>${letters.length?`<button type="button" class="mail-delete-all-button" data-delete-all-contact-mail>${mailActionCopy.deleteAll}</button>`:""}</div>${mailCards}${pending||!letters.length?`<article class="character-mail-card ${pending?"has-mail":"is-empty"}">${sender?avatar(sender):'<span class="mailbox-empty-icon">✉</span>'}<div><small>${pending?esc(sender?.name||""):t("mailbox","우편함")}</small><h2>${esc(title)}</h2><p>${esc(description)}</p></div>${pending?`<button type="button" class="primary" data-open-daily-question>${t("openLetter","편지 열기")}</button>`:""}</article>`:""}${gift}<section class="mailbox-home-call"><img src="./assets/home-ui/home.png" alt=""><span><h2>${callCopy.title}</h2><p>${callCopy.help}</p></span><div><button type="button" data-force-home="current">${esc(callCopy.current)}</button><button type="button" data-force-home="all">${callCopy.all}</button></div></section></section>`;
 }
 function wardrobe(){
   const c=active(),owned=new Set(c.inventory?.fashion||[]);

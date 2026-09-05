@@ -4,10 +4,12 @@ import assert from "node:assert/strict";
 const read=file=>fs.readFileSync(new URL(`../${file}`,import.meta.url),"utf8");
 const views=read("views.js"),css=read("character-book.css"),gradle=read("android/app/build.gradle"),index=read("index.html"),sw=read("sw.js");
 
-assert.match(gradle,/versionCode\s+(?:194|195|196)/);
-assert.match(gradle,/versionName\s+["']1\.0\.(?:181|182|183)["']/);
-assert.match(index,/20260902(?:taste194|personality195|emotion196)/);
-assert.match(sw,/(?:taste-scroll-194|personality-home-195|emotion-tastes-196)/);
+const versionCode=Number(gradle.match(/versionCode\s+(\d+)/)?.[1]||0);
+const versionPatch=Number(gradle.match(/versionName\s+["']1\.0\.(\d+)["']/)?.[1]||0);
+assert.ok(versionCode>=194,`versionCode ${versionCode} is older than the taste-scroll fix`);
+assert.ok(versionPatch>=181,`versionName patch ${versionPatch} is older than the taste-scroll fix`);
+assert.match(index,/\.js\?v=2026\d{4}[a-z0-9-]+/);
+assert.match(sw,/drawer-village-v2026\d{4}-[a-z0-9-]+/);
 
 assert.match(views,/<div class="personality-emotion-heading">/);
 assert.doesNotMatch(views,/<header class="personality-emotion-heading">/);
