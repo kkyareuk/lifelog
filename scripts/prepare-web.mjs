@@ -126,7 +126,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260905dev223";
+const expectedModuleCache="20260905dev224";
 const relativeImports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;

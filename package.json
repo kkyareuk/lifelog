@@ -78,7 +78,8 @@
     "test:gait-tablet219": "node scripts/check-gait-tablet-219.mjs",
     "test:hotfix220": "node scripts/check-hotfix-220.mjs",
     "test:hotfix221": "node scripts/check-hotfix-221.mjs",
-    "test:dev223": "node scripts/check-dev-223.mjs"
+    "test:dev223": "node scripts/check-dev-223.mjs",
+    "test:dev224": "node scripts/check-dev-224.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

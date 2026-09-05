@@ -11,7 +11,7 @@ globalThis.localStorage={get length(){return memory.size},key:i=>[...memory.keys
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
 const game=await import('../state.js');
-const {accountStorage}=await import('../account-storage.js?v=20260905dev223');
+const {accountStorage}=await import('../account-storage.js?v=20260905dev224');
 const character=(id)=>({id,name:id,days:{}});
 const cloud=new Map([['A',{syncFormat:1,gameState:{schema:31,characters:{a:character('a')},order:['a'],lastSaved:100}}],['B',{}]]);
 let callback,hold=null;const writes=[];
