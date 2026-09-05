@@ -77,7 +77,8 @@
     "test:town-walking218": "node scripts/check-town-walking-218.mjs",
     "test:gait-tablet219": "node scripts/check-gait-tablet-219.mjs",
     "test:hotfix220": "node scripts/check-hotfix-220.mjs",
-    "test:hotfix221": "node scripts/check-hotfix-221.mjs"
+    "test:hotfix221": "node scripts/check-hotfix-221.mjs",
+    "test:hotfix231": "node scripts/check-hotfix-231.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
