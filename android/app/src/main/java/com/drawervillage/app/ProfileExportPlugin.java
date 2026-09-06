@@ -2,6 +2,8 @@ package com.drawervillage.app;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.Intent;
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -16,10 +18,13 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import com.getcapacitor.annotation.ActivityCallback;
+import androidx.activity.result.ActivityResult;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 @CapacitorPlugin(name = "ProfileExport")
 public class ProfileExportPlugin extends Plugin {
@@ -36,9 +41,9 @@ public class ProfileExportPlugin extends Plugin {
             values.put(MediaStore.MediaColumns.DISPLAY_NAME, filename);
             values.put(MediaStore.MediaColumns.MIME_TYPE, mime);
             values.put(MediaStore.MediaColumns.RELATIVE_PATH, directory + "/DrawerVillage");
-            Uri collection = mime.equals("application/pdf")
-                ? MediaStore.Downloads.EXTERNAL_CONTENT_URI
-                : MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+            Uri collection = mime.startsWith("image/")
+                ? MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                : MediaStore.Downloads.EXTERNAL_CONTENT_URI;
             Uri uri = resolver.insert(collection, values);
             if (uri == null) throw new Exception("저장 위치를 만들지 못했습니다.");
             return uri;
@@ -89,5 +94,36 @@ public class ProfileExportPlugin extends Plugin {
             document.close(); bitmap.recycle();
             JSObject result = new JSObject(); result.put("uri", uri.toString()); call.resolve(result);
         } catch (Exception error) { call.reject(error.getMessage(), error); }
+    }
+
+    @PluginMethod
+    public void saveJson(PluginCall call) {
+        String filename = call.getString("filename", "drawer-village-backup.json");
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType("application/json");
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+        startActivityForResult(call, intent, "saveJsonResult");
+    }
+
+    @ActivityCallback
+    private void saveJsonResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
+            call.reject("backup-save-cancelled");
+            return;
+        }
+        try {
+            Uri uri = result.getData().getData();
+            String data = call.getString("data", "");
+            try (OutputStream output = stream(uri)) {
+                output.write(data.getBytes(StandardCharsets.UTF_8));
+            }
+            JSObject payload = new JSObject();
+            payload.put("uri", uri.toString());
+            call.resolve(payload);
+        } catch (Exception error) {
+            call.reject(error.getMessage(), error);
+        }
     }
 }

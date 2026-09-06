@@ -357,6 +357,15 @@ html.native-app[data-active-tab="observe"] .scene-action-tea .native-character-s
   filter:drop-shadow(0 7px 7px #0009)!important;
   animation:native-prop-coffee-sip 2.25s ease-in-out infinite!important;
 }
+.native-app :is(.native-scene-action-prop,.native-person-action-prop).action-prop-tea,
+.native-app :is(.native-scene-action-prop,.native-person-action-prop).action-prop-coffee-drinking{
+  display:grid!important;
+  filter:drop-shadow(0 7px 7px #0009)!important;
+  animation:native-prop-coffee-sip 2.25s ease-in-out infinite!important;
+}
+.native-app :is(.native-scene-action-prop,.native-person-action-prop).action-prop-eating{
+  animation:native-prop-eat 1.7s ease-in-out infinite!important;
+}
 
 @media(max-width:720px){
   .character-manage-grid>.character-home-visual-choice{align-items:stretch!important;flex-direction:column!important}

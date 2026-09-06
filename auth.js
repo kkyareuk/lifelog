@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906hotfix231";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev233";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906hotfix231";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906dev233";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -112,6 +112,30 @@ const applyLocalTombstones=(remote,local)=>{
 };
 const isData=value=>typeof value==="string"&&value.startsWith("data:");
 let auth,db,storage,user,busy=false,loginBusy=false;
+const FIRST_LOGIN_GUEST_HANDOFF="drawer-village-first-login-guest-handoff-v1";
+let pendingGuestHandoff=null;
+const characterCount=value=>Array.isArray(value?.characters)
+  ?value.characters.filter(Boolean).length
+  :Object.keys(value?.characters||{}).length;
+const clearGuestHandoffIntent=()=>{
+  pendingGuestHandoff=null;
+  try{globalThis.sessionStorage?.removeItem(FIRST_LOGIN_GUEST_HANDOFF)}catch{}
+};
+const rememberGuestHandoffIntent=()=>{
+  const candidate=localStorage.scope==="guest"?window.ParallelCity?.getState?.():null;
+  pendingGuestHandoff=characterCount(candidate)>0?clone(candidate):null;
+  try{
+    if(pendingGuestHandoff)globalThis.sessionStorage?.setItem(FIRST_LOGIN_GUEST_HANDOFF,"1");
+    else globalThis.sessionStorage?.removeItem(FIRST_LOGIN_GUEST_HANDOFF);
+  }catch{}
+};
+const takeGuestHandoff=()=>{
+  let persisted=false;
+  try{persisted=globalThis.sessionStorage?.getItem(FIRST_LOGIN_GUEST_HANDOFF)==="1"}catch{}
+  const candidate=pendingGuestHandoff||(persisted&&localStorage.scope==="guest"?window.ParallelCity?.getState?.():null);
+  clearGuestHandoffIntent();
+  return characterCount(candidate)>0?clone(candidate):null;
+};
 const accountName=()=>String(
   window.ParallelCity?.getState?.()?.ownerName||
   localStorage.getItem("drawer-village-user-name")||
@@ -561,6 +585,10 @@ async function login(){
   loginBusy=true;
   status(copy.opening);
   toast(copy.opening);
+  // 첫 캐릭터를 게스트 상태에서 만든 직후 사용자가 직접 로그인한 경우에만
+  // 그 기기 저장본을 로그인 계정으로 넘긴다. 앱 시작 시 복원되는 기존 로그인은
+  // 이 표식을 만들지 않으므로 공유 기기의 게스트 데이터를 임의로 가져가지 않는다.
+  rememberGuestHandoffIntent();
   const provider=new GoogleAuthProvider();
   provider.setCustomParameters({prompt:"select_account"});
   try{
@@ -587,7 +615,7 @@ async function login(){
       return true;
     }
     const detail=`${error?.code||""} ${error?.message||""}`;
-    if(/12501|cancel|canceled|cancelled/i.test(detail)){status("Google 로그인 안 됨");toast(copy.cancelled);return false}
+    if(/12501|cancel|canceled|cancelled/i.test(detail)){status("Google 로그인 안 됨");toast(copy.cancelled);clearGuestHandoffIntent();return false}
     const message=/\b10\b|12500|DEVELOPER_ERROR|ApiException: 10/i.test(detail)
       ?"Google 로그인 인증서가 앱 서명과 맞지 않습니다. Firebase에 Google Play 앱 서명 SHA-1을 확인해 주세요."
       :/network|timeout|unavailable/i.test(detail)
@@ -597,6 +625,7 @@ async function login(){
     status("Google 로그인 실패");
     toast(message);
     alert(message);
+    clearGuestHandoffIntent();
     return false;
   }finally{
     loginBusy=false;
@@ -604,8 +633,8 @@ async function login(){
   }
 }
 
-async function upload({silent=false,reason=""}={}){
-  if(switchingAccount)return false;
+async function upload({silent=false,reason="",accountTransition=false}={}){
+  if(switchingAccount&&!accountTransition)return false;
   const session=captureSession();
   await window.DrawerVillageLocalMedia?.ready;
   if(session.epoch!==accountEpoch||session.uid!==user?.uid)return false;
@@ -680,7 +709,7 @@ async function upload({silent=false,reason=""}={}){
   }finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }
 
-async function download({automatic=false,accountTransition=false}={}){
+async function download({automatic=false,accountTransition=false,detailed=false}={}){
   if(switchingAccount&&!accountTransition)return false;
   const session=captureSession();
   if(!user){if(!automatic)toast("Google 로그인이 필요합니다");return}
@@ -703,16 +732,15 @@ async function download({automatic=false,accountTransition=false}={}){
     assertSession(session);
     publishStorageUsage(documentData?.mediaManifest,remote);
     publishEntitlements(documentData?.entitlements);
-    if(!remote){status(`${accountName()} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return}
-    const countCharacters=value=>Array.isArray(value?.characters)?value.characters.length:Object.keys(value?.characters||{}).length;
-    const remoteCount=countCharacters(remote),localCount=countCharacters(window.ParallelCity.getState());
+    if(!remote){status(`${accountName()} · 저장 데이터 없음`);if(!automatic)toast("저장된 데이터가 없습니다");return detailed?"empty":undefined}
+    const remoteCount=characterCount(remote),localCount=characterCount(window.ParallelCity.getState());
     // 내용 없는 클라우드 문서는 계정 로그인 정보만 만들어졌을 때도 생긴다.
     // 수동 불러오기에서도 이것을 게임 저장본으로 취급하면 기기 캐릭터가
     // 전부 사라져 보이므로, 캐릭터 0명인 저장본은 절대 덮어쓰지 않는다.
     if(remoteCount===0){
       status(`${accountName()} · 기기 데이터 유지`);
       toast(localCount>0?"클라우드에 캐릭터가 없어 기기 데이터를 보호했습니다":"클라우드에 불러올 캐릭터 데이터가 없습니다");
-      return false;
+      return detailed?"empty":false;
     }
     const localState=window.ParallelCity.getState();
     const characterIds=value=>new Set(Array.isArray(value?.order)?value.order:Object.keys(value?.characters||{}));
@@ -721,7 +749,7 @@ async function download({automatic=false,accountTransition=false}={}){
     if(automatic&&!differentCharacters&&Number(localState?.lastSaved||0)>Number(remote?.lastSaved||0)){
       status(`${accountName()} · 더 최신인 기기 데이터 유지`);
       toast("기기의 최신 변경사항을 유지했습니다");
-      return false;
+      return detailed?"kept-local":false;
     }
     try{
       const raw=localStorage.getItem("drawer-village-game-v1");
@@ -738,8 +766,8 @@ async function download({automatic=false,accountTransition=false}={}){
     toast(differentCharacters
       ?`기기와 클라우드 인물을 합쳐 ${Object.keys(imported.characters||{}).length}명 불러왔습니다`
       :automatic?"자동으로 불러왔습니다":"불러왔습니다");
-    return true;
-  }catch(error){if(error?.code==="sync/account-changed")return false;console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return false}finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
+    return detailed?"loaded":true;
+  }catch(error){if(error?.code==="sync/account-changed")return detailed?"cancelled":false;console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return detailed?"error":false}finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }
 
 async function submitFeedback({category,message,allowReply=false}={}){
@@ -770,7 +798,14 @@ if(ready){
       try{
         await activeSyncDone;
         if(epoch!==accountEpoch)return;
+        const guestHandoff=next?takeGuestHandoff():null;
         window.ParallelCity.switchAccount(next?.uid||null);
+        const targetHadSnapshot=Boolean(localStorage.getItem("drawer-village-game-v1"));
+        let adoptedGuest=false;
+        if(guestHandoff&&!targetHadSnapshot&&characterCount(window.ParallelCity.getState())===0){
+          window.ParallelCity.replaceState(guestHandoff);
+          adoptedGuest=true;
+        }
         uploadedCache.clear();
         publishEntitlements(null);
         storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
@@ -780,7 +815,10 @@ if(ready){
           try{await registerSignedInUser()}catch(error){if(epoch!==accountEpoch)return;console.warn(error)}
           if(epoch!==accountEpoch)return;
           // Always load this account, even when it was used minutes ago.
-          await download({automatic:true,accountTransition:true});
+          const downloadOutcome=await download({automatic:true,accountTransition:true,detailed:true});
+          if(adoptedGuest&&!['error','cancelled'].includes(downloadOutcome)){
+            await upload({silent:true,accountTransition:true});
+          }
         }
       }catch(error){console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
       finally{if(epoch===accountEpoch){authSettled=true;switchingAccount=false;window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
@@ -799,5 +837,5 @@ window.ParallelCityAuth={
     }
   },
   getIdToken:async()=>user?user.getIdToken():null,
-  getInfo:()=>({ready:authSettled,user,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,storageUsage,guideState})
+  getInfo:()=>({ready:authSettled,user,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,storageUsage,guideState})
 };

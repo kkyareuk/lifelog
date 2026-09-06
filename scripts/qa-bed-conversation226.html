@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko" class="native-app" data-active-tab="home">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>침대 대화 226 QA</title>
+  <link rel="stylesheet" href="../app.css?v=20260906dev229">
+  <style>
+    html,body{width:100%;height:100%;margin:0;background:#e9ddc7;overflow:hidden}
+    body{display:grid;place-items:center}
+    .qa-room.room{position:relative!important;width:min(92vw,430px)!important;height:min(88vh,620px)!important;overflow:hidden!important;border:4px solid #21150e!important;border-radius:22px!important;background:#b88d62!important;background-image:repeating-linear-gradient(0deg,#0000 0 43px,#68472f55 44px 47px)!important;container-type:size}
+    .qa-room .room-furniture-item,.qa-room .room-couple-bed-overlay{--furniture-x:50%;--furniture-y:45%;--furniture-scale:1;--furniture-rotation:0deg;--furniture-layer:2;--furniture-flip:1;--furniture-grid-width:3;--furniture-grid-height:4;--furniture-cell-w:8.3333%;--furniture-cell-h:6.25%}
+    .qa-room .room-people{position:absolute!important;inset:0!important}
+  </style>
+</head>
+<body>
+  <section class="qa-room room">
+    <div class="room-furniture-layer">
+      <button type="button" class="room-furniture-item is-couple-bed" data-furniture-placement="qa-bed" tabindex="-1" style="--furniture-x:50%;--furniture-y:45%;--furniture-scale:1;--furniture-rotation:0deg;--furniture-layer:2;--furniture-flip:1;--furniture-grid-width:3;--furniture-grid-height:4">
+        <span class="room-furniture-art room-couple-bed-art" data-bed-layer-state="under-cover"><img class="couple-bed-layer couple-bed-base" src="../assets/furniture/couple-bed/couple-bed-base.png" alt=""></span>
+      </button>
+    </div>
+    <div class="room-people has-home-life">
+      <div class="home-person home-life-person home-life-using is-couple-bed-user couple-bed-slot-1 is-using-couple-bed is-under-cover is-bed-conversation is-conversing conversation-slot-1 scene-action-talk" data-couple-bed-id="qa-bed" data-bed-slot="0" style="--life-x:45.17%;--life-y:39.85%;--bed-face-size:48px;--couple-bed-character-rotation:0deg">
+        <span class="home-person-visual"><span class="avatar" style="background:#d9e5f2;color:#253447;border-radius:50%;display:grid;place-items:center;font-weight:900">크</span><i class="home-person-chat-bubble">•••</i></span>
+      </div>
+      <div class="home-person home-life-person home-life-using is-couple-bed-user couple-bed-slot-2 is-using-couple-bed is-under-cover is-bed-conversation is-conversing conversation-slot-2 scene-action-talk" data-couple-bed-id="qa-bed" data-bed-slot="1" style="--life-x:54.83%;--life-y:39.85%;--bed-face-size:48px;--couple-bed-character-rotation:0deg">
+        <span class="home-person-visual"><span class="avatar" style="background:#bdd9ce;color:#183c34;border-radius:50%;display:grid;place-items:center;font-weight:900">네</span><i class="home-person-chat-bubble">•••</i></span>
+      </div>
+    </div>
+    <div class="room-furniture-overlay-layer">
+      <span class="room-couple-bed-overlay" data-bed-layer-state="under-cover" style="--furniture-x:50%;--furniture-y:45%;--furniture-scale:1;--furniture-rotation:0deg;--furniture-layer:2;--furniture-flip:1;--furniture-grid-width:3;--furniture-grid-height:4"><img class="couple-bed-layer couple-bed-quilt" src="../assets/furniture/couple-bed/couple-bed-quilt.png" alt=""><img class="couple-bed-layer couple-bed-footboard" src="../assets/furniture/couple-bed/couple-bed-footboard.png" alt=""></span>
+    </div>
+    <div class="room-foreground-layer">
+      <div class="home-bed-foreground-status is-shared" style="--bed-status-x:50%;--bed-status-y:54.98%"><span class="home-interaction-status"><b>크로 · 네리네</b><small>잠들기 전 시간을 보내는 중</small></span></div>
+    </div>
+  </section>
+</body>
+</html>

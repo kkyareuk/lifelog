@@ -78,7 +78,18 @@
     "test:gait-tablet219": "node scripts/check-gait-tablet-219.mjs",
     "test:hotfix220": "node scripts/check-hotfix-220.mjs",
     "test:hotfix221": "node scripts/check-hotfix-221.mjs",
-    "test:hotfix231": "node scripts/check-hotfix-231.mjs"
+    "test:dev223": "node scripts/check-dev-223.mjs",
+    "test:dev224": "node scripts/check-dev-224.mjs",
+    "test:dev225": "node scripts/check-dev-225.mjs",
+    "test:dev226": "node scripts/check-dev-226.mjs",
+    "test:dev227": "node scripts/check-dev-227.mjs",
+    "test:dev228": "node scripts/check-dev-228.mjs",
+    "test:dev229": "node scripts/check-dev-229.mjs",
+    "test:dev230": "node scripts/check-dev-230.mjs",
+    "qa:dev230": "node scripts/qa-dev-230.mjs",
+    "test:dev232": "node scripts/check-dev-232.mjs",
+    "test:dev233": "node scripts/check-dev-233.mjs",
+    "qa:dev233": "node scripts/qa-dev-230.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
