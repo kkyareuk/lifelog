@@ -99,7 +99,8 @@
     "test:hotfix243": "node scripts/check-hotfix-243.mjs",
     "test:hotfix245": "node scripts/check-hotfix-245.mjs",
     "test:hotfix247": "node scripts/check-hotfix-247.mjs",
-    "test:hotfix252": "node scripts/check-hotfix-252.mjs"
+    "test:hotfix252": "node scripts/check-hotfix-252.mjs",
+    "test:hotfix255": "node scripts/check-hotfix-255.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",
