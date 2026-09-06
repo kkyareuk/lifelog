@@ -1,38 +1,38 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260906hotfix247";
-import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260906hotfix247";
-import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260906hotfix247";
-import {toggleDislike} from "./state.js?v=20260906hotfix247";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260906hotfix247";
-import {setCharacterSceneImage} from "./state.js?v=20260906hotfix247";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906hotfix247";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260906hotfix247";
-import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260906hotfix247";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260906hotfix247";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260906hotfix247";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260906hotfix247";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260906hotfix247";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260906hotfix247";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260906hotfix247";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260906hotfix247";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260906hotfix247";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260906hotfix247";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906hotfix247";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260906hotfix247";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260906hotfix247";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260906hotfix247";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906hotfix247";
-import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260906hotfix247";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260907hotfix252";
+import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260907hotfix252";
+import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260907hotfix252";
+import {toggleDislike} from "./state.js?v=20260907hotfix252";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260907hotfix252";
+import {setCharacterSceneImage} from "./state.js?v=20260907hotfix252";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907hotfix252";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260907hotfix252";
+import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260907hotfix252";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260907hotfix252";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260907hotfix252";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260907hotfix252";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260907hotfix252";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260907hotfix252";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260907hotfix252";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260907hotfix252";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260907hotfix252";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260907hotfix252";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907hotfix252";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260907hotfix252";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260907hotfix252";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260907hotfix252";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907hotfix252";
+import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260907hotfix252";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260906hotfix247";
-import {translateText} from "./views.js?v=20260906hotfix247";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260906hotfix247";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260906hotfix247";
-import {characterMood} from "./character-mood.js?v=20260906hotfix247";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260906hotfix247";
+import {switchAccountState} from "./state.js?v=20260907hotfix252";
+import {translateText} from "./views.js?v=20260907hotfix252";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260907hotfix252";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260907hotfix252";
+import {characterMood} from "./character-mood.js?v=20260907hotfix252";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260907hotfix252";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -1184,7 +1184,7 @@ function bindFurniturePlacementEditors(){
   const selectFurniture=element=>{
     if(!element)return;
     document.querySelectorAll("[data-furniture-placement].is-selected").forEach(item=>item.classList.remove("is-selected"));
-    selected=element;element.classList.add("is-selected");toolbar.hidden=false;
+    selected=element;element.classList.add("is-selected");toolbar.hidden=false;toolbar.classList.remove("is-collapsed");
     fitFurnitureSelection(element);
     const image=element.querySelector(".couple-bed-base");if(image&&!image.complete)image.addEventListener("load",()=>{if(element.isConnected)fitFurnitureSelection(element)},{once:true});
     const placement=state.homes[element.dataset.homeId]?.rooms?.[element.dataset.roomKey]?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);
@@ -1217,14 +1217,19 @@ function bindFurniturePlacementEditors(){
         ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');
         element.classList.add('furniture-drag-source');
       }
-      // Pointer capture stays on the source; hit-testing chooses the actual room
-      // under the finger. Toolbars and gaps are not valid drop destinations.
-      const target=document.elementFromPoint(event.clientX,event.clientY)?.closest('.room[data-room-key]');
+      // Pointer capture stays on the source. elementsFromPoint also sees the room
+      // below the floating controls, so Android's bottom bar or our toolbar can
+      // never turn a valid last position into a cancelled move.
+      const target=document.elementsFromPoint(event.clientX,event.clientY)
+        .map(node=>node.closest?.('.room[data-room-key]')).find(room=>room&&canvas.contains(room));
       const layer=target?.querySelector('.room-furniture-layer');
       if(!target||!canvas.contains(target)||!layer){latest=null;ghost.remove();return}
       const home=state.homes[element.dataset.homeId],current=home?.rooms?.[element.dataset.roomKey]?.furniturePlacements?.find(item=>item.id===element.dataset.furniturePlacement);
       if(!current)return;
-      const roomRect=target.getBoundingClientRect();
+      // Stored percentages are relative to the furniture layer's padding box,
+      // not the room's outer border. Mixing those rectangles nudged an object a
+      // few pixels upward every time it was picked up and dropped again.
+      const roomRect=layer.getBoundingClientRect();
       const snapped=snapFurniturePosition((event.clientX-roomRect.left)/roomRect.width*100,(event.clientY-roomRect.top)/roomRect.height*100,furnitureGridForRoom(roomRect,canvas.getBoundingClientRect()),furnitureFootprint(current.item));
       latest={roomKey:target.dataset.roomKey,...snapped};
       if(ghost.parentElement!==layer)layer.append(ghost);
@@ -1235,7 +1240,10 @@ function bindFurniturePlacementEditors(){
       const captured=pointerId;pointerId=null;
       if(element.hasPointerCapture(captured))element.releasePointerCapture(captured);
       ghost?.remove();ghost=null;element.classList.remove('furniture-drag-source');
-      if(latest&&event.type==='pointerup'){
+      // Android WebView commonly ends a drag with pointercancel/lostcapture when
+      // the finger crosses a scroll boundary. The latest validated room position
+      // is still the user's intended drop and must be committed.
+      if(latest){
         const {homeId,roomKey,furniturePlacement:placementId}=element.dataset;
         if(moveFurniturePlacement(homeId,roomKey,latest.roomKey,placementId,latest)){
           pendingFurnitureSelection={homeId,roomKey:latest.roomKey,placementId};render();
@@ -1254,6 +1262,14 @@ function bindFurniturePlacementEditors(){
       pendingFurnitureSelection={homeId,roomKey:toRoomKey,placementId};render();
     }else destination.value=roomKey;
   };
+  const toolbarToggle=toolbar.querySelector('[data-furniture-toolbar-toggle]');
+  if(toolbarToggle)toolbarToggle.onclick=event=>{
+    event.preventDefault();event.stopPropagation();
+    const collapsed=toolbar.classList.toggle('is-collapsed'),copy=homeEditorCopy(state.uiLanguage);
+    toolbarToggle.setAttribute('aria-expanded',String(!collapsed));
+    toolbarToggle.setAttribute('aria-label',collapsed?copy.expand:copy.collapse);
+    toolbarToggle.textContent=collapsed?'＋':'−';
+  };
   toolbar.querySelectorAll("[data-furniture-command]").forEach(button=>button.onclick=event=>{
     event.preventDefault();event.stopPropagation();
     const command=button.dataset.furnitureCommand;
@@ -1268,7 +1284,7 @@ function bindFurniturePlacementEditors(){
     }
     const patch=command==="smaller"?{scale:current.scale-.25}
       :command==="larger"?{scale:current.scale+.25}
-      :command==="rotate"?{facing:["front","left","right"][(["front","left","right"].indexOf(current.facing||"front")+1)%3]}
+      :command==="rotate"?{rotation:(Number(current.rotation)||0)+90}
       :command==="flip"?{flipped:!current.flipped}
       :command==="back"?{layerAction:"back"}
       :command==="front"?{layerAction:"front"}:{};
@@ -5795,7 +5811,7 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260906hotfix247").catch(error=>{
+import("./auth.js?v=20260907hotfix252").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     window.DrawerVillageAuthStartupFailed=true;
     setAccountLabel("Google 로그인");
@@ -5812,7 +5828,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260906hotfix247",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260907hotfix252",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>{

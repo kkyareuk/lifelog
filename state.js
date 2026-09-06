@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906hotfix247";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260906hotfix247";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906hotfix247";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260906hotfix247";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906hotfix247";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260906hotfix247";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906hotfix247";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260906hotfix247";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260906hotfix247";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907hotfix252";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907hotfix252";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907hotfix252";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260907hotfix252";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907hotfix252";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907hotfix252";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907hotfix252";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907hotfix252";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907hotfix252";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260906hotfix247";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906hotfix247";
+import {missingBuildings} from "./building-recovery.js?v=20260907hotfix252";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907hotfix252";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -667,6 +667,15 @@ function normalizeHomes(x){
     h.lifeSimulation=normalizeHomeLifeSimulation(h.lifeSimulation,Object.keys(h.rooms));
     h.cleanliness=Number.isFinite(h.cleanliness)?h.cleanliness:100;
   });
+  // Shared schedule entries are copied into every participant's day log, but the
+  // schedule itself belongs only to the character who created it. Migration must
+  // therefore check schedule IDs globally. Checking one character at a time made
+  // an invited participant's valid entry look orphaned and created a false global
+  // deletion tombstone on the next app launch.
+  const globallyStoredScheduleIds=new Set([
+    ...Object.values(x.routines||{}).flatMap(items=>Array.isArray(items)?items:[]),
+    ...Object.values(x.monthlyRoutines||{}).flatMap(items=>Array.isArray(items)?items:[])
+  ].map(item=>String(item?.id||"")).filter(Boolean));
   Object.values(x.characters||{}).forEach(c=>{
     c.townId=x.towns.some(t=>t.id===c.townId)?c.townId:x.towns[0].id;
     c.days=c.days&&typeof c.days==="object"&&!Array.isArray(c.days)?c.days:{};
@@ -703,7 +712,7 @@ function normalizeHomes(x){
       ...x.routines[c.id].map(item=>String(item.id||"")),
       ...x.monthlyRoutines[c.id].map(item=>String(item.id||""))
     ].filter(Boolean));
-    const orphanedScheduleIds=[...new Set(Object.values(c.days).flatMap(day=>(day.entries||[]).map(entry=>String(entry?.routineId||"")).filter(id=>id&&!activeScheduleIds.has(id))))];
+    const orphanedScheduleIds=[...new Set(Object.values(c.days).flatMap(day=>(day.entries||[]).map(entry=>String(entry?.routineId||"")).filter(id=>id&&!globallyStoredScheduleIds.has(id)&&!activeScheduleIds.has(id))))];
     if(orphanedScheduleIds.length){
       // 예전 저장본에는 주간/월간 구분도 남지 않으므로 양쪽 삭제 목록에
       // 넣는다. 일정 ID는 전역 UUID여서 다른 정상 일정을 가리지 않는다.

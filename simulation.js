@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260906hotfix247";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260906hotfix247";
-import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260906hotfix247";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260906hotfix247";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260906hotfix247";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907hotfix252";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907hotfix252";
+import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907hotfix252";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907hotfix252";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907hotfix252";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -190,10 +190,17 @@ const routineEndMinute=item=>{
 };
 const scheduledForDate=(c,date=new Date())=>{
   const seen=new Set(),deleted=new Set([...(state.deletedRoutineIds||[]),...(state.deletedMonthlyRoutineIds||[])].map(String));
-  return [
-    ...(state.monthlyRoutines?.[c.id]||[]).filter(item=>item.date===scheduleDateKey(date)),
-    ...(state.routines?.[c.id]||[]).filter(item=>Number(item.day)===date.getDay())
-  ].filter(item=>{
+  const sources=state.order.flatMap(ownerId=>{
+    const owner=state.characters[ownerId];if(!owner)return[];
+    return [
+      ...(state.monthlyRoutines?.[ownerId]||[]).filter(item=>item.date===scheduleDateKey(date)).map(item=>({item,ownerId,kind:"monthly"})),
+      ...(state.routines?.[ownerId]||[]).filter(item=>Number(item.day)===date.getDay()).map(item=>({item,ownerId,kind:"weekly"}))
+    ];
+  });
+  return sources.filter(({item,ownerId})=>ownerId===c.id||(item.withIds||[]).includes(c.id)).map(({item,ownerId,kind})=>{
+    const participantIds=[ownerId,...(item.withIds||[])].filter(id=>state.characters[id]);
+    return {...item,withIds:[...new Set(participantIds)].filter(id=>id!==c.id),routineOwnerId:ownerId,routineKind:kind,participantOrder:[...new Set(participantIds)]};
+  }).filter(item=>{
     const key=String(item?.id||`${item?.start}|${item?.end}|${item?.title}|${item?.placeId||item?.visitHomeId||""}`);
     if(deleted.has(key)||seen.has(key))return false;
     seen.add(key);return true;
@@ -2890,7 +2897,9 @@ function build(c,date=new Date()){
     const purpose=isDate?String(item.title||item.notes||"함께 정한 약속").replace(/^데이트\s*[·:-]?\s*/,"").trim():"";
     const endMinute=routineEndMinute(item);
     const dateGroup=isDate?`date-${[c.id,companions[0].id].sort().join("-")}-${dayKey(date)}-${minute}-${hash(purpose).toString(36)}`:"";
-    const routineMeta={routineId:item.id,routineStartMinute:minute,routineEndMinute:endMinute};
+    const participantOrder=[...new Set([...(item.participantOrder||[item.routineOwnerId||c.id]),c.id,...companions.map(person=>person.id)])];
+    const scheduledInteractionId=companions.length?["schedule",dayKey(date),item.id,participantOrder.join("~")].join(":"):"";
+    const routineMeta={routineId:item.id,routineOwnerId:item.routineOwnerId||c.id,routineKind:item.routineKind||"weekly",routineStartMinute:minute,routineEndMinute:endMinute,...(companions.length?{participantOrder,interactionId:scheduledInteractionId,groupInteraction:true}: {})};
     const companionIds=companions.map(person=>person.id);
     const dateMeta=isDate?{...routineMeta,withId:companions[0].id,withIds:companionIds,mood:"데이트",dateGroup,datePurpose:purpose,dateStartMinute:minute,dateEndMinute:endMinute}:{...routineMeta,withId:companions[0]?.id,withIds:companionIds,mood:"일정"};
     const desc=item.notes||(isDate?`${purpose} 약속에서 정한 일을 ${companions[0].name}와 순서대로 진행하고 있어요.`:`${companionText}${item.type} 일정을 진행하고 있어요. 종료 예정 시각은 ${item.end}예요.`);
@@ -3244,6 +3253,11 @@ function commitLiveEntry(c,date,item){
     if(changed){day.entries=nextEntries;save(false,false)}
     return changed;
   };
+  // A log entry is a historical snapshot, not a view model. Once the same
+  // interaction was written for this character, reopening the app must not
+  // replace its wording or participant list with a newly evaluated variant.
+  const immutableInteraction=item.interactionId&&entries.find(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute));
+  if(immutableInteraction)return immutableInteraction;
   // 수면은 현재 화면과 로그가 반드시 같은 한 사건을 가리켜야 한다. 같은 시각에
   // 예전 엔진이 만든 일반 장면이 남아 있어도 중복으로 거부하지 않고 수면으로 교체한다.
   if(item.mood==="수면"){
@@ -4815,7 +4829,12 @@ export function eventFor(c,date=new Date()){
   const incomingShared=!activeRoutine?incomingCommittedSharedSceneFor(c,date,baseCurrent):null;
   // 동행자를 지정하지 않은 일정에는 우연히 같은 장소에 있다는 이유만으로
   // 다른 캐릭터의 대화나 공동 행동을 끼워 넣지 않는다.
-  let current=adaptAccessibilityWording(c,activeRoutine&&!routineCompanionIds.length
+  const scheduledGroup=activeRoutine&&routineCompanionIds.length&&rawCurrent?.routineId===activeRoutine.id
+    ?{...rawCurrent,withId:routineCompanionIds[0],withIds:routineCompanionIds,participantOrder:activeRoutine.participantOrder||[activeRoutine.routineOwnerId||c.id,...routineCompanionIds],interactionId:rawCurrent.interactionId||["schedule",dayKey(date),activeRoutine.id,(activeRoutine.participantOrder||[]).join("~")].join(":"),groupInteraction:true}
+    :null;
+  let current=adaptAccessibilityWording(c,scheduledGroup
+    ?scheduledGroup
+    :activeRoutine&&!routineCompanionIds.length
     ?baseCurrent
     :incomingShared
       ?sharedPlaceScene(c,baseCurrent,date,{
@@ -4848,11 +4867,11 @@ export function eventFor(c,date=new Date()){
   if(current?.groupInteraction&&!current.dateGroup){
     const participants=(current.withIds||[]).map(id=>state.characters[id]).filter(Boolean);
     const reusingStoredInteraction=Boolean(baseCurrent?.groupInteraction&&baseCurrent.interactionId===current.interactionId);
+    const scheduledInteraction=Boolean(current.routineId);
     const everyoneActuallyHere=participants.length>0&&participants.every(other=>{
       const live=companionAlignedBaseEvent(other,baseEventFor(other,date),date);
       const soloBase=baseSceneFrom(live);
-      return !activeScheduledRoutine(other,date)
-        &&!isProtectedSoloActivity(soloBase)
+      return (scheduledInteraction?live?.routineId===current.routineId:!activeScheduledRoutine(other,date)&&!isProtectedSoloActivity(soloBase))
         &&sameLiveLocation(current,live)
         &&(!reusingStoredInteraction||live?.interactionId===current.interactionId);
     });
@@ -4871,7 +4890,7 @@ export function eventFor(c,date=new Date()){
     current.interactionStartedMinute=sharedMinute;
     current.minute=sharedMinute;
     current.time=clock(sharedMinute);
-    commitLiveEntry(c,date,current);
+    current=commitLiveEntry(c,date,current);
     const sharedLocation={
       home:Boolean(current.home),
       room:current.home?current.room:undefined,
