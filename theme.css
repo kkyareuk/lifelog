@@ -150,7 +150,7 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(
   .character-editor>.form{padding:20px!important}
 }
 
-@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
+@media(max-width:720px),(min-width:721px) and (orientation:portrait){
   .profile-license{gap:12px;max-width:100%;margin:0}
   .profile-basic-settings,.relationship-basic-settings{padding:15px;border-radius:18px}
   .settings-section-heading{display:grid;gap:5px}
@@ -346,7 +346,7 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
   z-index:4;
 }
 
-@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
+@media(max-width:720px),(min-width:721px) and (orientation:portrait){
   html[data-color-mode][data-visual-theme] :is(.panel,.form,.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card){box-shadow:0 9px 24px var(--theme-shadow)!important}
   .visual-theme-dialog .visual-theme-options-all{grid-template-columns:minmax(0,1fr)}
   .visual-theme-dialog .visual-theme-options-all>button{padding:13px 14px!important}
@@ -368,7 +368,7 @@ html[data-color-mode="light"][data-visual-theme="rose"] :is(input,select,textare
   background:#fff!important;
 }
 
-@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
+@media(max-width:720px),(min-width:721px) and (orientation:portrait){
   html.native-platform[data-color-mode="light"],
   html.native-platform[data-color-mode="light"] body,
   html.native-platform[data-color-mode="light"] #app,

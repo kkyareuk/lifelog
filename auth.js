@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev234";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev235";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906dev234";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906dev235";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -788,6 +788,250 @@ async function submitFeedback({category,message,allowReply=false}={}){
   return true;
 }
 
+// 그룹 멀티 데이터는 개인 게임 저장본과 분리한다. 그룹에서 주민을
+// 내보내거나 집 공개를 취소해도 users/{uid}/sync 및 기기 원본에는 손대지 않는다.
+const emptyGroupState=()=>({
+  loading:false,error:"",groups:[],activeGroupId:"",group:null,members:[],residents:[],homes:[],
+  selectedTownId:"",visitingHomeId:""
+});
+let groupState=emptyGroupState();
+let groupUnsubscribers=[];
+const groupSnapshot=()=>groupState;
+const emitGroupState=()=>{
+  const event=typeof CustomEvent==="function"
+    ?new CustomEvent("drawer-village-groups",{detail:groupState})
+    :Object.assign(new Event("drawer-village-groups"),{detail:groupState});
+  window.dispatchEvent(event);
+};
+const stopGroupSubscriptions=()=>{
+  groupUnsubscribers.forEach(unsubscribe=>{try{unsubscribe()}catch{}});
+  groupUnsubscribers=[];
+};
+const requireGroupUser=()=>{
+  if(!user)throw Object.assign(new Error("Google login required"),{code:"groups/login-required"});
+  return user;
+};
+const cleanGroupName=value=>String(value||"").trim().replace(/\s+/g," ").slice(0,40);
+const cleanInviteCode=value=>String(value||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,16);
+const inviteDisplay=value=>{
+  const code=cleanInviteCode(value);
+  return code.length===8?`${code.slice(0,4)}-${code.slice(4)}`:code;
+};
+const newInviteCode=()=>{
+  const alphabet="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes=crypto.getRandomValues(new Uint8Array(8));
+  return [...bytes].map(value=>alphabet[value%alphabet.length]).join("");
+};
+const publicImage=value=>{
+  const source=String(value||"").trim();
+  return /^https:\/\//i.test(source)?source.slice(0,1500):"";
+};
+const activeGroupMember=()=>groupState.members.find(member=>member.uid===user?.uid);
+const activeGroupRole=()=>activeGroupMember()?.role||(groupState.group?.ownerUid===user?.uid?"owner":"member");
+const isGroupManager=()=>["owner","manager"].includes(activeGroupRole());
+const groupRefs=groupId=>({
+  group:doc(db,"groups",groupId),members:collection(db,"groups",groupId,"members"),
+  residents:collection(db,"groups",groupId,"residents"),homes:collection(db,"groups",groupId,"homes")
+});
+const groupIndexRef=(uid,groupId)=>doc(db,"users",uid,"groupMemberships",groupId);
+
+function watchActiveGroup(groupId){
+  stopGroupSubscriptions();
+  groupState={...groupState,activeGroupId:groupId||"",group:null,members:[],residents:[],homes:[],selectedTownId:"",visitingHomeId:""};
+  if(!groupId||!user){emitGroupState();return}
+  const refs=groupRefs(groupId);
+  const listen=(reference,key,mapSnapshot)=>onSnapshot(reference,snapshot=>{
+    const value=mapSnapshot
+      ?snapshot.docs.map(item=>({id:item.id,...item.data()}))
+      :snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;
+    groupState={...groupState,[key]:value,error:"",loading:false};
+    if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
+    emitGroupState();
+  },error=>{
+    console.warn(`group ${key} subscription failed`,error);
+    groupState={...groupState,error:error?.code||"groups/load-failed",loading:false};emitGroupState();
+  });
+  groupUnsubscribers=[
+    listen(refs.group,"group",false),listen(refs.members,"members",true),
+    listen(refs.residents,"residents",true),listen(refs.homes,"homes",true)
+  ];
+}
+
+async function refreshGroups({preferredId=""}={}){
+  if(!ready||!db||!user){stopGroupSubscriptions();groupState=emptyGroupState();emitGroupState();return groupState}
+  const session=captureSession();
+  groupState={...groupState,loading:true,error:""};emitGroupState();
+  try{
+    const indexSnapshot=await getDocs(collection(db,"users",session.uid,"groupMemberships"));
+    assertSession(session);
+    const indexed=indexSnapshot.docs.map(item=>({id:item.id,...item.data()}));
+    const groups=(await Promise.all(indexed.map(async membership=>{
+      try{
+        const snapshot=await getDoc(doc(db,"groups",membership.groupId||membership.id));
+        return snapshot.exists()?{id:snapshot.id,...snapshot.data(),myRole:membership.role||"member"}:null;
+      }catch(error){console.warn("stale group membership",membership.id,error);return null}
+    }))).filter(Boolean);
+    assertSession(session);
+    const activeId=[preferredId,groupState.activeGroupId,groups[0]?.id].find(id=>groups.some(group=>group.id===id))||"";
+    groupState={...groupState,groups,loading:false,error:""};
+    watchActiveGroup(activeId);
+    return groupState;
+  }catch(error){
+    if(error?.code==="sync/account-changed")return groupState;
+    console.error("group list failed",error);groupState={...groupState,loading:false,error:error?.code||"groups/load-failed"};emitGroupState();return groupState;
+  }
+}
+
+async function createGroup({name}={}){
+  const account=requireGroupUser(),groupName=cleanGroupName(name);
+  if(!groupName)throw Object.assign(new Error("Group name required"),{code:"groups/name-required"});
+  const groupId=crypto.randomUUID?.()||`group_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+  let inviteCode=newInviteCode();
+  for(let attempt=0;attempt<4;attempt+=1){
+    const exists=await getDoc(doc(db,"groupInvites",inviteCode));
+    if(!exists.exists())break;
+    inviteCode=newInviteCode();
+  }
+  const batch=writeBatch(db),createdAt=serverTimestamp();
+  batch.set(doc(db,"groups",groupId),{
+    name:groupName,ownerUid:account.uid,ownerName:accountName(),inviteCode,createdAt,updatedAt:createdAt,
+    rules:{memberCharacterLimit:20,operatorCharacterLimit:100,managerCharacterLimit:100,allowHomeVisits:true},
+    towns:[{id:`town_${Date.now()}`,name:"첫 마을"}],schemaVersion:1
+  });
+  batch.set(doc(db,"groups",groupId,"members",account.uid),{uid:account.uid,displayName:accountName(),role:"owner",joinedAt:createdAt});
+  batch.set(groupIndexRef(account.uid,groupId),{groupId,role:"owner",joinedAt:createdAt});
+  batch.set(doc(db,"groupInvites",inviteCode),{groupId,ownerUid:account.uid,active:true,createdAt});
+  await batch.commit();
+  await refreshGroups({preferredId:groupId});
+  return {groupId,inviteCode:inviteDisplay(inviteCode)};
+}
+
+async function joinGroup(rawCode){
+  const account=requireGroupUser(),inviteCode=cleanInviteCode(rawCode);
+  if(inviteCode.length<6)throw Object.assign(new Error("Invalid invite code"),{code:"groups/code-invalid"});
+  const invite=await getDoc(doc(db,"groupInvites",inviteCode));
+  if(!invite.exists()||invite.data()?.active!==true)throw Object.assign(new Error("Invite not found"),{code:"groups/code-not-found"});
+  const groupId=String(invite.data().groupId||"");
+  if(!groupId)throw Object.assign(new Error("Invite missing group"),{code:"groups/code-invalid"});
+  const batch=writeBatch(db),joinedAt=serverTimestamp();
+  batch.set(doc(db,"groups",groupId,"members",account.uid),{uid:account.uid,displayName:accountName(),role:"member",inviteCode,joinedAt},{merge:true});
+  batch.set(groupIndexRef(account.uid,groupId),{groupId,role:"member",joinedAt},{merge:true});
+  await batch.commit();
+  await refreshGroups({preferredId:groupId});
+  return groupId;
+}
+
+async function updateGroupRules(patch={}){
+  requireGroupUser();if(!groupState.group||!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
+  const number=(key,fallback)=>Math.max(1,Math.min(100,Number(patch[key])||fallback));
+  const rules={
+    memberCharacterLimit:number("memberCharacterLimit",groupState.group.rules?.memberCharacterLimit||20),
+    operatorCharacterLimit:number("operatorCharacterLimit",groupState.group.rules?.operatorCharacterLimit||100),
+    managerCharacterLimit:number("managerCharacterLimit",groupState.group.rules?.managerCharacterLimit||100),
+    allowHomeVisits:patch.allowHomeVisits!==false
+  };
+  await setDoc(doc(db,"groups",groupState.activeGroupId),{rules,updatedAt:serverTimestamp()},{merge:true});
+}
+
+async function addGroupTown(name){
+  requireGroupUser();if(!groupState.group||!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
+  const cleanName=cleanGroupName(name);if(!cleanName)throw Object.assign(new Error("Town name required"),{code:"groups/town-name-required"});
+  const towns=[...(groupState.group.towns||[]),{id:`town_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,name:cleanName}];
+  await setDoc(doc(db,"groups",groupState.activeGroupId),{towns,updatedAt:serverTimestamp()},{merge:true});
+}
+
+async function addGroupResident(characterId,townId=""){
+  const account=requireGroupUser(),local=window.ParallelCity?.getState?.(),character=local?.characters?.[characterId];
+  if(!groupState.group||!character)throw Object.assign(new Error("Character missing"),{code:"groups/character-missing"});
+  if(groupState.residents.some(resident=>resident.ownerUid===account.uid&&resident.sourceCharacterId===characterId))throw Object.assign(new Error("Already resident"),{code:"groups/already-resident"});
+  const role=activeGroupRole(),rules=groupState.group.rules||{};
+  const limit=role==="operator"?Number(rules.operatorCharacterLimit)||100:["owner","manager"].includes(role)?Number(rules.managerCharacterLimit)||100:Number(rules.memberCharacterLimit)||20;
+  const mine=groupState.residents.filter(resident=>resident.ownerUid===account.uid).length;
+  if(mine>=limit)throw Object.assign(new Error("Resident limit"),{code:"groups/resident-limit",limit});
+  const residentId=`${account.uid}_${String(characterId).replace(/[^A-Za-z0-9_-]/g,"_")}`;
+  const localTown=local.towns?.find(item=>item.id===character.townId),localHome=local.homes?.[character.homeId];
+  await setDoc(doc(db,"groups",groupState.activeGroupId,"residents",residentId),{
+    ownerUid:account.uid,ownerName:accountName(),sourceCharacterId:characterId,
+    name:String(character.name||"이름 없는 캐릭터").slice(0,40),job:String(character.jobTitle||character.job||"무직").slice(0,60),
+    icon:publicImage(character.icon||character.photo),townId:townId||groupState.selectedTownId||groupState.group.towns?.[0]?.id||"",
+    sourceTownName:String(localTown?.name||"").slice(0,40),sourceHomeName:String(localHome?.name||"").slice(0,40),
+    joinedAt:serverTimestamp(),updatedAt:serverTimestamp()
+  });
+  return residentId;
+}
+
+async function removeGroupResident(residentId){
+  const account=requireGroupUser(),resident=groupState.residents.find(item=>item.id===residentId);
+  if(!resident)throw Object.assign(new Error("Resident missing"),{code:"groups/resident-missing"});
+  if(resident.ownerUid!==account.uid&&!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
+  // 그룹 주민 문서만 삭제한다. 원본 characterId의 개인 저장 데이터는 건드리지 않는다.
+  await deleteDoc(doc(db,"groups",groupState.activeGroupId,"residents",residentId));
+}
+
+async function publishGroupHome(homeId,townId=""){
+  const account=requireGroupUser(),local=window.ParallelCity?.getState?.(),home=local?.homes?.[homeId];
+  if(!groupState.group||!home)throw Object.assign(new Error("Home missing"),{code:"groups/home-missing"});
+  const sharedHomeId=`${account.uid}_${String(homeId).replace(/[^A-Za-z0-9_-]/g,"_")}`;
+  const residents=Object.values(local.characters||{}).filter(character=>character?.homeId===homeId).map(character=>String(character.name||"").slice(0,40)).filter(Boolean).slice(0,30);
+  const rooms=Object.values(home.rooms||{}).map(room=>String(room?.name||"").slice(0,30)).filter(Boolean).slice(0,30);
+  await setDoc(doc(db,"groups",groupState.activeGroupId,"homes",sharedHomeId),{
+    ownerUid:account.uid,ownerName:accountName(),sourceHomeId:homeId,name:String(home.name||"이름 없는 집").slice(0,40),
+    kind:String(home.kind||"일반 주거").slice(0,30),townId:townId||groupState.selectedTownId||groupState.group.towns?.[0]?.id||"",
+    exteriorImage:publicImage(home.exteriorImage||home.image),residentNames:residents,roomNames:rooms,
+    visitPolicy:"members",updatedAt:serverTimestamp(),createdAt:serverTimestamp()
+  },{merge:true});
+  return sharedHomeId;
+}
+
+async function removeGroupHome(homeId){
+  const account=requireGroupUser(),home=groupState.homes.find(item=>item.id===homeId);
+  if(!home)throw Object.assign(new Error("Home missing"),{code:"groups/home-missing"});
+  if(home.ownerUid!==account.uid&&!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
+  await deleteDoc(doc(db,"groups",groupState.activeGroupId,"homes",homeId));
+}
+
+async function updateGroupMemberRole(uid,role){
+  requireGroupUser();if(!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
+  if(uid===groupState.group?.ownerUid)throw Object.assign(new Error("Owner role fixed"),{code:"groups/owner-fixed"});
+  const nextRole=["manager","operator","member"].includes(role)?role:"member";
+  // 권한의 단일 기준은 그룹의 member 문서다. 다른 사용자의 개인 색인을
+  // 관리자가 수정하게 만들면 계정 경계가 흐려지므로 목록 색인은 건드리지 않는다.
+  await setDoc(doc(db,"groups",groupState.activeGroupId,"members",uid),{role:nextRole,updatedAt:serverTimestamp()},{merge:true});
+}
+
+async function removeGroupMember(uid){
+  requireGroupUser();if(!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
+  if(uid===groupState.group?.ownerUid)throw Object.assign(new Error("Owner cannot be removed"),{code:"groups/owner-fixed"});
+  const batch=writeBatch(db);
+  groupState.residents.filter(item=>item.ownerUid===uid).forEach(item=>batch.delete(doc(db,"groups",groupState.activeGroupId,"residents",item.id)));
+  groupState.homes.filter(item=>item.ownerUid===uid).forEach(item=>batch.delete(doc(db,"groups",groupState.activeGroupId,"homes",item.id)));
+  batch.delete(doc(db,"groups",groupState.activeGroupId,"members",uid));
+  batch.delete(groupIndexRef(uid,groupState.activeGroupId));
+  await batch.commit();
+}
+
+async function leaveGroup(){
+  const account=requireGroupUser();if(!groupState.activeGroupId)return;
+  if(account.uid===groupState.group?.ownerUid)throw Object.assign(new Error("Owner cannot leave"),{code:"groups/owner-cannot-leave"});
+  const batch=writeBatch(db);
+  groupState.residents.filter(item=>item.ownerUid===account.uid).forEach(item=>batch.delete(doc(db,"groups",groupState.activeGroupId,"residents",item.id)));
+  groupState.homes.filter(item=>item.ownerUid===account.uid).forEach(item=>batch.delete(doc(db,"groups",groupState.activeGroupId,"homes",item.id)));
+  batch.delete(doc(db,"groups",groupState.activeGroupId,"members",account.uid));
+  batch.delete(groupIndexRef(account.uid,groupState.activeGroupId));
+  await batch.commit();
+  await refreshGroups();
+}
+
+window.DrawerVillageGroups={
+  getSnapshot:groupSnapshot,refresh:refreshGroups,create:createGroup,join:joinGroup,
+  select:groupId=>watchActiveGroup(String(groupId||"")),
+  selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||"")};emitGroupState()},
+  visitHome:homeId=>{groupState={...groupState,visitingHomeId:String(homeId||"")};emitGroupState()},
+  updateRules:updateGroupRules,addTown:addGroupTown,addResident:addGroupResident,removeResident:removeGroupResident,
+  publishHome:publishGroupHome,removeHome:removeGroupHome,updateMemberRole:updateGroupMemberRole,
+  removeMember:removeGroupMember,leave:leaveGroup,inviteDisplay
+};
+
 if(ready){
   try{
     const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);storage=getStorage(app);
@@ -820,6 +1064,7 @@ if(ready){
             await upload({silent:true,accountTransition:true});
           }
         }
+        await refreshGroups();
       }catch(error){console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
       finally{if(epoch===accountEpoch){authSettled=true;switchingAccount=false;window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
     });

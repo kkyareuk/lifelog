@@ -225,7 +225,7 @@ html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{
   transform:translate(30px,-96px);
 }
 
-@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
+@media(max-width:720px),(min-width:721px) and (orientation:portrait){
   html.native-app[data-active-tab="town"] .town-map-scroll{
     position:absolute!important;
     inset:0!important;
