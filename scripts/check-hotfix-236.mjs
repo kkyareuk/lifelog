@@ -7,7 +7,7 @@ const auth=read("auth.js");
 const gradle=read("android/app/build.gradle");
 
 assert(/versionCode\s+236\b/.test(gradle),"Android versionCode must be 236");
-assert(/versionName\s+"1\.0\.204\.4"/.test(gradle),"Android versionName must be 1.0.204.4");
+assert(/versionName\s+"1\.0\.215\.1"/.test(gradle),"Android versionName must be 1.0.215.1");
 assert(css.includes(".relationship-viewpoint-dialog>form{position:relative!important;display:block!important;width:min(100%,412px)!important;height:100dvh!important;min-height:0!important"),"viewpoint form must own the viewport-height scroll area");
 assert(css.includes("overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important"),"viewpoint editor must allow native vertical panning");
 assert(css.includes(".relationship-viewpoint-dialog .relationship-all-fields{position:relative!important"),"viewpoint fields must participate in scroll height");

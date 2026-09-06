@@ -1,6 +1,6 @@
 # Android hotfix 236
 
-- Version name: `1.0.204.4`
+- Version name: `1.0.215.1`
 - Version code: `236`
 - Baseline: production `1.0.215` / code `233`
 - Cache marker: `20260906hotfix236`
