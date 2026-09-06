@@ -1,14 +1,14 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260906hotfix238";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260906hotfix240";
 import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260906hotfix236";
 import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260906hotfix236";
-import {toggleDislike} from "./state.js?v=20260906hotfix238";
+import {toggleDislike} from "./state.js?v=20260906hotfix240";
 import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260906hotfix236";
-import {setCharacterSceneImage} from "./state.js?v=20260906hotfix238";
+import {setCharacterSceneImage} from "./state.js?v=20260906hotfix240";
 import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906hotfix236";
 import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260906hotfix236";
-import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260906hotfix238";
+import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260906hotfix240";
 import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260906hotfix236";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260906hotfix238";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260906hotfix240";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260906hotfix236";
 import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260906hotfix236";
 import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260906hotfix236";
@@ -18,7 +18,7 @@ import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260906hot
 import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260906hotfix236";
 import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906hotfix236";
 import {homeLifeNextDelay} from "./home-simulation.js?v=20260906hotfix236";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260906hotfix236";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260906hotfix240";
 import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260906hotfix236";
 import {accountStorage as localStorage} from "./account-storage.js?v=20260906hotfix236";
 import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260906hotfix236";
@@ -27,12 +27,12 @@ let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260906hotfix238";
-import {translateText} from "./views.js?v=20260906hotfix238";
+import {switchAccountState} from "./state.js?v=20260906hotfix240";
+import {translateText} from "./views.js?v=20260906hotfix240";
 import {scheduleTownLighting} from "./town-lighting.js?v=20260906hotfix236";
 import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260906hotfix236";
 import {characterMood} from "./character-mood.js?v=20260906hotfix236";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260906hotfix238";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260906hotfix240";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -5811,7 +5811,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260906hotfix238",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260906hotfix240",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>{
@@ -5823,7 +5823,7 @@ const lockPortrait=()=>{
 if(matchMedia("(display-mode: standalone)").matches||navigator.standalone)lockPortrait();
 window.addEventListener("orientationchange",()=>{
   lockPortrait();
-  // The tablet full-settings DOM changes between a single right page and a
-  // two-page spread. Rebuild only that screen after the new viewport settles.
-  if(state.activeTab==="character"&&state.characterSettingsView==="full")setTimeout(render,120);
+  // Both the tablet book and the tablet-only town half of Observe change their
+  // actual DOM across orientation, so rebuild only those active surfaces.
+  if((state.activeTab==="character"&&state.characterSettingsView==="full")||state.activeTab==="observe")setTimeout(render,120);
 });

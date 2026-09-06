@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <style>
+    .hidden-tablet-map{display:none}
+    .visible-home-actor{display:block;width:24px;height:24px}
+  </style>
+</head>
+<body>
+  <section class="hidden-tablet-map"><i class="town-traveler is-roaming" data-person="hidden-town-resident"></i></section>
+  <i class="home-life-walking visible-home-actor" data-home-person="visible-home-resident"></i>
+  <script type="module">
+    window.createdMovementAudio=[];
+    window.Audio=class {
+      constructor(url){this.url=url;this.paused=true;this.ended=false;window.createdMovementAudio.push(this)}
+      addEventListener(){}
+      pause(){this.paused=true}
+      play(){this.paused=false;return Promise.resolve()}
+    };
+    const {syncMovementAudio}=await import("../audio.js?v=20260906hotfix240");
+    syncMovementAudio({soundMuted:false,soundEffectsVolume:50});
+    document.documentElement.dataset.ready="1";
+  </script>
+</body>
+</html>
