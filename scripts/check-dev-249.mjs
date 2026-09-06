@@ -41,11 +41,15 @@ assert.ok(views.includes("data-open-multiplayer-switcher"));
 assert.ok(views.includes("data-open-town-switcher"));
 assert.ok(views.includes("town-native-town-pill"));
 assert.ok(views.includes("data-multiplayer-select"));
+assert.ok(views.includes("data-multiplayer-town-open"));
+assert.ok(views.includes("멀티 상세에서 보기"));
 assert.ok(views.includes("town-information-browser"));
 assert.ok(app.includes("showMultiplayerList"));
 assert.ok(app.includes("showMultiplayerDetail"));
 assert.ok(app.includes("data-group-link-town"));
 assert.ok(app.includes("data-multiplayer-select"));
+assert.ok(app.includes("navigateToTab(\"groups\",{multiplayerDetail:true})"));
+assert.ok(app.includes("data-multiplayer-town-open"));
 assert.ok(css.includes(".town-native-community"));
 assert.ok(css.includes(".town-native-town-pill::before"));
 

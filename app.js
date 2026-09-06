@@ -2612,8 +2612,24 @@ function bind(){
     const town=target?.towns?.find(item=>item?.sourceTownId||item?.ownerUid)||target?.towns?.[0];
     groupApi?.select(groupId);
     const localTownId=town?.sourceTownId||town?.id||"";
-    if(localTownId&&state.towns.some(item=>item.id===localTownId))switchTown(localTownId);
-    render();
+    if(localTownId&&state.towns.some(item=>item.id===localTownId)){
+      switchTown(localTownId);
+      render();
+      return;
+    }
+    navigateToTab("groups",{multiplayerDetail:true});
+  }));
+  $$('[data-multiplayer-town-open]').forEach(button=>button.addEventListener("click",()=>{
+    button.closest("dialog")?.close();
+    const townId=button.dataset.multiplayerTownOpen||"",localTownId=button.dataset.sourceTownId||"";
+    groupApi?.selectTown?.(townId);
+    if(localTownId&&state.towns.some(item=>item.id===localTownId)){
+      switchTown(localTownId);
+      render();
+      centerMobileTownMap();
+      return;
+    }
+    navigateToTab("groups",{multiplayerDetail:true});
   }));
   $$("[data-mobile-town-character]").forEach(el=>el.onclick=()=>{setActive(el.dataset.mobileTownCharacter);render();centerMobileTownMap(el.dataset.mobileTownCharacter)});
   try{
@@ -4318,7 +4334,7 @@ function recordTabHistory(tab,replace=false){
   if(replace)history.replaceState(next,"",url);
   else if(history.state?.drawerVillageTab!==tab)history.pushState(next,"",url);
 }
-function navigateToTab(tab,{recordHistory=true}={}){
+function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false}={}){
   if(!APP_TABS.includes(tab))return;
   if(tab!=="home")closeHomeOccupantSheet();
   // The character tab is the editor itself. Rendering the old dashboard first
@@ -4330,7 +4346,7 @@ function navigateToTab(tab,{recordHistory=true}={}){
   document.querySelector(".page-guide[open]")?.close("navigate");
   if(tab!=="home")state.homeEditMode=false;
   if(tab!=="town")setMobileTownMode("");
-  if(tab==="groups")showMultiplayerList();
+  if(tab==="groups")multiplayerDetail?showMultiplayerDetail():showMultiplayerList();
   if(tab!=="character"){
     flushMobileCharacterDraft();
     mobileCharacterReorderOpen=false;
