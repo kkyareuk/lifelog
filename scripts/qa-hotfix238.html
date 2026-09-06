@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko" class="native-app" data-color-mode="dark" data-active-tab="character">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <link rel="stylesheet" href="../app.css?v=20260906hotfix238">
+  <link rel="stylesheet" href="../home-scene-layout.css?v=20260906hotfix238">
+  <title>캐릭터 배치 저장 검수</title>
+</head>
+<body>
+  <dialog open class="character-layout-dialog">
+    <div class="character-layout-dialog-shell">
+      <header><span><small>HOME SCENE LAYOUT</small><b>배치 조정하기</b></span><button type="button">×</button></header>
+      <section class="character-home-layout-editor" data-home-layout-editor data-mode="ld">
+        <div class="character-home-layout-heading"><div><h3>손가락으로 직접 배치</h3><p>한 손가락으로 이동하고, 두 손가락으로 확대·축소와 회전을 조절해요.</p></div></div>
+        <div class="home-layout-mode-buttons"><button class="on">SD 배치</button><button>LD 배치</button><button>LD 화면에 꽉 차게</button><button>현재 배치 초기화</button></div>
+        <div class="home-layout-preview" aria-label="배치 미리보기"><div class="home-layout-preview-backdrop"></div><div class="home-layout-ld-frame-guide"><small>실제 LD 배치 영역</small></div></div>
+        <small class="home-layout-preview-caption">실제 홈 화면 비율 · 손가락을 떼면 현재 배치가 바로 저장됩니다.</small>
+        <div class="home-layout-adjustments"><section><b>캐릭터</b><div class="home-layout-nudge-pad"><button>←</button><button>↑</button><button>↓</button><button>→</button></div></section><section><b>행동 아이콘</b><div class="home-layout-scale-buttons"><button>작게</button><button>크게</button></div></section></div>
+        <small class="home-layout-save-note">손가락을 떼면 현재 배치가 바로 저장됩니다.</small>
+        <div class="home-layout-save-bar"><button type="button" class="primary" data-home-layout-save>배치 저장</button></div>
+      </section>
+    </div>
+  </dialog>
+</body>
+</html>
