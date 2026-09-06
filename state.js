@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906hotfix236";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260906hotfix236";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906hotfix236";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260906hotfix236";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906hotfix236";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260906hotfix236";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906hotfix236";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260906hotfix236";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260906hotfix236";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906hotfix243";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260906hotfix243";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906hotfix243";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260906hotfix243";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906hotfix243";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260906hotfix243";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906hotfix243";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260906hotfix243";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260906hotfix243";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260906hotfix236";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906hotfix236";
+import {missingBuildings} from "./building-recovery.js?v=20260906hotfix243";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906hotfix243";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -206,7 +206,7 @@ const normalizedBodyProfile=value=>{
 // New worlds start with a genuinely blank dictionary. Existing worlds keep
 // every item already stored in their own catalog during normalization.
 const defaultCatalog=()=>Object.fromEntries([
-  "food","drink","fashion","music","idol","book","movie","game","perfume","hobby","electronics","ingredient","weapon"
+  "food","drink","fashion","music","idol","book","movie","game","perfume","hobby","electronics","ingredient","weapon","animal"
 ].map(kind=>[kind,[]]));
 const defaultHomeSceneLayout=()=>({
   sd:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0,customized:false},
