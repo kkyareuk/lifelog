@@ -2605,6 +2605,7 @@ function bind(){
   $("[data-open-multiplayer-switcher]")?.addEventListener("click",()=>$("[data-multiplayer-switch-dialog]")?.showModal());
   $$('[data-multiplayer-select]').forEach(button=>button.addEventListener("click",()=>{
     button.closest("dialog")?.close();
+    groupApi?.setDetailActive?.(false);
     const groupId=button.dataset.multiplayerSelect||"";
     if(!groupId){groupApi?.select("");render();return}
     const target=groupApi?.getSnapshot?.()?.groups?.find(group=>group.id===groupId);

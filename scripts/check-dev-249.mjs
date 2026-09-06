@@ -33,6 +33,8 @@ assert.ok(auth.includes("hostTownId:town.sourceTownId"));
 assert.ok(auth.includes("towns:[town]"));
 assert.ok(auth.includes("schemaVersion:2"));
 assert.ok(auth.includes("linkTown:linkGroupTown"));
+assert.ok(auth.includes("setDetailActive:setGroupDetailActive"));
+assert.ok(auth.includes("if(groupDetailActive)groupUnsubscribers.push"));
 assert.ok(!auth.includes("addTown:addGroupTown"));
 
 assert.ok(views.includes("data-open-multiplayer-switcher"));

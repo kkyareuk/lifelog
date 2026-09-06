@@ -849,6 +849,7 @@ const groupRefs=groupId=>({
   residents:collection(db,"groups",groupId,"residents"),homes:collection(db,"groups",groupId,"homes")
 });
 const groupIndexRef=(uid,groupId)=>doc(db,"users",uid,"groupMemberships",groupId);
+let groupDetailActive=false;
 
 function watchActiveGroup(groupId){
   stopGroupSubscriptions();
@@ -869,10 +870,17 @@ function watchActiveGroup(groupId){
     console.warn(`group ${key} subscription failed`,error);
     groupState={...groupState,error:error?.code||"groups/load-failed",loading:false};emitGroupState();
   });
-  groupUnsubscribers=[
-    listen(refs.group,"group",false),listen(refs.members,"members",true),
-    listen(refs.residents,"residents",true),listen(refs.homes,"homes",true)
-  ];
+  groupUnsubscribers=[listen(refs.group,"group",false)];
+  if(groupDetailActive)groupUnsubscribers.push(
+    listen(refs.members,"members",true),listen(refs.residents,"residents",true),listen(refs.homes,"homes",true)
+  );
+}
+
+function setGroupDetailActive(active){
+  const next=Boolean(active);
+  if(groupDetailActive===next)return;
+  groupDetailActive=next;
+  if(groupState.activeGroupId&&user)watchActiveGroup(groupState.activeGroupId);
 }
 
 async function refreshGroups({preferredId=""}={}){
@@ -1047,6 +1055,7 @@ async function leaveGroup(){
 
 window.DrawerVillageGroups={
   getSnapshot:groupSnapshot,refresh:refreshGroups,create:createGroup,join:joinGroup,
+  setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||"")};emitGroupState()},
   visitHome:homeId=>{groupState={...groupState,visitingHomeId:String(homeId||"")};emitGroupState()},

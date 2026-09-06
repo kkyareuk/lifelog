@@ -7,8 +7,8 @@ const COPY={
   ja:{title:"マルチ",intro:"自分の村枠を1つ共有村としてつなぎ、友だちを招待できます。",login:"マルチはGoogleログイン後に利用できます。",loginButton:"Googleでログイン",create:"新しいマルチを作成",join:"招待コードで参加",name:"マルチ名",code:"招待コード",townSlot:"共有する自分の村",townSlotHelp:"別の空の村を作るのではなく、ホストが所有する村枠を1つマルチの村として使います。",createButton:"作成",joinButton:"参加する",loading:"マルチ情報を読み込み中…",empty:"参加中のマルチはまだありません。",open:"詳細を見る",list:"マルチ一覧",residents:"マルチの住民",homes:"訪問できる家",members:"メンバーと役割",rules:"マルチのルール",addCharacter:"自分のキャラクターを入居",addHome:"自分の家を公開",remove:"マルチから外す",unpublish:"公開をやめる",visit:"遊びに行く",back:"戻る",owner:"ホスト",manager:"管理者",operator:"運営者",member:"メンバー",memberLimit:"メンバー1人のキャラクター数",operatorLimit:"運営者1人のキャラクター数",managerLimit:"管理者1人のキャラクター数",saveRules:"ルールを保存",linkTown:"自分の村を接続",changeTown:"接続する村を変更",leave:"マルチを退出",originalSafe:"ここから外しても、所有者アカウントの元キャラクターや家は削除されません。",noResidents:"入居中のキャラクターはまだいません。",noHomes:"公開中の家はまだありません。",rooms:"部屋",residing:"住民",homeVisits:"メンバーの家への訪問を許可",permission:"マルチサーバーで権限を確認できませんでした。しばらくしてからもう一度お試しください。",membersCount:"人参加",townMissing:"接続された村がありません",hostTown:"ホストの村",legacyTown:"旧バージョンで作成されたマルチです。ホストが所有する村を接続すると更新が完了します。"}
 };
 let viewMode="list";
-export const showMultiplayerList=()=>{viewMode="list"};
-export const showMultiplayerDetail=()=>{viewMode="detail"};
+export const showMultiplayerList=()=>{viewMode="list";window.DrawerVillageGroups?.setDetailActive?.(false)};
+export const showMultiplayerDetail=()=>{viewMode="detail";window.DrawerVillageGroups?.setDetailActive?.(true)};
 const copy=()=>COPY[state.uiLanguage]||COPY.ko;
 const roleLabel=(role,text)=>text[role]||role;
 const localAvatar=character=>{const source=character?.icon||character?.photo;return source?`<img src="${esc(source)}" alt="">`:`<span>${esc((character?.name||"?").slice(0,1))}</span>`};
