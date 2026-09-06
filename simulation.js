@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260906dev244";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260906dev244";
-import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260906dev244";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260906dev244";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260906dev244";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260906dev248";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260906dev248";
+import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260906dev248";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260906dev248";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260906dev248";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -663,6 +663,42 @@ function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에
   const resolvedRoom=room==="bedroom"?(usableSleepRoom(c.sleepRoomId)||"bedroom"):room;
   return adaptAccessibilityWording(c,entry(time,title,desc,{home:true,room:resolvedRoom,...extra}));
 }
+const isHomeResident=(c,home)=>Boolean(c&&home&&(
+  c.homeId===home.id||(c.residences||[]).some(residence=>residence.homeId===home.id)
+));
+const ownsRoom=(c,home,room)=>Boolean(c&&room&&(
+  (room.ownerMode==="all"&&isHomeResident(c,home))||(room.ownerCharacterIds||[]).includes(c.id)
+));
+export function roomAllowsCharacter(c,home,room){
+  if(!c||!home||!room)return false;
+  const mode=room.accessMode||((room.accessCharacterIds||[]).length?"selected":"everyone");
+  if(mode==="everyone")return true;
+  if(ownsRoom(c,home,room))return true;
+  if(mode==="owners")return false;
+  if((room.accessCharacterIds||[]).includes(c.id))return true;
+  const groups=room.accessGroups||[];
+  return isHomeResident(c,home)?groups.includes("residents"):groups.includes("outsiders");
+}
+export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new Date()){
+  const rooms=home?.rooms||{},ordered=Object.entries(rooms).sort((a,b)=>(Number(a[1]?.order)||0)-(Number(b[1]?.order)||0));
+  if(!ordered.length)return"";
+  const residence=(c.residences||[]).find(value=>value.homeId===home.id);
+  const sleeping=/침실|잠드는|잠에서|잠자리에|자는 중/.test(`${item.title||""} ${item.desc||""}`)||requestedRoom==="bedroom"||requestedRoom===usableSleepRoom(c.sleepRoomId);
+  const preferredSleepRoom=sleeping?(usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)):"";
+  if(preferredSleepRoom&&rooms[preferredSleepRoom]&&roomAllowsCharacter(c,home,rooms[preferredSleepRoom]))return preferredSleepRoom;
+  const direct=rooms[requestedRoom],requestedType=direct?.type||requestedRoom;
+  const exactRoomRequest=Boolean(direct&&requestedRoom!==requestedType);
+  if(exactRoomRequest&&roomAllowsCharacter(c,home,direct))return requestedRoom;
+  const allowedByType=ordered.filter(([,room])=>room?.type===requestedType&&roomAllowsCharacter(c,home,room));
+  const ownedByType=allowedByType.filter(([,room])=>ownsRoom(c,home,room));
+  const candidates=ownedByType.length?ownedByType:allowedByType;
+  if(candidates.length){
+    const seed=hash(`${c.id}:${dayKey(date)}:${requestedType}:${item.minute||0}:${item.title||""}`);
+    return candidates[seed%candidates.length][0];
+  }
+  const allowed=ordered.filter(([,room])=>roomAllowsCharacter(c,home,room));
+  return (allowed.find(([,room])=>ownsRoom(c,home,room))||allowed[0]||[""])[0];
+}
 function mobilityAidMorningEntry(c,time,date=new Date()){
   const body=c.bodyProfile||{},wheelchair=body.wheelchair||{},arm=body.prostheticArm||{},leg=body.prostheticLeg||{};
   const usesWheelchair=wheelchair.type&&wheelchair.type!=="사용하지 않음";
@@ -694,17 +730,8 @@ function withResidenceLocation(c,item,date=new Date()){
   if(!item?.home)return item;
   const homeId=item.visitHomeId||homeIdForDate(c,date),home=state.homes?.[homeId];
   if(!home)return {...item,visitHomeId:""};
-  const residence=(c.residences||[]).find(value=>value.homeId===homeId);
   const rooms=home.rooms||{};
-  let room=item.room;
-  const requestsSleepingRoom=room==="bedroom"||room===usableSleepRoom(c.sleepRoomId)||/침실|잠드는|잠에서|잠자리에/.test(`${item.title||""} ${item.desc||""}`);
-  if(requestsSleepingRoom)room=usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)||"bedroom";
-  if(!rooms[room]){
-    room=Object.keys(rooms).find(key=>rooms[key]?.type===item.room)
-      ||(item.room==="bedroom"&&usableSleepRoom(residence?.sleepRoomId))
-      ||Object.keys(rooms)[0]
-      ||"";
-  }
+  const room=resolveHomeRoomForActivity(c,home,item.room,item,date);
   const resolved={...item,visitHomeId:homeId,room};
   const interior=rooms[room]?.interiorStyle||"설정하지 않음",beauty=home.beautyLevel||"평범함";
   if(interior!=="설정하지 않음"&&hash(`${c.id}:${homeId}:${room}:${item.minute}:interior-mood`)%5===0){
