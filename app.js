@@ -4346,6 +4346,12 @@ function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false}={}){
   document.querySelector(".page-guide[open]")?.close("navigate");
   if(tab!=="home")state.homeEditMode=false;
   if(tab!=="town")setMobileTownMode("");
+  if(tab==="town"){
+    const multiplayerApi=window.DrawerVillageGroups,multiplayerSnapshot=multiplayerApi?.getSnapshot?.()||{};
+    const linkedTown=multiplayerSnapshot.group?.towns?.find(town=>town?.sourceTownId||town?.ownerUid)||multiplayerSnapshot.group?.towns?.[0];
+    const linkedTownId=linkedTown?.sourceTownId||linkedTown?.id||"";
+    if(multiplayerSnapshot.group&&(!linkedTownId||!state.towns.some(town=>town.id===linkedTownId)))multiplayerApi?.select?.("");
+  }
   if(tab==="groups")multiplayerDetail?showMultiplayerDetail():showMultiplayerList();
   if(tab!=="character"){
     flushMobileCharacterDraft();

@@ -50,6 +50,7 @@ assert.ok(app.includes("data-group-link-town"));
 assert.ok(app.includes("data-multiplayer-select"));
 assert.ok(app.includes("navigateToTab(\"groups\",{multiplayerDetail:true})"));
 assert.ok(app.includes("data-multiplayer-town-open"));
+assert.ok(app.includes("if(multiplayerSnapshot.group&&(!linkedTownId||!state.towns.some"));
 assert.ok(css.includes(".town-native-community"));
 assert.ok(css.includes(".town-native-town-pill::before"));
 
