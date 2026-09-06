@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260906dev237";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260906dev237";
-import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260906dev237";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260906dev237";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260906dev237";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260906dev242";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260906dev242";
+import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260906dev242";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260906dev242";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260906dev242";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -4522,6 +4522,11 @@ function sharedParticipantOrder(characters,relation){
   ];
   return [...new Set(stableOrder)];
 }
+export function sharedContextCharacters(sharedContext,currentCharacter,charactersById=state.characters){
+  const orderedIds=[...new Set((sharedContext?.participantOrder||[]).filter(Boolean))];
+  const characters=orderedIds.map(id=>charactersById[id]).filter(Boolean);
+  return characters.length>1&&characters.some(character=>character.id===currentCharacter.id)?characters:[];
+}
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
   // 명시적으로 혼자 집중하고 있는 현재 행동은 같은 장소에 있다는 이유만으로
@@ -4729,15 +4734,22 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
     ?relationList().find(relation=>relation.groupId===pair.relation.groupId&&Array.isArray(relation.displayOrder)&&relation.displayOrder.length>2)||pair.relation
     :pair.relation;
   const configuredGroupIds=new Set(Array.isArray(groupRelation?.displayOrder)?groupRelation.displayOrder:[]);
-  const participantCharacters=dating
-    ?[c,actualPartner].filter(Boolean)
-    :officialRomance
-      ?[c,actualPartner,...childParticipants].filter(Boolean)
-      :configuredGroupIds.size>2
-        ?[c,...together.filter(person=>configuredGroupIds.has(person.id))]
-        :[c,actualPartner].filter(Boolean);
-  const participantOrder=sharedContext?.participantOrder?.filter(id=>participantCharacters.some(character=>character.id===id))
-    ||sharedParticipantOrder(participantCharacters,groupRelation);
+  // 이미 성립한 공동 장면을 다른 참여자의 관점으로 복제할 때는 최초 장면의
+  // 참여자 명단이 기준이다. 각 참여자 화면에서 다시 둘만 추리면 한쪽은 3인,
+  // 다른 쪽은 2인으로 갈라지고 존재하지 않는 단독 대화가 생긴다.
+  const contextCharacters=sharedContextCharacters(sharedContext,c);
+  const participantCharacters=contextCharacters.length
+    ?contextCharacters
+    :dating
+      ?[c,actualPartner].filter(Boolean)
+      :officialRomance
+        ?[c,actualPartner,...childParticipants].filter(Boolean)
+        :configuredGroupIds.size>2
+          ?[c,...together.filter(person=>configuredGroupIds.has(person.id))]
+          :[c,actualPartner].filter(Boolean);
+  const participantOrder=contextCharacters.length
+    ?contextCharacters.map(character=>character.id)
+    :sharedParticipantOrder(participantCharacters,groupRelation);
   const interactionId=sharedContext?.interactionId||[
     "shared",
     dayKey(date),

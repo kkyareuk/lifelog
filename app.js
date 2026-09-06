@@ -1,39 +1,39 @@
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260906dev239";
-import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260906dev239";
-import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260906dev239";
-import {toggleDislike} from "./state.js?v=20260906dev239";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260906dev239";
-import {setCharacterSceneImage} from "./state.js?v=20260906dev239";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906dev239";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260906dev239";
-import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260906dev241";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260906dev239";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260906dev241";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260906dev239";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260906dev239";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260906dev239";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260906dev239";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260906dev239";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260906dev239";
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260906dev239";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906dev239";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260906dev239";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260906dev241";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260906dev239";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev239";
-import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260906dev239";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260906dev242";
+import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260906dev242";
+import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260906dev242";
+import {toggleDislike} from "./state.js?v=20260906dev242";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline} from "./simulation.js?v=20260906dev242";
+import {setCharacterSceneImage} from "./state.js?v=20260906dev242";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260906dev242";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260906dev242";
+import {homeLogMarkup,buildingDetailDialogs} from "./views.js?v=20260906dev242";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260906dev242";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260906dev242";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260906dev242";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260906dev242";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260906dev242";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260906dev242";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260906dev242";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260906dev242";
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260906dev242";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260906dev242";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260906dev242";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260906dev242";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260906dev242";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev242";
+import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260906dev242";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0;
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260906dev239";
-import {translateText} from "./views.js?v=20260906dev241";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260906dev239";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260906dev239";
-import {characterMood} from "./character-mood.js?v=20260906dev239";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260906dev239";
-import {groupErrorMessage} from "./groups.js?v=20260906dev239";
+import {switchAccountState} from "./state.js?v=20260906dev242";
+import {translateText} from "./views.js?v=20260906dev242";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260906dev242";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260906dev242";
+import {characterMood} from "./character-mood.js?v=20260906dev242";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260906dev242";
+import {groupErrorMessage} from "./groups.js?v=20260906dev242";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -2347,6 +2347,12 @@ function characterValueAtPath(character,path){
   return String(path||"").split(".").filter(Boolean).reduce((value,key)=>value?.[key],character);
 }
 
+function bodyChoiceSummary(values=[]){
+  if(!Array.isArray(values)||!values.length)return translateText("정하지 않음");
+  const visible=values.slice(0,2).map(value=>translateText(value));
+  return `${visible.join(" · ")}${values.length>2?` +${values.length-2}`:""}`;
+}
+
 function refreshCharacterSelectionSummaries(root=document){
   const character=active();
   if(!character)return;
@@ -2363,6 +2369,11 @@ function refreshCharacterSelectionSummaries(root=document){
     const values=character?.[mode]?.[button.dataset.openBookCatalog];
     const label=[...button.children].find(child=>child.tagName==="SPAN");
     if(label)label.textContent=characterSelectionCountLabel(Array.isArray(values)?values.length:0);
+  });
+  root.querySelectorAll("[data-open-body-choice]").forEach(button=>{
+    const values=characterValueAtPath(character.bodyProfile||{},button.dataset.openBodyChoice);
+    const label=button.querySelector("[data-body-choice-summary]");
+    if(label)label.textContent=bodyChoiceSummary(values);
   });
 }
 
@@ -3281,10 +3292,14 @@ function bind(){
     cursor[last]=selected?current.filter(item=>item!==value):[...current,value];
     const patch={bodyProfile};
     if(bodyPath==="physicalTraits"&&legacyAppearance.includes(value))patch.appearanceTags=legacyAppearance.filter(item=>item!==value);
-    const mobileDraft=markMobileCharacterDraft(el);
+    markMobileCharacterDraft(el);
     updateCharacter(character.id,patch,false);
-    if(!mobileDraft)save(true);
+    // 버튼으로 고른 값은 IME 조합 중인 텍스트와 달리 즉시 확정할 수 있다.
+    // 모바일 편집기에서도 바로 저장해야 모달을 닫거나 페이지를 넘긴 직후
+    // 요약이 이전 값으로 되돌아가지 않는다.
+    save(true,false);
     document.querySelectorAll(`[data-body-list="${CSS.escape(el.dataset.bodyList)}"][data-value="${CSS.escape(value)}"]`).forEach(button=>button.classList.toggle("on",!selected));
+    refreshCharacterSelectionSummaries();
   });
   $$("[data-open-body-choice]").forEach(el=>el.onclick=()=>{
     const dialog=document.querySelector("[data-body-choice-dialog]");
@@ -3298,6 +3313,7 @@ function bind(){
     });
     const title=activePanel?.dataset.bodyChoiceTitle||"";
     dialog.querySelector("[data-body-choice-dialog-title]")?.replaceChildren(document.createTextNode(title));
+    dialog.onclose=()=>refreshCharacterSelectionSummaries();
     dialog.showModal();
   });
   $$("[data-open-book-list]").forEach(el=>el.onclick=()=>{
@@ -5845,7 +5861,7 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260906dev239").catch(error=>{
+import("./auth.js?v=20260906dev242").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     window.DrawerVillageAuthStartupFailed=true;
     setAccountLabel("Google 로그인");
@@ -5862,7 +5878,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260906dev241",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260906dev242",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>{
