@@ -1,30 +1,32 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260906dev237";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260906dev237";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260906dev237";
-import {characterMood} from "./character-mood.js?v=20260906dev237";
-import {createContactMailbox} from "./notification-mail.js?v=20260906dev237";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260906dev237";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260906dev237";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906dev237";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906dev237";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260906dev237";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260906dev237";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260906dev237";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev237";
-import {achievementRows} from "./achievements.js?v=20260906dev237";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260906dev237";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260906dev237";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260906dev237";
-import {renderGroups} from "./groups.js?v=20260906dev237";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260906dev239";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260906dev239";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260906dev239";
+import {characterMood} from "./character-mood.js?v=20260906dev239";
+import {createContactMailbox} from "./notification-mail.js?v=20260906dev239";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260906dev239";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260906dev239";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260906dev239";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260906dev239";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260906dev239";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260906dev239";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260906dev239";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev239";
+import {achievementRows} from "./achievements.js?v=20260906dev239";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260906dev239";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260906dev239";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260906dev239";
+import {renderGroups} from "./groups.js?v=20260906dev239";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
   ja:{brandName:"ひきだし村",observe:"観察",mailbox:"郵便箱",home:"家",character:"人物",catalog:"辞典",relationship:"関係",routine:"予定",statistics:"統計",town:"村",shop:"店",settings:"設定",saved:"端末に保存済み",brandTagline:"引き出しの中のキャラクター生活観察ゲーム",currentMoment:"今この瞬間",todayLog:"今日の記録",expand:"開く",collapse:"閉じる",viewAll:"すべて見る",viewHome:"家を見る",gridEdit:"グリッド編集",floorUp:"一つ上の階へ",floorDown:"一つ下の階へ",floorLabel:n=>`${n}階`,language:"言語",languageHelp:"日本語は基本画面に対応し、生活シーンや関係文もアップデートごとに翻訳を増やしています。",languageNote:"日本語ベータ・基本画面と一部の生活シーンに対応。翻訳範囲を継続して拡大します。",mailArrived:"手紙が届きました",mailReady:"準備ができたら手紙を開いてください。選択は実際の生活予定に反映されます。",mailEmpty:"届いた手紙はまだありません",mailEmptyHelp:"キャラクターからの質問・選択・悩み・近況はここに届きます。",mailboxHelp:"キャラクターからの手紙をここでまとめて確認できます。",openLetter:"手紙を開く",characterPicker:"観察する人物を選ぶ",currentTownResidents:"この村の人物",moveToAnotherTown:"別の村へ移動",close:"閉じる",noSleepingRoom:"その他・なし（宿泊しない）",locationExterior:"現在の建物の外観",inTransit:"移動中",outAndAbout:"外出中",emptyTownTitle:"この村にはまだキャラクターが住んでいません",emptyTownHelp:"キャラクター画面で生活する村を選んでください。",openCharacterSettings:"キャラクター設定を開く"}
 };
 Object.assign(I18N.en,dictionaryCopy.en);Object.assign(I18N.ja,dictionaryCopy.ja);
+Object.assign(I18N.en,{"배치 저장":"Save placement","배치를 저장했습니다.":"Placement saved."});
+Object.assign(I18N.ja,{"배치 저장":"配置を保存","배치를 저장했습니다.":"配置を保存しました。"});
 Object.assign(I18N.en,{"작은 서랍 속,":"Inside a little drawer,","너만의 이야기":"a story of your own","캐릭터의 하루가 모이는 곳":"A home for your characters’ everyday stories","이름과 모습을 정하면, 이 마을에서 첫 하루가 시작돼요.":"Choose a name and a face. Their first day in this village begins with you.","첫 캐릭터 만들기":"Create your first character","내 마을 불러오기":"Load my village","이미 마을이 있다면, 먼저 불러와 주세요.":"Already have a village? Load it before starting a new one.","캐릭터의 하루":"Everyday life","함께 쌓는 관계":"Growing relationships","꾸미는 집과 마을":"Homes and villages","계정 기록을 확인하는 중…":"Checking your account save…","설정 열기":"Open settings"});
 Object.assign(I18N.ja,{"작은 서랍 속,":"小さな引き出しに、","너만의 이야기":"あなただけの物語","캐릭터의 하루가 모이는 곳":"キャラクターたちの日々が集まる場所","이름과 모습을 정하면, 이 마을에서 첫 하루가 시작돼요.":"名前と姿を決めたら、この村で最初の一日が始まります。","첫 캐릭터 만들기":"最初のキャラクターを作る","내 마을 불러오기":"自分の村を読み込む","이미 마을이 있다면, 먼저 불러와 주세요.":"すでに村がある場合は、先に読み込んでください。","캐릭터의 하루":"キャラクターの日々","함께 쌓는 관계":"育んでいく関係","꾸미는 집과 마을":"彩る家と村","계정 기록을 확인하는 중…":"アカウントの記録を確認中…","설정 열기":"設定を開く"});
 Object.assign(I18N.en,{"현실 시간":"Local real time","건물 불빛":"Building lights","조명 방식":"Lighting mode","설정한 시간에 켜기":"Scheduled lighting","항상 켜기":"Always on","항상 끄기":"Always off","켜지는 시간":"Lights on at","꺼지는 시간":"Lights off at","기기의 현실 시간 기준 · 같은 시각으로 설정하면 24시간 켜져요.":"Uses device local time. Matching times keep lights on for 24 hours.","이 건물 그림에는 아직 불빛 레이어가 없어요.":"This building artwork does not have a light layer yet.","계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요":"Could not switch account data. Please sign in again."});
@@ -816,12 +818,13 @@ const homeSceneLayoutFor=(c,mode)=>{
   const number=(value,fallback=0)=>Number.isFinite(Number(value))?Number(value):fallback;
   return {
     x:number(source.x),y:number(source.y),scale:number(source.scale,1),rotation:number(source.rotation),
-    actionX:number(source.actionX),actionY:number(source.actionY)
+    actionX:number(source.actionX),actionY:number(source.actionY),customized:source.customized===true
   };
 };
 const sceneLayoutVars=(c,mode,entry=null)=>{
   const outfitLayout=wardrobeSceneItem(c,entry,mode==="ld"?"ldImage":"iconImage")?.sceneLayout?.[mode];
-  const layout=outfitLayout?{...homeSceneLayoutFor(c,mode),...outfitLayout}:homeSceneLayoutFor(c,mode);
+  const characterLayout=homeSceneLayoutFor(c,mode);
+  const layout=!characterLayout.customized&&outfitLayout?{...characterLayout,...outfitLayout}:characterLayout;
   const globalScale=Math.max(70,Math.min(150,Number(mode==="ld"?state.homeLdScale:state.homeSdScale)||100))/100;
   return `--character-art-x:${layout.x}%;--character-art-y:${layout.y}%;--character-art-scale:${layout.scale};--character-render-scale:${globalScale*layout.scale};--character-art-rotation:${layout.rotation}deg;--character-action-x:${layout.actionX}%;--character-action-y:${layout.actionY}%`;
 };
@@ -2767,6 +2770,7 @@ function characterHomeLayoutEditor(c){
     </div>
     <small class="home-layout-preview-caption">실제 홈 화면 비율 · 화면 어디서든 한 손가락으로 이동하고, 두 손가락으로 크기와 각도를 함께 맞출 수 있어요. 행동 아이콘은 아이콘을 직접 끌어 옮겨요.</small>
     <small class="home-layout-save-note">손가락을 떼면 현재 배치가 바로 저장됩니다.</small>
+    <div class="home-layout-save-bar"><button type="button" class="primary" data-home-layout-save>${t("배치 저장","배치 저장")}</button></div>
   </section>`;
 }
 

@@ -209,8 +209,8 @@ const defaultCatalog=()=>Object.fromEntries([
   "food","drink","fashion","music","idol","book","movie","game","perfume","hobby","electronics","ingredient","weapon"
 ].map(kind=>[kind,[]]));
 const defaultHomeSceneLayout=()=>({
-  sd:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0},
-  ld:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0}
+  sd:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0,customized:false},
+  ld:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0,customized:false}
 });
 const normalizeHomeSceneLayout=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
@@ -218,14 +218,16 @@ const normalizeHomeSceneLayout=value=>{
   return Object.fromEntries(["sd","ld"].map(mode=>{
     const layout=source[mode]&&typeof source[mode]==="object"&&!Array.isArray(source[mode])?source[mode]:{};
     const isLd=mode==="ld";
-    return [mode,{
+    const normalized={
       x:clamp(layout.x,isLd?-50:-45,isLd?50:45,0),
       y:clamp(layout.y,isLd?-90:-45,isLd?90:45,0),
       scale:clamp(layout.scale,.45,2.5,1),
       rotation:clamp(layout.rotation,-180,180,0),
       actionX:clamp(layout.actionX,-45,45,0),
       actionY:clamp(layout.actionY,-45,45,0)
-    }];
+    };
+    const changed=normalized.x!==0||normalized.y!==0||normalized.scale!==1||normalized.rotation!==0||normalized.actionX!==0||normalized.actionY!==0;
+    return [mode,{...normalized,customized:layout.customized===true||changed}];
   }));
 };
 const CHARACTER_NOTIFICATION_KINDS=["questions","checkins","worries","comfort","lifeLogs","relationships","home","work","tastes"];

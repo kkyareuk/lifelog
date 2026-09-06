@@ -412,6 +412,8 @@ html.native-app[data-active-tab="character"] .mobile-character-full-settings>mai
 .home-layout-scale-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
 .home-layout-scale-buttons button{font-size:14px!important}
 .home-layout-save-note{justify-self:center;color:var(--muted)}
+.home-layout-save-bar{position:sticky;z-index:60;bottom:-12px;display:grid;width:100%;padding:10px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#f6efe4 24%)}
+.home-layout-save-bar button{width:100%;min-height:48px;font-weight:800;touch-action:manipulation}
 @media(max-width:720px),(min-width:721px) and (orientation:portrait){
   .character-home-layout-editor{padding:12px!important;border-radius:18px!important}
   .character-home-layout-heading{display:grid}.home-layout-mode-buttons{justify-content:stretch}.home-layout-mode-buttons button{flex:1 1 120px}
