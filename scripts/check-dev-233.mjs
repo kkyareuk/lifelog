@@ -7,8 +7,8 @@ const css=read("app.css"),book=read("character-book.css"),main=read("android/app
 const exporter=read("android/app/src/main/java/com/drawervillage/app/ProfileExportPlugin.java"),sw=read("sw.js");
 
 assert.match(gradle,/versionCode\s+233/);assert.match(gradle,/versionName\s+"1\.0\.215"/);
-assert.match(index,/app\.js\?v=20260906dev233/);assert.match(app,/auth\.js\?v=20260906dev233/);
-assert.match(sw,/drawer-village-v20260906-dev-233/);
+assert.match(index,/app\.js\?v=20260906hotfix236/);assert.match(app,/auth\.js\?v=20260906hotfix236/);
+assert.match(sw,/drawer-village-v20260906-hotfix-236/);
 assert.match(book,/\.character-editor-hub-only \.tablet-character-summary\{display:grid!important/);
 assert.doesNotMatch(book,/html\.native-app\[data-active-tab="character"\] \.tablet-character-summary(?:\{|\s)/);
 assert.match(css,/\.tablet-observe-map\{[^}]*inset:0!important[^}]*border:0!important[^}]*border-radius:0!important/);

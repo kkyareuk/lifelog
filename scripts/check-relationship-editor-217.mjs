@@ -28,6 +28,6 @@ assert.match(css,/\.official-order-list\{display:grid!important/);
 assert.match(css,/\.official-member-picker\{[^}]*max-height:188px[^}]*overflow-y:auto/);
 assert.match(css,/\.relation-editor-dialog\.relationship-fullscreen-dialog>form\{[^}]*overflow-y:auto/);
 assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1]||0)>=217);
-assert.ok(Number(gradle.match(/versionName\s+"1\.0\.(\d+)"/)?.[1]||0)>=202);
+assert.ok(Number(gradle.match(/versionName\s+"1\.0\.(\d+)(?:\.\d+)?"/)?.[1]||0)>=202);
 
 console.log("PASS relationship editor: flowing cards, all-member ordering, and separate family registration");
