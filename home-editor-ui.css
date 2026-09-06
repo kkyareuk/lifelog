@@ -89,7 +89,8 @@ html body #app :is(.home-room-card,.home-member-card){display:flex!important;fle
 .home-room-card[hidden]{display:none!important}
 html body #app .home-catalog-photo{display:grid;place-items:center;overflow:hidden;width:100%;height:110px;min-height:110px;border-radius:12px;background:#ede0c9;font-size:38px!important}
 html body #app .home-catalog-photo img{display:block;width:100%;height:100%;max-height:110px;min-height:0;border-radius:12px;object-fit:cover}
-html body #app .home-member-card .home-catalog-photo img{object-fit:contain;padding:5px;box-sizing:border-box}
+html body #app .home-member-card .home-catalog-photo img.member-icon-art{object-fit:contain;padding:5px;box-sizing:border-box}
+html body #app .home-member-card .home-catalog-photo img.member-profile-photo{object-fit:cover;padding:0}
 html body #app .home-catalog-photo>span{display:grid;place-items:center;width:100%;height:100%;font-size:36px}
 html body #app :is(.home-room-card,.home-member-card) b{display:block;min-width:0;font-size:14px!important;line-height:1.35!important;text-align:center;overflow-wrap:anywhere;color:#302116!important;-webkit-text-fill-color:#302116!important;-webkit-text-stroke:0!important;text-shadow:none!important}
 .home-room-card small{display:none}
@@ -100,7 +101,11 @@ html body #app .home-member-add{border-style:dashed!important;background:#f0e4ce
 html body #app .home-add-symbol{background:transparent;font-size:44px!important;color:#8e7040!important;-webkit-text-fill-color:#8e7040!important}
 html body :is(#app .home-member-editor,dialog.home-member-editor) .home-design-fields{display:block!important}
 .home-member-editor .pet-card,.home-member-editor .resident-setting{display:block!important;margin:0!important;padding:0!important;background:none!important;border:0!important}
-.home-member-editor .pet-edit-fields,.home-member-editor .residence-fields{display:grid;grid-template-columns:1fr 1fr;gap:4cqw}
+.home-member-editor .pet-edit-fields,.home-member-editor .residence-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4cqw}
+.home-member-editor .residence-fields>*{min-width:0}
+.home-member-editor .residence-days-field{grid-column:1/-1;min-width:0;margin:0;padding:0;border:0}
+.home-member-editor .residence-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;width:100%;min-width:0}
+html body :is(#app,dialog.home-design-page) .home-member-editor .residence-days button{width:100%!important;min-width:0!important;min-height:40px!important;padding:5px 0!important;overflow:hidden!important}
 .home-member-editor .pet-edit-fields fieldset,.home-member-editor .pet-actions{grid-column:1/-1}
 .home-member-editor [data-home-resident]{display:block;width:100%;margin-bottom:3cqw}
 .home-member-editor .pet-edit{border:0;background:none}

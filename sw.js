@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260907-dev-253";
+const CACHE_VERSION="drawer-village-v20260907-dev-254";
 const CORE=[
   "./",
   "./index.html",
@@ -53,7 +53,7 @@ const CORE=[
   "./character-book.css",
   "./shop.css",
   "./assets/shop/drawer-shop-wood.jpg",
-  "./assets/shop/drawer-shop-seller.png",
+  "./assets/shop/drawer-shop-nerine.png",
   "./assets/shop/character-slots-5.png",
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",

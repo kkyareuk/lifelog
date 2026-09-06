@@ -1,4 +1,4 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260907dev253";
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260907dev254";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -54,9 +54,9 @@ export function homeRoomBrowser(home,locale,translateLabel=value=>value){
   </div></section>`;
 }
 export function homeMemberMenu(home,characters,locale){
-  const c=homeEditorCopy(locale),card=(kind,item,art)=>`<button type="button" class="home-member-card" data-member-edit="${kind}" data-member-id="${escape(item.id)}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo">${art&&(/^(?:https?:|data:image\/|blob:|\.?\.?\/|assets\/|theme-assets\/)/i.test(art)||/^[^:\s]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:[?#].*)?$/i.test(art))?`<img class="${kind==="resident"&&!item.icon&&item.photo?"profile-photo-fallback":""}" src="${escape(art)}" alt="" loading="lazy">`:`<span aria-hidden="true">${kind==="resident"?escape(item.name?.slice(0,1)||"?"):kind==="pet"?"🐾":"🚙"}</span>`}</span><b>${escape(item.name)}</b></button>`;
+  const c=homeEditorCopy(locale),card=(kind,item,art)=>`<button type="button" class="home-member-card" data-member-edit="${kind}" data-member-id="${escape(item.id)}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo">${art&&(/^(?:https?:|data:image\/|blob:|\.?\.?\/|assets\/|theme-assets\/)/i.test(art)||/^[^:\s]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:[?#].*)?$/i.test(art))?`<img class="${kind==="resident"&&item.photo?"member-profile-photo":"member-icon-art"}" src="${escape(art)}" alt="" loading="lazy">`:`<span aria-hidden="true">${kind==="resident"?escape(item.name?.slice(0,1)||"?"):kind==="pet"?"🐾":"🚙"}</span>`}</span><b>${escape(item.name)}</b></button>`;
   return `<section class="home-feature-panel home-design-page home-members" data-home-feature="members"><header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${c.members}</h2></header>${[
-    ["resident",c.members,characters.map(p=>card("resident",p,p.icon||p.photo)).join("")],
+    ["resident",c.members,characters.map(p=>card("resident",p,p.photo||p.icon)).join("")],
     ["pet",c.pets,(home.pets||[]).map(p=>card("pet",p,p.icon||p.photo)).join("")],
     ["car",c.cars,(home.cars||[]).map(p=>card("car",p,p.image)).join("")]
   ].map(([kind,label,cards])=>`<section class="home-member-section"><h3>${label}</h3><div class="home-member-grid">${cards}<button type="button" class="home-member-card home-member-add" data-member-add="${kind}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo home-add-symbol">＋</span><b>${c.add}</b></button></div></section>`).join("")}</section>`;

@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev253";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev253";
-import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev253";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev253";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev253";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev254";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev254";
+import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev254";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev254";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev254";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -159,12 +159,10 @@ const residenceForDate=(c,date=new Date())=>{
   const residences=(Array.isArray(c?.residences)?c.residences:[]).filter(item=>item&&state.homes?.[item.homeId]);
   const primary=residences.find(item=>item.isPrimary)||residences.find(item=>item.homeId===c?.homeId)||residences[0]||null;
   if(state.preventInterTownMovement)return primary;
-  const day=date.getDay(),dateKey=`${String(date.getMonth()+1).padStart(2,"0")}${String(date.getDate()).padStart(2,"0")}`;
+  const day=date.getDay();
   const scheduled=residences.filter(item=>{
     if(item===primary)return false;
-    const exact=String(item.visitDates||"").split(/[\s,]+/).map(value=>value.replace(/\D/g,"")).includes(dateKey);
     const chosenDay=(item.visitDays||[]).map(Number).includes(day);
-    if(exact)return true;
     if(item.stayPattern==="요일 지정")return chosenDay;
     if(item.stayPattern==="주말 중심")return day===0||day===6;
     if(item.stayPattern==="평일 중심")return day>=1&&day<=5;
@@ -3520,8 +3518,13 @@ function manualDirectiveEventFor(c,date=new Date()){
   if(!directive||now<Number(directive.startedAt)||now>=Number(directive.endsAt))return null;
   const started=new Date(Number(directive.startedAt)),minute=started.getHours()*60+started.getMinutes();
   const copy=directive.copy?.[state.uiLanguage]||directive.copy?.ko||{};
+  const place=state.world.places.find(item=>item.id===directive.placeId),atWork=Boolean(place);
+  const participantOrder=[...new Set((Array.isArray(directive.withIds)?directive.withIds:[]).filter(id=>state.characters?.[id]))];
+  const companions=participantOrder.filter(id=>id!==c.id),shared=participantOrder.length>1;
+  const sharedHomeId=directive.homeId&&state.homes?.[directive.homeId]?directive.homeId:(homeIdForDate(c,date)||c.homeId);
   return withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
-    home:true,room:directive.room||"living",visitHomeId:homeIdForDate(c,date)||c.homeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
+    home:!atWork,placeId:atWork?place.id:"",room:directive.room||"living",visitHomeId:sharedHomeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
+    withId:companions[0],withIds:companions,participantOrder,groupInteraction:shared,interactionId:shared?`manual:${directive.id}`:undefined,
     manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
   }),date);
 }
@@ -4838,13 +4841,16 @@ export function eventFor(c,date=new Date()){
   if(rawCurrent.choicePhase==="buy")return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
   const routineCompanionIds=((rawCurrent?.routineId===activeRoutine?.id?rawCurrent.withIds:activeRoutine?.withIds)||[]).filter(id=>id&&id!==c.id&&state.characters[id]);
   const baseCurrent=companionAlignedBaseEvent(c,rawCurrent,date);
+  const manualShared=rawCurrent?.manualDirective&&rawCurrent?.groupInteraction?rawCurrent:null;
   const incomingShared=!activeRoutine?incomingCommittedSharedSceneFor(c,date,baseCurrent):null;
   // 동행자를 지정하지 않은 일정에는 우연히 같은 장소에 있다는 이유만으로
   // 다른 캐릭터의 대화나 공동 행동을 끼워 넣지 않는다.
   const scheduledGroup=activeRoutine&&routineCompanionIds.length&&rawCurrent?.routineId===activeRoutine.id
     ?{...rawCurrent,withId:routineCompanionIds[0],withIds:routineCompanionIds,participantOrder:activeRoutine.participantOrder||[activeRoutine.routineOwnerId||c.id,...routineCompanionIds],interactionId:rawCurrent.interactionId||["schedule",dayKey(date),activeRoutine.id,(activeRoutine.participantOrder||[]).join("~")].join(":"),groupInteraction:true}
     :null;
-  let current=adaptAccessibilityWording(c,scheduledGroup
+  let current=adaptAccessibilityWording(c,manualShared
+    ?manualShared
+    :scheduledGroup
     ?scheduledGroup
     :activeRoutine&&!routineCompanionIds.length
     ?baseCurrent
@@ -4917,7 +4923,10 @@ export function eventFor(c,date=new Date()){
       // 상대의 날짜 저장소를 먼저 만든 다음 같은 사건 ID와 참여 순서로
       // 상대 관점의 문장만 다시 만든다. 화면을 여는 순서에 따라 만남이 갈라지지 않는다.
       timeline(other,date);
-      const counterpart=adaptAccessibilityWording(other,sharedPlaceScene(other,baseEventFor(other,date),date,{
+      const otherBase=baseEventFor(other,date);
+      const counterpart=current.manualDirective&&otherBase?.manualDirectiveId===current.manualDirectiveId
+        ?adaptAccessibilityWording(other,{...otherBase,...sharedLocation,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true})
+        :adaptAccessibilityWording(other,sharedPlaceScene(other,otherBase,date,{
         interactionId:current.interactionId,
         participantOrder:current.participantOrder,
         forcedPartnerId:c.id,

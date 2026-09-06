@@ -6,12 +6,12 @@ const [state,views,groups,appCss,shopCss,index,prepare,gradle,sw]=await Promise.
   read("state.js"),read("views.js"),read("groups.js"),read("app.css"),read("shop.css"),read("index.html"),read("scripts/prepare-app.mjs"),read("android/app/build.gradle"),read("sw.js")
 ]);
 
-assert.match(gradle,/versionCode 250/);
-assert.match(gradle,/versionName "1\.0\.226"/);
-assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260906dev250"/);
-assert.match(index,/app\.js\?v=20260906dev250/);
-assert.match(index,/shop\.css\?v=20260906dev250/);
-assert.match(sw,/drawer-village-v20260906-dev-250/);
+assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1]||0)>=250);
+assert.match(gradle,/versionName "1\.0\.\d+"/);
+assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260907dev254"/);
+assert.match(index,/app\.js\?v=20260907dev254/);
+assert.match(index,/shop\.css\?v=20260907dev254/);
+assert.match(sw,/drawer-village-v20260907-dev-254/);
 
 assert.match(state,/personalTownLabel:"내 마을"/);
 assert.match(state,/x\.personalTownLabel=String\(x\.personalTownLabel\|\|"내 마을"\)/);

@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev253";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev253";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev253";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev253";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev253";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev253";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev253";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev253";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev253";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev254";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev254";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev254";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev254";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev254";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev254";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev254";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev254";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev254";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260907dev253";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev253";
+import {missingBuildings} from "./building-recovery.js?v=20260907dev254";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev254";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -391,7 +391,9 @@ function normalizeHomes(x){
   x.characterDirectives=x.characterDirectives&&typeof x.characterDirectives==="object"&&!Array.isArray(x.characterDirectives)
     ?Object.fromEntries(Object.entries(x.characterDirectives).filter(([characterId,item])=>x.characters?.[characterId]&&item&&typeof item==="object"&&!Array.isArray(item)).map(([characterId,item])=>[characterId,{
       id:String(item.id||uid()),kind:String(item.kind||"wake"),startedAt:Number(item.startedAt)||Date.now(),endsAt:Number(item.endsAt)||Date.now(),
-      room:String(item.room||"living"),placeId:String(item.placeId||""),copy:item.copy&&typeof item.copy==="object"&&!Array.isArray(item.copy)?item.copy:{}
+      room:String(item.room||"living"),placeId:String(item.placeId||""),homeId:x.homes?.[item.homeId]?String(item.homeId):"",targetId:x.characters?.[item.targetId]?String(item.targetId):"",
+      subjectId:x.characters?.[item.subjectId]?String(item.subjectId):"",withIds:[...new Set((Array.isArray(item.withIds)?item.withIds:[]).map(String).filter(id=>x.characters?.[id]))].slice(0,4),
+      topic:String(item.topic||"").slice(0,120),copy:item.copy&&typeof item.copy==="object"&&!Array.isArray(item.copy)?item.copy:{}
     }]))
     :{};
   x.relationshipDevelopment=x.relationshipDevelopment&&typeof x.relationshipDevelopment==="object"&&!Array.isArray(x.relationshipDevelopment)
@@ -858,13 +860,13 @@ function normalizeHomes(x){
       if(!item||typeof item!=="object"||!x.homes[item.homeId])return;
       const homeId=String(item.homeId);
       const homeRooms=x.homes[homeId]?.rooms||{};
-      const visitDates=String(item.visitDates||"").split(/[\s,]+/).map(value=>value.trim()).filter(value=>/^(0[1-9]|1[0-2])-?(0[1-9]|[12]\d|3[01])$/.test(value));
+      const legacyStayPattern=String(item.stayPattern||"");
       residenceMap.set(homeId,{
         homeId,
         role:["주거지","본가","별채","주말집","업무용 숙소","연인의 집","친척집","기타"].includes(item.role)?item.role:"주거지",
-        stayPattern:["상시 거주","평일 중심","주말 중심","요일 지정","명절·기념일","필요할 때 방문"].includes(item.stayPattern)?item.stayPattern:"상시 거주",
+        stayPattern:legacyStayPattern==="명절·기념일"?"필요할 때 방문":["상시 거주","평일 중심","주말 중심","요일 지정","필요할 때 방문"].includes(legacyStayPattern)?legacyStayPattern:"상시 거주",
         visitDays:Array.isArray(item.visitDays)?[...new Set(item.visitDays.map(Number).filter(day=>day>=0&&day<=6))]:[],
-        visitDates:[...new Set(visitDates)].join(", "),
+        visitDates:"",
         notes:String(item.notes||"").slice(0,200),
         isPrimary:Boolean(item.isPrimary),
         sleepRoomId:item.sleepRoomId==="__none__"?"__none__":homeRooms[item.sleepRoomId]?String(item.sleepRoomId):(homeRooms.bedroom?"bedroom":Object.keys(homeRooms)[0]||""),
@@ -1115,6 +1117,21 @@ export function updateCharacter(id,patch,persist=true){
   if(Object.keys(patch).some(key=>SIMULATION_FIELDS.has(key))||Object.hasOwn(patch,"behaviorHabits"))c.timelineResetAt=Date.now();
   if(persist)save();
 }
+export function setCharacterBodyChoices(characterId,path,values,persist=true){
+  const character=state.characters?.[characterId],parts=String(path||"").split(".").filter(Boolean);
+  if(!character||!parts.length)return false;
+  const bodyProfile=normalizedBodyProfile(structuredClone(character.bodyProfile||{})),last=parts.pop();
+  let cursor=bodyProfile;
+  parts.forEach(part=>{
+    if(!cursor[part]||typeof cursor[part]!=="object"||Array.isArray(cursor[part]))cursor[part]={};
+    cursor=cursor[part];
+  });
+  cursor[last]=[...new Set((Array.isArray(values)?values:[]).map(String).filter(Boolean))];
+  character.bodyProfile=normalizedBodyProfile(bodyProfile);
+  character.timelineResetAt=Date.now();
+  if(persist)save(true);
+  return true;
+}
 export function addRoutine(characterId){
   if(!state.characters[characterId])return;
   state.routines[characterId]=Array.isArray(state.routines[characterId])?state.routines[characterId]:[];
@@ -1284,16 +1301,51 @@ const DIRECTIVE_COPY={
   meal:{ko:["간단한 식사를 챙기는 중","주방으로 가서 부담 없이 먹을 수 있는 음식과 마실 것을 준비하고 있어요."],en:["Making a simple meal","They went to the kitchen to prepare something easy to eat and drink."],ja:["簡単な食事を用意するところ","キッチンへ行き、気軽に食べられる物と飲み物を用意しています。"],room:"kitchen",minutes:50},
   read:{ko:["읽고 싶던 것을 꺼내 보는 중","조용한 자리를 골라 궁금했던 책이나 자료를 펼치고 집중하고 있어요."],en:["Reading something they had in mind","They found a quiet spot, opened a book or reference they were curious about, and settled in."],ja:["読みたかったものを開くところ","静かな場所を選び、気になっていた本や資料を開いて集中しています。"],room:"study",minutes:60},
   relax:{ko:["거실에서 느긋하게 쉬는 중","편한 자리에 앉아 음악이나 가벼운 영상을 즐기며 천천히 정신을 깨우고 있어요."],en:["Relaxing in the living room","They are sitting comfortably with music or a light video, waking up at an easy pace."],ja:["リビングでゆっくり休むところ","楽な場所に座り、音楽や軽い動画を楽しみながらゆっくり目を覚ましています。"],room:"living",minutes:55},
-  exercise:{ko:["가볍게 몸을 움직이는 중","무리하지 않는 동작부터 시작해 굳은 몸을 천천히 풀고 있어요."],en:["Doing some light exercise","They started with gentle movements and are slowly loosening up."],ja:["軽く体を動かすところ","無理のない動きから始め、固まった体をゆっくりほぐしています。"],room:"living",minutes:45}
+  nap:{ko:["잠깐 눈을 붙이는 중","편한 자리를 골라 짧게 쉬며 기운을 회복하고 있어요."],en:["Taking a short nap","They found a comfortable spot and are resting briefly to recharge."],ja:["少し昼寝をしているところ","楽な場所で短く休み、元気を取り戻しています。"],room:"bedroom",minutes:45},
+  exercise:{ko:["가볍게 몸을 움직이는 중","무리하지 않는 동작부터 시작해 굳은 몸을 천천히 풀고 있어요."],en:["Doing some light exercise","They started with gentle movements and are slowly loosening up."],ja:["軽く体を動かすところ","無理のない動きから始め、固まった体をゆっくりほぐしています。"],room:"living",minutes:45},
+  music:{ko:["좋아하는 음악을 즐기는 중","듣고 싶던 곡을 골라 음악에 천천히 빠져들고 있어요."],en:["Enjoying some favorite music","They picked a song they wanted to hear and are settling into the music."],ja:["好きな音楽を楽しんでいるところ","聴きたかった曲を選び、ゆっくり音楽に浸っています。"],room:"living",minutes:55},
+  game:{ko:["게임에 집중하는 중","하고 싶던 게임을 켜고 한 판에 차분히 집중하고 있어요."],en:["Focused on a game","They started a game they had wanted to play and are concentrating on a round."],ja:["ゲームに集中しているところ","遊びたかったゲームを始め、一戦に集中しています。"],room:"living",minutes:65},
+  art:{ko:["손으로 무언가 만드는 중","그리거나 만들고 싶던 것을 꺼내 자기 방식대로 표현하고 있어요."],en:["Making something by hand","They brought out something they wanted to draw or make and are expressing it their way."],ja:["手を動かして何かを作っているところ","描いたり作ったりしたかったものを出し、自分らしく表現しています。"],room:"study",minutes:70},
+  walk:{ko:["가볍게 산책하는 중","바람을 쐬며 천천히 걸어 머릿속을 환기하고 있어요."],en:["Taking a gentle walk","They are walking at an easy pace, getting some air, and clearing their head."],ja:["軽く散歩しているところ","風に当たりながらゆっくり歩き、気分転換をしています。"],room:"living",minutes:55},
+  work:{ko:["해야 할 업무에 집중하는 중","미뤄 둔 일을 펼쳐 하나씩 차분히 처리하고 있어요."],en:["Focusing on work","They opened the work they had put off and are handling it one task at a time."],ja:["仕事に集中しているところ","後回しにしていた仕事を開き、一つずつ落ち着いて進めています。"],room:"study",minutes:80},
+  study:{ko:["공부에 집중하는 중","배우고 싶던 내용을 펼쳐 중요한 부분을 하나씩 익히고 있어요."],en:["Focused on studying","They opened material they wanted to learn and are working through the important parts."],ja:["勉強に集中しているところ","学びたかった内容を開き、大切な部分を一つずつ身につけています。"],room:"study",minutes:75},
+  chores:{ko:["집안일을 정리하는 중","눈에 띄는 일부터 하나씩 정리하며 공간을 돌보고 있어요."],en:["Taking care of chores","They are starting with what stands out and tidying the space one task at a time."],ja:["家事を片づけているところ","目についたことから一つずつ片づけ、空間を整えています。"],room:"living",minutes:55},
+  research:{ko:["자료를 조사하는 중","궁금한 주제를 정리하고 필요한 자료를 차분히 찾아보고 있어요."],en:["Researching a topic","They are organizing what they want to know and calmly looking through useful references."],ja:["資料を調べているところ","気になるテーマを整理し、必要な資料を落ち着いて探しています。"],room:"study",minutes:70},
+  talk:{room:"living",minutes:55,social:true},hangout:{room:"living",minutes:70,social:true},comfort:{room:"living",minutes:50,social:true},compliment:{room:"living",minutes:35,social:true},hug:{room:"living",minutes:35,social:true},kiss:{room:"living",minutes:30,social:true},gossip:{room:"living",minutes:60,social:true}
 };
-export function directCharacterActivity(characterId,kind="wake"){
+function socialDirectiveCopy(kind,actor,target,subject,topic){
+  const names={actor:actor?.name||"캐릭터",target:target?.name||"상대",subject:subject?.name||"다른 사람"},detail=String(topic||"").trim();
+  const copy={
+    talk:{ko:[`${names.target}와 대화하는 중`,detail?`${detail}에 관해 이야기를 나누며 상대의 말을 듣고 있어요.`:"마주 앉아 서로의 근황과 생각을 차분히 나누고 있어요."],en:[`Talking with ${names.target}`,detail?`They are talking about ${detail} and listening to each other.`:"They are sitting together and calmly catching up."],ja:[`${names.target}と話しているところ`,detail?`${detail}について話し、相手の言葉を聞いています。`:`向かい合って近況や考えを落ち着いて話しています。`]},
+    hangout:{ko:[`${names.target}와 함께 시간을 보내는 중`,`하고 싶은 일을 함께 고르며 느긋하게 시간을 보내고 있어요.`],en:[`Spending time with ${names.target}`,`They chose something to do together and are enjoying an easygoing time.`],ja:[`${names.target}と一緒に過ごしているところ`,`一緒にしたいことを選び、ゆっくり過ごしています。`]},
+    comfort:{ko:[`${names.target}를 위로하는 중`,`곁을 지키며 서두르지 않고 상대의 이야기를 들어 주고 있어요.`],en:[`Comforting ${names.target}`,`They are staying close and listening without rushing them.`],ja:[`${names.target}を慰めているところ`,`そばに寄り添い、急かさず話を聞いています。`]},
+    compliment:{ko:[`${names.target}를 칭찬하는 중`,`좋게 본 점을 구체적으로 말해 주며 따뜻하게 반응하고 있어요.`],en:[`Complimenting ${names.target}`,`They are warmly pointing out something they genuinely appreciated.`],ja:[`${names.target}を褒めているところ`,`素敵だと思った点を具体的に伝え、温かく反応しています。`]},
+    hug:{ko:[`${names.target}를 안아 주는 중`,`상대에게 다가가 다정하게 포옹하며 마음을 전하고 있어요.`],en:[`Hugging ${names.target}`,`They stepped closer and are sharing an affectionate hug.`],ja:[`${names.target}を抱きしめているところ`,`相手に近づき、優しく抱きしめて気持ちを伝えています。`]},
+    kiss:{ko:[`${names.target}에게 키스하는 중`,`가까이 다가가 조심스럽게 마음을 표현하고 있어요.`],en:[`Kissing ${names.target}`,`They moved closer and are carefully expressing their affection.`],ja:[`${names.target}にキスしているところ`,`そっと近づき、慎重に想いを伝えています。`]},
+    gossip:{ko:[`${names.target}와 ${names.subject}의 뒷이야기를 나누는 중`,detail?`${detail}에 관한 이야기를 낮은 목소리로 주고받고 있어요.`:`둘만 들을 수 있는 목소리로 ${names.subject}에 관한 이야기를 나누고 있어요.`],en:[`Gossiping with ${names.target} about ${names.subject}`,detail?`They are quietly trading thoughts about ${detail}.`:`They are speaking quietly about ${names.subject}.`],ja:[`${names.target}と${names.subject}のうわさ話をしているところ`,detail?`${detail}について小声で話しています。`:`二人にだけ聞こえる声で${names.subject}について話しています。`]}
+  }[kind]||null;
+  return copy?Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:copy[language][0],desc:copy[language][1]}])):null;
+}
+export function directCharacterActivity(characterId,kind="wake",options={}){
   const character=state.characters?.[characterId],definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
   if(!character)return false;
-  const startedAt=Date.now(),copy=Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:definition[language][0],desc:definition[language][1]}]));
+  const target=state.characters?.[options.targetId],subject=state.characters?.[options.subjectId];
+  if(definition.social&&(!target||target.id===character.id))return false;
+  if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
+  const startedAt=Date.now(),copy=definition.social?socialDirectiveCopy(kind,character,target,subject,options.topic):Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:definition[language][0],desc:definition[language][1]}]));
+  const directiveId=uid(),withIds=target?[character.id,target.id]:[];
   state.characterDirectives=state.characterDirectives&&typeof state.characterDirectives==="object"?state.characterDirectives:{};
-  state.characterDirectives[characterId]={id:uid(),kind,startedAt,endsAt:startedAt+definition.minutes*60000,room:definition.room,copy};
+  const sharedHomeId=target&&state.homes?.[character.homeId]?character.homeId:"";
+  const directive={id:directiveId,kind,startedAt,endsAt:startedAt+definition.minutes*60000,room:definition.room,placeId:kind==="work"?String(character.workplaceId||""):"",homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
+  state.characterDirectives[characterId]=directive;
   character.timelineResetAt=startedAt;
   delete state.dailyPlans?.[characterId];
+  if(target){
+    state.characterDirectives[target.id]={...directive,targetId:character.id,placeId:"",copy:socialDirectiveCopy(kind,target,character,subject,options.topic)};
+    target.timelineResetAt=startedAt;
+    delete state.dailyPlans?.[target.id];
+    recordAutomaticRelationshipMoment([character.id,target.id],`directive:${directiveId}`,kind==="kiss"||kind==="hug"?2:1,false);
+  }
   save(true);
   return true;
 }
