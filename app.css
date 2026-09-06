@@ -7068,6 +7068,19 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   overflow:visible!important;border:0!important;background:transparent!important;box-shadow:none!important
 }
 .tablet-observe-map,.home-native-tablet-info{display:none}
+.multiplayer-resident-avatar{display:grid;place-items:center;width:100%;height:100%;overflow:hidden;border-radius:50%;background:#f4ead8;color:#4c382e;font:800 1em/1 var(--ui-font),sans-serif}
+.multiplayer-resident-avatar img{display:block;width:100%;height:100%;object-fit:cover}
+.multiplayer-map-residents{position:absolute;z-index:20;inset:0;pointer-events:none}
+.multiplayer-map-resident{position:absolute;left:var(--resident-x);top:var(--resident-y);display:grid;justify-items:center;gap:2px;width:62px;padding:0;border:0;background:transparent;box-shadow:none;transform:translate(-50%,-50%);pointer-events:auto}
+.multiplayer-map-resident>.multiplayer-resident-avatar{width:48px;height:48px;border:3px solid #fff8e9;box-shadow:0 2px 7px #1f160dbb}
+.multiplayer-map-resident>small{max-width:76px;padding:2px 7px;border-radius:999px;background:#654b3de8;color:#fff7df;font-size:11px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.multiplayer-map-resident.on>.multiplayer-resident-avatar{outline:3px solid #f3d763;outline-offset:2px}
+.multiplayer-remote-resident{position:absolute;left:50%;top:42%;display:grid;justify-items:center;gap:10px;width:min(190px,42vw);transform:translate(-50%,-50%)}
+.multiplayer-remote-resident>.multiplayer-resident-avatar{width:min(150px,34vw);height:min(150px,34vw);border:5px solid #fff8e9;box-shadow:0 12px 30px #17110d88}
+.multiplayer-remote-resident>b{padding:5px 13px;border-radius:999px;background:#654b3de8;color:#fff7df;font-size:16px}
+.game-hud-multiplayer-title{position:absolute;left:5vw;top:4.2dvh;display:grid;gap:3px;max-width:62vw;color:#fff4d6}
+.game-hud-multiplayer-title>b{font:400 clamp(18px,5.05vw,23px)/1 var(--home-ui-font),sans-serif}
+.game-hud-multiplayer-title>small{font-size:clamp(10px,3vw,13px)}
 html.native-app .install-app-button{display:none!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>span,
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>img{
@@ -7087,9 +7100,9 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   html.native-app[data-active-tab="town"] .town-native-town-pill{margin:17px 0 0 7px!important}
 }
 /* Landscape tablet authority: the supplied 1280 × 800 SVG fixes the split at
-   x=517. The phone scene stays on the left and the town map owns the right. */
+   x=768. The town map stays on the left and the phone scene owns the right. */
 @media(min-width:721px) and (orientation:landscape){
-  .game-observe-hud[data-native-hud-version="4"] .tablet-observe-map{position:absolute!important;z-index:1!important;left:40.390625%!important;right:-.46875%!important;top:1.875dvh!important;bottom:-1.125dvh!important;display:block!important;width:auto!important;height:auto!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#91ad77!important}
+  .game-observe-hud[data-native-hud-version="4"] .tablet-observe-map{position:absolute!important;z-index:1!important;left:0!important;right:40%!important;top:2.5dvh!important;bottom:0!important;display:block!important;width:auto!important;height:auto!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#91ad77!important}
   .tablet-observe-world{position:relative!important;width:100%!important;height:100%!important;overflow:hidden!important}
   .tablet-observe-world :is(.place-people-faces,.place-person-face,.town-traveler,.town-traveler-visual){min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}
   .tablet-observe-world .place-person-face :is(.avatar,.sprite){margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;object-fit:contain!important}
@@ -7102,9 +7115,9 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   .tablet-observe-world>.person{position:absolute!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"]>.native-observe-backdrop,
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"]>.native-observe-shade,
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"]>.native-scene-atmosphere{left:0!important;right:auto!important;top:.9375dvh!important;bottom:-1.875dvh!important;width:40.46875%!important;height:auto!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top{left:0!important;right:auto!important;width:40.46875%!important;height:9.75dvh!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile{left:.703125%!important;top:4dvh!important;width:30%!important;height:9.5dvh!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"]>.native-scene-atmosphere{left:60%!important;right:0!important;top:9.5dvh!important;bottom:0!important;width:40%!important;height:auto!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top{left:60%!important;right:0!important;width:40%!important;height:9.75dvh!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile{left:1.640625vw!important;top:4dvh!important;width:30%!important;height:9.5dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-toggle{grid-template-columns:5.9375vw minmax(0,1fr)!important;gap:1.40625vw!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-frame{width:5.9375vw!important;height:9.5dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-frame :is(.avatar,.sprite){width:5.15625vw!important;height:8.25dvh!important}
@@ -7113,23 +7126,23 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-profile-copy small{left:0!important;top:4.75dvh!important;height:2.625dvh!important;max-width:4.609375vw!important;font-size:clamp(9px,.88vw,13px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top>time{top:6.875dvh!important;right:2.1875%!important;font-size:clamp(12px,1.25vw,18px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-date{top:4.625dvh!important;right:2.1875%!important;font-size:clamp(8px,.78vw,12px)!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage{left:1.171875%!important;right:auto!important;top:1dvh!important;width:34.375%!important;height:97.125dvh!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage{left:64.453125%!important;right:auto!important;top:9.5dvh!important;width:34.375%!important;height:88.5dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .native-character-stage,
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .native-character-stage:is(.has-scene-companion,.has-scene-lineup){width:100%!important;height:100%!important;min-height:0!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{left:3.75%!important;top:60.125dvh!important;bottom:auto!important;width:31.796875%!important;height:24.375dvh!important;min-height:0!important;max-height:none!important;padding:3.125dvh 2.421875vw 2.5dvh!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{left:64.0625%!important;top:60dvh!important;bottom:auto!important;width:32.578125%!important;height:24.5dvh!important;min-height:0!important;max-height:none!important;padding:3.125dvh 2.421875vw 2.5dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment h1{font-size:clamp(15px,1.5vw,21px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment p{font-size:clamp(10px,.95vw,14px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-character-command{right:1.72vw!important;bottom:1.75dvh!important;font-size:clamp(8px,.8vw,12px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side{top:auto!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:1fr!important;gap:.546875vw!important;width:18.75%!important;height:13.75dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left{left:62.96875%!important;right:auto!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{left:81.953125%!important;right:auto!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{left:81.953125%!important;right:auto!important;width:18.046875%!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side :is(button>span,.game-hud-menu-art){width:4.921875vw!important;height:7.875dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side button>small{top:6.125dvh!important;width:5.546875vw!important;height:4dvh!important;font-size:clamp(7px,.68vw,10px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock{left:3.984375%!important;top:auto!important;bottom:0!important;width:31.25%!important;height:15.5dvh!important;gap:.390625vw!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>span,
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>img{width:5.9375vw!important;height:9.5dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>small{top:8.625dvh!important;width:5.546875vw!important;height:4dvh!important;font-size:clamp(7px,.68vw,10px)!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-empty[data-native-hud-version="4"] .game-observe-empty-copy{left:20.234375%!important;max-width:26vw!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-empty[data-native-hud-version="4"] .game-observe-empty-copy{left:80%!important;max-width:26vw!important}
 
   html.native-app[data-active-tab="home"] :is(body,#app,#app>main,.home-page,.home-grid,.home){width:100%!important;height:100dvh!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden!important}
   html.native-app[data-active-tab="home"] .home{position:relative!important;border:0!important;border-radius:0!important;background:#5c4234!important;box-shadow:none!important}

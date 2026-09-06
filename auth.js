@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev254";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev256";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev254";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev256";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -792,8 +792,13 @@ async function submitFeedback({category,message,allowReply=false}={}){
 // 내보내거나 집 공개를 취소해도 users/{uid}/sync 및 기기 원본에는 손대지 않는다.
 const emptyGroupState=()=>({
   loading:false,error:"",groups:[],activeGroupId:"",group:null,members:[],residents:[],homes:[],
-  selectedTownId:"",visitingHomeId:""
+  selectedTownId:"",selectedResidentId:"",visitingHomeId:""
 });
+const groupContextKey="drawer-village-multiplayer-context-v1";
+const readGroupContext=()=>{try{return JSON.parse(localStorage.getItem(groupContextKey)||"{}")||{}}catch{return {}}};
+const writeGroupContext=context=>localStorage.setItem(groupContextKey,JSON.stringify({
+  groupId:String(context?.groupId||""),townId:String(context?.townId||""),residentId:String(context?.residentId||"")
+}));
 let groupState=emptyGroupState();
 let groupUnsubscribers=[];
 const groupSnapshot=()=>groupState;
@@ -859,7 +864,11 @@ async function migrateLegacyGroup(group){
 
 function watchActiveGroup(groupId){
   stopGroupSubscriptions();
-  groupState={...groupState,activeGroupId:groupId||"",group:null,members:[],residents:[],homes:[],selectedTownId:"",visitingHomeId:""};
+  const nextGroupId=String(groupId||""),remembered=readGroupContext(),sameGroup=groupState.activeGroupId===nextGroupId;
+  const selectedTownId=sameGroup?groupState.selectedTownId:remembered.groupId===nextGroupId?remembered.townId:"";
+  const selectedResidentId=sameGroup?groupState.selectedResidentId:remembered.groupId===nextGroupId?remembered.residentId:"";
+  groupState={...groupState,activeGroupId:nextGroupId,group:null,members:[],residents:[],homes:[],selectedTownId,selectedResidentId,visitingHomeId:""};
+  writeGroupContext({groupId:nextGroupId,townId:selectedTownId,residentId:selectedResidentId});
   if(!groupId||!user){emitGroupState();return}
   const refs=groupRefs(groupId);
   const listen=(reference,key,mapSnapshot)=>onSnapshot(reference,snapshot=>{
@@ -877,10 +886,13 @@ function watchActiveGroup(groupId){
     console.warn(`group ${key} subscription failed`,error);
     groupState={...groupState,error:error?.code||"groups/load-failed",loading:false};emitGroupState();
   });
-  groupUnsubscribers=[listen(refs.group,"group",false)];
-  if(groupDetailActive)groupUnsubscribers.push(
-    listen(refs.members,"members",true),listen(refs.residents,"residents",true),listen(refs.homes,"homes",true)
-  );
+  // The selected multiplayer context also drives the town and observe screens.
+  // Keep its public snapshot live while selected; otherwise leaving the detail
+  // page empties the multiplayer roster shown on the home screen.
+  groupUnsubscribers=[
+    listen(refs.group,"group",false),listen(refs.members,"members",true),
+    listen(refs.residents,"residents",true),listen(refs.homes,"homes",true)
+  ];
 }
 
 function setGroupDetailActive(active){
@@ -905,7 +917,10 @@ async function refreshGroups({preferredId=""}={}){
       }catch(error){console.warn("stale group membership",membership.id,error);return null}
     }))).filter(Boolean);
     assertSession(session);
-    const activeId=[preferredId,groupState.activeGroupId,groups[0]?.id].find(id=>groups.some(group=>group.id===id))||"";
+    // A membership refresh must not silently replace the personal town with
+    // the first multiplayer space. Only an explicit selection activates one.
+    const rememberedId=readGroupContext().groupId;
+    const activeId=[preferredId,groupState.activeGroupId,rememberedId].find(id=>groups.some(group=>group.id===id))||"";
     groupState={...groupState,groups,loading:false,error:""};
     watchActiveGroup(activeId);
     return groupState;
@@ -1059,7 +1074,8 @@ window.DrawerVillageGroups={
   getSnapshot:groupSnapshot,refresh:refreshGroups,create:createGroup,join:joinGroup,
   setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
-  selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||"")};emitGroupState()},
+  selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||""),selectedResidentId:""};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:""});emitGroupState()},
+  selectResident:residentId=>{groupState={...groupState,selectedResidentId:String(residentId||"")};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:groupState.selectedResidentId});emitGroupState()},
   visitHome:homeId=>{groupState={...groupState,visitingHomeId:String(homeId||"")};emitGroupState()},
   updateRules:updateGroupRules,linkTown:linkGroupTown,addResident:addGroupResident,removeResident:removeGroupResident,
   publishHome:publishGroupHome,removeHome:removeGroupHome,updateMemberRole:updateGroupMemberRole,

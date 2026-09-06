@@ -26,6 +26,23 @@ if(isNative){
   const consumableProducts=new Set(["character_slots_5","town_slot_1","green_tea"]);
   const pendingPurchaseKey="drawer-village.pending-play-purchases.v1";
   let purchaseInFlight=false;
+  const localizedBillingError=error=>{
+    const code=String(error?.code||"");
+    const messages={
+      NO_REGULAR_PAID_OFFER:{ko:"정상 유료 가격을 확인할 수 없어 결제를 시작하지 않았습니다. 앱을 업데이트하거나 고객센터에 문의해 주세요.",en:"The purchase was not started because a regular paid price could not be verified. Please update the app or contact support.",ja:"通常の有料価格を確認できなかったため、購入を開始しませんでした。アプリを更新するか、サポートへお問い合わせください。"},
+      PURCHASE_PENDING:{ko:"결제가 승인 대기 중입니다. Google Play에서 완료된 뒤 구매 내역을 확인해 주세요.",en:"This purchase is pending. Check your purchases after Google Play completes it.",ja:"購入は保留中です。Google Playで完了した後、購入履歴を確認してください。"},
+      PURCHASE_NOT_COMPLETED:{ko:"Google Play에서 완료된 구매로 확인되지 않았습니다.",en:"Google Play did not confirm this as a completed purchase.",ja:"Google Playで完了済みの購入として確認できませんでした。"},
+      PACKAGE_MISMATCH:{ko:"구매한 앱 정보가 일치하지 않습니다.",en:"The purchased app does not match.",ja:"購入したアプリの情報が一致しません。"},
+      PRODUCT_MISMATCH:{ko:"구매한 상품 정보가 요청한 상품과 일치하지 않습니다.",en:"The purchased product does not match the requested product.",ja:"購入した商品がリクエストした商品と一致しません。"}
+    };
+    const language=String(document.documentElement.lang||navigator.language||"ko").toLowerCase();
+    const locale=language.startsWith("ja")?"ja":language.startsWith("en")?"en":"ko";
+    const message=messages[code]?.[locale];
+    if(!message)return error;
+    const localized=new Error(message);
+    localized.code=code;
+    return localized;
+  };
 
   // Google Play 결제 직후 서버 확인이 잠시 실패해도 영수증 토큰을 잃지
   // 않는다. 이 값만으로는 상품을 지급하지 않고, 서버 검증 재시도에만 쓴다.
@@ -141,7 +158,7 @@ if(isNative){
           const restored=await restorePurchases();
           if(restored.restored)return {restored:true};
         }
-        throw error;
+        throw localizedBillingError(error);
       }
       if(Number(purchaseResult?.purchaseState)!==1){
         if(Number(purchaseResult?.purchaseState)===2)throw new Error("결제가 보류 중입니다. Google Play에서 완료한 뒤 다시 확인해 주세요.");

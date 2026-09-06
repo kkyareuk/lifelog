@@ -1,25 +1,25 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev254";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev254";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev254";
-import {characterMood} from "./character-mood.js?v=20260907dev254";
-import {createContactMailbox} from "./notification-mail.js?v=20260907dev254";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev254";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260907dev254";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev254";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev254";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev254";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev254";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev254";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev254";
-import {achievementRows} from "./achievements.js?v=20260907dev254";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev254";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev254";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev254";
-import {renderGroups} from "./groups.js?v=20260907dev254";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev254";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev256";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev256";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev256";
+import {characterMood} from "./character-mood.js?v=20260907dev256";
+import {createContactMailbox} from "./notification-mail.js?v=20260907dev256";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev256";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260907dev256";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev256";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev256";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev256";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev256";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev256";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev256";
+import {achievementRows} from "./achievements.js?v=20260907dev256";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev256";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev256";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev256";
+import {renderGroups} from "./groups.js?v=20260907dev256";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev256";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -54,6 +54,8 @@ Object.assign(I18N.en,{"매우 낙천적임":"Very optimistic","쾌활한 편":"
 Object.assign(I18N.ja,{"매우 낙천적임":"とても楽観的","쾌활한 편":"快活","열정적인 편":"情熱的","다정한 편":"思いやりがある","유혹적인 편":"誘惑的","호기심 많은 편":"好奇心旺盛","차분한 편":"落ち着いている","냉소적인 편":"皮肉っぽい","까칠한 편":"とげとげしい","예민한 편":"敏感","불안한 편":"不安がち","침울한 편":"沈みがち","분노를 품은 편":"怒りを抱えている","매우 둔감함":"とても鈍感","둔감한 편":"鈍感なほう","보통":"普通","매우 예민함":"とても敏感","거의 물들지 않음":"ほとんど影響されない","가까운 사람에게만 물듦":"親しい人にだけ影響される","상황에 따라 물듦":"状況によって影響される","쉽게 물드는 편":"影響されやすい","매우 쉽게 물듦":"とても影響されやすい"});
 Object.assign(I18N.en,{"마을 산책 중":"Roaming around town","마을에서 대화 중":"Chatting in town"});
 Object.assign(I18N.ja,{"마을 산책 중":"村を散策中","마을에서 대화 중":"村で会話中"});
+Object.assign(I18N.en,{"멀티 정보":"Multiplayer info","멀티 주민":"Residents","방문 가능한 집":"Homes to visit","멀티 규칙":"Multiplayer rules"});
+Object.assign(I18N.ja,{"멀티 정보":"マルチ情報","멀티 주민":"マルチの住民","방문 가능한 집":"訪問できる家","멀티 규칙":"マルチのルール"});
 Object.assign(I18N.en,{"옷 검색":"Search wardrobe","유니폼":"Uniform","격식":"Formal","총":"Total","상황과 드레스코드에 맞춰 자동 선택":"Auto-selected for the situation and dress code","옷 추가":"Add clothing","검색 결과가 없어요.":"No matching clothing.","드레스코드":"Dress code","사용 중":"Enabled","사용 안 함":"Disabled","이 건물의 드레스코드 사용":"Use a dress code for this building","필수 유니폼":"Required uniform","허용 색 · 여러 개 선택":"Allowed colors · multiple selection","권장 재질 · 여러 개 선택":"Preferred materials · multiple selection","분위기 · 여러 개 선택":"Styles · multiple selection"});
 Object.assign(I18N.ja,{"옷 검색":"衣装を検索","유니폼":"制服","격식":"フォーマル","총":"合計","상황과 드레스코드에 맞춰 자동 선택":"状況とドレスコードに合わせて自動選択","옷 추가":"衣装を追加","검색 결과가 없어요.":"一致する衣装がありません。","드레스코드":"ドレスコード","사용 중":"使用中","사용 안 함":"未使用","이 건물의 드레스코드 사용":"この建物でドレスコードを使用","필수 유니폼":"制服必須","허용 색 · 여러 개 선택":"使用可能な色・複数選択","권장 재질 · 여러 개 선택":"推奨素材・複数選択","분위기 · 여러 개 선택":"雰囲気・複数選択"});
 Object.assign(I18N.en,{"유니폼 착용 필수":"Uniform required","옷장에서 ‘유니폼으로 등록’한 옷만 자동 선택해요.":"Only wardrobe items marked ‘Register as uniform’ are auto-selected."});
@@ -969,6 +971,46 @@ function tabletObserveMap(){
   if(!shouldRenderTabletObserveMap())return "";
   const town=state.towns?.find(item=>item.id===state.activeTownId)||state.world;
   return `<section class="tablet-observe-map" aria-label="${esc(t("town","마을"))}"><div class="tablet-observe-world town-environment" data-town-language="${state.uiLanguage||"ko"}">${townBackgroundMarkup(town?.bg||state.world?.bg)}${state.world.places.map(placeCard).join("")}${townHomes().map(homeMapCard).join("")}${townDecorationsMarkup()}${state.world.places.map(peopleAtPlaceCard).join("")}${townHomes().map(peopleAtHomeCard).join("")}</div></section>`;
+}
+function multiplayerResidentAvatar(resident,cls=""){
+  const source=String(resident?.icon||"").trim();
+  return `<span class="multiplayer-resident-avatar ${cls}">${source?`<img src="${esc(source)}" alt="">`:`<b>${esc((resident?.name||"?").slice(0,1))}</b>`}</span>`;
+}
+function multiplayerObserveCopy(key){
+  const text={
+    ko:{residents:"이 멀티 마을의 캐릭터",living:"멀티 마을에서 함께 지내는 중",empty:"아직 입주한 캐릭터가 없어요",emptyHelp:"멀티 메뉴에서 내 캐릭터를 이 마을에 입주시켜 주세요.",open:"멀티 설정 열기",location:"멀티 마을",ownerScene:name=>`${name}님의 캐릭터와 같은 마을을 보고 있어요.`},
+    en:{residents:"Characters in this multiplayer town",living:"Spending time together in the multiplayer town",empty:"No characters live here yet",emptyHelp:"Open Multiplayer and move one of your characters into this town.",open:"Open multiplayer settings",location:"Multiplayer town",ownerScene:name=>`Viewing ${name}'s character in this shared town.`},
+    ja:{residents:"このマルチ村のキャラクター",living:"マルチ村で一緒に過ごしています",empty:"入居中のキャラクターはまだいません",emptyHelp:"マルチ設定から自分のキャラクターをこの村に入居させてください。",open:"マルチ設定を開く",location:"マルチ村",ownerScene:name=>`${name}さんのキャラクターを同じ村で見ています。`}
+  };
+  return (text[state.uiLanguage]||text.ko)[key];
+}
+function multiplayerTabletObserveMap(snapshot,town,residents){
+  if(!shouldRenderTabletObserveMap())return "";
+  const background=town?.previewImage||town?.bg||state.world?.bg||TOWN_BACKGROUND;
+  const people=residents.map((resident,index)=>{
+    const x=13+(index*23)%72,y=18+(Math.floor(index/4)*24+(index%2)*11)%62;
+    return `<button type="button" class="multiplayer-map-resident ${resident.id===snapshot.selectedResidentId?"on":""}" style="--resident-x:${x}%;--resident-y:${y}%" data-multiplayer-resident="${esc(resident.id)}" aria-label="${esc(resident.name)}">${multiplayerResidentAvatar(resident)}<small>${esc(resident.name)}</small></button>`;
+  }).join("");
+  return `<section class="tablet-observe-map multiplayer-observe-map" aria-label="${esc(town?.name||multiplayerObserveCopy("location"))}"><div class="tablet-observe-world town-environment">${townBackgroundMarkup(background)}<div class="multiplayer-map-residents">${people}</div></div></section>`;
+}
+function multiplayerObserve(snapshot,nativeHome){
+  const group=snapshot.group,towns=Array.isArray(group?.towns)?group.towns:[],town=towns.find(item=>item.id===snapshot.selectedTownId)||towns[0]||null;
+  const residents=(snapshot.residents||[]).filter(item=>!town?.id||item.townId===town.id);
+  const resident=residents.find(item=>item.id===snapshot.selectedResidentId)||residents[0]||null;
+  const accountUid=window.ParallelCityAuth?.getInfo?.()?.user?.uid||"";
+  const ownCharacter=resident?.ownerUid===accountUid&&resident?.sourceCharacterId?state.characters?.[resident.sourceCharacterId]:null;
+  const background=town?.previewImage||town?.bg||state.world?.bg||TOWN_BACKGROUND;
+  const theme=homeUiTheme(ownCharacter);
+  const gameNow=new Date(),gameDate=gameNow.toLocaleDateString(uiLocale(),{month:"long",day:"numeric",weekday:"short"}),gameTime=gameNow.toLocaleTimeString(uiLocale(),{hour:"2-digit",minute:"2-digit"});
+  const rosterOptions=residents.map(item=>`<button type="button" data-multiplayer-resident="${esc(item.id)}" class="game-hud-button character-picker-button ${item.id===resident?.id?"on":""}" title="${esc(item.name)}" aria-label="${esc(item.name)}">${multiplayerResidentAvatar(item)}<small>${esc(item.name)}</small></button>`).join("");
+  const townOptions=towns.length>1?`<div class="game-hud-town-jump"><b>${t("moveToAnotherTown","다른 마을로 이동")}</b><div>${towns.map(item=>`<button type="button" data-multiplayer-town-open="${esc(item.id)}" class="${item.id===town?.id?"on":""}">${esc(item.name)}</button>`).join("")}</div></div>`:"";
+  const profile=resident?`<details class="game-hud-profile"><summary class="game-hud-profile-toggle" data-open-game-hud-roster aria-label="${esc(multiplayerObserveCopy("residents"))}"><span class="game-hud-profile-frame">${ownCharacter?profileAvatar(ownCharacter,"game-hud-current-profile"):multiplayerResidentAvatar(resident,"game-hud-current-profile")}<img class="game-hud-profile-ring" src="${esc(homeUiAsset(ownCharacter,"profile-ring.png"))}" alt=""></span><span class="game-hud-profile-copy"><b>${esc(resident.name)}</b><small><em>${esc(resident.job||multiplayerObserveCopy("living"))}</em></small></span></summary><section class="game-hud-roster-drawer"><small class="game-hud-roster-kicker">${esc(multiplayerObserveCopy("residents"))}</small><div class="game-hud-roster-options">${rosterOptions}</div>${townOptions}</section></details>`:`<div class="game-hud-multiplayer-title"><b>${esc(group?.name||"멀티")}</b><small>${esc(town?.name||multiplayerObserveCopy("location"))}</small></div>`;
+  const characterStage=resident?(ownCharacter?`<div class="native-character-stage visual-mode-sd" aria-label="${esc(resident.name)}">${sceneAvatar(ownCharacter,"native-main-character","neutral","sd",eventFor(ownCharacter))}</div>`:`<div class="multiplayer-remote-resident">${multiplayerResidentAvatar(resident)}<b>${esc(resident.name)}</b></div>`):"";
+  const location=`<span class="game-hud-location"><i aria-hidden="true">🏘️</i><b>${esc(group?.name||"멀티")} · ${esc(town?.name||multiplayerObserveCopy("location"))}</b></span>`;
+  const description=resident?.ownerName?multiplayerObserveCopy("ownerScene")(resident.ownerName):multiplayerObserveCopy("living");
+  const status=resident?`<article class="game-hud-moment" data-game-hud-moment><div class="game-hud-moment-head"><span class="character-mood-badge">🏘️ ${esc(group?.name||"멀티")}</span></div><div class="game-hud-moment-body"><h1>${esc(multiplayerObserveCopy("living"))}</h1><p>${esc(description)}</p>${location}</div><button type="button" class="game-hud-character-command" data-group-section-open="residents">${esc(multiplayerObserveCopy("open"))}</button></article>`:`<div class="game-observe-empty-copy multiplayer-observe-empty"><span>🏘️</span><h1>${esc(multiplayerObserveCopy("empty"))}</h1><p>${esc(multiplayerObserveCopy("emptyHelp"))}</p><button class="primary" data-group-section-open="residents">${esc(multiplayerObserveCopy("open"))}</button></div>`;
+  const hud=`<section class="game-observe-hud multiplayer-observe-hud ${resident?"":"game-observe-empty"}" data-native-hud-version="4" data-home-ui-theme="${theme.id}" style="${homeUiThemeStyle(ownCharacter)}" aria-label="${esc(group?.name||"멀티")}">${multiplayerTabletObserveMap(snapshot,town,residents)}<div class="native-observe-backdrop" style="background-image:url(&quot;${esc(background)}&quot;)"></div><div class="native-observe-shade"></div><div class="game-hud-top">${profile}<time>${gameTime}</time><small class="game-hud-date">${esc(gameDate)}</small></div>${gameHudSideMenu("left",ownCharacter)}${gameHudSideMenu("right",ownCharacter)}<div class="game-hud-stage multiplayer-resident-stage">${characterStage}</div>${status}${gameHudDock(ownCharacter)}</section>`;
+  return nativeHome?hud:`<div class="standard-observe-view">${hud}</div>`;
 }
 function charactersInsideHome(homeId){
   return state.order.map(id=>state.characters[id]).filter(Boolean).filter(character=>{
@@ -1899,8 +1941,12 @@ function statisticsDashboard(){
 }
 function statistics(){return statisticsDashboard()}
 function observe(){
-  const localIds=state.order.filter(id=>visibleTownId(state.characters[id])===state.activeTownId);
   const nativeHome=Boolean(document.documentElement?.classList?.contains?.("native-app"));
+  const multiplayerSnapshot=window.DrawerVillageGroups?.getSnapshot?.()||{};
+  // Resolve the selected multiplayer context before personal-town residents.
+  // Otherwise the home screen keeps painting the old personal village.
+  if(multiplayerSnapshot.activeGroupId&&multiplayerSnapshot.group)return multiplayerObserve(multiplayerSnapshot,nativeHome);
+  const localIds=state.order.filter(id=>visibleTownId(state.characters[id])===state.activeTownId);
   const localId=localIds.includes(state.activeId)?state.activeId:localIds[0];
   const townSwitcher=state.towns.length>1?`<div class="observe-town-switcher"><b>관찰할 마을</b>${state.towns.map(town=>`<button data-observe-town="${town.id}" class="${town.id===state.activeTownId?"on":""}">🏙️ ${esc(town.name)}</button>`).join("")}</div>`:"";
   if(!localId){
@@ -4424,7 +4470,7 @@ function townMobile(){
   const multiplayerName=multiplayer?.name||state.personalTownLabel||t("내 마을","내 마을"),headerTownName=multiplayerTown?.name||state.world.name;
   const desktopTabs=`<div class="town-tabs">${state.towns.map(town=>`<button data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}">🏙️ ${esc(town.name)}</button>`).join("")}${mobileTownMode==="town"?`<button data-add-town>+ ${t("마을 추가","마을 추가")}</button>${state.towns.length>1?`<button class="danger" data-delete-town="${state.activeTownId}">${t("현재 마을 삭제","현재 마을 삭제")}</button>`:""}`:""}</div>`;
   const menuButtons=multiplayer
-    ?[["멀티 정보","Multiplayer info"],["멀티 주민","Residents"],["방문 가능한 집","Homes"],["멀티 규칙","Rules"]].map(([ko,en])=>`<button type="button" class="home-native-pill" data-tab="groups"><span>${t(ko,en)}</span></button>`).join("")
+    ?[["info","멀티 정보"],["residents","멀티 주민"],["homes","방문 가능한 집"],["rules","멀티 규칙"]].map(([section,label])=>`<button type="button" class="home-native-pill" data-group-section-open="${section}"><span>${t(label,label)}</span></button>`).join("")
     :`<button type="button" class="home-native-pill" data-tab="groups"><span>${t("그룹·멀티","그룹·멀티")}</span></button><button type="button" class="home-native-pill" data-mobile-town-layout-mode><span>${t("마을 정보","마을 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-building-edit-mode><span>${t("건물 정보","건물 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-town-decoration-mode><span>${mobileTownMode==="decorations"?t("편집완료","편집완료"):t("편집모드","편집모드")}</span></button>`;
   const townHeader=`<header class="town-native-header"><button type="button" class="home-native-back town-native-back" data-tab="observe" aria-label="${esc(t("메인 화면으로 돌아가기","메인 화면으로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><div class="town-native-context"><button type="button" class="town-native-community" data-open-multiplayer-switcher aria-label="${esc(t("멀티 변경","멀티 변경"))}"><img src="${esc(homeUiAsset(character||active(),"town.png"))}" alt=""><span>${esc(multiplayerName)}</span></button><button type="button" class="town-native-town-pill" data-open-town-switcher aria-label="${esc(t("마을 이동","마을 이동"))}"><span>${esc(headerTownName)}</span></button></div><span class="town-native-status">${t("현재 {current}명 · 거주 {resident}명","현재 {current}명 · 거주 {resident}명").replace("{current}",localIds.length).replace("{resident}",residentIds.length)}</span><div class="town-native-menu" role="navigation" aria-label="${esc(t("마을 메뉴","마을 메뉴"))}">${menuButtons}</div></header>`;
   const townSwitchOptions=multiplayer?(multiplayer.towns||[]).map(town=>`<button type="button" data-multiplayer-town-open="${esc(town.id||"")}" class="${town.id===multiplayerSnapshot.selectedTownId||town===multiplayerTown?"on":""}"><i aria-hidden="true"></i><span><b>${esc(town.name||multiplayer.hostTownName||t("멀티 마을 없음","No multiplayer town"))}</b><small>${t("현재 멀티 마을","Current multiplayer town")}</small></span></button>`).join(""):state.towns.map(town=>`<button type="button" data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}"><i aria-hidden="true"></i><span><b>${esc(town.name)}</b><small>${town.id===state.activeTownId?t("현재 마을","현재 마을"):t("이 마을로 이동","이 마을로 이동")}</small></span></button>`).join("")+`<button type="button" class="town-switch-add" data-add-town data-add-town-switcher><i aria-hidden="true">＋</i><span><b>${t("새 마을 만들기","새 마을 만들기")}</b><small>${t("새로운 마을 슬롯을 추가해요","새로운 마을 슬롯을 추가해요")}</small></span></button>`;
@@ -4603,7 +4649,7 @@ function nativePlayShop({browseOnly=false}={}){
   const comingTitle=section==="bundle"?copy.bundleSoon:section==="skin"?copy.skinSoon:copy.expansionSoon;
   const content=section==="base"?`<div class="drawer-shop-products">${["character_slots_5","town_slot_1","storage_50mb","green_tea"].map(productCard).join("")}</div>`:`<div class="drawer-shop-coming" role="status"><span aria-hidden="true">✦</span><b>${esc(comingTitle)}</b><small>${esc(copy.soonDetail)}</small></div>`;
   const sellerLabel=language==="en"?"Shopkeeper":language==="ja"?"店主":"상점주인";
-  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev254" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
+  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev256" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
 }
 function shop(){
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){
