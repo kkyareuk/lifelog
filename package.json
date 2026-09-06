@@ -102,7 +102,8 @@
     "qa:dev242": "node scripts/qa-dev242.mjs",
     "test:dev244": "node scripts/check-dev-244.mjs",
     "test:dev246": "node scripts/check-dev-246.mjs",
-    "test:dev248": "node scripts/check-dev-248.mjs"
+    "test:dev248": "node scripts/check-dev-248.mjs",
+    "test:dev249": "node scripts/check-dev-249.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

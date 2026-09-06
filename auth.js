@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev248";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260906dev249";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906dev248";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260906dev249";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -826,6 +826,21 @@ const publicImage=value=>{
   const source=String(value||"").trim();
   return /^https:\/\//i.test(source)?source.slice(0,1500):"";
 };
+const publicTownPreview=value=>{
+  const source=String(value||"").trim();
+  return /^(?:https:\/\/|\.?\/?assets\/)/i.test(source)?source.slice(0,1500):"";
+};
+const ownedTownPayload=townId=>{
+  const local=window.ParallelCity?.getState?.(),id=String(townId||"");
+  const stored=local?.towns?.find(town=>String(town?.id||"")===id);
+  if(!stored)throw Object.assign(new Error("Town required"),{code:"groups/town-required"});
+  const town=id===local.activeTownId&&local.world?local.world:stored;
+  return {
+    id,sourceTownId:id,ownerUid:user?.uid||"",name:cleanGroupName(town.name)||"마을",
+    illustrationId:String(town.illustrationId||"").slice(0,100),previewImage:publicTownPreview(town.bg||town.photo),
+    linkedAt:Date.now()
+  };
+};
 const activeGroupMember=()=>groupState.members.find(member=>member.uid===user?.uid);
 const activeGroupRole=()=>activeGroupMember()?.role||(groupState.group?.ownerUid===user?.uid?"owner":"member");
 const isGroupManager=()=>["owner","manager"].includes(activeGroupRole());
@@ -844,7 +859,10 @@ function watchActiveGroup(groupId){
     const value=mapSnapshot
       ?snapshot.docs.map(item=>({id:item.id,...item.data()}))
       :snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;
-    groupState={...groupState,[key]:value,error:"",loading:false};
+    const groups=key==="group"&&value
+      ?groupState.groups.map(item=>item.id===value.id?{...item,...value,myRole:item.myRole}:item)
+      :groupState.groups;
+    groupState={...groupState,[key]:value,groups,error:"",loading:false};
     if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
     emitGroupState();
   },error=>{
@@ -882,9 +900,12 @@ async function refreshGroups({preferredId=""}={}){
   }
 }
 
-async function createGroup({name}={}){
+async function createGroup({name,townId}={}){
   const account=requireGroupUser(),groupName=cleanGroupName(name);
   if(!groupName)throw Object.assign(new Error("Group name required"),{code:"groups/name-required"});
+  const town=ownedTownPayload(townId);
+  const duplicate=groupState.groups.find(group=>group.ownerUid===account.uid&&(group.hostTownId===town.sourceTownId||group.towns?.some(item=>item?.sourceTownId===town.sourceTownId)));
+  if(duplicate)throw Object.assign(new Error("Town already linked"),{code:"groups/town-in-use"});
   const groupId=crypto.randomUUID?.()||`group_${Date.now()}_${Math.random().toString(36).slice(2)}`;
   let inviteCode=newInviteCode();
   for(let attempt=0;attempt<4;attempt+=1){
@@ -896,7 +917,7 @@ async function createGroup({name}={}){
   batch.set(doc(db,"groups",groupId),{
     name:groupName,ownerUid:account.uid,ownerName:accountName(),inviteCode,createdAt,updatedAt:createdAt,
     rules:{memberCharacterLimit:20,operatorCharacterLimit:100,managerCharacterLimit:100,allowHomeVisits:true},
-    towns:[{id:`town_${Date.now()}`,name:"첫 마을"}],schemaVersion:1
+    hostTownId:town.sourceTownId,hostTownName:town.name,towns:[town],schemaVersion:2
   });
   batch.set(doc(db,"groups",groupId,"members",account.uid),{uid:account.uid,displayName:accountName(),role:"owner",joinedAt:createdAt});
   batch.set(groupIndexRef(account.uid,groupId),{groupId,role:"owner",joinedAt:createdAt});
@@ -933,11 +954,13 @@ async function updateGroupRules(patch={}){
   await setDoc(doc(db,"groups",groupState.activeGroupId),{rules,updatedAt:serverTimestamp()},{merge:true});
 }
 
-async function addGroupTown(name){
-  requireGroupUser();if(!groupState.group||!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
-  const cleanName=cleanGroupName(name);if(!cleanName)throw Object.assign(new Error("Town name required"),{code:"groups/town-name-required"});
-  const towns=[...(groupState.group.towns||[]),{id:`town_${Date.now()}_${Math.random().toString(36).slice(2,7)}`,name:cleanName}];
-  await setDoc(doc(db,"groups",groupState.activeGroupId),{towns,updatedAt:serverTimestamp()},{merge:true});
+async function linkGroupTown(townId){
+  const account=requireGroupUser();if(!groupState.group||groupState.group.ownerUid!==account.uid)throw Object.assign(new Error("Host required"),{code:"groups/owner-required"});
+  const town=ownedTownPayload(townId);
+  const duplicate=groupState.groups.find(group=>group.id!==groupState.activeGroupId&&group.ownerUid===user.uid&&(group.hostTownId===town.sourceTownId||group.towns?.some(item=>item?.sourceTownId===town.sourceTownId)));
+  if(duplicate)throw Object.assign(new Error("Town already linked"),{code:"groups/town-in-use"});
+  await setDoc(doc(db,"groups",groupState.activeGroupId),{hostTownId:town.sourceTownId,hostTownName:town.name,towns:[town],schemaVersion:2,updatedAt:serverTimestamp()},{merge:true});
+  groupState={...groupState,selectedTownId:town.id};
 }
 
 async function addGroupResident(characterId,townId=""){
@@ -1027,7 +1050,7 @@ window.DrawerVillageGroups={
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||"")};emitGroupState()},
   visitHome:homeId=>{groupState={...groupState,visitingHomeId:String(homeId||"")};emitGroupState()},
-  updateRules:updateGroupRules,addTown:addGroupTown,addResident:addGroupResident,removeResident:removeGroupResident,
+  updateRules:updateGroupRules,linkTown:linkGroupTown,addResident:addGroupResident,removeResident:removeGroupResident,
   publishHome:publishGroupHome,removeHome:removeGroupHome,updateMemberRole:updateGroupMemberRole,
   removeMember:removeGroupMember,leave:leaveGroup,inviteDisplay
 };
