@@ -1,6 +1,8 @@
 package com.drawervillage.app;
 
 import com.getcapacitor.BridgeActivity;
+import android.graphics.Color;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.core.graphics.Insets;
@@ -16,22 +18,34 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(PlayGamesAchievementsPlugin.class);
         super.onCreate(savedInstanceState);
         installSystemBarInsets();
-        hideStatusBar();
+        hideSystemBars();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        hideSystemBars();
     }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) hideStatusBar();
+        if (hasFocus) hideSystemBars();
     }
 
-    private void hideStatusBar() {
+    private void hideSystemBars() {
         androidx.core.view.WindowInsetsControllerCompat controller =
             androidx.core.view.WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        controller.hide(androidx.core.view.WindowInsetsCompat.Type.statusBars());
+        controller.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars());
         controller.setSystemBarsBehavior(
             androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         );
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
     }
 
     private void installSystemBarInsets() {
