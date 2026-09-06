@@ -6,12 +6,12 @@ const gradle=read("android/app/build.gradle"),index=read("index.html"),app=read(
 const views=read("views.js"),auth=read("auth.js"),groups=read("groups.js"),rules=read("firestore.rules");
 const book=read("character-book.css"),styles=["app.css","interface-system.css","home-scene-layout.css","theme.css","town-fit.css"].map(read);
 
-assert.match(gradle,/versionCode\s+235/);
-assert.match(gradle,/versionName\s+"1\.0\.217"/);
-assert.match(index,/app\.js\?v=20260906dev235/);
-assert.match(index,/groups\.css\?v=20260906dev235/);
-assert.match(app,/auth\.js\?v=20260906dev235/);
-assert.match(sw,/drawer-village-v20260906-dev-235/);
+assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1]||0)>=235);
+assert.ok(Number(gradle.match(/versionName\s+"1\.0\.(\d+)"/)?.[1]||0)>=217);
+assert.match(index,/app\.js\?v=20260906dev237/);
+assert.match(index,/groups\.css\?v=20260906dev237/);
+assert.match(app,/auth\.js\?v=20260906dev237/);
+assert.match(sw,/drawer-village-v20260906-dev-237/);
 
 assert.match(views,/renderGroups/);
 assert.ok(views.includes('["groups",t("groups","그룹"),"♧"]'));

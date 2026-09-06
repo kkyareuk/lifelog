@@ -1,4 +1,4 @@
-import {state} from "./state.js?v=20260906dev235";
+import {state} from "./state.js?v=20260906dev237";
 
 const esc=value=>String(value??"").replace(/[&<>"]/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[character]));
 const COPY={
