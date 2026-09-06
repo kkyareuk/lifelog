@@ -19,6 +19,7 @@ import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeIn
 import {homeSleepAnimation} from "./home-simulation.js?v=20260906dev239";
 import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260906dev239";
 import {renderGroups} from "./groups.js?v=20260906dev239";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260906dev241";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -961,6 +962,9 @@ function townDecorationCard(item){
 }
 function townDecorationsMarkup(){return (state.world.decorations||[]).map(townDecorationCard).join("")}
 function tabletObserveMap(){
+  // The map contains simulated moving residents. Creating it behind the phone
+  // home scene and merely hiding it with CSS also made those residents audible.
+  if(!shouldRenderTabletObserveMap())return "";
   const town=state.towns?.find(item=>item.id===state.activeTownId)||state.world;
   return `<section class="tablet-observe-map" aria-label="${esc(t("town","마을"))}"><div class="tablet-observe-world town-environment" data-town-language="${state.uiLanguage||"ko"}">${townBackgroundMarkup(town?.bg||state.world?.bg)}${state.world.places.map(placeCard).join("")}${townHomes().map(homeMapCard).join("")}${townDecorationsMarkup()}${state.world.places.map(peopleAtPlaceCard).join("")}${townHomes().map(peopleAtHomeCard).join("")}</div></section>`;
 }
