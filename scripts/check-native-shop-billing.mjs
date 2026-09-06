@@ -6,14 +6,15 @@ const [views,app,nativeApp,config,backend,shopCss,index,prepareApp,gradle,plugin
   read("views.js"),read("app.js"),read("native-app.js"),read("config.js"),read("functions/index.js"),read("shop.css"),read("index.html"),read("scripts/prepare-app.mjs"),read("android/app/build.gradle"),read("android/app/src/main/java/com/drawervillage/app/PlayBillingPlugin.java"),read("android/app/src/main/java/com/drawervillage/app/MainActivity.java")
 ]);
 
-for(const asset of ["assets/shop/drawer-shop-wood.jpg","assets/shop/drawer-shop-seller.png"]){
+for(const asset of ["assets/shop/drawer-shop-wood.jpg","assets/shop/drawer-shop-nerine.png"]){
   const info=await stat(new URL(`../${asset}`,import.meta.url));
   assert.ok(info.size>100_000&&info.size<1_500_000,`${asset}는 고해상도 상점 헤더 에셋 크기를 유지해야 합니다.`);
 }
 assert.match(index,/shop\.css\?v=[A-Za-z0-9_-]+/,"상점 스타일은 캐시 버전을 포함해 연결되어야 합니다.");
 assert.match(prepareApp,/"shop\.css"/);
 assert.match(views,/drawer-shop-wood\.jpg/);
-assert.match(views,/drawer-shop-seller\.png/);
+assert.match(views,/drawer-shop-nerine\.png/);
+assert.match(views,/drawer-shop-greeting/);
 for(const section of ["bundle","base","skin","expansion"])assert.match(views,new RegExp(`data-drawer-shop-tab=\\"\\$\\{key\\}\\"|\\[\\"bundle\\",\\"base\\",\\"skin\\",\\"expansion\\"\\]`));
 assert.equal((views.match(/data-play-purchase=\"\$\{id\}\"/g)||[]).length>=1,true);
 assert.doesNotMatch(views,/open_celebration_bundle/);
