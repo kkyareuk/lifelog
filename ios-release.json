@@ -1,7 +1,7 @@
 {
-  "version": "1.0.234",
-  "build": 12,
-  "sourceAndroidCode": 265,
+  "version": "1.0.235",
+  "build": 13,
+  "sourceAndroidCode": 266,
   "stage": "billing-integration",
   "appStoreReady": false
 }

@@ -1,20 +1,21 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev265";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev265";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev265";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev265";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev265";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev265";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev265";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev265";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev265";
+import {hospitalPurposes} from "./creative-options.js?v=20260907dev266";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev266";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev266";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev266";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev266";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev266";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev266";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev266";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev266";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev266";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260907dev265";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev265";
+import {missingBuildings} from "./building-recovery.js?v=20260907dev266";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev266";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -200,6 +201,8 @@ const normalizedBodyProfile=value=>{
     accessibilityPreferences:Array.isArray(source.accessibilityPreferences)?[...new Set(source.accessibilityPreferences.map(String))].slice(0,10):[],
     hospitalVisitFrequency:String(source.hospitalVisitFrequency||defaults.hospitalVisitFrequency),
     hospitalVisitPurpose:String(source.hospitalVisitPurpose||defaults.hospitalVisitPurpose),
+    hospitalVisitPurposes:[...new Set(hospitalPurposes(source).map(String))].slice(0,20),
+    hospitalDepartments:Array.isArray(source.hospitalDepartments)?[...new Set(source.hospitalDepartments.map(String))].slice(0,12):[],
     medications:normalizeMedications(source.medications,[source.medication1,source.medication2]),
     medication1:String(source.medication1||"").slice(0,80),
     medication2:String(source.medication2||"").slice(0,80),
@@ -1139,6 +1142,7 @@ export function setCharacterBodyChoices(characterId,path,values,persist=true){
     cursor=cursor[part];
   });
   cursor[last]=[...new Set((Array.isArray(values)?values:[]).map(String).filter(Boolean))];
+  if(path==="carePlan.weekdays")bodyProfile.hospitalVisitFrequency=["월","화","수","목","금"].every(x=>cursor[last].includes(x))&&cursor[last].length===5?"평일 전부":"직접 정한 요일";
   character.bodyProfile=normalizedBodyProfile(bodyProfile);
   character.timelineResetAt=Date.now();
   if(persist)save(true);

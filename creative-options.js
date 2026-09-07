@@ -21,7 +21,8 @@ export const creativeCopy=[
  ["사전은 항목 종류마다 80개까지 추가할 수 있어요.","Each dictionary category can contain up to 80 items.","辞典は種類ごとに80件まで追加できます。"]
 ];
 export function careRoutineFor(character,date,world){
- const plan=character.bodyProfile?.carePlan;
+ const profile=character.bodyProfile||{},stored=profile.carePlan||{},weekdays=["월","화","수","목","금"];
+ const plan=profile.hospitalVisitFrequency==="평일 전부"?{...stored,mode:stored.mode&&stored.mode!=="설정하지 않음"?stored.mode:"외래 통원",weekdays,end:stored.mode&&stored.mode!=="설정하지 않음"?stored.end:"10:00"}:stored;
  if(!plan||!CARE_MODES.includes(plan.mode)||["설정하지 않음","재택 회복"].includes(plan.mode))return null;
  const weekday=["일","월","화","수","목","금","토"][date.getDay()];
  if(plan.mode!=="입원"&&!(plan.weekdays||[]).includes(weekday))return null;
@@ -29,5 +30,10 @@ export function careRoutineFor(character,date,world){
  const place=places.find(p=>p.id===plan.placeId)||places.find(p=>/병원|의원|클리닉/.test(`${p.name} ${p.type}`));
  if(!place)return null;
  const start=plan.mode==="입원"?"00:00":plan.start||"09:00",end=plan.mode==="입원"?"23:59":plan.end||"16:00";
- return {id:`care-${character.id}`,day:date.getDay(),start,end,title:plan.mode==="낮 병동"?"낮 병동 프로그램":plan.mode==="입원"?"병원에서 치료와 휴식":"외래 진료",placeId:place.id,withIds:[],careSchedule:true};
+ const purposes=hospitalPurposes(profile),department=(profile.hospitalDepartments||[]).join(" · "),description=[department,...purposes].filter(Boolean).join(" · ");
+ return {id:`care-${character.id}`,day:date.getDay(),start,end,title:description|| (plan.mode==="낮 병동"?"낮 병동 프로그램":plan.mode==="입원"?"병원에서 치료와 휴식":"외래 진료"),placeId:place.id,withIds:[],careSchedule:true};
 }
+
+export const HOSPITAL_DEPARTMENTS=['종합병원','정신과','내과','외과','이비인후과','정형외과','피부과','치과','안과','한의원'];
+export const hospitalPurposes=profile=>Array.isArray(profile?.hospitalVisitPurposes)?profile.hospitalVisitPurposes.filter(x=>x&&x!=='설정하지 않음'):profile?.hospitalVisitPurpose&&profile.hospitalVisitPurpose!=='설정하지 않음'?[profile.hospitalVisitPurpose]:[];
+creativeCopy.push(['평일 전부','Every weekday','平日すべて'],['직접 정한 요일','Selected weekdays','指定した曜日'],['평일 전체 선택','Select all weekdays','平日をすべて選択'],['정신과','Psychiatry','精神科'],['진료 분야','Medical departments','診療科'],['병원 방문 목적','Hospital visit purposes','受診目的'],['입원 치료','Inpatient treatment','入院治療'],['통원 치료','Outpatient treatment','通院治療']);

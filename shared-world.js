@@ -1,4 +1,4 @@
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev265';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev266';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 export function sharedProfile(value){

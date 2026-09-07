@@ -1,28 +1,28 @@
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev265";
-import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,creativeCopy} from "./creative-options.js?v=20260907dev265";
-import {withSharedWorld} from './shared-world.js?v=20260907dev265';
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev266";
+import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,HOSPITAL_DEPARTMENTS,hospitalPurposes,creativeCopy} from "./creative-options.js?v=20260907dev266";
+import {withSharedWorld} from './shared-world.js?v=20260907dev266';
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev265";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev265";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev265";
-import {characterMood} from "./character-mood.js?v=20260907dev265";
-import {createContactMailbox} from "./notification-mail.js?v=20260907dev265";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev265";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907dev265";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev265";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev265";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev265";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev265";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev265";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev265";
-import {achievementRows} from "./achievements.js?v=20260907dev265";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev265";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev265";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev265";
-import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260907dev265";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev265";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev266";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev266";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev266";
+import {characterMood} from "./character-mood.js?v=20260907dev266";
+import {createContactMailbox} from "./notification-mail.js?v=20260907dev266";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev266";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907dev266";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev266";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev266";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev266";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev266";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev266";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev266";
+import {achievementRows} from "./achievements.js?v=20260907dev266";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev266";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev266";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev266";
+import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260907dev266";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev266";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -727,7 +727,7 @@ const townAssignment=c=>`<section class="setting-card character-town"><h2>기본
 const PLACE_TYPES={
   "카페":["","로스터리 카페","디저트 카페","테마 카페","찻집"],
   "음식점":["","한식당","중식당","일식당","이탈리아 식당","분식집","패스트푸드점","디저트 가게"],
-  "병원":["","종합병원","내과","외과","이비인후과","정형외과","피부과","치과","안과","한의원"],
+  "병원":["","종합병원","정신과","내과","외과","이비인후과","정형외과","피부과","치과","안과","한의원"],
   "공연장":["","콘서트홀","라이브 클럽","뮤지컬 극장","연극 극장","야외 공연장"],
   "옷가게":["","스포츠 브랜드","캐주얼 브랜드","정장 브랜드","빈티지 숍","디자이너 브랜드","신발 가게","액세서리 숍"],
   "사무실":["","일반 회사","IT 회사","연구소","방송국","출판사","디자인 스튜디오"],
@@ -2696,7 +2696,7 @@ const WARDROBE_TAG_OPTIONS=Object.values(WARDROBE_TAG_GROUPS).flat();
 const SALON_FREQUENCIES=["자동 · 설정에 맞춤","거의 가지 않음","3~4개월에 한 번","1~2개월에 한 번","한 달에 한 번","2주에 한 번","주 1회 이상"];
 const SURGERY_AREAS=["눈","코","입술","윤곽·턱","피부·흉터","가슴","체형 교정","성별확정 의료 과정","기타"];
 const ACCESSIBILITY_PREFERENCES=["도움 전에 먼저 물어보기","보조기기 함부로 만지지 않기","접근 가능한 동선 먼저 확인","쉬는 시간을 충분히 두기","조용한 자리 선호","문자·시각 정보 함께 제공","말로 주변 정보 설명","직접 선택하고 결정할 시간 주기"];
-const HOSPITAL_PURPOSES=["설정하지 않음","상담·경과 확인","정기 검진 · 상담 포함","검사·영상 촬영 · 검진·상담 포함","외래 처치·치료 · 검사 이하 포함","통원 시술 · 외래 치료 이하 포함","입원 치료 · 통원 치료 이하 포함","수술·집중 치료 · 입원 치료 이하 포함","재활·회복 관리","처방·복약 조정","예방접종","정신건강 진료","치과 진료","기타 진료"];
+const HOSPITAL_PURPOSES=["입원 치료","통원 치료","상담·경과 확인","정기 검진 · 상담 포함","검사·영상 촬영 · 검진·상담 포함","외래 처치·치료 · 검사 이하 포함","통원 시술 · 외래 치료 이하 포함","입원 치료 · 통원 치료 이하 포함","수술·집중 치료 · 입원 치료 이하 포함","재활·회복 관리","처방·복약 조정","예방접종","정신건강 진료","치과 진료","기타 진료"];
 const MEDICATION_PURPOSES=["설정하지 않음","통증 조절","알레르기 관리","호흡기 관리","심혈관 관리","혈압 관리","혈당 관리","호르몬 관리","면역 관리","소화기 관리","감염 치료","수면 관리","불안 완화","기분 조절","집중력 관리","피임·생식 건강","성별확정 의료 과정","비타민·영양 보충","기타"];
 const MEDICATION_FREQUENCIES=["설정하지 않음","필요할 때만","매일 아침","매일 점심","매일 저녁","취침 전","하루 1회","하루 2회","하루 3회 이상","주 1회","정해진 주기마다"];
 function profileSelect(label,path,options,current){
@@ -2788,8 +2788,9 @@ function healthAccessibilitySettings(c){
     </div>
     ${profileMultiChoice("만성질환·건강 관리", "healthConditions",HEALTH_CONDITIONS,p.healthConditions)}
     ${profileMultiChoice("정신건강 설정","mentalHealthConditions",MENTAL_HEALTH,p.mentalHealthConditions)}<p>여러 상태를 함께 선택할 수 있어요. 진단명으로 성격이나 기분을 고정하지 않으며, 치료 일정은 직접 정해요.</p>
+    ${profileMultiChoice("병원 방문 목적","hospitalVisitPurposes",[...new Set([...HOSPITAL_PURPOSES,...hospitalPurposes(p)])],hospitalPurposes(p))}${profileMultiChoice("진료 분야","hospitalDepartments",HOSPITAL_DEPARTMENTS,p.hospitalDepartments)}
     ${profileSelect("치료 형태","carePlan.mode",CARE_MODES,p.carePlan?.mode||"설정하지 않음")}
-    ${profileMultiChoice("치료 요일","carePlan.weekdays",["월","화","수","목","금","토","일"],p.carePlan?.weekdays)}
+    <button type="button" data-care-weekdays>평일 전체 선택</button>${profileMultiChoice("치료 요일","carePlan.weekdays",["월","화","수","목","금","토","일"],p.carePlan?.weekdays)}
     <div class="form-grid"><label>치료 시작<input type="time" data-body-field="carePlan.start" value="${esc(p.carePlan?.start||"09:00")}"></label><label>귀가 시각<input type="time" data-body-field="carePlan.end" value="${esc(p.carePlan?.end||"16:00")}"></label><label>치료 장소<select data-body-field="carePlan.placeId"><option value="">설정하지 않음</option>${state.towns.flatMap(t=>t.places||[]).map(place=>`<option value="${esc(place.id)}" ${p.carePlan?.placeId===place.id?"selected":""}>${esc(place.name)}</option>`).join("")}</select></label></div>
     ${profileMultiChoice("필요한 지원","mentalHealthSupports",["조용한 공간","예고 후 다가오기","휴식 시간","동행 지원"],p.mentalHealthSupports)}
 
@@ -3023,7 +3024,7 @@ function character(){
   const hairPreviewColor=appearancePreviewColor(bodyAppearance.hairColor,"#7F0000");
   const hairPreviewPath=hairCurlPreviewPath(bodyAppearance.hairTexture);
   const bodyGuide=`<svg class="character-body-guide" viewBox="0 0 412 917" aria-hidden="true" focusable="false" data-hair-curl-preview="${esc(bodyAppearance.hairTexture||"설정하지 않음")}"><ellipse data-eye-color-preview="left" cx="112" cy="235" rx="26" ry="26.5" fill="${leftEyePreview}"/><path d="M54 244C54 244 62 208 111.5 208C161 208 169 244 169 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M54 244.5C54 244.5 62 261.5 111.5 261.5C161 261.5 169 244.5 169 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><ellipse data-eye-color-preview="right" cx="278" cy="235" rx="26" ry="26.5" fill="${rightEyePreview}"/><path d="M220 244C220 244 228 208 277.5 208C327 208 335 244 335 244" fill="none" stroke="#17120f" stroke-width="2.5"/><path d="M220 244.5C220 244.5 228 261.5 277.5 261.5C327 261.5 335 244.5 335 244.5" fill="none" stroke="#17120f" stroke-width="2.5"/><path data-hair-shape-preview d="${hairPreviewPath}" fill="none" stroke="${hairPreviewColor}" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-  const bodyChoiceDialog=`<dialog class="character-body-choice-dialog" data-body-choice-dialog><form method="dialog"><header><span><small>MULTI SELECT</small><b data-body-choice-dialog-title>${t("여러 개 선택 가능","여러 개 선택 가능")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("여러 개 선택 가능","여러 개 선택 가능")}</p>${bodyChoicePanel("appearance.eyeFeatures","눈 특징",EYE_FEATURE_OPTIONS,bodyAppearance.eyeFeatures||[])}${bodyChoicePanel("appearance.hairStyles","헤어스타일",HAIR_STYLES,bodyAppearance.hairStyles||[])}${bodyChoicePanel("appearance.hairAccessories","머리 장식",HAIR_ACCESSORY_OPTIONS,bodyAppearance.hairAccessories||[])}${bodyChoicePanel("appearance.bodyHairLocations","체모 위치",BODY_HAIR_LOCATION_OPTIONS,bodyAppearance.bodyHairLocations||[])}${bodyChoicePanel("skinFeatures","피부 특징",SKIN_FEATURE_OPTIONS,c.bodyProfile?.skinFeatures||[])}${bodyChoicePanel("appearanceSummaries","총평",APPEARANCE_SUMMARY_OPTIONS,c.bodyProfile?.appearanceSummaries||[])}${bodyChoicePanel("overallImpressions","분위기",OVERALL_IMPRESSION_OPTIONS,c.bodyProfile?.overallImpressions||[])}<footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
+  const bodyChoiceDialog=`<dialog class="character-body-choice-dialog" data-body-choice-dialog><form method="dialog"><header><span><small>MULTI SELECT</small><b data-body-choice-dialog-title>${t("여러 개 선택 가능","여러 개 선택 가능")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("여러 개 선택 가능","여러 개 선택 가능")}</p>${bodyChoicePanel("hospitalVisitPurposes","병원 방문 목적",[...new Set([...HOSPITAL_PURPOSES,...hospitalPurposes(c.bodyProfile)])],hospitalPurposes(c.bodyProfile))}${bodyChoicePanel("hospitalDepartments","진료 분야",HOSPITAL_DEPARTMENTS,c.bodyProfile?.hospitalDepartments||[])}${bodyChoicePanel("appearance.eyeFeatures","눈 특징",EYE_FEATURE_OPTIONS,bodyAppearance.eyeFeatures||[])}${bodyChoicePanel("appearance.hairStyles","헤어스타일",HAIR_STYLES,bodyAppearance.hairStyles||[])}${bodyChoicePanel("appearance.hairAccessories","머리 장식",HAIR_ACCESSORY_OPTIONS,bodyAppearance.hairAccessories||[])}${bodyChoicePanel("appearance.bodyHairLocations","체모 위치",BODY_HAIR_LOCATION_OPTIONS,bodyAppearance.bodyHairLocations||[])}${bodyChoicePanel("skinFeatures","피부 특징",SKIN_FEATURE_OPTIONS,c.bodyProfile?.skinFeatures||[])}${bodyChoicePanel("appearanceSummaries","총평",APPEARANCE_SUMMARY_OPTIONS,c.bodyProfile?.appearanceSummaries||[])}${bodyChoicePanel("overallImpressions","분위기",OVERALL_IMPRESSION_OPTIONS,c.bodyProfile?.overallImpressions||[])}<footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
   const selectedSkinTone=c.bodyProfile?.skinTone||"뉴트럴톤 23호";
   const skinToneDialog=`<dialog class="character-skin-tone-dialog" data-skin-tone-dialog><form method="dialog"><header><span><small>SKIN PALETTE</small><b>${t("피부색 고르기","피부색 고르기")}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><p>${t("인종이나 국가 대신 색의 밝기와 언더톤으로 고릅니다.","인종이나 국가 대신 색의 밝기와 언더톤으로 고릅니다.")}</p><div class="character-skin-tone-grid">${Object.entries(SKIN_TONE_COLORS).map(([undertone,colors])=>`<section><h3>${t(undertone,undertone)}</h3><div>${colors.map((color,index)=>{const shade=skinToneDepthLabel(SKIN_TONE_DEPTHS[index]),value=`${undertone} ${shade}호`,selected=skinToneParts(selectedSkinTone);return `<button type="button" data-skin-tone-choice="${esc(value)}" class="${selected.undertone===undertone&&selected.depth===SKIN_TONE_DEPTHS[index]?"on":""}" style="--skin-tone:${color}" aria-label="${esc(skinToneLabel(value))}"><i></i><span>${shade}</span></button>`}).join("")}</div></section>`).join("")}</div><footer><button type="submit" value="close">${t("선택 완료","선택 완료")}</button></footer></form></dialog>`;
   const bodyFigureSource=hasLdArt(c)?ldArtSource(c):c.photo||"";
@@ -3082,8 +3083,9 @@ function character(){
     <section class="body-accessibility-choice body-health-conditions"><b>${t("만성질환·건강 관리","만성질환·건강 관리")}</b>${bodyInlineChoice("healthConditions",HEALTH_CONDITIONS,c.bodyProfile?.healthConditions||[])}</section>
     <section class="body-accessibility-choice body-hearing-supports"><b>${t("청각 접근 방식","청각 접근 방식")}</b>${bodyInlineChoice("hearing.supports",HEARING_SUPPORT_OPTIONS,c.bodyProfile?.hearing?.supports||[])}</section>
     <section class="body-accessibility-choice body-vision-supports"><b>${t("시각 접근 방식","시각 접근 방식")}</b>${bodyInlineChoice("vision.supports",VISION_SUPPORT_OPTIONS,c.bodyProfile?.vision?.supports||[])}</section>
-    <section class="body-accessibility-device body-hospital"><b>${t("병원 방문","병원 방문")}</b>${bodySelect("hospitalVisitFrequency",["자동 · 설정에 맞춤","정기 검진 때만","한 달에 한 번 이하","한 달에 여러 번","주 1회 이상","필요할 때 비정기적으로"],c.bodyProfile?.hospitalVisitFrequency||"자동 · 설정에 맞춤")}${bodySelect("hospitalVisitPurpose",HOSPITAL_PURPOSES,c.bodyProfile?.hospitalVisitPurpose||"설정하지 않음")}</section>
+    <section class="body-accessibility-device body-hospital"><b>${t("병원 방문","병원 방문")}</b>${bodySelect("hospitalVisitFrequency",["자동 · 설정에 맞춤","정기 검진 때만","한 달에 한 번 이하","한 달에 여러 번","주 1회 이상","평일 전부","직접 정한 요일","필요할 때 비정기적으로"],c.bodyProfile?.hospitalVisitFrequency||"자동 · 설정에 맞춤")}${bodyChoiceOpener("hospitalVisitPurposes","병원 방문 목적",hospitalPurposes(c.bodyProfile))}${bodyChoiceOpener("hospitalDepartments","진료 분야",c.bodyProfile?.hospitalDepartments||[])}</section>
     <section class="body-accessibility-device body-medications"><b>${t("복용중인 약","복용중인 약")}</b>${medicationCollection(c.bodyProfile?.medications)}</section>
+    ${bodyChoiceDialog}
     <nav class="character-book-page-controls body-controls" aria-label="${esc(t("신체 페이지 이동","신체 페이지 이동"))}"><button type="button" data-character-body-pane="appearance" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>6</b><button type="button" data-character-pane="wardrobe" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>
   </section>`;
   const bodyPane=state.characterBodyPane==="appearance"?bodyAppearancePane:state.characterBodyPane==="accessibility"?bodyAccessibilityPane:bodyFigurePane;
@@ -4670,7 +4672,7 @@ function nativePlayShop({browseOnly=false}={}){
   const comingTitle=section==="bundle"?copy.bundleSoon:section==="skin"?copy.skinSoon:copy.expansionSoon;
   const content=section==="base"?`<div class="drawer-shop-products">${((window.PARALLEL_CITY_CONFIG?.iosApp||window.PARALLEL_CITY_CONFIG?.iosPreview)?["character_slots_5","town_slot_1","green_tea"]:["character_slots_5","town_slot_1","storage_50mb","green_tea"]).map(productCard).join("")}</div>`:`<div class="drawer-shop-coming" role="status"><span aria-hidden="true">✦</span><b>${esc(comingTitle)}</b><small>${esc(copy.soonDetail)}</small></div>`;
   const sellerLabel=language==="en"?"Shopkeeper":language==="ja"?"店主":"상점주인";
-  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev265" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
+  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev266" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
 }
 function shop(){
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){
