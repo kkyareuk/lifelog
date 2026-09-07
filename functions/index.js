@@ -23,6 +23,7 @@ const WEB_PRODUCTS=Object.freeze({
 });
 const TOSS_MID="drawerq8ht";
 const TOSS_SECRET_KEY=defineSecret("TOSS_SECRET_KEY");
+const APPLE_IAP_PRIVATE_KEY=defineSecret("APPLE_IAP_PRIVATE_KEY");
 const WEB_GAME_PAYMENT_LIMIT=50000;
 
 function tossCredentials(){
@@ -297,4 +298,11 @@ app.post("/play-billing/verify",async(request,response)=>{
   }
 });
 
+const appleApp=express();
+appleApp.use(express.json({limit:"32kb"}));
+appleApp.use((req,res,next)=>{res.set("Access-Control-Allow-Origin",req.get("Origin")||"*");res.set("Vary","Origin");res.set("Access-Control-Allow-Headers","Authorization, Content-Type");res.set("Access-Control-Allow-Methods","POST, OPTIONS");if(req.method==="OPTIONS")return res.status(204).end();next()});
+require('./apple-billing').installAppleBilling(appleApp,{db,signedInUser,nextEntitlements,serverTimestamp:()=>FieldValue.serverTimestamp(),privateKey:()=>APPLE_IAP_PRIVATE_KEY.value()});
+
 exports.api=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[TOSS_SECRET_KEY]},app);
+
+exports.appleBillingApi=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[APPLE_IAP_PRIVATE_KEY]},appleApp);

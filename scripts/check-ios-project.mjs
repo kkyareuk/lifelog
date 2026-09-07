@@ -27,7 +27,7 @@ assert.ok(read("ios/App/App/public/auth.js").includes("ready:true"),"Local previ
 assert.ok(!read("ios/App/App/public/auth.js").includes("gstatic.com"),"Local preview must not load external auth SDK");
 assert.ok(read("ios/App/App/public/config.js").includes("playBilling||{}),enabled:false"));
 assert.ok(!read("ios/App/Podfile").includes("FirebaseAuthentication"));
-console.log("PASS iOS preparation: Xcode project, version, six native plugins, bundled modules/audio, disabled unconfigured login and purchase paths.");
+console.log("PASS iOS preparation: Xcode project, version, six native plugins, bundled modules/audio, preview login, and Apple billing bridge preparation (not live purchase verification).");
 if(process.argv.includes("--release")){
  assert.equal(release.appStoreReady,true,"NOT READY: signing, device QA, final icon, Apple login, StoreKit/server verification, account deletion and privacy review remain. Simulator compilation alone is not release approval. See APP-IOS.md.");
 }
