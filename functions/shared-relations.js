@@ -17,6 +17,7 @@ function createService({db,clock=Date.now,engine}){
   const owned=(resident,uid)=>{if(!resident||resident.ownerUid!==uid)fail('character-owner-required',403)};
   const notify=(tx,uid,eventId,groupId,proposalId,kind)=>tx.set(db.collection('notificationOutbox').doc(eventId),{uid,groupId,proposalId,kind,createdAt:clock()});
   const requests=require('./shared-relationship-requests')({db,membership,notify,clock,id});
+  const residency=require('./shared-residency')({db,membership,notify,clock,id});
   async function propose(uid,input){
     if(input.patch)return requests.propose(uid,input);
     const gid=id(input.groupId),sourceId=id(input.sourceId),targetId=id(input.targetId),requestId=id(input.requestId);
@@ -38,6 +39,7 @@ function createService({db,clock=Date.now,engine}){
     const gid=id(input.groupId),proposalId=id(input.proposalId),status=input.accept?'accepted':'declined';
     return db.runTransaction(async tx=>{
       const {root}=await membership(tx,gid,uid),ref=root.collection('proposals').doc(proposalId),snap=await tx.get(ref),proposal=data(snap);
+      if(['admission','cohabitation'].includes(proposal?.kind))return residency.respond(tx,root,uid,input,proposal);
       if(proposal?.requestRoot)return requests.respond(tx,root,uid,input,proposal);
       if(!proposal||proposal.recipientUid!==uid)fail('recipient-required',403);
       if(proposal.status!=='pending'){if(proposal.status!==status)fail('proposal-already-resolved',409);return {id:proposalId,status}}
@@ -79,6 +81,6 @@ function createService({db,clock=Date.now,engine}){
     const ref=db.collection('pushDevices').doc(crypto.createHash('sha256').update(bounded(input.token,2000)).digest('hex'));
     await db.runTransaction(async tx=>{const snap=await tx.get(ref);if(snap.exists&&snap.data().uid===uid)tx.delete(ref)});return {removed:true};
   }
-  return {propose,respond,saveView,registerDevice,unregisterDevice};
+  return {propose,respond,saveView,registerDevice,unregisterDevice,requestResidence:residency.requestResidence};
 }
 module.exports={createService};

@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict');
 const {createSharedTownService}=require('../functions/shared-town');
 const data=new Map([
- ['groups/g',{towns:[{id:'t',places:[]}],buildingRevision:0}],
+ ['groups/g',{ownerUid:'host',towns:[{id:'t',places:[]}],buildingRevision:0}],
  ['groups/g/members/host',{role:'owner'}],['groups/g/members/op',{role:'operator'}],['groups/g/members/member',{role:'member'}],
  ['groups/g/residents/a',{ownerUid:'member',townId:'t'}],['groups/g/residents/b',{ownerUid:'op',townId:'t'}]
 ]);
@@ -71,6 +71,20 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  await relations.respond('host',{groupId:'g',proposalId:'full2-host',accept:false,reason:'Keep current'});assert.equal(data.get('groups/g/relationships/accepted-full1').name,'Friends');
  await relations.propose('member',{groupId:'g',requestId:'cg1',kind:'characterGroup',patch:{name:'Study',memberIds:['a','b']}});
  await relations.respond('op',{groupId:'g',proposalId:'cg1-op',accept:true});assert.equal(data.get('groups/g/characterGroups/accepted-cg1').name,'Study');
+ const admission={groupId:'g',kind:'admission',requestId:'ad1',resident:{sourceCharacterId:'newchar',name:'New',townId:'t',sourceHomeId:'localhome',profileJson:'{}',scheduleJson:'{}'},home:{sourceHomeId:'localhome',name:'New home',layoutJson:'{"rooms":{}}'}};
+ await relations.requestResidence('member',admission);assert.ok(!data.has('groups/g/residents/member_newchar'));
+ await assert.rejects(relations.respond('op',{groupId:'g',proposalId:'ad1',accept:true}),e=>e.status===403);
+ await relations.respond('host',{groupId:'g',proposalId:'ad1',accept:false});assert.ok(!data.has('groups/g/residents/member_newchar'));
+ await relations.requestResidence('member',{...admission,requestId:'ad2'});
+ await relations.respond('host',{groupId:'g',proposalId:'ad2',accept:true});
+ assert.equal(data.get('groups/g/residents/member_newchar').ownerUid,'member');assert.ok(data.has('groups/g/homes/member_localhome'));
+ await relations.respond('host',{groupId:'g',proposalId:'ad2',accept:true});
+ await relations.requestResidence('member',{groupId:'g',kind:'cohabitation',requestId:'co1',sourceId:'a',homeId:'new-home'});
+ assert.equal(data.get('groups/g/residents/a').sharedHomeId,undefined);
+ await assert.rejects(relations.respond('host',{groupId:'g',proposalId:'co1',accept:true}),e=>e.status===403);
+ await relations.respond('op',{groupId:'g',proposalId:'co1',accept:true});assert.equal(data.get('groups/g/residents/a').sharedHomeId,'new-home');
+ await assert.rejects(relations.requestResidence('host',{groupId:'g',kind:'cohabitation',requestId:'co2',sourceId:'a',homeId:'new-home'}),e=>e.status===403);
+ console.log('PASS admission and cohabitation: pending isolation, recipient authorization, decline, accepted homes and idempotent response');
  console.log('PASS full relationship proposals, all-owner approval, rejected edit preservation and character-group proposals');
  console.log('PASS town/home/decoration shared edits, roles, revision conflicts and view field preservation');
  console.log('PASS declined reason and manual shared dictionary ownership, idempotency and 80-item limit');

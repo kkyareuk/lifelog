@@ -1,6 +1,7 @@
-import {sharedSelection,withSharedWorld,decodeShared} from './shared-world.js?v=20260907dev268';
-import {state} from './state.js?v=20260907dev268';
-import {renderGroupRelations} from './groups.js?v=20260907dev268';
+import {residentText} from './shared-residents.js?v=20260907dev269';
+import {sharedSelection,withSharedWorld,decodeShared} from './shared-world.js?v=20260907dev269';
+import {state} from './state.js?v=20260907dev269';
+import {renderGroupRelations} from './groups.js?v=20260907dev269';
 const messages={"다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.":["Another member edited this town. Refresh the layout and try again.","他のメンバーが先に編集しました。配置を確認してもう一度お試しください。"],"저장하지 못했어요":["Could not save.","保存できませんでした。"],"건물 편집 권한이 필요해요":["Building editing permission is required.","建物の編集権限が必要です。"],"내 캐릭터의 시선만 설정할 수 있어요":["You can only edit your own character’s viewpoint.","自分のキャラクターの視線だけを設定できます。"],"관계 제안을 보냈어요":["Relationship proposal sent.","関係の提案を送りました。"],"저장했어요":["Saved.","保存しました。"],"이 항목의 공유 편집 연결은 준비 중이에요":["Shared editing for this item is not available yet.","この項目の共有編集は準備中です。"],"이 시선 설정을 초기화할까요?":["Reset this viewpoint?","この視線設定を初期化しますか？"],"이 건물을 삭제할까요?":["Delete this building?","この建物を削除しますか？"],"삭제할까요?":["Delete this item?","削除しますか？"],"내 마을":["My town","自分のタウン"]};
 const tr=text=>messages[text]?.[{en:0,ja:1}[state.uiLanguage]]||text;
 const api=()=>window.DrawerVillageGroups, snapshot=()=>api()?.getSnapshot?.(),uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
@@ -14,6 +15,8 @@ export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,
  const toast=value=>notify(tr(value));
  const s=activeShared();if(!s)return;const root=document.querySelector('.relationship-page,.mobile-town-shell,.home-page');if(!root)return;
  const proposalButton=document.createElement('button');proposalButton.type='button';proposalButton.textContent=({ko:'받은 제안 · 보낸 제안',en:'Received and sent proposals',ja:'受信・送信した提案'}[state.uiLanguage]);proposalButton.onclick=official;root.querySelector('[data-official-relation-dialog]')?.append(proposalButton);
+ const visibleInbox=proposalButton.cloneNode(true);visibleInbox.dataset.sharedProposals='';const pending=(s.incomingProposals||[]).filter(p=>p.status==='pending').length;visibleInbox.textContent+=pending?' ('+pending+')':'';root.querySelector('[data-open-official-relations]')?.parentElement?.append(visibleInbox);
+ const pendingPush=window.DrawerVillageGroupPush?.pending;if(pendingPush?.groupId===s.activeGroupId&&(s.incomingProposals||[]).some(p=>p.id===pendingPush.proposalId)){window.DrawerVillageGroupPush.pending=null;queueMicrotask(official)}
  const select=sharedSelection(s),owned=id=>s.residents?.find(r=>r.id===id)?.ownerUid===uid();
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
  const saveBuilding=(id,patch={},extra={})=>enqueue(async()=>{const current=activeShared();if(current?.activeGroupId!==s.activeGroupId)throw Error('Group changed');if(!canEditShared(current))throw Error('건물 편집 권한이 필요해요');const result=await api().saveBuilding({id,townId:town(current).id,revision:current.group.buildingRevision||0,patch,...extra});applyTown(current,result);render()},toast);
@@ -45,7 +48,14 @@ export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,
   if(el.matches('[data-home-select]')){stop(e);api().visitHome(el.dataset.homeSelect);return}
   if(el.matches('[data-home-floor],[data-home-floor-step]')){stop(e);const id=el.dataset.homeId||s.visitingHomeId||s.homes[0]?.id,h=s.homes.find(h=>h.id===id),layout=decodeShared(h?.layoutJson);select.floors??={};select.floors[id]=Math.max(1,Math.min(Math.max(Number(layout.floorCount)||1,...Object.values(layout.rooms||{}).map(r=>Number(r.floor)||1)),el.dataset.homeFloor?Number(el.dataset.homeFloor):(select.floors[id]||1)+Number(el.dataset.homeFloorStep)));render();return}
   if(el.matches('[data-home-edit]')){stop(e);return}
-  if(el.matches('[data-shared-residents]')){stop(e);const d=document.createElement('dialog');d.className='directory-create-dialog shared-resident-directory';const close=document.createElement('button');close.textContent='×';close.onclick=()=>d.close();const list=document.createElement('div');list.className='directory-grid';for(const r of s.residents||[]){const b=document.createElement('button');b.className='directory-card';const img=document.createElement('img');img.src=r.photo||r.icon||'assets/home-ui/profile-placeholder.png';img.style.cssText='width:64px;height:64px;object-fit:cover;border-radius:50%';const name=document.createElement('b');name.textContent=r.name;const owner=document.createElement('small');owner.textContent=s.members?.find(m=>(m.uid||m.id)===r.ownerUid)?.displayName||r.ownerName||'';const member=s.members?.find(m=>(m.uid||m.id)===r.ownerUid);if(member?.photoURL){const avatar=document.createElement('img');avatar.src=member.photoURL;avatar.style.cssText='width:24px;height:24px;object-fit:cover;border-radius:50%';owner.prepend(avatar)}b.append(img,name,owner);b.onclick=()=>{d.close();api().selectResident(r.id);location.hash='tab=observe'};list.append(b)}const stage=document.createElement('section');stage.className='multiplayer-directory';const paper=document.createElement('div');paper.className='directory-paper';const inner=document.createElement('div');inner.className='directory-inner';const search=document.createElement('input');search.type='search';search.placeholder=({ko:'구성원 검색',en:'Search residents',ja:'住民を検索'}[state.uiLanguage]||'구성원 검색');search.oninput=()=>list.querySelectorAll('button').forEach(b=>b.hidden=!b.textContent.toLocaleLowerCase().includes(search.value.toLocaleLowerCase()));inner.append(search,list);paper.append(inner);stage.append(close,paper);d.append(stage);d.onclose=()=>d.remove();document.body.append(d);d.showModal();return}
+  if(el.matches('[data-shared-residents]')){stop(e);select.residentDetail='';select.residentForm='';setMode('residents');setPanel('residents');render();return}
+  if(el.matches('[data-shared-resident-detail]')){stop(e);select.residentDetail=el.dataset.sharedResidentDetail;select.residentForm='';render();return}
+  if(el.matches('[data-resident-apply]')){stop(e);select.residentForm='admission';select.admissionCandidates=Object.values(state.characters).filter(c=>!s.residents.some(r=>r.ownerUid===uid()&&r.sourceCharacterId===c.id)).map(c=>({id:c.id,name:c.name}));render();return}
+  if(el.matches('[data-resident-cohabit]')){stop(e);select.residentForm='cohabitation';render();return}
+  if(el.matches('[data-resident-visit]')){stop(e);api().visitHome(el.dataset.residentVisit);location.hash='tab=home';return}
+  if(el.matches('[data-resident-refresh]')){stop(e);enqueue(()=>api().refreshResidents(),toast);return}
+  if(el.matches('[data-resident-remove]')){stop(e);if(confirm(residentText('이 캐릭터를 그룹에서 퇴거시킬까요?','Move this character out of the group?','このキャラクターをグループから退去させますか？')))enqueue(async()=>{await api().removeResident(el.dataset.residentRemove);select.residentDetail='';render()},toast);return}
+  if(el.matches('[data-shared-proposals]')){stop(e);official();return}
   if(el.matches('[data-editor-save],[data-town-save]')){stop(e);serial.then(()=>toast('저장했어요'));return}
   if(el.matches('[data-world-transport]')){stop(e);const mode=el.dataset.worldTransport,modes=town(snapshot()).transportModes||[];saveTown({transportModes:modes.includes(mode)?modes.filter(m=>m!==mode):[...modes,mode]});return}
   if(el.matches('[data-place-stock],[data-place-audience]')){stop(e);const field=el.hasAttribute('data-place-stock')?'stock':'audiences',id=el.dataset.placeStock||el.dataset.placeAudience,p=town(snapshot()).places.find(p=>p.id===id),value=el.dataset.itemId||el.dataset.value,list=p[field]||[];saveBuilding(id,{[field]:list.includes(value)?list.filter(v=>v!==value):[...list,value]});return}
@@ -65,6 +75,8 @@ export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,
    if(patch)moveItem(kind,item,patch);return
   }
  },true);
+  root.querySelector('[data-resident-search]')?.addEventListener('input',e=>root.querySelectorAll('[data-resident-name]').forEach(card=>card.hidden=!card.dataset.residentName.includes(e.target.value.toLocaleLowerCase())));
+ root.querySelector('[data-residence-request]')?.addEventListener('submit',e=>{stop(e);const form=e.currentTarget,input=Object.fromEntries(new FormData(form));enqueue(async()=>{const result=await(form.dataset.residenceRequest==='admission'?api().requestAdmission(input.characterId):api().requestCohabitation(input));select.residentForm='';select.residentDetail='';toast(residentText(result.status==='accepted'?'적용했어요':'제안을 보냈어요',result.status==='accepted'?'Applied':'Proposal sent',result.status==='accepted'?'反映しました':'提案を送りました'));render()},toast)});
  root.addEventListener('change',e=>{
   const el=e.target;
   if(el.matches('[data-view-source],[data-view-target]')){stop(e);select[el.hasAttribute('data-view-source')?'source':'target']=el.value;render();return}

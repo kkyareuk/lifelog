@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260907dev268';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev268";
+import {sharedProfile} from './shared-world.js?v=20260907dev269';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev269";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev268";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev269";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -1036,27 +1036,14 @@ async function advanceSharedLife(force=false){
 }
 
 async function addGroupResident(characterId,townId=""){
-  const account=requireGroupUser(),groupId=groupState.activeGroupId,local=await sharedCloudState(),character=local?.characters?.[characterId];
-  if(groupId!==groupState.activeGroupId)throw Object.assign(new Error("Group changed"),{code:"groups/context-changed"});
-  if(!groupState.group||!character)throw Object.assign(new Error("Character missing"),{code:"groups/character-missing"});
-  if(groupState.residents.some(resident=>resident.ownerUid===account.uid&&resident.sourceCharacterId===characterId))throw Object.assign(new Error("Already resident"),{code:"groups/already-resident"});
-  const role=activeGroupRole(),rules=groupState.group.rules||{};
-  const limit=role==="operator"?Number(rules.operatorCharacterLimit)||100:["owner","manager"].includes(role)?Number(rules.managerCharacterLimit)||100:Number(rules.memberCharacterLimit)||20;
-  const mine=groupState.residents.filter(resident=>resident.ownerUid===account.uid).length;
-  if(mine>=limit)throw Object.assign(new Error("Resident limit"),{code:"groups/resident-limit",limit});
-  const residentId=`${account.uid}_${String(characterId).replace(/[^A-Za-z0-9_-]/g,"_")}`;
-  const localTown=local.towns?.find(item=>item.id===character.townId),localHome=local.homes?.[character.homeId];
-  if(character.homeId&&!groupState.homes.some(h=>h.ownerUid===account.uid&&h.sourceHomeId===character.homeId))await publishGroupHome(character.homeId,townId);
-  await setDoc(doc(db,"groups",groupState.activeGroupId,"residents",residentId),{
-    ownerUid:account.uid,ownerName:accountName(),sourceCharacterId:characterId,
-    name:String(character.name||"이름 없는 캐릭터").slice(0,40),job:String(character.jobTitle||character.job||"무직").slice(0,60),
-    profileJson:JSON.stringify(sharedProfile(character)),scheduleJson:JSON.stringify({routines:local.routines?.[characterId]||[],monthlyRoutines:local.monthlyRoutines?.[characterId]||[]}),sourceHomeId:character.homeId||'',photo:publicImage(character.photo),icon:publicImage(character.icon||character.photo),townId:townId||groupState.selectedTownId||groupState.group.towns?.[0]?.id||"",
-    sourceTownName:String(localTown?.name||"").slice(0,40),sourceHomeName:String(localHome?.name||"").slice(0,40),
-    joinedAt:serverTimestamp(),updatedAt:serverTimestamp()
-  });
-  return residentId;
+  return requestGroupAdmission(characterId,townId);
 }
-
+async function requestGroupAdmission(characterId,townId=""){
+  requireGroupUser();const gid=groupState.activeGroupId,cloud=await sharedCloudState(),c=cloud.characters?.[characterId];
+  if(!c||gid!==groupState.activeGroupId)throw Error('Character or group changed');
+  const h=cloud.homes?.[c.homeId],resident={sourceCharacterId:c.id,name:c.name,job:c.jobTitle||c.job||'',townId:townId||groupState.selectedTownId||groupState.group.towns[0].id,sourceHomeId:c.homeId||'',profileJson:JSON.stringify(sharedProfile(c)),scheduleJson:JSON.stringify({routines:cloud.routines?.[c.id]||[],monthlyRoutines:cloud.monthlyRoutines?.[c.id]||[]}),photo:publicImage(c.photo),icon:publicImage(c.icon)};
+  return sharedTownRequest('requestResidence',{requestId:crypto.randomUUID(),kind:'admission',resident,...(h?{home:{sourceHomeId:c.homeId,name:h.name,layoutJson:JSON.stringify(sharedProfile(h))}}:{})});
+}
 async function removeGroupResident(residentId){
   const account=requireGroupUser(),resident=groupState.residents.find(item=>item.id===residentId);
   if(!resident)throw Object.assign(new Error("Resident missing"),{code:"groups/resident-missing"});
@@ -1123,7 +1110,7 @@ async function leaveGroup(){
 window.DrawerVillageGroups={
   getSnapshot:groupSnapshot,refresh:refreshGroups,create:createGroup,join:joinGroup,
   publishCatalog:async()=>{const gid=groupState.activeGroupId,cloud=await sharedCloudState();if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:sharedProfile(cloud.catalog)})},
-  propose:input=>sharedTownRequest('propose',{requestId:crypto.randomUUID(),...input}),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command}),saveBuilding:input=>sharedTownRequest('saveBuilding',input),saveTown:input=>sharedTownRequest('saveTown',input),saveHomePlacement:input=>sharedTownRequest('saveHomePlacement',input),saveDecoration:input=>sharedTownRequest('saveDecoration',input),
+  requestAdmission:requestGroupAdmission,requestCohabitation:input=>sharedTownRequest('requestResidence',{requestId:crypto.randomUUID(),kind:'cohabitation',...input}),propose:input=>sharedTownRequest('propose',{requestId:crypto.randomUUID(),...input}),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command}),saveBuilding:input=>sharedTownRequest('saveBuilding',input),saveTown:input=>sharedTownRequest('saveTown',input),saveHomePlacement:input=>sharedTownRequest('saveHomePlacement',input),saveDecoration:input=>sharedTownRequest('saveDecoration',input),
   setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||""),selectedResidentId:""};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:""});emitGroupState()},
