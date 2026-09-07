@@ -1,5 +1,5 @@
 {
-  "request": "2026-09-07-build11-google-login-compile",
+  "request": "2026-09-07-build11-google-login-check",
   "purpose": "Compile and launch unsigned iOS billing integration; no purchases or upload",
   "appStoreUpload": false
 }

@@ -28,6 +28,7 @@ for (const lang of ['ko','en','ja']) {
   });
   assert.equal(screen,'welcome','Empty iOS preview must reach first-character screen, not account loading');
 }
-assert.match(read('scripts/prepare-app.mjs'), /if\(platform==="ios"\)await writeFile\(new URL\("auth.js",output\)/);
+assert.doesNotMatch(read('scripts/prepare-app.mjs'), /if\(platform==="ios"\)await writeFile\(new URL\("auth.js",output\)/);
+assert.match(read('scripts/prepare-app.mjs'), /iosPreview=false/);
 assert.match(read('auth.js'), /gstatic\.com\/firebasejs/);
-console.log('PASS local iOS auth: offline-ready, no storage mutations, no cloud identity or entitlements, ko/en/ja messages; Android/web auth preserved.');
+console.log('PASS offline auth fixture remains isolated; iOS builds retain real Firebase auth instead of the QA fixture.');
