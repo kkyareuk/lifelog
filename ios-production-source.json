@@ -2,11 +2,11 @@
   "commit": "841787a",
   "androidCode": 264,
   "files": {
-    "app.js": "bb3bee8288b1dd360e39db7a3a71fd1e01ad8a87429a4c59d88444d5ab78d168",
-    "state.js": "291c8acc872301dd99f2806b604068f779e186ab1d2580098856a5a05ad16f3a",
-    "simulation.js": "6cb8caca20b953b5c4d859007f838b44c8785fea18ace02e25f895c64fa296a9",
-    "auth.js": "849d9cd6e4b650810bad7172636e343c89c904f766322e9904bd788e2d60889e",
-    "app.css": "fc558a3efa15cda4144fc36afcd2e413849b2c329fe1202c384dba6e1110dd1b",
-    "character-book.css": "e5bc0de4f1825bc9650a4a4f582d349b4e07b1d75bfd9103ebb7a6dbc53fcc54"
+    "app.js": "2acb477aa5c2fcd8d7c7105d2b7a70f5678b9d812a265b4aea792825a0d0186f",
+    "state.js": "65ccde2b10768941a300f180deb2b2805611562c059a8daca73cf51a280a5b5d",
+    "simulation.js": "56161f1bff824920b2bb3a705315accf534f0e40f1e61f34f329abf9e5198a61",
+    "auth.js": "d1a3c92baf525cfcabc4bbd3f67c539a9b83c62bb9da74b0e4fe91161842b644",
+    "app.css": "7e1be695e390f8e3eea3a7e5af2afb742df2c70eaaf4b3de0543bd8b375eb396",
+    "character-book.css": "b8f3105a5adde6e3a1659693edc0bd3c2145e677bc5e57c9692af8aee2cf613e"
   }
 }
