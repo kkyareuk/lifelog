@@ -1,8 +1,9 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev261";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev261";
-import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev261";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev261";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev261";
+import {drinkExperience} from "./drink-log.js?v=20260907dev262";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev262";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev262";
+import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev262";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev262";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev262";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -628,7 +629,7 @@ function hasVerbalConflict(view={}){
 }
 
 function catalogChoice(c,place,kind,seed){
-  const stock=(place?.stock||[]).map(itemById).filter(Boolean);
+  const stock=(place?.stock||[]).map(itemById).filter(item=>item?.kind===kind);
   const pool=(stock.length?stock:(state.catalog?.[kind]||[])).filter(Boolean);
   if(!pool.length)return null;
   return [...pool].sort((a,b)=>score(b)-score(a))[hash(seed)%Math.min(3,pool.length)];
@@ -1212,9 +1213,9 @@ function socialEvent(c,time,date){
     const romanticPool=romanticDetails[p.type]||[`${pick.other.name}와 나란히 시간을 보내며 서로의 하루를 묻고 있어요.`];
     const romanticDetail=romanticPool[hash(`${pair}:${dayKey(date)}:${p.id}:romantic-detail`)%romanticPool.length];
     const detail=p.type==="공연장"?`${pick.other.name}와 공연을 관람하며 인상적인 장면에 대한 감상을 나누고 있어요.`:romantic?romanticDetail:relationDetails[pick.r.type]||`${pick.other.name}와 이야기를 주고받으며 ${p.name}을 함께 둘러보고 있어요.`;
-    return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id||drink?.id,withId:pick.other.id,mood:"즐거움",stress:10}));
+    return entry(time,action,detail,away(c,{placeId:p.id,itemId:food?.id||drink?.id,withId:pick.other.id,...(drink?{drinkExperience:drinkExperience(drink,c,hash(`${c.id}:${dayKey(date)}:${time}:drink-cues`))}:{}),mood:"즐거움",stress:10}));
   }
-  return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 식사하고 있어요.`:drink?`${drink.name}을 마시며 잠깐 쉬고 있어요.`:p.type==="공연장"?"공연을 관람하며 무대에 집중하고 있어요.":"가벼운 외출을 즐기고 있어요.",away(c,{placeId:p.id,itemId:food?.id||drink?.id,mood:"평온"}));
+  return entry(time,`${p.name} 방문`,food?`오늘은 ${food.name}을 골라 식사하고 있어요.`:drink?`${drink.name}을 마시며 잠깐 쉬고 있어요.`:p.type==="공연장"?"공연을 관람하며 무대에 집중하고 있어요.":"가벼운 외출을 즐기고 있어요.",away(c,{placeId:p.id,itemId:food?.id||drink?.id,...(drink?{drinkExperience:drinkExperience(drink,c,hash(`${c.id}:${dayKey(date)}:${time}:drink-cues`))}:{}),mood:"평온"}));
 }
 
 const RELATION_SCENE_PROFILES={

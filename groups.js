@@ -1,5 +1,5 @@
-import {multiplayerBack} from "./multiplayer-art.js?v=20260907dev261";
-import {state} from "./state.js?v=20260907dev261";
+import {multiplayerBack} from "./multiplayer-art.js?v=20260907dev262";
+import {state} from "./state.js?v=20260907dev262";
 
 const esc=value=>String(value??"").replace(/[&<>"]/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[character]));
 const COPY={

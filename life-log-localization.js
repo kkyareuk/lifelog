@@ -1,3 +1,4 @@
+import {drinkLogCopy} from "./drink-log.js?v=20260907dev262";
 const hangul=/[가-힣]/;
 const japanese=/[\u3040-\u30ff\u31f0-\u31ff]/;
 const latinWord=/[A-Za-z]{3,}/;
@@ -57,6 +58,7 @@ const actionCopy={
 // detailed Korean copy intact in Korean, and provide a localized semantic
 // fallback for every remaining generated entry in English and Japanese.
 export function localizeLifeLog(entry,language,world,characterId=""){
+  if(entry.drinkExperience)return {...entry,...drinkLogCopy(entry.drinkExperience,language,companionFor(entry,world,characterId)?.name||""),displayLanguage:language};
   const target=["ko","en","ja"].includes(language)?language:"ko",names=entityNames(world),title=String(entry.title||""),desc=String(entry.desc||"");
   const canonicalTitle=String(entry.canonicalTitleKo||""),canonicalDesc=String(entry.canonicalDescKo||""),sourceCopy=`${canonicalTitle||title} ${canonicalDesc||desc}`;
   const sourceLanguage=entry.sourceLanguage||detectedLanguage(sourceCopy,names);
