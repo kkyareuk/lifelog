@@ -1,6 +1,6 @@
 const crypto=require('node:crypto');
 const fs=require('node:fs');
-const {SignedDataVerifier,AppStoreServerAPIClient,Environment}=require('@apple/app-store-server-library');
+const {SignedDataVerifier,AppStoreServerAPIClient,Environment,VerificationStatus}=require('@apple/app-store-server-library');
 const bundleId='com.drawervillage.app';
 const productMap=Object.freeze({
  'com.drawervillage.app.character_slots_5':'character_slots_5',
@@ -21,21 +21,26 @@ function validatePurchase(p,uid,environment,transactionId){
  if(!Number.isSafeInteger(p.quantity)||p.quantity<1||p.quantity>100)throw fail('APPLE_INVALID_TRANSACTION');
  return {productId,quantity:p.quantity};
 }
-function appleServices(privateKey){
- const environment=process.env.APPLE_IAP_ENVIRONMENT,appId=Number(process.env.APPLE_APP_ID);
+function appleServices(privateKey,environment=process.env.APPLE_IAP_ENVIRONMENT){
+ const appId=Number(process.env.APPLE_APP_ID);
  if(process.env.APPLE_BILLING_ENABLED!=='true'||![Environment.PRODUCTION,Environment.SANDBOX].includes(environment)||!process.env.APPLE_IAP_KEY_ID||!process.env.APPLE_IAP_ISSUER_ID||!privateKey||environment===Environment.PRODUCTION&&(!Number.isSafeInteger(appId)||appId<=0))throw fail('APPLE_NOT_CONFIGURED',503);
  const verifier=new SignedDataVerifier([fs.readFileSync(__dirname+'/certificates/AppleRootCA-G3.cer')],true,environment,bundleId,environment===Environment.PRODUCTION?appId:undefined);
  const api=new AppStoreServerAPIClient(privateKey,process.env.APPLE_IAP_KEY_ID,process.env.APPLE_IAP_ISSUER_ID,bundleId,environment);
  return {environment,verifier,api};
 }
-function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimestamp,privateKey,services=()=>appleServices(privateKey())}){
+function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimestamp,privateKey,services=environment=>appleServices(privateKey(),environment)}){
  const handle=fn=>async(req,res)=>{try{await fn(req,res)}catch(e){res.status(Number.isInteger(e.status)&&e.status>=400&&e.status<=599?e.status:503).json({verified:false,entitlementApplied:false,code:e.code||'APPLE_VERIFICATION_FAILED'})}};
  app.post('/apple-billing/prepare',handle(async(req,res)=>{const identity=await signedInUser(req),service=services();res.json({appAccountToken:accountToken(identity.uid),environment:service.environment,products:productMap})}));
  app.post('/apple-billing/verify',handle(async(req,res)=>{
   const identity=await signedInUser(req),id=String(req.body?.transactionId||'');if(!/^\d{1,30}$/.test(id))throw fail('APPLE_INVALID_TRANSACTION',400);
-  const service=services();
+  let service=services();
   // Query Apple's current signed state, never trust a client-decoded receipt.
-  const result=await service.api.getTransactionInfo(id);const purchase=await service.verifier.verifyAndDecodeTransaction(result.signedTransactionInfo);
+  let result;
+  try{result=await service.api.getTransactionInfo(id)}catch(error){
+   if(service.environment!==Environment.PRODUCTION||error.apiError!==4040010)throw error;
+   service=services(Environment.SANDBOX);result=await service.api.getTransactionInfo(id);
+  }
+  const purchase=await service.verifier.verifyAndDecodeTransaction(result.signedTransactionInfo);
   const {productId,quantity}=validatePurchase(purchase,identity.uid,service.environment,id);
   const ref=db.collection('applePurchases').doc(service.environment+'-'+id),userRef=db.collection(service.environment===Environment.SANDBOX?'appleSandboxAccounts':'users').doc(identity.uid);
   const field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';let alreadyApplied=false;
@@ -49,7 +54,11 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
  }));
  // A refund arriving before verification leaves a tombstone, so replay cannot grant it.
  app.post('/apple-billing/notifications',handle(async(req,res)=>{
-  const service=services();const notice=await service.verifier.verifyAndDecodeNotification(String(req.body?.signedPayload||''));
+  let service=services(),notice;const signedPayload=String(req.body?.signedPayload||'');
+  try{notice=await service.verifier.verifyAndDecodeNotification(signedPayload)}catch(error){
+   if(service.environment!==Environment.PRODUCTION||error.status!==VerificationStatus.INVALID_ENVIRONMENT)throw error;
+   service=services(Environment.SANDBOX);notice=await service.verifier.verifyAndDecodeNotification(signedPayload);
+  }
   if(!['REFUND','REVOKE'].includes(notice.notificationType)){res.json({received:true});return}
   const purchase=await service.verifier.verifyAndDecodeTransaction(notice.data?.signedTransactionInfo||'');
   if(purchase.bundleId!==bundleId||purchase.environment!==service.environment||!productMap[purchase.productId]||!/^\d{1,30}$/.test(purchase.transactionId||''))throw fail('APPLE_INVALID_TRANSACTION');
