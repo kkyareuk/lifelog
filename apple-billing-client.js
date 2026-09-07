@@ -3,7 +3,7 @@
  if(!window.Capacitor?.isNativePlatform?.()||window.Capacitor.getPlatform()!=='ios')return;
  const bridge=window.Capacitor.Plugins.AppleBilling,config=()=>window.PARALLEL_CITY_CONFIG?.appleBilling||{};
  const messages={
- LOGIN_REQUIRED:['계정 로그인 연결 후 구매할 수 있어요. 현재 iOS 테스트판에서는 아직 로그인할 수 없습니다.','Purchases require an account login. Login is not connected in this iOS test build yet.','購入にはアカウントへのログインが必要です。このiOSテスト版ではまだログインできません。'],
+ LOGIN_REQUIRED:['서랍마을 계정에 로그인한 뒤 구매해 주세요.','Sign in to your Drawer Village account before purchasing.','購入前にひきだし村アカウントでログインしてください。'],
  PURCHASE_CANCELLED:['구매를 취소했어요.','Purchase cancelled.','購入をキャンセルしました。'],
  PURCHASE_PENDING:['Apple에서 구매 승인 대기 중이에요. 승인되면 구매 내역을 다시 확인해 주세요.','The purchase is awaiting Apple approval. Check purchases after approval.','Appleで購入の承認を待っています。承認後に購入履歴を確認してください。'],
  APPLE_NOT_CONFIGURED:['Apple 결제 연결을 준비 중이에요. 아직 결제는 시작되지 않았어요.','Apple billing setup is pending. No purchase has been started.','Apple決済の接続を準備中です。購入は開始していません。'],

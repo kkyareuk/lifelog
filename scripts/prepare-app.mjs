@@ -131,7 +131,7 @@ await copyModuleClosure();
 // The local-only iOS preview must not wait for external Firebase module loads
 // or restore an account that this preview cannot sign into. Android/web retain
 // the original auth implementation; no saved data or storage scope is changed.
-if(platform==="ios")await writeFile(new URL("auth.js",output),await readFile(new URL("scripts/ios-preview-auth.mjs",root)));
+// iOS now uses the same authenticated account flow as Android/web.
 
 // The character book used to be a separately requested stylesheet. Because it
 // was missing from the manually maintained Android asset list, WebView rendered
@@ -186,7 +186,7 @@ config=config.replace(
 );
 config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:${platform==="android"}};\n`;
 if(platform==="ios"){
- config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=true;\n";
+ config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=false;window.PARALLEL_CITY_CONFIG.iosApp=true;\n";
  config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
 }
 await writeFile(configPath,config,"utf8");

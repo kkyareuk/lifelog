@@ -1,0 +1,16 @@
+{
+  "CLIENT_ID": "115165634004-dejlne0mtv8i18bhta2a8b5pgngpaum3.apps.googleusercontent.com",
+  "REVERSED_CLIENT_ID": "com.googleusercontent.apps.115165634004-dejlne0mtv8i18bhta2a8b5pgngpaum3",
+  "API_KEY": "AIzaSyDVRjSQHfFrZ_YcAyrlLitYx8A7bbCA-bk",
+  "GCM_SENDER_ID": "115165634004",
+  "PLIST_VERSION": "1",
+  "BUNDLE_ID": "com.drawervillage.app",
+  "PROJECT_ID": "lifelog-98fff",
+  "STORAGE_BUCKET": "lifelog-98fff.firebasestorage.app",
+  "IS_ADS_ENABLED": false,
+  "IS_ANALYTICS_ENABLED": false,
+  "IS_APPINVITE_ENABLED": true,
+  "IS_GCM_ENABLED": true,
+  "IS_SIGNIN_ENABLED": true,
+  "GOOGLE_APP_ID": "1:115165634004:ios:ebf677dd5a12899a43ca41"
+}
