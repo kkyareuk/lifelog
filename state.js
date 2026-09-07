@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev260";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev260";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev260";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev260";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev260";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev260";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev260";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev260";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev260";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev261";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev261";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev261";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev261";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev261";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev261";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev261";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev261";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev261";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260907dev260";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev260";
+import {missingBuildings} from "./building-recovery.js?v=20260907dev261";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev261";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -206,7 +206,7 @@ const normalizedBodyProfile=value=>{
 // New worlds start with a genuinely blank dictionary. Existing worlds keep
 // every item already stored in their own catalog during normalization.
 const defaultCatalog=()=>Object.fromEntries([
-  "food","drink","fashion","music","idol","book","movie","game","perfume","hobby","electronics","ingredient","weapon","animal"
+  "food","drink","fashion","music","idol","book","movie","game","perfume","hobby","electronics","ingredient","weapon","animal","flower","misc"
 ].map(kind=>[kind,[]]));
 const defaultHomeSceneLayout=()=>({
   sd:{x:0,y:0,scale:1,rotation:0,actionX:0,actionY:0,customized:false},
@@ -1110,9 +1110,10 @@ export function updateCharacter(id,patch,persist=true){
     if(!c.residences.some(item=>item.homeId===patch.homeId))c.residences.push({homeId:patch.homeId,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:state.homes[patch.homeId].rooms?.bedroom?"bedroom":Object.keys(state.homes[patch.homeId].rooms||{})[0]||""});
     c.residences.forEach(item=>item.isPrimary=item.homeId===patch.homeId);
   }
-  if(patch.sleepRoomId&&c.homeId){
+  if(Object.hasOwn(patch,"sleepRoomId")&&c.homeId){
     const residence=(c.residences||[]).find(item=>item.homeId===c.homeId);
     if(residence)residence.sleepRoomId=patch.sleepRoomId;
+    syncBedroomSelection(id,c.homeId,patch.sleepRoomId);
   }
   if(Object.keys(patch).some(key=>SIMULATION_FIELDS.has(key))||Object.hasOwn(patch,"behaviorHabits"))c.timelineResetAt=Date.now();
   if(persist)save();
@@ -1224,10 +1225,27 @@ export function setRoomFloorImage(homeId,room,data,mode="custom"){
   h.rooms[room].floorMaterial=data?(mode==="customTile"?"customTile":"custom"):defaultHomeSurfaceForRoom(h.rooms[room].type);
   save(true);
 }
+export function syncBedroomSelection(characterId,homeId,roomKey){
+  const home=state.homes[homeId];if(!home)return;
+  for(const [key,room] of Object.entries(home.rooms||{})){if(room.type!=="bedroom"&&key!=="bedroom")continue;
+    if(key===roomKey){if(room.ownerMode!=="all"){room.ownerMode="selected";room.ownerCharacterIds=[...new Set([...(room.ownerCharacterIds||[]),characterId])]}}
+    else if(room.ownerMode!=="all")room.ownerCharacterIds=(room.ownerCharacterIds||[]).filter(id=>id!==characterId);
+  }
+}
 export function updateRoom(homeId,roomKey,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
-  h.rooms[roomKey]={...h.rooms[roomKey],...patch};
+  const previousRoom=h.rooms[roomKey];
+  h.rooms[roomKey]={...previousRoom,...patch};
+  const room=h.rooms[roomKey];
+  if((room.type==="bedroom"||roomKey==="bedroom")&&(Object.hasOwn(patch,"ownerCharacterIds")||Object.hasOwn(patch,"ownerMode"))){
+    for(const c of Object.values(state.characters)){const r=c.residences?.find(r=>r.homeId===homeId);if(!r)continue;
+      const owns=room.ownerMode==="all"||(room.ownerCharacterIds||[]).includes(c.id);
+      if(owns){r.sleepRoomId=roomKey;if(r.isPrimary||c.homeId===homeId)c.sleepRoomId=roomKey;syncBedroomSelection(c.id,homeId,roomKey)}
+      else if(r.sleepRoomId===roomKey){r.sleepRoomId="";if(r.isPrimary||c.homeId===homeId)c.sleepRoomId=""}
+      c.timelineResetAt=Date.now();
+    }
+  }
   // 위치·크기·이름·바닥·벽처럼 화면에만 영향을 주는 편집은 생활 사실을
   // 바꾸지 않는다. 방 용도나 가구처럼 실제 행동 후보가 달라지는 변경만
   // 다음 생활 장면에 반영한다.
@@ -1571,7 +1589,8 @@ export function updateCharacterResidence(characterId,homeId,patch,persist=true){
   if(patch?.isPrimary){
     c.residences.forEach(item=>item.isPrimary=item===residence);
     c.homeId=homeId;c.sleepRoomId=residence.sleepRoomId||"";
-  }else if(residence.isPrimary&&patch?.sleepRoomId)c.sleepRoomId=patch.sleepRoomId;
+  }else if((residence.isPrimary||c.homeId===homeId)&&Object.hasOwn(patch||{},"sleepRoomId"))c.sleepRoomId=patch.sleepRoomId;
+  if(Object.hasOwn(patch||{},"sleepRoomId"))syncBedroomSelection(characterId,homeId,patch.sleepRoomId);
   c.timelineResetAt=Date.now();if(persist)save();return true;
 }
 export function setPlaceInteriorImage(placeId,data){const p=state.world.places.find(x=>x.id===placeId);if(p){p.interiorImage=data;save(true)}}
@@ -1713,6 +1732,7 @@ export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Da
 }
 export function addCatalogItem(kind,data){
   if(!state.catalog[kind])state.catalog[kind]=[];
+  if(state.catalog[kind].length>=80)return null;
   const item={id:uid(),kind,name:"새 항목",category:"기타",subtype:"",keywords:[],image:"",spicy:0,sweet:0,creator:"",style:"",createdAt:Date.now(),userCreated:true,...data};
   state.catalog[kind].push(item);save(true);return item.id;
 }

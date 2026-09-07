@@ -1,25 +1,25 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev260";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev260";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev260";
-import {characterMood} from "./character-mood.js?v=20260907dev260";
-import {createContactMailbox} from "./notification-mail.js?v=20260907dev260";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev260";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907dev260";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev260";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev260";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev260";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev260";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev260";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev260";
-import {achievementRows} from "./achievements.js?v=20260907dev260";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev260";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev260";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev260";
-import {renderGroups} from "./groups.js?v=20260907dev260";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev260";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev261";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev261";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev261";
+import {characterMood} from "./character-mood.js?v=20260907dev261";
+import {createContactMailbox} from "./notification-mail.js?v=20260907dev261";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev261";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907dev261";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev261";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev261";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev261";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev261";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev261";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev261";
+import {achievementRows} from "./achievements.js?v=20260907dev261";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev261";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev261";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev261";
+import {renderGroups} from "./groups.js?v=20260907dev261";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev261";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -707,7 +707,7 @@ const INCOMES=["절약 우선","가성비 중시","필요한 만큼 소비","취
 const MUSIC=["발라드","인디","재즈","클래식","록","힙합","R&B","K-POP","J-POP","OST","전자음악","트로트"];
 const FOODS=["한식","일식","중식","양식","분식","고기","해산물","면 요리","디저트","매운 음식","채식"];
 const FOOD_PREFERENCES=[...TASTES,...FOODS];
-const DRINKS=["아메리카노","카페라테","바닐라 라테","아인슈페너","밀크티","말차 라테","차","탄산음료","주스","핫초코"];
+const DRINKS=["소다","모히토","무알코올 모히토","에이드","스무디","아메리카노","카페라테","바닐라 라테","아인슈페너","밀크티","말차 라테","차","탄산음료","주스","핫초코"];
 const SPICE_LEVELS=["안 매움","살짝 매콤","순한맛","보통 라면 맵기","매운맛","아주 매운맛"];
 const SWEET_LEVELS=["안 달음","은은한 단맛","적당히 달콤","달콤함","아주 달콤함","극강의 단맛"];
 const PERSONALITY_LEVELS={
@@ -733,8 +733,8 @@ const PLACE_TYPES={
   "관공서":["","시청","주민센터","경찰서","소방서"],
   "기타":[""]
 };
-const CATALOG_LABELS={food:"음식",ingredient:"식재료",drink:"음료",fashion:"옷·패션",music:"음악",idol:"아이돌·밴드",book:"책·작품",movie:"영화·영상",game:"게임",perfume:"향수",hobby:"취미 물품",electronics:"전자기기",weapon:"무기",animal:"동물"};
-const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식","기타"],ingredient:["채소","과일","곡물","육류","해산물","유제품","달걀","향신료·조미료","가공식품","기타 식재료"],drink:["커피","차","라테","탄산음료","주스","술","기타 음료","기타"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리","기타"],music:["노래","앨범","플레이리스트","악기","기타"],idol:["솔로 가수","아이돌","밴드","가상 아티스트","기타"],book:["소설","만화","잡지","에세이","전문서적","기타"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상","기타"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임","기타"],perfume:["향수","디퓨저","캔들","바디 제품","기타"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품","기타"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전","기타"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기","기타"],animal:["개","고양이","새","토끼","말","소형 포유류","파충류·양서류","어류","곤충·절지동물","가축","야생동물","판타지 생물","기타"]};
+const CATALOG_LABELS={food:"음식",ingredient:"식재료",drink:"음료",fashion:"옷·패션",music:"음악",idol:"아이돌·밴드",book:"책·작품",movie:"영화·영상",game:"게임",perfume:"향수",hobby:"취미 물품",electronics:"전자기기",weapon:"무기",animal:"동물",flower:"꽃",misc:"기타 물품"};
+const CATALOG_CATEGORIES={flower:["생화","드라이플라워","조화","꽃다발","화분","기타 꽃"],misc:["인형","기념품","문구","생활 소품","선물","기타 물품"],food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식","기타"],ingredient:["채소","과일","곡물","육류","해산물","유제품","달걀","향신료·조미료","가공식품","기타 식재료"],drink:["소다","모히토","에이드","스무디","커피","차","라테","탄산음료","주스","술","기타 음료","기타"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리","기타"],music:["노래","앨범","플레이리스트","악기","기타"],idol:["솔로 가수","아이돌","밴드","가상 아티스트","기타"],book:["소설","만화","잡지","에세이","전문서적","기타"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상","기타"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임","기타"],perfume:["향수","디퓨저","캔들","바디 제품","기타"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품","기타"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전","기타"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기","기타"],animal:["개","고양이","새","토끼","말","소형 포유류","파충류·양서류","어류","곤충·절지동물","가축","야생동물","판타지 생물","기타"]};
 const BLADE_SUBTYPES=["단검","나이프","쇼트소드","아밍소드","롱소드","바스타드소드","대검","클레이모어","레이피어","에페","세이버","커틀러스","샴시르","시미터","카타나","타치","와키자시","노다치","쌍검","검지팡이","의장검"];
 const WEAPON_SUBTYPES={총기:["권총","리볼버","기관단총","돌격소총","소총","저격소총","산탄총","기관총"],"검·도검":BLADE_SUBTYPES,도검:BLADE_SUBTYPES,검:BLADE_SUBTYPES,"활·석궁":["단궁","장궁","복합궁","컴파운드 보우","석궁"],둔기:["곤봉","메이스","철퇴","전투망치"],"창·장병기":["창","장창","할버드","언월도","삼지창"],방어구:["방패","경갑","중갑","투구"],"판타지 무기":["마법봉","지팡이","마도서","마검","에너지 무기"]};
 Object.assign(UI_TEXT.en,{
@@ -761,7 +761,7 @@ const catalogItems=()=>Object.entries(state.catalog||{}).flatMap(([kind,items])=
 const levelOptions=(labels,value)=>labels.map((label,index)=>`<option value="${index}" ${Number(value)===index?"selected":""}>${label}</option>`).join("");
 const placeTypeOptions=place=>Object.keys(PLACE_TYPES).map(type=>`<option ${place.type===type?"selected":""}>${type}</option>`).join("");
 const placeSubtypeOptions=place=>(PLACE_TYPES[place.type]||[""]).map(type=>`<option value="${type}" ${place.subtype===type?"selected":""}>${type||"지정 안 함 · 해당 유형 전체 취급"}</option>`).join("");
-const CATALOG_ICONS={food:"🍽️",ingredient:"🥕",drink:"🥤",fashion:"👗",music:"🎵",idol:"🎤",book:"📚",movie:"🎬",game:"🎮",perfume:"🧴",hobby:"🎨",electronics:"💻",weapon:"⚔️",animal:"🐾"};
+const CATALOG_ICONS={food:"🍽️",ingredient:"🥕",drink:"🥤",fashion:"👗",music:"🎵",idol:"🎤",book:"📚",movie:"🎬",game:"🎮",perfume:"🧴",hobby:"🎨",electronics:"💻",weapon:"⚔️",animal:"🐾",flower:"🌷",misc:"🎁"};
 const roomClasses={living:"living",kitchen:"kitchen",entry:"entry",bath:"bath",bedroom:"bedroom",study:"study"};
 const ROOM_TYPES={living:"거실",kitchen:"주방",entry:"현관",bath:"욕실",bedroom:"침실",study:"서재·취미방",dining:"다이닝룸",nursery:"아이방",guest:"손님방",hobby:"취미방",balcony:"베란다",storage:"창고",other:"기타 방"};
 const roomTypeOptions=room=>Object.entries(ROOM_TYPES).map(([value,label])=>`<option value="${value}" ${(room.type||"other")===value?"selected":""}>${label}</option>`).join("");
@@ -3100,7 +3100,7 @@ function character(){
       ${bookField("옷을 고르는 기준","clothingPriority",["가격","편안함","실용성","상황에 맞춤","디자인","브랜드","유행"],c.clothingPriority||"가격")}
       <div class="book-form-stack">${bookField("옷가게 방문 빈도","clothingShopFrequency",["자동 · 설정에 맞춤","거의 가지 않음","계절마다","매달","월 2회 이상"],c.clothingShopFrequency||"자동 · 설정에 맞춤")}<label class="book-check-field"><span>${t("구매한 옷을 실제로 입고 다님","구매한 옷을 실제로 입고 다님")}</span><input type="checkbox" data-field="wearsPurchasedClothes" ${c.wearsPurchasedClothes!==false?"checked":""}></label></div>
       <div class="book-form-stack">${bookField("유행 민감도","trendSensitivity",["유행에 무관심","유행을 늦게 받아들임","필요한 것만 따름","유행을 즐김","유행의 선도자"],c.trendSensitivity||"필요한 것만 따름")}${bookField("유행을 따르는 정도","trendFollowing",["전혀 따르지 않음","조금만 반영","상황에 따라","적극적으로 반영","새 유행을 먼저 시도"],c.trendFollowing||"상황에 따라")}</div>
-      <div class="book-form-stack">${bookField("신발","shoeStyle",["설정하지 않음","운동화","구두","부츠","샌들","하이힐"],c.shoeStyle||"설정하지 않음")}${bookField("실내","indoorFootwear",["맨발","양말","실내화","신발을 벗지 않음"],c.indoorFootwear||"맨발")}</div>
+      <div class="book-form-stack">${bookField("신발","shoeStyle",["설정하지 않음","운동화","구두","부츠","샌들","하이힐","로퍼","비즈니스 슈즈","옥스퍼드","더비","몽크 스트랩","게타","잇폰바게타","조리","전통 신발"],c.shoeStyle||"설정하지 않음")}${bookField("실내","indoorFootwear",["맨발","양말","실내화","신발을 벗지 않음"],c.indoorFootwear||"맨발")}</div>
     </div>${bookPageControls(7,'data-character-body-pane="accessibility"','data-character-pane="personality" data-character-personality-pane="core"')}
   </section>`;
   const personalityCoreFields=[
@@ -4594,11 +4594,13 @@ function renderAppContents(next){
   const appRoot=document.querySelector("#app");
   const showingWelcome=!state.order.length&&!["settings","mailbox"].includes(state.activeTab);
   const showingAccountLoading=Boolean(content?.includes?.('class="village-account-loading"'));
+  const showingMultiplayerDirectory=content.includes('class="multiplayer-directory"');
+  appRoot.classList.toggle("is-multiplayer-directory",showingMultiplayerDirectory);
   // The empty-world landing page is scrollable, unlike the fixed game HUD.
   document.documentElement.dataset.activeTab=showingWelcome?"welcome":state.activeTab;
   appRoot.classList.toggle("is-welcome",showingWelcome);
   appRoot.classList.toggle("is-account-loading",showingAccountLoading);
-  appRoot.innerHTML=`${showingWelcome||showingAccountLoading?"":header()}<main>${content}</main>`;
+  appRoot.innerHTML=`${showingWelcome||showingAccountLoading||showingMultiplayerDirectory?"":header()}<main>${content}</main>`;
   scheduleTownLighting(document);
   appRoot.querySelectorAll("img").forEach((image,index)=>{
     image.decoding="async";
@@ -4657,7 +4659,7 @@ function nativePlayShop({browseOnly=false}={}){
   const comingTitle=section==="bundle"?copy.bundleSoon:section==="skin"?copy.skinSoon:copy.expansionSoon;
   const content=section==="base"?`<div class="drawer-shop-products">${["character_slots_5","town_slot_1","storage_50mb","green_tea"].map(productCard).join("")}</div>`:`<div class="drawer-shop-coming" role="status"><span aria-hidden="true">✦</span><b>${esc(comingTitle)}</b><small>${esc(copy.soonDetail)}</small></div>`;
   const sellerLabel=language==="en"?"Shopkeeper":language==="ja"?"店主":"상점주인";
-  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev260" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
+  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev261" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
 }
 function shop(){
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){

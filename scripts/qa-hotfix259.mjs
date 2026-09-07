@@ -27,8 +27,8 @@ try {
  await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());
  await page.goto(origin+'/privacy.html');
  await page.evaluate(async()=>{
-  window.game=await import('/state.js?v=20260907dev260');
-  const dict=await import('/dictionary.js?v=20260907dev260');
+  window.game=await import('/state.js?v=20260907dev261');
+  const dict=await import('/dictionary.js?v=20260907dev261');
   game.resetAll();game.createCharacter();window.testId=game.addCatalogItem('food',{name:'원래 항목',category:'기타'});
   window.renderDict=()=>{document.body.innerHTML=dict.renderDictionary({labels:{food:'음식'},icons:{food:'🍚'},categories:{food:['기타']},subtypes:()=>[]});dict.mountDictionary({toast:t=>window.notice=t})};renderDict();
  });
@@ -46,7 +46,7 @@ try {
  await page.evaluate(()=>{Storage.prototype.setItem=originalSet});await page.locator('[data-dict-save]').click();await page.waitForFunction(()=>!document.querySelector('[data-dict-save]'));
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('drawer-village-game-v1')).catalog.food.find(x=>x.id===testId).memo),'공간 부족 중 입력한 내용');
  const scenes=await page.evaluate(async()=>{
-  const sim=await import('/simulation.js?v=20260907dev260'),c=game.state.characters[game.state.activeId];c.createdAt=1;c.wake='00:00';c.sleep='23:50';c.days={};c.timelineResetAt=0;
+  const sim=await import('/simulation.js?v=20260907dev261'),c=game.state.characters[game.state.activeId];c.createdAt=1;c.wake='00:00';c.sleep='23:50';c.days={};c.timelineResetAt=0;
   game.state.routines={[c.id]:[{id:'short',day:1,start:'01:00',end:'03:00',title:'짧은 일정',type:'기타',withIds:[]}]};game.state.monthlyRoutines={};game.state.dailyPlans={};
   return [2,3,5,12,19].map(h=>{const e=sim.eventFor(c,new Date(2026,8,7,h,0));return {h,title:e.title,routineId:e.routineId,minute:e.minute}});
  });assert.equal(scenes[0].routineId,'short');for(const scene of scenes.slice(1))assert.notEqual(scene.routineId,'short');
