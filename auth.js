@@ -1,10 +1,11 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev262";
+import {sharedProfile} from './shared-world.js?v=20260907dev265';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev265";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev262";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev265";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -791,7 +792,7 @@ async function submitFeedback({category,message,allowReply=false}={}){
 // 그룹 멀티 데이터는 개인 게임 저장본과 분리한다. 그룹에서 주민을
 // 내보내거나 집 공개를 취소해도 users/{uid}/sync 및 기기 원본에는 손대지 않는다.
 const emptyGroupState=()=>({
-  loading:false,error:"",groups:[],activeGroupId:"",group:null,members:[],residents:[],homes:[],
+  loading:false,error:"",groups:[],activeGroupId:"",group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],perceptions:[],incomingProposals:[],outgoingProposals:[],
   selectedTownId:"",selectedResidentId:"",visitingHomeId:""
 });
 const groupContextKey="drawer-village-multiplayer-context-v1";
@@ -846,7 +847,7 @@ const activeGroupRole=()=>activeGroupMember()?.role||(groupState.group?.ownerUid
 const isGroupManager=()=>["owner","manager"].includes(activeGroupRole());
 const groupRefs=groupId=>({
   group:doc(db,"groups",groupId),members:collection(db,"groups",groupId,"members"),
-  residents:collection(db,"groups",groupId,"residents"),homes:collection(db,"groups",groupId,"homes")
+  residents:collection(db,"groups",groupId,"residents"),homes:collection(db,"groups",groupId,"homes"),relationships:collection(db,"groups",groupId,"relationships"),perceptions:collection(db,"groups",groupId,"perceptions"),proposals:collection(db,"groups",groupId,"proposals"),declarations:collection(db,"groups",groupId,"declarations"),catalog:collection(db,"groups",groupId,"catalog")
 });
 const groupIndexRef=(uid,groupId)=>doc(db,"users",uid,"groupMemberships",groupId);
 let groupDetailActive=false;
@@ -867,7 +868,7 @@ function watchActiveGroup(groupId){
   const nextGroupId=String(groupId||""),remembered=readGroupContext(),sameGroup=groupState.activeGroupId===nextGroupId;
   const selectedTownId=sameGroup?groupState.selectedTownId:remembered.groupId===nextGroupId?remembered.townId:"";
   const selectedResidentId=sameGroup?groupState.selectedResidentId:remembered.groupId===nextGroupId?remembered.residentId:"";
-  groupState={...groupState,activeGroupId:nextGroupId,group:null,members:[],residents:[],homes:[],selectedTownId,selectedResidentId,visitingHomeId:""};
+  groupState={...groupState,activeGroupId:nextGroupId,group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],perceptions:[],incomingProposals:[],outgoingProposals:[],selectedTownId,selectedResidentId,visitingHomeId:""};
   writeGroupContext({groupId:nextGroupId,townId:selectedTownId,residentId:selectedResidentId});
   if(!groupId||!user){emitGroupState();return}
   const refs=groupRefs(groupId);
@@ -882,6 +883,13 @@ function watchActiveGroup(groupId){
     if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
     emitGroupState();
     if(key==="group"&&value)void migrateLegacyGroup(value);
+    if(key==="residents"&&value.length){
+      const migrationKey=`${user?.uid}:${groupId}`;
+      if(value.some(r=>r.ownerUid===user?.uid&&!r.profileJson)&&!migratedSharedProfiles.has(migrationKey)){
+        migratedSharedProfiles.add(migrationKey);void refreshSharedResidents().catch(error=>console.warn('Shared profile refresh',error.code));
+      }
+      void advanceSharedLife().catch(error=>console.warn("Shared life",error.code));
+    }
   },error=>{
     console.warn(`group ${key} subscription failed`,error);
     groupState={...groupState,error:error?.code||"groups/load-failed",loading:false};emitGroupState();
@@ -891,7 +899,7 @@ function watchActiveGroup(groupId){
   // page empties the multiplayer roster shown on the home screen.
   groupUnsubscribers=[
     listen(refs.group,"group",false),listen(refs.members,"members",true),
-    listen(refs.residents,"residents",true),listen(refs.homes,"homes",true)
+    listen(refs.residents,"residents",true),listen(refs.homes,"homes",true),listen(refs.catalog,"catalog",true),listen(refs.relationships,"relationships",true),listen(refs.perceptions,"perceptions",true),listen(query(refs.proposals,where("recipientUid","==",user.uid)),"incomingProposals",true),listen(query(refs.proposals,where("senderUid","==",user.uid)),"outgoingProposals",true)
   ];
 }
 
@@ -988,8 +996,45 @@ async function linkGroupTown(townId){
   throw Object.assign(new Error("Personal towns cannot be linked to multiplayer"),{code:"groups/independent-town-only"});
 }
 
+async function sharedCloudState(){
+  const session=captureSession();
+  if(!await upload({silent:true,reason:"멀티 공유"}))throw Object.assign(new Error("Cloud upload failed"),{code:"groups/share-upload-failed"});
+  assertSession(session);
+  const documentSnapshot=await getDoc(cloudDoc(session.uid));
+  const cloud=await readCloudGameState(documentSnapshot.data(),{uid:session.uid});
+  assertSession(session);return cloud;
+}
+async function refreshSharedResidents(){
+  const account=requireGroupUser(),gid=groupState.activeGroupId;
+  if(!gid)return;
+  const mine=groupState.residents.filter(r=>r.ownerUid===account.uid);
+  if(!mine.length)return;
+  const cloud=await sharedCloudState();
+  if(groupState.activeGroupId!==gid)return;
+  const batch=writeBatch(db);
+  for(const r of mine){const c=cloud.characters?.[r.sourceCharacterId];if(!c)continue;
+    batch.update(doc(db,'groups',gid,'residents',r.id),{profileJson:JSON.stringify(sharedProfile(c)),scheduleJson:JSON.stringify({routines:cloud.routines?.[c.id]||[],monthlyRoutines:cloud.monthlyRoutines?.[c.id]||[]}),sourceHomeId:c.homeId||'',icon:publicImage(c.icon),photo:publicImage(c.photo),name:c.name,job:c.jobTitle||c.job||'',updatedAt:serverTimestamp()});
+  }
+  for(const h of groupState.homes.filter(h=>h.ownerUid===account.uid)){const home=cloud.homes?.[h.sourceHomeId];if(home)batch.update(doc(db,'groups',gid,'homes',h.id),{layoutJson:JSON.stringify(sharedProfile(home)),exteriorImage:publicImage(home.exteriorImage||home.image),updatedAt:serverTimestamp()});}
+  await batch.commit();await advanceSharedLife(true);
+}
+const migratedSharedProfiles=new Set();
+let advancingShared=false,lastSharedAdvance=new Map();
+async function sharedTownRequest(action,body={}){
+  requireGroupUser();const gid=groupState.activeGroupId;
+  const token=await user.getIdToken();
+  const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/sharedTownApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({groupId:gid,...body})});
+  const result=await response.json();if(!response.ok)throw Object.assign(new Error(result.message||'Shared town failed'),{code:result.message||'groups/server-error'});return result;
+}
+async function advanceSharedLife(force=false){
+  const gid=groupState.activeGroupId;if(!gid||!groupState.group||advancingShared||(!force&&Date.now()-(lastSharedAdvance.get(gid)||0)<60000))return;
+  advancingShared=true;lastSharedAdvance.set(gid,Date.now());
+  try{return await sharedTownRequest('advance')}finally{advancingShared=false}
+}
+
 async function addGroupResident(characterId,townId=""){
-  const account=requireGroupUser(),local=window.ParallelCity?.getState?.(),character=local?.characters?.[characterId];
+  const account=requireGroupUser(),groupId=groupState.activeGroupId,local=await sharedCloudState(),character=local?.characters?.[characterId];
+  if(groupId!==groupState.activeGroupId)throw Object.assign(new Error("Group changed"),{code:"groups/context-changed"});
   if(!groupState.group||!character)throw Object.assign(new Error("Character missing"),{code:"groups/character-missing"});
   if(groupState.residents.some(resident=>resident.ownerUid===account.uid&&resident.sourceCharacterId===characterId))throw Object.assign(new Error("Already resident"),{code:"groups/already-resident"});
   const role=activeGroupRole(),rules=groupState.group.rules||{};
@@ -1001,7 +1046,7 @@ async function addGroupResident(characterId,townId=""){
   await setDoc(doc(db,"groups",groupState.activeGroupId,"residents",residentId),{
     ownerUid:account.uid,ownerName:accountName(),sourceCharacterId:characterId,
     name:String(character.name||"이름 없는 캐릭터").slice(0,40),job:String(character.jobTitle||character.job||"무직").slice(0,60),
-    icon:publicImage(character.icon||character.photo),townId:townId||groupState.selectedTownId||groupState.group.towns?.[0]?.id||"",
+    profileJson:JSON.stringify(sharedProfile(character)),scheduleJson:JSON.stringify({routines:local.routines?.[characterId]||[],monthlyRoutines:local.monthlyRoutines?.[characterId]||[]}),sourceHomeId:character.homeId||'',photo:publicImage(character.photo),icon:publicImage(character.icon||character.photo),townId:townId||groupState.selectedTownId||groupState.group.towns?.[0]?.id||"",
     sourceTownName:String(localTown?.name||"").slice(0,40),sourceHomeName:String(localHome?.name||"").slice(0,40),
     joinedAt:serverTimestamp(),updatedAt:serverTimestamp()
   });
@@ -1017,7 +1062,8 @@ async function removeGroupResident(residentId){
 }
 
 async function publishGroupHome(homeId,townId=""){
-  const account=requireGroupUser(),local=window.ParallelCity?.getState?.(),home=local?.homes?.[homeId];
+  const account=requireGroupUser(),groupId=groupState.activeGroupId,local=await sharedCloudState(),home=local?.homes?.[homeId];
+  if(groupId!==groupState.activeGroupId)throw Object.assign(new Error("Group changed"),{code:"groups/context-changed"});
   if(!groupState.group||!home)throw Object.assign(new Error("Home missing"),{code:"groups/home-missing"});
   const sharedHomeId=`${account.uid}_${String(homeId).replace(/[^A-Za-z0-9_-]/g,"_")}`;
   const residents=Object.values(local.characters||{}).filter(character=>character?.homeId===homeId).map(character=>String(character.name||"").slice(0,40)).filter(Boolean).slice(0,30);
@@ -1025,7 +1071,7 @@ async function publishGroupHome(homeId,townId=""){
   await setDoc(doc(db,"groups",groupState.activeGroupId,"homes",sharedHomeId),{
     ownerUid:account.uid,ownerName:accountName(),sourceHomeId:homeId,name:String(home.name||"이름 없는 집").slice(0,40),
     kind:String(home.kind||"일반 주거").slice(0,30),townId:townId||groupState.selectedTownId||groupState.group.towns?.[0]?.id||"",
-    exteriorImage:publicImage(home.exteriorImage||home.image),residentNames:residents,roomNames:rooms,
+    layoutJson:JSON.stringify(sharedProfile(home)),exteriorImage:publicImage(home.exteriorImage||home.image),residentNames:residents,roomNames:rooms,
     visitPolicy:"members",updatedAt:serverTimestamp(),createdAt:serverTimestamp()
   },{merge:true});
   return sharedHomeId;
@@ -1072,6 +1118,8 @@ async function leaveGroup(){
 
 window.DrawerVillageGroups={
   getSnapshot:groupSnapshot,refresh:refreshGroups,create:createGroup,join:joinGroup,
+  publishCatalog:async()=>{const gid=groupState.activeGroupId,cloud=await sharedCloudState();if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:sharedProfile(cloud.catalog)})},
+  propose:input=>sharedTownRequest('propose',input),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command}),saveBuilding:input=>sharedTownRequest('saveBuilding',input),
   setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||""),selectedResidentId:""};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:""});emitGroupState()},
@@ -1125,6 +1173,7 @@ try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-vil
 window.ParallelCityAuth={
   login,upload,download,submitFeedback,markGuideSeen,resetGuides,
   logout:async()=>{
+    try{await window.DrawerVillageGroupPush?.disable?.()}catch{}
     accountEpoch+=1;switchingAccount=true;
     try{if(user)await signOut(auth)}catch(error){switchingAccount=false;throw error}
     if(window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication){
@@ -1134,3 +1183,5 @@ window.ParallelCityAuth={
   getIdToken:async()=>user?user.getIdToken():null,
   getInfo:()=>({ready:authSettled,user,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,storageUsage,guideState})
 };
+
+setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home","groups"].includes(window.ParallelCity?.getState?.()?.activeTab))void advanceSharedLife().catch(()=>{})},60000);

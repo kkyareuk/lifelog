@@ -90,6 +90,7 @@ service cloud.firestore {
         && (resource.data.ownerUid == request.auth.uid || hasGroupMembership(groupId));
       allow update:
         if isGroupManager(groupId)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['lifeUpdatedAt', 'buildingRevision'])
         && request.resource.data.ownerUid == resource.data.ownerUid;
       allow delete:
         if isGroupOwner(groupId);
@@ -122,14 +123,32 @@ service cloud.firestore {
           && resource.data.role != 'owner';
       }
 
+      match /relationships/{id} {
+        allow read: if hasGroupMembership(groupId);
+      }
+      match /catalog/{id} {
+        allow read: if hasGroupMembership(groupId);
+      }
+      match /perceptions/{id} {
+        allow read: if hasGroupMembership(groupId);
+      }
+      match /declarations/{id} {
+        allow read: if hasGroupMembership(groupId);
+      }
+      match /proposals/{id} {
+        allow read: if hasGroupMembership(groupId)
+          && (resource.data.senderUid == request.auth.uid || resource.data.recipientUid == request.auth.uid);
+      }
       match /residents/{residentId} {
         allow read: if hasGroupMembership(groupId) || isGroupOwner(groupId);
         allow create:
           if hasGroupMembership(groupId)
           && request.resource.data.ownerUid == request.auth.uid
+          && !request.resource.data.keys().hasAny(['lifeJson', 'commandAt'])
           && request.resource.data.sourceCharacterId is string;
         allow update:
           if (resource.data.ownerUid == request.auth.uid || isGroupManager(groupId))
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['lifeJson', 'commandAt'])
           && request.resource.data.ownerUid == resource.data.ownerUid
           && request.resource.data.sourceCharacterId == resource.data.sourceCharacterId;
         allow delete:

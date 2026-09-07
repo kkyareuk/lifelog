@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import vm from "node:vm";
+import {creativeCopy} from "../creative-options.js";
 import {dictionaryCopy} from "../dictionary-copy.js";
 
 const source=fs.readFileSync(new URL("../views.js",import.meta.url),"utf8");
@@ -18,6 +19,8 @@ vm.runInContext(`${prelude}\nObject.assign(UI_TEXT.en,UI_TEXT_MORE.en);Object.as
 for(const match of source.slice(dynamicStart).matchAll(/Object\.assign\(UI_TEXT\.(?:en|ja),\{[\s\S]*?\}\);/g)){
   vm.runInContext(match[0],context);
 }
+
+for(const [ko,en,ja] of creativeCopy){context.I18N.en[ko]=en;context.I18N.ja[ko]=ja;}
 
 let runtimeSource=source.slice(dynamicStart)+"\n"+fs.readFileSync(new URL("../dictionary.js",import.meta.url),"utf8");
 runtimeSource=runtimeSource.replace(/Object\.assign\(UI_TEXT\.(?:en|ja),\{[\s\S]*?\}\);/g,"");

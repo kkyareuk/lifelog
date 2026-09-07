@@ -1,5 +1,5 @@
-import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260907dev262';
-import {informationOnlyState} from './local-media.js?v=20260907dev262';
+import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260907dev265';
+import {informationOnlyState} from './local-media.js?v=20260907dev265';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
 const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);

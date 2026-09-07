@@ -41,3 +41,8 @@ AuthKey_*.p8
 # Local deployment configuration and CLI diagnostics
 functions/.env*
 firebase-debug*.log
+
+functions/runtime/
+qa-output-263/
+
+qa-output-265/

@@ -306,3 +306,18 @@ require('./apple-billing').installAppleBilling(appleApp,{db,signedInUser,nextEnt
 exports.api=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[TOSS_SECRET_KEY]},app);
 
 exports.appleBillingApi=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[APPLE_IAP_PRIVATE_KEY]},appleApp);
+
+const sharedApp=express();
+sharedApp.use(express.json({limit:'2mb'}));
+sharedApp.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.set('Access-Control-Allow-Headers','Authorization, Content-Type');res.set('Access-Control-Allow-Methods','POST, OPTIONS');if(req.method==='OPTIONS')return res.status(204).end();next()});
+let sharedEngine;
+const sharedService=require('./shared-town').createSharedTownService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
+const relationService=require('./shared-relations').createService({db});
+Object.assign(sharedService,relationService);
+for(const action of ['advance','saveBuilding','publishCatalog','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
+  try{const identity=await signedInUser(req);res.json(await sharedService[action](identity.uid,req.body||{}))}
+  catch(error){const status=Number(error.status);res.status(status>=400&&status<600?status:503).json({message:error.status?error.message:'groups/server-error'})}
+});
+exports.sharedTownApi=onRequest({region:'asia-northeast3',timeoutSeconds:60,memory:'512MiB',maxInstances:4,concurrency:4},sharedApp);
+
+exports.relationshipNotification=require('./shared-notifications')({db});
