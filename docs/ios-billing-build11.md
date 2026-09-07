@@ -33,3 +33,7 @@ Apple SDK: https://github.com/apple/app-store-server-library-node
 StoreKit 네이티브 컴파일: Actions 34090035958에서 성공, 시뮬레이터 실행 단계 확인 중. Google 로그인 연결 변경은 후속 실행으로 검증한다.
 
 추가 검증 기록: StoreKit 실행 34090035958은 컴파일 성공 후 새 로그인 검증으로 전환하며 시뮬레이터 실행을 취소했다. 34090233673은 이전 로컬 미리보기 전용 검사 조건에서 실패했고, 실제 Firebase 로그인 빌드로 바뀐 요구에 맞춰 QA 조건을 수정했다. 최신 Mac 검사 34090475554 진행 중(9073ece). 전체 Mac 검사 성공이나 실제 로그인 성공으로 표기하지 않는다.
+
+2026-09-07 구매 검증 키 연결 작업: 사용자가 다운로드한 SubscriptionKey 파일의 P-256 형식을 비밀값 출력 없이 확인했다. 제공된 Issuer ID와 함께 Apple Sandbox API를 호출하여 거래 없음(HTTP404/4040010) 응답 확인. Secret Manager APPLE_IAP_PRIVATE_KEY 버전1 저장 완료. Apple 전용 함수만 Sandbox로 배포 요청 중이며 Google Play/Toss API는 배포하지 않았다. 테스트 지급은 사용자 쓰기 가능한 users 필드가 아닌 서버 전용 appleSandboxAccounts 컬렉션으로 분리했다. 실제 거래/과금/운영 지급 확인은 아직 아니다.
+
+Sandbox 서버 배포 완료: appleBillingApi(asia-northeast3). 최초 로컬 탐색 10초 제한 실패 후 FUNCTIONS_DISCOVERY_TIMEOUT=60으로 재시도하여 생성 완료. 비로그인 prepare/verify 모두 HTTP401 및 지급 false, 위조 notification 비정상서명 거부 확인. 운영 결제/실제 상품 구매/지급·복원 테스트 완료를 뜻하지 않는다. Google Play/Toss API와 Firestore 규칙은 배포하지 않았다. 키 파일 내용과 로컬 환경설정은 Git에 포함하지 않았다.

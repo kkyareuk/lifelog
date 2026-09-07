@@ -37,3 +37,7 @@ ios/build/
 *.p12
 *.mobileprovision
 AuthKey_*.p8
+
+# Local deployment configuration and CLI diagnostics
+functions/.env*
+firebase-debug*.log

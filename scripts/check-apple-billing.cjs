@@ -20,8 +20,8 @@ try{
 const url='http://127.0.0.1:'+server.address().port+'/apple-billing/';const post=(path,body={},auth='ok')=>fetch(url+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth},body:JSON.stringify(body)});
 assert.equal((await post('prepare',{},'bad')).status,401);
 assert.equal((await (await post('prepare')).json()).appAccountToken,accountToken(uid));
-await Promise.all(Array.from({length:8},()=>post('verify',{transactionId:'123'})));assert.equal(rows.get('users/buyer').appleSandboxEntitlements.characterSlotPacks,1);assert.equal(rows.get('users/buyer').entitlements,undefined);
-revoked=true;await post('notifications',{signedPayload:'signed'});await post('notifications',{signedPayload:'signed'});assert.equal(rows.get('users/buyer').appleSandboxEntitlements.characterSlotPacks,0);assert.equal((await post('verify',{transactionId:'123'})).status,409);
+await Promise.all(Array.from({length:8},()=>post('verify',{transactionId:'123'})));assert.equal(rows.get('appleSandboxAccounts/buyer').appleSandboxEntitlements.characterSlotPacks,1);assert.equal(rows.get('appleSandboxAccounts/buyer').entitlements,undefined);
+revoked=true;await post('notifications',{signedPayload:'signed'});await post('notifications',{signedPayload:'signed'});assert.equal(rows.get('appleSandboxAccounts/buyer').appleSandboxEntitlements.characterSlotPacks,0);assert.equal((await post('verify',{transactionId:'123'})).status,409);
 }finally{server.close()}
 let buy=0,finish=0,verified=true,loggedIn=true,cancel=false;
 const bridge={getProducts:async()=>({products:[{productId:purchase.productId,formattedPrice:'₩1,200',regularPaidOffer:true}]}),purchase:async()=>{buy++;if(cancel)throw {code:'PURCHASE_CANCELLED'};return {transactionId:'123'}},finishPurchase:async()=>finish++,restorePurchases:async()=>({purchases:[{transactionId:'123'}]}),addListener:()=>{}};

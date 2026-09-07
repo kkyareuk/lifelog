@@ -37,7 +37,7 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
   // Query Apple's current signed state, never trust a client-decoded receipt.
   const result=await service.api.getTransactionInfo(id);const purchase=await service.verifier.verifyAndDecodeTransaction(result.signedTransactionInfo);
   const {productId,quantity}=validatePurchase(purchase,identity.uid,service.environment,id);
-  const ref=db.collection('applePurchases').doc(service.environment+'-'+id),userRef=db.collection('users').doc(identity.uid);
+  const ref=db.collection('applePurchases').doc(service.environment+'-'+id),userRef=db.collection(service.environment===Environment.SANDBOX?'appleSandboxAccounts':'users').doc(identity.uid);
   const field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';let alreadyApplied=false;
   await db.runTransaction(async tx=>{
    const [receipt,user]=await Promise.all([tx.get(ref),tx.get(userRef)]);
@@ -57,7 +57,7 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
   await db.runTransaction(async tx=>{
    const receipt=await tx.get(ref),saved=receipt.data();if(saved?.revoked)return;
    if(saved?.uid){
-    const userRef=db.collection('users').doc(saved.uid),user=await tx.get(userRef),field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';
+    const userRef=db.collection(service.environment===Environment.SANDBOX?'appleSandboxAccounts':'users').doc(saved.uid),user=await tx.get(userRef),field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';
     const ent={...(user.data()?.[field]||{})},key={character_slots_5:'characterSlotPacks',town_slot_1:'townSlotPacks',green_tea:'teaSupportCount'}[saved.productId];
     if(key)ent[key]=Math.max(0,(Number(ent[key])||0)-saved.quantity);
     tx.set(userRef,{[field]:ent,updatedAt:serverTimestamp()},{merge:true});
