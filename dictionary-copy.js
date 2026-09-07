@@ -1,4 +1,8 @@
 const copy=[
+ ["저장하지 못했어요. 입력 내용은 앱을 닫기 전까지 유지돼요.","Could not save. Your edits are kept until the app is closed.","保存できませんでした。アプリを閉じるまでは入力内容を保持します。"],
+ ["저장하지 못했어요.","Could not save.","保存できませんでした。"],
+ ["입력 내용을 임시로 남겨 두고 목록으로 돌아갈까요? 앱을 종료하면 저장되지 않은 내용은 사라질 수 있어요.","Keep a temporary draft and return to the list? Unsaved edits may be lost when the app closes.","入力を一時的に保持して一覧に戻りますか？アプリを終了すると未保存の内容が失われる場合があります。"],
+ ["계속 수정","Keep editing","編集を続ける"],["목록으로 돌아가기","Back to list","一覧に戻る"],
  ['애니메이션 위치','Animation placement','アニメーションの配置'],
  ['같은 방향을 고른 인물이 여러 명이면 그 안에서는 기존 순서를 유지해요.','If multiple characters choose the same side, their existing order is kept within that side.','同じ側を選んだキャラクターが複数いる場合、その中では元の順番を保ちます。'],
  ['현재 기분','Current mood','今の気分'],

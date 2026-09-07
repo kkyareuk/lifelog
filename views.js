@@ -1,24 +1,24 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907hotfix255";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260907hotfix255";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907hotfix255";
-import {characterMood} from "./character-mood.js?v=20260907hotfix255";
-import {createContactMailbox} from "./notification-mail.js?v=20260907hotfix255";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260907hotfix255";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups} from "./simulation.js?v=20260907hotfix255";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907hotfix255";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907hotfix255";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907hotfix255";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907hotfix255";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907hotfix255";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907hotfix255";
-import {achievementRows} from "./achievements.js?v=20260907hotfix255";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907hotfix255";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260907hotfix255";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907hotfix255";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907hotfix255";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907hotfix259";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260907hotfix259";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907hotfix259";
+import {characterMood} from "./character-mood.js?v=20260907hotfix259";
+import {createContactMailbox} from "./notification-mail.js?v=20260907hotfix259";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260907hotfix259";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907hotfix259";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907hotfix259";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907hotfix259";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907hotfix259";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907hotfix259";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907hotfix259";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907hotfix259";
+import {achievementRows} from "./achievements.js?v=20260907hotfix259";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907hotfix259";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260907hotfix259";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907hotfix259";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907hotfix259";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -668,11 +668,12 @@ const fallbackEvent=c=>{
 const renderEventCache=new Map(),renderTimelineCache=new Map();
 const cacheSetBounded=(cache,key,value)=>{
   cache.set(key,value);
-  if(cache.size>160)cache.delete(cache.keys().next().value);
+  while(cache.size>Math.max(160,state.order.length*2))cache.delete(cache.keys().next().value);
   return value;
 };
 const renderSceneCacheKey=(c,date)=>`${c?.id||""}:${Number(c?.timelineResetAt||0)}:${Number(state.lastSaved||0)}:${state.uiLanguage}:${date.getFullYear()}-${date.getMonth()}-${date.getDate()}:${date.getHours()}:${date.getMinutes()}`;
-const eventFor=(c,date=new Date())=>{
+let renderSceneDate=null;
+const eventFor=(c,date=renderSceneDate||new Date())=>{
   const key=renderSceneCacheKey(c,date);
   if(renderEventCache.has(key))return renderEventCache.get(key);
   try{return cacheSetBounded(renderEventCache,key,simulateEventFor(c,date)||fallbackEvent(c))}
@@ -684,7 +685,7 @@ const eventFor=(c,date=new Date())=>{
 // Town cards share the render cache instead of running the simulator once per
 // character for every building on the map.
 const charactersAtPlace=(id,townId=state.activeTownId)=>state.order.map(key=>state.characters[key]).filter(Boolean).filter(character=>{const scene=eventFor(character);return scene.placeId===id&&scene.townId===townId});
-const visibleTimeline=(c,date=new Date())=>{
+const visibleTimeline=(c,date=renderSceneDate||new Date())=>{
   const key=renderSceneCacheKey(c,date);
   if(renderTimelineCache.has(key))return renderTimelineCache.get(key);
   try{const entries=simulateVisibleTimeline(c,date),value=Array.isArray(entries)?entries:[];return cacheSetBounded(renderTimelineCache,key,value)}
@@ -4510,6 +4511,10 @@ function view(){
   return ({observe,mailbox,home,character,catalog,relationship,routine,statistics,town:townMobile,shop,settings}[state.activeTab]||observe)();
 }
 export function renderApp(next){
+  const previous=renderSceneDate;renderSceneDate=new Date();
+  try{return withSimulationBatch(()=>renderAppContents(next))}finally{renderSceneDate=previous}
+}
+function renderAppContents(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];
   let content;
   try{content=view()}
