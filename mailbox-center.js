@@ -1,6 +1,6 @@
-import {state,save,recordCharacterInteraction} from './state.js?v=20260907dev270';
-import {proposalSettings} from './groups.js?v=20260907dev270';
-import {buildSharedWorld} from './shared-world.js?v=20260907dev270';
+import {state,save,recordCharacterInteraction} from './state.js?v=20260908dev271';
+import {proposalSettings} from './groups.js?v=20260908dev271';
+import {buildSharedWorld} from './shared-world.js?v=20260908dev271';
 export const mt=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let folder='inbox',page=0,showCharacterLetters=false;

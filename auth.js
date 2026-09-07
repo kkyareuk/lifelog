@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260907dev270';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev270";
+import {sharedProfile} from './shared-world.js?v=20260908dev271';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev271";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev270";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev271";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -813,7 +813,9 @@ const emitGroupState=()=>{if(groupEmitTimer)return;groupEmitTimer=setTimeout(()=
     :Object.assign(new Event("drawer-village-groups"),{detail:groupState});
   window.dispatchEvent(event);
 },50);};
+let groupSubscriptionKey="";
 const stopGroupSubscriptions=()=>{
+  groupSubscriptionKey="";
   groupUnsubscribers.forEach(unsubscribe=>{try{unsubscribe()}catch{}});
   groupUnsubscribers=[];
 };
@@ -868,6 +870,8 @@ async function migrateLegacyGroup(group){
 }
 
 function watchActiveGroup(groupId){
+  const subscriptionKey=user&&groupId?`${user.uid}:${groupId}`:"";
+  if(subscriptionKey&&subscriptionKey===groupSubscriptionKey&&groupUnsubscribers.length&&!groupState.error){emitGroupState();return}
   stopGroupSubscriptions();
   const nextGroupId=String(groupId||""),remembered=readGroupContext(),sameGroup=groupState.activeGroupId===nextGroupId;
   const selectedTownId=sameGroup?groupState.selectedTownId:remembered.groupId===nextGroupId?remembered.townId:"";
@@ -875,6 +879,7 @@ function watchActiveGroup(groupId){
   groupState={...groupState,activeGroupId:nextGroupId,group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],selectedTownId,selectedResidentId,visitingHomeId:""};
   writeGroupContext({groupId:nextGroupId,townId:selectedTownId,residentId:selectedResidentId});
   if(!groupId||!user){emitGroupState();return}
+  groupSubscriptionKey=subscriptionKey;
   const refs=groupRefs(groupId);
   const listen=(reference,key,mapSnapshot)=>onSnapshot(reference,snapshot=>{
     const value=mapSnapshot
@@ -911,7 +916,7 @@ function setGroupDetailActive(active){
   const next=Boolean(active);
   if(groupDetailActive===next)return;
   groupDetailActive=next;
-  if(groupState.activeGroupId&&user)watchActiveGroup(groupState.activeGroupId);
+  // Detail visibility does not change the selected group or its subscriptions.
 }
 
 async function refreshGroups({preferredId=""}={}){
@@ -1038,8 +1043,10 @@ async function sharedTownRequest(action,body={}){
 }
 async function advanceSharedLife(force=false){
   const gid=groupState.activeGroupId;if(!gid||!groupState.group||advancingShared||(!force&&Date.now()-(lastSharedAdvance.get(gid)||0)<60000))return;
+  // A different viewer already advanced this world. Keep its authoritative scene.
+  if(!force&&Date.now()-Number(groupState.group.lifeUpdatedAt||0)<60000)return;
   advancingShared=true;lastSharedAdvance.set(gid,Date.now());
-  try{return await sharedTownRequest('advance')}finally{advancingShared=false}
+  try{const result=await sharedTownRequest('advance');return result}catch(error){lastSharedAdvance.delete(gid);throw error}finally{advancingShared=false}
 }
 
 async function addGroupResident(characterId,townId=""){
@@ -1189,4 +1196,4 @@ window.ParallelCityAuth={
   getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,storageUsage,guideState})
 };
 
-setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home","groups"].includes(window.ParallelCity?.getState?.()?.activeTab))void advanceSharedLife().catch(()=>{})},60000);
+setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home","groups"].includes(window.ParallelCity?.getState?.()?.activeTab))void advanceSharedLife().catch(()=>{})},60000+Math.floor(Math.random()*8000));

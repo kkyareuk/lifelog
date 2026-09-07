@@ -13,3 +13,10 @@ console.log('PASS real profile save function uploads photo and updates member; f
 
 handlers.pushNotificationActionPerformed({notification:{data:{groupId:'g'}}});assert.equal(window.DrawerVillageGroupPush.pending,null);const selects=pushCalls.filter(x=>x==='select').length;events['drawer-village-auth-busy']();events['drawer-village-auth-busy']();assert.equal(pushCalls.filter(x=>x==='select').length,selects,'Auth refresh cannot replay an old notification navigation');
 console.log('PASS notification navigation is consumed once, never replayed during home editing');
+
+await new Promise(r=>setTimeout(r,20));assert.equal(pushCalls.filter(x=>x==='device').length,1,'Repeated auth events reuse successful device registration');
+console.log('PASS repeated auth events do not rewrite push device registration');
+
+window.ParallelCity={getState:()=>({uiLanguage:'ja'})};events['drawer-village-auth-busy']();await new Promise(r=>setTimeout(r,20));assert.equal(pushCalls.filter(x=>x==='device').length,2,'Language change updates device registration');
+window.DrawerVillageGroups.getSnapshot=()=>({activeGroupId:'g'});window.DrawerVillageGroups.refresh=()=>pushCalls.push('refresh');handlers.pushNotificationReceived({data:{groupId:'g'}});assert.equal(pushCalls.filter(x=>x==='refresh').length,0);handlers.pushNotificationReceived({data:{groupId:'other'}});assert.equal(pushCalls.filter(x=>x==='refresh').length,1);
+console.log('PASS language updates registration and live-group notifications avoid redundant group refresh');

@@ -1,7 +1,7 @@
-import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260907dev270';
-import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260907dev270';
-import {bindHomeEditorUI} from './home-editor-ui.js?v=20260907dev270';
-import {mt} from './mailbox-center.js?v=20260907dev270';
+import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260908dev271';
+import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260908dev271';
+import {bindHomeEditorUI} from './home-editor-ui.js?v=20260908dev271';
+import {mt} from './mailbox-center.js?v=20260908dev271';
 const queues=new Map();
 export function bindSharedHome(root,s,render,toast){
  const api=window.DrawerVillageGroups,selection=sharedSelection(s),world=buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;

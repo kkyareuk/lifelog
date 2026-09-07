@@ -23,8 +23,13 @@ function createSharedTownService({db,engine,clock=Date.now}){
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
         const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command?now:Math.floor(now/60000)*60000,input.command||null);
-        for(const life of lives)tx.update(ref.collection('residents').doc(life.id),{lifeJson:life.lifeJson,...(input.command?.characterId===life.id?{commandAt:now}:{})});
-        tx.update(ref,{lifeUpdatedAt:now});return {updated:true,count:lives.length};
+        const previous=new Map(residents.map(r=>[r.id,r.lifeJson]));let changedCount=0;
+        for(const life of lives){
+          const commanded=input.command?.characterId===life.id;
+          if(previous.get(life.id)===life.lifeJson&&!commanded)continue;
+          tx.update(ref.collection('residents').doc(life.id),{...(previous.get(life.id)!==life.lifeJson?{lifeJson:life.lifeJson}:{}),...(commanded?{commandAt:now}:{})});changedCount++;
+        }
+        tx.update(ref,{lifeUpdatedAt:now});return {updated:true,count:lives.length,changedCount};
       });
     },
     saveHomeLayout:async(uid,input)=>db.runTransaction(async tx=>{

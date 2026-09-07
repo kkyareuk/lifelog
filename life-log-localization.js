@@ -1,4 +1,4 @@
-import {drinkLogCopy} from "./drink-log.js?v=20260907dev270";
+import {drinkLogCopy} from "./drink-log.js?v=20260908dev271";
 const hangul=/[가-힣]/;
 const japanese=/[\u3040-\u30ff\u31f0-\u31ff]/;
 const latinWord=/[A-Za-z]{3,}/;
