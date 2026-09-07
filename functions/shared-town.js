@@ -42,6 +42,54 @@ function createSharedTownService({db,engine,clock=Date.now}){
       }
       tx.update(ref,{lifeUpdatedAt:0});return {saved:true};
     }),
+    saveHomePlacement:async(uid,input)=>db.runTransaction(async tx=>{
+      const {ref,group,member}=await context(tx,input.groupId,uid);
+      if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
+      const homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists)fail('home-missing',404);
+      const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
+      const home=snap.data(),patch=input.patch||{},numbers={mapX:[5,95],mapY:[5,95],mapScale:[.1,4],mapZ:[-100,1000]};
+      for(const [key,value] of Object.entries(patch)){
+        if(numbers[key]){const [lo,hi]=numbers[key];if(!Number.isFinite(value)||value<lo||value>hi)fail('invalid-home-value')}
+        else if(key==='mapFlipX'){if(typeof value!=='boolean')fail('invalid-home-value')}
+        else if(['name','buildingSubtype','exteriorStyle','reputation','atmosphere','beautyLevel','lightingMode','lightOnTime','lightOffTime','iconPreset','exteriorImage'].includes(key)){if(typeof value!=='string'||value.length>2000||/^(data:|blob:)/i.test(value))fail('invalid-home-value')}
+        else fail('invalid-home-field');
+      }
+      tx.update(homeRef,patch);tx.update(ref,{buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,home:{...home,...patch,id:input.id}};
+    }),
+    saveDecoration:async(uid,input)=>db.runTransaction(async tx=>{
+      const {ref,group,member}=await context(tx,input.groupId,uid);
+      if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
+      const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
+      const towns=structuredClone(group.towns||[]),town=towns.find(t=>t.id===input.townId);if(!town)fail('town-missing',404);
+      town.decorations??=[];const key=id(input.id),old=town.decorations.find(d=>d.id===key);
+      if(input.remove){town.decorations=town.decorations.filter(d=>d.id!==key)}
+      else {
+        if(!old&&town.decorations.length>=200)fail('decoration-limit',409);
+        const item={id:key,x:50,y:50,scale:1,...old},numbers={x:[5,95],y:[5,95],scale:[.1,4],mapZ:[-100,1000]};
+        for(const [field,value] of Object.entries(input.patch||{})){
+          if(numbers[field]){const [lo,hi]=numbers[field];if(!Number.isFinite(value)||value<lo||value>hi)fail('invalid-decoration');item[field]=value}
+          else if(field==='flipX'){if(typeof value!=='boolean')fail('invalid-decoration');item[field]=value}
+          else if(['kind','name','emoji'].includes(field)){if(typeof value!=='string'||value.length>100)fail('invalid-decoration');item[field]=value}
+          else fail('invalid-decoration-field');
+        }
+        if(old)Object.assign(old,item);else town.decorations.push(item);
+      }
+      tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
+    }),
+    saveTown:async(uid,input)=>db.runTransaction(async tx=>{
+      const {ref,group,member}=await context(tx,input.groupId,uid);
+      if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
+      const towns=structuredClone(group.towns||[]),town=towns.find(t=>t.id===input.townId);if(!town)fail('town-missing',404);
+      const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
+      const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','bg','travelAllowed','transportModes'];
+      for(const [key,value] of Object.entries(input.patch||{})){
+        if(!fields.includes(key))fail('invalid-town-field');
+        if(key==='travelAllowed'){if(typeof value!=='boolean')fail('invalid-value');town[key]=value}
+        else if(key==='transportModes'){if(!Array.isArray(value)||value.length>20||value.some(v=>typeof v!=='string'||v.length>80))fail('invalid-value');town[key]=value}
+        else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}
+      }
+      tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
+    }),
     saveBuilding:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,group,member}=await context(tx,input.groupId,uid);
       if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
@@ -50,13 +98,24 @@ function createSharedTownService({db,engine,clock=Date.now}){
       town.places??=[];const key=id(input.id),old=town.places.find(p=>p.id===key);
       if(input.remove){if(!old)fail('building-missing',404);town.places=town.places.filter(p=>p.id!==key)}
       else{
-        const name=String(input.name||'').trim().slice(0,60);if(!name)fail('name-required');
-        const types=['음식점','카페','공원','상점','병원','직장','학교','도서관'];if(!types.includes(input.type)&&input.type!==old?.type)fail('building-type-invalid');
+        const name=String(input.name||old?.name||'').trim().slice(0,60);if(!name)fail('name-required');
+        input.type??=old?.type;
+        const types=['음식점','카페','공원','상점','병원','직장','학교','도서관','공연장','옷가게','사무실','쇼핑몰','숙박','관공서','기타'];if(!types.includes(input.type)&&input.type!==old?.type)fail('building-type-invalid');
         if(!old&&town.places.length>=80)fail('building-limit',409);
-        const place={...old,id:key,name,type:input.type,x:Math.min(95,Math.max(5,Number(input.x)||50)),y:Math.min(95,Math.max(5,Number(input.y)||50)),stock:old?.stock||[]};
+        const place={...old,id:key,name,type:input.type,x:Math.min(95,Math.max(5,Number(input.x??old?.x)||50)),y:Math.min(95,Math.max(5,Number(input.y??old?.y)||50)),stock:old?.stock||[]};
+        const strings=['name','subtype','art','image','photo','description','open','close','audience','atmosphere','priceRange','reputation','fameLevel','lightingMode','lightOnTime','lightOffTime','iconPreset','interiorImage'];
+        const numbers={imageScale:[.1,4],zIndex:[-100,1000],mapZ:[-100,1000],capacity:[0,10000],spicy:[0,10],sweet:[0,10]};
+        for(const [field,value] of Object.entries(input.patch||{})){
+          if(strings.includes(field)){if(typeof value!=='string'||value.length>2000||/^(data:|blob:)/i.test(value))fail('invalid-building-value');place[field]=value}
+          else if(numbers[field]){const [lo,hi]=numbers[field];if(typeof value!=='number'||!Number.isFinite(value)||value<lo||value>hi)fail('invalid-building-value');place[field]=value}
+          else if(['stock','audiences'].includes(field)){if(!Array.isArray(value)||value.length>200||value.some(v=>typeof v!=='string'||v.length>180))fail('invalid-building-value');place[field]=value}
+          else if(field==='flipX'){if(typeof value!=='boolean')fail('invalid-building-value');place[field]=value}
+          else fail('invalid-building-field');
+        }
+        if(!place.name.trim())fail('name-required');
         if(old)Object.assign(old,place);else town.places.push(place);
       }
-      tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true};
+      tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
     })
   };
 }

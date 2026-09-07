@@ -1,6 +1,8 @@
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev266';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev267';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
+const selections=new Map();
+export function sharedSelection(snapshot){const key=snapshot.activeGroupId||snapshot.group?.id; if(!selections.has(key))selections.set(key,{});return selections.get(key)}
 export function sharedProfile(value){
   const blocked=new Set(['days','ownerUid','sharedScene','sharedContext','sourceCharacterId','revision','__proto__','prototype','constructor']);
   const clean=(v,depth=0)=>{
@@ -38,6 +40,10 @@ export function buildSharedWorld(snapshot,language='ko'){
 }
 export function withSharedWorld(snapshot,run){
   const world=buildSharedWorld(snapshot,state.uiLanguage);
+  const selection=sharedSelection(snapshot),uid=globalThis.window?.ParallelCityAuth?.getInfo?.()?.user?.uid;
+  world.characterViewSource=selection.source||world.order.find(id=>world.characters[id].ownerUid===uid)||world.order[0];
+  world.characterViewTarget=selection.target||world.order.find(id=>id!==world.characterViewSource);
+  world.activeTab=state.activeTab;
   for(const key of ['homeVisualMode','homeSdScale','homeLdScale','homeUiTheme','uiFont','uiScale'])world[key]=state[key];
   return runIsolatedWorld(world,()=>run(world));
 }

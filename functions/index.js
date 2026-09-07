@@ -314,7 +314,7 @@ let sharedEngine;
 const sharedService=require('./shared-town').createSharedTownService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
 const relationService=require('./shared-relations').createService({db});
 Object.assign(sharedService,relationService);
-for(const action of ['advance','saveBuilding','publishCatalog','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
+for(const action of ['advance','saveBuilding','saveTown','saveHomePlacement','saveDecoration','publishCatalog','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
   try{const identity=await signedInUser(req);res.json(await sharedService[action](identity.uid,req.body||{}))}
   catch(error){const status=Number(error.status);res.status(status>=400&&status<600?status:503).json({message:error.status?error.message:'groups/server-error'})}
 });

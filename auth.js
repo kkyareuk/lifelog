@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260907dev266';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev266";
+import {sharedProfile} from './shared-world.js?v=20260907dev267';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev267";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev266";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907dev267";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -1119,7 +1119,7 @@ async function leaveGroup(){
 window.DrawerVillageGroups={
   getSnapshot:groupSnapshot,refresh:refreshGroups,create:createGroup,join:joinGroup,
   publishCatalog:async()=>{const gid=groupState.activeGroupId,cloud=await sharedCloudState();if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:sharedProfile(cloud.catalog)})},
-  propose:input=>sharedTownRequest('propose',input),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command}),saveBuilding:input=>sharedTownRequest('saveBuilding',input),
+  propose:input=>sharedTownRequest('propose',input),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command}),saveBuilding:input=>sharedTownRequest('saveBuilding',input),saveTown:input=>sharedTownRequest('saveTown',input),saveHomePlacement:input=>sharedTownRequest('saveHomePlacement',input),saveDecoration:input=>sharedTownRequest('saveDecoration',input),
   setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||""),selectedResidentId:""};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:""});emitGroupState()},

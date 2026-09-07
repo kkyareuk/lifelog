@@ -56,8 +56,15 @@ function createService({db,clock=Date.now,engine}){
       const {root}=await membership(tx,input.groupId,uid);
       const [a,b]=await Promise.all([tx.get(root.collection('residents').doc(id(input.sourceId))),tx.get(root.collection('residents').doc(id(input.targetId)))]);
       owned(data(a),uid);if(!b.exists||a.id===b.id)fail('invalid-target');
+      const ref=root.collection('perceptions').doc(a.id+'~'+b.id),old=await tx.get(ref);
+      const fields=['overall','importance','trust','closeness','comfort','awareness','mutualAwareness','fear','annoyance','attention','jealousy','conflictIntensity','expectation','touchIntensity','aggression','aggressionAction'];
+      const field=input.field||'overall';if(!fields.includes(field))fail('invalid-view-field');
+      let view={};try{view=JSON.parse(old.data()?.viewJson||'{}')}catch{}
+      const value=bounded(input.value??input.overall,300);
+      if(field==='touchIntensity'&&value==='성인 간 친밀한 접촉까지'&&[a,b].some(r=>{try{return ['영아','유아','어린이','청소년'].includes(JSON.parse(r.data().profileJson||'{}').ageGroup)}catch{return true}}))fail('adult-characters-required');
+      if(input.reset)view={};else view[field]=value;
       tx.update(root,{lifeUpdatedAt:0});
-      tx.set(root.collection('perceptions').doc(a.id+'~'+b.id),{sourceId:a.id,targetId:b.id,viewJson:JSON.stringify({overall:bounded(input.overall,300)}),updatedAt:clock()});return {saved:true};
+      tx.set(ref,{sourceId:a.id,targetId:b.id,viewJson:JSON.stringify(view),updatedAt:clock()});return {saved:true};
     });
   }
   async function registerDevice(uid,input){
