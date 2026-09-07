@@ -1,8 +1,23 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260907hotfix259";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907hotfix259";
-import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907hotfix259";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260907hotfix259";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907hotfix259";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907hotfix264";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907hotfix264";
+import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907hotfix264";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907hotfix264";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907hotfix264";
+
+
+// A failed resident must never prevent other residents or navigation from updating.
+// Keep recovery scenes in memory: they are not historical life events.
+const sceneFailures=new WeakMap();
+function sceneFailure(c,date,error){
+  const previous=c&&sceneFailures.get(c);
+  if(c&&(!previous||Date.now()-previous.at>60000)){
+    sceneFailures.set(c,{at:Date.now()});
+    console.warn('[life-scene] resident calculation failed',error);
+  }
+  const copy={ko:['생활 장면을 표시하지 못했어요','캐릭터 설정과 기존 로그는 보존되어 있어요. 설정을 확인하거나 다른 캐릭터·마을로 이동할 수 있어요.','확인 필요'],en:['This life scene could not be displayed','Character settings and existing logs are preserved. You can check settings or switch to another character or town.','Check needed'],ja:['生活シーンを表示できませんでした','キャラクター設定と既存のログは保存されています。設定を確認したり、別のキャラクターや町に移動できます。','確認が必要']}[state.uiLanguage]||['생활 장면을 표시하지 못했어요','캐릭터 설정과 기존 로그는 보존되어 있어요. 설정을 확인하거나 다른 캐릭터·마을로 이동할 수 있어요.','확인 필요'];
+  return {minute:nowMin(date),title:copy[0],desc:copy[1],mood:copy[2],home:true,room:usableSleepRoom(c?.sleepRoomId)||Object.keys(state.homes?.[c?.homeId]?.rooms||{})[0]||'living',townId:c?.townId||state.activeTownId,sceneUnavailable:true};
+}
+const settingList=value=>Array.isArray(value)?value:typeof value==='string'&&value?[value]:[];
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -694,7 +709,7 @@ function homeEntry(c,time,title="거실에서 쉬는 중",desc="거실 소파에
   return adaptAccessibilityWording(c,entry(time,title,desc,{home:true,room:resolvedRoom,...extra}));
 }
 const isHomeResident=(c,home)=>Boolean(c&&home&&(
-  c.homeId===home.id||(c.residences||[]).some(residence=>residence.homeId===home.id)
+  c.homeId===home.id||settingList(c.residences).some(residence=>residence.homeId===home.id)
 ));
 const ownsRoom=(c,home,room)=>Boolean(c&&room&&(
   (room.ownerMode==="all"&&isHomeResident(c,home))||(room.ownerCharacterIds||[]).includes(c.id)
@@ -712,7 +727,7 @@ export function roomAllowsCharacter(c,home,room){
 export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new Date()){
   const rooms=home?.rooms||{},ordered=Object.entries(rooms).sort((a,b)=>(Number(a[1]?.order)||0)-(Number(b[1]?.order)||0));
   if(!ordered.length)return"";
-  const residence=(c.residences||[]).find(value=>value.homeId===home.id);
+  const residence=settingList(c.residences).find(value=>value.homeId===home.id);
   const sleeping=/침실|잠드는|잠에서|잠자리에|자는 중/.test(`${item.title||""} ${item.desc||""}`)||requestedRoom==="bedroom"||requestedRoom===usableSleepRoom(c.sleepRoomId);
   const preferredSleepRoom=sleeping?(usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)):"";
   if(preferredSleepRoom&&rooms[preferredSleepRoom]&&roomAllowsCharacter(c,home,rooms[preferredSleepRoom]))return preferredSleepRoom;
@@ -959,7 +974,7 @@ function appearanceCareEvent(c,time,date){
 }
 
 function morningScripts(c,date){
-  const likes=[...(c.hobbies||[]),...(c.interests||[])],seed=`${c.id}:${dayKey(date)}:morning`;
+  const likes=[...settingList(c.hobbies),...settingList(c.interests)],seed=`${c.id}:${dayKey(date)}:morning`;
   const storyGenres=c.favoriteStoryGenres||[];
   const videoTypes=c.favoriteVideoGenres||[];
   const choices=[];
@@ -1160,7 +1175,7 @@ function socialEvent(c,time,date){
     if(types.some(type=>["연인","부부","짝사랑","유사 연인"].includes(type)))pick=null;
   }
   const pair=pick?[c.id,pick.other.id].sort().join(":"):c.id;
-  const socialTypes=/산책|운동|등산|자전거/.test((c.hobbies||[]).join(" "))||hash(`${pair}:${dayKey(date)}:park-interest`)%4===0
+  const socialTypes=/산책|운동|등산|자전거/.test(settingList(c.hobbies).join(" "))||hash(`${pair}:${dayKey(date)}:park-interest`)%4===0
     ?["카페","음식점","공원","영화관","도서관","쇼핑몰","공연장"]
     :["카페","음식점","영화관","도서관","쇼핑몰","공연장"];
   const p=placeFor(socialTypes,`${pair}:${dayKey(date)}:${Math.floor(time/180)}:social-place`,c);
@@ -1448,17 +1463,17 @@ function relationshipHomeEntry(c,pick,time,date){
   const hasPartner=relationList().some(relation=>relation.temporalStatus!=="past"&&["연인","부부"].includes(relation.type)&&(relation.a===c.id||relation.b===c.id));
   const openness=c.relationshipOpenness||"설정하지 않음 · 절대 끌리지 않음";
   const opennessAllows=openness==="연인이 있어도 취향이면 끌릴 수 있음"||(!hasPartner&&openness==="연인이 없을 때만 취향이면 끌림");
-  const attractionAllowed=opennessAllows&&!(c.attractedGenders||[]).includes("없음")&&(c.attractedGenders||[]).includes(other.gender);
+  const attractionAllowed=opennessAllows&&!settingList(c.attractedGenders).includes("없음")&&settingList(c.attractedGenders).includes(other.gender);
   const otherTraits=[...(other.appearanceTags||[]),...(other.bodyProfile?.physicalTraits||[]),...appearanceTraitTags(other),other.bodyProfile?.bodySize,other.job,other.jobTitle,other.wealth,/의사|변호사|교수|연구|회계사|건축|약사|간호사|전문/.test(`${other.job||""} ${other.jobTitle||""}`)?"전문직":"",/예술|화가|작가|음악|배우|디자이너/.test(`${other.job||""} ${other.jobTitle||""}`)?"예술가 기질":"",/교사|군인|경찰|소방|승무원/.test(`${other.job||""} ${other.jobTitle||""}`)?"제복이 어울림":""].filter(Boolean);
-  const matchedLooks=(c.attractionTraits||[]).filter(tag=>otherTraits.includes(tag));
-  const dislikedLooks=(c.dislikedAttractionTraits||[]).filter(tag=>otherTraits.includes(tag));
+  const matchedLooks=settingList(c.attractionTraits).filter(tag=>otherTraits.includes(tag));
+  const dislikedLooks=settingList(c.dislikedAttractionTraits).filter(tag=>otherTraits.includes(tag));
   const noticesLooks=/꽤 중요하게 봄|외모에 크게 끌림/.test(c.appearanceInterest||"");
   const visuallyDrawn=attractionAllowed&&noticesLooks&&!dislikedLooks.length&&(matchedLooks.length||/매력적임|매우 아름답거나 잘생김|시선을 사로잡음/.test(other.appearanceLevel||""));
   const otherEyes=eyeLookPhrase(other),otherHair=hairLookPhrase(other),selfHair=hairLookPhrase(c);
   const otherAnnoyed=/종종 귀찮|많이 귀찮|보기만 해도 피곤|자주 성가|부담/.test(otherView.annoyance||"");
   const reactsAngrily=/바로 따짐|끝까지 결론/.test(c.conflictStyle||"")&&/쉽게 욱함|거의 참지 않음/.test(c.impulseControl||"");
   const playfulSafe=safePlayfulPair(c,other,r);
-  const personalityText=[...(c.personalityTypes||[]),c.socialStyle,c.decisionStyle,c.emotionalExpression].filter(Boolean).join(" ");
+  const personalityText=[...settingList(c.personalityTypes),c.socialStyle,c.decisionStyle,c.emotionalExpression].filter(Boolean).join(" ");
   const kindAndExtroverted=/다정|친절|배려|세심|온화|공감/.test(personalityText)&&/외향|사교|활발|먼저 다가|무리의 중심/.test(personalityText);
   const appearanceApproachSafe=!hating&&!uncomfortable&&!distrust&&!distant&&!highConflict;
   const hairTeasingConflict=!!selfHair&&highConflict&&otherAnnoyed&&reactsAngrily&&playfulSafe;
@@ -1908,7 +1923,7 @@ const mealActivityAllowed=(c,text,minute,date)=>{
   return /야식|late-night snack|夜食/i.test(value)&&nightSnackAllowed(c,date,clockMinute);
 };
 const homeActivityPoolFor=(c,date=new Date(),minute=nowMin(date))=>{
-  const hobbies=[...(c.hobbies||[]),...(c.interests||[])].map(String);
+  const hobbies=[...settingList(c.hobbies),...settingList(c.interests)].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
   const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL,...localizedHomeActivities()].filter(([title,description])=>{
     if(!mealActivityAllowed(c,`${title} ${description}`,minute,date))return false;
@@ -1916,10 +1931,10 @@ const homeActivityPoolFor=(c,date=new Date(),minute=nowMin(date))=>{
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
     if(title.includes("기초 화장품을 바르는"))return appearanceProfile(c).makeupLevel!=="하지 않음";
     if(title.includes("손톱을 정돈하는")){
-      const reservedMasculine=String(c.gender)==="남성"&&(c.personalityTypes||[]).some(type=>["냉정하고 논리적","완고하고 통제적","무심하고 독립적"].includes(type));
+      const reservedMasculine=String(c.gender)==="남성"&&settingList(c.personalityTypes).some(type=>["냉정하고 논리적","완고하고 통제적","무심하고 독립적"].includes(type));
       return !reservedMasculine;
     }
-    if(title.includes("잃어버린 물건")&&((c.personalityTypes||[]).includes("철두철미함")||["계획적","강박적으로 계획함"].includes(c.planningStyle)||["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness)))return false;
+    if(title.includes("잃어버린 물건")&&(settingList(c.personalityTypes).includes("철두철미함")||["계획적","강박적으로 계획함"].includes(c.planningStyle)||["흐트러짐을 못 참음","결벽에 가까움"].includes(c.neatness)))return false;
     if(title.includes("춤추는"))return hobbies.some(value=>/춤|댄스/.test(value));
     if(title.includes("악기를"))return hobbies.some(value=>/악기|기타|피아노|드럼|바이올린|연주/.test(value));
     if(title.includes("그림을 그리는"))return hobbies.some(value=>/그림|드로잉|스케치|회화|미술|일러스트/.test(value));
@@ -2213,7 +2228,7 @@ function contextualDailyEvent(c,time,date){
     ["갑자기 생각난 일을 시작한 중","원래 하려던 일을 잠시 미뤄 두고 지금 가장 마음이 가는 일에 손을 뻗었어요.","living"]);
   if(/계획적|강박적으로 계획함/.test(c.planningStyle||""))pool.push(
     ["남은 시간을 다시 배분하는 중","예상보다 늦어진 일을 확인하고 쉬는 시간까지 포함해 오늘 계획을 촘촘하게 다시 맞추고 있어요.","study"]);
-  (c.personalityTypes||[]).forEach(type=>pool.push(...(PERSONALITY_DAILY_SCENES[type]||[])));
+  settingList(c.personalityTypes).forEach(type=>pool.push(...(PERSONALITY_DAILY_SCENES[type]||[])));
   if(c.interference==="통제광"||c.interference==="강하게 간섭함")pool.push(...PERSONALITY_DAILY_SCENES["완고하고 통제적"]);
   (c.bodyProfile?.physicalTraits||[]).forEach(trait=>{
     const scene=BODY_DETAIL_DAILY_SCENES[trait];
@@ -2240,7 +2255,7 @@ function contextualDailyEvent(c,time,date){
     [/같은 자리|같은 식기|독특함|한입 크기/,local("익숙한 자리와 식기를 고르는 중","Choosing a familiar seat and utensils","慣れた席と食器を選ぶところ"),local("늘 편하게 느끼는 자리와 식기를 골라 한입씩 자기 방식대로 준비했어요.","They chose the seat and utensils that felt familiar and prepared each bite in their own way.","いつも落ち着く席と食器を選び、一口ずつ自分のやり方で整えました。"),"kitchen"],
     [/깨끗이 비움|조금 남김|맨 마지막|맨 먼저|섞지 않고|번갈아/,local("정해 둔 순서대로 접시를 비우는 중","Eating through the plate in a set order","決めた順番で皿を食べ進めるところ"),local("좋아하는 것과 남길 양을 미리 정한 듯 익숙한 순서로 접시를 정리해 갔어요.","As if the favorites and leftovers were already decided, they worked through the plate in a familiar order.","好きな物と残す量を決めていたように、慣れた順番で皿を食べ進めました。"),"kitchen"]
   ];
-  (c.dailyHabits||[]).forEach(habit=>{const scene=dailyHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
+  settingList(c.dailyHabits).forEach(habit=>{const scene=dailyHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
   const behaviorHabitScenes=[
     [/머리카락|손톱|입술|펜을 돌|주먹|입을 가림|몸이 먼저 굳|팔짱|기대어/,local("무심코 익숙한 몸짓을 하는 중","Falling into a familiar gesture","無意識にいつもの仕草をするところ"),local("생각에 잠긴 사이 몸이 먼저 익숙한 습관을 반복하다가 천천히 다음 행동으로 옮겨 갔어요.","While lost in thought, their body repeated a familiar habit before easing into the next task.","考え込む間に体がいつもの癖を繰り返し、ゆっくり次の行動へ移りました。"),"living"],
     [/말끝|감탄사|별명|존댓말|답장|연락|통화|농담/,local("익숙한 방식으로 연락을 이어 가는 중","Communicating in their usual way","いつものやり方で連絡するところ"),local("상대와 상황을 살피면서도 평소의 말버릇과 연락 방식이 자연스럽게 드러났어요.","Their usual wording and communication rhythm showed naturally as they considered the person and situation.","相手と状況を見ながら、普段の口癖と連絡の取り方が自然に表れました。"),"study"],
@@ -2248,8 +2263,8 @@ function contextualDailyEvent(c,time,date){
     [/몰아서|스포일러|운동|수집|버리지|일기|사진으로|메모/,local("좋아하는 방식으로 여가를 기록하는 중","Enjoying and recording free time their way","自分らしく余暇を楽しみ記録するところ"),local("자기에게 편한 속도로 취미를 이어 가며 남기고 싶은 장면만 골라 기록했어요.","They enjoyed the hobby at a comfortable pace and recorded only the moments they wanted to keep.","自分に合う速さで趣味を続け、残したい場面だけを記録しました。"),"study"],
     [/눈인사|손을 흔들|선물|거리|스킨십|비 오는|따뜻한 음료|동물|식물|새벽/,local("상황에 맞는 익숙한 반응을 보이는 중","Responding with a familiar situational habit","状況に応じたいつもの反応をするところ"),local("주변과 상대를 확인한 뒤 평소 편하게 느끼는 방식으로 반응했어요.","After checking the surroundings and the other person, they responded in the way that felt most natural.","周囲と相手を確かめ、普段いちばん自然に感じる方法で反応しました。"),"living"]
   ];
-  (c.behaviorHabits||[]).forEach(habit=>{const scene=behaviorHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
-  if((c.hobbies||[]).length)pool.push(
+  settingList(c.behaviorHabits).forEach(habit=>{const scene=behaviorHabitScenes.find(([pattern])=>pattern.test(habit));if(scene)pool.push(scene.slice(1));});
+  if(settingList(c.hobbies).length)pool.push(
     [`${c.hobbies[hash(`${c.id}:${dayKey(date)}:context-hobby`)%c.hobbies.length]}에 몰두하는 중`,"좋아하는 활동에 필요한 도구를 차분히 꺼내고 자기 방식대로 집중할 환경을 만들었어요.","study"]);
   if(!pool.length)pool.push(["잠깐 숨을 고르는 중","하던 일을 멈추고 물을 한 모금 마시며 다음에 무엇을 할지 천천히 생각하고 있어요.","living"]);
   const script=pool[hash(`${c.id}:${dayKey(date)}:contextual-daily`)%pool.length];
@@ -2473,17 +2488,17 @@ function profileSettingScenePool(c,date){
     "주변의 기분에 휩쓸리지 않게 호흡을 고르는 중","가까운 사람의 표정에 자기 기분까지 흔들린 것을 알아차리고, 상대의 감정과 자기 마음을 잠시 나누어 생각했어요.",
     "Separating their mood from someone else's","They noticed another person's expression shifting their own mood, breathed, and separated the other person's feelings from their own.",
     "周りの感情と自分の気持ちを分けるところ","近くの人の表情で自分の気分まで揺れたことに気づき、相手の感情と自分の気持ちを分けて考えました。","living",["emotionalContagion"]);
-  const catalogName=(kind,id)=>state.catalog?.[kind]?.find(item=>item.id===id)?.name||"";
-  const catalogSelections=selection=>Object.entries(selection||{}).flatMap(([kind,ids])=>(ids||[]).map(id=>catalogName(kind,id))).filter(Boolean);
+  const catalogName=(kind,id)=>settingList(state.catalog?.[kind]).find(item=>item?.id===id)?.name||"";
+  const catalogSelections=selection=>Object.entries(selection||{}).flatMap(([kind,ids])=>settingList(ids).map(id=>catalogName(kind,id))).filter(Boolean);
   const likedThings=[
-    ...(c.interests||[]).map(value=>({value,kind:"interest"})),
-    ...(c.hobbies||[]).map(value=>({value,kind:"hobby"})),
-    ...(c.foodPreferences||[]).map(value=>({value,kind:"food"})),
-    ...(c.musicGenres||[]).map(value=>({value,kind:"music"})),
-    ...(c.favoriteStoryGenres||[]).map(value=>({value,kind:"story"})),
+    ...settingList(c.interests).map(value=>({value,kind:"interest"})),
+    ...settingList(c.hobbies).map(value=>({value,kind:"hobby"})),
+    ...settingList(c.foodPreferences).map(value=>({value,kind:"food"})),
+    ...settingList(c.musicGenres).map(value=>({value,kind:"music"})),
+    ...settingList(c.favoriteStoryGenres).map(value=>({value,kind:"story"})),
     ...catalogSelections(c.favorites).map(value=>({value,kind:"catalog"}))
   ].filter(item=>item.value);
-  const dislikedThings=[...(c.dislikedFoodPreferences||[]),...(c.dislikedDrinks||[]),...(c.dislikedMusicGenres||[]),...(c.dislikedStoryGenres||[]),...(c.dislikedVideoGenres||[]),...(c.dislikedGameGenres||[]),...(c.dislikedScentNotes||[]),...(c.dislikedAnimals||[]),...(c.dislikedElectronics||[]),...(c.dislikedWeapons||[]),...(c.dislikedBooks||[]),...catalogSelections(c.dislikes)].filter(Boolean);
+  const dislikedThings=[...settingList(c.dislikedFoodPreferences),...settingList(c.dislikedDrinks),...settingList(c.dislikedMusicGenres),...settingList(c.dislikedStoryGenres),...settingList(c.dislikedVideoGenres),...settingList(c.dislikedGameGenres),...settingList(c.dislikedScentNotes),...settingList(c.dislikedAnimals),...settingList(c.dislikedElectronics),...settingList(c.dislikedWeapons),...settingList(c.dislikedBooks),...catalogSelections(c.dislikes)].filter(Boolean);
   const likedChoice=likedThings[hash(`${c.id}:${dayKey(date)}:liked-profile`)%Math.max(1,likedThings.length)],likedThing=likedChoice?.value;
   const dislikedThing=dislikedThings[hash(`${c.id}:${dayKey(date)}:disliked-profile`)%Math.max(1,dislikedThings.length)];
   if(likedThing){
@@ -2501,12 +2516,12 @@ function profileSettingScenePool(c,date){
     `${dislikedThing}을(를) 피할 방법을 찾는 중`,`싫어하는 ${dislikedThing}을(를) 억지로 참지 않고 다른 선택으로 바꿀 수 있는지 확인했어요. 당장 피할 수 없다면 머무는 시간을 줄이기로 했어요.`,
     `Finding a way around ${dislikedThing}`,`Rather than forcing themselves to endure something they dislike, they looked for an alternative and planned to limit the exposure if there was none.`,
     `苦手な${dislikedThing}を避ける方法を探すところ`,`嫌いな${dislikedThing}を無理に我慢せず、別の選択へ変えられるか確かめ、避けられなければ接する時間を短くしました。`,`living`,["dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedStoryGenres","dislikes"]);
-  const favoriteFood=(c.foodPreferences||[])[0]||(c.foodTypes||[])[0];
+  const favoriteFood=settingList(c.foodPreferences)[0]||settingList(c.foodTypes)[0];
   if(favoriteFood||Number.isFinite(Number(c.spiceTolerance))||Number.isFinite(Number(c.sweetPreference)))add("taste",
     "입맛에 맞게 간을 조절하는 중",`${favoriteFood?`${favoriteFood}을(를) 준비하며 `:""}한 입씩 맛을 보고 좋아하는 매운맛과 단맛이 될 때까지 양념을 조금씩 더했어요.`,
     "Adjusting the flavor to their taste",`${favoriteFood?`While preparing ${favoriteFood}, t`:"T"}hey tasted each addition and adjusted the seasoning until the heat and sweetness felt right.`,
     "好みに合わせて味を調整するところ",`${favoriteFood?`${favoriteFood}を用意しながら、`:""}少しずつ味見し、好みの辛さと甘さになるまで調味料を加えました。`,"kitchen",["foodPreferences","spiceTolerance","sweetPreference"]);
-  const music=(c.musicGenres||[])[0];
+  const music=settingList(c.musicGenres)[0];
   if(music)add("music",
     `${music}을(를) 골라 듣는 중`,`평소 자주 듣는 ${music} 재생 목록을 열고, 지금 기분에 맞는 곡부터 차례로 듣고 있어요.`,
     `Listening to ${music}`,`They opened a playlist from a favorite genre, ${music}, and chose a track that matched the moment.`,
@@ -2635,7 +2650,7 @@ function recordedInteractionEntries(c,date){
     if(action.type==="gift"){
       return giftEntryFor({...action,stamp:action.createdAt,interactionId:action.id},c,date);
     }
-    if(action.type==="exercise")return entry(minute,`${other?.name}와 함께 운동하는 중`,(c.hobbies||[]).includes("운동")?"익숙한 동작과 호흡을 맞추며 서로의 속도에 맞춰 즐겁게 몸을 움직이고 있어요.":"익숙하지 않은 동작은 조심스럽게 따라 하며 왜 이걸 즐기는지 조금씩 알아가고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원"],`${action.id}:exercise`,c,date)?.id,withId:other?.id,interactionId:action.id});
+    if(action.type==="exercise")return entry(minute,`${other?.name}와 함께 운동하는 중`,settingList(c.hobbies).includes("운동")?"익숙한 동작과 호흡을 맞추며 서로의 속도에 맞춰 즐겁게 몸을 움직이고 있어요.":"익숙하지 않은 동작은 조심스럽게 따라 하며 왜 이걸 즐기는지 조금씩 알아가고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원"],`${action.id}:exercise`,c,date)?.id,withId:other?.id,interactionId:action.id});
     return entry(minute,`${other?.name}와 함께 나들이하는 중`,"둘이 가고 싶던 장소를 골라 주변을 천천히 둘러보고 눈에 띄는 풍경 앞에서 이야기를 나누고 있어요.",{townId:townFor(c,date).id,placeId:placeFor(["공원","카페"],`${action.id}:outing`,c,date)?.id,withId:other?.id,interactionId:action.id});
   }).filter(Boolean);
 }
@@ -2741,7 +2756,7 @@ function build(c,date=new Date()){
   const partnerCars=romantic?(state.homes[homeIdForDate(romantic,date)]?.cars||[]).filter(car=>!car.ownerCharacterId||car.ownerCharacterId===romantic.id):[];
   const partnerCanDrive=canDrive(romantic)&&partnerCars.length&&activityTown(romantic,date)?.id===destination.id;
   const selfCanDrive=canDrive(c)&&homeCars.length;
-  const configuredCommuteModes=(c.commuteModes||[]).filter(mode=>mode!=="자차"||selfCanDrive);
+  const configuredCommuteModes=settingList(c.commuteModes).filter(mode=>mode!=="자차"||selfCanDrive);
   const commuteMode=configuredCommuteModes.length
     ?configuredCommuteModes[hash(`${c.id}:${dayKey(date)}:configured-commute`)%configuredCommuteModes.length]
     :selfCanDrive&&(hash(`${c.id}:${dayKey(date)}:commute-fallback`)%2===0)?"자차":"대중교통";
@@ -2975,7 +2990,7 @@ function signature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
   signatureCache.set(c,{character:c,revision,value});
   return value;
 }
@@ -3063,7 +3078,7 @@ function cleanShadowedBaseEntries(entries){
   return kept;
 }
 function cleanInvalidRoomAndHobbyEntries(c,entries){
-  const interests=[...(c.hobbies||[]),...(c.interests||[])].map(String);
+  const interests=[...settingList(c.hobbies),...settingList(c.interests)].map(String);
   const likesScent=interests.some(value=>/향수|향수 시향|조향|향기/.test(value));
   return entries.filter(item=>{
     if(item.title?.includes("침실에서 향을 고르는")&&!likesScent)return false;
@@ -3074,7 +3089,7 @@ function cleanInvalidRoomAndHobbyEntries(c,entries){
     if(!mealActivityAllowed(c,`${item.title||""} ${item.desc||""}`,Number(item.minute),new Date()))return false;
     return true;
   }).map(item=>{
-    const residence=(c.residences||[]).find(value=>value.homeId===(item.visitHomeId||c.homeId));
+    const residence=settingList(c.residences).find(value=>value.homeId===(item.visitHomeId||c.homeId));
     const sleepRoom=usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)||"bedroom";
     if(item.home&&item.title?.startsWith("침실에서")&&item.room!==sleepRoom){
       return {...item,room:sleepRoom};
@@ -3189,6 +3204,13 @@ function dateEntryBelongsTo(c,item){
 }
 
 export function timeline(c,date=new Date()){
+  try{return calculateTimeline(c,date)}catch(error){
+    sceneFailure(c,date,error);
+    const entries=c?.days?.[dayKey(date)]?.entries;
+    return Array.isArray(entries)?entries.filter(item=>item&&typeof item==='object'&&!Array.isArray(item)):[];
+  }
+}
+function calculateTimeline(c,date=new Date()){
   if(!c||typeof c!=="object")return[];
   const key=dayKey(date), sig=signature(c);
   if(!c.days||typeof c.days!=="object"||Array.isArray(c.days))c.days={};
@@ -3245,6 +3267,9 @@ export function visibleTimeline(c,date=new Date()){
 }
 
 export function nextSceneRefreshDelay(c,date=new Date()){
+  try{return calculateNextSceneRefreshDelay(c,date)}catch(error){sceneFailure(c,date,error);return 60000}
+}
+function calculateNextSceneRefreshDelay(c,date=new Date()){
   if(!c)return 10*60*1000;
   const n=nowMin(date),list=timeline(c,date).filter(item=>item&&dateEntryBelongsTo(c,item));
   const past=list.filter(item=>Number(item.minute)<=n),last=past.at(-1),candidates=[];
@@ -3562,6 +3587,9 @@ export function withSimulationBatch(run){
   try{return run()}finally{sceneBatch=null}
 }
 function baseEventFor(c,date=new Date()){
+  try{return cachedBaseEventFor(c,date)}catch(error){return sceneFailure(c,date,error)}
+}
+function cachedBaseEventFor(c,date=new Date()){
   if(!sceneBatch)return calculateBaseEvent(c,date);
   const day=c.days?.[dayKey(date)],cached=sceneBatch.get(c),time=date.getTime();
   if(cached&&cached.worldRevision===sceneBatch.revision&&cached.time===time&&cached.revision===c.timelineResetAt&&cached.day===day&&cached.entries===day?.entries&&cached.length===day?.entries?.length)return cached.value;
@@ -4876,10 +4904,11 @@ function companionAlignedBaseEvent(c,current,date){
   return {...current,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
 }
 export function eventFor(c,date=new Date()){
-  return withSimulationBatch(()=>calculateEventFor(c,date));
+  try{return withSimulationBatch(()=>calculateEventFor(c,date))}catch(error){return sceneFailure(c,date,error)}
 }
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);
+  if(rawCurrent.sceneUnavailable)return rawCurrent;
   if(rawCurrent.giftExchange){
     const other=state.characters[rawCurrent.withId];
     if(other){timeline(other,date);const counterpart=currentGiftFor(other,date);if(counterpart?.interactionId===rawCurrent.interactionId)commitLiveEntry(other,date,counterpart)}
@@ -4996,4 +5025,4 @@ function calculateEventFor(c,date){
   return localizeLifeLog({...current,coLocatedIds:coLocatedCharacterIds(c,current,date)},state.uiLanguage,state,c.id);
 }
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(Boolean).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}
-export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(!c)return;(c.residences||[]).forEach(item=>{if(state.homes[item.homeId])(out[item.homeId]??=[]).push(c)})});return out}
+export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(!c)return;settingList(c.residences).forEach(item=>{if(state.homes[item.homeId])(out[item.homeId]??=[]).push(c)})});return out}
