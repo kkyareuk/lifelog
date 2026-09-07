@@ -116,13 +116,21 @@ service cloud.firestore {
         allow update:
           if isGroupManager(groupId)
           && resource.data.uid == request.resource.data.uid
-          && (resource.data.role != 'owner' || isGroupOwner(groupId));
+          && (resource.data.role != 'owner' || isGroupOwner(groupId))
+          || (signedIn() && memberId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'photoURL'])
+            && request.resource.data.displayName is string
+            && request.resource.data.displayName.size() > 0
+            && request.resource.data.displayName.size() <= 20
+            && request.resource.data.photoURL is string
+            && request.resource.data.photoURL.size() <= 2000);
         allow delete:
           if signedIn()
           && (memberId == request.auth.uid || isGroupManager(groupId))
           && resource.data.role != 'owner';
       }
 
+      match /characterGroups/{id} { allow read: if hasGroupMembership(groupId); }
       match /relationships/{id} {
         allow read: if hasGroupMembership(groupId);
       }

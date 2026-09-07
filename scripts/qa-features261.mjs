@@ -53,7 +53,7 @@ try{
   await page.screenshot({path:resolve(output,"phone-body-summary-persisted.png"),fullPage:true});
 
   const checks=await page.evaluate(async()=>{
-    const game=await import('/state.js?v=20260907dev267'),transfer=await import('/settings-transfer.js?v=20260907dev267'),c=game.state.characters[game.state.activeId],home=game.state.homes[c.homeId];
+    const game=await import('/state.js?v=20260907dev268'),transfer=await import('/settings-transfer.js?v=20260907dev268'),c=game.state.characters[game.state.activeId],home=game.state.homes[c.homeId];
     home.floorCount=2;home.rooms.upstairs={...structuredClone(home.rooms.bedroom),name:'2층 침실',type:'bedroom',floor:2,ownerMode:'selected',ownerCharacterIds:[]};
     game.updateRoom(home.id,'upstairs',{ownerMode:'selected',ownerCharacterIds:[c.id]});
     const ownerToRoom=c.sleepRoomId==='upstairs'&&c.residences.find(r=>r.homeId===home.id).sleepRoomId==='upstairs';
@@ -72,8 +72,19 @@ try{
   await page.evaluate(()=>{location.hash='tab=catalog'});await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='catalog');
   try{await page.locator('dialog.page-guide[open] button[value=ok]').last().click({timeout:2000})}catch{}
   await page.screenshot({path:resolve(output,'dictionary-list.png'),fullPage:true});
-  const downloaded=page.waitForEvent('download');await page.locator('[data-settings-transfer="catalog-export"]').click();
+  const downloaded=page.waitForEvent('download');await page.locator('[data-settings-transfer="catalog-export"]').click();await page.locator('.catalog-selection-dialog button').nth(0).click();await page.locator('.catalog-selection-dialog button').last().click();
   const download=await downloaded;const downloadedFile=JSON.parse(await readFile(await download.path(),'utf8'));assert.equal(downloadedFile.catalog.flower.length,80);
+  await page.locator('[data-settings-transfer="catalog-export"]').click();
+  assert.equal(await page.locator('.catalog-selection-dialog button').last().isDisabled(),true);
+  await page.locator('.catalog-selection-dialog input[type=checkbox]').first().check();
+  const oneDownload=page.waitForEvent('download');await page.locator('.catalog-selection-dialog button').last().click();
+  const oneFile=JSON.parse(await readFile(await (await oneDownload).path(),'utf8'));
+  assert.equal(Object.values(oneFile.catalog).flat().length,1,'Only the selected item is exported');
+  const chooserPromise=page.waitForEvent('filechooser');await page.locator('[data-settings-transfer="catalog-import"]').click();
+  await (await chooserPromise).setFiles({name:'items.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify({format:'drawer-village-catalog',version:1,catalog:{misc:[{id:'qa-one',name:'선택한 물건'},{id:'qa-two',name:'선택하지 않은 물건'}]}}))});
+  await page.locator('.catalog-selection-dialog input[type=checkbox]').first().check();await page.locator('.catalog-selection-dialog button').last().click();
+  await page.waitForFunction(()=>window.ParallelCity.getState().catalog.misc.some(x=>x.importSourceId==='qa-one'));
+  assert.equal(await page.evaluate(()=>window.ParallelCity.getState().catalog.misc.some(x=>x.importSourceId==='qa-two')),false);
   const fullDownload=page.waitForEvent('download');await page.evaluate(()=>{const b=document.createElement('button');b.dataset.settingsTransfer='all-export';document.body.append(b);b.click();b.remove()});
   const backup=JSON.parse(await readFile(await (await fullDownload).path(),'utf8'));assert.equal(backup.format,'drawer-village-backup');assert.ok(Object.keys(backup.gameState.characters).length>=3);
   await page.locator('[data-dict-kind="drink"]').click();await page.locator('[data-dict-open]').first().click();
@@ -84,7 +95,7 @@ try{
     window.ParallelCityAuth={...window.ParallelCityAuth,getInfo:()=>({ready:true,user:{uid:'qa-owner'},entitlements:{townSlotPacks:4}})};
     const groups=Array.from({length:6},(_,i)=>({id:'qa-'+i,name:'함께 사는 마을 '+(i+1),ownerUid:i===0?'qa-owner':'friend',memberCount:i+2,towns:[{id:'town-'+i,name:'멀티 마을',previewImage:'./assets/multiplayer/reference-1.png'}]}));
     window.DrawerVillageGroups={getSnapshot:()=>({groups}),select:id=>window.selectedGroup=id,create:async()=>{},join:async()=>{}};
-    (await import('/groups.js?v=20260907dev267')).showMultiplayerList();location.hash='tab=groups';
+    (await import('/groups.js?v=20260907dev268')).showMultiplayerList();location.hash='tab=groups';
   });await page.waitForFunction(()=>!!document.querySelector('.directory-card'));
   try{await page.locator('dialog.page-guide[open] button[value=ok]').last().click({timeout:2000})}catch{}
   await page.setViewportSize({width:412,height:917});await page.waitForFunction(()=>[...document.querySelectorAll('.directory-portrait img')].every(i=>i.complete&&i.naturalWidth>0));await page.evaluate(async()=>{await Promise.all([...document.querySelectorAll('.directory-portrait img')].map(i=>i.decode()));await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))});await page.screenshot({path:resolve(output,'multiplayer-412.png'),fullPage:true});
@@ -98,5 +109,16 @@ try{
 
   assert.deepEqual(errors,[]);
   console.log("PASS 261: full-settings summary updates immediately and survives reload");
+  await page.evaluate(async()=>{const {state}=await import('/state.js?v=20260907dev268');const home=state.homes[state.characters[state.activeId].homeId];home.rooms={bedroom:{name:'침실',type:'bedroom',floor:1,size:'보통 방',furniture:['커플 침대'],furniturePlacements:[{id:'qa-side-bed',item:'커플 침대',x:50,y:50,rotation:0,scale:1,layer:1,props:[]}]}};home.activeFloor=1;state.activeHomeId=home.id;state.homeEditMode=true;state.activeTab='home';location.hash='tab=home';window.ParallelCity.mediaChanged()});
+  await page.locator('[data-home-edit]').click();
+  await page.locator('[data-furniture-placement="qa-side-bed"]').click();
+  await page.locator('[data-furniture-command="rotate"]').click();
+  assert.equal(await page.locator('[data-furniture-placement="qa-side-bed"]').getAttribute('data-bed-side'),'true');
+  assert.match(await page.locator('[data-furniture-placement="qa-side-bed"] .couple-bed-base').getAttribute('src'),/side-base.svg/);
+  console.log('PASS live furniture rotation immediately switches to supplied side artwork');
+  await page.evaluate(async()=>{window.ParallelCityAuth.savePublicProfile=async input=>{window.qaProfileInput=input.name;return {name:input.name,photoURL:''}};const p=await import('/user-profile.js?v=20260907dev268');p.openUserProfile()});
+  await page.locator('[data-user-profile-dialog] input[name=name]').fill('프로필 테스트');await page.locator('[data-user-profile-dialog] button[type=submit]').click();
+  await page.waitForFunction(()=>window.ParallelCity.getState().ownerName==='프로필 테스트');assert.equal(await page.evaluate(()=>window.qaProfileInput),'프로필 테스트');
+  console.log('PASS single-item export/import and profile editor save flow');
   await context.close();
 }finally{await browser.close();server.close()}

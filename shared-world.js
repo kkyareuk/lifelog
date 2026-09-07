@@ -1,4 +1,4 @@
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev267';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev268';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();
@@ -17,7 +17,7 @@ export function buildSharedWorld(snapshot,language='ko'){
   const base=emptyWorld(),group=snapshot.group||{},characters={},homes={},routines={},monthlyRoutines={},characterDirectives={},characterViews={};
   const towns=(group.towns||[]).map(t=>({...base.world,...t,places:t.places||[],decorations:t.decorations||[]}));
   const activeTownId=snapshot.selectedTownId||towns[0]?.id;
-  for(const item of snapshot.homes||[]){const layout=decodeShared(item.layoutJson);homes[item.id]={...layout,...item,rooms:layout.rooms||{},id:item.id}}
+  for(const item of snapshot.homes||[]){const layout=decodeShared(item.layoutJson),rooms=layout.rooms||{},floors=Object.values(rooms).map(r=>Number(r.floor)||1);homes[item.id]={...layout,...item,rooms,floorCount:Math.max(Number(layout.floorCount)||1,...floors),activeFloor:layout.activeFloor||Math.min(...floors,1),id:item.id}}
   for(const r of snapshot.residents||[]){
     const profile=decodeShared(r.profileJson),life=decodeShared(r.lifeJson),schedule=decodeShared(r.scheduleJson);
     const homeId=(snapshot.homes||[]).find(h=>h.ownerUid===r.ownerUid&&h.sourceHomeId===(r.sourceHomeId||profile.homeId))?.id||'';
@@ -33,14 +33,16 @@ export function buildSharedWorld(snapshot,language='ko'){
     for(const key of ['ownerCharacterIds','ownerIds','characterIds','allowedCharacterIds'])if(Array.isArray(room[key]))room[key]=room[key].map(id=>(snapshot.residents||[]).find(r=>r.ownerUid===h.ownerUid&&r.sourceCharacterId===id)?.id||id);
   }
   for(const p of snapshot.perceptions||[]){if(characters[p.sourceId]&&characters[p.targetId]){characterViews[p.sourceId]??={};characterViews[p.sourceId][p.targetId]=decodeShared(p.viewJson)}}
+  for(const h of Object.values(homes)){h.activeFloor=sharedSelection(snapshot).floors?.[h.id]||h.activeFloor||1}
   const activeId=snapshot.selectedResidentId&&characters[snapshot.selectedResidentId]?.townId===activeTownId?snapshot.selectedResidentId:Object.keys(characters).find(id=>characters[id].townId===activeTownId);
   return {...base,catalog:{...base.catalog,...Object.fromEntries((snapshot.catalog||[]).map(c=>[c.id,c.items||[]]))},relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:Object.keys(characters),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
-    characterDirectives,characterViews,activeHomeId:snapshot.visitingHomeId||characters[activeId]?.homeId||Object.keys(homes)[0],routines,monthlyRoutines,uiLanguage:language,
+    characterDirectives,characterViews,characterGroups:snapshot.characterGroups||[],activeHomeId:snapshot.visitingHomeId||characters[activeId]?.homeId||Object.keys(homes)[0],routines,monthlyRoutines,uiLanguage:language,
     sharedContext:{groupId:group.id||snapshot.activeGroupId},lastSaved:Number(group.lifeUpdatedAt)||0};
 }
 export function withSharedWorld(snapshot,run){
   const world=buildSharedWorld(snapshot,state.uiLanguage);
   const selection=sharedSelection(snapshot),uid=globalThis.window?.ParallelCityAuth?.getInfo?.()?.user?.uid;
+  if(snapshot.group?.rules?.allowHomeVisits===false)world.homes=Object.fromEntries(Object.entries(world.homes).filter(([,home])=>home.ownerUid===uid));
   world.characterViewSource=selection.source||world.order.find(id=>world.characters[id].ownerUid===uid)||world.order[0];
   world.characterViewTarget=selection.target||world.order.find(id=>id!==world.characterViewSource);
   world.activeTab=state.activeTab;

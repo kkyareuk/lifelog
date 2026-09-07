@@ -16,7 +16,9 @@ function createService({db,clock=Date.now,engine}){
   }
   const owned=(resident,uid)=>{if(!resident||resident.ownerUid!==uid)fail('character-owner-required',403)};
   const notify=(tx,uid,eventId,groupId,proposalId,kind)=>tx.set(db.collection('notificationOutbox').doc(eventId),{uid,groupId,proposalId,kind,createdAt:clock()});
+  const requests=require('./shared-relationship-requests')({db,membership,notify,clock,id});
   async function propose(uid,input){
+    if(input.patch)return requests.propose(uid,input);
     const gid=id(input.groupId),sourceId=id(input.sourceId),targetId=id(input.targetId),requestId=id(input.requestId);
     const type=bounded(input.type,80);if(!type||sourceId===targetId)fail('invalid-relationship');
     return db.runTransaction(async tx=>{
@@ -36,6 +38,7 @@ function createService({db,clock=Date.now,engine}){
     const gid=id(input.groupId),proposalId=id(input.proposalId),status=input.accept?'accepted':'declined';
     return db.runTransaction(async tx=>{
       const {root}=await membership(tx,gid,uid),ref=root.collection('proposals').doc(proposalId),snap=await tx.get(ref),proposal=data(snap);
+      if(proposal?.requestRoot)return requests.respond(tx,root,uid,input,proposal);
       if(!proposal||proposal.recipientUid!==uid)fail('recipient-required',403);
       if(proposal.status!=='pending'){if(proposal.status!==status)fail('proposal-already-resolved',409);return {id:proposalId,status}}
       const [a,b,sender]=await Promise.all([tx.get(root.collection('residents').doc(proposal.sourceId)),tx.get(root.collection('residents').doc(proposal.targetId)),tx.get(root.collection('members').doc(proposal.senderUid))]);

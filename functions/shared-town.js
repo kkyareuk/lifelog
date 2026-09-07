@@ -45,16 +45,17 @@ function createSharedTownService({db,engine,clock=Date.now}){
     saveHomePlacement:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,group,member}=await context(tx,input.groupId,uid);
       if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
-      const homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists)fail('home-missing',404);
+      const homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists&&!input.create)fail('home-missing',404);
+      if(input.create){if(snap.exists)fail('home-exists',409);const homes=await tx.get(ref.collection('homes'));if(homes.docs.length>=200)fail('home-limit',409);if(!group.towns?.some(t=>t.id===input.townId))fail('town-missing',404)}
       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
-      const home=snap.data(),patch=input.patch||{},numbers={mapX:[5,95],mapY:[5,95],mapScale:[.1,4],mapZ:[-100,1000]};
+      const home=snap.exists?snap.data():{ownerUid:uid,sourceHomeId:input.id,townId:input.townId,name:'새 집',mapX:50,mapY:50,layoutJson:JSON.stringify({floorCount:1,rooms:{living:{name:'거실',type:'living',furniture:['소파','TV'],size:'보통 방',floor:1,x:0,y:0,w:2,h:2},bedroom:{name:'침실',type:'bedroom',furniture:['침대','옷장'],size:'보통 방',floor:1,x:2,y:0,w:2,h:2},kitchen:{name:'주방',type:'kitchen',furniture:['식탁','냉장고'],size:'보통 방',floor:1,x:0,y:2,w:2,h:2},bathroom:{name:'욕실',type:'bath',furniture:['세면대'],size:'보통 방',floor:1,x:2,y:2,w:2,h:2}}}),residentNames:[],visitPolicy:'members'},patch=input.patch||{},numbers={mapX:[5,95],mapY:[5,95],mapScale:[.1,4],mapZ:[-100,1000]};
       for(const [key,value] of Object.entries(patch)){
         if(numbers[key]){const [lo,hi]=numbers[key];if(!Number.isFinite(value)||value<lo||value>hi)fail('invalid-home-value')}
         else if(key==='mapFlipX'){if(typeof value!=='boolean')fail('invalid-home-value')}
         else if(['name','buildingSubtype','exteriorStyle','reputation','atmosphere','beautyLevel','lightingMode','lightOnTime','lightOffTime','iconPreset','exteriorImage'].includes(key)){if(typeof value!=='string'||value.length>2000||/^(data:|blob:)/i.test(value))fail('invalid-home-value')}
         else fail('invalid-home-field');
       }
-      tx.update(homeRef,patch);tx.update(ref,{buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,home:{...home,...patch,id:input.id}};
+      if(input.create)tx.set(homeRef,{...home,...patch});else tx.update(homeRef,patch);tx.update(ref,{buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,home:{...home,...patch,id:input.id}};
     }),
     saveDecoration:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,group,member}=await context(tx,input.groupId,uid);

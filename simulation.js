@@ -1,10 +1,11 @@
-import {careRoutineFor} from "./creative-options.js?v=20260907dev267";
-import {drinkExperience} from "./drink-log.js?v=20260907dev267";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev267";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev267";
-import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev267";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev267";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev267";
+import {dailyInteractionLine} from './scene-context.js?v=20260907dev268';
+import {careRoutineFor} from "./creative-options.js?v=20260907dev268";
+import {drinkExperience} from "./drink-log.js?v=20260907dev268";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev268";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev268";
+import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev268";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev268";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev268";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -4444,16 +4445,16 @@ function relationCombinationScene(place,first,second,relation,date){
       relationProfile:profile.key
     };
   }
-  const firstExtra=[firstIntimacy||firstDetachedIntimacy||firstConflict,tension.key==="strained"?tension.lines[tensionVariant](first,second):""].filter(Boolean).join(" ")||tension.lines[tensionVariant](first,second);
-  const secondExtra=[secondIntimacy||secondDetachedIntimacy||secondConflict,tension.key==="strained"?tension.lines[reverseTensionVariant](second,first):""].filter(Boolean).join(" ")||tension.lines[reverseTensionVariant](second,first);
+  const firstExtra=[firstIntimacy||firstDetachedIntimacy||firstConflict,tension.key==="strained"?tension.lines[tensionVariant](first,second):""].filter(Boolean).join(" ")||(tension.key==="steady"?"":tension.lines[tensionVariant](first,second));
+  const secondExtra=[secondIntimacy||secondDetachedIntimacy||secondConflict,tension.key==="strained"?tension.lines[reverseTensionVariant](second,first):""].filter(Boolean).join(" ")||(tension.key==="steady"?"":tension.lines[reverseTensionVariant](second,first));
   const affairFirst=affairAllowed?`${topic(first.name)} 이미 이어지고 있는 관계가 있다는 사실을 의식하면서도 ${togetherWith(second.name)}의 만남을 끊지 않았고, 아는 사람과 마주치지 않을 자리를 골랐어요. `:"";
   const affairSecond=affairAllowed?`${topic(second.name)} 이 만남이 다른 관계와 충돌할 수 있다는 것을 알면서도 ${togetherWith(first.name)} 정한 시간까지 자리를 지켰어요. `:"";
   return {
     title:directTitle,
     firstTitle:directTitle,
     secondTitle:reverseTitle,
-    first:characterVoice(first,`${affairFirst}${bond.actions[variant](first,second)} ${firstExtra}`.trim()),
-    second:characterVoice(second,`${affairSecond}${bond.actions[reverseVariant](second,first)} ${secondExtra}`.trim()),
+    first:characterVoice(first,`${affairFirst}${dailyInteractionLine(first,second,place,firstView,sceneSeed,state.uiLanguage,relation)} ${firstExtra}`.trim()),
+    second:characterVoice(second,`${affairSecond}${dailyInteractionLine(second,first,place,secondView,sceneSeed+1,state.uiLanguage,relation)} ${secondExtra}`.trim()),
     relationProfile:profile.key
   };
 }

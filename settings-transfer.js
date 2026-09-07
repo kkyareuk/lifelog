@@ -1,5 +1,5 @@
-import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260907dev267';
-import {informationOnlyState} from './local-media.js?v=20260907dev267';
+import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260907dev268';
+import {informationOnlyState} from './local-media.js?v=20260907dev268';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
 const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);
@@ -49,6 +49,18 @@ export async function downloadSettings(file,name){
   if(window.Capacitor?.isNativePlatform?.()&&native?.saveJson){await native.saveJson({filename,data});return}
   const url=URL.createObjectURL(new Blob([data],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
+const catalogCopy={ko:['물품 선택','검색','전체 선택','선택 해제','취소','선택한 물품 저장','선택한 물품 추가','선택한 물품 다운로드'],en:['Choose items','Search','Select all','Clear selection','Cancel','Save selected items','Add selected items','Download selected items'],ja:['品物を選択','検索','すべて選択','選択解除','キャンセル','選んだ品物を保存','選んだ品物を追加','選んだ品物をダウンロード']};
+export function selectedCatalog(catalog,keys){return Object.fromEntries(Object.entries(catalog).map(([kind,items])=>[kind,items.filter((item,index)=>keys.has(kind+':'+index))]).filter(([,items])=>items.length))}
+function chooseCatalog(catalog,importing=false){return new Promise(resolve=>{
+ const copy=catalogCopy[state.uiLanguage]||catalogCopy.ko,d=document.createElement('dialog');d.className='directory-create-dialog catalog-selection-dialog';
+ const title=document.createElement('h2');title.textContent=copy[0];const search=document.createElement('input');search.type='search';search.placeholder=copy[1];const list=document.createElement('div');list.style.cssText='max-height:50dvh;overflow:auto;display:grid;gap:8px';
+ const rows=[];for(const [kind,items] of Object.entries(catalog))items.forEach((item,index)=>{const label=document.createElement('label'),check=document.createElement('input'),span=document.createElement('span');check.type='checkbox';check.value=kind+':'+index;span.textContent=item.name;label.append(check,span);list.append(label);rows.push({label,check,name:String(item.name).toLocaleLowerCase()})});
+ const controls=document.createElement('div');const addButton=(text,run)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=run;controls.append(b);return b};
+ addButton(copy[2],()=>{rows.filter(r=>!r.label.hidden).forEach(r=>r.check.checked=true);update()});addButton(copy[3],()=>{rows.forEach(r=>r.check.checked=false);update()});addButton(copy[4],()=>d.close());
+ const submit=addButton(copy[importing?6:5],()=>{const result=selectedCatalog(catalog,new Set(rows.filter(r=>r.check.checked).map(r=>r.check.value)));resolve(result);d.close()});
+ const update=()=>{const n=rows.filter(r=>r.check.checked).length;submit.disabled=!n;submit.textContent=copy[importing?6:5]+' ('+n+')'};
+ list.onchange=update;search.oninput=()=>rows.forEach(r=>r.label.hidden=!r.name.includes(search.value.toLocaleLowerCase()));d.append(title,search,list,controls);d.onclose=()=>{d.remove();resolve(null)};document.body.append(d);update();d.showModal();
+})}
 export function installSettingsTransfer({translate,toast,render,limit}){
   const t=translate;
   document.addEventListener('click',async event=>{
@@ -57,7 +69,7 @@ export function installSettingsTransfer({translate,toast,render,limit}){
     try{
       if(mode==='character-export'){if(active())await downloadSettings(characterSettingsFile(active()),active().name+'-설정');return}
       if(mode==='all-export'){await downloadSettings({format:'drawer-village-backup',version:2,mediaPolicy:'device-only',exportedAt:new Date().toISOString(),gameState:informationOnlyState(cloneState())},'서랍마을-전체백업');return}
-      if(mode==='catalog-export'){await downloadSettings({format:'drawer-village-catalog',version:1,catalog:informationOnlyState(state.catalog)},'서랍마을-사전');return}
+      if(mode==='catalog-export'){const catalog=await chooseCatalog(state.catalog);if(catalog)await downloadSettings({format:'drawer-village-catalog',version:1,catalog:informationOnlyState(catalog)},'서랍마을-선택물품');return}
       const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.hidden=true;document.body.append(input);
       input.oncancel=()=>input.remove();
       input.onchange=async()=>{
@@ -65,7 +77,8 @@ export function installSettingsTransfer({translate,toast,render,limit}){
           const selected=input.files?.[0];if(!selected)return;if(selected.size>10*1024*1024)throw Error('파일이 너무 커요.');
           const file=readSettingsFile(await selected.text());
           if(mode==='character-import'&&file.format!=='drawer-village-character'||mode==='catalog-import'&&file.format!=='drawer-village-catalog')throw Error('서랍마을 설정 파일을 선택해 주세요.');
-          if(!confirm(t(file.format==='drawer-village-character'?'설정을 새 캐릭터로 불러올까요? 사진·생활 로그·관계는 포함하지 않아요.':'사전을 가져올까요? 같은 항목은 갱신하고 새 항목은 추가해요. 자동으로 동기화하지 않아요.')))return;
+          if(file.format==='drawer-village-catalog'){const catalog=await chooseCatalog(file.catalog,true);if(!catalog)return;file.catalog=catalog}
+          if(file.format==='drawer-village-character'&&!confirm(t(file.format==='drawer-village-character'?'설정을 새 캐릭터로 불러올까요? 사진·생활 로그·관계는 포함하지 않아요.':'사전을 가져올까요? 같은 항목은 갱신하고 새 항목은 추가해요. 자동으로 동기화하지 않아요.')))return;
           if(file.format==='drawer-village-character')importCharacterSettings(file,limit());else mergeCatalogFile(file);
           document.querySelectorAll('dialog[open]').forEach(d=>d.close());render();toast('기기에 저장됨');
         }catch(error){toast(t(error.message))}finally{input.remove()}

@@ -1,28 +1,30 @@
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev267";
-import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,HOSPITAL_DEPARTMENTS,hospitalPurposes,creativeCopy} from "./creative-options.js?v=20260907dev267";
-import {withSharedWorld} from './shared-world.js?v=20260907dev267';
+import {bedPerspective} from './bed-perspective.js?v=20260907dev268';
+import {conflictEvidence} from './scene-context.js?v=20260907dev268';
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev268";
+import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,HOSPITAL_DEPARTMENTS,hospitalPurposes,creativeCopy} from "./creative-options.js?v=20260907dev268";
+import {withSharedWorld} from './shared-world.js?v=20260907dev268';
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev267";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev267";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev267";
-import {characterMood} from "./character-mood.js?v=20260907dev267";
-import {createContactMailbox} from "./notification-mail.js?v=20260907dev267";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev267";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907dev267";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev267";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev267";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev267";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev267";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev267";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev267";
-import {achievementRows} from "./achievements.js?v=20260907dev267";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev267";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev267";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev267";
-import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260907dev267";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev267";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907dev268";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260907dev268";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907dev268";
+import {characterMood} from "./character-mood.js?v=20260907dev268";
+import {createContactMailbox} from "./notification-mail.js?v=20260907dev268";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260907dev268";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907dev268";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev268";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev268";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907dev268";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907dev268";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907dev268";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev268";
+import {achievementRows} from "./achievements.js?v=20260907dev268";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907dev268";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260907dev268";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907dev268";
+import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260907dev268";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907dev268";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -1267,7 +1269,7 @@ function relationshipForPair(firstId,secondId){
   )||null;
 }
 function sceneEmotionScores(value){
-  const text=String(value||"");
+  const text=conflictEvidence(value);
   const scores={shock:0,anger:0,sad:0,fear:0,romance:0,playful:0,warm:0};
   const add=(emotion,pattern,weight=1)=>{if(pattern.test(text))scores[emotion]+=weight};
   add("shock",/큰 충격|충격을 받|충격적|경악|믿기지 않|머리가 하얘|말문이 막|얼어붙었|청천벽력|아연실색|깜짝 놀라|예상하지 못|사고가 나|깨져 버|떨어뜨렸|들켜 버|폭로|비명/,4);
@@ -1348,7 +1350,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const partners=orderedPartnerIds.map(id=>state.characters?.[id]).filter(Boolean);
   const partner=partners[0]||null;
   const dating=Boolean(partner&&validDate);
-  const fighting=Boolean(/싸움|싸우|말다툼|신경전|격렬|충돌|맞받아|목소리.{0,8}높|날카롭게|분노|화가 나|화를 냈/.test(text));
+  const fighting=Boolean(partner&&/싸움|싸우|말다툼|신경전|충돌|맞받아|목소리.{0,8}높|화를 냈/.test(conflictEvidence(text)));
   const ownView=partner?characterViewFor(c.id,partner.id):{};
   const reverseView=partner?characterViewFor(partner.id,c.id):{};
   const viewText=`${ownView.overall||""} ${ownView.comfort||""} ${ownView.trust||""} ${ownView.fear||""} ${ownView.annoyance||""} ${ownView.conflictIntensity||""}`;
@@ -1443,7 +1445,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const tone=sleeping?"sleep"
     :drowsy?"drowsy"
       :sceneEmotion==="shock"&&sceneEmotionScore>=2?"shock"
-        :sceneEmotion==="anger"&&sceneEmotionScore>=2?(coldFight?"fight-ice":"fight-fire")
+        :sceneEmotion==="anger"&&sceneEmotionScore>=2?(fighting&&partner?(coldFight?"fight-ice":"fight-fire"):"interaction-tense")
           :sceneEmotion==="sad"&&sceneEmotionScore>=2?"sad"
             :sceneEmotion==="fear"&&sceneEmotionScore>=2?"interaction-tense"
               :sceneEmotion==="romance"&&sceneEmotionScore>=2&&ownRomanceInterest
@@ -1451,7 +1453,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
                 :sceneEmotion==="playful"&&sceneEmotionScore>=2?"interaction-playful"
                   :sceneEmotion==="warm"&&sceneEmotionScore>=1?"interaction-warm"
                     :dating?"date-neutral":partner&&entry?.groupInteraction?"interaction-neutral"
-                      :ambientMood==="angry"?"fight-fire"
+                      :ambientMood==="angry"?"interaction-tense"
                         :ambientMood==="sad"?"sad"
                           :ambientMood==="tense"?"interaction-tense"
                             :ambientMood==="excited"?"interaction-playful"
@@ -2115,21 +2117,21 @@ function roomStyle(h,key,layout,mobileLayout){
 }
 const COUPLE_BED_ASSET_ROOT="assets/furniture/couple-bed";
 const COUPLE_BED_ART_SCALE=1.05;
-const furniturePlacementStyle=(placement,footprint)=>`--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.rotation}deg;--furniture-layer:${placement.layer};--furniture-flip:${placement.flipped?-1:1};--furniture-grid-width:${footprint.columns};--furniture-grid-height:${footprint.rows}`;
-const coupleBedImage=(layer,extra="")=>`<img class="couple-bed-layer couple-bed-${layer} ${extra}" src="${COUPLE_BED_ASSET_ROOT}/couple-bed-${layer}.png" alt="" aria-hidden="true">`;
+const furniturePlacementStyle=(placement,footprint)=>`--furniture-x:${placement.x}%;--furniture-y:${placement.y}%;--furniture-scale:${placement.scale};--furniture-rotation:${placement.item==="커플 침대"?bedPerspective(placement).artRotation:placement.rotation}deg;--furniture-layer:${placement.layer};--furniture-flip:${placement.item==="커플 침대"?bedPerspective(placement).artFlip:placement.flipped?-1:1};--furniture-grid-width:${footprint.columns};--furniture-grid-height:${footprint.rows}`;
+const coupleBedImage=(layer,extra="",placement={})=>`<img class="couple-bed-layer couple-bed-${layer} ${extra}" src="${COUPLE_BED_ASSET_ROOT}/couple-bed-${bedPerspective(placement).side?"side-":""}${layer}.${bedPerspective(placement).side?"svg":"png"}" alt="" aria-hidden="true">`;
 function roomFurnitureMarkup(homeId,roomKey,room,edit,bedStates=new Map()){
   const placements=normalizeFurniturePlacements(room.furniturePlacements);
   if(!placements.length&&!edit)return "";
   return `<div class="room-furniture-layer" aria-label="${esc(room.name||roomKey)} 가구">${placements.map(placement=>{
     const label=furnitureLabel(placement.item,state.uiLanguage),props=placement.props||[],footprint=furnitureFootprint(placement.item),coupleBed=placement.item==="커플 침대",bedState=edit?"default":bedStates.get(placement.id)||"default";
-    const art=coupleBed?`<span class="room-furniture-art room-couple-bed-art" data-bed-layer-state="${bedState}" aria-hidden="true">${coupleBedImage("base")}${bedState!=="under-cover"?coupleBedImage("quilt"):""}${bedState==="default"?coupleBedImage("footboard"):""}</span>`:`<span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>`;
-    return `<button type="button" class="room-furniture-item ${coupleBed?"is-couple-bed":""}" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" data-furniture-supports-props="${supportsFurnitureProps(placement.item)}" data-furniture-columns="${footprint.columns}" data-furniture-rows="${footprint.rows}" style="${furniturePlacementStyle(placement,footprint)}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}>${art}${props.length?`<span class="room-furniture-props" aria-hidden="true">${props.map((prop,index)=>`<i style="--prop-slot:${index}">${furniturePropIcon(prop.item)}</i>`).join("")}</span>`:""}${edit?`<small>${esc(label)} · ${footprint.columns}×${footprint.rows}</small>`:""}</button>`;
+    const art=coupleBed?`<span class="room-furniture-art room-couple-bed-art" data-bed-layer-state="${bedState}" data-bed-side="${bedPerspective(placement).side}" aria-hidden="true">${coupleBedImage("base","",placement)}${bedState!=="under-cover"?coupleBedImage("quilt","",placement):""}${bedState==="default"?coupleBedImage("footboard","",placement):""}</span>`:`<span class="room-furniture-art" aria-hidden="true">${furnitureIcon(placement.item)}</span>`;
+    return `<button type="button" class="room-furniture-item ${coupleBed?"is-couple-bed":""}" data-bed-direction="${bedPerspective(placement).direction}" data-bed-side="${coupleBed&&bedPerspective(placement).side}" data-furniture-placement="${esc(placement.id)}" data-home-id="${esc(homeId)}" data-room-key="${esc(roomKey)}" data-furniture-name="${esc(label)}" data-furniture-supports-props="${supportsFurnitureProps(placement.item)}" data-furniture-columns="${footprint.columns}" data-furniture-rows="${footprint.rows}" style="${furniturePlacementStyle(placement,footprint)}" aria-label="${esc(label)}${edit?" · 끌어서 이동":""}" ${edit?"":"tabindex=\"-1\""}>${art}${props.length?`<span class="room-furniture-props" aria-hidden="true">${props.map((prop,index)=>`<i style="--prop-slot:${index}">${furniturePropIcon(prop.item)}</i>`).join("")}</span>`:""}${edit?`<small>${esc(label)} · ${footprint.columns}×${footprint.rows}</small>`:""}</button>`;
   }).join("")}</div>`;
 }
 function roomFurnitureOverlayMarkup(room,bedStates=new Map()){
   const overlays=normalizeFurniturePlacements(room.furniturePlacements).filter(placement=>placement.item==="커플 침대"&&["on-bed","under-cover"].includes(bedStates.get(placement.id))).map(placement=>{
     const footprint=furnitureFootprint(placement.item),bedState=bedStates.get(placement.id);
-    return `<span class="room-couple-bed-overlay" data-bed-layer-state="${bedState}" style="${furniturePlacementStyle(placement,footprint)}">${bedState==="under-cover"?coupleBedImage("quilt"):""}${coupleBedImage("footboard")}</span>`;
+    return `<span class="room-couple-bed-overlay" data-bed-layer-state="${bedState}" style="${furniturePlacementStyle(placement,footprint)}">${bedState==="under-cover"?coupleBedImage("quilt","",placement):""}${coupleBedImage("footboard","",placement)}</span>`;
   });
   return overlays.length?`<div class="room-furniture-overlay-layer" aria-hidden="true">${overlays.join("")}</div>`:"";
 }
@@ -2143,7 +2145,7 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   const duration=Math.max(1,Number(agent?.endsAt||0)-Number(agent?.startedAt||0)),elapsed=Math.max(0,Math.min(duration,now-Number(agent?.startedAt||0)));
   const walkStyleClass=walkStyleClassFor(character);
   const visualPhase=scheduledWalk&&!walking?"waiting-to-walk":agent?.phase,bedUsing=bedSlot>=0&&agent?.phase==="using",coupleBedClass=bedSlot>=0?` is-couple-bed-user couple-bed-slot-${bedSlot+1}${bedUsing?" is-using-couple-bed":""}${options.bedState==="under-cover"?" is-under-cover":""}${bedConversation?" is-bed-conversation":""}`:"",conversationClass=conversing?` is-conversing conversation-slot-${Number(options.slot)||1}${agent?.approachingInteraction?" is-approaching-conversation":""}`:"",canvasClass=options.canvasWalker?" home-canvas-walker":"",lifeClass=agent?`home-life-person home-life-${visualPhase} ${walkStyleClass}${coupleBedClass}${conversationClass}${canvasClass}`:"";
-  const bedRotation=Number(options.bedPlacement?.rotation)||0,bedRadians=bedRotation*Math.PI/180,bedPlacementScale=Math.max(.55,Math.min(1.8,Number(options.bedPlacement?.scale)||1)),bedVisualScale=bedPlacementScale*COUPLE_BED_ART_SCALE;
+  const bedRotation=bedPerspective(options.bedPlacement).characterRotation,bedRadians=bedRotation*Math.PI/180,bedPlacementScale=Math.max(.55,Math.min(1.8,Number(options.bedPlacement?.scale)||1)),bedVisualScale=bedPlacementScale*COUPLE_BED_ART_SCALE;
   // 얼굴 중심을 침대 그림의 두 베개 중심에 맞춘다. 이 좌표에서 인물은
   // 침대 바닥보다 위, 이불·하단 프레임보다 아래 레이어에 놓인다.
   const localBedX=bedSlot===0?-4.6*bedVisualScale:bedSlot===1?4.6*bedVisualScale:0,localBedY=bedSlot>=0?-4.9*bedVisualScale:0,bedOffsetX=localBedX*Math.cos(bedRadians)-localBedY*Math.sin(bedRadians),bedOffsetY=localBedX*Math.sin(bedRadians)+localBedY*Math.cos(bedRadians);
@@ -2213,8 +2215,8 @@ function homeLifeInteractionMarkup(characters,scenes,agents,room,roomKey,index){
 function homeNativePill(label,attributes="",className=""){
   return `<button type="button" class="home-native-pill ${className}" ${attributes}><span>${esc(label)}</span></button>`;
 }
-function home(){
-  const shared=window.DrawerVillageGroups?.getSnapshot?.();if(shared?.activeGroupId&&shared.group)return renderGroupHomes(shared);
+function home(sharedPass=false){
+  const shared=window.DrawerVillageGroups?.getSnapshot?.();if(!sharedPass&&shared?.activeGroupId&&shared.group)return withSharedWorld(shared,()=>home(true));
   const groups=homeGroups(),ids=Object.keys(state.homes||{}),selected=state.homes[state.activeHomeId]?state.activeHomeId:(state.homes[active()?.homeId]?active().homeId:ids[0]);
   state.activeHomeId=selected;
   const houseGradient=chars=>{
@@ -3700,7 +3702,7 @@ Object.assign(UI_TEXT.ja,{
   "내 집 또는 자동 선택":"自宅または自動選択","캐릭터의 집":"キャラクターの家","마을의 건물":"村の建物","즉시 귀환":"すぐ帰宅","현재 외출을 끝내고 다음 등록 일정 전까지 집에서 지내게 해요.":"現在の外出を終え、次の登録予定まで家で過ごします。","모두 귀환":"全員を帰宅",
   "선물로 받고 싶은 것을 포함해 특히 좋아하는 항목과 실제로 가지고 다니거나 보관하는 물건을 각각 골라 주세요. 실제 선물은 우편함에서 보낼 수 있어요.":"プレゼントでもらいたい物を含むお気に入りと、実際に持ち歩いたり保管したりする物を分けて選びます。実際のプレゼントは郵便箱から送れます。"
 });
-const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>사용자 닉네임</h2><p>Google 계정 이름 대신 동기화 화면에 표시하고, 캐릭터가 사용자의 부탁을 말할 때도 이 이름을 사용해요.</p><label>캐릭터들이 뭐라고 부를까요?<input data-setting="ownerName" maxlength="20" value="${esc(state.ownerName||"")}" placeholder="예: 꺄륵"></label></section>`;
+const ownerNameSettings=()=>`<section class="setting-card owner-name-card"><h2>${t('사용자 닉네임','사용자 닉네임')}</h2><p>${esc(state.ownerName||'')}</p>${state.ownerPhoto?`<img src="${esc(state.ownerPhoto)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:50%">`:''}<button type="button" data-user-profile>${({ko:'유저 이름·프로필 사진 설정',en:'Edit name and profile photo',ja:'ユーザー名・プロフィール写真'}[state.uiLanguage]||'유저 이름·프로필 사진 설정')}</button></section>`;
 function visualThemeSettings(){
   const copy={
     en:{heading:"Home UI theme",description:"The current release keeps one complete Drawer Village UI pack as the default. Future packs can replace the frame and every home icon together, globally or per character.",current:"Current default",name:"Drawer Village Classic"},
@@ -4486,7 +4488,7 @@ function townMobile(sharedPass=false){
   const multiplayerName=multiplayer?.name||state.personalTownLabel||t("내 마을","내 마을"),headerTownName=multiplayerTown?.name||state.world.name;
   const desktopTabs=`<div class="town-tabs">${state.towns.map(town=>`<button data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}">🏙️ ${esc(town.name)}</button>`).join("")}${mobileTownMode==="town"?`<button data-add-town>+ ${t("마을 추가","마을 추가")}</button>${state.towns.length>1?`<button class="danger" data-delete-town="${state.activeTownId}">${t("현재 마을 삭제","현재 마을 삭제")}</button>`:""}`:""}</div>`;
   const canEditShared=!multiplayer||['owner','manager','operator'].includes(multiplayerSnapshot.members?.find(m=>m.uid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||m.id===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role||multiplayerSnapshot.role||(multiplayer.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid?'owner':''));
-  const menuButtons=`<button type="button" class="home-native-pill" data-mobile-town-layout-mode><span>${t("마을 정보","마을 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-building-edit-mode><span>${t("건물 정보","건물 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-town-decoration-mode ${canEditShared?'':'disabled'}><span>${mobileTownMode==="decorations"?t("편집완료","편집완료"):t("편집모드","편집모드")}</span></button>${multiplayer?`<button type="button" class="home-native-pill" data-group-section-open="members"><span>${t("구성원 정보","구성원 정보")}</span></button>`:''}`;
+  const menuButtons=`<button type="button" class="home-native-pill" data-tab="groups"><span>${t("멀티","멀티")}</span></button>${multiplayer?`<button type="button" class="home-native-pill" data-shared-residents><span>${t("구성원","구성원")}</span></button>`:""}<button type="button" class="home-native-pill" data-mobile-town-layout-mode><span>${t("마을 정보","마을 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-building-edit-mode><span>${t("건물 정보","건물 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-town-decoration-mode ${canEditShared?'':'disabled'}><span>${mobileTownMode==="decorations"?t("편집완료","편집완료"):t("편집모드","편집모드")}</span></button>`;
   const townHeader=`<header class="town-native-header"><button type="button" class="home-native-back town-native-back" data-tab="observe" aria-label="${esc(t("메인 화면으로 돌아가기","메인 화면으로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><div class="town-native-context"><button type="button" class="town-native-community" data-open-multiplayer-switcher aria-label="${esc(t("멀티 변경","멀티 변경"))}"><img src="${esc(homeUiAsset(character||active(),"town.png"))}" alt=""><span>${esc(multiplayerName)}</span></button><button type="button" class="town-native-town-pill" data-open-town-switcher aria-label="${esc(t("마을 이동","마을 이동"))}"><span>${esc(headerTownName)}</span></button></div><span class="town-native-status">${t("현재 {current}명 · 거주 {resident}명","현재 {current}명 · 거주 {resident}명").replace("{current}",localIds.length).replace("{resident}",residentIds.length)}</span><div class="town-native-menu" role="navigation" aria-label="${esc(t("마을 메뉴","마을 메뉴"))}">${menuButtons}</div></header>`;
   const townSwitchOptions=multiplayer?(multiplayer.towns||[]).map(town=>`<button type="button" data-multiplayer-town-open="${esc(town.id||"")}" class="${town.id===multiplayerSnapshot.selectedTownId||town===multiplayerTown?"on":""}"><i aria-hidden="true"></i><span><b>${esc(town.name||multiplayer.hostTownName||t("멀티 마을 없음","No multiplayer town"))}</b><small>${t("현재 멀티 마을","Current multiplayer town")}</small></span></button>`).join(""):state.towns.map(town=>`<button type="button" data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}"><i aria-hidden="true"></i><span><b>${esc(town.name)}</b><small>${town.id===state.activeTownId?t("현재 마을","현재 마을"):t("이 마을로 이동","이 마을로 이동")}</small></span></button>`).join("")+`<button type="button" class="town-switch-add" data-add-town data-add-town-switcher><i aria-hidden="true">＋</i><span><b>${t("새 마을 만들기","새 마을 만들기")}</b><small>${t("새로운 마을 슬롯을 추가해요","새로운 마을 슬롯을 추가해요")}</small></span></button>`;
   const townSwitcher=`<dialog class="town-switch-dialog" data-town-switch-dialog><form method="dialog"><header><span><small>TOWN SELECT</small><b>${t("마을 이동","마을 이동")}</b></span><button value="cancel" aria-label="${esc(t("닫기","닫기"))}">×</button></header><div>${townSwitchOptions}</div></form></dialog>`;
@@ -4670,7 +4672,7 @@ function nativePlayShop({browseOnly=false}={}){
   const comingTitle=section==="bundle"?copy.bundleSoon:section==="skin"?copy.skinSoon:copy.expansionSoon;
   const content=section==="base"?`<div class="drawer-shop-products">${((window.PARALLEL_CITY_CONFIG?.iosApp||window.PARALLEL_CITY_CONFIG?.iosPreview)?["character_slots_5","town_slot_1","green_tea"]:["character_slots_5","town_slot_1","storage_50mb","green_tea"]).map(productCard).join("")}</div>`:`<div class="drawer-shop-coming" role="status"><span aria-hidden="true">✦</span><b>${esc(comingTitle)}</b><small>${esc(copy.soonDetail)}</small></div>`;
   const sellerLabel=language==="en"?"Shopkeeper":language==="ja"?"店主":"상점주인";
-  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev267" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
+  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260907dev268" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
 }
 function shop(){
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){

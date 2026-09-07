@@ -1,4 +1,5 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260907dev267";
+import {bedPillowPoint} from './bed-perspective.js?v=20260907dev268';
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260907dev268";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -93,17 +94,19 @@ export function fitCoupleBedOccupants(root){
     const width=bed.clientWidth,height=bed.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
     const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio;
     const style=getComputedStyle(bed),flip=Number(style.getPropertyValue('--furniture-flip'))||1;
-    const x=width/2+(Number(person.dataset.bedSlot)===0?-.18:.18)*paintedWidth*1.05*flip;
     // Sleeping occupants sit across the quilt edge: the upper part stays on
     // the pillow and the lower part is actually covered by the foreground quilt.
     const underCover=person.classList.contains('is-under-cover');
-    const y=height/2-(underCover?.225:.29)*paintedHeight*1.05;
+    const pillow=bedPillowPoint({side:bed.dataset.bedSide==='true',direction:Number(bed.dataset.bedDirection)||1,artFlip:flip},Number(person.dataset.bedSlot),underCover);
+    const x=width/2+pillow.x*paintedWidth*1.05,y=height/2+pillow.y*paintedHeight*1.05;
+    person.style.zIndex=String(pillow.depth);
     const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
     const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy));
     const parent=person.offsetParent,layer=bed.offsetParent;
     person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
     person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    person.style.setProperty('--bed-face-size',`${Math.max(underCover?46:36,Math.min(underCover?64:56,paintedWidth*(underCover?.32:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)))}px`);
+    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(24,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(underCover?46:36,Math.min(underCover?64:56,paintedWidth*(underCover?.32:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
+    person.style.setProperty('--bed-face-size',`${faceSize}px`);
   });
   const layoutStatuses=()=>statuses.forEach(status=>{
     if(!status.isConnected)return;
