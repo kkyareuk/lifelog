@@ -14,7 +14,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
       return db.runTransaction(async tx=>{
         const {ref,group}=await context(tx,input.groupId,uid),now=clock();
         if(!input.command&&now-Number(group.lifeUpdatedAt||0)<60000)return {updated:false};
-        const [r,h,relationships,declarations,catalog,perceptions]=await Promise.all([tx.get(ref.collection('residents')),tx.get(ref.collection('homes')),tx.get(ref.collection('relationships')),tx.get(ref.collection('declarations')),tx.get(ref.collection('catalog')),tx.get(ref.collection('perceptions'))]);
+        const [r,h,relationships,declarations,catalog,perceptions,schedules]=await Promise.all([tx.get(ref.collection('residents')),tx.get(ref.collection('homes')),tx.get(ref.collection('relationships')),tx.get(ref.collection('declarations')),tx.get(ref.collection('catalog')),tx.get(ref.collection('perceptions')),tx.get(ref.collection('schedules'))]);
         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
         if(input.command){
           const c=residents.find(r=>r.id===input.command.characterId);if(!c||c.ownerUid!==uid)fail('character-owner-required',403);
@@ -22,11 +22,18 @@ function createSharedTownService({db,engine,clock=Date.now}){
           if(['talk','dine'].includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
-        const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions)},input.command?now:Math.floor(now/60000)*60000,input.command||null);
+        const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command?now:Math.floor(now/60000)*60000,input.command||null);
         for(const life of lives)tx.update(ref.collection('residents').doc(life.id),{lifeJson:life.lifeJson,...(input.command?.characterId===life.id?{commandAt:now}:{})});
         tx.update(ref,{lifeUpdatedAt:now});return {updated:true,count:lives.length};
       });
     },
+    saveHomeLayout:async(uid,input)=>db.runTransaction(async tx=>{
+      const {ref,member}=await context(tx,input.groupId,uid),homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists)fail('home-missing',404);const home=snap.data();if(home.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('home-owner-required',403);const revision=Number(home.layoutRevision)||0;if(Number(input.revision)!==revision)fail('groups/edit-conflict',409);
+      const layout=input.layout;if(!layout||typeof layout!=='object'||Array.isArray(layout)||JSON.stringify(layout).length>180000||!layout.rooms||Object.keys(layout.rooms).length>50)fail('invalid-layout');
+      for(const room of Object.values(layout.rooms)){if(!room||typeof room!=='object'||(room.furniturePlacements||[]).length>200)fail('invalid-layout')}
+      const clean={rooms:layout.rooms,floorCount:Math.max(1,Math.min(5,Number(layout.floorCount)||1)),activeFloor:Number(layout.activeFloor)||1};
+      const old=JSON.parse(home.layoutJson||'{}');tx.update(homeRef,{layoutJson:JSON.stringify({...old,...clean}),layoutRevision:revision+1,updatedAt:clock()});tx.update(ref,{lifeUpdatedAt:0});return {revision:revision+1};
+    }),
     publishCatalog:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,member}=await context(tx,input.groupId,uid);
       if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);

@@ -1,4 +1,4 @@
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev269';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260907dev270';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();
@@ -28,13 +28,15 @@ export function buildSharedWorld(snapshot,language='ko'){
     if(life.directive)characterDirectives[r.id]=life.directive;
     routines[r.id]=remap(schedule.routines);monthlyRoutines[r.id]=remap(schedule.monthlyRoutines);
   }
+  for(const schedule of (snapshot.schedules||[]).filter(s=>!s.cancelled))for(const cid of schedule.memberIds||[]){if(!characters[cid])continue;const shared={...schedule,withIds:schedule.memberIds.filter(id=>id!==cid),sharedScheduleId:schedule.id};if(schedule.monthly)(monthlyRoutines[cid]??=[]).push(shared);else for(const day of schedule.days||[])(routines[cid]??=[]).push({...shared,id:schedule.id+':'+day,seriesId:schedule.id,day})}
+  for(const [id,draft] of Object.entries(sharedSelection(snapshot).homeDrafts||{}))if(homes[id])homes[id]={...homes[id],...draft};
   // Room ownership references must use group resident IDs, not personal IDs.
   for(const h of Object.values(homes))for(const room of Object.values(h.rooms||{})){
     for(const key of ['ownerCharacterIds','ownerIds','characterIds','allowedCharacterIds'])if(Array.isArray(room[key]))room[key]=room[key].map(id=>(snapshot.residents||[]).find(r=>r.ownerUid===h.ownerUid&&r.sourceCharacterId===id)?.id||id);
   }
   for(const p of snapshot.perceptions||[]){if(characters[p.sourceId]&&characters[p.targetId]){characterViews[p.sourceId]??={};characterViews[p.sourceId][p.targetId]=decodeShared(p.viewJson)}}
   for(const h of Object.values(homes)){h.activeFloor=sharedSelection(snapshot).floors?.[h.id]||h.activeFloor||1}
-  const activeId=snapshot.selectedResidentId&&characters[snapshot.selectedResidentId]?.townId===activeTownId?snapshot.selectedResidentId:Object.keys(characters).find(id=>characters[id].townId===activeTownId);
+  const activeId=sharedSelection(snapshot).routineCharacter&&characters[sharedSelection(snapshot).routineCharacter]?sharedSelection(snapshot).routineCharacter:snapshot.selectedResidentId&&characters[snapshot.selectedResidentId]?.townId===activeTownId?snapshot.selectedResidentId:Object.keys(characters).find(id=>characters[id].townId===activeTownId);
   return {...base,catalog:{...base.catalog,...Object.fromEntries((snapshot.catalog||[]).map(c=>[c.id,c.items||[]]))},relationships:Object.fromEntries((snapshot.relationships||[]).map(r=>[r.id,r])),characters,order:Object.keys(characters),homes,towns,world:towns.find(t=>t.id===activeTownId)||base.world,activeTownId,activeId,
     characterDirectives,characterViews,characterGroups:snapshot.characterGroups||[],activeHomeId:snapshot.visitingHomeId||characters[activeId]?.homeId||Object.keys(homes)[0],routines,monthlyRoutines,uiLanguage:language,
     sharedContext:{groupId:group.id||snapshot.activeGroupId},lastSaved:Number(group.lifeUpdatedAt)||0};
@@ -45,7 +47,7 @@ export function withSharedWorld(snapshot,run){
   if(snapshot.group?.rules?.allowHomeVisits===false)world.homes=Object.fromEntries(Object.entries(world.homes).filter(([,home])=>home.ownerUid===uid));
   world.characterViewSource=selection.source||world.order.find(id=>world.characters[id].ownerUid===uid)||world.order[0];
   world.characterViewTarget=selection.target||world.order.find(id=>id!==world.characterViewSource);
-  world.activeTab=state.activeTab;
-  for(const key of ['homeVisualMode','homeSdScale','homeLdScale','homeUiTheme','uiFont','uiScale'])world[key]=state[key];
+  world.activeTab=state.activeTab;world.homeEditMode=!!selection.homeEditMode;
+  for(const key of ['routineView','routineMonth','homeVisualMode','homeSdScale','homeLdScale','homeUiTheme','uiFont','uiScale'])world[key]=state[key];
   return runIsolatedWorld(world,()=>run(world));
 }

@@ -130,6 +130,8 @@ service cloud.firestore {
           && resource.data.role != 'owner';
       }
 
+      match /mail/{id} { allow read: if hasGroupMembership(groupId) && (resource.data.senderUid == request.auth.uid || resource.data.recipientUid == request.auth.uid); }
+      match /schedules/{id} { allow read: if hasGroupMembership(groupId); }
       match /characterGroups/{id} { allow read: if hasGroupMembership(groupId); }
       match /relationships/{id} {
         allow read: if hasGroupMembership(groupId);

@@ -23,6 +23,7 @@ module.exports=({db,membership,notify,clock,id})=>{
  return {
   requestResidence:async(uid,input)=>db.runTransaction(async tx=>{
    const {root,group,member}=await membership(tx,input.groupId,uid),key=id(input.requestId),kind=input.kind==='cohabitation'?'cohabitation':'admission',ref=root.collection('proposals').doc(key);
+   if(kind==='cohabitation'&&group.rules?.allowCohabitation===false)fail('cohabitation-disabled',403);
    const old=await tx.get(ref);if(old.exists){if(old.data().senderUid!==uid)fail('request-id-conflict',409);return {id:key,status:old.data().status}}
    const recent=await tx.get(root.collection('proposals').where('senderUid','==',uid));if(recent.docs.filter(d=>d.data().createdAt>clock()-3600000).length>=20)fail('proposal-rate-limit',429);
    let p={kind,senderUid:uid,createdAt:clock(),status:'pending'};

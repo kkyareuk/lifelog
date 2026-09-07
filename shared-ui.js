@@ -1,7 +1,8 @@
-import {residentText} from './shared-residents.js?v=20260907dev269';
-import {sharedSelection,withSharedWorld,decodeShared} from './shared-world.js?v=20260907dev269';
-import {state} from './state.js?v=20260907dev269';
-import {renderGroupRelations} from './groups.js?v=20260907dev269';
+import {bindSharedHome} from './shared-home-editor.js?v=20260907dev270';
+import {residentText} from './shared-residents.js?v=20260907dev270';
+import {sharedSelection,withSharedWorld,decodeShared} from './shared-world.js?v=20260907dev270';
+import {state} from './state.js?v=20260907dev270';
+import {renderGroupRelations} from './groups.js?v=20260907dev270';
 const messages={"다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.":["Another member edited this town. Refresh the layout and try again.","他のメンバーが先に編集しました。配置を確認してもう一度お試しください。"],"저장하지 못했어요":["Could not save.","保存できませんでした。"],"건물 편집 권한이 필요해요":["Building editing permission is required.","建物の編集権限が必要です。"],"내 캐릭터의 시선만 설정할 수 있어요":["You can only edit your own character’s viewpoint.","自分のキャラクターの視線だけを設定できます。"],"관계 제안을 보냈어요":["Relationship proposal sent.","関係の提案を送りました。"],"저장했어요":["Saved.","保存しました。"],"이 항목의 공유 편집 연결은 준비 중이에요":["Shared editing for this item is not available yet.","この項目の共有編集は準備中です。"],"이 시선 설정을 초기화할까요?":["Reset this viewpoint?","この視線設定を初期化しますか？"],"이 건물을 삭제할까요?":["Delete this building?","この建物を削除しますか？"],"삭제할까요?":["Delete this item?","削除しますか？"],"내 마을":["My town","自分のタウン"]};
 const tr=text=>messages[text]?.[{en:0,ja:1}[state.uiLanguage]]||text;
 const api=()=>window.DrawerVillageGroups, snapshot=()=>api()?.getSnapshot?.(),uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
@@ -11,12 +12,10 @@ const town=s=>s.group.towns?.find(t=>t.id===s.selectedTownId)||s.group.towns?.[0
 let serial=Promise.resolve();
 function enqueue(run,toast){const next=serial.then(run);serial=next.catch(e=>toast(e.code==='groups/edit-conflict'?'다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.':e.message||e.code||'저장하지 못했어요'));return next.catch(()=>false)}
 function applyTown(s,result){if(result.town&&activeShared()?.activeGroupId===s.activeGroupId){const current=snapshot();current.group.towns=current.group.towns.map(t=>t.id===result.town.id?result.town:t);current.group.buildingRevision=result.revision}}
-export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,openMap,openShape,openRelation,openGroup}){
+export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,openMap,openShape,openRelation,openGroup,openRoutine,openMonthly,newRoutine,newMonthly}){
  const toast=value=>notify(tr(value));
- const s=activeShared();if(!s)return;const root=document.querySelector('.relationship-page,.mobile-town-shell,.home-page');if(!root)return;
- const proposalButton=document.createElement('button');proposalButton.type='button';proposalButton.textContent=({ko:'받은 제안 · 보낸 제안',en:'Received and sent proposals',ja:'受信・送信した提案'}[state.uiLanguage]);proposalButton.onclick=official;root.querySelector('[data-official-relation-dialog]')?.append(proposalButton);
- const visibleInbox=proposalButton.cloneNode(true);visibleInbox.dataset.sharedProposals='';const pending=(s.incomingProposals||[]).filter(p=>p.status==='pending').length;visibleInbox.textContent+=pending?' ('+pending+')':'';root.querySelector('[data-open-official-relations]')?.parentElement?.append(visibleInbox);
- const pendingPush=window.DrawerVillageGroupPush?.pending;if(pendingPush?.groupId===s.activeGroupId&&(s.incomingProposals||[]).some(p=>p.id===pendingPush.proposalId)){window.DrawerVillageGroupPush.pending=null;queueMicrotask(official)}
+ const s=activeShared();if(!s)return;const root=document.querySelector('.relationship-page,.mobile-town-shell,.home-page,.routine-shell');if(!root)return;
+ if(root.matches('.home-page'))bindSharedHome(root,s,render,toast);
  const select=sharedSelection(s),owned=id=>s.residents?.find(r=>r.id===id)?.ownerUid===uid();
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
  const saveBuilding=(id,patch={},extra={})=>enqueue(async()=>{const current=activeShared();if(current?.activeGroupId!==s.activeGroupId)throw Error('Group changed');if(!canEditShared(current))throw Error('건물 편집 권한이 필요해요');const result=await api().saveBuilding({id,townId:town(current).id,revision:current.group.buildingRevision||0,patch,...extra});applyTown(current,result);render()},toast);
@@ -36,6 +35,10 @@ export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,
  root.querySelectorAll('[data-character-view]').forEach(el=>el.disabled=!owned(el.dataset.source));
  root.addEventListener('click',e=>{
   const el=e.target.closest('button,[data-building-detail-open]');if(!el)return;
+  if(el.matches('[data-routine-character]')){stop(e);select.routineCharacter=el.dataset.routineCharacter;render();return}
+  if(el.matches('[data-add-routine],[data-add-routine-day],[data-add-monthly-routine],[data-edit-routine],[data-edit-monthly-routine]')){stop(e);withSharedWorld(snapshot(),()=>{const c=state.characters[state.activeId];if(!owned(c.id)){toast(residentText('내 캐릭터를 선택해서 제안해 주세요.','Select your own character to propose a schedule.','自分のキャラクターを選んで提案してください。'));return}const monthly=el.matches('[data-add-monthly-routine],[data-edit-monthly-routine]'),id=el.dataset.editRoutine||el.dataset.editMonthlyRoutine||'',draft=id?null:(monthly?newMonthly():newRoutine());if(draft&&el.dataset.addRoutineDay!==undefined)draft.day=Number(el.dataset.addRoutineDay);(monthly?openMonthly:openRoutine)(id,draft,(patch,targetId,close)=>enqueue(async()=>{await api().propose({kind:'schedule',patch,targetId});close();toast(residentText('일정 제안을 보냈어요. 우편함에서 답변을 확인해 주세요.','Schedule proposed. Check your mailbox for responses.','予定を提案しました。返答は郵便箱で確認できます。'));render()},toast));document.querySelector('[data-routine-save]').textContent=residentText(id?'수정 제안하기':'일정 제안하기',id?'Propose changes':'Propose schedule',id?'変更を提案':'予定を提案')});return}
+  if(el.matches('[data-delete-routine],[data-delete-monthly-routine]')){stop(e);const key=(el.dataset.deleteRoutine||el.dataset.deleteMonthlyRoutine).split(':')[0],schedule=s.schedules?.find(x=>x.id===key);if(!schedule){toast(residentText('원본 일정은 내 마을에서 수정해 주세요.','Edit original schedules in your personal town.','元の予定は自分の村で編集してください。'));return}enqueue(async()=>{await api().propose({kind:'schedule',targetId:key,patch:{...schedule,cancelled:true}});toast(residentText('일정 취소를 제안했어요.','Schedule cancellation proposed.','予定の取り消しを提案しました。'))},toast);return}
+  if(el.matches('[data-add-anniversary],[data-edit-anniversary]')){stop(e);withSharedWorld(snapshot(),()=>{const draft=newMonthly();draft.type='가족 일정';openMonthly('',draft,(patch,targetId,close)=>enqueue(async()=>{await api().propose({kind:'schedule',patch,targetId});close();render()},toast))});return}
   if(el.matches('[data-relationship-character]')){stop(e);select[el.dataset.relationshipCharacter]=el.dataset.characterId;render();return}
   if(el.matches('[data-open-official-relations]')){stop(e);root.querySelector('[data-official-relation-dialog]')?.showModal();return}
   if(el.matches('[data-open-character-groups]')){stop(e);root.querySelector('[data-character-group-list-dialog]')?.showModal();return}
@@ -55,7 +58,7 @@ export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,
   if(el.matches('[data-resident-visit]')){stop(e);api().visitHome(el.dataset.residentVisit);location.hash='tab=home';return}
   if(el.matches('[data-resident-refresh]')){stop(e);enqueue(()=>api().refreshResidents(),toast);return}
   if(el.matches('[data-resident-remove]')){stop(e);if(confirm(residentText('이 캐릭터를 그룹에서 퇴거시킬까요?','Move this character out of the group?','このキャラクターをグループから退去させますか？')))enqueue(async()=>{await api().removeResident(el.dataset.residentRemove);select.residentDetail='';render()},toast);return}
-  if(el.matches('[data-shared-proposals]')){stop(e);official();return}
+  if(el.matches('[data-shared-proposals]')){stop(e);location.hash='tab=mailbox';return}
   if(el.matches('[data-editor-save],[data-town-save]')){stop(e);serial.then(()=>toast('저장했어요'));return}
   if(el.matches('[data-world-transport]')){stop(e);const mode=el.dataset.worldTransport,modes=town(snapshot()).transportModes||[];saveTown({transportModes:modes.includes(mode)?modes.filter(m=>m!==mode):[...modes,mode]});return}
   if(el.matches('[data-place-stock],[data-place-audience]')){stop(e);const field=el.hasAttribute('data-place-stock')?'stock':'audiences',id=el.dataset.placeStock||el.dataset.placeAudience,p=town(snapshot()).places.find(p=>p.id===id),value=el.dataset.itemId||el.dataset.value,list=p[field]||[];saveBuilding(id,{[field]:list.includes(value)?list.filter(v=>v!==value):[...list,value]});return}
@@ -87,13 +90,6 @@ export function bindSharedUi({render,toast:notify,setMode,setPanel,setPlacement,
  },true);
  root.addEventListener('input',e=>{if(e.target.matches('[data-place-field],[data-home-field],[data-home-name],[data-world-name],[data-world-description]'))e.stopImmediatePropagation()},true);
  root.addEventListener('pointerdown',e=>{if(e.target.matches('[data-place-field]'))e.stopImmediatePropagation()},true);
- if(root.matches('.home-page')){
-  root.querySelectorAll('[data-home-edit]').forEach(b=>b.disabled=true);
-  root.querySelectorAll('input,select,textarea').forEach(el=>el.disabled=true);
-  root.addEventListener('change',stop,true);
-  // Visiting uses the existing interior and read-only panels. Editing cannot reach personal state.
-  root.addEventListener('click',e=>{const b=e.target.closest('button');if(b&&[...b.attributes].some(a=>/^data-(add-room|delete-|open-room-editor|open-furniture|room-surface|home-image)/.test(a.name)))stop(e)},true);
- }
  if(root.matches('.mobile-town-shell')){
   if(!canEditShared(s)){root.querySelectorAll('[data-place-field],[data-home-field],[data-home-name],[data-world-name],[data-world-description],[data-add-place],[data-delete-place],[data-mobile-town-decoration-mode]').forEach(el=>el.disabled=true);root.querySelectorAll('input,select,textarea,[data-world-transport]').forEach(el=>{if([...el.attributes].some(a=>/^data-(world-|home-|place-)/.test(a.name)))el.disabled=true})}
   root.querySelectorAll('[data-home-field="townId"],[data-place-field="townId"],[data-add-town],[data-delete-town]').forEach(el=>el.disabled=true);

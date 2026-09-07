@@ -3,7 +3,7 @@ const {createSharedTownService}=require('../functions/shared-town');
 const data=new Map([
  ['groups/g',{ownerUid:'host',towns:[{id:'t',places:[]}],buildingRevision:0}],
  ['groups/g/members/host',{role:'owner'}],['groups/g/members/op',{role:'operator'}],['groups/g/members/member',{role:'member'}],
- ['groups/g/residents/a',{ownerUid:'member',townId:'t'}],['groups/g/residents/b',{ownerUid:'op',townId:'t'}]
+ ['groups/g/residents/a',{name:'A',ownerUid:'member',townId:'t',profileJson:'{}'}],['groups/g/residents/b',{name:'B',ownerUid:'op',townId:'t',profileJson:'{}'}]
 ]);
 const ref=(path,collection=false)=>({path,id:path.split('/').at(-1),collection:name=>ref(path+'/'+name,true),doc:name=>ref(path+'/'+name),isCollection:collection,where:(field,op,value)=>({...ref(path,true),filter:[field,value]})});
 const snap=path=>({id:path.split('/').at(-1),exists:data.has(path),data:()=>structuredClone(data.get(path))});
@@ -85,6 +85,18 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  await relations.respond('op',{groupId:'g',proposalId:'co1',accept:true});assert.equal(data.get('groups/g/residents/a').sharedHomeId,'new-home');
  await assert.rejects(relations.requestResidence('host',{groupId:'g',kind:'cohabitation',requestId:'co2',sourceId:'a',homeId:'new-home'}),e=>e.status===403);
  console.log('PASS admission and cohabitation: pending isolation, recipient authorization, decline, accepted homes and idempotent response');
+ const schedule={memberIds:['a','b'],sourceId:'a',title:'Together',type:'친구 약속',start:'01:00',end:'03:00',days:[1,2,3,4,5],monthly:false,townId:'t'};
+ await relations.propose('member',{groupId:'g',requestId:'schedule1',kind:'schedule',patch:schedule});assert.ok(!data.has('groups/g/schedules/accepted-schedule1'));
+ await relations.respond('op',{groupId:'g',proposalId:'schedule1-op',accept:true});assert.equal(data.get('groups/g/schedules/accepted-schedule1').end,'03:00');
+ await relations.propose('member',{groupId:'g',requestId:'schedule2',kind:'schedule',targetId:'accepted-schedule1',patch:{...schedule,title:'Changed'}});await relations.respond('op',{groupId:'g',proposalId:'schedule2-op',accept:false});assert.equal(data.get('groups/g/schedules/accepted-schedule1').title,'Together');
+ await assert.rejects(relations.propose('member',{groupId:'g',requestId:'schedulebad',kind:'schedule',patch:{...schedule,start:'99:99'}}),/invalid-schedule/);
+ const mail={groupId:'g',requestId:'mail1',sourceId:'a',targetId:'b',subject:'Gift',body:'For you',gift:{kind:'drink',item:{id:'lemonade',name:'Lemonade'}}};
+ await relations.sendMail('member',mail);await relations.sendMail('member',mail);assert.equal(data.get('groups/g/mail/mail1').recipientUid,'op');assert.deepEqual(JSON.parse(data.get('groups/g/residents/b').profileJson).inventory.drink,['lemonade']);
+ await assert.rejects(relations.sendMail('host',{...mail,requestId:'mailbad'}),e=>e.status===403);
+ await service.saveHomeLayout('member',{groupId:'g',id:'home',revision:0,layout:{rooms:{bedroom:{name:'Bedroom',furniturePlacements:[{id:'bed1',item:'커플 침대',x:50,y:50}]}},floorCount:2}});assert.equal(JSON.parse(data.get('groups/g/homes/home').layoutJson).rooms.bedroom.furniturePlacements.length,1);
+ await assert.rejects(service.saveHomeLayout('member',{groupId:'g',id:'home',revision:0,layout:{rooms:{}}}),e=>e.status===409);
+ await assert.rejects(service.saveHomeLayout('member',{groupId:'g',id:'new-home',revision:0,layout:{rooms:{}}}),e=>e.status===403);
+ console.log('PASS shared schedules, declined edits, gift inventory idempotency and authorized home layouts with revision conflicts');
  console.log('PASS full relationship proposals, all-owner approval, rejected edit preservation and character-group proposals');
  console.log('PASS town/home/decoration shared edits, roles, revision conflicts and view field preservation');
  console.log('PASS declined reason and manual shared dictionary ownership, idempotency and 80-item limit');

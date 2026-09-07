@@ -1,11 +1,11 @@
-import {dailyInteractionLine} from './scene-context.js?v=20260907dev269';
-import {careRoutineFor} from "./creative-options.js?v=20260907dev269";
-import {drinkExperience} from "./drink-log.js?v=20260907dev269";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev269";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev269";
-import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev269";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev269";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev269";
+import {dailyInteractionLine} from './scene-context.js?v=20260907dev270';
+import {careRoutineFor} from "./creative-options.js?v=20260907dev270";
+import {drinkExperience} from "./drink-log.js?v=20260907dev270";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev270";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev270";
+import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev270";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev270";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev270";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -3820,7 +3820,9 @@ function viewDrivenInteraction(place,first,second,date){
   };}
   if(annoyed){
     const placeType=String(place?.type||place?.name||"");
-    const scenePool=/주방/.test(placeType)?[
+    const scenePool=/침실|침대|bedroom|bed/i.test(placeType)?[
+      {title:"쉬는 자리를 맞추며 이야기를 나누는 중",first:"조금 더 편하게 쉬고 싶다며 자세를 고쳐 앉고 옆자리를 비웠어요.",second:"자리를 조금 내어 주며 자기 쪽도 편하게 앉을 수 있도록 자세를 바꿨어요.",copy:{en:{title:"Talking while making room to rest",first:"They adjusted their posture and made some room beside them.",second:"They shifted a little so both could sit comfortably."},ja:{title:"休む場所を譲り合いながら話しているところ",first:"楽に休めるよう姿勢を直し、隣を少し空けました。",second:"少し場所を譲り、お互いが楽に座れるよう姿勢を変えました。"}}}
+    ]:/주방/.test(placeType)?[
       {title:"찻잔을 둘 자리를 놓고 툭툭 받아치는 중",first:"찻잔을 조리대 끝에 두지 말라고 짚은 뒤 자리를 직접 비웠어요.",second:"그 정도는 바로 치울 수 있다며 받아치고 찻잔을 물기 없는 쪽으로 옮겼어요."},
       {title:"간식 접시를 누가 치울지 짧게 말씨름하는 중",first:"방금 먹은 사람이 치우는 게 맞다고 말하며 빈 포장부터 한데 모았어요.",second:"준비한 사람이 따로 있지 않냐고 맞받아치면서도 접시는 싱크대로 가져갔어요."}
     ]:/카페|음식점/.test(placeType)?[
@@ -3837,8 +3839,9 @@ function viewDrivenInteraction(place,first,second,date){
     const selectedScene=pick(scenePool,3),chosen=selectedScene.copy?.[state.uiLanguage]||selectedScene;
     const initiator=interactionInitiator(first,second,`${place?.id||placeType}:${dayKey(date)}`),firstLeads=initiator.id===first.id;
     const firstAction=firstLeads?chosen.first:chosen.second,secondAction=firstLeads?chosen.second:chosen.first;
-    const firstTitle=`${togetherWith(second.name)} ${chosen.title}`;
-    const secondTitle=`${togetherWith(first.name)} ${chosen.title}`;
+    const namedTitle=name=>selectedScene.copy?.[state.uiLanguage]?(state.uiLanguage==="en"?`${chosen.title} with ${name}`:`${name}と${chosen.title}`):`${togetherWith(name)} ${chosen.title}`;
+    const firstTitle=namedTitle(second.name);
+    const secondTitle=namedTitle(first.name);
     return {
     title:firstTitle,firstTitle,secondTitle,
     first:`${firstAction}${/연애 감정|사랑|좋아함/.test(firstCombined)&&state.uiLanguage==="ko"?" 말투는 퉁명스러웠지만 상대가 곤란해질 부분은 따로 챙겼어요.":""}`,

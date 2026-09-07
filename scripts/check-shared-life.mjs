@@ -1,6 +1,6 @@
 import {advanceSharedLife} from '../server-life.mjs';
 import assert from 'node:assert/strict';
-const game=await import('../state.js?v=20260907dev269');
+const game=await import('../state.js?v=20260907dev270');
 const id=game.createCharacter(5),profile=structuredClone(game.state.characters[id]),before=JSON.stringify(game.state);
 const snapshot={group:{id:'test',towns:[{id:'town',name:'Shared',places:[{id:'park',name:'Park',type:'공원',x:30,y:40,stock:[]}]}]},residents:Array.from({length:2},(_,i)=>({id:'r'+i,name:'Person '+i,ownerUid:'u'+i,townId:'town',sourceCharacterId:'c'+i,profileJson:JSON.stringify({...profile,wake:'07:00',sleep:'23:00'}),scheduleJson:'{}'})),homes:[]};
 snapshot.residents.forEach(r=>{const p=JSON.parse(r.profileJson);p.createdAt=1;r.profileJson=JSON.stringify(p)});

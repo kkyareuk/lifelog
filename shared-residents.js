@@ -1,5 +1,5 @@
-import {state} from './state.js?v=20260907dev269';
-import {sharedSelection,decodeShared} from './shared-world.js?v=20260907dev269';
+import {state} from './state.js?v=20260907dev270';
+import {sharedSelection,decodeShared} from './shared-world.js?v=20260907dev270';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const residentText=(ko,en,ja)=>state.uiLanguage==='en'?en:state.uiLanguage==='ja'?ja:ko;
 export function sharedResidentsScreen(s){
