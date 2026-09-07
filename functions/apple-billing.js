@@ -23,13 +23,13 @@ function validatePurchase(p,uid,environment,transactionId){
 }
 function appleServices(privateKey){
  const environment=process.env.APPLE_IAP_ENVIRONMENT,appId=Number(process.env.APPLE_APP_ID);
- if(process.env.APPLE_BILLING_ENABLED!=='true'||![Environment.PRODUCTION,Environment.SANDBOX].includes(environment)||!process.env.APPLE_IAP_KEY_ID||!process.env.APPLE_IAP_ISSUER_ID||!privateKey||environment===Environment.PRODUCTION&&!Number.isSafeInteger(appId))throw fail('APPLE_NOT_CONFIGURED',503);
+ if(process.env.APPLE_BILLING_ENABLED!=='true'||![Environment.PRODUCTION,Environment.SANDBOX].includes(environment)||!process.env.APPLE_IAP_KEY_ID||!process.env.APPLE_IAP_ISSUER_ID||!privateKey||environment===Environment.PRODUCTION&&(!Number.isSafeInteger(appId)||appId<=0))throw fail('APPLE_NOT_CONFIGURED',503);
  const verifier=new SignedDataVerifier([fs.readFileSync(__dirname+'/certificates/AppleRootCA-G3.cer')],true,environment,bundleId,environment===Environment.PRODUCTION?appId:undefined);
  const api=new AppStoreServerAPIClient(privateKey,process.env.APPLE_IAP_KEY_ID,process.env.APPLE_IAP_ISSUER_ID,bundleId,environment);
  return {environment,verifier,api};
 }
 function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimestamp,privateKey,services=()=>appleServices(privateKey())}){
- const handle=fn=>async(req,res)=>{try{await fn(req,res)}catch(e){res.status(e.status||503).json({verified:false,entitlementApplied:false,code:e.code||'APPLE_VERIFICATION_FAILED'})}};
+ const handle=fn=>async(req,res)=>{try{await fn(req,res)}catch(e){res.status(Number.isInteger(e.status)&&e.status>=400&&e.status<=599?e.status:503).json({verified:false,entitlementApplied:false,code:e.code||'APPLE_VERIFICATION_FAILED'})}};
  app.post('/apple-billing/prepare',handle(async(req,res)=>{const identity=await signedInUser(req),service=services();res.json({appAccountToken:accountToken(identity.uid),environment:service.environment,products:productMap})}));
  app.post('/apple-billing/verify',handle(async(req,res)=>{
   const identity=await signedInUser(req),id=String(req.body?.transactionId||'');if(!/^\d{1,30}$/.test(id))throw fail('APPLE_INVALID_TRANSACTION',400);
