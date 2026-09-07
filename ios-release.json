@@ -1,7 +1,9 @@
 {
-  "version": "1.0.204",
-  "build": 10,
-  "sourceAndroidCode": 219,
-  "stage": "local-preview",
+  "version": "1.0.215",
+  "build": 14,
+  "sourceAndroidCode": 264,
+  "sourceAndroidVersion": "1.0.215.10",
+  "sourceCommit": "841787a",
+  "stage": "production-port",
   "appStoreReady": false
 }

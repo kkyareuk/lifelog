@@ -12,7 +12,8 @@
       "@capacitor/local-notifications",
       "@capacitor/network",
       "@capacitor/splash-screen",
-      "@capacitor/status-bar"
+      "@capacitor/status-bar",
+      "@capacitor-firebase/authentication"
     ]
   },
   "android": {

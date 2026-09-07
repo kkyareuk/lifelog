@@ -1,0 +1,12 @@
+{
+  "commit": "841787a",
+  "androidCode": 264,
+  "files": {
+    "app.js": "bb3bee8288b1dd360e39db7a3a71fd1e01ad8a87429a4c59d88444d5ab78d168",
+    "state.js": "291c8acc872301dd99f2806b604068f779e186ab1d2580098856a5a05ad16f3a",
+    "simulation.js": "6cb8caca20b953b5c4d859007f838b44c8785fea18ace02e25f895c64fa296a9",
+    "auth.js": "849d9cd6e4b650810bad7172636e343c89c904f766322e9904bd788e2d60889e",
+    "app.css": "fc558a3efa15cda4144fc36afcd2e413849b2c329fe1202c384dba6e1110dd1b",
+    "character-book.css": "e5bc0de4f1825bc9650a4a4f582d349b4e07b1d75bfd9103ebb7a6dbc53fcc54"
+  }
+}

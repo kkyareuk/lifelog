@@ -9,11 +9,12 @@ const project=read("ios/App/App.xcodeproj/project.pbxproj");
 assert.ok(read("ios/App/App.xcworkspace/contents.xcworkspacedata").includes("App.xcodeproj"));
 assert.equal(config.appId,"com.drawervillage.app");
 assert.equal(pkg.dependencies["@capacitor/ios"],"7.6.8");
-assert.ok(!config.ios.includePlugins.includes("@capacitor-firebase/authentication"),"Unconfigured Firebase must not crash preview at launch");
+assert.ok(config.ios.includePlugins.includes("@capacitor-firebase/authentication"));
+assert.ok(read("ios/App/App/GoogleService-Info.plist").includes("com.drawervillage.app"));
 assert.equal((project.match(new RegExp("MARKETING_VERSION = "+release.version.replaceAll(".","\\.")+";","g"))||[]).length,2);
 assert.equal((project.match(new RegExp("CURRENT_PROJECT_VERSION = "+release.build+";","g"))||[]).length,2);
 const gradle=read("android/app/build.gradle");
-assert.ok(gradle.includes('versionName "'+release.version+'"'),"Synchronize release version across targets deliberately");
+assert.ok(gradle.includes('versionName "'+(release.sourceAndroidVersion||release.version)+'"'),"Synchronize release version across targets deliberately");
 assert.ok(gradle.includes("versionCode "+release.sourceAndroidCode));
 assert.ok(read("native-app.js").includes('if(isAndroid)App.addListener("backButton"'));
 assert.ok(read("auth.js").includes("iosPreview"));
@@ -22,12 +23,12 @@ for(const file of ["index.html","audio.js","assets/audio/shoe-walking.m4a","room
  assert.ok(existsSync(new URL("ios/App/App/public/"+file,root)),"Missing iOS asset "+file);
 }
 assert.ok(read("ios/App/App/public/index.html").includes('name="drawer-village-app" content="ios"'));
-assert.ok(read("ios/App/App/public/config.js").includes("iosPreview=true"));
-assert.ok(read("ios/App/App/public/auth.js").includes("ready:true"),"Local preview must settle without network login");
-assert.ok(!read("ios/App/App/public/auth.js").includes("gstatic.com"),"Local preview must not load external auth SDK");
+assert.ok(read("ios/App/App/public/config.js").includes("iosPreview=false"));
+assert.ok(read("ios/App/App/public/auth.js").includes("signInWithCredential"));
+assert.ok(read("ios/App/App/public/config.js").includes("appleBilling"));
 assert.ok(read("ios/App/App/public/config.js").includes("playBilling||{}),enabled:false"));
-assert.ok(!read("ios/App/Podfile").includes("FirebaseAuthentication"));
-console.log("PASS iOS preparation: Xcode project, version, six native plugins, bundled modules/audio, disabled unconfigured login and purchase paths.");
+assert.ok(read("ios/App/Podfile").includes("CapacitorFirebaseAuthentication/Google"));
+console.log("PASS iOS preparation: Xcode project, version, seven native plugins, bundled modules/audio, configured Google login and Apple billing bridge preparation (not live purchase verification).");
 if(process.argv.includes("--release")){
  assert.equal(release.appStoreReady,true,"NOT READY: signing, device QA, final icon, Apple login, StoreKit/server verification, account deletion and privacy review remain. Simulator compilation alone is not release approval. See APP-IOS.md.");
 }

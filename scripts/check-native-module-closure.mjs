@@ -6,11 +6,17 @@ import {fileURLToPath} from "node:url";
 const output=new URL("../www/",import.meta.url),outputPath=fileURLToPath(output);
 const relativeImports=source=>{
   const found=[];
-  const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
+  const pattern=/(?:from\s*|import\s*\(\s*|import\s+)["'](\.[^"']+)["']/g;
   let match;
   while((match=pattern.exec(source)))found.push(match[1]);
   return found;
 };
+const html=await readFile(new URL('index.html',output),'utf8');
+for(const tag of html.matchAll(/<(?:script|link)\b[^>]*>/g)){
+  const target=tag[0].match(/(?:src|href)=["']([^"']+)["']/)?.[1];
+  if(!target||/^(?:https?:|data:|#)/.test(target))continue;
+  const url=new URL(target,output);url.search='';url.hash='';await access(url);
+}
 const queue=["app.js","native-app.js"],visited=new Set();
 while(queue.length){
   const name=queue.shift();

@@ -27,13 +27,13 @@ const includedFiles=new Set([
   "dictionary.css","home-editor-ui.css",
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
-  "native-app.js","payment.html","payment-success.html","payment-fail.html",
+  "native-app.js","apple-billing-client.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
   "town-fit.css"
 ]);
 const relativeModuleImports=source=>{
   const found=[];
-  const pattern=/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g;
+  const pattern=/(?:from\s*|import\s*\(\s*|import\s+)["'](\.[^"']+)["']/g;
   let match;
   while((match=pattern.exec(source)))found.push(match[1].split(/[?#]/)[0]);
   return found;
@@ -131,7 +131,7 @@ await copyModuleClosure();
 // The local-only iOS preview must not wait for external Firebase module loads
 // or restore an account that this preview cannot sign into. Android/web retain
 // the original auth implementation; no saved data or storage scope is changed.
-if(platform==="ios")await writeFile(new URL("auth.js",output),await readFile(new URL("scripts/ios-preview-auth.mjs",root)));
+// Production iOS keeps the authenticated account flow.
 
 // The character book used to be a separately requested stylesheet. Because it
 // was missing from the manually maintained Android asset list, WebView rendered
@@ -174,6 +174,7 @@ window.DRAWER_VILLAGE_NATIVE_BUILD="20260907hotfix264";
     globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});
   </script>
   <script type="module" src="./native-app.js"></script>
+  ${platform==="ios"?'<script type="module" src="./apple-billing-client.js"></script>':""}
 </head>`);
 await writeFile(indexPath,index,"utf8");
 
@@ -184,7 +185,10 @@ config=config.replace(
   "window.PARALLEL_CITY_CONFIG.paymentsEnabled=false;window.PARALLEL_CITY_CONFIG.nativeApp=true;window.PARALLEL_CITY_CONFIG.beta={...(window.PARALLEL_CITY_CONFIG.beta||{}),enabled:false};"
 );
 config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:${platform==="android"}};\n`;
-if(platform==="ios")config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=true;\n";
+if(platform==="ios"){
+ config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=false;window.PARALLEL_CITY_CONFIG.iosApp=true;\n";
+ config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
+}
 await writeFile(configPath,config,"utf8");
 
 console.log(`${platform} 앱용 웹 파일을 www 폴더에 준비했습니다.`);
