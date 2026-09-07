@@ -31,3 +31,5 @@ Apple SDK: https://github.com/apple/app-store-server-library-node
 첫 인앱결제 제출: https://developer.apple.com/help/app-store-connect/manage-submissions-to-app-review/submit-an-in-app-purchase/
 
 StoreKit 네이티브 컴파일: Actions 34090035958에서 성공, 시뮬레이터 실행 단계 확인 중. Google 로그인 연결 변경은 후속 실행으로 검증한다.
+
+추가 검증 기록: StoreKit 실행 34090035958은 컴파일 성공 후 새 로그인 검증으로 전환하며 시뮬레이터 실행을 취소했다. 34090233673은 이전 로컬 미리보기 전용 검사 조건에서 실패했고, 실제 Firebase 로그인 빌드로 바뀐 요구에 맞춰 QA 조건을 수정했다. 최신 Mac 검사 34090475554 진행 중(9073ece). 전체 Mac 검사 성공이나 실제 로그인 성공으로 표기하지 않는다.
