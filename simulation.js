@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev256";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev256";
-import {state,save,characterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev256";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev256";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev256";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev257";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev257";
+import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev257";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev257";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev257";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -187,6 +187,13 @@ const routineEndMinute=item=>{
   return rawEnd===start?start+30:rawEnd<start?rawEnd+1440:rawEnd;
 };
 const scheduledForDate=(c,date=new Date())=>{
+  if(!sceneBatch)return calculateScheduledForDate(c,date);
+  const key=`${c.id}:${scheduleDateKey(date)}`;
+  const cache=sceneBatch.schedules??=new Map();
+  if(!cache.has(key))cache.set(key,calculateScheduledForDate(c,date));
+  return cache.get(key);
+};
+const calculateScheduledForDate=(c,date)=>{
   const seen=new Set(),deleted=new Set([...(state.deletedRoutineIds||[]),...(state.deletedMonthlyRoutineIds||[])].map(String));
   const sources=state.order.flatMap(ownerId=>{
     const owner=state.characters[ownerId];if(!owner)return[];
@@ -270,7 +277,23 @@ const appearanceTraitTags=c=>{
   return [...new Set(tags.filter(Boolean))];
 };
 const itemById=id=>Object.values(state.catalog||{}).flat().find(x=>x.id===id);
-const relationList=()=>Object.values(state.relationships||{});
+function relationIndex(){
+  if(sceneBatch&&sceneBatch.relations?.revision===sceneBatch.relationshipRevision)return sceneBatch.relations;
+  const list=Object.values(state.relationships||{}),pairs=new Map();
+  for(const relation of list){
+    for(const [a,b] of [[relation.a,relation.b],[relation.b,relation.a]]){
+      if(!pairs.has(a))pairs.set(a,new Map());
+      const targets=pairs.get(a);if(!targets.has(b))targets.set(b,[]);
+      if(!targets.get(b).includes(relation))targets.get(b).push(relation);
+    }
+  }
+  const index={list,pairs,revision:sceneBatch?.relationshipRevision};
+  if(sceneBatch)sceneBatch.relations=index;
+  return index;
+}
+const relationList=()=>sceneBatch?relationIndex().list:Object.values(state.relationships||{});
+const pairRelations=(a,b)=>relationIndex().pairs.get(a)?.get(b)||[];
+const characterViewFor=(a,b)=>readCharacterViewFor(a,b,sceneBatch?pairRelations(a,b):null);
 const relationPriority={"부모·자녀":10,"형제·자매":9,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,동거인:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const related=c=>{
   const grouped=new Map();
@@ -2937,7 +2960,7 @@ function build(c,date=new Date()){
 const ENGINE_VERSION="20260902-language-scene-203";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
-const signatureCache=new Map();
+const signatureCache=new WeakMap();
 function signature(c){
   // Most screens ask for both the current event and the visible timeline.
   // Both used to serialize the same large simulation input independently.
@@ -2948,11 +2971,10 @@ function signature(c){
   // 동기화 직후 항목이 늘어난다. 캐릭터 객체가 교체되거나 실제 시뮬레이션
   // 설정의 timelineResetAt이 바뀐 경우에만 서명을 다시 계산한다.
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
-  const cached=signatureCache.get(c.id);
+  const cached=signatureCache.get(c);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
   const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:(c.residences||[]).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
-  signatureCache.set(c.id,{character:c,revision,value});
-  if(signatureCache.size>64)signatureCache.delete(signatureCache.keys().next().value);
+  signatureCache.set(c,{character:c,revision,value});
   return value;
 }
 
@@ -3183,7 +3205,7 @@ export function timeline(c,date=new Date()){
       if(wrong)cleaned=mergeImmutableEntries(cleaned.filter(item=>item.interactionId!==gift.interactionId),[gift]);
     }
     const changed=JSON.stringify(cleaned)!==JSON.stringify(old.entries);
-    if(changed)old.entries=cleaned;
+    if(changed){old.entries=cleaned;if(sceneBatch)sceneBatch.revision++}
     old.cleanupVersion=ENGINE_VERSION;
     save(false,false);
   }
@@ -3209,6 +3231,7 @@ export function timeline(c,date=new Date()){
       entries=mergeImmutableEntries(kept,entries.filter(item=>item.minute>cutoff));
     }
     c.days[key]={signature:sig,engineVersion:ENGINE_VERSION,cleanupVersion:ENGINE_VERSION,settingsAppliedAt:Number(c.timelineResetAt||0),entries};
+    if(sceneBatch)sceneBatch.revision++;
     save(false,false);
   }
   return Array.isArray(c.days[key]?.entries)?c.days[key].entries:[];
@@ -3248,7 +3271,7 @@ function commitLiveEntry(c,date,item){
   const entries=Array.isArray(day.entries)?day.entries:[];
   const applyEntries=nextEntries=>{
     const changed=nextEntries.length!==entries.length||nextEntries.some((entry,index)=>JSON.stringify(entry)!==JSON.stringify(entries[index]));
-    if(changed){day.entries=nextEntries;save(false,false)}
+    if(changed){day.entries=nextEntries;if(sceneBatch)sceneBatch.revision++;save(false,false)}
     return changed;
   };
   // A log entry is a historical snapshot, not a view model. Once the same
@@ -3298,7 +3321,10 @@ function commitLiveEntry(c,date,item){
       return !shadowedBase;
     });
     const changed=applyEntries(mergeImmutableEntries(withoutSameMoment,[item]));
-    if(changed&&item.interactionId)recordAutomaticRelationshipMoment([c.id,...(item.withIds||[]),item.withId],`scene:${item.interactionId}`,1,true);
+    if(changed&&item.interactionId&&recordAutomaticRelationshipMoment([c.id,...(item.withIds||[]),item.withId],`scene:${item.interactionId}`,1,false)){
+      if(sceneBatch)sceneBatch.relationshipRevision++;
+      save(false,true);
+    }
     return item;
   }
   const interactionIndex=item.interactionId?entries.findIndex(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute)):-1;
@@ -3321,7 +3347,7 @@ function commitLiveEntry(c,date,item){
     (item.dateGroup&&entry.dateGroup===item.dateGroup&&storyKey(entry.title)===storyKey(item.title)&&storyKey(entry.desc)===storyKey(item.desc))||
     (!item.dateGroup&&sceneKey(entry.title)===sceneKey(item.title)&&entry.placeId===item.placeId&&entry.room===item.room&&Math.abs(Number(entry.minute)-Number(item.minute))<240)
   )||Boolean(lastDateEntry&&Number(item.minute)-Number(lastDateEntry.minute)<dateGap);
-  if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);save(false,false)}
+  if(!duplicate){day.entries=mergeImmutableEntries(entries,[item]);if(sceneBatch)sceneBatch.revision++;save(false,false)}
   return item;
 }
 export function forceCharactersHome(characterIds,date=new Date()){
@@ -3528,7 +3554,38 @@ function manualDirectiveEventFor(c,date=new Date()){
     manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
   }),date);
 }
+// Repeated participant searches share base scenes only during a synchronous
+// calculation transaction. No result survives a user edit, clock tick or sync.
+let sceneBatch=null;
+export function withSimulationBatch(run){
+  if(sceneBatch)return run();
+  sceneBatch=new WeakMap();
+  sceneBatch.revision=0;
+  sceneBatch.relationshipRevision=0;
+  try{return run()}finally{sceneBatch=null}
+}
 function baseEventFor(c,date=new Date()){
+  if(!sceneBatch)return calculateBaseEvent(c,date);
+  const day=c.days?.[dayKey(date)],cached=sceneBatch.get(c),time=date.getTime();
+  if(cached&&cached.worldRevision===sceneBatch.revision&&cached.time===time&&cached.revision===c.timelineResetAt&&cached.day===day&&cached.entries===day?.entries&&cached.length===day?.entries?.length)return cached.value;
+  const value=calculateBaseEvent(c,date),nextDay=c.days?.[dayKey(date)];
+  sceneBatch.set(c,{time,worldRevision:sceneBatch.revision,revision:c.timelineResetAt,day:nextDay,entries:nextDay?.entries,length:nextDay?.entries?.length,value});
+  return value;
+}
+function dateReservationOwners(date){
+  const cached=sceneBatch?.reservations,time=date.getTime();
+  if(cached&&cached.time===time&&cached.revision===sceneBatch.revision)return cached.owners;
+  const owners=new Map();
+  for(const id of state.order){
+    const owner=state.characters[id];if(!owner)continue;
+    const event=baseEventFor(owner,date),ids=dateGroupParticipantIds(event);
+    if(!event?.dateGroup||!event?.datePurpose||ids.length<2)continue;
+    for(const target of ids){if(!owners.has(target))owners.set(target,[]);owners.get(target).push(id)}
+  }
+  if(sceneBatch)sceneBatch.reservations={time,revision:sceneBatch.revision,owners};
+  return owners;
+}
+function calculateBaseEvent(c,date=new Date()){
   const n=nowMin(date);
   const list=timeline(c,date);
   const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
@@ -3919,11 +3976,17 @@ function relationshipAwareness(first,second,relation){
 }
 function interactionPair(group,date=new Date(),placeKey=""){
   const people=[...new Map(group.filter(Boolean).map(person=>[person.id,person])).values()].sort((a,b)=>String(a.id).localeCompare(String(b.id)));
+  const cache=sceneBatch?(sceneBatch.pairs??=new Map()):null;
+  const cacheKey=cache?JSON.stringify([sceneBatch.revision,date.getTime(),placeKey,people.map(person=>person.id)]):null;
+  if(cache?.has(cacheKey))return cache.get(cacheKey);
   const candidates=[];
   for(let i=0;i<people.length;i++){
     for(let j=i+1;j<people.length;j++){
       const first=people[i],second=people[j];
-      const relation=relationList().find(r=>(r.a===first.id&&r.b===second.id)||(r.a===second.id&&r.b===first.id))||null;
+      const relation=pairRelations(first.id,second.id)[0]||null;
+      const scores=sceneBatch?(sceneBatch.pairScores??=new Map()):null;
+      const scoreKey=scores?JSON.stringify([first.id,second.id,first.timelineResetAt,second.timelineResetAt,placeKey,date.getTime(),relation]):null;
+      if(scores?.has(scoreKey)){const score=scores.get(scoreKey);if(score)candidates.push(score);continue}
       const key=`${first.id}:${second.id}`,relativeSide=hash(`${key}:${placeKey}:${dayKey(date)}:side`)%2?"right":"left";
       const inverseSide=relativeSide==="right"?"left":"right";
       const perception=Math.max(visionSideScore(first,relativeSide),visionSideScore(second,inverseSide));
@@ -3933,11 +3996,14 @@ function interactionPair(group,date=new Date(),placeKey=""){
       const willingness=Math.max(4,Math.min(92,12+familiarity*56+initiative*3+explicit*18))*perception;
       // 모르는 사람은 같은 장소에 있다는 이유만으로 매번 대화하지 않는다.
       // 관계·편안함·신뢰와 실제로 보이는 방향을 통과했을 때만 먼저 다가간다.
-      if(hash(`${key}:${placeKey}:${dayKey(date)}:${Math.floor(nowMin(date)/30)}:notice`)%100>=willingness)continue;
-      candidates.push({first,second,relation,score:relationImportance(first,second,relation)+familiarity*35+perception*18,key,perceptionSide:relativeSide});
+      if(hash(`${key}:${placeKey}:${dayKey(date)}:${Math.floor(nowMin(date)/30)}:notice`)%100>=willingness){if(scores)scores.set(scoreKey,null);continue}
+      const candidate={first,second,relation,score:relationImportance(first,second,relation)+familiarity*35+perception*18,key,perceptionSide:relativeSide};
+      if(scores)scores.set(scoreKey,candidate);
+      candidates.push(candidate);
     }
   }
   candidates.sort((a,b)=>b.score-a.score||a.key.localeCompare(b.key));
+  if(cache)cache.set(cacheKey,candidates[0]);
   return candidates[0];
 }
 function significantEncounter(pair,group,date){
@@ -4702,14 +4768,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
       if(otherEvent.dateGroup&&otherEvent.datePurpose&&otherDatePartner&&otherDatePartner!==c.id)return false;
       const otherInteractionIds=[other.id,...(otherEvent.participantOrder||[]),...(otherEvent.withIds||[]),otherEvent.withId].filter(Boolean);
       if(otherEvent.groupInteraction&&!otherInteractionIds.includes(c.id))return false;
-      const reservedByAnotherDate=state.order.some(ownerId=>{
-        const owner=state.characters[ownerId];
-        if(!owner||owner.id===other.id||owner.id===c.id)return false;
-        const ownerEvent=baseEventFor(owner,date);
-        const groupIds=dateGroupParticipantIds(ownerEvent);
-        const reservesCharacter=groupIds.length>=2&&groupIds.includes(other.id);
-        return Boolean(ownerEvent?.dateGroup&&ownerEvent?.datePurpose&&reservesCharacter);
-      });
+      const reservedByAnotherDate=(dateReservationOwners(date).get(other.id)||[]).some(ownerId=>ownerId!==other.id&&ownerId!==c.id);
       if(reservedByAnotherDate)return false;
       if(isHomeScene){
         const otherHomeId=otherEvent.visitHomeId||other.homeId;
@@ -4832,6 +4891,9 @@ function companionAlignedBaseEvent(c,current,date){
   return {...current,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
 }
 export function eventFor(c,date=new Date()){
+  return withSimulationBatch(()=>calculateEventFor(c,date));
+}
+function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);
   if(rawCurrent.giftExchange){
     const other=state.characters[rawCurrent.withId];

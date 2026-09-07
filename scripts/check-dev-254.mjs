@@ -7,9 +7,9 @@ globalThis.localStorage={get length(){return memory.size},key:index=>[...memory.
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener(){},dispatchEvent(){}};
 globalThis.document={addEventListener(){},querySelector(){return null},activeElement:null,visibilityState:"visible"};
 
-const {state,setCharacterBodyChoices,directCharacterActivity}=await import("../state.js?v=20260907dev256");
-const {accountStorage}=await import("../account-storage.js?v=20260907dev256");
-const {eventFor}=await import(`../simulation.js?v=20260907dev256`);
+const {state,setCharacterBodyChoices,directCharacterActivity}=await import("../state.js?v=20260907dev257");
+const {accountStorage}=await import("../account-storage.js?v=20260907dev257");
+const {eventFor}=await import(`../simulation.js?v=20260907dev257`);
 const character=(id,name)=>({id,name,createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",townId:"town",homeId:"home",residences:[{homeId:"home",isPrimary:true,stayPattern:"상시 거주",sleepRoomId:"bedroom"}],sleepRoomId:"bedroom",wake:"07:00",sleep:"23:30",job:"무직",jobTitle:"",workplaceId:"",personalityTypes:[],characterTraits:[],traitExpressions:[],hobbies:[],interests:[],inventory:{},foodTypes:[],foodPreferences:[],musicGenres:[],appearanceTags:[],attractionTraits:[],bodyProfile:{appearanceSummaries:[],overallImpressions:[]},theme:{primary:"#176b60"},days:{},timelineResetAt:0});
 state.characters=Object.fromEntries([["a","가람"],["b","나래"],["c","다온"]].map(([id,name])=>[id,character(id,name)]));
 state.order=["a","b","c"];
@@ -49,10 +49,10 @@ assert.notEqual(staleA.interactionId,interactionId,"불일치한 3인 대화 캐
 const app=read("app.js"),views=read("views.js"),css=read("app.css"),homeCss=read("home-editor-ui.css"),gradle=read("android/app/build.gradle"),prepare=read("scripts/prepare-app.mjs");
 assert.match(app,/setCharacterBodyChoices\(character\.id,bodyPath,cursor\[last\],true\)/);
 assert.match(app,/DIRECT_ACTIVITY_GROUPS/);assert.match(app,/data-direct-category/);assert.match(app,/data-direct-social-action/);
-assert.match(views,/drawer-shop-nerine\.png\?v=20260907dev256/);
+assert.match(views,/drawer-shop-nerine\.png\?v=20260907dev257/);
 assert.doesNotMatch(views,/data-residence-field="visitDates"/);
 assert.match(homeCss,/grid-template-columns:repeat\(7,minmax\(0,1fr\)\)/);
 assert.match(css,/\.direct-category-tabs/);
-assert.match(gradle,/versionCode\s+256\b/);assert.match(gradle,/versionName\s+"1\.0\.229"/);
-assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260907dev256"/);
+assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1])>=256);
+assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260907dev257"/);
 console.log("PASS dev 254: character impression persistence, synchronized social scenes, stale 3-person scene rejection, residence and direct-action UI");

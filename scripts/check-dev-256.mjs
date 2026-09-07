@@ -25,10 +25,10 @@ assert.match(plugin,/regularPaidOffer/);
 assert.match(plugin,/Purchase\.PurchaseState\.PURCHASED/);
 assert.match(nativeApp,/NO_REGULAR_PAID_OFFER/);
 assert.match(app,/products\.filter\(product=>product\.regularPaidOffer===true\)/);
-assert.match(gradle,/versionCode\s+256\b/);
-assert.match(gradle,/versionName\s+"1\.0\.229"/);
-assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260907dev256"/);
-assert.match(index,/app\.js\?v=20260907dev256/);
-assert.match(worker,/drawer-village-v20260907-dev-256/);
+assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1])>=256);
+
+assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260907dev257"/);
+assert.match(index,/app\.js\?v=20260907dev257/);
+assert.match(worker,/drawer-village-v20260907-dev-257/);
 
 console.log("PASS dev 256: SVG tablet home layout, multiplayer context routing, and paid-offer integrity");

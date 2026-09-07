@@ -108,7 +108,10 @@
     "qa:dev250": "node scripts/qa-dev250.mjs",
     "test:dev253": "node scripts/check-dev-253.mjs",
     "test:dev254": "node scripts/check-dev-254.mjs",
-    "qa:dev254": "node scripts/qa-dev254.mjs"
+    "qa:dev254": "node scripts/qa-dev254.mjs",
+    "test:population": "node scripts/benchmark-population.mjs 200 --verify",
+    "qa:population": "node scripts/qa-population.mjs",
+    "test:population-cache": "node scripts/check-population-cache.mjs"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^7.5.0",

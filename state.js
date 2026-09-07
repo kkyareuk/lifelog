@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev256";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev256";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev256";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev256";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev256";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev256";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev256";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev256";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev256";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260907dev257";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260907dev257";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907dev257";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260907dev257";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907dev257";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260907dev257";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260907dev257";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260907dev257";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260907dev257";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260907dev256";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev256";
+import {missingBuildings} from "./building-recovery.js?v=20260907dev257";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260907dev257";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1828,8 +1828,8 @@ export function updateCharacterView(sourceId,targetId,field,value,{persist=false
   if(persist)save(true);
   return true;
 }
-export function characterViewFor(sourceId,targetId){
-  const relations=Object.values(state.relationships||{}).filter(item=>
+export function characterViewFor(sourceId,targetId,indexedRelations=null){
+  const relations=indexedRelations??Object.values(state.relationships||{}).filter(item=>
     (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
   );
   const explicit=explicitCharacterViewFor(sourceId,targetId);
