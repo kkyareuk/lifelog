@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev257";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev257";
-import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev257";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev257";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev257";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260907dev260";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260907dev260";
+import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260907dev260";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260907dev260";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260907dev260";
 
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
@@ -2942,8 +2942,8 @@ function build(c,date=new Date()){
           travel:`${item.title||"외출 일정"}을 마치고 집으로 돌아가는 중`,travelDesc:`${destinationName}에서 하던 일을 예정한 시각에 마치고 집으로 향하고 있어요.`,home:"일정을 마치고 집에 돌아온 참",homeDesc:"외출 일정을 마치고 돌아와 신발과 겉옷을 정리한 뒤 집 안에서 쉬고 있어요."
         };
         const destinationTown=state.towns.find(town=>town.id===destinationTownId),networkMode=crossTown?transportBetween(destinationTown,homeTown):"도보길",networkCopy=crossTown?transportSceneCopy(networkMode,homeTown.name,state.uiLanguage):null;
-        list.push(entry(endMinute,crossTown?networkCopy.title:copy.travel,crossTown?networkCopy.desc:copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:networkMode,...routineMeta,mood:"이동"}));
-        list.push(homeEntry(c,homeAt,copy.home,copy.homeDesc,"entry",{...routineMeta,routineReturned:true,mood:"귀가"}));
+        list.push(entry(endMinute,crossTown?networkCopy.title:copy.travel,crossTown?networkCopy.desc:copy.travelDesc,{townId:homeTown.id,transit:true,returningHome:true,transportMode:networkMode,...routineMeta,groupInteraction:false,interactionId:undefined,mood:"이동"}));
+        list.push(homeEntry(c,homeAt,copy.home,copy.homeDesc,"entry",{...routineMeta,groupInteraction:false,interactionId:undefined,routineReturned:true,mood:"귀가"}));
       }
     }
   });
@@ -3603,7 +3603,7 @@ function calculateBaseEvent(c,date=new Date()){
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
   if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);
   const sources=giftSources(date);
-  const past=list.filter(x=>dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
+  const past=list.filter(x=>(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){

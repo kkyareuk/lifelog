@@ -10,9 +10,9 @@ function unpack(value){
   if(!value?.startsWith(PACKED))return value;
   return ungzip(Uint8Array.from(atob(value.slice(PACKED.length)),character=>character.charCodeAt(0)),{to:"string"});
 }
-function pack(value){
+function pack(value,level=1){
   if(value.length<4096||value.startsWith(PACKED))return value;
-  const bytes=gzip(value,{level:1});
+  const bytes=gzip(value,{level});
   let binary="";
   for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
   const packed=PACKED+btoa(binary);
@@ -25,8 +25,10 @@ function compactSnapshots(storage){
   for(const key of keys){
     if(!key||!isSnapshot(key))continue;
     const raw=storage.getItem(key);
-    if(!raw||raw.startsWith(PACKED))continue;
-    try{const packed=pack(raw);if(packed!==raw)storage.setItem(key,packed)}catch{/* Atomic setItem keeps the original on failure. */}
+    if(!raw)continue;
+    // Only on quota failure, recompress even old level-1 snapshots. Never
+    // discard another account's data or a recovery copy to make room.
+    try{const packed=pack(unpack(raw),9);if(packed.length<raw.length)storage.setItem(key,packed)}catch{/* Atomic setItem keeps the original on failure. */}
   }
 }
 
@@ -50,7 +52,7 @@ export function createAccountStorage(storage){
       try{storage.setItem(target,encoded)}catch(error){
         if(!quotaError(error))throw error;
         compactSnapshots(storage);
-        storage.setItem(target,isSnapshot(name)?pack(raw):raw);
+        storage.setItem(target,isSnapshot(name)?pack(raw,9):raw);
       }
     },
     removeItem:name=>storage.removeItem(key(name)),
