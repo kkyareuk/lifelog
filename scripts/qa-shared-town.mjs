@@ -202,7 +202,13 @@ try{
   const wm=await watermark.evaluate(e=>({opacity:getComputedStyle(e).opacity,pointer:getComputedStyle(e).pointerEvents,transform:getComputedStyle(e).transform,loaded:e.complete&&e.naturalWidth>0}));
   assert.equal(wm.opacity,'0.085');assert.equal(wm.pointer,'none');assert.notEqual(wm.transform,'none');assert.ok(wm.loaded);
   assert.equal(await page.locator('.mail-body').evaluate(e=>getComputedStyle(e).opacity),'1');
-  await page.screenshot({path:resolve(output,'character-letter-watermark-276.png')});await page.locator('[data-close-mail]').click();
+  for(const width of [320,412,768]){
+    await page.setViewportSize({width,height:917});
+    const clip=await page.locator('.mail-reader .mail-watermark-clip').evaluate(e=>{const c=e.getBoundingClientRect(),d=e.closest('dialog').getBoundingClientRect(),img=e.querySelector('img');return {overflow:getComputedStyle(e).overflow,inside:c.left>=d.left&&c.right<=d.right&&c.top>=d.top&&c.bottom<=d.bottom,ratio:img.clientWidth/e.clientWidth}});
+    assert.equal(clip.overflow,'hidden');assert.ok(clip.inside);assert.ok(clip.ratio>.95,'Watermark fills its clipped letter area');
+    await page.screenshot({path:resolve(output,'character-letter-watermark-'+width+'-276.png')});
+  }
+  await page.locator('[data-close-mail]').click();
   await page.locator('[data-mail-open=user276]').click();assert.equal(await page.locator('.mail-watermark').count(),0);await page.locator('[data-close-mail]').click();
   console.log('PASS character letter watermark, opaque text, unobstructed close and no watermark on user mail');
   await context.close();

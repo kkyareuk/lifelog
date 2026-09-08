@@ -1,6 +1,6 @@
 import {wardrobeCount} from "./state.js?v=20260908dev275";
 import {captureMeetingPositions} from './meeting-journey.js?v=20260908dev275';
-import {bindMailbox,composeAnnouncement} from './mailbox-center.js?v=20260908dev275';
+import {bindMailbox,composeAnnouncement,letterWatermark} from './mailbox-center.js?v=20260908dev275';
 import {bedPerspective} from './bed-perspective.js?v=20260908dev275';
 import './user-profile.js?v=20260908dev275';
 import {withSharedWorld,buildSharedWorld} from './shared-world.js?v=20260908dev275';
@@ -5607,7 +5607,7 @@ function openDailyCharacterQuestion(question,now=new Date()){
   const prompt=question.mailBody||characterQuestionPrompt(character,{kind,target:target?.name||"",language,base:basePrompt});
   const dialog=document.createElement("dialog"),image=character.icon||character.photo;
   dialog.className="character-question-dialog mail-letter";
-  dialog.innerHTML=`<form method="dialog">${image?`<img class="mail-watermark" src="${htmlEsc(image)}" alt="" aria-hidden="true">`:""}<button value="later" class="mail-letter-close" aria-label="${copy.later}">×</button><div class="character-question-speaker">${image?`<img src="${htmlEsc(image)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1))}</span>`}<div><small>${copy.label}</small><b>${htmlEsc(character.name)}</b></div></div><h2>${htmlEsc(prompt)}</h2><p>${copy.saved}</p><div class="character-question-options">${options.map((option,index)=>`<button type="button" data-character-question-option="${index}">${htmlEsc(option.label[language]||option.label.ko)}</button>`).join("")}</div><button value="later" class="character-question-later">${copy.later}</button></form>`;
+  dialog.innerHTML=`<form method="dialog">${letterWatermark(image)}<button value="later" class="mail-letter-close" aria-label="${copy.later}">×</button><div class="character-question-speaker">${image?`<img src="${htmlEsc(image)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1))}</span>`}<div><small>${copy.label}</small><b>${htmlEsc(character.name)}</b></div></div><h2>${htmlEsc(prompt)}</h2><p>${copy.saved}</p><div class="character-question-options">${options.map((option,index)=>`<button type="button" data-character-question-option="${index}">${htmlEsc(option.label[language]||option.label.ko)}</button>`).join("")}</div><button value="later" class="character-question-later">${copy.later}</button></form>`;
   dialog.querySelectorAll("[data-character-question-option]").forEach(button=>button.onclick=()=>{
     const option=options[Number(button.dataset.characterQuestionOption)];
     if(scheduleCharacterChoice(option)){
@@ -5935,7 +5935,7 @@ function openContactMail(id){
   }
   const dialog=document.createElement("dialog");dialog.className="character-question-dialog mail-letter";
   const sender=state.characters[e.characterId],image=sender.icon||sender.photo;
-  dialog.innerHTML=`<form method="dialog">${image?`<img class="mail-watermark" src="${htmlEsc(image)}" alt="" aria-hidden="true">`:""}<h2>${htmlEsc(letter.title)}</h2><p>${htmlEsc(letter.body)}</p><button>${translateText("닫기")}</button></form>`;
+  dialog.innerHTML=`<form method="dialog">${letterWatermark(image)}<h2>${htmlEsc(letter.title)}</h2><p>${htmlEsc(letter.body)}</p><button>${translateText("닫기")}</button></form>`;
   dialog.onclose=()=>dialog.remove();document.body.append(dialog);dialog.showModal();
 }
 window.addEventListener("drawer-village-character-notification-open",event=>{

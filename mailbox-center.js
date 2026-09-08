@@ -5,7 +5,7 @@ import {buildSharedWorld} from './shared-world.js?v=20260908dev275';
 export const mt=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function senderImage(p,s){const c=state.characters[p.sourceId||p.characterId]||(s.residents||[]).find(c=>c.id===(p.sourceId||p.characterId));if(c){let profile={};try{profile=JSON.parse(c.profileJson||'{}')}catch{}return profile.icon||c.icon||profile.photo||c.photo||''}if(p.sourceId||p.characterId)return '';return (s.members||[]).find(m=>(m.uid||m.id)===p.senderUid)?.photoURL||''}
-export function letterWatermark(image){return image?`<img class="mail-watermark" src="${esc(image)}" alt="" aria-hidden="true">`:''}
+export function letterWatermark(image){return image?`<span class="mail-watermark-clip" aria-hidden="true"><img class="mail-watermark" src="${esc(image)}" alt=""></span>`:''}
 let folder='inbox' ,page=0,showCharacterLetters=false,redraw=()=>{},announce=()=>{};
 function openNotificationMail(){const target=window.DrawerVillageMailTarget,s=snapshot();if(!target?.id||target.groupId!==s.activeGroupId||state.activeTab!=='mailbox')return;const proposal=[...(s.incomingProposals||[]),...(s.outgoingProposals||[])].some(p=>p.id===target.id),mail=[...(s.incomingMail||[]),...(s.outgoingMail||[])].some(p=>p.id===target.id);if(!proposal&&!mail)return;window.DrawerVillageMailTarget=null;document.querySelectorAll('.mail-reader[open]').forEach(d=>d.close());openLetter(target.id,proposal,redraw,announce)}
 window.addEventListener('drawer-village-groups',openNotificationMail);
