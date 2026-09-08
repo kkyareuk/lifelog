@@ -92,6 +92,7 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  await relations.respond('op',{groupId:'g',proposalId:'schedule1-op',accept:true});assert.equal(data.get('groups/g/schedules/accepted-schedule1').end,'03:00');
  await relations.propose('member',{groupId:'g',requestId:'schedule2',kind:'schedule',targetId:'accepted-schedule1',patch:{...schedule,title:'Changed'}});await relations.respond('op',{groupId:'g',proposalId:'schedule2-op',accept:false});assert.equal(data.get('groups/g/schedules/accepted-schedule1').title,'Together');
  await assert.rejects(relations.propose('member',{groupId:'g',requestId:'schedulebad',kind:'schedule',patch:{...schedule,start:'99:99'}}),/invalid-schedule/);
+ data.delete('groups/g/catalog/flower');
  const mail={groupId:'g',requestId:'mail1',sourceId:'a',targetId:'b',subject:'Gift',body:'For you',gift:{kind:'drink',item:{id:'lemonade',name:'Lemonade'}}};
  await relations.sendMail('member',mail);await relations.sendMail('member',mail);assert.equal(data.get('groups/g/mail/mail1').recipientUid,'op');assert.deepEqual(JSON.parse(data.get('groups/g/residents/b').profileJson).inventory.drink,['lemonade']);
  await assert.rejects(relations.sendMail('host',{...mail,requestId:'mailbad'}),e=>e.status===403);

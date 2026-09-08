@@ -1,4 +1,5 @@
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev279';
+import {withTownEditDraft} from './town-edit-draft.js?v=20260908dev280';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev280';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();
@@ -14,6 +15,7 @@ export function sharedProfile(value){
   };return clean(value);
 }
 export function buildSharedWorld(snapshot,language='ko'){
+  snapshot=withTownEditDraft(snapshot);
   const base=emptyWorld(),group=snapshot.group||{},characters={},homes={},routines={},monthlyRoutines={},characterDirectives={},characterViews={};
   const towns=(group.towns||[]).map(t=>({...base.world,...t,places:t.places||[],decorations:t.decorations||[]}));
   const activeTownId=snapshot.selectedTownId||towns[0]?.id;

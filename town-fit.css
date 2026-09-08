@@ -49,7 +49,7 @@
 }
 html.native-app[data-active-tab="town"] .town-map-scroll{scroll-behavior:auto!important}
 html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label{
-  transform:translate(-50%,var(--town-label-offset,129px))!important;
+  transform:translate(-50%,calc(var(--town-building-height) * var(--town-label-scale,1) / 2 + 3px))!important;
 }
 html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{display:none!important}
 :is(.town-map-scroll,.standard-observe-view .viewport)>.world{

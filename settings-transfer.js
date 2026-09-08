@@ -1,6 +1,6 @@
-import {characterCodeDialog} from "./character-code.js?v=20260908dev279";
-import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260908dev279';
-import {informationOnlyState} from './local-media.js?v=20260908dev279';
+import {characterCodeDialog} from "./character-code.js?v=20260908dev280";
+import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260908dev280';
+import {informationOnlyState} from './local-media.js?v=20260908dev280';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
 const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);
@@ -21,7 +21,7 @@ export function readSettingsFile(text){
   if(file.format==='drawer-village-character'&&(!file.character||typeof file.character.name!=='string'))throw Error('서랍마을 설정 파일을 선택해 주세요.');
   if(file.format==='drawer-village-catalog'){
     if(!file.catalog||typeof file.catalog!=='object'||Array.isArray(file.catalog))throw Error('서랍마을 설정 파일을 선택해 주세요.');
-    for(const [kind,items] of Object.entries(file.catalog))if(!kinds.includes(kind)||!Array.isArray(items)||items.length>80||items.some(x=>!x||typeof x.name!=='string'))throw Error('사전은 종류별 80개까지 불러올 수 있어요.');
+    for(const [kind,items] of Object.entries(file.catalog))if(!kinds.includes(kind)||!Array.isArray(items)||items.length>80||items.some(x=>!x||typeof x.name!=='string'))throw Error('사전은 전체 80개까지 불러올 수 있어요.');
   }
   return file;
 }
@@ -39,7 +39,7 @@ export function mergeCatalogFile(file){
       // Re-importing the same exported entry updates that entry, not a copy.
       const existing=next[kind].find(x=>source.id&&(x.id===source.id||x.importSourceId===source.id));
       const item={...source,id:existing?.id||crypto.randomUUID(),importSourceId:source.id||source.importSourceId,kind};
-      if(existing)Object.assign(existing,item);else{if(next[kind].length>=80)throw Error('사전은 종류별 80개까지 불러올 수 있어요.');next[kind].push(item)}
+      if(existing)Object.assign(existing,item);else{if(Object.entries(next).reduce((n,[k,items])=>n+items.filter(i=>k!=='fashion'||!i.ownerId).length,0)>=80)throw Error('사전은 전체 80개까지 불러올 수 있어요.');next[kind].push(item)}
     }
   }
   state.catalog=next;if(!save(true)){replaceState(before);throw Error('저장하지 못했어요.')}

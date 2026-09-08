@@ -9,6 +9,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
     return {ref,group:{id:g.id,...g.data()},member:m.data()};
   }
   return {
+    saveTownEdit:require('./town-edit')({db,makeService:database=>createSharedTownService({db:database,engine,clock})}),
     advance:async(uid,input)=>{
       const advance=await engine();
       return db.runTransaction(async tx=>{
@@ -53,10 +54,11 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const kinds=['food','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','ingredient','weapon','animal','flower','misc'];
       if(!input.catalog||typeof input.catalog!=='object'||Array.isArray(input.catalog))fail('invalid-catalog');
       const existing=rows(await tx.get(ref.collection('catalog')));
+      let total=existing.reduce((n,c)=>n+(c.items||[]).length,0);
       for(const kind of Object.keys(input.catalog)){
         const incoming=input.catalog[kind];if(!kinds.includes(kind)||!Array.isArray(incoming)||incoming.length>80)fail('catalog-limit');
         if(incoming.some(item=>!item||typeof item!=='object'||typeof item.id!=='string'||typeof item.name!=='string'||item.id.length>180||item.name.length>200))fail('invalid-catalog-item');
-        const merged=new Map((existing.find(c=>c.id===kind)?.items||[]).map(item=>[item.id,item]));for(const item of incoming)if(!merged.has(item.id)&&![...merged.values()].some(old=>old.name.trim().normalize('NFKC').toLocaleLowerCase()===item.name.trim().normalize('NFKC').toLocaleLowerCase()))merged.set(item.id,{...item,kind});const items=[...merged.values()];if(items.length>80)fail('catalog-limit',409);
+        const merged=new Map((existing.find(c=>c.id===kind)?.items||[]).map(item=>[item.id,item]));for(const item of incoming)if(!merged.has(item.id)&&![...merged.values()].some(old=>old.name.trim().normalize('NFKC').toLocaleLowerCase()===item.name.trim().normalize('NFKC').toLocaleLowerCase()))merged.set(item.id,{...item,kind});const items=[...merged.values()];total+=items.length-(existing.find(c=>c.id===kind)?.items||[]).length;if(total>80)fail('catalog-limit',409);
         if(JSON.stringify(items).length>100000)fail('catalog-size-limit');
         tx.set(ref.collection('catalog').doc(kind),{items,updatedAt:clock()});
       }
@@ -100,7 +102,8 @@ function createSharedTownService({db,engine,clock=Date.now}){
     saveTown:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,group,member}=await context(tx,input.groupId,uid);
       if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
-      const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
+      const slots=input.create?await require('./account-slots').usage(db,tx,uid):null;if(slots)require('./account-slots').check(slots,'towns');
+      const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,slotOwnerUid:uid,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
       const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','bg','travelAllowed','transportModes'];
       for(const [key,value] of Object.entries(input.patch||{})){
@@ -110,7 +113,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}
       }
       if(!String(town.name||'').trim())fail('name-required');
-      tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
+      if(slots)slots.reserve();tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
     }),
     saveBuilding:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,group,member}=await context(tx,input.groupId,uid);

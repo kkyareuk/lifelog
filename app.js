@@ -1,38 +1,38 @@
-import {wardrobeCount} from "./state.js?v=20260908dev279";
-import {captureMeetingPositions} from './meeting-journey.js?v=20260908dev279';
-import {bindMailbox,composeAnnouncement,letterWatermark} from './mailbox-center.js?v=20260908dev279';
-import {bedPerspective} from './bed-perspective.js?v=20260908dev279';
-import './user-profile.js?v=20260908dev279';
-import {withSharedWorld,buildSharedWorld} from './shared-world.js?v=20260908dev279';
-import {bindSharedUi,activeShared,canEditShared} from './shared-ui.js?v=20260908dev279';
-import "./group-push.js?v=20260908dev279";
-import {EXTRA_FAMILY,hospitalPurposes} from "./creative-options.js?v=20260908dev279";
-import {installSettingsTransfer} from "./settings-transfer.js?v=20260908dev279";
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, setCharacterBodyChoices, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260908dev279";
-import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260908dev279";
-import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260908dev279";
-import {toggleDislike} from "./state.js?v=20260908dev279";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline,withSimulationBatch} from "./simulation.js?v=20260908dev279";
-import {setCharacterSceneImage} from "./state.js?v=20260908dev279";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260908dev279";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260908dev279";
-import {homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260908dev279";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260908dev279";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260908dev279";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260908dev279";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260908dev279";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260908dev279";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260908dev279";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260908dev279";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260908dev279";
-import {installDirectSteps} from './direct-steps.js?v=20260908dev279';
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260908dev279";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260908dev279";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260908dev279";
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260908dev279";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260908dev279";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev279";
-import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260908dev279";
+import {wardrobeCount} from "./state.js?v=20260908dev280";
+import {captureMeetingPositions} from './meeting-journey.js?v=20260908dev280';
+import {bindMailbox,composeAnnouncement,letterWatermark} from './mailbox-center.js?v=20260908dev280';
+import {bedPerspective} from './bed-perspective.js?v=20260908dev280';
+import './user-profile.js?v=20260908dev280';
+import {withSharedWorld,buildSharedWorld} from './shared-world.js?v=20260908dev280';
+import {bindSharedUi,activeShared,canEditShared} from './shared-ui.js?v=20260908dev280';
+import "./group-push.js?v=20260908dev280";
+import {EXTRA_FAMILY,hospitalPurposes} from "./creative-options.js?v=20260908dev280";
+import {installSettingsTransfer} from "./settings-transfer.js?v=20260908dev280";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, setCharacterBodyChoices, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260908dev280";
+import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260908dev280";
+import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260908dev280";
+import {toggleDislike} from "./state.js?v=20260908dev280";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline,withSimulationBatch} from "./simulation.js?v=20260908dev280";
+import {setCharacterSceneImage} from "./state.js?v=20260908dev280";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260908dev280";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260908dev280";
+import {homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260908dev280";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260908dev280";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260908dev280";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260908dev280";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260908dev280";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260908dev280";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260908dev280";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260908dev280";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260908dev280";
+import {installDirectSteps} from './direct-steps.js?v=20260908dev280';
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260908dev280";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260908dev280";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260908dev280";
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260908dev280";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260908dev280";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev280";
+import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260908dev280";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0,meetingRefreshTimer=0;
 function scheduleMeetingRefresh(){
@@ -46,13 +46,13 @@ function scheduleMeetingRefresh(){
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260908dev279";
-import {translateText} from "./views.js?v=20260908dev279";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260908dev279";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260908dev279";
-import {characterMood} from "./character-mood.js?v=20260908dev279";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260908dev279";
-import {groupErrorMessage,showMultiplayerList,showMultiplayerDetail} from "./groups.js?v=20260908dev279";
+import {switchAccountState} from "./state.js?v=20260908dev280";
+import {translateText} from "./views.js?v=20260908dev280";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260908dev280";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260908dev280";
+import {characterMood} from "./character-mood.js?v=20260908dev280";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260908dev280";
+import {groupErrorMessage,showMultiplayerList,showMultiplayerDetail} from "./groups.js?v=20260908dev280";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -73,7 +73,7 @@ function openCharacterPlacement(){
 }
 function openCharacterMood(){
   const c=active();if(!c)return;
-  const mood=characterMood(c,eventFor(c),state);
+  const mood=characterMood(c,state.sharedContext?c.sharedScene||{}:eventFor(c),state);
   const heading=state.uiLanguage==="en"?"Mood breakdown":state.uiLanguage==="ja"?"気分の内訳":"기분 내역";
   featureDialog("현재 기분",`<h3>${esc(c.name)} · ${mood.icon} ${esc(mood.label)} (${mood.score>0?"+":""}${mood.score})</h3><h4>${heading}</h4><ul class="mood-factor-list">${mood.reasons.map(reason=>`<li><span>${esc(reason.text)}</span><b class="${reason.value<0?"negative":"positive"}">${reason.value>0?"+":""}${reason.value}</b></li>`).join("")||`<li>${esc(translateText("특별한 기분 변화 없음"))}</li>`}</ul>`);
 
@@ -174,6 +174,7 @@ document.addEventListener("keydown",event=>{
   const modifier=event.ctrlKey||event.metaKey,key=event.key.toLowerCase();
   if(!modifier||(key!=="z"&&key!=="y"))return;
   event.preventDefault();
+  if(activeShared()){document.querySelector(`[data-town-placement-command="${key==="y"||event.shiftKey?'redo':'undo'}"]`)?.click();return}
   if(key==="y"||(key==="z"&&event.shiftKey))redoTownPlacement();else undoTownPlacement();
 });
 const closeHomeOccupantSheet=()=>{
@@ -254,8 +255,8 @@ const overallViewPhrase=value=>({
   "없어서는 안 될 사람":"없어서는 안 될 사람으로 여김"
 }[value]||String(value||"어떤 사람인지 판단하지 않음"));
 const purchases=()=>window.ParallelCityAuth?.getInfo?.().entitlements||{};
-const characterLimit=()=>5+(Math.max(0,Number(purchases().characterSlotPacks)||0)*5);
-const townLimit=()=>2+Math.max(0,Number(purchases().townSlotPacks)||0);
+const characterLimit=()=>Math.max(0,5+(Math.max(0,Number(purchases().characterSlotPacks)||0)*5)-(window.ParallelCityAuth?.getInfo?.().slotUsage?.characters||0));
+const townLimit=()=>Math.max(0,2+Math.max(0,Number(purchases().townSlotPacks)||0)-(window.ParallelCityAuth?.getInfo?.().slotUsage?.towns||0));
 const BASE_AUDIENCES=["혼자 조용히 있고 싶은 사람","연인·데이트","부부","가족","친구 모임","직장인","학생","대학생","어린이","청소년","중장년","고소득층","가성비 중시","디저트 러버","커피 애호가","차 애호가","매운 음식 마니아","채식 선호","한식파","일식파","면 요리 마니아","신상 맛집파","SF 덕후","로맨스 덕후","판타지 덕후","미스터리 덕후","공포 덕후","액션 덕후","코미디 덕후","애니메이션 팬","영화 팬","드라마 팬","관찰 예능 팬","게임 방송 팬","음악 팬","아이돌 팬","인디 음악 팬","클래식 애호가","게임 마니아","보드게임 팬","e스포츠 팬","패션 관심층","빈티지 애호가","향수 애호가","사진 애호가","미술 애호가","독서가","여행 애호가","반려동물 동반","운동 애호가","야외 활동파","집순이·집돌이","오타쿠","얼리어답터"];
 function audienceOptions(){
   const values=new Set(BASE_AUDIENCES),fields=["interests","hobbies","foodPreferences","drinks","favoriteStoryGenres","musicGenres","favoriteFashionStyles","favoriteVideoGenres","favoriteGameGenres","favoriteScentNotes"];
@@ -2476,10 +2477,10 @@ function bind(){
     finally{if(button?.isConnected)button.disabled=false}
   };
   document.querySelector('[data-management-pane]')?.addEventListener('input',e=>{if(e.target.matches('input:not([type=file]),textarea,select'))e.target.dataset.groupDirty='1'});
-  $$('[data-group-manage]').forEach(button=>button.onclick=async()=>{const {selectManagementPane}=await import('./groups.js?v=20260908dev279');selectManagementPane(button.dataset.groupManage);render()});
+  $$('[data-group-manage]').forEach(button=>button.onclick=async()=>{const {selectManagementPane}=await import('./groups.js?v=20260908dev280');selectManagementPane(button.dataset.groupManage);render()});
   $('[data-group-presentation]')?.addEventListener('submit',event=>{event.preventDefault();runGroupAction(event.submitter,()=>groupApi.saveGroupPresentation(Object.fromEntries(new FormData(event.currentTarget))))});
-  $('[data-group-catalog-publish]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const {chooseCatalog}=await import('./settings-transfer.js?v=20260908dev279');const chosen=await chooseCatalog(state.catalog);if(chosen)await groupApi.publishCatalog(chosen)}));
-  $('[data-group-catalog-import]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const transfer=await import('./settings-transfer.js?v=20260908dev279');transfer.mergeCatalogFile({format:'drawer-village-catalog',version:1,catalog:Object.fromEntries((groupApi.getSnapshot().catalog||[]).map(c=>[c.id,c.items||[]]))});render()}));
+  $('[data-group-catalog-publish]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const {chooseCatalog}=await import('./settings-transfer.js?v=20260908dev280');const chosen=await chooseCatalog(state.catalog);if(chosen)await groupApi.publishCatalog(chosen)}));
+  $('[data-group-catalog-import]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const transfer=await import('./settings-transfer.js?v=20260908dev280');transfer.mergeCatalogFile({format:'drawer-village-catalog',version:1,catalog:Object.fromEntries((groupApi.getSnapshot().catalog||[]).map(c=>[c.id,c.items||[]]))});render()}));
   $$('[data-relation-group]').forEach(button=>button.addEventListener('click',()=>groupApi.select(button.dataset.relationGroup)));
   $('[data-group-proposal]')?.addEventListener('submit',event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));runGroupAction(event.submitter,()=>groupApi.propose({...data,requestId:crypto.randomUUID()}))});
   $$('[data-group-perception] select').forEach(select=>select.addEventListener('change',()=>{const form=select.closest('form'),snapshot=groupApi.getSnapshot(),saved=(snapshot.perceptions||[]).find(p=>p.sourceId===form.elements.sourceId.value&&p.targetId===form.elements.targetId.value);try{form.elements.overall.value=JSON.parse(saved?.viewJson||'{}').overall||''}catch{form.elements.overall.value=''}}));
@@ -2493,7 +2494,7 @@ function bind(){
     featureDialog('할 일 정하기',`<div data-shared-command-form><select name="kind">${choices.map(([id,ko,en,ja])=>`<option value="${id}">${({ko,en,ja}[state.uiLanguage]||ko)}</option>`).join('')}</select><label>${({ko:'대화 상대',en:'Conversation partner',ja:'会話相手'}[state.uiLanguage])}<select name="targetId">${snapshot.residents.filter(r=>r.id!==c.id&&r.townId===c.townId).map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('')}</select></label><button type="button" data-shared-command-start>${({ko:'시작',en:'Start',ja:'開始'}[state.uiLanguage])}</button></div>`);
      $('[data-shared-command-start]')?.addEventListener('click',event=>{event.preventDefault();const form=event.currentTarget.closest('[data-shared-command-form]'),data={kind:form.querySelector('[name=kind]').value,targetId:form.querySelector('[name=targetId]').value};runGroupAction(event.currentTarget,async()=>{await groupApi.command({characterId:c.id,kind:data.kind,targetId:['talk','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(data.kind)?data.targetId:''});form.closest('dialog')?.close()})});
   }));
-  $('[data-shared-mood]')?.addEventListener('click',()=>document.querySelector('[data-shared-mood-dialog]')?.showModal());
+  $('[data-shared-mood]')?.addEventListener('click',()=>withSharedWorld(activeShared(),openCharacterMood));
   $('[data-group-refresh-residents]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,()=>groupApi.refreshResidents()));
   $$('[data-group-building-form]').forEach(form=>form.addEventListener('submit',event=>{
     event.preventDefault();const data=Object.fromEntries(new FormData(form)),button=event.submitter;
@@ -2560,6 +2561,8 @@ function bind(){
   $$("[data-member-edit]").forEach(b=>b.onclick=()=>openHomeMemberEditor(b.dataset.memberEdit,b.dataset.homeId,b.dataset.memberId));
   $$("[data-member-add]").forEach(b=>b.onclick=()=>{const kind=b.dataset.memberAdd,homeId=b.dataset.homeId;if(kind==="resident"){openHomeResidentPicker(homeId);return}const id=kind==="pet"?addPet(homeId):addCar(homeId);render();showHomeFeature("members");openHomeMemberEditor(kind,homeId,id)});
   $("[data-character-placement-open]")?.addEventListener("click",openCharacterPlacement);
+  document.querySelector('[data-member-group-create]')?.addEventListener('submit',e=>{e.preventDefault();const form=e.currentTarget,data=new FormData(form),s=window.DrawerVillageGroups.getSnapshot();runGroupAction(e.submitter,()=>window.DrawerVillageGroups.saveMemberGroups({memberGroups:[...(s.group.memberGroups||[]),{id:crypto.randomUUID(),name:data.get('name'),memberIds:data.getAll('memberIds')}]}))});
+  document.querySelectorAll('[data-member-group-remove]').forEach(b=>b.onclick=()=>runGroupAction(b,()=>window.DrawerVillageGroups.saveMemberGroups({memberGroups:(window.DrawerVillageGroups.getSnapshot().group.memberGroups||[]).filter(g=>g.id!==b.dataset.memberGroupRemove)})));
   $("[data-open-character-mood]")?.addEventListener("click",openCharacterMood);
   $("[data-building-recovery]")?.addEventListener("click",openBuildingRecovery);
   bindHorizontalWheelNavigation();
@@ -6037,7 +6040,7 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260908dev279").catch(error=>{
+import("./auth.js?v=20260908dev280").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     window.DrawerVillageAuthStartupFailed=true;
     setAccountLabel("Google 로그인");
@@ -6054,7 +6057,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260908dev279",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260908dev280",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>{
