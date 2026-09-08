@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260909dev284';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev284";
+import {sharedProfile} from './shared-world.js?v=20260909dev285';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev285";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev284";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev285";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -550,7 +550,7 @@ async function uploadDataUrl(dataUrl,manifest,session){
   return url;
 }
 
-async function prepareState(local,manifest,previousState,session){
+async function prepareState(local,manifest,previousState,session,{uploadPhotos=true}={}){
   const next=clone(local),jobs=[];
   const walk=(node,path=[])=>{
     if(!node||typeof node!=="object")return;
@@ -563,6 +563,7 @@ async function prepareState(local,manifest,previousState,session){
   walk(next,[]);
   let photoFailures=0;
   for(let i=0;i<jobs.length;i+=1){
+    if(!uploadPhotos){const previousValue=jobs[i].path.reduce((value,key)=>value&&typeof value==="object"?value[key]:undefined,previousState);jobs[i].node[jobs[i].key]=typeof previousValue==="string"&&!isData(previousValue)?previousValue:"";continue}
     status(`${accountName()} · 사진 ${i+1}/${jobs.length} 올리는 중`);
     try{assertSession(session);jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest,session)}
     catch(error){
@@ -576,7 +577,7 @@ async function prepareState(local,manifest,previousState,session){
   const usedUrls=storedPhotoUrls(next);
   manifest.items=manifest.items.filter(item=>usedUrls.has(item.url));
   manifest.legacyCount=Math.max(0,usedUrls.size-manifest.items.length);
-  return {gameState:next,mediaManifest:manifest,uploadedCount:jobs.length-photoFailures,photoFailures};
+  return {gameState:next,mediaManifest:manifest,uploadedCount:uploadPhotos?jobs.length-photoFailures:0,photoFailures};
 }
 
 async function login(){
@@ -639,7 +640,7 @@ async function login(){
   }
 }
 
-async function upload({silent=false,reason="",accountTransition=false}={}){
+async function upload({silent=false,reason="",accountTransition=false,metadataOnly=false}={}){
   if(switchingAccount&&!accountTransition)return false;
   const session=captureSession();
   await window.DrawerVillageLocalMedia?.ready;
@@ -682,7 +683,7 @@ async function upload({silent=false,reason="",accountTransition=false}={}){
     const tombstoneSafeState=previousGameState
       ?mergeDeviceAndCloudState(localState,previousGameState)
       :localState;
-    const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState),previousGameState,session);
+    const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState),previousGameState,session,{uploadPhotos:!metadataOnly});
     assertSession(session);
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
     let compatibilityMode=false;
@@ -812,10 +813,24 @@ const writeGroupContext=context=>localStorage.setItem(groupContextKey,JSON.strin
 let groupState=emptyGroupState();
 let slotUsage={characters:0,towns:0},slotUsageUid="";
 async function refreshSlotUsage(){if(!user)return;const session=captureSession();const value=await sharedTownRequest('readSlotUsage');assertSession(session);slotUsage=value;slotUsageUid=session.uid;return value}
+const createdResidents=new Map();
+async function saveSharedResident({groupId=groupState.activeGroupId,id,profile}){
+ requireGroupUser();const session=captureSession(),reference=cloudDoc(session.uid),previous=await getDoc(reference);
+ const prepared=await prepareState({character:profile},structuredClone(normalizeManifest(previous.data()?.mediaManifest,null)),null,session);assertSession(session);
+ if(prepared.photoFailures)throw Error(({ko:'사진을 올리지 못했어요. 설정과 사진을 다시 전송할 수 있어요.',en:'Photos could not be uploaded. You can retry saving.',ja:'写真をアップロードできませんでした。再試行できます。'})[document.documentElement.lang]||'사진 업로드에 실패했어요. 다시 시도해 주세요.');
+ await mergeUploadedMedia(reference,prepared.mediaManifest,session);assertSession(session);
+ const value=sharedProfile(prepared.gameState.character);return sharedTownRequest('saveResident',{groupId,id,profile:value});
+}
 async function createSharedResident(input){
- requireGroupUser();const session=captureSession();if(!await upload({silent:true,reason:'멀티 캐릭터 생성'}))throw Error('Cloud upload failed');assertSession(session);
- const reference=cloudDoc(session.uid),previous=await getDoc(reference),prepared=await prepareState({character:input.profile},structuredClone(normalizeManifest(previous.data()?.mediaManifest,null)),null,session);assertSession(session);if(prepared.photoFailures)throw Error('Photo upload failed');await mergeUploadedMedia(reference,prepared.mediaManifest,session);
- const result=await sharedTownRequest('createResident',{...input,profile:sharedProfile(prepared.gameState.character)});await refreshSlotUsage();return result;
+ requireGroupUser();const session=captureSession(),groupId=input.groupId||groupState.activeGroupId,key=session.uid+':'+groupId+':'+input.id;
+ let result=createdResidents.get(key);
+ if(!result){
+  if(!await upload({silent:true,reason:'멀티 캐릭터 생성',metadataOnly:true}))throw Error('Cloud upload failed');assertSession(session);
+  result=await sharedTownRequest('createResident',{...input,groupId,profile:sharedProfile(input.profile)});createdResidents.set(key,result);void refreshSlotUsage().catch(()=>{});
+ }
+ try{await saveSharedResident({groupId,id:result.id,profile:input.profile})}
+ catch(error){throw Error(({ko:'캐릭터는 만들어졌지만 사진·설정 전송을 완료하지 못했어요. 다시 시도하면 같은 캐릭터에 이어서 저장해요. ',en:'Character created, but photos/settings are still pending. Retry to finish the same character. ',ja:'キャラクターは作成されましたが写真・設定の送信が未完了です。再試行すると同じキャラクターに保存します。'})[document.documentElement.lang]+error.message)}
+ return result;
 }
 let groupUnsubscribers=[];
 let accountMailbox={uid:'',at:0,data:{}},mailboxRequest=null;
@@ -1167,7 +1182,7 @@ window.DrawerVillageGroups={
   saveGroupPresentation:input=>sharedTownRequest('saveGroupPresentation',input),
   uploadHomeMemberImage:async file=>{requireGroupUser();const session=captureSession(),gid=groupState.activeGroupId,reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);const manifest=normalizeManifest(previous.data()?.mediaManifest,null),data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)}),photoURL=await uploadDataUrl(data,manifest,session);await mergeUploadedMedia(reference,manifest,session);assertSession(session);if(gid!==groupState.activeGroupId)throw Error('Group changed');return photoURL},
   saveGroupPhoto:async file=>{requireGroupUser();const session=captureSession(),gid=groupState.activeGroupId,reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);const manifest=normalizeManifest(previous.data()?.mediaManifest,null),data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)}),photoURL=await uploadDataUrl(data,manifest,session);await mergeUploadedMedia(reference,manifest,session);assertSession(session);if(gid!==groupState.activeGroupId)throw Error('Group changed');return sharedTownRequest('saveGroupPresentation',{photoURL})},
-  createResident:createSharedResident,refreshSlotUsage,readMailTargets:input=>sharedTownRequest('readMailTargets',input),saveMemberGroups:async input=>{const result=await sharedTownRequest('saveMemberGroups',input);window.dispatchEvent(new Event('drawer-village-mail-targets-changed'));return result},publishCharacterCode,readCharacterCode:code=>sharedTownRequest('readCharacterCode',{code}),revokeCharacterCode:code=>sharedTownRequest('revokeCharacterCode',{code}),sendMail:input=>sharedTownRequest('sendMail',{...input,...(input.gift?{positions:window.ParallelCity.getMeetingPositions?.([input.sourceId,input.targetId])}:{})}),requestAdmission:requestGroupAdmission,requestCohabitation:input=>sharedTownRequest('requestResidence',{requestId:crypto.randomUUID(),kind:'cohabitation',...input}),propose:input=>sharedTownRequest('propose',{requestId:crypto.randomUUID(),...input}),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command:{...command,positions:window.ParallelCity.getMeetingPositions?.([command.characterId,command.targetId])}}),saveTownEdit:input=>sharedTownRequest('saveTownEdit',input),saveBuilding:input=>sharedTownRequest('saveBuilding',input),createTown:async({name})=>{if(!await upload({silent:true,reason:"멀티 마을 생성"}))throw Error("Cloud upload failed");assertMultiplayerTownSlot();const result=await sharedTownRequest('saveTown',{create:true,townId:crypto.randomUUID(),patch:{name},revision:Number(groupState.group?.buildingRevision)||0});await refreshSlotUsage();window.DrawerVillageGroups.selectTown(result.town.id);return result;},saveTown:input=>sharedTownRequest('saveTown',input),saveHomeMember:input=>sharedTownRequest('saveHomeMember',input),saveHomeLayout:input=>sharedTownRequest('saveHomeLayout',input),saveHomePlacement:input=>sharedTownRequest('saveHomePlacement',input),saveDecoration:input=>sharedTownRequest('saveDecoration',input),
+  createResident:createSharedResident,saveResident:saveSharedResident,refreshSlotUsage,readMailTargets:input=>sharedTownRequest('readMailTargets',input),saveMemberGroups:async input=>{const result=await sharedTownRequest('saveMemberGroups',input);window.dispatchEvent(new Event('drawer-village-mail-targets-changed'));return result},publishCharacterCode,readCharacterCode:code=>sharedTownRequest('readCharacterCode',{code}),revokeCharacterCode:code=>sharedTownRequest('revokeCharacterCode',{code}),sendMail:input=>sharedTownRequest('sendMail',{...input,...(input.gift?{positions:window.ParallelCity.getMeetingPositions?.([input.sourceId,input.targetId])}:{})}),requestAdmission:requestGroupAdmission,requestCohabitation:input=>sharedTownRequest('requestResidence',{requestId:crypto.randomUUID(),kind:'cohabitation',...input}),propose:input=>sharedTownRequest('propose',{requestId:crypto.randomUUID(),...input}),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command:{...command,positions:window.ParallelCity.getMeetingPositions?.([command.characterId,command.targetId])}}),saveTownEdit:input=>sharedTownRequest('saveTownEdit',input),saveBuilding:input=>sharedTownRequest('saveBuilding',input),createTown:async({name})=>{if(!await upload({silent:true,reason:"멀티 마을 생성"}))throw Error("Cloud upload failed");assertMultiplayerTownSlot();const result=await sharedTownRequest('saveTown',{create:true,townId:crypto.randomUUID(),patch:{name},revision:Number(groupState.group?.buildingRevision)||0});await refreshSlotUsage();window.DrawerVillageGroups.selectTown(result.town.id);return result;},saveTown:input=>sharedTownRequest('saveTown',input),saveHomeMember:input=>sharedTownRequest('saveHomeMember',input),saveHomeLayout:input=>sharedTownRequest('saveHomeLayout',input),saveHomePlacement:input=>sharedTownRequest('saveHomePlacement',input),saveDecoration:input=>sharedTownRequest('saveDecoration',input),
   setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||""),selectedResidentId:""};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:""});emitGroupState()},

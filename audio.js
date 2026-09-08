@@ -1,4 +1,4 @@
-import {walkingGaitForElement} from "./walking-gaits.js?v=20260909dev284";
+import {walkingGaitForElement} from "./walking-gaits.js?v=20260909dev285";
 
 const FOOTSTEP_URLS={
   walk:"./assets/audio/shoe-walking.m4a?v=20260826independent155",

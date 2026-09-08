@@ -1,5 +1,5 @@
-import {state,addCatalogItem,updateCatalogItem,deleteCatalogItem,save} from './state.js?v=20260909dev284';
-import {initializeLocalMediaState} from './local-media.js?v=20260909dev284';
+import {state,addCatalogItem,updateCatalogItem,deleteCatalogItem,save} from './state.js?v=20260909dev285';
+import {initializeLocalMediaState} from './local-media.js?v=20260909dev285';
 
 const esc=(x='')=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const itemEffects={none:'없음',glow:'은은한 빛',sparkle:'반짝임',float:'둥실둥실',sway:'살랑살랑'};

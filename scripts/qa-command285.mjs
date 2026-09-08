@@ -7,7 +7,7 @@ import {fileURLToPath} from "node:url";
 
 const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
 const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
-const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-281");
+const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-285");
 await mkdir(output,{recursive:true});
 const previewAuth=await readFile(resolve(root,"scripts/ios-preview-auth.mjs"));
 const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
@@ -29,7 +29,7 @@ let snapshot={activeGroupId:'g',selectedTownId:'t',group:{id:'g',ownerUid:'a',na
 const contexts=[],pages=[];let requests=0;
 try{
  for(const id of ['a','b']){
- const c=await browser.newContext({viewport:{width:1480,height:920},serviceWorkers:'block'});contexts.push(c);await c.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());const p=await c.newPage();pages.push(p);p.on('pageerror',e=>{throw e});await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.ParallelCity);
+ const c=await browser.newContext({viewport:{width:1480,height:920},hasTouch:true,serviceWorkers:'block'});contexts.push(c);await c.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());const p=await c.newPage();p.setDefaultTimeout(8000);pages.push(p);p.on('pageerror',e=>{throw e});await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.ParallelCity);
  await p.exposeFunction('qaCommand',async command=>{requests++;const lives=advanceSharedLife(snapshot,Date.now(),command);snapshot.residents=snapshot.residents.map(r=>({...r,lifeJson:lives.find(l=>l.id===r.id).lifeJson}));await Promise.all(pages.map(page=>page.evaluate(s=>{window.qaSnapshot={...s,selectedResidentId:window.qaUid};window.dispatchEvent(new Event('drawer-village-groups'))},snapshot)))});
  await p.evaluate(async({snapshot,id})=>{const g=await import('/state.js?v=20260909dev285');g.createCharacter();g.state.homeVisualMode='ld';g.state.activeTab='observe';location.hash='tab=observe';window.qaUid=id;window.qaSnapshot={...snapshot,selectedResidentId:id};window.ParallelCityAuth.getInfo=()=>({ready:true,busy:false,user:{uid:id},guideState:{loaded:true,seen:['observe','character','home','town','groups']}});window.DrawerVillageGroups={getSnapshot:()=>window.qaSnapshot,setDetailActive(){},selectResident(cid){window.qaSnapshot.selectedResidentId=cid;window.dispatchEvent(new Event('drawer-village-groups'))},command:command=>window.qaCommand(command)};window.dispatchEvent(new Event('drawer-village-groups'))},{snapshot,id});
  }
@@ -42,7 +42,16 @@ try{
  await pages[1].locator('.tablet-observe-map [data-person=a]').click({force:true});await pages[1].waitForTimeout(100);assert.ok((await pages[1].locator('.game-hud-profile-copy').innerText()).includes('짭바이'));
  for(const page of pages){await page.evaluate(t=>{window.RealDate??=Date;window.Date=class extends window.RealDate{constructor(...args){super(...(args.length?args:[t]))}static now(){return t}};window.dispatchEvent(new Event('drawer-village-groups'))},route.arrivesAt+1000);await page.waitForTimeout(100);assert.ok((await page.locator('.game-hud-moment').innerText()).includes('대화'));const pair=page.locator('.native-scene-lineup-person');assert.equal(await pair.count(),2);const boxes=await pair.evaluateAll(es=>es.map(e=>({name:e.textContent,x:e.getBoundingClientRect().x})));assert.ok(boxes[0].x<boxes[1].x,JSON.stringify(boxes));assert.ok(boxes[1].name.includes('안테'));await page.screenshot({path:resolve(output,'two-account-'+pages.indexOf(page)+'.png')});}
  await pages[0].setViewportSize({width:384,height:420});await pages[0].waitForTimeout(150);
- await pages[0].locator('[data-shared-command]').click();await pages[0].locator('[data-direct-category=social]').click();await pages[0].locator('.direct-step-choice').filter({hasText:'지금 할 일'}).click();
+ await pages[0].locator('[data-shared-command]').click();await pages[0].locator('[data-direct-category=social]').click();
+ const cdp=await contexts[0].newCDPSession(pages[0]);
+ const rootChoice=pages[0].locator('.direct-step-choice').filter({hasText:'함께할 상대'}),rootBox=await rootChoice.boundingBox();
+ const beforeRoot=await pages[0].locator('.direct-step-flow').evaluate(e=>e.scrollTop);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:rootBox.x+rootBox.width/2,y:rootBox.y+rootBox.height/2}]});
+ for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:rootBox.x+rootBox.width/2,y:rootBox.y+rootBox.height/2-i*12}]});
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await pages[0].waitForTimeout(100);
+ assert.ok(await pages[0].locator('dialog[open]').evaluate(e=>e.scrollTop+e.querySelector('.direct-step-flow').scrollTop)>beforeRoot,'Touch swipe starting on companion button must scroll');
+ console.log('PASS real touch scroll starting on root command button');
+ await pages[0].locator('.direct-step-choice').filter({hasText:'지금 할 일'}).click();
  const scroll=pages[0].locator('.direct-step-flow');console.log(await scroll.evaluate(e=>({height:e.clientHeight,scroll:e.scrollHeight,css:getComputedStyle(e).cssText,max:getComputedStyle(e).maxHeight,overflow:getComputedStyle(e).overflowY,buttons:e.querySelectorAll('button:not([hidden])').length})));await pages[0].screenshot({path:resolve(output,'command284.png')});assert.ok(await scroll.evaluate(e=>e.scrollHeight>e.clientHeight),'Action choices must have a scrollable container');await scroll.hover();await pages[0].mouse.wheel(0,600);await pages[0].waitForTimeout(150);assert.ok(await scroll.evaluate(e=>e.scrollTop>0));
  console.log('PASS narrow activity chooser scroll');
  await pages[0].locator('dialog[open] header button').click();
@@ -51,6 +60,12 @@ try{
  await pages[0].screenshot({path:resolve(output,'washing284.png')});
 
 
+ await pages[0].setViewportSize({width:1280,height:800});await pages[0].evaluate(()=>{window.DrawerVillageNavigation.go('town');document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
+ await pages[0].locator('[data-mobile-town-decoration-mode]').click();
+ const building=pages[0].locator('.town-edit [data-home-map=ha]');await building.scrollIntoViewIfNeeded();const buildingBox=await building.boundingBox();
+ await pages[0].mouse.move(buildingBox.x+buildingBox.width/2,buildingBox.y+buildingBox.height/2);await pages[0].mouse.down();await pages[0].mouse.move(buildingBox.x+buildingBox.width/2+47,buildingBox.y+buildingBox.height/2+36,{steps:8});
+ const snapped=await building.evaluate(e=>({x:parseFloat(e.style.left),y:parseFloat(e.style.top)}));assert.ok(Math.abs(snapped.x/2-Math.round(snapped.x/2))<.001);assert.ok(Math.abs(snapped.y/3.5-Math.round(snapped.y/3.5))<.001);await pages[0].mouse.up();
+ assert.equal(requests,1);await pages[0].locator('button').filter({hasText:'편집 취소'}).click();console.log('PASS multiplayer building snaps while dragging; no command write during editing');
  const timings=[];
  for(const tab of ['relationship','settings','home','town','mailbox']){
    await pages[0].evaluate(tab=>window.DrawerVillageNavigation.go(tab),tab);
@@ -96,5 +111,15 @@ try{
  assert.ok(await pages[0].evaluate(()=>qaGame.state.characters[qaGame.state.activeId].favoriteFashionStyles.includes('전통의상')));
  console.log('PASS multiple accessories and traditional attire in fashion choices');
  console.log('PASS phone/tablet character book pages and multiple touch reactions persist');
+ await pages[0].evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());qaGame.createCharacter();window.DrawerVillageNavigation.go('relationship')});
+ await pages[0].waitForTimeout(100);await pages[0].evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+ await pages[0].locator('[data-open-official-relations]').click();await pages[0].locator('[data-add-rel]').click();
+ await pages[0].locator('.relation-editor-dialog select[name=type]').selectOption({label:'사제 관계'});
+ const teachers=await pages[0].locator('.relation-editor-dialog select[name=teacherId] option').evaluateAll(es=>es.map(e=>e.value));assert.ok(teachers.length>=2);
+ await pages[0].locator('.relation-editor-dialog select[name=teacherId]').selectOption(teachers[1]);
+ await pages[0].locator('.relation-editor-dialog [value=save]').last().click();
+ await pages[0].waitForFunction(()=>Object.values(qaGame.state.relationships).some(r=>r.type==='사제 관계'));
+ assert.equal(await pages[0].evaluate(()=>Object.values(qaGame.state.relationships).find(r=>r.type==='사제 관계')?.teacherId),teachers[1]);
+ console.log('PASS teacher selection persists independently of character display order');
  assert.equal(requests,1,'Animation/arrival/selection must not submit extra writes');console.log('PASS two isolated accounts share departure, visible route, waiting and arrival with one command; tablet map selects remote character');
 }finally{for(const c of contexts)await c.close();await browser.close();server.close()}

@@ -1,6 +1,6 @@
-import {decodeShared} from './shared-world.js?v=20260909dev284';
-import {multiplayerBack} from "./multiplayer-art.js?v=20260909dev284";
-import {state} from "./state.js?v=20260909dev284";
+import {decodeShared} from './shared-world.js?v=20260909dev285';
+import {multiplayerBack} from "./multiplayer-art.js?v=20260909dev285";
+import {state} from "./state.js?v=20260909dev285";
 
 const esc=value=>String(value??"").replace(/[&<>"]/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[character]));
 const COPY={
@@ -106,7 +106,7 @@ export function renderGroupHomes(snapshot){
 
 export function proposalSettings(p,residents){
  if(!p.patch)return '';
- const labels={name:['이름','Name','名前'],type:['관계 종류','Relationship type','関係の種類'],sourceRole:['첫 번째 인물의 역할','First character’s role','一人目の役割'],targetRole:['두 번째 인물의 역할','Second character’s role','二人目の役割'],stage:['관계 단계','Stage','関係段階'],temporalStatus:['현재·과거','Current or past','現在・過去'],tags:['태그','Tags','タグ'],legalStatus:['법적 상태','Legal status','法的状態'],legalRegistration:['법적 등록','Legal registration','法的登録'],socialAcceptance:['주변의 시선','Social acceptance','周囲の受け止め方'],cohabit:['함께 살기','Live together','同居'],stayTogether:['함께 다니기','Travel together','一緒に行動'],intimacy:['친밀도','Intimacy','親密度'],conflict:['갈등','Conflict','葛藤'],parentRole:['부모 역할','Parent role','親の役割'],kinship:['가족 연결','Family link','家族のつながり'],faultReason:['관계가 끝난 이유','Reason it ended','関係が終わった理由']};
+ const labels={teacherId:['스승','Teacher','師匠'],name:['이름','Name','名前'],type:['관계 종류','Relationship type','関係の種類'],sourceRole:['첫 번째 인물의 역할','First character’s role','一人目の役割'],targetRole:['두 번째 인물의 역할','Second character’s role','二人目の役割'],stage:['관계 단계','Stage','関係段階'],temporalStatus:['현재·과거','Current or past','現在・過去'],tags:['태그','Tags','タグ'],legalStatus:['법적 상태','Legal status','法的状態'],legalRegistration:['법적 등록','Legal registration','法的登録'],socialAcceptance:['주변의 시선','Social acceptance','周囲の受け止め方'],cohabit:['함께 살기','Live together','同居'],stayTogether:['함께 다니기','Travel together','一緒に行動'],intimacy:['친밀도','Intimacy','親密度'],conflict:['갈등','Conflict','葛藤'],parentRole:['부모 역할','Parent role','親の役割'],kinship:['가족 연결','Family link','家族のつながり'],faultReason:['관계가 끝난 이유','Reason it ended','関係が終わった理由']};
  const words={current:groupText('현재','Current','現在'),past:groupText('과거','Past','過去'),biological:groupText('혈연','Biological','血縁'),adoptive:groupText('입양','Adoptive','養子'),guardian:groupText('보호자','Guardian','保護者'),none:groupText('없음','None','なし')};
  const text=(value,depth=0)=>{if(value==null||depth>4)return '';if(typeof value==='boolean')return groupText(value?'예':'아니요',value?'Yes':'No',value?'はい':'いいえ');if(Array.isArray(value))return value.map(v=>text(v,depth+1)).filter(Boolean).join(' · ');if(typeof value==='object')return Object.entries(value).map(([k,v])=>{const person=residents.find(r=>r.id===k);return (person?person.name+': ':'')+text(v,depth+1)}).filter(Boolean).join(' / ');return residents.find(r=>r.id===value)?.name||words[value]||String(value)};
  const ids=p.patch.memberIds||p.patch.groupMembers?.length&&p.patch.groupMembers||[p.patch.a,p.patch.b];

@@ -1,13 +1,13 @@
-import {routineScene} from './routine-scenes.js?v=20260909dev284';
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev284';
-import {dailyInteractionLine} from './scene-context.js?v=20260909dev284';
-import {careRoutineFor} from "./creative-options.js?v=20260909dev284";
-import {drinkExperience} from "./drink-log.js?v=20260909dev284";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev284";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev284";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev284";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev284";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev284";
+import {routineScene} from './routine-scenes.js?v=20260909dev285';
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev285';
+import {dailyInteractionLine} from './scene-context.js?v=20260909dev285';
+import {careRoutineFor} from "./creative-options.js?v=20260909dev285";
+import {drinkExperience} from "./drink-log.js?v=20260909dev285";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev285";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev285";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev285";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev285";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev285";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -3295,6 +3295,13 @@ function calculateNextSceneRefreshDelay(c,date=new Date()){
 }
 
 function commitLiveEntry(c,date,item){
+  if(item?.groupInteraction&&!item.transit&&!item.routineId&&/대화|이야기/.test(item.title||'')&&!/거절|다툼|싸움|화해/.test(item.title||'')){
+    const partner=state.characters[item.withId],relation=partner&&Object.values(state.relationships||{}).find(r=>r.type==='사제 관계'&&r.temporalStatus!=='past'&&[r.a,r.b,...(r.groupMembers||[])].includes(c.id)&&[r.a,r.b,...(r.groupMembers||[])].includes(partner.id));
+    if(relation){const teacherId=relation.teacherId||(relation.targetRole==='스승'?relation.b:relation.a),teaching=c.id===teacherId;
+      item={...item,title:teaching?`${partner.name}에게 가르친 내용을 짚어 주는 중`:`${partner.name}에게 배운 내용을 질문하는 중`,desc:teaching?`${partner.name}의 설명을 듣고 잘 이해한 부분과 다시 연습할 부분을 짚어 주었어요.`:`${partner.name}에게 혼자 해보다 막힌 부분을 보여 주고, 설명을 들으며 다시 시도했어요.`,mentorScene:true,mentorTeaching:teaching};
+    }
+  }
+
   const key=dayKey(date),day=c.days?.[key];
   if(!day||!item)return item;
   item={...item,time:clock(Number(item.minute))};
