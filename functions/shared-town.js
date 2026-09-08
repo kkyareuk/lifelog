@@ -18,9 +18,9 @@ function createSharedTownService({db,engine,clock=Date.now}){
         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
         if(input.command){
           const c=residents.find(r=>r.id===input.command.characterId);if(!c||c.ownerUid!==uid)fail('character-owner-required',403);
-          if(!['wake','wash','meal','read','rest','walk','study','chores','talk','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile'].includes(input.command.kind))fail('invalid-command');
-          if(['talk','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile'].includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
-          if(['kiss','kiss_cautious','kiss_reconcile','handhold','lean','hug'].includes(input.command.kind)){
+          if(!['wake','wash','meal','read','rest','walk','study','chores','talk','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(input.command.kind))fail('invalid-command');
+          if(['talk','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
+          if(['kiss','kiss_cautious','kiss_reconcile','affection','handhold','lean','hug'].includes(input.command.kind)){
             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
             if(input.command.kind!=='hug'&&profiles.some(p=>!['성인','노인'].includes(p.ageGroup)))fail('adult-characters-required');
             if(profiles.some(p=>/접촉.*(싫|피함|거부)|신체 접촉 없음/.test(p.touchReaction||'')))fail('contact-preference-required');

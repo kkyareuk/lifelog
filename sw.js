@@ -1,9 +1,9 @@
 const CACHE_VERSION="drawer-village-v20260907-dev-269";
 const CORE=[
-  './shared-residents.js?v=20260908dev276',
-  './bed-perspective.js?v=20260908dev276',
-  './scene-context.js?v=20260908dev276',
-  './user-profile.js?v=20260908dev276',
+  './shared-residents.js?v=20260908dev277',
+  './bed-perspective.js?v=20260908dev277',
+  './scene-context.js?v=20260908dev277',
+  './user-profile.js?v=20260908dev277',
   './assets/furniture/couple-bed/couple-bed-side-base.svg',
   './assets/furniture/couple-bed/couple-bed-side-quilt.svg',
   './assets/furniture/couple-bed/couple-bed-side-footboard.svg',

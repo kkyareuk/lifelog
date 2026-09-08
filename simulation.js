@@ -1,12 +1,12 @@
-import {meetingScene} from './meeting-journey.js?v=20260908dev276';
-import {dailyInteractionLine} from './scene-context.js?v=20260908dev276';
-import {careRoutineFor} from "./creative-options.js?v=20260908dev276";
-import {drinkExperience} from "./drink-log.js?v=20260908dev276";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev276";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev276";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908dev276";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev276";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev276";
+import {meetingScene} from './meeting-journey.js?v=20260908dev277';
+import {dailyInteractionLine} from './scene-context.js?v=20260908dev277';
+import {careRoutineFor} from "./creative-options.js?v=20260908dev277";
+import {drinkExperience} from "./drink-log.js?v=20260908dev277";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev277";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev277";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908dev277";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev277";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev277";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -2626,7 +2626,7 @@ function currentGiftFor(c,date){
   const busy=new Set(),minute=nowMin(date);
   for(const source of giftSources(date).sort((a,b)=>b.stamp-a.stamp||String(a.id).localeCompare(String(b.id)))){
     const stamp=new Date(source.stamp),start=stamp.getHours()*60+stamp.getMinutes();
-    if(minute<start||minute>=start+20||busy.has(source.actorId)||busy.has(source.targetId))continue;
+    if(source.endedAt&&source.endedAt<=date.getTime()||minute<start||minute>=start+20||busy.has(source.actorId)||busy.has(source.targetId))continue;
     busy.add(source.actorId);busy.add(source.targetId);
     if(c.id===source.actorId||c.id===source.targetId)return giftEntryFor(source,c,date);
   }
@@ -3635,7 +3635,7 @@ function calculateBaseEvent(c,date=new Date()){
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
   if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);
   const sources=giftSources(date);
-  const past=list.filter(x=>(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
+  const past=list.filter(x=>(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){
