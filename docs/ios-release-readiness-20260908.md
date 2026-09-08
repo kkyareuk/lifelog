@@ -26,3 +26,12 @@
 - Android 운영main274, 개발판280은 이번 iOS 메타데이터 작업에서 변경/배포하지 않았습니다. 요청된 멀티·태블릿·효과강도 개발판281 작업은 미완료 상태로 유지합니다.
 
 읽기 전용 재확인: ASC 환경변수가 준비된 상태에서 `node scripts/ios-release-readiness.mjs`. 보고서는 개인정보/토큰을 저장하지 않으며 ready를 자동으로 true로 만들지 않습니다.
+
+## 후속 · Apple 키 파일 확보 및 Firebase 연결 완료
+- 사용자가 Downloads 경로를 제공했고 AuthKey_BXUJ9VYS35.p8 파일(257 bytes)을 확인했습니다. P-256 EC 개인키 형식 검사 통과. 키 내용은 로그/저장소에 출력하지 않았습니다.
+- 승인된 기존 Firebase 관리 세션을 갱신한 후 Apple 제공자를 생성했습니다. enabled=true, native clientId 및 허용 bundleIds=com.drawervillage.app, codeFlowConfig의 Team ID/Key ID 등록 후 재조회 일치 확인.
+- 웹용 Services ID·리디렉션 등록은 이번 단계에서 만들지 않았습니다. 현재 설정은 iOS 네이티브 앱에 한정하며 실제 Apple 로그인·코드 교환·토큰 해제 성공은 아직 실기기 검증 전입니다.
+- 키 사본은 프로젝트/OneDrive 밖 LocalAppData/DrawerVillage/ios-secrets에 저장하고 현재 Windows 사용자와 SYSTEM 접근으로 제한, 원본과 SHA256 일치 확인. 원본 Downloads 파일은 보존했습니다.
+- 기존 키 DP73N3TJ7H/895DH37Y2U의 최종 폐기 상태는 이번 단계에서 재확인하지 않았습니다. 신규 키 정상 동작 검증 후 불필요한 키 정리 필요.
+- 빌드14에 로그인 버튼/계정삭제가 자동 적용되는 것은 아닙니다. 앱 코드, Apple entitlement, 서명 프로파일 및 새 빌드 검증이 남았습니다. 결제 검증용 IAP 키와 환경은 변경하지 않았습니다.
+- iOS/Android 새 빌드·심사 제출 미실행. 기존 앱 및 전체 번역 진행률 변경 없음. 상품 문구 영어·일본어 각3/3 완료 유지.
