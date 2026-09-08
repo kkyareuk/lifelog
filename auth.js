@@ -1,6 +1,6 @@
 import {accountStorage as localStorage} from "./account-storage.js?v=20260908hotfix274";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {getAuth,GoogleAuthProvider,OAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,reauthenticateWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {getAuth,initializeAuth,GoogleAuthProvider,OAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,reauthenticateWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
@@ -454,7 +454,7 @@ const normalizeEntitlements=value=>{
 let sandboxSlotPreview=null;
 const publishEntitlements=value=>{
   entitlements=normalizeEntitlements(value);
-  if(sandboxSlotPreview?.uid===user?.uid)for(const field of ["characterSlotPacks","townSlotPacks"])entitlements[field]=Math.max(entitlements[field],Number(sandboxSlotPreview.value?.[field])||0);
+  if(user&&sandboxSlotPreview?.uid===user.uid)for(const field of ["characterSlotPacks","townSlotPacks"])entitlements[field]=Math.max(entitlements[field],Number(sandboxSlotPreview.value?.[field])||0);
   storageUsage={...storageUsage,maxCount:maxPhotos(),maxBytes:maxTotalBytes(),unlimited:false};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.ParallelCity?.setEntitlements?.(entitlements);
@@ -841,9 +841,16 @@ async function submitFeedback({category,message,allowReply=false}={}){
 
 if(ready){
   try{
-    const app=initializeApp(cfg);auth=getAuth(app);db=getFirestore(app);storage=getStorage(app);
-    await setPersistence(auth,browserLocalPersistence);
-    try{await getRedirectResult(auth)}catch(error){console.warn(error)}
+    const app=initializeApp(cfg);
+    // Native OAuth returns credentials through Capacitor. The web redirect
+    // resolver opens an unnecessary iframe that can stall WKWebView startup.
+    const nativeIOS=window.Capacitor?.getPlatform?.()==="ios";
+    auth=nativeIOS?initializeAuth(app,{persistence:browserLocalPersistence}):getAuth(app);
+    db=getFirestore(app);storage=getStorage(app);
+    if(!nativeIOS){
+      await setPersistence(auth,browserLocalPersistence);
+      try{await getRedirectResult(auth)}catch(error){console.warn(error)}
+    }
     onAuthStateChanged(auth,async next=>{
       const epoch=++accountEpoch;switchingAccount=true;user=next;
       try{
