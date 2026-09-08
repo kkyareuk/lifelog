@@ -8,7 +8,7 @@
 - Two isolated browser accounts using the server engine: common activity chooser, departure, same route, waiting and arrival passed with one command request and no animation writes.
 - Server engine: talk-to-solo-read cancellation with a stale target, reverse initiator movement, shared meal identity and scheduled care boundaries passed. 200-character fixture completed in 342 ms (test-machine measurement, not phone latency).
 - Relationship viewpoint/emotion and log continuity checks passed.
-- Older check-character-notifications.mjs has three pre-existing static expectations failing (schema wording, system-bar implementation, old build number). No claim that the whole legacy suite passed.
+- Older check-character-notifications.mjs has three unresolved static expectations failing (schema wording, system-bar implementation, old build number). No claim that the whole legacy suite passed.
 - sharedTownApi deployment succeeded on 2026-09-09.
 - Read markers persist per account on this device, not between devices. Proposal acceptance/rejection is server state.
 - UI coverage heuristic: EN 2198/2894 (76.0%), JA 2197/2894 (75.9%). New controls and messages have KO/EN/JA copy.
