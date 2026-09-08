@@ -1,6 +1,6 @@
-import {characterCodeDialog} from "./character-code.js?v=20260909dev285";
-import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev285';
-import {informationOnlyState} from './local-media.js?v=20260909dev285';
+import {characterCodeDialog} from "./character-code.js?v=20260909dev286";
+import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev286';
+import {informationOnlyState} from './local-media.js?v=20260909dev286';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
 const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);
@@ -26,6 +26,7 @@ export function readSettingsFile(text){
   return file;
 }
 export function importCharacterSettings(file,limit){
+if(characterEditorActive()){endCharacterEditor();window.DrawerVillageGroups?.select('');state.activeTab='character'}
   const settings=characterSettingsFile(file.character).character,before=cloneState();
   const id=createCharacter(limit);if(!id)throw Error('남은 캐릭터 슬롯이 없어요.');
   try{updateCharacter(id,settings,false);if(!save(true))throw Error('저장하지 못했어요.');return id}

@@ -10,7 +10,9 @@ module.exports=({db,clock=Date.now})=>async(uid,input)=>{
   const [group,old]=await Promise.all([tx.get(root),tx.get(record)]);
   if(old.exists){if(old.data().ownerUid!==uid)fail('owner-required',403);return old.data()}
   if(!group.exists||group.data().ownerUid!==uid)fail('owner-required',403);
-  const members=await tx.get(root.collection('members'));
+  const [members,residents,homes]=await Promise.all([tx.get(root.collection('members')),tx.get(root.collection('residents')),tx.get(root.collection('homes'))]);
+  const restore=await require('./character-transfer').prepareReturn(db,tx,gid,residents.docs.map(d=>({id:d.id,...d.data()})),homes.docs.map(d=>({id:d.id,...d.data()})),clock());
+  restore();
   const value={ownerUid:uid,memberIds:[...new Set([uid,...members.docs.map(d=>d.id)])],completedAt:0,requestedAt:clock()};
   tx.set(record,value);tx.delete(root);return value;
  });

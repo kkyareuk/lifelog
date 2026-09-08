@@ -1,11 +1,11 @@
-import {runBackgroundAction} from './background-actions.js?v=20260909dev285';
-import {createCharacter,emptyWorld,runIsolatedWorld} from './state.js?v=20260909dev285';
-import {withTownEditDraft,stageTownEdit,commitTownEdit,townEditDraft,discardTownEdit} from './town-edit-draft.js?v=20260909dev285';
-import {bindSharedHome} from './shared-home-editor.js?v=20260909dev285';
-import {residentText} from './shared-residents.js?v=20260909dev285';
-import {sharedSelection,withSharedWorld,decodeShared,buildSharedWorld} from './shared-world.js?v=20260909dev285';
-import {state} from './state.js?v=20260909dev285';
-import {renderGroupRelations} from './groups.js?v=20260909dev285';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev286';
+import {createCharacter,emptyWorld,runIsolatedWorld} from './state.js?v=20260909dev286';
+import {withTownEditDraft,stageTownEdit,commitTownEdit,townEditDraft,discardTownEdit} from './town-edit-draft.js?v=20260909dev286';
+import {bindSharedHome} from './shared-home-editor.js?v=20260909dev286';
+import {residentText} from './shared-residents.js?v=20260909dev286';
+import {sharedSelection,withSharedWorld,decodeShared,buildSharedWorld} from './shared-world.js?v=20260909dev286';
+import {state} from './state.js?v=20260909dev286';
+import {renderGroupRelations} from './groups.js?v=20260909dev286';
 const messages={"다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.":["Another member edited this town. Refresh the layout and try again.","他のメンバーが先に編集しました。配置を確認してもう一度お試しください。"],"저장하지 못했어요":["Could not save.","保存できませんでした。"],"건물 편집 권한이 필요해요":["Building editing permission is required.","建物の編集権限が必要です。"],"내 캐릭터의 시선만 설정할 수 있어요":["You can only edit your own character’s viewpoint.","自分のキャラクターの視線だけを設定できます。"],"관계 제안을 보냈어요":["Relationship proposal sent.","関係の提案を送りました。"],"저장했어요":["Saved.","保存しました。"],"이 항목의 공유 편집 연결은 준비 중이에요":["Shared editing for this item is not available yet.","この項目の共有編集は準備中です。"],"이 시선 설정을 초기화할까요?":["Reset this viewpoint?","この視線設定を初期化しますか？"],"이 건물을 삭제할까요?":["Delete this building?","この建物を削除しますか？"],"삭제할까요?":["Delete this item?","削除しますか？"],"내 마을":["My town","自分のタウン"]};
 const tr=text=>messages[text]?.[{en:0,ja:1}[state.uiLanguage]]||text;
 const api=()=>window.DrawerVillageGroups, snapshot=()=>withTownEditDraft(api()?.getSnapshot?.()),uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
@@ -82,14 +82,8 @@ export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPa
    if(patch)moveItem(kind,item,patch);return
   }
  },true);
+  root.querySelector('[data-resident-reconnect]')?.addEventListener('click',()=>api().select(s.activeGroupId));
   root.querySelector('[data-resident-search]')?.addEventListener('input',e=>root.querySelectorAll('[data-resident-name]').forEach(card=>card.hidden=!card.dataset.residentName.includes(e.target.value.toLocaleLowerCase())));
- root.querySelector('[data-create-shared-resident]')?.addEventListener('submit',e=>{stop(e);const form=e.currentTarget;if(form.dataset.pending)return;form.dataset.pending='1';const data=Object.fromEntries(new FormData(form)),id=crypto.randomUUID(),groupId=s.activeGroupId,townId=town(s).id,account=uid();form.querySelector('button[type=submit]').disabled=true;select.residentForm='';render();void runBackgroundAction('create-resident:'+id,async()=>{
-  if(uid()!==account)throw Error('Account changed');const world=emptyWorld(),seed=runIsolatedWorld(world,()=>{const id=createCharacter(5);return {profile:structuredClone(state.characters[id]),home:structuredClone(state.homes[id])}});
-  if(data.code.trim()){const result=await api().readCharacterCode(data.code);Object.assign(seed.profile,result.character);delete seed.profile.days}
-  if(data.name.trim())seed.profile.name=data.name.trim();if(!data.code.trim()){seed.profile.job=data.job||'무직';seed.profile.ageGroup=data.ageGroup}
-  for(const [field,key] of [['icon','iconFile'],['photo','photoFile']]){const file=data[key];if(file?.size)seed.profile[field]=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)})}
-  const result=await api().createResident({id,groupId,townId,...seed});if(activeShared()?.activeGroupId===groupId){select.residentDetail=result.id;render()}
- })});
  root.querySelector('[data-residence-request]')?.addEventListener('submit',e=>{stop(e);const form=e.currentTarget,input=Object.fromEntries(new FormData(form));enqueue(async()=>{const result=await(form.dataset.residenceRequest==='admission'?api().requestAdmission(input.characterId):api().requestCohabitation(input));select.residentForm='';select.residentDetail='';toast(residentText(result.status==='accepted'?'적용했어요':'제안을 보냈어요',result.status==='accepted'?'Applied':'Proposal sent',result.status==='accepted'?'反映しました':'提案を送りました'));render()},toast)});
  root.addEventListener('change',e=>{
   const el=e.target;

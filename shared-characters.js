@@ -1,22 +1,48 @@
-import {state} from './state.js?v=20260909dev285';
-import {decodeShared} from './shared-world.js?v=20260909dev285';
-import {TOUCH_REACTIONS,touchReactions} from './touch-reactions.js?v=20260909dev285';
-import {runBackgroundAction} from './background-actions.js?v=20260909dev285';
+import {state,beginCharacterEditor,endCharacterEditor,characterEditorActive,emptyWorld,runIsolatedWorld,createCharacter} from './state.js?v=20260909dev286';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev286';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev286';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-export function sharedCharacterRoster(s){
- const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;
- return `<section class="shared-character-roster"><header><h2>${esc(s.group.name)} · ${t('캐릭터','Characters','キャラクター')}</h2><button data-shared-character-personal>${t('내 마을 캐릭터','Personal characters','自分の村のキャラクター')}</button></header><div class="town-building-card-grid">${s.residents.map(r=>{const p=decodeShared(r.profileJson);return `<button type="button" class="town-building-browser-card" data-edit-shared-character="${esc(r.id)}"><img src="${esc(p.icon||r.icon||p.photo||r.photo||'assets/home-ui/profile-placeholder.png')}" alt=""><b>${esc(r.name)}</b><small>${r.ownerUid===uid?t('내 캐릭터 · 편집','My character · Edit','自分のキャラクター・編集'):t('프로필 보기','View profile','プロフィールを見る')}</small></button>`}).join('')}</div></section>`;
+let session=null;
+const drafts=new Map();
+export function leaveSharedCharacterEditor(){
+ if(session&&characterEditorActive())drafts.set(session.uid+':'+session.groupId,state);
+ endCharacterEditor();session=null;
+}
+export function syncSharedCharacterEditor(){
+ const s=window.DrawerVillageGroups?.getSnapshot?.(),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;
+ if(state.activeTab!=='character'||!s?.group||!s.activeGroupId||!uid){leaveSharedCharacterEditor();return}
+ if(session?.uid===uid&&session.groupId===s.activeGroupId&&characterEditorActive()){const ids=(s.residents||[]).filter(r=>r.ownerUid===uid).map(r=>r.id);if(ids.length===state.order.length&&ids.every(id=>state.order.includes(id)))return;}
+ leaveSharedCharacterEditor();
+ const incoming=buildSharedWorld(s,state.uiLanguage),cached=drafts.get(uid+':'+s.activeGroupId);
+ const world=cached||incoming;
+ if(cached){world.characters=Object.fromEntries(Object.entries(incoming.characters).map(([id,c])=>[id,cached.characters[id]||c]));world.order=incoming.order;world.homes=incoming.homes;world.towns=incoming.towns;world.world=incoming.world;}
+ const defaults=runIsolatedWorld(emptyWorld(),()=>{const id=createCharacter();return structuredClone(state.characters[id])});
+ for(const id of world.order)world.characters[id]={...structuredClone(defaults),...world.characters[id],id};
+ world.order=world.order.filter(id=>world.characters[id]?.ownerUid===uid);
+ if(!world.order.includes(world.activeId))world.activeId=world.order[0];
+ for(const key of ['uiLanguage','uiScale','uiFont','animationIntensity','ownerName','ownerPhoto'])world[key]=state[key];
+ world.activeTab='character';world.characterSettingsView||='hub';
+ beginCharacterEditor(world);session={uid,groupId:s.activeGroupId};
+}
+export function characterGroupSelector(){
+ const s=window.DrawerVillageGroups?.getSnapshot?.()||{};
+ return `<label class="character-group-selector">${t('캐릭터 그룹','Character group','キャラクターのグループ')}<select data-character-world><option value="">${t('내 마을','My town','自分の村')}</option>${(s.group&&!(s.groups||[]).some(g=>g.id===s.activeGroupId)?[...(s.groups||[]),{...s.group,id:s.activeGroupId}]:s.groups||[]).map(g=>`<option value="${esc(g.id)}" ${g.id===s.activeGroupId?'selected':''}>${esc(g.name)}</option>`).join('')}</select></label>`;
+}
+export function saveSharedCharacter(){
+ if(!session||!characterEditorActive())return null;
+ const {uid,groupId}=session,id=state.activeId,profile=structuredClone(state.characters[id]);
+ if(!profile||profile.ownerUid!==uid)throw Error('Character owner required');
+ return runBackgroundAction('resident-edit:'+groupId+':'+id,async()=>{
+  if(window.ParallelCityAuth.getInfo().user?.uid!==uid)throw Error('Account changed');
+  await window.DrawerVillageGroups.saveResident({groupId,id,profile});
+ });
 }
 export function bindSharedCharacters(render){
- document.querySelector('[data-shared-character-personal]')?.addEventListener('click',()=>{window.DrawerVillageGroups.select('');render()});
- document.querySelectorAll('[data-edit-shared-character]').forEach(b=>b.onclick=()=>openSharedCharacter(b.dataset.editSharedCharacter,render));
+ document.querySelectorAll('[data-new]').forEach(button=>{if(!session)return;const create=button.onclick;button.onclick=async()=>{leaveSharedCharacterEditor();await window.DrawerVillageGroups.select('');state.activeTab='character';create?.();render()}});
+ document.querySelector('[data-character-world]')?.addEventListener('change',async e=>{const gid=e.target.value;leaveSharedCharacterEditor();await window.DrawerVillageGroups.select(gid);state.activeTab='character';render()});
+ // Character creation and deletion belong to group membership/slot operations.
+ if(session)document.querySelectorAll('[data-delete-character]').forEach(b=>{b.onclick=()=>{const id=b.dataset.deleteCharacter,{groupId,uid}=session,world=state;if(!confirm(t('이 캐릭터를 영구 삭제할까요? 내 마을로 돌아오지 않으며 복구할 수 없습니다.','Permanently delete this character? It will not return to your town and cannot be recovered.','このキャラクターを完全に削除しますか？自分の村には戻らず、復元できません。')))return;void runBackgroundAction('resident-delete:'+groupId+':'+id,async()=>{if(window.ParallelCityAuth.getInfo().user?.uid!==uid)throw Error('Account changed');await window.DrawerVillageGroups.deleteResident({groupId,residentId:id});delete world.characters[id];world.order=world.order.filter(x=>x!==id);world.activeId=world.order[0]||'';render()})}});
 }
 export function openSharedCharacter(id,render){
- const api=window.DrawerVillageGroups,s=api.getSnapshot(),r=s.residents.find(r=>r.id===id);if(!r)return;
- const uid=window.ParallelCityAuth.getInfo().user.uid,editable=r.ownerUid===uid,profile={...structuredClone(decodeShared(r.profileJson)),name:r.name,job:r.job||decodeShared(r.profileJson).job||""},d=document.createElement('dialog');d.className='shared-character-editor';
- const fields=[['name','이름','Name','名前'],['job','직업','Occupation','職業'],['jobTitle','직함','Job title','役職'],['gender','성별','Gender','性別'],['wake','기상 시간','Wake time','起床時刻','time'],['sleep','수면 시간','Bedtime','就寝時刻','time'],['speechStyle','말투','Speech style','話し方'],['traitNotes','성격 상세','Personality notes','性格の詳細','textarea'],['affectionStyle','애정 표현','Affection style','愛情表現'],['conflictStyle','갈등 대응','Conflict style','対立への対応'],['emotionalBaseline','기본 정서','Emotional baseline','基本感情'],['hobbies','취미','Hobbies','趣味','list'],['interests','관심사','Interests','関心事','list'],['favoriteFashionStyles','패션 분위기','Fashion styles','服装の雰囲気','list'],['accessories','악세서리','Accessories','アクセサリー','list']];
- d.innerHTML=`<form><header><h2>${esc(r.name)}</h2><button type="button" data-close>×</button></header><fieldset ${editable?'':'disabled'}><div class="shared-character-photo-fields">${['icon','photo','ldImage'].map((key,i)=>`<label><img data-preview="${key}" src="${esc(profile[key]||r[key]||'assets/home-ui/profile-placeholder.png')}" alt="">${[t('아이콘','Icon','アイコン'),t('프로필 사진','Profile photo','プロフィール写真'),t('전신 그림','Full-body art','全身画像')][i]}${editable?`<span class="shared-photo-pick">${t("사진 선택","Choose image","写真を選ぶ")}</span><input type="file" accept="image/*" data-shared-photo="${key}">`:""}</label>`).join('')}</div><label>${t('나이대','Age group','年齢層')}<select name="ageGroup">${['성인','노인','청소년','어린이','아기'].map((x,i)=>`<option value="${x}" ${profile.ageGroup===x?'selected':''}>${t(x,['Adult','Older adult','Teen','Child','Baby'][i],['成人','高齢者','青少年','子供','赤ちゃん'][i])}</option>`).join('')}</select></label>${fields.map(([key,ko,en,ja,type])=>`<label>${t(ko,en,ja)}${type==='textarea'?`<textarea name="${key}" maxlength="500">${esc(profile[key])}</textarea>`:`<input name="${key}" type="${type==='time'?'time':'text'}" maxlength="${key==='name'?40:500}" ${key==='name'?'required':''} value="${esc(Array.isArray(profile[key])?profile[key].join(', '):profile[key])}">`}${type==='list'?`<small>${t('쉼표로 나누어 여러 개 입력','Separate multiple choices with commas','複数入力はカンマで区切ってください')}</small>`:''}</label>`).join('')}<fieldset><legend>${t('신체접촉 반응 · 여러 개 선택','Touch reactions · multiple choices','接触への反応・複数選択')}</legend>${TOUCH_REACTIONS.map(x=>`<label class="shared-touch-choice"><input type="checkbox" name="touchReaction" value="${esc(x.value||x)}" ${touchReactions(profile.touchReaction).includes(x.value||x)?'checked':''}>${esc(typeof x==='string'?x:x[state.uiLanguage]||x.ko||x.value)}</label>`).join('')}</fieldset></fieldset>${editable?`<footer><button type="submit">${t('캐릭터 저장','Save character','キャラクターを保存')}</button></footer>`:''}</form>`;
- document.body.append(d);d.onclose=()=>d.remove();d.querySelector('[data-close]').onclick=()=>d.close();d.showModal();window.ParallelCity.translateInterface?.(d);
- const draftImages={};d.querySelectorAll('[data-shared-photo]').forEach(input=>input.onchange=async()=>{const file=input.files[0];if(!file)return;input.disabled=true;try{const data=await window.ParallelCity.cropCharacterImage(file,input.dataset.sharedPhoto);if(data){draftImages[input.dataset.sharedPhoto]=data;d.querySelector(`[data-preview="${input.dataset.sharedPhoto}"]`).src=data}}finally{input.disabled=false}});
- d.querySelector('form').onsubmit=e=>{e.preventDefault();if(!editable||d.querySelector('input[type=file]:disabled'))return;const data=new FormData(e.currentTarget),patch={...profile,...draftImages,ageGroup:data.get('ageGroup')};for(const [key,,,,type] of fields)patch[key]=type==='list'?String(data.get(key)||'').split(',').map(x=>x.trim()).filter(Boolean):data.get(key);patch.touchReaction=data.getAll('touchReaction');d.close();void runBackgroundAction('resident-edit:'+s.activeGroupId+':'+id,async()=>{if(window.ParallelCityAuth.getInfo().user?.uid!==uid)throw Error('Account changed');await api.saveResident({groupId:s.activeGroupId,id,profile:patch});render()})};
+ syncSharedCharacterEditor();if(state.order.includes(id)){state.activeId=id;render()}
 }

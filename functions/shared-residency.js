@@ -10,8 +10,10 @@ module.exports=({db,membership,notify,clock,id})=>{
    if(residents.docs.some(r=>r.id===p.sourceId))fail('already-resident',409);
    if(residents.docs.filter(r=>r.data().ownerUid===p.senderUid).length>=limit(group.data(),sender.data())||residents.docs.length>=200)fail('resident-limit',409);
    if(!group.data().towns?.some(t=>t.id===p.resident.townId))fail('town-missing',409);
+   const move=await require('./character-transfer').prepareMove(db,tx,p,root.id,clock());
    if(p.home){const old=await tx.get(root.collection('homes').doc(p.home.id));if(!old.exists)tx.create(root.collection('homes').doc(p.home.id),p.home)}
-   tx.create(root.collection('residents').doc(p.sourceId),{...p.resident,ownerUid:p.senderUid,joinedAt:clock(),updatedAt:clock()});
+   move();
+   tx.create(root.collection('residents').doc(p.sourceId),{...p.resident,independentCharacter:true,movedCharacter:true,ownerUid:p.senderUid,joinedAt:clock(),updatedAt:clock()});
   }else{
    const [resident,home]=await Promise.all([tx.get(root.collection('residents').doc(p.sourceId)),tx.get(root.collection('homes').doc(p.homeId))]);
    if(!resident.exists||resident.data().ownerUid!==p.senderUid||!home.exists||home.data().ownerUid!==p.recipientUid)fail('participants-changed',409);

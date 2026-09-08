@@ -1,24 +1,25 @@
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev285';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev286';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev286';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev285";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev285";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev285";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev285";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev285";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev285";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev285";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev285";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev285";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev285";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev286";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev286";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev286";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev286";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev286";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev286";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev286";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev286";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev286";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev286";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev285";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev285";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev286";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev286";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -935,6 +936,23 @@ function load(){
 }
 
 export let state=load();
+let editorPersonalState=null;
+let pendingPersonalTransferSave=false;
+export const personalState=()=>editorPersonalState||state;
+export const characterEditorActive=()=>Boolean(editorPersonalState);
+export function beginCharacterEditor(world){
+  if(editorPersonalState)endCharacterEditor();
+  flushSave(false);
+  editorPersonalState=state;
+  state=world;
+}
+export function endCharacterEditor(){
+  if(!editorPersonalState)return;
+  const tab=state.activeTab;
+  state=editorPersonalState;editorPersonalState=null;
+  state.activeTab=tab;
+  if(pendingPersonalTransferSave){pendingPersonalTransferSave=false;save(true,false)}
+}
 export const emptyWorld=()=>fresh();
 let isolatedWorldDepth=0;
 // Shared simulation/rendering must never write into a player's personal save.
@@ -998,6 +1016,7 @@ function preserveLastNonempty(value,serialized="",force=false){
   }catch{return false}
 }
 function writeState(notify=true){
+  if(editorPersonalState)return true;
   if(saveRunning)return false;
   saveRunning=true;
   let stored=false;
@@ -1019,7 +1038,7 @@ function writeState(notify=true){
   return stored;
 }
 export function save(immediate=false,notify=true){
-  if(isolatedWorldDepth)return true;
+  if(isolatedWorldDepth||editorPersonalState)return true;
   clearTimeout(timer);
   if(immediate)clearDeferredTextSave();
   pendingNotify=pendingNotify||notify;
@@ -2185,6 +2204,7 @@ export function reorderTownDecoration(id,direction){
 }
 export function deleteTownDecoration(id){state.world.decorations=(state.world.decorations||[]).filter(item=>item.id!==id);touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));save(true)}
 export function replaceState(next){
+  endCharacterEditor();
   preserveLastNonempty(state,"",true);
   const prepared=migrate(preserveDevicePhotos(state,clone(next)));
   const serialized=stringifyLocalMediaState(prepared);
@@ -2205,6 +2225,7 @@ export function replaceState(next){
   return true;
 }
 export function resetAll(){
+  endCharacterEditor();
   clearTimeout(timer);timer=undefined;clearDeferredTextSave();pendingNotify=false;
   state=normalizeHomes(fresh());
   state.gameResetAt=Date.now();
@@ -2219,6 +2240,7 @@ export function resetAll(){
   localStorage.setItem(KEY,stringifyLocalMediaState(state));
 }
 export function switchAccountState(uid){
+  endCharacterEditor();
   if(localStorage.scope===String(uid||"guest"))return false;
   // Flush only the departing account, then cancel every deferred write.
   save(true,false);clearTimeout(timer);timer=undefined;
@@ -2228,4 +2250,6 @@ export function switchAccountState(uid){
   state=migrate(load());
   return true;
 }
-export const cloneState=()=>({...clone(state),characterSettingsView:"hub"});
+export const cloneState=()=>({...clone(editorPersonalState||state),characterSettingsView:"hub"});
+
+export function receiveCharacterTransfers(records){if(!records?.length)return;const personal=editorPersonalState||state;const changed=records.some(r=>['group','deleted'].includes(r.location)?Boolean(personal.characters?.[r.personalId]):Number(r.revision)>Number(personal.characterTransferVersions?.[r.personalId]||0));if(!changed)return;applyCharacterTransfers(personal,records);if(!editorPersonalState)save(true,false);else pendingPersonalTransferSave=true}

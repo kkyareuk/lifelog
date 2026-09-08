@@ -4,6 +4,9 @@ async function usage(db,tx,uid){
  const root=db.collection('users').doc(uid),lock=root.collection('slotReservations').doc('revision');
  const [user,core,memberships,revision]=await Promise.all([tx.get(root),tx.get(root.collection('sync').doc('core')),tx.get(root.collection('groupMemberships')),tx.get(lock)]);
  const local=core.data()?.state||user.data()?.gameState||{},entitlements=user.data()?.entitlements||{},personalIds=new Set(array(local.order));
+ const transferDocs=await tx.get(root.collection('characterTransfers'));
+ const transfers=transferDocs.docs.map(d=>d.data());transfers.filter(t=>['group','deleted'].includes(t.location)).forEach(t=>personalIds.delete(t.personalId));
+ transfers.filter(t=>t.location==='personal'&&Number(local.characterTransferVersions?.[t.personalId]||0)<Number(t.revision)).forEach(t=>personalIds.add(t.personalId));
  let characters=0,towns=0;
  for(const membership of memberships.docs){const groupRef=db.collection('groups').doc(membership.id),group=await tx.get(groupRef);if(!group.exists)continue;
   const g=group.data();towns+=(g.towns||[]).filter(t=>(t.slotOwnerUid||g.ownerUid)===uid).length;

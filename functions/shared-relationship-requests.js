@@ -36,7 +36,8 @@ module.exports=({db,membership,notify,clock,id})=>{
    const owners=Object.fromEntries(residents.map(r=>[r.id,r.data().ownerUid]));
    if(!privileged&&!(old.exists?oldIds:ids).some(cid=>owners[cid]===uid))fail('character-owner-required',403);
    if(kind==='schedule'&&!privileged&&(!ids.includes(patch.sourceId)||owners[patch.sourceId]!==uid))fail('character-owner-required',403);
-   const recipients=privileged?[]:[...new Set(Object.values(owners))].filter(owner=>owner!==uid);
+   if(input.applyAsManager===true&&!privileged)fail('manager-required',403);
+   const recipients=privileged&&input.applyAsManager===true?[]:[...new Set(Object.values(owners))].filter(owner=>owner!==uid);
    const accounts=await Promise.all(recipients.map(owner=>tx.get(root.collection('members').doc(owner))));if(accounts.some(m=>!m.exists))fail('recipient-left-group',409);
    const sourceName=residents.filter(r=>privileged?r.id===ids[0]:r.data().ownerUid===uid).map(r=>r.data().name).join(' · '),targetName=residents.filter(r=>privileged?r.id!==ids[0]:r.data().ownerUid!==uid).map(r=>r.data().name).join(' · ');
    const request={kind,targetId,patch,baseHash:hash(old.exists?old.data():null),participantIds:ids,owners,recipientUids:recipients,approvals:[],senderUid:uid,sourceName,targetName,status:recipients.length?'pending':'accepted',createdAt:clock()};

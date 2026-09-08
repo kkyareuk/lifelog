@@ -1,14 +1,15 @@
-import {runBackgroundAction} from './background-actions.js?v=20260909dev285';
-import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev285';
-import {bindMailRecipients} from './mail-recipients.js?v=20260909dev285';
-import {createContactMailbox} from './notification-mail.js?v=20260909dev285';
-import {accountStorage} from './account-storage.js?v=20260909dev285';
-import {chooseCatalog} from './settings-transfer.js?v=20260909dev285';
-import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev285';
-import {proposalSettings} from './groups.js?v=20260909dev285';
-import {buildSharedWorld} from './shared-world.js?v=20260909dev285';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev286';
+import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev286';
+import {bindMailRecipients} from './mail-recipients.js?v=20260909dev286';
+import {createContactMailbox} from './notification-mail.js?v=20260909dev286';
+import {accountStorage} from './account-storage.js?v=20260909dev286';
+import {chooseCatalog} from './settings-transfer.js?v=20260909dev286';
+import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev286';
+import {proposalSettings} from './groups.js?v=20260909dev286';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev286';
 export const mt=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function returnMail(p){if(p.kind!=='return')return p;return {...p,subject:mt('캐릭터가 내 마을로 돌아왔습니다.','Your characters returned home.','キャラクターが自分の村に戻りました。'),body:mt(`${p.groupName||'멀티 마을'}에서 떠나 내 마을로 돌아왔습니다. 캐릭터 탭에서 확인해 주세요.`,`Your characters left ${p.groupName||'the multiplayer group'} and returned to your town. Check the Characters tab.`,`${p.groupName||'マルチの村'}を離れ、自分の村へ戻りました。キャラクタータブでご確認ください。`)}}
 function senderImage(p,s){if(p.senderPhoto)return p.senderPhoto;const c=state.characters[p.sourceId||p.characterId]||(s.residents||[]).find(c=>c.id===(p.sourceId||p.characterId));if(c){let profile={};try{profile=JSON.parse(c.profileJson||'{}')}catch{}return profile.icon||c.icon||profile.photo||c.photo||''}if(p.sourceId||p.characterId)return '';return (s.members||[]).find(m=>(m.uid||m.id)===p.senderUid)?.photoURL||(!p.senderUid||p.senderUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid?window.ParallelCityAuth?.getInfo?.()?.user?.photoURL:'')||''}
 export function letterWatermark(image){return image?`<span class="mail-watermark-clip" aria-hidden="true"><img class="mail-watermark" src="${esc(image)}" alt=""></span>`:''}
 let lastMailSources=[];
@@ -35,7 +36,7 @@ export function unreadMailCount(){return mailboxRows().filter(p=>!mailWasRead(p)
 export function renderMailbox(){
  lastMailSources=mailSources();
  const s=snapshot(),rows=mailboxRows(folder),pageSize=Math.max(1,Math.floor((window.innerHeight-310)/100));page=Math.min(page,Math.max(0,Math.ceil(rows.length/pageSize)-1));const totalPages=Math.max(1,Math.ceil(rows.length/pageSize)),slice=rows.slice(page*pageSize,page*pageSize+pageSize);
- const cards=slice.map(p=>`<button type="button" class="mail-row" ${p.contact?`data-open-contact-mail="${esc(p.id)}"`:p.daily?'data-open-daily-question':`data-mail-open="${esc(p.id)}"`} data-mail-group="${esc(p.groupId||'')}" data-mail-proposal="${!!p.proposal}"><span class="mail-sender-art ${p.sourceId||p.characterId?"is-character":"is-user"}">${senderImage(p,s)?`<img src="${esc(senderImage(p,s))}" alt="">`:'✉'}</span><span class="mail-row-copy"><small>${esc(new Date(p.createdAt||Date.now()).toLocaleDateString(state.uiLanguage==='ja'?'ja-JP':state.uiLanguage==='en'?'en-US':'ko-KR'))}</small><b>${esc(p.proposal?proposalTitle(p):p.subject)}</b><p>${esc(p.proposal?proposalBody(p):p.body)}</p></span><span class="mail-read-label">${p.proposal?status(p):p.answered?mt('답변 완료','Answered','回答済み'):mailWasRead(p)?mt('읽음','Read','既読'):mt('안 읽음','Unread','未読')}</span></button>`).join('');
+ const cards=slice.map(returnMail).map(p=>`<button type="button" class="mail-row" ${p.contact?`data-open-contact-mail="${esc(p.id)}"`:p.daily?'data-open-daily-question':`data-mail-open="${esc(p.id)}"`} data-mail-group="${esc(p.groupId||'')}" data-mail-proposal="${!!p.proposal}"><span class="mail-sender-art ${(p.senderKind==='character'||(!p.proposal&&(p.sourceId||p.characterId)))?"is-character":"is-user"}">${senderImage(p,s)?`<img src="${esc(senderImage(p,s))}" alt="">`:'✉'}</span><span class="mail-row-copy"><small>${esc(new Date(p.createdAt||Date.now()).toLocaleDateString(state.uiLanguage==='ja'?'ja-JP':state.uiLanguage==='en'?'en-US':'ko-KR'))}</small><b>${esc(p.proposal?proposalTitle(p):p.subject)}</b><p>${esc(p.proposal?proposalBody(p):p.body)}</p></span><span class="mail-read-label">${p.proposal?status(p):p.answered?mt('답변 완료','Answered','回答済み'):mailWasRead(p)?mt('읽음','Read','既読'):mt('안 읽음','Unread','未読')}</span></button>`).join('');
  return `<section class="mail-center"><div class="mail-center-heading"><button type="button" class="mail-back" data-tab="observe" aria-label="${mt('뒤로','Back','戻る')}"><img src="./assets/home-ui/back.png" alt=""></button><h1><img src="./assets/home-ui/mailbox.png" alt="">${mt('우편함','Mailbox','郵便箱')}</h1><span>${mt('모든 마을의 우편','Mail from every world','すべての村の手紙')}</span></div><nav class="mail-folders">${[['inbox',mt('받은 우편','Inbox','受信')],['sent',mt('보낸 우편','Sent','送信済み')],['compose',mt('쓰기','Compose','作成')]].map(([id,label])=>`<button type="button" data-mail-folder="${id}" aria-pressed="${folder===id}">${label}</button>`).join('')}</nav><p class="mail-retention">${mt('받은 우편은 30일 뒤 삭제돼요.','Received mail is deleted after 30 days.','受信した手紙は30日後に削除されます。')}</p><div class="mail-paper">${folder==='compose'?compose(s):`<div class="mail-list">${cards||`<p>${mt('표시할 우편이 없어요.','No mail to display.','表示する手紙はありません。')}</p>`}</div><nav class="mail-pagination"><button data-mail-page="-1" ${page===0?'disabled':''}>‹ ${mt('이전','Previous','前へ')}</button><span>${page+1} / ${totalPages}</span><button data-mail-page="1" ${(page+1)*pageSize>=rows.length?'disabled':''}>${mt('다음','Next','次へ')} ›</button></nav>`}</div></section>`;
 }
 const mailCatalog=world=>Object.fromEntries([...new Set([...Object.keys(state.catalog||{}),...Object.keys(world.catalog||{})])].map(k=>[k,[...new Map([...(state.catalog?.[k]||[]),...(world.catalog?.[k]||[])].map(i=>[i.id,i])).values()]]));
@@ -62,7 +63,7 @@ export function bindMailbox(render,toast){
  });});
 }
 function openLetter(id,proposal,render,toast,groupId){
- const s=snapshot(),p=(proposal?[...(s.incomingProposals||[]),...(s.outgoingProposals||[])]:[...(s.incomingMail||[]),...(s.outgoingMail||[]),...localLetters()]).find(p=>p.id===id&&(!groupId||p.groupId===groupId||!p.groupId&&s.activeGroupId===groupId));if(!p)return;if(proposal)p.asResponse=folder==='inbox'&&p.senderUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid&&!!p.respondedAt;
+ const s=snapshot(),found=(proposal?[...(s.incomingProposals||[]),...(s.outgoingProposals||[])]:[...(s.incomingMail||[]),...(s.outgoingMail||[]),...localLetters()]).find(p=>p.id===id&&(!groupId||p.groupId===groupId||!p.groupId&&s.activeGroupId===groupId));if(!found)return;const p=returnMail(found);if(proposal)p.asResponse=folder==='inbox'&&p.senderUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid&&!!p.respondedAt;
  if(folder==='inbox')markMailRead(p);
  const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,dialog=document.createElement('dialog');dialog.className='mail-reader mail-letter';
  const schedule=p.kind==='schedule'?`<p>${esc(p.patch.title)} · ${esc(p.patch.date||p.patch.days?.map(d=>mt(['일','월','화','수','목','금','토'][d],['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d],['日','月','火','水','木','金','土'][d])).join(' · '))}</p><p>${esc(p.patch.start)}–${esc(p.patch.end)}</p><p>${esc(p.patch.notes)}</p>`:'';

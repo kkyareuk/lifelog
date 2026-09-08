@@ -20,6 +20,7 @@ function createService({db,clock=Date.now,engine}){
   const residency=require('./shared-residency')({db,membership,notify,clock,id});
   async function propose(uid,input){
     if(input.patch)return requests.propose(uid,input);
+    if(input.applyAsManager===true)return requests.propose(uid,{...input,patch:{a:input.sourceId,b:input.targetId,type:input.type,sourceRole:input.sourceRole||'',targetRole:input.targetRole||'',temporalStatus:'current'}});
     const gid=id(input.groupId),sourceId=id(input.sourceId),targetId=id(input.targetId),requestId=id(input.requestId);
     const type=bounded(input.type,80);if(!type||sourceId===targetId)fail('invalid-relationship');
     return db.runTransaction(async tx=>{
