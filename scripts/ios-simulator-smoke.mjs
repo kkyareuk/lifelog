@@ -38,10 +38,10 @@ async function main() {
       simctl(['install', device.udid, app]);
       const launch = simctl(['launch', device.udid, 'com.drawervillage.app']);
       if (!/com\.drawervillage\.app:\s*\d+/.test(launch)) throw new Error(`Unexpected launch: ${launch}`);
-      await new Promise(resolve => setTimeout(resolve, 15_000));
+      await new Promise(resolve => setTimeout(resolve, process.env.GITHUB_REF==='refs/heads/codex/ios-production264'?60000:15000));
       simctl(['io', device.udid, 'screenshot', `${reports}/${device.family}.png`]);
       if(process.env.GITHUB_REF==='refs/heads/codex/ios-production264'){
-        await new Promise(resolve=>setTimeout(resolve,35000));
+        await new Promise(resolve=>setTimeout(resolve,90000));
         simctl(['io',device.udid,'screenshot',`${reports}/${device.family}-home.png`]);
       }
       // A screenshot alone can be SpringBoard after a crash; verify a live app PID.

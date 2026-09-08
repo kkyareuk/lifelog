@@ -64,7 +64,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO \
             build 2>&1 | tee ios/build/reports/build.log
       - name: Launch on iPhone and iPad simulators
-        timeout-minutes: 10
+        timeout-minutes: 15
         run: node scripts/ios-simulator-smoke.mjs
       - name: Keep small diagnostics only (not an installable IPA)
         if: always()
