@@ -1,13 +1,14 @@
-import {routineScene} from './routine-scenes.js?v=20260909dev287';
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev287';
-import {dailyInteractionLine} from './scene-context.js?v=20260909dev287';
-import {careRoutineFor} from "./creative-options.js?v=20260909dev287";
-import {drinkExperience} from "./drink-log.js?v=20260909dev287";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev287";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev287";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev287";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev287";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev287";
+import {overheardGossip} from './gossip-reaction.js?v=20260909dev288';
+import {routineScene} from './routine-scenes.js?v=20260909dev288';
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev288';
+import {dailyInteractionLine} from './scene-context.js?v=20260909dev288';
+import {careRoutineFor} from "./creative-options.js?v=20260909dev288";
+import {drinkExperience} from "./drink-log.js?v=20260909dev288";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev288";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev288";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev288";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev288";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev288";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -4959,7 +4960,7 @@ function privateLifeEvent(c,date){
  if(target){c.lastPrivateBlock=block;target.lastPrivateBlock=block;directCharacterActivity(c.id,'affection',{targetId:target.id,now,scenes:{[c.id]:base,[target.id]:baseEventFor(target,date)}});}
 }
 export function eventFor(c,date=new Date()){
-  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return calculateEventFor(c,date)})}catch(error){return sceneFailure(c,date,error)}
+  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return overheardGossip(state,c,calculateEventFor(c,date),date.getTime(),state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
 }
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);

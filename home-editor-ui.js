@@ -1,5 +1,5 @@
-import {bedPillowPoint} from './bed-perspective.js?v=20260909dev287';
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev287";
+import {bedPillowPoint} from './bed-perspective.js?v=20260909dev288';
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev288";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={

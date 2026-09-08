@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {overheardGossip} from '../gossip-reaction.js';
+const character={id:'c',homeId:'h',personalityTypes:['성급함']},scene={home:true,room:'living',title:'독서 중',townId:'t'};
+const directive={id:'gossip1',kind:'gossip',subjectId:'c',endsAt:10000,journey:{actorId:'a',arrivesAt:1000,to:{home:true,homeId:'h',room:'living',townId:'t'}}};
+const world={characters:{a:{name:'안테'}},characterDirectives:{a:directive}};
+assert.equal(overheardGossip(world,character,scene,500),scene,'Cannot hear while participants are still travelling');
+assert.equal(overheardGossip(world,character,{...scene,room:'bath'},2000).gossipReaction,undefined,'Different room cannot overhear');
+assert.equal(overheardGossip(world,character,{...scene,title:'자는 중'},2000).gossipReaction,undefined,'Sleeping subject cannot hear');
+assert.equal(overheardGossip(world,character,scene,2000).gossipReaction,'angry');
+assert.equal(overheardGossip(world,{...character,personalityTypes:['수줍음']},scene,2000).gossipReaction,'surprised');
+assert.equal(overheardGossip(world,{...character,personalityTypes:['침착']},scene,2000).gossipReaction,'cold');
+assert.equal(overheardGossip(world,character,scene,11000),scene);
+for(const lang of ['ko','en','ja'])assert.ok(overheardGossip(world,character,scene,2000,lang).desc);
+const before=JSON.stringify(world);overheardGossip(world,character,scene,2000);assert.equal(JSON.stringify(world),before,'Projection does not write state');
+console.log('PASS hearing requires arrival and same room, personality reactions, translations and no writes');

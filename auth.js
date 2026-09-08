@@ -1,13 +1,13 @@
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev287';
-import {chooseProposalMode} from './proposal-mode.js?v=20260909dev287';
-import {sharedProfile} from './shared-world.js?v=20260909dev287';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev287";
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev288';
+import {chooseProposalMode} from './proposal-mode.js?v=20260909dev288';
+import {sharedProfile} from './shared-world.js?v=20260909dev288';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev288";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,initializeFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev287";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev288";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);

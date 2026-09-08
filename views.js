@@ -1,36 +1,36 @@
-import {characterGroupSelector} from './shared-characters.js?v=20260909dev287';
-import {touchReactions} from "./touch-reactions.js?v=20260909dev287";
-import {routineScene} from './routine-scenes.js?v=20260909dev287';
-import {meetingScene,createEntranceTransitions} from './meeting-journey.js?v=20260909dev287';
-import {renderMailbox,unreadMailCount} from './mailbox-center.js?v=20260909dev287';
-import {sharedResidentsScreen} from './shared-residents.js?v=20260909dev287';
-import {bedPerspective} from './bed-perspective.js?v=20260909dev287';
-import {conflictEvidence} from './scene-context.js?v=20260909dev287';
-import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev287";
-import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,HOSPITAL_DEPARTMENTS,hospitalPurposes,creativeCopy} from "./creative-options.js?v=20260909dev287";
-import {withSharedWorld} from './shared-world.js?v=20260909dev287';
+import {characterGroupSelector} from './shared-characters.js?v=20260909dev288';
+import {touchReactions} from "./touch-reactions.js?v=20260909dev288";
+import {routineScene} from './routine-scenes.js?v=20260909dev288';
+import {meetingScene,createEntranceTransitions} from './meeting-journey.js?v=20260909dev288';
+import {renderMailbox,unreadMailCount} from './mailbox-center.js?v=20260909dev288';
+import {sharedResidentsScreen} from './shared-residents.js?v=20260909dev288';
+import {bedPerspective} from './bed-perspective.js?v=20260909dev288';
+import {conflictEvidence} from './scene-context.js?v=20260909dev288';
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev288";
+import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,HOSPITAL_DEPARTMENTS,hospitalPurposes,creativeCopy} from "./creative-options.js?v=20260909dev288";
+import {withSharedWorld} from './shared-world.js?v=20260909dev288';
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260909dev287";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260909dev287";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260909dev287";
-import {characterMood} from "./character-mood.js?v=20260909dev287";
-import {createContactMailbox} from "./notification-mail.js?v=20260909dev287";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260909dev287";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260909dev287";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev287";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev287";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260909dev287";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260909dev287";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260909dev287";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev287";
-import {achievementRows} from "./achievements.js?v=20260909dev287";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260909dev287";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260909dev287";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260909dev287";
-import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260909dev287";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260909dev287";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260909dev288";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260909dev288";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260909dev288";
+import {characterMood} from "./character-mood.js?v=20260909dev288";
+import {createContactMailbox} from "./notification-mail.js?v=20260909dev288";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260909dev288";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260909dev288";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev288";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev288";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260909dev288";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260909dev288";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260909dev288";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev288";
+import {achievementRows} from "./achievements.js?v=20260909dev288";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260909dev288";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260909dev288";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260909dev288";
+import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260909dev288";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260909dev288";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -2184,7 +2184,7 @@ function homeLifePersonMarkup(character,event,agent,room,roomKey,index,bedSlot=-
   const speech=conversing&&!bedConversation?`<i class="home-person-chat-bubble" aria-hidden="true">${agent?.approachingInteraction?"!":"•••"}</i>`:"";
   const quietBedSleep=bedSlot>=0&&sleeping,hideStatus=quietBedSleep||Boolean(options.hideStatus);
   const sleepMotion=homeSleepAnimation(character.sleepHabit);
-  return `<div class="home-person ${!walking&&/씻|샤워|목욕|washing|shower|bath|洗|入浴/i.test(title)?"is-washing":""} ${lifeClass} ${scene.meetingKind==='affection'?'is-affection':''} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" data-sleep-style="${sleeping?sleepMotion.style:""}" style="--sleep-duration:${sleepMotion.duration}s;--sleep-delay:-${(now/1000+index*.71)%sleepMotion.duration}s;${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-couple-bed-id="${esc(options.bedPlacement?.id||"")}" data-bed-slot="${bedSlot}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${speech}${sleeping&&!quietBedSleep?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span>${hideStatus?"":`<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small></span>`}</div>`;
+  return `<div class="home-person ${!walking&&/씻|샤워|목욕|washing|shower|bath|洗|入浴/i.test(title)?"is-washing":""} ${lifeClass} ${scene.meetingKind==='affection'?'is-affection':''} scene-action-${esc(actionKind)} ${sleeping?"is-sleeping":""}" data-sleep-style="${sleeping?sleepMotion.style:""}" style="--sleep-duration:${sleepMotion.duration}s;--sleep-delay:-${(now/1000+index*.71)%sleepMotion.duration}s;${lifeStyle}--home-float-delay:${-(index%4)*.37}s" role="button" tabindex="0" aria-label="${esc(`${character.name} · ${title}`)}" data-couple-bed-id="${esc(options.bedPlacement?.id||"")}" data-bed-slot="${bedSlot}" data-home-person="${esc(character.id)}" data-home-occupant="character" data-character-id="${esc(character.id)}" data-occupant-name="${esc(character.name)}" data-occupant-title="${esc(title)}" data-occupant-desc="${esc(scene?.desc||"")}" data-occupant-room="${esc(room.name||roomKey)}"><span class="home-person-visual">${avatar(character)}${actionProp}${scene.gossipReaction?`<i class="home-person-chat-bubble" aria-hidden="true">${scene.gossipReaction==='angry'?'💢':scene.gossipReaction==='surprised'?'!':'…'}</i>`:speech}${sleeping&&!quietBedSleep?'<i class="room-sleep-mark" aria-hidden="true">ZZ</i>':""}</span>${hideStatus?"":`<span class="home-person-status"><b>${esc(character.name)}</b><small>${esc(activity)}</small></span>`}</div>`;
 }
 function homeInteractionSummary(scene){
   const text=`${scene?.title||""} ${scene?.desc||""} ${scene?.sharedActionText||""}`;
@@ -2527,7 +2527,7 @@ function homeCard(id,chars){
     if(!visibleRoomKeys.includes(segment.fromRoom)&&!visibleRoomKeys.includes(segment.toRoom))return "";
     const convert=(key,point)=>{const r=visualRoomLayout(key);return {x:Number(r.x||0)+Number(r.w||100)*point.x/100,y:Number(r.y||0)+Number(r.h||100)*point.y/100}};
     const partner=!scene.meetingJourney&&scene.groupInteraction?inside.find(p=>p.id!==c.id&&(scene.withIds||[scene.withId]).includes(p.id)&&!sceneFor(p)?.meetingJourney&&sceneFor(p)?.room===scene.room):null;
-    if(partner){const pairKey=[c.id,partner.id].sort().join('|');if(drawnPairs.has(pairKey))return '';drawnPairs.add(pairKey);const center=convert(segment.toRoom,segment.to);return `<div class="meeting-pair ${scene.meetingKind==='affection'?'is-affection':/키스|입맞춤|kiss|キス/i.test(scene.title||'')?'is-kissing':/gift|선물/.test(scene.meetingKind||scene.title||'')?'is-gifting':''}" style="left:${center.x}%;top:${center.y}%;--gift-direction:${homeOrderedCharacters([c,partner],[scene,sceneFor(partner)])[0]?.id===scene.meetingActorId?1:-1}"><div class="meeting-pair-faces">${homeOrderedCharacters([c,partner],[scene,sceneFor(partner)]).map(p=>`<button type="button" class="${["affection","kiss","kiss_cautious","kiss_reconcile"].includes(scene.meetingKind)||/키스|입맞춤|kiss|キス/i.test(scene.title||"")?characterMood(p,sceneFor(p),state).tone==="excited"?"is-blushing":"":""}" data-person="${esc(p.id)}" aria-label="${esc(p.name)}">${avatar(p)}</button>`).join('')}</div><span class="meeting-caption"><b>${esc(homeOrderedCharacters([c,partner],[scene,sceneFor(partner)]).map(p=>p.name).join(" · "))}</b><small>${esc(scene.title)}</small></span></div>`}
+    if(partner){const pairKey=[c.id,partner.id].sort().join('|');if(drawnPairs.has(pairKey))return '';drawnPairs.add(pairKey);const center=convert(segment.toRoom,segment.to);return `<div class="meeting-pair ${scene.meetingKind==='affection'?'is-affection':/키스|입맞춤|kiss|キス/i.test(scene.title||'')?'is-kissing':/gift|선물/.test(scene.meetingKind||scene.title||'')?'is-gifting':['talk','gossip','comfort','compliment'].includes(scene.meetingKind)?'is-talking':''}" style="left:${center.x}%;top:${center.y}%;--gift-direction:${homeOrderedCharacters([c,partner],[scene,sceneFor(partner)])[0]?.id===scene.meetingActorId?1:-1}"><div class="meeting-pair-faces">${homeOrderedCharacters([c,partner],[scene,sceneFor(partner)]).map(p=>`<button type="button" class="${["affection","kiss","kiss_cautious","kiss_reconcile"].includes(scene.meetingKind)||/키스|입맞춤|kiss|キス/i.test(scene.title||"")?characterMood(p,sceneFor(p),state).tone==="excited"?"is-blushing":"":""}" data-person="${esc(p.id)}" aria-label="${esc(p.name)}">${avatar(p)}</button>`).join('')}</div><span class="meeting-caption"><b>${esc(homeOrderedCharacters([c,partner],[scene,sceneFor(partner)]).map(p=>p.name).join(" · "))}</b><small>${esc(scene.title)}</small></span></div>`}
     return meetingWalker(c,sceneFor(c),{...segment,from:convert(segment.fromRoom,segment.from),to:convert(segment.toRoom,segment.to)},!scene.meetingJourney,"home");
   }).join("");
   const dayLabels=["일","월","화","수","목","금","토"];
@@ -4710,7 +4710,7 @@ function nativePlayShop({browseOnly=false}={}){
   const comingTitle=section==="bundle"?copy.bundleSoon:section==="skin"?copy.skinSoon:copy.expansionSoon;
   const content=section==="base"?`<div class="drawer-shop-products">${((window.PARALLEL_CITY_CONFIG?.iosApp||window.PARALLEL_CITY_CONFIG?.iosPreview)?["character_slots_5","town_slot_1","green_tea"]:["character_slots_5","town_slot_1","storage_50mb","green_tea"]).map(productCard).join("")}</div>`:`<div class="drawer-shop-coming" role="status"><span aria-hidden="true">✦</span><b>${esc(comingTitle)}</b><small>${esc(copy.soonDetail)}</small></div>`;
   const sellerLabel=language==="en"?"Shopkeeper":language==="ja"?"店主":"상점주인";
-  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260909dev287" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
+  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260909dev288" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
 }
 function shop(){
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){

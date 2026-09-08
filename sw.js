@@ -1,13 +1,14 @@
-const CACHE_VERSION="drawer-village-v20260909-dev-287";
+const CACHE_VERSION="drawer-village-v20260909-dev-288";
 const CORE=[
-  './character-transfers.js?v=20260909dev287',
-  './proposal-mode.js?v=20260909dev287',
-  './background-actions.js?v=20260909dev287',
-  './shared-characters.js?v=20260909dev287',
-  './shared-residents.js?v=20260909dev287',
-  './bed-perspective.js?v=20260909dev287',
-  './scene-context.js?v=20260909dev287',
-  './user-profile.js?v=20260909dev287',
+  './gossip-reaction.js?v=20260909dev288',
+  './character-transfers.js?v=20260909dev288',
+  './proposal-mode.js?v=20260909dev288',
+  './background-actions.js?v=20260909dev288',
+  './shared-characters.js?v=20260909dev288',
+  './shared-residents.js?v=20260909dev288',
+  './bed-perspective.js?v=20260909dev288',
+  './scene-context.js?v=20260909dev288',
+  './user-profile.js?v=20260909dev288',
   './assets/furniture/couple-bed/couple-bed-side-base.svg',
   './assets/furniture/couple-bed/couple-bed-side-quilt.svg',
   './assets/furniture/couple-bed/couple-bed-side-footboard.svg',
