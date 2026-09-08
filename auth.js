@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260908dev275';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev275";
+import {sharedProfile} from './shared-world.js?v=20260908dev276';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev276";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev275";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev276";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);

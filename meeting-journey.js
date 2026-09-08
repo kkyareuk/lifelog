@@ -49,3 +49,25 @@ export function captureMeetingPositions(ids,townId){
  }
  return positions;
 }
+
+// Ephemeral presentation routes: no position writes, and no replay on first load.
+export function createEntranceTransitions(){
+ let scope='',entries=new Map();
+ return {
+ project(world,c,scene,now,key){
+  if(!c)return scene;
+  if(scope!==key){scope=key;entries.clear()}
+  const old=entries.get(c.id),home=s=>s?.home?(s.visitHomeId||c.homeId):'';
+  let journey=old?.journey;
+  if(scene.manualDirective||scene.meetingJourney||Math.abs(Date.now()-now)>120000){entries.set(c.id,{scene,seen:now});return scene}
+  if(old&&old.scene!==scene&&home(old.scene)!==home(scene)&&now-old.seen<120000){journey=planMeetingJourney(world,c,c,now,old.scene,scene)}
+  if(journey&&now>=journey.arrivesAt)journey=null;
+  entries.set(c.id,{scene,seen:now,journey});
+  if(entries.size>512)entries.delete(entries.keys().next().value);
+  if(!journey)return scene;
+  const moving=meetingScene(scene,{journey,endsAt:journey.arrivesAt},c.id,now,world.uiLanguage);
+  return {...moving,title:({ko:'이동하는 중',en:'On the way',ja:'移動中'})[world.uiLanguage]||'이동하는 중',desc:scene.desc,groupInteraction:false};
+ },
+ ends(now){return [...entries.values()].flatMap(e=>e.journey?.segments.map(s=>s.end)||[]).filter(t=>t>now)}
+ };
+}

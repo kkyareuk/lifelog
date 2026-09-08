@@ -1,7 +1,7 @@
-import {chooseCatalog} from './settings-transfer.js?v=20260908dev275';
-import {state,save,recordCharacterInteraction} from './state.js?v=20260908dev275';
-import {proposalSettings} from './groups.js?v=20260908dev275';
-import {buildSharedWorld} from './shared-world.js?v=20260908dev275';
+import {chooseCatalog} from './settings-transfer.js?v=20260908dev276';
+import {state,save,recordCharacterInteraction} from './state.js?v=20260908dev276';
+import {proposalSettings} from './groups.js?v=20260908dev276';
+import {buildSharedWorld} from './shared-world.js?v=20260908dev276';
 export const mt=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function senderImage(p,s){const c=state.characters[p.sourceId||p.characterId]||(s.residents||[]).find(c=>c.id===(p.sourceId||p.characterId));if(c){let profile={};try{profile=JSON.parse(c.profileJson||'{}')}catch{}return profile.icon||c.icon||profile.photo||c.photo||''}if(p.sourceId||p.characterId)return '';return (s.members||[]).find(m=>(m.uid||m.id)===p.senderUid)?.photoURL||''}

@@ -1,4 +1,4 @@
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev275';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev276';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();

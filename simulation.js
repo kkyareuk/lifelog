@@ -1,12 +1,12 @@
-import {meetingScene} from './meeting-journey.js?v=20260908dev275';
-import {dailyInteractionLine} from './scene-context.js?v=20260908dev275';
-import {careRoutineFor} from "./creative-options.js?v=20260908dev275";
-import {drinkExperience} from "./drink-log.js?v=20260908dev275";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev275";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev275";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908dev275";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev275";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev275";
+import {meetingScene} from './meeting-journey.js?v=20260908dev276';
+import {dailyInteractionLine} from './scene-context.js?v=20260908dev276';
+import {careRoutineFor} from "./creative-options.js?v=20260908dev276";
+import {drinkExperience} from "./drink-log.js?v=20260908dev276";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev276";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev276";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908dev276";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev276";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev276";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
