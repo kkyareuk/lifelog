@@ -1,6 +1,6 @@
 import {advanceSharedLife} from '../server-life.mjs';
 import assert from 'node:assert/strict';
-const game=await import('../state.js?v=20260908dev271');
+const game=await import('../state.js?v=20260908dev272');
 const id=game.createCharacter(5),profile=structuredClone(game.state.characters[id]),before=JSON.stringify(game.state);
 const snapshot={group:{id:'test',towns:[{id:'town',name:'Shared',places:[{id:'park',name:'Park',type:'공원',x:30,y:40,stock:[]}]}]},residents:Array.from({length:2},(_,i)=>({id:'r'+i,name:'Person '+i,ownerUid:'u'+i,townId:'town',sourceCharacterId:'c'+i,profileJson:JSON.stringify({...profile,wake:'07:00',sleep:'23:00'}),scheduleJson:'{}'})),homes:[]};
 snapshot.residents.forEach(r=>{const p=JSON.parse(r.profileJson);p.createdAt=1;r.profileJson=JSON.stringify(p)});
@@ -14,7 +14,10 @@ const started=performance.now(),lives=advanceSharedLife(crowded,Date.now());
 assert.equal(lives.length,200);console.log('200 shared residents:',Math.round(performance.now()-started),'ms',Math.round(JSON.stringify(lives).length/1024),'KB');
 assert.equal(JSON.stringify(game.state),before);
 
-const sharedMeal=advanceSharedLife(snapshot,Date.now(),{characterId:'r0',targetId:'r1',kind:'dine'}).map(r=>JSON.parse(r.lifeJson).scene);
+const commandNow=Date.now(),departing=advanceSharedLife(snapshot,commandNow,{characterId:'r0',targetId:'r1',kind:'dine'});
+assert.match(JSON.parse(departing[0].lifeJson).scene.title,/만나러/);assert.match(JSON.parse(departing[1].lifeJson).scene.title,/기다리는/);
+const arrivedSnapshot={...snapshot,residents:snapshot.residents.map(r=>({...r,lifeJson:departing.find(d=>d.id===r.id).lifeJson}))};
+const sharedMeal=advanceSharedLife(arrivedSnapshot,commandNow+55000).map(r=>JSON.parse(r.lifeJson).scene);
 assert.ok(sharedMeal.every(e=>/식사/.test(e.title)),JSON.stringify(sharedMeal.map(e=>e.title)));
 assert.equal(sharedMeal[0].interactionId,sharedMeal[1].interactionId);
 const care=structuredClone(snapshot);const profileCare=JSON.parse(care.residents[0].profileJson);profileCare.bodyProfile.carePlan={mode:'낮 병동',weekdays:['월'],start:'09:00',end:'16:00',placeId:'hospital'};care.residents[0].profileJson=JSON.stringify(profileCare);care.group.towns[0].places.push({id:'hospital',name:'마을 병원',type:'병원',x:50,y:50,stock:[]});

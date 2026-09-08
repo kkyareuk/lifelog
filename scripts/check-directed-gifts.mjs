@@ -3,8 +3,8 @@ const memory=new Map();
 globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js?v=20260901closet187');
-const sim=await import('../simulation.js?v=20260901closet187');
+const game=await import('../state.js?v=20260908dev272');
+const sim=await import('../simulation.js?v=20260908dev272');
 const date=new Date();date.setHours(13,6,0,0);
 game.resetAll();const first=game.createCharacter(),second=game.createCharacter();
 const {state}=game,a=state.characters[first],b=state.characters[second];
@@ -27,10 +27,11 @@ for(const order of [[b,a],[a,b],[b,a]]){
 for(const c of [a,b])assert.equal(sim.visibleTimeline(c,date).filter(x=>x.interactionId===`choice:${choice}:give`).length,1,'One shared gift, no repeated logs');
 game.settleScheduledChoices(date.getTime());game.settleScheduledChoices(date.getTime());
 assert.deepEqual(b.inventory.perfume,['gift-test']);assert(!(a.inventory.perfume||[]).includes('gift-test'));
-game.updateCharacterView(second,first,'trust','의심함');
+const newGift=()=>{date.setMinutes(date.getMinutes()+1);state.scheduledChoices=[];game.scheduleCharacterChoice({kind:'gift',characterId:first,targetId:second,itemKind:'perfume',itemId:'gift-test',buyAt:date.getTime()-60000,giveAt:date.getTime()})};
+game.updateCharacterView(second,first,'trust','의심함');newGift();
 assert.match(sim.eventFor(b,date).desc,/경계/,'Recipient-to-giver distrust outweighs romance');
-b.favorites={};b.favoriteScentNotes=['우디'];assert.match(sim.eventFor(b,date).desc,/평소 좋아하던/);
-b.favoriteScentNotes=[];assert.match(sim.eventFor(b,date).desc,/취향에 맞을지/);
+b.favorites={};b.favoriteScentNotes=['우디'];newGift();assert.match(sim.eventFor(b,date).desc,/평소 좋아하던/);
+b.favoriteScentNotes=[];newGift();assert.match(sim.eventFor(b,date).desc,/취향에 맞을지/);
 for(const language of ['en','ja']){state.uiLanguage=language;assert(!/[가-힣]/.test(sim.eventFor(b,date).desc.replaceAll(a.name,'').replaceAll(b.name,'').replaceAll('데 로스 산토스','')))}
 state.uiLanguage='ko';assert(!sim.eventFor(a,new Date(date.getTime()+25*60000)).giftExchange,'Gift does not trap the rest of the day');
 // Direct gifts use the same direction contract, with no invalid self-gifts.

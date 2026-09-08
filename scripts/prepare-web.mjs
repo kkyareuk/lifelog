@@ -31,7 +31,7 @@ const includedDirectories=new Set([
 
 const includedFiles=new Set([
   "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js","observe-responsive.js",
-  "group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","multiplayer-art.js","dictionary.js","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
+  "meeting-journey.js","group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","multiplayer-art.js","dictionary.js","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
   "_headers",
   "index.html",
   "login.html",
@@ -129,7 +129,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260908dev271";
+const expectedModuleCache="20260908dev272";
 const relativeImports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*|import\s+)["'](\.[^"']+)["']/g;

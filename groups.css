@@ -1,3 +1,4 @@
+.group-cover{display:grid;gap:12px;margin-bottom:20px}.group-cover img{width:100%;max-height:360px;object-fit:contain;border-radius:16px}.group-cover input{max-width:100%}
 .native-app[data-active-tab="groups"] main{overflow:auto!important;background:#76543f url("./assets/town-ui/building-info-wood.png") center top/100% auto repeat-y}
 .groups-page{--multi-ink:#2d2119;--multi-brown:#634938;--multi-line:#cbb69d;min-height:100%;color:var(--multi-ink);font-family:"KCCHanbit",var(--ui-font),sans-serif}
 .multiplayer-building-shell{display:grid;align-content:start;gap:14px;width:min(1100px,100%);min-height:100dvh;margin:auto;padding:18px clamp(14px,4vw,52px) max(36px,env(safe-area-inset-bottom));box-sizing:border-box}

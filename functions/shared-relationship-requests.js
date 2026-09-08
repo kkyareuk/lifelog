@@ -24,8 +24,8 @@ module.exports=({db,membership,notify,clock,id})=>{
    const ids=members(patch,kind);if(ids.length<(kind!=='relationship'?1:2)||ids.length>200||ids.some(x=>typeof x!=='string'))fail('invalid-participants');ids.forEach(id);
    if(kind==='relationship'&&(!patch.type||!ids.includes(patch.a)||!ids.includes(patch.b)||patch.a===patch.b))fail('invalid-relationship');
    if(kind==='characterGroup'&&(!patch.name||String(patch.name).length>40))fail('name-required');
-   const {root,group}=await membership(tx,gid,uid),requestRef=root.collection('relationshipRequests').doc(key),targetId=input.targetId?id(input.targetId):'accepted-'+key;
-   if(group.rules?.[kind==='schedule'?'allowScheduleProposals':'allowRelationshipProposals']===false)fail('proposals-disabled',403);
+   const {root,group,member}=await membership(tx,gid,uid),privileged=group.ownerUid===uid||['owner','manager','operator'].includes(member.role),requestRef=root.collection('relationshipRequests').doc(key),targetId=input.targetId?id(input.targetId):'accepted-'+key;
+   if(!privileged&&group.rules?.[kind==='schedule'?'allowScheduleProposals':'allowRelationshipProposals']===false)fail('proposals-disabled',403);
    const [existing,old,recent]=await Promise.all([tx.get(requestRef),tx.get(root.collection(collection(kind)).doc(targetId)),tx.get(root.collection('relationshipRequests').where('senderUid','==',uid))]);
    if(existing.exists){const r=existing.data();if(r.senderUid!==uid||hash(r.patch)!==hash(patch)||r.targetId!==targetId)fail('request-id-conflict',409);return {id:key,status:r.status}}
    if(input.targetId&&!old.exists)fail('relationship-missing',404);
@@ -33,10 +33,11 @@ module.exports=({db,membership,notify,clock,id})=>{
    const oldIds=old.exists?members(old.data(),kind):[],all=[...new Set([...ids,...oldIds])];
    const residents=await Promise.all(all.map(cid=>tx.get(root.collection('residents').doc(cid))));if(residents.some(r=>!r.exists))fail('resident-missing',404);
    const owners=Object.fromEntries(residents.map(r=>[r.id,r.data().ownerUid]));
-   if(!(old.exists?oldIds:ids).some(cid=>owners[cid]===uid))fail('character-owner-required',403);
-   const recipients=[...new Set(Object.values(owners))].filter(owner=>owner!==uid);
+   if(!privileged&&!(old.exists?oldIds:ids).some(cid=>owners[cid]===uid))fail('character-owner-required',403);
+   if(kind==='schedule'&&!privileged&&(!ids.includes(patch.sourceId)||owners[patch.sourceId]!==uid))fail('character-owner-required',403);
+   const recipients=privileged?[]:[...new Set(Object.values(owners))].filter(owner=>owner!==uid);
    const accounts=await Promise.all(recipients.map(owner=>tx.get(root.collection('members').doc(owner))));if(accounts.some(m=>!m.exists))fail('recipient-left-group',409);
-   const sourceName=residents.filter(r=>r.data().ownerUid===uid).map(r=>r.data().name).join(' · '),targetName=residents.filter(r=>r.data().ownerUid!==uid).map(r=>r.data().name).join(' · ');
+   const sourceName=residents.filter(r=>privileged?r.id===ids[0]:r.data().ownerUid===uid).map(r=>r.data().name).join(' · '),targetName=residents.filter(r=>privileged?r.id!==ids[0]:r.data().ownerUid!==uid).map(r=>r.data().name).join(' · ');
    const request={kind,targetId,patch,baseHash:hash(old.exists?old.data():null),participantIds:ids,owners,recipientUids:recipients,approvals:[],senderUid:uid,sourceName,targetName,status:recipients.length?'pending':'accepted',createdAt:clock()};
    tx.create(requestRef,request);
    for(const owner of recipients){const proposalId=key+'-'+owner;tx.create(root.collection('proposals').doc(proposalId),{requestRoot:key,sourceId:ids[0],targetId:ids[1]||ids[0],sourceName,targetName,senderUid:uid,recipientUid:owner,type:kind==='schedule'?patch.title:patch.type||patch.name,kind,editing:Boolean(input.targetId),patch,status:'pending',createdAt:clock()});notify(tx,owner,gid+'-'+proposalId+'-requested',gid,proposalId,kind==='schedule'?'schedule-request':'relationship-request')}

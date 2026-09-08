@@ -1,5 +1,5 @@
-import {bedPillowPoint} from './bed-perspective.js?v=20260908dev271';
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260908dev271";
+import {bedPillowPoint} from './bed-perspective.js?v=20260908dev272';
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260908dev272";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -43,7 +43,7 @@ export function homeFurnitureDrawer(home,locale){
       <nav class="home-drawer-categories home-drawer-types" aria-label="${copy.typeFilter}">${FURNITURE_TYPES.map(key=>`<button type="button" data-home-furniture-type="${key}" aria-pressed="${ui.type===key}" class="${ui.type===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
       <div class="home-drawer-results"><div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden role="status">${copy.empty}</p></div>
     </div>
-  </section>`;
+  </section><div class="home-drawer-clearance" aria-hidden="true"></div>`;
 }
 export function homeRoomBrowser(home,locale,translateLabel=value=>value){
   const copy=homeEditorCopy(locale);

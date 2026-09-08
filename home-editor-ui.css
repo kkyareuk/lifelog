@@ -1,6 +1,8 @@
 /* Shared height keeps the furniture toolbar clear of the three drawer rows. */
 .home{--home-drawer-height:calc(184px + max(8px,env(safe-area-inset-bottom)))}
 .home-furniture-drawer{position:fixed;z-index:680;left:0;right:0;bottom:0;max-width:100%;color:#392b21;background:linear-gradient(180deg,#fff9ed,#efe0c7);border-top:2px solid #bba27b;border-radius:20px 20px 0 0;box-shadow:0 -5px 18px #20170b33;transition:transform .18s ease;transform:translateY(0)}
+.home-drawer-clearance{height:calc(var(--home-drawer-height) + 52px)}
+.home-furniture-drawer.is-collapsed+.home-drawer-clearance{height:52px}
 .home-furniture-drawer.is-collapsed{transform:translateY(100%)}
 .home-drawer-toggle{position:absolute!important;bottom:calc(100% + 6px);left:16px;display:grid;place-items:center;width:38px;height:38px;padding:0!important;border:2px solid #b49a72!important;border-radius:50%!important;background:#fff8e9!important;color:#513d29!important;-webkit-text-fill-color:#513d29!important;font-size:18px!important;box-shadow:0 2px 5px #261a1733}
 .home-drawer-content{position:relative;padding:8px max(16px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-right));display:grid;grid-template-rows:36px 34px 94px;gap:6px;height:var(--home-drawer-height);box-sizing:border-box}

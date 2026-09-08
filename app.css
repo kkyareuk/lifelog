@@ -1,3 +1,4 @@
+.home-native-pill:disabled{opacity:.38;cursor:not-allowed;filter:grayscale(1)}
 :root{--p:#6b452b;--s:#a97b50;--ink:#2d251f;--muted:#7d7067;--line:#e4d9cd;--bg:#f7f2eb;--panel:#fffdf9;--grad:linear-gradient(135deg,var(--p),var(--s));--on-p:#fff;--on-s:#fff;--on-grad:#fff}
 
 .mail-center{width:min(760px,100%);margin:0 auto;padding:20px 14px 48px;box-sizing:border-box;color:var(--ink)}
@@ -1602,6 +1603,12 @@ html body #app .furniture-edit-toolbar strong{color:#392b21!important}
 @media(prefers-reduced-motion:reduce){.is-scene-moving .native-character-stage,.native-scene-moving-badge>i{animation:none!important}}
 
 /* 장소가 없는 이동 장면도 마을 지도 위에서 실제로 움직이는 모습으로 보인다. */
+.meeting-walker{position:absolute;z-index:32;left:var(--meeting-x0);top:var(--meeting-y0);display:grid;justify-items:center;width:max-content;max-width:100px;padding:0;border:0;background:transparent;box-shadow:none;pointer-events:auto;transform:translate(-50%,-60%);animation:meeting-route var(--meeting-duration) linear var(--meeting-delay) both}
+.meeting-walker :is(.avatar,.sprite){width:48px;height:56px;object-fit:contain;animation:home-life-step .42s ease-in-out infinite}
+.meeting-walker.is-stationary,.meeting-walker.is-stationary :is(.avatar,.sprite){animation:none}
+.meeting-walker span{padding:3px 6px;background:#fff8e9;border-radius:8px;font-size:11px;color:#302418}
+@keyframes meeting-route{from{left:var(--meeting-x0);top:var(--meeting-y0)}to{left:var(--meeting-x1);top:var(--meeting-y1)}}
+@media(prefers-reduced-motion:reduce){.meeting-walker :is(.avatar,.sprite){animation:none}}
 .town-traveler{position:absolute;z-index:24;display:grid!important;justify-items:center!important;width:max-content!important;min-width:0!important;height:auto!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;color:#17120f!important;-webkit-text-fill-color:#17120f!important;transform:translate3d(-50%,-50%,0);animation:town-traveler-route var(--travel-duration,22s) var(--traveler-delay,0s) linear infinite;will-change:transform;backface-visibility:hidden;pointer-events:auto}
 .town-traveler.is-village-walk{animation-name:town-traveler-village-route;animation-duration:var(--route-duration,28s);will-change:left,top,transform}.town-traveler.is-decoration-visit{animation:none}.town-traveler.is-decoration-visit .town-traveler-visual :is(.avatar,.sprite){animation:town-action-idle 2.8s ease-in-out infinite}
 @supports (offset-path:polygon(0 0,100% 0,100% 100%)){

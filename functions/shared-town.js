@@ -32,6 +32,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         tx.update(ref,{lifeUpdatedAt:now});return {updated:true,count:lives.length,changedCount};
       });
     },
+    saveGroupPresentation:async(uid,input)=>db.runTransaction(async tx=>{const {ref,group,member}=await context(tx,input.groupId,uid);if(group.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('manager-required',403);if(typeof input.photoURL!=='string'||input.photoURL.length>2000||input.photoURL&&!/^https:\/\//.test(input.photoURL))fail('invalid-photo');tx.update(ref,{photoURL:input.photoURL});return {saved:true}}),
     saveHomeLayout:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,member}=await context(tx,input.groupId,uid),homeRef=ref.collection('homes').doc(id(input.id)),snap=await tx.get(homeRef);if(!snap.exists)fail('home-missing',404);const home=snap.data();if(home.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('home-owner-required',403);const revision=Number(home.layoutRevision)||0;if(Number(input.revision)!==revision)fail('groups/edit-conflict',409);
       const layout=input.layout;if(!layout||typeof layout!=='object'||Array.isArray(layout)||JSON.stringify(layout).length>180000||!layout.rooms||Object.keys(layout.rooms).length>50)fail('invalid-layout');

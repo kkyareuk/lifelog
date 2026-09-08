@@ -2,14 +2,14 @@ globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
 globalThis.document??={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window??={addEventListener(){},dispatchEvent(){}};
 process.env.TZ='Asia/Seoul';
-const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260908dev271');
-const {buildSharedWorld}=await import('./shared-world.js?v=20260908dev271');
-const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260908dev271');
+const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260908dev272');
+const {buildSharedWorld}=await import('./shared-world.js?v=20260908dev272');
+const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260908dev272');
 export function advanceSharedLife(snapshot,now,command=null){
   const world=buildSharedWorld(snapshot);
   return runIsolatedWorld(world,()=>withSimulationBatch(()=>{
     const date=new Date(now),scenes={};
-    if(command)directCharacterActivity(command.characterId,command.kind,{targetId:command.targetId||"",now});
+    if(command)directCharacterActivity(command.characterId,command.kind,{targetId:command.targetId||"",topic:command.topic||"",positions:command.positions,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});
     for(const id of world.order){
       scenes[id]=eventFor(world.characters[id],date);
       const announcement=(snapshot.declarations||[]).find(d=>d.until>now&&d.participantIds.includes(id));

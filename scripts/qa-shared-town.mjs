@@ -7,7 +7,7 @@ import {fileURLToPath} from "node:url";
 
 const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
 const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
-const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-270");
+const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-272");
 await mkdir(output,{recursive:true});
 const previewAuth=await readFile(resolve(root,"scripts/ios-preview-auth.mjs"));
 const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
@@ -66,7 +66,7 @@ try{
 
   assert.equal(await page.locator('details[name="group-picker"][open]').count(),1);
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2);assert.equal(overflow,false,'No horizontal overflow');
-  await page.evaluate(()=>{const r=window.qaSnapshot.residents[0];window.qaSnapshot.residents.push({...r,id:'mine',name:'내 캐릭터',ownerUid:'me'});window.qaSnapshot.incomingProposals=[{id:'proposal',sourceId:'remote',targetId:'mine',sourceName:r.name,targetName:'내 캐릭터',type:'친구',status:'pending',recipientUid:'me'}];window.qaCalls=[];Object.assign(window.DrawerVillageGroups,{propose:async value=>window.qaCalls.push({action:'propose',...value}),respond:async value=>window.qaCalls.push({action:'respond',...value}),saveView:async value=>window.qaCalls.push({action:'view',...value}),advanceLife:async()=>{}});location.hash='tab=relationship'});
+  await page.evaluate(()=>{const r=window.qaSnapshot.residents[0];window.qaSnapshot.residents.push({...r,id:'mine',name:'내 캐릭터',ownerUid:'me'});window.qaSnapshot.incomingProposals=[{id:'proposal',sourceId:'remote',targetId:'mine',sourceName:r.name,targetName:'내 캐릭터',type:'친구',status:'pending',recipientUid:'me'}];window.qaCalls=[];Object.assign(window.DrawerVillageGroups,{propose:async value=>{window.qaCalls.push({action:'propose',...value});return {status:'accepted'}},respond:async value=>window.qaCalls.push({action:'respond',...value}),saveView:async value=>window.qaCalls.push({action:'view',...value}),advanceLife:async()=>{}});location.hash='tab=relationship'});
   await page.locator('[data-open-official-relations]').click();
   await page.locator('[data-official-relation-dialog] [data-add-rel]').click();
   await page.locator('.relation-editor-dialog input[name=name]').fill('보호자·피보호자');
@@ -81,9 +81,9 @@ try{
   await page.locator('.mail-reader textarea').fill('조금 더 알아가고 싶어요');await page.locator('[data-decline-form] button').click();
   assert.deepEqual(await page.evaluate(()=>window.qaCalls.map(x=>x.action)),['propose','view','respond']);
   assert.equal(await page.evaluate(()=>window.qaCalls.at(-1).accept),false);
-  for(const language of ['ko','en','ja']){await page.evaluate(async lang=>{const g=await import('/state.js?v=20260908dev271');g.state.uiLanguage=lang;window.ParallelCity.mediaChanged()},language);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);await page.screenshot({path:resolve(output,'shared-relations-'+language+'-384.png'),fullPage:true});}
+  for(const language of ['ko','en','ja']){await page.evaluate(async lang=>{const g=await import('/state.js?v=20260908dev272');g.state.uiLanguage=lang;window.ParallelCity.mediaChanged()},language);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+2),false);await page.screenshot({path:resolve(output,'shared-relations-'+language+'-384.png'),fullPage:true});}
   console.log('PASS existing relationship UI, proposal, perception, decline reason and three-language layout');
-  await page.evaluate(async()=>{const g=await import('/state.js?v=20260908dev271');g.state.uiLanguage='ko';window.qaPersonal=JSON.stringify({towns:g.state.towns,homes:g.state.homes,views:g.state.characterViews});Object.assign(window.DrawerVillageGroups,{saveBuilding:async input=>{window.qaCalls.push({action:'building',...input});const t=window.qaSnapshot.group.towns[0],p=t.places.find(p=>p.id===input.id);Object.assign(p,input.patch,...['x','y'].filter(k=>k in input).map(k=>({[k]:input[k]})));return {town:structuredClone(t),revision:input.revision+1}}});location.hash='tab=town'});
+  await page.evaluate(async()=>{const g=await import('/state.js?v=20260908dev272');g.state.uiLanguage='ko';window.qaPersonal=JSON.stringify({towns:g.state.towns,homes:g.state.homes,views:g.state.characterViews});Object.assign(window.DrawerVillageGroups,{saveBuilding:async input=>{window.qaCalls.push({action:'building',...input});const t=window.qaSnapshot.group.towns[0],p=t.places.find(p=>p.id===input.id);Object.assign(p,input.patch,...['x','y'].filter(k=>k in input).map(k=>({[k]:input[k]})));return {town:structuredClone(t),revision:input.revision+1}}});location.hash='tab=town'});
   const townY=await page.locator('.town-native-town-pill').evaluate(el=>el.getBoundingClientRect().top);
   await page.evaluate(()=>{location.hash='tab=observe'});await page.waitForTimeout(100);
   const jobY=await page.locator('.game-hud-profile-copy small').evaluate(el=>el.getBoundingClientRect().top);
@@ -95,7 +95,7 @@ try{
   await page.waitForTimeout(300);
   assert.equal(await page.evaluate(()=>window.qaSnapshot.group.towns[0].places[0].name),'공유 공원');
   await page.screenshot({path:resolve(output,'shared-building-editor.png'),fullPage:true});
-  await page.evaluate(async()=>{const g=await import('/state.js?v=20260908dev271');if(window.qaPersonal!==JSON.stringify({towns:g.state.towns,homes:g.state.homes,views:g.state.characterViews}))throw Error('Personal world mutated')});
+  await page.evaluate(async()=>{const g=await import('/state.js?v=20260908dev272');if(window.qaPersonal!==JSON.stringify({towns:g.state.towns,homes:g.state.homes,views:g.state.characterViews}))throw Error('Personal world mutated')});
   await page.locator('[data-building-browser-back]').click();
   await page.locator('[data-mobile-town-close]').first().click();
   await page.locator('[data-mobile-town-decoration-mode]').click();
@@ -128,13 +128,46 @@ try{
   await page.locator('[data-home-edit]').first().click();await page.locator('[data-home-add-furniture]').first().click();await page.waitForTimeout(200);assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='layout'&&Object.values(c.layout.rooms).some(r=>r.furniturePlacements?.length))));
   await page.locator('[data-furniture-placement]').first().click();await page.locator('.shared-home-dialog').getByRole('button',{name:'90° 회전',exact:true}).click();await page.waitForTimeout(100);
   assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='layout'&&Object.values(c.layout.rooms).some(r=>r.furniturePlacements?.some(p=>p.rotation===90)))));
+  await page.setViewportSize({width:1100,height:850});await page.waitForTimeout(400);
+  await page.locator('[data-home-drawer-toggle]').click();await page.waitForTimeout(200);
+  const handle=page.locator('[data-room-resize]').first();await handle.scrollIntoViewIfNeeded();const hb=await handle.boundingBox();
+  await page.mouse.move(hb.x+hb.width/2,hb.y+hb.height/2);await page.mouse.down();await page.mouse.move(hb.x+hb.width/2-40,hb.y+hb.height/2-25,{steps:6});await page.mouse.up();await page.waitForTimeout(200);
+  assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='layout'&&Object.values(c.layout.rooms).some(r=>r.layout))),'Shared grid resize persists');
+  await page.evaluate(()=>{const h=window.qaSnapshot.homes[0],l=JSON.parse(h.layoutJson);l.rooms.second={name:'옆방',type:'living',floor:2,layout:{x:50,y:0,w:50,h:100},furniturePlacements:[]};l.rooms.bedroom.layout={x:0,y:0,w:50,h:100};h.layoutJson=JSON.stringify(l)});
+  await page.locator('[data-home-edit]').first().click();await page.waitForTimeout(100);await page.locator('[data-home-edit]').first().click();
+  const furniture=page.locator('[data-furniture-placement]').first();await furniture.scrollIntoViewIfNeeded();const fb=await furniture.boundingBox(),targetRoom=await page.locator('.room[data-room-key=second]').boundingBox();
+  const movedId=await furniture.getAttribute('data-furniture-placement');await page.mouse.move(fb.x+fb.width/2,fb.y+fb.height/2);await page.mouse.down();await page.mouse.move(targetRoom.x+targetRoom.width/2,targetRoom.y+targetRoom.height/2,{steps:8});await page.mouse.up();await page.waitForTimeout(200);
+  assert.ok(await page.evaluate(id=>window.qaCalls.some(c=>c.action==='layout'&&c.layout.rooms.second?.furniturePlacements?.some(f=>f.id===id)),movedId),'Furniture moves to another room without losing its ID');
   await page.screenshot({path:resolve(output,'shared-home-edit.png'),fullPage:true});
+  await page.setViewportSize({width:384,height:784});
   await page.locator('[data-home-edit]').first().click();await page.waitForTimeout(100);
   await page.evaluate(()=>location.hash='tab=routine');await page.locator('.routine-character-switcher summary').click();await page.locator('[data-routine-character="mine"]').click();
   await page.locator('[data-add-routine]').click();await page.locator('.routine-sheet-backdrop [name=title]').fill('함께 차 마시기');await page.locator('.routine-sheet-backdrop [name=withId][value=remote]').check();await page.locator('[data-routine-save]').click();await page.waitForTimeout(100);
   assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.kind==='schedule'&&c.patch.memberIds.includes('remote'))));
   await page.evaluate(()=>location.hash='tab=mailbox');await page.locator('[data-mail-folder="compose"]').click();await page.locator('[data-player-mail] [name=subject]').fill('선물이야');await page.locator('[data-player-mail] [name=body]').fill('함께 읽어 줘');await page.locator('[data-player-mail] [name=sourceId]').selectOption('mine');await page.locator('[data-player-mail] [name=targetId]').selectOption('remote');await page.locator('[data-player-mail] [name=gift]').selectOption({index:1});await page.locator('[data-player-mail] button[type=submit]').click();await page.waitForTimeout(100);assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='mail'&&c.gift?.item?.name)));
-  console.log('PASS shared furniture add/rotate, schedule proposal and gift mail UI');
+  console.log('PASS shared furniture add/rotate/grid resize/room transfer, schedule proposal and gift mail UI');
+  await page.evaluate(()=>{window.qaSnapshot.members.push({uid:'other',role:'member',displayName:'다른 유저'});location.hash='tab=groups'});await page.waitForTimeout(150);
+  if(await page.locator('[data-group-open]').count())await page.locator('[data-group-open]').first().click();
+  assert.equal(await page.locator('[data-group-building-form]').count(),0);assert.ok(await page.locator('[data-group-cover-photo]').count());
+  await page.locator('[data-compose-announcement]').click();assert.equal(await page.locator('[data-player-mail] [name=targetId]').inputValue(),'announcement');
+  await page.locator('[data-player-mail] [name=subject]').fill('전체 공지');await page.locator('[data-player-mail] button[type=submit]').click();await page.waitForTimeout(100);
+  assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='mail'&&c.audience==='announcement')));
+  await page.locator('[data-mail-folder=compose]').click();await page.locator('[data-player-mail] [name=targetId]').selectOption('user:other');await page.locator('[data-player-mail] [name=subject]').fill('유저에게');await page.locator('[data-player-mail] button[type=submit]').click();await page.waitForTimeout(100);
+  assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='mail'&&c.audience==='member'&&c.targetUid==='other')));
+  await page.evaluate(()=>{window.DrawerVillageMailTarget={groupId:'shared',id:'proposal'};window.dispatchEvent(new Event('drawer-village-groups'))});await page.locator('.mail-reader').waitFor();await page.locator('[data-close-mail]').click();
+  await page.evaluate(()=>{window.qaSnapshot.group.ownerUid='other';window.qaSnapshot.members[0].role='member';location.hash='tab=town'});await page.waitForTimeout(100);assert.ok(await page.locator('[data-mobile-town-decoration-mode]').isDisabled());assert.ok(Number(await page.locator('[data-mobile-town-decoration-mode]').evaluate(e=>getComputedStyle(e).opacity))<.5);
+  await page.evaluate(()=>location.hash='tab=routine');await page.locator('.routine-character-switcher summary').click();await page.locator('[data-routine-character=remote]').click();assert.ok(await page.locator('[data-add-routine]').isDisabled());
+  await page.locator('.routine-character-switcher summary').click();await page.locator('[data-routine-character=mine]').click();await page.locator('[data-add-routine]').click();assert.equal(await page.locator('[data-routine-save]').textContent(),'설정하기');await page.locator('[name=withId][value=remote]').check();assert.equal(await page.locator('[data-routine-save]').textContent(),'일정 제안하기');await page.locator('[data-routine-cancel]').click();
+  console.log('PASS staff announcements, user mail, notification target opening, dimmed edit permission and own-only schedule rules');
+  await page.evaluate(async()=>{const {buildSharedWorld}=await import('/shared-world.js?v=20260908dev272'),{planMeetingJourney}=await import('/meeting-journey.js?v=20260908dev272'),s=window.qaSnapshot;const from={home:true,visitHomeId:'shared-home',room:'bedroom',townId:'shared-town'},to={...from,room:'second'},w=buildSharedWorld(s),now=Date.now(),journey=planMeetingJourney(w,w.characters.mine,w.characters.remote,now,from,to);window.qaArrival=journey.arrivesAt;for(const r of s.residents){r.lifeJson=JSON.stringify({scene:r.id==='mine'?from:to,directive:{id:'qa-meeting',journey,startedAt:now,endsAt:now+600000,targetId:r.id==='mine'?'remote':'mine',withIds:['mine','remote'],copy:{ko:{title:'함께 이야기하는 중',desc:'마주 보며 이야기하고 있어요.'}}}})}s.selectedResidentId='mine';s.visitingHomeId='shared-home';window.qaMovementBefore=JSON.stringify(s.residents);window.qaMovementWrites=window.qaCalls.length;location.hash='tab=home'});
+  const walker=page.locator('.meeting-walker[data-person=mine]'),receiver=page.locator('.meeting-walker[data-person=remote]');await walker.waitFor();
+  const startWalker=await walker.boundingBox(),startReceiver=await receiver.boundingBox();await page.waitForTimeout(1000);const duringWalker=await walker.boundingBox(),duringReceiver=await receiver.boundingBox();assert.ok(Math.abs(duringWalker.x-startWalker.x)+Math.abs(duringWalker.y-startWalker.y)>2,'Character visibly walks');assert.ok(Math.abs(duringReceiver.x-startReceiver.x)+Math.abs(duringReceiver.y-startReceiver.y)<1,'Receiver stays in place');
+  await page.screenshot({path:resolve(output,'meeting-between-rooms.png'),fullPage:true});
+  assert.equal(await page.evaluate(()=>JSON.stringify(window.qaSnapshot.residents)),await page.evaluate(()=>window.qaMovementBefore));assert.equal(await page.evaluate(()=>window.qaCalls.length),await page.evaluate(()=>window.qaMovementWrites));
+  await page.waitForTimeout(10000);assert.ok(await walker.evaluate(e=>e.classList.contains('is-stationary')),'Local arrival timer finishes without a database update');assert.equal(await page.evaluate(()=>window.qaCalls.length),await page.evaluate(()=>window.qaMovementWrites));
+  console.log('PASS visible local approach, stationary receiver, no server writes while walking and local arrival transition');
+
+
   await page.setViewportSize({width:384,height:784});await page.evaluate(()=>{window.qaSnapshot.activeGroupId='';window.qaSnapshot.group=null;location.hash='tab=town'});await page.waitForTimeout(200);
   for(const edit of [false,true]){if(edit)await page.locator('[data-mobile-town-decoration-mode]').click();const map=page.locator('.town-map-scroll');await map.evaluate(el=>el.scrollLeft=275);for(let i=0;i<3;i++){await page.evaluate(()=>window.dispatchEvent(new Event('drawer-village-groups')));await page.waitForTimeout(100);assert.equal(await map.evaluate(el=>el.scrollLeft),275,'Personal town camera in edit='+edit)}}
   console.log('PASS resident screen, cohabitation form, retained camera and tablet header');

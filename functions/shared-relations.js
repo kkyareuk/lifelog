@@ -16,7 +16,7 @@ function createService({db,clock=Date.now,engine}){
   }
   const owned=(resident,uid)=>{if(!resident||resident.ownerUid!==uid)fail('character-owner-required',403)};
   const notify=(tx,uid,eventId,groupId,proposalId,kind)=>tx.set(db.collection('notificationOutbox').doc(eventId),{uid,groupId,proposalId,kind,createdAt:clock()});
-  const requests=require('./shared-relationship-requests')({db,membership,notify,clock,id});
+  const requests=require('./shared-relationship-requests')({db,membership,notify,clock,id,engine});
   const residency=require('./shared-residency')({db,membership,notify,clock,id});
   async function propose(uid,input){
     if(input.patch)return requests.propose(uid,input);
@@ -58,9 +58,9 @@ function createService({db,clock=Date.now,engine}){
   }
   async function saveView(uid,input){
     return db.runTransaction(async tx=>{
-      const {root}=await membership(tx,input.groupId,uid);
+      const {root,group,member}=await membership(tx,input.groupId,uid);
       const [a,b]=await Promise.all([tx.get(root.collection('residents').doc(id(input.sourceId))),tx.get(root.collection('residents').doc(id(input.targetId)))]);
-      owned(data(a),uid);if(!b.exists||a.id===b.id)fail('invalid-target');
+      if(!a.exists)fail('resident-missing',404);if(group.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))owned(data(a),uid);if(!b.exists||a.id===b.id)fail('invalid-target');
       const ref=root.collection('perceptions').doc(a.id+'~'+b.id),old=await tx.get(ref);
       const fields=['overall','importance','trust','closeness','comfort','awareness','mutualAwareness','fear','annoyance','attention','jealousy','conflictIntensity','expectation','touchIntensity','aggression','aggressionAction'];
       const field=input.field||'overall';if(!fields.includes(field))fail('invalid-view-field');
@@ -81,6 +81,6 @@ function createService({db,clock=Date.now,engine}){
     const ref=db.collection('pushDevices').doc(crypto.createHash('sha256').update(bounded(input.token,2000)).digest('hex'));
     await db.runTransaction(async tx=>{const snap=await tx.get(ref);if(snap.exists&&snap.data().uid===uid)tx.delete(ref)});return {removed:true};
   }
-  return {sendMail:require('./shared-mail')({db,membership,notify,clock,id}),propose,respond,saveView,registerDevice,unregisterDevice,requestResidence:residency.requestResidence};
+  return {sendMail:require('./shared-mail')({db,membership,notify,clock,id,engine}),propose,respond,saveView,registerDevice,unregisterDevice,requestResidence:residency.requestResidence};
 }
 module.exports={createService};

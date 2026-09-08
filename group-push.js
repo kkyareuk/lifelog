@@ -7,7 +7,7 @@ async function registerCurrentDevice(){
 }
 const plugin=()=>window.Capacitor?.getPlatform?.()==='android'?window.Capacitor?.Plugins?.PushNotifications:null;
 const account=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid||'';
-function openPendingNotification(){const pending=window.DrawerVillageGroupPush.pending;if(!pending?.groupId||!account())return;window.DrawerVillageGroupPush.pending=null;window.DrawerVillageGroups?.select(pending.groupId);location.hash='tab=mailbox'}
+function openPendingNotification(){const pending=window.DrawerVillageGroupPush.pending;if(!pending?.groupId||!account())return;window.DrawerVillageGroupPush.pending=null;window.DrawerVillageMailTarget={groupId:pending.groupId,id:pending.proposalId};window.DrawerVillageGroups?.select(pending.groupId);location.hash='tab=mailbox&mail='+encodeURIComponent(pending.proposalId||'')}
 async function enableNow(prompt=true){
  const api=plugin();if(!api)return false;
  let permission=await api.checkPermissions();if(['prompt','prompt-with-rationale'].includes(permission.receive)&&prompt)permission=await api.requestPermissions();

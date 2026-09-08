@@ -1,11 +1,12 @@
-import {dailyInteractionLine} from './scene-context.js?v=20260908dev271';
-import {careRoutineFor} from "./creative-options.js?v=20260908dev271";
-import {drinkExperience} from "./drink-log.js?v=20260908dev271";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev271";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev271";
-import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908dev271";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev271";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev271";
+import {meetingScene} from './meeting-journey.js?v=20260908dev272';
+import {dailyInteractionLine} from './scene-context.js?v=20260908dev272';
+import {careRoutineFor} from "./creative-options.js?v=20260908dev272";
+import {drinkExperience} from "./drink-log.js?v=20260908dev272";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev272";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev272";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908dev272";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev272";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev272";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -3306,7 +3307,7 @@ function commitLiveEntry(c,date,item){
   // interaction was written for this character, reopening the app must not
   // replace its wording or participant list with a newly evaluated variant.
   const immutableInteraction=item.interactionId&&entries.find(entry=>entry.interactionId===item.interactionId&&Number(entry.minute)===Number(item.minute));
-  if(immutableInteraction)return immutableInteraction;
+  if(immutableInteraction&&!item.manualDirective)return immutableInteraction;
   // 수면은 현재 화면과 로그가 반드시 같은 한 사건을 가리켜야 한다. 같은 시각에
   // 예전 엔진이 만든 일반 장면이 남아 있어도 중복으로 거부하지 않고 수면으로 교체한다.
   if(item.mood==="수면"){
@@ -3576,11 +3577,11 @@ function manualDirectiveEventFor(c,date=new Date()){
   const participantOrder=[...new Set((Array.isArray(directive.withIds)?directive.withIds:[]).filter(id=>state.characters?.[id]))];
   const companions=participantOrder.filter(id=>id!==c.id),shared=participantOrder.length>1;
   const sharedHomeId=directive.homeId&&state.homes?.[directive.homeId]?directive.homeId:(homeIdForDate(c,date)||c.homeId);
-  return withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
+  return meetingScene(withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
     home:!atWork,placeId:atWork?place.id:"",room:directive.room||"living",visitHomeId:sharedHomeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
     withId:companions[0],withIds:companions,participantOrder,groupInteraction:shared,interactionId:shared?`manual:${directive.id}`:undefined,
     manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
-  }),date);
+  }),date),directive,c.id,now,state.uiLanguage);
 }
 // Repeated participant searches share base scenes only during a synchronous
 // calculation transaction. No result survives a user edit, clock tick or sync.
@@ -3619,8 +3620,8 @@ function dateReservationOwners(date){
 function calculateBaseEvent(c,date=new Date()){
   const n=nowMin(date);
   const list=calculateTimeline(c,date);
-  const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
   const directed=manualDirectiveEventFor(c,date);if(directed)return commitLiveEntry(c,date,directed);
+  const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   if(sleepingNow(c,date)){
     const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
@@ -4930,6 +4931,7 @@ export function eventFor(c,date=new Date()){
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);
   if(rawCurrent.sceneUnavailable)return rawCurrent;
+  if(rawCurrent.manualDirective)return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
   if(rawCurrent.giftExchange){
     const other=state.characters[rawCurrent.withId];
     if(other){timeline(other,date);const counterpart=currentGiftFor(other,date);if(counterpart?.interactionId===rawCurrent.interactionId)commitLiveEntry(other,date,counterpart)}
@@ -5053,3 +5055,9 @@ function calculateEventFor(c,date){
 }
 export function charactersAtPlace(id,townId=state.activeTownId){return state.order.map(x=>state.characters[x]).filter(Boolean).filter(c=>{const e=eventFor(c);return e.placeId===id&&e.townId===townId})}
 export function homeGroups(){const out={};state.order.forEach(id=>{const c=state.characters[id];if(!c)return;settingList(c.residences).forEach(item=>{if(state.homes[item.homeId])(out[item.homeId]??=[]).push(c)})});return out}
+
+setDirectiveSceneResolver(eventFor,(character,source,date)=>{
+ const previous=state.uiLanguage,copy={};
+ try{for(const language of ["ko","en","ja"]){state.uiLanguage=language;const value=giftEntryFor(source,character,date);copy[language]={title:value?.title||"",desc:value?.desc||""}}}finally{state.uiLanguage=previous}
+ return copy;
+});
