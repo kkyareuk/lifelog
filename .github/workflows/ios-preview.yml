@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   simulator:
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/codex/ios-production264'
     runs-on: macos-15
     timeout-minutes: 30
     env:
@@ -40,10 +40,18 @@ jobs:
       - name: Check workflow safety and platform isolation
         run: |
           node scripts/check-ios-cloud.mjs
-          node scripts/check-native-platforms.mjs
-          node scripts/check-ios-preview-auth.mjs
+          if [ "$GITHUB_REF" = "refs/heads/codex/ios-production264" ]; then
+            node scripts/check-ios-production.mjs
+            node scripts/check-ios-apple-auth.mjs
+          else
+            node scripts/check-native-platforms.mjs
+            node scripts/check-ios-preview-auth.mjs
+          fi
       - name: Prepare iOS assets and CocoaPods
         run: npm run app:sync:ios
+      - name: Navigate disposable simulator for review screenshots
+        if: github.ref == 'refs/heads/codex/ios-production264'
+        run: node scripts/prepare-ios-review-screenshots.mjs
       - name: Build simulator app (no Apple credentials)
         shell: bash
         run: |
