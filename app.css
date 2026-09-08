@@ -3398,6 +3398,15 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   }
 
 /* 모바일·태블릿 앱 셸: 바깥 문서는 기기 크기에 고정하고 각 화면만 내부에서 동작한다. */
+/* House chooser is shared by phone and tablet layouts. */
+  html.native-app[data-active-tab="home"] .home-native-switcher{position:absolute;z-index:12;left:91px;top:78px;display:grid;width:min(230px,calc(100vw - 105px));max-height:min(62dvh,530px);gap:5px;padding:12px;overflow:auto;border:1px solid #624735;border-radius:15px;background:#fffdf7ed;box-shadow:0 13px 35px #2a160d66;backdrop-filter:blur(7px);pointer-events:auto}
+  html.native-app[data-active-tab="home"] .home-native-switcher[hidden]{display:none!important}
+  html.native-app[data-active-tab="home"] .home-native-switcher-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px}
+  html.native-app[data-active-tab="home"] .home-native-switcher-row>[data-home-select]{display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:0 7px;min-height:47px;padding:5px 8px;border:1px solid #aa927f;border-radius:11px;background:#fffaf1;color:#32241d;text-align:left;box-shadow:none}
+  html.native-app[data-active-tab="home"] .home-native-switcher-row>[data-home-select]>span{grid-row:1/3;font-size:21px}.home-native-switcher-row>[data-home-select]>b{overflow-wrap:anywhere}.home-native-switcher-row>[data-home-select]>small{font-size:10px;color:#756357}
+  html.native-app[data-active-tab="home"] .home-native-switcher-row>[data-home-select].on{border-color:var(--home-own);box-shadow:inset 0 0 0 1px var(--home-own)}
+  html.native-app[data-active-tab="home"] .home-native-switcher-row>.home-native-empty-delete{align-self:stretch;width:58px!important;min-width:58px!important;min-height:47px!important;padding:4px!important;border-radius:11px!important;font-size:10px!important;line-height:1.2!important}
+  html.native-app[data-active-tab="home"] .home-native-switcher .home-native-add-home{display:block;width:100%;min-height:38px;text-align:center}
 @media(max-width:1200px),(orientation:portrait){
   html.native-app,
   html.native-app body{
@@ -3546,14 +3555,7 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   html.native-app[data-active-tab="home"] .home-native-ui-toggle>span{font-size:9px}
   html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle{width:78px!important}
   html[lang="en"].native-app[data-active-tab="home"] .home-native-ui-toggle>span{font-size:7px}
-  html.native-app[data-active-tab="home"] .home-native-switcher{position:absolute;z-index:12;left:91px;top:78px;display:grid;width:min(230px,calc(100vw - 105px));max-height:min(62dvh,530px);gap:5px;padding:12px;overflow:auto;border:1px solid #624735;border-radius:15px;background:#fffdf7ed;box-shadow:0 13px 35px #2a160d66;backdrop-filter:blur(7px);pointer-events:auto}
-  html.native-app[data-active-tab="home"] .home-native-switcher[hidden]{display:none!important}
-  html.native-app[data-active-tab="home"] .home-native-switcher-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px}
-  html.native-app[data-active-tab="home"] .home-native-switcher-row>[data-home-select]{display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;gap:0 7px;min-height:47px;padding:5px 8px;border:1px solid #aa927f;border-radius:11px;background:#fffaf1;color:#32241d;text-align:left;box-shadow:none}
-  html.native-app[data-active-tab="home"] .home-native-switcher-row>[data-home-select]>span{grid-row:1/3;font-size:21px}.home-native-switcher-row>[data-home-select]>b{overflow-wrap:anywhere}.home-native-switcher-row>[data-home-select]>small{font-size:10px;color:#756357}
-  html.native-app[data-active-tab="home"] .home-native-switcher-row>[data-home-select].on{border-color:var(--home-own);box-shadow:inset 0 0 0 1px var(--home-own)}
-  html.native-app[data-active-tab="home"] .home-native-switcher-row>.home-native-empty-delete{align-self:stretch;width:58px!important;min-width:58px!important;min-height:47px!important;padding:4px!important;border-radius:11px!important;font-size:10px!important;line-height:1.2!important}
-  html.native-app[data-active-tab="home"] .home-native-switcher .home-native-add-home{display:block;width:100%;min-height:38px;text-align:center}
+
   html.native-app[data-active-tab="home"] .home-native-elevator{position:absolute;z-index:9;right:7px;top:52%;display:grid;grid-template-rows:34px auto 34px;place-items:center;width:42px;overflow:hidden;border:2px solid #4d372a;border-radius:18px;background:#fff9eee8;box-shadow:0 5px 16px #0006;transform:translateY(-50%);pointer-events:auto}
   html.native-app[data-active-tab="home"] .home-native-elevator button{display:grid;width:100%;height:34px;min-width:0;min-height:0;margin:0;padding:0;place-items:center;border:0!important;border-radius:0!important;background:#664b3a!important;color:#fff5dd!important;-webkit-text-fill-color:#fff5dd!important;font:900 15px/1 sans-serif;box-shadow:none!important}
   html.native-app[data-active-tab="home"] .home-native-elevator button:disabled{opacity:.35}
@@ -7120,7 +7122,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
    x=768. The town map stays on the left and the phone scene owns the right. */
 @media(min-width:721px) and (orientation:landscape){
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top::before{height:100%!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top::after{left:calc(-150% - 2px)!important;right:-2px!important;top:0!important;height:2.5dvh!important;background-size:100% 100%!important;background-repeat:no-repeat!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-top::after{left:calc(-150% - 2px)!important;right:-2px!important;top:0!important;height:2.5dvh!important;background-position:center!important;background-size:cover!important;background-repeat:no-repeat!important}
   .game-observe-hud[data-native-hud-version="4"] .tablet-observe-map{position:absolute!important;z-index:1!important;left:0!important;right:40%!important;top:2.5dvh!important;bottom:0!important;display:block!important;width:auto!important;height:auto!important;overflow:hidden!important;border:0!important;border-radius:0!important;background:#91ad77!important}
   .tablet-observe-world{position:relative!important;width:100%!important;height:100%!important;overflow:hidden!important}
   .tablet-observe-world :is(.place-people-faces,.place-person-face,.town-traveler,.town-traveler-visual){min-width:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}

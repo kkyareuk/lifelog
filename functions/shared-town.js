@@ -19,12 +19,13 @@ function createSharedTownService({db,engine,clock=Date.now}){
         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
         if(input.command){
           const c=residents.find(r=>r.id===input.command.characterId);if(!c||c.ownerUid!==uid)fail('character-owner-required',403);
-          if(!['wake','wash','meal','read','rest','walk','study','chores','talk','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(input.command.kind))fail('invalid-command');
-          if(['talk','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
+          if(!['wake','wash','meal','read','rest','relax','nap','music','game','art','exercise','work','research','walk','study','chores','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(input.command.kind))fail('invalid-command');
+          if(['talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
           if(['kiss','kiss_cautious','kiss_reconcile','affection','handhold','lean','hug'].includes(input.command.kind)){
             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
             if(input.command.kind!=='hug'&&profiles.some(p=>!['성인','노인'].includes(p.ageGroup)))fail('adult-characters-required');
           }
+          if(input.command.kind==='gossip'&&!residents.some(r=>r.id===input.command.subjectId&&r.id!==c.id&&r.id!==input.command.targetId&&r.townId===c.townId))fail('invalid-subject');
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
         const lives=advance({group,residents,homes:rows(h),relationships:rows(relationships),declarations:rows(declarations),catalog:rows(catalog),perceptions:rows(perceptions),schedules:rows(schedules)},input.command?now:Math.floor(now/60000)*60000,input.command||null);

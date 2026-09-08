@@ -2,14 +2,14 @@ globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
 globalThis.document??={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window??={addEventListener(){},dispatchEvent(){}};
 process.env.TZ='Asia/Seoul';
-const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260908dev280');
-const {buildSharedWorld}=await import('./shared-world.js?v=20260908dev280');
-const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260908dev280');
+const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260908dev281');
+const {buildSharedWorld}=await import('./shared-world.js?v=20260908dev281');
+const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260908dev281');
 export function advanceSharedLife(snapshot,now,command=null){
   const world=buildSharedWorld(snapshot);
   return runIsolatedWorld(world,()=>withSimulationBatch(()=>{
     const date=new Date(now),scenes={};
-    if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{targetId:command.targetId||"",topic:command.topic||"",positions:command.positions,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted&&command.kind==='affection')throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
+    if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{targetId:command.targetId||"",topic:command.topic||"",subjectId:command.subjectId||"",positions:command.positions,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted)throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
     for(const id of [...world.order].sort())eventFor(world.characters[id],date);
     for(const id of world.order){
       scenes[id]=eventFor(world.characters[id],date);
@@ -20,8 +20,8 @@ export function advanceSharedLife(snapshot,now,command=null){
     }
     return world.order.map(id=>{
       const c=world.characters[id],days=Object.fromEntries(Object.entries(c.days||{}).sort(([a],[b])=>{const stamp=k=>{const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d).getTime()};return stamp(a)-stamp(b)}).slice(-2).map(([key,day])=>[key,{...day,entries:(day.entries||[]).slice(-80)}]));
-      let json=JSON.stringify({scene:scenes[id],days,directive:world.characterDirectives?.[id]||null});
-      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({scene:scenes[id],days,directive:world.characterDirectives?.[id]||null})}
+      let json=JSON.stringify({scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null});
+      if(Buffer.byteLength(json)>120000){for(const d of Object.values(days)){delete d.signature;d.entries=d.entries.slice(-30)}json=JSON.stringify({scene:scenes[id],timelineResetAt:c.timelineResetAt||0,days,directive:world.characterDirectives?.[id]||null})}
       if(Buffer.byteLength(json)>200000)throw new Error('Shared life exceeds document budget');
       return {id,lifeJson:json};
     });

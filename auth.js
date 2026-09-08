@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260908dev280';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev280";
+import {sharedProfile} from './shared-world.js?v=20260908dev281';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev281";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev280";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev281";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -899,12 +899,14 @@ function watchActiveGroup(groupId){
   groupSubscriptionKey=subscriptionKey;
   const refs=groupRefs(groupId);
   const listen=(reference,key,mapSnapshot)=>onSnapshot(reference,snapshot=>{
+    if(groupSubscriptionKey!==subscriptionKey)return;
     const value=mapSnapshot
       ?snapshot.docs.map(item=>({id:item.id,...item.data()}))
       :snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;
     const groups=key==="group"&&value
       ?groupState.groups.map(item=>item.id===value.id?{...item,...value,myRole:item.myRole}:item)
       :['members','residents'].includes(key)?groupState.groups.map(item=>item.id===groupId?{...item,[key==='members'?'memberCount':'residentCount']:value.length}:item):groupState.groups;
+    if(key==="group"&&!value){watchActiveGroup("");void refreshGroups();return}
     groupState={...groupState,[key]:value,groups,error:"",loading:false};
     if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
     emitGroupState();
@@ -1164,6 +1166,7 @@ window.DrawerVillageGroups={
   setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||""),selectedResidentId:""};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:""});emitGroupState()},
+  deleteGroup:async()=>{await sharedTownRequest("deleteGroup",{confirm:true});watchActiveGroup("");await refreshGroups();await refreshSlotUsage();},
   selectResident:residentId=>{groupState={...groupState,selectedResidentId:String(residentId||"")};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:groupState.selectedResidentId});emitGroupState()},
   visitHome:homeId=>{groupState={...groupState,visitingHomeId:String(homeId||"")};emitGroupState()},
   updateRules:updateGroupRules,linkTown:linkGroupTown,addResident:addGroupResident,removeResident:removeGroupResident,

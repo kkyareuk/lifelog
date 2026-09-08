@@ -1,5 +1,5 @@
-import {withTownEditDraft} from './town-edit-draft.js?v=20260908dev280';
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev280';
+import {withTownEditDraft} from './town-edit-draft.js?v=20260908dev281';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev281';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();
@@ -26,7 +26,7 @@ export function buildSharedWorld(snapshot,language='ko'){
     const remap=items=>(items||[]).map(item=>({...item,townId:r.townId,homeId,withIds:(item.withIds||[]).map(id=>(snapshot.residents||[]).find(x=>x.ownerUid===r.ownerUid&&x.sourceCharacterId===id)?.id).filter(Boolean)}));
     characters[r.id]={...profile,id:r.id,name:r.name,job:r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
       residences:homeId?[{homeId,isPrimary:true,stayPattern:'상시 거주',sleepRoomId:profile.sleepRoomId||'bedroom'}]:[],
-      wake:profile.wake||'07:00',sleep:profile.sleep||'23:00',createdAt:profile.createdAt||1,ageGroup:profile.ageGroup||'성인',bodyProfile:profile.bodyProfile||{},days:life.days||{},sharedScene:life.scene||null};
+      wake:profile.wake||'07:00',sleep:profile.sleep||'23:00',createdAt:profile.createdAt||1,ageGroup:profile.ageGroup||'성인',bodyProfile:profile.bodyProfile||{},timelineResetAt:life.timelineResetAt||profile.timelineResetAt||0,days:life.days||{},sharedScene:life.scene||null};
     if(life.directive)characterDirectives[r.id]=life.directive;
     routines[r.id]=remap(schedule.routines);monthlyRoutines[r.id]=remap(schedule.monthlyRoutines);
   }
@@ -49,6 +49,6 @@ export function withSharedWorld(snapshot,run){
   world.characterViewSource=selection.source||world.order.find(id=>world.characters[id].ownerUid===uid)||world.order[0];
   world.characterViewTarget=selection.target||world.order.find(id=>id!==world.characterViewSource);
   world.activeTab=state.activeTab;world.homeEditMode=!!selection.homeEditMode;
-  for(const key of ['routineView','routineMonth','homeVisualMode','homeSdScale','homeLdScale','homeUiTheme','uiFont','uiScale'])world[key]=state[key];
+  for(const key of ['animationIntensity','routineView','routineMonth','homeVisualMode','homeSdScale','homeLdScale','homeUiTheme','uiFont','uiScale'])world[key]=state[key];
   return runIsolatedWorld(world,()=>run(world));
 }

@@ -15,6 +15,7 @@ service cloud.firestore {
 
     function hasGroupMembership(groupId) {
       return signedIn()
+        && exists(/databases/$(database)/documents/groups/$(groupId))
         && exists(/databases/$(database)/documents/groups/$(groupId)/members/$(request.auth.uid));
     }
 
@@ -81,6 +82,7 @@ service cloud.firestore {
     match /groups/{groupId} {
       allow create:
         if signedIn()
+        && !exists(/databases/$(database)/documents/deletedGroups/$(groupId))
         && request.resource.data.ownerUid == request.auth.uid
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0

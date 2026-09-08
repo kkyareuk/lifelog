@@ -315,8 +315,8 @@ sharedApp.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.se
 let sharedEngine;
 const sharedService=require('./shared-town').createSharedTownService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
 const relationService=require('./shared-relations').createService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
-Object.assign(sharedService,relationService,require('./mail-targets')({db}),require('./character-codes')({db}),{createResident:require('./create-resident')({db}),readSlotUsage:require('./account-slots').read(db),readMailbox:require('./account-mailbox')({db})});
-for(const action of ['createResident','readSlotUsage','readMailTargets','saveMemberGroups','readMailbox','publishCharacterCode','readCharacterCode','revokeCharacterCode','advance','saveGroupPresentation','saveBuilding','saveTownEdit','saveTown','saveHomePlacement','saveHomeLayout','saveDecoration','publishCatalog','sendMail','requestResidence','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
+Object.assign(sharedService,relationService,require('./mail-targets')({db}),require('./character-codes')({db}),{deleteGroup:require('./delete-group')({db}),createResident:require('./create-resident')({db}),readSlotUsage:require('./account-slots').read(db),readMailbox:require('./account-mailbox')({db})});
+for(const action of ['deleteGroup','createResident','readSlotUsage','readMailTargets','saveMemberGroups','readMailbox','publishCharacterCode','readCharacterCode','revokeCharacterCode','advance','saveGroupPresentation','saveBuilding','saveTownEdit','saveTown','saveHomePlacement','saveHomeLayout','saveDecoration','publishCatalog','sendMail','requestResidence','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
   try{const identity=await signedInUser(req);res.json(await sharedService[action](identity.uid,req.body||{}))}
   catch(error){const status=Number(error.status);res.status(status>=400&&status<600?status:503).json({message:error.status?error.message:'groups/server-error'})}
 });
@@ -326,6 +326,8 @@ exports.relationshipNotification=require('./shared-notifications')({db});
 
 // Expired mail is hidden immediately by clients and removed daily on the server.
 exports.expireVillageMail=require('firebase-functions/v2/scheduler').onSchedule({schedule:'0 3 * * *',timeZone:'Asia/Seoul',region:'asia-northeast3',timeoutSeconds:540,memory:'256MiB'},async()=>{
+  const pendingGroups=await db.collection('deletedGroups').where('completedAt','==',0).limit(10).get();
+  for(const item of pendingGroups.docs)await require('./delete-group')({db})(item.data().ownerUid,{groupId:item.id,confirm:true});
  const {deleteExpired}=require('./mail-retention');const cutoff=Date.now()-30*86400000;let cursor;
  while(true){let q=db.collection('groups').orderBy('__name__').limit(100);if(cursor)q=q.startAfter(cursor);const page=await q.get();if(page.empty)break;
  for(const group of page.docs)for(const kind of ['mail','proposals','relationshipRequests','mailDispatches'])await deleteExpired(group.ref.collection(kind),cutoff);
