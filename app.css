@@ -538,12 +538,12 @@ html[data-color-mode][data-visual-theme] :is(.settings-shell,.catalog-shell,.sho
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] :is(dialog:not(.relationship-fullscreen-dialog),.visual-theme-dialog) form{
+html[data-color-mode][data-visual-theme] :is(dialog:not(.relationship-fullscreen-dialog):not(.mail-letter),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] dialog:not(.relationship-fullscreen-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
+html[data-color-mode][data-visual-theme] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
 html[data-color-mode][data-visual-theme] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint){color:var(--muted)!important}
 html[data-color-mode][data-visual-theme] .current-visual-theme{
   border-color:var(--theme-border)!important;
@@ -635,12 +635,12 @@ html[data-color-mode] :is(.settings-shell,.catalog-shell,.shop-store,.relationsh
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode] :is(dialog:not(.relationship-fullscreen-dialog),.visual-theme-dialog) form{
+html[data-color-mode] :is(dialog:not(.relationship-fullscreen-dialog):not(.mail-letter),.visual-theme-dialog) form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;
 }
-html[data-color-mode] dialog:not(.relationship-fullscreen-dialog)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
+html[data-color-mode] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter)::backdrop{background:color-mix(in srgb,var(--p) 32%,#10131acc)!important}
 html[data-color-mode] :is(.setting-card,.panel,.form,.native-status-card,.native-log-card) :is(p,small,time):not(.room-edit-hint){color:var(--muted)!important}
 html[data-color-mode] .current-visual-theme{
   border-color:var(--theme-border)!important;
@@ -1602,6 +1602,8 @@ html body #app .furniture-edit-toolbar strong{color:#392b21!important}
 .meeting-walker.is-stationary,.meeting-walker.is-stationary :is(.avatar,.sprite){animation:none}
 .meeting-pair .meeting-caption,.meeting-walker .meeting-caption{display:grid;gap:2px;padding:5px 9px;background:#fff8eee8;border:1px solid #d7c5b0;border-radius:12px;box-shadow:0 2px 5px #20180e20;font-size:11px;color:#302418;text-align:center;text-shadow:none}.meeting-caption small{max-width:140px;font-size:10px;line-height:1.3}.meeting-walker.is-kissing::after{content:'♥';position:absolute;top:-10px;right:-5px;color:#d66a90;font-size:19px;pointer-events:none;animation:meeting-kiss-heart 2.8s ease-in-out infinite}.meeting-walker.is-kissing :is(.avatar,.sprite){animation:meeting-kiss 2.8s ease-in-out infinite}.meeting-walker :is(.avatar,.sprite){background:transparent;border:0;box-shadow:none;padding:0}@keyframes meeting-kiss{50%{rotate:7deg;translate:3px 0}}@keyframes meeting-kiss-heart{50%{translate:0 -6px;opacity:.5}}
 .meeting-pair{position:absolute;z-index:32;transform:translate(-50%,-60%);display:grid;justify-items:center;max-width:180px;pointer-events:auto}.meeting-pair-faces{display:flex;align-items:center}.meeting-pair-faces button{display:block;width:48px;height:56px;min-height:0;padding:0;border:0;background:transparent;box-shadow:none}.meeting-pair-faces :is(.avatar,.sprite){width:100%;height:100%;object-fit:contain;background:none;border:0;box-shadow:none}.meeting-pair.is-kissing .meeting-pair-faces button:first-child{animation:meeting-kiss 2.8s ease-in-out infinite}.meeting-pair.is-kissing .meeting-pair-faces button:last-child{animation:meeting-kiss 2.8s ease-in-out infinite reverse}.meeting-pair.is-kissing::after{content:'♥';position:absolute;top:-10px;color:#d66a90;animation:meeting-kiss-heart 2.8s ease-in-out infinite}
+/* Local affection animation: warm glow and a gentle approach, no network timer. */
+.is-affection{isolation:isolate}.is-affection::before{content:'';position:absolute;inset:-20%;z-index:-1;background:radial-gradient(ellipse,#e6848860,transparent 70%);pointer-events:none;animation:affection-glow 3s ease-in-out infinite}.is-affection::after{content:'♥';position:absolute;left:50%;top:0;color:#cd6975;pointer-events:none;animation:affection-heart 3s ease-out infinite}.is-affection .meeting-pair-faces>button:first-child,.is-affection .native-scene-lineup-person:first-child{animation:affection-left 3s ease-in-out infinite}.is-affection .meeting-pair-faces>button:last-child,.is-affection .native-scene-lineup-person:last-child{animation:affection-right 3s ease-in-out infinite}@keyframes affection-left{50%{translate:5px 0;rotate:3deg}}@keyframes affection-right{50%{translate:-5px 0;rotate:-3deg}}@keyframes affection-glow{50%{opacity:.4}}@keyframes affection-heart{0%{translate:-50% 0;opacity:0}35%{opacity:1}100%{translate:-50% -35px;opacity:0}}@media(prefers-reduced-motion:reduce){.is-affection,.is-affection *,.is-affection::before,.is-affection::after{animation:none!important}}
 .meeting-pair.is-gifting::after{content:'🎁';position:absolute;top:16px;left:calc(50% - var(--gift-direction,1)*25%);font-size:22px;pointer-events:none;animation:gift-pass 2.5s ease-in-out infinite}@keyframes gift-pass{0%,100%{translate:0 -10px;opacity:0}25%{opacity:1}75%{translate:calc(var(--gift-direction,1)*40px) -10px;opacity:1}}
 @keyframes meeting-route{from{left:var(--meeting-x0);top:var(--meeting-y0)}to{left:var(--meeting-x1);top:var(--meeting-y1)}}
 @media(prefers-reduced-motion:reduce){.meeting-walker :is(.avatar,.sprite){animation:none}}
@@ -3523,7 +3525,7 @@ img.catalog-app-icon{object-fit:contain;border-radius:0;background:transparent;f
   html.native-app[data-active-tab="home"] .home-native-back{position:absolute;z-index:30;left:21px;top:44px;width:61px;height:61px;min-width:0;min-height:0;margin:0;padding:0;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;pointer-events:auto}
   html.native-app[data-active-tab="home"] .home-native-back img{display:block;width:100%;height:100%;padding:0!important;border:0!important;border-radius:0!important;object-fit:contain;background:transparent!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px #0004)}
 html.native-app[data-active-tab="home"] .home-native-meta{position:absolute;left:max(86px,calc(24.27vw - 40px));right:12px;top:calc(4.577dvh - 3px);display:block;min-width:0;pointer-events:none}
-  html.native-app[data-active-tab="home"] body #app .home-native-context{position:absolute;right:0;top:32px;bottom:auto;width:82px;overflow:hidden;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.55px #211710;paint-order:stroke fill;font-family:var(--home-ui-font),sans-serif!important;font-size:9px!important;font-weight:400!important;line-height:13px!important;text-align:right;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 0 #211710,1px 0 0 #211710,-1px 0 0 #211710,0 -1px 0 #211710,0 2px 2px #0008}
+  html.native-app[data-active-tab="home"] body #app .home-native-context{position:fixed;right:3.155vw;top:5.45dvh;bottom:auto;width:120px;overflow:hidden;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.55px #211710;paint-order:stroke fill;font-family:var(--home-ui-font),sans-serif!important;font-size:9px!important;font-weight:400!important;line-height:13px!important;text-align:right;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 0 #211710,1px 0 0 #211710,-1px 0 0 #211710,0 -1px 0 #211710,0 2px 2px #0008}
   html.native-app[data-active-tab="home"] .home-native-house-icon{position:relative;grid-row:2;display:grid;place-items:center;width:33px;height:35px;overflow:visible;background:transparent!important}
   html.native-app[data-active-tab="home"] .home-native-house-icon img{display:block;width:33px;height:33px;padding:0!important;border:0!important;border-radius:0!important;object-fit:contain;background:transparent!important;box-shadow:none!important;filter:drop-shadow(0 2px 2px #0007)}
   html.native-app[data-active-tab="home"] .home-native-house-name{position:relative;grid-row:2;align-self:end;display:flex;align-items:center;gap:9px;width:100%!important;min-width:0!important;height:31px!important;min-height:0!important;margin:0!important;padding:0!important;overflow:hidden;border:0!important;border-radius:0!important;appearance:none!important;-webkit-appearance:none!important;background:none!important;background-color:transparent!important;background-image:none!important;box-shadow:none!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.2px #000;paint-order:stroke fill;font:400 clamp(18px,5.05vw,23px)/25px var(--home-ui-font),sans-serif;font-family:var(--home-ui-font),sans-serif!important;font-size:clamp(18px,5.05vw,23px)!important;line-height:25px!important;text-align:left;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 2px 3px #0008;pointer-events:auto}
@@ -5295,28 +5297,28 @@ html[data-color-mode="light"].native-app[data-active-tab="shop"] .premium-buy.pr
 @keyframes room-sleep-z{0%,100%{opacity:.25;translate:0 3px}50%{opacity:1;translate:4px -5px}}
 
 /* 다크 모드 팝업은 제목과 같은 어두운 면, 화이트 모드는 밝은 면을 사용한다. */
-html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog),
-html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog)>form{
+html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter),
+html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter)>form{
   border-color:#ffffff20!important;
   background:#101a28!important;
   color:#f4f7fb!important;
 }
 html[data-color-mode="dark"] dialog::backdrop{background:#050a12c9!important;backdrop-filter:blur(5px)}
-html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ffffff1f!important;background:#101a28f2!important;color:#f4f7fb!important}
-html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
-html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog) :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
-html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog) :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
+html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ffffff1f!important;background:#101a28f2!important;color:#f4f7fb!important}
+html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f7fafc!important;-webkit-text-fill-color:#f7fafc!important}
+html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
+html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 html[data-color-mode="dark"] dialog button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--p),var(--s))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
 html[data-color-mode="dark"] dialog :is(.relation,.empty-mini,.room-editor-photo,.room-image-choice button,.relationship-color-legend span){border-color:#ffffff1b!important;background:#172536!important;color:#f4f7fb!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas{border:1px solid #ffffff1d!important;background:radial-gradient(circle at center,#25374a 0 32%,#101a28 100%)!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas svg text{paint-order:stroke;fill:#f8fafc!important;stroke:#101a28!important}
 html[data-color-mode="dark"] .official-relation-dialog .relation{background:linear-gradient(145deg,#172536,#203449)!important}
-html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog),
-html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog)>form{border-color:#d9d0c7!important;background:#fffdf9!important;color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ddd3c9!important;background:#fffdf9f2!important;color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog) :is(h1,h2,h3,h4,b,strong,label,legend){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
-html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog) :is(p,small){color:#6f6258!important;-webkit-text-fill-color:#6f6258!important}
-html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog) :is(input,select,textarea,button){border-color:#d8cec5!important;background:#fff!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter),
+html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter)>form{border-color:#d9d0c7!important;background:#fffdf9!important;color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(.relationship-map-dialog-head,.title,.modal-head,.dialog-head){border-color:#ddd3c9!important;background:#fffdf9f2!important;color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(h1,h2,h3,h4,b,strong,label,legend){color:#302a25!important;-webkit-text-fill-color:#302a25!important}
+html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(p,small){color:#6f6258!important;-webkit-text-fill-color:#6f6258!important}
+html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(input,select,textarea,button){border-color:#d8cec5!important;background:#fff!important;color:#302a25!important;-webkit-text-fill-color:#302a25!important}
 
 /* 넓은 화면에서도 선택한 화면 모드가 헤더·패널·입력창까지 끊기지 않게 한다. */
 @media(min-width:721px){
@@ -6734,8 +6736,8 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog{
     width:calc(100vw - 12px)!important;max-width:calc(100vw - 12px)!important;height:calc(100dvh - 12px)!important;max-height:calc(100dvh - 12px)!important;margin:auto!important;overflow:hidden!important;
   }
-  dialog.relation-editor-dialog:not(.relationship-fullscreen-dialog) form,
-  dialog.character-view-dialog:not(.relationship-fullscreen-dialog) form{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;padding:16px 16px max(84px,calc(24px + env(safe-area-inset-bottom)))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
+  dialog.relation-editor-dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) form,
+  dialog.character-view-dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) form{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;padding:16px 16px max(84px,calc(24px + env(safe-area-inset-bottom)))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important}
   dialog.relation-editor-dialog form *,
   dialog.character-view-dialog form *{min-width:0;max-width:100%;box-sizing:border-box}
   dialog.relation-editor-dialog :is(select,input,textarea,button),
@@ -6747,7 +6749,7 @@ html[data-active-tab="shop"] .shop-expansion-showcase .expansion-copy>div>b{colo
   dialog.character-view-dialog .character-view-dialog-direction{display:grid!important;grid-template-columns:52px 20px 52px minmax(0,1fr);align-items:center;gap:5px!important;width:100%}
   dialog.character-view-dialog .character-view-dialog-direction :is(.avatar,.sprite){width:48px!important;height:48px!important}
   dialog.character-view-dialog .character-view-dialog-direction>span{min-width:0!important;overflow-wrap:anywhere}
-  dialog.character-view-dialog:not(.relationship-fullscreen-dialog) .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
+  dialog.character-view-dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) .character-view-fields{grid-template-columns:minmax(0,1fr)!important}
 }
 
 /* 관계 편집기의 체크박스를 모바일 공통 입력 너비 규칙에서 제외한다. */
@@ -7172,7 +7174,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   html.native-app[data-active-tab="home"] .home-native-back{position:absolute!important;z-index:30!important;left:22px!important;top:36px!important;width:64px!important;height:64px!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;pointer-events:auto!important}
   html.native-app[data-active-tab="home"] .home-native-back img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important}
 html.native-app[data-active-tab="home"] .home-native-meta{position:absolute!important;left:calc(22.57vw - 27px)!important;right:20px!important;top:calc(22.5px + 1.197dvh)!important;display:block!important;min-width:0!important}
-  html.native-app[data-active-tab="home"] .home-native-context{position:absolute!important;right:0!important;top:32px!important;bottom:auto!important;color:#fff!important;font-size:11px!important}
+  html.native-app[data-active-tab="home"] .home-native-context{position:fixed!important;right:2.1875vw!important;top:6.875dvh!important;bottom:auto!important;color:#fff!important;font-size:11px!important}
   html.native-app[data-active-tab="home"] .home-native-house-icon{grid-row:2!important;width:38px!important;height:38px!important}
   html.native-app[data-active-tab="home"] .home-native-house-icon img{width:38px!important;height:38px!important;object-fit:contain!important}
   html.native-app[data-active-tab="home"] .home-native-house-name{grid-row:2!important;display:flex!important;align-items:center!important;gap:10px!important;height:35px!important;padding:0!important;overflow:hidden!important;border:0!important;background:transparent!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:1.2px #000!important;font:400 24px/30px var(--home-ui-font),sans-serif!important;font-size:24px!important;font-weight:400!important;line-height:30px!important;text-align:left!important;text-overflow:ellipsis!important;white-space:nowrap!important;text-shadow:0 2px 3px #0008!important;box-shadow:none!important;pointer-events:auto!important}

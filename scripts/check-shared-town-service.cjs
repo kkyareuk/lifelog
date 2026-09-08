@@ -44,6 +44,7 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  await assert.rejects(service.publishCatalog('member',{groupId:'g',catalog}),e=>e.status===403);
  await service.publishCatalog('op',{groupId:'g',catalog});await service.publishCatalog('op',{groupId:'g',catalog});
  assert.equal(data.get('groups/g/catalog/flower').items.length,80);
+ await service.publishCatalog('op',{groupId:'g',catalog:{flower:[{id:'same-name-new-id',name:'Flower 0'}]}});assert.equal(data.get('groups/g/catalog/flower').items.length,80);
  await assert.rejects(service.publishCatalog('op',{groupId:'g',catalog:{flower:[{id:'extra',name:'Extra'}]}}),e=>e.status===409);
  assert.equal(data.get('groups/g/catalog/flower').items.length,80);
  await relations.saveView('member',{groupId:'g',sourceId:'a',targetId:'b',field:'trust',value:'신뢰함'});
@@ -98,6 +99,7 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  await assert.rejects(service.saveHomeLayout('member',{groupId:'g',id:'home',revision:0,layout:{rooms:{}}}),e=>e.status===409);
  await assert.rejects(service.saveHomeLayout('member',{groupId:'g',id:'new-home',revision:0,layout:{rooms:{}}}),e=>e.status===403);
  await service.saveGroupPresentation('op',{groupId:'g',photoURL:'https://example.com/group.webp'});assert.equal(data.get('groups/g').photoURL,'https://example.com/group.webp');
+ await service.saveGroupPresentation('op',{groupId:'g',name:'Renamed',description:'x'.repeat(600)});assert.equal(data.get('groups/g').name,'Renamed');assert.equal(data.get('groups/g').description.length,500);
  await assert.rejects(service.saveGroupPresentation('member',{groupId:'g',photoURL:'https://example.com/no.webp'}),e=>e.status===403);
  await assert.rejects(relations.propose('member',{groupId:'g',requestId:'foreign-schedule',kind:'schedule',patch:{...schedule,memberIds:['a','b'],sourceId:'b'}}),e=>e.status===403);
  const own=await relations.propose('member',{groupId:'g',requestId:'own-schedule',kind:'schedule',patch:{...schedule,memberIds:['a']}});assert.equal(own.status,'accepted');

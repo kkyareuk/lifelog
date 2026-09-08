@@ -321,3 +321,12 @@ for(const action of ['publishCharacterCode','readCharacterCode','revokeCharacter
 exports.sharedTownApi=onRequest({region:'asia-northeast3',timeoutSeconds:60,memory:'512MiB',maxInstances:4,concurrency:4},sharedApp);
 
 exports.relationshipNotification=require('./shared-notifications')({db});
+
+// Expired mail is hidden immediately by clients and removed daily on the server.
+exports.expireVillageMail=require('firebase-functions/v2/scheduler').onSchedule({schedule:'0 3 * * *',timeZone:'Asia/Seoul',region:'asia-northeast3',timeoutSeconds:540,memory:'256MiB'},async()=>{
+ const {deleteExpired}=require('./mail-retention');const cutoff=Date.now()-30*86400000;let cursor;
+ while(true){let q=db.collection('groups').orderBy('__name__').limit(100);if(cursor)q=q.startAfter(cursor);const page=await q.get();if(page.empty)break;
+ for(const group of page.docs)for(const kind of ['mail','proposals','relationshipRequests','mailDispatches'])await deleteExpired(group.ref.collection(kind),cutoff);
+ cursor=page.docs.at(-1);if(page.size<100)break;}
+ await deleteExpired(db.collection('notificationOutbox'),cutoff);
+});

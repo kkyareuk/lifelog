@@ -1,4 +1,4 @@
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev277';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260908dev278';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();
@@ -44,7 +44,6 @@ export function buildSharedWorld(snapshot,language='ko'){
 export function withSharedWorld(snapshot,run){
   const world=buildSharedWorld(snapshot,state.uiLanguage);
   const selection=sharedSelection(snapshot),uid=globalThis.window?.ParallelCityAuth?.getInfo?.()?.user?.uid;
-  if(snapshot.group?.rules?.allowHomeVisits===false)world.homes=Object.fromEntries(Object.entries(world.homes).filter(([,home])=>home.ownerUid===uid));
   world.characterViewSource=selection.source||world.order.find(id=>world.characters[id].ownerUid===uid)||world.order[0];
   world.characterViewTarget=selection.target||world.order.find(id=>id!==world.characterViewSource);
   world.activeTab=state.activeTab;world.homeEditMode=!!selection.homeEditMode;

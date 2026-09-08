@@ -3,14 +3,14 @@ const point=(x,y)=>({x:Math.max(0,Math.min(100,Number.isFinite(Number(x))?Number
 function location(world,c,scene={},position){
  const homeId=scene.home?(scene.visitHomeId||c.homeId):'',home=world.homes?.[homeId],room=scene.room&&home?.rooms?.[scene.room]?scene.room:Object.keys(home?.rooms||{})[0]||'living';
  const place=world.world?.places?.find(p=>p.id===scene.placeId),agent=home?.lifeSimulation?.agents?.[c.id];
- const value={home:Boolean(home),homeId:home?.id||homeId,room,placeId:place?.id||'',townId:scene.townId||c.townId,point:agent?.roomKey===room?point(agent.x,agent.y):point(45+(String(c.id).length%3)*8,60),map:home?point(home.mapX,home.mapY):place?point(place.x,place.y):point(scene.mapX||scene.x,scene.mapY||scene.y)};
+ const value={home:Boolean(home),homeId:home?.id||homeId,room,placeId:place?.id||'',townId:scene.townId||c.townId,point:scene.goal?.point|| (agent?.roomKey===room?point(agent.x,agent.y):point(45+(String(c.id).length%3)*8,60)),map:home?point(home.mapX,home.mapY):place?point(place.x,place.y):point(scene.mapX||scene.x,scene.mapY||scene.y)};
  if(position?.homeId===homeId&&position.room===room&&Number.isFinite(position.point?.x)&&Number.isFinite(position.point?.y))value.point=point(position.point.x,position.point.y);
  if(!home&&!place&&position?.townId===value.townId&&Number.isFinite(position.map?.x)&&Number.isFinite(position.map?.y))value.map=point(position.map.x,position.map.y);
  return value;
 }
 export function entranceRoom(home){const rooms=Object.entries(home?.rooms||{});return rooms.find(([key,room])=>/entrance|entry|현관/i.test(key+' '+room.type+' '+room.name))?.[0]||rooms.sort((a,b)=>(Number(a[1].floor)||1)-(Number(b[1].floor)||1))[0]?.[0]||'living'}
 export function planMeetingJourney(world,actor,target,now,sourceScene,targetScene,positions={}){
- const from=location(world,actor,sourceScene,positions?.[actor.id]),to=location(world,target,targetScene,positions?.[target.id]),segments=[];let time=now;
+ const from=location(world,actor,sourceScene,positions?.[actor.id]),to=location(world,target,targetScene,targetScene?.goal||positions?.[target.id]),segments=[];let time=now;
  const add=(surface,homeId,fromRoom,toRoom,a,b,seconds)=>{segments.push({surface,homeId,fromRoom,toRoom,from:a,to:b,start:time,end:time+seconds*1000});time+=seconds*1000};
  if(from.home&&to.home&&from.homeId===to.homeId){const rooms=world.homes[from.homeId].rooms;if((Number(rooms[from.room]?.floor)||1)!==(Number(rooms[to.room]?.floor)||1)){add('home',from.homeId,from.room,from.room,from.point,{x:50,y:94},5);add('home',to.homeId,to.room,to.room,{x:50,y:94},to.point,5)}else add('home',from.homeId,from.room,to.room,from.point,to.point,10);}
  else{
@@ -26,13 +26,13 @@ export function meetingPhase(directive,now=Date.now()){
 }
 export function meetingScene(scene,directive,characterId,now=Date.now(),language='ko'){
  const phase=meetingPhase(directive,now);if(!phase)return scene;
- const {journey:j,segment,arrived}=phase,actor=j.actorId===characterId,where=actor&&!arrived?(segment?.surface==='home'?{home:true,homeId:segment.homeId,room:segment.fromRoom,townId:j.from.townId}: {home:false,townId:j.to.townId}):j.to;
+ const {journey:j,segment,arrived}=phase,actor=j.actorId===characterId,where=actor&&!arrived&&segment?(segment?.surface==='home'?{home:true,homeId:segment.homeId,room:segment.fromRoom,townId:j.from.townId}: {home:false,townId:j.to.townId}):j.to;
  const partner=actor?j.targetName:j.actorName,copy=directive.copy?.[language]||directive.copy?.ko||{};
  const moving={ko:[`${partner}를 만나러 가는 중`,'상대가 있는 곳으로 걸어가고 있어요.'],en:[`Walking to meet ${partner}`,'They are walking to where the other character is.'],ja:[`${partner}に会いに行くところ`,'相手がいる場所へ歩いて向かっています。']}[language]||{};
  const waiting={ko:[`${partner}를 기다리는 중`,'있던 자리에서 다가오는 상대를 기다리고 있어요.'],en:[`Waiting for ${partner}`,'They are staying where they are as the other character approaches.'],ja:[`${partner}を待っているところ`,'今いる場所で、こちらに向かう相手を待っています。']}[language]||{};
- const text=arrived?[copy.title,copy.desc]:actor?moving:waiting;
+ const text=arrived?[copy.title,copy.desc]:!directive.targetId?({ko:['이동하는 중','할 일을 하러 걸어가고 있어요.'],en:['On the way','Walking to the activity location.'],ja:['移動中','行動する場所へ歩いています。']}[language]||moving):actor?moving:waiting;
  const nearby=actor&&arrived?{...where,point:point(where.point?.x-8,where.point?.y),map:point(where.map?.x-3,where.map?.y)}:where;
- return {...scene,title:text[0]||scene.title,desc:text[1]||scene.desc,copy:undefined,home:Boolean(where.home),visitHomeId:where.homeId||'',room:where.room||'',placeId:where.placeId||'',townId:where.townId,mood:arrived?(scene.mood||'평온'):'평온',transit:actor&&!arrived&&!where.home,meetingKind:directive.kind,meetingActorId:j.actorId,participantOrder:scene.participantOrder||j.participantOrder,groupInteraction:arrived,withId:arrived?directive.targetId:undefined,withIds:arrived?(directive.withIds||[]).filter(id=>id!==characterId):[],meetingJourney:actor&&!arrived?{...segment,arrivesAt:j.arrivesAt}:null,meetingWaiting:!actor&&!arrived,meetingLocation:nearby,manualDirective:true};
+ return {...scene,title:text[0]||scene.title,desc:text[1]||scene.desc,copy:undefined,home:Boolean(where.home),visitHomeId:where.homeId||'',room:where.room||'',placeId:where.placeId||'',townId:where.townId,mood:arrived?(scene.mood||'평온'):'평온',transit:actor&&!arrived&&!where.home,meetingKind:directive.kind,meetingActorId:j.actorId,participantOrder:scene.participantOrder||j.participantOrder,groupInteraction:arrived&&Boolean(directive.targetId),withId:arrived?directive.targetId:undefined,withIds:arrived?(directive.withIds||[]).filter(id=>id!==characterId):[],meetingJourney:actor&&!arrived&&segment?{...segment,arrivesAt:j.arrivesAt}:null,meetingWaiting:!actor&&!arrived,meetingLocation:nearby,manualDirective:true};
 }
 export function journeyPosition(segment,now){
  const p=Math.max(0,Math.min(1,(now-segment.start)/(segment.end-segment.start)));
