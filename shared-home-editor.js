@@ -1,7 +1,8 @@
-import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260908dev272';
-import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260908dev272';
-import {bindHomeEditorUI} from './home-editor-ui.js?v=20260908dev272';
-import {mt} from './mailbox-center.js?v=20260908dev272';
+import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260908dev275';
+import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260908dev275';
+import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260908dev275';
+import {bindHomeEditorUI} from './home-editor-ui.js?v=20260908dev275';
+import {mt} from './mailbox-center.js?v=20260908dev275';
 const queues=new Map();
 export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  const api=window.DrawerVillageGroups,selection=sharedSelection(s),world=buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;
@@ -25,7 +26,29 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  },true);
  // Replace personal callbacks with isolated shared-world callbacks; search and drag/drop keep the existing drawer.
  if(selection.homeEditMode&&canEdit){bindHomeEditorUI(root,{state:world,addFurniture:(id,room,item)=>change(()=>addFurniturePlacement(id,room,item)),updateFurniture:(id,room,p,patch)=>change(()=>updateFurniturePlacement(id,room,p,patch)),openRoom:(_,room)=>roomDialog(room),selectAdded:()=>render()})}
- root.querySelectorAll('[data-furniture-placement]').forEach(el=>{el.onpointerdown=null;if(!selection.homeEditMode||!canEdit)return;el.onpointerdown=e=>{if(e.button!==0)return;stop(e);const room=el.closest('[data-room-key]'),roomKey=room.dataset.roomKey,item=home.rooms[roomKey]?.furniturePlacements?.find(p=>p.id===el.dataset.furniturePlacement);if(!item)return;const rect=room.getBoundingClientRect(),startX=e.clientX,startY=e.clientY;let x=item.x,y=item.y,moved=false,targetRoom=room;el.setPointerCapture(e.pointerId);el.onpointermove=m=>{if(Math.abs(m.clientX-startX)+Math.abs(m.clientY-startY)<5&&!moved)return;moved=true;targetRoom=[...root.querySelectorAll('.room[data-room-key]')].find(r=>{const b=r.getBoundingClientRect();return m.clientX>=b.left&&m.clientX<=b.right&&m.clientY>=b.top&&m.clientY<=b.bottom})||room;const box=targetRoom.getBoundingClientRect();x=Math.max(0,Math.min(100,(m.clientX-box.left)/box.width*100));y=Math.max(0,Math.min(100,(m.clientY-box.top)/box.height*100));el.style.setProperty('--furniture-x',((m.clientX-rect.left)/rect.width*100)+'%');el.style.setProperty('--furniture-y',((m.clientY-rect.top)/rect.height*100)+'%')};el.onpointerup=()=>{el.onpointermove=null;el.onpointerup=null;if(moved){change(()=>moveFurniturePlacement(home.id,roomKey,targetRoom.dataset.roomKey,item.id,{x,y}));el.addEventListener('click',stop,{once:true,capture:true});render()}};el.onpointercancel=()=>{el.onpointermove=null;el.onpointerup=null;render()}}});
+ root.querySelectorAll('[data-furniture-placement]').forEach(el=>{
+  el.onpointerdown=null;if(!selection.homeEditMode||!canEdit)return;
+  el.onpointerdown=e=>{
+   if(e.button!==0)return;stop(e);
+   const room=el.closest('[data-room-key]'),roomKey=room.dataset.roomKey,item=home.rooms[roomKey]?.furniturePlacements?.find(p=>p.id===el.dataset.furniturePlacement),canvas=room.closest('[data-room-canvas]')||room.parentElement;
+   if(!item)return;
+   let latest=null,ghost=null,finished=false;const pointer=e.pointerId,startX=e.clientX,startY=e.clientY;
+   el.setPointerCapture(pointer);
+   el.onpointermove=m=>{
+    if(m.pointerId!==pointer||Math.hypot(m.clientX-startX,m.clientY-startY)<5&&!ghost)return;stop(m);
+    const target=document.elementsFromPoint(m.clientX,m.clientY).map(n=>n.closest?.('.room[data-room-key]')).find(n=>n&&canvas.contains(n)),layer=target?.querySelector('.room-furniture-layer');
+    if(!layer){latest=null;ghost?.remove();return}
+    const box=layer.getBoundingClientRect(),position=snapFurniturePosition((m.clientX-box.left)/box.width*100,(m.clientY-box.top)/box.height*100,furnitureGridForRoom(box,canvas.getBoundingClientRect()),furnitureFootprint(item.item));
+    latest={roomKey:target.dataset.roomKey,...position};
+    if(!ghost){ghost=el.cloneNode(true);ghost.removeAttribute('data-furniture-placement');ghost.removeAttribute('id');ghost.classList.add('furniture-drag-preview','is-dragging');ghost.inert=true;ghost.setAttribute('aria-hidden','true');el.classList.add('furniture-drag-source')}
+    if(ghost.parentElement!==layer)layer.append(ghost);
+    ghost.style.setProperty('--furniture-x',position.x+'%');ghost.style.setProperty('--furniture-y',position.y+'%');
+   };
+   const finish=m=>{if(finished||m.pointerId!==pointer)return;finished=true;el.onpointermove=null;el.onpointerup=null;el.onpointercancel=null;el.onlostpointercapture=null;ghost?.remove();el.classList.remove('furniture-drag-source');if(el.hasPointerCapture(pointer))el.releasePointerCapture(pointer);if(latest){change(()=>moveFurniturePlacement(home.id,roomKey,latest.roomKey,item.id,latest));el.addEventListener('click',stop,{once:true,capture:true});render()}};
+   el.onpointerup=finish;el.onpointercancel=finish;el.onlostpointercapture=finish;
+  };
+ });
+
  function dialog(title){const d=document.createElement('dialog');d.className='mail-reader shared-home-dialog';const h=document.createElement('h2');h.textContent=title;const close=document.createElement('button');close.textContent=mt('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(h,close);d.onclose=()=>{d.remove();render()};document.body.append(d);d.showModal();return d}
  function roomDialog(roomKey){const room=home.rooms[roomKey];if(!room)return;const d=dialog(mt('방 편집','Edit room','部屋の編集'));for(const [key,label,type] of [['name',mt('방 이름','Room name','部屋名'),'text'],['floor',mt('층','Floor','階'),'number']]){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.type=type;input.value=room[key]||1;if(type==='number'){input.min=1;input.max=home.floorCount||1}input.onchange=()=>change(()=>updateRoom(home.id,roomKey,{[key]:type==='number'?Math.max(1,Math.min(home.floorCount||1,Number(input.value))):input.value}));l.append(input);d.append(l)}const hint=document.createElement('p');hint.textContent=mt('가구는 아래 가구 목록에서 방으로 끌어 놓거나 눌러 추가할 수 있어요.','Drag furniture into a room or tap it in the catalog below.','下の家具一覧から部屋へドラッグするか、タップして追加できます。');d.append(hint)}
  function furnitureDialog(roomKey,id){const item=home.rooms[roomKey]?.furniturePlacements?.find(p=>p.id===id);if(!item)return;const d=dialog(item.item||mt('가구','Furniture','家具'));const action=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{change(fn);d.close()};d.append(b)};

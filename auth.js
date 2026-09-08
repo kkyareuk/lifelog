@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260908dev272';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev272";
+import {sharedProfile} from './shared-world.js?v=20260908dev275';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev275";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev272";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev275";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -891,7 +891,7 @@ function watchActiveGroup(groupId){
       :snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;
     const groups=key==="group"&&value
       ?groupState.groups.map(item=>item.id===value.id?{...item,...value,myRole:item.myRole}:item)
-      :groupState.groups;
+      :['members','residents'].includes(key)?groupState.groups.map(item=>item.id===groupId?{...item,[key==='members'?'memberCount':'residentCount']:value.length}:item):groupState.groups;
     groupState={...groupState,[key]:value,groups,error:"",loading:false};
     if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
     emitGroupState();
@@ -934,7 +934,10 @@ async function refreshGroups({preferredId=""}={}){
     const groups=(await Promise.all(indexed.map(async membership=>{
       try{
         const snapshot=await getDoc(doc(db,"groups",membership.groupId||membership.id));
-        return snapshot.exists()?{id:snapshot.id,...snapshot.data(),myRole:membership.role||"member"}:null;
+        if(!snapshot.exists())return null;
+        const result={id:snapshot.id,...snapshot.data(),myRole:membership.role||"member"};
+        await Promise.all([['members','memberCount'],['residents','residentCount']].map(async([path,key])=>{try{result[key]=(await getCountFromServer(collection(db,'groups',snapshot.id,path))).data().count}catch(error){console.warn('Group count unavailable',key,error.code)}}));
+        return result;
       }catch(error){console.warn("stale group membership",membership.id,error);return null}
     }))).filter(Boolean);
     assertSession(session);

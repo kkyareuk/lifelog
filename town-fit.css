@@ -7,6 +7,8 @@
   --town-building-height:252px;
 }
 
+.multiplayer-town{--town-building-width:126px;--town-building-height:139px}
+
 /* Placement tools are shared by phone and tablet, not a phone-only media rule. */
 .native-app[data-active-tab="town"] .town-placement-toolbar{position:fixed;z-index:240;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));display:grid;gap:8px;padding:10px;border:2px solid #fff8;border-radius:21px;background:#172237eb;color:#fff;box-shadow:0 12px 32px #0008;backdrop-filter:blur(8px)}
 .native-app[data-active-tab="town"] .town-placement-toolbar>b{overflow:hidden;padding:0 5px;font-size:15px;text-overflow:ellipsis;white-space:nowrap}.native-app[data-active-tab="town"] .town-placement-toolbar>div{display:flex;gap:6px;padding-bottom:2px;overflow-x:auto;scrollbar-width:none}.native-app[data-active-tab="town"] .town-placement-toolbar>div::-webkit-scrollbar{display:none}

@@ -1,24 +1,24 @@
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260908dev272';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260908dev275';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260908dev272";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev272";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260908dev272";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260908dev272";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260908dev272";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260908dev272";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260908dev272";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260908dev272";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260908dev272";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260908dev272";
+import {hospitalPurposes} from "./creative-options.js?v=20260908dev275";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev275";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260908dev275";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260908dev275";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260908dev275";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260908dev275";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260908dev275";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260908dev275";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260908dev275";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260908dev275";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260908dev272";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260908dev272";
+import {missingBuildings} from "./building-recovery.js?v=20260908dev275";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260908dev275";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1351,6 +1351,8 @@ const DIRECTIVE_COPY={
   research:{ko:["자료를 조사하는 중","궁금한 주제를 정리하고 필요한 자료를 차분히 찾아보고 있어요."],en:["Researching a topic","They are organizing what they want to know and calmly looking through useful references."],ja:["資料を調べているところ","気になるテーマを整理し、必要な資料を落ち着いて探しています。"],room:"study",minutes:70},
   gift:{room:"living",minutes:20,social:true},dine:{room:"kitchen",minutes:50,social:true},talk:{room:"living",minutes:55,social:true},hangout:{room:"living",minutes:70,social:true},comfort:{room:"living",minutes:50,social:true},compliment:{room:"living",minutes:35,social:true},hug:{room:"living",minutes:35,social:true},kiss:{room:"living",minutes:30,social:true},gossip:{room:"living",minutes:60,social:true}
 };
+DIRECTIVE_COPY.rest=DIRECTIVE_COPY.relax;
+for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile'])DIRECTIVE_COPY[kind]={room:'living',minutes:20,social:true};
 function socialDirectiveCopy(kind,actor,target,subject,topic){
   const names={actor:actor?.name||"캐릭터",target:target?.name||"상대",subject:subject?.name||"다른 사람"},detail=String(topic||"").trim();
   const copy={
@@ -1361,6 +1363,10 @@ function socialDirectiveCopy(kind,actor,target,subject,topic){
     comfort:{ko:[`${names.target}를 위로하는 중`,`곁을 지키며 서두르지 않고 상대의 이야기를 들어 주고 있어요.`],en:[`Comforting ${names.target}`,`They are staying close and listening without rushing them.`],ja:[`${names.target}を慰めているところ`,`そばに寄り添い、急かさず話を聞いています。`]},
     compliment:{ko:[`${names.target}를 칭찬하는 중`,`좋게 본 점을 구체적으로 말해 주며 따뜻하게 반응하고 있어요.`],en:[`Complimenting ${names.target}`,`They are warmly pointing out something they genuinely appreciated.`],ja:[`${names.target}を褒めているところ`,`素敵だと思った点を具体的に伝え、温かく反応しています。`]},
     hug:{ko:[`${names.target}를 안아 주는 중`,`상대에게 다가가 다정하게 포옹하며 마음을 전하고 있어요.`],en:[`Hugging ${names.target}`,`They stepped closer and are sharing an affectionate hug.`],ja:[`${names.target}を抱きしめているところ`,`相手に近づき、優しく抱きしめて気持ちを伝えています。`]},
+    handhold:{ko:[`${names.target}와 손을 잡고 있는 중`,'서로 손을 맞잡고 곁에서 시간을 보내고 있어요.'],en:[`Holding hands with ${names.target}`,'They are holding hands and spending time together.'],ja:[`${names.target}と手をつないでいるところ`,'手をつないで、そばで一緒に過ごしています。']},
+    lean:{ko:[`${names.target}의 어깨에 기대는 중`,'편하게 기댈 자리를 내어 주며 나란히 쉬고 있어요.'],en:[`Leaning on ${names.target}’s shoulder`,'They make room for each other and rest side by side.'],ja:[`${names.target}の肩に寄り添っているところ`,'寄り添える場所を空け、並んで休んでいます。']},
+    kiss_cautious:{ko:[`${names.target}와 조심스럽게 키스하는 중`,'서로의 반응을 살피고 가까이 다가가 짧게 입을 맞추었어요.'],en:[`Sharing a cautious kiss with ${names.target}`,'They check each other’s response, move closer and share a brief kiss.'],ja:[`${names.target}と慎重にキスしているところ`,'互いの反応を確かめて近づき、短く口づけしました。']},
+    kiss_reconcile:{ko:[`${names.target}와 화해의 키스를 나누는 중`,'남아 있던 감정을 말로 나누고, 서로 받아들인 뒤 입을 맞추었어요.'],en:[`Sharing a reconciliation kiss with ${names.target}`,'They talk through their feelings and share a kiss after accepting each other.'],ja:[`${names.target}と仲直りのキスをしているところ`,'残っていた気持ちを言葉にし、互いを受け入れて口づけしました。']},
     kiss:{ko:[`${names.target}에게 키스하는 중`,`가까이 다가가 조심스럽게 마음을 표현하고 있어요.`],en:[`Kissing ${names.target}`,`They moved closer and are carefully expressing their affection.`],ja:[`${names.target}にキスしているところ`,`そっと近づき、慎重に想いを伝えています。`]},
     gossip:{ko:[`${names.target}와 ${names.subject}의 뒷이야기를 나누는 중`,detail?`${detail}에 관한 이야기를 낮은 목소리로 주고받고 있어요.`:`둘만 들을 수 있는 목소리로 ${names.subject}에 관한 이야기를 나누고 있어요.`],en:[`Gossiping with ${names.target} about ${names.subject}`,detail?`They are quietly trading thoughts about ${detail}.`:`They are speaking quietly about ${names.subject}.`],ja:[`${names.target}と${names.subject}のうわさ話をしているところ`,detail?`${detail}について小声で話しています。`:`二人にだけ聞こえる声で${names.subject}について話しています。`]}
   }[kind]||null;
@@ -1371,6 +1377,8 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(!character)return false;
   const target=state.characters?.[options.targetId],subject=state.characters?.[options.subjectId];
   if(definition.social&&(!target||target.id===character.id))return false;
+  if(['kiss','kiss_cautious','kiss_reconcile','handhold','lean'].includes(kind)&&(!['성인','노인'].includes(character.ageGroup)||!['성인','노인'].includes(target?.ageGroup)))return false;
+  if(['kiss','kiss_cautious','kiss_reconcile','handhold','lean','hug'].includes(kind)&&[character,target].some(c=>/접촉.*(싫|피함|거부)|신체 접촉 없음/.test(c?.touchReaction||'')))return false;
   if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
   const startedAt=Number.isFinite(options.now)?options.now:Date.now(),copy=options.giftSource&&giftCopyResolver?giftCopyResolver(character,options.giftSource,new Date(startedAt)):definition.social?socialDirectiveCopy(kind,character,target,subject,options.topic):Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:definition[language][0],desc:definition[language][1]}]));
   const directiveId=uid(),withIds=target?[character.id,target.id]:[];

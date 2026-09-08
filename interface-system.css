@@ -136,9 +136,9 @@ html[data-visual-theme="noir-rain"] body{background-image:repeating-linear-gradi
 .home-observe-tools button{min-height:28px!important;padding:5px 9px!important;border:1px solid #ffffff4a!important;background:#101722b0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;font-size:10px!important;box-shadow:0 5px 14px #0005!important}
 
 /* Town characters never inherit the generic white button/card surface. */
-.town-map-scroll :is(.place-people-faces,.place-person-face),
-.standard-observe-view :is(.place-people-faces,.place-person-face),
-.observe :is(.place-people-faces,.place-person-face){
+.town-map-scroll :is(.place-people,.place-people-faces,.place-person-face),
+.standard-observe-view :is(.place-people,.place-people-faces,.place-person-face),
+.observe :is(.place-people,.place-people-faces,.place-person-face){
   border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;backdrop-filter:none!important;padding:0!important;
 }
 .town-map-scroll :is(.town-traveler,.town-traveler-visual){border:0!important;outline:0!important;background:transparent!important;background-image:none!important;box-shadow:none!important;backdrop-filter:none!important}
