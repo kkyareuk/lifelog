@@ -6,9 +6,9 @@ export function mailEnvelope(item,owner){
   return {...item,extra:{...item.extra,mailId:id,mailOwner:owner,mailTitle:String(item.title||''),mailBody:String(item.body||''),scheduledAt:new Date(at).toISOString()}};
 }
 export function createContactMailbox(storage){
-  const key='drawer-village-contact-mail-v1',deletedKey='drawer-village-contact-mail-deleted-v1',answeredKey='drawer-village-contact-mail-answered-v1';let cachedOwner,cached=[];
-  function read(){cachedOwner=storage.scope;try{cached=JSON.parse(storage.getItem(key)||'[]')}catch{cached=[]}if(!Array.isArray(cached))cached=[];const fresh=cached.filter(m=>m.at>Date.now()-30*86400000);if(fresh.length!==cached.length)write(fresh);return fresh}
-  function write(messages){storage.setItem(key,JSON.stringify(messages));cached=messages;cachedOwner=storage.scope;return messages}
+  const key='drawer-village-contact-mail-v1',deletedKey='drawer-village-contact-mail-deleted-v1',answeredKey='drawer-village-contact-mail-answered-v1';let cachedOwner,cachedRaw,cached=[];
+  function read(){const raw=storage.getItem(key)||'[]';if(cachedOwner!==storage.scope||cachedRaw!==raw){cachedOwner=storage.scope;cachedRaw=raw;try{cached=JSON.parse(raw)}catch{cached=[]}if(!Array.isArray(cached))cached=[];}const fresh=cached.filter(m=>m.at>Date.now()-30*86400000);if(fresh.length!==cached.length)write(fresh);return fresh}
+  function write(messages){cachedRaw=JSON.stringify(messages);storage.setItem(key,cachedRaw);cached=messages;cachedOwner=storage.scope;return messages}
   function readDeleted(){let deleted;try{deleted=JSON.parse(storage.getItem(deletedKey)||'[]')}catch{deleted=[]}return Array.isArray(deleted)?deleted.filter(Boolean).map(String):[]}
   function writeDeleted(ids){const next=[...new Set(ids.map(String))].slice(-500);storage.setItem(deletedKey,JSON.stringify(next));return next}
   function readAnswered(){let answered;try{answered=JSON.parse(storage.getItem(answeredKey)||'[]')}catch{answered=[]}return Array.isArray(answered)?answered.filter(Boolean).map(String):[]}

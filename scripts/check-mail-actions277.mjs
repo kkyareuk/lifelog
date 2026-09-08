@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {advanceSharedLife} from '../server-life.mjs';
-const g=await import('../state.js?v=20260908dev282');
-const {eventFor}=await import('../simulation.js?v=20260908dev282');
+const g=await import('../state.js?v=20260909dev283');
+const {eventFor}=await import('../simulation.js?v=20260909dev283');
 g.resetAll();const a=g.createCharacter(20),b=g.createCharacter(20),c=g.createCharacter(20),now=Date.now();
 for(const id of [a,b,c])g.state.characters[id].ageGroup='성인';
 assert.ok(g.directCharacterActivity(a,'gift',{targetId:b,now}));

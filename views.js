@@ -1,33 +1,33 @@
-import {meetingScene,createEntranceTransitions} from './meeting-journey.js?v=20260908dev282';
-import {renderMailbox} from './mailbox-center.js?v=20260908dev282';
-import {sharedResidentsScreen} from './shared-residents.js?v=20260908dev282';
-import {bedPerspective} from './bed-perspective.js?v=20260908dev282';
-import {conflictEvidence} from './scene-context.js?v=20260908dev282';
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev282";
-import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,HOSPITAL_DEPARTMENTS,hospitalPurposes,creativeCopy} from "./creative-options.js?v=20260908dev282";
-import {withSharedWorld} from './shared-world.js?v=20260908dev282';
+import {meetingScene,createEntranceTransitions} from './meeting-journey.js?v=20260909dev283';
+import {renderMailbox,unreadMailCount} from './mailbox-center.js?v=20260909dev283';
+import {sharedResidentsScreen} from './shared-residents.js?v=20260909dev283';
+import {bedPerspective} from './bed-perspective.js?v=20260909dev283';
+import {conflictEvidence} from './scene-context.js?v=20260909dev283';
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev283";
+import {MARTIAL_ARTS,MENTAL_HEALTH,CARE_MODES,TRADITIONAL_CLOTHES,HOSPITAL_DEPARTMENTS,hospitalPurposes,creativeCopy} from "./creative-options.js?v=20260909dev283";
+import {withSharedWorld} from './shared-world.js?v=20260909dev283';
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260908dev282";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260908dev282";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260908dev282";
-import {characterMood} from "./character-mood.js?v=20260908dev282";
-import {createContactMailbox} from "./notification-mail.js?v=20260908dev282";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260908dev282";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260908dev282";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260908dev282";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260908dev282";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260908dev282";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260908dev282";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260908dev282";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev282";
-import {achievementRows} from "./achievements.js?v=20260908dev282";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260908dev282";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260908dev282";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260908dev282";
-import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260908dev282";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260908dev282";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260909dev283";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260909dev283";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260909dev283";
+import {characterMood} from "./character-mood.js?v=20260909dev283";
+import {createContactMailbox} from "./notification-mail.js?v=20260909dev283";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260909dev283";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260909dev283";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev283";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev283";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260909dev283";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260909dev283";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260909dev283";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev283";
+import {achievementRows} from "./achievements.js?v=20260909dev283";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260909dev283";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260909dev283";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260909dev283";
+import {renderGroupRelations,renderGroupHomes,renderGroups} from "./groups.js?v=20260909dev283";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260909dev283";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -925,7 +925,7 @@ function gameHudSideMenu(side,character){
   return `<nav class="game-hud-side game-hud-side-${side}" aria-label="${esc(t(side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴",side==="left"?"캐릭터와 관계 메뉴":"일정과 설정 메뉴"))}">${GAME_HUD_SIDE_TABS[side].map(({key,labelKey,label,asset,icon})=>`<button type="button" class="game-hud-button" data-tab="${key}">${asset?`<img class="game-hud-menu-art" src="${esc(homeUiAsset(character,asset))}" alt="">`:`<span data-menu-icon="${key}" aria-hidden="true">${icon}</span>`}<small><span>${gameHudLabel(labelKey,label)}</span></small></button>`).join("")}</nav>`;
 }
 function gameHudDock(character){
-  const item=(key,label,asset,attrs,classKey=key)=>`<button type="button" class="game-hud-button game-hud-${classKey}-button" ${attrs}><img src="${esc(homeUiAsset(character,asset))}" alt=""><small><span>${gameHudLabel(key,label)}</span></small></button>`;
+  const item=(key,label,asset,attrs,classKey=key)=>`<button type="button" class="game-hud-button game-hud-${classKey}-button" ${attrs}><img src="${esc(homeUiAsset(character,asset))}" alt=""><small><span>${gameHudLabel(key,label)}</span></small>${key==="mailbox"&&unreadMailCount()?`<em class="mail-unread-badge">${unreadMailCount()}</em>`:""}</button>`;
   return `<nav class="game-hud-dock" aria-label="${esc(t("주요 메뉴","주요 메뉴"))}">${item("home","집","home.png",'data-tab="home"')}${item("mailbox","우편함","mailbox.png",'data-tab="mailbox"')}${item("todayLog","기록물","ink.png","data-open-native-log","log")}${item("shop","상점","shop.png",'data-tab="shop"')}${item("town","마을","town.png",'data-tab="town"')}</nav>`;
 }
 function rosterSummary(entry){
@@ -3842,7 +3842,8 @@ Object.assign(UI_TEXT.ja,{
 });
 function settingsContent(){
   const colorMode=`<section class="setting-card color-mode-card"><h2>화면 모드</h2><p>밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.</p><div class="color-mode-options"><button type="button" data-color-mode="light" class="${state.colorMode==="light"?"on":""}"><span>☀️</span><b>화이트 모드</b></button><button type="button" data-color-mode="dark" class="${state.colorMode!=="light"?"on":""}"><span>🌙</span><b>다크 모드</b></button></div></section>`;
-  const sound=`<section class="setting-card sound-setting-card"><h2>${t("이동과 생활 효과음","이동과 생활 효과음")}</h2><p>${t("캐릭터가 걷거나 뛰는 동안 들리는 효과음을 조절해요.","캐릭터가 걷거나 뛰는 동안 들리는 효과음을 조절해요.")}</p><label class="notification-update-option"><input type="checkbox" data-sound-muted ${state.soundMuted?"checked":""}><span><b>${t("모든 효과음 음소거","모든 효과음 음소거")}</b><small>${t("앱의 이동·생활 효과음을 한 번에 끕니다.","앱의 이동·생활 효과음을 한 번에 끕니다.")}</small></span></label><label class="sound-volume-control">${t("효과음 크기","효과음 크기")} <output>${Math.round(Number(state.soundEffectsVolume)||0)}%</output><input type="range" min="0" max="100" step="5" value="${Number(state.soundEffectsVolume)||0}" data-sound-volume ${state.soundMuted?"disabled":""}></label><div class="sound-preview-actions"><button type="button" data-sound-preview="walk" ${state.soundMuted?"disabled":""}>${t("걷기 구두소리 듣기","걷기 구두소리 듣기")}</button><button type="button" data-sound-preview="run" ${state.soundMuted?"disabled":""}>${t("달리기 구두소리 듣기","달리기 구두소리 듣기")}</button></div>${state.soundMuted?`<small>${t("음소거를 해제하면 미리 들을 수 있어요.","음소거를 해제하면 미리 들을 수 있어요.")}</small>`:""}</section>`;
+  const musicText=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
+  const sound=`<section class="setting-card sound-setting-card"><h2>${musicText('배경음악','Background music','背景音楽')}</h2><p>${musicText('서랍마을 메인 테마','Drawer Village Main Theme','引き出し村 メインテーマ')}</p><label class="notification-update-option"><input type="checkbox" data-music-muted ${state.backgroundMusicMuted?'checked':''}>${musicText('배경음악 끄기','Mute background music','背景音楽をオフ')}</label><label class="sound-volume-control">${musicText('음악 크기','Music volume','音楽の音量')} <output>${state.backgroundMusicVolume??35}%</output><input data-music-volume type="range" min="0" max="100" step="1" value="${state.backgroundMusicVolume??35}" ${state.backgroundMusicMuted?'disabled':''}></label></section><section class="setting-card sound-setting-card"><h2>${t("이동과 생활 효과음","이동과 생활 효과음")}</h2><p>${t("캐릭터가 걷거나 뛰는 동안 들리는 효과음을 조절해요.","캐릭터가 걷거나 뛰는 동안 들리는 효과음을 조절해요.")}</p><label class="notification-update-option"><input type="checkbox" data-sound-muted ${state.soundMuted?"checked":""}><span><b>${t("모든 효과음 음소거","모든 효과음 음소거")}</b><small>${t("앱의 이동·생활 효과음을 한 번에 끕니다.","앱의 이동·생활 효과음을 한 번에 끕니다.")}</small></span></label><label class="sound-volume-control">${t("효과음 크기","효과음 크기")} <output>${Math.round(Number(state.soundEffectsVolume)||0)}%</output><input type="range" min="0" max="100" step="5" value="${Number(state.soundEffectsVolume)||0}" data-sound-volume ${state.soundMuted?"disabled":""}></label><div class="sound-preview-actions"><button type="button" data-sound-preview="walk" ${state.soundMuted?"disabled":""}>${t("걷기 구두소리 듣기","걷기 구두소리 듣기")}</button><button type="button" data-sound-preview="run" ${state.soundMuted?"disabled":""}>${t("달리기 구두소리 듣기","달리기 구두소리 듣기")}</button></div>${state.soundMuted?`<small>${t("음소거를 해제하면 미리 들을 수 있어요.","음소거를 해제하면 미리 들을 수 있어요.")}</small>`:""}</section>`;
   const measurement=`<section class="setting-card measurement-setting-card"><h2>${t("신체 단위","신체 단위")}</h2><p>${t("캐릭터 설정의 키와 몸무게 표기 단위를 고릅니다.","캐릭터 설정의 키와 몸무게 표기 단위를 고릅니다.")}</p><label>${t("표기 단위","표기 단위")}<select data-setting="measurementUnits"><option value="metric" ${state.measurementUnits!=="imperial"?"selected":""}>${t("미터법 · cm / kg","미터법 · cm / kg")}</option><option value="imperial" ${state.measurementUnits==="imperial"?"selected":""}>${t("야드파운드법 · in / lb","야드파운드법 · in / lb")}</option></select></label><small>${t("저장값은 안전하게 유지되며 화면 표기만 변환됩니다.","저장값은 안전하게 유지되며 화면 표기만 변환됩니다.")}</small></section>`;
   const motionCopy=({ko:["애니메이션 효과 강도","기본","낮음","끄기","장식 효과와 캐릭터 흔들림을 줄입니다. 이동 경로와 행동 진행은 그대로 유지됩니다."],en:["Animation intensity","Normal","Reduced","Off","Reduce decorative effects and character motion. Travel routes and activity progress remain visible."],ja:["アニメーションの強さ","通常","控えめ","オフ","装飾効果とキャラクターの揺れを減らします。移動経路と行動の進行は維持されます。"]}[state.uiLanguage]||[]);
   const homeCharacterDisplay=`<section class="setting-card"><h2>${motionCopy[0]}</h2><select data-setting="animationIntensity" aria-label="${motionCopy[0]}">${["normal","reduced","off"].map((v,i)=>`<option value="${v}" ${(state.animationIntensity||"normal")===v?"selected":""}>${motionCopy[i+1]}</option>`).join("")}</select><p>${motionCopy[4]}</p></section><section class="setting-card home-character-display-card"><h2>홈 화면 캐릭터 표현</h2><p>모든 캐릭터에 같은 표시 방식을 적용합니다. LD는 원본 비율을 유지하고 자르거나 늘리지 않습니다.</p><label>SD / LD<select data-setting="homeVisualMode"><option value="sd" ${state.homeVisualMode!=="ld"?"selected":""}>SD</option><option value="ld" ${state.homeVisualMode==="ld"?"selected":""}>LD</option></select></label><label>SD 크기 <output>${Math.round(Number(state.homeSdScale)||100)}%</output><input type="range" min="70" max="150" step="5" value="${Number(state.homeSdScale)||100}" data-setting="homeSdScale"></label><label>LD 크기 <output>${Math.round(Number(state.homeLdScale)||100)}%</output><input type="range" min="70" max="150" step="5" value="${Number(state.homeLdScale)||100}" data-setting="homeLdScale"></label><small>2인 LD도 1인과 같은 높이·같은 Y좌표를 사용하고 X좌표만 좌우로 나뉩니다. 현재 선택한 캐릭터가 항상 앞에 표시됩니다.</small></section>`;
@@ -4698,7 +4699,7 @@ function nativePlayShop({browseOnly=false}={}){
   const comingTitle=section==="bundle"?copy.bundleSoon:section==="skin"?copy.skinSoon:copy.expansionSoon;
   const content=section==="base"?`<div class="drawer-shop-products">${((window.PARALLEL_CITY_CONFIG?.iosApp||window.PARALLEL_CITY_CONFIG?.iosPreview)?["character_slots_5","town_slot_1","green_tea"]:["character_slots_5","town_slot_1","storage_50mb","green_tea"]).map(productCard).join("")}</div>`:`<div class="drawer-shop-coming" role="status"><span aria-hidden="true">✦</span><b>${esc(comingTitle)}</b><small>${esc(copy.soonDetail)}</small></div>`;
   const sellerLabel=language==="en"?"Shopkeeper":language==="ja"?"店主":"상점주인";
-  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260908dev282" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
+  return `<section class="drawer-shop-shell" aria-label="${esc(t("shop","상점"))}"><div class="drawer-shop-stage" data-shop-section="${section}"><header class="drawer-shop-hero"><img class="drawer-shop-wood" src="./assets/shop/drawer-shop-wood.jpg" alt=""><img class="drawer-shop-seller" src="./assets/shop/drawer-shop-nerine.png?v=20260909dev283" alt=""><p class="drawer-shop-greeting"><b>${sellerLabel}</b><span>${esc(copy.sellerHello)}</span></p><button type="button" class="drawer-shop-back" data-tab="observe" aria-label="${esc(copy.back)}"><img src="./assets/home-ui/back.png" alt=""></button></header><nav class="drawer-shop-tabs" aria-label="${esc(t("상점 메뉴","상점 메뉴"))}">${tab("bundle",copy.bundle)}${tab("base",copy.base)}${tab("skin",copy.skin)}${tab("expansion",copy.expansion)}</nav><div class="drawer-shop-content">${browseOnly?`<p class="drawer-shop-preview-notice" role="status">${esc(previewCopy.notice)}</p>`:""}${content}</div>${browseOnly?"":`<button type="button" class="drawer-shop-restore" data-play-restore>${esc(copy.restore)}</button>`}</div></section>`;
 }
 function shop(){
   if(window.PARALLEL_CITY_CONFIG?.iosPreview){

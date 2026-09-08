@@ -1,6 +1,6 @@
 import {advanceSharedLife} from '../server-life.mjs';
 import assert from 'node:assert/strict';
-const game=await import('../state.js?v=20260908dev282');
+const game=await import('../state.js?v=20260909dev283');
 const id=game.createCharacter(5),profile=structuredClone(game.state.characters[id]),before=JSON.stringify(game.state);
 const snapshot={group:{id:'test',towns:[{id:'town',name:'Shared',places:[{id:'park',name:'Park',type:'공원',x:30,y:40,stock:[]}]}]},residents:Array.from({length:2},(_,i)=>({id:'r'+i,name:'Person '+i,ownerUid:'u'+i,townId:'town',sourceCharacterId:'c'+i,profileJson:JSON.stringify({...profile,wake:'07:00',sleep:'23:00'}),scheduleJson:'{}'})),homes:[]};
 snapshot.residents.forEach(r=>{const p=JSON.parse(r.profileJson);p.createdAt=1;r.profileJson=JSON.stringify(p)});
@@ -26,3 +26,15 @@ assert.ok(careScene.routineId==='care-r0',JSON.stringify(careScene));
 const afterCare=JSON.parse(advanceSharedLife(care,new Date('2026-09-07T17:00:00+09:00').getTime())[0].lifeJson).scene;
 assert.notEqual(afterCare.routineId,'care-r0');
 console.log('PASS shared meal counterpart identity and explicit day-hospital schedule boundaries');
+
+// A solo command must cancel both sides of the previous encounter, including
+// its saved timeline row, even when an old UI sends a leftover target id.
+const readingWorld=structuredClone(arrivedSnapshot);readingWorld.homes=[{id:'reading-home',ownerUid:'u1',townId:'town',layoutJson:JSON.stringify({rooms:{living:{type:'living',furniture:[]}}})}];readingWorld.residents[1].sharedHomeId='reading-home';
+const reading=advanceSharedLife(readingWorld,commandNow+15000,{characterId:'r1',kind:'read',targetId:'r0'});
+const reader=JSON.parse(reading.find(r=>r.id==='r1').lifeJson),former=JSON.parse(reading.find(r=>r.id==='r0').lifeJson);
+assert.equal(reader.directive.targetId,'');assert.deepEqual(reader.directive.withIds,[]);
+assert.equal(former.directive,null);assert.ok(!former.scene.meetingWaiting);assert.ok(!former.scene.manualDirective);
+const reverse=advanceSharedLife(snapshot,commandNow,{characterId:'r1',kind:'talk',targetId:'r0'});
+const actor=JSON.parse(reverse.find(r=>r.id==='r1').lifeJson),partner=JSON.parse(reverse.find(r=>r.id==='r0').lifeJson);
+assert.equal(actor.directive.journey.actorId,'r1');assert.ok(actor.scene.meetingJourney);assert.ok(partner.scene.meetingWaiting);
+console.log('PASS reverse command movement and solo cancellation of stale partner');

@@ -1,12 +1,12 @@
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260908dev282';
-import {dailyInteractionLine} from './scene-context.js?v=20260908dev282';
-import {careRoutineFor} from "./creative-options.js?v=20260908dev282";
-import {drinkExperience} from "./drink-log.js?v=20260908dev282";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev282";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev282";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260908dev282";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev282";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev282";
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev283';
+import {dailyInteractionLine} from './scene-context.js?v=20260909dev283';
+import {careRoutineFor} from "./creative-options.js?v=20260909dev283";
+import {drinkExperience} from "./drink-log.js?v=20260909dev283";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev283";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev283";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev283";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev283";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev283";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -3635,7 +3635,7 @@ function calculateBaseEvent(c,date=new Date()){
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
   if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);
   const sources=giftSources(date);
-  const past=list.filter(x=>(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
+  const past=list.filter(x=>!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);
   const nextGap=last?.holdMinutes?Math.max(3,Number(last.holdMinutes)||0):(last?30+(hash(`${c.id}:${dayKey(date)}:${last.minute}:reaction-gap`)%31):30);
   if(last&&n-last.minute>=nextGap){
@@ -3744,10 +3744,10 @@ function viewDrivenInteraction(place,first,second,date){
     const own=Object.values(view||{}).join(" "),ownLove=/연애 감정|사랑|소중|좋아함/.test(own),ownAnnoyed=/귀찮|성가|짜증|보기만 해도 피곤/.test(own),ownHarsh=/거친 말을 하고 싶은/.test(view?.aggression||""),ownMisread=/불편함으로 착각/.test(view?.awareness||"");
     if(!(ownLove&&(ownAnnoyed||ownHarsh)&&ownMisread))return null;
     return {
-      ko:`${target.name}에게 차가운 말투로 짧게 대답했어요. 사소한 행동에도 퉁명스럽게 반응하며 거리를 두었어요. 자꾸 신경 쓰이는 마음을 그저 상대가 거슬리기 때문이라고 여겼어요.`,
-      en:`${actor.name} gave ${target.name} a short, cold reply and reacted curtly to small gestures. They kept their distance, mistaking their persistent interest for irritation.`,
-      ja:`${actor.name}は${target.name}に冷たい口調で短く答えました。些細な仕草にもそっけなく反応して距離を置き、気になるのは相手が気に障るからだと思っています。`
-    }[state.uiLanguage]||`${target.name}에게 차가운 말투로 짧게 대답했어요. 사소한 행동에도 퉁명스럽게 반응하며 거리를 두었어요. 자꾸 신경 쓰이는 마음을 그저 상대가 거슬리기 때문이라고 여겼어요.`;
+      ko:`${target.name}에게 차가운 말투로 짧게 대답했어요. 퉁명스럽게 반응하면서도 이야기가 끝날 때까지 곁을 지켰어요. 시선은 자꾸 상대에게 돌아갔고, 짧은 대답 사이에도 상대의 반응을 살폈어요.`,
+      en:`${actor.name} gave ${target.name} a short, cold reply but stayed close until the conversation ended. Between curt replies, their gaze kept returning to their partner to check their reaction.`,
+      ja:`${actor.name}は${target.name}に冷たい口調で短く答えました。そっけなく答えながらも会話が終わるまでそばにいました。短い返事の合間にも、相手の様子が気になって何度も視線を向けました。`
+    }[state.uiLanguage]||`${target.name}에게 차가운 말투로 짧게 대답했어요. 퉁명스럽게 반응하면서도 이야기가 끝날 때까지 곁을 지켰어요. 시선은 자꾸 상대에게 돌아갔고, 짧은 대답 사이에도 상대의 반응을 살폈어요.`;
   };
   const firstConflict=conflictedViewAction(first,second,firstView),secondConflict=conflictedViewAction(second,first,secondView);
   if(firstConflict||secondConflict){
