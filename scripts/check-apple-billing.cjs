@@ -13,6 +13,7 @@ await assert.rejects(()=>verifier.verifyAndDecodeTransaction('forged.receipt.sig
 const rows=new Map();let queue=Promise.resolve();
 const db={collection:name=>({doc:id=>({key:name+'/'+id})}),runTransaction:fn=>{const job=queue.then(()=>fn({get:async ref=>({exists:rows.has(ref.key),data:()=>structuredClone(rows.get(ref.key))}),set:(ref,data,options)=>rows.set(ref.key,options?.merge?{...rows.get(ref.key),...data}:data)}));queue=job.catch(()=>{});return job}};
 let revoked=false;
+const notificationPayload='header.'+Buffer.from(JSON.stringify({data:{environment}})).toString('base64url')+'.signature';
 const app=express();app.use(express.json());
 installAppleBilling(app,{db,signedInUser:async req=>{if(req.get('Authorization')!=='Bearer ok')throw Object.assign(Error(),{status:401});return {uid}},nextEntitlements:(old,id,n)=>({...old,characterSlotPacks:(old?.characterSlotPacks||0)+n}),serverTimestamp:()=>1,services:()=>({environment,api:{getTransactionInfo:async()=>({signedTransactionInfo:'signed'})},verifier:{verifyAndDecodeTransaction:async()=>({...purchase,...(revoked?{revocationDate:1}:{})}),verifyAndDecodeNotification:async()=>({notificationType:'REFUND',data:{signedTransactionInfo:'signed'}})}})});
 const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));
@@ -21,7 +22,7 @@ const url='http://127.0.0.1:'+server.address().port+'/apple-billing/';const post
 assert.equal((await post('prepare',{},'bad')).status,401);
 assert.equal((await (await post('prepare')).json()).appAccountToken,accountToken(uid));
 await Promise.all(Array.from({length:8},()=>post('verify',{transactionId:'123'})));assert.equal(rows.get('appleSandboxAccounts/buyer').appleSandboxEntitlements.characterSlotPacks,1);assert.equal(rows.get('appleSandboxAccounts/buyer').entitlements,undefined);
-revoked=true;await post('notifications',{signedPayload:'signed'});await post('notifications',{signedPayload:'signed'});assert.equal(rows.get('appleSandboxAccounts/buyer').appleSandboxEntitlements.characterSlotPacks,0);assert.equal((await post('verify',{transactionId:'123'})).status,409);
+revoked=true;await post('notifications',{signedPayload:notificationPayload});await post('notifications',{signedPayload:notificationPayload});assert.equal(rows.get('appleSandboxAccounts/buyer').appleSandboxEntitlements.characterSlotPacks,0);assert.equal((await post('verify',{transactionId:'123'})).status,409);
 }finally{server.close()}
 let buy=0,finish=0,verified=true,loggedIn=true,cancel=false;
 const bridge={getProducts:async()=>({products:[{productId:purchase.productId,formattedPrice:'₩1,200',regularPaidOffer:true}]}),purchase:async()=>{buy++;if(cancel)throw {code:'PURCHASE_CANCELLED'};return {transactionId:'123'}},finishPurchase:async()=>finish++,restorePurchases:async()=>({purchases:[{transactionId:'123'}]}),addListener:()=>{}};

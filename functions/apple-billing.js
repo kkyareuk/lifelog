@@ -67,11 +67,15 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
  }));
  // A refund arriving before verification leaves a tombstone, so replay cannot grant it.
  app.post('/apple-billing/notifications',handle(async(req,res)=>{
-  let service=services(),notice;const signedPayload=String(req.body?.signedPayload||'');
-  try{notice=await service.verifier.verifyAndDecodeNotification(signedPayload)}catch(error){
-   if(service.environment!==Environment.PRODUCTION||error.status!==VerificationStatus.INVALID_ENVIRONMENT)throw error;
-   service=services(Environment.SANDBOX);notice=await service.verifier.verifyAndDecodeNotification(signedPayload);
-  }
+  const signedPayload=String(req.body?.signedPayload||'');
+  if(!signedPayload||signedPayload.length>100000)throw fail('APPLE_INVALID_NOTIFICATION',400);
+  // Sandbox TEST notices omit appAppleId. Select a verifier before its app-ID
+  // check; the untrusted hint never authorizes a notice or a database write.
+  let payload;
+  try{payload=JSON.parse(Buffer.from(signedPayload.split('.')[1]||'','base64url').toString())}catch{throw fail('APPLE_INVALID_NOTIFICATION',400)}
+  const hinted=payload.data?.environment??payload.summary?.environment??payload.appData?.environment;
+  if(![Environment.PRODUCTION,Environment.SANDBOX].includes(hinted))throw fail('APPLE_INVALID_NOTIFICATION',400);
+  const service=services(hinted),notice=await service.verifier.verifyAndDecodeNotification(signedPayload);
   if(!['REFUND','REVOKE'].includes(notice.notificationType)){res.json({received:true});return}
   const purchase=await service.verifier.verifyAndDecodeTransaction(notice.data?.signedTransactionInfo||'');
   if(purchase.bundleId!==bundleId||purchase.environment!==service.environment||!productMap[purchase.productId]||!/^\d{1,30}$/.test(purchase.transactionId||''))throw fail('APPLE_INVALID_TRANSACTION');
