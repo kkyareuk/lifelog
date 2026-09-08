@@ -25,7 +25,7 @@ const excludedAndroidAssets=new Set([
 const excludedAndroidAssetPrefixes=[];
 const includedFiles=new Set([
   "dictionary.css","home-editor-ui.css",
-  "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
+  "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","character-code.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
@@ -165,7 +165,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260908hotfix273";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260908hotfix274";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

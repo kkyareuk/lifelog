@@ -31,8 +31,8 @@ globalThis.localStorage={
 };
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener(){},dispatchEvent(){}};
 globalThis.document={addEventListener(){},querySelector(){return null},activeElement:null,visibilityState:"visible"};
-const {state,updateFurniturePlacement}=await import("../state.js?v=20260908hotfix273");
-const {accountStorage}=await import("../account-storage.js?v=20260908hotfix273");
+const {state,updateFurniturePlacement}=await import("../state.js?v=20260908hotfix274");
+const {accountStorage}=await import("../account-storage.js?v=20260908hotfix274");
 const {eventFor}=await import(`../simulation.js?hotfix252=${Date.now()}`);
 const character=(id,name)=>({id,name,createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",townId:"town",homeId:"home",residences:[{homeId:"home",isPrimary:true,stayPattern:"상시 거주",sleepRoomId:"bedroom"}],sleepRoomId:"bedroom",wake:"07:00",sleep:"23:30",job:"무직",jobTitle:"",personalityTypes:[],characterTraits:[],traitExpressions:[],hobbies:[],interests:[],inventory:{},foodTypes:[],foodPreferences:[],musicGenres:[],appearanceTags:[],attractionTraits:[],bodyProfile:{},theme:{primary:"#176b60"},days:{},timelineResetAt:0});
 state.characters=Object.fromEntries([["a","가람"],["b","나래"],["c","다온"],["d","라온"]].map(([id,name])=>[id,character(id,name)]));
@@ -56,8 +56,8 @@ for(const id of expected){
 }
 
 const gradle=files("android/app/build.gradle"),prepare=files("scripts/prepare-app.mjs");
-assert.match(gradle,/versionCode\s+273\b/);
-assert.match(gradle,/versionName\s+"1\.0\.215\.11"/);
-assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260908hotfix273"/);
+assert.match(gradle,/versionCode\s+274\b/);
+assert.match(gradle,/versionName\s+"1\.0\.215\.12"/);
+assert.match(prepare,/DRAWER_VILLAGE_NATIVE_BUILD="20260908hotfix274"/);
 console.log("PASS hotfix 273 regression: furniture persistence, mailbox answers, immutable logs, and shared schedules");
 

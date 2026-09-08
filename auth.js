@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908hotfix273";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908hotfix274";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908hotfix273";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908hotfix274";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -827,7 +827,24 @@ if(ready){
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
+async function mergeUploadedMedia(reference,manifest,session){
+  await runTransaction(db,async tx=>{const current=await tx.get(reference);assertSession(session);const latest=normalizeManifest(current.data()?.mediaManifest,null),items=[...new Map([...latest.items,...manifest.items].map(x=>[x.hash,x])).values()];if(items.length+latest.legacyCount>maxPhotos()||items.reduce((sum,item)=>sum+(Number(item.size)||0),0)>maxTotalBytes())throw Object.assign(new Error("storage-limit"),{code:"storage/total-size-limit"});tx.set(reference,{mediaManifest:{...latest,items}},{merge:true})});
+}
+async function publishCharacterCode(characterId){
+  requireCodeUser();await activeSyncDone;const session=captureSession();
+  const character=await window.ParallelCity.getCharacterForSharing(characterId);assertSession(session);if(!character)throw Error('Character missing');
+  const reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);
+  const manifest=normalizeManifest(previous.data()?.mediaManifest,null),prepared=await prepareState({character},structuredClone(manifest),null,session);
+  if(prepared.photoFailures)throw Object.assign(new Error(({ko:'사진을 올리지 못했어요. 사진을 포함하려면 다시 시도해 주세요.',en:'Photo upload failed. Please retry to include every photo.',ja:'写真をアップロードできませんでした。写真を含めるには再試行してください。'})[document.documentElement.lang]||'사진을 올리지 못했어요. 다시 시도해 주세요.'),{code:'groups/photo-upload-failed'});
+  await mergeUploadedMedia(reference,prepared.mediaManifest,session);
+  assertSession(session);return characterCodeRequest('publishCharacterCode',{character:prepared.gameState.character});
+}
+
+function requireCodeUser(){if(!user)throw Error(({ko:'로그인 후 사용할 수 있어요.',en:'Please sign in first.',ja:'ログインしてください。'})[document.documentElement.lang]||'로그인 후 사용할 수 있어요.');return user}
+async function characterCodeRequest(action,body){requireCodeUser();const session=captureSession(),token=await user.getIdToken();assertSession(session);const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/sharedTownApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});const result=await response.json();assertSession(session);if(!response.ok)throw Error(result.message||'Character code failed');return result}
+
 window.ParallelCityAuth={
+  publishCharacterCode,readCharacterCode:code=>characterCodeRequest("readCharacterCode",{code}),revokeCharacterCode:code=>characterCodeRequest("revokeCharacterCode",{code}),
   login,upload,download,submitFeedback,markGuideSeen,resetGuides,
   logout:async()=>{
     accountEpoch+=1;switchingAccount=true;

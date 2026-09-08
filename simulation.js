@@ -1,8 +1,8 @@
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260908hotfix273";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908hotfix273";
-import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908hotfix273";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260908hotfix273";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908hotfix273";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260908hotfix274";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260908hotfix274";
+import {state,save,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908hotfix274";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260908hotfix274";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908hotfix274";
 
 
 // A failed resident must never prevent other residents or navigation from updating.

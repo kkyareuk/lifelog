@@ -1,20 +1,20 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908hotfix273";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260908hotfix273";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260908hotfix273";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260908hotfix273";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260908hotfix273";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260908hotfix273";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260908hotfix273";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260908hotfix273";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260908hotfix273";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908hotfix274";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260908hotfix274";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260908hotfix274";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260908hotfix274";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260908hotfix274";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260908hotfix274";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260908hotfix274";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260908hotfix274";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260908hotfix274";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260908hotfix273";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260908hotfix273";
+import {missingBuildings} from "./building-recovery.js?v=20260908hotfix274";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260908hotfix274";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1658,7 +1658,9 @@ export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Da
   if(result.changed&&persist)save(false,false);
   return result;
 }
+export function wardrobeCount(characterId){const ids=new Set(state.characters[characterId]?.inventory?.fashion||[]);return (state.catalog?.fashion||[]).filter(item=>ids.has(item.id)).length}
 export function addCatalogItem(kind,data){
+  if(kind==="fashion"&&data?.ownerId&&wardrobeCount(data.ownerId)>=30)return null;
   if(!state.catalog[kind])state.catalog[kind]=[];
   const item={id:uid(),kind,name:"새 항목",category:"기타",subtype:"",keywords:[],image:"",spicy:0,sweet:0,creator:"",style:"",createdAt:Date.now(),userCreated:true,...data};
   state.catalog[kind].push(item);save(true);return item.id;
@@ -1924,7 +1926,8 @@ export function updateRelationship(id,data){
 export function toggleOwned(characterId,kind,itemId,persist=true){
   const c=state.characters[characterId];if(!c)return;
   c.inventory=c.inventory||{};const list=Array.isArray(c.inventory[kind])?[...c.inventory[kind]]:[];
-  c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);
+  if(kind==="fashion"&&!list.includes(itemId)&&wardrobeCount(characterId)>=30)return false;
+  c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);return true;
 }
 export function deleteRelationship(id){
   const relation=state.relationships[id];if(!relation)return;

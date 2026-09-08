@@ -7,7 +7,7 @@ import {fileURLToPath} from "node:url";
 
 const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
 const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
-const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-273");
+const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-274");
 await mkdir(output,{recursive:true});
 const previewAuth=await readFile(resolve(root,"scripts/ios-preview-auth.mjs"));
 const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
@@ -48,5 +48,20 @@ try{
  const saved=await page.evaluate(async id=>(await import('/state.js?v=20260908hotfix274')).state.catalog.drink.find(x=>x.id===id),itemId);
  assert.equal(saved.carbonation,3);assert.equal(saved.acidity,2);assert.equal(saved.caffeine,'없음');
  console.log('PASS drink editor: no spice, carbonation/acidity/caffeine survive save and reload');
+
+ await page.evaluate(()=>{location.hash='tab=character'});await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='character');
+ await page.evaluate(async()=>{const g=await import('/state.js?v=20260908hotfix274');g.state.characterSettingsView='full';g.state.characterPane='personality';g.state.characterPersonalityPane='emotion';window.ParallelCity.mediaChanged()});
+ const touch=page.locator('[data-field="touchReaction"]:visible').first();await touch.selectOption({label:'간지럼을 잘 탐'});
+ await page.locator('[data-open-cognitive-traits]:visible').first().click();
+ const dialog=page.locator('[data-cognitive-traits-dialog][open]');await dialog.waitFor();
+ const clipping=await dialog.locator('[data-trait-expression]').evaluateAll(buttons=>buttons.map(b=>{const text=b.querySelector('span'),r=text.getBoundingClientRect(),outer=b.getBoundingClientRect();return{label:text.textContent,ok:r.top>=outer.top-1&&r.bottom<=outer.bottom+1&&b.scrollHeight<=b.clientHeight+2}}).filter(x=>!x.ok));assert.deepEqual(clipping,[]);
+ await page.screenshot({path:resolve(output,'cognitive-options274.png')});await dialog.locator('button[value="apply"]').click();
+ const contact=await page.evaluate(async()=>{const g=await import('/state.js?v=20260908hotfix274');return g.state.characters[g.state.activeId].touchReaction});assert.equal(contact,'간지럼을 잘 탐');
+ console.log('PASS long cognitive options fit vertically and contact response is editable');
+ await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+ await page.evaluate(async()=>{window.ParallelCityAuth.readCharacterCode=async()=>({character:{name:'코드로 받은 캐릭터',photo:'https://example.com/photo.png',ldImage:'https://example.com/ld.png'}});const {characterCodeDialog}=await import('/character-code.js?v=20260908hotfix274');await characterCodeDialog('character-code-import',()=>20,()=>{},()=>{})});
+ await page.locator('.character-code-dialog input').fill('ABCDEF-123456-ABCDEF');await page.getByRole('button',{name:'캐릭터 확인',exact:true}).click();await page.getByRole('button',{name:'사진과 함께 불러오기',exact:true}).click();
+ assert.equal(await page.evaluate(()=>window.ParallelCity.getState().characters[window.ParallelCity.getState().activeId].ldImage),'https://example.com/ld.png');
+ console.log('PASS code preview and import button retain LD photos');
 
 }finally{await browser.close();server.close()}

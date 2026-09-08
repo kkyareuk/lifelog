@@ -7836,3 +7836,5 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .birthday-parts label{display:grid!important;gap:4px!important}
   html.native-app[data-active-tab="character"] .birthday-parts small{grid-column:1/-1!important}
 }
+
+.character-code-dialog{width:min(440px,92vw);max-height:85dvh;overflow:auto;padding:20px;border:2px solid #856c52;border-radius:20px;background:#fff8eb;color:#352a22}.character-code-dialog input{width:100%;box-sizing:border-box;margin:12px 0}.character-code-dialog button{margin:6px;white-space:normal;height:auto;min-height:40px}.character-code-dialog img{display:block;width:120px;height:120px;object-fit:contain}
