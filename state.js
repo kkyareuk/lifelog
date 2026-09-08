@@ -1,25 +1,25 @@
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev286';
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev286';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev287';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev287';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev286";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev286";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev286";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev286";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev286";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev286";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev286";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev286";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev286";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev286";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev287";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev287";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev287";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev287";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev287";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev287";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev287";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev287";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev287";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev287";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev286";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev286";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev287";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev287";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1107,7 +1107,7 @@ export function createCharacter(limit=5){
   state.monthlyRoutines[id]=[];
   state.activeId=id;state.activeTab="character";state.characterSettingsView="hub";save(true);return id;
 }
-export function setActive(id){if(state.characters[id]){state.activeId=id;save()}}
+export function setActive(id){if(state.characters[id]&&state.activeId!==id){state.activeId=id;save(false,false)}}
 export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(value)?value:"profile");save()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
@@ -2137,7 +2137,7 @@ export function addTown(limit=2){
   const town={id,name:`새 마을 ${state.towns.length+1}`,...normalizeTownProfile(base),photo:"",density:"여유로움",urbanization:"소도시",size:"보통 마을",description:"",era:"modern",places:[],decorations:[]};
   state.towns.push(town);state.activeTownId=id;state.world=clone(town);save(true);return id;
 }
-export function switchTown(id,{activeId}={}){
+export function switchTown(id,{activeId,deferSave=false}={}){
   const activeTab=state.activeTab;
   syncTown();const town=state.towns.find(t=>t.id===id);if(!town)return null;
   state.activeTownId=id;state.world=clone(town);
@@ -2147,7 +2147,7 @@ export function switchTown(id,{activeId}={}){
   // 마을 선택은 데이터 범위만 바꾸며 현재 보고 있던 탭을 바꾸지 않는다.
   // 캐릭터가 없는 마을도 빈 마을 화면으로 정상 렌더링한다.
   state.activeTab=activeTab;
-  save(true);
+  save(!deferSave,!deferSave);
   return {id,activeId:state.activeId,hasCharacters:Boolean(localCharacter)};
 }
 export function deleteTown(id){

@@ -17,7 +17,7 @@ export function bindMailRecipients(form,s,mt,onChange,initial=''){
     for(const {g,data} of all)for(const m of data.members)if(m.uid!==uid&&!seen.has(m.uid)){seen.add(m.uid);rows.push({value:`user:${g.id}:${m.uid}`,text:m.displayName||mt('구성원','Member','メンバー')})}
    }else if(kind.value.startsWith('group:')){
     const g=groups.find(g=>'group:'+g.id===kind.value),data=await directory(g);
-    rows=[{value:'announcement',text:mt('전체 구성원에게 공지','All members','全メンバーにお知らせ')},...['owner','manager','operator','member'].map((role,i)=>({value:'role:'+role,text:mt(['방장에게','관리자에게','운영자에게','일반 멤버에게'][i],['Hosts','Managers','Operators','Members'][i],['ホスト宛','管理者宛','運営者宛','一般メンバー宛'][i])})),...data.memberGroups.map(g=>({value:'subgroup:'+g.id,text:mt(g.name+'에게',g.name+' members',g.name+'宛')}))];
+    rows=[{value:'announcement',text:mt('전체 구성원에게 공지','All members','全メンバーにお知らせ')},...['owner','manager','member'].map((role,i)=>({value:'role:'+role,text:mt(['방장에게','관리자에게','일반 멤버에게'][i],['Hosts','Administrators','Members'][i],['ホスト宛','管理者宛','一般メンバー宛'][i])})),...data.memberGroups.map(g=>({value:'subgroup:'+g.id,text:mt(g.name+'에게',g.name+' members',g.name+'宛')}))];
    }
    if(current!==generation||!form.isConnected)return;
    target.innerHTML=options(rows.length?rows:[{value:'',text:mt('받을 대상이 없어요','No recipients','宛先がありません')}]);target.disabled=!rows.length;onChange();

@@ -1,12 +1,12 @@
-import {runBackgroundAction} from './background-actions.js?v=20260909dev286';
-import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev286';
-import {bindMailRecipients} from './mail-recipients.js?v=20260909dev286';
-import {createContactMailbox} from './notification-mail.js?v=20260909dev286';
-import {accountStorage} from './account-storage.js?v=20260909dev286';
-import {chooseCatalog} from './settings-transfer.js?v=20260909dev286';
-import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev286';
-import {proposalSettings} from './groups.js?v=20260909dev286';
-import {buildSharedWorld} from './shared-world.js?v=20260909dev286';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev287';
+import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev287';
+import {bindMailRecipients} from './mail-recipients.js?v=20260909dev287';
+import {createContactMailbox} from './notification-mail.js?v=20260909dev287';
+import {accountStorage} from './account-storage.js?v=20260909dev287';
+import {chooseCatalog} from './settings-transfer.js?v=20260909dev287';
+import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev287';
+import {proposalSettings} from './groups.js?v=20260909dev287';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev287';
 export const mt=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function returnMail(p){if(p.kind!=='return')return p;return {...p,subject:mt('캐릭터가 내 마을로 돌아왔습니다.','Your characters returned home.','キャラクターが自分の村に戻りました。'),body:mt(`${p.groupName||'멀티 마을'}에서 떠나 내 마을로 돌아왔습니다. 캐릭터 탭에서 확인해 주세요.`,`Your characters left ${p.groupName||'the multiplayer group'} and returned to your town. Check the Characters tab.`,`${p.groupName||'マルチの村'}を離れ、自分の村へ戻りました。キャラクタータブでご確認ください。`)}}

@@ -1,13 +1,13 @@
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev286';
-import {chooseProposalMode} from './proposal-mode.js?v=20260909dev286';
-import {sharedProfile} from './shared-world.js?v=20260909dev286';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev286";
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev287';
+import {chooseProposalMode} from './proposal-mode.js?v=20260909dev287';
+import {sharedProfile} from './shared-world.js?v=20260909dev287';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev287";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,initializeFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev286";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev287";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -1042,7 +1042,7 @@ async function updateGroupRules(patch={}){
   const rules={
     ...groupState.group.rules,
     memberCharacterLimit:number("memberCharacterLimit",groupState.group.rules?.memberCharacterLimit||20),
-    operatorCharacterLimit:number("operatorCharacterLimit",groupState.group.rules?.operatorCharacterLimit||100),
+    operatorCharacterLimit:number("managerCharacterLimit",groupState.group.rules?.managerCharacterLimit||100),
     managerCharacterLimit:number("managerCharacterLimit",groupState.group.rules?.managerCharacterLimit||100),
     allowRelationshipProposals:patch.allowRelationshipProposals!==false,
     allowScheduleProposals:patch.allowScheduleProposals!==false,
@@ -1147,7 +1147,7 @@ async function removeGroupHome(homeId){
 async function updateGroupMemberRole(uid,role){
   requireGroupUser();if(!isGroupManager())throw Object.assign(new Error("Manager required"),{code:"groups/manager-required"});
   if(uid===groupState.group?.ownerUid)throw Object.assign(new Error("Owner role fixed"),{code:"groups/owner-fixed"});
-  const nextRole=["manager","operator","member"].includes(role)?role:"member";
+  const nextRole=["manager","operator"].includes(role)?"manager":"member";
   // 권한의 단일 기준은 그룹의 member 문서다. 다른 사용자의 개인 색인을
   // 관리자가 수정하게 만들면 계정 경계가 흐려지므로 목록 색인은 건드리지 않는다.
   await setDoc(doc(db,"groups",groupState.activeGroupId,"members",uid),{role:nextRole,updatedAt:serverTimestamp()},{merge:true});

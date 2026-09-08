@@ -1,7 +1,7 @@
 const fail=(code,status=400)=>{throw Object.assign(new Error(code),{code,status})};
 module.exports=({db,membership,notify,clock,id})=>{
  const clean=(s,max=120000)=>{if(typeof s!=='string'||Buffer.byteLength(s)>max)fail('invalid-profile');let v;try{v=JSON.parse(s)}catch{fail('invalid-profile')}if(!v||typeof v!=='object'||Array.isArray(v))fail('invalid-profile');return s};
- const limit=(group,member)=>Math.max(1,Math.min(100,Number(group.rules?.[member.role==='operator'?'operatorCharacterLimit':['owner','manager'].includes(member.role)?'managerCharacterLimit':'memberCharacterLimit'])||(['owner','manager','operator'].includes(member.role)?100:20)));
+ const limit=(group,member)=>Math.max(1,Math.min(100,Number(group.rules?.[['owner','manager','operator'].includes(member.role)?'managerCharacterLimit':'memberCharacterLimit'])||(['owner','manager','operator'].includes(member.role)?100:20)));
  async function apply(tx,root,p){
   const [sender,group,residents]=await Promise.all([tx.get(root.collection('members').doc(p.senderUid)),tx.get(root),tx.get(root.collection('residents'))]);
   if(!sender.exists)fail('recipient-left-group',409);

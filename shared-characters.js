@@ -1,6 +1,6 @@
-import {state,beginCharacterEditor,endCharacterEditor,characterEditorActive,emptyWorld,runIsolatedWorld,createCharacter} from './state.js?v=20260909dev286';
-import {buildSharedWorld} from './shared-world.js?v=20260909dev286';
-import {runBackgroundAction} from './background-actions.js?v=20260909dev286';
+import {state,beginCharacterEditor,endCharacterEditor,characterEditorActive,emptyWorld,runIsolatedWorld,createCharacter} from './state.js?v=20260909dev287';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev287';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev287';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let session=null;
 const drafts=new Map();
@@ -39,7 +39,7 @@ export function saveSharedCharacter(){
 }
 export function bindSharedCharacters(render){
  document.querySelectorAll('[data-new]').forEach(button=>{if(!session)return;const create=button.onclick;button.onclick=async()=>{leaveSharedCharacterEditor();await window.DrawerVillageGroups.select('');state.activeTab='character';create?.();render()}});
- document.querySelector('[data-character-world]')?.addEventListener('change',async e=>{const gid=e.target.value;leaveSharedCharacterEditor();await window.DrawerVillageGroups.select(gid);state.activeTab='character';render()});
+ document.querySelectorAll('[data-character-world]').forEach(select=>select.addEventListener('change',async e=>{const gid=e.target.value;leaveSharedCharacterEditor();await window.DrawerVillageGroups.select(gid);state.activeTab='character';render({force:true})}));
  // Character creation and deletion belong to group membership/slot operations.
  if(session)document.querySelectorAll('[data-delete-character]').forEach(b=>{b.onclick=()=>{const id=b.dataset.deleteCharacter,{groupId,uid}=session,world=state;if(!confirm(t('이 캐릭터를 영구 삭제할까요? 내 마을로 돌아오지 않으며 복구할 수 없습니다.','Permanently delete this character? It will not return to your town and cannot be recovered.','このキャラクターを完全に削除しますか？自分の村には戻らず、復元できません。')))return;void runBackgroundAction('resident-delete:'+groupId+':'+id,async()=>{if(window.ParallelCityAuth.getInfo().user?.uid!==uid)throw Error('Account changed');await window.DrawerVillageGroups.deleteResident({groupId,residentId:id});delete world.characters[id];world.order=world.order.filter(x=>x!==id);world.activeId=world.order[0]||'';render()})}});
 }

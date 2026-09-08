@@ -1,13 +1,13 @@
-import {routineScene} from './routine-scenes.js?v=20260909dev286';
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev286';
-import {dailyInteractionLine} from './scene-context.js?v=20260909dev286';
-import {careRoutineFor} from "./creative-options.js?v=20260909dev286";
-import {drinkExperience} from "./drink-log.js?v=20260909dev286";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev286";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev286";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev286";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev286";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev286";
+import {routineScene} from './routine-scenes.js?v=20260909dev287';
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev287';
+import {dailyInteractionLine} from './scene-context.js?v=20260909dev287';
+import {careRoutineFor} from "./creative-options.js?v=20260909dev287";
+import {drinkExperience} from "./drink-log.js?v=20260909dev287";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev287";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev287";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev287";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev287";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev287";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
