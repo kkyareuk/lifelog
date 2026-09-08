@@ -1,24 +1,24 @@
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev283';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev284';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev283";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev283";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev283";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev283";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev283";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev283";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev283";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev283";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev283";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev283";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev284";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev284";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev284";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev284";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev284";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev284";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev284";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev284";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev284";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev284";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev283";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev283";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev284";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev284";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -786,6 +786,9 @@ function normalizeHomes(x){
     c.fashionSense=["패션에 전혀 관심 없음","조합을 자주 틀림","무난하게 입음","센스 있게 입음","스타일링에 능숙함"].includes(c.fashionSense)?c.fashionSense:"무난하게 입음";
     c.appearanceCareLevel=["거의 신경 쓰지 않음","필요한 만큼만","기본적으로 단정하게","꾸준히 관리함","세심하게 공들임"].includes(c.appearanceCareLevel)?c.appearanceCareLevel:"기본적으로 단정하게";
     c.accessoryUse=["착용하지 않음","착용함"].includes(c.accessoryUse)?c.accessoryUse:(["하나만 착용","여러 개 즐겨 착용"].includes(c.accessoryPreference)?"착용함":"착용하지 않음");
+    c.accessories=Array.isArray(c.accessories)?[...new Set(c.accessories.filter(value=>typeof value==="string"))]:[];
+    if(c.accessories.length)c.accessoryUse="착용함";
+    if(c.traditionalClothing&&c.traditionalClothing!=="설정하지 않음")c.favoriteFashionStyles=[...new Set([...(c.favoriteFashionStyles||[]),"전통의상"])];
     delete c.accessoryPreference;
     c.savedOutfits=Array.isArray(c.savedOutfits)?c.savedOutfits.filter(outfit=>outfit&&typeof outfit==="object"&&!Array.isArray(outfit)).map(outfit=>({
       id:outfit.id||uid(),name:outfit.name||"저장 코디",layout:outfit.layout||"cluster-1",
@@ -1115,7 +1118,7 @@ export function deleteCharacter(id){
   state.activeId=state.order[0]||null;
   save(true);
 }
-const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","appearanceCareLevel","accessoryUse","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
+const SIMULATION_FIELDS=new Set(["ageGroup","gender","speechStyle","wake","wakeHabit","sleep","sleepHabit","foodHabit","dailyHabits","eatingHabits","walkingStyle","educationLevel","lifeAdaptation","job","jobTitle","workplaceId","townId","homeId","residences","sleepRoomId","personalityTypes","characterTraits","traitExpressions","traitNotes","traitNotesInScripts","bodyProfile","appearanceLevel","appearanceInterest","appearanceTags","attractionTraits","dislikedAttractionTraits","hobbies","interests","inventory","favorites","dislikes","foodTypes","foodPreferences","spiceTolerance","sweetPreference","drinks","drinkTypes","favoriteScentNotes","favoriteStoryGenres","favoriteVideoGenres","favoriteGameGenres","favoriteFashionStyles","favoriteAnimals","favoriteElectronics","favoriteWeapons","favoriteBooks","musicGenres","dislikedStoryGenres","dislikedFoodPreferences","dislikedDrinks","dislikedMusicGenres","dislikedVideoGenres","dislikedGameGenres","dislikedScentNotes","dislikedAnimals","dislikedElectronics","dislikedWeapons","dislikedBooks","income","wealth","fashionSense","appearanceCareLevel","accessoryUse","accessories","driverLicense","commuteModes","smokingStatus","alcoholTolerance","socialStyle","perceptionStyle","decisionStyle","planningStyle","activityTempo","neatness","interference","conflictStyle","affectionStyle","energyRhythm","humorStyle","emotionalExpression","impulseControl","emotionalBaseline","moodVolatility","moodPersistence","positiveMoodResponse","stressMoodResponse","moodRecoveryStyle","angerResponse","flirtResponse","emotionalSensitivity","emotionalContagion"]);
 SIMULATION_FIELDS.add("diligence");
 const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
@@ -1124,6 +1127,7 @@ const touchCharacterTimelines=ids=>{
 export function updateCharacter(id,patch,persist=true){
   const c=state.characters[id];if(!c)return;
   Object.assign(c,patch);
+  if(Object.hasOwn(patch,"accessories"))c.accessoryUse=c.accessories?.length?"착용함":"착용하지 않음";
   if(patch.homeId&&state.homes[patch.homeId]){
     c.residences=Array.isArray(c.residences)?c.residences:[];
     if(!c.residences.some(item=>item.homeId===patch.homeId))c.residences.push({homeId:patch.homeId,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId:state.homes[patch.homeId].rooms?.bedroom?"bedroom":Object.keys(state.homes[patch.homeId].rooms||{})[0]||""});

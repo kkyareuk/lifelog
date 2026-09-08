@@ -4549,7 +4549,7 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
   bottom:max(55px,calc(env(safe-area-inset-bottom) + 48px));
   width:min(360px,calc(100vw - 16px));
   max-height:min(430px,62dvh);
-  padding:9px 34px 9px 9px;
+  padding:36px 12px 12px;
   overflow:auto;
   border:1px solid #ffffff42;
   border-radius:20px;

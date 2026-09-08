@@ -1,12 +1,13 @@
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev283';
-import {dailyInteractionLine} from './scene-context.js?v=20260909dev283';
-import {careRoutineFor} from "./creative-options.js?v=20260909dev283";
-import {drinkExperience} from "./drink-log.js?v=20260909dev283";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev283";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev283";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev283";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev283";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev283";
+import {routineScene} from './routine-scenes.js?v=20260909dev284';
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev284';
+import {dailyInteractionLine} from './scene-context.js?v=20260909dev284';
+import {careRoutineFor} from "./creative-options.js?v=20260909dev284";
+import {drinkExperience} from "./drink-log.js?v=20260909dev284";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev284";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev284";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev284";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev284";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev284";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -2939,7 +2940,7 @@ function build(c,date=new Date()){
     const dateGroup=isDate?`date-${[c.id,companions[0].id].sort().join("-")}-${dayKey(date)}-${minute}-${hash(purpose).toString(36)}`:"";
     const participantOrder=[...new Set([...(item.participantOrder||[item.routineOwnerId||c.id]),c.id,...companions.map(person=>person.id)])];
     const scheduledInteractionId=companions.length?["schedule",dayKey(date),item.id,participantOrder.join("~")].join(":"):"";
-    const routineMeta={routineId:item.id,routineOwnerId:item.routineOwnerId||c.id,routineKind:item.routineKind||"weekly",routineStartMinute:minute,routineEndMinute:endMinute,...(companions.length?{participantOrder,interactionId:scheduledInteractionId,groupInteraction:true}: {})};
+    const routineMeta={routineType:item.type,routineTitle:item.title,routineId:item.id,routineOwnerId:item.routineOwnerId||c.id,routineKind:item.routineKind||"weekly",routineStartMinute:minute,routineEndMinute:endMinute,...(companions.length?{participantOrder,interactionId:scheduledInteractionId,groupInteraction:true}: {})};
     const companionIds=companions.map(person=>person.id);
     const dateMeta=isDate?{...routineMeta,withId:companions[0].id,withIds:companionIds,mood:"데이트",dateGroup,datePurpose:purpose,dateStartMinute:minute,dateEndMinute:endMinute}:{...routineMeta,withId:companions[0]?.id,withIds:companionIds,mood:"일정"};
     const desc=item.notes||(isDate?`${purpose} 약속에서 정한 일을 ${companions[0].name}와 순서대로 진행하고 있어요.`:`${companionText}${item.type} 일정을 진행하고 있어요. 종료 예정 시각은 ${item.end}예요.`);
@@ -3633,7 +3634,7 @@ function calculateBaseEvent(c,date=new Date()){
   const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&!item.routineReturned&&Number(item.minute)<=n&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
   // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
   // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
-  if(activeRoutineEntry)return withResidenceLocation(c,activeRoutineEntry,date);
+  if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,routineType:activeRoutine.type,routineTitle:activeRoutine.title},date),c,state,date.getTime(),state.uiLanguage);
   const sources=giftSources(date);
   const past=list.filter(x=>!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);

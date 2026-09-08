@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260909dev283';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev283";
+import {sharedProfile} from './shared-world.js?v=20260909dev284';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev284";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev283";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev284";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -416,16 +416,18 @@ async function registerSignedInUser(){
   if(!user)return;
   const session=captureSession();
   const guardKey=`drawer-village-login-write-${user.uid}`;
-  if(Date.now()-sessionStamp(guardKey)<REFRESH_GUARD_MS)return;
+  const skipPresenceWrite=Date.now()-sessionStamp(guardKey)<REFRESH_GUARD_MS;
   const reference=cloudDoc();
   const snapshot=await getDoc(reference);
   assertSession(session);
-  profileSetupComplete=Boolean(snapshot.data()?.profile?.configured);
+  profileSetupComplete=snapshot.exists()&&snapshot.data()?.profile?.configured!==false;
+  if(skipPresenceWrite&&snapshot.exists())return;
   const profile={
     name:accountName(),
     email:user.email||"",
     photoURL:accountPhoto(),
-    provider:user.providerData?.[0]?.providerId||"google.com"
+    provider:user.providerData?.[0]?.providerId||"google.com",
+    configured:profileSetupComplete
   };
   const presence={
     profile,
@@ -1077,7 +1079,7 @@ async function sharedTownRequest(action,body={}){
   requireGroupUser();const gid=groupState.activeGroupId;
   const token=await user.getIdToken();
   const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/sharedTownApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({groupId:gid,...body})});
-  const result=await response.json();if(!response.ok)throw Object.assign(new Error(result.message||'Shared town failed'),{code:result.message||'groups/server-error'});if(['sendMail','respond','propose','requestResidence'].includes(action))await refreshMailbox(true).catch(error=>console.warn('Mailbox refresh',error.code));return result;
+  const result=await response.json();if(response.ok&&action==='advance'&&result.lives&&groupState.activeGroupId===gid&&Number(groupState.group?.lifeUpdatedAt||0)<=Number(result.lifeUpdatedAt||0)){const updates=new Map(result.lives.map(l=>[l.id,l]));groupState.residents=groupState.residents.map(r=>updates.has(r.id)?{...r,...updates.get(r.id)}:r);groupState.group={...groupState.group,lifeUpdatedAt:result.lifeUpdatedAt,lifeNextAt:result.lifeNextAt};emitGroupState()}if(!response.ok)throw Object.assign(new Error(result.message||'Shared town failed'),{code:result.message||'groups/server-error'});if(['sendMail','respond','propose','requestResidence'].includes(action))await refreshMailbox(true).catch(error=>console.warn('Mailbox refresh',error.code));return result;
 }
 async function advanceSharedLife(force=false){
   const gid=groupState.activeGroupId;if(!gid||!groupState.group||advancingShared||(!force&&Date.now()-(lastSharedAdvance.get(gid)||0)<60000))return;

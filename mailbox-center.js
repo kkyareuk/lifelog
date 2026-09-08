@@ -1,11 +1,11 @@
-import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev283';
-import {bindMailRecipients} from './mail-recipients.js?v=20260909dev283';
-import {createContactMailbox} from './notification-mail.js?v=20260909dev283';
-import {accountStorage} from './account-storage.js?v=20260909dev283';
-import {chooseCatalog} from './settings-transfer.js?v=20260909dev283';
-import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev283';
-import {proposalSettings} from './groups.js?v=20260909dev283';
-import {buildSharedWorld} from './shared-world.js?v=20260909dev283';
+import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev284';
+import {bindMailRecipients} from './mail-recipients.js?v=20260909dev284';
+import {createContactMailbox} from './notification-mail.js?v=20260909dev284';
+import {accountStorage} from './account-storage.js?v=20260909dev284';
+import {chooseCatalog} from './settings-transfer.js?v=20260909dev284';
+import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev284';
+import {proposalSettings} from './groups.js?v=20260909dev284';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev284';
 export const mt=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function senderImage(p,s){if(p.senderPhoto)return p.senderPhoto;const c=state.characters[p.sourceId||p.characterId]||(s.residents||[]).find(c=>c.id===(p.sourceId||p.characterId));if(c){let profile={};try{profile=JSON.parse(c.profileJson||'{}')}catch{}return profile.icon||c.icon||profile.photo||c.photo||''}if(p.sourceId||p.characterId)return '';return (s.members||[]).find(m=>(m.uid||m.id)===p.senderUid)?.photoURL||(!p.senderUid||p.senderUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid?window.ParallelCityAuth?.getInfo?.()?.user?.photoURL:'')||''}

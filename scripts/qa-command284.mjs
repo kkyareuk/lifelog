@@ -41,5 +41,60 @@ try{
  const routes=await Promise.all(pages.map(p=>p.locator('.tablet-observe-map .meeting-walker[data-person=a]').getAttribute('style')));assert.equal(routes[0],routes[1]);assert.equal(requests,1);
  await pages[1].locator('.tablet-observe-map [data-person=a]').click({force:true});await pages[1].waitForTimeout(100);assert.ok((await pages[1].locator('.game-hud-profile-copy').innerText()).includes('짭바이'));
  for(const page of pages){await page.evaluate(t=>{window.RealDate??=Date;window.Date=class extends window.RealDate{constructor(...args){super(...(args.length?args:[t]))}static now(){return t}};window.dispatchEvent(new Event('drawer-village-groups'))},route.arrivesAt+1000);await page.waitForTimeout(100);assert.ok((await page.locator('.game-hud-moment').innerText()).includes('대화'));const pair=page.locator('.native-scene-lineup-person');assert.equal(await pair.count(),2);const boxes=await pair.evaluateAll(es=>es.map(e=>({name:e.textContent,x:e.getBoundingClientRect().x})));assert.ok(boxes[0].x<boxes[1].x,JSON.stringify(boxes));assert.ok(boxes[1].name.includes('안테'));await page.screenshot({path:resolve(output,'two-account-'+pages.indexOf(page)+'.png')});}
+ await pages[0].setViewportSize({width:384,height:420});await pages[0].waitForTimeout(150);
+ await pages[0].locator('[data-shared-command]').click();await pages[0].locator('[data-direct-category=social]').click();await pages[0].locator('.direct-step-choice').filter({hasText:'지금 할 일'}).click();
+ const scroll=pages[0].locator('.direct-step-flow');console.log(await scroll.evaluate(e=>({height:e.clientHeight,scroll:e.scrollHeight,css:getComputedStyle(e).cssText,max:getComputedStyle(e).maxHeight,overflow:getComputedStyle(e).overflowY,buttons:e.querySelectorAll('button:not([hidden])').length})));await pages[0].screenshot({path:resolve(output,'command284.png')});assert.ok(await scroll.evaluate(e=>e.scrollHeight>e.clientHeight),'Action choices must have a scrollable container');await scroll.hover();await pages[0].mouse.wheel(0,600);await pages[0].waitForTimeout(150);assert.ok(await scroll.evaluate(e=>e.scrollTop>0));
+ console.log('PASS narrow activity chooser scroll');
+ await pages[0].locator('dialog[open] header button').click();
+ await pages[0].evaluate(()=>{qaSnapshot={...qaSnapshot,residents:qaSnapshot.residents.map(r=>({...r,lifeJson:JSON.stringify({scene:{home:true,visitHomeId:'ha',room:'living',title:'씻는 중',desc:'비누 거품으로 씻고 있어요.',townId:'t'},days:{}})})),visitingHomeId:'ha'};location.hash='tab=home'});
+ await pages[0].waitForTimeout(300);await pages[0].evaluate(()=>{const t=Date.now()+120000;window.Date=class extends window.RealDate{constructor(...args){super(...(args.length?args:[t]))}static now(){return t}};window.dispatchEvent(new Event('drawer-village-groups'))});await pages[0].waitForTimeout(300);console.log(await pages[0].evaluate(()=>({tab:document.documentElement.dataset.activeTab,text:document.querySelector('main')?.innerText.slice(0,700),people:[...document.querySelectorAll('.home-person,.meeting-walker')].map(e=>({class:e.className,title:e.getAttribute('aria-label')}))})));await pages[0].screenshot({path:resolve(output,'washing284.png')});assert.ok(await pages[0].locator('.is-washing').count(),'Home washing scene exposes the washing animation');
+ await pages[0].screenshot({path:resolve(output,'washing284.png')});
+
+
+ const timings=[];
+ for(const tab of ['relationship','settings','home','town','mailbox']){
+   await pages[0].evaluate(tab=>window.DrawerVillageNavigation.go(tab),tab);
+   await pages[0].waitForTimeout(100);
+   await pages[0].evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+   if(tab==='relationship')await pages[0].evaluate(()=>{document.querySelector('.relationship-character-rail')?.dispatchEvent(new Event('scroll'))});
+   const result=await pages[0].evaluate(()=>{const start=performance.now();window.DrawerVillageNavigation.back();return {ms:performance.now()-start,tab:window.DrawerVillageNavigation.current()}});
+   assert.equal(result.tab,'observe');timings.push({tab,...result});
+   await pages[0].waitForTimeout(350);assert.equal(await pages[0].evaluate(()=>window.DrawerVillageNavigation.current()),'observe');
+ }
+ console.log('PASS back navigation from five tabs, including a pending relationship scroll',JSON.stringify(timings));
+
+ await pages[0].setViewportSize({width:412,height:883});
+ await pages[0].evaluate(async()=>{qaSnapshot={...qaSnapshot,activeGroupId:'',group:null};const g=await import('/state.js?v=20260909dev284');window.qaGame=g;window.DrawerVillageNavigation.go('character');document.querySelectorAll('dialog[open]').forEach(d=>d.close())});
+ await pages[0].locator('[data-open-full-character-settings]:visible').first().click();
+ for(const size of [{width:412,height:883},{width:1280,height:800}]){
+  await pages[0].setViewportSize(size);
+  for(const pane of ['visual','profile','body','wardrobe','personality','taste','closet']){
+   await pages[0].evaluate(pane=>{qaGame.state.characterPane=pane;qaGame.state.characterPersonalityPane='emotion';window.ParallelCity.mediaChanged()},pane);
+   assert.equal(await pages[0].locator('.view-error').count(),0,'Book page '+pane);
+  }
+ }
+ await pages[0].setViewportSize({width:412,height:883});
+ await pages[0].evaluate(()=>{qaGame.state.characterPane='personality';qaGame.state.characterPersonalityPane='emotion';window.ParallelCity.mediaChanged()});
+ await pages[0].locator('[data-touch-reactions]').click();
+ for(const value of ['간지럼을 잘 탐','갑작스러운 접촉에 쉽게 놀람'])await pages[0].locator('[data-reaction]').filter({hasText:value}).click();
+ await pages[0].locator('dialog[open] button[value=apply]').click();
+ await pages[0].waitForFunction(()=>Array.isArray(qaGame.state.characters[qaGame.state.activeId].touchReaction));
+ const reactions=await pages[0].evaluate(()=>qaGame.state.characters[qaGame.state.activeId].touchReaction);
+ assert.ok(reactions.includes('간지럼을 잘 탐')&&reactions.includes('갑작스러운 접촉에 쉽게 놀람'));
+ await pages[0].locator('[data-touch-reactions]').click();assert.equal(await pages[0].locator('[data-reaction][aria-pressed=true]').count(),reactions.length);
+ await pages[0].screenshot({path:resolve(output,'touch284.png')});
+
+ await pages[0].locator('dialog[open] button[value=close]').click();await pages[0].waitForTimeout(50);
+ await pages[0].evaluate(()=>{qaGame.state.characterPane='wardrobe';window.ParallelCity.mediaChanged()});
+ assert.equal(await pages[0].locator('[data-field=traditionalClothing]').count(),0);
+ await pages[0].locator('[data-open-book-list=accessories]').click();
+ for(const value of ['반지','링 귀고리','목걸이'])await pages[0].locator(`[data-book-list-choice=accessories][data-value="${value}"]`).click();
+ assert.deepEqual(await pages[0].evaluate(()=>qaGame.state.characters[qaGame.state.activeId].accessories),['반지','링 귀고리','목걸이']);
+ await pages[0].locator('dialog[open] button[value=apply]').click();await pages[0].waitForTimeout(50);
+ await pages[0].locator('[data-open-book-list=favoriteFashionStyles]').click();
+ await pages[0].locator('[data-book-list-choice=favoriteFashionStyles][data-value="전통의상"]').click();
+ assert.ok(await pages[0].evaluate(()=>qaGame.state.characters[qaGame.state.activeId].favoriteFashionStyles.includes('전통의상')));
+ console.log('PASS multiple accessories and traditional attire in fashion choices');
+ console.log('PASS phone/tablet character book pages and multiple touch reactions persist');
  assert.equal(requests,1,'Animation/arrival/selection must not submit extra writes');console.log('PASS two isolated accounts share departure, visible route, waiting and arrival with one command; tablet map selects remote character');
 }finally{for(const c of contexts)await c.close();await browser.close();server.close()}

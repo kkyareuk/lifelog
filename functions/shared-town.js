@@ -38,7 +38,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         const future=[now+300000];
         for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
         const lifeNextAt=Math.max(now+1000,Math.min(...future));
-        tx.update(ref,{lifeUpdatedAt:now,lifeNextAt});return {updated:true,count:lives.length,changedCount,lifeNextAt};
+        tx.update(ref,{lifeUpdatedAt:now,lifeNextAt});return {updated:true,count:lives.length,changedCount,lifeNextAt,lifeUpdatedAt:now,...(input.command?{lives:lives.filter(l=>previous.get(l.id)!==l.lifeJson)}:{})};
       });
     },
     saveGroupPresentation:async(uid,input)=>db.runTransaction(async tx=>{const {ref,group,member}=await context(tx,input.groupId,uid);if(group.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('manager-required',403);const patch={};if(input.photoURL!==undefined){if(typeof input.photoURL!=='string'||input.photoURL.length>2000||input.photoURL&&!/^https:\/\//.test(input.photoURL))fail('invalid-photo');patch.photoURL=input.photoURL}if(input.name!==undefined){patch.name=String(input.name).trim().slice(0,80);if(!patch.name)fail('name-required')}if(input.description!==undefined)patch.description=String(input.description).slice(0,500);tx.update(ref,patch);return {saved:true}}),
