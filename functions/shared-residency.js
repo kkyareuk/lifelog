@@ -16,7 +16,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    const [resident,home]=await Promise.all([tx.get(root.collection('residents').doc(p.sourceId)),tx.get(root.collection('homes').doc(p.homeId))]);
    if(!resident.exists||resident.data().ownerUid!==p.senderUid||!home.exists||home.data().ownerUid!==p.recipientUid)fail('participants-changed',409);
    if((resident.data().sharedHomeId||'')!==p.previousHomeId)fail('residence-edit-conflict',409);
-   tx.update(resident.ref||root.collection('residents').doc(p.sourceId),{sharedHomeId:p.homeId,townId:home.data().townId,updatedAt:clock()});
+   tx.update(resident.ref||root.collection('residents').doc(p.sourceId),{sharedHomeId:p.homeId,residences:[{homeId:p.homeId,isPrimary:true,role:'주거지',stayPattern:'상시 거주',sleepRoomId:Object.keys(JSON.parse(home.data().layoutJson||'{}').rooms||{})[0]||'__none__',visitDays:[],notes:''}],residenceRevision:(Number(resident.data().residenceRevision)||0)+1,townId:home.data().townId,updatedAt:clock()});
   }
   tx.update(root,{lifeUpdatedAt:0});
  }

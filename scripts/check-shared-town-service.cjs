@@ -127,5 +127,25 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  await service.saveTown('host',{groupId:'g',townId:'new',create:true,revision:rev,patch:{name:'New town'}});assert.ok(data.get('groups/g').towns.some(t=>t.id==='new'));
  await assert.rejects(service.saveTown('host',{groupId:'g',townId:'new',create:true,revision:rev,patch:{name:'Duplicate'}}),e=>e.status===409);
  console.log('PASS authorized new town creation and duplicate rejection');
+
+ data.set('groups/g/homes/member-house',{ownerUid:'member',townId:'t',layoutRevision:0,layoutJson:JSON.stringify({rooms:{living:{name:'거실'}}})});
+ const pet={homeId:'member-house',groupId:'g',kind:'pet',id:'pet',revision:0,item:{name:'봄봄',species:'고양이',room:'living',needsWalk:false}};
+ await assert.rejects(service.saveHomeMember('stranger',pet),e=>e.status===403);
+ data.set('groups/g/members/host',{role:'member'}); // root ownership must win over stale role data
+ const saved=await service.saveHomeMember('host',pet);assert.equal(saved.revision,1);
+ assert.equal(JSON.parse(saved.layoutJson).pets[0].name,'봄봄');
+ await assert.rejects(service.saveHomeMember('host',pet),e=>e.status===409);
+ const vehicle=await service.saveHomeMember('op',{...pet,kind:'car',id:'car',revision:1,item:{name:'차',seats:4,ownerCharacterId:'a'}});
+ assert.equal(JSON.parse(vehicle.layoutJson).pets.length,1);assert.equal(JSON.parse(vehicle.layoutJson).cars[0].seats,4);
+ await assert.rejects(service.saveHomeMember('host',{...pet,revision:2,item:{...pet.item,room:'missing'}}),/room-missing/);
+ await assert.rejects(service.saveHomeMember('host',{...pet,revision:2,item:{...pet.item,icon:'javascript:alert(1)'}}),/invalid-member-image/);
+ data.set('groups/g/members/visitor',{role:'member'});
+ await assert.rejects(service.saveHomeMember('visitor',{...pet,revision:2}),e=>e.status===403);
+ const joined=await service.saveHomeMember('host',{...pet,kind:'resident',id:'b',revision:0,item:{sleepRoomId:'living',stayPattern:'요일 지정',visitDays:[1,3],notes:'주중 방문'}});
+ assert.equal(joined.sharedHomeId,'member-house');assert.deepEqual(joined.residences[0].visitDays,[1,3]);
+ await assert.rejects(service.saveHomeMember('member',{...pet,kind:'resident',id:'b',revision:1,item:{sleepRoomId:'living'}}),e=>e.status===403);
+ const removed=await service.saveHomeMember('host',{...pet,kind:'resident',id:'b',revision:1,remove:true});assert.deepEqual(removed.residences,[]);
+ const removedPet=await service.saveHomeMember('member',{...pet,revision:2,remove:true});assert.equal(JSON.parse(removedPet.layoutJson).pets.length,0);assert.equal(JSON.parse(removedPet.layoutJson).cars.length,1);
+ console.log('PASS shared home pets, vehicles, residence settings, root owner, staff, private ownership, stale edits and input validation');
  console.log('PASS shared town membership, role permissions, stale edit rejection, own-character commands, throttling and concurrent viewer deduplication');
 })().catch(error=>{console.error(error);process.exitCode=1});

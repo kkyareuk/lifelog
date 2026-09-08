@@ -1,19 +1,21 @@
-import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260908dev281';
-import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260908dev281';
-import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260908dev281';
-import {bindHomeEditorUI} from './home-editor-ui.js?v=20260908dev281';
-import {mt} from './mailbox-center.js?v=20260908dev281';
+import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260908dev282';
+import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260908dev282';
+import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260908dev282';
+import {bindHomeEditorUI} from './home-editor-ui.js?v=20260908dev282';
+import {mt} from './mailbox-center.js?v=20260908dev282';
+import {bindSharedHomeMembers} from './shared-home-members.js?v=20260908dev282';
 const queues=new Map();
 export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  const api=window.DrawerVillageGroups,selection=sharedSelection(s),world=buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;
- const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=home.ownerUid===uid||s.members?.some(m=>(m.id||m.uid)===uid&&['owner','manager','operator'].includes(m.role)),key=s.activeGroupId+':'+home.id;
+ const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=s.group?.ownerUid===uid||home.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role)),key=s.activeGroupId+':'+home.id;
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
  function commit(){const layout=structuredClone({rooms:home.rooms,floorCount:home.floorCount,activeFloor:home.activeFloor});selection.homeDrafts??={};selection.homeDrafts[home.id]=layout;const previous=queues.get(key)||Promise.resolve();const next=previous.catch(()=>{}).then(async()=>{const current=api.getSnapshot();if(current.activeGroupId!==s.activeGroupId)throw Error(mt('그룹이 바뀌었어요.','The group changed.','グループが変わりました。'));const record=current.homes.find(h=>h.id===home.id),result=await api.saveHomeLayout({id:home.id,revision:Number(record.layoutRevision)||0,layout});record.layoutRevision=result.revision;record.layoutJson=JSON.stringify({...JSON.parse(record.layoutJson||'{}'),...layout})});queues.set(key,next);next.catch(e=>toast(e.message));return next}
  const change=fn=>{if(!canEdit)return;const result=runIsolatedWorld(world,fn);commit();return result};
  root.querySelectorAll('[data-home-edit]').forEach(b=>b.disabled=!canEdit);
  root.querySelectorAll('[data-room-drag],[data-room-resize]').forEach(h=>{h.disabled=!canEdit;if(canEdit&&bindRoomGeometry)bindRoomGeometry(h,h.hasAttribute('data-room-drag')?'move':'resize',{world,update:(...args)=>{runIsolatedWorld(world,()=>updateRoom(...args.slice(0,3),false));if(args[3])commit()},saveAll:()=>{}})});
  // Unconnected personal-world actions must never write into the private world.
- root.querySelectorAll('[data-member-add],[data-member-edit],[data-delete-home],[data-home-image],[data-open-room-image-menu]').forEach(b=>b.disabled=true);
+ bindSharedHomeMembers(root,s,world,canEdit,render,toast);
+ root.querySelectorAll('[data-delete-home],[data-home-image],[data-open-room-image-menu]').forEach(b=>b.disabled=true);
  root.querySelectorAll('[data-home-floor-count]').forEach(b=>b.disabled=!canEdit);
  root.addEventListener('change',e=>{if(e.target.matches('[data-home-floor-count]')){stop(e);if(canEdit){change(()=>setHomeFloorCount(home.id,e.target.value));render()}}},true);
  root.addEventListener('click',e=>{

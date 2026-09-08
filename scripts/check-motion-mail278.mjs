@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {advanceSharedLife} from '../server-life.mjs';
-const g=await import('../state.js?v=20260908dev281');
-const {meetingScene}=await import('../meeting-journey.js?v=20260908dev281');
-const {orderAnimationCharacters}=await import('../character-placement.js?v=20260908dev281');
+const g=await import('../state.js?v=20260908dev282');
+const {meetingScene}=await import('../meeting-journey.js?v=20260908dev282');
+const {orderAnimationCharacters}=await import('../character-placement.js?v=20260908dev282');
 g.resetAll();const a=g.createCharacter(),b=g.createCharacter(),now=Date.now();
 const ca=g.state.characters[a],cb=g.state.characters[b],home=g.state.homes[ca.homeId];
 ca.ageGroup=cb.ageGroup='성인';g.state.characterViews[a]={[b]:{touchIntensity:'성인 간 친밀한 접촉까지'}};g.state.characterViews[b]={[a]:{touchIntensity:'성인 간 친밀한 접촉까지'}};

@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 const memory=new Map();globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js?v=20260908dev281'),sim=await import('../simulation.js?v=20260908dev281');
-const {drinkExperience,drinkLogCopy}=await import('../drink-log.js?v=20260908dev281');
-const {localizeLifeLog}=await import('../life-log-localization.js?v=20260908dev281');
+const game=await import('../state.js?v=20260908dev282'),sim=await import('../simulation.js?v=20260908dev282');
+const {drinkExperience,drinkLogCopy}=await import('../drink-log.js?v=20260908dev282');
+const {localizeLifeLog}=await import('../life-log-localization.js?v=20260908dev282');
 const drink={id:'test-drink',kind:'drink',name:'테스트 에이드',sweet:5,acidity:4,carbonation:5,temperature:'차갑게',caffeine:'디카페인',alcohol:'무알코올'};
 const cueSet=new Set();for(let seed=0;seed<6;seed++)for(const cue of drinkExperience(drink,{sweetPreference:1},seed).cues)cueSet.add(cue);
 for(const cue of ['cold','tooSweet','sour','fizzy','decaf','noAlcohol'])assert.ok(cueSet.has(cue));

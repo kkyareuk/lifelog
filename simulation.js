@@ -1,12 +1,12 @@
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260908dev281';
-import {dailyInteractionLine} from './scene-context.js?v=20260908dev281';
-import {careRoutineFor} from "./creative-options.js?v=20260908dev281";
-import {drinkExperience} from "./drink-log.js?v=20260908dev281";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev281";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev281";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260908dev281";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev281";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev281";
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260908dev282';
+import {dailyInteractionLine} from './scene-context.js?v=20260908dev282';
+import {careRoutineFor} from "./creative-options.js?v=20260908dev282";
+import {drinkExperience} from "./drink-log.js?v=20260908dev282";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev282";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev282";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260908dev282";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev282";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev282";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -3744,28 +3744,28 @@ function viewDrivenInteraction(place,first,second,date){
     const own=Object.values(view||{}).join(" "),ownLove=/연애 감정|사랑|소중|좋아함/.test(own),ownAnnoyed=/귀찮|성가|짜증|보기만 해도 피곤/.test(own),ownHarsh=/거친 말을 하고 싶은/.test(view?.aggression||""),ownMisread=/불편함으로 착각/.test(view?.awareness||"");
     if(!(ownLove&&(ownAnnoyed||ownHarsh)&&ownMisread))return null;
     return {
-      ko:`${target.name}의 사소한 행동이 거슬린다며 퉁명스럽게 한마디하려다가 멈췄어요. 거친 말은 삼켰지만 자리를 피하지 않고 ${target.name}이 하던 말을 끝까지 들었어요. ${actor.name}은(는) 소중히 여기고 끌리는 마음까지 단순히 불편해서 신경 쓰이는 것이라고 잘못 생각했어요.`,
-      en:`${actor.name} almost snapped that one of ${target.name}'s small habits was annoying, but stopped. They swallowed the harsh words, stayed, and listened to the end. They mistook even their protectiveness and attraction for simple discomfort.`,
-      ja:`${actor.name}は${target.name}の些細な行動が気に障るとぶっきらぼうに言いかけて止まりました。きつい言葉は飲み込み、立ち去らず最後まで話を聞きました。大切に思い惹かれる気持ちまで、ただ居心地が悪くて気になるだけだと勘違いしています。`
-    }[state.uiLanguage]||`${target.name}의 사소한 행동이 거슬린다며 퉁명스럽게 한마디하려다가 멈췄어요. 거친 말은 삼켰지만 자리를 피하지 않고 ${target.name}이 하던 말을 끝까지 들었어요. ${actor.name}은(는) 소중히 여기고 끌리는 마음까지 단순히 불편해서 신경 쓰이는 것이라고 잘못 생각했어요.`;
+      ko:`${target.name}에게 차가운 말투로 짧게 대답했어요. 사소한 행동에도 퉁명스럽게 반응하며 거리를 두었어요. 자꾸 신경 쓰이는 마음을 그저 상대가 거슬리기 때문이라고 여겼어요.`,
+      en:`${actor.name} gave ${target.name} a short, cold reply and reacted curtly to small gestures. They kept their distance, mistaking their persistent interest for irritation.`,
+      ja:`${actor.name}は${target.name}に冷たい口調で短く答えました。些細な仕草にもそっけなく反応して距離を置き、気になるのは相手が気に障るからだと思っています。`
+    }[state.uiLanguage]||`${target.name}에게 차가운 말투로 짧게 대답했어요. 사소한 행동에도 퉁명스럽게 반응하며 거리를 두었어요. 자꾸 신경 쓰이는 마음을 그저 상대가 거슬리기 때문이라고 여겼어요.`;
   };
   const firstConflict=conflictedViewAction(first,second,firstView),secondConflict=conflictedViewAction(second,first,secondView);
   if(firstConflict||secondConflict){
     const conflictedTitles={
-      ko:[`${second.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`,`${first.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`],
-      en:[`Staying in the conversation despite mixed feelings toward ${second.name}`,`Staying in the conversation despite mixed feelings toward ${first.name}`],
-      ja:[`${second.name}にぶっきらぼうに接しながらも会話を続けているところ`,`${first.name}にぶっきらぼうに接しながらも会話を続けているところ`]
-    }[state.uiLanguage]||[`${second.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`,`${first.name}에게 퉁명스럽게 굴면서도 대화를 이어 가는 중`];
+      ko:[`${second.name}에게 차갑게 대하는 중`,`${first.name}에게 차갑게 대하는 중`],
+      en:[`Being cold toward ${second.name}`,`Being cold toward ${first.name}`],
+      ja:[`${second.name}に冷たく接しているところ`,`${first.name}に冷たく接しているところ`]
+    }[state.uiLanguage]||[`${second.name}에게 차갑게 대하는 중`,`${first.name}에게 차갑게 대하는 중`];
     const listeningTitles={
-      ko:[`${togetherWith(second.name)} 같은 대화를 이어 가는 중`,`${togetherWith(first.name)} 같은 대화를 이어 가는 중`],
-      en:[`Continuing the same conversation with ${second.name}`,`Continuing the same conversation with ${first.name}`],
-      ja:[`${second.name}と同じ会話を続けているところ`,`${first.name}と同じ会話を続けているところ`]
-    }[state.uiLanguage]||[`${togetherWith(second.name)} 같은 대화를 이어 가는 중`,`${togetherWith(first.name)} 같은 대화를 이어 가는 중`];
+      ko:[`${togetherWith(second.name)} 대화하는 중`,`${togetherWith(first.name)} 대화하는 중`],
+      en:[`Talking with ${second.name}`,`Talking with ${first.name}`],
+      ja:[`${second.name}と話しているところ`,`${first.name}と話しているところ`]
+    }[state.uiLanguage]||[`${togetherWith(second.name)} 대화하는 중`,`${togetherWith(first.name)} 대화하는 중`];
     const titles=[firstConflict?conflictedTitles[0]:listeningTitles[0],secondConflict?conflictedTitles[1]:listeningTitles[1]];
     const neutral=(actor,target)=>({
-      ko:`${target.name}의 말투가 거칠어진 것을 알아차렸지만 다른 일을 시작하지 않았어요. 방금 하던 대화의 쟁점을 하나씩 확인하며 ${actor.name}의 대답을 기다렸어요.`,
-      en:`${actor.name} noticed ${target.name}'s tone turn rough, but did not wander off to another activity. They stayed with the topic and waited for an answer.`,
-      ja:`${actor.name}は${target.name}の口調が荒くなったことに気づきましたが、別のことは始めませんでした。話していた要点を一つずつ確かめ、返事を待ちました。`
+      ko:`${target.name}의 차가운 말투에 잠시 말을 멈췄어요. 표정을 살피다가 방금 하던 이야기를 짧게 되물었어요.`,
+      en:`${actor.name} paused at ${target.name}'s cold tone, watched their expression, and asked a brief question about what they had just said.`,
+      ja:`${actor.name}は${target.name}の冷たい口調に一瞬言葉を止めました。表情をうかがい、先ほどの話について短く聞き返しました。`
     }[state.uiLanguage]);
     return {title:titles[0],firstTitle:titles[0],secondTitle:titles[1],first:firstConflict||neutral(first,second),second:secondConflict||neutral(second,first)};
   }
@@ -4899,12 +4899,13 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   ].join(":");
   const sharedActionText=cleanRepeatedSceneText(`${scene.title||""} ${scene.first||""} ${scene.second||""}`);
   const participantNames=participantOrder.map(id=>state.characters[id]?.name).filter(Boolean).join(" · ");
-  const sharedCanonicalTitle=sharedContext?.sharedCanonicalTitle||resolveEntityParticles(`${participantNames} · ${scene.title||combinedTitle}`);
-  const topic=/싸움|다툼|입맞춤|포옹|키스|갈등/.test(sharedActionText)||hash(`${interactionId}:${c.id}:topic`)%3!==0?"":environmentConversation(c,{...current,home:isHomeScene,visitHomeId:currentHomeId},state);
+  const sharedCanonicalTitle=sharedContext?.sharedCanonicalTitle||resolveEntityParticles(scene.title||title);
+  const topic=""; // A resolved conversation already has a topic; do not append unrelated town chatter.
   const sharedCanonicalDesc=sharedContext?.sharedCanonicalDesc||resolveEntityParticles([compactLogDescription(sharedActionText),topic].filter(Boolean).join(" "));
   const perspectiveDesc=resolveEntityParticles([compactLogDescription(detail),topic].filter(Boolean).join(" "));
   const shortConflict=!dating&&/짧게 말씨름|말다툼|의견이 부딪|날 선 대화/.test(sharedActionText);
-  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(title),desc:perspectiveDesc,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose,holdMinutes:dating?current.holdMinutes:(shortConflict?12:25)};
+  const sharedPerspectives=Object.fromEntries([[pair.first,scene.firstTitle||scene.title,scene.first],[pair.second,scene.secondTitle||String(scene.title||" ").split(pair.second.name).join(pair.first.name),scene.second]].map(([person,t,d])=>[person.id,{title:resolveEntityParticles(t),desc:resolveEntityParticles(compactLogDescription(d))}]));
+  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(title),desc:perspectiveDesc,sharedPerspectives,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose,holdMinutes:dating?current.holdMinutes:(shortConflict?12:25)};
 }
 function companionAlignedBaseEvent(c,current,date){
   if(!c||activeScheduledRoutine(c,date)||isProtectedSoloActivity(current))return current;
@@ -5047,7 +5048,7 @@ function calculateEventFor(c,date){
       // 상대 관점의 문장만 다시 만든다. 화면을 여는 순서에 따라 만남이 갈라지지 않는다.
       timeline(other,date);
       const otherBase=baseEventFor(other,date);
-      const synchronizedCounterpart={...otherBase,...sharedLocation,title:current.sharedCanonicalTitle||current.title,desc:current.sharedCanonicalDesc||current.desc,baseTitle:otherBase.baseTitle||otherBase.title,baseDesc:otherBase.baseDesc||otherBase.desc,sharedCanonicalTitle:current.sharedCanonicalTitle||current.title,sharedCanonicalDesc:current.sharedCanonicalDesc||current.desc,sharedActionText:current.sharedActionText,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
+      const synchronizedCounterpart={...otherBase,...sharedLocation,title:current.sharedPerspectives?.[other.id]?.title||current.sharedCanonicalTitle||current.title,desc:current.sharedPerspectives?.[other.id]?.desc||current.sharedCanonicalDesc||current.desc,sharedPerspectives:current.sharedPerspectives,baseTitle:otherBase.baseTitle||otherBase.title,baseDesc:otherBase.baseDesc||otherBase.desc,sharedCanonicalTitle:current.sharedCanonicalTitle||current.title,sharedCanonicalDesc:current.sharedCanonicalDesc||current.desc,sharedActionText:current.sharedActionText,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
       synchronizedCounterpart.minute=sharedMinute;
       synchronizedCounterpart.time=clock(sharedMinute);
       synchronizedCounterpart.interactionStartedMinute=sharedMinute;
