@@ -46,7 +46,9 @@ app.use((request,response,next)=>{
 async function signedInUser(request){
   const authorization=String(request.get("Authorization")||"");
   if(!authorization.startsWith("Bearer "))throw Object.assign(new Error("Google 로그인이 필요합니다."),{status:401});
-  return getAuth().verifyIdToken(authorization.slice(7),true);
+  const identity=await getAuth().verifyIdToken(authorization.slice(7),true);
+  if((await db.collection('deletedAccounts').doc(identity.uid).get()).exists)throw Object.assign(new Error('Account deletion in progress'),{status:403});
+  return identity;
 }
 
 async function playPurchase(productId,purchaseToken){
@@ -330,3 +332,13 @@ exports.expireVillageMail=require('firebase-functions/v2/scheduler').onSchedule(
  cursor=page.docs.at(-1);if(page.size<100)break;}
  await deleteExpired(db.collection('notificationOutbox'),cutoff);
 });
+
+const accountApp=express();
+accountApp.use(express.json({limit:'2kb'}));
+accountApp.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.set('Access-Control-Allow-Headers','Authorization, Content-Type');res.set('Access-Control-Allow-Methods','POST, OPTIONS');if(req.method==='OPTIONS')return res.status(204).end();next()});
+const deletionService=require('./account-deletion').createAccountDeletion({db,auth:getAuth(),bucket:require('firebase-admin/storage').getStorage().bucket('lifelog-98fff.firebasestorage.app')});
+for(const action of ['preview','delete'])accountApp.post('/'+action,async(req,res)=>{
+ try{const token=String(req.get('Authorization')||'').replace(/^Bearer /,'');const identity=await getAuth().verifyIdToken(token,true);res.json(action==='preview'?await deletionService.preview(identity.uid):await deletionService.remove(identity,req.body||{}))}
+ catch(error){res.status(error.status||401).json({code:error.status?error.message:'account-deletion-failed'})}
+});
+exports.accountDeletionApi=onRequest({region:'asia-northeast3',timeoutSeconds:540,memory:'512MiB',maxInstances:2,concurrency:1},accountApp);

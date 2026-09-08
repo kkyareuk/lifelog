@@ -21,10 +21,12 @@
   const result=await response.json().catch(()=>({}));if(!response.ok)throw error(result.code||'FAILED');return result;
  }
  async function settle(purchase,auth){
-  const result=await request('verify',{transactionId:purchase.transactionId},auth);
+  const result=await request('verify',{transactionId:purchase.transactionId,signedTransaction:purchase.signedTransaction},auth);
   if(result.verified!==true||result.entitlementApplied!==true)throw error('FAILED');
   // StoreKit retains unfinished transactions across restarts until the server commits.
-  await bridge.finishPurchase({transactionId:purchase.transactionId});return result;
+  await bridge.finishPurchase({transactionId:purchase.transactionId});
+  if(result.environment==="Sandbox")window.ParallelCityAuth?.setAppleSandboxEntitlements?.(result.entitlements);
+  return result;
  }
  async function exclusive(run){if(busy)throw error('BUSY');busy=true;try{return await run()}catch(e){if(messages[e.code])throw error(e.code);throw error('FAILED')}finally{busy=false}}
  async function restorePurchases(interactive=true){return exclusive(async()=>{

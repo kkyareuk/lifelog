@@ -34,6 +34,18 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
  app.post('/apple-billing/verify',handle(async(req,res)=>{
   const identity=await signedInUser(req),id=String(req.body?.transactionId||'');if(!/^\d{1,30}$/.test(id))throw fail('APPLE_INVALID_TRANSACTION',400);
   let service=services();
+  // Route using a verified Apple JWS, never a client environment flag. This
+  // also supports review transactions before Production recognizes a new app.
+  if(req.body?.signedTransaction){
+   const jws=req.body.signedTransaction;
+   if(typeof jws!=='string'||jws.length>24000)throw fail('APPLE_INVALID_TRANSACTION',400);
+   let hinted;
+   try{hinted=JSON.parse(Buffer.from(jws.split('.')[1]||'', 'base64url').toString()).environment}catch{throw fail('APPLE_INVALID_TRANSACTION',400)}
+   if(![Environment.PRODUCTION,Environment.SANDBOX].includes(hinted))throw fail('APPLE_INVALID_TRANSACTION',400);
+   service=services(hinted);
+   const signed=await service.verifier.verifyAndDecodeTransaction(jws);
+   validatePurchase(signed,identity.uid,service.environment,id);
+  }
   // Query Apple's current signed state, never trust a client-decoded receipt.
   let result;
   try{result=await service.api.getTransactionInfo(id)}catch(error){
@@ -43,14 +55,15 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
   const purchase=await service.verifier.verifyAndDecodeTransaction(result.signedTransactionInfo);
   const {productId,quantity}=validatePurchase(purchase,identity.uid,service.environment,id);
   const ref=db.collection('applePurchases').doc(service.environment+'-'+id),userRef=db.collection(service.environment===Environment.SANDBOX?'appleSandboxAccounts':'users').doc(identity.uid);
-  const field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';let alreadyApplied=false;
+  const field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';let alreadyApplied=false,grantedEntitlements;
   await db.runTransaction(async tx=>{
    const [receipt,user]=await Promise.all([tx.get(ref),tx.get(userRef)]);
-   if(receipt.exists){const saved=receipt.data();if(saved.uid!==identity.uid||saved.productId!==productId)throw fail('APPLE_ACCOUNT_MISMATCH');if(saved.revoked)throw fail('APPLE_REVOKED');alreadyApplied=true;return}
+   if(receipt.exists){const saved=receipt.data();if(saved.uid!==identity.uid||saved.productId!==productId)throw fail('APPLE_ACCOUNT_MISMATCH');if(saved.revoked)throw fail('APPLE_REVOKED');alreadyApplied=true;grantedEntitlements=user.data()?.[field];return}
    tx.set(ref,{uid:identity.uid,productId,storeProductId:purchase.productId,quantity,environment:service.environment,createdAt:serverTimestamp(),revoked:false});
-   tx.set(userRef,{[field]:nextEntitlements(user.data()?.[field],productId,quantity),updatedAt:serverTimestamp()},{merge:true});
+   grantedEntitlements=nextEntitlements(user.data()?.[field],productId,quantity);
+   tx.set(userRef,{[field]:grantedEntitlements,updatedAt:serverTimestamp()},{merge:true});
   });
-  res.json({verified:true,entitlementApplied:true,alreadyApplied,productId,quantity,environment:service.environment});
+  res.json({verified:true,entitlementApplied:true,alreadyApplied,productId,quantity,environment:service.environment,entitlements:grantedEntitlements});
  }));
  // A refund arriving before verification leaves a tombstone, so replay cannot grant it.
  app.post('/apple-billing/notifications',handle(async(req,res)=>{
