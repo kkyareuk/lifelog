@@ -7,7 +7,7 @@ import {fileURLToPath} from "node:url";
 
 const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
 const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
-const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-264");
+const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-273");
 await mkdir(output,{recursive:true});
 const previewAuth=await readFile(resolve(root,"scripts/ios-preview-auth.mjs"));
 const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
@@ -34,5 +34,19 @@ try{
  await page.screenshot({path:resolve(output,'town-navigation-after-scene-failure.png')});
  await page.evaluate(()=>{location.hash='tab=character'});await page.waitForFunction(()=>document.documentElement.dataset.activeTab==='character');
  console.log('PASS browser: failing resident does not block character switch, town switch or settings');
-}finally{await browser.close();server.close()}
+ await page.evaluate(async id=>{const g=await import('/state.js?v=20260908hotfix273');for(const day of Object.values(g.state.characters[id].days||{}))delete day.signature;},ids.a);
+ const itemId=await page.evaluate(async()=>{const g=await import('/state.js?v=20260908hotfix273');return g.addCatalogItem('drink',{name:'검사용 소다',category:'소다'})});
+ await page.evaluate(()=>{location.hash='tab=catalog'});
+ await page.locator(`[data-dict-open="${itemId}"]`).click();
+ assert.equal(await page.locator('[data-dict-field="spicy"]').count(),0);
+ await page.locator('[data-dict-field="carbonation"]').selectOption('3');
+ await page.locator('[data-dict-field="acidity"]').selectOption('2');
+ await page.locator('[data-dict-field="caffeine"]').selectOption('없음');
+ await page.locator('[data-dict-save]').click();
+ await page.locator(`[data-dict-open="${itemId}"]`).waitFor();
+ await page.reload();await page.waitForFunction(()=>window.ParallelCity);
+ const saved=await page.evaluate(async id=>(await import('/state.js?v=20260908hotfix273')).state.catalog.drink.find(x=>x.id===id),itemId);
+ assert.equal(saved.carbonation,3);assert.equal(saved.acidity,2);assert.equal(saved.caffeine,'없음');
+ console.log('PASS drink editor: no spice, carbonation/acidity/caffeine survive save and reload');
 
+}finally{await browser.close();server.close()}

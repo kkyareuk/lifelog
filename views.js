@@ -1,24 +1,24 @@
 // 모든 화면과 이벤트가 반드시 app.js와 같은 상태 모듈 인스턴스를 본다.
 // 캐시 키가 다르면 브라우저는 같은 state.js를 별도 모듈로 취급해 버튼은
 // 새 상태를 바꾸고 화면은 예전 상태를 그리는 치명적인 불일치가 생긴다.
-import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260907hotfix264";
-import {renderDictionary,itemArt} from "./dictionary.js?v=20260907hotfix264";
-import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260907hotfix264";
-import {characterMood} from "./character-mood.js?v=20260907hotfix264";
-import {createContactMailbox} from "./notification-mail.js?v=20260907hotfix264";
-import {dictionaryCopy} from "./dictionary-copy.js?v=20260907hotfix264";
-import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260907hotfix264";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260907hotfix264";
-import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260907hotfix264";
-import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260907hotfix264";
-import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260907hotfix264";
-import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260907hotfix264";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907hotfix264";
-import {achievementRows} from "./achievements.js?v=20260907hotfix264";
-import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260907hotfix264";
-import {homeSleepAnimation} from "./home-simulation.js?v=20260907hotfix264";
-import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260907hotfix264";
-import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260907hotfix264";
+import {state,active,characterViewFor,explicitCharacterViewFor} from "./state.js?v=20260908hotfix273";
+import {renderDictionary,itemArt} from "./dictionary.js?v=20260908hotfix273";
+import {PLACEMENTS,characterPlacement,orderAnimationCharacters} from "./character-placement.js?v=20260908hotfix273";
+import {characterMood} from "./character-mood.js?v=20260908hotfix273";
+import {createContactMailbox} from "./notification-mail.js?v=20260908hotfix273";
+import {dictionaryCopy} from "./dictionary-copy.js?v=20260908hotfix273";
+import {eventFor as simulateEventFor,visibleTimeline as simulateVisibleTimeline,homeGroups,withSimulationBatch} from "./simulation.js?v=20260908hotfix273";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260908hotfix273";
+import {furnitureFootprint,furnitureIcon,furnitureLabel,furniturePropIcon,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260908hotfix273";
+import {homeSurfaceImage,normalizeHomeSurface,normalizeWallSurface,wallSurfaceImage} from "./home-surfaces.js?v=20260908hotfix273";
+import {TOWN_TYPE_SUBTYPES,TOWN_TYPES,TOWN_REPUTATIONS,TOWN_FAME_LEVELS,TOWN_TERRAINS,TOWN_TRANSPORTS} from "./town-profile.js?v=20260908hotfix273";
+import {normalizeBuildingLighting,buildingLightsOn,scheduleTownLighting} from "./town-lighting.js?v=20260908hotfix273";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908hotfix273";
+import {achievementRows} from "./achievements.js?v=20260908hotfix273";
+import {homeEditorCopy,homeFurnitureDrawer,homeRoomBrowser,homeMemberMenu,homeInformationMarkup} from "./home-editor-ui.js?v=20260908hotfix273";
+import {homeSleepAnimation} from "./home-simulation.js?v=20260908hotfix273";
+import {WALKING_STYLE_OPTIONS,walkingGait,walkStyleClassFor} from "./walking-gaits.js?v=20260908hotfix273";
+import {shouldRenderTabletObserveMap} from "./observe-responsive.js?v=20260908hotfix273";
 const esc=(x="")=>String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
@@ -696,13 +696,14 @@ const visibleTimeline=(c,date=renderSceneDate||new Date())=>{
 };
 const JOBS=["무직","학생","회사원","CEO","의사","간호사","교사","교수","정치인","기자","요리사","프로그래머","연구원","가수","아이돌","예술가","해적","군인","범죄자","환경미화원","여관주인","자영업·직접 입력"];
 const TASTES=["아재 입맛","어린이 입맛","한식파","면 요리 선호","디저트광","커피 못 마심","신상 맛집파"];
-const INTERESTS=["향수","애니메이션","만화","게임","패션","미술","음악","영화","드라마","예능","문구","인테리어","역사","기계","자동차","오토바이","철도","항공","천문학","우주","과학","의학","심리학","철학","정치","경제","법률","언어","외국어","여행","지도","지리","건축","사진","영상 편집","글쓰기","소설","시","요리","베이킹","커피","차","와인","반려동물","식물","원예","자연","환경","캠핑","등산","러닝","헬스","요가","축구","야구","농구","e스포츠","보드게임","퍼즐","마술","공예","뜨개질","재봉","목공","도예","수집","빈티지","전자기기","프로그래밍","로봇","인공지능","오컬트","신화","종교","범죄 사건","추리","밀리터리","무기"];
-const HOBBIES=["취미 없음","집에서 뒹굴기","외출 안 함","인터넷 서핑","커뮤니티 눈팅","영상 정주행","낮잠","덕질","독서","웹소설 읽기","만화 보기","글쓰기","일기 쓰기","필사","외국어 공부","카페 탐방","맛집 탐방","쇼핑","빈티지 숍 구경","패션 코디","향수 시향","요리","베이킹","커피 내리기","차 우리기","칵테일 만들기","청소","정리 정돈","인테리어 꾸미기","식물 돌보기","원예","반려동물과 놀기","산책","러닝","등산","캠핑","자전거","수영","헬스","요가","필라테스","축구","야구","농구","사진 촬영","영상 촬영","영상 편집","그림 그리기","디지털 드로잉","전시 관람","공연 관람","영화 감상","음악 감상","악기 연주","노래 부르기","춤추기","공방 체험","도예","뜨개질","재봉","자수","목공","가죽 공예","프라모델 조립","피규어 수집","우표 수집","레코드 수집","보드게임","퍼즐","방탈출","게임","e스포츠 시청","코딩","전자기기 만지기","자동차 관리","드라이브","천체 관측","여행 계획","지도 보기","역사 탐방","봉사활동"];
+const MARTIAL_ARTS=["격투기","태권도","권법","검술","창술"];
+const INTERESTS=["향수","애니메이션","만화","게임","패션","미술","음악","영화","드라마","예능","문구","인테리어","역사","기계","자동차","오토바이","철도","항공","천문학","우주","과학","의학","심리학","정신건강","정신건강 지식","철학","정치","경제","법률","언어","외국어","여행","지도","지리","건축","사진","영상 편집","글쓰기","소설","시","요리","베이킹","커피","차","와인","반려동물","식물","원예","자연","환경","캠핑","등산","러닝","헬스","요가",...MARTIAL_ARTS,"축구","야구","농구","e스포츠","보드게임","퍼즐","마술","공예","뜨개질","재봉","목공","도예","수집","빈티지","전자기기","프로그래밍","로봇","인공지능","오컬트","신화","종교","범죄 사건","추리","밀리터리","무기"];
+const HOBBIES=["취미 없음","집에서 뒹굴기","외출 안 함","인터넷 서핑","커뮤니티 눈팅","영상 정주행","낮잠","덕질","독서","웹소설 읽기","만화 보기","글쓰기","일기 쓰기","필사","외국어 공부","카페 탐방","맛집 탐방","쇼핑","빈티지 숍 구경","패션 코디","향수 시향","요리","베이킹","커피 내리기","차 우리기","칵테일 만들기","청소","정리 정돈","인테리어 꾸미기","식물 돌보기","원예","반려동물과 놀기","산책","러닝","등산","캠핑","자전거","수영","헬스","요가","필라테스",...MARTIAL_ARTS,"축구","야구","농구","사진 촬영","영상 촬영","영상 편집","그림 그리기","디지털 드로잉","전시 관람","공연 관람","영화 감상","음악 감상","악기 연주","노래 부르기","춤추기","공방 체험","도예","뜨개질","재봉","자수","목공","가죽 공예","프라모델 조립","피규어 수집","우표 수집","레코드 수집","보드게임","퍼즐","방탈출","게임","e스포츠 시청","코딩","전자기기 만지기","자동차 관리","드라이브","천체 관측","여행 계획","지도 보기","역사 탐방","봉사활동"];
 const INCOMES=["절약 우선","가성비 중시","필요한 만큼 소비","취향에는 아끼지 않음","품질 우선","가격을 거의 신경 쓰지 않음"];
 const MUSIC=["발라드","인디","재즈","클래식","록","힙합","R&B","K-POP","J-POP","OST","전자음악","트로트"];
 const FOODS=["한식","일식","중식","양식","분식","고기","해산물","면 요리","디저트","매운 음식","채식"];
 const FOOD_PREFERENCES=[...TASTES,...FOODS];
-const DRINKS=["아메리카노","카페라테","바닐라 라테","아인슈페너","밀크티","말차 라테","차","탄산음료","주스","핫초코"];
+const DRINKS=["소다","모히토","무알코올 모히토","에이드","스무디","아메리카노","카페라테","바닐라 라테","아인슈페너","밀크티","말차 라테","차","탄산음료","주스","핫초코"];
 const SPICE_LEVELS=["안 매움","살짝 매콤","순한맛","보통 라면 맵기","매운맛","아주 매운맛"];
 const SWEET_LEVELS=["안 달음","은은한 단맛","적당히 달콤","달콤함","아주 달콤함","극강의 단맛"];
 const PERSONALITY_LEVELS={
@@ -729,7 +730,7 @@ const PLACE_TYPES={
   "기타":[""]
 };
 const CATALOG_LABELS={food:"음식",ingredient:"식재료",drink:"음료",fashion:"옷·패션",music:"음악",idol:"아이돌·밴드",book:"책·작품",movie:"영화·영상",game:"게임",perfume:"향수",hobby:"취미 물품",electronics:"전자기기",weapon:"무기",animal:"동물"};
-const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식","기타"],ingredient:["채소","과일","곡물","육류","해산물","유제품","달걀","향신료·조미료","가공식품","기타 식재료"],drink:["커피","차","라테","탄산음료","주스","술","기타 음료","기타"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리","기타"],music:["노래","앨범","플레이리스트","악기","기타"],idol:["솔로 가수","아이돌","밴드","가상 아티스트","기타"],book:["소설","만화","잡지","에세이","전문서적","기타"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상","기타"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임","기타"],perfume:["향수","디퓨저","캔들","바디 제품","기타"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품","기타"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전","기타"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기","기타"],animal:["개","고양이","새","토끼","말","소형 포유류","파충류·양서류","어류","곤충·절지동물","가축","야생동물","판타지 생물","기타"]};
+const CATALOG_CATEGORIES={food:["한식","일식","중식","이탈리아 음식","양식","분식","패스트푸드","디저트","빵","간식","기타"],ingredient:["채소","과일","곡물","육류","해산물","유제품","달걀","향신료·조미료","가공식품","기타 식재료"],drink:["커피","차","라테","탄산음료","소다","주스","에이드","스무디","술","모히토","무알코올 모히토","기타 음료","기타"],fashion:["상의","하의","아우터","원피스","신발","가방","액세서리","기타"],music:["노래","앨범","플레이리스트","악기","기타"],idol:["솔로 가수","아이돌","밴드","가상 아티스트","기타"],book:["소설","만화","잡지","에세이","전문서적","기타"],movie:["영화","드라마","애니메이션","예능","유튜브·웹영상","기타"],game:["PC 게임","콘솔 게임","모바일 게임","보드게임","기타"],perfume:["향수","디퓨저","캔들","바디 제품","기타"],hobby:["미술 도구","수집품","운동 용품","공예 도구","반려동물 용품","기타"],electronics:["휴대기기","컴퓨터","게임기","음향기기","카메라","생활가전","기타"],weapon:["총기","검·도검","활·석궁","둔기","창·장병기","방어구","판타지 무기","기타"],animal:["개","고양이","새","토끼","말","소형 포유류","파충류·양서류","어류","곤충·절지동물","가축","야생동물","판타지 생물","기타"]};
 const BLADE_SUBTYPES=["단검","나이프","쇼트소드","아밍소드","롱소드","바스타드소드","대검","클레이모어","레이피어","에페","세이버","커틀러스","샴시르","시미터","카타나","타치","와키자시","노다치","쌍검","검지팡이","의장검"];
 const WEAPON_SUBTYPES={총기:["권총","리볼버","기관단총","돌격소총","소총","저격소총","산탄총","기관총"],"검·도검":BLADE_SUBTYPES,도검:BLADE_SUBTYPES,검:BLADE_SUBTYPES,"활·석궁":["단궁","장궁","복합궁","컴파운드 보우","석궁"],둔기:["곤봉","메이스","철퇴","전투망치"],"창·장병기":["창","장창","할버드","언월도","삼지창"],방어구:["방패","경갑","중갑","투구"],"판타지 무기":["마법봉","지팡이","마도서","마검","에너지 무기"]};
 Object.assign(UI_TEXT.en,{
@@ -3105,7 +3106,7 @@ function character(){
   const bookListSources={
     makeupStyles:{path:"bodyProfile.appearance.makeupStyles",groups:{"화장 스타일":MAKEUP_STYLES}},cosmeticSurgeryAreas:{path:"bodyProfile.appearance.cosmeticSurgeryAreas",groups:{"시술 부위":SURGERY_AREAS}},
     favoriteFashionStyles:{groups:WARDROBE_TAG_GROUPS},
-    interests:{groups:{"관심사":INTERESTS}},hobbies:{groups:{"취미":HOBBIES}},favoriteStoryGenres:{groups:{"장르":storyGenres}},skills:{groups:{"기술":["요리","악기","그림","글쓰기","운동","춤","연기","공예","프로그래밍","외국어","정비","의료"]}},foodPreferences:{groups:{"음식":FOOD_PREFERENCES}},drinks:{groups:{"음료":DRINKS}},musicGenres:{groups:{"음악":MUSIC}},favoriteVideoGenres:{groups:{"영상":videoFormats}},favoriteGameGenres:{groups:{"게임":gameGenres}},favoriteScentNotes:{groups:{"향":PERFUME_NOTES}},favoriteAnimals:{groups:{"동물":["개","고양이","새","토끼","파충류","어류","말","야생동물"]}},favoriteElectronics:{groups:{"전자기기":["스마트폰","컴퓨터","게임기","카메라","오디오","스마트홈","웨어러블"]}},favoriteWeapons:{groups:{"무기":["검","활","총기","창","도끼","둔기","마법 도구"]}},favoriteBooks:{groups:{"책":storyGenres}},
+    interests:{groups:{"관심사":INTERESTS}},hobbies:{groups:{"취미":HOBBIES}},favoriteStoryGenres:{groups:{"장르":storyGenres}},skills:{groups:{"기술":["요리","악기","그림","글쓰기","운동",...MARTIAL_ARTS,"춤","연기","공예","프로그래밍","외국어","정비","의료","심리학","정신건강 지식"]}},foodPreferences:{groups:{"음식":FOOD_PREFERENCES}},drinks:{groups:{"음료":DRINKS}},musicGenres:{groups:{"음악":MUSIC}},favoriteVideoGenres:{groups:{"영상":videoFormats}},favoriteGameGenres:{groups:{"게임":gameGenres}},favoriteScentNotes:{groups:{"향":PERFUME_NOTES}},favoriteAnimals:{groups:{"동물":["개","고양이","새","토끼","파충류","어류","말","야생동물"]}},favoriteElectronics:{groups:{"전자기기":["스마트폰","컴퓨터","게임기","카메라","오디오","스마트홈","웨어러블"]}},favoriteWeapons:{groups:{"무기":["검","활","총기","창","도끼","둔기","마법 도구"]}},favoriteBooks:{groups:{"책":storyGenres}},
     dislikedStoryGenres:{groups:{"장르":storyGenres}},dislikedFoodPreferences:{groups:{"음식":FOOD_PREFERENCES}},dislikedDrinks:{groups:{"음료":DRINKS}},dislikedMusicGenres:{groups:{"음악":MUSIC}},dislikedVideoGenres:{groups:{"영상":videoFormats}},dislikedGameGenres:{groups:{"게임":gameGenres}},dislikedScentNotes:{groups:{"향":PERFUME_NOTES}},dislikedAnimals:{groups:{"동물":["개","고양이","새","토끼","파충류","어류","말","야생동물"]}},dislikedElectronics:{groups:{"전자기기":["스마트폰","컴퓨터","게임기","카메라","오디오","스마트홈","웨어러블"]}},dislikedWeapons:{groups:{"무기":["검","활","총기","창","도끼","둔기","마법 도구"]}},dislikedBooks:{groups:{"책":storyGenres}}
   };
   const valueAtPath=(object,path)=>String(path||"").split(".").reduce((value,key)=>value?.[key],object);
@@ -4611,3 +4612,6 @@ Object.assign(UI_TEXT.en,{"웨딩드레스 부티크":"Wedding dress boutique","
 Object.assign(UI_TEXT.ja,{"웨딩드레스 부티크":"ウェディングドレス・ブティック","원형 경기장":"円形スタジアム","도심 오フィス":"都心オフィス","학사모 학교":"卒業帽の学校","여행가방 호텔":"スーツケースホテル","시계탑 학교":"時計台の学校","책더미 도서관":"本の山の図書館","옥상 정원 건물":"屋上庭園の建物","직접 그린 건물":"手描きの建物","시간별 조명":"時間指定の照明","원화의 흰색 유지":"原画の白色を保持"});
 Object.assign(UI_TEXT.en,{"캐릭터 정보":"Character information","선택한 캐릭터":"Selected character","기본 정보를 빠르게 수정":"Quickly edit basic information","설정책에서 자세히 수정":"Edit every detail in the settings book","펼친 책 페이지 이동":"Turn open-book spreads","이전 두 페이지":"Previous two pages","다음 두 페이지":"Next two pages"});
 Object.assign(UI_TEXT.ja,{"캐릭터 정보":"人物情報","선택한 캐릭터":"選択中の人物","기본 정보를 빠르게 수정":"基本情報をすばやく編集","설정책에서 자세히 수정":"設定帳ですべての詳細を編集","펼친 책 페이지 이동":"見開きページを移動","이전 두 페이지":"前の2ページ","다음 두 페이지":"次の2ページ"});
+
+Object.assign(I18N.en,{"정신건강": "Mental health", "정신건강 지식": "Mental health knowledge", "격투기": "Martial arts", "태권도": "Taekwondo", "권법": "Unarmed martial arts", "검술": "Swordsmanship", "창술": "Spear training", "소다": "Soda", "모히토": "Mojito", "무알코올 모히토": "Alcohol-free mojito", "에이드": "Fruit ade", "스무디": "Smoothie", "산미": "Acidity", "탄산": "Carbonation", "디카페인": "Decaffeinated", "저도수": "Low alcohol", "고도수": "High alcohol", "음료 온도": "Drink temperature", "상온": "Room temperature"});
+Object.assign(I18N.ja,{"정신건강": "メンタルヘルス", "정신건강 지식": "精神保健の知識", "격투기": "格闘技", "태권도": "テコンドー", "권법": "拳法", "검술": "剣術", "창술": "槍術", "소다": "ソーダ", "모히토": "モヒート", "무알코올 모히토": "ノンアルコールモヒート", "에이드": "フルーツエード", "스무디": "スムージー", "산미": "酸味", "탄산": "炭酸", "디카페인": "デカフェ", "저도수": "低アルコール", "고도수": "高アルコール", "음료 온도": "飲み物の温度", "상온": "常温"});
