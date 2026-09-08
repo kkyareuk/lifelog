@@ -1,12 +1,16 @@
 {
-  "commit": "841787a",
-  "androidCode": 264,
+  "commit": "ad741e1",
+  "androidCode": 274,
   "files": {
-    "app.js": "2acb477aa5c2fcd8d7c7105d2b7a70f5678b9d812a265b4aea792825a0d0186f",
-    "state.js": "65ccde2b10768941a300f180deb2b2805611562c059a8daca73cf51a280a5b5d",
-    "simulation.js": "56161f1bff824920b2bb3a705315accf534f0e40f1e61f34f329abf9e5198a61",
-    "auth.js": "d1a3c92baf525cfcabc4bbd3f67c539a9b83c62bb9da74b0e4fe91161842b644",
-    "app.css": "7e1be695e390f8e3eea3a7e5af2afb742df2c70eaaf4b3de0543bd8b375eb396",
-    "character-book.css": "b8f3105a5adde6e3a1659693edc0bd3c2145e677bc5e57c9692af8aee2cf613e"
+    "state.js": "3132699e0508ddcc477f0acb30b81fcf60e9bec7bd04107ee3b9d0b5dcf22f3d",
+    "simulation.js": "6a950caf066092a1ef722de57493c130c4b79c3f90bc92636a3d6129aa62b6b3",
+    "character-book.css": "031b72de2a8233cd576d0eee775e27578a741b6b42ccbd4bad791c4845f977ab"
+  },
+  "platformFiles": {
+    "auth.js": "07e7515790f53182d9b1a89155d7c6fbb2079f50841307885336f43b4ca55ed8",
+    "app.js": "e3d2591e1a32dc375d6b3ce421adf923c4aada582dd37eb2ade472e9d20aac36",
+    "views.js": "013fdcb7f7134f0bf88ee57d5a09b1a5e62a282762069501866aa35096c7423d",
+    "app.css": "977ba5ca6c18afd37dacd1e6b7e2965bf4dd7d06dca89d7c53012a1634cc189c",
+    "apple-billing-client.js": "bff7a624f960d4073c8ae05b4cd82b673e9213b2578d86c30779039ab26325dc"
   }
 }

@@ -256,6 +256,7 @@ img.sprite,.char-row>.sprite,.char-row>.avatar,.home-person>.sprite,.home-person
 
 /* 수동 계정 저장과 취향 사전 스티커 */
 .sync-panel{margin:0 0 22px;padding:22px;border:1px solid var(--line);border-radius:22px;background:linear-gradient(135deg,color-mix(in srgb,var(--p) 9%,#fff),color-mix(in srgb,var(--s) 10%,#fff))}
+.sync-actions button.apple-sign-in{background:#000;color:#fff;border:1px solid #000;border-radius:8px;min-height:44px;font-family:system-ui,sans-serif;font-weight:600;padding:10px 18px}
 .sync-panel h2{margin:0 0 8px}.sync-panel p{font-weight:700}.sync-actions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}
 .catalog-sticker{display:inline-block;width:34px;height:34px;margin-right:7px;object-fit:contain;vertical-align:middle;filter:drop-shadow(0 3px 3px #0002)}
 .building-art{object-fit:contain;background:transparent;filter:drop-shadow(0 8px 6px #2235)}
@@ -7836,3 +7837,5 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
   html.native-app[data-active-tab="character"] .birthday-parts label{display:grid!important;gap:4px!important}
   html.native-app[data-active-tab="character"] .birthday-parts small{grid-column:1/-1!important}
 }
+
+.character-code-dialog{width:min(440px,92vw);max-height:85dvh;overflow:auto;padding:20px;border:2px solid #856c52;border-radius:20px;background:#fff8eb;color:#352a22}.character-code-dialog input{width:100%;box-sizing:border-box;margin:12px 0}.character-code-dialog button{margin:6px;white-space:normal;height:auto;min-height:40px}.character-code-dialog img{display:block;width:120px;height:120px;object-fit:contain}

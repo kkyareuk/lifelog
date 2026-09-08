@@ -1,4 +1,4 @@
-name: iOS production 264 candidate
+name: iOS production candidate
 
 # A dedicated request change on dev is the only automatic trigger.
 # Do not enable PR, scheduled, tag, or ordinary source-change deployments.
@@ -30,7 +30,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check explicit internal-only request
+      - name: Check explicit App Store candidate request
         run: node scripts/check-ios-production.mjs
       - name: Verify Apple upload access and unused build number
         env:

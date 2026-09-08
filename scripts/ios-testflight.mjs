@@ -58,6 +58,7 @@ try{
   const profile=JSON.parse(run('python3',['-c','import sys,plistlib,json,base64,datetime; print(json.dumps(plistlib.loads(sys.stdin.buffer.read()),default=lambda v: base64.b64encode(v).decode() if isinstance(v,bytes) else v.isoformat()+"Z"))'],{input:decoded}));
   const team='3KH3F66KQ3',bundle='com.drawervillage.app';
   assert.deepEqual(profile.TeamIdentifier,[team]);
+  assert.deepEqual(profile.Entitlements['com.apple.developer.applesignin'],['Default'],'Signing profile must include Apple login');
   assert.equal(profile.Entitlements['application-identifier'],`${team}.${bundle}`);
   assert.equal(profile.Entitlements['get-task-allow'],false);
   assert.equal(profile.Entitlements['beta-reports-active'],true);

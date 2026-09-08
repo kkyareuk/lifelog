@@ -1,10 +1,10 @@
-import {accountStorage as localStorage} from "./account-storage.js?v=20260907hotfix264";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908hotfix274";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import {getAuth,GoogleAuthProvider,OAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,reauthenticateWithCredential,signOut} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {getFirestore,doc,getDoc,getDocFromServer,setDoc,collection,getDocs,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260907hotfix264";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908hotfix274";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -451,8 +451,10 @@ const normalizeEntitlements=value=>{
     note:typeof value?.note==="string"?value.note:""
   };
 };
+let sandboxSlotPreview=null;
 const publishEntitlements=value=>{
   entitlements=normalizeEntitlements(value);
+  if(sandboxSlotPreview?.uid===user?.uid)for(const field of ["characterSlotPacks","townSlotPacks"])entitlements[field]=Math.max(entitlements[field],Number(sandboxSlotPreview.value?.[field])||0);
   storageUsage={...storageUsage,maxCount:maxPhotos(),maxBytes:maxTotalBytes(),unlimited:false};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
   window.ParallelCity?.setEntitlements?.(entitlements);
@@ -633,6 +635,55 @@ async function login(){
   }
 }
 
+// Apple credentials come from the native provider, including its cryptographic nonce.
+async function deleteAccount(){
+  if(!user||busy||loginBusy||switchingAccount)return false;
+  const lang=String(document.documentElement.lang||"ko");
+  const copy=lang.startsWith("en")?{confirm:"Permanently delete this account, its characters, photos, shared character codes, purchased slots and groups you own? This affects all devices. Refunds are not automatic. Sign in again to confirm.",done:"Your account has been deleted.",failed:"Deletion could not be completed. Please retry. No other account was deleted."}:lang.startsWith("ja")?{confirm:"このアカウント、キャラクター、写真、共有コード、購入枠、主催するグループを完全に削除しますか？すべての端末に適用されます。自動返金はされません。確認のため再ログインします。",done:"アカウントを削除しました。",failed:"削除を完了できませんでした。再試行してください。他のアカウントは削除していません。"}:{confirm:"계정과 캐릭터·사진·공유 코드·구매한 슬롯·내가 방장인 멀티 그룹을 영구 삭제할까요? 모든 기기에 적용되며 자동 환불되지는 않습니다. 확인을 위해 다시 로그인합니다.",done:"계정을 삭제했어요.",failed:"삭제를 완료하지 못했어요. 다시 시도해 주세요. 다른 계정은 삭제하지 않았어요."};
+  if(!confirm(copy.confirm))return false;
+  const current=user,uid=current.uid,native=window.Capacitor?.Plugins?.FirebaseAuthentication;
+  if(!native||window.Capacitor?.getPlatform?.()!=="ios")return false;
+  loginBusy=true;
+  try{
+    const apple=current.providerData.some(p=>p.providerId==="apple.com");
+    const result=apple?await native.signInWithApple({skipNativeAuth:false,scopes:["email","name"]}):await native.signInWithGoogle({skipNativeAuth:true,useCredentialManager:false});
+    const credential=apple?new OAuthProvider("apple.com").credential({idToken:result.credential?.idToken,rawNonce:result.credential?.nonce}):GoogleAuthProvider.credential(result.credential?.idToken);
+    // Reauthentication rejects a different provider account without switching
+    // the web session or deleting the account selected accidentally.
+    await reauthenticateWithCredential(current,credential);
+    if(user?.uid!==uid)throw Error("Account changed");
+    if(apple){if(!result.credential?.authorizationCode)throw Error("Missing Apple authorization code");await native.revokeAccessToken({token:result.credential.authorizationCode})}
+    await activeSyncDone;switchingAccount=true;accountEpoch+=1;
+    const token=await current.getIdToken(true);
+    const response=await fetch("https://asia-northeast3-lifelog-98fff.cloudfunctions.net/accountDeletionApi/delete",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify({confirm:true,deleteOwnedGroups:true})});
+    const resultBody=await response.json();if(!response.ok||!resultBody.deleted)throw Error("Deletion incomplete");
+    await signOut(auth);await native.signOut().catch(()=>{});
+    const prefix="drawer-account:"+encodeURIComponent(uid)+":";
+    for(const key of Object.keys(window.localStorage))if(key.startsWith(prefix))window.localStorage.removeItem(key);
+    alert(copy.done);location.reload();return true;
+  }catch(error){switchingAccount=false;alert(copy.failed);return false}
+  finally{loginBusy=false;window.dispatchEvent(new Event("drawer-village-auth-busy"))}
+}
+
+async function loginApple(){
+  if(!ready||loginBusy||switchingAccount)return false;
+  const native=window.Capacitor?.Plugins?.FirebaseAuthentication;
+  if(window.Capacitor?.getPlatform?.()!=="ios"||!native)return false;
+  const lang=String(document.documentElement.lang||"ko"),copy=lang.startsWith("en")?{opening:"Opening Apple sign-in…",success:"Apple account connected",failed:"Apple sign-in failed. Please try again."}:lang.startsWith("ja")?{opening:"Appleサインインを開いています…",success:"Appleアカウントに接続しました",failed:"Appleサインインに失敗しました。再試行してください。"}:{opening:"Apple 로그인 화면을 여는 중…",success:"Apple 계정이 연결됐어요",failed:"Apple 로그인에 실패했어요. 다시 시도해 주세요."};
+  loginBusy=true;status(copy.opening);rememberGuestHandoffIntent();
+  try{
+    const result=await native.signInWithApple({skipNativeAuth:true,scopes:["email","name"]});
+    const idToken=result?.credential?.idToken,rawNonce=result?.credential?.nonce;
+    if(!idToken||!rawNonce)throw new Error("Missing Apple credential or nonce");
+    await signInWithCredential(auth,new OAuthProvider("apple.com").credential({idToken,rawNonce}));
+    toast(copy.success);return true;
+  }catch(error){
+    clearGuestHandoffIntent();
+    if(!/cancel|1001/i.test(String(error?.code)+" "+String(error?.message))){status(copy.failed);toast(copy.failed)}
+    return false;
+  }finally{loginBusy=false;window.dispatchEvent(new Event("drawer-village-auth-busy"))}
+}
+
 async function upload({silent=false,reason="",accountTransition=false}={}){
   if(switchingAccount&&!accountTransition)return false;
   const session=captureSession();
@@ -810,7 +861,7 @@ if(ready){
         publishEntitlements(null);
         storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
         publishGuideState(localGuideKeys());
-        status(user?`Google 계정 연결됨 · ${user.email||accountName()}`:"Google 로그인 안 됨");
+        status(user?`계정 연결됨 · ${user.email||accountName()}`:"Google 로그인 안 됨");
         if(user){
           try{await registerSignedInUser()}catch(error){if(epoch!==accountEpoch)return;console.warn(error)}
           if(epoch!==accountEpoch)return;
@@ -827,8 +878,26 @@ if(ready){
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
+async function mergeUploadedMedia(reference,manifest,session){
+  await runTransaction(db,async tx=>{const current=await tx.get(reference);assertSession(session);const latest=normalizeManifest(current.data()?.mediaManifest,null),items=[...new Map([...latest.items,...manifest.items].map(x=>[x.hash,x])).values()];if(items.length+latest.legacyCount>maxPhotos()||items.reduce((sum,item)=>sum+(Number(item.size)||0),0)>maxTotalBytes())throw Object.assign(new Error("storage-limit"),{code:"storage/total-size-limit"});tx.set(reference,{mediaManifest:{...latest,items}},{merge:true})});
+}
+async function publishCharacterCode(characterId){
+  requireCodeUser();await activeSyncDone;const session=captureSession();
+  const character=await window.ParallelCity.getCharacterForSharing(characterId);assertSession(session);if(!character)throw Error('Character missing');
+  const reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);
+  const manifest=normalizeManifest(previous.data()?.mediaManifest,null),prepared=await prepareState({character},structuredClone(manifest),null,session);
+  if(prepared.photoFailures)throw Object.assign(new Error(({ko:'사진을 올리지 못했어요. 사진을 포함하려면 다시 시도해 주세요.',en:'Photo upload failed. Please retry to include every photo.',ja:'写真をアップロードできませんでした。写真を含めるには再試行してください。'})[document.documentElement.lang]||'사진을 올리지 못했어요. 다시 시도해 주세요.'),{code:'groups/photo-upload-failed'});
+  await mergeUploadedMedia(reference,prepared.mediaManifest,session);
+  assertSession(session);return characterCodeRequest('publishCharacterCode',{character:prepared.gameState.character});
+}
+
+function requireCodeUser(){if(!user)throw Error(({ko:'로그인 후 사용할 수 있어요.',en:'Please sign in first.',ja:'ログインしてください。'})[document.documentElement.lang]||'로그인 후 사용할 수 있어요.');return user}
+async function characterCodeRequest(action,body){requireCodeUser();const session=captureSession(),token=await user.getIdToken();assertSession(session);const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/sharedTownApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});const result=await response.json();assertSession(session);if(!response.ok)throw Error(result.message||'Character code failed');return result}
+
 window.ParallelCityAuth={
-  login,upload,download,submitFeedback,markGuideSeen,resetGuides,
+  publishCharacterCode,readCharacterCode:code=>characterCodeRequest("readCharacterCode",{code}),revokeCharacterCode:code=>characterCodeRequest("revokeCharacterCode",{code}),
+  setAppleSandboxEntitlements:value=>{if(window.PARALLEL_CITY_CONFIG?.iosApp&&user){sandboxSlotPreview={uid:user.uid,value};publishEntitlements(entitlements)}},
+  login,loginApple,deleteAccount,upload,download,submitFeedback,markGuideSeen,resetGuides,
   logout:async()=>{
     accountEpoch+=1;switchingAccount=true;
     try{if(user)await signOut(auth)}catch(error){switchingAccount=false;throw error}

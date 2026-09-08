@@ -1,6 +1,6 @@
-require_relative '../../../drawer-village-dev260/node_modules/@capacitor/ios/scripts/pods_helpers'
+require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
-platform :ios, '14.0'
+platform :ios, '15.0'
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
@@ -9,15 +9,15 @@ use_frameworks!
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../../drawer-village-dev260/node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../../drawer-village-dev260/node_modules/@capacitor/ios'
-  pod 'CapacitorApp', :path => '../../../drawer-village-dev260/node_modules/@capacitor/app'
-  pod 'CapacitorBrowser', :path => '../../../drawer-village-dev260/node_modules/@capacitor/browser'
-  pod 'CapacitorLocalNotifications', :path => '../../../drawer-village-dev260/node_modules/@capacitor/local-notifications'
-  pod 'CapacitorNetwork', :path => '../../../drawer-village-dev260/node_modules/@capacitor/network'
-  pod 'CapacitorSplashScreen', :path => '../../../drawer-village-dev260/node_modules/@capacitor/splash-screen'
-  pod 'CapacitorStatusBar', :path => '../../../drawer-village-dev260/node_modules/@capacitor/status-bar'
-  pod 'CapacitorFirebaseAuthentication', :path => '../../../drawer-village-dev260/node_modules/@capacitor-firebase/authentication'
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
+  pod 'CapacitorBrowser', :path => '../../node_modules/@capacitor/browser'
+  pod 'CapacitorLocalNotifications', :path => '../../node_modules/@capacitor/local-notifications'
+  pod 'CapacitorNetwork', :path => '../../node_modules/@capacitor/network'
+  pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
+  pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
+  pod 'CapacitorFirebaseAuthentication', :path => '../../node_modules/@capacitor-firebase/authentication'
 end
 
 target 'App' do
