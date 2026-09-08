@@ -6,7 +6,7 @@ module.exports=({db,membership,notify,clock,id})=>{
   const [sender,group,residents]=await Promise.all([tx.get(root.collection('members').doc(p.senderUid)),tx.get(root),tx.get(root.collection('residents'))]);
   if(!sender.exists)fail('recipient-left-group',409);
   if(p.kind==='admission'){
-   if(group.data().ownerUid!==p.recipientUid)fail('recipient-changed',409);
+   if(group.data().ownerUid!==p.recipientUid&&!(p.appliedByAuthority&&p.recipientUid===p.senderUid&&['owner','manager','operator'].includes(sender.data().role)))fail('recipient-changed',409);
    if(residents.docs.some(r=>r.id===p.sourceId))fail('already-resident',409);
    if(residents.docs.filter(r=>r.data().ownerUid===p.senderUid).length>=limit(group.data(),sender.data())||residents.docs.length>=200)fail('resident-limit',409);
    if(!group.data().towns?.some(t=>t.id===p.resident.townId))fail('town-missing',409);
@@ -37,7 +37,7 @@ module.exports=({db,membership,notify,clock,id})=>{
     let r=input.resident;if(input.sourceGroupId){const origin=id(input.sourceGroupId);if(origin===root.id)fail('already-resident');const sourceRoot=db.collection('groups').doc(origin),[sourceMember,source]=await Promise.all([tx.get(sourceRoot.collection('members').doc(uid)),tx.get(sourceRoot.collection('residents').doc(id(input.sourceResidentId)))]);if(!sourceMember.exists||!source.exists||source.data().ownerUid!==uid)fail('character-owner-required',403);r={...source.data(),sourceCharacterId:source.data().sourceCharacterId||source.id,townId:input.townId};p.sourceGroupId=origin;p.sourceResidentId=source.id;const homeId=source.data().sharedHomeId||uid+'_'+source.data().sourceHomeId;if(homeId){const home=await tx.get(sourceRoot.collection('homes').doc(homeId));if(home.exists&&home.data().ownerUid===uid)input.home={sourceHomeId:r.sourceHomeId,name:home.data().name,layoutJson:home.data().layoutJson}}}if(!r||typeof r.name!=='string'||!r.name.trim()||r.name.length>40)fail('invalid-profile');
     const source=id(r.sourceCharacterId),sourceId=uid+'_'+source.replace(/[^A-Za-z0-9_-]/g,'_');
     const resident={ownerName:String(member.displayName||'').slice(0,40),sourceCharacterId:source,name:r.name,job:String(r.job||'').slice(0,60),townId:id(r.townId),sourceHomeId:String(r.sourceHomeId||''),profileJson:clean(r.profileJson),scheduleJson:clean(r.scheduleJson),photo:String(r.photo||'').slice(0,2000),icon:String(r.icon||'').slice(0,2000)};
-    p={...p,sourceId,sourceName:r.name,targetName:group.name||'',recipientUid:group.ownerUid,type:'입주 신청',resident};
+    p={...p,sourceId,sourceName:r.name,targetName:group.name||'',recipientUid:group.ownerUid===uid||['owner','manager','operator'].includes(member.role)?uid:group.ownerUid,appliedByAuthority:group.ownerUid===uid||['owner','manager','operator'].includes(member.role),type:'입주 신청',resident};
     if(input.home){const h=input.home;if(h.sourceHomeId!==resident.sourceHomeId)fail('invalid-home');p.home={id:uid+'_'+id(h.sourceHomeId).replace(/[^A-Za-z0-9_-]/g,'_'),ownerUid:uid,ownerName:resident.ownerName,sourceHomeId:h.sourceHomeId,townId:resident.townId,name:String(h.name||'집').slice(0,60),layoutJson:clean(h.layoutJson),residentNames:[r.name],visitPolicy:'members'}}
    }else{
     const sourceId=id(input.sourceId),homeId=id(input.homeId),[r,h]=await Promise.all([tx.get(root.collection('residents').doc(sourceId)),tx.get(root.collection('homes').doc(homeId))]);
