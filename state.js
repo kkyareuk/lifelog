@@ -1,25 +1,25 @@
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev288';
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev288';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev289';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev289';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev288";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev288";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev288";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev288";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev288";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev288";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev288";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev288";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev288";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev288";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev289";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev289";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev289";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev289";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev289";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev289";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev289";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev289";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev289";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev289";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev288";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev288";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev289";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev289";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -938,7 +938,8 @@ function load(){
 export let state=load();
 let editorPersonalState=null;
 let pendingPersonalTransferSave=false;
-export const personalState=()=>editorPersonalState||state;
+let isolatedPersonalState=null;
+export const personalState=()=>editorPersonalState||isolatedPersonalState||state;
 export const characterEditorActive=()=>Boolean(editorPersonalState);
 export function beginCharacterEditor(world){
   if(editorPersonalState)endCharacterEditor();
@@ -957,8 +958,8 @@ export const emptyWorld=()=>fresh();
 let isolatedWorldDepth=0;
 // Shared simulation/rendering must never write into a player's personal save.
 export function runIsolatedWorld(world,run){
-  const previous=state;state=world;isolatedWorldDepth++;
-  try{return run(state)}finally{state=previous;isolatedWorldDepth--}
+  const previous=state;if(!isolatedWorldDepth)isolatedPersonalState=previous;state=world;isolatedWorldDepth++;
+  try{return run(state)}finally{state=previous;isolatedWorldDepth--;if(!isolatedWorldDepth)isolatedPersonalState=null}
 }
 let timer;
 let pendingNotify=false;

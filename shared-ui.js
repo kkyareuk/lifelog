@@ -1,11 +1,11 @@
-import {runBackgroundAction} from './background-actions.js?v=20260909dev288';
-import {createCharacter,emptyWorld,runIsolatedWorld} from './state.js?v=20260909dev288';
-import {withTownEditDraft,stageTownEdit,commitTownEdit,townEditDraft,discardTownEdit} from './town-edit-draft.js?v=20260909dev288';
-import {bindSharedHome} from './shared-home-editor.js?v=20260909dev288';
-import {residentText} from './shared-residents.js?v=20260909dev288';
-import {sharedSelection,withSharedWorld,decodeShared,buildSharedWorld} from './shared-world.js?v=20260909dev288';
-import {state} from './state.js?v=20260909dev288';
-import {renderGroupRelations} from './groups.js?v=20260909dev288';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev289';
+import {createCharacter,emptyWorld,runIsolatedWorld} from './state.js?v=20260909dev289';
+import {withTownEditDraft,stageTownEdit,commitTownEdit,townEditDraft,discardTownEdit} from './town-edit-draft.js?v=20260909dev289';
+import {bindSharedHome} from './shared-home-editor.js?v=20260909dev289';
+import {residentText} from './shared-residents.js?v=20260909dev289';
+import {sharedSelection,withSharedWorld,decodeShared,buildSharedWorld} from './shared-world.js?v=20260909dev289';
+import {state} from './state.js?v=20260909dev289';
+import {renderGroupRelations} from './groups.js?v=20260909dev289';
 const messages={"다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.":["Another member edited this town. Refresh the layout and try again.","他のメンバーが先に編集しました。配置を確認してもう一度お試しください。"],"저장하지 못했어요":["Could not save.","保存できませんでした。"],"건물 편집 권한이 필요해요":["Building editing permission is required.","建物の編集権限が必要です。"],"내 캐릭터의 시선만 설정할 수 있어요":["You can only edit your own character’s viewpoint.","自分のキャラクターの視線だけを設定できます。"],"관계 제안을 보냈어요":["Relationship proposal sent.","関係の提案を送りました。"],"저장했어요":["Saved.","保存しました。"],"이 항목의 공유 편집 연결은 준비 중이에요":["Shared editing for this item is not available yet.","この項目の共有編集は準備中です。"],"이 시선 설정을 초기화할까요?":["Reset this viewpoint?","この視線設定を初期化しますか？"],"이 건물을 삭제할까요?":["Delete this building?","この建物を削除しますか？"],"삭제할까요?":["Delete this item?","削除しますか？"],"내 마을":["My town","自分のタウン"]};
 const tr=text=>messages[text]?.[{en:0,ja:1}[state.uiLanguage]]||text;
 const api=()=>window.DrawerVillageGroups, snapshot=()=>withTownEditDraft(api()?.getSnapshot?.()),uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
@@ -57,7 +57,7 @@ export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPa
   if(el.matches('[data-home-edit]')){stop(e);return}
   if(el.matches('[data-shared-residents]')){stop(e);select.residentDetail='';select.residentForm='';setMode('residents');setPanel('residents');render();return}
   if(el.matches('[data-shared-resident-detail]')){stop(e);select.residentDetail=el.dataset.sharedResidentDetail;select.residentForm='';render();return}
-  if(el.matches('[data-resident-apply]')){stop(e);select.residentForm='admission';render();return}
+  if(el.matches('[data-resident-apply]')){stop(e);select.residentForm='admission';render();if(api().readMoveCandidates)void api().readMoveCandidates().then(result=>{if(activeShared()?.activeGroupId!==s.activeGroupId)return;select.moveCandidates=result.characters||[];render()}).catch(error=>toast(error.message));return}
   if(el.matches('[data-resident-cohabit]')){stop(e);select.residentForm='cohabitation';render();return}
   if(el.matches('[data-resident-visit]')){stop(e);api().visitHome(el.dataset.residentVisit);location.hash='tab=home';return}
   if(el.matches('[data-resident-refresh]')){stop(e);enqueue(()=>api().refreshResidents(),toast);return}
@@ -84,7 +84,13 @@ export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPa
  },true);
   root.querySelector('[data-resident-reconnect]')?.addEventListener('click',()=>api().select(s.activeGroupId));
   root.querySelector('[data-resident-search]')?.addEventListener('input',e=>root.querySelectorAll('[data-resident-name]').forEach(card=>card.hidden=!card.dataset.residentName.includes(e.target.value.toLocaleLowerCase())));
- root.querySelector('[data-residence-request]')?.addEventListener('submit',e=>{stop(e);const form=e.currentTarget,input=Object.fromEntries(new FormData(form));enqueue(async()=>{const result=await(form.dataset.residenceRequest==='admission'?api().requestAdmission(input.characterId):api().requestCohabitation(input));select.residentForm='';select.residentDetail='';toast(residentText(result.status==='accepted'?'적용했어요':'제안을 보냈어요',result.status==='accepted'?'Applied':'Proposal sent',result.status==='accepted'?'反映しました':'提案を送りました'));render()},toast)});
+ const residenceForm=root.querySelector('[data-residence-request]');
+ if(residenceForm?.dataset.residenceRequest==='admission')residenceForm.addEventListener('change',()=>{select.moveChecked=[...residenceForm.querySelectorAll('input:checked')].map(e=>e.value);residenceForm.querySelector('[type=submit]').disabled=!residenceForm.querySelector('input:checked')});
+ residenceForm?.addEventListener('submit',async e=>{stop(e);const form=e.currentTarget,data=new FormData(form),input=Object.fromEntries(data),ids=data.getAll('characterId');if(form.dataset.residenceRequest==='admission'&&!ids.length)return;
+ const cross=ids.filter(id=>String(id).startsWith('group:'));if(cross.length){const dialog=document.createElement('dialog');dialog.className='relation-dialog';const title=document.createElement('h2');title.textContent=residentText('다른 멀티에서 이사할까요?','Move from another group?','別のグループから引っ越しますか？');const message=document.createElement('p');message.textContent=cross.map(id=>{const c=(select.moveCandidates||[]).find(c=>c.id===id);return (c?.name||'')+' · '+(c?.originName||'')}).join('\n')+' → '+s.group.name;const help=document.createElement('p');help.textContent=residentText('입주가 수락되면 원래 멀티에서 떠납니다. 거절되면 원래 소속에 남아요.','Characters leave their original group only after acceptance. Declined requests leave them in place.','入居が承認された後に元のグループを離れます。辞退された場合は元の所属に残ります。');const cancel=document.createElement('button'),ok=document.createElement('button');cancel.textContent=residentText('취소','Cancel','キャンセル');ok.textContent=residentText('확인하고 계속','Confirm and continue','確認して続ける');dialog.append(title,message,help,cancel,ok);document.body.append(dialog);const confirmed=await new Promise(resolve=>{dialog.onclose=()=>{resolve(dialog.returnValue==='yes');dialog.remove()};cancel.onclick=()=>dialog.close();ok.onclick=()=>dialog.close('yes');dialog.showModal()});if(!confirmed)return;}
+ form.querySelector('[type=submit]').disabled=true;
+ enqueue(async()=>{try{if(form.dataset.residenceRequest==='admission'){for(const id of ids){if(api().getSnapshot().activeGroupId!==s.activeGroupId)throw Error('Group changed');await api().requestAdmission(id);const checkbox=[...form.querySelectorAll('input[name=characterId]')].find(e=>e.value===id);if(checkbox){checkbox.checked=false;checkbox.disabled=true;select.moveChecked=(select.moveChecked||[]).filter(value=>value!==id);checkbox.closest('label').dataset.complete='true'}}}else await api().requestCohabitation(input);select.residentForm='';select.residentDetail='';toast(residentText('이사 요청을 처리했어요.','Move requests processed.','引っ越しリクエストを処理しました。'));render()}finally{if(form.isConnected)form.querySelector('[type=submit]').disabled=form.dataset.residenceRequest==='admission'?!form.querySelector('input:checked'):false}},toast)});
+
  root.addEventListener('change',e=>{
   const el=e.target;
   if(el.matches('[data-view-source],[data-view-target]')){stop(e);select[el.hasAttribute('data-view-source')?'source':'target']=el.value;render();return}

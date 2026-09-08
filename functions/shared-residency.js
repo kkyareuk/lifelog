@@ -23,6 +23,10 @@ module.exports=({db,membership,notify,clock,id})=>{
   tx.update(root,{lifeUpdatedAt:0});
  }
  return {
+  readMoveCandidates:async(uid,input)=>{
+   const links=await db.collection('users').doc(uid).collection('groupMemberships').get();
+   const rows=await Promise.all(links.docs.filter(d=>d.id!==input.groupId).map(async link=>{const root=db.collection('groups').doc(link.id);const [group,member,residents]=await Promise.all([root.get(),root.collection('members').doc(uid).get(),root.collection('residents').where('ownerUid','==',uid).get()]);if(!group.exists||!member.exists)return [];return residents.docs.map(d=>{const r=d.data();return {id:'group:'+link.id+':'+d.id,sourceGroupId:link.id,residentId:d.id,name:r.name,icon:r.icon||r.photo||'',originName:(group.data().name||'')+' · '+((group.data().towns||[]).find(t=>t.id===r.townId)?.name||'')}})}));return {characters:rows.flat()};
+  },
   requestResidence:async(uid,input)=>db.runTransaction(async tx=>{
    const {root,group,member}=await membership(tx,input.groupId,uid),key=id(input.requestId),kind=input.kind==='cohabitation'?'cohabitation':'admission',ref=root.collection('proposals').doc(key);
    if(kind==='cohabitation'&&group.rules?.allowCohabitation===false)fail('cohabitation-disabled',403);
@@ -30,7 +34,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    const recent=await tx.get(root.collection('proposals').where('senderUid','==',uid));if(recent.docs.filter(d=>d.data().createdAt>clock()-3600000).length>=20)fail('proposal-rate-limit',429);
    let p={kind,senderUid:uid,createdAt:clock(),status:'pending'};
    if(kind==='admission'){
-    const r=input.resident;if(!r||typeof r.name!=='string'||!r.name.trim()||r.name.length>40)fail('invalid-profile');
+    let r=input.resident;if(input.sourceGroupId){const origin=id(input.sourceGroupId);if(origin===root.id)fail('already-resident');const sourceRoot=db.collection('groups').doc(origin),[sourceMember,source]=await Promise.all([tx.get(sourceRoot.collection('members').doc(uid)),tx.get(sourceRoot.collection('residents').doc(id(input.sourceResidentId)))]);if(!sourceMember.exists||!source.exists||source.data().ownerUid!==uid)fail('character-owner-required',403);r={...source.data(),sourceCharacterId:source.data().sourceCharacterId||source.id,townId:input.townId};p.sourceGroupId=origin;p.sourceResidentId=source.id;const homeId=source.data().sharedHomeId||uid+'_'+source.data().sourceHomeId;if(homeId){const home=await tx.get(sourceRoot.collection('homes').doc(homeId));if(home.exists&&home.data().ownerUid===uid)input.home={sourceHomeId:r.sourceHomeId,name:home.data().name,layoutJson:home.data().layoutJson}}}if(!r||typeof r.name!=='string'||!r.name.trim()||r.name.length>40)fail('invalid-profile');
     const source=id(r.sourceCharacterId),sourceId=uid+'_'+source.replace(/[^A-Za-z0-9_-]/g,'_');
     const resident={ownerName:String(member.displayName||'').slice(0,40),sourceCharacterId:source,name:r.name,job:String(r.job||'').slice(0,60),townId:id(r.townId),sourceHomeId:String(r.sourceHomeId||''),profileJson:clean(r.profileJson),scheduleJson:clean(r.scheduleJson),photo:String(r.photo||'').slice(0,2000),icon:String(r.icon||'').slice(0,2000)};
     p={...p,sourceId,sourceName:r.name,targetName:group.name||'',recipientUid:group.ownerUid,type:'입주 신청',resident};
