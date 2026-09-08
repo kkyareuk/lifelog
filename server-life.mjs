@@ -2,14 +2,15 @@ globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
 globalThis.document??={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window??={addEventListener(){},dispatchEvent(){}};
 process.env.TZ='Asia/Seoul';
-const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260908dev278');
-const {buildSharedWorld}=await import('./shared-world.js?v=20260908dev278');
-const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260908dev278');
+const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260908dev279');
+const {buildSharedWorld}=await import('./shared-world.js?v=20260908dev279');
+const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260908dev279');
 export function advanceSharedLife(snapshot,now,command=null){
   const world=buildSharedWorld(snapshot);
   return runIsolatedWorld(world,()=>withSimulationBatch(()=>{
     const date=new Date(now),scenes={};
     if(command){const accepted=directCharacterActivity(command.characterId,command.kind,{targetId:command.targetId||"",topic:command.topic||"",positions:command.positions,giftSource:command.kind==="gift"?{id:"gift-"+now,interactionId:"gift-"+now,actorId:command.characterId,targetId:command.targetId,itemId:command.itemId,itemKind:command.itemKind,stamp:now}:null,now});if(!accepted&&command.kind==='affection')throw Object.assign(new Error('activity-location-required'),{code:'activity-location-required',status:400})}
+    for(const id of [...world.order].sort())eventFor(world.characters[id],date);
     for(const id of world.order){
       scenes[id]=eventFor(world.characters[id],date);
       const announcement=(snapshot.declarations||[]).find(d=>d.until>now&&d.participantIds.includes(id));

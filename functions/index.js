@@ -313,8 +313,8 @@ sharedApp.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.se
 let sharedEngine;
 const sharedService=require('./shared-town').createSharedTownService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
 const relationService=require('./shared-relations').createService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
-Object.assign(sharedService,relationService,require('./character-codes')({db}));
-for(const action of ['publishCharacterCode','readCharacterCode','revokeCharacterCode','advance','saveGroupPresentation','saveBuilding','saveTown','saveHomePlacement','saveHomeLayout','saveDecoration','publishCatalog','sendMail','requestResidence','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
+Object.assign(sharedService,relationService,require('./character-codes')({db}),{readMailbox:require('./account-mailbox')({db})});
+for(const action of ['readMailbox','publishCharacterCode','readCharacterCode','revokeCharacterCode','advance','saveGroupPresentation','saveBuilding','saveTown','saveHomePlacement','saveHomeLayout','saveDecoration','publishCatalog','sendMail','requestResidence','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
   try{const identity=await signedInUser(req);res.json(await sharedService[action](identity.uid,req.body||{}))}
   catch(error){const status=Number(error.status);res.status(status>=400&&status<600?status:503).json({message:error.status?error.message:'groups/server-error'})}
 });

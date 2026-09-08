@@ -121,5 +121,10 @@ const service=createSharedTownService({db,clock:()=>1000000,engine:async()=>snap
  console.log('PASS town/home/decoration shared edits, roles, revision conflicts and view field preservation');
  console.log('PASS declined reason and manual shared dictionary ownership, idempotency and 80-item limit');
  console.log('PASS proposals: recipient-only decisions, idempotency, declaration and notification outbox, perception ownership');
+ const rev=data.get('groups/g').buildingRevision;
+ await assert.rejects(service.saveTown('member',{groupId:'g',townId:'new',create:true,revision:rev,patch:{name:'New town'}}),e=>e.status===403);
+ await service.saveTown('host',{groupId:'g',townId:'new',create:true,revision:rev,patch:{name:'New town'}});assert.ok(data.get('groups/g').towns.some(t=>t.id==='new'));
+ await assert.rejects(service.saveTown('host',{groupId:'g',townId:'new',create:true,revision:rev,patch:{name:'Duplicate'}}),e=>e.status===409);
+ console.log('PASS authorized new town creation and duplicate rejection');
  console.log('PASS shared town membership, role permissions, stale edit rejection, own-character commands, throttling and concurrent viewer deduplication');
 })().catch(error=>{console.error(error);process.exitCode=1});

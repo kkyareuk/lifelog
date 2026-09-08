@@ -7,7 +7,7 @@ async function registerCurrentDevice(){
 }
 const plugin=()=>window.Capacitor?.getPlatform?.()==='android'?window.Capacitor?.Plugins?.PushNotifications:null;
 const account=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid||'';
-function openPendingNotification(){const pending=window.DrawerVillageGroupPush.pending;if(!pending?.groupId||!account())return;window.DrawerVillageGroupPush.pending=null;window.DrawerVillageMailTarget={groupId:pending.groupId,id:pending.proposalId};window.DrawerVillageGroups?.select(pending.groupId);location.hash='tab=mailbox&mail='+encodeURIComponent(pending.proposalId||'')}
+function openPendingNotification(){const pending=window.DrawerVillageGroupPush.pending;if(!pending?.groupId||!account())return;window.DrawerVillageGroupPush.pending=null;window.DrawerVillageMailTarget={groupId:pending.groupId,id:pending.proposalId};void window.DrawerVillageGroups?.refreshMailbox?.(true).catch(()=>{});location.hash='tab=mailbox&mail='+encodeURIComponent(pending.proposalId||'')}
 async function enableNow(prompt=true){
  const api=plugin();if(!api)return false;
  let permission=await api.checkPermissions();if(['prompt','prompt-with-rationale'].includes(permission.receive)&&prompt)permission=await api.requestPermissions();
@@ -16,7 +16,7 @@ async function enableNow(prompt=true){
   listening=true;
   await api.addListener('registration',async result=>{token=result.value;if(account())await registerCurrentDevice().catch(()=>{})});
   await api.addListener('pushNotificationActionPerformed',event=>{const data=event.notification?.data;if(data?.groupId){window.DrawerVillageGroupPush.pending=data;openPendingNotification()}});
-  await api.addListener('pushNotificationReceived',event=>{const groups=window.DrawerVillageGroups,gid=event.notification?.data?.groupId||event.data?.groupId;if(gid&&groups?.getSnapshot?.()?.activeGroupId===gid)return;return groups?.refresh?.()});
+  await api.addListener('pushNotificationReceived',()=>window.DrawerVillageGroups?.refreshMailbox?.(true));
  }
  await api.createChannel({id:'relationships',name:'Relationships',importance:4,visibility:0});
  await api.register();return true;

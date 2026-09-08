@@ -1,11 +1,11 @@
-import {sharedProfile} from './shared-world.js?v=20260908dev278';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev278";
+import {sharedProfile} from './shared-world.js?v=20260908dev279';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260908dev279";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev278";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260908dev279";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -809,7 +809,13 @@ const writeGroupContext=context=>localStorage.setItem(groupContextKey,JSON.strin
 }));
 let groupState=emptyGroupState();
 let groupUnsubscribers=[];
-const groupSnapshot=()=>groupState;
+let accountMailbox={uid:'',at:0,data:{}},mailboxRequest=null;
+const groupSnapshot=()=>({...groupState,...(accountMailbox.uid===user?.uid?accountMailbox.data:{})});
+async function refreshMailbox(force=false){
+ if(!user)return;if(accountMailbox.uid!==user.uid)accountMailbox={uid:user.uid,at:0,data:{}};
+ if(mailboxRequest)return mailboxRequest;if(!force&&Date.now()-accountMailbox.at<300000)return;
+ const uid=user.uid;mailboxRequest=sharedTownRequest('readMailbox').then(data=>{if(user?.uid===uid){accountMailbox={uid,at:Date.now(),data};emitGroupState()}}).finally(()=>{mailboxRequest=null});return mailboxRequest;
+}
 let groupEmitTimer=null;
 const emitGroupState=()=>{if(groupEmitTimer)return;groupEmitTimer=setTimeout(()=>{groupEmitTimer=null;
   const event=typeof CustomEvent==="function"
@@ -843,7 +849,7 @@ const publicImage=value=>{
   return /^https:\/\//i.test(source)?source.slice(0,1500):"";
 };
 const townSlotCapacity=()=>2+Math.max(0,Number(entitlements?.townSlotPacks)||0);
-const ownedMultiplayerTownCount=()=>groupState.groups.filter(group=>group.ownerUid===user?.uid).length;
+const ownedMultiplayerTownCount=()=>groupState.groups.filter(group=>group.ownerUid===user?.uid).reduce((n,g)=>n+Math.max(1,g.towns?.length||0),0);
 const localTownCount=()=>window.ParallelCity?.getState?.()?.towns?.length||0;
 const assertMultiplayerTownSlot=()=>{
   const limit=townSlotCapacity(),used=localTownCount()+ownedMultiplayerTownCount();
@@ -901,7 +907,7 @@ function watchActiveGroup(groupId){
       if(value.some(r=>r.ownerUid===user?.uid&&!r.profileJson)&&!migratedSharedProfiles.has(migrationKey)){
         migratedSharedProfiles.add(migrationKey);void refreshSharedResidents().catch(error=>console.warn('Shared profile refresh',error.code));
       }
-      void advanceSharedLife().catch(error=>console.warn("Shared life",error.code));
+      if(["observe","town","home"].includes(window.ParallelCity?.getActiveTab?.()||window.ParallelCity?.getState?.()?.activeTab))void advanceSharedLife().catch(error=>console.warn("Shared life",error.code));
     }
   },error=>{
     console.warn(`group ${key} subscription failed`,error);
@@ -912,7 +918,7 @@ function watchActiveGroup(groupId){
   // page empties the multiplayer roster shown on the home screen.
   groupUnsubscribers=[
     listen(refs.group,"group",false),listen(refs.members,"members",true),
-    listen(query(collection(db,"groups",groupId,"mail"),where("recipientUid","==",user.uid)),"incomingMail",true),listen(query(collection(db,"groups",groupId,"mail"),where("senderUid","==",user.uid)),"outgoingMail",true),listen(collection(db,"groups",groupId,"schedules"),"schedules",true),listen(refs.residents,"residents",true),listen(refs.homes,"homes",true),listen(refs.catalog,"catalog",true),listen(refs.relationships,"relationships",true),listen(collection(db,"groups",groupId,"characterGroups"),"characterGroups",true),listen(refs.perceptions,"perceptions",true),listen(query(refs.proposals,where("recipientUid","==",user.uid)),"incomingProposals",true),listen(query(refs.proposals,where("senderUid","==",user.uid)),"outgoingProposals",true)
+    listen(collection(db,"groups",groupId,"schedules"),"schedules",true),listen(refs.residents,"residents",true),listen(refs.homes,"homes",true),listen(refs.catalog,"catalog",true),listen(refs.relationships,"relationships",true),listen(collection(db,"groups",groupId,"characterGroups"),"characterGroups",true),listen(refs.perceptions,"perceptions",true)
   ];
 }
 
@@ -1059,12 +1065,12 @@ async function sharedTownRequest(action,body={}){
   requireGroupUser();const gid=groupState.activeGroupId;
   const token=await user.getIdToken();
   const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/sharedTownApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({groupId:gid,...body})});
-  const result=await response.json();if(!response.ok)throw Object.assign(new Error(result.message||'Shared town failed'),{code:result.message||'groups/server-error'});return result;
+  const result=await response.json();if(!response.ok)throw Object.assign(new Error(result.message||'Shared town failed'),{code:result.message||'groups/server-error'});if(['sendMail','respond','propose','requestResidence'].includes(action))await refreshMailbox(true).catch(error=>console.warn('Mailbox refresh',error.code));return result;
 }
 async function advanceSharedLife(force=false){
   const gid=groupState.activeGroupId;if(!gid||!groupState.group||advancingShared||(!force&&Date.now()-(lastSharedAdvance.get(gid)||0)<60000))return;
   // A different viewer already advanced this world. Keep its authoritative scene.
-  if(!force&&Date.now()-Number(groupState.group.lifeUpdatedAt||0)<60000)return;
+  if(!force&&groupState.group.lifeUpdatedAt&&(Date.now()-Number(groupState.group.lifeUpdatedAt)<60000||Number(groupState.group.lifeNextAt)>Date.now()))return;
   advancingShared=true;lastSharedAdvance.set(gid,Date.now());
   try{const result=await sharedTownRequest('advance');return result}catch(error){lastSharedAdvance.delete(gid);throw error}finally{advancingShared=false}
 }
@@ -1142,11 +1148,11 @@ async function leaveGroup(){
 }
 
 window.DrawerVillageGroups={
-  getSnapshot:groupSnapshot,refresh:refreshGroups,create:createGroup,join:joinGroup,
+  getSnapshot:groupSnapshot,refreshMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
   publishCatalog:async selected=>{const gid=groupState.activeGroupId,cloud=await sharedCloudState();if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:Object.fromEntries(Object.entries(selected||{}).map(([kind,items])=>[kind,(sharedProfile(cloud.catalog)?.[kind]||[]).filter(item=>items.some(chosen=>chosen.id===item.id))]))})},
   saveGroupPresentation:input=>sharedTownRequest('saveGroupPresentation',input),
   saveGroupPhoto:async file=>{requireGroupUser();const session=captureSession(),gid=groupState.activeGroupId,reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);const manifest=normalizeManifest(previous.data()?.mediaManifest,null),data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)}),photoURL=await uploadDataUrl(data,manifest,session);await mergeUploadedMedia(reference,manifest,session);assertSession(session);if(gid!==groupState.activeGroupId)throw Error('Group changed');return sharedTownRequest('saveGroupPresentation',{photoURL})},
-  publishCharacterCode,readCharacterCode:code=>sharedTownRequest('readCharacterCode',{code}),revokeCharacterCode:code=>sharedTownRequest('revokeCharacterCode',{code}),sendMail:input=>sharedTownRequest('sendMail',{...input,...(input.gift?{positions:window.ParallelCity.getMeetingPositions?.([input.sourceId,input.targetId])}:{})}),requestAdmission:requestGroupAdmission,requestCohabitation:input=>sharedTownRequest('requestResidence',{requestId:crypto.randomUUID(),kind:'cohabitation',...input}),propose:input=>sharedTownRequest('propose',{requestId:crypto.randomUUID(),...input}),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command:{...command,positions:window.ParallelCity.getMeetingPositions?.([command.characterId,command.targetId])}}),saveBuilding:input=>sharedTownRequest('saveBuilding',input),saveTown:input=>sharedTownRequest('saveTown',input),saveHomeLayout:input=>sharedTownRequest('saveHomeLayout',input),saveHomePlacement:input=>sharedTownRequest('saveHomePlacement',input),saveDecoration:input=>sharedTownRequest('saveDecoration',input),
+  publishCharacterCode,readCharacterCode:code=>sharedTownRequest('readCharacterCode',{code}),revokeCharacterCode:code=>sharedTownRequest('revokeCharacterCode',{code}),sendMail:input=>sharedTownRequest('sendMail',{...input,...(input.gift?{positions:window.ParallelCity.getMeetingPositions?.([input.sourceId,input.targetId])}:{})}),requestAdmission:requestGroupAdmission,requestCohabitation:input=>sharedTownRequest('requestResidence',{requestId:crypto.randomUUID(),kind:'cohabitation',...input}),propose:input=>sharedTownRequest('propose',{requestId:crypto.randomUUID(),...input}),respond:input=>sharedTownRequest('respond',input),saveView:input=>sharedTownRequest('saveView',input),registerDevice:input=>sharedTownRequest('registerDevice',input),unregisterDevice:input=>sharedTownRequest('unregisterDevice',input),refreshResidents:refreshSharedResidents,advanceLife:advanceSharedLife,command:command=>sharedTownRequest('advance',{command:{...command,positions:window.ParallelCity.getMeetingPositions?.([command.characterId,command.targetId])}}),saveBuilding:input=>sharedTownRequest('saveBuilding',input),createTown:async({name})=>{assertMultiplayerTownSlot();const result=await sharedTownRequest('saveTown',{create:true,townId:crypto.randomUUID(),patch:{name},revision:Number(groupState.group?.buildingRevision)||0});window.DrawerVillageGroups.selectTown(result.town.id);return result;},saveTown:input=>sharedTownRequest('saveTown',input),saveHomeLayout:input=>sharedTownRequest('saveHomeLayout',input),saveHomePlacement:input=>sharedTownRequest('saveHomePlacement',input),saveDecoration:input=>sharedTownRequest('saveDecoration',input),
   setDetailActive:setGroupDetailActive,
   select:groupId=>watchActiveGroup(String(groupId||"")),
   selectTown:townId=>{groupState={...groupState,selectedTownId:String(townId||""),selectedResidentId:""};writeGroupContext({groupId:groupState.activeGroupId,townId:groupState.selectedTownId,residentId:""});emitGroupState()},
@@ -1218,4 +1224,4 @@ window.ParallelCityAuth={
   getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,storageUsage,guideState})
 };
 
-setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home","groups"].includes((window.ParallelCity?.getActiveTab?.()||window.ParallelCity?.getState?.()?.activeTab)))void advanceSharedLife().catch(()=>{})},60000+Math.floor(Math.random()*8000));
+setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home"].includes((window.ParallelCity?.getActiveTab?.()||window.ParallelCity?.getState?.()?.activeTab)))void advanceSharedLife().catch(()=>{})},60000+Math.floor(Math.random()*8000));

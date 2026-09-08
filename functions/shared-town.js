@@ -13,7 +13,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const advance=await engine();
       return db.runTransaction(async tx=>{
         const {ref,group}=await context(tx,input.groupId,uid),now=clock();
-        if(!input.command&&now-Number(group.lifeUpdatedAt||0)<60000)return {updated:false};
+        if(!input.command&&group.lifeUpdatedAt&&(now-Number(group.lifeUpdatedAt)<60000||Number(group.lifeNextAt)>now))return {updated:false};
         const [r,h,relationships,declarations,catalog,perceptions,schedules]=await Promise.all([tx.get(ref.collection('residents')),tx.get(ref.collection('homes')),tx.get(ref.collection('relationships')),tx.get(ref.collection('declarations')),tx.get(ref.collection('catalog')),tx.get(ref.collection('perceptions')),tx.get(ref.collection('schedules'))]);
         const residents=rows(r);if(residents.length>200)fail('group-population-limit',409);
         if(input.command){
@@ -23,7 +23,6 @@ function createSharedTownService({db,engine,clock=Date.now}){
           if(['kiss','kiss_cautious','kiss_reconcile','affection','handhold','lean','hug'].includes(input.command.kind)){
             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
             if(input.command.kind!=='hug'&&profiles.some(p=>!['성인','노인'].includes(p.ageGroup)))fail('adult-characters-required');
-            if(profiles.some(p=>/접촉.*(싫|피함|거부)|신체 접촉 없음/.test(p.touchReaction||'')))fail('contact-preference-required');
           }
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
@@ -34,7 +33,10 @@ function createSharedTownService({db,engine,clock=Date.now}){
           if(previous.get(life.id)===life.lifeJson&&!commanded)continue;
           tx.update(ref.collection('residents').doc(life.id),{...(previous.get(life.id)!==life.lifeJson?{lifeJson:life.lifeJson}:{}),...(commanded?{commandAt:now}:{})});changedCount++;
         }
-        tx.update(ref,{lifeUpdatedAt:now});return {updated:true,count:lives.length,changedCount};
+        const future=[now+300000];
+        for(const life of lives){let value;try{value=JSON.parse(life.lifeJson)}catch{continue}for(const stamp of [value.directive?.endsAt,value.directive?.journey?.arrivesAt])if(stamp>now)future.push(stamp);for(const [key,day] of Object.entries(value.days||{})){const [y,m,d]=key.split('-').map(Number),midnight=Date.UTC(y,m-1,d)-9*3600000;for(const entry of day.entries||[]){const stamp=midnight+Number(entry.minute)*60000;if(stamp>now)future.push(stamp)}}}
+        const lifeNextAt=Math.max(now+1000,Math.min(...future));
+        tx.update(ref,{lifeUpdatedAt:now,lifeNextAt});return {updated:true,count:lives.length,changedCount,lifeNextAt};
       });
     },
     saveGroupPresentation:async(uid,input)=>db.runTransaction(async tx=>{const {ref,group,member}=await context(tx,input.groupId,uid);if(group.ownerUid!==uid&&!['owner','manager','operator'].includes(member.role))fail('manager-required',403);const patch={};if(input.photoURL!==undefined){if(typeof input.photoURL!=='string'||input.photoURL.length>2000||input.photoURL&&!/^https:\/\//.test(input.photoURL))fail('invalid-photo');patch.photoURL=input.photoURL}if(input.name!==undefined){patch.name=String(input.name).trim().slice(0,80);if(!patch.name)fail('name-required')}if(input.description!==undefined)patch.description=String(input.description).slice(0,500);tx.update(ref,patch);return {saved:true}}),
@@ -98,7 +100,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
     saveTown:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,group,member}=await context(tx,input.groupId,uid);
       if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
-      const towns=structuredClone(group.towns||[]),town=towns.find(t=>t.id===input.townId);if(!town)fail('town-missing',404);
+      const towns=structuredClone(group.towns||[]);let town=towns.find(t=>t.id===input.townId);if(input.create){if(town)fail('town-exists',409);if(towns.length>=20)fail('town-limit',409);town={id:id(input.townId),name:'',illustrationId:'owner-forest',independent:true,createdAt:clock(),places:[],decorations:[]};towns.push(town)}if(!town)fail('town-missing',404);
       const revision=Number(group.buildingRevision)||0;if(Number(input.revision||0)!==revision)fail('groups/edit-conflict',409);
       const fields=['name','townType','townSubtype','density','urbanization','reputation','fameLevel','size','terrain','description','era','bg','travelAllowed','transportModes'];
       for(const [key,value] of Object.entries(input.patch||{})){
@@ -107,6 +109,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
         else if(key==='transportModes'){if(!Array.isArray(value)||value.length>20||value.some(v=>typeof v!=='string'||v.length>80))fail('invalid-value');town[key]=value}
         else {if(typeof value!=='string'||value.length>2000)fail('invalid-value');town[key]=value}
       }
+      if(!String(town.name||'').trim())fail('name-required');
       tx.update(ref,{towns,buildingRevision:revision+1,lifeUpdatedAt:0});return {saved:true,revision:revision+1,town};
     }),
     saveBuilding:async(uid,input)=>db.runTransaction(async tx=>{

@@ -1,12 +1,12 @@
-import {meetingScene} from './meeting-journey.js?v=20260908dev278';
-import {dailyInteractionLine} from './scene-context.js?v=20260908dev278';
-import {careRoutineFor} from "./creative-options.js?v=20260908dev278";
-import {drinkExperience} from "./drink-log.js?v=20260908dev278";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev278";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev278";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment} from "./state.js?v=20260908dev278";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev278";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev278";
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260908dev279';
+import {dailyInteractionLine} from './scene-context.js?v=20260908dev279';
+import {careRoutineFor} from "./creative-options.js?v=20260908dev279";
+import {drinkExperience} from "./drink-log.js?v=20260908dev279";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260908dev279";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260908dev279";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260908dev279";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260908dev279";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260908dev279";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -3979,7 +3979,7 @@ function placeObjectScene(place,first,second,relation,date){
   if(tense){
     const scenes=[
       {title:`${object} 앞에서 말다툼하는 중`,first:`${first.name}은(는) ${object}을(를) 쓰는 순서를 두고 ${second.name}의 말을 끊으며 자기 방식이 맞다고 날카롭게 받아쳤어요.`,second:`${second.name}은(는) 물러서지 않고 잘못 건드린 부분을 하나씩 짚었고, 둘의 목소리는 잠시 높아졌어요.`},
-      {title:`${object}을 두고 신경전을 벌이는 중`,first:`${first.name}은(는) ${second.name}이(가) 고른 방식이 마음에 들지 않아 비꼬듯 한마디를 던졌어요.`,second:`${second.name}은(는) 곧바로 같은 어조로 되받아치고 ${object}을(를) 자기 쪽으로 돌려놓았어요.`},
+      {title:`${object}을 두고 신경전을 벌이는 중`,first:`${first.name}은(는) ${second.name}이(가) 고른 방식이 마음에 들지 않아 비꼬듯 한마디를 던졌어요.`,second:`${second.name}은(는) 같은 어조로 되받아치며 ${object}을(를) 어떻게 사용할지 자신의 생각을 말했어요.`},
       {title:`${object} 앞에서 의견이 부딪힌 중`,first:`${first.name}은(는) 설명을 끝까지 듣지 않고 ${second.name}의 선택이 비효율적이라고 잘라 말했어요.`,second:`${second.name}은(는) 그 말투부터 문제라며 정면으로 맞받았지만, 서로 손을 쓰지는 않고 말로 끝냈어요.`}
     ];return scenes[hash(`${first.id}:${second.id}:${object}:fight`)%scenes.length];
   }
@@ -4674,6 +4674,7 @@ export function sharedContextCharacters(sharedContext,currentCharacter,character
 }
 function sharedPlaceScene(c,current,date,sharedContext=null){
   current=baseSceneFrom(current);
+  if(/문자로|문자 메시지|전화로|text message|by phone|メッセージ|電話で/.test(`${current?.title||''} ${current?.desc||''}`))return {...current,remoteContact:true,groupInteraction:false,withId:undefined,withIds:[],participantOrder:[]};
   // 명시적으로 혼자 집중하고 있는 현재 행동은 같은 장소에 있다는 이유만으로
   // 다른 캐릭터의 자동 대화에 끌어오지 않는다. 등록된 동행·데이트만 예외다.
   if(!sharedContext&&isProtectedSoloActivity(current))return current;
@@ -4925,8 +4926,31 @@ function companionAlignedBaseEvent(c,current,date){
   if(!sameLocation)return current;
   return {...current,forcedCompanionId:other.id,withId:other.id,withIds:[other.id],stayTogetherScene:true};
 }
+const privacyChecks=new WeakMap();
+function privateLifeEvent(c,date){
+ const stamp=Math.floor(+date/15000);if(privacyChecks.get(c)===stamp)return;privacyChecks.set(c,stamp);
+ const now=+date,base=baseEventFor(c,date);
+ if(!base?.home||base.transit||activeScheduledRoutine(c,date))return;
+ const homeId=base.visitHomeId||c.homeId,home=state.homes[homeId];if(!home)return;
+ const currentDirective=state.characterDirectives?.[c.id];if(currentDirective?.endsAt>now&&(currentDirective.targetId||currentDirective.kind==='privacy-exit'))return;
+ const others=state.order.filter(id=>id!==c.id).map(id=>state.characters[id]).filter(Boolean);
+ const privateOther=others.find(other=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!e.meetingJourney&&(e.meetingKind==='affection'||/샤워하는|목욕하는|씻는 중|showering|taking a bath|シャワー|入浴/.test(e.title||''))});
+ if(privateOther){
+  const e=baseEventFor(privateOther,date),ids=[privateOther.id,...(e.withIds||[])],poly=Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&/연인|부부|폴리|poly/i.test([r.type,r.name,...(r.tags||[])].join(' '))&&[...(r.groupMembers||[]),...(r.memberIds||[])].includes(c.id)&&ids.every(id=>[...(r.groupMembers||[]),...(r.memberIds||[])].includes(id)));
+  if(ids.includes(c.id)||poly)return;
+  const jealous=e.meetingKind==='affection'&&ids.some(id=>Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(id))&&!/질투하지 않음|선택하지 않음/.test(readCharacterViewFor(c.id,privateOther.id).jealousy||'질투하지 않음'));
+  const exit=Object.keys(home.rooms||{}).find(key=>key!==base.room&&key===entranceRoom(home))||Object.keys(home.rooms||{}).find(key=>key!==base.room);if(!exit)return;
+  const journey=planMeetingJourney(state,c,c,now,base,{home:true,visitHomeId:homeId,room:exit,townId:c.townId});
+  const copy={ko:{title:jealous?'당황하고 질투하며 자리를 피하는 중':'깜짝 놀라 방에서 나오는 중',desc:jealous?'연인이 다른 사람과 함께 있는 모습을 보고 마음이 상했어요. 우선 방을 나와 마음을 가라앉히고 있어요.':'사적인 시간을 보내는 모습을 보고 놀랐어요. 방을 나와 상대의 시간을 존중해요.'},en:{title:jealous?'Leaving, startled and jealous':'Startled, leaving the room',desc:jealous?'Seeing their partner with someone else hurt. They leave the room to gather their thoughts.':'They are surprised to interrupt a private moment and step outside to give them privacy.'},ja:{title:jealous?'驚きと嫉妬を抱えて部屋を出るところ':'驚いて部屋を出るところ',desc:jealous?'恋人が別の相手といる姿に傷つき、気持ちを落ち着けるため部屋を出ます。':'私的な時間を邪魔して驚き、相手の時間を尊重して部屋を出ます。'}};
+  state.characterDirectives[c.id]={id:`privacy-${c.id}-${now}`,kind:'privacy-exit',startedAt:now,endsAt:now+120000,journey,room:exit,homeId,targetId:'',withIds:[],copy,privacyStartled:true,jealous};c.timelineResetAt=now;save(true);return;
+ }
+ const block=Math.floor(now/7200000),eager=/먼저 다가|신체 접촉을 좋아|적극/.test([c.touchReaction,c.affectionStyle].join(' ')),roll=[...c.id+String(block)].reduce((n,x)=>(n*31+x.charCodeAt(0))>>>0,0);
+ if(roll%(eager?6:24)!==0||c.lastPrivateBlock===block||Math.floor(Number(currentDirective?.startedAt)/7200000)===block)return;
+ const target=others.find(other=>c.id<other.id&&contactAllowed(c,other,'affection')&&['성인','노인'].includes(c.ageGroup)&&['성인','노인'].includes(other.ageGroup)&&!(state.characterDirectives[other.id]?.endsAt>now)&&!activeScheduledRoutine(other,date)&&Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(other.id))&&(()=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!/자는|수면|sleep|寝/.test(e.title||'')})());
+ if(target){c.lastPrivateBlock=block;target.lastPrivateBlock=block;directCharacterActivity(c.id,'affection',{targetId:target.id,now,scenes:{[c.id]:base,[target.id]:baseEventFor(target,date)}});}
+}
 export function eventFor(c,date=new Date()){
-  try{return withSimulationBatch(()=>calculateEventFor(c,date))}catch(error){return sceneFailure(c,date,error)}
+  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return calculateEventFor(c,date)})}catch(error){return sceneFailure(c,date,error)}
 }
 function calculateEventFor(c,date){
   const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);
@@ -5023,28 +5047,7 @@ function calculateEventFor(c,date){
       // 상대 관점의 문장만 다시 만든다. 화면을 여는 순서에 따라 만남이 갈라지지 않는다.
       timeline(other,date);
       const otherBase=baseEventFor(other,date);
-      const counterpart=current.manualDirective&&otherBase?.manualDirectiveId===current.manualDirectiveId
-        ?adaptAccessibilityWording(other,{...otherBase,...sharedLocation,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true})
-        :adaptAccessibilityWording(other,sharedPlaceScene(other,otherBase,date,{
-        interactionId:current.interactionId,
-        participantOrder:current.participantOrder,
-        forcedPartnerId:c.id,
-        dateGroup:current.dateGroup,
-        datePurpose:current.datePurpose,
-        location:sharedLocation,
-        sourceEvent:current,
-        sourceOwnerId:c.id,
-        sharedCanonicalTitle:current.sharedCanonicalTitle,
-        sharedCanonicalDesc:current.sharedCanonicalDesc
-      }));
-      const synchronizedCounterpart=counterpart?.groupInteraction?counterpart:(()=>{
-        const copy={
-          ko:{title:`${togetherWith(c.name)} 같은 대화를 이어 가는 중`,desc:current.sharedCanonicalDesc||`${c.name}와 방금 시작한 대화의 같은 주제를 끝까지 이어 가고 있어요.`},
-          en:{title:`Continuing the same conversation with ${c.name}`,desc:current.sharedCanonicalDesc||`They are staying with the same topic they just began discussing with ${c.name}.`},
-          ja:{title:`${c.name}と同じ会話を続けているところ`,desc:current.sharedCanonicalDesc||`${c.name}と始めた会話の同じ話題を最後まで続けています。`}
-        }[state.uiLanguage]||{title:`${togetherWith(c.name)} 같은 대화를 이어 가는 중`,desc:current.sharedCanonicalDesc||`${c.name}와 방금 시작한 대화의 같은 주제를 끝까지 이어 가고 있어요.`};
-        return {...baseEventFor(other,date),...sharedLocation,...copy,baseTitle:baseEventFor(other,date)?.title,baseDesc:baseEventFor(other,date)?.desc,sharedActionText:current.sharedActionText,sharedCanonicalTitle:current.sharedCanonicalTitle,sharedCanonicalDesc:current.sharedCanonicalDesc,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
-      })();
+      const synchronizedCounterpart={...otherBase,...sharedLocation,title:current.sharedCanonicalTitle||current.title,desc:current.sharedCanonicalDesc||current.desc,baseTitle:otherBase.baseTitle||otherBase.title,baseDesc:otherBase.baseDesc||otherBase.desc,sharedCanonicalTitle:current.sharedCanonicalTitle||current.title,sharedCanonicalDesc:current.sharedCanonicalDesc||current.desc,sharedActionText:current.sharedActionText,withId:c.id,withIds:current.participantOrder.filter(id=>id!==other.id),participantOrder:current.participantOrder,interactionId:current.interactionId,groupInteraction:true,holdMinutes:current.holdMinutes};
       synchronizedCounterpart.minute=sharedMinute;
       synchronizedCounterpart.time=clock(sharedMinute);
       synchronizedCounterpart.interactionStartedMinute=sharedMinute;

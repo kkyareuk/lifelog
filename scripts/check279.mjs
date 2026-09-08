@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import '../server-life.mjs';
+const g=await import('../state.js?v=20260908dev279');
+const {meetingScene}=await import('../meeting-journey.js?v=20260908dev279');
+g.resetAll();const a=g.createCharacter(20),b=g.createCharacter(20),now=Date.now();
+for(const id of [a,b])g.state.characters[id].ageGroup='성인';
+const h=g.state.homes[g.state.characters[a].homeId];h.rooms={entry:{type:'entry'},bed:{type:'bedroom',furniturePlacements:[{id:'double',item:'커플 침대',x:45,y:50}]}};
+const scenes={[a]:{home:true,visitHomeId:h.id,room:'entry'},[b]:{home:true,visitHomeId:h.id,room:'entry'}};
+assert.equal(g.contactAllowed(g.state.characters[a],g.state.characters[b],'affection'),false);
+assert.ok(g.directCharacterActivity(a,'affection',{targetId:b,now,scenes}));let d=g.state.characterDirectives[a];assert.equal(d.contactRejected,true);assert.equal(d.kind,'talk');assert.ok(d.journey.segments.length);assert.match(d.copy.ko.desc,/원하지 않아/);
+for(const [x,y] of [[a,b],[b,a]])g.state.characterViews[x]={[y]:{touchIntensity:'성인 간 친밀한 접촉까지'}};
+assert.ok(g.directCharacterActivity(a,'affection',{targetId:b,now:now+1000,scenes}));d=g.state.characterDirectives[a];assert.equal(d.furniture.id,'double');const at=meetingScene({},d,a,d.journey.arrivesAt+1);assert.equal(at.meetingFurniture.id,'double');assert.equal(at.meetingKind,'affection');
+g.state.characterViews[b][a].touchIntensity='포옹·기대기까지';assert.equal(g.contactAllowed(g.state.characters[a],g.state.characters[b],'affection'),false);
+console.log('PASS bilateral touch levels, walking refusal, accepted bed placement and projected furniture');
+
+const {eventFor}=await import('../simulation.js?v=20260908dev279');
+const c=g.createCharacter(20),atTime=d.journey.arrivesAt+2000;g.state.characters[c].homeId=h.id;g.state.characters[c].residences=[{homeId:h.id,isPrimary:true,stayPattern:'상시 거주'}];
+g.state.characterDirectives[c]={id:'rest-third',kind:'rest',startedAt:atTime-1000,endsAt:atTime+600000,room:'bed',homeId:h.id,withIds:[],targetId:'',copy:{ko:{title:'쉬는 중',desc:'잠시 쉬고 있어요.'}}};
+eventFor(g.state.characters[c],new Date(atTime));assert.equal(g.state.characterDirectives[c].kind,'privacy-exit');assert.equal(g.state.characterDirectives[c].journey.to.room,'entry');
+g.state.relationships.poly={type:'연인',temporalStatus:'current',a,b,groupMembers:[a,b,c]};delete g.state.characterDirectives[c];g.state.characterDirectives[c]={id:'rest-again',kind:'rest',startedAt:atTime,endsAt:atTime+600000,room:'bed',homeId:h.id,withIds:[],targetId:'',copy:{ko:{title:'쉬는 중',desc:''}}};g.state.characters[c].timelineResetAt=atTime+16000;
+eventFor(g.state.characters[c],new Date(atTime+16000));assert.equal(g.state.characterDirectives[c].kind,'rest');
+console.log('PASS private-room exit via doorway and acknowledged three-partner exception');

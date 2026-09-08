@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {advanceSharedLife} from '../server-life.mjs';
-const g=await import('../state.js?v=20260908dev278');
-const {meetingScene}=await import('../meeting-journey.js?v=20260908dev278');
-const {orderAnimationCharacters}=await import('../character-placement.js?v=20260908dev278');
+const g=await import('../state.js?v=20260908dev279');
+const {meetingScene}=await import('../meeting-journey.js?v=20260908dev279');
+const {orderAnimationCharacters}=await import('../character-placement.js?v=20260908dev279');
 g.resetAll();const a=g.createCharacter(),b=g.createCharacter(),now=Date.now();
 const ca=g.state.characters[a],cb=g.state.characters[b],home=g.state.homes[ca.homeId];
-ca.ageGroup=cb.ageGroup='성인';
+ca.ageGroup=cb.ageGroup='성인';g.state.characterViews[a]={[b]:{touchIntensity:'성인 간 친밀한 접촉까지'}};g.state.characterViews[b]={[a]:{touchIntensity:'성인 간 친밀한 접촉까지'}};
 home.rooms={entry:{type:'entry',floor:1,furniture:[]},bath:{type:'bath',floor:1,furniturePlacements:[{item:'욕조',x:30,y:40}]}};
 const scenes={[a]:{home:true,room:'entry',visitHomeId:home.id},[b]:{home:false,townId:ca.townId}};
 assert.ok(g.directCharacterActivity(a,'wash',{now,scenes}));
