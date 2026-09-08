@@ -25,7 +25,7 @@
   <table>
     <thead><tr><th>구분</th><th>처리 항목</th><th>이용 목적</th></tr></thead>
     <tbody>
-      <tr><td>Google 로그인</td><td>Google 계정 식별자(UID), 이메일, 표시 이름, 프로필 이미지</td><td>본인 식별, 계정별 저장·불러오기, 구매 권한 연결</td></tr>
+      <tr><td>Google·Apple 로그인</td><td>인증 계정 식별자(UID), 제공되는 이메일·표시 이름·프로필 이미지. Apple의 이메일 가리기를 선택하면 중계 이메일 주소를 이용합니다.</td><td>본인 식별, 계정별 저장·불러오기, 구매 권한 연결</td></tr>
       <tr><td>게임 이용</td><td>캐릭터·관계·마을·일정·선호 설정, 생활 로그, 이용자가 등록한 이미지와 이미지 주소</td><td>게임 기능 제공, 기기 간 동기화, 백업</td></tr>
       <tr><td>결제</td><td>주문번호, 상품·수량·금액, 결제 상태, 결제대행사가 제공하는 거래 식별 정보</td><td>결제 승인, 상품 지급, 취소·환불 및 분쟁 대응</td></tr>
       <tr><td>문의·피드백</td><td>문의 내용, 답변을 원할 때의 로그인 이메일</td><td>문의 확인, 답변, 오류 개선</td></tr>
@@ -34,6 +34,8 @@
   </table>
 
   <h2>2. 보유 및 이용 기간</h2>
+  <p lang="en">Google or Apple sign-in provides an account identifier and the email, name or profile image made available by the provider. If you choose Hide My Email with Apple, we use the relay address. Apple processes iOS in-app purchases; we receive transaction identifiers and purchase status, not your card details.</p>
+  <p lang="ja">GoogleまたはAppleログインでは、アカウント識別子と認証サービスが提供するメールアドレス・名前・プロフィール画像を利用します。Appleの「メールを非公開」を選択した場合は中継アドレスを利用します。iOSのアプリ内購入はAppleが処理し、運営者は取引識別子と購入状態を受け取ります。カード情報は受け取りません。</p>
   <ul>
     <li>계정과 게임 데이터: 회원 탈퇴 또는 삭제 요청 시까지</li>
     <li>계약·청약철회·대금결제 및 재화 공급 기록: 5년</li>
@@ -50,6 +52,7 @@
     <thead><tr><th>수탁자</th><th>업무</th></tr></thead>
     <tbody>
       <tr><td>Google LLC (Firebase)</td><td>로그인 인증, 데이터베이스 및 이미지 저장</td></tr>
+      <tr><td>Apple Inc.</td><td>iOS Apple 로그인 및 App Store 결제 처리. 운영자는 거래 식별 정보와 상태를 받으며 카드 정보는 받지 않습니다.</td></tr>
       <tr><td>Cloudflare, Inc.</td><td>웹 호스팅, 콘텐츠 전송, 보안 및 접속 로그 처리</td></tr>
       <tr><td>토스페이먼츠 주식회사</td><td>결제 처리, 취소·환불 및 결제 관련 고객 지원</td></tr>
     </tbody>
@@ -63,6 +66,9 @@
   <p>이용자는 자신의 개인정보 열람, 정정, 삭제, 처리 정지 및 동의 철회를 요청할 수 있습니다. 본인 확인이 필요한 요청은 아래 개인정보 문의처로 보내 주세요. 법정대리인은 관련 법령에 따라 아동의 권리를 행사할 수 있습니다.</p>
 
   <h2 id="account-deletion">7. 계정 및 클라우드 데이터 삭제 요청</h2>
+  <p>iOS 1.0.215(빌드 15)부터 설정 → 저장과 동기화 → 계정 영구 삭제에서 재로그인 후 계정과 서버 데이터를 직접 삭제할 수 있습니다. 캐릭터·사진·공유 코드와 본인이 방장인 멀티 그룹도 함께 삭제됩니다. 자동 환불은 이루어지지 않으며, 결제 관련 기록은 위의 법정 보관 기간을 따릅니다. 삭제 중 다른 기기가 데이터를 다시 저장하지 못하도록 계정 식별자는 보안 목적으로 별도 보관합니다.</p>
+  <p lang="en">In iOS 1.0.215 (build 15) and later, open Settings → Storage and sync → Delete account permanently and sign in again to delete your account and cloud data. This includes your characters, photos, sharing codes, and groups you own. Deletion does not automatically issue a refund. Payment records follow the retention periods above. The account identifier is retained separately to prevent other devices from restoring deleted data.</p>
+  <p lang="ja">iOS 1.0.215（ビルド15）以降は、設定 → 保存と同期 → アカウントを完全に削除から再ログインし、アカウントとクラウドデータを削除できます。キャラクター、写真、共有コード、主催するグループも削除されます。自動返金は行われません。決済記録は上記の保存期間に従います。他の端末による削除済みデータの復元を防ぐため、アカウント識別子は別途保管します。</p>
   <div class="request">
     <p>Google 로그인으로 만든 서랍마을 계정 전체와 연결된 클라우드 게임 데이터의 삭제를 요청할 수 있습니다. 아래 버튼으로 메일을 보내고, 본인 확인을 위해 서랍마을에 로그인한 Google 이메일 주소와 ‘계정 전체 삭제’를 적어 주세요.</p>
     <p>요청 확인 후 Firebase Authentication 계정, 클라우드에 동기화된 캐릭터·관계·마을·일정·생활 로그와 업로드 이미지를 삭제합니다.</p>
