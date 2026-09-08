@@ -1,3 +1,4 @@
+import {characterCodeDialog} from "./character-code.js?v=20260908dev272";
 import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260908dev272';
 import {informationOnlyState} from './local-media.js?v=20260908dev272';
 
@@ -86,18 +87,4 @@ export function installSettingsTransfer({translate,toast,render,limit}){
       };input.click();
     }catch(error){toast(t(error.message))}
   });
-}
-
-async function characterCodeDialog(mode,limit,render,toast){
- const text=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),api=window.DrawerVillageGroups,d=document.createElement('dialog');d.className='mail-reader character-code-dialog';
- const title=document.createElement('h2');title.textContent=text('캐릭터 공유 코드','Character sharing code','キャラクター共有コード');const close=document.createElement('button');close.type='button';close.textContent=text('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(title,close);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
- const info=document.createElement('p');info.textContent=text('사진은 서버의 기존 파일을 사용해요. 코드를 아는 사람은 설정과 사진을 불러올 수 있어요.','Photos reference existing server files. Anyone with the code can import the settings and photos.','写真は既存のサーバーファイルを参照します。コードを知っている人は設定と写真を読み込めます。');d.append(info);
- try{
-  if(mode==='character-code-export'){
-   info.textContent=text('사진과 설정을 서버에 저장하고 있어요…','Saving photos and settings…','写真と設定を保存中…');const result=await api.publishCharacterCode(active().id);if(!d.isConnected)return;
-   info.textContent=text('사진과 설정을 포함한 코드입니다. 불러온 캐릭터의 편집은 원본에 영향을 주지 않아요.','This code includes photos and settings. Editing an imported character does not change the original.','写真と設定を含むコードです。読み込んだキャラクターの編集は元の人物に影響しません。');const code=document.createElement('input');code.readOnly=true;code.value=result.code.match(/.{1,6}/g).join('-');code.setAttribute('aria-label','Code');const copy=document.createElement('button');copy.textContent=text('코드 복사','Copy code','コードをコピー');copy.onclick=async()=>{try{await navigator.clipboard.writeText(code.value);toast(text('복사했어요.','Copied.','コピーしました。'))}catch{code.select()}};const revoke=document.createElement('button');revoke.textContent=text('이 코드 사용 중지','Revoke this code','このコードを無効化');revoke.onclick=async()=>{revoke.disabled=true;try{await api.revokeCharacterCode(result.code);d.close()}catch(e){toast(e.message);revoke.disabled=false}};d.append(code,copy,revoke);
-  }else{
-   const input=document.createElement('input');input.placeholder='ABCDEF-123456-ABCDEF';input.maxLength=24;input.autocapitalize='characters';const lookup=document.createElement('button');lookup.textContent=text('캐릭터 확인','Preview character','キャラクターを確認');const preview=document.createElement('div');d.append(input,lookup,preview);lookup.onclick=async()=>{lookup.disabled=true;preview.replaceChildren();try{const result=await api.readCharacterCode(input.value),c=result.character;const name=document.createElement('h3');name.textContent=c.name;preview.append(name);if(/^https:\/\//.test(c.photo||c.icon||'')){const img=document.createElement('img');img.src=c.photo||c.icon;img.alt=c.name;img.style.cssText='width:120px;height:120px;object-fit:contain';preview.append(img)}const add=document.createElement('button');add.textContent=text('사진과 함께 불러오기','Import with photos','写真と一緒に読み込む');preview.append(add);add.onclick=()=>{add.disabled=true;const before=cloneState();try{const id=importCharacterSettings({character:c},limit());const media=Object.fromEntries(['photo','icon','image','sceneImages'].filter(k=>c[k]).map(k=>[k,clean(c[k])]));updateCharacter(id,media,false);if(!save(true))throw Error(text('저장하지 못했어요.','Could not save.','保存できませんでした。'));document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());render();toast(text('캐릭터와 사진을 불러왔어요.','Character and photos imported.','キャラクターと写真を読み込みました。'))}catch(e){replaceState(before);toast(e.message);add.disabled=false}}}catch(e){toast(e.message)}finally{lookup.disabled=false}};
-  }
- }catch(e){info.textContent=e.message}
 }

@@ -1,3 +1,4 @@
+import {wardrobeCount} from "./state.js?v=20260908dev272";
 import {captureMeetingPositions} from './meeting-journey.js?v=20260908dev272';
 import {bindMailbox,composeAnnouncement} from './mailbox-center.js?v=20260908dev272';
 import {bedPerspective} from './bed-perspective.js?v=20260908dev272';
@@ -359,10 +360,12 @@ function openOutfitDialog(characterId){
 }
 function openClothingEditor(itemId=""){
   const character=active();if(!character)return;
+  if(!itemId&&wardrobeCount(character.id)>=30){showToast(translateText("옷장은 캐릭터마다 30개까지 등록할 수 있어요."));return}
   const isNew=!itemId;let item=state.catalog.fashion.find(value=>value.id===itemId);
   if(!item){
     const id=addCatalogItem("fashion",{name:"새 옷",category:"의상",image:"",iconImage:"",ldImage:"",sceneLayout:{sd:{x:0,y:0,scale:1,rotation:0},ld:{x:0,y:0,scale:1,rotation:0}},materials:[],colors:[],flairs:[],occasionTags:["일상복"],moodTags:["모든 기분"],ordinary:"무난함",warmth:"보통",formality:"캐주얼",comfort:"편안함",requiredUniform:false,ownerId:character.id});
     if(!id){showToast("종류별로 80개까지 추가할 수 있어요.");return}
+    if(!id){showToast(translateText("옷장은 캐릭터마다 30개까지 등록할 수 있어요."));return}
     character.inventory.fashion=[...new Set([...(character.inventory.fashion||[]),id])];
     item=state.catalog.fashion.find(value=>value.id===id);save(true);
   }
@@ -5247,8 +5250,9 @@ function openAnniversaryDialog(id=""){
   };
 }
 
-const RELATION_TYPES=[...EXTRA_FAMILY,"친구","연인","부부","부모·자녀","형제·자매","동거인","소꿉친구","학창 시절 친구들","친구 모임","산악회","동아리 동료","직장 동료","라이벌","혐관","기타"];
+const RELATION_TYPES=[...EXTRA_FAMILY,"친구","연인","부부","부모·자녀","형제·자매","동거인","소꿉친구","학창 시절 친구들","친구 모임","산악회","동아리 동료","직장 동료","사제 관계","라이벌","혐관","기타"];
 const RELATION_STAGES={
+  "사제 관계":["배움을 시작한 사이","서로 신뢰하는 사제","가르침을 이어가는 사이"],
   연인:["이별 통보 직전","마음이 멀어지는 중","위태로운 사이","서로 알아가는 중","편안한 연인","서로를 깊이 사랑함","운명의 상대"],
   부부:["이혼 서류가 오가는 중","별거를 고민하는 중","권태기","생활 동반자","애정이 깊은 부부","서로 없이는 못 사는 사이","운명의 상대"],
   친구:["거의 안 친함","어색한 사이","가끔 연락함","편한 친구","가까운 친구","아주 가까운 친구","베스트 프렌드"],
@@ -5305,7 +5309,7 @@ function openRelationDialog(id="",sharedSave){
     <label class="official-name-field"><span>${copy.name}</span><input name="name" maxlength="50" value="${htmlEsc(old?.name||"")}" placeholder="${copy.nameHint}"></label>
     <section class="official-member-section"><b>${copy.members}</b><div class="official-member-picker">${editorState.order.map(cid=>`<button type="button" data-official-member="${htmlEsc(cid)}">${htmlEsc(editorState.characters[cid]?.name||"")}</button>`).join("")}</div><select name="a" hidden>${characterOptions(aId)}</select><select name="b" hidden>${characterOptions(bId)}</select></section>
     <div class="official-relation-fields">
-      <label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${type}</option>`).join("")}</select></label>
+      <label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${translateText(type)}</option>`).join("")}</select></label>
       <label class="official-stage-field"><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
       <label class="official-past-toggle"><b>${copy.past}</b><input type="checkbox" name="temporalPast"><small>${copy.pastHint}</small><input type="hidden" name="temporalStatus" value="current"></label>
       <section class="official-order-card"><b>${copy.order}</b><small>${copy.orderHint}</small><div class="official-order-list" data-official-order-list></div></section>
@@ -5342,7 +5346,7 @@ function openRelationDialog(id="",sharedSave){
   };
   const refreshStages=()=>{
     const values=stagesFor(f.type.value,f.temporalStatus.value),selected=initial&&old?.stage&&values.includes(old.stage)?old.stage:defaultRelationStage(f.type.value,f.temporalStatus.value);
-    f.stage.innerHTML=values.map(value=>`<option ${value===selected?"selected":""}>${value}</option>`).join("");
+    f.stage.innerHTML=values.map(value=>`<option value="${htmlEsc(value)}" ${value===selected?"selected":""}>${translateText(value)}</option>`).join("");
     f.querySelector("[data-stage-label]").textContent=f.temporalStatus.value==="past"?(language==="en"?"Past relationship stage":language==="ja"?"過去の関係段階":"과거 관계 단계"):copy.stage;
     f.querySelector(".official-fault").hidden=f.temporalStatus.value!=="past";
     initial=false;

@@ -1755,9 +1755,11 @@ export function advanceHomeLifeSimulation(homeId,characterIds,contexts={},now=Da
   if(result.changed&&persist)save(false,false);
   return result;
 }
+export function wardrobeCount(characterId){const ids=new Set(state.characters[characterId]?.inventory?.fashion||[]);return (state.catalog?.fashion||[]).filter(item=>ids.has(item.id)).length}
 export function addCatalogItem(kind,data){
+  if(kind==="fashion"&&data?.ownerId&&wardrobeCount(data.ownerId)>=30)return null;
   if(!state.catalog[kind])state.catalog[kind]=[];
-  if(state.catalog[kind].length>=80)return null;
+  if(!(kind==="fashion"&&data?.ownerId)&&state.catalog[kind].filter(item=>kind!=="fashion"||!item.ownerId).length>=80)return null;
   const item={id:uid(),kind,name:"새 항목",category:"기타",subtype:"",keywords:[],image:"",spicy:0,sweet:0,creator:"",style:"",createdAt:Date.now(),userCreated:true,...data};
   state.catalog[kind].push(item);save(true);return item.id;
 }
@@ -2022,7 +2024,8 @@ export function updateRelationship(id,data){
 export function toggleOwned(characterId,kind,itemId,persist=true){
   const c=state.characters[characterId];if(!c)return;
   c.inventory=c.inventory||{};const list=Array.isArray(c.inventory[kind])?[...c.inventory[kind]]:[];
-  c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);
+  if(kind==="fashion"&&!list.includes(itemId)&&wardrobeCount(characterId)>=30)return false;
+  c.inventory[kind]=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];if(persist)save(true);return true;
 }
 export function deleteRelationship(id){
   const relation=state.relationships[id];if(!relation)return;

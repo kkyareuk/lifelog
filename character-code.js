@@ -1,0 +1,22 @@
+import {state,active,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260908dev272';
+const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sharedScene','sharedContext','sourceCharacterId','revision','savedOutfits']);
+export function importCodeCharacter(character,limit){
+ const clean=(v,depth=0)=>{if(depth>20)throw Error('Invalid character');if(Array.isArray(v))return v.map(x=>clean(x,depth+1));if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!['__proto__','constructor','prototype'].includes(k)).map(([k,x])=>[k,clean(x,depth+1)]));return v};
+ if(!character||typeof character.name!=='string')throw Error('Invalid character');
+ const before=cloneState(),profile=clean(Object.fromEntries(Object.entries(character).filter(([key])=>!excluded.has(key))));
+ try{const id=createCharacter(limit);if(!id)throw Error(({ko:'남은 캐릭터 슬롯이 없어요.',en:'No character slots remaining.',ja:'キャラクター枠が足りません。'})[state.uiLanguage]||'남은 캐릭터 슬롯이 없어요.');updateCharacter(id,profile,false);if(!save(true))throw Error('Could not save');return id}catch(e){replaceState(before);throw e}
+}
+export async function characterCodeDialog(mode,limit,render,toast){
+ const text=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),api=window.DrawerVillageGroups||window.ParallelCityAuth,d=document.createElement('dialog');d.className='character-code-dialog';
+ const h=document.createElement('h2');h.textContent=text('사진 포함 캐릭터 코드','Character code with photos','写真付きキャラクターコード');const close=document.createElement('button');close.textContent=text('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(h,close);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
+ const info=document.createElement('p');info.textContent=text('코드를 아는 사람은 사진과 설정을 불러올 수 있어요. 불러온 캐릭터는 원본과 별개로 편집돼요.','Anyone with the code can import photos and settings. Imported characters are edited independently.','コードを知っている人は写真と設定を読み込めます。読み込んだ人物は元の人物とは別に編集できます。');d.append(info);
+ const account=window.ParallelCityAuth?.getInfo?.().user?.uid;const sameAccount=()=>{if(account!==window.ParallelCityAuth?.getInfo?.().user?.uid)throw Error(text('계정이 바뀌었어요. 다시 열어 주세요.','Account changed. Please reopen.','アカウントが変わりました。開き直してください。'))};
+ try{if(mode==='character-code-export'){
+ const result=await api.publishCharacterCode(active().id);sameAccount();if(!d.isConnected)return;
+ const code=document.createElement('input');code.readOnly=true;code.value=result.code.match(/.{1,6}/g).join('-');code.setAttribute('aria-label',text('캐릭터 코드','Character code','キャラクターコード'));const copy=document.createElement('button');copy.textContent=text('코드 복사','Copy code','コードをコピー');copy.onclick=async()=>{try{await navigator.clipboard.writeText(code.value)}catch{code.select()}};
+ const revoke=document.createElement('button');revoke.textContent=text('이 코드 사용 중지','Revoke code','コードを無効化');revoke.onclick=async()=>{revoke.disabled=true;try{sameAccount();await api.revokeCharacterCode(result.code);d.close()}catch(e){toast(e.message);revoke.disabled=false}};d.append(code,copy,revoke);
+ }else{
+ const input=document.createElement('input');input.placeholder='ABCDEF-123456-ABCDEF';input.maxLength=24;input.autocapitalize='characters';const lookup=document.createElement('button');lookup.textContent=text('캐릭터 확인','Preview character','キャラクターを確認');const preview=document.createElement('section');d.append(input,lookup,preview);
+ lookup.onclick=async()=>{lookup.disabled=true;preview.replaceChildren();try{sameAccount();const result=await api.readCharacterCode(input.value);sameAccount();if(!d.isConnected)return;const c=result.character,name=document.createElement('h3');name.textContent=c.name;preview.append(name);const src=c.photo||c.icon||c.ldImage;if(/^https:\/\//.test(src||'')){const img=document.createElement('img');img.src=src;img.alt=c.name;preview.append(img)}const add=document.createElement('button');add.textContent=text('사진과 함께 불러오기','Import with photos','写真と一緒に読み込む');preview.append(add);add.onclick=()=>{add.disabled=true;try{sameAccount();importCodeCharacter(c,limit());document.querySelectorAll('dialog[open]').forEach(x=>x.close());render();toast(text('캐릭터와 사진을 불러왔어요.','Character and photos imported.','キャラクターと写真を読み込みました。'))}catch(e){toast(e.message);add.disabled=false}}}catch(e){toast(e.message)}finally{lookup.disabled=false}};
+ }}catch(e){info.textContent=e.message}
+}
