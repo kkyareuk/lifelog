@@ -25,7 +25,7 @@
   <table>
     <thead><tr><th>구분</th><th>처리 항목</th><th>이용 목적</th></tr></thead>
     <tbody>
-      <tr><td>Google 로그인</td><td>Google 계정 식별자(UID), 이메일, 표시 이름, 프로필 이미지</td><td>본인 식별, 계정별 저장·불러오기, 구매 권한 연결</td></tr>
+      <tr><td>Google·Apple 로그인</td><td>인증 계정 식별자(UID), 제공되는 이메일·표시 이름·프로필 이미지. Apple의 이메일 가리기를 선택하면 중계 이메일 주소를 이용합니다.</td><td>본인 식별, 계정별 저장·불러오기, 구매 권한 연결</td></tr>
       <tr><td>게임 이용</td><td>캐릭터·관계·마을·일정·선호 설정, 생활 로그, 이용자가 등록한 이미지와 이미지 주소</td><td>게임 기능 제공, 기기 간 동기화, 백업</td></tr>
       <tr><td>결제</td><td>주문번호, 상품·수량·금액, 결제 상태, 결제대행사가 제공하는 거래 식별 정보</td><td>결제 승인, 상품 지급, 취소·환불 및 분쟁 대응</td></tr>
       <tr><td>문의·피드백</td><td>문의 내용, 답변을 원할 때의 로그인 이메일</td><td>문의 확인, 답변, 오류 개선</td></tr>
@@ -34,6 +34,8 @@
   </table>
 
   <h2>2. 보유 및 이용 기간</h2>
+  <p lang="en">Google or Apple sign-in provides an account identifier and the email, name or profile image made available by the provider. If you choose Hide My Email with Apple, we use the relay address. Apple processes iOS in-app purchases; we receive transaction identifiers and purchase status, not your card details.</p>
+  <p lang="ja">GoogleまたはAppleログインでは、アカウント識別子と認証サービスが提供するメールアドレス・名前・プロフィール画像を利用します。Appleの「メールを非公開」を選択した場合は中継アドレスを利用します。iOSのアプリ内購入はAppleが処理し、運営者は取引識別子と購入状態を受け取ります。カード情報は受け取りません。</p>
   <ul>
     <li>계정과 게임 데이터: 회원 탈퇴 또는 삭제 요청 시까지</li>
     <li>계약·청약철회·대금결제 및 재화 공급 기록: 5년</li>
@@ -50,6 +52,7 @@
     <thead><tr><th>수탁자</th><th>업무</th></tr></thead>
     <tbody>
       <tr><td>Google LLC (Firebase)</td><td>로그인 인증, 데이터베이스 및 이미지 저장</td></tr>
+      <tr><td>Apple Inc.</td><td>iOS Apple 로그인 및 App Store 결제 처리. 운영자는 거래 식별 정보와 상태를 받으며 카드 정보는 받지 않습니다.</td></tr>
       <tr><td>Cloudflare, Inc.</td><td>웹 호스팅, 콘텐츠 전송, 보안 및 접속 로그 처리</td></tr>
       <tr><td>토스페이먼츠 주식회사</td><td>결제 처리, 취소·환불 및 결제 관련 고객 지원</td></tr>
     </tbody>
