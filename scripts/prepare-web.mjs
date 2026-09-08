@@ -31,7 +31,7 @@ const includedDirectories=new Set([
 
 const includedFiles=new Set([
   "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js","observe-responsive.js",
-  "direct-steps.js","meeting-journey.js","group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","multiplayer-art.js","dictionary.js","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
+  "direct-steps.js","meeting-journey.js","group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","multiplayer-art.js","dictionary.js","mailbox.css","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
   "_headers",
   "index.html",
   "login.html",

@@ -52,15 +52,15 @@ export async function downloadSettings(file,name){
 }
 const catalogCopy={ko:['물품 선택','검색','전체 선택','선택 해제','취소','선택한 물품 저장','선택한 물품 추가','선택한 물품 다운로드'],en:['Choose items','Search','Select all','Clear selection','Cancel','Save selected items','Add selected items','Download selected items'],ja:['品物を選択','検索','すべて選択','選択解除','キャンセル','選んだ品物を保存','選んだ品物を追加','選んだ品物をダウンロード']};
 export function selectedCatalog(catalog,keys){return Object.fromEntries(Object.entries(catalog).map(([kind,items])=>[kind,items.filter((item,index)=>keys.has(kind+':'+index))]).filter(([,items])=>items.length))}
-export function chooseCatalog(catalog,importing=false){return new Promise(resolve=>{
+export function chooseCatalog(catalog,importing=false,{single=false}={}){return new Promise(resolve=>{
  const copy=catalogCopy[state.uiLanguage]||catalogCopy.ko,d=document.createElement('dialog');d.className='directory-create-dialog catalog-selection-dialog';
  const title=document.createElement('h2');title.textContent=copy[0];const search=document.createElement('input');search.type='search';search.placeholder=copy[1];const list=document.createElement('div');list.className='catalog-selection-grid';
  const rows=[];for(const [kind,items] of Object.entries(catalog))items.forEach((item,index)=>{const label=document.createElement('label'),check=document.createElement('input'),span=document.createElement('span');check.type='checkbox';check.value=kind+':'+index;span.textContent=item.name;label.className='catalog-selection-card';const art=document.createElement('span');art.className='catalog-selection-art';if(item.image){const img=document.createElement('img');img.src=item.image;img.alt='';img.loading='lazy';art.append(img)}else art.textContent=item.emoji||'◇';label.append(check,art,span);list.append(label);rows.push({label,check,name:String(item.name).toLocaleLowerCase()})});
  const controls=document.createElement('div');controls.className='catalog-selection-controls';const addButton=(text,run)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=run;controls.append(b);return b};
- addButton(copy[2],()=>{rows.filter(r=>!r.label.hidden).forEach(r=>r.check.checked=true);update()});addButton(copy[3],()=>{rows.forEach(r=>r.check.checked=false);update()});addButton(copy[4],()=>d.close());
+ addButton(copy[2],()=>{rows.filter(r=>!r.label.hidden).slice(0,single?1:rows.length).forEach(r=>r.check.checked=true);update()});addButton(copy[3],()=>{rows.forEach(r=>r.check.checked=false);update()});addButton(copy[4],()=>d.close());
  const submit=addButton(copy[importing?6:5],()=>{const result=selectedCatalog(catalog,new Set(rows.filter(r=>r.check.checked).map(r=>r.check.value)));resolve(result);d.close()});
  const update=()=>{const n=rows.filter(r=>r.check.checked).length;submit.disabled=!n;submit.textContent=copy[importing?6:5]+' ('+n+')'};
- list.onchange=update;search.oninput=()=>rows.forEach(r=>r.label.hidden=!r.name.includes(search.value.toLocaleLowerCase()));d.append(title,search,list,controls);d.onclose=()=>{d.remove();resolve(null)};document.body.append(d);update();d.showModal();
+ list.onchange=event=>{if(single&&event.target.checked)rows.forEach(r=>{if(r.check!==event.target)r.check.checked=false});update()};search.oninput=()=>rows.forEach(r=>r.label.hidden=!r.name.includes(search.value.toLocaleLowerCase()));d.append(title,search,list,controls);d.onclose=()=>{d.remove();resolve(null)};document.body.append(d);update();d.showModal();
 })}
 export function installSettingsTransfer({translate,toast,render,limit}){
   const t=translate;

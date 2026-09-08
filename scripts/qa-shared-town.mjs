@@ -7,7 +7,7 @@ import {fileURLToPath} from "node:url";
 
 const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
 const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
-const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-275");
+const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-276");
 await mkdir(output,{recursive:true});
 const previewAuth=await readFile(resolve(root,"scripts/ios-preview-auth.mjs"));
 const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
@@ -144,7 +144,7 @@ try{
   await page.evaluate(()=>location.hash='tab=routine');await page.locator('.routine-character-switcher summary').click();await page.locator('[data-routine-character="mine"]').click();
   await page.locator('[data-add-routine]').click();await page.locator('.routine-sheet-backdrop [name=title]').fill('함께 차 마시기');await page.locator('.routine-sheet-backdrop [name=withId][value=remote]').check();await page.locator('[data-routine-save]').click();await page.waitForTimeout(100);
   assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.kind==='schedule'&&c.patch.memberIds.includes('remote'))));
-  await page.evaluate(()=>location.hash='tab=mailbox');await page.locator('[data-mail-folder="compose"]').click();await page.locator('[data-player-mail] [name=subject]').fill('선물이야');await page.locator('[data-player-mail] [name=body]').fill('함께 읽어 줘');await page.locator('[data-player-mail] [name=sourceId]').selectOption('mine');await page.locator('[data-player-mail] [name=targetId]').selectOption('remote');await page.locator('[data-player-mail] [name=gift]').selectOption({index:1});await page.locator('[data-player-mail] button[type=submit]').click();await page.waitForTimeout(100);assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='mail'&&c.gift?.item?.name)));
+  await page.evaluate(()=>location.hash='tab=mailbox');await page.locator('[data-mail-folder="compose"]').click();await page.locator('[data-player-mail] [name=subject]').fill('선물이야');await page.locator('[data-player-mail] [name=body]').fill('함께 읽어 줘');await page.locator('[data-player-mail] [name=sourceId]').selectOption('mine');await page.locator('[data-player-mail] [name=targetId]').selectOption('remote');await page.locator('[data-mail-gift-picker]').click();await page.locator('.catalog-selection-card').first().click();await page.locator('.catalog-selection-controls button').last().click();await page.locator('[data-player-mail] button[type=submit]').click();await page.waitForTimeout(100);assert.ok(await page.evaluate(()=>window.qaCalls.some(c=>c.action==='mail'&&c.gift?.item?.name)));
   console.log('PASS shared furniture add/rotate/grid resize/room transfer, schedule proposal and gift mail UI');
   await page.evaluate(()=>{window.qaSnapshot.members.push({uid:'other',role:'member',displayName:'다른 유저'});location.hash='tab=groups'});await page.waitForTimeout(150);
   if(await page.locator('[data-group-open]').count())await page.locator('[data-group-open]').first().click();
@@ -196,5 +196,14 @@ try{
   await page.evaluate(async()=>{const g=await import('/state.js?v=20260908dev275');const [a,b]=g.state.order;g.state.activeId=a;g.directCharacterActivity(a,'kiss_cautious',{targetId:b,now:Date.now()-300000});location.hash='tab=observe'});await page.waitForTimeout(300);
   assert.ok(await page.locator('.native-scene-lineup.is-kissing.kiss-cautious').count(),'Home kiss animation after the approach');await page.screenshot({path:resolve(output,'kiss-275.png')});
   console.log('PASS native three-column photo chooser, compact checkboxes and arrived kiss animation');
+  await page.evaluate(()=>{window.qaSnapshot.activeGroupId='shared';window.qaSnapshot.incomingMail=[{id:'letter276',sourceId:'remote',sourceName:'안테',targetName:'나',subject:'오늘의 편지',body:'오늘 같이 보낸 시간이 즐거웠어요.\n내일도 함께 산책해요.',createdAt:Date.now()},{id:'user276',sourceName:'유저',subject:'유저 편지',body:'안녕하세요.',createdAt:Date.now()}];location.hash='tab=mailbox'});
+  await page.locator('[data-mail-folder=inbox]').click();await page.locator('[data-mail-open=letter276]').click();
+  const watermark=page.locator('.mail-reader .mail-watermark');await watermark.waitFor();
+  const wm=await watermark.evaluate(e=>({opacity:getComputedStyle(e).opacity,pointer:getComputedStyle(e).pointerEvents,transform:getComputedStyle(e).transform,loaded:e.complete&&e.naturalWidth>0}));
+  assert.equal(wm.opacity,'0.085');assert.equal(wm.pointer,'none');assert.notEqual(wm.transform,'none');assert.ok(wm.loaded);
+  assert.equal(await page.locator('.mail-body').evaluate(e=>getComputedStyle(e).opacity),'1');
+  await page.screenshot({path:resolve(output,'character-letter-watermark-276.png')});await page.locator('[data-close-mail]').click();
+  await page.locator('[data-mail-open=user276]').click();assert.equal(await page.locator('.mail-watermark').count(),0);await page.locator('[data-close-mail]').click();
+  console.log('PASS character letter watermark, opaque text, unobstructed close and no watermark on user mail');
   await context.close();
 }finally{await browser.close();server.close()}

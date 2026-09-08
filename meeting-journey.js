@@ -8,14 +8,15 @@ function location(world,c,scene={},position){
  if(!home&&!place&&position?.townId===value.townId&&Number.isFinite(position.map?.x)&&Number.isFinite(position.map?.y))value.map=point(position.map.x,position.map.y);
  return value;
 }
+export function entranceRoom(home){const rooms=Object.entries(home?.rooms||{});return rooms.find(([key,room])=>/entrance|entry|현관/i.test(key+' '+room.type+' '+room.name))?.[0]||rooms.sort((a,b)=>(Number(a[1].floor)||1)-(Number(b[1].floor)||1))[0]?.[0]||'living'}
 export function planMeetingJourney(world,actor,target,now,sourceScene,targetScene,positions={}){
  const from=location(world,actor,sourceScene,positions?.[actor.id]),to=location(world,target,targetScene,positions?.[target.id]),segments=[];let time=now;
  const add=(surface,homeId,fromRoom,toRoom,a,b,seconds)=>{segments.push({surface,homeId,fromRoom,toRoom,from:a,to:b,start:time,end:time+seconds*1000});time+=seconds*1000};
  if(from.home&&to.home&&from.homeId===to.homeId){const rooms=world.homes[from.homeId].rooms;if((Number(rooms[from.room]?.floor)||1)!==(Number(rooms[to.room]?.floor)||1)){add('home',from.homeId,from.room,from.room,from.point,{x:50,y:94},5);add('home',to.homeId,to.room,to.room,{x:50,y:94},to.point,5)}else add('home',from.homeId,from.room,to.room,from.point,to.point,10);}
  else{
-  if(from.home)add('home',from.homeId,from.room,from.room,from.point,{x:50,y:94},5);
+  if(from.home){const entry=entranceRoom(world.homes[from.homeId]);if(from.room!==entry)add('home',from.homeId,from.room,entry,from.point,{x:50,y:65},5);add('home',from.homeId,entry,entry,from.room===entry?from.point:{x:50,y:65},{x:50,y:94},4)}
   add('town','',from.room,to.room,from.map,to.map,Math.max(12,Math.min(35,Math.hypot(from.map.x-to.map.x,from.map.y-to.map.y)/2)));
-  if(to.home)add('home',to.homeId,to.room,to.room,{x:50,y:94},to.point,5);
+  if(to.home){const entry=entranceRoom(world.homes[to.homeId]);add('home',to.homeId,entry,entry,{x:50,y:94},to.room===entry?to.point:{x:50,y:65},4);if(entry!==to.room)add('home',to.homeId,entry,to.room,{x:50,y:65},to.point,5)}
  }
  return {actorId:actor.id,targetId:target.id,actorName:actor.name,targetName:target.name,from,to,startedAt:now,arrivesAt:time,segments};
 }

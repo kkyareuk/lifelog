@@ -1774,9 +1774,9 @@ function peopleAtHomeCard(home){
   const residents=group.length?`<div class="person place-people home-place-people ${state.mapCharacterLabelMode==="name"?"show-name":"icon-only"}" title="${esc(names)}" style="left:${x}%;top:${y}%;--people-count:${visible.length}"><span class="place-people-faces">${visible.map(c=>townActionFace(c,eventFor(c),home)).join("")}${hiddenCount?`<b class="place-person-more">+${hiddenCount}</b>`:""}</span>${state.mapCharacterLabelMode==="name"?`<span class="place-people-names">${esc(names)}</span>`:""}</div>`:"";
   return residents+travelers;
 }
-function meetingWalker(character,scene,segment,stationary=false){
+function meetingWalker(character,scene,segment,stationary=false,surface="town"){
   const seconds=Math.max(.01,(segment.end-segment.start)/1000),elapsed=Math.max(0,(Date.now()-segment.start)/1000);
-  return `<button type="button" class="meeting-walker ${stationary?"is-stationary":""}" data-person="${esc(character.id)}" data-journey-end="${segment.end}" style="--meeting-x0:${segment.from.x}%;--meeting-y0:${segment.from.y}%;--meeting-x1:${segment.to.x}%;--meeting-y1:${segment.to.y}%;--meeting-duration:${seconds}s;--meeting-delay:-${elapsed}s" aria-label="${esc(scene.title)}">${avatar(character)}<span>${esc(character.name)}</span></button>`;
+  return `<button type="button" class="meeting-walker meeting-surface-${surface} ${stationary?"is-stationary":""} ${stationary&&scene.groupInteraction&&/키스|입맞춤|kiss|キス/i.test(scene.title||"")?"is-kissing":""}" data-person="${esc(character.id)}" data-journey-end="${segment.end}" style="--meeting-x0:${segment.from.x}%;--meeting-y0:${segment.from.y}%;--meeting-x1:${segment.to.x}%;--meeting-y1:${segment.to.y}%;--meeting-duration:${seconds}s;--meeting-delay:-${elapsed}s" aria-label="${esc(scene.title)}">${avatar(character)}${surface==="home"?`<span class="meeting-caption"><b>${esc(character.name)}</b><small>${esc(scene.title)}</small></span>`:""}</button>`;
 }
 function townTravelersMarkup(homeId=""){
   const travelers=state.order.map(id=>state.characters[id]).filter(Boolean).filter(character=>{
@@ -2519,7 +2519,7 @@ function homeCard(id,chars){
     const scene=sceneFor(c),at=scene.meetingLocation,segment=scene.meetingJourney||{fromRoom:at.room,toRoom:at.room,from:at.point,to:at.point,start:Date.now(),end:Date.now()+1000};
     if(!visibleRoomKeys.includes(segment.fromRoom)&&!visibleRoomKeys.includes(segment.toRoom))return "";
     const convert=(key,point)=>{const r=visualRoomLayout(key);return {x:Number(r.x||0)+Number(r.w||100)*point.x/100,y:Number(r.y||0)+Number(r.h||100)*point.y/100}};
-    return meetingWalker(c,sceneFor(c),{...segment,from:convert(segment.fromRoom,segment.from),to:convert(segment.toRoom,segment.to)},!scene.meetingJourney);
+    return meetingWalker(c,sceneFor(c),{...segment,from:convert(segment.fromRoom,segment.from),to:convert(segment.toRoom,segment.to)},!scene.meetingJourney,"home");
   }).join("");
   const dayLabels=["일","월","화","수","목","금","토"];
   const residenceScheduleHelp=({en:"Set specific dates and anniversaries in Schedule. Here, choose only recurring visit weekdays. ‘Visit when needed’ does not create automatic travel.",ja:"特定の日付や記念日は「予定」で設定します。ここでは繰り返し訪問する曜日だけを選びます。「必要なときに訪問」は自動移動を作りません。"})[state.uiLanguage]||"방문 날짜와 기념일은 일정에서 정하고, 여기서는 반복 방문 요일만 정해요. ‘필요할 때 방문’은 임의 이동을 만들지 않습니다.";
