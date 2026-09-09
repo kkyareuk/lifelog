@@ -1,44 +1,44 @@
-import {receiveCharacterTransfers,personalState,characterEditorActive,runIsolatedWorld} from './state.js?v=20260909dev290';
-import {bindSharedCharacters,syncSharedCharacterEditor,leaveSharedCharacterEditor,saveSharedCharacter} from './shared-characters.js?v=20260909dev290';
-import {runBackgroundAction} from './background-actions.js?v=20260909dev290';
-import {TOUCH_REACTIONS,touchReactions} from "./touch-reactions.js?v=20260909dev290";
-import {nextRoutinePhaseAt} from './routine-scenes.js?v=20260909dev290';
-import {wardrobeCount} from "./state.js?v=20260909dev290";
-import {captureMeetingPositions} from './meeting-journey.js?v=20260909dev290';
-import {bindMailbox,composeAnnouncement,letterWatermark,mailboxNeedsRefresh} from './mailbox-center.js?v=20260909dev290';
-import {bedPerspective} from './bed-perspective.js?v=20260909dev290';
-import './user-profile.js?v=20260909dev290';
-import {withSharedWorld,buildSharedWorld} from './shared-world.js?v=20260909dev290';
-import {bindSharedUi,activeShared,canEditShared} from './shared-ui.js?v=20260909dev290';
-import "./group-push.js?v=20260909dev290";
-import {EXTRA_FAMILY,hospitalPurposes} from "./creative-options.js?v=20260909dev290";
-import {installSettingsTransfer} from "./settings-transfer.js?v=20260909dev290";
-import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, setCharacterBodyChoices, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260909dev290";
-import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260909dev290";
-import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260909dev290";
-import {toggleDislike} from "./state.js?v=20260909dev290";
-import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline,withSimulationBatch} from "./simulation.js?v=20260909dev290";
-import {setCharacterSceneImage} from "./state.js?v=20260909dev290";
-import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev290";
-import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260909dev290";
-import {nativeLogContents,homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260909dev290";
-import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260909dev290";
-import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260909dev290";
-import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260909dev290";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260909dev290";
-import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260909dev290";
-import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260909dev290";
-import {mergeImportedBackupState} from "./sync-merge.js?v=20260909dev290";
-import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260909dev290";
-import {installDirectSteps} from './direct-steps.js?v=20260909dev290';
-import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev290";
-import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev290";
-import {homeLifeNextDelay} from "./home-simulation.js?v=20260909dev290";
-import {syncBackgroundMusic} from './background-music.js?v=20260909dev290';
-import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260909dev290";
-import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260909dev290";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev290";
-import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260909dev290";
+import {receiveCharacterTransfers,personalState,characterEditorActive,runIsolatedWorld} from './state.js?v=20260909dev291';
+import {bindSharedCharacters,syncSharedCharacterEditor,leaveSharedCharacterEditor,saveSharedCharacter} from './shared-characters.js?v=20260909dev291';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev291';
+import {TOUCH_REACTIONS,touchReactions} from "./touch-reactions.js?v=20260909dev291";
+import {nextRoutinePhaseAt} from './routine-scenes.js?v=20260909dev291';
+import {wardrobeCount} from "./state.js?v=20260909dev291";
+import {captureMeetingPositions} from './meeting-journey.js?v=20260909dev291';
+import {bindMailbox,composeAnnouncement,letterWatermark,mailboxNeedsRefresh} from './mailbox-center.js?v=20260909dev291';
+import {bedPerspective} from './bed-perspective.js?v=20260909dev291';
+import './user-profile.js?v=20260909dev291';
+import {withSharedWorld,buildSharedWorld} from './shared-world.js?v=20260909dev291';
+import {bindSharedUi,activeShared,canEditShared} from './shared-ui.js?v=20260909dev291';
+import "./group-push.js?v=20260909dev291";
+import {EXTRA_FAMILY,hospitalPurposes} from "./creative-options.js?v=20260909dev291";
+import {installSettingsTransfer} from "./settings-transfer.js?v=20260909dev291";
+import {state, active, save, replaceState, createCharacter, deleteCharacter, setActive, setActiveHome, updateCharacter, setCharacterBodyChoices, updateCharacterView, toggleChip, addRelationship, updateRelationship, deleteRelationship, setHomeImage, setRoomFloorImage, setHomeBackground, setHomeExteriorImage, setPlaceInteriorImage, setCharacterImage, setWorldBackground, addPlace, deletePlace, movePlace, moveHomeOnTown, updatePlace, reorderPlace, addTownDecoration, updateTownDecoration, moveTownDecoration, reorderTownDecoration, deleteTownDecoration, resetAll, cloneState, setHomeEditMode, updateHome, createHome, createTownHome, deleteHome, addCharacterResidence, removeCharacterResidence, updateCharacterResidence, updateRoom, addRoom, setHomeFloorCount, setActiveHomeFloor, setRoomType, deleteRoom, addPet, updatePet, deletePet, setPetImage, addCar, updateCar, deleteCar, addFurniturePlacement, moveFurniturePlacement, updateFurniturePlacement, deleteFurniturePlacement, addFurnitureProp, deleteFurnitureProp, assignFurnitureBed, advanceHomeLifeSimulation, setHomeResidents, moveCharacter, addCatalogItem, updateCatalogItem, deleteCatalogItem, toggleFavorite, toggleOwned, togglePlaceStock, setCharacterPane, addTown, switchTown, deleteTown, recordCharacterInteraction, setDailyQuestion, updateRoutineDays, deleteRoutine as deleteStateRoutine, deleteMonthlyRoutine as deleteStateMonthlyRoutine, scheduleCharacterChoice, settleScheduledChoices, directCharacterActivity} from "./state.js?v=20260909dev291";
+import {roomPermissionMarkup,bindRoomPermissionEditor,readRoomPermissionEditor} from "./room-permissions.js?v=20260909dev291";
+import {bindHomeEditorUI,homeEditorCopy,fitFurnitureSelection,filteredFurniture} from "./home-editor-ui.js?v=20260909dev291";
+import {toggleDislike} from "./state.js?v=20260909dev291";
+import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline,withSimulationBatch} from "./simulation.js?v=20260909dev291";
+import {setCharacterSceneImage} from "./state.js?v=20260909dev291";
+import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev291";
+import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260909dev291";
+import {nativeLogContents,homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260909dev291";
+import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260909dev291";
+import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260909dev291";
+import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260909dev291";
+import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260909dev291";
+import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260909dev291";
+import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260909dev291";
+import {mergeImportedBackupState} from "./sync-merge.js?v=20260909dev291";
+import {normalizeRoomLayout,snapRoomLayout} from "./room-layout.js?v=20260909dev291";
+import {installDirectSteps} from './direct-steps.js?v=20260909dev291';
+import {FURNITURE_PROPS,furnitureCapacity,furnitureCatalogForRoom,furnitureFootprint,furnitureGridForRoom,furnitureIcon,furnitureLabel,furniturePropIcon,furniturePropLabel,isBedFurniture,normalizeFurniturePlacement,snapFurniturePosition,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev291";
+import {HOME_SURFACE_KEYS,HOME_WALL_KEYS,homeSurfaceImage,homeSurfaceLabel,wallSurfaceImage,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev291";
+import {homeLifeNextDelay} from "./home-simulation.js?v=20260909dev291";
+import {syncBackgroundMusic} from './background-music.js?v=20260909dev291';
+import {previewFootstep,stopMovementAudio,syncMovementAudio} from "./audio.js?v=20260909dev291";
+import {TOWN_TYPE_SUBTYPES} from "./town-profile.js?v=20260909dev291";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev291";
+import {ACHIEVEMENTS,evaluateAchievements,googlePlayAchievementStatus,openGooglePlayAchievements,signInGooglePlayAchievements,syncGooglePlayAchievements,localizedAchievement} from "./achievements.js?v=20260909dev291";
 const contactMailbox=createContactMailbox(localStorage);
 let mailboxRefreshTimer=0,meetingRefreshTimer=0;
 function scheduleMeetingRefresh(){
@@ -54,13 +54,13 @@ function scheduleMeetingRefresh(){
 document.addEventListener("contextmenu",event=>{
   if(event.target.closest?.("#app img, #app button, #app [role=button], dialog img, dialog button"))event.preventDefault();
 });
-import {switchAccountState} from "./state.js?v=20260909dev290";
-import {translateText} from "./views.js?v=20260909dev290";
-import {scheduleTownLighting} from "./town-lighting.js?v=20260909dev290";
-import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260909dev290";
-import {characterMood} from "./character-mood.js?v=20260909dev290";
-import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260909dev290";
-import {groupErrorMessage,showMultiplayerList,showMultiplayerDetail} from "./groups.js?v=20260909dev290";
+import {switchAccountState} from "./state.js?v=20260909dev291";
+import {translateText} from "./views.js?v=20260909dev291";
+import {scheduleTownLighting} from "./town-lighting.js?v=20260909dev291";
+import {PLACEMENTS,characterPlacement} from "./character-placement.js?v=20260909dev291";
+import {characterMood} from "./character-mood.js?v=20260909dev291";
+import {recoverableBuildings,restoreBuildings} from "./state.js?v=20260909dev291";
+import {groupErrorMessage,showMultiplayerList,showMultiplayerDetail} from "./groups.js?v=20260909dev291";
 const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
 
 function featureDialog(title,body){
@@ -748,10 +748,10 @@ async function exportProfilePdfV2(character,bodyFont){
     win.document.open();win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name}의 프로필</title><style>@page{size:A4;margin:0}*{box-sizing:border-box}html,body{margin:0;background:#eee}main{width:210mm;margin:0 auto;background:#fff}img{display:block;width:100%;height:auto}button{position:fixed;right:20px;bottom:20px;padding:12px 18px;border:0;border-radius:12px;color:#fff;background:#333}@media print{html,body,main{width:100%;background:#fff}button{display:none}}</style></head><body><main><img src="${image}" alt="${character.name}의 프로필"></main><button onclick="print()">PDF로 저장 / 인쇄</button></body></html>`);win.document.close();setTimeout(()=>win.print(),500);
   }catch(error){win.close();showToast("PDF를 만들지 못했어요. 프로필 사진의 주소를 확인해 주세요.")}
 }
-installSettingsTransfer({translate:translateText,toast:showToast,render:()=>render(),limit:characterLimit});
+installSettingsTransfer({translate:translateText,toast:showToast,render:()=>render(),limit:characterLimit,townLimit});
 function openProfileExportDialog(){
   const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
-  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>한글이 깨지지 않는 기본 글꼴로 관공서 제출 서류처럼 만들고, 아래에 서랍마을 기록 도장을 찍어요.</small></div><button value="cancel">×</button></div><p>${translateText("캐릭터 설정 파일에는 사진·생활 로그·관계를 포함하지 않아요. 전체 백업에는 관계와 생활 기록도 포함해요.")}</p><div class="profile-export-options"><button type="button" data-settings-transfer="character-code-export">${({ko:"사진 포함 공유 코드 만들기",en:"Create a sharing code with photos",ja:"写真付き共有コードを作成"}[state.uiLanguage]||"사진 포함 공유 코드 만들기")}</button><button type="button" data-settings-transfer="character-code-import">${({ko:"캐릭터 코드로 불러오기",en:"Import by character code",ja:"キャラクターコードで読み込む"}[state.uiLanguage]||"캐릭터 코드로 불러오기")}</button><button type="button" data-settings-transfer="character-export">${translateText("캐릭터 설정 다운로드")}</button><button type="button" data-settings-transfer="character-import">${translateText("캐릭터 설정 불러오기")}</button><button type="button" data-settings-transfer="all-export">${translateText("전체 설정 백업 다운로드")}</button><button type="button" data-export-format="png"><b>PNG 증명서</b><small>이미지 파일로 바로 저장</small></button><button type="button" data-export-format="pdf"><b>PDF 증명서</b><small>같은 문서를 PDF로 저장·인쇄</small></button></div></form>`;
+  dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>프로필 내보내기</h2><small>한글이 깨지지 않는 기본 글꼴로 관공서 제출 서류처럼 만들고, 아래에 서랍마을 기록 도장을 찍어요.</small></div><button value="cancel">×</button></div><div class="profile-export-options"><button type="button" data-settings-transfer="character-code-export">${({ko:"공유 코드 만들기",en:"Create sharing code",ja:"共有コードを作成"}[state.uiLanguage]||"공유 코드 만들기")}</button><button type="button" data-settings-transfer="character-code-import">${({ko:"공유 코드로 불러오기",en:"Import by sharing code",ja:"共有コードで読み込む"}[state.uiLanguage]||"공유 코드로 불러오기")}</button><button type="button" data-export-format="png"><b>PNG 증명서</b><small>이미지 파일로 바로 저장</small></button><button type="button" data-export-format="pdf"><b>PDF 증명서</b><small>같은 문서를 PDF로 저장·인쇄</small></button></div></form>`;
   dialog.querySelectorAll("[data-export-format]").forEach(button=>button.onclick=async()=>{
     dialog.querySelectorAll("button").forEach(value=>value.disabled=true);
     try{
@@ -2496,10 +2496,10 @@ function bind(){
     finally{if(button?.isConnected)button.disabled=false}
   };
   document.querySelector('[data-management-pane]')?.addEventListener('input',e=>{if(e.target.matches('input:not([type=file]),textarea,select'))e.target.dataset.groupDirty='1'});
-  $$('[data-group-manage]').forEach(button=>button.onclick=async()=>{const {selectManagementPane}=await import('./groups.js?v=20260909dev290');selectManagementPane(button.dataset.groupManage);render()});
+  $$('[data-group-manage]').forEach(button=>button.onclick=async()=>{const {selectManagementPane}=await import('./groups.js?v=20260909dev291');selectManagementPane(button.dataset.groupManage);render()});
   $('[data-group-presentation]')?.addEventListener('submit',event=>{event.preventDefault();runGroupAction(event.submitter,()=>groupApi.saveGroupPresentation(Object.fromEntries(new FormData(event.currentTarget))))});
-  $('[data-group-catalog-publish]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const {chooseCatalog}=await import('./settings-transfer.js?v=20260909dev290');const chosen=await chooseCatalog(state.catalog);if(chosen)await groupApi.publishCatalog(chosen)}));
-  $('[data-group-catalog-import]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const transfer=await import('./settings-transfer.js?v=20260909dev290');transfer.mergeCatalogFile({format:'drawer-village-catalog',version:1,catalog:Object.fromEntries((groupApi.getSnapshot().catalog||[]).map(c=>[c.id,c.items||[]]))});render()}));
+  $('[data-group-catalog-publish]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const {chooseCatalog}=await import('./settings-transfer.js?v=20260909dev291');const chosen=await chooseCatalog(state.catalog);if(chosen)await groupApi.publishCatalog(chosen)}));
+  $('[data-group-catalog-import]')?.addEventListener('click',event=>runGroupAction(event.currentTarget,async()=>{const transfer=await import('./settings-transfer.js?v=20260909dev291');transfer.mergeCatalogFile({format:'drawer-village-catalog',version:1,catalog:Object.fromEntries((groupApi.getSnapshot().catalog||[]).map(c=>[c.id,c.items||[]]))});render()}));
   $$('[data-relation-group]').forEach(button=>button.addEventListener('click',()=>groupApi.select(button.dataset.relationGroup)));
   $('[data-group-proposal]')?.addEventListener('submit',event=>{event.preventDefault();const data=Object.fromEntries(new FormData(event.currentTarget));runGroupAction(event.submitter,()=>groupApi.propose({...data,requestId:crypto.randomUUID()}))});
   $$('[data-group-perception] select').forEach(select=>select.addEventListener('change',()=>{const form=select.closest('form'),snapshot=groupApi.getSnapshot(),saved=(snapshot.perceptions||[]).find(p=>p.sourceId===form.elements.sourceId.value&&p.targetId===form.elements.targetId.value);try{form.elements.overall.value=JSON.parse(saved?.viewJson||'{}').overall||''}catch{form.elements.overall.value=''}}));
@@ -5535,6 +5535,7 @@ window.ParallelCity={
   cropCharacterImage:(file,type)=>cropImage(file,type),
   cropUserProfile:file=>cropImage(file,"userProfile"),
   getState:cloneState,
+  getPersonalStateForSharing:()=>structuredClone(personalState()),
   getCharacterCount:()=>personalState().order.length,getActiveTab:()=>state.activeTab,
   getMeetingPositions:ids=>captureMeetingPositions(ids,activeShared()?.selectedTownId||activeShared()?.group?.towns?.[0]?.id||state.activeTownId),
   getCharacterForSharing:async id=>{const c=state.characters[id];if(!c)return null;const {days,...profile}=c,result=structuredClone(profile),media=await initializeLocalMediaState(result);if(media.pending)throw Error(({ko:"사진을 아직 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",en:"Some photos are not ready. Please try again shortly.",ja:"写真をまだ読み込めません。少し待ってから再試行してください。"})[state.uiLanguage]);return result},
@@ -6098,7 +6099,7 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260909dev290").catch(error=>{
+import("./auth.js?v=20260909dev291").catch(error=>{
     console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
     window.DrawerVillageAuthStartupFailed=true;
     setAccountLabel("Google 로그인");
@@ -6115,7 +6116,7 @@ if("serviceWorker" in navigator){
       globalThis.caches?.keys?.().then(keys=>Promise.all(keys.map(key=>caches.delete(key))))
     ]).catch(error=>console.warn("앱의 이전 웹 캐시를 정리하지 못했습니다",error));
   }else{
-    navigator.serviceWorker.register("./sw.js?v=20260909dev290",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
+    navigator.serviceWorker.register("./sw.js?v=20260909dev291",{updateViaCache:"none"}).then(registration=>registration.update()).catch(error=>console.warn("오프라인 업데이트 준비 실패",error));
   }
 }
 const lockPortrait=()=>{

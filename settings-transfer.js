@@ -1,6 +1,7 @@
-import {characterCodeDialog} from "./character-code.js?v=20260909dev290";
-import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev290';
-import {informationOnlyState} from './local-media.js?v=20260909dev290';
+import {worldTransferDialog} from './world-transfer.js?v=20260909dev291';
+import {characterCodeDialog} from "./character-code.js?v=20260909dev291";
+import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev291';
+import {informationOnlyState} from './local-media.js?v=20260909dev291';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
 const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);
@@ -63,12 +64,13 @@ export function chooseCatalog(catalog,importing=false,{single=false}={}){return 
  const update=()=>{const n=rows.filter(r=>r.check.checked).length;submit.disabled=!n;submit.textContent=copy[importing?6:5]+' ('+n+')'};
  list.onchange=event=>{if(single&&event.target.checked)rows.forEach(r=>{if(r.check!==event.target)r.check.checked=false});update()};search.oninput=()=>rows.forEach(r=>r.label.hidden=!r.name.includes(search.value.toLocaleLowerCase()));d.append(title,search,list,controls);d.onclose=()=>{d.remove();resolve(null)};document.body.append(d);update();d.showModal();
 })}
-export function installSettingsTransfer({translate,toast,render,limit}){
+export function installSettingsTransfer({translate,toast,render,limit,townLimit}){
   const t=translate;
   document.addEventListener('click',async event=>{
     const button=event.target.closest('[data-settings-transfer]');if(!button)return;
     const mode=button.dataset.settingsTransfer;
     try{
+      if(mode==='world-transfer'){await worldTransferDialog({homeId:button.dataset.shareHome||'',kind:button.dataset.shareKind||'town',render,toast,limits:()=>({characterLimit:limit(),townLimit:townLimit()})});return}
       if(mode==='character-code-export'||mode==='character-code-import'){await characterCodeDialog(mode,limit,render,toast);return}
       if(mode==='character-export'){if(active())await downloadSettings(characterSettingsFile(active()),active().name+'-설정');return}
       if(mode==='all-export'){await downloadSettings({format:'drawer-village-backup',version:2,mediaPolicy:'device-only',exportedAt:new Date().toISOString(),gameState:informationOnlyState(cloneState())},'서랍마을-전체백업');return}

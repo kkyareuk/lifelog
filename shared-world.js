@@ -1,5 +1,5 @@
-import {withTownEditDraft} from './town-edit-draft.js?v=20260909dev290';
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260909dev290';
+import {withTownEditDraft} from './town-edit-draft.js?v=20260909dev291';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260909dev291';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();
@@ -23,7 +23,7 @@ export function buildSharedWorld(snapshot,language='ko'){
   for(const r of snapshot.residents||[]){
     const profile=decodeShared(r.profileJson),life=decodeShared(r.lifeJson),schedule=decodeShared(r.scheduleJson);
     const homeId=Array.isArray(r.residences)?(r.residences.find(item=>item.isPrimary&&homes[item.homeId])?.homeId||r.residences.find(item=>homes[item.homeId])?.homeId||''):(snapshot.homes||[]).some(h=>h.id===r.sharedHomeId)?r.sharedHomeId:(snapshot.homes||[]).find(h=>h.ownerUid===r.ownerUid&&h.sourceHomeId===(r.sourceHomeId||profile.homeId))?.id||'';
-    const remap=items=>(items||[]).map(item=>({...item,townId:r.townId,homeId,withIds:(item.withIds||[]).map(id=>(snapshot.residents||[]).find(x=>x.ownerUid===r.ownerUid&&x.sourceCharacterId===id)?.id).filter(Boolean)}));
+    const remap=items=>(items||[]).map(item=>({...item,townId:r.townId,homeId,withIds:(item.withIds||[]).map(id=>(snapshot.residents||[]).find(x=>x.ownerUid===r.ownerUid&&x.sourceCharacterId===id)?.id||((snapshot.residents||[]).some(x=>x.id===id)?id:null)).filter(Boolean)}));
     characters[r.id]={...profile,id:r.id,name:r.name,job:r.job,icon:profile.icon||r.icon||'',photo:profile.photo||r.photo||'',ownerUid:r.ownerUid,townId:r.townId,homeId,
       residences:Array.isArray(r.residences)?r.residences.filter(item=>homes[item.homeId]):homeId?[{homeId,isPrimary:true,stayPattern:'상시 거주',sleepRoomId:profile.sleepRoomId||'bedroom'}]:[],
       wake:profile.wake||'07:00',sleep:profile.sleep||'23:00',createdAt:profile.createdAt||1,ageGroup:profile.ageGroup||'성인',bodyProfile:profile.bodyProfile||{},timelineResetAt:life.timelineResetAt||profile.timelineResetAt||0,days:life.days||{},sharedScene:life.scene||null};

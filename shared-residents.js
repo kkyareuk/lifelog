@@ -1,5 +1,5 @@
-import {state,personalState} from './state.js?v=20260909dev290';
-import {sharedSelection,decodeShared} from './shared-world.js?v=20260909dev290';
+import {state,personalState} from './state.js?v=20260909dev291';
+import {sharedSelection,decodeShared} from './shared-world.js?v=20260909dev291';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const residentText=(ko,en,ja)=>state.uiLanguage==='en'?en:state.uiLanguage==='ja'?ja:ko;
 export function moveCandidates(snapshot,uid){

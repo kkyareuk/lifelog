@@ -1,5 +1,5 @@
-import {bedPillowPoint} from './bed-perspective.js?v=20260909dev290';
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev290";
+import {bedPillowPoint} from './bed-perspective.js?v=20260909dev291';
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev291";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -66,7 +66,7 @@ export function homeInformationMarkup(home,photo,state,t){
   const c=homeEditorCopy(state.uiLanguage),id=escape(home.id);
   const select=(key,label,values)=>`<label>${label}<select data-home-field="${key}" data-home-id="${id}">${[...new Set([...(home[key]?[home[key]]:[]),...values])].map(v=>`<option value="${escape(v)}" ${v===home[key]?"selected":""}>${escape(t(v,v))}</option>`).join("")}</select></label>`;
   return `<section class="home-feature-panel home-design-page home-design-info" data-home-feature="house-info">
-    <header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${escape(home.name)}</h2></header>
+    <header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${escape(home.name)}</h2></header><button type="button" data-settings-transfer="world-transfer" data-share-home="${id}">${({ko:"집 공유 코드",en:"Home sharing code",ja:"家の共有コード"}[state.uiLanguage]||"집 공유 코드")}</button>
     <button type="button" class="home-design-photo" data-home-building-shape="${id}" aria-label="${c.homePhoto}"><img src="${escape(photo)}" alt=""></button>
     <div class="home-design-fields">
       <label class="wide">${t("집 이름","집 이름")}<input data-home-name data-home-id="${id}" value="${escape(home.name)}" maxlength="80"></label>

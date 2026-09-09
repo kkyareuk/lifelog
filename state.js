@@ -1,25 +1,25 @@
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev290';
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev290';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev291';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev291';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev290";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev290";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev290";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev290";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev290";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev290";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev290";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev290";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev290";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev290";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev291";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev291";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev291";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev291";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev291";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev291";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev291";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev291";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev291";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev291";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev290";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev290";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev291";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev291";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -2253,4 +2253,4 @@ export function switchAccountState(uid){
 }
 export const cloneState=()=>({...clone(editorPersonalState||state),characterSettingsView:"hub"});
 
-export function receiveCharacterTransfers(records){if(!records?.length)return;const personal=editorPersonalState||state;const changed=records.some(r=>['group','deleted'].includes(r.location)?Boolean(personal.characters?.[r.personalId]):Number(r.revision)>Number(personal.characterTransferVersions?.[r.personalId]||0));if(!changed)return;applyCharacterTransfers(personal,records);if(!editorPersonalState)save(true,false);else pendingPersonalTransferSave=true}
+export function receiveCharacterTransfers(records){if(!records?.length)return;const personal=editorPersonalState||state;const changed=records.some(r=>r.kind==='world'?!personal.worldTransferVersions?.[r.personalId]:['group','deleted'].includes(r.location)?Boolean(personal.characters?.[r.personalId]):Number(r.revision)>Number(personal.characterTransferVersions?.[r.personalId]||0));if(!changed)return;applyCharacterTransfers(personal,records);if(!editorPersonalState)save(true,false);else pendingPersonalTransferSave=true}

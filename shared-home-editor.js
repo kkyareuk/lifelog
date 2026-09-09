@@ -1,9 +1,9 @@
-import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev290';
-import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev290';
-import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260909dev290';
-import {bindHomeEditorUI} from './home-editor-ui.js?v=20260909dev290';
-import {mt} from './mailbox-center.js?v=20260909dev290';
-import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev290';
+import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev291';
+import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev291';
+import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260909dev291';
+import {bindHomeEditorUI} from './home-editor-ui.js?v=20260909dev291';
+import {mt} from './mailbox-center.js?v=20260909dev291';
+import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev291';
 const queues=new Map();
 export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  const api=window.DrawerVillageGroups,selection=sharedSelection(s),world=buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;
