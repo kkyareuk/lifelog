@@ -1,3 +1,4 @@
+import {bindDiamondShop,diamondShopGuide} from "./diamond-shop.js?v=20260909dev305";
 // Keep native purchase state through shop rerenders and late price responses.
 function syncApplePurchaseButtons(){
  const status=window.DrawerVillagePlayBilling?.getState?.();if(!status)return;
@@ -1838,7 +1839,7 @@ function restoreMobileCharacterDialogs(){
 }
 
 function maybeShowPageGuide(){
-  const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
+  const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=tab==="shop"&&window.PARALLEL_CITY_CONFIG?.diamonds?.enabled?diamondShopGuide(state.uiLanguage):PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
   const accountGuides=window.ParallelCityAuth?.getInfo?.().guideState;
   if(accountGuides&&!accountGuides.loaded)return;
   if(!guide||!state.order.length||accountGuides?.seen?.includes(tab)||localStorage.getItem(key)==="1"||guidePending.has(tab))return;
@@ -2531,6 +2532,7 @@ function refreshCharacterSelectionSummaries(root=document){
 }
 
 function bind(){
+  bindDiamondShop({render,toast:showToast});
   if(state.activeTab==="credits")openSupporterCredits();
   const groupApi=window.DrawerVillageGroups;
   let directoryFilter="all";
@@ -2840,8 +2842,10 @@ function bind(){
   };
   const playButtons=$$("[data-play-purchase]");
   $$('[data-drawer-shop-tab]').forEach(button=>button.onclick=()=>{setNativeShopSection(button.dataset.drawerShopTab);render()});
+  const playText=text=>({"구매하기":["Buy","購入"],"결제창 여는 중…":["Opening checkout…","決済画面を開いています…"],"이미 구매함":["Already owned","購入済み"],"현재 구매할 수 없음":["Currently unavailable","現在購入できません"],"상품 준비 중":["Coming soon","準備中"],"잠시 후 다시 시도해 주세요":["Please try again shortly","しばらくしてから再度お試しください"],"구매가 완료되어 상품을 지급했습니다":["Purchase completed and applied","購入が完了し、適用されました"]}[text]?.[state.uiLanguage==="en"?0:state.uiLanguage==="ja"?1:-1]||text);
   const playLabel=button=>button.querySelector("[data-play-label]");
   const setPlayButtonState=(button,stateName,label,disabled=true)=>{
+    label=playText(label);
     button.dataset.purchaseState=stateName;
     button.disabled=disabled;
     const hiddenLabel=playLabel(button);
@@ -2854,8 +2858,9 @@ function bind(){
     const productId=button.dataset.playPurchase;
     setPlayButtonState(button,"opening","결제창 여는 중…",true);
     try{
-      await window.DrawerVillagePlayBilling?.purchase?.(productId);
-      showToast("구매가 완료되어 상품을 지급했습니다");
+      const purchaseResult=await window.DrawerVillagePlayBilling?.purchase?.(productId);
+      if(productId==="diamonds_100")window.dispatchEvent(new CustomEvent("drawer-village-diamonds-charged",{detail:purchaseResult||{}}));
+      showToast(playText("구매가 완료되어 상품을 지급했습니다"));
       render();
     }catch(error){
       console.error(error);
@@ -2883,7 +2888,7 @@ function bind(){
           return;
         }
         setPlayButtonState(button,"unavailable","현재 구매할 수 없음",true);
-        document.querySelectorAll(`[data-play-price="${CSS.escape(button.dataset.playPurchase)}"]`).forEach(price=>price.textContent="상품 준비 중");
+        document.querySelectorAll(`[data-play-price="${CSS.escape(button.dataset.playPurchase)}"]`).forEach(price=>price.textContent=playText("상품 준비 중"));
       });
     }).catch(error=>{
       console.warn("상품 조회 실패",error);

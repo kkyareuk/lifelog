@@ -28,7 +28,7 @@ assert.match(nativeApp,/verifyPurchase/);
 assert.ok(nativeApp.indexOf("verifyPurchase")<nativeApp.indexOf("finishVerifiedPurchase"),"서버 영수증 검증 코드가 구매 완료 처리보다 먼저 정의되어야 합니다.");
 assert.doesNotMatch(config,/open_celebration_bundle/);
 assert.doesNotMatch(backend,/open_celebration_bundle/);
-assert.match(backend,/PRODUCTS=new Set\(\["character_slots_5"/);
+assert.match(backend,/PRODUCTS=new Set\(\["diamonds_100"/);
 assert.match(backend,/next\.storage50=true/);
 // Release numbers change independently of shop behaviour. Exact agreement with
 // staged assets is checked by check-android-build-assets.mjs.

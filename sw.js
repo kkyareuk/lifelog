@@ -1,5 +1,6 @@
-const CACHE_VERSION="drawer-village-v20260910-dev305-slot1";
+const CACHE_VERSION="drawer-village-v20260910-dev305-diamonds1";
 const CORE=[
+  "./diamond-shop.css?v=20260910dev305","./diamond-shop.js?v=20260909dev305",
   "./relationship-context.js?v=20260909dev305",
   './gossip-reaction.js?v=20260909dev305',
   './character-transfers.js?v=20260909dev305',

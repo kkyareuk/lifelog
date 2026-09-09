@@ -114,6 +114,7 @@
     "test:population-cache": "node scripts/check-population-cache.mjs"
   },
   "dependencies": {
+    "@capacitor-community/admob": "7.2.0",
     "@capacitor-firebase/authentication": "^7.5.0",
     "@capacitor/android": "^7.4.3",
     "@capacitor/app": "^7.1.0",

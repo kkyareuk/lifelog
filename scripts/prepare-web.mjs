@@ -30,6 +30,7 @@ const includedDirectories=new Set([
 ]);
 
 const includedFiles=new Set([
+  "diamond-shop.css","diamond-shop.js",
   "relationship-context.js",
   "life-tasks.js","automatic-activities.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js","observe-responsive.js",
@@ -172,6 +173,6 @@ if(!index.includes(expectedModuleCache))throw new Error("최신 웹 UI 캐시 �
 if(!app.includes(expectedModuleCache))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
 if(!index.includes(expectedModuleCache))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
 if(!index.includes(expectedModuleCache)||!app.includes(expectedModuleCache))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260910-dev305-slot1"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260910-dev305-diamonds1"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

@@ -17,4 +17,6 @@
     <string name="achievement_ten_buildings" translatable="false"></string>
     <string name="achievement_profile_complete" translatable="false"></string>
     <string name="achievement_three_towns" translatable="false"></string>
+    <!-- Google test app ID. Replace before enabling production ads. -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
 </resources>

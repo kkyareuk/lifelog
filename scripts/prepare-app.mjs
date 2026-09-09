@@ -24,6 +24,7 @@ const excludedAndroidAssets=new Set([
 ]);
 const excludedAndroidAssetPrefixes=[];
 const includedFiles=new Set([
+  "diamond-shop.css","diamond-shop.js",
   "life-tasks.js","automatic-activities.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css",
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
@@ -188,7 +189,7 @@ config=config.replace(
 config+=`\nwindow.PARALLEL_CITY_CONFIG.playBilling={...(window.PARALLEL_CITY_CONFIG.playBilling||{}),enabled:${platform==="android"}};\n`;
 if(platform==="ios"){
  config+="\nwindow.PARALLEL_CITY_CONFIG.iosPreview=false;window.PARALLEL_CITY_CONFIG.iosApp=true;\n";
- config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{character_slot_1:"com.drawervillage.app.character_slot_1",character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
+ config+='window.PARALLEL_CITY_CONFIG.appleBilling='+JSON.stringify({enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/appleBillingApi",products:{diamonds_100:"com.drawervillage.app.diamonds_100",character_slot_1:"com.drawervillage.app.character_slot_1",character_slots_5:"com.drawervillage.app.character_slots_5",town_slot_1:"com.drawervillage.app.town_slot_1",green_tea:"com.drawervillage.app.green_tea"}})+';\n';
 }
 await writeFile(configPath,config,"utf8");
 

@@ -1298,6 +1298,7 @@ async function deleteOwnAccount(){
 window.ParallelCityAuth={
   deleteOwnAccount,
   login,upload,download,submitFeedback,savePublicProfile,markGuideSeen,resetGuides,
+  refreshEntitlements:async()=>{const account=user?.uid;if(!account)return;const snapshot=await getDocFromServer(doc(db,"users",account));if(user?.uid===account)publishEntitlements(snapshot.data()?.entitlements)},
   logout:async()=>{
     try{await window.DrawerVillageGroupPush?.disable?.()}catch{}
     accountEpoch+=1;switchingAccount=true;

@@ -13,9 +13,10 @@ const app=express();
 app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
-const PRODUCTS=new Set(["character_slots_5","character_slot_1","town_slot_1","storage_50mb","green_tea"]);
-const CONSUMABLE_PRODUCTS=new Set(["character_slots_5","character_slot_1","town_slot_1","green_tea"]);
+const PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","storage_50mb","green_tea"]);
+const CONSUMABLE_PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","green_tea"]);
 const WEB_PRODUCTS=Object.freeze({
+  diamonds_100:{name:"다이아 100개 충전",amount:1000},
   character_slot_1:{name:"캐릭터 슬롯 1개 추가",amount:1000},
   town_slot_1:{name:"마을 슬롯 1개 추가",amount:1900},
   storage_50mb:{name:"사진 저장 공간 50MB 추가",amount:2900},
@@ -89,6 +90,7 @@ function nextEntitlements(current,productId,quantity){
   const count=Math.max(1,Math.min(100,Number(quantity)||1));
   const purchases=Array.from(new Set([...(Array.isArray(current?.purchases)?current.purchases:[]),productId]));
   const next={...(current||{}),purchases};
+  if(productId==="diamonds_100")next.diamondPaid=(Number(current?.diamondPaid)||0)+count*100;
   if(productId==="character_slot_1")next.characterSingleSlots=(Number(current?.characterSingleSlots)||0)+count;
   if(productId==="character_slots_5")next.characterSlotPacks=(Number(current?.characterSlotPacks ?? (current?.purchases||[]).filter(id=>id==="character_slots_5").length)||0)+count;
   if(productId==="town_slot_1")next.townSlotPacks=(Number(current?.townSlotPacks)||0)+count;
@@ -130,6 +132,7 @@ app.post("/payments/orders",async(request,response)=>{
     const identity=await signedInUser(request);
     const {environment}=tossCredentials();
     const items=webCart(request.body?.items);
+    if(items.some(i=>i.packageId==="diamonds_100")){if(items.some(i=>i.packageId!=="diamonds_100"))throw Object.assign(Error("다이아는 별도로 충전해 주세요."),{status:400});if((await db.collection("economySettings").doc("live").get()).data()?.enabled!==true)throw Object.assign(Error("다이아 충전을 준비 중입니다."),{status:503})}
     const {amount,count,orderName}=orderSummary(items);
     if(amount<100||amount>=WEB_GAME_PAYMENT_LIMIT)throw Object.assign(new Error("게임 상품은 한 번에 5만원 미만으로만 결제할 수 있습니다."),{status:400});
     const orderId=`dv_${Date.now()}_${crypto.randomBytes(8).toString("hex")}`;
@@ -252,7 +255,7 @@ app.post("/play-billing/verify",async(request,response)=>{
     if(request.body?.orderId&&purchase.orderId&&request.body.orderId!==purchase.orderId){
       throw Object.assign(new Error("주문번호가 일치하지 않습니다."),{status:409});
     }
-    const quantity=Math.max(1,Number(purchase.quantity)||Number(request.body?.quantity)||1);
+    const quantity=Math.max(1,Number(purchase.quantity)||1);
     const receiptId=crypto.createHash("sha256").update(`${PACKAGE_NAME}:${productId}:${purchaseToken}`).digest("hex");
     const receiptRef=db.collection("playPurchases").doc(receiptId);
     const userRef=db.collection("users").doc(identity.uid);
@@ -336,6 +339,7 @@ exports.expireVillageMail=require('firebase-functions/v2/scheduler').onSchedule(
  for(const group of page.docs)for(const kind of ['mail','proposals','relationshipRequests','mailDispatches'])await deleteExpired(group.ref.collection(kind),cutoff);
  cursor=page.docs.at(-1);if(page.size<100)break;}
  await deleteExpired(db.collection('notificationOutbox'),cutoff);
+ await deleteExpired(db.collection('diamondAdTickets'),Date.now()-2*86400000);
 });
 
 const accountApp=express();
@@ -347,3 +351,13 @@ for(const action of ['preview','delete'])accountApp.post('/'+action,async(req,re
  catch(error){res.status(error.status||401).json({code:error.status?error.message:'account-deletion-failed'})}
 });
 exports.accountDeletionApi=onRequest({region:'asia-northeast3',timeoutSeconds:540,memory:'512MiB',maxInstances:2,concurrency:1},accountApp);
+
+exports.diamondWalletApi=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB"},require("./diamond-api")({db,signedInUser}));
+
+app.post('/payments/diamond-refund',async(req,res)=>{
+ try{const orderId=String(req.body?.data?.orderId||'');if(!/^dv_[0-9]+_[a-f0-9]{16}$/.test(orderId))return res.sendStatus(400);const {secretKey}=tossCredentials();const response=await fetch('https://api.tosspayments.com/v1/payments/orders/'+orderId,{headers:{Authorization:'Basic '+Buffer.from(secretKey+':').toString('base64')},signal:AbortSignal.timeout(15000)});if(!response.ok)return res.sendStatus(503);await require('./diamond-refunds').tossRefund(db,orderId,await response.json());res.json({received:true})}catch{res.sendStatus(503)}
+});
+exports.reconcileDiamondPlayRefunds=require('firebase-functions/v2/scheduler').onSchedule({schedule:'every 60 minutes',region:'asia-northeast3',timeoutSeconds:540,memory:'256MiB'},async()=>{
+ const publisher=google.androidpublisher({version:'v3',auth:new google.auth.GoogleAuth({scopes:['https://www.googleapis.com/auth/androidpublisher']})});let token;
+ do{const result=await publisher.purchases.voidedpurchases.list({packageName:PACKAGE_NAME,startTime:String(Date.now()-29*86400000),includeQuantityBasedPartialRefund:true,token,maxResults:1000});for(const item of result.data.voidedPurchases||[])await require('./diamond-refunds').playRefund(db,item);token=result.data.tokenPagination?.nextPageToken}while(token);
+});

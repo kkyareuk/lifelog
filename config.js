@@ -24,6 +24,7 @@
     backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api",
     packageName:"com.drawervillage.app",
     products:{
+      diamonds_100:"diamonds_100",
       character_slots_5:"character_slots_5",
       character_slot_1:"character_slot_1",
       town_slot_1:"town_slot_1",
@@ -31,6 +32,8 @@
       green_tea:"green_tea"
     }
   };
+  window.PARALLEL_CITY_CONFIG.diamonds={enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/diamondWalletApi"};
+  window.PARALLEL_CITY_CONFIG.ads={enabled:false,testing:true};
   window.PARALLEL_CITY_CONFIG.maintenance=window.PARALLEL_CITY_CONFIG.maintenance||{
     enabled:false,
     title:"서랍마을을 잠시 점검하고 있어요",

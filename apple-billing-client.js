@@ -32,6 +32,7 @@
   if(result.verified!==true||result.entitlementApplied!==true)throw error('FAILED');
   // StoreKit retains unfinished transactions across restarts until the server commits.
   await bounded(bridge.finishPurchase({transactionId:purchase.transactionId}));
+  if(result.productId==="diamonds_100")window.dispatchEvent?.(new CustomEvent("drawer-village-diamonds-charged",{detail:result}));
   if(result.environment==="Sandbox")window.ParallelCityAuth?.setAppleSandboxEntitlements?.(result.entitlements);
   return result;
  }

@@ -94,6 +94,9 @@ function scanCode(end=""){
 scanCode();
 // Include the independently loaded dictionary module's exact UI labels.
 Object.keys(dictionaryCopy.en).forEach(add);
+const diamondSource=fs.readFileSync(new URL("../diamond-shop.js",import.meta.url),"utf8");
+const diamondCopies=vm.runInNewContext("("+diamondSource.match(/const copies=([\s\S]*?);\r?\nconst esc=/)[1]+")");
+for(const key of Object.keys(diamondCopies.ko)){const ko=diamondCopies.ko[key];add(ko);for(const lang of ["en","ja"])context.UI_TEXT[lang][ko]=diamondCopies[lang][key]}
 const translations={en:{...context.UI_TEXT.en,...context.I18N.en},ja:{...context.UI_TEXT.ja,...context.I18N.ja}};
 for(const language of ["en","ja"]){
   const translated=[...candidates].filter(text=>translations[language][text]);

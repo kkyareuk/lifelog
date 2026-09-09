@@ -1,0 +1,8 @@
+.diamond-shop{display:grid;gap:16px;width:100%;max-width:760px;margin:0 auto;padding:18px;box-sizing:border-box;color:#46372d;background:#fffaf4;border-radius:16px}
+.diamond-shop h2,.diamond-shop p{margin:0}.diamond-shop p{font-size:13px;line-height:1.65}
+.diamond-balance{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:16px;background:#f4edfa;border:1px solid #d9c9e7;border-radius:14px}
+.diamond-balance strong{font-size:26px;color:#785597}.diamond-balance span{font-size:12px}.diamond-balance button{margin-left:auto}
+.diamond-products,.diamond-rewards{display:grid;gap:10px}.diamond-product,.diamond-charge{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;background:#fffaf2;border:1px solid #e7d9c6;border-radius:12px}
+.diamond-shop button,.diamond-charge a{min-height:44px;padding:10px 14px;border:1px solid #c8b4d7;border-radius:10px;background:#f1e7f9;color:inherit;font:inherit;text-decoration:none;cursor:pointer}.diamond-shop button:disabled{opacity:.55;cursor:default}
+.diamond-charge button small{display:block;font-size:11px}.diamond-product b,.diamond-charge b{font-size:14px}.diamond-banner-space{display:none}.diamond-banner-visible .drawer-shop-shell{box-sizing:border-box;padding-bottom:calc(50px + env(safe-area-inset-bottom,0px))}
+@media(max-width:380px){.diamond-shop{padding:12px}.diamond-product,.diamond-charge{flex-wrap:wrap}.diamond-product button,.diamond-charge button,.diamond-charge a{margin-left:auto}}

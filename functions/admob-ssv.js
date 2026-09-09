@@ -1,0 +1,6 @@
+'use strict';
+const crypto=require('node:crypto');
+let cached,loadedAt=0;
+async function keys(){if(cached&&Date.now()-loadedAt<3600000)return cached;const response=await fetch('https://www.gstatic.com/admob/reward/verifier-keys.json',{signal:AbortSignal.timeout(10000)});if(!response.ok)throw Error('ads-key-unavailable');const data=await response.json();cached=new Map(data.keys.map(k=>[String(k.keyId),k.pem||crypto.createPublicKey({key:Buffer.from(k.base64,'base64'),type:'spki',format:'der'})]));loadedAt=Date.now();return cached}
+async function verify(rawQuery,keyProvider=keys){const match=String(rawQuery).match(/^(.+)&signature=([^&]+)&key_id=(\d+)$/);if(!match)throw Object.assign(Error('ads-invalid-signature'),{status:400});const params=new URLSearchParams(rawQuery);for(const key of new Set(params.keys()))if(params.getAll(key).length!==1)throw Object.assign(Error('ads-duplicate-parameter'),{status:400});const key=(await keyProvider()).get(match[3]);if(!key||!crypto.verify('sha256',Buffer.from(match[1]),key,Buffer.from(decodeURIComponent(match[2]),'base64url')))throw Object.assign(Error('ads-invalid-signature'),{status:403});return Object.fromEntries(params)}
+module.exports={verify};
