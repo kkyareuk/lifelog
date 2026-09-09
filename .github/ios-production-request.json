@@ -1,9 +1,9 @@
 {
-  "version": "1.0.266",
-  "build": 23,
+  "version": "1.0.267",
+  "build": 24,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Fix moved characters reappearing after restoring older saves"
+  "reason": "Landscape tablet shop from supplied artwork, three-column product panel"
 }

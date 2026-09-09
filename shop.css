@@ -27,5 +27,30 @@ html.native-platform[data-active-tab="shop"] #app>main{padding:0!important}
 .drawer-shop-restore{z-index:5;width:min(72%,320px)!important;min-height:40px!important;margin:8px auto max(10px,env(safe-area-inset-bottom))!important;padding:6px 18px!important;border:2px solid #c99f64!important;border-radius:999px!important;background:#4a2d1ce8!important;color:#f8dfb8!important;-webkit-text-fill-color:#f8dfb8!important;font-weight:900!important;box-shadow:0 3px 0 #100603!important}
 .world-no-illustration{background:radial-gradient(circle at 50% 42%,#d8d6a2 0 9%,transparent 10%),linear-gradient(145deg,#b7c88d,#d9c999 48%,#9db789)!important}.town-information-hero-empty,.town-info-art-empty{display:grid;place-items:center;align-content:center;gap:6px;background:linear-gradient(145deg,#f0ead8,#d9cfb3)!important;color:#584c39!important;text-align:center}.town-information-hero-empty>span,.town-info-art-empty{font-size:38px}.town-information-hero-empty>b{font-size:17px}.town-information-hero-empty>small{font-size:11px;color:#776950!important;-webkit-text-fill-color:#776950!important}
 @media(max-width:370px){.drawer-shop-stage{grid-template-rows:235px auto minmax(0,1fr) auto}.drawer-shop-product{grid-template-rows:75px minmax(86px,auto) 42px;padding:10px}.drawer-shop-product-icon,.drawer-shop-product-icon img{height:74px}.drawer-shop-tab{font-size:11px!important}.drawer-shop-greeting{left:14px;bottom:14px;width:58%;padding:9px 11px;font-size:9px}}
-@media(min-width:650px){.drawer-shop-stage{grid-template-rows:300px auto minmax(0,1fr) auto}.drawer-shop-products{grid-template-columns:repeat(4,minmax(0,1fr))}.drawer-shop-product{grid-template-rows:105px minmax(120px,auto) 48px}.drawer-shop-product-icon,.drawer-shop-product-icon img{height:102px}.drawer-shop-seller{right:4%;width:310px}.drawer-shop-greeting{left:35px;bottom:30px;width:280px;font-size:13px}}
+@media(min-width:650px){.drawer-shop-stage{grid-template-rows:300px auto minmax(0,1fr) auto}.drawer-shop-products{grid-template-columns:repeat(3,minmax(0,1fr))}.drawer-shop-product{grid-template-rows:105px minmax(120px,auto) 48px}.drawer-shop-product-icon,.drawer-shop-product-icon img{height:102px}.drawer-shop-seller{right:4%;width:310px}.drawer-shop-greeting{left:35px;bottom:30px;width:280px;font-size:13px}}
+/* Landscape tablet composition from 태블릿-기본상점.svg. The product panel
+   scrolls independently, leaving the shopkeeper, navigation and restore visible. */
+@media(min-width:900px) and (orientation:landscape){
+ .drawer-shop-stage{width:100%;max-width:none;grid-template-columns:52% minmax(0,1fr);grid-template-rows:150px minmax(0,1fr) auto;padding-right:max(22px,env(safe-area-inset-right));background:#5a3a2c url('./assets/shop/drawer-shop-wood.jpg') center/cover;box-sizing:border-box}
+ .drawer-shop-stage::before{content:"";position:absolute;z-index:-1;left:52%;right:max(22px,env(safe-area-inset-right));top:116px;bottom:-42px;border:3px solid #dfb775;border-radius:48px 48px 0 0;background:linear-gradient(120deg,#30221a,#20150f)}
+ .drawer-shop-hero{grid-column:1;grid-row:1/4;border:0;background:transparent;overflow:visible}
+ .drawer-shop-wood{display:none}
+ .drawer-shop-seller{top:auto;bottom:0;right:2%;width:94%;height:84%;object-fit:contain;object-position:center bottom}
+ .drawer-shop-back{top:max(28px,env(safe-area-inset-top));left:max(22px,env(safe-area-inset-left));width:clamp(72px,8vw,100px)!important;height:clamp(72px,8vw,100px)!important}
+ .drawer-shop-greeting{left:23%;right:7%;top:30px;bottom:auto;width:auto;min-height:92px;box-sizing:border-box;padding:16px 24px;border:3px solid #17130f;border-radius:42px;background:#fff;font-size:clamp(13px,1.3vw,18px);box-shadow:none}
+ .drawer-shop-greeting::after{left:18%;right:auto;bottom:-20px;width:28px;height:28px;background:#fff;border:0;border-right:3px solid #17130f;border-bottom:3px solid #17130f;transform:skewY(35deg)}
+ .drawer-shop-greeting b{font-size:14px}
+ .drawer-shop-tabs{grid-column:2;grid-row:1;align-self:end;gap:14px;margin:0 7%;padding:0 0 8px;border:0;background:transparent}
+ .drawer-shop-tab{height:54px!important;font-size:clamp(13px,1.5vw,20px)!important;border-color:#120e0a!important;border-radius:15px!important;background:#625b55!important}
+ .drawer-shop-content{position:relative;grid-column:2;grid-row:2;padding:28px 20px 16px;background:transparent;scroll-padding:20px}
+ .drawer-shop-products{grid-template-columns:repeat(3,minmax(0,1fr));align-items:start;gap:22px}
+ .drawer-shop-product{grid-template-rows:56px 94px 44px 44px;gap:8px;padding:12px;border:3px solid #dfb775;border-radius:14px;background:radial-gradient(ellipse at center,#80571e,#2c1d0d 80%);box-shadow:none;content-visibility:visible}
+ .drawer-shop-product>div{display:contents}
+ .drawer-shop-product>div>small{display:none}
+ .drawer-shop-product b{grid-row:1;text-align:center;align-self:center;font-size:clamp(14px,1.4vw,20px);color:#ffdb85!important;-webkit-text-fill-color:#ffdb85!important}
+ .drawer-shop-product-icon{grid-row:2;height:94px;font-size:64px}.drawer-shop-product-icon img{height:94px}
+ .drawer-shop-product p{grid-row:3;text-align:center;-webkit-line-clamp:3;font-size:11px}
+ .drawer-shop-purchase{grid-row:4;min-width:0!important;width:100%!important;border-radius:14px!important;background:linear-gradient(#ffe58e,#dba645 52%,#8d602e)!important;color:#fff!important;-webkit-text-fill-color:#fff!important;text-shadow:0 1px 2px #24170e}
+ .drawer-shop-restore{grid-column:2;grid-row:3;margin:10px auto max(14px,env(safe-area-inset-bottom))!important}
+}
 @media(prefers-reduced-motion:reduce){.drawer-shop-tab,.drawer-shop-purchase{transition:none!important}}
