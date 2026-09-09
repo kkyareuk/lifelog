@@ -1,0 +1,36 @@
+[
+  {
+    "baseline": true,
+    "cpuSlowdown": 4,
+    "medianMs": {
+      "settings": 24.800000190734863,
+      "town": 28.800000190734863,
+      "observe": 31.09999990463257
+    },
+    "swipeMedianMs": 12.5,
+    "swipesChanged": true,
+    "scroll": {
+      "before": 350,
+      "after": 0,
+      "samePanel": false
+    },
+    "errors": []
+  },
+  {
+    "baseline": false,
+    "cpuSlowdown": 4,
+    "medianMs": {
+      "settings": 33.799999713897705,
+      "town": 33.39999961853027,
+      "observe": 29.09999990463257
+    },
+    "swipeMedianMs": 10.5,
+    "swipesChanged": true,
+    "scroll": {
+      "before": 350,
+      "after": 350,
+      "samePanel": true
+    },
+    "errors": []
+  }
+]

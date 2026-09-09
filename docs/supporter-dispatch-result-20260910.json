@@ -1,0 +1,15 @@
+{
+  "dispatch": "supporter-name-20260910-v1",
+  "pushNotificationsQueued": 0,
+  "created": 495,
+  "existing": 0,
+  "skipped": 0,
+  "stored": 495,
+  "languages": {
+    "ko": 490,
+    "en": 2,
+    "ja": 3
+  },
+  "verified": true,
+  "completedAt": 1788975638368
+}

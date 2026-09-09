@@ -1,0 +1,29 @@
+import {execFileSync} from 'node:child_process';
+import {writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve,extname,sep} from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=resolve('.'),out=resolve('qa-performance309');await mkdir(out,{recursive:true});
+const server=createServer(async(req,res)=>{try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname),file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root+sep))throw Error();const body=await readFile(pathname==='/auth.js'?resolve('scripts/ios-preview-auth.mjs'):file);res.writeHead(200,{'Content-Type':({'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2'})[extname(file)]||'application/octet-stream'}).end(body)}catch{res.writeHead(404).end()}});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({channel:'chrome',headless:true});
+const results=[];
+try{for(const baseline of [true,false]){
+ const p=await browser.newPage({viewport:{width:360,height:880},hasTouch:true});const errors=[];await p.addInitScript(()=>{let seed=309;Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296)});p.on('pageerror',e=>errors.push(e.message));
+ await p.route('**/*',async r=>{const u=new URL(r.request().url());if(!u.href.startsWith(origin))return r.abort();if(baseline&&['/app.js','/views.js'].includes(u.pathname))return r.fulfill({contentType:'text/javascript',body:execFileSync('git',['show','601e8be:'+u.pathname.slice(1)],{maxBuffer:20*1024*1024})});return r.continue()});await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.ParallelCity&&window.ParallelCityAuth);
+ await p.evaluate(async()=>{const g=await import('/state.js?v=20260909dev305');for(let i=0;i<8;i++)g.createCharacter(20);document.querySelectorAll('dialog[open]').forEach(d=>d.close());for(const tab of ['observe','settings','town','character'])localStorage.setItem('drawer-village-guide-'+tab,'1');window.DrawerVillageNavigation.go('observe')});
+ const cdp=await p.context().newCDPSession(p);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4});
+ const timings=await p.evaluate(async()=>{const result=[];for(let i=0;i<4;i++)for(const tab of ['settings','town','observe']){const start=performance.now();window.DrawerVillageNavigation.go(tab);result.push([tab,performance.now()-start]);await new Promise(r=>setTimeout(r,200))}return result});
+ const swipes=await p.evaluate(async()=>{const g=await import('/state.js?v=20260909dev305'),times=[];for(let i=0;i<8;i++){const hud=document.querySelector('.game-observe-hud'),old=g.state.activeId,start=performance.now();hud.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,pointerType:'mouse',pointerId:1,clientX:280,clientY:350}));hud.dispatchEvent(new PointerEvent('pointerup',{bubbles:true,pointerType:'mouse',pointerId:1,clientX:60,clientY:350}));times.push({ms:performance.now()-start,changed:g.state.activeId!==old});await new Promise(r=>setTimeout(r,400))}return times});
+ await p.evaluate(()=>window.DrawerVillageNavigation.go('settings'));await p.locator('[data-settings-pane="display"]').click();
+ const scroll=await p.evaluate(async()=>{const panel=document.querySelector('.settings-shell'),select=panel.querySelector('[data-color-mode="dark"]');panel.scrollTop=350;const before=panel.scrollTop;select.click();await new Promise(r=>setTimeout(r,250));return {before,after:document.querySelector('.settings-shell').scrollTop,samePanel:panel.isConnected}});
+ const median=values=>values.sort((a,b)=>a-b)[Math.floor(values.length/2)];const result={baseline,cpuSlowdown:4,medianMs:Object.fromEntries(['settings','town','observe'].map(tab=>[tab,median(timings.filter(t=>t[0]===tab).map(t=>t[1]))])),swipeMedianMs:median(swipes.map(s=>s.ms)),swipesChanged:swipes.every(s=>s.changed),scroll,errors};results.push(result);console.log(JSON.stringify(result));
+ if(!baseline){assert(result.swipesChanged);assert(scroll.before>0);assert.equal(scroll.after,scroll.before);assert(scroll.samePanel);assert.deepEqual(errors,[]);
+  for(const language of ['ko','en','ja']){const position=await p.evaluate(async lang=>{const g=await import('/state.js?v=20260909dev305');g.state.uiLanguage=lang;const panel=document.querySelector('.settings-shell');panel.scrollTop=320;const before=panel.scrollTop;window.ParallelCity.mediaChanged();await new Promise(r=>setTimeout(r,220));return [before,document.querySelector('.settings-shell').scrollTop]},language);console.log(language,position);assert(Math.abs(position[1]-position[0])<=2);}
+  await p.screenshot({path:out+'/settings-scroll.png'});
+  await p.evaluate(()=>window.DrawerVillageNavigation.go('town'));await p.waitForTimeout(150);const position=await p.evaluate(()=>{const map=document.querySelector('.town-map-scroll');map.scrollLeft=300;map.scrollTop=400;return [map.scrollLeft,map.scrollTop]});await p.evaluate(()=>{window.DrawerVillageNavigation.go('settings');window.DrawerVillageNavigation.go('town')});await p.waitForTimeout(250);assert.deepEqual(await p.evaluate(()=>{const map=document.querySelector('.town-map-scroll');return [map.scrollLeft,map.scrollTop]}),position);
+ }
+ await p.close();
+}await writeFile(out+'/results.json',JSON.stringify(results,null,2));}finally{await browser.close();server.close()}

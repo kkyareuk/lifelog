@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260910-dev308-scheduled-slots";
+const CACHE_VERSION="drawer-village-v20260910-dev309-scroll-performance";
 const CORE=[
   "./diamond-shop.css?v=20260910dev305","./diamond-shop.js?v=20260909dev305",
   "./relationship-context.js?v=20260909dev305",

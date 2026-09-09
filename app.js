@@ -1432,14 +1432,16 @@ function replaceFeedbackFormWithEmailLink(){
 }
 
 function restoreWindowScroll(x,y){
-  const restore=()=>window.scrollTo({left:x,top:y,behavior:"auto"});
+  const main=document.querySelector("#app>main");
+  const restore=()=>{if(main!==document.querySelector("#app>main"))return;if(window.scrollX!==x||window.scrollY!==y)window.scrollTo({left:x,top:y,behavior:"auto"})};
   requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
   setTimeout(restore,40);
 }
 function restoreMainScroll(left,top,openCatalogKeys=[]){
+  const main=document.querySelector("#app>main");
   const restore=()=>{
-    const main=document.querySelector("#app>main");
-    if(main){main.scrollLeft=left;main.scrollTop=top}
+    if(!main?.isConnected)return;
+    if(main){if(main.scrollLeft!==left)main.scrollLeft=left;if(main.scrollTop!==top)main.scrollTop=top}
     openCatalogKeys.forEach(key=>{
       const [kind,itemId]=String(key).split(":");
       document.querySelector(`.catalog-dex-card [data-catalog-field][data-kind="${CSS.escape(kind||"")}"][data-item="${CSS.escape(itemId||"")}"]`)?.closest("details")?.setAttribute("open","");
@@ -1558,7 +1560,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
   syncBackgroundMusic(state);
   if(!selectionOnly&&state.activeTab==="observe")void window.DrawerVillageGroups?.refreshMailbox?.().catch(()=>{});
   if(!force&&state.activeTab==='mailbox'&&document.querySelector('dialog[open]'))return;
-  scheduleMeetingRefresh();
+  if(!selectionOnly)scheduleMeetingRefresh();
   clearTimeout(mailboxRefreshTimer);
   if(state.activeTab==="mailbox"&&document.visibilityState!=="hidden"){
     const due=contactMailbox.nextAt();
@@ -1587,7 +1589,9 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
   // 팝업이 포커스를 옮기며 main.scrollTop을 바꿔도 그 값을 책 화면에
   // 복원하지 않아야 상단 메뉴와 책 전체가 함께 위로 튕기지 않는다.
   const fullCharacterBookActive=state.activeTab==="character"&&state.characterSettingsView==="full";
-  const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender&&!fullCharacterBookActive;
+  const preservePageScroll=document.documentElement.dataset.drawerRendered==="1"&&!resetScrollAfterRender&&!fullCharacterBookActive&&!(state.activeTab==="observe"&&document.documentElement.classList.contains("native-app"));
+  const previousSettings=document.querySelector("[data-settings-scroll]");
+  const settingsPosition=!resetScrollAfterRender&&previousSettings?{pane:previousSettings.dataset.settingsScroll,top:previousSettings.scrollTop,left:previousSettings.scrollLeft}:null;
   const previousPageX=window.scrollX,previousPageY=window.scrollY;
   // 앱에서는 window가 아니라 main이 실제 세로 스크롤을 담당한다. 이 값을
   // 따로 보존하지 않으면 취향 도감의 모든 재렌더가 화면을 맨 위로 보낸다.
@@ -1686,6 +1690,10 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     }
     const nextGroup=document.querySelector('[data-management-pane]');
     if(groupContext&&nextGroup?.dataset.groupId===groupContext.id&&nextGroup?.dataset.managementPane===groupContext.pane){const scroller=nextGroup.querySelector('.multiplayer-detail-scroll');if(scroller)scroller.scrollTop=groupContext.top;for(const f of groupContext.fields)if(f.name){const el=[...nextGroup.querySelectorAll('[name]')].find(e=>e.name===f.name);if(el){el.value=f.value;el.checked=f.checked;el.dataset.groupDirty='1'}}}
+    if(settingsPosition){
+      const scroller=document.querySelector("[data-settings-scroll]");
+      if(scroller?.dataset.settingsScroll===settingsPosition.pane){scroller.scrollTop=settingsPosition.top;scroller.scrollLeft=settingsPosition.left}
+    }
     if(preservePageScroll){
       restoreWindowScroll(previousPageX,previousPageY);
       restoreMainScroll(previousMainLeft,previousMainTop,openCatalogKeys);
@@ -1793,7 +1801,9 @@ function renderPreservingPageScroll(element){
   const townPanel=element?.closest?.(".town-editor-panel"),townPanelPosition=townPanel?{left:townPanel.scrollLeft,top:townPanel.scrollTop}:null;
   element?.blur?.();
   render();
+  const renderedMain=document.querySelector("#app>main");
   const restore=()=>{
+    if(!renderedMain?.isConnected)return;
     restoreWindowScroll(pageX,pageY);
     const nextMain=document.querySelector("#app>main");
     if(nextMain){nextMain.scrollLeft=mainLeft;nextMain.scrollTop=mainTop}
@@ -2151,8 +2161,11 @@ function openCarEditor(homeId,carId){
   dialog.showModal();
 }
 
+let appliedThemeMode="";
 function applyTheme(){
   const mode=state.colorMode==="light"?"light":"dark";
+  if(appliedThemeMode===mode&&document.documentElement.dataset.visualTheme==="drawer-default")return;
+  appliedThemeMode=mode;
   const palette={light:["#80502f","#b77a4b","#f7efe5","#fffaf4","#2f241d","#75675d","#dfcdbc"],dark:["#d9a46f","#a66e45","#16100c","#241a14","#fff7ef","#d1bfae","#6d4b34"]};
   const selected="drawer-default";
   state.visualTheme=selected;
@@ -3645,7 +3658,7 @@ function bind(){
     if(!patch)return;
     updateCharacter(active().id,patch,false);
     syncCharacterControls(el,"data-field");
-    if(!markMobileCharacterDraft(el))save(el.tagName==="SELECT");
+    if(!markMobileCharacterDraft(el))save();
     if(el.dataset.levels){
       const labelSets={
         spice:["안 매움","살짝 매콤","순한맛","보통 라면 맵기","매운맛","아주 매운맛"],
@@ -3660,7 +3673,7 @@ function bind(){
     }
     if(el.dataset.field==="homeVisualScale")el.closest("label")?.querySelector("[data-home-visual-scale-value]")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
     };
-    el.oninput=apply;
+    if(el.tagName!=="SELECT")el.oninput=apply;
     // IME 조합 종료와 포커스 이탈 때 최종 DOM 값을 한 번 더 반영한다.
     el.addEventListener("compositionend",apply);
     el.addEventListener("change",()=>{
@@ -4063,8 +4076,9 @@ function bind(){
       el.value=state.personalTownLabel;
     }
     if(key==="ownerName") localStorage.setItem("drawer-village-user-name",String(el.value||"").trim());
-    save(true);
-    if(key==="animationIntensity"||key==="uiLanguage"||key==="measurementUnits"){renderPreservingPageScroll(el);return}
+    save();
+    if(key==="uiLanguage"||key==="measurementUnits"){renderPreservingPageScroll(el);return}
+    if(key==="animationIntensity")document.documentElement.dataset.animationIntensity=state.animationIntensity;
     document.documentElement.dataset.uiFont=state.uiFont||"hanbit";
     document.documentElement.dataset.uiScale=state.uiScale||"normal";
     if(["homeSdScale","homeLdScale"].includes(key))el.closest("label")?.querySelector("output")?.replaceChildren(document.createTextNode(`${Math.round(Number(el.value))}%`));
@@ -4073,8 +4087,9 @@ function bind(){
   $$("button[data-color-mode]").forEach(button=>button.onclick=event=>{
     event.stopPropagation();
     state.colorMode=button.dataset.colorMode==="light"?"light":"dark";
-    save(true);
-    renderPreservingPageScroll(button);
+    save();
+    applyTheme();
+    $$("button[data-color-mode]").forEach(option=>option.classList.toggle("on",option.dataset.colorMode===state.colorMode));
   });
   $("[data-sync-upload]")?.addEventListener("click",()=>window.ParallelCityAuth?.upload());
   $("[data-delete-own-account]")?.addEventListener("click",async event=>{const button=event.currentTarget;button.disabled=true;try{await window.ParallelCityAuth?.deleteOwnAccount()}catch(error){showToast(error.message)}finally{button.disabled=false}});
@@ -4618,8 +4633,8 @@ function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false}={}){
   resetScrollAfterRender=true;
   render({force:true});
   if(recordHistory)recordTabHistory(tab);
-  if(tab==="town")centerMobileTownMap();
-  window.scrollTo({top:0,behavior:"auto"});
+  if(tab==="town"&&!townMapPositions.has(document.querySelector(".mobile-town-shell")?.dataset.townId))centerMobileTownMap(undefined,{animate:false});
+  if(window.scrollX||window.scrollY)window.scrollTo({top:0,left:0,behavior:"auto"});
 }
 
 function navigateBackToObserve(){
@@ -4684,9 +4699,11 @@ window.addEventListener("drawer-village-native-back",event=>{
   if(navigateBackToObserve())event.preventDefault();
 });
 
-function centerMobileTownMap(characterId){
+function centerMobileTownMap(characterId,{animate=true}={}){
+  const scroller=document.querySelector(".town-map-scroll")||document.querySelector(".standard-observe-view .viewport");
   requestAnimationFrame(()=>{
-    const scroller=document.querySelector(".town-map-scroll")||document.querySelector(".standard-observe-view .viewport"),world=scroller?.querySelector(".world");
+    if(!scroller?.isConnected)return;
+    const world=scroller.querySelector(".world");
     if(!scroller||!world)return;
     // 모바일 마을 화면은 현재 마을에 실제로 표시 중인 캐릭터 카드를 우선한다.
     // 마을 전환 직후 다른 마을의 activeId 좌표로 움직이거나 지도 한가운데로
@@ -4702,7 +4719,7 @@ function centerMobileTownMap(characterId){
     const ratioY=Math.max(0,Math.min(1,Number(place?target.y:target.mapY)/100));
     const left=Math.max(0,world.scrollWidth*ratioX-scroller.clientWidth/2);
     const top=Math.max(0,world.scrollHeight*ratioY-scroller.clientHeight/2);
-    scroller.scrollTo({left,top,behavior:"smooth"});
+    scroller.scrollTo({left,top,behavior:animate?"smooth":"instant"});
   });
 }
 

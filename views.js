@@ -3895,7 +3895,7 @@ function settingsContent(){
   };
   const paneNames={gameplay:"게임플레이",sound:"소리",notifications:"알림",display:"화면·표시",achievements:achievementCopy.heading,account:"계정·백업",support:"도움말·오류 신고"};
   const body=settingsPane==="home"?`${sync}${appInfo}<section class="setting-card"><h2>${({ko:"함께 만든 서랍마을",en:"Together in Drawer Village",ja:"みんなで作る引き出し村"})[state.uiLanguage]||"함께 만든 서랍마을"}</h2><div class="sync-actions"><button type="button" data-safety-manage>${({ko:"차단한 계정 관리",en:"Blocked accounts",ja:"ブロックしたアカウント"})[state.uiLanguage]}</button><button type="button" data-supporter-menu="credits">${({ko:"크레딧",en:"Credits",ja:"クレジット"})[state.uiLanguage]||"크레딧"}</button><button type="button" data-supporter-menu="editor" ${Number(window.ParallelCityAuth?.getInfo?.()?.entitlements?.teaSupportCount)>0?"":"hidden"}>${({ko:"후원자 이름 편집",en:"Supporter name editor",ja:"応援者の名前を編集"})[state.uiLanguage]||"후원자 이름 편집"}</button></div></section>${menu}`:`<div class="settings-pane-heading"><button type="button" data-tab="settings" data-settings-pane="home" aria-label="설정 메뉴로 돌아가기">‹</button><span><small>SETTINGS</small><h2>${paneNames[settingsPane]}</h2></span></div>${paneContent[settingsPane]||menu}`;
-  return `<section class="panel form settings-shell ${settingsPane==="home"?"settings-home":"settings-subpage"}"><h1>${t("settings","설정")}</h1>${body}</section>`;
+  return `<section data-settings-scroll="${settingsPane}" class="panel form settings-shell ${settingsPane==="home"?"settings-home":"settings-subpage"}"><h1>${t("settings","설정")}</h1>${body}</section>`;
 }
 Object.assign(UI_TEXT.en,{
   "고전과 장식 테마":"Heritage & ornamental themes","바로크 살롱":"Baroque Salon","검정 칠기 액자와 빛바랜 양피지, 와인빛과 청동 장식":"Black lacquer frames, aged parchment, wine red, and bronze ornament",

@@ -1,0 +1,25 @@
+{
+  "ko": {
+    "subject": "서랍마을 응원하기 · 후원자 이름 등록 안내",
+    "body": "안녕하세요. 서랍마을 개발자입니다.\n\n상점에서 ‘서랍마을 응원하기(응원 선물)’를 구매해 주시면, 크레딧에 후원자 이름을 올리는 신청을 할 수 있어요.\n\n구매 후 설정 첫 화면의 ‘후원자 이름 편집’에서 공개할 이름을 정하고, 신청 내용을 복사하거나 신청 파일을 내보내 제작자에게 전달해 주세요. 설정의 ‘도움말·오류 신고’에서 개발자 이메일로 보내실 수 있습니다. 확인 후 크레딧에 반영해 드립니다.\n\n이름은 자동으로 공개되지 않으며, 익명이나 비공개도 선택할 수 있어요. 실제 응원 금액과 결제 정보는 공개 명단에 표시되지 않습니다.\n\n기존에 응원 선물을 구매하신 분도 구매 내역이 계정에 확인되면 신청하실 수 있어요.\n\n서랍마을을 함께 아껴 주셔서 감사합니다. 보내 주신 응원은 오래 함께할 수 있는 마을을 만드는 데 큰 힘이 됩니다.",
+    "sender": "서랍마을 운영팀",
+    "recipient": "서랍마을 이용자님"
+  },
+  "en": {
+    "subject": "Support Drawer Village · Add your name to the credits",
+    "body": "Hello from the developer of Drawer Village!\n\nPurchasing the Drawer Village Support Gift in the shop lets you request a supporter name in the credits.\n\nAfter purchase, open Settings → Supporter name editor. Choose your public name, then copy the request or export its file and send it to the developer. You can find the developer email under Settings → Help & bug reports. Your name will be added after review.\n\nYour name is never published automatically. You can choose anonymous or private visibility. Actual support amounts and payment details are not shown in public credits.\n\nPrevious Support Gift buyers can also apply once their purchase is verified on their account.\n\nThank you for supporting Drawer Village and helping this little village continue to grow!",
+    "sender": "Drawer Village Team",
+    "recipient": "Drawer Village player"
+  },
+  "ja": {
+    "subject": "ひきだし村を応援 · クレジットへのお名前掲載について",
+    "body": "こんにちは。ひきだし村の開発者です。\n\nショップの「ひきだし村 応援ギフト」を購入すると、クレジットへの応援者名の掲載を申請できます。\n\n購入後、設定の最初の画面にある「応援者の名前を編集」で公開する名前を決め、申請内容をコピーするか申請ファイルを書き出して開発者にお送りください。開発者のメールアドレスは設定の「ヘルプ・不具合報告」から確認できます。確認後、クレジットに反映します。\n\n名前が自動で公開されることはありません。匿名や非公開も選べます。実際の応援金額や決済情報は公開名簿に表示されません。\n\n以前に応援ギフトを購入された方も、アカウントで購入履歴が確認できれば申請できます。\n\nひきだし村を大切にしてくださり、ありがとうございます。皆さまの応援が、長く一緒に楽しめる村づくりの力になります。",
+    "sender": "ひきだし村運営",
+    "recipient": "ひきだし村をご利用の皆さま"
+  },
+  "_delivery": {
+    "status": "approved",
+    "pushNotification": false,
+    "reason": "User requested a silent in-game supporter-name announcement to all accounts."
+  }
+}
