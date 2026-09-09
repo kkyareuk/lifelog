@@ -24,11 +24,11 @@ assert.equal(next({characterSingleSlots:4},'character_slots_5',2).characterSingl
 const catalog=source.match(/const WEB_PRODUCTS=Object.freeze\(([\s\S]*?)\);/)[1];
 const webCart=vm.runInNewContext(`const WEB_PRODUCTS=${catalog};const WEB_GAME_PAYMENT_LIMIT=50000;(${source.match(/function webCart[\s\S]*?\n}/)[0]})`);
 assert.equal(webCart([{packageId:'character_slot_1',quantity:3}])[0].unitAmount,1000);
-assert.throws(()=>webCart([{packageId:'character_slots_5',quantity:1}]));
+assert.equal(webCart([{packageId:'character_slots_5',quantity:1}])[0].unitAmount,1200);
 assert.throws(()=>webCart([{packageId:'character_slot_1',quantity:50}]));
 for(const id of ['character_slot_1','character_slots_5']){
   validatePurchase({transactionId:'123',productId:'com.drawervillage.app.'+id,bundleId:'com.drawervillage.app',environment:'Sandbox',type:'Consumable',quantity:1,appAccountToken:accountToken('buyer')},'buyer','Sandbox','123');
 }
 assert.match(read('views.js'),/character_slot_1:\{label:"캐릭터 슬롯",title:"캐릭터 1명 추가"/);
-assert.doesNotMatch(read('payment.html'),/character_slots_5|amount:1200/);
+assert.match(read('payment.html'),/saleAllows\(id\)/);
 console.log('Single-slot grants, legacy preservation, refund zero, shared capacity, checkout and Apple SKU validation passed.');

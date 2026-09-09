@@ -1,25 +1,26 @@
 {
   "ko": {
     "subject": "[9월 14일 적용] 캐릭터 슬롯 가격 변경 안내 및 사과 말씀",
-    "body": "안녕하세요. 서랍마을 개발자입니다.\n\n다음 주 월요일인 2026년 9월 14일부터 캐릭터 슬롯의 판매 구성과 가격이 변경됩니다.\n\n• 기존: 캐릭터 슬롯 5개에 1,200원\n• 변경: 캐릭터 슬롯 1개에 1,000원\n\n슬롯 1개 기준으로는 240원에서 1,000원으로 오르는 가격 인상입니다.\n\n운영을 이어가는 과정에서 예상보다 많은 서버 비용이 발생하고 있습니다. 서랍마을을 장기적으로 운영하기 위해 고민한 끝에 가격을 변경하기로 결정했습니다.\n\n처음 상품 구성과 가격을 정할 때 운영 비용을 더 신중하게 검토했어야 했습니다. 기존 가격을 보고 이용을 계획하셨던 분들께 부담과 혼란을 드리게 되어 죄송합니다.\n\n기존에 구매하신 슬롯은 그대로 유지됩니다. 5개 상품으로 구매하신 슬롯을 1개로 줄이거나, 가격 변경을 이유로 추가 금액을 요구하지 않습니다.\n\n서랍마을을 이용해 주시는 분들께 가격 인상 소식을 전하게 되어 다시 한번 죄송합니다. 오래 함께할 수 있는 게임으로 운영해 나가겠습니다.",
+    "body": "안녕하세요. 서랍마을 개발자입니다.\n\n다음 주 월요일인 2026년 9월 14일 0시(한국 시간)부터 캐릭터 슬롯의 판매 구성과 가격이 변경됩니다.\n\n• 기존: 캐릭터 슬롯 5개에 1,200원\n• 변경: 캐릭터 슬롯 1개에 1,000원\n\n슬롯 1개 기준으로는 240원에서 1,000원으로 오르는 가격 인상입니다.\n\n운영을 이어가는 과정에서 예상보다 많은 서버 비용이 발생하고 있습니다. 서랍마을을 장기적으로 운영하기 위해 고민한 끝에 가격을 변경하기로 결정했습니다.\n\n처음 상품 구성과 가격을 정할 때 운영 비용을 더 신중하게 검토했어야 했습니다. 기존 가격을 보고 이용을 계획하셨던 분들께 부담과 혼란을 드리게 되어 죄송합니다.\n\n기존에 구매하신 슬롯은 그대로 유지됩니다. 5개 상품으로 구매하신 슬롯을 1개로 줄이거나, 가격 변경을 이유로 추가 금액을 요구하지 않습니다.\n\n서랍마을을 이용해 주시는 분들께 가격 인상 소식을 전하게 되어 다시 한번 죄송합니다. 오래 함께할 수 있는 게임으로 운영해 나가겠습니다.",
     "sender": "서랍마을 운영팀",
     "recipient": "서랍마을 이용자님"
   },
   "en": {
     "subject": "[September 14] Character slot price change and apology",
-    "body": "Hello, this is the developer of Drawer Village.\n\nStarting next Monday, September 14, 2026, the character slot package and its price will change.\n\n• Previously: 5 character slots for KRW 1,200\n• New offer: 1 character slot for KRW 1,000\n\nThis is a price increase from KRW 240 to KRW 1,000 per slot. These are the Korean prices; other regions display their local store prices.\n\nServer costs have been higher than expected. After careful consideration, I decided to change the price to support the long-term operation of Drawer Village.\n\nI should have evaluated operating costs more carefully when setting the original package and price. I am sorry for the added burden and confusion this causes, especially for those who planned their purchases around the previous price.\n\nSlots you have already purchased will remain yours. A previously purchased five-slot package will not be reduced to one slot, and you will not be charged an additional amount because of this price change.\n\nI am sorry to bring you news of a price increase. I will keep working to make Drawer Village a game we can enjoy together for a long time.",
+    "body": "Hello, this is the developer of Drawer Village.\n\nStarting next Monday, September 14, 2026 at 00:00 (Korea Standard Time), the character slot package and its price will change.\n\n• Previously: 5 character slots for KRW 1,200\n• New offer: 1 character slot for KRW 1,000\n\nThis is a price increase from KRW 240 to KRW 1,000 per slot. These are the Korean prices; other regions display their local store prices.\n\nServer costs have been higher than expected. After careful consideration, I decided to change the price to support the long-term operation of Drawer Village.\n\nI should have evaluated operating costs more carefully when setting the original package and price. I am sorry for the added burden and confusion this causes, especially for those who planned their purchases around the previous price.\n\nSlots you have already purchased will remain yours. A previously purchased five-slot package will not be reduced to one slot, and you will not be charged an additional amount because of this price change.\n\nI am sorry to bring you news of a price increase. I will keep working to make Drawer Village a game we can enjoy together for a long time.",
     "sender": "Drawer Village Team",
     "recipient": "Drawer Village player"
   },
   "ja": {
     "subject": "【9月14日適用】キャラクタースロット価格変更のお知らせとお詫び",
-    "body": "こんにちは。ひきだし村の開発者です。\n\n来週月曜日の2026年9月14日より、キャラクタースロットの販売内容と価格を変更します。\n\n• 変更前：キャラクタースロット5枠で1,200ウォン\n• 変更後：キャラクタースロット1枠で1,000ウォン\n\n1枠あたり240ウォンから1,000ウォンへの値上げとなります。上記は韓国での価格です。他の地域では各ストアの現地価格が表示されます。\n\n運営を続ける中で、想定を上回るサーバー費用が発生しています。ひきだし村を長期的に運営していくため、検討を重ねた末に価格変更を決めました。\n\n最初に商品内容と価格を決める際、運営費用をもっと慎重に検討すべきでした。これまでの価格をもとにご利用を計画されていた皆さまに、ご負担と混乱をおかけして申し訳ありません。\n\nすでに購入されたスロットはそのまま維持されます。購入済みの5枠を1枠に減らしたり、今回の価格変更を理由に追加料金を請求したりすることはありません。\n\nひきだし村をご利用くださる皆さまに値上げをお知らせすることになり、重ねてお詫び申し上げます。長く一緒に楽しめるゲームを目指して運営を続けてまいります。",
+    "body": "こんにちは。ひきだし村の開発者です。\n\n来週月曜日の2026年9月14日0時（韓国時間）より、キャラクタースロットの販売内容と価格を変更します。\n\n• 変更前：キャラクタースロット5枠で1,200ウォン\n• 変更後：キャラクタースロット1枠で1,000ウォン\n\n1枠あたり240ウォンから1,000ウォンへの値上げとなります。上記は韓国での価格です。他の地域では各ストアの現地価格が表示されます。\n\n運営を続ける中で、想定を上回るサーバー費用が発生しています。ひきだし村を長期的に運営していくため、検討を重ねた末に価格変更を決めました。\n\n最初に商品内容と価格を決める際、運営費用をもっと慎重に検討すべきでした。これまでの価格をもとにご利用を計画されていた皆さまに、ご負担と混乱をおかけして申し訳ありません。\n\nすでに購入されたスロットはそのまま維持されます。購入済みの5枠を1枠に減らしたり、今回の価格変更を理由に追加料金を請求したりすることはありません。\n\nひきだし村をご利用くださる皆さまに値上げをお知らせすることになり、重ねてお詫び申し上げます。長く一緒に楽しめるゲームを目指して運営を続けてまいります。",
     "sender": "ひきだし村運営",
     "recipient": "ひきだし村をご利用の皆さま"
   },
   "_delivery": {
-    "status": "held",
+    "status": "approved",
     "pushNotification": false,
-    "reason": "캐릭터 슬롯 1개/1,000원 직접 구매로 확정. 스토어 적용 일정 확인 전 발송 보류. 전체 계정 우편/푸시 미발송."
+    "reason": "2026-09-10 사용자 명시 지시: 전체 계정 인게임 사과·공지 우편 발송, 푸시 없이 9월14일 가격 변경 안내.",
+    "effectiveAt": "2026-09-14T00:00:00+09:00"
   }
 }

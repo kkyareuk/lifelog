@@ -1,3 +1,4 @@
+import {saleAllows,saleChangedMessage} from "./slot-sale.js?v=20260909dev305";
 // Keep native purchase state through shop rerenders and late price responses.
 function syncApplePurchaseButtons(){
  const status=window.DrawerVillagePlayBilling?.getState?.();if(!status)return;
@@ -2627,6 +2628,12 @@ function bind(){
     if(confirm(message))runGroupAction(event.currentTarget,()=>groupApi.leave());
   });
   $$("[data-member-edit]").forEach(b=>b.onclick=()=>openHomeMemberEditor(b.dataset.memberEdit,b.dataset.homeId,b.dataset.memberId));
+  $$("[data-home-remove-resident]").forEach(button=>button.onclick=()=>{
+    const id=button.dataset.homeRemoveResident,homeId=button.dataset.homeId,person=state.characters[id],home=state.homes[homeId];
+    if(!person||!home)return;const copy=homeEditorCopy(state.uiLanguage);
+    if(!confirm(copy.removeResidentQuestion(person.name,home.name)))return;
+    removeCharacterResidence(id,homeId);render();showHomeFeature("members");showToast(copy.residentRemoved);
+  });
   $$("[data-member-add]").forEach(b=>b.onclick=()=>{const kind=b.dataset.memberAdd,homeId=b.dataset.homeId;if(kind==="resident"){openHomeResidentPicker(homeId);return}const id=kind==="pet"?addPet(homeId):addCar(homeId);render();showHomeFeature("members");openHomeMemberEditor(kind,homeId,id)});
   $("[data-character-placement-open]")?.addEventListener("click",openCharacterPlacement);
   document.querySelector('[data-member-group-create]')?.addEventListener('submit',e=>{e.preventDefault();const form=e.currentTarget,data=new FormData(form),s=window.DrawerVillageGroups.getSnapshot();runGroupAction(e.submitter,()=>window.DrawerVillageGroups.saveMemberGroups({memberGroups:[...(s.group.memberGroups||[]),{id:crypto.randomUUID(),name:data.get('name'),memberIds:data.getAll('memberIds')}]}))});
@@ -2821,11 +2828,12 @@ function bind(){
   refreshCharacterSelectionSummaries();
   const cartKey="drawer-village-cart";
   const cartLimit=50000;
-  const cartPrices={character_slot_1:1000,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
+  const cartPrices={character_slots_5:1200,character_slot_1:1000,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const cartTotal=cart=>Object.entries(cart||{}).reduce((sum,[id,qty])=>sum+(Number(cartPrices[id])||0)*Math.max(0,Number(qty)||0),0);
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};
   const addCartItem=(cart,id)=>{
+    if(!saleAllows(id)){showToast(saleChangedMessage(state.uiLanguage));render();return false;}
     const price=Number(cartPrices[id])||0;
     const nextQuantity=id==="storage_50mb"?1:(Number(cart[id])||0)+1;
     const nextTotal=cartTotal(cart)+(id==="storage_50mb"&&Number(cart[id])>0?0:price);
@@ -2854,6 +2862,7 @@ function bind(){
   };
   playButtons.forEach(button=>button.onclick=async()=>{
     const productId=button.dataset.playPurchase;
+    if(!saleAllows(productId)){showToast(saleChangedMessage(state.uiLanguage));render();return;}
     setPlayButtonState(button,"opening","결제창 여는 중…",true);
     try{
       const purchaseResult=await window.DrawerVillagePlayBilling?.purchase?.(productId);

@@ -88,6 +88,9 @@ html body #app .home-room-filters button.on{background:#fff1c9!important;color:#
 .home-catalog-paper,.home-member-section{margin:0 14px 20px;padding:16px;border:5px double #a88958;border-radius:23px;background:#f5ecdc;box-shadow:0 4px 0 #513821}
 .home-room-cards,.home-member-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-content:start}
 html body #app :is(.home-room-card,.home-member-card){display:flex!important;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:9px;width:100%;min-width:0;height:auto;min-height:148px;margin:0;padding:9px!important;border:1px solid #c9af88!important;border-radius:16px!important;background:#fff9ee!important;box-shadow:inset 0 1px #fff,0 3px 0 #c9b18a!important;color:#302116!important;-webkit-text-fill-color:#302116!important}
+.home-resident-entry{display:flex;flex-direction:column;gap:8px;min-width:0}
+html body #app .home-resident-remove{min-height:44px;width:100%;padding:8px 5px;border:1px solid #ae6d59!important;border-radius:12px;background:#fff3e8!important;color:#813e2b!important;-webkit-text-fill-color:#813e2b!important;font-size:12px;line-height:1.4;white-space:normal}
+.home-resident-help{font-size:13px;line-height:1.5;margin:0 0 12px}
 .home-room-card[hidden]{display:none!important}
 html body #app .home-catalog-photo{display:grid;place-items:center;overflow:hidden;width:100%;height:110px;min-height:110px;border-radius:12px;background:#ede0c9;font-size:38px!important}
 html body #app .home-catalog-photo img{display:block;width:100%;height:100%;max-height:110px;min-height:0;border-radius:12px;object-fit:cover}

@@ -16,6 +16,7 @@ const PACKAGE_NAME="com.drawervillage.app";
 const PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","storage_50mb","green_tea"]);
 const CONSUMABLE_PRODUCTS=new Set(["diamonds_100","character_slots_5","character_slot_1","town_slot_1","green_tea"]);
 const WEB_PRODUCTS=Object.freeze({
+  character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:1200},
   diamonds_100:{name:"다이아 100개 충전",amount:1000},
   character_slot_1:{name:"캐릭터 슬롯 1개 추가",amount:1000},
   town_slot_1:{name:"마을 슬롯 1개 추가",amount:1900},
@@ -132,6 +133,8 @@ app.post("/payments/orders",async(request,response)=>{
     const identity=await signedInUser(request);
     const {environment}=tossCredentials();
     const items=webCart(request.body?.items);
+    const activeSlot=Date.now()<Date.parse("2026-09-14T00:00:00+09:00")?"character_slots_5":"character_slot_1";
+    if(items.some(i=>["character_slots_5","character_slot_1"].includes(i.packageId)&&i.packageId!==activeSlot))throw Object.assign(Error("판매 구성이 변경됐습니다. 상점에서 다시 확인해 주세요."),{status:409});
     if(items.some(i=>i.packageId==="diamonds_100"))throw Object.assign(Error("판매하지 않는 상품입니다."),{status:400});
     const {amount,count,orderName}=orderSummary(items);
     if(amount<100||amount>=WEB_GAME_PAYMENT_LIMIT)throw Object.assign(new Error("게임 상품은 한 번에 5만원 미만으로만 결제할 수 있습니다."),{status:400});

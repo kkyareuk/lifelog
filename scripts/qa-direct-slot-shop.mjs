@@ -10,10 +10,12 @@ const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.
 try{for(const viewport of [{width:360,height:840},{width:1180,height:820}]){
  const p=await browser.newPage({viewport,hasTouch:true}),errors=[];p.on('pageerror',e=>errors.push(e.message));p.setDefaultTimeout(12000);let wallets=0;
  await p.route('**/*',r=>{const u=r.request().url();if(u.includes('diamondWalletApi'))wallets++;return u.startsWith(origin)?r.continue():r.abort()});
- await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.ParallelCity&&window.ParallelCityAuth);
- await p.evaluate(async()=>{const game=await import(performance.getEntriesByType('resource').find(r=>/\/state\.js\?/.test(r.name)).name);game.createCharacter(10);document.querySelectorAll('dialog[open]').forEach(d=>d.close());localStorage.setItem('drawer-village-guide-shop','1');localStorage.setItem('drawer-village-guide-observe','1');window.DrawerVillageNavigation.go('shop')});
+ await p.clock.setFixedTime(new Date('2026-09-13T23:59:59+09:00'));await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.ParallelCity&&window.ParallelCityAuth);
+ await p.evaluate(async()=>{const game=await import('/state.js?v=20260909dev305');game.createCharacter(10);document.querySelectorAll('dialog[open]').forEach(d=>d.close());localStorage.setItem('drawer-village-guide-shop','1');localStorage.setItem('drawer-village-guide-observe','1');window.DrawerVillageNavigation.go('shop')});
+ const oldCard=p.locator('.drawer-shop-product').filter({has:p.locator('[data-play-purchase="character_slots_5"]')});await oldCard.waitFor();assert.match(await oldCard.textContent(),/1,200/);assert.equal(await p.locator('[data-play-purchase="character_slot_1"]').count(),0);
+ await p.clock.setFixedTime(new Date('2026-09-14T00:00:00+09:00'));await p.evaluate(()=>window.ParallelCity.mediaChanged());
  for(const lang of ['ko','en','ja']){
- await p.evaluate(async lang=>{const game=await import(performance.getEntriesByType('resource').find(r=>/\/state\.js\?/.test(r.name)).name);game.state.uiLanguage=lang;window.ParallelCity.mediaChanged()},lang);
+ await p.evaluate(async lang=>{const game=await import('/state.js?v=20260909dev305');game.state.uiLanguage=lang;window.ParallelCity.mediaChanged()},lang);
  const card=p.locator('.drawer-shop-product').filter({has:p.locator('[data-play-purchase="character_slot_1"]')});await card.waitFor();assert.match(await card.textContent(),/1,000/);assert.equal(await p.locator('[data-diamond-shop],[data-play-purchase="diamonds_100"]').count(),0);assert.equal(await p.locator('[data-play-purchase="character_slots_5"]').count(),0);
  const title=await card.locator('div>b').textContent();assert.equal(title,({ko:'캐릭터 1명 추가',en:'Add 1 character slot',ja:'キャラクター枠を1人追加'})[lang]);await p.screenshot({path:out+`/shop-${lang}-${viewport.width}.png`});
  }

@@ -4242,7 +4242,7 @@ function pairedConflictScene(first,second,tensionKey,variant,firstView,secondVie
   ];
   return actions[variant];
 }
-function relationCombinationScene(place,first,second,relation,date){
+export function relationCombinationScene(place,first,second,relation,date){
   const firstExplicit=explicitCharacterViewFor(first.id,second.id);
   const secondExplicit=explicitCharacterViewFor(second.id,first.id);
   const firstView=characterViewFor(first.id,second.id);
@@ -4259,21 +4259,14 @@ function relationCombinationScene(place,first,second,relation,date){
     .map(item=>item.a===person.id?item.b:item.a);
   const affairActors=[first,second].filter(person=>activeRomanticPartners(person).some(partnerId=>partnerId!==first.id&&partnerId!==second.id));
   const affairAllowed=affairActors.length>0&&affairActors.every(person=>/연인이 있어도 취향이면 끌릴 수 있음/.test(person.relationshipOpenness||""));
-  if(firstRomantic!==secondRomantic){
-    const admirer=firstRomantic?first:second;
-    const other=firstRomantic?second:first;
-    const admirerView=firstRomantic?firstView:secondView;
-    const aware=/알고 있음|확인함/.test(admirerView.mutualAwareness||"");
-    const variants=[
-      {admirer:`${admirer.name}은(는) ${other.name}의 몫을 먼저 챙긴 뒤 별 뜻 없다는 얼굴로 시선을 돌렸어요.`,other:`${other.name}은(는) 건네받은 것을 가볍게 흔들어 보이며 고맙다고만 했어요.`},
-      {admirer:`${admirer.name}은(는) 대화를 하나 더 꺼내며 둘만 남은 시간을 붙잡았어요.`,other:`${other.name}은(는) 마지막 말에 짧게 답한 뒤 먼저 자기 자리로 돌아갔어요.`},
-      {admirer:`${admirer.name}은(는) ${other.name}이(가) 다른 사람과 웃는 모습을 말없이 오래 바라봤어요.`,other:`${other.name}은(는) 그 시선을 ${aware?"알면서도 모르는 척했어요.":"눈치채지 못한 채 대화를 이어 갔어요."}`},
-      {admirer:`${admirer.name}은(는) 헤어진 뒤 사소한 핑계를 만들어 먼저 메시지를 보냈어요.`,other:`${other.name}은(는) 한참 뒤 필요한 말에만 짧게 답했어요.`}
-    ];
-    const variant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/45)}:one-sided`)%4;
-    const lines=variants[variant];
-    return {title:`${object(other.name)} 향한 일방적인 연심`,first:first.id===admirer.id?lines.admirer:lines.other,second:second.id===admirer.id?lines.admirer:lines.other,relationProfile:"one_sided_romance"};
-  }
+  const directional=()=>{
+    const seed=`${dayKey(date)}:${Math.floor(nowMin(date)/15)}:${place?.id}:combination`;
+    const ar=relationshipReaction(first,second,firstView,relation,{seed,language:state.uiLanguage});
+    const br=relationshipReaction(second,first,secondView,relation,{seed,language:state.uiLanguage});
+    const title=(person,reaction)=>`${person.name} · ${reaction.title}`;
+    return {title:title(second,ar),firstTitle:title(second,ar),secondTitle:title(first,br),first:ar.text,second:br.text,relationProfile:'directional',relationshipContext:true,relationshipCues:{[first.id]:ar.key,[second.id]:br.key}};
+  };
+  if(firstRomantic!==secondRomantic)return directional();
   const foundBond=RELATION_COMBINATION_BONDS.findIndex(item=>item.test(firstView,secondView,relation));
   const foundTension=RELATION_COMBINATION_TENSIONS.findIndex(item=>item.test(firstView,secondView,relation,first,second));
   const bondIndex=Math.max(0,foundBond),tensionIndex=Math.max(0,foundTension);
@@ -4293,6 +4286,9 @@ function relationCombinationScene(place,first,second,relation,date){
   const firstConflict=heightenedConflictBeat(first,second,tension.key,beatVariant);
   const secondConflict=heightenedConflictBeat(second,first,tension.key,reverseBeatVariant);
   const pairedConflict=pairedConflictScene(first,second,tension.key,variant%4,firstView,secondView);
+  // A pair-level tension does not imply that both people feel it, and
+  // discomfort alone never implies annoyance, jealousy or possessiveness.
+  if(!pairedConflict&&(tension.key!=='steady'||!firstRomantic||!secondRomantic))return directional();
   const familyRomance=["부모·자녀","형제·자매"].includes(relation?.type)&&["devoted","romantic","love_hate"].includes(bond.key);
   const hiddenMutualRomance=!relation&&firstRomantic&&secondRomantic&&!/확인함/.test(`${firstView.mutualAwareness} ${secondView.mutualAwareness}`);
   const profileLabel=familyRomance

@@ -1321,6 +1321,7 @@ export function deleteHome(homeId){
   if(!state.deletedHomeIds.includes(homeId))state.deletedHomeIds.push(homeId);
   delete state.homes[homeId];
   Object.values(state.characters).forEach(c=>{
+    if(c.homeId!==homeId&&!(c.residences||[]).some(item=>item.homeId===homeId))return;
     c.residences=(c.residences||[]).filter(item=>item.homeId!==homeId);
     let primary=c.residences.find(item=>item.isPrimary)||c.residences[0];
     c.residences.forEach(item=>item.isPrimary=item===primary);
@@ -1334,7 +1335,7 @@ export function deleteHome(homeId){
   Object.keys(state.monthlyRoutines||{}).forEach(characterId=>{
     state.monthlyRoutines[characterId]=(state.monthlyRoutines[characterId]||[]).map(item=>item.visitHomeId===homeId?{...item,visitHomeId:""}:item);
   });
-  state.activeHomeId=Object.keys(state.homes)[0]||null;
+  if(state.activeHomeId===homeId||!state.homes[state.activeHomeId])state.activeHomeId=Object.keys(state.homes)[0]||null;
   save(true);
   return true;
 }
@@ -1719,6 +1720,10 @@ export function removeCharacterResidence(characterId,homeId){
   c.residences.forEach(item=>item.isPrimary=item===primary);
   c.homeId=primary?.homeId||"";
   c.sleepRoomId=primary?.sleepRoomId||"";
+  for(const room of Object.values(state.homes[homeId]?.rooms||{})){
+    if(Array.isArray(room.ownerCharacterIds))room.ownerCharacterIds=room.ownerCharacterIds.filter(id=>id!==characterId);
+    for(const furniture of room.furniturePlacements||[])if(Array.isArray(furniture.assignedCharacterIds))furniture.assignedCharacterIds=furniture.assignedCharacterIds.filter(id=>id!==characterId);
+  }
   c.timelineResetAt=Date.now();save(true);return true;
 }
 export function updateCharacterResidence(characterId,homeId,patch,persist=true){
