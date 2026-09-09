@@ -5,5 +5,5 @@
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Shared room editing and unified activity selection, visible affection and searchable topics"
+  "reason": "Shared room editing and unified activity selection, visible affection and searchable topics; normalized CSS source parity"
 }
