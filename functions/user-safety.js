@@ -19,7 +19,12 @@ function createSafety({db,clock=Date.now}){
   setUserBlock:async(uid,input)=>db.runTransaction(async tx=>{
    const ref=safetyRef(db,uid),old=await tx.get(ref),list=old.data()?.blocked||[];
    const person=input.block===false?{uid:id(input.targetUid)}:await target(tx,uid,input);
-   const next=list.filter(x=>x.uid!==person.uid);if(input.block!==false){if(next.length>=200)fail('block-limit');next.push({uid:person.uid,name:person.name,at:clock()})}tx.set(ref,{blocked:next},{merge:true});return {blocked:next};
+   const next=list.filter(x=>x.uid!==person.uid);if(input.block!==false){if(next.length>=200)fail('block-limit');next.push({uid:person.uid,name:person.name,at:clock()})}
+   if(input.removeMember===true){
+    if(input.block!==true||input.kind!=='member')fail('invalid-block-removal');
+    await require('./remove-member').inTransaction({db,clock},tx,uid,{groupId:input.groupId,uid:person.uid});
+   }
+   tx.set(ref,{blocked:next},{merge:true});return {blocked:next};
   }),
   reportContent:async(uid,input)=>db.runTransaction(async tx=>{
    if(!['harassment','sexual','violence','hate','spam','other'].includes(input.reason))fail('report-reason-required');

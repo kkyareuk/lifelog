@@ -1,5 +1,5 @@
 const fail=(message,status=403)=>{throw Object.assign(Error(message),{status})};
-module.exports=({db,clock=Date.now})=>async(uid,input)=>db.runTransaction(async tx=>{
+async function inTransaction({db,clock=Date.now},tx,uid,input){
  const gid=input.groupId,target=input.uid||uid;if(!gid||/[\/]/.test(gid)||!target||/[\/]/.test(target))fail('invalid-id',400);
  const root=db.collection('groups').doc(gid),[g,m,targetDoc,residents,homes]=await Promise.all([tx.get(root),tx.get(root.collection('members').doc(uid)),tx.get(root.collection('members').doc(target)),tx.get(root.collection('residents')),tx.get(root.collection('homes'))]);
  // Repeated self-leave after a successful removal is a completed operation.
@@ -19,4 +19,6 @@ module.exports=({db,clock=Date.now})=>async(uid,input)=>db.runTransaction(async 
  for(const owner of owners){const key='return-'+now+'-'+owner;tx.set(root.collection('mail').doc(key),{senderUid:uid,recipientUid:owner,senderPhoto:m.data()?.photoURL||'',senderKind:'user',subject:owner===uid?'캐릭터가 내 마을로 돌아왔습니다.':'멀티 마을에서 퇴거되었습니다.',body:(g.data().name||'멀티 마을')+'에서 떠나 내 마을로 돌아왔습니다. 캐릭터 탭에서 확인해 주세요.',createdAt:now,expiresAt:now+30*86400000,kind:'return',groupName:g.data().name||''});tx.set(db.collection('notificationOutbox').doc(gid+'-'+key),{uid:owner,groupId:gid,proposalId:key,kind:'member-returned',createdAt:now})}
  if(!input.residentId){tx.delete(root.collection('members').doc(target));tx.delete(db.collection('users').doc(target).collection('groupMemberships').doc(gid))}
  tx.update(root,{lifeUpdatedAt:0});return {returned:selected.length};
-});
+}
+module.exports=options=>async(uid,input)=>options.db.runTransaction(tx=>inTransaction(options,tx,uid,input));
+module.exports.inTransaction=inTransaction;
