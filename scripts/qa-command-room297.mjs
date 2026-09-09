@@ -1,0 +1,33 @@
+import assert from "node:assert/strict";
+import {createServer} from "node:http";
+import {readFile,mkdir} from "node:fs/promises";
+import {resolve,extname,sep} from "node:path";
+import {createRequire} from "node:module";
+import {fileURLToPath} from "node:url";
+
+const root=resolve(fileURLToPath(new URL("..",import.meta.url))),require=createRequire(import.meta.url);
+const playwrightPath=process.env.PLAYWRIGHT_MODULE||"C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright";
+const {chromium}=require(playwrightPath),output=resolve(root,"qa-output-293");
+await mkdir(output,{recursive:true});
+const previewAuth=await readFile(resolve(root,"scripts/ios-preview-auth.mjs"));
+const mime={".html":"text/html",".js":"text/javascript",".mjs":"text/javascript",".css":"text/css",".json":"application/json",".png":"image/png",".jpg":"image/jpeg",".webp":"image/webp",".svg":"image/svg+xml",".woff2":"font/woff2",".ttf":"font/ttf",".m4a":"audio/mp4"};
+const server=createServer(async(request,response)=>{
+  try{
+    const pathname=decodeURIComponent(new URL(request.url,"http://localhost").pathname),file=resolve(root,"."+(pathname==="/"?"/index.html":pathname));
+    if(!file.startsWith(root+sep)||!mime[extname(file)])return response.writeHead(404).end();
+    let body=pathname==="/auth.js"?previewAuth:await readFile(file);
+    if(pathname==="/views.js")body=body.toString().replace("const rawViewEvent=(c,date)=>{","const rawViewEvent=(c,date)=>{window.qaSceneCalls=(window.qaSceneCalls||0)+1;").replace("if(c&&date===renderSceneDate&&projectedRenderScenes.has(c))","if(!window.qaDisableCache&&c&&date===renderSceneDate&&projectedRenderScenes.has(c))");
+    response.writeHead(200,{"Content-Type":mime[extname(file)],"Cache-Control":"no-store"}).end(body);
+  }catch{response.writeHead(404).end()}
+});
+await new Promise(done=>server.listen(0,"127.0.0.1",done));
+const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({channel:process.env.QA_BROWSER||"chrome",headless:true});
+
+try{
+ const page=await browser.newPage({viewport:{width:360,height:840},hasTouch:true}),errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin+'/?native-preview=1');await page.waitForFunction(()=>window.ParallelCity);
+ await page.evaluate(async()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());const url=performance.getEntriesByType('resource').find(r=>/\/state\.js\?/.test(r.name)).name;window.game=await import(url);const a=game.createCharacter(10),b=game.createCharacter(10);game.state.activeId=a;game.state.activeTab='observe';game.state.catalog.food=Array.from({length:18},(_,i)=>({name:'물품'+i}));window.qaA=a;location.hash='tab=observe';window.ParallelCity.mediaChanged()});
+ await page.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));await page.locator('[data-character-command]').first().click();await page.locator('[data-direct-category=social]').click();await page.locator('[data-social-section=romance]').click();assert.ok(await page.locator('[data-direct-social-action=kiss]').isVisible());const localButtons=await page.locator('[data-direct-social-action]').evaluateAll(bs=>bs.map(b=>b.dataset.directSocialAction));await page.locator('[data-social-section=friendly]').click();await page.locator('[data-direct-social-action=talk]').click();await page.locator('.direct-topic-controls select').selectOption('2');await page.locator('.direct-topic-controls input').fill('물품');assert.equal(await page.locator('[data-direct-topic]:visible').count(),6);await page.getByRole('button',{name:'다음',exact:true}).click();await page.locator('.direct-topic-controls input').fill('물품17');assert.equal(await page.locator('[data-direct-topic]:visible').count(),1);await page.locator('[data-command-close]').click();
+ await page.evaluate(()=>{const home=game.state.homes[game.state.characters[qaA].homeId];window.qaHome=structuredClone(home);game.state.activeHomeId=home.id;game.state.homeEditMode=true;game.state.activeTab='home';location.hash='tab=home';window.ParallelCity.mediaChanged()});await page.evaluate(()=>document.querySelectorAll('dialog.page-guide[open]').forEach(d=>d.close()));await page.locator('[data-open-home-feature="room-info"]').click();await page.locator('[data-room-info-edit]').first().click();await page.locator('.room-editor-dialog .home-design-back').click();await page.waitForFunction(()=>!game.state.homeEditMode);
+ await page.evaluate(()=>{const profile=structuredClone(game.state.characters[qaA]);window.qaSnapshot={activeGroupId:'g',selectedTownId:'t',selectedResidentId:'a',group:{id:'g',ownerUid:'owner',name:'멀티',towns:[{id:'t',name:'마을',places:[]}]},groups:[],members:[{uid:'owner',role:'owner'}],homes:[{id:'h',name:'집',townId:'t',ownerUid:'owner',layoutJson:JSON.stringify(qaHome),layoutRevision:0}],catalog:[],relationships:[],residents:['a','b'].map(id=>({id,name:id,townId:'t',sharedHomeId:'h',ownerUid:'owner',profileJson:JSON.stringify({...profile,id,photo:'',icon:'',name:id})}))};window.ParallelCityAuth.getInfo=()=>({ready:true,user:{uid:'owner'}});window.DrawerVillageGroups={getSnapshot:()=>qaSnapshot,saveHomeLayout:async input=>{window.qaLayout=input;return {revision:1}},setDetailActive(){}};game.state.activeTab='observe';location.hash='tab=observe';window.dispatchEvent(new Event('drawer-village-groups'))});await page.locator('[data-shared-command]').first().click();assert.deepEqual(await page.locator('[data-direct-social-action]').evaluateAll(bs=>bs.map(b=>b.dataset.directSocialAction)),localButtons);assert.equal(await page.locator('[data-direct-target=b]').count(),1);await page.locator('[data-command-close]').click();
+ await page.evaluate(()=>{game.state.activeTab='home';location.hash='tab=home';window.ParallelCity.mediaChanged()});await page.locator('[data-open-home-feature="room-info"]').click();await page.locator('[data-room-info-edit]').first().click();await page.locator('.shared-home-dialog input[type=text]').fill('바뀐 방');await page.locator('.shared-home-dialog input[type=text]').press('Tab');await page.waitForFunction(()=>!!window.qaLayout);assert.ok(Object.values(await page.evaluate(()=>qaLayout.layout.rooms)).some(r=>r.name==='바뀐 방'));await page.locator('.shared-home-dialog button').first().click();assert.deepEqual(errors,[]);console.log('PASS local/shared command parity, visible romance, six-item topic search/paging, exit edit mode, shared room edit persistence');
+}finally{await browser.close();server.close()}

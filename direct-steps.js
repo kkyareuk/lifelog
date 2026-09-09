@@ -1,4 +1,4 @@
-import {SOCIAL_SECTIONS,workTasks} from './social-activities.js?v=20260909dev296';
+import {SOCIAL_SECTIONS,workTasks} from './social-activities.js?v=20260909dev297';
 export function installDirectSteps(command,copy,character){
  command.classList.add('direct-step-flow');
  const lang=document.documentElement.lang==='en'?1:document.documentElement.lang==='ja'?2:0;
@@ -17,6 +17,17 @@ export function installDirectSteps(command,copy,character){
   b.onclick=()=>{panels.forEach(p=>p.hidden=p!==panel);tabs.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))};
  }
  tabs.firstElementChild.click();
+ const topicGrid=social.querySelector('.direct-topic-grid'),topicButtons=[...topicGrid.querySelectorAll('[data-direct-topic]')],topicGroups=[[],[],[]];let topicGroup=0;
+ for(const child of [...topicGrid.children]){if(child.tagName==='H4'){topicGroup++;child.remove()}else if(child.matches('[data-direct-topic]'))topicGroups[Math.min(2,topicGroup)].push(child)}
+ const controls=document.createElement('div');controls.className='direct-topic-controls';
+ const type=document.createElement('select');type.setAttribute('aria-label',text('주제 종류','Topic type','テーマの種類'));
+ for(const [i,label] of [text('일상 이야기','Everyday topics','日常の話題'),text('사람','People','人物'),text('사전 속 물품','Dictionary items','辞典のアイテム')].entries()){const option=document.createElement('option');option.value=i;option.textContent=label;type.append(option)}
+ const search=document.createElement('input');search.type='search';search.placeholder=text('주제 검색','Search topics','テーマを検索');search.setAttribute('aria-label',search.placeholder);
+ const results=document.createElement('div');results.className='direct-action-grid';results.append(...topicButtons);
+ const pager=document.createElement('div');pager.className='direct-topic-controls';const previous=document.createElement('button'),next=document.createElement('button'),count=document.createElement('span');previous.type=next.type='button';previous.textContent=text('이전','Previous','前へ');next.textContent=text('다음','Next','次へ');pager.append(previous,count,next);let page=0;
+ const drawTopics=()=>{const found=topicGroups[Number(type.value)].filter(b=>b.dataset.directTopic.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase())),pages=Math.max(1,Math.ceil(found.length/6));page=Math.min(page,pages-1);const visible=new Set(found.slice(page*6,page*6+6));topicButtons.forEach(b=>b.hidden=!visible.has(b));count.textContent=found.length?`${page+1} / ${pages}`:text('검색 결과 없음','No results','見つかりません');previous.disabled=page===0;next.disabled=page>=pages-1};
+ type.onchange=search.oninput=()=>{page=0;drawTopics()};previous.onclick=()=>{page--;drawTopics()};next.onclick=()=>{page++;drawTopics()};controls.append(type,search);topicGrid.replaceChildren(controls,results,pager);drawTopics();
+
  const refresh=()=>{const kind=command.dataset.directSocialAction;social.querySelector('[data-direct-social-submit]').disabled=!kind||!command.dataset.directTarget;const topics=['talk','gossip','debate','custom_social','argue','taunt','insult','fight'].includes(kind);for(const selector of ['.direct-topic-grid','[data-direct-custom-topic]']){const node=social.querySelector(selector);node.hidden=!topics;if(node.previousElementSibling?.tagName==='H4')node.previousElementSibling.hidden=!topics}social.querySelector('[data-direct-payment-field]').hidden=!['dine','tea','drinks'].includes(kind)};
  social.addEventListener('click',refresh);refresh();
  for(const [category,groups] of Object.entries({needs:[[['위생','Hygiene','清潔'],['wash']],[['허기','Hunger','空腹'],['meal']],[['휴식','Rest','休憩'],['relax']],[['수면','Sleep','睡眠'],['nap','wake']]],hobby:[[['독서','Reading','読書'],['read']],[['음악','Music','音楽'],['music']],[['게임','Games','ゲーム'],['game']],[['창작','Creativity','創作'],['art']],[['운동·산책','Exercise and walks','運動・散歩'],['exercise','walk']]]})){

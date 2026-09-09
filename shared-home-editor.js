@@ -1,9 +1,9 @@
-import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev296';
-import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev296';
-import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260909dev296';
-import {bindHomeEditorUI} from './home-editor-ui.js?v=20260909dev296';
-import {mt} from './mailbox-center.js?v=20260909dev296';
-import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev296';
+import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev297';
+import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev297';
+import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260909dev297';
+import {bindHomeEditorUI} from './home-editor-ui.js?v=20260909dev297';
+import {mt} from './mailbox-center.js?v=20260909dev297';
+import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev297';
 const queues=new Map();
 export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  const api=window.DrawerVillageGroups,selection=sharedSelection(s),world=buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;
@@ -21,13 +21,14 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  root.addEventListener('click',e=>{
   const b=e.target.closest('button,[data-furniture-placement],[data-open-room-editor]');if(!b)return;
   if(b.matches('[data-home-edit]')){stop(e);if(!canEdit)return;if(selection.homeEditMode){const button=b;button.disabled=true;(queues.get(key)||Promise.resolve()).then(()=>{selection.homeEditMode=false;delete selection.homeDrafts?.[home.id];render()}).catch(()=>{button.disabled=false})}else{selection.homeEditMode=true;render()}return}
+  if(b.matches('[data-close-home-feature]')&&b.closest('[data-home-feature="room-info"]')){stop(e);selection.homeEditMode=false;render();return}
   if(b.matches('[data-add-room]')){stop(e);change(()=>addRoom(home.id,home.activeFloor||1));render();return}
-  if(b.matches('[data-open-room-editor],[data-open-furniture-layout]')){stop(e);if(selection.homeEditMode&&canEdit)roomDialog(b.dataset.openRoomEditor||Object.keys(home.rooms)[0]);return}
+  if(b.matches('[data-open-room-editor],[data-open-furniture-layout],[data-room-info-edit]')){if(e.target.closest('[data-home-occupant],[data-home-person],[data-furniture-placement],.room-drag-handle,.room-resize-handle'))return;stop(e);if(canEdit)roomDialog(b.dataset.roomInfoEdit||b.dataset.openRoomEditor||Object.keys(home.rooms)[0]);return}
   if(b.matches('[data-furniture-placement]')&&selection.homeEditMode){stop(e);if(canEdit)furnitureDialog(b.closest('[data-room-key]')?.dataset.roomKey,b.dataset.furniturePlacement);return}
   if(selection.homeEditMode&&b.matches('[data-delete-home],[data-home-image],[data-open-room-image-menu]')){stop(e);return}
  },true);
  // Replace personal callbacks with isolated shared-world callbacks; search and drag/drop keep the existing drawer.
- if(selection.homeEditMode&&canEdit){bindHomeEditorUI(root,{state:world,addFurniture:(id,room,item)=>change(()=>addFurniturePlacement(id,room,item)),updateFurniture:(id,room,p,patch)=>change(()=>updateFurniturePlacement(id,room,p,patch)),openRoom:(_,room)=>roomDialog(room),selectAdded:()=>render()})}
+ if(canEdit){bindHomeEditorUI(root,{state:world,addFurniture:(id,room,item)=>change(()=>addFurniturePlacement(id,room,item)),updateFurniture:(id,room,p,patch)=>change(()=>updateFurniturePlacement(id,room,p,patch)),openRoom:(_,room)=>roomDialog(room),selectAdded:()=>render()})}
  root.querySelectorAll('[data-furniture-placement]').forEach(el=>{
   el.onpointerdown=null;if(!selection.homeEditMode||!canEdit)return;
   el.onpointerdown=e=>{
@@ -51,8 +52,8 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
   };
  });
 
- function dialog(title){const d=document.createElement('dialog');d.className='mail-reader shared-home-dialog';const h=document.createElement('h2');h.textContent=title;const close=document.createElement('button');close.textContent=mt('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(h,close);d.onclose=()=>{d.remove();render()};document.body.append(d);d.showModal();return d}
- function roomDialog(roomKey){const room=home.rooms[roomKey];if(!room)return;const d=dialog(mt('방 편집','Edit room','部屋の編集'));for(const [key,label,type] of [['name',mt('방 이름','Room name','部屋名'),'text'],['floor',mt('층','Floor','階'),'number']]){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.type=type;input.value=room[key]||1;if(type==='number'){input.min=1;input.max=home.floorCount||1}input.onchange=()=>change(()=>updateRoom(home.id,roomKey,{[key]:type==='number'?Math.max(1,Math.min(home.floorCount||1,Number(input.value))):input.value}));l.append(input);d.append(l)}const hint=document.createElement('p');hint.textContent=mt('가구는 아래 가구 목록에서 방으로 끌어 놓거나 눌러 추가할 수 있어요.','Drag furniture into a room or tap it in the catalog below.','下の家具一覧から部屋へドラッグするか、タップして追加できます。');d.append(hint)}
+ function dialog(title,exitEdit=false){const d=document.createElement('dialog');d.className='mail-reader shared-home-dialog';const h=document.createElement('h2');h.textContent=title;const close=document.createElement('button');close.textContent=mt('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(h,close);d.onclose=()=>{if(exitEdit)selection.homeEditMode=false;d.remove();render()};document.body.append(d);d.showModal();return d}
+ function roomDialog(roomKey){const room=home.rooms[roomKey];if(!room)return;const d=dialog(mt('방 편집','Edit room','部屋の編集'),true);for(const [key,label,type] of [['name',mt('방 이름','Room name','部屋名'),'text'],['floor',mt('층','Floor','階'),'number']]){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.type=type;input.value=room[key]||1;if(type==='number'){input.min=1;input.max=home.floorCount||1}input.onchange=()=>change(()=>updateRoom(home.id,roomKey,{[key]:type==='number'?Math.max(1,Math.min(home.floorCount||1,Number(input.value))):input.value}));l.append(input);d.append(l)}const hint=document.createElement('p');hint.textContent=mt('가구는 아래 가구 목록에서 방으로 끌어 놓거나 눌러 추가할 수 있어요.','Drag furniture into a room or tap it in the catalog below.','下の家具一覧から部屋へドラッグするか、タップして追加できます。');d.append(hint)}
  function furnitureDialog(roomKey,id){const item=home.rooms[roomKey]?.furniturePlacements?.find(p=>p.id===id);if(!item)return;const d=dialog(item.item||mt('가구','Furniture','家具'));const action=(label,fn)=>{const b=document.createElement('button');b.textContent=label;b.onclick=()=>{change(fn);d.close()};d.append(b)};
   action(mt('90° 회전','Rotate 90°','90°回転'),()=>updateFurniturePlacement(home.id,roomKey,id,{rotation:((item.rotation||0)+90)%360}));action(mt('좌우 뒤집기','Flip horizontally','左右反転'),()=>updateFurniturePlacement(home.id,roomKey,id,{flipped:!item.flipped}));
   for(const [field,label,min,max] of [['scale',mt('크기','Scale','大きさ'),.2,3],['x','X',0,100],['y','Y',0,100]]){const l=document.createElement('label');l.textContent=label;const input=document.createElement('input');input.type='range';input.min=min;input.max=max;input.step=field==='scale'?.1:1;input.value=item[field]??1;input.onchange=()=>change(()=>updateFurniturePlacement(home.id,roomKey,id,{[field]:Number(input.value)}));l.append(input);d.append(l)}
