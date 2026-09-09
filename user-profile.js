@@ -1,5 +1,5 @@
-import {runBackgroundAction} from './background-actions.js?v=20260909dev298';
-import {state,save} from './state.js?v=20260909dev298';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev299';
+import {state,save} from './state.js?v=20260909dev299';
 const copy=()=>({ko:['유저 프로필','어떻게 불러드릴까요?','프로필 사진','저장','나중에','멀티 구성원에게 이 이름과 사진이 표시돼요.','저장 중…'],en:['User profile','What should we call you?','Profile photo','Save','Later','Group members will see this name and photo.','Saving…'],ja:['ユーザープロフィール','何とお呼びしましょうか？','プロフィール写真','保存','あとで','グループのメンバーにこの名前と写真が表示されます。','保存中…']}[["ko","en","ja"].includes(state.uiLanguage)?state.uiLanguage:"ko"]);
 let promptedUid='';
 export function openUserProfile(){

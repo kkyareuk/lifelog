@@ -39,7 +39,7 @@ try{
   });
 
  await page.setViewportSize({width:1480,height:920});
- await page.evaluate(async()=>{const g=await import('/state.js?v=20260909dev298');window.qaSnapshot.activeGroupId='';window.qaSnapshot.group=null;g.state.characterSettingsView='hub';location.hash='tab=character'});
+ await page.evaluate(async()=>{const g=await import('/state.js?v=20260909dev299');window.qaSnapshot.activeGroupId='';window.qaSnapshot.group=null;g.state.characterSettingsView='hub';location.hash='tab=character'});
  await page.waitForTimeout(700);
 
  const anchor=await page.locator('[data-toggle-character-roster]').first().boundingBox();await page.locator('[data-toggle-character-roster]').first().click();await page.waitForTimeout(300);const roster=await page.locator('[data-character-roster]').boundingBox();assert.ok(Math.abs(roster.x+roster.width/2-anchor.x-anchor.width/2)<3);await page.screenshot({path:resolve(output,'roster.png')});await page.locator('[data-toggle-character-roster]').first().click();
