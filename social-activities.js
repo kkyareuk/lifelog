@@ -37,8 +37,13 @@ export const ROMANTIC_ACTIVITIES=['kiss','kiss_cautious','kiss_reconcile','affec
 export function hasRomanticRelationship(relationships,a,b){return Object.values(relationships||{}).some(r=>r&&r.temporalStatus!=='past'&&((r.a===a&&r.b===b)||(r.a===b&&r.b===a))&&['연인','부부','약혼','약혼자','커플','폴리 관계'].includes(r.type));}
 
 export const SOCIAL_SECTIONS=[
- {id:'conversation',labels:['대화·교류','Conversation','会話・交流'],actions:['talk','debate','gossip','custom_social']},
- {id:'together',labels:['함께하기','Together','一緒に過ごす'],actions:['hangout','comfort','compliment','dine','tea','drinks','cook_together','play_together','study_together','read_together','compete']},
+ {id:'friendly',labels:['친근한 활동','Friendly activities','親しい交流'],actions:['talk','debate','gossip','custom_social','hangout','comfort','compliment','dine','tea','drinks','cook_together','play_together','study_together','read_together','compete']},
  {id:'conflict',labels:['갈등','Conflict','対立'],actions:['taunt','insult','argue','fight']},
- {id:'romance',labels:['로맨스','Romance','ロマンス'],actions:['hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection']}
+ {id:'romance',labels:['애정 표현','Affection','愛情表現'],actions:['hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection']}
 ];
+
+export function workTasks(character){
+ const job=String(character?.jobTitle||character?.job||'');
+ const tasks=/의사|간호|의료|병원/.test(job)?[['consult','진료·상담하기','See patients','診察・相談'],['chart','진료 기록 정리하기','Update medical records','診療記録の整理']]:/교사|교수|강사/.test(job)?[['lesson','수업 준비하기','Prepare lessons','授業の準備'],['teach','수업하기','Teach a class','授業をする']]:/요리|조리|셰프/.test(job)?[['prep','식재료 준비하기','Prepare ingredients','食材の準備'],['kitchen','주방 업무하기','Work in the kitchen','厨房で働く']]:/연구|과학/.test(job)?[['experiment','연구·실험하기','Research and experiments','研究・実験'],['results','연구 결과 정리하기','Review research results','研究結果の整理']]:/작가|화가|예술|음악|배우/.test(job)?[['create','작품 작업하기','Work on a piece','作品づくり'],['practice','연습·퇴고하기','Practice and revise','練習・推敲']]:/학생/.test(job)?[['assignment','과제하기','Do assignments','課題に取り組む'],['revision','수업 복습하기','Review lessons','授業の復習']]:/무직|없음|설정하지/.test(job)||!job?[['career','진로 알아보기','Explore careers','進路を調べる']]:[['tasks','담당 업무 처리하기','Handle work tasks','担当業務を進める'],['plan','업무 계획 세우기','Plan work','仕事の計画'],['report','업무 기록 정리하기','Organize work records','業務記録の整理']];
+ return tasks.map(([id,...labels])=>({id,labels}));
+}

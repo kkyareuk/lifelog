@@ -1527,7 +1527,7 @@ html[data-animation-intensity="off"] :is(.home-interaction-avatar,.meeting-pair 
 .direct-command-body{padding:18px;overflow:auto;overscroll-behavior:contain;max-height:calc(88dvh - 110px);touch-action:pan-y}
 .direct-command-dialog .home-occupant-command{margin:0;border:0;padding:0}.direct-command-dialog .direct-action-popup{position:static;box-shadow:none;border:0;padding:0;background:transparent;overflow:visible;max-height:none}
 .direct-command-dialog button,.direct-command-dialog input,.direct-command-dialog select{touch-action:pan-y;box-sizing:border-box;min-height:44px;max-width:100%;font:inherit}
-.direct-command-dialog .direct-social-sections{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.direct-command-dialog .direct-social-sections{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
 .direct-command-dialog .direct-action-grid>.direct-action-grid{grid-column:1/-1}
 .direct-command-dialog [hidden]{display:none!important}
 .direct-command-dialog [data-social-section][aria-pressed=true]{background:#604939;color:#fff}
@@ -7939,3 +7939,5 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
 .character-code-dialog{width:min(440px,92vw);max-height:85dvh;overflow:auto;padding:20px;border:2px solid #856c52;border-radius:20px;background:#fff8eb;color:#352a22}.character-code-dialog input{width:100%;box-sizing:border-box;margin:12px 0}.character-code-dialog button{margin:6px;white-space:normal;height:auto;min-height:40px}.character-code-dialog img{display:block;width:120px;height:120px;object-fit:contain}
 
 .is-startled .avatar{animation:privacy-startle .18s ease-in-out 6}.privacy-exclamation{position:absolute;left:50%;top:-24px;color:#ffcf53;font-size:32px;font-weight:bold;text-shadow:1px 2px #522a10;animation:privacy-startle .18s ease-in-out 6}@keyframes privacy-startle{50%{translate:0 -6px;rotate:8deg}}@media(prefers-reduced-motion:reduce){.is-startled .avatar,.privacy-exclamation{animation:none}}
+
+.direct-command-dialog .direct-subheading{grid-column:1/-1;margin:16px 0 4px;font-size:13px;color:#78634d;border-bottom:1px solid #d9cdbb;padding-bottom:6px}.direct-command-dialog .direct-category-tabs{gap:0;border-bottom:2px solid #72523e;margin-bottom:16px}.direct-command-dialog .direct-category-tabs button{border-radius:0;background:transparent;border:0;font-weight:bold;justify-content:center}.direct-command-dialog .direct-category-tabs button[aria-expanded=true]{background:#624733;color:#fff9ed}.direct-command-dialog .direct-social-sections button{font-size:13px;background:#eee3d1;justify-content:center}
