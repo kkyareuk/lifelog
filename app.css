@@ -5323,6 +5323,7 @@ html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.ma
 html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(p,small){color:#bdc9d6!important;-webkit-text-fill-color:#bdc9d6!important}
 html[data-color-mode="dark"] dialog:not(.relationship-fullscreen-dialog):not(.mail-letter) :is(input,select,textarea,button){border-color:#ffffff24!important;background:#182638!important;color:#f5f8fb!important;-webkit-text-fill-color:#f5f8fb!important}
 html[data-color-mode="dark"] dialog button.primary{border-color:transparent!important;background:linear-gradient(135deg,var(--p),var(--s))!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
+.view-copy-actions{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.view-copy-actions button{min-width:0;min-height:44px;white-space:normal}
 html[data-color-mode="dark"] dialog :is(.relation,.empty-mini,.room-editor-photo,.room-image-choice button,.relationship-color-legend span){border-color:#ffffff1b!important;background:#172536!important;color:#f4f7fb!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas{border:1px solid #ffffff1d!important;background:radial-gradient(circle at center,#25374a 0 32%,#101a28 100%)!important}
 html[data-color-mode="dark"] .relationship-map-dialog .relationship-map-canvas svg text{paint-order:stroke;fill:#f8fafc!important;stroke:#101a28!important}

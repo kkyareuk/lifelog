@@ -1,3 +1,4 @@
+let copiedViewSettings=null;
 import {receiveCharacterTransfers,personalState,characterEditorActive,runIsolatedWorld} from './state.js?v=20260909dev291';
 import {bindSharedCharacters,syncSharedCharacterEditor,leaveSharedCharacterEditor,saveSharedCharacter} from './shared-characters.js?v=20260909dev291';
 import {runBackgroundAction} from './background-actions.js?v=20260909dev291';
@@ -4326,6 +4327,18 @@ function bind(){
   }));
   $("[data-refresh-relationship-map]")?.addEventListener("click",()=>refreshRelationshipMap(mapDialog));
   $("[data-export-relationship-map]")?.addEventListener("click",exportRelationshipMapPng);
+  $$("[data-copy-view]").forEach(button=>button.onclick=()=>{
+    copiedViewSettings=Object.fromEntries([...button.closest('[data-view-dialog]').querySelectorAll('[data-character-view]')].map(el=>[el.dataset.viewField,el.value]));
+    showToast(({ko:'시선 설정을 복사했어요',en:'Viewpoint copied.',ja:'視線の設定をコピーしました。'}[state.uiLanguage]||''));
+  });
+  $$("[data-paste-view]").forEach(button=>button.onclick=()=>{
+    if(!copiedViewSettings){showToast(({ko:'먼저 시선 설정을 복사해 주세요',en:'Copy a viewpoint first.',ja:'先に視線の設定をコピーしてください。'}[state.uiLanguage]||''));return}
+    for(const el of button.closest('[data-view-dialog]').querySelectorAll('[data-character-view]')){
+      const value=copiedViewSettings[el.dataset.viewField];if(![...el.options].some(o=>o.value===value))continue;
+      el.value=value;el.dispatchEvent(new Event('change',{bubbles:true}));
+    }
+    showToast(({ko:'시선을 붙여넣었어요 · 편집 완료 시 저장돼요',en:'Viewpoint pasted. Finish editing to save.',ja:'貼り付けました。編集完了時に保存します。'}[state.uiLanguage]||''));
+  });
   $$("[data-character-view]").forEach(select=>select.onchange=()=>{
     const source=select.dataset.source,target=select.dataset.target,field=select.dataset.viewField;
     if(field==="touchIntensity"&&select.value==="성인 간 친밀한 접촉까지"&&[source,target].some(id=>["영아","유아","어린이","청소년"].includes(state.characters[id]?.ageGroup))){

@@ -70,7 +70,7 @@ export function installSettingsTransfer({translate,toast,render,limit,townLimit}
     const button=event.target.closest('[data-settings-transfer]');if(!button)return;
     const mode=button.dataset.settingsTransfer;
     try{
-      if(mode==='world-transfer'){await worldTransferDialog({homeId:button.dataset.shareHome||'',kind:button.dataset.shareKind||'town',render,toast,limits:()=>({characterLimit:limit(),townLimit:townLimit()})});return}
+      if(mode==='world-transfer'){await worldTransferDialog({homeId:button.dataset.shareHome||'',townId:button.dataset.shareTown||'',kind:button.dataset.shareKind||'town',render,toast,limits:()=>({characterLimit:limit(),townLimit:townLimit()})});return}
       if(mode==='character-code-export'||mode==='character-code-import'){await characterCodeDialog(mode,limit,render,toast);return}
       if(mode==='character-export'){if(active())await downloadSettings(characterSettingsFile(active()),active().name+'-설정');return}
       if(mode==='all-export'){await downloadSettings({format:'drawer-village-backup',version:2,mediaPolicy:'device-only',exportedAt:new Date().toISOString(),gameState:informationOnlyState(cloneState())},'서랍마을-전체백업');return}
