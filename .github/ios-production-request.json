@@ -1,9 +1,9 @@
 {
   "version": "1.0.269",
-  "build": 30,
+  "build": 31,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Recover pending purchases without new purchase prompts; group mail and editor transitions"
+  "reason": "Mailbox refresh, empty character screen, remote activities and view-based gossip fixes"
 }

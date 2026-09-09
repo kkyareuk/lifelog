@@ -1,7 +1,7 @@
-import {worldTransferDialog} from './world-transfer.js?v=20260909dev302';
-import {characterCodeDialog} from "./character-code.js?v=20260909dev302";
-import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev302';
-import {informationOnlyState} from './local-media.js?v=20260909dev302';
+import {worldTransferDialog} from './world-transfer.js?v=20260909dev304';
+import {characterCodeDialog} from "./character-code.js?v=20260909dev304";
+import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev304';
+import {informationOnlyState} from './local-media.js?v=20260909dev304';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
 const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);

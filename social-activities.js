@@ -1,5 +1,8 @@
 // Shared command definitions: local and multiplayer use the same activity IDs.
 export const SOCIAL_ACTIVITIES={
+ message:{remote:true,labels:['문자 보내기','Send a message','メッセージを送る'],lines:['휴대폰으로 전할 말을 적어 보내고 있어요. 상대의 답장을 강요하지 않고 자기 자리에서 연락해요.','They type and send a message from where they are, without demanding a reply.','その場で伝えたいことを入力して送っています。返事は急かしません。']},
+ remote_checkin:{remote:true,labels:['문자로 안부 묻기','Check in by message','メッセージで近況を聞く'],lines:['잘 지내는지 묻는 문자를 보내고 있어요. 상대가 확인할 때까지 하던 일을 이어 가요.','They send a message asking how the other person is doing, then continue their own day.','元気にしているかメッセージで尋ね、相手が確認するまで自分の用事を続けます。']},
+ phone_call:{remote:true,labels:['전화 걸기','Make a call','電話をかける'],lines:['자기 자리에서 전화를 걸고 연결을 기다리고 있어요. 아직 상대가 받은 것은 아니에요.','They place a call from where they are and wait for an answer. The other person has not answered yet.','その場で電話をかけ、つながるのを待っています。相手はまだ出ていません。']},
  taunt:{labels:['비아냥대기','Taunt','皮肉を言う'],lines:['상대의 말을 비꼬며 신경을 건드리고 있어요.','They make a sarcastic remark to provoke the other person.','皮肉を言って相手の神経を逆なでしています。'],negative:true},
  insult:{labels:['모욕하기','Insult','侮辱する'],lines:['날 선 말로 상대를 깎아내리며 분위기가 험악해졌어요.','A cutting insult makes the atmosphere tense.','刺々しい言葉で相手をけなし、険悪な雰囲気になりました。'],negative:true},
  fight:{labels:['싸우기','Fight','けんかする'],lines:['서로 물러서지 않고 거칠게 맞서고 있어요.','Neither backs down as they confront each other.','互いに引かず、激しく対立しています。'],negative:true},
@@ -30,7 +33,7 @@ export function socialActivityCopy(kind,actor,target,topic='',options={}){
  const extra=socialFood&&critic?[`${critic.name}${older?'은 경험을 내세워 생활 방식까지 훈수를 두고 있어요.':'은 사소한 방식까지 지적하며 자기 뜻대로 하려 해요.'}`,`${critic.name} ${older?'uses their experience to lecture about life.':'criticizes small details and tries to take control.'}`,`${critic.name}は${older?'経験を持ち出して暮らし方に口を出しています。':'細かいやり方を指摘し、自分の思い通りにしようとしています。'}`]:['','',''];
  const payment=options.payment||'split',payer=options.payerName||actor?.name||'';
  const bill=!['dine','tea','drinks'].includes(kind)?['','','']:payment==='treat'?[`${payer}이 계산을 맡기로 했어요.`,`${payer} offered to pay.`,`${payer}が支払いを引き受けました。`]:payment==='request'?[`${payer}에게 사 달라고 부탁했어요. 아직 동의한 것은 아니에요.`,`${payer} was asked to pay; they have not agreed yet.`,`${payer}におごってほしいと頼みました。まだ同意はしていません。`]:['각자 계산하기로 했어요.','They agreed to pay separately.','各自で支払うことにしました。'];
- return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${other}와 ${item.labels[0].replace(/하기$/,'하는 중')}`,`${item.labels[1]} · ${other}`,`${other}と${item.labels[2]}`][i],desc:[item.lines[i],extra[i],bill[i]].filter(Boolean).join(' ')+(detail?[' 함께 정한 주제: ',' Chosen topic: ',' テーマ：'][i]+detail:'')}]))
+ return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[item.remote?`${other}에게 ${item.labels[0]}`:`${other}와 ${item.labels[0].replace(/하기$/,'하는 중')}`,`${item.labels[1]} · ${other}`,`${other}と${item.labels[2]}`][i],desc:[item.lines[i],extra[i],bill[i]].filter(Boolean).join(' ')+(detail?[' 함께 정한 주제: ',' Chosen topic: ',' テーマ：'][i]+detail:'')}]))
 }
 
 export const ROMANTIC_ACTIVITIES=['kiss','kiss_cautious','kiss_reconcile','affection'];

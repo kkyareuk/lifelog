@@ -1,14 +1,14 @@
-import {overheardGossip} from './gossip-reaction.js?v=20260909dev302';
-import {routineScene} from './routine-scenes.js?v=20260909dev302';
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev302';
-import {dailyInteractionLine,oneSidedJoke} from './scene-context.js?v=20260909dev302';
-import {careRoutineFor} from "./creative-options.js?v=20260909dev302";
-import {drinkExperience} from "./drink-log.js?v=20260909dev302";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev302";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev302";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev302";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev302";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev302";
+import {overheardGossip} from './gossip-reaction.js?v=20260909dev304';
+import {routineScene} from './routine-scenes.js?v=20260909dev304';
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev304';
+import {dailyInteractionLine,oneSidedJoke} from './scene-context.js?v=20260909dev304';
+import {careRoutineFor} from "./creative-options.js?v=20260909dev304";
+import {drinkExperience} from "./drink-log.js?v=20260909dev304";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev304";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev304";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev304";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev304";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev304";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
@@ -3589,7 +3589,7 @@ function manualDirectiveEventFor(c,date=new Date()){
   return meetingScene(withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
     home:!atWork,placeId:atWork?place.id:"",room:directive.room||"living",visitHomeId:sharedHomeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
     withId:companions[0],withIds:companions,participantOrder,groupInteraction:shared,interactionId:shared?`manual:${directive.id}`:undefined,
-    manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
+    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
   }),date),directive,c.id,now,state.uiLanguage);
 }
 // Repeated participant searches share base scenes only during a synchronous

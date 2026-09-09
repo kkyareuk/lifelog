@@ -1,6 +1,6 @@
-import {state} from './state.js?v=20260909dev302';
-import {mt} from './mailbox-center.js?v=20260909dev302';
-import {sharedSelection} from './shared-world.js?v=20260909dev302';
+import {state} from './state.js?v=20260909dev304';
+import {mt} from './mailbox-center.js?v=20260909dev304';
+import {sharedSelection} from './shared-world.js?v=20260909dev304';
 
 // Dialog state stays local until Save. No personal-world event handlers are reused.
 export function bindSharedHomeMembers(root,s,world,canEdit,render,toast){
