@@ -1,9 +1,9 @@
 {
   "version": "1.0.269",
-  "build": 26,
+  "build": 27,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Supplied app icon plus tablet controls and Apple purchase restore fixes"
+  "reason": "Fix native Apple payment presentation and persistent purchase progress"
 }

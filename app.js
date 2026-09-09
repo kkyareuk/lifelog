@@ -1,3 +1,19 @@
+// Keep native purchase state through shop rerenders and late price responses.
+function syncApplePurchaseButtons(){
+ const status=window.DrawerVillagePlayBilling?.getState?.();if(!status)return;
+ const progress=document.querySelector?.('[data-apple-billing-progress]');if(progress){progress.hidden=!status.busy;progress.textContent=status.label;}
+ document.querySelectorAll('[data-play-purchase]').forEach(button=>{
+  const label=button.querySelector('[data-play-label]');
+  if(status.busy){
+   if(!button.dataset.appleBusy){button.dataset.appleBusy='true';button.dataset.appleWasDisabled=String(button.disabled);if(label)button.dataset.applePreviousLabel=label.textContent;}
+   button.disabled=true;if(label)label.textContent=status.label;
+  }else if(button.dataset.appleBusy){
+   button.disabled=button.dataset.appleWasDisabled==='true';if(label&&button.dataset.applePreviousLabel)label.textContent=button.dataset.applePreviousLabel;
+   delete button.dataset.appleBusy;delete button.dataset.appleWasDisabled;delete button.dataset.applePreviousLabel;
+  }
+ });
+}
+window.addEventListener('drawer-village-billing-state',syncApplePurchaseButtons);
 import {installUserSafety} from './user-safety.js?v=20260909dev302';
 import {SOCIAL_ACTIVITIES,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev302';
 import {installSupporterCredits,openSupporterCredits} from './supporter-credits.js?v=20260909dev302';
@@ -2816,6 +2832,8 @@ function bind(){
     const hiddenLabel=playLabel(button);
     if(hiddenLabel)hiddenLabel.textContent=label;
     else button.textContent=label;
+    if(button.dataset.appleBusy){button.dataset.appleWasDisabled=String(disabled);button.dataset.applePreviousLabel=label;}
+    syncApplePurchaseButtons();
   };
   playButtons.forEach(button=>button.onclick=async()=>{
     const productId=button.dataset.playPurchase;
@@ -2830,6 +2848,7 @@ function bind(){
       setPlayButtonState(button,"ready","구매하기",false);
     }
   });
+  syncApplePurchaseButtons();
   if(playButtons.length&&window.DrawerVillagePlayBilling?.enabled?.()){
     window.DrawerVillagePlayBilling.loadProducts().then(result=>{
       const products=Array.isArray(result)?result:(result?.products||[]);

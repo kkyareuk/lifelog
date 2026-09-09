@@ -1,0 +1,10 @@
+import fs from 'node:fs';import vm from 'node:vm';import assert from 'node:assert/strict';
+const app=fs.readFileSync(new URL('../app.js',import.meta.url),'utf8');
+const label={textContent:'구매하기'},button={dataset:{},disabled:false,querySelector:()=>label};let status={busy:false,phase:'idle'};
+const context={window:{DrawerVillagePlayBilling:{getState:()=>status},addEventListener(){}},document:{querySelectorAll:()=>[button]}};
+vm.createContext(context);vm.runInContext(app.slice(0,app.indexOf('import ')),context);
+vm.runInContext(app.slice(app.indexOf('  const playLabel='),app.indexOf('  playButtons.forEach(button=>button.onclick=')),context);
+status={busy:true,label:'Apple 결제창 응답 대기 중…'};context.syncApplePurchaseButtons();assert.equal(button.disabled,true);
+vm.runInContext('setPlayButtonState(document.querySelectorAll()[0],"ready","구매하기",false)',context);assert.equal(button.disabled,true);assert.equal(label.textContent,status.label);
+status={busy:false};context.syncApplePurchaseButtons();assert.equal(button.disabled,false);assert.equal(label.textContent,'구매하기');
+console.log('PASS late price response cannot re-enable a pending purchase; completion restores buttons');
