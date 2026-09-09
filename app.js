@@ -1,6 +1,7 @@
 // Keep native purchase state through shop rerenders and late price responses.
 function syncApplePurchaseButtons(){
  const status=window.DrawerVillagePlayBilling?.getState?.();if(!status)return;
+ const progress=document.querySelector?.('[data-apple-billing-progress]');if(progress){progress.hidden=!status.busy;progress.textContent=status.label;}
  document.querySelectorAll('[data-play-purchase]').forEach(button=>{
   const label=button.querySelector('[data-play-label]');
   if(status.busy){
