@@ -1,6 +1,7 @@
 import Foundation
 import Capacitor
 import StoreKit
+import UIKit
 
 @available(iOS 15.0, *)
 @objc(AppleBillingPlugin)
@@ -14,6 +15,8 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "finishPurchase", returnType: CAPPluginReturnPromise)
     ]
     private let allowed: Set<String> = ["com.drawervillage.app.character_slots_5", "com.drawervillage.app.town_slot_1", "com.drawervillage.app.green_tea"]
+    @MainActor private var loadedProducts: [String: Product] = [:]
+    @MainActor private var purchaseActive = false
     private var updates: Task<Void, Never>?
     public override func load() {
         updates = Task { [weak self] in
@@ -34,19 +37,30 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
     enum BillingError: Error { case unverified }
     @objc func getProducts(_ call: CAPPluginCall) {
         let ids = (call.getArray("productIds", String.self) ?? []).filter { allowed.contains($0) }
-        Task {
+        Task { @MainActor in
             do {
                 let products = try await Product.products(for: ids)
+                for product in products { loadedProducts[product.id] = product }
                 call.resolve(["products": products.map { ["productId": $0.id, "title": $0.displayName, "formattedPrice": $0.displayPrice, "regularPaidOffer": $0.price > 0] as [String: Any] }])
             } catch { call.reject("PRODUCTS_UNAVAILABLE", "PRODUCTS_UNAVAILABLE") }
         }
     }
     @objc func purchase(_ call: CAPPluginCall) {
         guard let id = call.getString("productId"), allowed.contains(id), let token = UUID(uuidString: call.getString("appAccountToken") ?? "") else { call.reject("INVALID_PURCHASE", "INVALID_PURCHASE"); return }
-        Task {
+        Task { @MainActor in
+            guard !purchaseActive else { call.reject("BUSY", "BUSY"); return }
+            // Products are loaded by the bounded JS preflight before any payment starts.
+            guard let product = loadedProducts[id] else { call.reject("PRODUCTS_UNAVAILABLE", "PRODUCTS_UNAVAILABLE"); return }
+            guard let presenter = bridge?.viewController, presenter.viewIfLoaded?.window != nil else { call.reject("PURCHASE_FAILED", "PURCHASE_FAILED"); return }
+            purchaseActive = true
+            defer { purchaseActive = false }
             do {
-                guard let product = try await Product.products(for: [id]).first else { call.reject("PRODUCTS_UNAVAILABLE", "PRODUCTS_UNAVAILABLE"); return }
-                let result = try await product.purchase(options: [.appAccountToken(token)])
+                let result: Product.PurchaseResult
+                if #available(iOS 18.2, *) {
+                    result = try await product.purchase(confirmIn: presenter, options: [.appAccountToken(token)])
+                } else {
+                    result = try await product.purchase(options: [.appAccountToken(token)])
+                }
                 switch result {
                 case .success(let verified): call.resolve(try payload(verified))
                 case .userCancelled: call.reject("PURCHASE_CANCELLED", "PURCHASE_CANCELLED")

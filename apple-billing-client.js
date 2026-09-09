@@ -13,14 +13,17 @@
  FAILED:['구매 확인을 끝내지 못했어요. 다시 결제하지 말고 구매 내역 복원을 눌러 주세요.','Purchase verification is incomplete. Restore purchases instead of paying again.','購入確認を完了できませんでした。再購入せず、購入の復元をお試しください。']
  };
  const error=code=>{const index=String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0;return Object.assign(new Error((messages[code]||messages.FAILED)[index]),{code})};
- let busy=false,backgroundRestore=null;
+ let busy=false,backgroundRestore=null,phase='idle';
+ const phaseText={restoring:['구매 내역 확인 중…','Checking purchases…','購入履歴を確認中…'],account:['계정 확인 중…','Checking account…','アカウントを確認中…'],product:['Apple 상품 확인 중…','Loading Apple product…','Apple商品を確認中…'],payment:['Apple 결제창 응답 대기 중…','Waiting for Apple payment…','Apple決済の応答を待機中…'],verifying:['구매 지급 확인 중…','Verifying purchase…','購入を確認中…']};
+ const getState=()=>({busy,phase,label:(phaseText[phase]||[])[String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0]||''});
+ const setPhase=value=>{phase=value;window.dispatchEvent?.(new CustomEvent('drawer-village-billing-state',{detail:getState()}))};
  const bounded=(work,ms=25000)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(error('FAILED')),ms);Promise.resolve(work).then(resolve,reject).finally(()=>clearTimeout(timer))});
  const refreshAccount=()=>{void Promise.resolve().then(()=>window.ParallelCityAuth?.download?.({automatic:false})).catch(()=>{})};
  async function token(){const value=await bounded(window.ParallelCityAuth?.getIdToken?.());if(!value)throw error('LOGIN_REQUIRED');return value}
  async function request(path,body,auth){
   const backend=String(config().backendUrl||'').replace(/\/$/,'');if(!backend)throw error('APPLE_NOT_CONFIGURED');
   let response;try{response=await fetch(backend+'/apple-billing/'+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+auth},body:JSON.stringify(body),signal:AbortSignal.timeout(25000)})}catch{throw error('FAILED')}
-  const result=await response.json().catch(()=>({}));if(!response.ok)throw error(result.code||'FAILED');return result;
+  const result=await bounded(response.json()).catch(()=>{throw error('FAILED')});if(!response.ok)throw error(result.code||'FAILED');return result;
  }
  async function settle(purchase,auth){
   const result=await request('verify',{transactionId:purchase.transactionId,signedTransaction:purchase.signedTransaction},auth);
@@ -30,10 +33,11 @@
   if(result.environment==="Sandbox")window.ParallelCityAuth?.setAppleSandboxEntitlements?.(result.entitlements);
   return result;
  }
- async function exclusive(run){if(busy)throw error('BUSY');busy=true;try{return await run()}catch(e){if(messages[e.code])throw error(e.code);throw error('FAILED')}finally{busy=false}}
+ async function exclusive(run){if(busy)throw error('BUSY');busy=true;try{return await run()}catch(e){if(messages[e.code])throw error(e.code);throw error('FAILED')}finally{busy=false;setPhase('idle')}}
  async function restorePurchases(interactive=true){
   if(backgroundRestore)await backgroundRestore;
   const result=await exclusive(async()=>{
+   setPhase('restoring');
    // A quiet login check must not download the whole save or block on an empty history.
    const result=await bounded(bridge.restorePurchases({interactive}));
    if(!(result.purchases||[]).length)return {restored:0,failed:0};
@@ -47,13 +51,20 @@
   backgroundRestore=restorePurchases(false).catch(()=>{}).finally(()=>{backgroundRestore=null});
  }
  window.DrawerVillagePlayBilling={
+  getState,
   enabled:()=>Boolean(bridge&&config().enabled),configured:()=>Boolean(config().backendUrl),
   loadProducts:async()=>bridge?bridge.getProducts({productIds:Object.values(config().products||{})}).then(result=>({products:(result.products||[]).map(p=>({...p,storeProductId:p.productId,productId:Object.keys(config().products||{}).find(key=>config().products[key]===p.productId)||p.productId}))})):({products:[]}),
   purchase:async id=>{if(backgroundRestore)await backgroundRestore;return exclusive(async()=>{
    if(!bridge||!config().enabled||!config().products?.[id])throw error('APPLE_NOT_CONFIGURED');
+   setPhase('account');
    const auth=await token(),prepared=await request('prepare',{},auth),productId=config().products[id];
    if(prepared.products?.[productId]!==id||!prepared.appAccountToken)throw error('APPLE_NOT_CONFIGURED');
+   setPhase('product');
+   const products=await bounded(bridge.getProducts({productIds:[productId]}));
+   if(!(products.products||[]).some(p=>p.productId===productId))throw error('APPLE_NOT_CONFIGURED');
+   setPhase('payment');
    const purchase=await bridge.purchase({productId,appAccountToken:prepared.appAccountToken});
+   setPhase('verifying');
    await settle(purchase,auth);refreshAccount();return purchase;
   })},restorePurchases
  };
