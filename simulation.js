@@ -3589,7 +3589,7 @@ function manualDirectiveEventFor(c,date=new Date()){
   return meetingScene(withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
     home:!atWork,placeId:atWork?place.id:"",room:directive.room||"living",visitHomeId:sharedHomeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
     withId:companions[0],withIds:companions,participantOrder,groupInteraction:shared,interactionId:shared?`manual:${directive.id}`:undefined,
-    manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
+    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
   }),date),directive,c.id,now,state.uiLanguage);
 }
 // Repeated participant searches share base scenes only during a synchronous

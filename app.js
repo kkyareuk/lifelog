@@ -1543,6 +1543,13 @@ function scheduleHomeLifeRefresh(){
 }
 let relationshipRailCleanup=[];
 let deferredCommandRender=false;
+let commandRenderQueued=false;
+function renderAfterCommand(){
+ if(commandRenderQueued)return;
+ commandRenderQueued=true;
+ requestAnimationFrame(()=>setTimeout(()=>{commandRenderQueued=false;render()},0));
+}
+
 function render({force=false}={}){
   if(!force&&document.querySelector('.direct-command-dialog[open]')){deferredCommandRender=true;return}
   deferredCommandRender=false;
@@ -1939,7 +1946,7 @@ function directActivityCommandMarkup(character,sleeping){
 }
 function bindDirectActivityCommand(root,characterId,close){
   const groupId=activeShared()?.activeGroupId,commandRelationships=state.relationships;
-  const execute=async(kind,options={})=>{if(command.dataset.pending)return false;command.dataset.pending='1';command.setAttribute('aria-busy','true');const status=document.createElement('p');status.setAttribute('role','status');status.textContent=({ko:'행동을 전달하는 중…',en:'Sending the activity…',ja:'行動を伝えています…'}[state.uiLanguage]||'행동을 전달하는 중…');command.append(status);await new Promise(resolve=>requestAnimationFrame(resolve));try{if(groupId){if(activeShared()?.activeGroupId!==groupId)return false;close();void runBackgroundAction('command:'+groupId+':'+characterId,async()=>{if(activeShared()?.activeGroupId!==groupId)throw Error(copy.chooseTarget);await window.DrawerVillageGroups.command({characterId,kind,...options});if(state.activeTab==='observe'||state.activeTab==='home'||state.activeTab==='town')render()});return true}return directCharacterActivity(characterId,kind,options)}finally{delete command.dataset.pending;command.removeAttribute('aria-busy');status.remove()}};
+  const execute=async(kind,options={})=>{if(command.dataset.pending)return false;command.dataset.pending='1';command.setAttribute('aria-busy','true');const status=document.createElement('p');status.setAttribute('role','status');status.textContent=({ko:'행동을 전달하는 중…',en:'Sending the activity…',ja:'行動を伝えています…'}[state.uiLanguage]||'행동을 전달하는 중…');command.append(status);await new Promise(resolve=>requestAnimationFrame(()=>setTimeout(resolve,0)));try{if(groupId){if(activeShared()?.activeGroupId!==groupId)return false;close();void runBackgroundAction('command:'+groupId+':'+characterId,async()=>{if(activeShared()?.activeGroupId!==groupId)throw Error(copy.chooseTarget);await window.DrawerVillageGroups.command({characterId,kind,...options});if(state.activeTab==='observe'||state.activeTab==='home'||state.activeTab==='town')render()});return true}return directCharacterActivity(characterId,kind,options)}finally{delete command.dataset.pending;command.removeAttribute('aria-busy');status.remove()}};
   const copy=DIRECT_ACTIVITY_UI[state.uiLanguage]||DIRECT_ACTIVITY_UI.ko,command=root.querySelector("[data-direct-command]");if(!command)return;
   command.querySelectorAll("[data-direct-category]").forEach(button=>button.onclick=()=>{
     const open=button.getAttribute("aria-expanded")!=="true";
@@ -1948,7 +1955,7 @@ function bindDirectActivityCommand(root,characterId,close){
     if(open){button.setAttribute("aria-expanded","true");command.querySelector(`[data-direct-panel="${CSS.escape(button.dataset.directCategory)}"]`).hidden=false}
   });
   installDirectSteps(command,copy,state.characters[characterId],state);
-  command.querySelectorAll("[data-direct-simple-action]").forEach(action=>action.onclick=async()=>{action.disabled=true;try{if(await execute(action.dataset.directSimpleAction,{workTask:action.dataset.workTask,lifeTask:action.dataset.lifeTask})){close();render()}}catch(error){showToast(error.message)}finally{action.disabled=false}});
+  command.querySelectorAll("[data-direct-simple-action]").forEach(action=>action.onclick=async()=>{action.disabled=true;try{if(await execute(action.dataset.directSimpleAction,{workTask:action.dataset.workTask,lifeTask:action.dataset.lifeTask})){close();renderAfterCommand()}}catch(error){showToast(error.message)}finally{action.disabled=false}});
   const choose=(selector,attribute)=>command.querySelectorAll(selector).forEach(button=>button.onclick=()=>{command.querySelectorAll(selector).forEach(item=>item.setAttribute("aria-pressed","false"));button.setAttribute("aria-pressed","true");command.dataset[attribute]=button.dataset[attribute]} );
   choose("[data-direct-target]","directTarget");choose("[data-direct-subject]","directSubject");choose("[data-direct-topic]","directTopic");
   command.querySelectorAll("[data-direct-social-action]").forEach(button=>button.onclick=()=>{
@@ -1962,7 +1969,7 @@ function bindDirectActivityCommand(root,characterId,close){
     if(!targetId)return showToast(copy.chooseTarget);
     const custom=command.querySelector("[data-direct-custom-topic]")?.value.trim(),topic=custom||command.dataset.directTopic||"";
     let accepted=false;event.currentTarget.disabled=true;try{accepted=await execute(kind,{targetId,subjectId,topic,payment:command.querySelector("[data-direct-payment]")?.value||"split"})}catch(error){showToast(error.message);return}finally{command.querySelector("[data-direct-social-submit]").disabled=false}
-    if(accepted){close();render()}else showToast(({ko:'나이·신체접촉 설정과 집 안의 침대·욕조·샤워기·의자를 확인해 주세요.',en:'Check age, contact preferences and a bed, bath, shower or chair at home.',ja:'年齢・接触設定と家のベッド・浴槽・シャワー・椅子を確認してください。'}[state.uiLanguage]));
+    if(accepted){close();renderAfterCommand()}else showToast(({ko:'나이·신체접촉 설정과 집 안의 침대·욕조·샤워기·의자를 확인해 주세요.',en:'Check age, contact preferences and a bed, bath, shower or chair at home.',ja:'年齢・接触設定と家のベッド・浴槽・シャワー・椅子を確認してください。'}[state.uiLanguage]));
   });
 }
 
@@ -2004,7 +2011,7 @@ function openDirectCommandDialog(character,sleeping=false){
  const copy=DIRECT_ACTIVITY_UI[state.uiLanguage]||DIRECT_ACTIVITY_UI.ko;
  const dialog=document.createElement('dialog');dialog.className='direct-command-dialog';
  dialog.innerHTML=`<header><span><small>${htmlEsc(character.name)}</small><h2>${htmlEsc(({ko:"활동 선택",en:"Choose an activity",ja:"活動を選ぶ"})[state.uiLanguage])}</h2></span><button type="button" data-command-close aria-label="${({ko:'닫기',en:'Close',ja:'閉じる'})[state.uiLanguage]}">×</button></header><div class="direct-command-body">${directActivityCommandMarkup(character,sleeping)}</div>`;
- const close=()=>dialog.close();dialog.querySelector('[data-command-close]').onclick=close;dialog.addEventListener('close',()=>{dialog.remove();requestAnimationFrame(()=>{if(deferredCommandRender)render()})},{once:true});document.body.append(dialog);bindDirectActivityCommand(dialog,character.id,close);dialog.showModal();
+ const close=()=>dialog.close();dialog.querySelector('[data-command-close]').onclick=close;dialog.addEventListener('close',()=>{dialog.remove();if(deferredCommandRender)renderAfterCommand()},{once:true});document.body.append(dialog);bindDirectActivityCommand(dialog,character.id,close);dialog.showModal();
 }
 
 function openTownCharacterSheet(button){

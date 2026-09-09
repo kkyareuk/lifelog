@@ -1,5 +1,5 @@
 import {lifeTask,lifeCopy} from './life-tasks.js?v=20260909dev303';
-import {automaticConversation,hobbyChoice,ignoresOthers,dislikesPerson} from './automatic-activities.js?v=20260909dev303';
+import {automaticConversation,hobbyChoice,ignoresOthers,dislikesPerson,gossipReasons,seededChoice} from './automatic-activities.js?v=20260909dev303';
 import {workTasks} from './social-activities.js?v=20260909dev303';
 import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev303';
 import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev303';
@@ -1385,7 +1385,7 @@ DIRECTIVE_COPY.rest=DIRECTIVE_COPY.relax;
 for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile','affection'])DIRECTIVE_COPY[kind]={room:'living',minutes:20,social:true};
 for(const kind of Object.keys(SOCIAL_ACTIVITIES))DIRECTIVE_COPY[kind]={room:"living",minutes:20,social:true};
 function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
-  if(kind==='gossip'&&subject){const criticizing=dislikesPerson(state,actor,subject)&&!ignoresOthers(actor),distant=ignoresOthers(actor);const desc=criticizing?[`${subject.name}의 마음에 들지 않는 태도를 짚으며 불만을 털어놓고 있어요.`,`They criticize ${subject.name}’s behavior and voice their displeasure.`,`${subject.name}の気に入らない態度を指摘し、不満をこぼしています。`]:distant?['남의 이야기에 별 관심이 없어 짧게 듣고 다른 화제로 돌리려 해요.','They show little interest in gossip and try to change the subject.','他人の話にはあまり関心を示さず、話題を変えようとしています。']:['상대의 불만을 듣지만 섣불리 맞장구치지는 않고 있어요.','They listen to the complaint without rushing to agree.','相手の不満を聞きつつ、すぐには同調していません。'];return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 ${subject.name}에 대해 이야기하는 중`,`Talking with ${target.name} about ${subject.name}`,`${target.name}と${subject.name}について話すところ`][i],desc:desc[i]}]))}
+  if(kind==='gossip'&&subject){const criticizing=dislikesPerson(state,actor,subject)&&!ignoresOthers(actor),distant=ignoresOthers(actor);const reasons=gossipReasons(characterViewFor(actor.id,subject.id),subject);const desc=criticizing&&reasons.length?reasons[Math.floor(seededChoice(actor.id+':'+subject.id+':'+(options.now||Math.floor(Date.now()/60000)))()*reasons.length)]:distant?['남의 이야기에 별 관심이 없어 짧게 듣고 다른 화제로 돌리려 해요.','They show little interest in gossip and try to change the subject.','他人の話にはあまり関心を示さず、話題を変えようとしています。']:['상대의 불만을 듣지만 섣불리 맞장구치지는 않고 있어요.','They listen to the complaint without rushing to agree.','相手の不満を聞きつつ、すぐには同調していません。'];return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 ${subject.name}에 대해 이야기하는 중`,`Talking with ${target.name} about ${subject.name}`,`${target.name}と${subject.name}について話すところ`][i],desc:desc[i]}]))}
 
   const extra=socialActivityCopy(kind,actor,target,topic,options);if(extra)return extra;
   const names={actor:actor?.name||"캐릭터",target:target?.name||"상대",subject:subject?.name||"다른 사람"},detail=String(topic||"").trim();
@@ -1425,7 +1425,9 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
   if(['affection','kiss','kiss_cautious','kiss_reconcile','handhold','lean'].includes(kind)&&(!['성인','노인'].includes(character.ageGroup)||!['성인','노인'].includes(target?.ageGroup)))return false;
-  if(ROMANTIC_ACTIVITIES.includes(kind)&&!hasRomanticRelationship(state.relationships,character.id,target?.id))return false;
+  // Explicit mutual contact settings also permit a directed kiss. A custom
+  // relationship name must not silently veto the user's settings.
+  if(ROMANTIC_ACTIVITIES.includes(kind)&&!hasRomanticRelationship(state.relationships,character.id,target?.id)&&!contactAllowed(character,target,kind))return false;
   const contactRejected=!contactAllowed(character,target,kind);if(contactRejected){kind='talk';definition=DIRECTIVE_COPY.talk;}
   if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
   if(kind==="drinks"&&[character,target].some(c=>!["성인","노인"].includes(c?.ageGroup)))return false;
@@ -1434,7 +1436,12 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const directiveId=uid(),withIds=target?[character.id,target.id]:[];
   state.characterDirectives=state.characterDirectives&&typeof state.characterDirectives==="object"?state.characterDirectives:{};
   const scene=c=>options.scenes?.[c.id]||(c.sharedScene?meetingScene(c.sharedScene,state.characterDirectives?.[c.id],c.id,startedAt,state.uiLanguage):directiveSceneResolver?.(c,new Date(startedAt)))||{home:true,room:c.sleepRoomId||"living",townId:c.townId};
-  const sourceScene=scene(character),targetScene=target?scene(target):null,positions=options.positions||globalThis.window?.ParallelCity?.getMeetingPositions?.([character.id,target?.id]);
+  const sourceScene=scene(character),targetScene=target&&!SOCIAL_ACTIVITIES[kind]?.remote?scene(target):null,positions=SOCIAL_ACTIVITIES[kind]?.remote?null:options.positions||globalThis.window?.ParallelCity?.getMeetingPositions?.([character.id,target?.id]);
+  if(SOCIAL_ACTIVITIES[kind]?.remote){
+    // A remote action belongs to the sender. Never move or wake the recipient.
+    state.characterDirectives[characterId]={id:directiveId,kind,remote:true,startedAt,endsAt:startedAt+3*60000,room:sourceScene.room||'living',homeId:sourceScene.visitHomeId||character.homeId,placeId:sourceScene.placeId||'',sourceScene:{home:sourceScene.home,room:sourceScene.room,visitHomeId:sourceScene.visitHomeId,townId:sourceScene.townId,placeId:sourceScene.placeId},targetId:target.id,withIds:[],copy};
+    character.timelineResetAt=startedAt;delete state.dailyPlans?.[characterId];save();return true;
+  }
   let destination=targetScene,otherJourney=null;
   if(!target||kind==='affection'){
     const home=state.homes?.[kind==='affection'?(targetScene?.home?(targetScene.visitHomeId||target.homeId):character.homeId):character.homeId];
@@ -1473,7 +1480,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     if(!contactRejected&&!SOCIAL_ACTIVITIES[kind]?.negative)recordAutomaticRelationshipMoment([character.id,target.id],`directive:${directiveId}`,kind==="kiss"||kind==="hug"?2:1,false);
   }
   if(contactRejected){for(const id of [character.id,target.id]){const d=state.characterDirectives[id],other=state.characters[d.targetId];d.copy={ko:{title:`${other.name}와 접촉에 대한 마음을 이야기하는 중`,desc:'상대가 원하지 않아 접촉하지 않기로 했어요. 서로의 의사를 확인하고 거리를 지켜 대화를 마무리해요.'},en:{title:`Talking about boundaries with ${other.name}`,desc:'The contact was declined. They respect the answer and finish their conversation without touching.'},ja:{title:`${other.name}と触れ合いについて話すところ`,desc:'相手が望まないため触れ合いは控えました。気持ちを尊重し、距離を保って会話を終えます。'}};}}
-  save(true);
+  save();
   return true;
 }
 
