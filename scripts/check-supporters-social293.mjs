@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {supportBenefits,approveSupporterRequest,publicSupporterEntries,nextSupporter} from '../supporter-model.js';
+import {SOCIAL_ACTIVITIES,SOCIAL_SECTIONS,socialActivityCopy,hasRomanticRelationship} from '../social-activities.js';
+assert.equal(supportBenefits(49999).color,false);assert.equal(supportBenefits(50000).color,true);
+assert.equal(supportBenefits(99999).all,false);assert.equal(supportBenefits(100000).all,true);
+assert.equal(supportBenefits(5000000).size,36);
+const request={format:'drawer-supporter-request',version:1,previewAmount:1000000,style:{name:'A',effect:'neon',background:'fireflies'}};
+const approved=approveSupporterRequest(request,1000,'public1');assert.equal(approved.effect,'plain');assert.equal(approved.background,'none');assert(!('previewAmount' in approved));
+assert.throws(()=>approveSupporterRequest(request,NaN,'public1'));assert.throws(()=>approveSupporterRequest(request,100000,'x/../y'));
+assert.equal(publicSupporterEntries([{...approved,visibility:'hidden'}]).length,0);
+const entries=[approved,{...approved,id:'public2'},{...approved,id:'public3',weight:2}],scores={},counts={};let last='';
+for(let i=0;i<120;i++){const n=nextSupporter(entries,scores,last);assert.notEqual(n.id,last);last=n.id;counts[n.id]=(counts[n.id]||0)+1}assert(counts.public3>counts.public1);
+assert.equal(SOCIAL_SECTIONS.length,4);const ids=SOCIAL_SECTIONS.flatMap(s=>s.actions);assert.equal(ids.length,new Set(ids).size);
+const a={id:'a',name:'A',ageGroup:'노인',personalityTypes:['완고하고 통제적']},b={id:'b',name:'B',personalityTypes:['다정하고 세심함']};
+for(const kind of Object.keys(SOCIAL_ACTIVITIES)){const copy=socialActivityCopy(kind,a,b,'');for(const lang of ['ko','en','ja'])assert(copy[lang].title&&copy[lang].desc)}
+assert.match(socialActivityCopy('dine',a,b,'',{payment:'request',payerName:'B'}).ko.desc,/B에게 사 달라고/);
+assert.match(socialActivityCopy('cook_together',a,b).ko.desc,/경험을 내세워/);
+assert(!hasRomanticRelationship([{a:'a',b:'b',type:'친구'}],'a','b'));assert(hasRomanticRelationship([{a:'a',b:'b',type:'연인'}],'a','b'));
+assert(!hasRomanticRelationship([{a:'a',b:'b',type:'연인',temporalStatus:'past'}],'a','b'));
+console.log('PASS supporter thresholds, forged amount, public privacy, weighted rotation; four social groups, translations, payment attribution, personality and relationship filtering');

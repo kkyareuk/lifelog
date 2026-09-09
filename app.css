@@ -1423,7 +1423,7 @@ html body #app .furniture-edit-toolbar strong{color:#392b21!important}
    위에, 편집 손잡이보다 아래에 두고 이동 중에도 눌러 상태를 확인할 수 있다. */
 .room-people.has-home-life{position:absolute;inset:0;z-index:4;display:block;max-width:none;max-height:none;overflow:visible;pointer-events:none}
 .home-life-roaming-layer{position:absolute;z-index:30;inset:0;overflow:visible;pointer-events:none;container-type:size}
-:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person{--life-edge:52px;position:absolute;left:clamp(var(--life-edge),var(--life-x),calc(100% - var(--life-edge)));top:var(--life-y);z-index:4;display:flex;flex-direction:column;align-items:center;max-width:min(150px,82%);pointer-events:auto;transform:translate(-50%,-72%);will-change:transform}
+:is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person{--life-edge:min(82px,50%);position:absolute;left:clamp(var(--life-edge),var(--life-x),calc(100% - var(--life-edge)));top:var(--life-y);z-index:4;display:flex;flex-direction:column;align-items:center;max-width:min(150px,82%);pointer-events:auto;transform:translate(-50%,-72%);will-change:transform}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person.is-couple-bed-user{--life-edge:36px}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person.is-couple-bed-user.is-using-couple-bed{left:var(--life-x);transform:translate(-50%,-50%);max-width:none}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person.is-couple-bed-user.is-using-couple-bed .home-person-visual{width:var(--bed-face-size,52px);height:var(--bed-face-size,52px);transform-origin:50% 50%;rotate:var(--couple-bed-character-rotation,0deg);scale:1}
@@ -1447,7 +1447,7 @@ html body #app .furniture-edit-toolbar strong{color:#392b21!important}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-using .home-person-visual{animation:home-person-float 3.2s var(--home-float-delay,0s) ease-in-out infinite}
 :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-waiting{opacity:.94}
 .home-interaction-card{display:flex;flex-direction:column;align-items:center;gap:3px;max-width:min(184px,94%);padding:0;border:0;background:transparent;filter:drop-shadow(0 7px 7px #19223844)}
-.room-people.has-home-life .home-life-interaction{position:absolute;left:clamp(58px,var(--life-x),calc(100% - 58px));top:var(--life-y);z-index:5;pointer-events:auto;transform:translate(-50%,-72%)}
+.room-people.has-home-life .home-life-interaction{position:absolute;left:clamp(min(98px,50%),var(--life-x),calc(100% - min(98px,50%)));top:var(--life-y);z-index:5;pointer-events:auto;transform:translate(-50%,-72%)}
 .home-interaction-visual{position:relative;display:flex!important;align-items:flex-end!important;justify-content:center!important;width:76px;min-width:76px;height:58px;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}
 .home-interaction-avatar{display:grid!important;place-items:center!important;width:48px;height:54px;margin:0 -10px 0 0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;font-style:normal;transform-origin:50% 82%}
 .home-interaction-avatar:last-of-type{margin:0 0 0 -10px!important}
@@ -1506,6 +1506,34 @@ html body #app .furniture-edit-toolbar strong{color:#392b21!important}
 @keyframes home-bed-conversation-right{0%,100%{transform:translate(0,0) rotate(1deg)}24%{transform:translate(-1px,-2px) rotate(-1deg)}52%{transform:translate(1px,-1px) rotate(2deg)}78%{transform:translate(0,1px) rotate(-1deg)}}
 .home-interaction-kiss .home-interaction-avatar:first-of-type{animation:home-interaction-kiss-left 1.8s ease-in-out infinite}.home-interaction-kiss .home-interaction-avatar:nth-of-type(2){animation:home-interaction-kiss-right 1.8s ease-in-out infinite}.home-interaction-kiss .home-interaction-visual>em{animation:home-interaction-heart 1.8s ease-in-out infinite}
 .home-interaction-hug .home-interaction-avatar:first-of-type{animation:home-interaction-hug-left 2.2s ease-in-out infinite}.home-interaction-hug .home-interaction-avatar:nth-of-type(2){animation:home-interaction-hug-right 2.2s ease-in-out infinite}
+.home-interaction-taunt .home-interaction-avatar,.meeting-pair.is-social-taunt button{animation:social-taunt 2s ease-in-out infinite}
+.home-interaction-insult .home-interaction-avatar,.meeting-pair.is-social-insult button{animation:social-insult 1.7s ease-in-out infinite}
+.home-interaction-argue .home-interaction-avatar,.meeting-pair.is-social-argue button{animation:social-argue 1.2s ease-in-out infinite alternate}
+.home-interaction-fight .home-interaction-avatar,.meeting-pair.is-social-fight button{animation:social-fight .8s ease-in-out infinite alternate}
+.home-interaction-cook .home-interaction-avatar,.meeting-pair.is-social-cook_together button{animation:social-cook 1.4s ease-in-out infinite}
+:is(.home-interaction-taunt,.home-interaction-insult,.home-interaction-argue,.home-interaction-fight,.home-interaction-cook) .home-interaction-avatar:nth-of-type(2){animation-delay:-.4s}
+html[data-animation-intensity="off"] :is(.home-interaction-avatar,.meeting-pair button),html[data-animation-intensity="reduced"] :is(.home-interaction-avatar,.meeting-pair button){animation:none!important}
+@media(prefers-reduced-motion:reduce){.home-interaction-avatar,.meeting-pair button{animation:none!important}}
+@keyframes social-taunt{50%{transform:translateY(-3px) rotate(-7deg)}}
+@keyframes social-insult{30%{transform:translateX(4px) rotate(4deg)}60%{transform:translateX(-2px)}}
+@keyframes social-argue{to{transform:translateY(-5px) rotate(3deg)}}
+@keyframes social-fight{to{transform:translateX(5px) rotate(-6deg)}}
+@keyframes social-cook{50%{transform:translateY(3px) rotate(3deg)}}
+.account-reset-control{display:grid;gap:6px;width:100%}.account-deletion-links{display:flex;flex-direction:column;align-items:stretch;gap:10px}.account-reset-control small{line-height:1.5}
+.direct-command-dialog{box-sizing:border-box;width:min(94vw,600px);max-height:88dvh;padding:0;border:1px solid #b9a28c;border-radius:24px;background:#fff8ec;color:#48352a;overflow:hidden;box-shadow:0 20px 70px #24170966}
+.direct-command-dialog::backdrop{background:#24170999}
+.direct-command-dialog>header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid #b9a28c55;background:#eee1cd}
+.direct-command-dialog h2{font-size:21px;margin:4px 0}.direct-command-dialog>header button{width:44px;height:44px;padding:0;border-radius:50%;font-size:23px}
+.direct-command-body{padding:18px;overflow:auto;overscroll-behavior:contain;max-height:calc(88dvh - 110px);touch-action:pan-y}
+.direct-command-dialog .home-occupant-command{margin:0;border:0;padding:0}.direct-command-dialog .direct-action-popup{position:static;box-shadow:none;border:0;padding:0;background:transparent;overflow:visible;max-height:none}
+.direct-command-dialog button,.direct-command-dialog input,.direct-command-dialog select{touch-action:pan-y;box-sizing:border-box;min-height:44px;max-width:100%;font:inherit}
+.direct-command-dialog .direct-social-sections{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.direct-command-dialog .direct-action-grid>.direct-action-grid{grid-column:1/-1}
+.direct-command-dialog [hidden]{display:none!important}
+.direct-command-dialog [data-social-section][aria-pressed=true]{background:#604939;color:#fff}
+.direct-command-dialog [data-direct-payment-field]{display:grid;gap:8px;margin:14px 0}
+.direct-command-dialog .direct-submit{width:100%;min-height:48px!important;font-size:16px!important;margin-top:18px;background:#604939!important;color:#fff!important;border-radius:12px}
+.direct-command-dialog .direct-step-choice{width:100%;text-align:start;border:1px solid #c6b49f;border-radius:12px;padding:14px;background:#f3e9db;margin:5px 0}
 .home-interaction-talk .home-interaction-avatar:first-of-type,.home-interaction-play .home-interaction-avatar:first-of-type,.home-interaction-together .home-interaction-avatar:first-of-type{animation:home-interaction-talk-left 1.2s ease-in-out infinite}.home-interaction-talk .home-interaction-avatar:nth-of-type(2),.home-interaction-play .home-interaction-avatar:nth-of-type(2),.home-interaction-together .home-interaction-avatar:nth-of-type(2){animation:home-interaction-talk-right 1.2s .2s ease-in-out infinite}
 .home-interaction-together .home-interaction-visual>em{animation:home-interaction-heart 1.8s ease-in-out infinite}
 .home-interaction-watch .home-interaction-visual{width:98px;min-width:98px}
@@ -1564,7 +1592,7 @@ html body #app .furniture-edit-toolbar strong{color:#392b21!important}
 @keyframes home-pet-stretch{0%,70%,100%{transform:scale(1)}82%{transform:scale(1.08,.9) translateY(2px)}}
 @keyframes home-pet-pounce{0%,100%{transform:translateY(0) rotate(-2deg)}45%{transform:translateY(-6px) rotate(3deg)}}
 @media(max-width:1200px),(orientation:portrait){
-  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person{--life-edge:46px;max-width:76%;transform:translate(-50%,-70%)}
+  :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person{--life-edge:min(82px,50%);max-width:76%;transform:translate(-50%,-70%)}
   :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person .home-person-status{max-width:76px;padding:3px 5px;font-size:8px}
   :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person img.avatar{width:40px;height:40px}
   :is(.room-people.has-home-life,.home-life-roaming-layer) .home-life-person img.sprite{width:48px;height:48px}
@@ -1611,7 +1639,7 @@ html body #app .furniture-edit-toolbar strong{color:#392b21!important}
 .background-action-notice[data-state=success] .background-action-icon{background:#e3e9d4;color:#657650;border-color:#c2cba9}
 .background-action-notice[data-state=error] .background-action-icon{background:#f1dfd4;color:#a46349;border-color:#d5ad96}
 .background-action-notice [hidden]{display:none}
-.meeting-pair{position:absolute;z-index:32;transform:translate(-50%,-60%);display:grid;justify-items:center;max-width:180px;pointer-events:auto}.meeting-pair-faces{display:flex;align-items:center}.meeting-pair-faces button{position:relative;display:block;flex:0 0 64px;width:64px;height:72px;min-height:0;padding:0;border:0;background:transparent;box-shadow:none}.meeting-pair-faces :is(.avatar,.sprite){width:100%;height:100%;object-fit:contain;background:none;border:0;box-shadow:none}.meeting-pair-faces .is-blushing::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 10px 6px at 26% 64%,#ef728383,transparent),radial-gradient(ellipse 10px 6px at 74% 64%,#ef728383,transparent)}.meeting-pair.is-kissing .meeting-pair-faces button:first-child{animation:meeting-kiss 2.8s ease-in-out infinite}.meeting-pair.is-kissing .meeting-pair-faces button:last-child{animation:meeting-kiss 2.8s ease-in-out infinite reverse}.meeting-pair.is-talking .meeting-pair-faces{position:relative}.meeting-pair.is-talking .meeting-pair-faces::after{content:'•••';position:absolute;right:-7px;top:-12px;min-width:26px;padding:3px 5px;border:1px solid #ad9a81;border-radius:12px 12px 12px 2px;background:#fff7e7;color:#705742;font:16px/1 system-ui;pointer-events:none;animation:meeting-chat 2.4s ease-in-out infinite}.meeting-pair.is-talking button:first-child{animation:meeting-chat-nod 2.4s ease-in-out infinite}.meeting-pair.is-talking button:last-child{animation:meeting-chat-nod 2.4s ease-in-out 1.2s infinite}@keyframes meeting-chat{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(-3px);opacity:1}}@keyframes meeting-chat-nod{0%,35%,100%{transform:translateY(0)}15%{transform:translateY(-3px)}}html[data-animation-intensity=off] .meeting-pair.is-talking button,html[data-animation-intensity=off] .meeting-pair.is-talking .meeting-pair-faces::after,html[data-animation-intensity=reduced] .meeting-pair.is-talking button{animation:none}
+.meeting-pair{--pair-half:min(90px,calc(var(--pair-room-width,100%)/2 - 8px));left:clamp(calc(var(--pair-room-left,0%) + var(--pair-half) + 8px),var(--pair-x,50%),calc(var(--pair-room-left,0%) + var(--pair-room-width,100%) - var(--pair-half) - 8px));width:min(180px,calc(var(--pair-room-width,100%) - 16px));position:absolute;z-index:32;transform:translate(-50%,-60%);display:grid;justify-items:center;max-width:180px;pointer-events:auto}.meeting-pair-faces{display:flex;align-items:center;max-width:100%;width:128px}.meeting-pair .meeting-caption{box-sizing:border-box;max-width:100%;overflow-wrap:anywhere}.meeting-pair .meeting-caption small{max-width:100%}.meeting-pair-faces button{position:relative;display:block;flex:1 1 64px;min-width:0;width:64px;height:72px;min-height:0;padding:0;border:0;background:transparent;box-shadow:none}.meeting-pair-faces :is(.avatar,.sprite){width:100%;height:100%;object-fit:contain;background:none;border:0;box-shadow:none}.meeting-pair-faces .is-blushing::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 10px 6px at 26% 64%,#ef728383,transparent),radial-gradient(ellipse 10px 6px at 74% 64%,#ef728383,transparent)}.meeting-pair.is-kissing .meeting-pair-faces button:first-child{animation:meeting-kiss 2.8s ease-in-out infinite}.meeting-pair.is-kissing .meeting-pair-faces button:last-child{animation:meeting-kiss 2.8s ease-in-out infinite reverse}.meeting-pair.is-talking .meeting-pair-faces{position:relative}.meeting-pair.is-talking .meeting-pair-faces::after{content:'•••';position:absolute;right:-7px;top:-12px;min-width:26px;padding:3px 5px;border:1px solid #ad9a81;border-radius:12px 12px 12px 2px;background:#fff7e7;color:#705742;font:16px/1 system-ui;pointer-events:none;animation:meeting-chat 2.4s ease-in-out infinite}.meeting-pair.is-talking button:first-child{animation:meeting-chat-nod 2.4s ease-in-out infinite}.meeting-pair.is-talking button:last-child{animation:meeting-chat-nod 2.4s ease-in-out 1.2s infinite}@keyframes meeting-chat{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(-3px);opacity:1}}@keyframes meeting-chat-nod{0%,35%,100%{transform:translateY(0)}15%{transform:translateY(-3px)}}html[data-animation-intensity=off] .meeting-pair.is-talking button,html[data-animation-intensity=off] .meeting-pair.is-talking .meeting-pair-faces::after,html[data-animation-intensity=reduced] .meeting-pair.is-talking button{animation:none}
 @media(prefers-reduced-motion:reduce){.meeting-pair.is-talking .meeting-pair-faces::after,.meeting-pair.is-talking button{animation:none}}
 .meeting-pair.is-kissing::after{content:'♥';position:absolute;top:-10px;color:#d66a90;animation:meeting-kiss-heart 2.8s ease-in-out infinite}
 /* Local affection animation: warm glow and a gentle approach, no network timer. */
@@ -3242,7 +3270,8 @@ html[data-active-tab="town"] .town-illustration-dialog{z-index:1200;width:min(92
   background-image:linear-gradient(to right,#ffffff2c 1px,transparent 1px),linear-gradient(to bottom,#ffffff2c 1px,transparent 1px);
   background-size:calc(100% / 12) calc(100% / 16);
 }
-.home.is-editing .rooms>.room{z-index:1;box-shadow:none;filter:none}
+.home.is-editing .rooms>.room{z-index:auto;box-shadow:none;filter:none}
+.home.is-editing .rooms>.room.room-dragging{z-index:20}
 .room-dragging{z-index:20;opacity:1;filter:none}
 .room-drop-target{outline:none;filter:none;box-shadow:none}
 .home-floor-tabs{display:flex;gap:8px;margin:10px 0;overflow-x:auto;scrollbar-width:thin}
