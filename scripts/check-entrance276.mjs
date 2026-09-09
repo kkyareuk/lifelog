@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {createEntranceTransitions,planMeetingJourney} from '../meeting-journey.js';
+const now=Date.now(),c={id:'a',name:'A',homeId:'h',townId:'t'},world={uiLanguage:'ko',homes:{h:{id:'h',mapX:20,mapY:20,rooms:{bedroom:{floor:2},entrance:{type:'entrance',floor:1}}}},world:{places:[{id:'park',x:80,y:80}]}},inside={home:true,room:'bedroom',visitHomeId:'h',townId:'t'},outside={home:false,placeId:'park',townId:'t'};
+const route=planMeetingJourney(world,c,c,now,inside,outside);
+assert.equal(route.segments.at(-2).fromRoom,'entrance');assert.equal(route.segments.at(-1).surface,'town');
+const travel=createEntranceTransitions(),original=JSON.stringify(world);
+assert.equal(travel.project(world,c,inside,now,'u'),inside,'First load does not replay entry');
+const leaving=travel.project(world,c,outside,now+1,'u');assert.equal(leaving.meetingJourney.toRoom,'entrance');
+assert.ok(travel.ends(now).length);assert.equal(travel.project(world,c,outside,now+60000,'u'),outside);
+const entering=travel.project(world,c,inside,now+61000,'u');assert.equal(entering.meetingJourney.surface,'town');
+assert.equal(travel.project(world,c,inside,now+62000,'other'),inside,'Account or group change clears presentation routes');
+assert.equal(JSON.stringify(world),original,'Presentation never writes positions into stored world');
+console.log('PASS regular entry/exit, entrance waypoint, initial load, arrival, account isolation and immutable world');

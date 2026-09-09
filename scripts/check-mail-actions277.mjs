@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {advanceSharedLife} from '../server-life.mjs';
+const g=await import('../state.js?v=20260909dev293');
+const {eventFor}=await import('../simulation.js?v=20260909dev293');
+g.resetAll();const a=g.createCharacter(20),b=g.createCharacter(20),c=g.createCharacter(20),now=Date.now();
+for(const id of [a,b,c])g.state.characters[id].ageGroup='성인';
+assert.ok(g.directCharacterActivity(a,'gift',{targetId:b,now}));
+assert.ok(g.directCharacterActivity(b,'kiss',{targetId:c,now:now+1000}));
+assert.ok(!g.state.characterDirectives[a],'Former partner released');
+assert.equal(g.state.characterDirectives[b].id,g.state.characterDirectives[c].id);
+assert.ok(g.directCharacterActivity(b,'affection',{targetId:c,now:now+2000}));
+assert.ok(g.state.characterDirectives[b].copy.en.title);g.state.characters[c].ageGroup='청소년';assert.equal(g.directCharacterActivity(b,'affection',{targetId:c}),false);g.state.characters[c].ageGroup='성인';
+const snap={group:{id:'g',towns:[{id:'t',places:[]}]},residents:[a,b,c].map(id=>({id,ownerUid:id,name:id,townId:'t',profileJson:JSON.stringify(g.state.characters[id]),lifeJson:'{}',scheduleJson:'{}'})),homes:[]};
+const gift=advanceSharedLife(snap,now,{characterId:a,targetId:b,kind:'gift'});snap.residents.forEach(r=>r.lifeJson=gift.find(x=>x.id===r.id).lifeJson);
+const next=advanceSharedLife(snap,now+6000,{characterId:b,targetId:c,kind:'kiss'});assert.equal(JSON.parse(next.find(r=>r.id===a).lifeJson).directive,null);
+const {createContactMailbox,mailEnvelope}=await import('../notification-mail.js');const data={};const storage={scope:'u',getItem:k=>data[k],setItem:(k,v)=>data[k]=v};const mail=createContactMailbox(storage);
+mail.record([mailEnvelope({id:1,title:'Old',body:'Expired',at:new Date(now-31*86400000),extra:{characterId:a}},'u'),mailEnvelope({id:2,title:'New',body:'Current',at:new Date(now-1000),extra:{characterId:a}},'u')]);assert.equal(mail.due(g.state.characters).length,1);
+console.log('PASS replaced pair released locally and on server, adult private-time boundary, 30-day received mail retention');

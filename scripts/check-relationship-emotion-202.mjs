@@ -54,7 +54,7 @@ globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
 globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
 const [{state:runtimeState},{timeline,eventFor}]=await Promise.all([
-  import(`../state.js?v=20260904home209`),
+  import(`../state.js?v=20260909dev293`),
   import(`../simulation.js?relationship-sync=${Date.now()}`)
 ]);
 const runtimeCharacter=(id,name)=>({...basic(id,name),createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",homeId:"shared-home",residences:[{homeId:"shared-home",isPrimary:true,stayPattern:"상시 거주"}],wake:"00:01",sleep:"23:59",job:"무직",jobTitle:"",traitExpressions:[],bodyProfile:{},theme:{primary:"#76513e"}});
@@ -66,7 +66,7 @@ runtimeState.homes={"shared-home":{id:"shared-home",townId:"",rooms:{living:{nam
 runtimeState.relationships={bond:{id:"bond",a:"runtime-jen",b:"runtime-gyp",type:"동거인",temporalStatus:"current",stayTogether:true}};
 runtimeState.characterViews={"runtime-jen":{"runtime-gyp":world.characterViews.jen.gyp},"runtime-gyp":{"runtime-jen":world.characterViews.gyp.jen}};
 runtimeState.routines={"runtime-jen":[],"runtime-gyp":[]};runtimeState.monthlyRoutines={"runtime-jen":[],"runtime-gyp":[]};runtimeState.dailyPlans={};runtimeState.interactions=[];runtimeState.scheduledChoices=[];
-const now=new Date(),dayKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`,minute=now.getHours()*60+now.getMinutes();
+const now=new Date("2026-09-08T15:00:00"),dayKey=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`,minute=now.getHours()*60+now.getMinutes();
 timeline(runtimeState.characters["runtime-jen"],now);timeline(runtimeState.characters["runtime-gyp"],now);
 for(const id of runtimeState.order){
   const character=runtimeState.characters[id],key=Object.keys(character.days||{}).find(value=>value===dayKey)||Object.keys(character.days||{})[0];
@@ -78,12 +78,15 @@ assert.ok(jenEvent.groupInteraction&&gypEvent.groupInteraction,"한쪽이 대화
 assert.equal(jenEvent.interactionId,gypEvent.interactionId,"두 사람의 현재 장면이 같은 사건 ID를 사용한다");
 assert.equal(jenEvent.withId,"runtime-gyp");assert.equal(gypEvent.withId,"runtime-jen");
 assert.ok(/집소필라/.test(jenEvent.title)&&/젠할린/.test(gypEvent.title),"각자 관점의 제목에도 실제 상대를 표시한다");
-assert.match(jenEvent.title,/퉁명스럽게/,"복합 감정을 가진 쪽의 실제 행동을 제목에 드러낸다");
-assert.doesNotMatch(gypEvent.title,/퉁명스럽게/,"상대에게 같은 감정과 행동을 잘못 복사하지 않는다");
+assert.match(jenEvent.title,/차갑게/,"복합 감정을 가진 쪽의 실제 행동을 제목에 드러낸다");
+assert.doesNotMatch(gypEvent.title,/차갑게/,"상대에게 같은 감정과 행동을 잘못 복사하지 않는다");
 assert.ok(!/각자 메모를 정리/.test(gypEvent.title),"대화 상대가 동시에 별개의 행동을 표시하지 않는다");
 assert.equal(characterMood(runtimeJen,jenEvent,runtimeState).label,"복잡한 끌림");
 assert.equal(characterMood(runtimeGyp,gypEvent,runtimeState).label,"편안함","같은 사건이어도 방향별 관계 설정에 따라 서로 다른 감정을 계산한다");
 
+assert.doesNotMatch(gypEvent.desc,/집소필라의 대답을 기다|서두르지 않고 걷|다른 일을 시작하지/);
+assert.doesNotMatch(gypEvent.title,/젠할린 · 집소필라/);
+assert.match(jenEvent.desc,/차가운 말투/);
 const soloMinute=Math.max(0,minute-1);
 const runtimeDayKey=Object.keys(runtimeState.characters["runtime-jen"].days)[0];
 runtimeState.characters["runtime-jen"].days[runtimeDayKey].entries=[{date:runtimeDayKey,minute:soloMinute,time:"",title:"거실에서 차를 마시는 중",desc:"거실 탁자에서 차를 천천히 마시고 있어요.",home:true,visitHomeId:"shared-home",room:"living",townId:"",mood:"차분"}];
@@ -100,9 +103,7 @@ assert.doesNotMatch(simulation,/청춘을\(를\) 골라 기분을 바꾸는 중|
 assert.match(simulation,/\$\{likedThing\} 장르의 책을 골라 읽는 중/);
 assert.match(simulation,/synchronizedCounterpart/);
 assert.match(simulation,/coLocatedIds:coLocatedCharacterIds/);
-assert.match(gradle,/versionCode\s+(?:202|203|204|205|206|208|209)/);
-assert.match(gradle,/versionName\s+"1\.0\.(?:18[89]|19[0-4])"/);
-assert.ok(/drawer-village-v(?:20260902-(?:relationship-emotion-202|language-scene-203|font-204|cognitive-205)|20260903-(?:sync-home-character-206|food-image-dev-208)|20260904-home-editor-dev-209)/.test(worker));
-assert.ok(index.includes("20260904home209"));
+assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1])>=209);
+assert.ok(index.includes("20260909dev293"));
 
-console.log("v1.0.188 / 202 관계 동기화·복합 감정·구체 행동 로그 검증 완료");
+console.log("관계 동기화·복합 감정·구체 행동 로그 검증 완료");

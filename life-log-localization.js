@@ -1,3 +1,4 @@
+import {drinkLogCopy} from "./drink-log.js?v=20260909dev293";
 const hangul=/[가-힣]/;
 const japanese=/[\u3040-\u30ff\u31f0-\u31ff]/;
 const latinWord=/[A-Za-z]{3,}/;
@@ -57,6 +58,12 @@ const actionCopy={
 // detailed Korean copy intact in Korean, and provide a localized semantic
 // fallback for every remaining generated entry in English and Japanese.
 export function localizeLifeLog(entry,language,world,characterId=""){
+  if(entry.mentorScene&&language!=="ko"){
+    const name=companionFor(entry,world,characterId)?.name||"",teaching=entry.mentorTeaching;
+    const [title,desc]=language==="ja"?(teaching?[`${name}に教えた内容を振り返っているところ`,`${name}の説明を聞き、理解できた点ともう一度練習する点を確認しました。`]:[`${name}に習った内容を質問しているところ`,`${name}に行き詰まった箇所を見せ、説明を聞いてもう一度試しました。`]):(teaching?[`Reviewing a lesson with ${name}`,`They listened to ${name}'s explanation and identified what was understood and what needed more practice.`]:[`Asking ${name} about a lesson`,`They showed ${name} where they got stuck and tried again with guidance.`]);
+    return {...entry,title,desc,displayLanguage:language};
+  }
+  if(entry.drinkExperience)return {...entry,...drinkLogCopy(entry.drinkExperience,language,companionFor(entry,world,characterId)?.name||""),displayLanguage:language};
   const target=["ko","en","ja"].includes(language)?language:"ko",names=entityNames(world),title=String(entry.title||""),desc=String(entry.desc||"");
   const canonicalTitle=String(entry.canonicalTitleKo||""),canonicalDesc=String(entry.canonicalDescKo||""),sourceCopy=`${canonicalTitle||title} ${canonicalDesc||desc}`;
   const sourceLanguage=entry.sourceLanguage||detectedLanguage(sourceCopy,names);

@@ -225,7 +225,7 @@ html[data-visual-theme="noir-rain"] #app :is(.panel,.setting-card,.native-status
     linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
 }
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html:is(
     [data-visual-theme="ruined-rose"],
     [data-visual-theme="healing-glasshouse"],

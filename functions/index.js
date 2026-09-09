@@ -23,6 +23,7 @@ const WEB_PRODUCTS=Object.freeze({
 });
 const TOSS_MID="drawerq8ht";
 const TOSS_SECRET_KEY=defineSecret("TOSS_SECRET_KEY");
+const APPLE_IAP_PRIVATE_KEY=defineSecret("APPLE_IAP_PRIVATE_KEY");
 const WEB_GAME_PAYMENT_LIMIT=50000;
 
 function tossCredentials(){
@@ -45,7 +46,9 @@ app.use((request,response,next)=>{
 async function signedInUser(request){
   const authorization=String(request.get("Authorization")||"");
   if(!authorization.startsWith("Bearer "))throw Object.assign(new Error("Google 로그인이 필요합니다."),{status:401});
-  return getAuth().verifyIdToken(authorization.slice(7),true);
+  const identity=await getAuth().verifyIdToken(authorization.slice(7),true);
+  if((await db.collection('deletedAccounts').doc(identity.uid).get()).exists)throw Object.assign(new Error('Account deletion in progress'),{status:403});
+  return identity;
 }
 
 async function playPurchase(productId,purchaseToken){
@@ -297,4 +300,47 @@ app.post("/play-billing/verify",async(request,response)=>{
   }
 });
 
+const appleApp=express();
+appleApp.use(express.json({limit:"32kb"}));
+appleApp.use((req,res,next)=>{res.set("Access-Control-Allow-Origin",req.get("Origin")||"*");res.set("Vary","Origin");res.set("Access-Control-Allow-Headers","Authorization, Content-Type");res.set("Access-Control-Allow-Methods","POST, OPTIONS");if(req.method==="OPTIONS")return res.status(204).end();next()});
+require('./apple-billing').installAppleBilling(appleApp,{db,signedInUser,nextEntitlements,serverTimestamp:()=>FieldValue.serverTimestamp(),privateKey:()=>APPLE_IAP_PRIVATE_KEY.value()});
+
 exports.api=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[TOSS_SECRET_KEY]},app);
+
+exports.appleBillingApi=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[APPLE_IAP_PRIVATE_KEY]},appleApp);
+
+const sharedApp=express();
+sharedApp.use(express.json({limit:'2mb'}));
+sharedApp.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.set('Access-Control-Allow-Headers','Authorization, Content-Type');res.set('Access-Control-Allow-Methods','POST, OPTIONS');if(req.method==='OPTIONS')return res.status(204).end();next()});
+let sharedEngine;
+const sharedService=require('./shared-town').createSharedTownService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
+const relationService=require('./shared-relations').createService({db,engine:async()=>{sharedEngine??=import('./runtime/server-life.mjs');return (await sharedEngine).advanceSharedLife}});
+Object.assign(sharedService,relationService,require('./mail-targets')({db}),require('./character-codes')({db}),require('./world-packages')({db}),{removeMember:require('./remove-member')({db}),deleteGroup:require('./delete-group')({db}),createResident:require('./create-resident')({db}),saveResident:require('./save-resident')({db}),readSlotUsage:require('./account-slots').read(db),readMailbox:require('./account-mailbox')({db})});
+for(const action of ['publishWorldCode','readWorldCode','revokeWorldCode','migrateTown','removeMember','deleteGroup','createResident','saveResident','readSlotUsage','readMailTargets','readMoveCandidates','saveMemberGroups','readMailbox','publishCharacterCode','readCharacterCode','revokeCharacterCode','advance','saveGroupPresentation','saveBuilding','saveTownEdit','saveTown','saveHomePlacement','saveHomeLayout','saveHomeMember','saveDecoration','publishCatalog','sendMail','requestResidence','propose','respond','saveView','registerDevice','unregisterDevice'])sharedApp.post('/'+action,async(req,res)=>{
+  try{const identity=await signedInUser(req);res.json(await sharedService[action](identity.uid,req.body||{}))}
+  catch(error){const status=Number(error.status);res.status(status>=400&&status<600?status:503).json({message:error.status?error.message:'groups/server-error'})}
+});
+exports.sharedTownApi=onRequest({region:'asia-northeast3',timeoutSeconds:60,memory:'512MiB',maxInstances:4,concurrency:4},sharedApp);
+
+exports.relationshipNotification=require('./shared-notifications')({db});
+
+// Expired mail is hidden immediately by clients and removed daily on the server.
+exports.expireVillageMail=require('firebase-functions/v2/scheduler').onSchedule({schedule:'0 3 * * *',timeZone:'Asia/Seoul',region:'asia-northeast3',timeoutSeconds:540,memory:'256MiB'},async()=>{
+  const pendingGroups=await db.collection('deletedGroups').where('completedAt','==',0).limit(10).get();
+  for(const item of pendingGroups.docs)await require('./delete-group')({db})(item.data().ownerUid,{groupId:item.id,confirm:true});
+ const {deleteExpired}=require('./mail-retention');const cutoff=Date.now()-30*86400000;let cursor;
+ while(true){let q=db.collection('groups').orderBy('__name__').limit(100);if(cursor)q=q.startAfter(cursor);const page=await q.get();if(page.empty)break;
+ for(const group of page.docs)for(const kind of ['mail','proposals','relationshipRequests','mailDispatches'])await deleteExpired(group.ref.collection(kind),cutoff);
+ cursor=page.docs.at(-1);if(page.size<100)break;}
+ await deleteExpired(db.collection('notificationOutbox'),cutoff);
+});
+
+const accountApp=express();
+accountApp.use(express.json({limit:'2kb'}));
+accountApp.use((req,res,next)=>{res.set('Access-Control-Allow-Origin','*');res.set('Access-Control-Allow-Headers','Authorization, Content-Type');res.set('Access-Control-Allow-Methods','POST, OPTIONS');if(req.method==='OPTIONS')return res.status(204).end();next()});
+const deletionService=require('./account-deletion').createAccountDeletion({db,auth:getAuth(),bucket:require('firebase-admin/storage').getStorage().bucket('lifelog-98fff.firebasestorage.app')});
+for(const action of ['preview','delete'])accountApp.post('/'+action,async(req,res)=>{
+ try{const token=String(req.get('Authorization')||'').replace(/^Bearer /,'');const identity=await getAuth().verifyIdToken(token,true);res.json(action==='preview'?await deletionService.preview(identity.uid):await deletionService.remove(identity,req.body||{}))}
+ catch(error){res.status(error.status||401).json({code:error.status?error.message:'account-deletion-failed'})}
+});
+exports.accountDeletionApi=onRequest({region:'asia-northeast3',timeoutSeconds:540,memory:'512MiB',maxInstances:2,concurrency:1},accountApp);

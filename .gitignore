@@ -38,4 +38,15 @@ ios/build/
 *.mobileprovision
 AuthKey_*.p8
 
-qa-output-264/
+# Local deployment configuration and CLI diagnostics
+functions/.env*
+firebase-debug*.log
+
+functions/runtime/
+qa-output-263/
+
+qa-output-265/
+
+qa-store-images/
+qa-apk-*/
+qa-output-266/

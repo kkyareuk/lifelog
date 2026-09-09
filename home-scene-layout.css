@@ -3,6 +3,7 @@
    competing LD size or pair-position rules. */
 
 .native-app .native-character-stage.visual-mode-ld{
+  --scene-pair-shift:23%;
   position:relative!important;
   display:block!important;
   margin:0!important;
@@ -129,7 +130,7 @@
 
 /* Mobile: the art owns one viewport-height frame behind the interface. A pair
    duplicates that exact frame and changes only the two X centers. */
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (orientation:portrait){
   html.native-app[data-active-tab="observe"] .native-observe-home{--scene-frame-top:8.62dvh}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage.visual-mode-ld{
     --scene-frame-top:8.62dvh;
@@ -414,12 +415,16 @@ html.native-app[data-active-tab="character"] .mobile-character-full-settings>mai
 .home-layout-save-note{justify-self:center;color:var(--muted)}
 .home-layout-save-bar{position:sticky;z-index:60;bottom:-12px;display:grid;width:100%;padding:10px 0 max(12px,env(safe-area-inset-bottom));background:linear-gradient(180deg,transparent,#f6efe4 24%)}
 .home-layout-save-bar button{width:100%;min-height:48px;font-weight:800;touch-action:manipulation}
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (orientation:portrait){
   .character-home-layout-editor{padding:12px!important;border-radius:18px!important}
   .character-home-layout-heading{display:grid}.home-layout-mode-buttons{justify-content:stretch}.home-layout-mode-buttons button{flex:1 1 120px}
   .home-layout-preview{width:min(100%,360px);border-radius:22px}
   .home-layout-adjustments{grid-template-columns:minmax(0,1fr)}
 }
+html.native-app[data-animation-intensity="reduced"] body #app :is(.scene-ld-art,.native-main-character,.native-scene-lineup-person,.home-person-visual,.town-traveler-visual),
+html.native-app[data-animation-intensity="off"] body #app :is(.scene-ld-art,.native-main-character,.native-scene-lineup-person,.home-person-visual,.town-traveler-visual,.native-scene-atmosphere,.native-scene-effects,.native-scene-effects *, .native-character-stage::before,.native-character-stage::after){animation:none!important;will-change:auto!important}
+html.native-app[data-animation-intensity="reduced"] body #app .native-scene-atmosphere{animation:none!important;will-change:auto!important}
+html.native-app[data-animation-intensity="off"] body #app :is(.native-scene-effects,.native-scene-atmosphere){display:none!important}
 @media(prefers-reduced-motion:reduce){
   .native-app .native-character-stage.visual-mode-ld,
   .native-app .native-character-stage.visual-mode-ld .scene-ld-art,

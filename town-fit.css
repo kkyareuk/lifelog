@@ -7,6 +7,8 @@
   --town-building-height:252px;
 }
 
+.multiplayer-town{--town-building-width:126px;--town-building-height:139px}
+
 /* Placement tools are shared by phone and tablet, not a phone-only media rule. */
 .native-app[data-active-tab="town"] .town-placement-toolbar{position:fixed;z-index:240;left:12px;right:12px;bottom:max(12px,env(safe-area-inset-bottom));display:grid;gap:8px;padding:10px;border:2px solid #fff8;border-radius:21px;background:#172237eb;color:#fff;box-shadow:0 12px 32px #0008;backdrop-filter:blur(8px)}
 .native-app[data-active-tab="town"] .town-placement-toolbar>b{overflow:hidden;padding:0 5px;font-size:15px;text-overflow:ellipsis;white-space:nowrap}.native-app[data-active-tab="town"] .town-placement-toolbar>div{display:flex;gap:6px;padding-bottom:2px;overflow-x:auto;scrollbar-width:none}.native-app[data-active-tab="town"] .town-placement-toolbar>div::-webkit-scrollbar{display:none}
@@ -47,7 +49,7 @@
 }
 html.native-app[data-active-tab="town"] .town-map-scroll{scroll-behavior:auto!important}
 html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label{
-  transform:translate(-50%,var(--town-label-offset,129px))!important;
+  transform:translate(-50%,calc(var(--town-building-height) * var(--town-label-scale,1) / 2 + 3px))!important;
 }
 html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{display:none!important}
 :is(.town-map-scroll,.standard-observe-view .viewport)>.world{
@@ -225,7 +227,7 @@ html.native-app[data-active-tab="town"] .town-map-scroll .map-place-label small{
   transform:translate(30px,-96px);
 }
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (orientation:portrait){
   html.native-app[data-active-tab="town"] .town-map-scroll{
     position:absolute!important;
     inset:0!important;

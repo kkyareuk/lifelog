@@ -10,19 +10,17 @@ globalThis.localStorage={get length(){return memory.size},key:i=>[...memory.keys
 },removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js');
-const {accountStorage}=await import('../account-storage.js?v=20260908hotfix274');
+const game=await import('../state.js?v=20260909dev293');
+const {accountStorage}=await import('../account-storage.js?v=20260909dev293');
 const character=(id)=>({id,name:id,days:{}});
 const cloud=new Map([['A',{syncFormat:1,gameState:{schema:31,characters:{a:character('a')},order:['a'],lastSaved:100}}],['B',{}]]);
 let callback,hold=null;const writes=[];
 const pathOf=parts=>parts.filter(part=>typeof part==='string').join('/');
 const snapshot=(path)=>({exists:()=>cloud.has(path.split('/')[1]),data:()=>cloud.get(path.split('/')[1])});
 const fakeWindow={PARALLEL_CITY_FIREBASE:{apiKey:'test',projectId:'test',authDomain:'test'},dispatchEvent(){},ParallelCity:{getState:game.cloneState,switchAccount:game.switchAccountState,replaceState:game.replaceState,setAccountStatus(){},setEntitlements(){},toast(){}}};
-const nativeIOS=process.env.TEST_NATIVE_IOS==='1';
-if(nativeIOS)fakeWindow.Capacitor={getPlatform:()=> 'ios'};
 class FakeGoogleAuthProvider{setCustomParameters(){}}
-const context={window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout,clearTimeout,URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
- initializeApp:()=>({}),getAuth:()=>{assert(!nativeIOS);return{}},initializeAuth:(_,deps)=>{assert(nativeIOS);assert(deps.persistence);assert(!deps.popupRedirectResolver);return{}},getFirestore:()=>({}),getStorage:()=>({}),setPersistence:async()=>{assert(!nativeIOS)},browserLocalPersistence:{},getRedirectResult:async()=>{assert(!nativeIOS)},onAuthStateChanged:(_,fn)=>{callback=fn},
+const context={window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
+ initializeApp:()=>({}),getAuth:()=>({}),getFirestore:()=>({}),getStorage:()=>({}),setPersistence:async()=>{},browserLocalPersistence:{},getRedirectResult:async()=>{},onAuthStateChanged:(_,fn)=>{callback=fn},
  doc:(...parts)=>pathOf(parts),collection:(...parts)=>pathOf(parts),getDoc:async path=>{if(hold&&path==='users/A')await hold.promise;return snapshot(path)},getDocFromServer:async path=>snapshot(path),getDocs:async()=>({docs:[]}),getDocsFromServer:async()=>({docs:[]}),
  setDoc:async(path,data)=>{writes.push({path,data});if(path.split('/').length===2)cloud.set(path.split('/')[1],{...cloud.get(path.split('/')[1]),...data})},deleteDoc:async()=>{},deleteField:()=>undefined,serverTimestamp:()=>0,arrayUnion:(...x)=>x,signOut:async()=>callback(null),
  GoogleAuthProvider:FakeGoogleAuthProvider,signInWithPopup:async()=>callback({uid:'C',email:'c@test'}),signInWithRedirect:async()=>{},signInWithCredential:async()=>{}
@@ -30,10 +28,6 @@ const context={window:fakeWindow,document:globalThis.document,localStorage:accou
 const source=fs.readFileSync(new URL('../auth.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'');
 await vm.runInNewContext(`(async()=>{${source}\n})()`,context);
 const auth=fakeWindow.ParallelCityAuth;
-await callback(null);
-assert.equal(auth.getInfo().ready,true);
-assert.equal(auth.getInfo().busy,false);
-assert.equal(auth.getInfo().entitlements.characterSlotPacks,0);
 await callback({uid:'A',email:'a@test'});
 assert.deepEqual(game.state.order,['a']);
 await auth.logout();

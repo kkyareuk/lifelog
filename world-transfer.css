@@ -1,0 +1,10 @@
+.world-transfer-dialog{box-sizing:border-box;width:min(92vw,560px);max-height:88dvh;overflow:auto;padding:24px;border:2px solid #9a8062;border-radius:22px;background:#fff8eb;color:#34281f;overscroll-behavior:contain;touch-action:pan-y}
+.world-transfer-dialog::backdrop{background:#21170db3}
+.world-transfer-dialog h2{font-size:1.4rem;margin:0 0 14px}
+.world-transfer-dialog h3{font-size:1.15rem}
+.world-transfer-dialog p{line-height:1.6;overflow-wrap:anywhere}
+.world-transfer-dialog button,.world-transfer-dialog input,.world-transfer-dialog select{box-sizing:border-box;width:100%;min-height:44px;margin:6px 0;padding:10px 14px;border:1px solid #b29a7a;border-radius:12px;font:inherit;touch-action:pan-y}
+.world-transfer-dialog button{background:#eee0c5;color:inherit;white-space:normal}
+.world-transfer-dialog button:disabled{opacity:.5}
+.world-transfer-dialog section{border-top:1px solid #d6c5aa;margin-top:12px}
+.world-transfer-dialog label{display:block;margin:12px 0}

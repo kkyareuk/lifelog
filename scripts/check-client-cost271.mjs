@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';import vm from 'node:vm';
+const auth=await readFile('auth.js','utf8'),source=auth.slice(auth.indexOf('function watchActiveGroup('),auth.indexOf('async function refreshGroups('));
+let starts=0,stops=0,emits=0;
+const c={user:{uid:'a'},groupSubscriptionKey:'',groupUnsubscribers:[],groupState:{activeGroupId:'',groups:[]},groupDetailActive:false,readGroupContext:()=>({}),writeGroupContext(){},groupRefs:()=>({}),query:()=>({}),collection:()=>({}),where:()=>({}),db:{},emitGroupState:()=>emits++,onSnapshot:()=>{starts++;return()=>stops++},stopGroupSubscriptions:()=>{c.groupUnsubscribers.forEach(f=>f());c.groupUnsubscribers=[];c.groupSubscriptionKey=''}};
+vm.createContext(c);vm.runInContext(source,c);c.watchActiveGroup('g');const count=starts;assert.equal(count,9);for(let i=0;i<10;i++){c.setGroupDetailActive(i%2===0);c.watchActiveGroup('g')}assert.equal(starts,count);assert.equal(stops,0);c.watchActiveGroup('h');assert.equal(starts,count*2);assert.equal(stops,count);c.user={uid:'b'};c.watchActiveGroup('h');assert.equal(starts,count*3);c.groupState.error='permission-denied';c.watchActiveGroup('h');assert.equal(starts,count*4);
+console.log(`PASS ${count} listeners reused through 10 detail/refresh transitions, restarted on group/account change or error`);
+const advance=auth.slice(auth.indexOf('async function advanceSharedLife('),auth.indexOf('async function addGroupResident('));let requests=0;
+const ac={groupState:{activeGroupId:'g',group:{lifeUpdatedAt:Date.now()}},advancingShared:false,lastSharedAdvance:new Map(),sharedTownRequest:async()=>{requests++;return {updated:true}}};vm.createContext(ac);vm.runInContext(advance,ac);await ac.advanceSharedLife();assert.equal(requests,0);ac.groupState.group.lifeUpdatedAt=0;await Promise.all([ac.advanceSharedLife(),ac.advanceSharedLife()]);assert.equal(requests,1);await ac.advanceSharedLife(true);assert.equal(requests,2);ac.sharedTownRequest=async()=>{throw Error('offline')};await assert.rejects(ac.advanceSharedLife(true));assert.equal(ac.lastSharedAdvance.has('g'),false);
+console.log('PASS fresh shared heartbeat avoids API call; commands/forced refresh and failure retry retained');
+
+ac.groupState.group={lifeUpdatedAt:Date.now()-90000,lifeNextAt:Date.now()+120000};ac.lastSharedAdvance.clear();const before=requests;await ac.advanceSharedLife();assert.equal(requests,before);console.log('PASS no server advance before the next scene boundary');

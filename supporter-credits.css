@@ -1,0 +1,27 @@
+.supporter-dialog{box-sizing:border-box;width:min(94vw,680px);max-height:90dvh;padding:0;border:1px solid #b6a38a;border-radius:24px;background:#fff9ed;color:#44372e;overflow:hidden;box-shadow:0 20px 80px #0005}
+.supporter-dialog::backdrop{background:#17110db0}
+.supporter-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;border-bottom:1px solid #b6a38a55}
+.supporter-dialog h2{font-size:22px;margin:0}.supporter-body{box-sizing:border-box;padding:20px 24px;max-height:calc(90dvh - 80px);overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.supporter-dialog button,.supporter-dialog input,.supporter-dialog select,.supporter-dialog textarea{box-sizing:border-box;font:inherit;max-width:100%;min-width:0;touch-action:pan-y}
+.supporter-dialog button{min-height:44px;padding:10px 16px;border:1px solid #b6a38a;border-radius:12px;background:#f1e7d6;color:inherit;cursor:pointer}
+.supporter-dialog input:not([type=checkbox]),.supporter-dialog select,.supporter-dialog textarea{width:100%;min-height:44px;padding:8px;border:1px solid #b6a38a;border-radius:8px;background:#fff;color:#392d25}
+.supporter-dialog :disabled{opacity:.5;cursor:default}.supporter-note{font-size:13px;line-height:1.65;color:inherit;opacity:.8}.supporter-empty{text-align:center;padding:40px 10px}
+.supporter-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.supporter-fields label{display:grid;gap:8px;align-content:start;font-size:14px}.supporter-actions{display:flex;flex-wrap:wrap;gap:8px}.supporter-stage{display:flex;align-items:center;justify-content:center;min-height:130px;padding:12px;overflow:hidden}.supporter-featured{text-align:center;padding:20px 0}.supporter-list{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:18px 24px;padding:24px 0}
+.supporter-name-wrap{position:relative;display:inline-block;max-width:100%;padding:16px 12px;isolation:isolate;line-height:1.5;vertical-align:middle}
+.supporter-name{display:inline-block;position:relative;z-index:1;font-size:var(--supporter-size,24px);font-weight:700;color:var(--supporter-color);overflow-wrap:anywhere;text-align:center;line-height:1.5}
+.supporter-name-wrap[data-font=book] .supporter-name{font-family:Georgia,'Noto Serif KR',serif}.supporter-name-wrap[data-font=round] .supporter-name{font-family:'Arial Rounded MT Bold',system-ui,sans-serif;letter-spacing:.04em}
+.supporter-name-wrap[data-effect=gradient] .supporter-name,.supporter-name-wrap[data-effect=shine] .supporter-name{background:linear-gradient(100deg,var(--supporter-color),var(--supporter-color2),var(--supporter-color));background-size:250% 100%;background-clip:text;-webkit-background-clip:text;color:transparent}
+.supporter-name-wrap[data-effect=shine] .supporter-name{background-image:linear-gradient(110deg,var(--supporter-color) 25%,#fff 48%,var(--supporter-color2) 62%,var(--supporter-color) 80%)}
+.supporter-name-wrap[data-effect=neon] .supporter-name{text-shadow:0 0 7px var(--supporter-color),0 0 20px var(--supporter-color2)}
+.supporter-name-wrap[data-effect=comic] .supporter-name{-webkit-text-stroke:.7px var(--supporter-color2);text-shadow:2px 2px var(--supporter-color2)}
+.supporter-name-wrap[data-effect=pop] .supporter-name{text-shadow:1px 1px var(--supporter-color2),2px 2px var(--supporter-color2),3px 3px var(--supporter-color2)}
+.supporter-particle{position:absolute;pointer-events:none;left:var(--x);top:var(--y);width:4px;height:4px;border-radius:50%;background:var(--supporter-color2);box-shadow:0 0 10px var(--supporter-color2);opacity:.4;z-index:0}
+.supporter-name-wrap[data-background=starlight] .supporter-particle{border-radius:0;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);width:9px;height:9px}
+.supporter-name-wrap[data-motion=true] .supporter-particle{animation:supporter-fly var(--duration) ease-in-out var(--delay) infinite alternate}
+.supporter-name-wrap[data-motion=true]:is([data-effect=gradient],[data-effect=shine]) .supporter-name{animation:supporter-flow 4s linear infinite}
+.supporter-name-wrap[data-motion=true][data-effect=neon] .supporter-name{animation:supporter-glow 2.8s ease-in-out infinite}
+.supporter-name-wrap[data-motion=true]:is([data-effect=comic],[data-effect=pop]) .supporter-name{animation:supporter-bob 3s ease-in-out infinite}
+@keyframes supporter-flow{to{background-position:250% 0}}@keyframes supporter-glow{50%{text-shadow:0 0 3px var(--supporter-color),0 0 9px var(--supporter-color2)}}@keyframes supporter-bob{50%{transform:translateY(-3px) rotate(-1deg)}}@keyframes supporter-fly{0%{transform:translate(-8px,12px);opacity:.15}50%{opacity:.85}100%{transform:translate(10px,-14px);opacity:.35}}
+@media(max-width:440px){.supporter-fields{grid-template-columns:1fr}.supporter-body{padding:16px}.supporter-dialog>header{padding:12px 16px}.supporter-dialog h2{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.supporter-dialog *{animation:none!important}}
+.supporter-dialog[data-page-hidden=true] *{animation-play-state:paused!important}

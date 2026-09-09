@@ -1,5 +1,17 @@
-const CACHE_VERSION="drawer-village-v20260908-hotfix-274";
+const CACHE_VERSION="drawer-village-v20260909-dev-291";
 const CORE=[
+  './gossip-reaction.js?v=20260909dev293',
+  './character-transfers.js?v=20260909dev293',
+  './proposal-mode.js?v=20260909dev293',
+  './background-actions.js?v=20260909dev293',
+  './shared-characters.js?v=20260909dev293',
+  './shared-residents.js?v=20260909dev293',
+  './bed-perspective.js?v=20260909dev293',
+  './scene-context.js?v=20260909dev293',
+  './user-profile.js?v=20260909dev293',
+  './assets/furniture/couple-bed/couple-bed-side-base.svg',
+  './assets/furniture/couple-bed/couple-bed-side-quilt.svg',
+  './assets/furniture/couple-bed/couple-bed-side-footboard.svg',
   "./",
   "./index.html",
   "./login.html",
@@ -53,7 +65,7 @@ const CORE=[
   "./character-book.css",
   "./shop.css",
   "./assets/shop/drawer-shop-wood.jpg",
-  "./assets/shop/drawer-shop-seller.png",
+  "./assets/shop/drawer-shop-nerine.png",
   "./assets/shop/character-slots-5.png",
   "./fonts/Ownglyph_Corncorn.ttf",
   "./fonts/ChangwonDangamRound-Regular.woff2",

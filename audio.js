@@ -1,4 +1,4 @@
-import {walkingGaitForElement} from "./walking-gaits.js?v=20260908hotfix274";
+import {walkingGaitForElement} from "./walking-gaits.js?v=20260909dev293";
 
 const FOOTSTEP_URLS={
   walk:"./assets/audio/shoe-walking.m4a?v=20260826independent155",
@@ -6,7 +6,7 @@ const FOOTSTEP_URLS={
 };
 const MAX_MOVEMENT_ACTORS=2;
 const RUNNING_SELECTOR=[".town-traveler.is-jogging",".town-traveler.is-scene-running",".home-life-running",".native-character-stage.is-scene-jogging"].join(",");
-const WALKING_SELECTOR=[".home-life-walking",".town-traveler.is-roaming",".town-traveler.is-transit",".town-traveler.is-village-walk",".native-character-stage.is-scene-moving"].join(",");
+const WALKING_SELECTOR=[".meeting-walker:not(.is-stationary)",".home-life-walking",".town-traveler.is-roaming",".town-traveler.is-transit",".town-traveler.is-village-walk",".native-character-stage.is-scene-moving"].join(",");
 const channels=new Map();
 let previewAudio=null;
 let latestState=null;

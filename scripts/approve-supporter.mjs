@@ -1,0 +1,16 @@
+import {readFile,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {approveSupporterRequest} from '../supporter-model.js';
+const [input,amount,id,output]=process.argv.slice(2);
+if(!input||!amount||!id||!output)throw Error('Usage: node scripts/approve-supporter.mjs request.json VERIFIED_CUMULATIVE_KRW public-entry-id output.js');
+const source=resolve('supporter-data.js'),destination=resolve(output);
+if(source===destination)throw Error('Write a review file first, then review and replace supporter-data.js');
+const request=JSON.parse(await readFile(input,'utf8'));
+const {SUPPORTER_CREDITS}=await import(pathToFileURL(source));
+const entry=approveSupporterRequest(request,Number(amount),id);
+const entries=SUPPORTER_CREDITS.entries.filter(e=>e.id!==entry.id);
+if(entry.visibility!=='hidden')entries.push(entry);
+const data={version:1,updatedAt:new Date().toISOString().slice(0,10),entries};
+await writeFile(destination,'// Approved public display data only. No receipts, account IDs or payment amounts.\nexport const SUPPORTER_CREDITS='+JSON.stringify(data,null,2)+';\n',{flag:'wx'});
+console.log('Created review file with '+entries.length+' public entries. The requested preview amount was not used.');

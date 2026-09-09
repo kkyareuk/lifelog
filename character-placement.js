@@ -5,8 +5,8 @@ export function characterPlacement(character,relationships={}){
   const old=Object.values(relationships).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0)).find(r=>r.animationPlacement?.[character?.id]&&r.animationPlacement[character.id]!=='random');
   return old?.animationPlacement[character?.id]||'random';
 }
-export function orderAnimationCharacters(ids,characters,relationships={},seed=''){
+export function orderAnimationCharacters(ids,characters,relationships={},seed='',preserveOrder=false){
   const unique=[...new Set(ids)].filter(id=>characters[id]),weights={'always-left':-20,'prefer-left':-10,random:0,'prefer-right':10,'always-right':20};
   const rank=id=>{let n=2166136261;for(const c of seed+id)n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0};
-  return unique.slice().sort((a,b)=>{const left=characterPlacement(characters[a],relationships),right=characterPlacement(characters[b],relationships);return weights[left]-weights[right]||(left==='random'&&right==='random'?rank(a)-rank(b):unique.indexOf(a)-unique.indexOf(b))});
+  return unique.slice().sort((a,b)=>{const left=characterPlacement(characters[a],relationships),right=characterPlacement(characters[b],relationships);return weights[left]-weights[right]||(!preserveOrder&&left==='random'&&right==='random'?rank(a)-rank(b):unique.indexOf(a)-unique.indexOf(b))});
 }

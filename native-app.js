@@ -233,19 +233,6 @@ if(isNative){
     else App.minimizeApp();
   });
 
-  // The relationship page uses a full-height composited canvas. Handle its
-  // visible header button before that canvas can swallow or retarget a tap.
-  const handleNativeHeaderBack=event=>{
-    const path=typeof event.composedPath==="function"?event.composedPath():[];
-    const button=path.find(node=>node?.matches?.(".native-sub-header [data-tab='observe']"))||event.target?.closest?.(".native-sub-header [data-tab='observe']");
-    if(!button)return;
-    event.preventDefault();
-    event.stopPropagation();
-    window.DrawerVillageNavigation?.back?.();
-  };
-  document.addEventListener("pointerdown",handleNativeHeaderBack,true);
-  document.addEventListener("touchstart",handleNativeHeaderBack,{capture:true,passive:false});
-
   const showNetworkState=connected=>{
     let banner=document.querySelector("#native-network-banner");
     if(connected){banner?.remove();return}

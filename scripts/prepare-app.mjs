@@ -24,8 +24,9 @@ const excludedAndroidAssets=new Set([
 ]);
 const excludedAndroidAssetPrefixes=[];
 const includedFiles=new Set([
-  "dictionary.css","home-editor-ui.css",
-  "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","character-code.js","auth.js","config.js",
+  "supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
+  "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css",
+  "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",
   "native-app.js","apple-billing-client.js","payment.html","payment-success.html","payment-fail.html",
   "privacy.html","terms.html","simulation.js","state.js","local-media.js","speech-styles.js","character-notifications.js","achievements.js","sw.js","views.js",
@@ -131,7 +132,7 @@ await copyModuleClosure();
 // The local-only iOS preview must not wait for external Firebase module loads
 // or restore an account that this preview cannot sign into. Android/web retain
 // the original auth implementation; no saved data or storage scope is changed.
-// Production iOS keeps the authenticated account flow.
+// iOS now uses the same authenticated account flow as Android/web.
 
 // The character book used to be a separately requested stylesheet. Because it
 // was missing from the manually maintained Android asset list, WebView rendered
@@ -165,7 +166,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260908hotfix274";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260909dev293";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

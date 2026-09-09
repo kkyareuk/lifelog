@@ -1,4 +1,4 @@
-import {observedMoodEvents} from "./mood-event-causes.js?v=20260908hotfix274";
+import {observedMoodEvents} from "./mood-event-causes.js?v=20260909dev293";
 // Mood is derived from the scene. Opening a screen never accumulates or mutates it.
 const goodTown=new Set(['매우 좋은 평판','좋은 평판','조용하고 평화로움','살기 좋음','주민들이 친절함','외지인을 환영함','자연 경관이 아름다움','의료·복지가 좋음']);
 const badTown=new Set(['나쁜 평판','매우 나쁜 평판','치안이 불안함','사건 사고가 잦음','환경 오염이 심함','폐쇄적인 곳']);
@@ -103,6 +103,7 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const {town,place}=moodContext(character,entry,world),reasons=[],supports=[],traits=traitsOf(character),copy=`${entry?.baseTitle||entry?.title||''} ${entry?.desc||''}`,baseline=character.emotionalBaseline||'',volatility=character.moodVolatility||'상황에 따라 달라짐',positiveResponse=character.positiveMoodResponse||'',stressResponse=character.stressMoodResponse||'',recoveryStyle=character.moodRecoveryStyle||'',angerResponse=character.angerResponse||'차분히 이유를 확인함',flirtResponse=character.flirtResponse||'알아도 모른 척함',emotionalSensitivity=character.emotionalSensitivity||'보통',emotionalContagion=character.emotionalContagion||'상황에 따라 물듦',restrained=/과묵|냉정|무뚝뚝|엄격|표정 변화가 거의 없음|감정을 잘 드러내지 않음|절제/.test(traits)||positiveResponse==='조용히 만족함',outgoing=/외향|활발|사교|무리의 중심|가만히 못/.test(traits),optimistic=/낙천|밝은|쾌활/.test(baseline)||/낙천|긍정|밝고|명랑|쾌활/.test(traits),resilient=optimistic||/온화|다정|느긋|침착|강인|무던|인내/.test(traits),sensitive=/예민|걱정|불안|침울|비관|까칠|분노/.test(baseline)||/예민|불안|걱정|신경질|감정 기복|까칠|성급|충동/.test(traits);
   const sourceTitle=String(entry?.baseTitle||entry?.title||'').trim(),sourceDesc=String(entry?.desc||'').trim(),minute=Number(entry?.minute),sourceTime=String(entry?.time||'').trim()||(Number.isFinite(minute)?`${String(Math.floor(minute/60)%24).padStart(2,'0')}:${String(minute%60).padStart(2,'0')}`:'');
   if(/자는 중|잠든|수면 중|sleeping|asleep|眠って|睡眠中/i.test(copy))return {score:0,label:text(language,'수면 중','Sleeping','睡眠中'),icon:'☾',reasons:[],placeName:place?.name||town?.name||'',tone:'sleeping',sourceEntry:sourceTitle?{time:sourceTime,title:sourceTitle,desc:sourceDesc}:null};
+  if(entry?.gossipReaction)return {score:-3,label:entry.gossipReaction==='surprised'?text(language,'당황','Flustered','戸惑い'):entry.gossipReaction==='cold'?text(language,'불쾌','Displeased','不快'):text(language,'분노','Angry','怒り'),icon:entry.gossipReaction==='angry'?'💢':entry.gossipReaction==='surprised'?'!':'…',reasons:[],tone:entry.gossipReaction==='angry'?'angry':'uneasy',sourceEntry:{time:sourceTime,title:sourceTitle,desc:sourceDesc}};
   const observed=observedMoodEvents(copy);
   const positiveEvent={test:()=>Boolean(observed.positive)},angryEvent={test:()=>Boolean(observed.angry)},sadEvent={test:()=>Boolean(observed.sad)};
   const tiredEvent=/피곤|지쳤|야근|밤샘|졸리|tired|exhaust|overtime|all.nighter|sleepy|疲|夜更|眠い/i;
@@ -200,7 +201,9 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const score=Math.max(-100,Math.min(100,reasons.reduce((number,reason)=>number+reason.value,0)));
   const praiseOrSuccess=/성공|칭찬|해냈|완성|success|praise|complete|成功|褒め|完成/i.test(copy),giftOrFavorite=/선물|맛있|좋아하는|favorite|gift|delicious|贈り物|好き|おいし/i.test(copy),playful=/웃|농담|장난|즐거|laugh|joke|playful|笑|冗談|楽しい/i.test(copy),rejection=/거절|무시|외면|reject|ignore|拒絶|無視/i.test(copy),loss=/상실|잃어|떠나|이별|loss|lost|leave|喪失|失く|別れ/i.test(copy),lonely=/외롭|혼자 남|고립|lonely|isolat|寂し|孤立/i.test(copy),embarrassed=/당황|민망|실수|embarrass|awkward|mistake|戸惑|気まず|失敗/i.test(copy),disgusted=dislikedMatches.length&&/냄새|맛|음식|향|혐오|역겨|smell|taste|disgust|臭|味|嫌悪/i.test(copy);
   let label,icon,tone;
-  if(hasTiredEvent&&/졸리|잠|sleepy|眠/.test(copy)){label=text(language,'졸림','Sleepy','眠い');icon='☾';tone='tired'}
+  const affectionateContact=entry?.groupInteraction&&!entry.transit&&!/거절|원하지|불편|강요|reject|拒否/.test(copy)&&(entry.meetingKind==="affection"||/키스|입맞춤|스킨십|스킨쉽|kiss|キス/.test(copy))&&primaryRelationship?.flags?.loving;
+  if(affectionateContact){label=/화해|누그러|reconcil|仲直り/.test(copy)?text(language,'누그러짐','Softened','和らいでいる'):(entry.meetingKind==="affection"||/뜨거|열정|스킨십|스킨쉽|passion/.test(copy))?text(language,'불타오름','Passionate','情熱的'):text(language,'설렘','Fluttering','ときめき');icon='♥';tone='excited'}
+  else if(hasTiredEvent&&/졸리|잠|sleepy|眠/.test(copy)){label=text(language,'졸림','Sleepy','眠い');icon='☾';tone='tired'}
   else if(hasTiredEvent&&/야근|밤샘|지쳤|exhaust|overtime|all.nighter|夜更|疲れ切/.test(copy)){label=text(language,'지침','Exhausted','疲れ切っている');icon='☾';tone='tired'}
   else if(hasTiredEvent){label=text(language,'피곤함','Tired','疲れている');icon='☾';tone='tired'}
   else if(flirtEvent.test(copy)&&/당황|거리/.test(flirtResponse)){label=text(language,'당황함','Flustered','戸惑っている');icon='◇';tone='tense'}

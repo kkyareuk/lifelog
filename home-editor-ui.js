@@ -1,4 +1,5 @@
-import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260908hotfix274";
+import {bedPillowPoint} from './bed-perspective.js?v=20260909dev293';
+import {FURNITURE_CATALOG,furnitureLabel,furnitureIcon,furnitureFootprint,snapFurniturePosition,furnitureGridForRoom} from "./furniture-layout.js?v=20260909dev293";
 
 const escape=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const COPY={
@@ -42,7 +43,7 @@ export function homeFurnitureDrawer(home,locale){
       <nav class="home-drawer-categories home-drawer-types" aria-label="${copy.typeFilter}">${FURNITURE_TYPES.map(key=>`<button type="button" data-home-furniture-type="${key}" aria-pressed="${ui.type===key}" class="${ui.type===key?"on":""}">${copy[key]}</button>`).join("")}</nav>
       <div class="home-drawer-results"><div class="home-drawer-items" data-home-furniture-items></div><p data-home-furniture-empty hidden role="status">${copy.empty}</p></div>
     </div>
-  </section>`;
+  </section><div class="home-drawer-clearance" aria-hidden="true"></div>`;
 }
 export function homeRoomBrowser(home,locale,translateLabel=value=>value){
   const copy=homeEditorCopy(locale);
@@ -54,9 +55,9 @@ export function homeRoomBrowser(home,locale,translateLabel=value=>value){
   </div></section>`;
 }
 export function homeMemberMenu(home,characters,locale){
-  const c=homeEditorCopy(locale),card=(kind,item,art)=>`<button type="button" class="home-member-card" data-member-edit="${kind}" data-member-id="${escape(item.id)}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo">${art&&(/^(?:https?:|data:image\/|blob:|\.?\.?\/|assets\/|theme-assets\/)/i.test(art)||/^[^:\s]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:[?#].*)?$/i.test(art))?`<img class="${kind==="resident"&&!item.icon&&item.photo?"profile-photo-fallback":""}" src="${escape(art)}" alt="" loading="lazy">`:`<span aria-hidden="true">${kind==="resident"?escape(item.name?.slice(0,1)||"?"):kind==="pet"?"🐾":"🚙"}</span>`}</span><b>${escape(item.name)}</b></button>`;
+  const c=homeEditorCopy(locale),card=(kind,item,art)=>`<button type="button" class="home-member-card" data-member-edit="${kind}" data-member-id="${escape(item.id)}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo">${art&&(/^(?:https?:|data:image\/|blob:|\.?\.?\/|assets\/|theme-assets\/)/i.test(art)||/^[^:\s]+\.(?:png|jpe?g|webp|gif|svg|avif)(?:[?#].*)?$/i.test(art))?`<img class="${kind==="resident"&&item.photo?"member-profile-photo":"member-icon-art"}" src="${escape(art)}" alt="" loading="lazy">`:`<span aria-hidden="true">${kind==="resident"?escape(item.name?.slice(0,1)||"?"):kind==="pet"?"🐾":"🚙"}</span>`}</span><b>${escape(item.name)}</b></button>`;
   return `<section class="home-feature-panel home-design-page home-members" data-home-feature="members"><header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${c.members}</h2></header>${[
-    ["resident",c.members,characters.map(p=>card("resident",p,p.icon||p.photo)).join("")],
+    ["resident",c.members,characters.map(p=>card("resident",p,p.photo||p.icon)).join("")],
     ["pet",c.pets,(home.pets||[]).map(p=>card("pet",p,p.icon||p.photo)).join("")],
     ["car",c.cars,(home.cars||[]).map(p=>card("car",p,p.image)).join("")]
   ].map(([kind,label,cards])=>`<section class="home-member-section"><h3>${label}</h3><div class="home-member-grid">${cards}<button type="button" class="home-member-card home-member-add" data-member-add="${kind}" data-home-id="${escape(home.id)}"><span class="home-catalog-photo home-add-symbol">＋</span><b>${c.add}</b></button></div></section>`).join("")}</section>`;
@@ -68,6 +69,7 @@ export function homeInformationMarkup(home,photo,state,t){
     <header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${escape(home.name)}</h2></header>
     <button type="button" class="home-design-photo" data-home-building-shape="${id}" aria-label="${c.homePhoto}"><img src="${escape(photo)}" alt=""></button>
     <div class="home-design-fields">
+      <button type="button" class="wide" data-share-kind="home" data-settings-transfer="world-transfer" data-share-home="${id}">${({ko:"집 공유 코드",en:"Home sharing code",ja:"家の共有コード"}[state.uiLanguage]||"집 공유 코드")}</button>
       <label class="wide">${t("집 이름","집 이름")}<input data-home-name data-home-id="${id}" value="${escape(home.name)}" maxlength="80"></label>
       <div>${select("kind",t("집 유형","집 유형"),["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"])}${select("ownershipType",`<span class="sr-only">${t("거주 방식","거주 방식")}</span>`,["설정하지 않음","자가","전세","월세","기숙사","사택","무상 거주","임시 거주","기타"])}</div>
       <label>${t("마을","마을")}<select data-home-field="townId" data-home-id="${id}">${state.towns.map(town=>`<option value="${escape(town.id)}" ${town.id===home.townId?"selected":""}>${escape(town.name)}</option>`).join("")}</select></label>
@@ -93,17 +95,19 @@ export function fitCoupleBedOccupants(root){
     const width=bed.clientWidth,height=bed.clientHeight,ratio=image.naturalWidth/image.naturalHeight;
     const paintedWidth=Math.min(width,height*ratio),paintedHeight=paintedWidth/ratio;
     const style=getComputedStyle(bed),flip=Number(style.getPropertyValue('--furniture-flip'))||1;
-    const x=width/2+(Number(person.dataset.bedSlot)===0?-.18:.18)*paintedWidth*1.05*flip;
     // Sleeping occupants sit across the quilt edge: the upper part stays on
     // the pillow and the lower part is actually covered by the foreground quilt.
     const underCover=person.classList.contains('is-under-cover');
-    const y=height/2-(underCover?.225:.29)*paintedHeight*1.05;
+    const pillow=bedPillowPoint({side:bed.dataset.bedSide==='true',direction:Number(bed.dataset.bedDirection)||1,artFlip:flip},Number(person.dataset.bedSlot),underCover);
+    const x=width/2+pillow.x*paintedWidth*1.05,y=height/2+pillow.y*paintedHeight*1.05;
+    person.style.zIndex=String(pillow.depth);
     const [ox,oy]=style.transformOrigin.split(' ').map(parseFloat);
     const point=new DOMMatrix(style.transform).transformPoint(new DOMPoint(x-ox,y-oy));
     const parent=person.offsetParent,layer=bed.offsetParent;
     person.style.setProperty('--life-x',`${bed.offsetLeft+layer.offsetLeft+ox+point.x-parent.offsetLeft}px`);
     person.style.setProperty('--life-y',`${bed.offsetTop+layer.offsetTop+oy+point.y-parent.offsetTop}px`);
-    person.style.setProperty('--bed-face-size',`${Math.max(underCover?46:36,Math.min(underCover?64:56,paintedWidth*(underCover?.32:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)))}px`);
+    const side=bed.dataset.bedSide==='true',faceSize=side?Math.max(24,Math.min(56,paintedHeight*.29*(Number(style.getPropertyValue('--furniture-scale'))||1))):Math.max(underCover?46:36,Math.min(underCover?64:56,paintedWidth*(underCover?.32:.28)*(Number(style.getPropertyValue('--furniture-scale'))||1)));
+    person.style.setProperty('--bed-face-size',`${faceSize}px`);
   });
   const layoutStatuses=()=>statuses.forEach(status=>{
     if(!status.isConnected)return;

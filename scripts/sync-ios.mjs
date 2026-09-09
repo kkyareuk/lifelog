@@ -16,9 +16,8 @@ const plist='<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//
 await writeFile(new URL("../ios/App/App/GoogleService-Info.plist",import.meta.url),plist);
 const podfile=new URL("../ios/App/Podfile",import.meta.url);
 let pods=await readFile(podfile,"utf8");
-pods=pods.replace(/\.\.\/\.\.\/\.\.\/drawer-village-[^/"'\s]+\/node_modules/g,"../../node_modules");
+pods=pods.replace(/\.\.\/\.\.\/\.\.\/drawer-village-[^/"\x27\s]+\/node_modules/g,"../../node_modules");
 if(!pods.includes("CapacitorFirebaseAuthentication/Google"))pods=pods.replace("  # Add your Pods here","  # Add your Pods here\n  pod 'CapacitorFirebaseAuthentication/Google', :path => '../../node_modules/@capacitor-firebase/authentication'");
-pods=pods.replace("platform :ios, '14.0'","platform :ios, '15.0'");
 await writeFile(podfile,pods);
 function run(args){
  const result=spawnSync(process.execPath,args,{cwd:root,stdio:"inherit"});
@@ -29,6 +28,6 @@ run(["scripts/prepare-app.mjs","--ios"]);
 run(["scripts/check-native-module-closure.mjs"]);
 const shim=process.platform==="win32"?["--require","./scripts/windows-userinfo-shim.cjs"]:[];
 run([...shim,"./node_modules/@capacitor/cli/bin/capacitor","sync","ios"]);
-await writeFile(podfile,(await readFile(podfile,"utf8")).replace(/\.\.\/\.\.\/\.\.\/drawer-village-[^/"'\s]+\/node_modules/g,"../../node_modules"));
+await writeFile(podfile,(await readFile(podfile,"utf8")).replace(/\.\.\/\.\.\/\.\.\/drawer-village-[^/"\x27\s]+\/node_modules/g,"../../node_modules"));
 run(["scripts/check-ios-project.mjs"]);
 if(process.platform!=="darwin")console.log("iOS project/assets prepared only. CocoaPods, Xcode compilation, signing and device tests must run on a Mac.");

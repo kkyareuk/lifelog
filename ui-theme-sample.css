@@ -370,7 +370,7 @@ html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visua
 html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visual-theme="moonlit-drawer"] span{padding:6px 8px;border-radius:10px;background:#fffaf0e8}
 html[data-visual-theme="moonlit-drawer"] .visual-theme-options button[data-visual-theme="moonlit-drawer"] :is(b,small){color:var(--moon-ink)!important;-webkit-text-fill-color:var(--moon-ink)!important}
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html[data-visual-theme="moonlit-drawer"] :is(.panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.home-page,.town-edit,.mobile-character-dashboard){border-radius:18px!important}
   html[data-visual-theme="moonlit-drawer"] :is(.setting-card,.sync-panel,.feedback-card,.native-status-card,.native-log-card,.catalog-card,.catalog-dex-card,.routine-day,.premium-product,.mobile-character-heading,.mobile-character-pane-grid button){border-radius:15px!important}
   html[data-visual-theme="moonlit-drawer"] .mobile-character-editor-body{background:#fffdf8!important}
@@ -425,7 +425,7 @@ html[data-color-mode][data-visual-theme="moonlit-drawer"].native-app #app .mobil
   background:#fffaf0e8!important;
 }
 
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html[data-visual-theme="moonlit-drawer"] #app :is(
     .panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,
     .relationship-page,.home-page,.town-edit,.mobile-character-dashboard,
@@ -486,7 +486,7 @@ html[data-color-mode][data-visual-theme="moonlit-drawer"] #app :is(
   -webkit-text-fill-color:#fffaf0!important;
   box-shadow:0 7px 18px #172f6c42,inset 0 1px #ffffff38!important;
 }
-@media(max-width:720px){
+@media(max-width:720px),(min-width:721px) and (max-width:900px) and (orientation:portrait){
   html[data-color-mode][data-visual-theme="moonlit-drawer"] #app :is(
     .panel,.form,.settings-shell,.catalog-shell,.routine-shell,.shop-store,.relationship-page,.home-page,
     .town-edit,.mobile-character-dashboard,.desktop-character-editor,.character-manage-pane,.setting-card,
