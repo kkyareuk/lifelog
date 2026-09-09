@@ -68,12 +68,15 @@ export function renderGroups(){
 }
 
 export function groupErrorMessage(error){
-  const language=state.uiLanguage||"ko",code=error?.code||"";
+  const language=state.uiLanguage||"ko",code=error?.code||error?.message||"";
   if(code==="groups/town-slot-required")return ({ko:"남은 마을 슬롯이 있어야 멀티를 만들 수 있어요.",en:"You need an unused town slot to create multiplayer.",ja:"マルチを作成するには空き村スロットが必要です。"}[language]||"남은 마을 슬롯이 있어야 멀티를 만들 수 있어요.");
   if(code==="groups/independent-town-only")return ({ko:"멀티 마을은 개인 마을과 연결하지 않고 독립적으로 사용해요.",en:"Multiplayer towns are independent from personal towns.",ja:"マルチ村は個人の村とは別に使用します。"}[language]||"멀티 마을은 개인 마을과 연결하지 않고 독립적으로 사용해요.");
+  const photoError=['사진을 올리지 못해 공유를 멈췄어요. 원본 사진과 인터넷 연결을 확인한 뒤 다시 공유해 주세요.','Sharing stopped because a photo could not be uploaded. Check the original photo and your connection, then retry.','写真をアップロードできなかったため共有を中止しました。元の写真と接続を確認して再試行してください。'];
   const specific={
+    'photo-upload-required':photoError,
+    'catalog-photo-upload-required':photoError,
     'activity-location-required':['집 안에 침대·욕조·샤워기·의자가 있어야 해요. 나이와 접촉 설정도 확인해 주세요.','A bed, bath, shower or chair inside a home is required. Check age and contact preferences too.','家の中にベッド・浴槽・シャワー・椅子が必要です。年齢と接触設定も確認してください。'],
-    'catalog-limit':['합친 뒤 한 항목이 80개를 넘어요. 항목 수를 줄인 뒤 다시 공유해 주세요.','Merging would exceed 80 entries in a category. Reduce the entries and retry.','結合するとカテゴリが80件を超えます。件数を減らして再試行してください。'],
+    'catalog-limit':['공유 사전 전체 물품이 80개를 넘어요. 항목 수를 줄인 뒤 다시 공유해 주세요.','The shared dictionary would exceed 80 items in total. Reduce the entries and retry.','共有辞典全体で80件を超えます。件数を減らして再試行してください。'],
     'groups/edit-conflict':['다른 멤버가 먼저 수정했어요. 화면을 다시 열고 변경 내용을 확인해 주세요.','Another member edited this first. Reopen the screen and review their changes.','他のメンバーが先に編集しました。画面を開き直して変更を確認してください。'],
     'groups/share-upload-failed':['사진과 설정을 계정에 저장하지 못했어요. 연결과 저장 공간을 확인한 뒤 다시 시도해 주세요.','Photos and settings could not be saved. Check your connection and storage, then retry.','写真と設定を保存できませんでした。接続と保存容量を確認して再試行してください。'],
     'groups/context-changed':['그룹이 바뀌어 공유를 멈췄어요. 선택한 그룹에서 다시 시도해 주세요.','The group changed. Retry sharing in the selected group.','グループが変わったため共有を中止しました。選択中のグループで再試行してください。'],

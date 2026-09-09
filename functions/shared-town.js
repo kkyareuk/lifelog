@@ -60,7 +60,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
       for(const kind of Object.keys(input.catalog)){
         const incoming=input.catalog[kind];if(!kinds.includes(kind)||!Array.isArray(incoming)||incoming.length>80)fail('catalog-limit');
         if(incoming.some(item=>!item||typeof item!=='object'||typeof item.id!=='string'||typeof item.name!=='string'||item.id.length>180||item.name.length>200))fail('invalid-catalog-item');
-        const merged=new Map((existing.find(c=>c.id===kind)?.items||[]).map(item=>[item.id,item]));for(const item of incoming)if(!merged.has(item.id)&&![...merged.values()].some(old=>old.name.trim().normalize('NFKC').toLocaleLowerCase()===item.name.trim().normalize('NFKC').toLocaleLowerCase()))merged.set(item.id,{...item,kind});const items=[...merged.values()];total+=items.length-(existing.find(c=>c.id===kind)?.items||[]).length;if(total>80)fail('catalog-limit',409);
+        const items=require('./catalog-media').mergeCatalogItems(existing.find(c=>c.id===kind)?.items||[],incoming,kind);total+=items.length-(existing.find(c=>c.id===kind)?.items||[]).length;if(total>80)fail('catalog-limit',409);
         if(JSON.stringify(items).length>100000)fail('catalog-size-limit');
         tx.set(ref.collection('catalog').doc(kind),{items,updatedAt:clock()});
       }
