@@ -1,14 +1,14 @@
-import {overheardGossip} from './gossip-reaction.js?v=20260909dev298';
-import {routineScene} from './routine-scenes.js?v=20260909dev298';
-import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev298';
-import {dailyInteractionLine,oneSidedJoke} from './scene-context.js?v=20260909dev298';
-import {careRoutineFor} from "./creative-options.js?v=20260909dev298";
-import {drinkExperience} from "./drink-log.js?v=20260909dev298";
-import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev298";
-import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev298";
-import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev298";
-import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev298";
-import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev298";
+import {overheardGossip} from './gossip-reaction.js?v=20260909dev299';
+import {routineScene} from './routine-scenes.js?v=20260909dev299';
+import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev299';
+import {dailyInteractionLine,oneSidedJoke} from './scene-context.js?v=20260909dev299';
+import {careRoutineFor} from "./creative-options.js?v=20260909dev299";
+import {drinkExperience} from "./drink-log.js?v=20260909dev299";
+import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev299";
+import {localizeLifeLog} from "./life-log-localization.js?v=20260909dev299";
+import {state,save,setDirectiveSceneResolver,characterViewFor as readCharacterViewFor,explicitCharacterViewFor,recordAutomaticRelationshipMoment,directCharacterActivity,contactAllowed} from "./state.js?v=20260909dev299";
+import {characterPlanSpeech} from "./speech-styles.js?v=20260909dev299";
+import {canTravelBetween,transportBetween,transportSceneCopy} from "./town-profile.js?v=20260909dev299";
 
 // A failed resident must never prevent other residents or navigation from updating.
 // Keep recovery scenes in memory: they are not historical life events.
