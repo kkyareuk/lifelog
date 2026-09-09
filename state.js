@@ -1,27 +1,29 @@
-import {workTasks} from './social-activities.js?v=20260909dev297';
-import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev297';
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev297';
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev297';
+import {lifeTask,lifeCopy} from './life-tasks.js?v=20260909dev298';
+import {automaticConversation,hobbyChoice,ignoresOthers,dislikesPerson} from './automatic-activities.js?v=20260909dev298';
+import {workTasks} from './social-activities.js?v=20260909dev298';
+import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev298';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev298';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev298';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev297";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev297";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev297";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev297";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev297";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev297";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev297";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev297";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev297";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev297";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev298";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev298";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev298";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev298";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev298";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev298";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev298";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev298";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev298";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev298";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev297";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev297";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev298";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev298";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1383,6 +1385,8 @@ DIRECTIVE_COPY.rest=DIRECTIVE_COPY.relax;
 for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile','affection'])DIRECTIVE_COPY[kind]={room:'living',minutes:20,social:true};
 for(const kind of Object.keys(SOCIAL_ACTIVITIES))DIRECTIVE_COPY[kind]={room:"living",minutes:20,social:true};
 function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
+  if(kind==='gossip'&&subject){const criticizing=dislikesPerson(state,actor,subject)&&!ignoresOthers(actor),distant=ignoresOthers(actor);const desc=criticizing?[`${subject.name}의 마음에 들지 않는 태도를 짚으며 불만을 털어놓고 있어요.`,`They criticize ${subject.name}’s behavior and voice their displeasure.`,`${subject.name}の気に入らない態度を指摘し、不満をこぼしています。`]:distant?['남의 이야기에 별 관심이 없어 짧게 듣고 다른 화제로 돌리려 해요.','They show little interest in gossip and try to change the subject.','他人の話にはあまり関心を示さず、話題を変えようとしています。']:['상대의 불만을 듣지만 섣불리 맞장구치지는 않고 있어요.','They listen to the complaint without rushing to agree.','相手の不満を聞きつつ、すぐには同調していません。'];return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 ${subject.name}에 대해 이야기하는 중`,`Talking with ${target.name} about ${subject.name}`,`${target.name}と${subject.name}について話すところ`][i],desc:desc[i]}]))}
+
   const extra=socialActivityCopy(kind,actor,target,topic,options);if(extra)return extra;
   const names={actor:actor?.name||"캐릭터",target:target?.name||"상대",subject:subject?.name||"다른 사람"},detail=String(topic||"").trim();
   const copy={
@@ -1412,6 +1416,11 @@ export function contactAllowed(a,b,kind){
 export function directCharacterActivity(characterId,kind="wake",options={}){
   const character=state.characters?.[characterId];let definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
   if(!character)return false;
+  let task=options.lifeTask==='hobby_auto'?hobbyChoice(state,character,characterId+':'+(options.now||Date.now())):lifeTask(options.lifeTask);
+  if(options.lifeTask==='smoke'){if(!['성인','노인'].includes(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
+  if(options.lifeTask&&!task)return false;
+  if(task){if(task.id==='alcohol'&&!['성인','노인'].includes(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...lifeCopy(task)}}
+  if(['talk','gossip','debate','custom_social'].includes(kind)&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
@@ -1437,6 +1446,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
       if(!chosen)return false;
     }else{const room=rooms.find(([key,r])=>key===definition.room||r.type===definition.room)||rooms[0];if(!room)return false;chosen={key:room[0]}}
     destination={home:true,visitHomeId:home.id,room:chosen.key,townId:home.townId||character.townId};
+    if(task?.id==='groceries'){const shop=(state.world?.places||[]).find(p=>/마트|시장|편의점|식료품|슈퍼/.test([p.name,p.kind,p.type].join(' ')));if(shop)destination={home:false,placeId:shop.id,townId:character.townId}}
     if(kind==='work'&&character.workplaceId)destination={home:false,placeId:character.workplaceId,townId:character.townId};
     const goal=chosen.furniture?{homeId:home.id,room:chosen.key,point:{x:Number(chosen.furniture.x)||50,y:Number(chosen.furniture.y)||60}}:null;
     if(goal){destination.goal=goal;destination.furniture=chosen.furniture;}
@@ -1448,7 +1458,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   }
 
   const sharedHomeId=journey?.to.homeId||"";
-  const directive={id:directiveId,kind,payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
+  const directive={id:directiveId,kind,lifeTask:task?.id||"",payment:options.payment,contactRejected,furniture:destination?.furniture||null,startedAt,endsAt:startedAt+(contactRejected?2:definition.minutes)*60000,journey,room:journey?.to.room||definition.room,placeId:journey?.to.placeId||(kind==="work"?String(character.workplaceId||""):""),homeId:sharedHomeId,targetId:target?.id||"",subjectId:subject?.id||"",withIds,topic:String(options.topic||"").slice(0,120),copy};
   const replacing=new Set([characterId,target?.id].filter(Boolean)),oldIds=new Set([...replacing].map(id=>state.characterDirectives[id]?.id).filter(Boolean));
   for(const gift of state.interactions||[]){if(gift.type==='gift'&&gift.id!==options.giftSource?.interactionId&&(replacing.has(gift.actorId)||replacing.has(gift.targetId))&&!gift.endedAt&&gift.createdAt<startedAt)gift.endedAt=startedAt}
   for(const [id,old] of Object.entries(state.characterDirectives)){if(oldIds.has(old.id)){delete state.characterDirectives[id];if(state.characters[id]){state.characters[id].timelineResetAt=startedAt;delete state.dailyPlans?.[id]}}}

@@ -75,7 +75,7 @@ html[data-color-mode][data-visual-theme] :is(
 html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
-  dialog,.visual-theme-dialog
+  dialog:not(.direct-command-dialog),.visual-theme-dialog
 ) :is(h1,h2,h3,h4,h5,b,strong,label,legend,dt,dd,span,li):not(.relationship-redesign *):not(.relationship-fullscreen-dialog *):not(.room-heading *):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-book-v8 *):not(.home-native-hud *):not(.home-native-edit-tools *){
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
@@ -83,7 +83,7 @@ html[data-color-mode][data-visual-theme] :is(
 html[data-color-mode][data-visual-theme] :is(
   .settings-shell,.catalog-shell,.shop-store,.relationship-page,
   .character-statistics-page,.character-editor,.home-page,.panel,.form,
-  dialog,.visual-theme-dialog
+  dialog:not(.direct-command-dialog),.visual-theme-dialog
 ) :is(p,small,time,em,.muted,.hint):not(.relationship-redesign *):not(.relationship-fullscreen-dialog *):not(.room-edit-hint):not(.character-draft-sheet *):not(.character-registration-card *):not(.character-pane-ribbon *):not(.character-wallet-selected *):not(.character-wallet-roster *):not(.mobile-character-dashboard[data-character-ui-version="8"] *):not(.character-quick-settings-dialog *):not(.mobile-character-full-settings *):not(.character-book-v8 *){
   color:var(--muted)!important;
   -webkit-text-fill-color:var(--muted)!important;
@@ -95,8 +95,8 @@ html[data-color-mode][data-visual-theme] main button:not(.dictionary-shell *):no
   color:var(--ink)!important;
   -webkit-text-fill-color:var(--ink)!important;
 }
-html[data-color-mode][data-visual-theme] :is(dialog:not(.relationship-fullscreen-dialog):not(.mail-letter),.visual-theme-dialog),
-html[data-color-mode][data-visual-theme] :is(dialog:not(.relationship-fullscreen-dialog):not(.mail-letter),.visual-theme-dialog)>form{
+html[data-color-mode][data-visual-theme] :is(dialog:not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog),
+html[data-color-mode][data-visual-theme] :is(dialog:not(.relationship-fullscreen-dialog):not(.mail-letter):not(.direct-command-dialog),.visual-theme-dialog)>form{
   border-color:var(--theme-border)!important;
   background:linear-gradient(145deg,var(--theme-surface),var(--panel))!important;
   color:var(--ink)!important;

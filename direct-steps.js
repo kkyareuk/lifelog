@@ -1,39 +1,29 @@
-import {SOCIAL_SECTIONS,workTasks} from './social-activities.js?v=20260909dev297';
-export function installDirectSteps(command,copy,character){
- command.classList.add('direct-step-flow');
- const lang=document.documentElement.lang==='en'?1:document.documentElement.lang==='ja'?2:0;
- const text=(ko,en,ja)=>[ko,en,ja][lang];
- command.querySelector('h3')?.remove();
- const nav=command.querySelector('.direct-category-tabs');
- const social=command.querySelector('[data-direct-panel="social"]');
- const grid=social.querySelector('.direct-action-grid'),buttons=[...grid.children];if(grid.previousElementSibling?.tagName==='H4')grid.previousElementSibling.remove();grid.replaceChildren();
- const tabs=document.createElement('nav');tabs.className='direct-social-sections';grid.append(tabs);
- const panels=[];
- const heading=(node,label)=>{const h=document.createElement('h4');h.className='direct-subheading';h.textContent=label;node.append(h)};
- for(const section of SOCIAL_SECTIONS){
-  const b=document.createElement('button');b.type='button';b.dataset.socialSection=section.id;b.textContent=section.labels[lang];tabs.append(b);
-  const panel=document.createElement('div');panel.className='direct-action-grid';panels.push(panel);grid.append(panel);
-  for(const kind of section.actions){if(section.id==='friendly'&&kind==='talk')heading(panel,text('일반 상호작용','Everyday interaction','普段の交流'));if(kind==='hangout')heading(panel,text('마음 나누기','Sharing feelings','気持ちの交流'));if(kind==='dine')heading(panel,text('함께 보내는 시간','Time together','一緒に過ごす時間'));const item=buttons.find(x=>x.dataset.directSocialAction===kind);if(item)panel.append(item)}
-  b.onclick=()=>{panels.forEach(p=>p.hidden=p!==panel);tabs.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))};
- }
- tabs.firstElementChild.click();
- const topicGrid=social.querySelector('.direct-topic-grid'),topicButtons=[...topicGrid.querySelectorAll('[data-direct-topic]')],topicGroups=[[],[],[]];let topicGroup=0;
- for(const child of [...topicGrid.children]){if(child.tagName==='H4'){topicGroup++;child.remove()}else if(child.matches('[data-direct-topic]'))topicGroups[Math.min(2,topicGroup)].push(child)}
- const controls=document.createElement('div');controls.className='direct-topic-controls';
- const type=document.createElement('select');type.setAttribute('aria-label',text('주제 종류','Topic type','テーマの種類'));
- for(const [i,label] of [text('일상 이야기','Everyday topics','日常の話題'),text('사람','People','人物'),text('사전 속 물품','Dictionary items','辞典のアイテム')].entries()){const option=document.createElement('option');option.value=i;option.textContent=label;type.append(option)}
- const search=document.createElement('input');search.type='search';search.placeholder=text('주제 검색','Search topics','テーマを検索');search.setAttribute('aria-label',search.placeholder);
- const results=document.createElement('div');results.className='direct-action-grid';results.append(...topicButtons);
- const pager=document.createElement('div');pager.className='direct-topic-controls';const previous=document.createElement('button'),next=document.createElement('button'),count=document.createElement('span');previous.type=next.type='button';previous.textContent=text('이전','Previous','前へ');next.textContent=text('다음','Next','次へ');pager.append(previous,count,next);let page=0;
- const drawTopics=()=>{const found=topicGroups[Number(type.value)].filter(b=>b.dataset.directTopic.toLocaleLowerCase().includes(search.value.trim().toLocaleLowerCase())),pages=Math.max(1,Math.ceil(found.length/6));page=Math.min(page,pages-1);const visible=new Set(found.slice(page*6,page*6+6));topicButtons.forEach(b=>b.hidden=!visible.has(b));count.textContent=found.length?`${page+1} / ${pages}`:text('검색 결과 없음','No results','見つかりません');previous.disabled=page===0;next.disabled=page>=pages-1};
- type.onchange=search.oninput=()=>{page=0;drawTopics()};previous.onclick=()=>{page--;drawTopics()};next.onclick=()=>{page++;drawTopics()};controls.append(type,search);topicGrid.replaceChildren(controls,results,pager);drawTopics();
-
- const refresh=()=>{const kind=command.dataset.directSocialAction;social.querySelector('[data-direct-social-submit]').disabled=!kind||!command.dataset.directTarget;const topics=['talk','gossip','debate','custom_social','argue','taunt','insult','fight'].includes(kind);for(const selector of ['.direct-topic-grid','[data-direct-custom-topic]']){const node=social.querySelector(selector);node.hidden=!topics;if(node.previousElementSibling?.tagName==='H4')node.previousElementSibling.hidden=!topics}social.querySelector('[data-direct-payment-field]').hidden=!['dine','tea','drinks'].includes(kind)};
- social.addEventListener('click',refresh);refresh();
- for(const [category,groups] of Object.entries({needs:[[['위생','Hygiene','清潔'],['wash']],[['허기','Hunger','空腹'],['meal']],[['휴식','Rest','休憩'],['relax']],[['수면','Sleep','睡眠'],['nap','wake']]],hobby:[[['독서','Reading','読書'],['read']],[['음악','Music','音楽'],['music']],[['게임','Games','ゲーム'],['game']],[['창작','Creativity','創作'],['art']],[['운동·산책','Exercise and walks','運動・散歩'],['exercise','walk']]]})){
-  const panel=command.querySelector(`[data-direct-panel="${category}"] .direct-action-grid`),items=[...panel.children];panel.replaceChildren();for(const [labels,kinds] of groups){heading(panel,labels[lang]);for(const kind of kinds)panel.append(items.find(b=>b.dataset.directSimpleAction===kind))}
- }
- const work=command.querySelector('[data-direct-panel="work"] .direct-action-grid');work.replaceChildren();heading(work,character.jobTitle||character.job||text('진로·일상 업무','Career and daily tasks','進路・日常の仕事'));for(const task of workTasks(character)){const b=document.createElement('button');b.type='button';b.dataset.directSimpleAction='work';b.dataset.workTask=task.id;b.textContent=task.labels[lang];work.append(b)}
- command.querySelectorAll('[data-direct-category]').forEach(b=>b.addEventListener('click',()=>{command.querySelectorAll('[data-direct-panel]').forEach(p=>p.hidden=p.dataset.directPanel!==b.dataset.directCategory);nav.querySelectorAll('button').forEach(x=>x.setAttribute('aria-expanded',String(x===b)))}));
- command.querySelector('[data-direct-category="needs"]').click();
+import {personalChoices,hobbyChoice} from './automatic-activities.js?v=20260909dev298';
+import {workTasks} from './social-activities.js?v=20260909dev298';
+import {LIFE_TASKS} from './life-tasks.js?v=20260909dev298';
+export function installDirectSteps(command,copy,character,world){
+ const lang=document.documentElement.lang==='en'?1:document.documentElement.lang==='ja'?2:0,text=(...labels)=>labels[lang],dialog=command.closest('dialog');
+ const social=command.querySelector('[data-direct-panel="social"]'),targets=social.querySelector('[data-direct-target-list]'),payment=social.querySelector('[data-direct-payment-field]'),submit=social.querySelector('[data-direct-social-submit]');
+ const socialButtons=[...social.querySelectorAll('[data-direct-social-action]')],simpleButtons=[...command.querySelectorAll('[data-direct-simple-action]')];
+ command.className='home-occupant-command command-menu';command.replaceChildren();const pages=[],titles=new Map();let current=null;const history=[];
+ const createPage=title=>{const p=document.createElement('section');p.className='command-menu-page';p.hidden=true;command.append(p);pages.push(p);titles.set(p,title);return p};
+ const title=dialog.querySelector('h2'),back=dialog.querySelector('[data-command-close]');back.textContent='';back.setAttribute('aria-label',text('뒤로','Back','戻る'));
+ const show=(p,push=true)=>{if(current&&push)history.push(current);current=p;pages.forEach(x=>x.hidden=x!==p);title.textContent=titles.get(p);dialog.querySelector('.direct-command-body').scrollTop=0};
+ back.onclick=()=>history.length?show(history.pop(),false):dialog.close();dialog.addEventListener('cancel',e=>{if(history.length){e.preventDefault();show(history.pop(),false)}});
+ const button=(parent,label,action)=>{const b=document.createElement('button');b.type='button';b.className='command-menu-button';b.textContent=label;if(action)b.onclick=action;parent.append(b);return b};
+ const root=createPage(text('활동 선택','Choose an activity','活動を選ぶ')),life=createPage(text('생활','Daily life','生活')),exchange=createPage(text('교류','Social','交流')),hobby=createPage(text('취미','Hobbies','趣味')),work=createPage(text('일·학업','Work and study','仕事・学業')),move=createPage(text('이동','Movement','移動')),self=createPage(text('나답게','Personal time','自分らしく'));
+ for(const [p,label] of [[life,text('생활','Daily life','生活')],[move,text('이동','Movement','移動')],[exchange,text('교류','Social','交流')],[hobby,text('취미활동','Enjoy a hobby','趣味を楽しむ')],[work,text('일·학업','Work and study','仕事・学業')],[self,text('나답게','Personal time','自分らしく')]]){const b=button(root,label,()=>show(p));if(p===hobby){b.dataset.directSimpleAction='relax';b.dataset.lifeTask='hobby_auto';b.onclick=null;if(!hobbyChoice(world,character,0)){b.disabled=true;b.textContent=text('취미 설정 필요','Set a hobby first','趣味を設定してください')}}}
+ const addTask=(p,t)=>{const b=button(p,t.labels[lang]);b.dataset.directSimpleAction=t.kind;b.dataset.lifeTask=t.id};
+ for(const [group,labels] of [['food',['식사·요리','Food and cooking','食事・料理']],['hygiene',['위생','Hygiene','清潔']],['rest',['휴식·개인시간','Rest and personal time','休息・自分の時間']],['groom',['몸단장','Grooming','身支度']],['chores',['집안일·살림','Household chores','家事']],['sleep',['수면','Sleep','睡眠']]]){const p=createPage(text('생활 · ','Daily life · ','生活・')+labels[lang]);button(life,labels[lang],()=>show(p));LIFE_TASKS.filter(t=>t.group===group).forEach(t=>addTask(p,t))}
+ const addSimple=(p,kind)=>{const source=simpleButtons.find(b=>b.dataset.directSimpleAction===kind);if(source){const b=source.cloneNode(true);b.className='command-menu-button';p.append(b)}};
+ ['read','music','game','art','exercise'].forEach(k=>addSimple(hobby,k));['walk','exercise'].forEach(k=>addSimple(move,k));for(const choice of personalChoices(world,character)){const b=button(self,choice.labels[lang]);if(choice.targetId){b.dataset.directSocialAction=choice.kind;b.dataset.autoTarget=choice.targetId}else{b.dataset.directSimpleAction=choice.kind;b.dataset.lifeTask=choice.lifeTask}}
+ for(const task of workTasks(character||{})){const b=button(work,task.labels[lang]);b.dataset.directSimpleAction='work';b.dataset.workTask=task.id}addSimple(work,'study');addSimple(work,'research');
+ const targetPage=createPage(text('함께할 상대 고르기','Choose a companion','相手を選ぶ'));targetPage.classList.add('command-target-page');if(targets)targetPage.append(targets);else{const p=document.createElement('p');p.textContent=copy.noTarget;targetPage.append(p)}
+ const sections=[['대화','Conversation','会話',['talk','debate','gossip','custom_social']],['연락','Keeping in touch','交流を深める',['hangout','comfort','compliment']],['애정','Affection','愛情',['hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection']],['갈등','Conflict','対立',['taunt','insult','argue','fight']],['선물','Gifts','贈り物',[]],['동행','Together','一緒に',['dine','tea','drinks','cook_together','play_together','study_together','read_together','compete']]];
+ for(const [ko,en,ja,kinds] of sections){const p=createPage(text('교류 · ','Social · ','交流・')+text(ko,en,ja));button(exchange,text(ko,en,ja),()=>show(p));if(!kinds.length){button(p,text('우편함에서 선물 보내기','Send a gift from the mailbox','郵便箱から贈り物を送る'),()=>{dialog.close();location.hash='tab=mailbox'});continue}const choose=button(p,text('함께할 상대 고르기','Choose a companion','相手を選ぶ'),()=>show(targetPage));choose.classList.add('command-companion');for(const kind of kinds){const b=socialButtons.find(b=>b.dataset.directSocialAction===kind);if(b){b.hidden=false;b.className='command-menu-button';p.append(b)}}}
+ if(payment){payment.hidden=false;payment.classList.add('command-payment');const together=pages.find(p=>titles.get(p)===text('교류 · ','Social · ','交流・')+text('동행','Together','一緒に'));together?.append(payment)}
+ submit.hidden=true;command.append(submit);
+ command.addEventListener('click',e=>{const auto=e.target.closest('[data-auto-target]');if(auto)command.dataset.directTarget=auto.dataset.autoTarget},true);
+ command.addEventListener('click',e=>{const target=e.target.closest('button[data-direct-target]');if(target){command.querySelectorAll('.command-companion').forEach(b=>b.textContent=target.textContent.trim());if(history.length)show(history.pop(),false)}const action=e.target.closest('button[data-direct-social-action]');if(action)queueMicrotask(()=>{if(!command.dataset.directTarget){show(targetPage);return}submit.disabled=false;submit.click()})});
+ show(root,false);
 }

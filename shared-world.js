@@ -1,5 +1,5 @@
-import {withTownEditDraft} from './town-edit-draft.js?v=20260909dev297';
-import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260909dev297';
+import {withTownEditDraft} from './town-edit-draft.js?v=20260909dev298';
+import {state,runIsolatedWorld,emptyWorld} from './state.js?v=20260909dev298';
 
 export const decodeShared=value=>{try{return typeof value==='string'?JSON.parse(value):value||{}}catch{return {}}};
 const selections=new Map();
