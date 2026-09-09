@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import '../server-life.mjs';
-const {stageTownEdit,commitTownEdit,withTownEditDraft,townEditDraft}=await import('../town-edit-draft.js?v=20260909dev300');
+const {stageTownEdit,commitTownEdit,withTownEditDraft,townEditDraft}=await import('../town-edit-draft.js?v=20260909dev301');
 const s={activeGroupId:'test',selectedTownId:'town',group:{towns:[{id:'town',places:[{id:'p',name:'Park',imageScale:1}]}],buildingRevision:7},homes:[]};
 let calls=0;
 for(let i=0;i<30;i++)stageTownEdit(s,'saveBuilding',{id:'p',patch:{imageScale:1+i/10}});
@@ -8,6 +8,6 @@ assert.equal(calls,0);assert.equal(s.group.towns[0].places[0].imageScale,1);asse
 await assert.rejects(commitTownEdit(s,{saveTownEdit:async()=>{throw Error('offline')}}),/offline/);assert.ok(townEditDraft(s),'Failed save retains draft');
 await commitTownEdit(s,{saveTownEdit:async input=>{calls++;assert.equal(input.operations.length,1);assert.equal(input.revision,7);return {saved:true}}});assert.equal(calls,1);assert.equal(townEditDraft(s),undefined);
 let account='A';window.ParallelCityAuth={getInfo:()=>({user:{uid:account}})};stageTownEdit(s,'saveBuilding',{id:'p',patch:{name:'Private draft'}});account='B';assert.equal(townEditDraft(s),undefined,'Drafts are isolated per account');account='A';assert.equal(withTownEditDraft(s).group.towns[0].places[0].name,'Private draft');
-const game=await import('../state.js?v=20260909dev300');game.resetAll();game.state.catalog={food:[],drink:[]};for(let i=0;i<40;i++){assert.ok(game.addCatalogItem('food',{name:'F'+i}));assert.ok(game.addCatalogItem('drink',{name:'D'+i}))}assert.equal(game.addCatalogItem('book',{name:'Overflow'}),null);
+const game=await import('../state.js?v=20260909dev301');game.resetAll();game.state.catalog={food:[],drink:[]};for(let i=0;i<40;i++){assert.ok(game.addCatalogItem('food',{name:'F'+i}));assert.ok(game.addCatalogItem('drink',{name:'D'+i}))}assert.equal(game.addCatalogItem('book',{name:'Overflow'}),null);
 assert.equal(game.createCharacter(0),null);
 console.log('PASS 30 edits coalesce into one save; offline draft retained; personal dictionary aggregate cap; zero free slots cannot create');

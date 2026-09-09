@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 await import('../server-life.mjs');
-const game=await import('../state.js?v=20260909dev300');const {createCharacter,cloneState,replaceState}=game;
+const game=await import('../state.js?v=20260909dev301');const {createCharacter,cloneState,replaceState}=game;
 const {makeWorldPackage,importWorldPackage,mapPackageIds}=await import('../world-transfer.js');
 const {applyCharacterTransfers}=await import('../character-transfers.js');
 createCharacter(10);createCharacter(10);
