@@ -83,4 +83,3 @@ a.days={[key]:{entries:[{minute:date.getHours()*60+date.getMinutes()-30,withId:b
 assert.equal(automaticConflictAllowed(a,b,tense,tense,date,state),false,'A recent fight gives the pair a cooldown');
 console.log(`PASS settings-to-command path, 16 directional fields, official/explicit views, 3 languages, historical snapshots, conflict frequency (${fights}/450)`);
 game.flushSave(false);
-
