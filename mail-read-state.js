@@ -1,4 +1,4 @@
-import {accountStorage} from './account-storage.js?v=20260909dev295';
+import {accountStorage} from './account-storage.js?v=20260909dev296';
 const key='drawer-mail-read-v1';
 let raw,scope,marks={};
 function load(){

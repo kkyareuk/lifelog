@@ -1,9 +1,9 @@
 {
-  "version": "1.0.262",
-  "build": 19,
-  "sourceAndroidCode": 295,
-  "sourceAndroidVersion": "1.0.262",
-  "sourceCommit": "8600fcc",
+  "version": "1.0.263",
+  "build": 20,
+  "sourceAndroidCode": 296,
+  "sourceAndroidVersion": "1.0.263",
+  "sourceCommit": "221f72c",
   "stage": "production-port",
   "appStoreReady": false
 }

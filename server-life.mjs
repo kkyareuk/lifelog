@@ -2,9 +2,9 @@ globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
 globalThis.document??={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window??={addEventListener(){},dispatchEvent(){}};
 process.env.TZ='Asia/Seoul';
-const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260909dev295');
-const {buildSharedWorld}=await import('./shared-world.js?v=20260909dev295');
-const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260909dev295');
+const {directCharacterActivity,runIsolatedWorld}=await import('./state.js?v=20260909dev296');
+const {buildSharedWorld}=await import('./shared-world.js?v=20260909dev296');
+const {eventFor,withSimulationBatch}=await import('./simulation.js?v=20260909dev296');
 export function advanceSharedLife(snapshot,now,command=null){
   const world=buildSharedWorld(snapshot);
   return runIsolatedWorld(world,()=>withSimulationBatch(()=>{
