@@ -31,9 +31,13 @@ export function socialActivityCopy(kind,actor,target,topic='',options={}){
  const critic=controlling(actor)?actor:controlling(target)?target:null;
  const older=critic?.ageGroup==='노인';
  const extra=socialFood&&critic?[`${critic.name}${older?'은 경험을 내세워 생활 방식까지 훈수를 두고 있어요.':'은 사소한 방식까지 지적하며 자기 뜻대로 하려 해요.'}`,`${critic.name} ${older?'uses their experience to lecture about life.':'criticizes small details and tries to take control.'}`,`${critic.name}は${older?'経験を持ち出して暮らし方に口を出しています。':'細かいやり方を指摘し、自分の思い通りにしようとしています。'}`]:['','',''];
- const payment=options.payment||'split',payer=options.payerName||actor?.name||'';
- const bill=!['dine','tea','drinks'].includes(kind)?['','','']:payment==='treat'?[`${payer}이 계산을 맡기로 했어요.`,`${payer} offered to pay.`,`${payer}が支払いを引き受けました。`]:payment==='request'?[`${payer}에게 사 달라고 부탁했어요. 아직 동의한 것은 아니에요.`,`${payer} was asked to pay; they have not agreed yet.`,`${payer}におごってほしいと頼みました。まだ同意はしていません。`]:['각자 계산하기로 했어요.','They agreed to pay separately.','各自で支払うことにしました。'];
+ const bill=socialPaymentCopy(kind,actor,options);
  return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[item.remote?`${other}에게 ${item.labels[0]}`:`${other}와 ${item.labels[0].replace(/하기$/,'하는 중')}`,`${item.labels[1]} · ${other}`,`${other}と${item.labels[2]}`][i],desc:[item.lines[i],extra[i],bill[i]].filter(Boolean).join(' ')+(detail?[' 함께 정한 주제: ',' Chosen topic: ',' テーマ：'][i]+detail:'')}]))
+}
+
+export function socialPaymentCopy(kind,actor,options={}){
+ const payment=options.payment||'split',payer=options.payerName||actor?.name||'';
+ return !['dine','tea','drinks'].includes(kind)?['','','']:payment==='treat'?[`${payer}이 계산을 맡기로 했어요.`,`${payer} offered to pay.`,`${payer}が支払いを引き受けました。`]:payment==='request'?[`${payer}에게 사 달라고 부탁했어요. 아직 동의한 것은 아니에요.`,`${payer} was asked to pay; they have not agreed yet.`,`${payer}におごってほしいと頼みました。まだ同意はしていません。`]:['각자 계산하기로 했어요.','They agreed to pay separately.','各自で支払うことにしました。'];
 }
 
 export const ROMANTIC_ACTIVITIES=['kiss','kiss_cautious','kiss_reconcile','affection'];

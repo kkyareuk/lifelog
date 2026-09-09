@@ -1,5 +1,6 @@
-const CACHE_VERSION="drawer-village-v20260909-dev-291";
+const CACHE_VERSION="drawer-village-v20260909-dev305-log1";
 const CORE=[
+  "./relationship-context.js?v=20260909dev305",
   './gossip-reaction.js?v=20260909dev305',
   './character-transfers.js?v=20260909dev305',
   './proposal-mode.js?v=20260909dev305',

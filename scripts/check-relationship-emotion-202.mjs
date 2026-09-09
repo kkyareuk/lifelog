@@ -54,7 +54,7 @@ globalThis.localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)
 globalThis.window={DRAWER_VILLAGE_NATIVE:false,addEventListener:()=>{},dispatchEvent:()=>{}};
 globalThis.document={addEventListener:()=>{},querySelector:()=>null,activeElement:null,visibilityState:"visible"};
 const [{state:runtimeState},{timeline,eventFor}]=await Promise.all([
-  import(`../state.js?v=20260909dev302`),
+  import(`../state.js?v=20260909dev305`),
   import(`../simulation.js?relationship-sync=${Date.now()}`)
 ]);
 const runtimeCharacter=(id,name)=>({...basic(id,name),createdAt:1,ageGroup:"성인",gender:"설정하지 않음",speechStyle:"자동 · 성격에 맞춤",homeId:"shared-home",residences:[{homeId:"shared-home",isPrimary:true,stayPattern:"상시 거주"}],wake:"00:01",sleep:"23:59",job:"무직",jobTitle:"",traitExpressions:[],bodyProfile:{},theme:{primary:"#76513e"}});
@@ -78,7 +78,7 @@ assert.ok(jenEvent.groupInteraction&&gypEvent.groupInteraction,"한쪽이 대화
 assert.equal(jenEvent.interactionId,gypEvent.interactionId,"두 사람의 현재 장면이 같은 사건 ID를 사용한다");
 assert.equal(jenEvent.withId,"runtime-gyp");assert.equal(gypEvent.withId,"runtime-jen");
 assert.ok(/집소필라/.test(jenEvent.title)&&/젠할린/.test(gypEvent.title),"각자 관점의 제목에도 실제 상대를 표시한다");
-assert.match(jenEvent.title,/차갑게/,"복합 감정을 가진 쪽의 실제 행동을 제목에 드러낸다");
+assert.ok(jenEvent.relationshipCue,"복합 감정을 가진 쪽의 시선을 실제 장면 선택에 전달한다");
 assert.doesNotMatch(gypEvent.title,/차갑게/,"상대에게 같은 감정과 행동을 잘못 복사하지 않는다");
 assert.ok(!/각자 메모를 정리/.test(gypEvent.title),"대화 상대가 동시에 별개의 행동을 표시하지 않는다");
 assert.equal(characterMood(runtimeJen,jenEvent,runtimeState).label,"복잡한 끌림");
@@ -86,7 +86,8 @@ assert.equal(characterMood(runtimeGyp,gypEvent,runtimeState).label,"편안함","
 
 assert.doesNotMatch(gypEvent.desc,/집소필라의 대답을 기다|서두르지 않고 걷|다른 일을 시작하지/);
 assert.doesNotMatch(gypEvent.title,/젠할린 · 집소필라/);
-assert.match(jenEvent.desc,/차가운 말투/);
+assert.notEqual(jenEvent.desc,gypEvent.desc,"각자의 시선을 별도 행동으로 표현한다");
+assert.doesNotMatch(jenEvent.desc,/차가운 말투/,"복합 감정만으로 고정 말투를 강요하지 않는다");
 const soloMinute=Math.max(0,minute-1);
 const runtimeDayKey=Object.keys(runtimeState.characters["runtime-jen"].days)[0];
 runtimeState.characters["runtime-jen"].days[runtimeDayKey].entries=[{date:runtimeDayKey,minute:soloMinute,time:"",title:"거실에서 차를 마시는 중",desc:"거실 탁자에서 차를 천천히 마시고 있어요.",home:true,visitHomeId:"shared-home",room:"living",townId:"",mood:"차분"}];
@@ -104,6 +105,6 @@ assert.match(simulation,/\$\{likedThing\} 장르의 책을 골라 읽는 중/);
 assert.match(simulation,/synchronizedCounterpart/);
 assert.match(simulation,/coLocatedIds:coLocatedCharacterIds/);
 assert.ok(Number(gradle.match(/versionCode\s+(\d+)/)?.[1])>=209);
-assert.ok(index.includes("20260909dev302"));
+assert.ok(index.includes("20260909dev305"));
 
 console.log("관계 동기화·복합 감정·구체 행동 로그 검증 완료");

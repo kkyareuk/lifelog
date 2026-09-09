@@ -1,3 +1,4 @@
+import {relationshipBetween,viewSignals} from './relationship-context.js?v=20260909dev305';
 import {observedMoodEvents} from "./mood-event-causes.js?v=20260909dev305";
 // Mood is derived from the scene. Opening a screen never accumulates or mutates it.
 const goodTown=new Set(['매우 좋은 평판','좋은 평판','조용하고 평화로움','살기 좋음','주민들이 친절함','외지인을 환영함','자연 경관이 아름다움','의료·복지가 좋음']);
@@ -28,10 +29,7 @@ const preferenceTerms=(character,world,mode="likes")=>{
 };
 const termsInCopy=(terms,copy)=>terms.filter(term=>copy.includes(term)).slice(0,3);
 
-const relationshipFor=(sourceId,targetId,world)=>Object.values(world.relationships||{}).find(value=>{
-  const members=[value?.a,value?.b,...values(value?.memberIds),...values(value?.characterIds),...values(value?.members)].filter(Boolean);
-  return members.includes(sourceId)&&members.includes(targetId);
-});
+const relationshipFor=(a,b,world)=>relationshipBetween(world,a,b);
 const relationshipCopy=view=>Object.values(view||{}).filter(value=>typeof value==='string').join(' ');
 
 export function relationshipAppraisal(character,entry,world,language=world.uiLanguage||'ko'){
@@ -42,13 +40,13 @@ export function relationshipAppraisal(character,entry,world,language=world.uiLan
     if(!companion)return null;
     const relationship=relationshipFor(character.id,companionId,world);
     const view=world.characterViews?.[character.id]?.[companionId]||{};
-    const copy=relationshipCopy(view),official=`${relationship?.type||''} ${relationship?.stage||''}`,overall=String(view.overall||''),hasDirectedOverall=Boolean(overall&&!/그저 그런|낯선 사람/.test(overall));
+    const copy=relationshipCopy(view),official=relationship?.temporalStatus==='past'?'':`${relationship?.type||''} ${relationship?.stage||''}`,overall=String(view.overall||''),hasDirectedOverall=Boolean(overall&&!/정하지 않음|설정하지 않음/.test(overall));
     const loveHate=/애증/.test(overall);
     const loving=/연애 감정|깊이 사랑|없어서는 안 될|운명의 상대/.test(overall)||(!hasDirectedOverall&&/연인|부부/.test(official));
     const friendly=loving||loveHate||/인간적인 호감|친구로 좋아|소중하게|존경|동경|안쓰럽게/.test(overall)||(!hasDirectedOverall&&/친구|소꿉친구|부모·자녀|형제·자매/.test(official));
-    const hostile=/매우 싫|싫어|미워|증오|혐오|원망|적대|탐탁지|꺼림/.test(`${view.overall||''} ${official}`);
+    const hostile=/매우 싫|싫어|미워|증오|혐오|원망|적대|탐탁지|꺼림/.test(hasDirectedOverall?overall:official);
     const guardedOverall=/경계함|불편해함|부담스러워함|경쟁심/.test(overall);
-    const annoyed=/가끔 성가|종종 귀찮|많이 귀찮|보기만 해도 피곤|자주 성가/.test(view.annoyance||'');
+    const annoyed=viewSignals(view).annoyed;
     const aggressive=/거친 말을 하고 싶은|밀어내고 싶은|해치고 싶은|죽이고 싶을 만큼/.test(view.aggression||'');
     const unaware=/어렴풋|착각|전혀 모름|부정/.test(view.awareness||'');
     const uncomfortable=/숨 막|공간 공유는 불편|매우 불편|긴장하고 대화도 조심/.test(view.comfort||'');

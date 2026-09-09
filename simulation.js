@@ -1,3 +1,4 @@
+import {relationshipReaction,relationshipBetween,relationshipMembers,viewSignals,automaticConflictAllowed} from './relationship-context.js?v=20260909dev305';
 import {overheardGossip} from './gossip-reaction.js?v=20260909dev305';
 import {routineScene} from './routine-scenes.js?v=20260909dev305';
 import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev305';
@@ -302,7 +303,8 @@ function relationIndex(){
   if(sceneBatch&&sceneBatch.relations?.revision===sceneBatch.relationshipRevision)return sceneBatch.relations;
   const list=Object.values(state.relationships||{}),pairs=new Map();
   for(const relation of list){
-    for(const [a,b] of [[relation.a,relation.b],[relation.b,relation.a]]){
+    for(const a of relationshipMembers(relation))for(const b of relationshipMembers(relation)){
+      if(a===b)continue;
       if(!pairs.has(a))pairs.set(a,new Map());
       const targets=pairs.get(a);if(!targets.has(b))targets.set(b,[]);
       if(!targets.get(b).includes(relation))targets.get(b).push(relation);
@@ -3589,7 +3591,7 @@ function manualDirectiveEventFor(c,date=new Date()){
   return meetingScene(withResidenceLocation(c,entry(minute,copy.title||"부탁받은 일을 하는 중",copy.desc||"마을 주인이 정해 준 일을 바로 시작했어요.",{
     home:!atWork,placeId:atWork?place.id:"",room:directive.room||"living",visitHomeId:sharedHomeId,mood:directive.kind==="exercise"?"활기":"평온",stress:2,
     withId:companions[0],withIds:companions,participantOrder,groupInteraction:shared,interactionId:shared?`manual:${directive.id}`:undefined,
-    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
+    ...(directive.remote?{...directive.sourceScene,remote:true,withId:undefined,withIds:[],participantOrder:[],groupInteraction:false,interactionId:undefined}:{}),manualDirective:true,manualDirectiveId:directive.id,localizedCopy:directive.copy,relationshipCue:copy.relationshipCue,holdMinutes:Math.max(10,Math.ceil((Number(directive.endsAt)-Number(directive.startedAt))/60000))
   }),date),directive,c.id,now,state.uiLanguage);
 }
 // Repeated participant searches share base scenes only during a synchronous
@@ -3735,130 +3737,6 @@ function interactionInitiator(first,second,key){
   if(firstScore!==secondScore)return firstScore>secondScore?first:second;
   return hash(`${[first.id,second.id].sort().join(":")}:${key}:initiative`)%2?first:second;
 }
-function viewDrivenInteraction(place,first,second,date){
-  const firstView=explicitCharacterViewFor(first.id,second.id);
-  const secondView=explicitCharacterViewFor(second.id,first.id);
-  if(!Object.keys(firstView).length&&!Object.keys(secondView).length)return null;
-  const combined=[...Object.values(firstView),...Object.values(secondView)].join(" ");
-  const firstCombined=Object.values(firstView).join(" ");
-  const secondCombined=Object.values(secondView).join(" ");
-  const romantic=/연애 감정|사랑|연심|좋아함/.test(combined);
-  const uncomfortable=/불편|긴장|조심|숨막|거리|어색/.test(combined);
-  const distrust=/믿지 않|못 믿|불신|의심/.test(combined);
-  const annoyed=/귀찮|성가|짜증/.test(combined);
-  const attentive=/1순위|2순위|최우선|중요|자주 챙|늘 챙|많이 신경/.test(combined);
-  const seed=hash(`${first.id}:${second.id}:${dayKey(date)}:${place.id}:view`);
-  const pick=(items,offset=0)=>items[(seed+offset)%items.length];
-  const conflictedViewAction=(actor,target,view)=>{
-    const own=Object.values(view||{}).join(" "),ownLove=/연애 감정|사랑|소중|좋아함/.test(own),ownAnnoyed=/귀찮|성가|짜증|보기만 해도 피곤/.test(own),ownHarsh=/거친 말을 하고 싶은/.test(view?.aggression||""),ownMisread=/불편함으로 착각/.test(view?.awareness||"");
-    if(!(ownLove&&(ownAnnoyed||ownHarsh)&&ownMisread))return null;
-    return {
-      ko:`${target.name}에게 차가운 말투로 짧게 대답했어요. 퉁명스럽게 반응하면서도 이야기가 끝날 때까지 곁을 지켰어요. 시선은 자꾸 상대에게 돌아갔고, 짧은 대답 사이에도 상대의 반응을 살폈어요.`,
-      en:`${actor.name} gave ${target.name} a short, cold reply but stayed close until the conversation ended. Between curt replies, their gaze kept returning to their partner to check their reaction.`,
-      ja:`${actor.name}は${target.name}に冷たい口調で短く答えました。そっけなく答えながらも会話が終わるまでそばにいました。短い返事の合間にも、相手の様子が気になって何度も視線を向けました。`
-    }[state.uiLanguage]||`${target.name}에게 차가운 말투로 짧게 대답했어요. 퉁명스럽게 반응하면서도 이야기가 끝날 때까지 곁을 지켰어요. 시선은 자꾸 상대에게 돌아갔고, 짧은 대답 사이에도 상대의 반응을 살폈어요.`;
-  };
-  const firstConflict=conflictedViewAction(first,second,firstView),secondConflict=conflictedViewAction(second,first,secondView);
-  if(firstConflict||secondConflict){
-    const conflictedTitles={
-      ko:[`${second.name}에게 차갑게 대하는 중`,`${first.name}에게 차갑게 대하는 중`],
-      en:[`Being cold toward ${second.name}`,`Being cold toward ${first.name}`],
-      ja:[`${second.name}に冷たく接しているところ`,`${first.name}に冷たく接しているところ`]
-    }[state.uiLanguage]||[`${second.name}에게 차갑게 대하는 중`,`${first.name}에게 차갑게 대하는 중`];
-    const listeningTitles={
-      ko:[`${togetherWith(second.name)} 대화하는 중`,`${togetherWith(first.name)} 대화하는 중`],
-      en:[`Talking with ${second.name}`,`Talking with ${first.name}`],
-      ja:[`${second.name}と話しているところ`,`${first.name}と話しているところ`]
-    }[state.uiLanguage]||[`${togetherWith(second.name)} 대화하는 중`,`${togetherWith(first.name)} 대화하는 중`];
-    const titles=[firstConflict?conflictedTitles[0]:listeningTitles[0],secondConflict?conflictedTitles[1]:listeningTitles[1]];
-    const neutral=(actor,target)=>({
-      ko:`${target.name}의 차가운 말투에 잠시 말을 멈췄어요. 표정을 살피다가 방금 하던 이야기를 짧게 되물었어요.`,
-      en:`${actor.name} paused at ${target.name}'s cold tone, watched their expression, and asked a brief question about what they had just said.`,
-      ja:`${actor.name}は${target.name}の冷たい口調に一瞬言葉を止めました。表情をうかがい、先ほどの話について短く聞き返しました。`
-    }[state.uiLanguage]);
-    return {title:titles[0],firstTitle:titles[0],secondTitle:titles[1],first:firstConflict||neutral(first,second),second:secondConflict||neutral(second,first)};
-  }
-  if(romantic&&uncomfortable){
-    const firstTitle=`${togetherWith(second.name)} 가까이 있지만 조심스럽게 시간을 보내는 중`;
-    const secondTitle=`${togetherWith(first.name)} 가까이 있지만 조심스럽게 시간을 보내는 중`;
-    return {
-    title:firstTitle,firstTitle,secondTitle,
-    first:pick([
-      `${second.name} 곁에 머물렀지만 거리를 갑자기 좁히지는 않았어요. 좋아하는 마음과 별개로 긴장되는 기색을 숨기며 짧은 질문부터 건넸어요.`,
-      `${second.name}에게 하고 싶은 말을 몇 번 삼킨 뒤 부담스럽지 않은 이야기부터 꺼냈어요. 불편함이 남아 있어도 자리를 피하지는 않았어요.`,
-      `${second.name}의 반응을 살피며 한 자리 정도의 간격을 남겨 두었어요. 가까워지고 싶지만 서두르지 않기로 했어요.`
-    ]),
-    second:pick([
-      `${first.name}의 조심스러운 태도를 알아채고 대답할 시간을 충분히 두었어요. 어색한 침묵이 와도 억지로 접촉하지 않았어요.`,
-      `${first.name}이 긴장하는 것을 보고 목소리를 낮췄어요. 둘은 부담이 덜한 주제로 천천히 대화를 이어 갔어요.`,
-      `${first.name}과 눈이 마주치자 잠깐 시선을 피했지만 자리를 뜨지는 않았어요. 불편함 속에서도 함께 있고 싶은 마음이 남아 있었어요.`
-    ],1)
-  };}
-  if(romantic&&distrust){
-    const firstTitle=`${second.name}에게 마음은 있지만 쉽게 믿지 못한 채 이야기하는 중`;
-    const secondTitle=`${first.name}에게 마음은 있지만 쉽게 믿지 못한 채 이야기하는 중`;
-    return {
-    title:firstTitle,firstTitle,secondTitle,
-    first:pick([
-      `${second.name}의 말을 곧이곧대로 믿지는 않았지만 대화를 끊지도 않았어요. 애매한 부분을 하나씩 되물으며 진심을 확인했어요.`,
-      `${second.name}에게 마음이 가면서도 약속은 쉽게 받아들이지 않았어요. 대신 오늘 있었던 일을 구체적으로 물었어요.`,
-      `${second.name}의 표정과 말이 맞는지 잠시 살폈어요. 의심은 남았지만 관심까지 거두지는 않았어요.`
-    ]),
-    second:pick([
-      `${first.name}이 경계하는 것을 알아차리고 큰 약속 대신 지금 할 수 있는 일을 먼저 보여 줬어요.`,
-      `${first.name}의 확인 질문에 얼버무리지 않고 짧고 분명하게 답했어요.`,
-      `${first.name}이 쉽게 믿지 않는다는 것을 알고 말보다 행동으로 답하려 했어요.`
-    ],1)
-  };}
-  if(romantic&&attentive){
-    const firstTitle=`${second.name}의 취향을 챙기며 함께 시간을 보내는 중`;
-    const secondTitle=`${first.name}의 취향을 챙기며 함께 시간을 보내는 중`;
-    return {
-    title:firstTitle,firstTitle,secondTitle,
-    first:pick([
-      `${second.name}이 전에 말했던 취향을 기억해 두었다가 지금 하기 좋은 일을 먼저 제안했어요.`,
-      `${second.name}의 일정과 기분을 살핀 뒤 무리하지 않아도 되는 계획을 골랐어요.`,
-      `${second.name}이 편하게 머물 자리를 먼저 확인하고 필요한 것을 묻기 전에 챙겨 두었어요.`,
-      `${second.name}에게 어울릴 것 같은 음악과 볼거리를 골라 보여 주며 반응을 기다렸어요.`
-    ]),
-    second:pick([
-      `${first.name}의 세심한 준비를 알아채고 다음에 함께하고 싶은 일을 하나 보탰어요.`,
-      `${first.name}이 고른 계획을 따라가다가 자기 취향도 솔직하게 말했어요.`,
-      `${first.name}이 기억해 준 것을 눈치채고 짧게 고마움을 전했어요.`,
-      `${first.name}의 제안을 하나씩 살펴보며 가장 마음에 드는 것을 골랐어요.`
-    ],1)
-  };}
-  if(annoyed){
-    const placeType=String(place?.type||place?.name||"");
-    const scenePool=/침실|침대|bedroom|bed/i.test(placeType)?[
-      {title:"쉬는 자리를 맞추며 이야기를 나누는 중",first:"조금 더 편하게 쉬고 싶다며 자세를 고쳐 앉고 옆자리를 비웠어요.",second:"자리를 조금 내어 주며 자기 쪽도 편하게 앉을 수 있도록 자세를 바꿨어요.",copy:{en:{title:"Talking while making room to rest",first:"They adjusted their posture and made some room beside them.",second:"They shifted a little so both could sit comfortably."},ja:{title:"休む場所を譲り合いながら話しているところ",first:"楽に休めるよう姿勢を直し、隣を少し空けました。",second:"少し場所を譲り、お互いが楽に座れるよう姿勢を変えました。"}}}
-    ]:/주방/.test(placeType)?[
-      {title:"찻잔을 둘 자리를 놓고 툭툭 받아치는 중",first:"찻잔을 조리대 끝에 두지 말라고 짚은 뒤 자리를 직접 비웠어요.",second:"그 정도는 바로 치울 수 있다며 받아치고 찻잔을 물기 없는 쪽으로 옮겼어요."},
-      {title:"간식 접시를 누가 치울지 짧게 말씨름하는 중",first:"방금 먹은 사람이 치우는 게 맞다고 말하며 빈 포장부터 한데 모았어요.",second:"준비한 사람이 따로 있지 않냐고 맞받아치면서도 접시는 싱크대로 가져갔어요."}
-    ]:/카페|음식점/.test(placeType)?[
-      {title:"메뉴를 고르며 티격태격하는 중",first:"메뉴판을 넘겨 보다가 먹고 싶은 메뉴 두 개를 가리키며, 여기서 하나씩 고르자고 말했어요.",second:"천천히 봐야 후회하지 않는다며 받아치면서도, 마음이 덜 가는 메뉴 하나는 바로 제외했어요.",copy:{en:{title:"Bickering while choosing from the menu",first:"After looking through the menu, they pointed to two dishes they wanted and suggested choosing one from those.",second:"They replied that rushing would only lead to regret, but still ruled out the less appealing dish."},ja:{title:"メニューを選びながら軽く言い合っているところ",first:"メニューを見ながら食べたい料理を二つ指し、ここから一つずつ選ぼうと提案しました。",second:"急いで決めると後悔すると言い返しつつも、気持ちが向かない一品はすぐ候補から外しました。"}}},
-      {title:"마지막 한입을 누가 먹을지 실랑이하는 중",first:"처음부터 먹고 싶었다면 진작 말했어야 한다며 접시를 가운데로 밀었어요.",second:"혼자 다 먹을 생각은 아니었다고 받아치며 정확히 반으로 나눴어요."}
-    ]:/공원|산책/.test(placeType)?[
-      {title:"산책 방향을 두고 짧게 말씨름하는 중",first:"방금 지나온 길로 되돌아가기는 싫다며 표지판의 다른 길을 가리켰어요.",second:"그 길이 더 멀다고 바로 받아쳤지만, 지도를 다시 보고 우회로를 하나 골랐어요."},
-      {title:"벤치 자리를 고르며 서로 한마디씩 보태는 중",first:"햇빛이 정면으로 드는 자리는 피하자며 그늘 쪽 빈자리를 먼저 확인했어요.",second:"바람은 반대쪽이 낫다고 맞받아치고 둘 다 덜 불편한 가운데 자리에 앉았어요."}
-    ]:[
-      {title:"물건을 둘 자리를 놓고 툭툭 받아치는 중",first:"사용한 물건은 찾기 쉬운 자리에 돌려놓자고 말하며 빈 공간을 가리켰어요.",second:"자기 방식도 나름의 순서가 있다고 받아치면서도 통로를 막던 물건은 옮겼어요."},
-      {title:"다음 순서를 정하며 짧게 의견을 주고받는 중",first:"한꺼번에 바꾸지 말고 급한 일부터 하자며 순서를 세 가지로 줄였어요.",second:"자기 차례를 마음대로 정하지 말라고 받아친 뒤 두 번째 순서에는 동의했어요."},
-      {title:"설명에서 빠진 부분을 두고 한마디씩 보태는 중",first:"중간 과정이 빠졌다며 정확히 어느 부분부터 다시 말해야 하는지 짚었어요.",second:"그 정도는 알아들을 줄 알았다고 받아치고 빠진 설명을 짧게 덧붙였어요."}
-    ];
-    const selectedScene=pick(scenePool,3),chosen=selectedScene.copy?.[state.uiLanguage]||selectedScene;
-    const initiator=interactionInitiator(first,second,`${place?.id||placeType}:${dayKey(date)}`),firstLeads=initiator.id===first.id;
-    const firstAction=firstLeads?chosen.first:chosen.second,secondAction=firstLeads?chosen.second:chosen.first;
-    const namedTitle=name=>selectedScene.copy?.[state.uiLanguage]?(state.uiLanguage==="en"?`${chosen.title} with ${name}`:`${name}と${chosen.title}`):`${togetherWith(name)} ${chosen.title}`;
-    const firstTitle=namedTitle(second.name);
-    const secondTitle=namedTitle(first.name);
-    return {
-    title:firstTitle,firstTitle,secondTitle,
-    first:`${firstAction}${/연애 감정|사랑|좋아함/.test(firstCombined)&&state.uiLanguage==="ko"?" 말투는 퉁명스러웠지만 상대가 곤란해질 부분은 따로 챙겼어요.":""}`,
-    second:`${secondAction}${/연애 감정|사랑|좋아함/.test(secondCombined)&&state.uiLanguage==="ko"?" 투덜거리면서도 상대가 신경 쓰던 부분은 그대로 두지 않았어요.":""}`
-  };}
-  return null;
-}
 function datePurpose(place,first,second,date){
   const type=place?.type||"";
   const choices={
@@ -3981,9 +3859,9 @@ function placeObjectScene(place,first,second,relation,date){
     pool=state.homes[homeId]?.rooms?.[roomKey]?.furniture||[];
   }
   if(!pool.length)return null;
-  const object=pool[hash(`${first.id}:${second.id}:${place.id}:${dayKey(date)}:object`)%pool.length];
+  const object=pool[hash(`${first.id}:${second.id}:${place.id}:${dayKey(date)}:${Math.floor(nowMin(date)/45)}:object`)%pool.length];
   const viewA=characterViewFor(first.id,second.id)||{},viewB=characterViewFor(second.id,first.id)||{};
-  const tense=["혐관","적","라이벌"].includes(relation?.type)||/자주 충돌|격렬|파국/.test(`${viewA.conflictIntensity} ${viewB.conflictIntensity}`);
+  const tense=automaticConflictAllowed(first,second,viewA,viewB,date,state);
   const playful=safePlayfulPair(first,second,relation);
   if(tense){
     const scenes=[
@@ -4472,9 +4350,24 @@ function relationCombinationScene(place,first,second,relation,date){
   };
 }
 function concreteInteraction(place,first,second,relation,date=new Date()){
+  relation=relationshipBetween(state,first.id,second.id)||relation;
+  const a=characterViewFor(first.id,second.id),b=characterViewFor(second.id,first.id);
+  const hasContext=relation||Object.keys(explicitCharacterViewFor(first.id,second.id)).length||Object.keys(explicitCharacterViewFor(second.id,first.id)).length;
+  const safeView=view=>{const v=viewSignals(view);return !v.afraid&&!v.distrust&&!v.hostile&&!v.guarded&&!v.uncomfortable&&!v.annoyed&&!v.unaware&&v.conflict<=0&&v.urge<=0};
+  // Keep the established affectionate scenes when both perspectives support
+  // them; tension and one-sided feelings use each character's own reaction.
+  const mutualComfortScene=safeView(a)&&safeView(b)&&viewSignals(a).romantic===viewSignals(b).romantic&&hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/45)}:familiar`)%3===0;
+  if(hasContext&&!mutualComfortScene&&!automaticConflictAllowed(first,second,a,b,date,state)){
+    const seed=`${dayKey(date)}:${Math.floor(nowMin(date)/45)}:${place?.id}`;
+    const react=(actor,other,view)=>{
+      const prior=(actor.days?.[dayKey(date)]?.entries||[]).filter(e=>e.minute<nowMin(date)).at(-1);
+      return relationshipReaction(actor,other,view,relation,{seed,language:state.uiLanguage,previousKeys:[prior?.relationshipCue].filter(Boolean),moodScore:prior?characterMood(actor,prior,state,'ko').score:0});
+    };
+    const ar=react(first,second,a),br=react(second,first,b);
+    const title=(other,reaction)=>state.uiLanguage==='en'?`${reaction.title} · ${other.name}`:state.uiLanguage==='ja'?`${other.name}と${reaction.title}`:`${togetherWith(other.name)} ${reaction.title}`;
+    return {title:title(second,ar),firstTitle:title(second,ar),secondTitle:title(first,br),first:ar.text,second:br.text,relationshipContext:true,relationshipCues:{[first.id]:ar.key,[second.id]:br.key}};
+  }
   const name=second.name,type=place?.type||"";
-  const viewScene=viewDrivenInteraction(place,first,second,date);
-  if(viewScene)return viewScene;
   const jokeVariant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/15)}:one-sided-joke`);
   const avoidsJokes=[characterViewFor(first.id,second.id),characterViewFor(second.id,first.id)].some(v=>/두려|혐오|경계|불편|싫/.test(`${v?.overall||''} ${v?.comfort||''} ${v?.fear||''}`));
   if(!avoidsJokes&&jokeVariant%4===0){const joke=oneSidedJoke(first,second,Math.floor(jokeVariant/4),state.uiLanguage);if(joke)return joke}
@@ -4858,7 +4751,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   if(!scene)return current;
   if(!dating){
     const objectScene=placeObjectScene(place,pair.first,pair.second,pair.relation,date);
-    if(objectScene&&!/때리|싸우|충돌|밀어|몸싸움/.test(`${scene.title} ${scene.first} ${scene.second}`))scene={...scene,...objectScene};
+    if(objectScene&&!scene.relationshipContext&&!/때리|싸우|충돌|밀어|몸싸움/.test(`${scene.title} ${scene.first} ${scene.second}`))scene={...scene,...objectScene};
     const encounter=significantEncounter(pair,group,date);
     if(encounter){
       scene.first+=encounter;
@@ -4917,7 +4810,7 @@ function sharedPlaceScene(c,current,date,sharedContext=null){
   const perspectiveDesc=resolveEntityParticles([compactLogDescription(detail),topic].filter(Boolean).join(" "));
   const shortConflict=!dating&&/짧게 말씨름|말다툼|의견이 부딪|날 선 대화/.test(sharedActionText);
   const sharedPerspectives=Object.fromEntries([[pair.first,scene.firstTitle||scene.title,scene.first],[pair.second,scene.secondTitle||String(scene.title||" ").split(pair.second.name).join(pair.first.name),scene.second]].map(([person,t,d])=>[person.id,{title:resolveEntityParticles(t),desc:resolveEntityParticles(compactLogDescription(d))}]));
-  return {...current,baseTitle,baseDesc,title:resolveEntityParticles(title),desc:perspectiveDesc,sharedPerspectives,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose,holdMinutes:dating?current.holdMinutes:(shortConflict?12:25)};
+  return {...current,relationshipCue:scene.relationshipCues?.[c.id],automaticConflict:!dating&&/말다툼|거칠게 충돌|신경전|몸싸움/.test(scene.title||""),baseTitle,baseDesc,title:resolveEntityParticles(title),desc:perspectiveDesc,sharedPerspectives,sharedActionText,sharedCanonicalTitle,sharedCanonicalDesc,withId:actualPartnerId,withIds:participantOrder.filter(id=>id!==c.id),participantOrder,interactionId,groupInteraction:true,dateGroup:dateGroup||current.dateGroup,mood:dating?"데이트":current.mood,datePurpose:dating?purpose:current.datePurpose,holdMinutes:dating?current.holdMinutes:(shortConflict?12:25)};
 }
 function companionAlignedBaseEvent(c,current,date){
   if(!c||activeScheduledRoutine(c,date)||isProtectedSoloActivity(current))return current;

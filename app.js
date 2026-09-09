@@ -1550,12 +1550,12 @@ function renderAfterCommand(){
  requestAnimationFrame(()=>setTimeout(()=>{commandRenderQueued=false;render()},0));
 }
 
-function render({force=false}={}){
+function render({force=false,selectionOnly=false,sceneDate=null}={}){
   if(!force&&document.querySelector('.direct-command-dialog[open]')){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
   syncBackgroundMusic(state);
-  if(state.activeTab==="observe")void window.DrawerVillageGroups?.refreshMailbox?.().catch(()=>{});
+  if(!selectionOnly&&state.activeTab==="observe")void window.DrawerVillageGroups?.refreshMailbox?.().catch(()=>{});
   if(!force&&state.activeTab==='mailbox'&&document.querySelector('dialog[open]'))return;
   scheduleMeetingRefresh();
   clearTimeout(mailboxRefreshTimer);
@@ -1632,7 +1632,7 @@ function render({force=false}={}){
     if(["character","mailbox"].includes(state.activeTab))ensureDailyQuestionSchedule();
     prepareActiveHomeLife();
     relationshipRailCleanup.splice(0).forEach(cleanup=>cleanup());
-    renderApp(state);
+    renderApp(state,sceneDate||new Date());
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
     // enclosing form. Accidental form submissions were jumping mobile pages
@@ -1671,7 +1671,7 @@ function render({force=false}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
-    requestAnimationFrame(()=>scheduleLiveSceneRefresh());
+    if(!selectionOnly)requestAnimationFrame(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
       if(main){main.scrollLeft=0;main.scrollTop=0}
@@ -2374,10 +2374,10 @@ function bindCharacterSceneLayoutEditors(){
   });
 }
 
-function activateCharacterInObservedTown(id){
+function activateCharacterInObservedTown(id,date=new Date()){
   const character=state.characters[id];
   if(!character)return;
-  const townId=eventFor(character)?.townId||character.townId;
+  const townId=eventFor(character,date)?.townId||character.townId;
   if(townId&&townId!==state.activeTownId&&state.towns.some(town=>town.id===townId))switchTown(townId,{deferSave:true});
   setActive(id);
 }
@@ -2420,7 +2420,7 @@ function bindNativeObserveCharacterSwipe(){
     const direction=dx<0?1:-1;
     const next=localOrder[(currentIndex+direction+localOrder.length)%localOrder.length];
     if(shared)window.DrawerVillageGroups?.selectResident?.(next);
-    else{activateCharacterInObservedTown(next);render();}
+    else withSimulationBatch(()=>{const date=new Date();activateCharacterInObservedTown(next,date);render({selectionOnly:true,sceneDate:date});});
   };
   hud.addEventListener("touchstart",event=>{
     if(event.touches.length!==1)return;

@@ -4637,9 +4637,9 @@ function view(){
   return content;
 }
 export function nativeLogContents(){const c=active();return c?dailyLogItems(displayTimeline(c,eventFor(c)),c):""}
-export function renderApp(next){
+export function renderApp(next,date=new Date()){
   const previous=renderSceneDate,previousProjected=projectedRenderScenes;
-  projectedRenderScenes=new WeakMap();renderSceneDate=new Date();
+  projectedRenderScenes=new WeakMap();renderSceneDate=date;
   try{return withSimulationBatch(()=>renderAppContents(next))}finally{renderSceneDate=previous;projectedRenderScenes=previousProjected}
 }
 function renderAppContents(next){

@@ -58,6 +58,7 @@ const actionCopy={
 // detailed Korean copy intact in Korean, and provide a localized semantic
 // fallback for every remaining generated entry in English and Japanese.
 export function localizeLifeLog(entry,language,world,characterId=""){
+  if(entry?.manualDirective&&!entry.transit&&entry.localizedCopy?.[language]?.desc)return {...entry,...entry.localizedCopy[language],displayLanguage:language};
   if(entry.mentorScene&&language!=="ko"){
     const name=companionFor(entry,world,characterId)?.name||"",teaching=entry.mentorTeaching;
     const [title,desc]=language==="ja"?(teaching?[`${name}に教えた内容を振り返っているところ`,`${name}の説明を聞き、理解できた点ともう一度練習する点を確認しました。`]:[`${name}に習った内容を質問しているところ`,`${name}に行き詰まった箇所を見せ、説明を聞いてもう一度試しました。`]):(teaching?[`Reviewing a lesson with ${name}`,`They listened to ${name}'s explanation and identified what was understood and what needed more practice.`]:[`Asking ${name} about a lesson`,`They showed ${name} where they got stuck and tried again with guidance.`]);

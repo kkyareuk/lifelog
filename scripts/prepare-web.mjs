@@ -30,6 +30,7 @@ const includedDirectories=new Set([
 ]);
 
 const includedFiles=new Set([
+  "relationship-context.js",
   "life-tasks.js","automatic-activities.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "character-placement.js","character-mood.js","character-scene-image.js","life-log-localization.js","building-recovery.js","observe-responsive.js",
   "direct-steps.js","meeting-journey.js","group-push.js","creative-options.js","shared-world.js","drink-log.js","settings-transfer.js","multiplayer-art.js","dictionary.js","world-transfer.css","mailbox.css","multiplayer-directory.css","dictionary.css","dictionary-copy.js","notification-mail.js","home-editor-ui.js","home-editor-ui.css","groups.js","groups.css",
@@ -130,7 +131,7 @@ const requiredFiles=[
 for(const file of requiredFiles)await readFile(new URL(file,output));
 
 const outputPath=fileURLToPath(output);
-const expectedModuleCache="20260909dev302";
+const expectedModuleCache="20260909dev305";
 const relativeImports=source=>{
   const found=[];
   const pattern=/(?:from\s*|import\s*\(\s*|import\s+)["'](\.[^"']+)["']/g;
@@ -152,7 +153,14 @@ while(moduleQueue.length){
     const dependencyUrl=new URL(specifier,moduleUrl);dependencyUrl.search="";dependencyUrl.hash="";
     const dependencyName=relative(outputPath,fileURLToPath(dependencyUrl)).replaceAll("\\","/");
     if(dependencyName.startsWith("../"))throw new Error(`${name}이 웹 배포 폴더 밖의 모듈을 참조합니다: ${specifier}`);
-    await access(dependencyUrl);
+    // Follow the actual import graph, as the native packager does. A new
+    // runtime module must not disappear merely because the seed list is old.
+    try{await access(dependencyUrl)}catch(error){
+      if(error.code!=="ENOENT"||!dependencyName.endsWith(".js"))throw error;
+      const sourceUrl=new URL(dependencyName,root);
+      await mkdir(new URL("./",dependencyUrl),{recursive:true});
+      await writeFile(dependencyUrl,await readSource(sourceUrl));
+    }
     if(dependencyName.endsWith(".js"))moduleQueue.push(dependencyName);
   }
 }
@@ -164,6 +172,6 @@ if(!index.includes(expectedModuleCache))throw new Error("최신 웹 UI 캐시 �
 if(!app.includes(expectedModuleCache))throw new Error("최신 앱 모듈 표식이 app.js에 없습니다.");
 if(!index.includes(expectedModuleCache))throw new Error("최신 글꼴 CSS 캐시 표식이 index.html에 없습니다.");
 if(!index.includes(expectedModuleCache)||!app.includes(expectedModuleCache))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
-if(!serviceWorker.includes("drawer-village-v20260907-dev-266"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
+if(!serviceWorker.includes("drawer-village-v20260909-dev305-log1"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

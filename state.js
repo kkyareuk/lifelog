@@ -1,7 +1,9 @@
+import {relationshipReaction,relationshipBetween,relationshipMembers} from './relationship-context.js?v=20260909dev305';
+import {characterMood} from './character-mood.js?v=20260909dev305';
 import {lifeTask,lifeCopy} from './life-tasks.js?v=20260909dev305';
 import {automaticConversation,hobbyChoice,ignoresOthers,dislikesPerson,gossipReasons,seededChoice} from './automatic-activities.js?v=20260909dev305';
 import {workTasks} from './social-activities.js?v=20260909dev305';
-import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
+import {SOCIAL_ACTIVITIES,socialActivityCopy,socialPaymentCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
 import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev305';
 import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev305';
 let directiveSceneResolver=null,giftCopyResolver=null;
@@ -1385,6 +1387,26 @@ DIRECTIVE_COPY.rest=DIRECTIVE_COPY.relax;
 for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile','affection'])DIRECTIVE_COPY[kind]={room:'living',minutes:20,social:true};
 for(const kind of Object.keys(SOCIAL_ACTIVITIES))DIRECTIVE_COPY[kind]={room:"living",minutes:20,social:true};
 function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
+  const copy=baseSocialDirectiveCopy(kind,actor,target,subject,topic,options);
+  if(!copy||!['talk','hangout','dine','tea','drinks','cook_together','debate','custom_social'].includes(kind))return copy;
+  const date=new Date(options.now??Date.now()),minute=date.getHours()*60+date.getMinutes();
+  const key=`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+  const prior=(actor.days?.[key]?.entries||[]).filter(e=>e.minute<minute).at(-1);
+  const moodScore=prior?characterMood(actor,prior,state,'ko').score:0;
+  const relation=relationshipBetween(state,actor.id,target.id),view=characterViewFor(actor.id,target.id);
+  const previousKeys=[state.characterDirectives?.[actor.id]?.copy?.ko?.relationshipCue].filter(Boolean);
+  const actions={talk:['방금 꺼낸 이야기를 이어 가고 있어요.','They continue the topic just raised.','今出た話題を続けています。'],hangout:['같이할 일을 골라 시간을 보내고 있어요.','They are choosing something to do together.','一緒にすることを選んで過ごしています。'],dine:['같은 식탁에서 식사를 하고 있어요.','They are eating at the same table.','同じ食卓で食事をしています。'],tea:['차를 마시며 잠시 함께 쉬고 있어요.','They are taking a break over tea.','お茶を飲みながら一緒に休んでいます。'],drinks:['같은 자리에서 술을 마시고 있어요.','They are having drinks together.','同じ席でお酒を飲んでいます。'],cook_together:['요리할 재료와 맡을 일을 확인하고 있어요.','They are checking the ingredients and dividing the cooking tasks.','料理の材料と分担を確認しています。']};
+  for(const [i,language] of ['ko','en','ja'].entries()){
+    const reaction=relationshipReaction(actor,target,view,relation,{seed:String(date.getTime()),language,previousKeys,moodScore,kind});
+    const detail=String(topic||'').trim();
+    const localizedTopic=detail==='오늘 하루'?['오늘 하루','their day','今日の出来事'][i]:detail;
+    const action=localizedTopic&&['talk','debate','custom_social'].includes(kind)?[`${localizedTopic}에 관한 이야기를 이어 가고 있어요.`,`They continue discussing ${localizedTopic}.`,`${localizedTopic}について話を続けています。`][i]:(actions[kind]||actions.talk)[i];
+    const payment=socialPaymentCopy(kind,actor,options)[i];
+    copy[language]={...copy[language],desc:[action,reaction.text,payment].filter(Boolean).join(' '),relationshipCue:reaction.key};
+  }
+  return copy;
+}
+function baseSocialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   if(kind==='gossip'&&subject){const criticizing=dislikesPerson(state,actor,subject)&&!ignoresOthers(actor),distant=ignoresOthers(actor);const reasons=gossipReasons(characterViewFor(actor.id,subject.id),subject);const desc=criticizing&&reasons.length?reasons[Math.floor(seededChoice(actor.id+':'+subject.id+':'+(options.now||Math.floor(Date.now()/60000)))()*reasons.length)]:distant?['남의 이야기에 별 관심이 없어 짧게 듣고 다른 화제로 돌리려 해요.','They show little interest in gossip and try to change the subject.','他人の話にはあまり関心を示さず、話題を変えようとしています。']:['상대의 불만을 듣지만 섣불리 맞장구치지는 않고 있어요.','They listen to the complaint without rushing to agree.','相手の不満を聞きつつ、すぐには同調していません。'];return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 ${subject.name}에 대해 이야기하는 중`,`Talking with ${target.name} about ${subject.name}`,`${target.name}と${subject.name}について話すところ`][i],desc:desc[i]}]))}
 
   const extra=socialActivityCopy(kind,actor,target,topic,options);if(extra)return extra;
@@ -1419,7 +1441,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   let task=options.lifeTask==='hobby_auto'?hobbyChoice(state,character,characterId+':'+(options.now||Date.now())):lifeTask(options.lifeTask);
   if(options.lifeTask==='smoke'){if(!['성인','노인'].includes(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
   if(options.lifeTask&&!task)return false;
-  if(task){if(task.id==='alcohol'&&!['성인','노인'].includes(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...lifeCopy(task)}}
+  if(task){if(task.id==='alcohol'&&!['성인','노인'].includes(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...lifeCopy(task,character)}}
   if(['talk','gossip','debate','custom_social'].includes(kind)&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
@@ -1939,9 +1961,9 @@ function withoutOrphanedGeneratedView(explicit,relations){
   if(!edited.has("fear")&&["전혀 두렵지 않음","조금 두려움","경계하며 두려워함"].includes(cleaned.fear))delete cleaned.fear;
   return cleaned;
 }
-export function explicitCharacterViewFor(sourceId,targetId){
-  const relations=Object.values(state.relationships||{}).filter(item=>
-    (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
+export function explicitCharacterViewFor(sourceId,targetId,indexedRelations=null){
+  const relations=indexedRelations??Object.values(state.relationships||{}).filter(item=>
+    relationshipMembers(item).includes(sourceId)&&relationshipMembers(item).includes(targetId)
   );
   const explicit={...withoutOrphanedGeneratedView(state.characterViews?.[sourceId]?.[targetId]||{},relations)};
   delete explicit._editedFields;
@@ -1963,14 +1985,20 @@ export function updateCharacterView(sourceId,targetId,field,value,{persist=false
     delete next.rapport;
   }
   state.characterViews[sourceId][targetId]=next;
+  // Both perspectives depend on this view. Invalidate future scene inputs,
+  // while immutable entries and an already started directive retain their copy.
+  for(const id of [sourceId,targetId]){
+    const character=state.characters[id];
+    character.timelineResetAt=Math.max(Date.now(),Number(character.timelineResetAt||0)+1);
+  }
   if(persist)save(true);
   return true;
 }
 export function characterViewFor(sourceId,targetId,indexedRelations=null){
   const relations=indexedRelations??Object.values(state.relationships||{}).filter(item=>
-    (item.a===sourceId&&item.b===targetId)||(item.a===targetId&&item.b===sourceId)
+    relationshipMembers(item).includes(sourceId)&&relationshipMembers(item).includes(targetId)
   );
-  const explicit=explicitCharacterViewFor(sourceId,targetId);
+  const explicit=explicitCharacterViewFor(sourceId,targetId,relations);
   if(explicit.touchIntensity==="성인 간 합의된 친밀한 접촉까지")explicit.touchIntensity="성인 간 친밀한 접촉까지";
   const currentRelations=relations.filter(item=>item.temporalStatus!=="past");
   let defaults={overall:"낯선 사람으로 여김",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",fear:"설정하지 않음",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
