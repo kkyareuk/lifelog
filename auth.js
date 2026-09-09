@@ -841,6 +841,14 @@ async function createSharedResident(input){
 }
 let groupUnsubscribers=[];
 let accountMailbox={uid:'',at:0,data:{}},mailboxRequest=null,mailboxRefreshQueued=false;
+let mailboxSignalStop=null,mailboxSignalTimer=null;
+function watchMailboxSignal(){
+ mailboxSignalStop?.();mailboxSignalStop=null;clearTimeout(mailboxSignalTimer);
+ if(!user)return;const uid=user.uid;
+ mailboxSignalStop=onSnapshot(doc(db,'users',uid,'sync','mailbox-signal'),()=>{
+  clearTimeout(mailboxSignalTimer);mailboxSignalTimer=setTimeout(()=>{if(user?.uid===uid)void refreshMailbox(true).catch(error=>console.warn('Mailbox signal refresh',error.code))},250);
+ },error=>console.warn('Mailbox signal',error.code));
+}
 const groupSnapshot=()=>{const s={...groupState,...(accountMailbox.uid===user?.uid?accountMailbox.data:{})};return window.DrawerVillageSafety?.filterSnapshot(s)||s};
 async function refreshMailbox(force=false){
  if(!user)return;if(accountMailbox.uid!==user.uid)accountMailbox={uid:user.uid,at:0,data:{}};
@@ -1197,6 +1205,7 @@ if(ready){
     try{await getRedirectResult(auth)}catch(error){console.warn(error)}
     onAuthStateChanged(auth,async next=>{
       const epoch=++accountEpoch;switchingAccount=true;profileSetupComplete=false;user=next;
+      mailboxSignalStop?.();mailboxSignalStop=null;clearTimeout(mailboxSignalTimer);
       try{
         await activeSyncDone;
         if(epoch!==accountEpoch)return;
@@ -1224,7 +1233,7 @@ if(ready){
         }
         await refreshGroups();
       }catch(error){console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
-      finally{if(epoch===accountEpoch){authSettled=true;switchingAccount=false;window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
+      finally{if(epoch===accountEpoch){authSettled=true;switchingAccount=false;watchMailboxSignal();window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
     });
   }catch(error){authSettled=true;status(`로그인 초기화 실패 · ${shortError(error)}`);window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }else status("Firebase 설정 필요");

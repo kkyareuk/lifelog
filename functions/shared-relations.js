@@ -15,7 +15,10 @@ function createService({db,clock=Date.now,engine}){
     return {root,group,member};
   }
   const owned=(resident,uid)=>{if(!resident||resident.ownerUid!==uid)fail('character-owner-required',403)};
-  const notify=(tx,uid,eventId,groupId,proposalId,kind)=>tx.set(db.collection('notificationOutbox').doc(eventId),{uid,groupId,proposalId,kind,createdAt:clock()});
+  const notify=(tx,uid,eventId,groupId,proposalId,kind)=>{
+    tx.set(db.collection('notificationOutbox').doc(eventId),{uid,groupId,proposalId,kind,createdAt:clock()});
+    tx.set(db.collection('users').doc(uid).collection('sync').doc('mailbox-signal'),{eventId,updatedAt:clock()});
+  };
   const requests=require('./shared-relationship-requests')({db,membership,notify,clock,id,engine});
   const residency=require('./shared-residency')({db,membership,notify,clock,id});
   async function propose(uid,input){

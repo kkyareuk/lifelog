@@ -4,13 +4,14 @@ import {runBackgroundAction} from './background-actions.js?v=20260909dev303';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let session=null;
 const drafts=new Map();
+const editorPending=s=>s?.activeGroupId&&Array.isArray(s.loadedCollections)&&!['group','residents'].every(key=>s.loadedCollections.includes(key));
 export function leaveSharedCharacterEditor(){
  if(session&&characterEditorActive())drafts.set(session.uid+':'+session.groupId,state);
  endCharacterEditor();session=null;
 }
 export function syncSharedCharacterEditor(){
  const s=window.DrawerVillageGroups?.getSnapshot?.(),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;
- if(state.activeTab==='character'&&s?.activeGroupId&&Array.isArray(s.loadedCollections)&&!['group','residents','homes'].every(key=>s.loadedCollections.includes(key)))return;
+ if(state.activeTab==='character'&&editorPending(s))return;
  if(state.activeTab!=='character'||!s?.group||!s.activeGroupId||!uid){leaveSharedCharacterEditor();return}
  if(session?.uid===uid&&session.groupId===s.activeGroupId&&characterEditorActive()){const ids=(s.residents||[]).filter(r=>r.ownerUid===uid).map(r=>r.id);if(ids.length===state.order.length&&ids.every(id=>state.order.includes(id)))return;}
  leaveSharedCharacterEditor();
@@ -39,7 +40,8 @@ export function saveSharedCharacter(){
  });
 }
 export function bindSharedCharacters(render){
- const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),pending=snapshot?.activeGroupId&&Array.isArray(snapshot.loadedCollections)&&!['group','residents','homes'].every(key=>snapshot.loadedCollections.includes(key));
+ if(state.activeTab!=='character')return;
+ const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),pending=editorPending(snapshot);
  if(pending){document.querySelectorAll('#app main button,#app main input,#app main textarea,#app main select:not([data-character-world])').forEach(el=>el.disabled=true);const label=document.querySelector('.character-group-selector');if(label){const status=document.createElement('span');status.setAttribute('role','status');status.textContent=t('캐릭터를 불러오는 중…','Loading characters…','キャラクターを読み込み中…');label.append(status)}}
 
  document.querySelectorAll('[data-new]').forEach(button=>{if(!session)return;const create=button.onclick;button.onclick=async()=>{leaveSharedCharacterEditor();await window.DrawerVillageGroups.select('');state.activeTab='character';create?.();render()}});
