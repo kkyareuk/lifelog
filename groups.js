@@ -1,6 +1,6 @@
-import {decodeShared} from './shared-world.js?v=20260909dev304';
-import {multiplayerBack} from "./multiplayer-art.js?v=20260909dev304";
-import {state} from "./state.js?v=20260909dev304";
+import {decodeShared} from './shared-world.js?v=20260909dev305';
+import {multiplayerBack} from "./multiplayer-art.js?v=20260909dev305";
+import {state} from "./state.js?v=20260909dev305";
 
 const esc=value=>String(value??"").replace(/[&<>"]/g,character=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[character]));
 const COPY={

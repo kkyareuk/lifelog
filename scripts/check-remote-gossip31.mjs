@@ -3,10 +3,10 @@ const memory=new Map();
 globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js?v=20260909dev304');
+const game=await import('../state.js?v=20260909dev305');
 
-const {gossipReasons,dislikesPerson,automaticConversation}=await import('../automatic-activities.js?v=20260909dev304');
-const sim=await import('../simulation.js?v=20260909dev304');
+const {gossipReasons,dislikesPerson,automaticConversation}=await import('../automatic-activities.js?v=20260909dev305');
+const sim=await import('../simulation.js?v=20260909dev305');
 for(const kind of ['message','remote_checkin','phone_call']){
  game.resetAll();const a=game.createCharacter(),b=game.createCharacter(),s=game.state,now=Date.now();
  const sleeping={id:'sleep-test',kind:'nap',startedAt:now-1000,endsAt:now+600000};s.characterDirectives[b]=sleeping;

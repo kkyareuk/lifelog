@@ -3,7 +3,7 @@ const memory=new Map();
 globalThis.localStorage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,String(v)),removeItem:k=>memory.delete(k)};
 globalThis.document={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window={addEventListener(){},dispatchEvent(){}};
-const game=await import('../state.js?v=20260909dev304');
+const game=await import('../state.js?v=20260909dev305');
 for(const kind of ['kiss','kiss_cautious','kiss_reconcile']){
  game.resetAll();const a=game.createCharacter(),b=game.createCharacter(),s=game.state;
  for(const id of [a,b])s.characters[id].ageGroup='성인';
