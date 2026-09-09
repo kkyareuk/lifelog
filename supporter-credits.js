@@ -1,5 +1,5 @@
-import {state} from './state.js?v=20260909dev299';
-import {accountStorage} from './account-storage.js?v=20260909dev299';
+import {state} from './state.js?v=20260909dev300';
+import {accountStorage} from './account-storage.js?v=20260909dev300';
 import {SUPPORTER_CREDITS} from './supporter-data.js';
 import {supportBenefits,normalizeSupporterStyle,publicSupporterEntries,nextSupporter,TEXT_EFFECTS,BACKGROUND_EFFECTS,CREDIT_FONTS} from './supporter-model.js';
 const words={

@@ -1,29 +1,29 @@
-import {lifeTask,lifeCopy} from './life-tasks.js?v=20260909dev299';
-import {automaticConversation,hobbyChoice,ignoresOthers,dislikesPerson} from './automatic-activities.js?v=20260909dev299';
-import {workTasks} from './social-activities.js?v=20260909dev299';
-import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev299';
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev299';
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev299';
+import {lifeTask,lifeCopy} from './life-tasks.js?v=20260909dev300';
+import {automaticConversation,hobbyChoice,ignoresOthers,dislikesPerson} from './automatic-activities.js?v=20260909dev300';
+import {workTasks} from './social-activities.js?v=20260909dev300';
+import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev300';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev300';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev300';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev299";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev299";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev299";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev299";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev299";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev299";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev299";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev299";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev299";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev299";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev300";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev300";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev300";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev300";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev300";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev300";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev300";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev300";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev300";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev300";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev299";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev299";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev300";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev300";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
