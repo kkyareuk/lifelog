@@ -39,3 +39,28 @@ Apple은 회신과 App Review Information의 Notes 양쪽에 정보를 넣으라
 - iOS 제출 빌드의 로그인, 계정 삭제, 콘텐츠 신고/차단, 구매 동작. Android 개발 소스의 기능을 iOS 16번 빌드에 있다고 설명하지 않는다.
 - 실제 제출 빌드의 지역별 차이 및 심사 계정 접근 방법.
 - 결제·개인정보 등 민감한 내용을 포함하지 않은 최종 영어 회신. 확인 전에는 제출하지 않는다.
+
+## 1.0.260 / build 17 준비 (2026-09-09)
+
+Android 293 / dev747de94의 공통 게임 모듈을 iOS 후보15641be에 반영했다. Apple 로그인, 네이티브 리디렉션 초기화 방지, StoreKit 연결을 유지하고 새 계정 삭제 흐름에 Apple 재인증 및 토큰 취소를 연결했다. App Store에 기존 제출된 빌드16이 자동으로 바뀌는 것은 아니다.
+
+- 공통 게임 파일의 정규화 SHA256을 ios-production-source.json으로 확인한다.
+- Apple nonce 누락 거부, 다른 계정 재인증 시 삭제 API에 도달하지 않음, 사교 명령 UI와 로컬 준비 검사 통과.
+- GitHub Actions34313516893에서 서명/업로드 진행. 결과는 별도 기록한다.
+- 실제 iPad/iPhone 검증과 화면 녹화는 아직 없음.
+- 현재 소스에서 이용자별 UGC 신고/차단을 확인하지 못했다. 피드백 보내기와 방장의 추방 기능을 일반 사용자의 신고/차단 완료라고 설명하지 않는다. 이 흐름을 보완한 후 제출해야 한다.
+- 재심사 제출은 아직 하지 않았다.
+
+## 회신 작성용 영문 초안 (미제출, 빈 항목 완료 후 사용)
+
+Thank you for reviewing Drawer Village. We are preparing an updated build and the additional information requested under Guideline 2.1.
+
+1. Physical-device recording: [Attach the completed recording and record the device model, OS version, app version and build number. Include launch, authentication, core gameplay, user-generated-content reporting/blocking, purchases and account deletion.]
+2. Purpose and audience: Drawer Village is a character life simulation for people who enjoy creating fictional characters and observing their daily lives. Users configure personalities, relationships, homes and towns, then choose activities and observe the resulting scenes and logs.
+3. Main features and access: [Verify the exact onboarding steps on the submitted build. Provide reviewer access to multiplayer and any required demo credentials through the App Review Information fields.]
+4. Services: Firebase Authentication, Cloud Firestore, Cloud Storage and Cloud Functions support account and shared-world functions. iOS purchases use StoreKit and server-side transaction verification. [Confirm the final complete service list against the release build.]
+5. Regional behavior: [Confirm the final release behavior, localization and storefront availability.]
+6. Rights: The developer created the supplied original game illustrations and composed the main theme. [Finish the bundled-font and other-asset license inventory; attach authorization where applicable.]
+7. In-App Purchase: The submitted catalog contains an additional five character slots, an additional town slot, and a one-time support gift. Open the Shop from the main screen to view the catalog. [Verify purchase and restore behavior and the final support-gift benefits against the submitted build.]
+
+This draft must not be sent while bracketed items remain. Copy the verified final information into both the App Review reply and App Review Information Notes, as requested.
