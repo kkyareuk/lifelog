@@ -11,6 +11,7 @@ function createAccountDeletion({db,auth,bucket,clock=Date.now}){
   // A server-only tombstone prevents other signed-in devices recreating the
   // data while cleanup runs. Repeated requests safely resume partial cleanup.
   await db.collection('deletedAccounts').doc(uid).set({requestedAt:clock()},{merge:true});
+  await eraseQuery(db.collection('moderationReports').where('reporterUid','==',uid));await eraseQuery(db.collection('moderationReports').where('targetUid','==',uid));await db.collection('moderationRateLimits').doc(uid).delete();
   const owned=await db.collection('groups').where('ownerUid','==',uid).get();
   for(const group of owned.docs){
    const members=await group.ref.collection('members').get();
