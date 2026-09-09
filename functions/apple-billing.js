@@ -3,6 +3,7 @@ const fs=require('node:fs');
 const {SignedDataVerifier,AppStoreServerAPIClient,Environment,VerificationStatus}=require('@apple/app-store-server-library');
 const bundleId='com.drawervillage.app';
 const productMap=Object.freeze({
+ 'com.drawervillage.app.character_slot_1':'character_slot_1',
  'com.drawervillage.app.character_slots_5':'character_slots_5',
  'com.drawervillage.app.town_slot_1':'town_slot_1',
  'com.drawervillage.app.green_tea':'green_tea'
@@ -84,7 +85,7 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
    const receipt=await tx.get(ref),saved=receipt.data();if(saved?.revoked)return;
    if(saved?.uid){
     const userRef=db.collection(service.environment===Environment.SANDBOX?'appleSandboxAccounts':'users').doc(saved.uid),user=await tx.get(userRef),field=service.environment===Environment.SANDBOX?'appleSandboxEntitlements':'entitlements';
-    const ent={...(user.data()?.[field]||{})},key={character_slots_5:'characterSlotPacks',town_slot_1:'townSlotPacks',green_tea:'teaSupportCount'}[saved.productId];
+    const ent={...(user.data()?.[field]||{})},key={character_slot_1:'characterSingleSlots',character_slots_5:'characterSlotPacks',town_slot_1:'townSlotPacks',green_tea:'teaSupportCount'}[saved.productId];
     if(key)ent[key]=Math.max(0,(Number(ent[key])||0)-saved.quantity);
     tx.set(userRef,{[field]:ent,updatedAt:serverTimestamp()},{merge:true});
    }

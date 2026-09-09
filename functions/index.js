@@ -13,10 +13,10 @@ const app=express();
 app.use(express.json({limit:"32kb"}));
 
 const PACKAGE_NAME="com.drawervillage.app";
-const PRODUCTS=new Set(["character_slots_5","town_slot_1","storage_50mb","green_tea"]);
-const CONSUMABLE_PRODUCTS=new Set(["character_slots_5","town_slot_1","green_tea"]);
+const PRODUCTS=new Set(["character_slots_5","character_slot_1","town_slot_1","storage_50mb","green_tea"]);
+const CONSUMABLE_PRODUCTS=new Set(["character_slots_5","character_slot_1","town_slot_1","green_tea"]);
 const WEB_PRODUCTS=Object.freeze({
-  character_slots_5:{name:"캐릭터 슬롯 5개 추가",amount:1200},
+  character_slot_1:{name:"캐릭터 슬롯 1개 추가",amount:1000},
   town_slot_1:{name:"마을 슬롯 1개 추가",amount:1900},
   storage_50mb:{name:"사진 저장 공간 50MB 추가",amount:2900},
   green_tea:{name:"서랍마을 응원 선물",amount:3000}
@@ -89,7 +89,8 @@ function nextEntitlements(current,productId,quantity){
   const count=Math.max(1,Math.min(100,Number(quantity)||1));
   const purchases=Array.from(new Set([...(Array.isArray(current?.purchases)?current.purchases:[]),productId]));
   const next={...(current||{}),purchases};
-  if(productId==="character_slots_5")next.characterSlotPacks=(Number(current?.characterSlotPacks)||0)+count;
+  if(productId==="character_slot_1")next.characterSingleSlots=(Number(current?.characterSingleSlots)||0)+count;
+  if(productId==="character_slots_5")next.characterSlotPacks=(Number(current?.characterSlotPacks ?? (current?.purchases||[]).filter(id=>id==="character_slots_5").length)||0)+count;
   if(productId==="town_slot_1")next.townSlotPacks=(Number(current?.townSlotPacks)||0)+count;
   if(productId==="storage_50mb")next.storage50=true;
   if(productId==="green_tea")next.teaSupportCount=(Number(current?.teaSupportCount)||0)+count;

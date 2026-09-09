@@ -23,7 +23,7 @@ if(isNative){
   const isAndroid=window.Capacitor?.getPlatform?.()==="android";
   const playConfig=()=>isAndroid?(window.PARALLEL_CITY_CONFIG?.playBilling||{}):{};
   const productIds=()=>Object.values(playConfig().products||{}).filter(Boolean);
-  const consumableProducts=new Set(["character_slots_5","town_slot_1","green_tea"]);
+  const consumableProducts=new Set(["character_slots_5","character_slot_1","town_slot_1","green_tea"]);
   const pendingPurchaseKey="drawer-village.pending-play-purchases.v1";
   let purchaseInFlight=false;
   const localizedBillingError=error=>{

@@ -25,6 +25,7 @@
     packageName:"com.drawervillage.app",
     products:{
       character_slots_5:"character_slots_5",
+      character_slot_1:"character_slot_1",
       town_slot_1:"town_slot_1",
       storage_50mb:"storage_50mb",
       green_tea:"green_tea"

@@ -288,7 +288,7 @@ const overallViewPhrase=value=>({
   "없어서는 안 될 사람":"없어서는 안 될 사람으로 여김"
 }[value]||String(value||"어떤 사람인지 판단하지 않음"));
 const purchases=()=>window.ParallelCityAuth?.getInfo?.().entitlements||{};
-const characterLimit=()=>Math.max(0,5+(Math.max(0,Number(purchases().characterSlotPacks)||0)*5)-(window.ParallelCityAuth?.getInfo?.().slotUsage?.characters||0));
+const characterLimit=()=>Math.max(0,5+(Math.max(0,Number(purchases().characterSlotPacks)||0)*5)+Math.max(0,Number(purchases().characterSingleSlots)||0)-(window.ParallelCityAuth?.getInfo?.().slotUsage?.characters||0));
 const townLimit=()=>Math.max(0,2+Math.max(0,Number(purchases().townSlotPacks)||0)-(window.ParallelCityAuth?.getInfo?.().slotUsage?.towns||0));
 const BASE_AUDIENCES=["혼자 조용히 있고 싶은 사람","연인·데이트","부부","가족","친구 모임","직장인","학생","대학생","어린이","청소년","중장년","고소득층","가성비 중시","디저트 러버","커피 애호가","차 애호가","매운 음식 마니아","채식 선호","한식파","일식파","면 요리 마니아","신상 맛집파","SF 덕후","로맨스 덕후","판타지 덕후","미스터리 덕후","공포 덕후","액션 덕후","코미디 덕후","애니메이션 팬","영화 팬","드라마 팬","관찰 예능 팬","게임 방송 팬","음악 팬","아이돌 팬","인디 음악 팬","클래식 애호가","게임 마니아","보드게임 팬","e스포츠 팬","패션 관심층","빈티지 애호가","향수 애호가","사진 애호가","미술 애호가","독서가","여행 애호가","반려동물 동반","운동 애호가","야외 활동파","집순이·집돌이","오타쿠","얼리어답터"];
 function audienceOptions(){
@@ -2821,7 +2821,7 @@ function bind(){
   refreshCharacterSelectionSummaries();
   const cartKey="drawer-village-cart";
   const cartLimit=50000;
-  const cartPrices={character_slots_5:1200,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
+  const cartPrices={character_slot_1:1000,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const cartTotal=cart=>Object.entries(cart||{}).reduce((sum,[id,qty])=>sum+(Number(cartPrices[id])||0)*Math.max(0,Number(qty)||0),0);
   const writeCart=cart=>{localStorage.setItem(cartKey,JSON.stringify(cart));render()};

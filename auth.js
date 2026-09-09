@@ -148,7 +148,7 @@ const accountName=()=>String(
   user?.displayName||
   "계정"
 ).trim().slice(0,20)||"계정";
-let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,townSlotPacks:0,storage50:false,teaSupportMonth:""};
+let entitlements={backgroundPacks:[],iconPacks:[],dlcPacks:[],purchases:[],characterSlotPacks:0,characterSingleSlots:0,townSlotPacks:0,storage50:false,teaSupportMonth:""};
 let guideState={loaded:!ready,seen:[]};
 let accountEpoch=0,switchingAccount=false,activeSyncDone=Promise.resolve();
 const captureSession=()=>({uid:user?.uid,epoch:accountEpoch});
@@ -453,7 +453,8 @@ const normalizeEntitlements=value=>{
     iconPacks:Array.isArray(value?.iconPacks)?value.iconPacks.filter(x=>typeof x==="string"):[],
     dlcPacks:Array.isArray(value?.dlcPacks)?value.dlcPacks.filter(x=>typeof x==="string"):[],
     purchases,
-    characterSlotPacks:Math.max(0,Number(value?.characterSlotPacks)||purchases.filter(x=>x==="character_slots_5").length),
+    characterSingleSlots:Math.max(0,Number(value?.characterSingleSlots)||0),
+    characterSlotPacks:Math.max(0,Number(value?.characterSlotPacks ?? purchases.filter(x=>x==="character_slots_5").length)||0),
     townSlotPacks:Math.max(0,Number(value?.townSlotPacks)||purchases.filter(x=>x==="town_slot_1").length),
     storage50:Boolean(value?.storage50||purchases.includes("storage_50mb")),
     teaSupportMonth:typeof value?.teaSupportMonth==="string"?value.teaSupportMonth:"",
@@ -468,7 +469,7 @@ const publishEntitlements=value=>{
   window.ParallelCity?.setEntitlements?.(entitlements);
 };
 const accessLabel=()=>[
-  entitlements.characterSlotPacks?`캐릭터 슬롯 +${entitlements.characterSlotPacks*5}`:"",
+  (entitlements.characterSlotPacks*5+entitlements.characterSingleSlots)?`캐릭터 슬롯 +${entitlements.characterSlotPacks*5+entitlements.characterSingleSlots}`:"",
   entitlements.townSlotPacks?`마을 슬롯 +${entitlements.townSlotPacks}`:"",
   entitlements.backgroundPacks.length?`배경 팩 ${entitlements.backgroundPacks.length}개`:"",
   entitlements.iconPacks.length?`아이콘 팩 ${entitlements.iconPacks.length}개`:"",
@@ -661,7 +662,7 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
   try{
     status(`${accountName()} · 올리는 중`);
     const localState=window.ParallelCity.getState();
-    const allowedCharacters=5+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5);
+    const allowedCharacters=5+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5)+Math.max(0,Number(entitlements.characterSingleSlots)||0);
     const localCharacterCount=Array.isArray(localState?.order)
       ?new Set(localState.order.filter(id=>localState.characters?.[id])).size
       :Object.keys(localState?.characters||{}).length;

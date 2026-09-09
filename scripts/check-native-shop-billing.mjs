@@ -18,7 +18,7 @@ assert.match(views,/drawer-shop-greeting/);
 for(const section of ["bundle","base","skin","expansion"])assert.match(views,new RegExp(`data-drawer-shop-tab=\\"\\$\\{key\\}\\"|\\[\\"bundle\\",\\"base\\",\\"skin\\",\\"expansion\\"\\]`));
 assert.equal((views.match(/data-play-purchase=\"\$\{id\}\"/g)||[]).length>=1,true);
 assert.doesNotMatch(views,/open_celebration_bundle/);
-for(const product of ["character_slots_5","town_slot_1","storage_50mb","green_tea"])assert.match(views,new RegExp(product));
+for(const product of ["character_slot_1","town_slot_1","storage_50mb","green_tea"])assert.match(views,new RegExp(product));
 assert.match(views,/신규 번들은 아직 판매하지 않아요/);
 assert.match(app,/querySelectorAll\(`\[data-play-price/);
 assert.match(app,/data-drawer-shop-tab/);
