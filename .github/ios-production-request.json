@@ -1,9 +1,9 @@
 {
-  "version": "1.0.268",
-  "build": 25,
+  "version": "1.0.269",
+  "build": 26,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Fix landscape character controls and purchase blocking during automatic Apple restore"
+  "reason": "Supplied app icon plus tablet controls and Apple purchase restore fixes"
 }
