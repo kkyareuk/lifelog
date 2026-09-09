@@ -1,9 +1,9 @@
 {
-  "version": "1.0.267",
-  "build": 24,
+  "version": "1.0.268",
+  "build": 25,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Landscape tablet shop from supplied artwork, three-column product panel"
+  "reason": "Fix landscape character controls and purchase blocking during automatic Apple restore"
 }
