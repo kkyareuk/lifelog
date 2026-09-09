@@ -25,7 +25,6 @@ function createSharedTownService({db,engine,clock=Date.now}){
             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
             if(input.command.kind!=='hug'&&profiles.some(p=>!['성인','노인'].includes(p.ageGroup)))fail('adult-characters-required');
           }
-          if(input.command.kind==='gossip'&&!residents.some(r=>r.id===input.command.subjectId&&r.id!==c.id&&r.id!==input.command.targetId&&r.townId===c.townId))fail('invalid-subject');
           const contact=residents.find(r=>r.id===input.command.targetId);if(contact)await require('./user-safety').allowContact(db,tx,uid,contact.ownerUid);
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);
         }
