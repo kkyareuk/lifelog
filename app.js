@@ -17,7 +17,7 @@ function syncApplePurchaseButtons(){
 window.addEventListener('drawer-village-billing-state',syncApplePurchaseButtons);
  document.addEventListener?.('click',async event=>{
   if(!event.target.closest?.('[data-apple-billing-diagnostics]'))return;
-  try{const report=await window.DrawerVillagePlayBilling.diagnostics();const text=JSON.stringify(report);const progress=document.querySelector('[data-apple-billing-progress]');if(progress)progress.textContent=text;}catch(error){showToast(error.message)}
+  try{const report=await window.DrawerVillagePlayBilling.diagnostics();const text=report.label;const progress=document.querySelector('[data-apple-billing-progress]');if(progress)progress.textContent=text;}catch(error){showToast(error.message)}
  });
 import {installUserSafety} from './user-safety.js?v=20260909dev302';
 import {SOCIAL_ACTIVITIES,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev302';

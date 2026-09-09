@@ -24,14 +24,14 @@ assert.equal((await (await post('prepare')).json()).appAccountToken,accountToken
 await Promise.all(Array.from({length:8},()=>post('verify',{transactionId:'123'})));assert.equal(rows.get('appleSandboxAccounts/buyer').appleSandboxEntitlements.characterSlotPacks,1);assert.equal(rows.get('appleSandboxAccounts/buyer').entitlements,undefined);
 revoked=true;await post('notifications',{signedPayload:notificationPayload});await post('notifications',{signedPayload:notificationPayload});assert.equal(rows.get('appleSandboxAccounts/buyer').appleSandboxEntitlements.characterSlotPacks,0);assert.equal((await post('verify',{transactionId:'123'})).status,409);
 }finally{server.close()}
-let buy=0,finish=0,verified=true,loggedIn=true,cancel=false;
-const bridge={getProducts:async()=>({products:[{productId:purchase.productId,formattedPrice:'₩1,200',regularPaidOffer:true}]}),purchase:async()=>{buy++;if(cancel)throw {code:'PURCHASE_CANCELLED'};return {transactionId:'123'}},finishPurchase:async()=>finish++,restorePurchases:async()=>({purchases:[{transactionId:'123'}]}),addListener:()=>{}};
+let buy=0,finish=0,verified=true,loggedIn=true,cancel=false,history=[];
+const bridge={getProducts:async()=>({products:[{productId:purchase.productId,formattedPrice:'₩1,200',regularPaidOffer:true}]}),purchase:async()=>{buy++;if(cancel)throw {code:'PURCHASE_CANCELLED'};return {transactionId:'123'}},finishPurchase:async()=>finish++,restorePurchases:async()=>({purchases:history}),addListener:()=>{}};
 const window={Capacitor:{isNativePlatform:()=>true,getPlatform:()=> 'ios',Plugins:{AppleBilling:bridge}},PARALLEL_CITY_CONFIG:{appleBilling:{enabled:true,backendUrl:'https://billing.test',products:{character_slots_5:purchase.productId}}},ParallelCityAuth:{getIdToken:async()=>loggedIn?'token':null,download:async()=>{}},addEventListener:()=>{}};
-vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../apple-billing-client.js'),'utf8'),{window,document:{documentElement:{lang:'ko'}},AbortSignal,fetch:async url=>({ok:true,json:async()=>url.endsWith('prepare')?{appAccountToken:accountToken(uid),products:productMap}:{verified,entitlementApplied:verified}})});
+vm.runInNewContext(fs.readFileSync(require('node:path').join(__dirname,'../apple-billing-client.js'),'utf8'),{window,document:{documentElement:{lang:'ko'}},setTimeout,clearTimeout,CustomEvent:class{},AbortSignal,fetch:async url=>({ok:true,json:async()=>url.endsWith('prepare')?{appAccountToken:accountToken(uid),products:productMap}:{verified,entitlementApplied:verified}})});
 const billing=window.DrawerVillagePlayBilling;assert.equal((await billing.loadProducts()).products[0].productId,'character_slots_5');
 await billing.purchase('character_slots_5');assert.equal(finish,1);
 verified=false;await assert.rejects(()=>billing.purchase('character_slots_5'));assert.equal(finish,1);
-loggedIn=false;const before=buy;await assert.rejects(()=>billing.purchase('character_slots_5'),/로그인/);assert.equal(buy,before);
+verified=true;await billing.restorePurchases(false);loggedIn=false;const before=buy;await assert.rejects(()=>billing.purchase('character_slots_5'),/로그인/);assert.equal(buy,before);
 loggedIn=true;verified=true;cancel=true;await assert.rejects(()=>billing.purchase('character_slots_5'),/취소/);assert.equal(finish,1);
 console.log('PASS Apple billing: identity, signed-receipt rejection, transaction idempotency, sandbox separation, refund replay, server-before-finish, login gate, cancellation, price/product mapping');
 })().catch(e=>{console.error(e);process.exitCode=1});

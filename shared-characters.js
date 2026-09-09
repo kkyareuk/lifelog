@@ -10,6 +10,7 @@ export function leaveSharedCharacterEditor(){
 }
 export function syncSharedCharacterEditor(){
  const s=window.DrawerVillageGroups?.getSnapshot?.(),uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid;
+ if(state.activeTab==='character'&&s?.activeGroupId&&Array.isArray(s.loadedCollections)&&!['group','residents','homes'].every(key=>s.loadedCollections.includes(key)))return;
  if(state.activeTab!=='character'||!s?.group||!s.activeGroupId||!uid){leaveSharedCharacterEditor();return}
  if(session?.uid===uid&&session.groupId===s.activeGroupId&&characterEditorActive()){const ids=(s.residents||[]).filter(r=>r.ownerUid===uid).map(r=>r.id);if(ids.length===state.order.length&&ids.every(id=>state.order.includes(id)))return;}
  leaveSharedCharacterEditor();
@@ -20,7 +21,7 @@ export function syncSharedCharacterEditor(){
  for(const id of world.order)world.characters[id]={...structuredClone(defaults),...world.characters[id],id};
  world.order=world.order.filter(id=>world.characters[id]?.ownerUid===uid);
  if(!world.order.includes(world.activeId))world.activeId=world.order[0];
- for(const key of ['uiLanguage','uiScale','uiFont','animationIntensity','ownerName','ownerPhoto'])world[key]=state[key];
+ for(const key of ['uiLanguage','uiScale','uiFont','animationIntensity','ownerName','ownerPhoto','homeUiTheme','colorMode','visualTheme','soundMuted','soundEffectsVolume','backgroundMusicVolume','backgroundMusicMuted'])world[key]=state[key];
  world.activeTab='character';world.characterSettingsView||='hub';
  beginCharacterEditor(world);session={uid,groupId:s.activeGroupId};
 }
@@ -38,8 +39,11 @@ export function saveSharedCharacter(){
  });
 }
 export function bindSharedCharacters(render){
+ const snapshot=window.DrawerVillageGroups?.getSnapshot?.(),pending=snapshot?.activeGroupId&&Array.isArray(snapshot.loadedCollections)&&!['group','residents','homes'].every(key=>snapshot.loadedCollections.includes(key));
+ if(pending){document.querySelectorAll('#app main button,#app main input,#app main textarea,#app main select:not([data-character-world])').forEach(el=>el.disabled=true);const label=document.querySelector('.character-group-selector');if(label){const status=document.createElement('span');status.setAttribute('role','status');status.textContent=t('캐릭터를 불러오는 중…','Loading characters…','キャラクターを読み込み中…');label.append(status)}}
+
  document.querySelectorAll('[data-new]').forEach(button=>{if(!session)return;const create=button.onclick;button.onclick=async()=>{leaveSharedCharacterEditor();await window.DrawerVillageGroups.select('');state.activeTab='character';create?.();render()}});
- document.querySelectorAll('[data-character-world]').forEach(select=>select.addEventListener('change',async e=>{const gid=e.target.value;leaveSharedCharacterEditor();await window.DrawerVillageGroups.select(gid);state.activeTab='character';render({force:true})}));
+ document.querySelectorAll('[data-character-world]').forEach(select=>select.addEventListener('change',async e=>{const gid=e.target.value;await window.DrawerVillageGroups.select(gid);state.activeTab='character';render({force:true})}));
  // Character creation and deletion belong to group membership/slot operations.
  if(session)document.querySelectorAll('[data-delete-character]').forEach(b=>{b.onclick=()=>{const id=b.dataset.deleteCharacter,{groupId,uid}=session,world=state;if(!confirm(t('이 캐릭터를 영구 삭제할까요? 내 마을로 돌아오지 않으며 복구할 수 없습니다.','Permanently delete this character? It will not return to your town and cannot be recovered.','このキャラクターを完全に削除しますか？自分の村には戻らず、復元できません。')))return;void runBackgroundAction('resident-delete:'+groupId+':'+id,async()=>{if(window.ParallelCityAuth.getInfo().user?.uid!==uid)throw Error('Account changed');await window.DrawerVillageGroups.deleteResident({groupId,residentId:id});delete world.characters[id];world.order=world.order.filter(x=>x!==id);world.activeId=world.order[0]||'';render()})}});
 }

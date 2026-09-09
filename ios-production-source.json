@@ -1,5 +1,5 @@
 {
-  "commit": "8de744d",
+  "commit": "a82e61a",
   "androidCode": 302,
   "files": {
     "account-storage.js": "c6f835188f61b3f83730a4834408b6e83fd557acc4842ed21d181e5553afa3f4",
@@ -39,7 +39,7 @@
     "life-log-localization.js": "00e6c271b660a5f2f72ac06143be5109e51cdb41e7217da5a54453031ec9f691",
     "local-media.js": "7199088eea4442969da6b139d85cf7d9360f6843d5e0b5d55c406f7454e35230",
     "mail-read-state.js": "36e72bbcaaa3198cb10bceafe466e65371329eb68bfe3c7667870e7c128401c6",
-    "mail-recipients.js": "5772123950cea0eacb119dee2a2d51340d8b72fc321e347007d33553f8b8b2a4",
+    "mail-recipients.js": "a773ab537fcdc2df1f33c4dafb44a9261e31f2530a80ba015a6e828c1bd2f190",
     "mailbox-center.js": "5c00ed801402069513ecf1a7e2611095b2dbf5803e5d0eb1b38d5c9c71c3b0eb",
     "mailbox.css": "dff8913d9660cc8b3bce86915c8bc879593ec8c737101babd0953a490aa78b7b",
     "meeting-journey.js": "cce1e981e19453a9276931011192728e61cebf14db4a742f538a63c9d6f5c765",
@@ -55,7 +55,7 @@
     "routine-scenes.js": "22ca4afb5ebbfa450f00f2b6a41201de0db998bab2ad3b6c4adecb9414c141d5",
     "scene-context.js": "ad11a4c60f34dc14ae70aed65fca39e00ea37711dfe787e11f6d0b926662af1b",
     "settings-transfer.js": "e9668b66cb83a8ffdaa718a1099e1145d83ecd69b8379b9a4e2e917a4156abb0",
-    "shared-characters.js": "27899ed95841c711a342defca6419249ded2487bd8b8486b47c3f330c12ceb9b",
+    "shared-characters.js": "d01f3f185dcac4a75602037e4e38a66c67d5d139c6eb40c549eaca6c4c7b035c",
     "shared-home-editor.js": "dfb3dd297075dc6653b4c6bf953d51dbf18a67682e5e3fa77248d43f5246e2c4",
     "shared-home-members.js": "972e1a80dc4b9b4d5277694cdfb6ca3f345c4cc5df10b48dbc6a17d9b4b865ba",
     "shared-residents.js": "c8165dab93bd3b27e2ebd666c33585a877cd40b6049fbd58967655f9c8bfe8fb",
@@ -89,13 +89,13 @@
     "automatic-activities.js": "4d4cdc918465d7aae1f91c08f2f320b77e40a3e3ff09d772fe642099f94c8d21"
   },
   "platformFiles": {
-    "auth.js": "24cd2fd6340318af7c99fd44199c931c98732f165bb36df6cf969fdd06f31a64",
-    "app.js": "b92df654e8782771720785b30523018016bcb1b485f48a4fb821250481ce4d49",
+    "auth.js": "266683e003b20fde43b593396a9c6d4d943a8668a1e84d18270780aacb4d9472",
+    "app.js": "5708499c2711eff61df9b5aa1ab589b9ebfeb85074b24bdd70eee8adc69600a0",
     "views.js": "556e8c14fa25e1c9c2cbaea48185fb3f11c98d96b2d87acf49039361fdff5d73",
     "app.css": "65fc2a7088d57be0545a9ec2ff7b712669dee954e389d846a334e4c39d6f33d7",
-    "apple-billing-client.js": "40861ab7dba35957437dc8ff83a27a8f7a8e8a3cd251809ef652b76d891b687e",
+    "apple-billing-client.js": "be8bed00902420a40abf8fb2e27b870829e1d0b29e56cd3f2f7089399fc582c3",
     "native-app.js": "4893e7f0b2d435a8916d5cf9f6fcc35779ecf478f2d36fc3a88ca6ee1545e257",
-    "ios/App/App/AppleBillingPlugin.swift": "05a47ffe019767697988fcb2ce8d4faf4b9458a7f3f6809ba6890b45bdf09392",
+    "ios/App/App/AppleBillingPlugin.swift": "a5fd55bfedeb163fd5b0428b75d87016232f1061d3a9cce4b15cf3fee7afc0ab",
     "ios/App/App/AppDelegate.swift": "4c6daa6d005580b5ffd49a2238c9a52e9f84de1b16dc6adea9b1449959047189",
     "ios/App/App/Info.plist": "d76128b5d533a9c309d7121595fc0acf630e2e97c29839340b7ba241f4408a85"
   }

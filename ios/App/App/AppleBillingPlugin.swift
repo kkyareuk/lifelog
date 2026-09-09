@@ -85,9 +85,9 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
     }
     @objc func restorePurchases(_ call: CAPPluginCall) {
         let interactive = call.getBool("interactive") ?? true
-        Task {
+        Task { @MainActor in
             do {
-                if interactive { try await AppStore.sync() }
+                if interactive && !purchaseActive { try await AppStore.sync() }
                 var purchases: [String: [String: Any]] = [:]
                 for await result in StoreKit.Transaction.unfinished {
                     if case .verified(let transaction) = result, allowed.contains(transaction.productID), transaction.revocationDate == nil { purchases[String(transaction.id)] = try payload(result) }
