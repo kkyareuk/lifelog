@@ -1,6 +1,6 @@
-import {personalChoices,hobbyNames} from './automatic-activities.js?v=20260909dev304';
-import {workTasks} from './social-activities.js?v=20260909dev304';
-import {LIFE_TASKS} from './life-tasks.js?v=20260909dev304';
+import {personalChoices,hobbyNames} from './automatic-activities.js?v=20260909dev305';
+import {workTasks} from './social-activities.js?v=20260909dev305';
+import {LIFE_TASKS} from './life-tasks.js?v=20260909dev305';
 export function installDirectSteps(command,copy,character,world){
  const lang=document.documentElement.lang==='en'?1:document.documentElement.lang==='ja'?2:0,text=(...labels)=>labels[lang],dialog=command.closest('dialog');
  const social=command.querySelector('[data-direct-panel="social"]'),targets=social.querySelector('[data-direct-target-list]'),payment=social.querySelector('[data-direct-payment-field]'),submit=social.querySelector('[data-direct-social-submit]');

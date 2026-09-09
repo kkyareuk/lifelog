@@ -1,14 +1,14 @@
-import {initializeLocalMediaState} from './local-media.js?v=20260909dev304';
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev304';
-import {chooseProposalMode} from './proposal-mode.js?v=20260909dev304';
-import {sharedProfile} from './shared-world.js?v=20260909dev304';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev304";
+import {initializeLocalMediaState} from './local-media.js?v=20260909dev305';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev305';
+import {chooseProposalMode} from './proposal-mode.js?v=20260909dev305';
+import {sharedProfile} from './shared-world.js?v=20260909dev305';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,initializeAuth,OAuthProvider,GoogleAuthProvider,reauthenticateWithPopup,reauthenticateWithCredential,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,initializeFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev304";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev305";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -1092,7 +1092,7 @@ async function prepareWorldPackage(pack){
  assertSession(session);if(prepared.photoFailures)throw Error('photo-upload-required');await mergeUploadedMedia(reference,prepared.mediaManifest,session);return prepared.gameState.package;
 }
 async function migratePersonalTown(input){
- const cloud=await sharedCloudState(),{makeWorldPackage}=await import('./world-transfer.js?v=20260909dev304');
+ const cloud=await sharedCloudState(),{makeWorldPackage}=await import('./world-transfer.js?v=20260909dev305');
  const local=window.ParallelCity.getPersonalStateForSharing();const pack=await prepareWorldPackage(makeWorldPackage(local,'town',input.sourceTownId));if(JSON.stringify(Object.keys(pack.characters).sort())!==JSON.stringify([...(input.expectedCharacterIds||[])].sort()))throw Error('transfer-preview-changed');const result=await sharedTownRequest('migrateTown',{...input,package:pack});
  await refreshMailbox(true);await refreshSlotUsage();await refreshGroups({preferredId:input.groupId});return result;
 }
@@ -1184,7 +1184,7 @@ let leavingGroup=null;
 async function leaveGroup(){if(leavingGroup)return leavingGroup;const groupId=groupState.activeGroupId;if(!groupId)return;leavingGroup=(async()=>{const result=await sharedTownRequest('removeMember',{groupId});if(groupState.activeGroupId===groupId)watchActiveGroup('');await Promise.allSettled([refreshMailbox(true),refreshSlotUsage(),refreshGroups()]);return result})().finally(()=>{leavingGroup=null});return leavingGroup}
 window.DrawerVillageGroups={
   readSafety:()=>sharedTownRequest("readSafety"),setUserBlock:input=>sharedTownRequest("setUserBlock",input),reportContent:input=>sharedTownRequest("reportContent",input),getSnapshot:groupSnapshot,refreshMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
-  publishCatalog:async selected=>{const gid=groupState.activeGroupId,cloud=await sharedCloudState();if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:Object.fromEntries(Object.entries(selected||{}).map(([kind,items])=>[kind,(sharedProfile(cloud.catalog)?.[kind]||[]).filter(item=>items.some(chosen=>chosen.id===item.id))]))})},
+  publishCatalog:async selected=>{const gid=groupState.activeGroupId,catalog=await prepareWorldPackage(selected||{});if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:sharedProfile(catalog)})},
   saveGroupPresentation:input=>sharedTownRequest('saveGroupPresentation',input),
   uploadHomeMemberImage:async file=>{requireGroupUser();const session=captureSession(),gid=groupState.activeGroupId,reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);const manifest=normalizeManifest(previous.data()?.mediaManifest,null),data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)}),photoURL=await uploadDataUrl(data,manifest,session);await mergeUploadedMedia(reference,manifest,session);assertSession(session);if(gid!==groupState.activeGroupId)throw Error('Group changed');return photoURL},
   saveGroupPhoto:async file=>{requireGroupUser();const session=captureSession(),gid=groupState.activeGroupId,reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);const manifest=normalizeManifest(previous.data()?.mediaManifest,null),data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)}),photoURL=await uploadDataUrl(data,manifest,session);await mergeUploadedMedia(reference,manifest,session);assertSession(session);if(gid!==groupState.activeGroupId)throw Error('Group changed');return sharedTownRequest('saveGroupPresentation',{photoURL})},

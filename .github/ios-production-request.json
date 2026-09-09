@@ -1,9 +1,9 @@
 {
   "version": "1.0.269",
-  "build": 31,
+  "build": 32,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Mailbox refresh, empty character screen, remote activities and view-based gossip fixes"
+  "reason": "Include selected dictionary photo upload and broken shared photo repair"
 }
