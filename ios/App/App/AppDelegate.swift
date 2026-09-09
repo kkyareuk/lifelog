@@ -47,3 +47,32 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 }
+
+// UIKit creates the storyboard window for this single application scene.
+class DrawerSceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        guard scene is UIWindowScene else { return }
+        (UIApplication.shared.delegate as? AppDelegate)?.window = window
+        if !connectionOptions.urlContexts.isEmpty { self.scene(scene, openURLContexts: connectionOptions.urlContexts) }
+        for activity in connectionOptions.userActivities { self.scene(scene, continue: activity) }
+    }
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        #if DEBUG
+        let report: [String: Any] = ["sceneActive": scene.activationState == .foregroundActive, "hasWindow": window != nil, "hasRoot": window?.rootViewController is DrawerBridgeViewController]
+        if let data = try? JSONSerialization.data(withJSONObject: report), let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            try? data.write(to: documents.appendingPathComponent("drawer-scene-check.json"))
+        }
+        #endif
+    }
+    func scene(_ scene: UIScene, openURLContexts contexts: Set<UIOpenURLContext>) {
+        for context in contexts {
+            var options: [UIApplication.OpenURLOptionsKey: Any] = [.openInPlace: context.options.openInPlace]
+            if let source = context.options.sourceApplication { options[.sourceApplication] = source }
+            _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, open: context.url, options: options)
+        }
+    }
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        _ = ApplicationDelegateProxy.shared.application(UIApplication.shared, continue: userActivity, restorationHandler: { _ in })
+    }
+}
