@@ -1,13 +1,13 @@
-import {proposalCopy} from './proposal-copy.js?v=20260909dev295';
-import {runBackgroundAction} from './background-actions.js?v=20260909dev295';
-import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev295';
-import {bindMailRecipients} from './mail-recipients.js?v=20260909dev295';
-import {createContactMailbox} from './notification-mail.js?v=20260909dev295';
-import {accountStorage} from './account-storage.js?v=20260909dev295';
-import {chooseCatalog} from './settings-transfer.js?v=20260909dev295';
-import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev295';
-import {proposalSettings} from './groups.js?v=20260909dev295';
-import {buildSharedWorld} from './shared-world.js?v=20260909dev295';
+import {proposalCopy} from './proposal-copy.js?v=20260909dev296';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev296';
+import {mailWasRead,markMailRead} from './mail-read-state.js?v=20260909dev296';
+import {bindMailRecipients} from './mail-recipients.js?v=20260909dev296';
+import {createContactMailbox} from './notification-mail.js?v=20260909dev296';
+import {accountStorage} from './account-storage.js?v=20260909dev296';
+import {chooseCatalog} from './settings-transfer.js?v=20260909dev296';
+import {state,save,recordCharacterInteraction} from './state.js?v=20260909dev296';
+import {proposalSettings} from './groups.js?v=20260909dev296';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev296';
 export const mt=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function returnMail(p){if(p.kind!=='return')return p;return {...p,subject:mt('캐릭터가 내 마을로 돌아왔습니다.','Your characters returned home.','キャラクターが自分の村に戻りました。'),body:mt(`${p.groupName||'멀티 마을'}에서 떠나 내 마을로 돌아왔습니다. 캐릭터 탭에서 확인해 주세요.`,`Your characters left ${p.groupName||'the multiplayer group'} and returned to your town. Check the Characters tab.`,`${p.groupName||'マルチの村'}を離れ、自分の村へ戻りました。キャラクタータブでご確認ください。`)}}
@@ -68,7 +68,7 @@ function openLetter(id,proposal,render,toast,groupId){
  if(folder==='inbox')markMailRead(p);
  const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,dialog=document.createElement('dialog');dialog.className='mail-reader mail-letter';
  const schedule=p.kind==='schedule'?`<p>${esc(p.patch.title)} · ${esc(p.patch.date||p.patch.days?.map(d=>mt(['일','월','화','수','목','금','토'][d],['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d],['日','月','火','水','木','金','土'][d])).join(' · '))}</p><p>${esc(p.patch.start)}–${esc(p.patch.end)}</p><p>${esc(p.patch.notes)}</p>`:'';
- dialog.innerHTML=`${!proposal&&p.sourceId?letterWatermark(senderImage(p,s)):""}<div class="mail-letter-content"><div class="mail-reader-heading"><h2>${esc(proposal?proposalTitle(p):p.subject)}</h2><button type="button" data-close-mail>×</button></div><div class="mail-address"><span>${mt('보낸 이','From','差出人')}<b>${esc(proposal?(p.asResponse?p.responderDisplayName:p.senderUid===uid?mt('나','Me','自分'):p.senderDisplayName)||mt('구성원','Member','メンバー'):p.sourceName||mt('나','Me','自分'))}</b></span><span>${mt('받는 이','To','宛先')}<b>${esc(proposal?(p.asResponse||p.recipientUid===uid?mt('나','Me','自分'):p.recipientDisplayName||mt('구성원','Member','メンバー')):p.targetName||'')}</b></span></div>${proposal?`<p class="mail-body">${esc(proposalBody(p))}</p><p class="mail-proposal-status">${status(p)}</p>${schedule}${proposalSettings(p,s.residents||[])}}`:`<p class="mail-body">${esc(p.body)}</p>${p.gift?`<p>🎁 ${esc(p.gift.item.name)}</p>`:''}`}${proposal&&p.status==='pending'&&p.recipientUid===uid?`<div class="mail-response"><button data-accept-mail>${mt('수락하기','Accept','承認する')}</button><button data-decline-mail>${mt('거절하기','Decline','辞退する')}</button><form data-decline-form hidden><label>${mt('거절 사유 (선택)','Reason (optional)','理由（任意）')}<textarea name="reason" maxlength="500" rows="3"></textarea></label><button type="submit">${mt('거절 답변 보내기','Send decline','辞退の返答を送る')}</button></form></div>`:''}</div>`;
+ dialog.innerHTML=`${!proposal&&p.sourceId?letterWatermark(senderImage(p,s)):""}<div class="mail-letter-content"><div class="mail-reader-heading"><h2>${esc(proposal?proposalTitle(p):p.subject)}</h2><button type="button" data-close-mail>×</button></div><div class="mail-address"><span>${mt('보낸 이','From','差出人')}<b>${esc(proposal?(p.asResponse?p.responderDisplayName:p.senderUid===uid?mt('나','Me','自分'):p.senderDisplayName)||mt('구성원','Member','メンバー'):p.sourceName||mt('나','Me','自分'))}</b></span><span>${mt('받는 이','To','宛先')}<b>${esc(proposal?(p.asResponse||p.recipientUid===uid?mt('나','Me','自分'):p.recipientDisplayName||mt('구성원','Member','メンバー')):p.targetName||'')}</b></span></div>${proposal?`<p class="mail-body">${esc(proposalBody(p))}</p><p class="mail-proposal-status">${status(p)}</p>${schedule}${proposalSettings(p,s.residents||[])}`:`<p class="mail-body">${esc(p.body)}</p>${p.gift?`<p>🎁 ${esc(p.gift.item.name)}</p>`:''}`}${proposal&&p.status==='pending'&&p.recipientUid===uid?`<div class="mail-response"><button data-accept-mail>${mt('수락하기','Accept','承認する')}</button><button data-decline-mail>${mt('거절하기','Decline','辞退する')}</button><form data-decline-form hidden><label>${mt('거절 사유 (선택)','Reason (optional)','理由（任意）')}<textarea name="reason" maxlength="500" rows="3"></textarea></label><button type="submit">${mt('거절 답변 보내기','Send decline','辞退の返答を送る')}</button></form></div>`:''}</div>`;
  if(p.senderUid&&(p.senderUid!==uid||p.asResponse)&&p.groupId){const safety=document.createElement('button');safety.type='button';safety.dataset.userSafety=p.id;safety.dataset.safetyKind=proposal?'proposal':'mail';safety.dataset.safetyGroup=p.groupId;safety.textContent=mt('신고·계정 차단','Report / block account','通報・アカウントブロック');dialog.querySelector('.mail-letter-content').append(safety)}
  document.body.append(dialog);dialog.querySelector('[data-close-mail]').onclick=()=>dialog.close();dialog.onclose=()=>{dialog.remove();render()};dialog.querySelector('details')?.setAttribute('open','');
  const respond=(accept,reason='')=>{dialog.querySelectorAll('button').forEach(b=>b.disabled=true);dialog.close();void runBackgroundAction('response:'+id,async()=>{if(window.ParallelCityAuth?.getInfo?.()?.user?.uid!==uid)throw Error('Account changed');await window.DrawerVillageGroups.respond({groupId:p.groupId||s.activeGroupId,proposalId:id,accept,reason});if(state.activeTab==='mailbox')render()})};

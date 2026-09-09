@@ -1,4 +1,4 @@
-import {SOCIAL_SECTIONS,workTasks} from './social-activities.js?v=20260909dev295';
+import {SOCIAL_SECTIONS,workTasks} from './social-activities.js?v=20260909dev296';
 export function installDirectSteps(command,copy,character){
  command.classList.add('direct-step-flow');
  const lang=document.documentElement.lang==='en'?1:document.documentElement.lang==='ja'?2:0;
