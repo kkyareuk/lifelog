@@ -1542,7 +1542,10 @@ function scheduleHomeLifeRefresh(){
   },homeLifeNextDelay(simulation));
 }
 let relationshipRailCleanup=[];
+let deferredCommandRender=false;
 function render({force=false}={}){
+  if(!force&&document.querySelector('.direct-command-dialog[open]')){deferredCommandRender=true;return}
+  deferredCommandRender=false;
   syncSharedCharacterEditor();
   syncBackgroundMusic(state);
   if(state.activeTab==="observe")void window.DrawerVillageGroups?.refreshMailbox?.().catch(()=>{});
@@ -2001,7 +2004,7 @@ function openDirectCommandDialog(character,sleeping=false){
  const copy=DIRECT_ACTIVITY_UI[state.uiLanguage]||DIRECT_ACTIVITY_UI.ko;
  const dialog=document.createElement('dialog');dialog.className='direct-command-dialog';
  dialog.innerHTML=`<header><span><small>${htmlEsc(character.name)}</small><h2>${htmlEsc(({ko:"활동 선택",en:"Choose an activity",ja:"活動を選ぶ"})[state.uiLanguage])}</h2></span><button type="button" data-command-close aria-label="${({ko:'닫기',en:'Close',ja:'閉じる'})[state.uiLanguage]}">×</button></header><div class="direct-command-body">${directActivityCommandMarkup(character,sleeping)}</div>`;
- const close=()=>dialog.close();dialog.querySelector('[data-command-close]').onclick=close;dialog.addEventListener('close',()=>dialog.remove(),{once:true});document.body.append(dialog);bindDirectActivityCommand(dialog,character.id,close);dialog.showModal();
+ const close=()=>dialog.close();dialog.querySelector('[data-command-close]').onclick=close;dialog.addEventListener('close',()=>{dialog.remove();requestAnimationFrame(()=>{if(deferredCommandRender)render()})},{once:true});document.body.append(dialog);bindDirectActivityCommand(dialog,character.id,close);dialog.showModal();
 }
 
 function openTownCharacterSheet(button){

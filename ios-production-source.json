@@ -1,5 +1,5 @@
 {
-  "commit": "8788817",
+  "commit": "8de744d",
   "androidCode": 302,
   "files": {
     "account-storage.js": "c6f835188f61b3f83730a4834408b6e83fd557acc4842ed21d181e5553afa3f4",
@@ -22,7 +22,7 @@
     "dictionary-copy.js": "d195a29615bb4fbddc4adc14151232ce863a4a42ba3bb46cf8d5098d3d47e2a7",
     "dictionary.css": "7d010f543446d35d22f515165ed42bd9ca1282c5246ed9779ab12951ef59d89b",
     "dictionary.js": "7d6fd53bd4bd0d5973bfa1a088343e67b793c7eceb354bacf7dfb7299a4036cc",
-    "direct-steps.js": "4831b3ad0c5422256043b9803e51819c9e502f13cfd9bf2de2e00867902c5fd8",
+    "direct-steps.js": "3e248b86948e7b780b7ec0b04e4529344f478b820a158cb1fd43debc57b215bc",
     "drink-log.js": "8e9469230f3047cb81049130c94c7e2273c7e0e3119659edca09e95251d5163a",
     "font-preferences.css": "e0dc99105ebbe2460bd7bc92253b81a4f6d57814ae8f336f152b97c9a7fd8252",
     "furniture-layout.js": "e610ea504216cb0bb207f0ee888c69cbd3d17f6a0df0a7d1bd2017a33b9b401a",
@@ -86,13 +86,13 @@
     "world-transfer.js": "3fdabce97c91da29e567dc053fa2c34233e4a5d05fa14856ec29323d0ef3b174",
     "user-safety.js": "90fb0f77cd999c6345b6bc40baa8c60ac039df4db6bd3281aa52c441c24be3ae",
     "life-tasks.js": "b543765df566fe36e1e0adefd51bb0a417a66e357b2696982f12376463eb2632",
-    "automatic-activities.js": "2c76d1cefae2d49380594298f0a89c1f40775735f4319ad2f0a4f3c92c682d8a"
+    "automatic-activities.js": "4d4cdc918465d7aae1f91c08f2f320b77e40a3e3ff09d772fe642099f94c8d21"
   },
   "platformFiles": {
-    "auth.js": "5101d8bd9893a92ae17460a82224d4261bb4b60af2e021462ca8bb8794bb6e34",
-    "app.js": "08b2501db633b958583d08a6482357e99a9d5e162d8d658ee2feab91326428c3",
+    "auth.js": "24cd2fd6340318af7c99fd44199c931c98732f165bb36df6cf969fdd06f31a64",
+    "app.js": "b92df654e8782771720785b30523018016bcb1b485f48a4fb821250481ce4d49",
     "views.js": "556e8c14fa25e1c9c2cbaea48185fb3f11c98d96b2d87acf49039361fdff5d73",
-    "app.css": "21624594c765c5b32990bdd83d18491e702289350179f460a66855fde2e84ee7",
+    "app.css": "65fc2a7088d57be0545a9ec2ff7b712669dee954e389d846a334e4c39d6f33d7",
     "apple-billing-client.js": "40861ab7dba35957437dc8ff83a27a8f7a8e8a3cd251809ef652b76d891b687e",
     "native-app.js": "4893e7f0b2d435a8916d5cf9f6fcc35779ecf478f2d36fc3a88ca6ee1545e257",
     "ios/App/App/AppleBillingPlugin.swift": "05a47ffe019767697988fcb2ce8d4faf4b9458a7f3f6809ba6890b45bdf09392",

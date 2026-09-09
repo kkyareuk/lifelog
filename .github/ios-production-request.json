@@ -1,9 +1,9 @@
 {
   "version": "1.0.269",
-  "build": 28,
+  "build": 29,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Active UIKit window scene and unfinished Apple purchase reconciliation"
+  "reason": "Fresh Apple reauthentication for account deletion and activity menu improvements"
 }
