@@ -32,7 +32,7 @@
       green_tea:"green_tea"
     }
   };
-  window.PARALLEL_CITY_CONFIG.diamonds={enabled:true,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/diamondWalletApi"};
+  window.PARALLEL_CITY_CONFIG.diamonds={enabled:false,backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/diamondWalletApi"};
   window.PARALLEL_CITY_CONFIG.ads={enabled:false,testing:true};
   window.PARALLEL_CITY_CONFIG.maintenance=window.PARALLEL_CITY_CONFIG.maintenance||{
     enabled:false,

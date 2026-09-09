@@ -5375,7 +5375,7 @@ html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.m
   html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell){border-color:#ffffff1c!important;background:#142131!important;color:#f4f7fb!important}
   html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important}
   html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell) :is(p,small,time){color:#b9c5d1!important;-webkit-text-fill-color:#b9c5d1!important}
-  html[data-color-mode="dark"] :is(input,select,textarea),html[data-color-mode="dark"] button:not(.meeting-walker):not(.meeting-pair *):not(.town-traveler):not(.game-hud-button):not(.game-hud-currency):not(.game-hud-profile-toggle){border-color:#ffffff22;background:#1b2a3c;color:#f4f7fb}
+  html[data-color-mode="dark"] :is(input,select,textarea),html[data-color-mode="dark"] button:not(.meeting-walker):not(.meeting-pair *):not(.town-traveler):not(.game-hud-button):not(.game-hud-profile-toggle){border-color:#ffffff22;background:#1b2a3c;color:#f4f7fb}
   html[data-color-mode="light"],html[data-color-mode="light"] body,html[data-color-mode="light"] main{background:#f5f1ea!important;color:#302a25!important}
   html[data-color-mode="light"] header{border-color:#d9d0c7!important;background:#fffdf9f2!important;color:#302a25!important}
   html[data-color-mode="light"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell){border-color:#ddd3c9!important;background:#fffdf9!important;color:#302a25!important}
@@ -7025,14 +7025,6 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   position:absolute!important;top:3.487dvh!important;right:3.155vw!important;display:block!important;width:max-content!important;margin:0!important;padding:0!important;color:#fff!important;-webkit-text-fill-color:#fff!important;-webkit-text-stroke:.85px #000!important;paint-order:stroke fill!important;
   font-family:var(--home-ui-font)!important;font-size:10px!important;font-weight:400!important;line-height:12px!important;text-align:right!important;text-shadow:0 2px 3px #2a160dcc!important;white-space:nowrap!important;-webkit-text-size-adjust:none!important;text-size-adjust:none!important
 }
-.game-hud-currencies{position:absolute;top:calc(5.45dvh + 22px);right:3.155vw;display:flex;gap:4px;align-items:center;max-width:46vw;pointer-events:auto}
-.game-hud-currency{appearance:none;display:grid;grid-template-columns:12px minmax(0,1fr) 12px;align-items:stretch;min-width:0;min-height:44px;padding:8px 0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#fff5dd;font-family:var(--home-ui-font);font-size:11px;line-height:28px;text-shadow:0 1px 2px #2a160d99}
-.game-hud-currency:disabled{opacity:1;cursor:default}
-.game-hud-currency::before{content:"";background:var(--home-ui-pill-left) right center/auto 100% no-repeat}
-.game-hud-currency::after{content:"";background:var(--home-ui-pill-right) left center/auto 100% no-repeat}
-.game-hud-currency>span{min-width:0;margin:0 -1px;padding:0 2px;background:var(--home-ui-pill-middle) center/100% 100% repeat-x;white-space:nowrap}
-.game-hud-currency b{font:inherit}
-@media(min-width:721px) and (orientation:landscape){.game-hud-currencies{top:calc(6.875dvh + 22px);right:2.1875%}}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-stage{
   position:absolute!important;z-index:7!important;left:18.45vw!important;right:18.45vw!important;top:13.1dvh!important;height:49.4dvh!important;
   display:grid!important;place-items:center!important;min-height:0!important;padding:0!important;overflow:visible!important;pointer-events:none!important

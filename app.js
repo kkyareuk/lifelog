@@ -1,4 +1,3 @@
-import {bindDiamondShop,diamondShopGuide} from "./diamond-shop.js?v=20260909dev305";
 // Keep native purchase state through shop rerenders and late price responses.
 function syncApplePurchaseButtons(){
  const status=window.DrawerVillagePlayBilling?.getState?.();if(!status)return;
@@ -1839,7 +1838,7 @@ function restoreMobileCharacterDialogs(){
 }
 
 function maybeShowPageGuide(){
-  const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=tab==="shop"&&window.PARALLEL_CITY_CONFIG?.diamonds?.enabled?diamondShopGuide(state.uiLanguage):PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
+  const tab=state.activeTab==="dlc"?"observe":state.activeTab,guide=PAGE_GUIDES[tab],key=`drawer-village-guide-${tab}`;
   const accountGuides=window.ParallelCityAuth?.getInfo?.().guideState;
   if(accountGuides&&!accountGuides.loaded)return;
   if(!guide||!state.order.length||accountGuides?.seen?.includes(tab)||localStorage.getItem(key)==="1"||guidePending.has(tab))return;
@@ -2532,7 +2531,6 @@ function refreshCharacterSelectionSummaries(root=document){
 }
 
 function bind(){
-  bindDiamondShop({render,toast:showToast});
   if(state.activeTab==="credits")openSupporterCredits();
   const groupApi=window.DrawerVillageGroups;
   let directoryFilter="all";
