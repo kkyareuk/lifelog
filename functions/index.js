@@ -324,6 +324,7 @@ for(const action of ['readSafety','setUserBlock','reportContent','publishWorldCo
 exports.sharedTownApi=onRequest({region:'asia-northeast3',timeoutSeconds:60,memory:'512MiB',maxInstances:4,concurrency:4},sharedApp);
 
 exports.relationshipNotification=require('./shared-notifications')({db});
+exports.moderationReportEmail=require('./moderation-email-trigger');
 
 // Expired mail is hidden immediately by clients and removed daily on the server.
 exports.expireVillageMail=require('firebase-functions/v2/scheduler').onSchedule({schedule:'0 3 * * *',timeZone:'Asia/Seoul',region:'asia-northeast3',timeoutSeconds:540,memory:'256MiB'},async()=>{
