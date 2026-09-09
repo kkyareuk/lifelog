@@ -2,6 +2,9 @@ const fail=(message,status=403)=>{throw Object.assign(Error(message),{status})};
 module.exports=({db,clock=Date.now})=>async(uid,input)=>db.runTransaction(async tx=>{
  const gid=input.groupId,target=input.uid||uid;if(!gid||/[\/]/.test(gid)||!target||/[\/]/.test(target))fail('invalid-id',400);
  const root=db.collection('groups').doc(gid),[g,m,targetDoc,residents,homes]=await Promise.all([tx.get(root),tx.get(root.collection('members').doc(uid)),tx.get(root.collection('members').doc(target)),tx.get(root.collection('residents')),tx.get(root.collection('homes'))]);
+ // Repeated self-leave after a successful removal is a completed operation.
+ // Never extend this exception to removing another member or a resident.
+ if((!g.exists||!m.exists)&&target===uid&&!input.residentId&&!input.deletePermanently&&!residents.docs.some(d=>d.data().ownerUid===uid))return {returned:0,alreadyLeft:true};
  if(!g.exists||!m.exists)fail('group-membership-required');
  if(!input.residentId&&!targetDoc.exists)return {returned:0};
  const manager=g.data().ownerUid===uid||['owner','manager','operator'].includes(m.data().role);

@@ -917,7 +917,7 @@ function watchActiveGroup(groupId){
   const nextGroupId=String(groupId||""),remembered=readGroupContext(),sameGroup=groupState.activeGroupId===nextGroupId;
   const selectedTownId=sameGroup?groupState.selectedTownId:remembered.groupId===nextGroupId?remembered.townId:"";
   const selectedResidentId=sameGroup?groupState.selectedResidentId:remembered.groupId===nextGroupId?remembered.residentId:"";
-  groupState={...groupState,activeGroupId:nextGroupId,error:null,subscriptionErrors:{},group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],selectedTownId,selectedResidentId,visitingHomeId:""};
+  groupState={...groupState,activeGroupId:nextGroupId,error:null,loadedCollections:[],subscriptionErrors:{},group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],selectedTownId,selectedResidentId,visitingHomeId:""};
   writeGroupContext({groupId:nextGroupId,townId:selectedTownId,residentId:selectedResidentId});
   if(!groupId||!user){emitGroupState();return}
   groupSubscriptionKey=subscriptionKey;
@@ -934,7 +934,7 @@ function watchActiveGroup(groupId){
     const presentation=value=>JSON.stringify(Object.fromEntries(Object.entries(value||{}).filter(([k])=>!["lifeUpdatedAt","lifeNextAt","updatedAt"].includes(k))));
     const clockOnly=key==="group"&&groupState.group&&value&&!groupState.error&&!groupState.loading&&presentation(groupState.group)===presentation(value);
     const errors={...groupState.subscriptionErrors};delete errors[key];
-    groupState={...groupState,[key]:value,groups,subscriptionErrors:errors,error:Object.values(errors)[0]||'',loading:false};
+    groupState={...groupState,[key]:value,loadedCollections:[...new Set([...(groupState.loadedCollections||[]),key])],groups,subscriptionErrors:errors,error:Object.values(errors)[0]||'',loading:false};
     if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
     emitGroupState();
     if(key==="group"&&value)void migrateLegacyGroup(value);
@@ -1170,7 +1170,8 @@ async function updateGroupMemberRole(uid,role){
 
 async function removeGroupMember(uid){return sharedTownRequest('removeMember',{uid})}
 
-async function leaveGroup(){await sharedTownRequest('removeMember',{});await watchActiveGroup('');await refreshMailbox(true);await refreshSlotUsage()}
+let leavingGroup=null;
+async function leaveGroup(){if(leavingGroup)return leavingGroup;const groupId=groupState.activeGroupId;if(!groupId)return;leavingGroup=(async()=>{const result=await sharedTownRequest('removeMember',{groupId});if(groupState.activeGroupId===groupId)watchActiveGroup('');await Promise.allSettled([refreshMailbox(true),refreshSlotUsage(),refreshGroups()]);return result})().finally(()=>{leavingGroup=null});return leavingGroup}
 window.DrawerVillageGroups={
   readSafety:()=>sharedTownRequest("readSafety"),setUserBlock:input=>sharedTownRequest("setUserBlock",input),reportContent:input=>sharedTownRequest("reportContent",input),getSnapshot:groupSnapshot,refreshMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
   publishCatalog:async selected=>{const gid=groupState.activeGroupId,cloud=await sharedCloudState();if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:Object.fromEntries(Object.entries(selected||{}).map(([kind,items])=>[kind,(sharedProfile(cloud.catalog)?.[kind]||[]).filter(item=>items.some(chosen=>chosen.id===item.id))]))})},

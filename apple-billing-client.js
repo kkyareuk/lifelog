@@ -15,8 +15,8 @@
  FAILED:['구매 확인을 끝내지 못했어요. 다시 결제하지 말고 구매 내역 복원을 눌러 주세요.','Purchase verification is incomplete. Restore purchases instead of paying again.','購入確認を完了できませんでした。再購入せず、購入の復元をお試しください。']
  };
  const error=code=>{const index=String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0;return Object.assign(new Error((messages[code]||messages.FAILED)[index]),{code})};
- let busy=false,backgroundRestore=null,backgroundRestoreError=null,phase='idle';
- const phaseText={paymentDelayed:['Apple 응답이 늦어요. 결제 상태 확인을 눌러 주세요.','Apple is taking longer. Check payment status.','Appleの応答が遅れています。決済状況を確認してください。'],restoring:['구매 내역 확인 중…','Checking purchases…','購入履歴を確認中…'],account:['계정 확인 중…','Checking account…','アカウントを確認中…'],product:['Apple 상품 확인 중…','Loading Apple product…','Apple商品を確認中…'],payment:['Apple 결제창 응답 대기 중…','Waiting for Apple payment…','Apple決済の応答を待機中…'],verifying:['구매 지급 확인 중…','Verifying purchase…','購入を確認中…']};
+ let busy=false,backgroundRestore=null,backgroundRestoreError=null,phase='idle',paymentRecovery=null,recoveredDuringPayment=false;
+ const phaseText={recovered:['구매 상품을 반영했어요. Apple 결제창이 닫힐 때까지 다시 구매하지 마세요.','Purchase applied. Do not buy again while Apple closes the payment window.','購入を反映しました。Appleの決済画面が閉じるまで再購入しないでください。'],paymentDelayed:['Apple 응답이 늦어요. 결제 상태 확인을 눌러 주세요.','Apple is taking longer. Check payment status.','Appleの応答が遅れています。決済状況を確認してください。'],restoring:['구매 내역 확인 중…','Checking purchases…','購入履歴を確認中…'],account:['계정 확인 중…','Checking account…','アカウントを確認中…'],product:['Apple 상품 확인 중…','Loading Apple product…','Apple商品を確認中…'],payment:['Apple 결제창 응답 대기 중…','Waiting for Apple payment…','Apple決済の応答を待機中…'],verifying:['구매 지급 확인 중…','Verifying purchase…','購入を確認中…']};
  const getState=()=>({busy,phase,label:(phaseText[phase]||[])[String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0]||''});
  const setPhase=value=>{phase=value;window.dispatchEvent?.(new CustomEvent('drawer-village-billing-state',{detail:getState()}))};
  const bounded=(work,ms=25000)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(error('FAILED')),ms);Promise.resolve(work).then(resolve,reject).finally(()=>clearTimeout(timer))});
@@ -48,12 +48,21 @@
    if(restored)refreshAccount();if(failed)throw error('FAILED');return {restored,failed};
   });backgroundRestoreError=null;return result;
  }
+ async function recoverPayment(){
+  if(paymentRecovery)return paymentRecovery;
+  if(!busy||!['payment','paymentDelayed','recovered'].includes(phase))return getState();
+  paymentRecovery=(async()=>{
+   const history=await bounded(bridge.restorePurchases({interactive:false}));
+   if((history.purchases||[]).length){const auth=await token();for(const purchase of history.purchases)await settle(purchase,auth);recoveredDuringPayment=true;refreshAccount();setPhase('recovered')}
+   return getState();
+  })().finally(()=>{paymentRecovery=null});return paymentRecovery;
+ }
  function restoreInBackground(){
-  if(busy||backgroundRestore)return;
+  if(busy){void recoverPayment().catch(()=>{});return}if(backgroundRestore)return;
   backgroundRestore=restorePurchases(false).catch(e=>{backgroundRestoreError=e}).finally(()=>{backgroundRestore=null});
  }
  window.DrawerVillagePlayBilling={
-  getState,diagnostics:()=>bounded(bridge.getDiagnostics()),
+  getState,diagnostics:async()=>{await recoverPayment();return getState()},
   enabled:()=>Boolean(bridge&&config().enabled),configured:()=>Boolean(config().backendUrl),
   loadProducts:async()=>bridge?bridge.getProducts({productIds:Object.values(config().products||{})}).then(result=>({products:(result.products||[]).map(p=>({...p,storeProductId:p.productId,productId:Object.keys(config().products||{}).find(key=>config().products[key]===p.productId)||p.productId}))})):({products:[]}),
   purchase:async id=>{if(backgroundRestore)await backgroundRestore;if(backgroundRestoreError)throw error('RESTORE_REQUIRED');return exclusive(async()=>{
@@ -64,14 +73,15 @@
    setPhase('restoring');
    const outstanding=await bounded(bridge.restorePurchases({interactive:false}));
    for(const previous of outstanding.purchases||[]){try{await settle(previous,auth)}catch{throw error('RESTORE_REQUIRED')}}
+   if((outstanding.purchases||[]).length){refreshAccount();return {recovered:true}}
    setPhase('product');
    const products=await bounded(bridge.getProducts({productIds:[productId]}));
    if(!(products.products||[]).some(p=>p.productId===productId))throw error('APPLE_NOT_CONFIGURED');
-   setPhase('payment');
-   const slow=setTimeout(()=>setPhase('paymentDelayed'),30000);let purchase;
+   recoveredDuringPayment=false;setPhase('payment');
+   const slow=setTimeout(()=>{if(!recoveredDuringPayment)setPhase('paymentDelayed')},30000);let purchase;
    try{purchase=await bridge.purchase({productId,appAccountToken:prepared.appAccountToken})}finally{clearTimeout(slow)}
    setPhase('verifying');
-   await settle(purchase,auth);refreshAccount();return purchase;
+   try{if(paymentRecovery)await paymentRecovery;await settle(purchase,auth)}catch(e){backgroundRestoreError=e;throw e}refreshAccount();return purchase;
   })},restorePurchases
  };
  bridge?.addListener('transactionUpdated',restoreInBackground);
