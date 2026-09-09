@@ -1,9 +1,9 @@
 {
   "version": "1.0.269",
-  "build": 27,
+  "build": 28,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Fix native Apple payment presentation and persistent purchase progress"
+  "reason": "Active UIKit window scene and unfinished Apple purchase reconciliation"
 }

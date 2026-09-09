@@ -1,6 +1,7 @@
 // Keep native purchase state through shop rerenders and late price responses.
 function syncApplePurchaseButtons(){
  const status=window.DrawerVillagePlayBilling?.getState?.();if(!status)return;
+ const diagnosticButton=document.querySelector?.('[data-apple-billing-diagnostics]');if(diagnosticButton)diagnosticButton.hidden=!status.busy;
  const progress=document.querySelector?.('[data-apple-billing-progress]');if(progress){progress.hidden=!status.busy;progress.textContent=status.label;}
  document.querySelectorAll('[data-play-purchase]').forEach(button=>{
   const label=button.querySelector('[data-play-label]');
@@ -14,6 +15,10 @@ function syncApplePurchaseButtons(){
  });
 }
 window.addEventListener('drawer-village-billing-state',syncApplePurchaseButtons);
+ document.addEventListener?.('click',async event=>{
+  if(!event.target.closest?.('[data-apple-billing-diagnostics]'))return;
+  try{const report=await window.DrawerVillagePlayBilling.diagnostics();const text=JSON.stringify(report);const progress=document.querySelector('[data-apple-billing-progress]');if(progress)progress.textContent=text;}catch(error){showToast(error.message)}
+ });
 import {installUserSafety} from './user-safety.js?v=20260909dev302';
 import {SOCIAL_ACTIVITIES,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev302';
 import {installSupporterCredits,openSupporterCredits} from './supporter-credits.js?v=20260909dev302';

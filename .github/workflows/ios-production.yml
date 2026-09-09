@@ -45,6 +45,15 @@ jobs:
           node scripts/check-ios-production.mjs
           node scripts/check-ios-preview-auth.mjs
           npm run app:sync:ios
+      - name: Verify iPad scene launch before signing
+        run: |
+          xcodebuild -workspace ios/App/App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath ios/build/DerivedData CODE_SIGNING_ALLOWED=NO build > ios-scene-build.log 2>&1 || { tail -n 100 ios-scene-build.log; exit 1; }
+          node scripts/check-scene28.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios-scene28
+          path: ios/build/scene28
+          retention-days: 3
       - name: Archive, sign and upload App Store eligible candidate
         env:
           IOS_DISTRIBUTION_P12_BASE64: ${{ secrets.IOS_DISTRIBUTION_P12_BASE64 }}

@@ -1,5 +1,5 @@
 {
-  "commit": "5b55860",
+  "commit": "8788817",
   "androidCode": 302,
   "files": {
     "account-storage.js": "c6f835188f61b3f83730a4834408b6e83fd557acc4842ed21d181e5553afa3f4",
@@ -90,11 +90,13 @@
   },
   "platformFiles": {
     "auth.js": "5101d8bd9893a92ae17460a82224d4261bb4b60af2e021462ca8bb8794bb6e34",
-    "app.js": "4590e3c8936bbe0b8d1c62a242001bfd9b747a4b7ccb18b7ed8fca8138d1225e",
-    "views.js": "8283d24ef241b6feb7f926ce69f60d32c99c054db87ade1e461abd6f4a29608a",
+    "app.js": "08b2501db633b958583d08a6482357e99a9d5e162d8d658ee2feab91326428c3",
+    "views.js": "556e8c14fa25e1c9c2cbaea48185fb3f11c98d96b2d87acf49039361fdff5d73",
     "app.css": "21624594c765c5b32990bdd83d18491e702289350179f460a66855fde2e84ee7",
-    "apple-billing-client.js": "4f41f3b8963d1c77d8aef3e7e776fab25c8e68bf17440ed774e07678dd5b57c2",
+    "apple-billing-client.js": "40861ab7dba35957437dc8ff83a27a8f7a8e8a3cd251809ef652b76d891b687e",
     "native-app.js": "4893e7f0b2d435a8916d5cf9f6fcc35779ecf478f2d36fc3a88ca6ee1545e257",
-    "ios/App/App/AppleBillingPlugin.swift": "06e80738d7de95021ffd20dcbf6b7d3f4ce5ef3fdc3111d033b4c21b9fccea1b"
+    "ios/App/App/AppleBillingPlugin.swift": "05a47ffe019767697988fcb2ce8d4faf4b9458a7f3f6809ba6890b45bdf09392",
+    "ios/App/App/AppDelegate.swift": "4c6daa6d005580b5ffd49a2238c9a52e9f84de1b16dc6adea9b1449959047189",
+    "ios/App/App/Info.plist": "d76128b5d533a9c309d7121595fc0acf630e2e97c29839340b7ba241f4408a85"
   }
 }

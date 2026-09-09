@@ -3,6 +3,8 @@
  if(!window.Capacitor?.isNativePlatform?.()||window.Capacitor.getPlatform()!=='ios')return;
  const bridge=window.Capacitor.Plugins.AppleBilling,config=()=>window.PARALLEL_CITY_CONFIG?.appleBilling||{};
  const messages={
+ APPLE_WINDOW_UNAVAILABLE:['결제창을 연결할 앱 화면을 찾지 못했어요. 앱을 다시 열어 주세요.','The app window for payment is unavailable. Reopen the app.','決済画面に接続できません。アプリを開き直してください。'],
+ RESTORE_REQUIRED:['이전 구매를 확인하지 못했어요. 구매 내역 복원에서 먼저 확인해 주세요.','An earlier purchase could not be verified. Restore purchases first.','前の購入を確認できません。先に購入を復元してください。'],
  LOGIN_REQUIRED:['서랍마을 계정에 로그인한 뒤 구매해 주세요.','Sign in to your Drawer Village account before purchasing.','購入前にひきだし村アカウントでログインしてください。'],
  PURCHASE_CANCELLED:['구매를 취소했어요.','Purchase cancelled.','購入をキャンセルしました。'],
  PURCHASE_PENDING:['Apple에서 구매 승인 대기 중이에요. 승인되면 구매 내역을 다시 확인해 주세요.','The purchase is awaiting Apple approval. Check purchases after approval.','Appleで購入の承認を待っています。承認後に購入履歴を確認してください。'],
@@ -13,8 +15,8 @@
  FAILED:['구매 확인을 끝내지 못했어요. 다시 결제하지 말고 구매 내역 복원을 눌러 주세요.','Purchase verification is incomplete. Restore purchases instead of paying again.','購入確認を完了できませんでした。再購入せず、購入の復元をお試しください。']
  };
  const error=code=>{const index=String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0;return Object.assign(new Error((messages[code]||messages.FAILED)[index]),{code})};
- let busy=false,backgroundRestore=null,phase='idle';
- const phaseText={restoring:['구매 내역 확인 중…','Checking purchases…','購入履歴を確認中…'],account:['계정 확인 중…','Checking account…','アカウントを確認中…'],product:['Apple 상품 확인 중…','Loading Apple product…','Apple商品を確認中…'],payment:['Apple 결제창 응답 대기 중…','Waiting for Apple payment…','Apple決済の応答を待機中…'],verifying:['구매 지급 확인 중…','Verifying purchase…','購入を確認中…']};
+ let busy=false,backgroundRestore=null,backgroundRestoreError=null,phase='idle';
+ const phaseText={paymentDelayed:['Apple 응답이 늦어요. 결제 상태 확인을 눌러 주세요.','Apple is taking longer. Check payment status.','Appleの応答が遅れています。決済状況を確認してください。'],restoring:['구매 내역 확인 중…','Checking purchases…','購入履歴を確認中…'],account:['계정 확인 중…','Checking account…','アカウントを確認中…'],product:['Apple 상품 확인 중…','Loading Apple product…','Apple商品を確認中…'],payment:['Apple 결제창 응답 대기 중…','Waiting for Apple payment…','Apple決済の応答を待機中…'],verifying:['구매 지급 확인 중…','Verifying purchase…','購入を確認中…']};
  const getState=()=>({busy,phase,label:(phaseText[phase]||[])[String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0]||''});
  const setPhase=value=>{phase=value;window.dispatchEvent?.(new CustomEvent('drawer-village-billing-state',{detail:getState()}))};
  const bounded=(work,ms=25000)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(error('FAILED')),ms);Promise.resolve(work).then(resolve,reject).finally(()=>clearTimeout(timer))});
@@ -44,26 +46,30 @@
    const auth=await token();await request('prepare',{},auth);let restored=0,failed=0;
    for(const purchase of result.purchases||[]){try{await settle(purchase,auth);restored++}catch{failed++}}
    if(restored)refreshAccount();if(failed)throw error('FAILED');return {restored,failed};
-  });return result;
+  });backgroundRestoreError=null;return result;
  }
  function restoreInBackground(){
   if(busy||backgroundRestore)return;
-  backgroundRestore=restorePurchases(false).catch(()=>{}).finally(()=>{backgroundRestore=null});
+  backgroundRestore=restorePurchases(false).catch(e=>{backgroundRestoreError=e}).finally(()=>{backgroundRestore=null});
  }
  window.DrawerVillagePlayBilling={
-  getState,
+  getState,diagnostics:()=>bounded(bridge.getDiagnostics()),
   enabled:()=>Boolean(bridge&&config().enabled),configured:()=>Boolean(config().backendUrl),
   loadProducts:async()=>bridge?bridge.getProducts({productIds:Object.values(config().products||{})}).then(result=>({products:(result.products||[]).map(p=>({...p,storeProductId:p.productId,productId:Object.keys(config().products||{}).find(key=>config().products[key]===p.productId)||p.productId}))})):({products:[]}),
-  purchase:async id=>{if(backgroundRestore)await backgroundRestore;return exclusive(async()=>{
+  purchase:async id=>{if(backgroundRestore)await backgroundRestore;if(backgroundRestoreError)throw error('RESTORE_REQUIRED');return exclusive(async()=>{
    if(!bridge||!config().enabled||!config().products?.[id])throw error('APPLE_NOT_CONFIGURED');
    setPhase('account');
    const auth=await token(),prepared=await request('prepare',{},auth),productId=config().products[id];
    if(prepared.products?.[productId]!==id||!prepared.appAccountToken)throw error('APPLE_NOT_CONFIGURED');
+   setPhase('restoring');
+   const outstanding=await bounded(bridge.restorePurchases({interactive:false}));
+   for(const previous of outstanding.purchases||[]){try{await settle(previous,auth)}catch{throw error('RESTORE_REQUIRED')}}
    setPhase('product');
    const products=await bounded(bridge.getProducts({productIds:[productId]}));
    if(!(products.products||[]).some(p=>p.productId===productId))throw error('APPLE_NOT_CONFIGURED');
    setPhase('payment');
-   const purchase=await bridge.purchase({productId,appAccountToken:prepared.appAccountToken});
+   const slow=setTimeout(()=>setPhase('paymentDelayed'),30000);let purchase;
+   try{purchase=await bridge.purchase({productId,appAccountToken:prepared.appAccountToken})}finally{clearTimeout(slow)}
    setPhase('verifying');
    await settle(purchase,auth);refreshAccount();return purchase;
   })},restorePurchases

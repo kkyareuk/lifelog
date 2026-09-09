@@ -9,6 +9,7 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
     public let identifier = "AppleBillingPlugin"
     public let jsName = "AppleBilling"
     public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "getDiagnostics", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "getProducts", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "purchase", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "restorePurchases", returnType: CAPPluginReturnPromise),
@@ -17,6 +18,8 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
     private let allowed: Set<String> = ["com.drawervillage.app.character_slots_5", "com.drawervillage.app.town_slot_1", "com.drawervillage.app.green_tea"]
     @MainActor private var loadedProducts: [String: Product] = [:]
     @MainActor private var purchaseActive = false
+    @MainActor private var purchaseStarted: Date?
+    @MainActor private var lastErrorCode = "none"
     private var updates: Task<Void, Never>?
     public override func load() {
         updates = Task { [weak self] in
@@ -35,6 +38,13 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
         return ["transactionId": String(transaction.id), "productId": transaction.productID, "signedTransaction": result.jwsRepresentation]
     }
     enum BillingError: Error { case unverified }
+    @objc func getDiagnostics(_ call: CAPPluginCall) {
+        Task { @MainActor in
+            let controller = bridge?.viewController
+            let scene = controller?.viewIfLoaded?.window?.windowScene
+            call.resolve(["build": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "", "hasWindow": controller?.viewIfLoaded?.window != nil, "hasScene": scene != nil, "sceneActive": scene?.activationState == .foregroundActive, "purchaseActive": purchaseActive, "waitingSeconds": purchaseStarted.map { Int(Date().timeIntervalSince($0)) } ?? 0, "errorCode": lastErrorCode])
+        }
+    }
     @objc func getProducts(_ call: CAPPluginCall) {
         let ids = (call.getArray("productIds", String.self) ?? []).filter { allowed.contains($0) }
         Task { @MainActor in
@@ -52,12 +62,15 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
             // Products are loaded by the bounded JS preflight before any payment starts.
             guard let product = loadedProducts[id] else { call.reject("PRODUCTS_UNAVAILABLE", "PRODUCTS_UNAVAILABLE"); return }
             guard let presenter = bridge?.viewController, presenter.viewIfLoaded?.window != nil else { call.reject("PURCHASE_FAILED", "PURCHASE_FAILED"); return }
+            guard let scene = presenter.view.window?.windowScene, scene.activationState == .foregroundActive else { call.reject("APPLE_WINDOW_UNAVAILABLE", "APPLE_WINDOW_UNAVAILABLE"); return }
+            purchaseStarted = Date()
+            lastErrorCode = "none"
             purchaseActive = true
-            defer { purchaseActive = false }
+            defer { purchaseActive = false; purchaseStarted = nil }
             do {
                 let result: Product.PurchaseResult
                 if #available(iOS 18.2, *) {
-                    result = try await product.purchase(confirmIn: presenter, options: [.appAccountToken(token)])
+                    result = try await product.purchase(confirmIn: scene, options: [.appAccountToken(token)])
                 } else {
                     result = try await product.purchase(options: [.appAccountToken(token)])
                 }
@@ -67,7 +80,7 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
                 case .pending: call.reject("PURCHASE_PENDING", "PURCHASE_PENDING")
                 @unknown default: call.reject("PURCHASE_FAILED", "PURCHASE_FAILED")
                 }
-            } catch { call.reject("PURCHASE_FAILED", "PURCHASE_FAILED") }
+            } catch { lastErrorCode = "\((error as NSError).domain):\((error as NSError).code)"; call.reject("PURCHASE_FAILED", "PURCHASE_FAILED") }
         }
     }
     @objc func restorePurchases(_ call: CAPPluginCall) {
