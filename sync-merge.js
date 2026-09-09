@@ -59,6 +59,16 @@ export function mergeDeviceAndCloudState(deviceValue,cloudValue){
   const deletedCharacters=new Set(next.deletedCharacterIds),deletedHomes=new Set(next.deletedHomeIds);
 
   next.characters=mergedMap(preferred.characters,fallback.characters);
+  // A move is not a deletion: retain its revision so a later return can win.
+  next.characterTransferLocations={};next.characterTransferVersions={};
+  for(const source of [fallback,preferred]){
+    for(const [id,revision] of Object.entries(source.characterTransferVersions||{}))next.characterTransferVersions[id]=Math.max(Number(next.characterTransferVersions[id])||0,Number(revision)||0);
+    for(const [id,receipt] of Object.entries(source.characterTransferLocations||{})){
+      const old=next.characterTransferLocations[id];
+      if(!old||Number(receipt.revision||0)>=Number(old.revision||0))next.characterTransferLocations[id]=clone(receipt);
+    }
+  }
+  for(const [id,receipt] of Object.entries(next.characterTransferLocations))if(['group','deleted'].includes(receipt.location))delete next.characters[id];
   deletedCharacters.forEach(id=>delete next.characters[id]);
   const preferredOrder=Array.isArray(preferred.order)?preferred.order:Object.keys(mapById(preferred.characters));
   const fallbackOrder=Array.isArray(fallback.order)?fallback.order:Object.keys(mapById(fallback.characters));

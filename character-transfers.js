@@ -1,7 +1,9 @@
 // The server transfer record is authoritative; never infer identity from a name.
 export function applyCharacterTransfers(world,records=[]){
- world.characterTransferVersions||={};world.order||=[];world.characters||={};
+ world.characterTransferVersions||={};world.characterTransferLocations||={};world.order||=[];world.characters||={};
  for(const r of records){if(r.kind==='world')continue;const id=r.personalId;if(!id)continue;
+  if(Number(r.revision||0)<Number(world.characterTransferVersions[id]||0))continue;
+  world.characterTransferLocations[id]={location:r.location,revision:Number(r.revision)||0};
   if(['group','deleted'].includes(r.location)){
    delete world.characters[id];world.order=world.order.filter(x=>x!==id);
    if(world.activeId===id)world.activeId=world.order[0]||'';

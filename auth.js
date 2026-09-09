@@ -690,6 +690,7 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
     const tombstoneSafeState=previousGameState
       ?mergeDeviceAndCloudState(localState,previousGameState)
       :localState;
+    applyCharacterTransfers(tombstoneSafeState,accountMailbox.uid===session.uid?accountMailbox.data.characterTransfers||[]:[]);
     const prepared=await prepareState(tombstoneSafeState,normalizeManifest(previous?.mediaManifest,previousGameState),previousGameState,session,{uploadPhotos:!metadataOnly});
     assertSession(session);
     const {gameState,mediaManifest,uploadedCount,photoFailures}=prepared;
@@ -776,6 +777,7 @@ async function download({automatic=false,accountTransition=false,detailed=false}
     const imported=automatic
       ?differentCharacters?mergeDeviceAndCloudState(localState,remote):applyLocalTombstones(remote,localState)
       :mergeCloudRestoreState(localState,remote);
+    applyCharacterTransfers(imported,accountMailbox.uid===session.uid?accountMailbox.data.characterTransfers||[]:[]);
     window.ParallelCity.replaceState(imported);
     if(documentData?.syncRevision)localStorage.setItem(syncRevisionKey(session.uid),String(documentData.syncRevision));
     else localStorage.removeItem(syncRevisionKey(session.uid));
@@ -840,12 +842,12 @@ async function createSharedResident(input){
  return result;
 }
 let groupUnsubscribers=[];
-let accountMailbox={uid:'',at:0,data:{}},mailboxRequest=null;
+let accountMailbox={uid:'',at:0,data:{}},mailboxRequest=null,mailboxRefreshQueued=false;
 const groupSnapshot=()=>{const s={...groupState,...(accountMailbox.uid===user?.uid?accountMailbox.data:{})};return window.DrawerVillageSafety?.filterSnapshot(s)||s};
 async function refreshMailbox(force=false){
  if(!user)return;if(accountMailbox.uid!==user.uid)accountMailbox={uid:user.uid,at:0,data:{}};
- if(mailboxRequest)return mailboxRequest;if(!force&&Date.now()-accountMailbox.at<300000)return;
- const uid=user.uid;mailboxRequest=sharedTownRequest('readMailbox').then(data=>{if(user?.uid===uid){accountMailbox={uid,at:Date.now(),data};window.ParallelCity?.receiveCharacterTransfers?.(data.characterTransfers||[]);emitGroupState()}}).finally(()=>{mailboxRequest=null});return mailboxRequest;
+ if(mailboxRequest){if(force)mailboxRefreshQueued=true;return mailboxRequest}if(!force&&Date.now()-accountMailbox.at<300000)return;
+ const uid=user.uid;mailboxRequest=(async()=>{do{mailboxRefreshQueued=false;const data=await sharedTownRequest('readMailbox');if(user?.uid!==uid)return;accountMailbox={uid,at:Date.now(),data};window.ParallelCity?.receiveCharacterTransfers?.(data.characterTransfers||[]);emitGroupState()}while(mailboxRefreshQueued)})().finally(()=>{mailboxRequest=null});return mailboxRequest;
 }
 let groupEmitTimer=null;
 const emitGroupState=()=>{if(groupEmitTimer)return;groupEmitTimer=setTimeout(()=>{groupEmitTimer=null;

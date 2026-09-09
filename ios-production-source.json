@@ -1,5 +1,5 @@
 {
-  "commit": "820ba4f",
+  "commit": "978e1d5",
   "androidCode": 298,
   "files": {
     "account-storage.js": "c6f835188f61b3f83730a4834408b6e83fd557acc4842ed21d181e5553afa3f4",
@@ -15,7 +15,7 @@
     "character-notifications.js": "5bf60d7aee479548821c8ddde8dea632bb75c52c97bfc237b528d71dfb8fe6a6",
     "character-placement.js": "b9e49ea88d7d80c07980fa334fe0e175d4f958612183af62bd961fd1c22440ca",
     "character-scene-image.js": "88c5c20907c1f62b7a7557c47e4ea9c650df32cbed0df097f2588196cabb5d74",
-    "character-transfers.js": "cdab780c1d006723d1320c242ee49e6c1f487a8379993b254fdd903d04d8e874",
+    "character-transfers.js": "f2c50b1bd8e449420346853285b26247efe9c3091426c538e40c5f6d8de2a386",
     "config.js": "f483ab682efb85b8cba4859d39152256e13ec01f1d06c764c004cf4789905f94",
     "contact-voice.js": "eebbc0a98587e659cbeed8d228910ac27b8bcd9a08c6f0ca76e49adbf587672e",
     "creative-options.js": "6d5e840c31f53cd8085a0fd56e6c667189b8d75c3bbc888d9c95c174b909f278",
@@ -65,14 +65,14 @@
     "simulation.js": "0f65ba59fd085eeef590fd7c25d980a84060d14e10ee043074b0d83d7c17e1ea",
     "social-activities.js": "2166383153aebfa0f904ad00a47d4f18214d59622bd3ce2b8378b8092c9797fa",
     "speech-styles.js": "188f9bbe68e80fe37c3610a4bd598ebc371c6f7cb5455358a1df8c8a29065599",
-    "state.js": "b470a1bec3fd8737de76d6013221633ce7ac801803036b1dbb59450b4fb0104f",
+    "state.js": "e7bb9ea1f5a0501508bbfcffc5a11f97359ea594b29b621eade52d80a408974f",
     "story-themes.css": "c1ec8fddce075d1ccd5f7f87a58142d02632609f0be91c48bc576955a2427910",
     "supporter-credits.css": "4fbe607c49c5469d6ff70286cdb5062af998699e14a926ae91eecdb871604367",
     "supporter-credits.js": "1f58a279e600e9ff0112f0caef537042fbf6165d490b18c89ac34952d4bcd704",
     "supporter-data.js": "7fc89228ef1090e13e24711c7df49e1a696c12f3044c129fa916eaa87967c0f9",
     "supporter-model.js": "085a70d04861f26982191ed8cd8edae44edea52bed8f1265dc49d64be000b56e",
     "sw.js": "8bf3e4ab63de65089aa4d65e8a7e73a28e65e1e643f0d0941895ab8c8445d375",
-    "sync-merge.js": "3ae305ab3e735dcec59cc627ba3458a6a18210f729ed1407e59acb943bd8fc9c",
+    "sync-merge.js": "eee225feed40b8f38502e17bb06212a40aa587b4aabfd4fc5ae6d1498486f96b",
     "theme.css": "c9a3e09791d78667e8bfc45deefe3da4b12dce0c64d167ee0146c1ca27fb5c22",
     "touch-reactions.js": "1296aa0389386c9b1c1260168be4dd26784fedeaf0b6429a52efc9254a537211",
     "town-edit-draft.js": "1b14c559fb2634bffe5bef1e59c262d92590d8e0ef97549220a81aca226f73d8",
@@ -89,7 +89,7 @@
     "automatic-activities.js": "2c76d1cefae2d49380594298f0a89c1f40775735f4319ad2f0a4f3c92c682d8a"
   },
   "platformFiles": {
-    "auth.js": "6d9adebdb6ab936e7124bc21e859f5e1bc9651102757ef1ea486388ac4791415",
+    "auth.js": "047c2dc19e770dfe805a7121ea262e66f054445ab9bb682af4fffda237eb72f4",
     "app.js": "3609d2e29b521ad7bf790326c9ace474c5075a00ba3e96a1605385864b96a03d",
     "views.js": "c91b7bfcfb1945b93752375003feee778534452939dda43e2dd5846895a5e551",
     "app.css": "21624594c765c5b32990bdd83d18491e702289350179f460a66855fde2e84ee7",

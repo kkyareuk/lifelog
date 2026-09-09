@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 const read=p=>fs.readFileSync(p,'utf8'),json=p=>JSON.parse(read(p));
 const source=json('ios-production-source.json'),release=json('ios-release.json'),request=json('.github/ios-production-request.json');
-assert.equal(source.commit,'820ba4f');assert.equal(source.androidCode,298);
+assert.equal(source.commit,'978e1d5');assert.equal(source.androidCode,298);
 for(const [file,hash] of Object.entries({...source.files,...source.platformFiles}))assert.equal(createHash('sha256').update(read(file).replaceAll('\r\n','\n')).digest('hex'),hash,'Production game changed: '+file);
 assert.equal(release.sourceAndroidCode,298);assert.equal(release.sourceAndroidVersion,'1.0.265');
 assert.equal(request.version,release.version);assert.equal(request.build,release.build);
