@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {advanceSharedLife} from '../server-life.mjs';
 const {createSharedTownService}=createRequire(import.meta.url)('../functions/shared-town.js');
-const game=await import('../state.js?v=20260909dev291');
+const game=await import('../state.js?v=20260909dev292');
 const source=game.createCharacter(5),profile=structuredClone(game.state.characters[source]);profile.createdAt=1;
 const count=200,minutes=60,data=new Map([['groups/g',{ownerUid:'u',towns:[{id:'t',name:'Town',places:[]}]}],['groups/g/members/u',{role:'owner'}]]);
 for(let i=0;i<count;i++)data.set('groups/g/residents/r'+i,{name:'Resident '+i,ownerUid:'u',townId:'t',sourceCharacterId:source,profileJson:JSON.stringify({...profile,id:'r'+i}),scheduleJson:'{}'});

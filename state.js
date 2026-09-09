@@ -1,25 +1,25 @@
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev291';
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev291';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev292';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev292';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev291";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev291";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev291";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev291";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev291";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev291";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev291";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev291";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev291";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev291";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev292";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev292";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev292";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev292";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev292";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev292";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev292";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev292";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev292";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev292";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev291";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev291";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev292";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev292";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";

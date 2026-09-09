@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {advanceSharedLife} from '../server-life.mjs';
-const g=await import('../state.js?v=20260909dev291');
+const g=await import('../state.js?v=20260909dev292');
 g.resetAll();const a=g.createCharacter(20),b=g.createCharacter(20),now=Date.now();
 for(const kind of ['handhold','lean','kiss','kiss_cautious','kiss_reconcile']){
  assert.equal(g.directCharacterActivity(a,kind,{targetId:b,now}),true);
