@@ -53,7 +53,7 @@ try{
   await page.screenshot({path:resolve(output,"phone-body-summary-persisted.png"),fullPage:true});
 
   const checks=await page.evaluate(async()=>{
-    const game=await import('/state.js?v=20260909dev293'),transfer=await import('/settings-transfer.js?v=20260909dev293'),c=game.state.characters[game.state.activeId],home=game.state.homes[c.homeId];
+    const game=await import('/state.js?v=20260909dev294'),transfer=await import('/settings-transfer.js?v=20260909dev294'),c=game.state.characters[game.state.activeId],home=game.state.homes[c.homeId];
     home.floorCount=2;home.rooms.upstairs={...structuredClone(home.rooms.bedroom),name:'2층 침실',type:'bedroom',floor:2,ownerMode:'selected',ownerCharacterIds:[]};
     game.updateRoom(home.id,'upstairs',{ownerMode:'selected',ownerCharacterIds:[c.id]});
     const ownerToRoom=c.sleepRoomId==='upstairs'&&c.residences.find(r=>r.homeId===home.id).sleepRoomId==='upstairs';
@@ -95,7 +95,7 @@ try{
     window.ParallelCityAuth={...window.ParallelCityAuth,getInfo:()=>({ready:true,user:{uid:'qa-owner'},entitlements:{townSlotPacks:4}})};
     const groups=Array.from({length:6},(_,i)=>({id:'qa-'+i,name:'함께 사는 마을 '+(i+1),ownerUid:i===0?'qa-owner':'friend',memberCount:i+2,towns:[{id:'town-'+i,name:'멀티 마을',previewImage:'./assets/multiplayer/reference-1.png'}]}));
     window.DrawerVillageGroups={getSnapshot:()=>({groups}),select:id=>window.selectedGroup=id,create:async()=>{},join:async()=>{}};
-    (await import('/groups.js?v=20260909dev293')).showMultiplayerList();location.hash='tab=groups';
+    (await import('/groups.js?v=20260909dev294')).showMultiplayerList();location.hash='tab=groups';
   });await page.waitForFunction(()=>!!document.querySelector('.directory-card'));
   try{await page.locator('dialog.page-guide[open] button[value=ok]').last().click({timeout:2000})}catch{}
   await page.setViewportSize({width:412,height:917});await page.waitForFunction(()=>[...document.querySelectorAll('.directory-portrait img')].every(i=>i.complete&&i.naturalWidth>0));await page.evaluate(async()=>{await Promise.all([...document.querySelectorAll('.directory-portrait img')].map(i=>i.decode()));await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))});await page.screenshot({path:resolve(output,'multiplayer-412.png'),fullPage:true});
@@ -109,14 +109,14 @@ try{
 
   assert.deepEqual(errors,[]);
   console.log("PASS 261: full-settings summary updates immediately and survives reload");
-  await page.evaluate(async()=>{const {state}=await import('/state.js?v=20260909dev293');const home=state.homes[state.characters[state.activeId].homeId];home.rooms={bedroom:{name:'침실',type:'bedroom',floor:1,size:'보통 방',furniture:['커플 침대'],furniturePlacements:[{id:'qa-side-bed',item:'커플 침대',x:50,y:50,rotation:0,scale:1,layer:1,props:[]}]}};home.activeFloor=1;state.activeHomeId=home.id;state.homeEditMode=true;state.activeTab='home';location.hash='tab=home';window.ParallelCity.mediaChanged()});
+  await page.evaluate(async()=>{const {state}=await import('/state.js?v=20260909dev294');const home=state.homes[state.characters[state.activeId].homeId];home.rooms={bedroom:{name:'침실',type:'bedroom',floor:1,size:'보통 방',furniture:['커플 침대'],furniturePlacements:[{id:'qa-side-bed',item:'커플 침대',x:50,y:50,rotation:0,scale:1,layer:1,props:[]}]}};home.activeFloor=1;state.activeHomeId=home.id;state.homeEditMode=true;state.activeTab='home';location.hash='tab=home';window.ParallelCity.mediaChanged()});
   await page.locator('[data-home-edit]').click();
   await page.locator('[data-furniture-placement="qa-side-bed"]').click();
   await page.locator('[data-furniture-command="rotate"]').click();
   assert.equal(await page.locator('[data-furniture-placement="qa-side-bed"]').getAttribute('data-bed-side'),'true');
   assert.match(await page.locator('[data-furniture-placement="qa-side-bed"] .couple-bed-base').getAttribute('src'),/side-base.svg/);
   console.log('PASS live furniture rotation immediately switches to supplied side artwork');
-  await page.evaluate(async()=>{window.ParallelCityAuth.savePublicProfile=async input=>{window.qaProfileInput=input.name;return {name:input.name,photoURL:''}};const p=await import('/user-profile.js?v=20260909dev293');p.openUserProfile()});
+  await page.evaluate(async()=>{window.ParallelCityAuth.savePublicProfile=async input=>{window.qaProfileInput=input.name;return {name:input.name,photoURL:''}};const p=await import('/user-profile.js?v=20260909dev294');p.openUserProfile()});
   await page.locator('[data-user-profile-dialog] input[name=name]').fill('프로필 테스트');await page.locator('[data-user-profile-dialog] button[type=submit]').click();
   await page.waitForFunction(()=>window.ParallelCity.getState().ownerName==='프로필 테스트');assert.equal(await page.evaluate(()=>window.qaProfileInput),'프로필 테스트');
   console.log('PASS single-item export/import and profile editor save flow');

@@ -1,26 +1,27 @@
-import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev293';
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev293';
-import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev293';
+import {workTasks} from './social-activities.js?v=20260909dev294';
+import {SOCIAL_ACTIVITIES,socialActivityCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev294';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev294';
+import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev294';
 let directiveSceneResolver=null,giftCopyResolver=null;
 export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
-import {hospitalPurposes} from "./creative-options.js?v=20260909dev293";
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev293";
-import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev293";
-import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev293";
-import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev293";
-import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev293";
-import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev293";
-import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev293";
-import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev293";
-import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev293";
+import {hospitalPurposes} from "./creative-options.js?v=20260909dev294";
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev294";
+import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev294";
+import {SPEECH_STYLE_OPTIONS} from "./speech-styles.js?v=20260909dev294";
+import {normalizeRoomLayout} from "./room-layout.js?v=20260909dev294";
+import {FURNITURE_CATALOG,furnitureCapacity,furnitureCatalogForRoom,isBedFurniture,newFurniturePlacement,newFurnitureProp,normalizeFurniturePlacement,normalizeFurniturePlacements,supportsFurnitureProps} from "./furniture-layout.js?v=20260909dev294";
+import {advanceHomeLifeSimulation as advanceLifeSimulation,normalizeHomeLifeSimulation} from "./home-simulation.js?v=20260909dev294";
+import {defaultHomeSurfaceForRoom,normalizeHomeSurface,normalizeWallSurface} from "./home-surfaces.js?v=20260909dev294";
+import {normalizeTownProfile,TOWN_ILLUSTRATIONS} from "./town-profile.js?v=20260909dev294";
+import {normalizeBuildingLighting} from "./town-lighting.js?v=20260909dev294";
 
 const normalizeDressCode=value=>{
   const source=value&&typeof value==="object"&&!Array.isArray(value)?value:{};
   const list=key=>[...new Set((Array.isArray(source[key])?source[key]:[]).map(String).filter(Boolean))];
   return {enabled:Boolean(source.enabled),colors:list("colors"),materials:list("materials"),flairs:list("flairs"),formality:String(source.formality||"지정 안 함"),requiredUniform:Boolean(source.requiredUniform)};
 };
-import {missingBuildings} from "./building-recovery.js?v=20260909dev293";
-import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev293";
+import {missingBuildings} from "./building-recovery.js?v=20260909dev294";
+import {normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev294";
 
 const KEY="drawer-village-game-v1";
 const oldKey="parallel-city-game-v2";
@@ -1411,6 +1412,7 @@ export function contactAllowed(a,b,kind){
 export function directCharacterActivity(characterId,kind="wake",options={}){
   const character=state.characters?.[characterId];let definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
   if(!character)return false;
+  if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
   if(['affection','kiss','kiss_cautious','kiss_reconcile','handhold','lean'].includes(kind)&&(!['성인','노인'].includes(character.ageGroup)||!['성인','노인'].includes(target?.ageGroup)))return false;
