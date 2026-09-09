@@ -1,4 +1,4 @@
-import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev296';
+import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev297';
 const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sharedScene','sharedContext','sourceCharacterId','revision','savedOutfits']);
 export function importCodeCharacter(character,limit){
  const clean=(v,depth=0)=>{if(depth>20)throw Error('Invalid character');if(Array.isArray(v))return v.map(x=>clean(x,depth+1));if(v&&typeof v==='object')return Object.fromEntries(Object.entries(v).filter(([k])=>!['__proto__','constructor','prototype'].includes(k)).map(([k,x])=>[k,clean(x,depth+1)]));return v};
