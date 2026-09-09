@@ -4613,6 +4613,10 @@ function welcome(){
 function accountLoading(){
   return `<section class="village-account-loading" role="status" aria-live="polite"><img src="./world-assets/owner-forest-town.webp" alt=""><div><span aria-hidden="true"></span><b>${esc(t("계정 기록을 확인하는 중…","계정 기록을 확인하는 중…"))}</b><p>${esc(t("저장된 마을을 확인한 뒤 이어서 열게요.","저장된 마을을 확인한 뒤 이어서 열게요."))}</p></div></section>`;
 }
+function emptySharedCharacter(){
+ const copy=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),s=window.DrawerVillageGroups?.getSnapshot?.(),pending=s?.activeGroupId&&Array.isArray(s.loadedCollections)&&!['group','residents'].every(k=>s.loadedCollections.includes(k));
+ return `<section class="shared-character-empty"><header><button type="button" data-tab="observe" aria-label="${copy('뒤로가기','Back','戻る')}"><img src="./assets/home-ui/back.png" alt=""></button><h1>${copy('캐릭터','Characters','キャラクター')}</h1></header>${characterGroupSelector()}<div class="empty-registration"><img src="./assets/home-ui/profile-placeholder.png" alt=""><div><h2>${copy('서랍마을 주민등록증','Drawer Village resident card','引き出し村 住民登録証')}</h2><p>${pending?copy('캐릭터를 불러오고 있어요.','Loading characters.','キャラクターを読み込んでいます。'):copy('이 그룹에는 내 캐릭터가 없어요.','You have no characters in this group.','このグループには自分のキャラクターがいません。')}</p><p>${copy('내 마을에서 캐릭터를 만든 뒤, 멀티 구성원에서 이사시킬 수 있어요.','Create a character in your town, then move them from the multiplayer Members page.','自分の村でキャラクターを作成し、マルチのメンバー画面から引っ越しできます。')}</p></div></div><footer><button type="button" data-new ${pending?'disabled':''}>${copy('새 캐릭터 만들기','Create a character','新しいキャラクターを作る')}</button><button type="button" data-tab="groups">${copy('멀티 구성원 보러 가기','Open multiplayer','マルチを開く')}</button></footer></section>`;
+}
 function view(){
   const authInfo=window.ParallelCityAuth?.getInfo?.();
   const configured=Boolean(window.PARALLEL_CITY_FIREBASE?.apiKey&&window.PARALLEL_CITY_FIREBASE?.projectId&&window.PARALLEL_CITY_FIREBASE?.authDomain);
@@ -4620,7 +4624,7 @@ function view(){
   // cloud download before any local game screen is exposed.  Manual syncs do
   // not use startupSyncing, so they never replace an already-open screen.
   if(configured&&!window.DrawerVillageAuthStartupFailed&&(!authInfo||!authInfo.ready||authInfo.startupSyncing))return accountLoading();
-  if(!state.order.length&&state.activeTab==='character'&&(state.sharedContext||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId))return `<section class="panel shared-character-empty">${characterGroupSelector()}<p>${({ko:'선택한 곳에 내 캐릭터가 없어요. 위에서 캐릭터가 있는 마을이나 그룹을 선택해 주세요.',en:'No character of yours lives here. Select a town or group containing your characters above.',ja:'ここには自分のキャラクターがいません。上からキャラクターのいる村やグループを選んでください。'}[state.uiLanguage]||'')}</p><button data-new>${t('새 캐릭터 만들기','새 캐릭터 만들기')}</button></section>`;
+  if(!state.order.length&&state.activeTab==='character'&&(state.sharedContext||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId))return emptySharedCharacter();
   if(!state.order.length&&!window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId){
     if(state.activeTab==="credits")return `<main data-credits-page></main>`;
     if(state.activeTab==="settings")return settings();
