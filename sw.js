@@ -1,4 +1,4 @@
-const CACHE_VERSION="drawer-village-v20260910-dev305-diamonds1";
+const CACHE_VERSION="drawer-village-v20260910-dev306-home-wallet";
 const CORE=[
   "./diamond-shop.css?v=20260910dev305","./diamond-shop.js?v=20260909dev305",
   "./relationship-context.js?v=20260909dev305",
