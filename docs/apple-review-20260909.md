@@ -64,3 +64,12 @@ Thank you for reviewing Drawer Village. We are preparing an updated build and th
 7. In-App Purchase: The submitted catalog contains an additional five character slots, an additional town slot, and a one-time support gift. Open the Shop from the main screen to view the catalog. [Verify purchase and restore behavior and the final support-gift benefits against the submitted build.]
 
 This draft must not be sent while bracketed items remain. Copy the verified final information into both the App Review reply and App Review Information Notes, as requested.
+
+
+## 실제 영상 확인 및 재심사 준비 — build 32
+
+- 본편: ScreenRecording_09-09-2026 22-41-25_1.mp4, 약 8분 26초. TestFlight32에서 실행, 캐릭터/마을/멀티 흐름, 5:58 구매 완료, 7:00 신고 접수, 8:10 계정 삭제 완료 확인.
+- 보충: ScreenRecording_09-09-2026 23-03-57_1.mp4, 약 1분 55초. Apple 로그인과 최초 사용자 프로필 설정, 1:53 차단 계정 관리 목록에 대상 계정이 표시된 상태 확인.
+- 두 영상은 실제 iPad 2732x2048 녹화. 원본을 편집하거나 공개 호스팅하지 않았다.
+- App Store 버전 표시를 1.0.269로 저장·확인했다. 현재 연결된 심사 빌드는 여전히16이다. 32 연결 및 첨부/심사 회신/재제출은 완료되지 않았다.
+- 멤버 차단·퇴장 선택은32 이후 별도 코드 변경이므로32 영상에서 시연됐다고 설명하지 않는다.
