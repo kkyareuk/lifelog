@@ -10,7 +10,7 @@ assert.throws(()=>approveSupporterRequest(request,NaN,'public1'));assert.throws(
 assert.equal(publicSupporterEntries([{...approved,visibility:'hidden'}]).length,0);
 const entries=[approved,{...approved,id:'public2'},{...approved,id:'public3',weight:2}],scores={},counts={};let last='';
 for(let i=0;i<120;i++){const n=nextSupporter(entries,scores,last);assert.notEqual(n.id,last);last=n.id;counts[n.id]=(counts[n.id]||0)+1}assert(counts.public3>counts.public1);
-assert.equal(SOCIAL_SECTIONS.length,4);const ids=SOCIAL_SECTIONS.flatMap(s=>s.actions);assert.equal(ids.length,new Set(ids).size);
+assert.equal(SOCIAL_SECTIONS.length,3);const ids=SOCIAL_SECTIONS.flatMap(s=>s.actions);assert.equal(ids.length,new Set(ids).size);
 const a={id:'a',name:'A',ageGroup:'노인',personalityTypes:['완고하고 통제적']},b={id:'b',name:'B',personalityTypes:['다정하고 세심함']};
 for(const kind of Object.keys(SOCIAL_ACTIVITIES)){const copy=socialActivityCopy(kind,a,b,'');for(const lang of ['ko','en','ja'])assert(copy[lang].title&&copy[lang].desc)}
 assert.match(socialActivityCopy('dine',a,b,'',{payment:'request',payerName:'B'}).ko.desc,/B에게 사 달라고/);

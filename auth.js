@@ -1,14 +1,14 @@
-import {initializeLocalMediaState} from './local-media.js?v=20260909dev293';
-import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev293';
-import {chooseProposalMode} from './proposal-mode.js?v=20260909dev293';
-import {sharedProfile} from './shared-world.js?v=20260909dev293';
-import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev293";
+import {initializeLocalMediaState} from './local-media.js?v=20260909dev294';
+import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev294';
+import {chooseProposalMode} from './proposal-mode.js?v=20260909dev294';
+import {sharedProfile} from './shared-world.js?v=20260909dev294';
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev294";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 import {getAuth,GoogleAuthProvider,reauthenticateWithPopup,reauthenticateWithCredential,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,initializeFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
-import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev293";
+import {mergeCloudRestoreState,mergeDeviceAndCloudState} from "./sync-merge.js?v=20260909dev294";
 
 const cfg=window.PARALLEL_CITY_FIREBASE||{};
 const ready=Boolean(cfg.apiKey&&cfg.projectId&&cfg.authDomain);
@@ -1080,7 +1080,7 @@ async function prepareWorldPackage(pack){
  assertSession(session);if(prepared.photoFailures)throw Error('photo-upload-required');await mergeUploadedMedia(reference,prepared.mediaManifest,session);return prepared.gameState.package;
 }
 async function migratePersonalTown(input){
- const cloud=await sharedCloudState(),{makeWorldPackage}=await import('./world-transfer.js?v=20260909dev293');
+ const cloud=await sharedCloudState(),{makeWorldPackage}=await import('./world-transfer.js?v=20260909dev294');
  const local=window.ParallelCity.getPersonalStateForSharing();const pack=await prepareWorldPackage(makeWorldPackage(local,'town',input.sourceTownId));if(JSON.stringify(Object.keys(pack.characters).sort())!==JSON.stringify([...(input.expectedCharacterIds||[])].sort()))throw Error('transfer-preview-changed');const result=await sharedTownRequest('migrateTown',{...input,package:pack});
  await refreshMailbox(true);await refreshSlotUsage();await refreshGroups({preferredId:input.groupId});return result;
 }

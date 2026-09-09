@@ -25,3 +25,5 @@
 @media(max-width:440px){.supporter-fields{grid-template-columns:1fr}.supporter-body{padding:16px}.supporter-dialog>header{padding:12px 16px}.supporter-dialog h2{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.supporter-dialog *{animation:none!important}}
 .supporter-dialog[data-page-hidden=true] *{animation-play-state:paused!important}
+
+.supporter-page{width:100%;min-height:100dvh;max-height:none;border:0;border-radius:0;box-shadow:none}.supporter-page .supporter-body{max-height:none;overflow:visible}.supporter-page>header{position:sticky;top:0;background:#fff9ed;z-index:1}

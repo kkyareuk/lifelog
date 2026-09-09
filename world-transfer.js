@@ -1,5 +1,5 @@
-import {buildSharedWorld} from './shared-world.js?v=20260909dev293';
-import {state,personalState,cloneState,replaceState,save} from './state.js?v=20260909dev293';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev294';
+import {state,personalState,cloneState,replaceState,save} from './state.js?v=20260909dev294';
 const scalar=new Set('id a b teacherId parentId childId sourceId targetId characterId homeId sharedHomeId sourceHomeId townId workplaceId placeId visitHomeId ownerCharacterId partnerId'.split(' '));
 const arrays=new Set('memberIds groupMembers participantIds withIds displayOrder ownerCharacterIds ownerIds characterIds assignedCharacterIds allowedCharacterIds'.split(' '));
 export function mapPackageIds(v,map,key=''){
