@@ -12,7 +12,7 @@ function createSafety({db,clock=Date.now}){
   const data=doc.data();if(!membership.exists&&(!['mail','proposal'].includes(kind)||![data.senderUid,data.recipientUid].includes(uid)))fail('group-membership-required',403);
   if(['mail','proposal'].includes(kind)&&![data.senderUid,data.recipientUid].includes(uid))fail('mail-access-required',403);
   const owner=kind==='member'?doc.id:kind==='group'?data.ownerUid:kind==='resident'?data.ownerUid:kind==='proposal'&&data.senderUid===uid&&data.respondedAt?data.recipientUid:data.senderUid;if(!owner||owner===uid)fail('invalid-report-target');
-  return {uid:owner,name:String(data.displayName||data.name||data.sourceName||'').slice(0,80),evidence:JSON.stringify(data).slice(0,120000)};
+  const account=kind==='member'?doc:await tx.get(root.collection('members').doc(owner));return {uid:owner,name:String(account.data()?.displayName||owner.slice(0,8)).slice(0,80),evidence:JSON.stringify(data).slice(0,120000)};
  }
  return {
   readSafety:async uid=>({blocked:(await safetyRef(db,uid).get()).data()?.blocked||[]}),
