@@ -1,10 +1,28 @@
+export function playfulPersonality(c){
+ const humor=String(c?.humorStyle||'');
+ if(['장난을 거의 하지 않음','건조한 농담만 함'].includes(humor))return false;
+ if(humor)return /가끔 장난|장난을 즐김|유머로 분위기를 이끎/.test(humor);
+ return (c?.personalityTypes||[]).includes('장난기 많음');
+}
+export function oneSidedJoke(first,second,variant=0,language='ko'){
+ if(playfulPersonality(first)===playfulPersonality(second))return null;
+ const joker=playfulPersonality(first)?first:second,receiver=joker===first?second:first;
+ const profile=[receiver.conflictStyle,...(receiver.personalityTypes||[])].join(' ');
+ const irritated=/바로 따짐|정면|즉시|감정적이고 충동적/.test(profile)&&variant%2===0;
+ const relaxed=/느긋|여유|흘려|넘김|피함|차분/.test([joker.conflictStyle,joker.diligence,joker.activityTempo,...(joker.personalityTypes||[])].join(' '));
+ const choose=(ko,en,ja)=>language==='en'?en:language==='ja'?ja:ko;
+ const response=choose(irritated?`${receiver.name}은 ${joker.name}의 장난에 눈살을 찌푸리며 그만하라고 짜증 섞인 목소리로 말했어요.`:`${receiver.name}은 ${joker.name}의 장난에 대꾸하지 않고 하던 일로 시선을 돌렸어요.`,irritated?`${receiver.name} frowned at ${joker.name}'s joke and irritably asked them to stop.`:`${receiver.name} ignored ${joker.name}'s joke and returned their attention to their task.`,irritated?`${receiver.name}は${joker.name}の冗談に眉をひそめ、苛立った声でやめるように言いました。`:`${receiver.name}は${joker.name}の冗談に答えず、作業に視線を戻しました。`);
+ const action=choose(`${joker.name}은 ${receiver.name}에게 가벼운 장난을 건넸어요. ${relaxed?'상대의 무뚝뚝한 반응을 여유롭게 넘기고 더 놀리지 않은 채 화제를 바꿨어요.':'상대가 받아주지 않자 장난을 멈추고 잠시 말을 줄였어요.'}`,`${joker.name} made a light joke to ${receiver.name}. ${relaxed?'They took the curt response in stride and changed the subject without teasing further.':'When it was not welcomed, they stopped joking and quietened down.'}`,`${joker.name}は${receiver.name}に軽い冗談を言いました。${relaxed?'そっけない反応をゆったり受け流し、それ以上からかわず話題を変えました。':'受け入れられないと分かると、冗談をやめて言葉を控えました。'}`);
+ const receiverTitle=choose(`${joker.name}의 장난을 ${irritated?'못마땅해하는':'무시하는'} 중`,`${irritated?'Annoyed by':'Ignoring'} ${joker.name}'s joke`,`${joker.name}の冗談を${irritated?'嫌がる':'無視する'}ところ`),jokerTitle=choose(`${receiver.name}의 반응을 보고 화제를 바꾸는 중`,`Changing the subject after ${receiver.name}'s reaction`,`${receiver.name}の反応を見て話題を変えるところ`);
+ return {title:first===joker?jokerTitle:receiverTitle,firstTitle:first===joker?jokerTitle:receiverTitle,secondTitle:second===joker?jokerTitle:receiverTitle,first:first===joker?action:response,second:second===joker?action:response};
+}
 export function conflictEvidence(value){
  return String(value||'').replace(/(?:싸우|다투)지\s*(?:않(?:고|았|는|아|음)?|말[^\s,.!?]*)?|(?:싸움|다툼|갈등)(?:을|이|은|도)?\s*(?:피하|피했|없이|없었|없어|없는)|(?:without|not|never)\s+(?:fighting|arguing|angry)|喧嘩せず|争わず|怒っていない/gi,'');
 }
 export function dailyInteractionLine(a,b,place,view={},variant=0,language='ko',relation={}){
  const choose=(ko,en,ja)=>language==='en'?en:language==='ja'?ja:ko;
  const traits=JSON.stringify([a.personalityTypes,a.characterTraits,a.traitExpressions,a.speechStyle,a.humorStyle,a.emotionalExpression]);
- const quiet=Number(a.socialEnergy)<=2||/내향|과묵|조용|무뚝뚝|말수가 적|IST|INT/.test(traits),playful=/장난|유머|활발|외향|ENF|ESF|ENTP/.test(traits);
+ const quiet=Number(a.socialEnergy)<=2||/내향|과묵|조용|무뚝뚝|말수가 적|IST|INT/.test(traits),playful=playfulPersonality(a);
  const wary=/두려|경계|불편|싫|신뢰하지/.test(`${view.overall||''} ${view.comfort||''} ${view.trust||''} ${view.fear||''}`);
  const name=a.name,other=b.name,type=place?.type||'';
  if(wary)return choose(`${name}은 ${other}에게 필요한 말만 전하고 한 사람 정도의 간격을 두었어요.`,`${name} exchanged only the necessary words with ${other}, leaving some space between them.`,`${name}は${other}に必要なことを伝え、少し間隔を空けました。`);

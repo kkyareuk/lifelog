@@ -1,7 +1,7 @@
 import {overheardGossip} from './gossip-reaction.js?v=20260909dev291';
 import {routineScene} from './routine-scenes.js?v=20260909dev291';
 import {meetingScene,planMeetingJourney,entranceRoom} from './meeting-journey.js?v=20260909dev291';
-import {dailyInteractionLine} from './scene-context.js?v=20260909dev291';
+import {dailyInteractionLine,oneSidedJoke} from './scene-context.js?v=20260909dev291';
 import {careRoutineFor} from "./creative-options.js?v=20260909dev291";
 import {drinkExperience} from "./drink-log.js?v=20260909dev291";
 import {characterMood,environmentConversation} from "./character-mood.js?v=20260909dev291";
@@ -583,7 +583,7 @@ function safePlayfulPair(first,second,relation=null){
   const closeByView=[firstView.closeness,secondView.closeness].every(value=>/가장 가까운|아주 가까움|가까운 사이|친한 사이|가족처럼 가까움|마음의 중심/.test(value||""));
   const closeByRelation=Boolean(relation&&relation.temporalStatus!=="past"&&["친구","소꿉친구","형제·자매","연인","부부"].includes(relation.type));
   const rapport=[firstView.comfort,secondView.comfort].every(value=>/농담과 장난|대화는 편안함|공간도 대화도 완벽|아주 편안|가장 편안/.test(value||""));
-  return !hostile&&(closeByView||closeByRelation)&&rapport&&(openlyPlayful(first)||openlyPlayful(second));
+  return !hostile&&(closeByView||closeByRelation)&&rapport&&(openlyPlayful(first)&&openlyPlayful(second));
 }
 function characterVoice(c,text){
   let value=String(text||"");
@@ -4475,6 +4475,9 @@ function concreteInteraction(place,first,second,relation,date=new Date()){
   const name=second.name,type=place?.type||"";
   const viewScene=viewDrivenInteraction(place,first,second,date);
   if(viewScene)return viewScene;
+  const jokeVariant=hash(`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/15)}:one-sided-joke`);
+  const avoidsJokes=[characterViewFor(first.id,second.id),characterViewFor(second.id,first.id)].some(v=>/두려|혐오|경계|불편|싫/.test(`${v?.overall||''} ${v?.comfort||''} ${v?.fear||''}`));
+  if(!avoidsJokes&&jokeVariant%4===0){const joke=oneSidedJoke(first,second,Math.floor(jokeVariant/4),state.uiLanguage);if(joke)return joke}
   const combinationScene=relationCombinationScene(place,first,second,relation,date);
   if(combinationScene)return combinationScene;
   if(!relation){
