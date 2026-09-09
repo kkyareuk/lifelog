@@ -1,6 +1,6 @@
-import {state,beginCharacterEditor,endCharacterEditor,characterEditorActive,emptyWorld,runIsolatedWorld,createCharacter} from './state.js?v=20260909dev294';
-import {buildSharedWorld} from './shared-world.js?v=20260909dev294';
-import {runBackgroundAction} from './background-actions.js?v=20260909dev294';
+import {state,beginCharacterEditor,endCharacterEditor,characterEditorActive,emptyWorld,runIsolatedWorld,createCharacter} from './state.js?v=20260909dev295';
+import {buildSharedWorld} from './shared-world.js?v=20260909dev295';
+import {runBackgroundAction} from './background-actions.js?v=20260909dev295';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let session=null;
 const drafts=new Map();

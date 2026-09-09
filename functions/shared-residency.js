@@ -45,12 +45,13 @@ module.exports=({db,membership,notify,clock,id})=>{
     p={...p,sourceId,homeId,previousHomeId:r.data().sharedHomeId||'',sourceName:r.data().name,targetName:h.data().name,recipientUid:h.data().ownerUid,type:'동거 제안'};
    }
    const recipient=await tx.get(root.collection('members').doc(p.recipientUid));if(!recipient.exists)fail('recipient-left-group',409);
+   await require('./user-safety').allowContact(db,tx,uid,p.recipientUid);
    if(p.recipientUid===uid){await apply(tx,root,p);p.status='accepted'}
    tx.create(ref,p);if(p.status==='pending')notify(tx,p.recipientUid,root.id+'-'+key+'-residency',root.id,key,'residency-request');
    return {id:key,status:p.status};
   }),
   respond:async(tx,root,uid,input,p)=>{
-   if(p.recipientUid!==uid)fail('recipient-required',403);const status=input.accept?'accepted':'declined';
+   if(p.recipientUid!==uid)fail('recipient-required',403);await require('./user-safety').allowContact(db,tx,uid,p.senderUid);const status=input.accept?'accepted':'declined';
    if(p.status!=='pending'){if(p.status!==status)fail('proposal-already-resolved',409);return {id:input.proposalId,status}}
    if(input.accept)await apply(tx,root,p);
    tx.update(root.collection('proposals').doc(input.proposalId),{status,reason:input.accept?'':String(input.reason||'').slice(0,500),respondedAt:clock()});

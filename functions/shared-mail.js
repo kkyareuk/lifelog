@@ -13,7 +13,7 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
   const staff=group.ownerUid===uid||['owner','manager','operator'].includes(member.role);if(input.audience==='announcement'&&!staff)fail('manager-required',403);
   const members=await tx.get(root.collection('members'));
   const scope=input.recipientScope||'all',subgroup=scope.startsWith('subgroup:')?(group.memberGroups||[]).find(g=>g.id===scope.slice(9)):null;if(input.audience==='announcement'&&scope!=='all'&&!['role:owner','role:manager','role:operator','role:member'].includes(scope)&&!subgroup)fail('invalid-recipient-scope');
-  const recipients=members.docs.filter(d=>d.id!==uid&&(input.audience==='member'?d.id===input.targetUid:scope==='all'||scope.startsWith('role:')&&(d.data().role==='operator'?'manager':d.data().role)===(scope.slice(5)==='operator'?'manager':scope.slice(5))||subgroup?.memberIds.includes(d.id)));if(!recipients.length)fail('recipient-missing',404);if(recipients.length>200)fail('recipient-limit');
+  let recipients=members.docs.filter(d=>d.id!==uid&&(input.audience==='member'?d.id===input.targetUid:scope==='all'||scope.startsWith('role:')&&(d.data().role==='operator'?'manager':d.data().role)===(scope.slice(5)==='operator'?'manager':scope.slice(5))||subgroup?.memberIds.includes(d.id)));if(!recipients.length)fail('recipient-missing',404);if(recipients.length>200)fail('recipient-limit');const checks=await Promise.all(recipients.map(r=>require('./user-safety').blocked(db,tx,uid,r.id)));recipients=recipients.filter((r,i)=>!checks[i]);if(!recipients.length)fail('contact-unavailable',403);
   const subject=String(input.subject||'').trim().slice(0,80),body=String(input.body||'').slice(0,500);if(!subject)fail('subject-required');
   reserve();tx.create(requestRef,{senderUid:uid,createdAt:clock()});for(const recipient of recipients){const mailId=key+'-'+recipient.id;tx.create(root.collection('mail').doc(mailId),{senderUid:uid,recipientUid:recipient.id,sourceName:member.displayName||group.ownerName||'Member',targetName:recipient.data().displayName||'Member',subject,body,announcement:input.audience==='announcement',dispatchId:key,recipientCount:recipients.length,createdAt:clock()});notify(tx,recipient.id,root.id+'-'+mailId+'-mail',root.id,mailId,'mail-received')}return {id:key};
  }
@@ -22,6 +22,7 @@ module.exports=({db,membership,notify,clock,id,engine})=>async(uid,input)=>db.ru
  if(!target.exists||sourceId&&(!source?.exists||source.data().ownerUid!==uid||sourceId===targetId))fail('character-owner-required',403);
  if(sent.length>=30)fail('mail-rate-limit',429);
  const recipientUid=target.data().ownerUid,recipient=await tx.get(root.collection('members').doc(recipientUid));if(!recipient.exists)fail('recipient-left-group',409);
+ await require('./user-safety').allowContact(db,tx,uid,recipientUid);
  const subject=String(input.subject||'').trim().slice(0,80),body=String(input.body||'').slice(0,500);if(!subject)fail('subject-required');
  let gift=null,catalogRef,catalogItems,profile;
  if(input.gift){if(group.rules?.allowGifts===false)fail('gifts-disabled',403);const {kind,item}=input.gift;if(!['food','drink','flower','misc','fashion','perfume','book','toy'].includes(kind)||!item?.name||typeof item.name!=='string')fail('invalid-gift');

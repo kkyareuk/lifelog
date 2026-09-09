@@ -1,9 +1,9 @@
 {
-  "version": "1.0.261",
-  "build": 18,
+  "version": "1.0.262",
+  "build": 19,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
   "requestedAt": "2026-09-09",
-  "reason": "Android 294 mailbox, swipe, activities and verified supporter parity"
+  "reason": "Account-wide report and block flows for Android and iOS"
 }

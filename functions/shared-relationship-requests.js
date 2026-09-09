@@ -40,6 +40,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    const recipients=privileged&&input.applyAsManager===true?[]:[...new Set(Object.values(owners))].filter(owner=>owner!==uid);
    const accounts=await Promise.all(recipients.map(owner=>tx.get(root.collection('members').doc(owner))));if(accounts.some(m=>!m.exists))fail('recipient-left-group',409);
    const sourceName=residents.filter(r=>privileged?r.id===ids[0]:r.data().ownerUid===uid).map(r=>r.data().name).join(' · '),targetName=residents.filter(r=>privileged?r.id!==ids[0]:r.data().ownerUid!==uid).map(r=>r.data().name).join(' · ');
+   await Promise.all([...new Set(Object.values(owners))].map(owner=>require("./user-safety").allowContact(db,tx,uid,owner)));
    const request={kind,targetId,patch,baseHash:hash(old.exists?old.data():null),participantIds:ids,owners,recipientUids:recipients,approvals:[],senderUid:uid,sourceName,targetName,status:recipients.length?'pending':'accepted',createdAt:clock()};
    tx.create(requestRef,request);
    for(const owner of recipients){const proposalId=key+'-'+owner;tx.create(root.collection('proposals').doc(proposalId),{requestRoot:key,sourceId:ids[0],targetId:ids[1]||ids[0],sourceName,targetName,senderUid:uid,recipientUid:owner,type:kind==='schedule'?patch.title:patch.type||patch.name,kind,editing:Boolean(input.targetId),patch,status:'pending',createdAt:clock()});notify(tx,owner,gid+'-'+proposalId+'-requested',gid,proposalId,kind==='schedule'?'schedule-request':'relationship-request')}
@@ -55,6 +56,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    if(hash(old.exists?old.data():null)!==request.baseHash)fail('relationship-edit-conflict',409);
    if(residents.some(r=>!r.exists||r.data().ownerUid!==request.owners[r.id]))fail('participants-changed',409);
    const accounts=await Promise.all([...new Set(Object.values(request.owners))].map(owner=>tx.get(root.collection('members').doc(owner))));if(accounts.some(a=>!a.exists))fail('recipient-left-group',409);
+   await require('./user-safety').allowContact(db,tx,uid,proposal.senderUid);
    const approvals=[...request.approvals,uid],status=!input.accept?'declined':request.recipientUids.every(owner=>approvals.includes(owner))?'accepted':'pending';
    tx.update(requestRef,{approvals:input.accept?approvals:request.approvals,status});
    const reason=input.accept?'':String(input.reason||'').trim().slice(0,500);

@@ -31,6 +31,7 @@ function createService({db,clock=Date.now,engine}){
       if(existing.exists){const old=existing.data();if(old.senderUid!==uid||old.sourceId!==sourceId||old.targetId!==targetId||old.type!==type)fail('request-id-conflict',409);return {id:requestId,status:old.status}}
       const recent=await tx.get(root.collection('proposals').where('senderUid','==',uid));
       if(rows(recent).filter(x=>x.createdAt>clock()-3600000).length>=20)fail('proposal-rate-limit',429);
+      await require("./user-safety").allowContact(db,tx,uid,target.ownerUid);
       const value={sourceId,targetId,sourceName:bounded(source.name),targetName:bounded(target.name),senderUid:uid,recipientUid:target.ownerUid,type,sourceRole:bounded(input.sourceRole,80),targetRole:bounded(input.targetRole,80),message:bounded(input.message,500),status:'pending',createdAt:clock()};
       tx.create(ref,value);notify(tx,target.ownerUid,`${gid}-${requestId}-requested`,gid,requestId,'relationship-request');
       return {id:requestId,status:'pending'};
@@ -42,7 +43,7 @@ function createService({db,clock=Date.now,engine}){
       const {root}=await membership(tx,gid,uid),ref=root.collection('proposals').doc(proposalId),snap=await tx.get(ref),proposal=data(snap);
       if(['admission','cohabitation'].includes(proposal?.kind))return residency.respond(tx,root,uid,input,proposal);
       if(proposal?.requestRoot)return requests.respond(tx,root,uid,input,proposal);
-      if(!proposal||proposal.recipientUid!==uid)fail('recipient-required',403);
+      if(!proposal||proposal.recipientUid!==uid)fail('recipient-required',403);await require('./user-safety').allowContact(db,tx,uid,proposal.senderUid);
       if(proposal.status!=='pending'){if(proposal.status!==status)fail('proposal-already-resolved',409);return {id:proposalId,status}}
       const [a,b,sender]=await Promise.all([tx.get(root.collection('residents').doc(proposal.sourceId)),tx.get(root.collection('residents').doc(proposal.targetId)),tx.get(root.collection('members').doc(proposal.senderUid))]);
       if(!sender.exists||!a.exists||!b.exists||a.data().ownerUid!==proposal.senderUid||b.data().ownerUid!==uid)fail('participants-changed',409);
