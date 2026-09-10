@@ -1,0 +1,139 @@
+{
+  "characters": 80,
+  "cpuSlowdown": 4,
+  "results": [
+    {
+      "tab": "character",
+      "syncMs": 237.69999999552965,
+      "paintMs": 448.5
+    },
+    {
+      "tab": "settings",
+      "syncMs": 115.19999999552965,
+      "paintMs": 277.19999999552965
+    },
+    {
+      "tab": "town",
+      "syncMs": 831.2000000029802,
+      "paintMs": 943.5
+    },
+    {
+      "tab": "observe",
+      "syncMs": 148,
+      "paintMs": 259.20000000298023
+    },
+    {
+      "tab": "character",
+      "syncMs": 48.599999994039536,
+      "paintMs": 85.79999999701977
+    },
+    {
+      "tab": "settings",
+      "syncMs": 22,
+      "paintMs": 59.899999998509884
+    },
+    {
+      "tab": "town",
+      "syncMs": 78,
+      "paintMs": 104.10000000149012
+    },
+    {
+      "tab": "observe",
+      "syncMs": 71.79999999701977,
+      "paintMs": 223.70000000298023
+    }
+  ],
+  "hot": [
+    {
+      "name": "(program)",
+      "file": "",
+      "line": -1,
+      "ms": 1020.665
+    },
+    {
+      "name": "navigateToTab",
+      "file": "app.js?v=20260909dev305",
+      "line": 4628,
+      "ms": 283.798
+    },
+    {
+      "name": "navigateToTab",
+      "file": "app.js?v=20260909dev305",
+      "line": 4628,
+      "ms": 174.742
+    },
+    {
+      "name": "(idle)",
+      "file": "",
+      "line": -1,
+      "ms": 78.002
+    },
+    {
+      "name": "render",
+      "file": "app.js?v=20260909dev305",
+      "line": 1576,
+      "ms": 64.814
+    },
+    {
+      "name": "(garbage collector)",
+      "file": "",
+      "line": -1,
+      "ms": 56.755
+    },
+    {
+      "name": "renderAppContents",
+      "file": "views.js?v=20260909dev305",
+      "line": 4663,
+      "ms": 54.6
+    },
+    {
+      "name": "",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 3909,
+      "ms": 29.451
+    },
+    {
+      "name": "RegExp: 혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業",
+      "file": "",
+      "line": -1,
+      "ms": 28.003
+    },
+    {
+      "name": "pushState",
+      "file": "",
+      "line": -1,
+      "ms": 27.629
+    },
+    {
+      "name": "",
+      "file": "town-lighting.js?v=20260909dev305",
+      "line": 23,
+      "ms": 20.034
+    },
+    {
+      "name": "sharedPlaceScene",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 4591,
+      "ms": 18.817
+    },
+    {
+      "name": "querySelectorAll",
+      "file": "",
+      "line": -1,
+      "ms": 17.951
+    },
+    {
+      "name": "",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 1938,
+      "ms": 17.592
+    },
+    {
+      "name": "interactionPair",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 3908,
+      "ms": 12.881
+    }
+  ],
+  "scope": "Local synthetic profiles, no images, no real multiplayer network"
+}

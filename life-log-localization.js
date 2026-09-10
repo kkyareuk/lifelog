@@ -4,9 +4,13 @@ const japanese=/[\u3040-\u30ff\u31f0-\u31ff]/;
 const latinWord=/[A-Za-z]{3,}/;
 const values=value=>Array.isArray(value)?value:[];
 
+let batchNames=null;
+export function withLogNameBatch(callback){const previous=batchNames;batchNames=new WeakMap();try{return callback()}finally{batchNames=previous}}
 function entityNames(world){
-  return [...Object.values(world.characters||{}),...Object.values(world.homes||{}),...(world.towns||[]),...(world.towns||[]).flatMap(town=>town.places||[]),...Object.values(world.catalog||{}).flatMap(values)]
+ const refs=[world.characters,world.homes,world.towns,world.catalog],cached=batchNames?.get(world);if(cached&&refs.every((value,i)=>value===cached.refs[i]))return cached.names;
+ const names=[...Object.values(world.characters||{}),...Object.values(world.homes||{}),...(world.towns||[]),...(world.towns||[]).flatMap(town=>town.places||[]),...Object.values(world.catalog||{}).flatMap(values)]
     .map(value=>String(value?.name||"").trim()).filter(Boolean).sort((a,b)=>b.length-a.length);
+ batchNames?.set(world,{refs,names});return names;
 }
 function withoutEntityNames(value,names){
   let copy=String(value||"");

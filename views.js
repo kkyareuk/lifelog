@@ -1,3 +1,4 @@
+import {withLogNameBatch} from './life-log-localization.js?v=20260909dev305';
 import {sceneReaction} from './scene-reaction.js?v=20260909dev305';
 import {slotText} from './character-slots.js?v=20260909dev305';
 import {isFamily,relationshipReference,relationshipMemberName} from './relationship-roles.js?v=20260909dev305';
@@ -117,6 +118,8 @@ Object.assign(I18N.ja,{"평소 외모 관리":"普段の身だしなみ","거의
 Object.assign(I18N.en,{"연결된 행동 로그":"Linked activity log"});Object.assign(I18N.ja,{"연결된 행동 로그":"関連する行動ログ"});
 Object.assign(I18N.en,{"캐릭터 화면으로 돌아가기":"Back to character screen","뒤로가기":"Back"});
 Object.assign(I18N.ja,{"캐릭터 화면으로 돌아가기":"キャラクター画面に戻る","뒤로가기":"戻る"});
+Object.assign(I18N.en,{"폭력성":"Aggression","공격적인 반응이 거의 없음":"Almost never responds aggressively","공격적인 반응이 드묾":"Rarely responds aggressively","때때로 거칠게 반응함":"Sometimes responds harshly","공격적인 반응이 잦음":"Often responds aggressively","매우 공격적으로 반응함":"Responds very aggressively"});
+Object.assign(I18N.ja,{"폭력성":"攻撃性","공격적인 반응이 거의 없음":"攻撃的な反応はほぼない","공격적인 반응이 드묾":"攻撃的な反応はまれ","때때로 거칠게 반응함":"時々荒く反応する","공격적인 반응이 잦음":"攻撃的な反応が多い","매우 공격적으로 반응함":"非常に攻撃的に反応する"});
 const t=(key,fallback,ja)=>ja?({ko:key,en:fallback,ja}[state.uiLanguage]||key):(I18N[state.uiLanguage]?.[key]||fallback);
 export const translateText=key=>t(key,key);
 Object.assign(I18N.en,{"현재 계정의 기기 저장 데이터를 초기화할까요? 다른 계정의 데이터는 유지됩니다.":"Reset this account's data on this device? Other accounts will be kept."});
@@ -3124,8 +3127,8 @@ function character(){
     <section class="body-accessibility-choice body-health-conditions"><b>${t("만성질환·건강 관리","만성질환·건강 관리")}</b>${bodyInlineChoice("healthConditions",HEALTH_CONDITIONS,c.bodyProfile?.healthConditions||[])}</section>
     <section class="body-accessibility-choice body-hearing-supports"><b>${t("청각 접근 방식","청각 접근 방식")}</b>${bodyInlineChoice("hearing.supports",HEARING_SUPPORT_OPTIONS,c.bodyProfile?.hearing?.supports||[])}</section>
     <section class="body-accessibility-choice body-vision-supports"><b>${t("시각 접근 방식","시각 접근 방식")}</b>${bodyInlineChoice("vision.supports",VISION_SUPPORT_OPTIONS,c.bodyProfile?.vision?.supports||[])}</section>
-    <section class="body-accessibility-device body-hospital"><b>${t("병원 방문","병원 방문")}</b>${bodySelect("hospitalVisitFrequency",["자동 · 설정에 맞춤","정기 검진 때만","한 달에 한 번 이하","한 달에 여러 번","주 1회 이상","평일 전부","직접 정한 요일","필요할 때 비정기적으로"],c.bodyProfile?.hospitalVisitFrequency||"자동 · 설정에 맞춤")}${bodyChoiceOpener("hospitalVisitPurposes","병원 방문 목적",hospitalPurposes(c.bodyProfile))}${bodyChoiceOpener("hospitalDepartments","진료 분야",c.bodyProfile?.hospitalDepartments||[])}</section>
-    <section class="body-accessibility-device body-medications"><b>${t("복용중인 약","복용중인 약")}</b>${medicationCollection(c.bodyProfile?.medications)}</section>
+    <section class="body-accessibility-device body-hospital" data-discovery-container="bodyProfile.hospitalVisits"><b>${t("병원 방문","병원 방문")}</b>${bodySelect("hospitalVisitFrequency",["자동 · 설정에 맞춤","정기 검진 때만","한 달에 한 번 이하","한 달에 여러 번","주 1회 이상","평일 전부","직접 정한 요일","필요할 때 비정기적으로"],c.bodyProfile?.hospitalVisitFrequency||"자동 · 설정에 맞춤")}${bodyChoiceOpener("hospitalVisitPurposes","병원 방문 목적",hospitalPurposes(c.bodyProfile))}${bodyChoiceOpener("hospitalDepartments","진료 분야",c.bodyProfile?.hospitalDepartments||[])}</section>
+    <section class="body-accessibility-device body-medications" data-discovery-container="bodyProfile.medications"><b>${t("복용중인 약","복용중인 약")}</b>${medicationCollection(c.bodyProfile?.medications)}</section>
     ${bodyChoiceDialog}
     <nav class="character-book-page-controls body-controls" aria-label="${esc(t("신체 페이지 이동","신체 페이지 이동"))}"><button type="button" data-character-body-pane="appearance" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>6</b><button type="button" data-character-pane="wardrobe" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>
   </section>`;
@@ -3164,6 +3167,7 @@ function character(){
     ["통제욕","interference",["방관자","요청할 때만 도움","적당히 관여","챙기고 확인함","강하게 간섭함","통제광"]],
     ["깔끔한 정도","neatness",["어질러도 편함","조금 느슨함","보통","정돈을 좋아함","흐트러짐을 못 참음"]],
     ["게으름·근면함","diligence",["매우 느긋함","필요할 때만 움직임","보통","부지런함","쉴 새 없이 움직임"]],
+    ["폭력성","aggressionLevel",["공격적인 반응이 거의 없음","공격적인 반응이 드묾","때때로 거칠게 반응함","공격적인 반응이 잦음","매우 공격적으로 반응함"]],
     ["갈등 대응","conflictStyle",["피하는 편","시간을 두고 말함","대화로 해결","바로 따짐","끝까지 결론을 냄"]],
     ["애정 표현","affectionStyle",["표현이 서툼","조용히 곁에 있음","말로 표현","행동으로 표현","적극적으로 챙김"]],
     ["생활 에너지","energyRhythm",["집에서 충전","느긋한 편","상황에 따라","활동적인 편","가만히 못 있음"]],
@@ -4655,7 +4659,7 @@ export function renderApp(next,date=new Date(),options={}){
   const previousOptions=characterRenderOptions;characterRenderOptions=options;
   const previous=renderSceneDate,previousProjected=projectedRenderScenes;
   projectedRenderScenes=new WeakMap();renderSceneDate=date;
-  try{return withSimulationBatch(()=>renderAppContents(next))}finally{renderSceneDate=previous;projectedRenderScenes=previousProjected;characterRenderOptions=previousOptions}
+  try{return withLogNameBatch(()=>withSimulationBatch(()=>renderAppContents(next)))}finally{renderSceneDate=previous;projectedRenderScenes=previousProjected;characterRenderOptions=previousOptions}
 }
 function renderAppContents(next){
   if((!next.activeId||!next.characters[next.activeId])&&next.order.length)next.activeId=next.order[0];

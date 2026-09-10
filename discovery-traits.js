@@ -278,3 +278,5 @@ export const DISCOVERY_TRAITS={
   ]
  }
 };
+
+DISCOVERY_TRAITS.aggressionLevel={label:"폭력성",values:["공격적인 반응이 거의 없음","공격적인 반응이 드묾","때때로 거칠게 반응함","공격적인 반응이 잦음","매우 공격적으로 반응함"]};

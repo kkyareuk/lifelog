@@ -1,0 +1,139 @@
+{
+  "characters": 80,
+  "cpuSlowdown": 4,
+  "results": [
+    {
+      "tab": "character",
+      "syncMs": 253.70000000298023,
+      "paintMs": 481
+    },
+    {
+      "tab": "settings",
+      "syncMs": 130.89999999850988,
+      "paintMs": 234.10000000149012
+    },
+    {
+      "tab": "town",
+      "syncMs": 1031.1999999955297,
+      "paintMs": 1153.6000000014901
+    },
+    {
+      "tab": "observe",
+      "syncMs": 162.60000000149012,
+      "paintMs": 305.8999999985099
+    },
+    {
+      "tab": "character",
+      "syncMs": 115.90000000596046,
+      "paintMs": 236.30000000447035
+    },
+    {
+      "tab": "settings",
+      "syncMs": 46,
+      "paintMs": 115.5
+    },
+    {
+      "tab": "town",
+      "syncMs": 95.10000000149012,
+      "paintMs": 125.10000000149012
+    },
+    {
+      "tab": "observe",
+      "syncMs": 81.79999999701977,
+      "paintMs": 240.19999999552965
+    }
+  ],
+  "hot": [
+    {
+      "name": "(program)",
+      "file": "",
+      "line": -1,
+      "ms": 1144.473
+    },
+    {
+      "name": "navigateToTab",
+      "file": "app.js?v=20260909dev305",
+      "line": 4628,
+      "ms": 333.236
+    },
+    {
+      "name": "navigateToTab",
+      "file": "app.js?v=20260909dev305",
+      "line": 4628,
+      "ms": 190.856
+    },
+    {
+      "name": "renderAppContents",
+      "file": "views.js?v=20260909dev305",
+      "line": 4659,
+      "ms": 79.247
+    },
+    {
+      "name": "render",
+      "file": "app.js?v=20260909dev305",
+      "line": 1576,
+      "ms": 72.425
+    },
+    {
+      "name": "(garbage collector)",
+      "file": "",
+      "line": -1,
+      "ms": 65.499
+    },
+    {
+      "name": "pushState",
+      "file": "",
+      "line": -1,
+      "ms": 62.981
+    },
+    {
+      "name": "(idle)",
+      "file": "",
+      "line": -1,
+      "ms": 37.616
+    },
+    {
+      "name": "interactionPair",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 3907,
+      "ms": 26.947
+    },
+    {
+      "name": "",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 3908,
+      "ms": 25.644
+    },
+    {
+      "name": "RegExp: 혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業",
+      "file": "",
+      "line": -1,
+      "ms": 25.128
+    },
+    {
+      "name": "entityNames",
+      "file": "life-log-localization.js?v=20260909dev305",
+      "line": 6,
+      "ms": 22.711
+    },
+    {
+      "name": "",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 1937,
+      "ms": 22.54
+    },
+    {
+      "name": "sharedPlaceScene",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 4590,
+      "ms": 22.297
+    },
+    {
+      "name": "querySelectorAll",
+      "file": "",
+      "line": -1,
+      "ms": 22.139
+    }
+  ],
+  "scope": "Local synthetic profiles, no images, no real multiplayer network"
+}

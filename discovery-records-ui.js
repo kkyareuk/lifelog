@@ -1,0 +1,36 @@
+import {RECORD_OPTIONS,FORM_FIELDS} from './discovery-records.js?v=20260909dev305';
+export function recordEditor(character,kind,language,locked){
+ const t=(ko,en,ja)=>({ko,en,ja}[language]||ko),root=document.createElement('div');root.className='discovery-record-editor';
+ const body=character.bodyProfile||{},values={},records={},base={},readers=[],baseValues=structuredClone(character.bodyProfile||{});
+ const el=(tag,text)=>{const n=document.createElement(tag);if(text)n.textContent=text;return n;};
+ const label=(text,control,parent=root)=>{const l=el('label');l.append(el('span',text),control);parent.append(l);return l;};
+ const select=(key,value='')=>{const s=el('select');for(const o of RECORD_OPTIONS[key]){const n=el('option',o.text[language]||o.text.ko);n.value=o.value;s.append(n);}if(value&&!Array.from(s.options).some(o=>o.value===value)){const n=el('option',value);n.value=value;s.append(n);}s.value=value||s.options[0]?.value||'';return s;};
+ const disabled=key=>locked(character,'bodyProfile.'+key);
+ const measure=which=>{const isHeight=which==='height',numberKey=isHeight?'heightCm':'weightKg',categoryKey=isHeight?'heightImpression':'bodySize',section=el('fieldset');section.append(el('legend',isHeight?t('키','Height','身長'):t('체형·몸무게','Build and weight','体型・体重')));root.append(section);
+  const modes=el('select');for(const [value,text] of [['category',t('대략적인 느낌','General description','大まかな印象')],['number',t('숫자로 입력','Enter a number','数値で入力')]]){const o=el('option',text);o.value=value;modes.append(o);}modes.value=body[numberKey]?'number':'category';label(t('입력 방식','Input method','入力方法'),modes,section);
+  const category=select(isHeight?'height':'build',body[categoryKey]),input=el('input');input.type='number';input.inputMode='decimal';input.min=isHeight?'20':'1';input.max='300';input.step='0.1';input.value=body[numberKey]||'';input.placeholder=isHeight?'cm':'kg';
+  const empty=el('option',t('선택하지 않음','Not selected','未選択'));empty.value='';category.prepend(empty);if(!body[categoryKey]||body[categoryKey]==='설정하지 않음')category.value='';
+  const a=label(isHeight?t('키의 느낌','Height description','身長の印象'):t('체형','Build','体型'),category,section),b=label(isHeight?'cm':'kg',input,section);
+  const refresh=()=>{a.hidden=modes.value!=='category';b.hidden=modes.value!=='number';};modes.onchange=refresh;refresh();category.disabled=disabled(categoryKey);input.disabled=disabled(numberKey);
+  readers.push(()=>{if(modes.value==='number'&&!input.disabled){if(!input.value||!input.checkValidity()){input.reportValidity();input.focus();throw Error('incomplete');}values[numberKey]=input.value;}else if(!category.disabled&&category.value)values[categoryKey]=category.value;else if(kind!=='checkup'&&!category.disabled){category.focus();throw Error('incomplete');}});
+ };
+ const collection=(key,title,schema,max)=>{const section=el('fieldset');section.className='discovery-record-collection';section.append(el('legend',title));root.append(section);const list=el('div');section.append(list);let entries=[];base[key]=structuredClone(body[key]||[]);
+  let initial=base[key];if(key==='hospitalVisits'&&!initial.length&&body.hospitalDepartments?.length)initial=body.hospitalDepartments.map(department=>({department,purpose:body.hospitalVisitPurposes?.[0]||'정기 검진 · 상담 포함',frequency:RECORD_OPTIONS.visitFrequency.some(o=>o.value===body.hospitalVisitFrequency)?body.hospitalVisitFrequency:'필요할 때 비정기적으로'}));
+  const lockedCollection=disabled(key)||(key==='hospitalVisits'&&FORM_FIELDS.hospital.some(f=>locked(character,f)));
+  const addRow=(row={})=>{if(entries.length>=max)return;const article=el('article');article.className='discovery-record-row';const controls={};
+   for(const [field,text,type] of schema){let control;if(type==='text'){control=el('input');control.type='text';control.maxLength=field==='notes'?160:key==='tattoos'?40:60;control.value=row[field]||'';}else control=select(type,row[field]);control.disabled=lockedCollection;label(text,control,article);controls[field]=control;}
+   const remove=el('button',t('이 항목 빼기','Remove this entry','この項目を削除'));remove.type='button';remove.disabled=lockedCollection;remove.onclick=()=>{entries=entries.filter(e=>e.article!==article);article.remove();add.disabled=lockedCollection||entries.length>=max;};article.append(remove);entries.push({article,controls});list.append(article);
+  };
+  const add=el('button',t('또 있어요','There is another','ほかにもあります'));add.type='button';add.className='discovery-add-record';add.onclick=()=>{addRow();add.disabled=entries.length>=max;};add.disabled=lockedCollection;section.append(add);
+  initial.forEach(addRow);add.disabled=lockedCollection||entries.length>=max;
+  if(!initial.length)section.insertBefore(el('small',t('없으면 추가하지 않아도 돼요.','Leave empty if there are none.','なければ追加しなくて大丈夫です。')),list);
+  readers.push(()=>{if(lockedCollection)return;records[key]=entries.map(({controls})=>Object.fromEntries(Object.entries(controls).map(([k,v])=>[k,v.value])));if(key==='medications'&&records[key].some(r=>!r.name.trim())){entries.find(e=>!e.controls.name.value.trim()).controls.name.focus();throw Error('incomplete');}});
+ };
+ const tattoos=()=>collection('tattoos',t('내 타투','My tattoos','自分のタトゥー'),[['name',t('이름·메모','Name or note','名前・メモ'),'text'],['location',t('이곳에 있고','Located on','場所'),'location'],['type',t('이런 문양이에요','The design is','模様'),'type'],['attitude',t('나는 이렇게 생각해요','I feel this way about it','自分はこう思う'),'attitude']],8);
+ const meds=()=>collection('medications',t('먹는 약','Medication','服用する薬'),[['name',t('약 이름','Medication name','薬の名前'),'text'],['purpose',t('먹는 이유','Purpose','目的'),'purpose'],['frequency',t('먹는 때','When they take it','飲む時'),'frequency'],['notes',t('메모','Notes','メモ'),'text']],12);
+ const hospital=()=>collection('hospitalVisits',t('다니는 병원','Medical visits','通院'),[['department',t('진료과','Department','診療科'),'department'],['purpose',t('다니는 이유','Reason for visits','通う理由'),'visitPurpose'],['frequency',t('다니는 빈도','Visit frequency','通う頻度'),'visitFrequency']],12);
+ if(kind==='height'||kind==='checkup')measure('height');if(kind==='weight'||kind==='checkup')measure('weight');if(kind==='tattoos')tattoos();
+ if(kind==='checkup'){const section=el('fieldset');section.append(el('legend',t('건강 상태','Health conditions','健康状態')));root.append(section);const inputs=[];for(const option of [...RECORD_OPTIONS.health,...(body.healthConditions||[]).filter(v=>!RECORD_OPTIONS.health.some(o=>o.value===v)).map(value=>({value,text:{ko:value,en:value,ja:value}}))]){const input=el('input');input.type='checkbox';input.value=option.value;input.checked=body.healthConditions?.includes(option.value)||false;input.disabled=disabled('healthConditions');label(option.text[language],input,section);inputs.push(input);}const note=el('textarea');note.maxLength=200;note.value=body.healthOther||'';note.disabled=disabled('healthOther');label(t('더 적고 싶은 건강 설정','Additional health details','補足したい健康設定'),note,section);readers.push(()=>{if(!disabled('healthConditions'))values.healthConditions=inputs.filter(i=>i.checked).map(i=>i.value);if(!note.disabled)values.healthOther=note.value;});}
+ if(kind==='hospital'||kind==='checkup')hospital();if(kind==='medications'||kind==='checkup')meds();
+ return {root,read(){readers.forEach(fn=>fn());return {values,records,base,baseValues};}};
+}
