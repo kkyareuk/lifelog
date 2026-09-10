@@ -1,3 +1,6 @@
 # iOS 1.0.269 (33)
 Only UI/review navigation changes: page guide uses modal top layer, bounded safe-area scrolling and 44px close target; Basic shop is first tab with existing three IAPs. Prices, grants, backend and game features unchanged. Fix stale user-safety.js baseline hash: bytes unchanged from HEAD (already committed safety source), no safety code modified.
 Local Chrome checks: iPhone/iPad sizes, KO/EN/JA, all three product buttons and no horizontal overflow. Actual StoreKit flow and on-device performance require Apple environment; existing recordings retained. CI compiles/signs/uploads; submission separately via App Store Connect.
+
+## Submission verified
+2026-09-11 01:28 KST: App Store Connect submission b325a13b-4082-47ee-9149-977b67760a1c shows Waiting for Review for app1.0.269(33) and all three existing IAPs. Build ID83bcaa6e-4762-49b5-a1c9-c7413c6f4d5a. Actions34499784023 completed successfully; existing encryption-use response saved, review notes and direct review reply contain purchase steps. Existing build32 physical-iPad recordings retained. Prices/grants/features unchanged. iPad Pro13 M5/iOS26.2 UIKit launch artifact passed; no new physical-device payment was made.
