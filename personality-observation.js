@@ -28,6 +28,8 @@ export const observationAxes=[
   text('의견이 갈린 대목으로 다시 돌아가 결론을 확인하려는 모습을 보았어요.','They noticed the other person return to a disagreement to settle the conclusion.','相手が意見の分かれた箇所に戻り、結論を確かめようとする様子を見ました。')]
 ];
 function level(character,[field,numeric,values]){
+ const score=character.discovery?.scores?.[field];
+ if(Number.isFinite(score))return Math.max(0,Math.min(100,score))/100;
  const i=values.indexOf(character[field]);
  if(i>=0)return i/(values.length-1);
  if(numeric&&Number.isFinite(character[numeric])&&character[numeric]>=1&&character[numeric]<=5)return (character[numeric]-1)/4;

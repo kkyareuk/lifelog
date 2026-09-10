@@ -1,0 +1,18 @@
+<ko-KR>
+캐릭터 프로필과 전체설정 메뉴에 설명을 추가했어요.
+개인 플레이 중 상황 질문에 답하면 성향이 조금씩 달라지고 이후 로그에 반영돼요.
+전체설정의 자물쇠로 성향을 고정하면 관련 질문이 나오지 않아요.
+질문을 넘기면 설정이 바뀌지 않으며, 접속하지 않은 동안 질문이 쌓이지 않아요.
+</ko-KR>
+<en-US>
+Added descriptions to Character profile and Full settings.
+During solo play, situational choices gradually shape traits and future logs.
+Lock traits in Full settings to prevent changes and related questions.
+Skipping changes nothing. Questions do not pile up while you are away.
+</en-US>
+<ja-JP>
+キャラクタープロフィールと全設定に説明を追加しました。
+ソロプレイ中の質問に答えると傾向が少しずつ変わり、以後のログに反映されます。
+全設定の鍵で傾向を固定すると、関連する質問も止まります。
+見送ると設定は変わらず、未接続中に質問がたまることもありません。
+</ja-JP>

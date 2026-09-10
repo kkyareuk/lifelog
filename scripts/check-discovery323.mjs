@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {DISCOVERY_SCENES,discoveryLocked,discoveryCandidates,discoveryAnswer,manualDiscoveryPatch,createDiscoverySession} from '../character-discovery-rules.js';
+const c={id:'a',discovery:{version:1,locks:{},answers:{}}},scene={title:'독서 중',minute:10},question=DISCOVERY_SCENES.find(s=>s.id==='reading');
+assert.equal(discoveryCandidates(c,scene)[0],question);assert.equal(discoveryCandidates({id:'old'},scene).length,0);
+const answer=discoveryAnswer(c,question,2,100);assert.equal(answer.discovery.scores.perceptionStyle,54);assert.equal(answer.perceptionStyle,'균형형');Object.assign(c,answer);assert.equal(discoveryCandidates(c,scene).length,1);for(let i=0;i<10;i++)Object.assign(c,discoveryAnswer(c,question,2,101+i));assert(c.discovery.scores.perceptionStyle>80);assert.notEqual(c.perceptionStyle,'균형형');const previous=c.discovery.scores.perceptionStyle;Object.assign(c,discoveryAnswer(c,question,0));assert(c.discovery.scores.perceptionStyle<previous);assert(previous-c.discovery.scores.perceptionStyle<=4);
+Object.assign(c,manualDiscoveryPatch(c,{perceptionStyle:'구체적인 편'}));assert(discoveryLocked(c,'perceptionStyle'));assert.equal(discoveryAnswer(c,question,2),null);
+assert(discoveryLocked({...c,...manualDiscoveryPatch(c,{thinkingFeeling:1})},'decisionStyle'));
+const fresh={id:'b',discovery:{version:1}},session=createDiscoverySession(()=>0),now=10000000;
+assert.equal(session.offer(fresh,scene,{now}),null,'initial log is not a backlog');assert.equal(session.offer(fresh,{...scene,minute:11},{now:now+1}),question);assert.equal(session.offer(fresh,{...scene,minute:12},{now:now+2}),null,'cooldown');session.reset();assert.equal(session.offer(fresh,{...scene,minute:13},{now:now+900000}),null,'return from offline starts a new baseline');assert.equal(session.offer(fresh,{...scene,minute:14},{now:now+900001,blocked:true}),null);assert.equal(session.offer(fresh,{...scene,minute:14},{now:now+900002}),null,'missed modal must not queue');
+for(const q of DISCOVERY_SCENES)for(const lang of ['ko','en','ja']){assert(q.question[lang]);for(const o of q.choices)assert(o.text[lang]);}
+console.log('PASS seven localized situations, cumulative bounded numerical changes, legacy protection, answers, manual locks/aliases, fresh log/cooldown/offline/no backlog');

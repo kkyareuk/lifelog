@@ -30,7 +30,7 @@ export function importCharacterSettings(file,limit){
 if(characterEditorActive()){endCharacterEditor();window.DrawerVillageGroups?.select('');state.activeTab='character'}
   const settings=characterSettingsFile(file.character).character,before=cloneState();
   const id=createCharacter(limit);if(!id)throw Error('남은 캐릭터 슬롯이 없어요.');
-  try{updateCharacter(id,settings,false);if(!save(true))throw Error('저장하지 못했어요.');return id}
+  try{updateCharacter(id,{...settings,discovery:settings.discovery||{version:0,locks:{}}},false);if(!save(true))throw Error('저장하지 못했어요.');return id}
   catch(error){replaceState(before);throw error}
 }
 export function mergeCatalogFile(file){

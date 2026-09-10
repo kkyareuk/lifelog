@@ -5,7 +5,7 @@ export function importCodeCharacter(character,limit){
  if(!character||typeof character.name!=='string')throw Error('Invalid character');
 if(characterEditorActive()){endCharacterEditor();window.DrawerVillageGroups?.select('');state.activeTab='character'}
  const before=cloneState(),profile=clean(Object.fromEntries(Object.entries(character).filter(([key])=>!excluded.has(key))));
- try{const id=createCharacter(limit);if(!id)throw Error(({ko:'남은 캐릭터 슬롯이 없어요.',en:'No character slots remaining.',ja:'キャラクター枠が足りません。'})[state.uiLanguage]||'남은 캐릭터 슬롯이 없어요.');updateCharacter(id,profile,false);if(!save(true))throw Error('Could not save');return id}catch(e){replaceState(before);throw e}
+ try{const id=createCharacter(limit);if(!id)throw Error(({ko:'남은 캐릭터 슬롯이 없어요.',en:'No character slots remaining.',ja:'キャラクター枠が足りません。'})[state.uiLanguage]||'남은 캐릭터 슬롯이 없어요.');updateCharacter(id,{...profile,discovery:profile.discovery||{version:0,locks:{}}},false);if(!save(true))throw Error('Could not save');return id}catch(e){replaceState(before);throw e}
 }
 export async function characterCodeDialog(mode,limit,render,toast){
  const text=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),api=window.DrawerVillageGroups||window.ParallelCityAuth,d=document.createElement('dialog');d.className='character-code-dialog';

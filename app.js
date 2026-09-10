@@ -1,3 +1,5 @@
+import {considerDiscovery,bindDiscoveryLocks} from './character-discovery.js?v=20260909dev305';
+import {manualDiscoveryPatch} from './character-discovery-rules.js?v=20260909dev305';
 import {bindFamilyNames} from './family-names.js?v=20260909dev305';
 import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
 import {openFamilyPreview} from './family-expansion.js?v=20260909dev305';
@@ -1696,6 +1698,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
+    if(!sceneDate&&!selectionOnly)requestAnimationFrame(()=>{const c=active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)});
     if(!selectionOnly)requestAnimationFrame(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
@@ -2566,6 +2569,7 @@ function refreshCharacterSelectionSummaries(root=document){
 
 function bind(){
   bindCharacterFolds();
+  bindDiscoveryLocks();
   bindFamilyNames(render);
   if(state.activeTab==="credits")openSupporterCredits();
   const groupApi=window.DrawerVillageGroups;
@@ -3679,7 +3683,7 @@ function bind(){
     const apply=()=>{
     const patch=characterPatchFromField(el);
     if(!patch)return;
-    updateCharacter(active().id,patch,false);
+    updateCharacter(active().id,manualDiscoveryPatch(active(),patch),false);
     syncCharacterControls(el,"data-field");
     if(!markMobileCharacterDraft(el))save();
     if(el.dataset.levels){
