@@ -1,0 +1,149 @@
+{
+  "characters": 9,
+  "cpuSlowdown": 4,
+  "results": [
+    {
+      "tab": "character",
+      "syncMs": 202.19999999552965,
+      "paintMs": 398.5
+    },
+    {
+      "tab": "settings",
+      "syncMs": 117,
+      "paintMs": 207.60000000149012
+    },
+    {
+      "tab": "town",
+      "syncMs": 238.79999999701977,
+      "paintMs": 306.19999999552965
+    },
+    {
+      "tab": "observe",
+      "syncMs": 124.10000000149012,
+      "paintMs": 201
+    },
+    {
+      "tab": "home",
+      "syncMs": 227.89999999850988,
+      "paintMs": 423.79999999701977
+    },
+    {
+      "tab": "character",
+      "syncMs": 78,
+      "paintMs": 132.90000000596046
+    },
+    {
+      "tab": "settings",
+      "syncMs": 33,
+      "paintMs": 74.09999999403954
+    },
+    {
+      "tab": "town",
+      "syncMs": 51.900000005960464,
+      "paintMs": 64.90000000596046
+    },
+    {
+      "tab": "observe",
+      "syncMs": 39.099999994039536,
+      "paintMs": 69.19999999552965
+    },
+    {
+      "tab": "home",
+      "syncMs": 113.20000000298023,
+      "paintMs": 240.80000000447035
+    }
+  ],
+  "hot": [
+    {
+      "name": "(program)",
+      "file": "",
+      "line": -1,
+      "ms": 1062.68
+    },
+    {
+      "name": "navigateToTab",
+      "file": "app.js?v=20260909dev305",
+      "line": 4653,
+      "ms": 259.752
+    },
+    {
+      "name": "pushState",
+      "file": "",
+      "line": -1,
+      "ms": 175.804
+    },
+    {
+      "name": "navigateToTab",
+      "file": "app.js?v=20260909dev305",
+      "line": 4653,
+      "ms": 167.143
+    },
+    {
+      "name": "(idle)",
+      "file": "",
+      "line": -1,
+      "ms": 112.547
+    },
+    {
+      "name": "renderAppContents",
+      "file": "views.js?v=20260909dev305",
+      "line": 4683,
+      "ms": 96.5
+    },
+    {
+      "name": "maybeShowPageGuide",
+      "file": "app.js?v=20260909dev305",
+      "line": 1891,
+      "ms": 50.801
+    },
+    {
+      "name": "render",
+      "file": "app.js?v=20260909dev305",
+      "line": 1594,
+      "ms": 44.279
+    },
+    {
+      "name": "",
+      "file": "town-lighting.js?v=20260909dev305",
+      "line": 23,
+      "ms": 39.839
+    },
+    {
+      "name": "(garbage collector)",
+      "file": "",
+      "line": -1,
+      "ms": 36.266
+    },
+    {
+      "name": "querySelectorAll",
+      "file": "",
+      "line": -1,
+      "ms": 28.31
+    },
+    {
+      "name": "blur",
+      "file": "",
+      "line": -1,
+      "ms": 25.361
+    },
+    {
+      "name": "bind",
+      "file": "app.js?v=20260909dev305",
+      "line": 2597,
+      "ms": 15.585
+    },
+    {
+      "name": "querySelector",
+      "file": "",
+      "line": -1,
+      "ms": 12.48
+    },
+    {
+      "name": "build",
+      "file": "simulation.js?v=20260909dev305",
+      "line": 2741,
+      "ms": 11.253
+    }
+  ],
+  "scope": "Local synthetic profiles, no images, no real multiplayer network"
+}

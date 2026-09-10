@@ -1,3 +1,4 @@
+import {createNotificationOpenQueue} from './notification-open-queue.js?v=20260909dev305';
 import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
 import {considerDiscovery,bindDiscoveryLocks} from './character-discovery.js?v=20260909dev305';
@@ -1674,7 +1675,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
     if(["character","mailbox"].includes(state.activeTab))ensureDailyQuestionSchedule();
-    prepareActiveHomeLife();
+    withSimulationBatch(()=>prepareActiveHomeLife());
     relationshipRailCleanup.splice(0).forEach(cleanup=>cleanup());
     cleanupRenderedScreen();
     renderApp(state,sceneDate||new Date(),{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen});
@@ -1710,7 +1711,8 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     afterScreenRender(restoreMobileCharacterDialogs);
     afterScreenRender(showSetupCoach);
     afterScreenRender(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
-    afterScreenRender(maybeShowPageGuide);
+    afterScreenRender(()=>{if(!notificationOpenQueue.pending)maybeShowPageGuide()});
+    afterScreenRender(()=>notificationOpenQueue.flush());
     // The desktop observation map is already positioned by CSS. Smoothly
     // scrolling its large canvas after every render made the whole site feel
     // delayed and could briefly place an invisible scroll layer over the nav.
@@ -4653,6 +4655,9 @@ function recordTabHistory(tab,replace=false){
 }
 function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false}={}){
   if(!APP_TABS.includes(tab))return;
+  // Read/reset the old viewport before replacing DOM. Reading scrollX after
+  // render forced the new screen layout inside the tap handler.
+  if(window.scrollX||window.scrollY)window.scrollTo({top:0,left:0,behavior:"instant"});
   if(tab!=="home")closeHomeOccupantSheet();
   // The character tab is the editor itself. Rendering the old dashboard first
   // made taps appear ignored while Android parsed several hidden editors.
@@ -4691,7 +4696,6 @@ function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false}={}){
   render({force:true});
   if(recordHistory)recordTabHistory(tab);
   if(tab==="town"&&!townMapPositions.has(document.querySelector(".mobile-town-shell")?.dataset.townId))centerMobileTownMap(undefined,{animate:false});
-  if(window.scrollX||window.scrollY)window.scrollTo({top:0,left:0,behavior:"auto"});
 }
 
 function navigateBackToObserve(){
@@ -6175,14 +6179,18 @@ function openContactMail(id){
   dialog.innerHTML=`<form method="dialog">${letterWatermark(image)}<h2>${htmlEsc(letter.title)}</h2><p>${htmlEsc(letter.body)}</p><button>${translateText("닫기")}</button></form>`;
   dialog.onclose=()=>{dialog.remove();if(state.activeTab==="mailbox")render()};document.body.append(dialog);dialog.showModal();contactMailbox.mark(id,{read:true});
 }
-window.addEventListener("drawer-village-character-notification-open",event=>{
-  const extra=event.detail||{};
-  if(extra.mailOwner&&extra.mailOwner!==localStorage.scope)return;
-  const character=state.characters[extra.characterId];
-  const letter=contactMailbox.accept(extra);if(!letter)return;if(character)setActive(character.id);
-  navigateToTab("mailbox");
-  if(letter)requestAnimationFrame(()=>openContactMail(letter.id));
+const notificationOpenQueue=createNotificationOpenQueue({
+  ready:()=>{const auth=window.ParallelCityAuth?.getInfo?.();return document.visibilityState!=='hidden'&&document.documentElement.dataset.drawerRendered==='1'&&!document.querySelector('.village-account-loading')&&!!auth?.ready&&!auth.startupSyncing},
+  open:extra=>{
+    if(extra.mailOwner&&extra.mailOwner!==localStorage.scope)return;
+    const letter=contactMailbox.accept(extra);if(!letter)return;
+    const character=state.characters[extra.characterId];if(character)setActive(character.id);
+    navigateToTab("mailbox");
+    afterScreenRender(()=>{if(state.activeTab==='mailbox'&&(!extra.mailOwner||extra.mailOwner===localStorage.scope)){document.querySelector('.page-guide[open]')?.close('notification');openContactMail(letter.id)}});
+  }
 });
+window.addEventListener('drawer-village-character-notification-open',event=>notificationOpenQueue.push(event.detail||{}));
+window.addEventListener('drawer-village-auth-busy',()=>notificationOpenQueue.flush());
 window.addEventListener("drawer-village-character-notification-received",event=>{
   if(contactMailbox.accept(event.detail||{})&&state.activeTab==="mailbox")render();
 });
@@ -6193,7 +6201,7 @@ function scheduleLiveSceneRefresh(){
   if(document.visibilityState==="hidden"||!["observe","home"].includes(state.activeTab)||state.homeEditMode){liveSceneRefreshTimer=0;return}
   const now=new Date();
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
-  const delay=[...characters.map(character=>nextSceneRefreshDelay(character,now)),10*60*1000].reduce((soonest,value)=>Math.min(soonest,value),10*60*1000);
+  const delay=withSimulationBatch(()=>[...characters.map(character=>nextSceneRefreshDelay(character,now)),10*60*1000].reduce((soonest,value)=>Math.min(soonest,value),10*60*1000));
   liveSceneRefreshTimer=setTimeout(()=>{
     liveSceneRefreshTimer=0;
     if(document.visibilityState!=="hidden"&&["observe","home"].includes(state.activeTab)&&!state.homeEditMode){
@@ -6210,17 +6218,25 @@ ensureDailyQuestionSchedule();
 if(state.characterNotificationsEnabled&&characterNotificationsAvailable())initializeCharacterNotifications().then(()=>{
   if(state.characterNotificationSettings?.mailVersion!==1||state.characterNotificationSettings?.voiceVersion!==CONTACT_VOICE_VERSION||Date.now()-Number(state.characterNotificationSettings?.lastScheduledAt||0)>6*60*60*1000)setTimeout(syncCharacterNotificationSchedule,800);
 });
+let foregroundRefreshTimer=0;
 const restoreForegroundState=()=>{
+  if(document.visibilityState==="hidden"||foregroundRefreshTimer)return;
+  foregroundRefreshTimer=setTimeout(()=>{
+  foregroundRefreshTimer=0;
+  if(document.visibilityState==="hidden")return;
+  const auth=window.ParallelCityAuth?.getInfo?.();if(!auth?.ready||auth.startupSyncing)return;
+  notificationOpenQueue.flush();
   scheduleTownLighting(document);
   refreshLocalMedia();
   const refreshedAt=Date.now();
   if(refreshedAt-lastForegroundSceneRefreshAt>1000&&["observe","home"].includes(state.activeTab)){
     lastForegroundSceneRefreshAt=refreshedAt;
     const now=new Date();
-    state.order.map(id=>state.characters[id]).filter(Boolean).forEach(character=>eventFor(character,now));
+    withSimulationBatch(()=>state.order.map(id=>state.characters[id]).filter(Boolean).forEach(character=>eventFor(character,now)));
     render();
   }
   scheduleLiveSceneRefresh();
+  },80);
 };
 window.addEventListener("focus",restoreForegroundState);
 window.addEventListener("pageshow",restoreForegroundState);

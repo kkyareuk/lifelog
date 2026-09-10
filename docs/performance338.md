@@ -1,0 +1,11 @@
+# Responsiveness / notification startup — dev, Android 334 unchanged
+
+Changes: reset old viewport scroll before DOM replacement, avoiding forced new-screen layout in the navigation handler; batch per-character home preparation and refresh-deadline work; coalesce focus/pageshow/visibility restoration with an 80 ms task and guard account startup; batch foreground scene calculations. Queue the latest notification tap until auth is ready, startup sync is done and a real screen exists, then allow two frames before navigating. Validate account scope on delivery. Music allows one pending play and rechecks hidden/startup/mute state when play resolves; suspended context resumes even if volume is unchanged.
+
+Measured local Chrome, 384x832, CPU throttled 4x. Synthetic 9 and 80 profiles, no user photos, no real multiplayer. Timings are individual runs, not a statistically controlled benchmark. Click handler improvements must not be confused with all painting finishing sooner.
+
+80-character first navigation sync milliseconds: character 246→54; settings 126→30; town 495→356; observe 153→57; home 709→291. Home two-frame metric 1181→805 ms; repeated home 812→455 ms. Some other paint timings vary or regress. Nine-character first character handler 202→35 ms; first home paint 424→332 ms. Town paint 306→326 ms, settings 208→305 ms: remaining layout/paint work needs further profiling; not all lag is fixed.
+
+Verification: check-startup338.mjs passed readiness/interrupted readiness/pending notification replacement and pending audio/startup/visibility races with mocks. qa-web335 passed KO/EN/JA and mobile navigation. qa-memory336: 30 switches stable 398 nodes / 77 listeners; 10 credits openings stable. Build 107 modules. Existing check-character-notifications has three outdated/unchanged assertions failing: hardcoded schema31, old Android status-bar implementation, versionCode186/versionName1.0.173. Its notification-routing and language checks pass. No changes made to those unrelated assertions.
+
+No actual Galaxy S21 notification launch, sound output, installed Android or iOS hardware verified. No APK/AAB or production deployment. New user-facing strings: none; EN/JA additional translation targets 0, existing localized UI retained. Source remains dev; board goes main.
