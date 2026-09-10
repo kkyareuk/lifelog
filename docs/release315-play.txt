@@ -1,0 +1,21 @@
+<ko-KR>
+방 출입 권한과 지정한 자는 방이 낮잠·수면에 반영되도록 보강했어요.
+구성원 설정에 가끔 다른 곳에서 자기와 빈도 선택을 추가했어요.
+1인 침대의 중복 점유를 수정했어요.
+다른 방의 상대와 대면하는 장면은 이동 후 이어지도록 개선했어요.
+태블릿 가로 메뉴를 아이콘과 글자가 있는 기존 배치로 복원했어요.
+</ko-KR>
+<en-US>
+Improved room access and assigned bedrooms for sleep and naps.
+Added optional sleeping elsewhere with frequency settings.
+Fixed overlapping use of single beds.
+Face-to-face scenes in another room now follow movement to that room.
+Restored labeled menu buttons in tablet landscape mode.
+</en-US>
+<ja-JP>
+入室制限と指定の寝室が睡眠・昼寝に反映されるよう改善しました。
+時々ほかの場所で寝る設定と頻度選択を追加しました。
+1人用ベッドの重複使用を修正しました。
+別の部屋にいる相手との対面シーンは移動後に続くよう改善しました。
+タブレット横画面のメニューを文字付きの従来の配置に戻しました。
+</ja-JP>

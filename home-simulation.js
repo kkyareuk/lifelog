@@ -4,7 +4,7 @@ const clamp=(value,min,max,fallback=min)=>{
 };
 const hash=value=>[...String(value||"")].reduce((result,character)=>(result*31+character.charCodeAt(0))>>>0,2166136261);
 export function isHomeSleepScene(scene){
-  return scene?.actionKind==="sleep"||/자는 중|잠든|잠들어|낮잠|수면|sleeping|asleep|睡眠|眠って|睡觉/i.test(`${scene?.title||""} ${scene?.mood||""}`);
+  return scene?.actionKind==="sleep"||/자는 중|잠든|잠들어|낮잠|눈을 붙|눈 붙|수면|sleeping|asleep|睡眠|眠って|睡觉/i.test(`${scene?.title||""} ${scene?.mood||""}`);
 }
 export function homeSleepAnimation(habit){
   const styles={
@@ -176,7 +176,7 @@ export function advanceHomeLifeSimulation(home,characterIds,contexts={},now=Date
     const rawTarget=previousBed||(candidates.length?candidates[hash(`${characterId}:${sceneKey}`)%candidates.length]:null);
     const target=rawTarget?{...rawTarget,...safeHomePoint(rawTarget.x,rawTarget.y)}:null;
     if(target)occupied.set(target.id,(occupied.get(target.id)||0)+1);
-    const old=current.agents[characterId],sameScene=(old?.sceneKey===sceneKey||Boolean(previousBed))&&(!old.furnitureId||placementById.has(old.furnitureId));
+    const old=current.agents[characterId],sameScene=(old?.sceneKey===sceneKey||Boolean(previousBed))&&(!old.furnitureId||Boolean(target&&old.furnitureId===target.id));
     const sceneStartAt=Math.max(0,Number(context.startedAt)||now),sceneEndAt=Math.max(now+60_000,Number(context.endsAt)||now+homeActivityDurationMinutes(target?.item||scene.title,`${characterId}:${sceneKey}`)*60_000);
     const hydrateInPlace=context.animateMovement===false;
     if(sameScene){

@@ -15,7 +15,7 @@ assert.match(simulation,/if\(old&&today\)\{[\s\S]*Number\(item\.minute\)<=cutoff
 console.log("PASS 설정·집 배치·동기화 뒤에도 현재 시각까지의 로그 원문과 시각을 보존합니다");
 
 const updateRoomBlock=state.slice(state.indexOf("export function updateRoom"),state.indexOf("export function createHome"));
-assert.match(updateRoomBlock,/simulationKeys=new Set\(\["type","furniture","furniturePlacements"\]\)/);
+assert.match(updateRoomBlock,/simulationKeys=new Set\(\["type","furniture","furniturePlacements","ownerMode","ownerCharacterIds","accessMode","accessGroups","accessCharacterIds"\]\)/);
 assert.match(updateRoomBlock,/Object\.keys\(patch\|\|\{\}\)\.some/);
 console.log("PASS 방 크기·위치·바닥·벽 편집은 생활 로그 초기화와 분리됩니다");
 

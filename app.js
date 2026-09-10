@@ -2100,7 +2100,7 @@ function openHomeMemberEditor(kind,homeId,itemId){
   dialog.querySelector('.home-design-fields').append(source);
   const details=source.querySelector('details');if(details){details.open=true;details.querySelector('summary')?.remove();details.replaceWith(...details.childNodes)}
   source.querySelectorAll('[data-pet-field="species"] option').forEach(option=>{if(option.value==="새")option.textContent=state.uiLanguage==="en"?"Bird":state.uiLanguage==="ja"?"鳥":"새"});
-  source.querySelectorAll('small,.pet-info,.pet-avatar').forEach(n=>n.hidden=true);
+  source.querySelectorAll('small:not(.sleep-settings small),.pet-info,.pet-avatar').forEach(n=>n.hidden=true);
   source.querySelectorAll('[data-residence-day]').forEach(button=>{const day=Number(button.dataset.residenceDay);button.textContent=({en:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],ja:['日','月','火','水','木','金','土']}[state.uiLanguage]||['일','월','화','수','목','금','토'])[day]});
   dialog.querySelector('.home-design-back').onclick=()=>dialog.close();
   dialog.querySelector("[data-member-save]").onclick=()=>{document.activeElement?.blur();dialog.close()};
@@ -3356,10 +3356,10 @@ function bind(){
   $$("[data-residence-field]").forEach(el=>{
     const apply=()=>{
       const field=el.dataset.residenceField;
-      updateCharacterResidence(el.dataset.characterId,el.dataset.homeId,{[field]:el.value},el.tagName!=="SELECT");
+      updateCharacterResidence(el.dataset.characterId,el.dataset.homeId,{[field]:el.type==="checkbox"?el.checked:el.value},el.tagName!=="SELECT");
       if(el.tagName==="SELECT")save(true,false);
     };
-    if(el.tagName==="SELECT")el.onchange=apply;else el.oninput=apply;
+    if(el.tagName==="SELECT"||el.type==="checkbox")el.onchange=apply;else el.oninput=apply;
   });
   $$("[data-residence-day]").forEach(el=>el.onclick=()=>{
     const c=state.characters[el.dataset.characterId],residence=c?.residences?.find(item=>item.homeId===el.dataset.homeId);if(!residence)return;

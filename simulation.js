@@ -1,3 +1,4 @@
+import {isHomeSleepScene} from './home-simulation.js?v=20260909dev305';
 import {CONCRETE_LIFE_TASKS} from './concrete-life.js?v=20260909dev305';
 import {relationshipReaction,relationshipBetween,relationshipMembers,viewSignals,automaticConflictAllowed} from './relationship-context.js?v=20260909dev305';
 import {overheardGossip} from './gossip-reaction.js?v=20260909dev305';
@@ -734,9 +735,17 @@ export function roomAllowsCharacter(c,home,room){
 export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new Date()){
   const rooms=home?.rooms||{},ordered=Object.entries(rooms).sort((a,b)=>(Number(a[1]?.order)||0)-(Number(b[1]?.order)||0));
   if(!ordered.length)return"";
+  if(item.homeEncounter&&rooms[requestedRoom]&&roomAllowsCharacter(c,home,rooms[requestedRoom]))return requestedRoom;
   const residence=settingList(c.residences).find(value=>value.homeId===home.id);
   const sleeping=/침실|잠드는|잠에서|잠자리에|자는 중/.test(`${item.title||""} ${item.desc||""}`)||requestedRoom==="bedroom"||requestedRoom===usableSleepRoom(c.sleepRoomId);
-  const preferredSleepRoom=sleeping?(usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)):"";
+  let preferredSleepRoom=sleeping||isHomeSleepScene(item)?(usableSleepRoom(residence?.sleepRoomId)||usableSleepRoom(c.sleepRoomId)):"";
+  if(isHomeSleepScene(item)&&residence?.sleepElsewhere===true){
+    const night=new Date(date);if(night.getHours()<12)night.setDate(night.getDate()-1);
+    const frequency={rare:5,sometimes:15,often:35}[residence.sleepElsewhereFrequency]||5;
+    const alternatives=ordered.filter(([key,room])=>key!==preferredSleepRoom&&['living','rest'].includes(room.type||key)&&roomAllowsCharacter(c,home,room));
+    const seed=hash(`${c.id}:${home.id}:${dayKey(night)}:sleep-elsewhere`);
+    if(alternatives.length&&seed%100<frequency)return alternatives[seed%alternatives.length][0];
+  }
   if(preferredSleepRoom&&rooms[preferredSleepRoom]&&roomAllowsCharacter(c,home,rooms[preferredSleepRoom]))return preferredSleepRoom;
   const direct=rooms[requestedRoom],requestedType=direct?.type||requestedRoom;
   const exactRoomRequest=Boolean(direct&&requestedRoom!==requestedType);
@@ -2570,6 +2579,7 @@ function profileSettingScenePool(c,date){
   }
   const hobbies=settingList(c.hobbies).join(' ');
   for(const task of CONCRETE_LIFE_TASKS)if(!task.hobbyPattern||new RegExp(task.hobbyPattern).test(hobbies))add('concrete:'+task.id,task.labels[0],task.details[0],task.labels[1],task.details[1],task.labels[2],task.details[2],task.room,['hobbies']);
+  if(relationship)for(const scene of pool)if(scene.category.startsWith("relationship")&&!/메모|note|メモ/.test(scene.title))scene.withId=relationship.other.id;
   return pool;
 }
 export function personalSceneChoices(c,date=new Date()){
@@ -2580,7 +2590,7 @@ function profileSettingEvents(c,times,date){
   if(!pool.length)return [];
   const firstIndex=hash(`${c.id}:${dayKey(date)}:profile-first`)%pool.length,first=pool[firstIndex];
   const remaining=pool.filter(scene=>scene.category!==first.category),second=remaining.length?remaining[hash(`${c.id}:${dayKey(date)}:profile-second`)%remaining.length]:null;
-  return [first,second].filter(Boolean).map((scene,index)=>homeEntry(c,times[index],scene.title,scene.desc,scene.room,{profileFields:scene.fields,profileScene:true}));
+  return [first,second].filter(Boolean).map((scene,index)=>homeEntry(c,times[index],scene.title,scene.desc,scene.room,{profileFields:scene.fields,profileScene:true,withId:scene.withId}));
 }
 function financialStressEvent(c,time,date){
   const lowWealth=["생계가 빠듯함","여유가 적음"].includes(c.wealth);
@@ -3002,7 +3012,7 @@ function signature(c){
   const revision=`${Number(c.timelineResetAt||0)}:${state.uiLanguage}:${state.order.length}`;
   const cached=signatureCache.get(c);
   if(cached?.character===c&&cached.revision===revision)return cached.value;
-  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
+  const value=JSON.stringify({uiLanguage:state.uiLanguage,createdAt:c.createdAt,birthday:c.birthday,birthdays:state.order.map(id=>[id,state.characters[id]?.birthday]),townId:c.townId,homeId:c.homeId,residences:c.residences,homes:settingList(c.residences).map(item=>{const home=state.homes[item.homeId];return[home?.id,home?.kind,home?.townId,home?.exteriorStyle,home?.beautyLevel,home?.ownershipType,home?.ownerKind,home?.ownerCharacterId,home?.ownerName,Object.entries(home?.rooms||{}).map(([key,room])=>[key,room?.interiorStyle,room?.type,room?.ownerMode,room?.ownerCharacterIds,room?.accessMode,room?.accessGroups,room?.accessCharacterIds]),(home?.cars||[]).map(car=>[car.id,car.ownerCharacterId,car.type]),home?.pets?.length]}),ageGroup:c.ageGroup,gender:c.gender,speechStyle:c.speechStyle,attractedGenders:c.attractedGenders,touchReaction:c.touchReaction,appearanceLevel:c.appearanceLevel,appearanceInterest:c.appearanceInterest,appearanceTags:c.appearanceTags,attractionTraits:c.attractionTraits,personalityTypes:c.personalityTypes,characterTraits:c.characterTraits,traitExpressions:c.traitExpressions,traitNotesInScripts:c.traitNotesInScripts,traitNotes:c.traitNotesInScripts?c.traitNotes:"",bodyProfile:c.bodyProfile,timelineResetAt:c.timelineResetAt,wake:c.wake,wakeHabit:c.wakeHabit,sleep:c.sleep,sleepHabit:c.sleepHabit,foodHabit:c.foodHabit,dailyHabits:c.dailyHabits,eatingHabits:c.eatingHabits,walkingStyle:c.walkingStyle,educationLevel:c.educationLevel,lifeAdaptation:c.lifeAdaptation,job:c.job,jobTitle:c.jobTitle,workplaceId:c.workplaceId,driverLicense:c.driverLicense,commuteModes:c.commuteModes,smokingStatus:c.smokingStatus,alcoholTolerance:c.alcoholTolerance,income:c.income,wealth:c.wealth,spiceTolerance:c.spiceTolerance,sweetPreference:c.sweetPreference,fashionSense:c.fashionSense,appearanceCareLevel:c.appearanceCareLevel,accessoryUse:c.accessoryUse,humorStyle:c.humorStyle,emotionalExpression:c.emotionalExpression,impulseControl:c.impulseControl,emotionalBaseline:c.emotionalBaseline,emotionalSensitivity:c.emotionalSensitivity,emotionalContagion:c.emotionalContagion,moodVolatility:c.moodVolatility,moodPersistence:c.moodPersistence,positiveMoodResponse:c.positiveMoodResponse,stressMoodResponse:c.stressMoodResponse,moodRecoveryStyle:c.moodRecoveryStyle,routines:state.routines?.[c.id],monthlyRoutines:state.monthlyRoutines?.[c.id],deletedSchedules:[state.deletedRoutineIds,state.deletedMonthlyRoutineIds],scheduledChoices:(state.scheduledChoices||[]).filter(item=>item.characterId===c.id||item.targetId===c.id),hobbies:c.hobbies,interests:c.interests,inventory:c.inventory,foodTypes:c.foodTypes,foodPreferences:c.foodPreferences,favoriteScentNotes:c.favoriteScentNotes,favoriteStoryGenres:c.favoriteStoryGenres,favoriteVideoGenres:c.favoriteVideoGenres,favoriteGameGenres:c.favoriteGameGenres,favoriteFashionStyles:c.favoriteFashionStyles,favoriteAnimals:c.favoriteAnimals,favoriteElectronics:c.favoriteElectronics,favoriteWeapons:c.favoriteWeapons,favoriteBooks:c.favoriteBooks,drinks:c.drinks,drinkTypes:c.drinkTypes,musicGenres:c.musicGenres,dislikedStoryGenres:c.dislikedStoryGenres,dislikedFoodPreferences:c.dislikedFoodPreferences,dislikedDrinks:c.dislikedDrinks,dislikedMusicGenres:c.dislikedMusicGenres,dislikedVideoGenres:c.dislikedVideoGenres,dislikedGameGenres:c.dislikedGameGenres,dislikedScentNotes:c.dislikedScentNotes,dislikedAnimals:c.dislikedAnimals,dislikedElectronics:c.dislikedElectronics,dislikedWeapons:c.dislikedWeapons,dislikedBooks:c.dislikedBooks,favorites:c.favorites,dislikes:c.dislikes,socialStyle:c.socialStyle,perceptionStyle:c.perceptionStyle,decisionStyle:c.decisionStyle,planningStyle:c.planningStyle,activityTempo:c.activityTempo,neatness:c.neatness,interference:c.interference,conflictStyle:c.conflictStyle,affectionStyle:c.affectionStyle,energyRhythm:c.energyRhythm,rels:relationList().filter(r=>r.a!==r.b&&(r.a===c.id||r.b===c.id)),views:state.characterViews?.[c.id],townProfiles:state.towns.map(t=>[t.id,t.era,t.townType,t.townSubtype,t.reputation,t.terrain,t.transportModes,t.travelAllowed]),places:state.towns.flatMap(t=>(t.places||[]).map(p=>[p.id,p.type,p.stock,p.priceRange,p.spicy,p.sweet])),decorations:state.towns.flatMap(t=>(t.decorations||[]).map(item=>[item.id,item.type,item.interactions]))});
   signatureCache.set(c,{character:c,revision,value});
   return value;
 }
@@ -4497,7 +4507,7 @@ function baseSceneFrom(value){
   };
 }
 function isProtectedSoloActivity(value){
-  return !value?.groupInteraction&&!value?.dateGroup&&!value?.withId&&/혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業/i.test(`${value?.title||""} ${value?.desc||""}`);
+  return isHomeSleepScene(value)||!value?.groupInteraction&&!value?.dateGroup&&!value?.withId&&/혼자|집중|읽|독서|공부|연구|작업|업무|글을 쓰|기록을 정리|focus|read|study|research|working alone|ひとり|集中|読書|勉強|研究|作業/i.test(`${value?.title||""} ${value?.desc||""}`);
 }
 function soloSceneFrom(value){
   const base=baseSceneFrom(value)||value;
@@ -4860,8 +4870,29 @@ function privateLifeEvent(c,date){
 export function eventFor(c,date=new Date()){
   try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return overheardGossip(state,c,calculateEventFor(c,date),date.getTime(),state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
 }
+export function resolveHomeEncounter(c,current,otherScene,date){
+  if(!current?.home||!current.withId||current.groupInteraction||current.manualDirective||current.routineId||current.giftExchange||isHomeSleepScene(current))return current;
+  const home=state.homes[current.visitHomeId||c.homeId],other=state.characters[current.withId];
+  const targetHome=otherScene?.visitHomeId||other?.homeId;
+  const lang=state.uiLanguage||'ko',line=(ko,en,ja)=>({ko,en,ja}[lang]||ko);
+  const unavailable=!otherScene?.home||targetHome!==home?.id||!roomAllowsCharacter(c,home,home?.rooms?.[otherScene?.room])||isHomeSleepScene(otherScene);
+  if(unavailable)return {...current,title:line('혼자 잠시 쉬는 중','Taking a quiet break','ひとりで少し休憩中'),desc:line('지금은 상대를 방해하지 않고 자기 자리에서 쉬고 있어요.','They are resting in their own space without disturbing the other person.','今は相手を邪魔せず、自分の場所で休んでいます。'),withId:undefined,withIds:[],homeEncounter:null,encounterBlocked:true};
+  const pending=current.homeEncounter;
+  if(pending&&pending.room===otherScene.room){
+    if(date.getTime()<pending.arrivesAt)return current;
+    return {...current,room:pending.room,title:pending.title,desc:pending.desc,homeEncounter:{...pending,arrived:true}};
+  }
+  if(sameLiveLocation(current,otherScene))return current;
+  return {...current,minute:nowMin(date),title:line(`${other.name}에게 가는 중`,`Going to ${other.name}`,`${other.name}のところへ移動中`),desc:line('상대가 있는 방으로 이동하고 있어요. 도착한 뒤 이야기를 나눠요.','They are heading to the other room and will talk after arriving.','相手がいる部屋へ移動しています。到着してから話します。'),homeEncounter:{room:otherScene.room,arrivesAt:date.getTime()+60000,title:pending?.title||current.title,desc:pending?.desc||current.desc},holdMinutes:2};
+}
 function calculateEventFor(c,date){
-  const activeRoutine=activeScheduledRoutine(c,date),rawCurrent=baseEventFor(c,date);
+  const activeRoutine=activeScheduledRoutine(c,date);let rawCurrent=baseEventFor(c,date);
+  if(rawCurrent.home&&rawCurrent.withId&&!rawCurrent.groupInteraction&&!rawCurrent.manualDirective){
+    const other=state.characters[rawCurrent.withId];
+    const aligned=resolveHomeEncounter(c,rawCurrent,other?baseEventFor(other,date):null,date);
+    if(aligned!==rawCurrent){rawCurrent=commitLiveEntry(c,date,aligned)}
+    if(rawCurrent.encounterBlocked||rawCurrent.homeEncounter&&!rawCurrent.homeEncounter.arrived)return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
+  }
   if(rawCurrent.sceneUnavailable)return rawCurrent;
   if(rawCurrent.manualDirective)return localizeLifeLog(rawCurrent,state.uiLanguage,state,c.id);
   if(rawCurrent.giftExchange){

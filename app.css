@@ -7070,7 +7070,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   left:50%!important;width:clamp(70px,20.4vw,94px)!important;transform:translateX(-50%)!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left button>small{top:5.56dvh!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right button>small{top:27px!important;width:58px!important;height:21px!important;--label-cap:10px;font-size:9px!important}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right button>small{display:none!important;top:27px!important;width:58px!important;height:21px!important;--label-cap:10px;font-size:9px!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment{
   position:absolute!important;z-index:27!important;left:7.04vw!important;top:auto!important;bottom:15.38dvh!important;width:85.19vw!important;height:21.26dvh!important;max-height:none!important;max-width:none!important;
   box-sizing:border-box!important;margin:0!important;padding:2.45dvh 7.28vw 2.1dvh!important;overflow:visible!important;border:1.5px solid #000!important;border-radius:30px!important;
@@ -7193,9 +7193,9 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-character-command{right:1.72vw!important;bottom:1.75dvh!important;font-size:clamp(8px,.8vw,12px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side{top:auto!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:1fr!important;gap:.546875vw!important;width:18.75%!important;height:13.75dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left{left:62.96875%!important;right:auto!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{left:auto!important;right:12px!important;top:96px!important;gap:12px!important;bottom:auto!important;width:44px!important;height:auto!important;grid-template-columns:1fr!important;grid-template-rows:repeat(3,44px)!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left :is(button>span,.game-hud-menu-art){width:4.921875vw!important;height:7.875dvh!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left button>small{top:6.125dvh!important;width:5.546875vw!important;height:4dvh!important;font-size:clamp(7px,.68vw,10px)!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{left:auto!important;right:0!important;top:auto!important;bottom:0!important;gap:.546875vw!important;width:18.75%!important;height:13.75dvh!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:1fr!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side :is(button>span,.game-hud-menu-art){width:4.921875vw!important;height:7.875dvh!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side button>small{display:grid!important;top:6.125dvh!important;width:5.546875vw!important;height:4dvh!important;font-size:clamp(7px,.68vw,10px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock{left:3.984375%!important;top:auto!important;bottom:0!important;width:31.25%!important;height:15.5dvh!important;gap:.390625vw!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>span,
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-dock button>img{width:5.9375vw!important;height:9.5dvh!important}

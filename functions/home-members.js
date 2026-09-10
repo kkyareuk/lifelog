@@ -21,7 +21,7 @@ module.exports=({context,clock,id})=>async(uid,input)=>{
   if(!input.remove){
    const p=input.item||{},room=text(p.sleepRoomId||'__none__',180);if(room!=='__none__'&&!rooms[room])fail('room-missing');
    const days=p.visitDays||[];if(!Array.isArray(days)||days.some(d=>!Number.isInteger(d)||d<0||d>6))fail('invalid-visit-days');
-   const item={homeId:homeRef.id,role:text(p.role||'주거지',40),stayPattern:text(p.stayPattern||'상시 거주',40),sleepRoomId:room,notes:text(p.notes||'',200),visitDays:[...new Set(days)],isPrimary:!!p.isPrimary||!residences.length};
+   const item={homeId:homeRef.id,role:text(p.role||'주거지',40),stayPattern:text(p.stayPattern||'상시 거주',40),sleepRoomId:room,sleepElsewhere:p.sleepElsewhere===true,sleepElsewhereFrequency:["rare","sometimes","often"].includes(p.sleepElsewhereFrequency)?p.sleepElsewhereFrequency:"rare",notes:text(p.notes||'',200),visitDays:[...new Set(days)],isPrimary:!!p.isPrimary||!residences.length};
    if(!['상시 거주','평일 중심','주말 중심','요일 지정','필요할 때 방문'].includes(item.stayPattern))fail('invalid-stay-pattern');
    if(item.isPrimary)residences=residences.map(r=>({...r,isPrimary:false}));residences.push(item);
   }

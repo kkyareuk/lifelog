@@ -892,6 +892,8 @@ function normalizeHomes(x){
         notes:String(item.notes||"").slice(0,200),
         isPrimary:Boolean(item.isPrimary),
         sleepRoomId:item.sleepRoomId==="__none__"?"__none__":homeRooms[item.sleepRoomId]?String(item.sleepRoomId):(homeRooms.bedroom?"bedroom":Object.keys(homeRooms)[0]||""),
+        sleepElsewhere:item.sleepElsewhere===true,
+        sleepElsewhereFrequency:["rare","sometimes","often"].includes(item.sleepElsewhereFrequency)?item.sleepElsewhereFrequency:"rare",
         sourceRelationshipId:String(item.sourceRelationshipId||"")
       });
     });
@@ -1300,7 +1302,7 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
   // 위치·크기·이름·바닥·벽처럼 화면에만 영향을 주는 편집은 생활 사실을
   // 바꾸지 않는다. 방 용도나 가구처럼 실제 행동 후보가 달라지는 변경만
   // 다음 생활 장면에 반영한다.
-  const simulationKeys=new Set(["type","furniture","furniturePlacements"]);
+  const simulationKeys=new Set(["type","furniture","furniturePlacements","ownerMode","ownerCharacterIds","accessMode","accessGroups","accessCharacterIds"]);
   if(Object.keys(patch||{}).some(key=>simulationKeys.has(key)))touchCharacterTimelines(Object.values(state.characters).filter(c=>(c.residences||[]).some(item=>item.homeId===homeId)).map(c=>c.id));
   if(persist)save();
 }
