@@ -1,3 +1,4 @@
+import {CONCRETE_LIFE_TASKS} from './concrete-life.js?v=20260909dev305';
 import {relationshipReaction,relationshipBetween,relationshipMembers,viewSignals,automaticConflictAllowed} from './relationship-context.js?v=20260909dev305';
 import {overheardGossip} from './gossip-reaction.js?v=20260909dev305';
 import {routineScene} from './routine-scenes.js?v=20260909dev305';
@@ -2415,7 +2416,7 @@ function profileSettingScenePool(c,date){
   const language=state.uiLanguage||"ko";
   const text=(ko,en,ja)=>({ko,en,ja}[language]||ko);
   const pool=[],add=(category,titleKo,descKo,titleEn,descEn,titleJa,descJa,room="living",fields=[])=>pool.push({
-    category,room,fields,title:text(titleKo,titleEn,titleJa),desc:text(descKo,descEn,descJa)
+    category,room,fields,title:text(titleKo,titleEn,titleJa),desc:text(descKo,descEn,descJa),copy:{ko:{title:titleKo,desc:descKo},en:{title:titleEn,desc:descEn},ja:{title:titleJa,desc:descJa}}
   });
   if(c.speechStyle)add("speech",
     "말투를 고르며 짧게 대답하는 중",`“${characterPlanSpeech(c,"ko")}” 하고 혼잣말하며, 평소 쓰는 말투로 다음 행동을 정했어요.`,
@@ -2567,7 +2568,12 @@ function profileSettingScenePool(c,date){
     if(conflict&&relationshipConflict)add("relationship-conflict",...conflict,"living",["conflictStyle","interference"]);
     relationshipCombinationScenePool(c,relationship,date).forEach(scene=>pool.push({...scene,fields:["conflictStyle","affectionStyle","interference","socialStyle","decisionStyle","planningStyle","humorStyle","impulseControl"]}));
   }
+  const hobbies=settingList(c.hobbies).join(' ');
+  for(const task of CONCRETE_LIFE_TASKS)if(!task.hobbyPattern||new RegExp(task.hobbyPattern).test(hobbies))add('concrete:'+task.id,task.labels[0],task.details[0],task.labels[1],task.details[1],task.labels[2],task.details[2],task.room,['hobbies']);
   return pool;
+}
+export function personalSceneChoices(c,date=new Date()){
+ return profileSettingScenePool(c,date).filter(scene=>scene.copy&&scene.category!=='speech'&&!scene.category.startsWith('relationship')).map(scene=>({id:'ambient:'+scene.category,kind:'relax',room:scene.room,minutes:20,labels:['ko','en','ja'].map(lang=>scene.copy[lang].title),copy:scene.copy}));
 }
 function profileSettingEvents(c,times,date){
   const pool=profileSettingScenePool(c,date);
@@ -4965,4 +4971,4 @@ setDirectiveSceneResolver(eventFor,(character,source,date)=>{
  const previous=state.uiLanguage,copy={};
  try{for(const language of ["ko","en","ja"]){state.uiLanguage=language;const value=giftEntryFor(source,character,date);copy[language]={title:value?.title||"",desc:value?.desc||""}}}finally{state.uiLanguage=previous}
  return copy;
-});
+},personalSceneChoices);

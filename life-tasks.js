@@ -1,3 +1,4 @@
+import {CONCRETE_LIFE_TASKS} from './concrete-life.js?v=20260909dev305';
 export const LIFE_TASKS=[
   {
     "group": "hygiene",
@@ -684,12 +685,14 @@ export const LIFE_TASKS=[
     ]
   }
 ];
+LIFE_TASKS.push(...CONCRETE_LIFE_TASKS);
 export const lifeTask=id=>LIFE_TASKS.find(t=>t.id===id);
 
 export function lifeCopy(task,character={}){
  const endings=[['갈아입기','갈아입는 중'],['하기','하는 중'],['자기','자는 중'],['마시기','마시는 중'],['먹기','먹는 중'],['만들기','만드는 중'],['싸기','싸는 중'],['털기','살펴보는 중'],['개기','개는 중'],['버리기','버리는 중'],['채우기','채우는 중'],['보기','보는 중'],['쓰기','쓰는 중'],['감기','감는 중'],['말리기','말리는 중'],['씻기','씻는 중'],['듣기','듣는 중'],['거리기','거리는 중'],['가기','가는 중']];let title=task.labels[0];const ending=endings.find(([from])=>title.endsWith(from));title=ending?title.slice(0,-ending[0].length)+ending[1]:title+' 즐기는 중';
  const details={shower:'물 온도를 맞추고 샤워기로 몸을 씻고 있어요.',bath:'욕조에 몸을 담그고 느긋하게 씻고 있어요.',face:'세면대에서 얼굴을 씻고 물기를 닦고 있어요.',teeth:'칫솔에 치약을 묻혀 이를 꼼꼼하게 닦고 있어요.',hair_wash:'머리에 샴푸를 묻혀 씻어 내고 있어요.',hair_dry:'젖은 머리를 수건과 드라이어로 말리고 있어요.',hands:'비누로 손을 씻고 깨끗하게 헹구고 있어요.',shave:'거울을 보며 조심스럽게 면도하고 있어요.',nails:'손톱을 다듬고 손끝을 정돈하고 있어요.',toilet:'잠시 화장실을 사용하고 있어요.',dishes:'식기를 씻어 헹군 뒤 제자리에 놓고 있어요.',laundry:'빨랫감을 분류해 세탁하고 있어요.',fold:'마른 빨래를 하나씩 개어 정리하고 있어요.',bedding:'구겨진 이불과 베개를 가지런히 정리하고 있어요.',trash:'쓰레기를 분리해 버릴 준비를 하고 있어요.',plants:'흙의 상태를 살피고 식물에 물을 주고 있어요.',air:'창문을 열어 실내 공기를 바꾸고 있어요.',repair:'고장 난 부분을 살피고 필요한 도구로 손보고 있어요.',budget:'지출 내역을 확인하고 가계부를 정리하고 있어요.',mail:'도착한 택배와 우편을 살피고 있어요.',smoke:'잠시 자리를 옮겨 담배를 피우고 있어요.'};
  const copy={ko:[title,details[task.id]||(task.hobby?`${task.labels[0]} 취미에 몰두하며 자기 시간을 보내고 있어요.`:`${task.labels[0]}에 집중하며 시간을 보내고 있어요.`)],en:[task.labels[1],`Taking time to ${task.labels[1].toLowerCase()}.`],ja:[task.labels[2],`${task.labels[2]}時間を過ごしています。`]};
+ if(task.details)for(const [i,lang] of ['ko','en','ja'].entries())copy[lang]=[task.labels[i],task.details[i]];
  const types=Array.isArray(character.personalityTypes)?character.personalityTypes:[];
  const practical=task.group==='chores'||['simple_cook','full_cook','lunchbox','make_snack'].includes(task.id);
  let detail=null;

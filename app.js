@@ -1638,7 +1638,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     if(["character","mailbox"].includes(state.activeTab))ensureDailyQuestionSchedule();
     prepareActiveHomeLife();
     relationshipRailCleanup.splice(0).forEach(cleanup=>cleanup());
-    renderApp(state,sceneDate||new Date());
+    renderApp(state,sceneDate||new Date(),{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen});
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
     // enclosing form. Accidental form submissions were jumping mobile pages

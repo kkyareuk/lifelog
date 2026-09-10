@@ -6,8 +6,9 @@ import {workTasks} from './social-activities.js?v=20260909dev305';
 import {SOCIAL_ACTIVITIES,socialActivityCopy,socialPaymentCopy,ROMANTIC_ACTIVITIES,hasRomanticRelationship} from './social-activities.js?v=20260909dev305';
 import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev305';
 import {planMeetingJourney,meetingScene} from './meeting-journey.js?v=20260909dev305';
-let directiveSceneResolver=null,giftCopyResolver=null;
-export function setDirectiveSceneResolver(resolve,gift){directiveSceneResolver=resolve;giftCopyResolver=gift}
+let directiveSceneResolver=null,giftCopyResolver=null,personalSceneResolver=null;
+export function setDirectiveSceneResolver(resolve,gift,personal){directiveSceneResolver=resolve;giftCopyResolver=gift;personalSceneResolver=personal}
+export const personalSceneChoicesFor=(character,date=new Date())=>personalSceneResolver?.(character,date)||[];
 import {hospitalPurposes} from "./creative-options.js?v=20260909dev305";
 import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {stringifyLocalMediaState,preserveDevicePhotos} from "./local-media.js?v=20260909dev305";
@@ -1389,7 +1390,7 @@ for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile','affection
 for(const kind of Object.keys(SOCIAL_ACTIVITIES))DIRECTIVE_COPY[kind]={room:"living",minutes:20,social:true};
 function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   const copy=baseSocialDirectiveCopy(kind,actor,target,subject,topic,options);
-  if(!copy||!['talk','hangout','dine','tea','drinks','cook_together','debate','custom_social'].includes(kind))return copy;
+  if(!copy||(!SOCIAL_ACTIVITIES[kind]?.contextual&&!['talk','hangout','dine','tea','drinks','cook_together','debate','custom_social'].includes(kind)))return copy;
   const date=new Date(options.now??Date.now()),minute=date.getHours()*60+date.getMinutes();
   const key=`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
   const prior=(actor.days?.[key]?.entries||[]).filter(e=>e.minute<minute).at(-1);
@@ -1401,7 +1402,7 @@ function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
     const reaction=relationshipReaction(actor,target,view,relation,{seed:String(date.getTime()),language,previousKeys,moodScore,kind});
     const detail=String(topic||'').trim();
     const localizedTopic=detail==='오늘 하루'?['오늘 하루','their day','今日の出来事'][i]:detail;
-    const action=localizedTopic&&['talk','debate','custom_social'].includes(kind)?[`${localizedTopic}에 관한 이야기를 이어 가고 있어요.`,`They continue discussing ${localizedTopic}.`,`${localizedTopic}について話を続けています。`][i]:(actions[kind]||actions.talk)[i];
+    const action=localizedTopic&&['talk','debate','custom_social'].includes(kind)?[`${localizedTopic}에 관한 이야기를 이어 가고 있어요.`,`They continue discussing ${localizedTopic}.`,`${localizedTopic}について話を続けています。`][i]:SOCIAL_ACTIVITIES[kind]?.contextual?copy[language].desc:(actions[kind]||actions.talk)[i];
     const payment=socialPaymentCopy(kind,actor,options)[i];
     copy[language]={...copy[language],desc:[action,reaction.text,payment].filter(Boolean).join(' '),relationshipCue:reaction.key};
   }
@@ -1439,10 +1440,10 @@ export function contactAllowed(a,b,kind){
 export function directCharacterActivity(characterId,kind="wake",options={}){
   const character=state.characters?.[characterId];let definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
   if(!character)return false;
-  let task=options.lifeTask==='hobby_auto'?hobbyChoice(state,character,characterId+':'+(options.now||Date.now())):lifeTask(options.lifeTask);
+  let task=String(options.lifeTask||'').startsWith('ambient:')?personalSceneChoicesFor(character,new Date(options.now??Date.now())).find(t=>t.id===options.lifeTask):options.lifeTask==='hobby_auto'?hobbyChoice(state,character,characterId+':'+(options.now||Date.now())):lifeTask(options.lifeTask);
   if(options.lifeTask==='smoke'){if(!['성인','노인'].includes(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
   if(options.lifeTask&&!task)return false;
-  if(task){if(task.id==='alcohol'&&!['성인','노인'].includes(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...lifeCopy(task,character)}}
+  if(task){if(task.id==='alcohol'&&!['성인','노인'].includes(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
   if(['talk','gossip','debate','custom_social'].includes(kind)&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;

@@ -7047,10 +7047,10 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side .game-hud-menu-art{
   position:absolute!important;top:0!important;left:50%!important;display:grid!important;place-items:center!important;
   max-width:none!important;overflow:visible!important;transform:translateX(-50%)!important;border:0!important;background:transparent!important;box-shadow:none!important;
-  color:#fff!important;font-size:clamp(31px,10.4vw,45px)!important;line-height:1!important;object-fit:contain!important;filter:var(--hud-menu-filter,drop-shadow(0 3px 3px #0009))!important
+  color:#fff!important;font-size:clamp(31px,10.4vw,45px)!important;line-height:1!important;object-fit:contain!important;filter:drop-shadow(0 3px 3px #0009)!important
 }
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left :is(button>span,.game-hud-menu-art){width:15.29vw!important;height:6.87dvh!important}
-html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right :is(button>span,.game-hud-menu-art){width:34px!important;height:34px!important;--hud-menu-filter:drop-shadow(1px 0 0 white) drop-shadow(-1px 0 0 white) drop-shadow(0 1px 0 white) drop-shadow(0 -1px 0 white)}
+html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right :is(button>span,.game-hud-menu-art){width:34px!important;height:34px!important}
 html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] :is(.game-hud-side,.game-hud-dock) button>small{
   --label-cap:calc(var(--hud-label-h) * .484);position:absolute!important;z-index:3!important;display:grid!important;grid-template-columns:var(--label-cap) minmax(0,1fr) var(--label-cap)!important;align-items:stretch!important;box-sizing:border-box!important;height:var(--hud-label-h)!important;margin:0!important;padding:0!important;
   overflow:visible!important;border:0!important;background:transparent!important;color:#FFF5DD!important;-webkit-text-fill-color:#FFF5DD!important;

@@ -1,3 +1,4 @@
+import {SOCIAL_ACTIVITIES} from './social-activities.js?v=20260909dev305';
 globalThis.localStorage??={getItem:()=>null,setItem(){},removeItem(){}};
 globalThis.document??={querySelector:()=>null,addEventListener(){},activeElement:null};
 globalThis.window??={addEventListener(){},dispatchEvent(){}};
@@ -27,3 +28,5 @@ export function advanceSharedLife(snapshot,now,command=null){
     });
   }));
 }
+
+advanceSharedLife.socialKinds=Object.keys(SOCIAL_ACTIVITIES);
