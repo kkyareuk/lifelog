@@ -1,0 +1,9 @@
+<ko-KR>
+후원자 세 분을 크레딧에 추가하고 매주 일요일 확인 후 반영 안내를 넣었어요. 공유마을 입주 시 옷장·코디 정보가 유지되도록 수정하고, 선물 가능한 물품과 우편 대상 안내를 추가했어요. 관심사·취미·기술·음료 취향 질문과 자발적 행동을 제한하는 개입하기를 추가했어요. 질문 아이콘 위치·대기 표시, 설정 잠금 위치와 항목 겹침도 개선했어요.
+</ko-KR>
+<en-US>
+Added three supporters to credits and a Sunday review notice. Fixed wardrobe and outfit transfer to shared towns, and clarified gift eligibility and mail recipients. Added questions for interests, hobbies, skills and drink preferences, plus controls for autonomous activities. Improved the question icon, cooldown display, lock menu and overlapping settings.
+</en-US>
+<ja-JP>
+応援者3名をクレジットに追加し、毎週日曜日の確認・反映を案内しました。共有の村への服・コーデの引き継ぎを修正し、贈れる品物と手紙の宛先を説明しました。興味・趣味・技能・飲み物の好みを決める質問と、自発的な活動を制限する介入を追加しました。質問アイコン、待機表示、固定メニューと設定項目の重なりも改善しました。
+</ja-JP>
