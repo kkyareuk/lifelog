@@ -1,0 +1,21 @@
+<ko-KR>
+후원자 이름을 앱에서 신청하고 접수 상태를 확인할 수 있어요.
+크레딧 화면을 나무 배경과 미색 상자로 꾸몄어요.
+설정에 내 이미지 전체 삭제를 추가했어요.
+우측 메뉴에 흰 외곽선을 넣고 위치와 간격을 조정했어요.
+저장 실패 안내와 우편 읽음 처리를 보강했어요.
+</ko-KR>
+<en-US>
+Submit supporter names in the app and check their status.
+Credits now have a wooden background and cream panels.
+Added Delete all my images in Settings.
+Improved right-side icons, spacing and placement.
+Improved save-failure messages and mail read tracking.
+</en-US>
+<ja-JP>
+アプリから応援者の名前を申請し、受付状況を確認できるようになりました。
+クレジットを木目背景とクリーム色のパネルに変更しました。
+設定に自分の画像をすべて削除する機能を追加しました。
+右側アイコンに白い縁取りを追加し、位置と間隔を調整しました。
+保存失敗の案内とメールの既読処理を改善しました。
+</ja-JP>

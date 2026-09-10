@@ -3,7 +3,7 @@ const key='drawer-mail-read-v1';
 let raw,scope,marks={};
 function load(){
  let next;try{next=accountStorage.getItem(key)||'{}'}catch{next=scope===accountStorage.scope?raw||'{}':'{}'};
- if(raw!==next||scope!==accountStorage.scope){raw=next;scope=accountStorage.scope;try{marks=JSON.parse(next)}catch{marks={}}}
+ if(raw!==next||scope!==accountStorage.scope){raw=next;scope=accountStorage.scope;try{marks=JSON.parse(next);if(!marks||typeof marks!=='object'||Array.isArray(marks))marks={}}catch{marks={}}}
  return marks;
 }
 const identity=p=>JSON.stringify([p.groupId||'',p.id,!!p.asResponse]);

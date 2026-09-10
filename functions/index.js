@@ -312,6 +312,7 @@ appleApp.use(express.json({limit:"32kb"}));
 appleApp.use((req,res,next)=>{res.set("Access-Control-Allow-Origin",req.get("Origin")||"*");res.set("Vary","Origin");res.set("Access-Control-Allow-Headers","Authorization, Content-Type");res.set("Access-Control-Allow-Methods","POST, OPTIONS");if(req.method==="OPTIONS")return res.status(204).end();next()});
 require('./apple-billing').installAppleBilling(appleApp,{db,signedInUser,nextEntitlements,serverTimestamp:()=>FieldValue.serverTimestamp(),privateKey:()=>APPLE_IAP_PRIVATE_KEY.value()});
 
+app.use('/supporter',require('./supporter-requests')({db,signedInUser}));
 exports.api=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[TOSS_SECRET_KEY]},app);
 
 exports.appleBillingApi=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB",secrets:[APPLE_IAP_PRIVATE_KEY]},appleApp);
@@ -353,6 +354,8 @@ for(const action of ['preview','delete'])accountApp.post('/'+action,async(req,re
  try{const token=String(req.get('Authorization')||'').replace(/^Bearer /,'');const identity=await getAuth().verifyIdToken(token,true);res.json(action==='preview'?await deletionService.preview(identity.uid):await deletionService.remove(identity,req.body||{}))}
  catch(error){res.status(error.status||401).json({code:error.status?error.message:'account-deletion-failed'})}
 });
+const imageDeletionService=require('./image-deletion').createImageDeletion({db,bucket:require('firebase-admin/storage').getStorage().bucket('lifelog-98fff.firebasestorage.app')});
+for(const action of ['preview','delete'])accountApp.post('/images/'+action,async(req,res)=>{try{const identity=await signedInUser(req);res.json(action==='preview'?await imageDeletionService.preview(identity.uid):await imageDeletionService.remove(identity,req.body||{}))}catch(error){res.status(error.status||500).json({code:error.status?error.message:'image-deletion-failed'})}});
 exports.accountDeletionApi=onRequest({region:'asia-northeast3',timeoutSeconds:540,memory:'512MiB',maxInstances:2,concurrency:1},accountApp);
 
 exports.diamondWalletApi=onRequest({region:"asia-northeast3",timeoutSeconds:30,memory:"256MiB"},require("./diamond-api")({db,signedInUser}));

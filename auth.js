@@ -1,3 +1,4 @@
+import {clearAccountImages} from './image-cleanup.js?v=20260909dev305';
 import {initializeLocalMediaState} from './local-media.js?v=20260909dev305';
 import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev305';
 import {chooseProposalMode} from './proposal-mode.js?v=20260909dev305';
@@ -222,6 +223,15 @@ function shortError(error){
   if(code.includes("network"))return "인터넷 연결 확인";
   return code;
 }
+let mediaEpoch='';
+const withMediaEpoch=(reference,data)=>(String(reference.path||reference)==='users/'+user?.uid||String(reference.path||reference).startsWith('users/'+user?.uid+'/'))?{...data,_mediaEpoch:mediaEpoch}:data;
+const setUserDoc=(reference,data,options)=>setDoc(reference,withMediaEpoch(reference,data),options);
+async function refreshMediaEpoch(){
+ const session=captureSession(),snap=await getDoc(doc(db,'imageDeletionState',session.uid));assertSession(session);
+ const value=snap.data();mediaEpoch=value?.epoch||'';
+ if(value?.status==='deleting')throw Object.assign(Error('image-deletion-in-progress'),{code:'images/deleting'});
+ if(mediaEpoch&&localStorage.getItem('drawer-images-cleared-epoch')!==mediaEpoch){await clearAccountImages(mediaEpoch);assertSession(session);uploadedCache.clear();localStorage.removeItem(syncRevisionKey(session.uid))}
+}
 const cloudDoc=(uid=user?.uid)=>doc(db,"users",uid);
 const cloudCoreDoc=(uid=user?.uid)=>doc(db,"users",uid,"sync","core");
 const cloudCharacters=(uid=user?.uid)=>collection(db,"users",uid,"characters");
@@ -329,7 +339,7 @@ async function writeCloudGameState(gameState,session,previousManifest){
     const days=character.days&&typeof character.days==="object"?character.days:{};
     delete character.days;
     const manifestKey=safeDocumentId(characterId),record=manifest.characters[manifestKey],oldRecord=canUseManifest?previousManifest.characters?.[manifestKey]:null;
-    if(!oldRecord||oldRecord.hash!==record.hash)await setDoc(cloudCharacterDoc(characterId,uid),{
+    if(!oldRecord||oldRecord.hash!==record.hash)await setUserDoc(cloudCharacterDoc(characterId,uid),{
         characterId:String(characterId),
         character:encodeFirestoreState(character),
         updatedAt:serverTimestamp()
@@ -344,13 +354,13 @@ async function writeCloudGameState(gameState,session,previousManifest){
     await Promise.all(Object.entries(days).filter(([dateKey])=>{
       const key=safeDocumentId(dateKey);
       return !oldRecord?.days?.[key]||oldRecord.days[key].hash!==record.days[key].hash;
-    }).map(([dateKey,day])=>setDoc(cloudDayDoc(characterId,dateKey,uid),{
+    }).map(([dateKey,day])=>setUserDoc(cloudDayDoc(characterId,dateKey,uid),{
         dateKey:String(dateKey),day:encodeFirestoreState(day),updatedAt:serverTimestamp()
       })));
   }
   // 루트의 syncRevision이 최종 완료 표식이다. core도 달라졌을 때만 쓴다.
   assertSession(session);
-  if(!canUseManifest||previousManifest.coreHash!==manifest.coreHash)await setDoc(cloudCoreDoc(uid),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
+  if(!canUseManifest||previousManifest.coreHash!==manifest.coreHash)await setUserDoc(cloudCoreDoc(uid),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
   return manifest;
 }
 
@@ -388,7 +398,7 @@ async function writeLegacyCloudGameState(gameState,mediaManifest,session){
   const encodedText=JSON.stringify(encoded);
   const byteLength=new TextEncoder().encode(encodedText).byteLength;
   if(byteLength<=700000){
-    await setDoc(reference,{
+    await setUserDoc(reference,{
       gameState:encoded,
       gameStateGzip:deleteField(),
       gameStateCompression:deleteField(),
@@ -404,7 +414,7 @@ async function writeLegacyCloudGameState(gameState,mediaManifest,session){
   const compressed=await encodeCompressedLegacyState(gameState);
   if(!compressed||new TextEncoder().encode(compressed).byteLength>780000)throw Object.assign(new Error("legacy-document-too-large"),{code:"sync/legacy-document-too-large"});
   assertSession(session);
-  await setDoc(reference,{
+  await setUserDoc(reference,{
     gameState:deleteField(),
     gameStateGzip:compressed,
     gameStateCompression:"gzip-base64-v1",
@@ -443,7 +453,7 @@ async function registerSignedInUser(){
     accountSchemaVersion:2
   };
   if(!snapshot.exists())presence.createdAt=serverTimestamp();
-  await setDoc(reference,presence,{merge:true});
+  await setUserDoc(reference,presence,{merge:true});
   assertSession(session);stampSession(guardKey);return snapshot;
 }
 const normalizeEntitlements=value=>{
@@ -485,12 +495,12 @@ async function markGuideSeen(tab){
   if(!tab)return;
   publishGuideState([...guideState.seen,tab]);
   localStorage.setItem(`drawer-village-guide-${tab}`,"1");
-  if(user)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:guideState.seen}},{merge:true});
+  if(user)await setUserDoc(cloudDoc(),{uiPreferences:{pageGuides:guideState.seen}},{merge:true});
 }
 async function resetGuides(){
   publishGuideState([]);
   localGuideKeys().forEach(tab=>localStorage.removeItem(`drawer-village-guide-${tab}`));
-  if(user)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:[]}},{merge:true});
+  if(user)await setUserDoc(cloudDoc(),{uiPreferences:{pageGuides:[]}},{merge:true});
 }
 
 const canvasBlob=(canvas,type,quality)=>new Promise(resolve=>canvas.toBlob(resolve,type,quality));
@@ -543,7 +553,7 @@ async function uploadDataUrl(dataUrl,manifest,session){
   assertSession(session);
   const target=ref(storage,`users/${session.uid}/media/${hash}.${ext}`);
   await Promise.race([
-    uploadBytes(target,blob,{contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000,immutable"}),
+    uploadBytes(target,blob,{customMetadata:{imageEpoch:mediaEpoch},contentType:blob.type||"image/webp",cacheControl:"public,max-age=31536000,immutable"}),
     new Promise((_,reject)=>setTimeout(()=>reject(Object.assign(new Error("storage-timeout"),{code:"storage/timeout"})),30000))
   ]);
   const url=await Promise.race([
@@ -662,6 +672,7 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
   busy=true;let finishSync;activeSyncDone=new Promise(resolve=>{finishSync=resolve});
   try{
     status(`${accountName()} · 올리는 중`);
+    await refreshMediaEpoch();assertSession(session);
     const localState=window.ParallelCity.getState();
     const allowedCharacters=5+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5)+Math.max(0,Number(entitlements.characterSingleSlots)||0);
     const localCharacterCount=Array.isArray(localState?.order)
@@ -699,7 +710,7 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
       const syncManifest=await writeCloudGameState(gameState,session,previous?.syncManifest);
       assertSession(session);
       const syncRevision=`${Date.now()}-${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;
-      await setDoc(cloudDoc(session.uid),{gameState:deleteField(),syncFormat:2,syncManifest,syncRevision,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
+      await setUserDoc(cloudDoc(session.uid),{gameState:deleteField(),syncFormat:2,syncManifest,syncRevision,mediaManifest,updatedAt:serverTimestamp(),profile:{name:accountName(),email:user.email||""}},{merge:true});
       localStorage.setItem(syncRevisionKey(session.uid),syncRevision);
     }catch(error){
       if(!canUseLegacySync(error))throw error;
@@ -733,6 +744,7 @@ async function download({automatic=false,accountTransition=false,detailed=false,
   busy=true;let finishSync;activeSyncDone=new Promise(resolve=>{finishSync=resolve});
   try{
     status(`${accountName()} · 불러오는 중`);
+    await refreshMediaEpoch();assertSession(session);
     // 사용자가 누른 '불러오기'는 브라우저의 Firestore 로컬 캐시가 아니라
     // 앱이 방금 올린 서버 저장본을 직접 읽는다. 자동 불러오기는 오프라인
     // 복구를 위해 기존 Firestore 동작을 유지한다.
@@ -742,7 +754,7 @@ async function download({automatic=false,accountTransition=false,detailed=false,
     const remoteGuides=Array.isArray(documentData?.uiPreferences?.pageGuides)?documentData.uiPreferences.pageGuides:[];
     const mergedGuides=[...new Set([...remoteGuides,...localGuideKeys()])];
     publishGuideState(mergedGuides);
-    if(user&&mergedGuides.length!==remoteGuides.length)await setDoc(cloudDoc(),{uiPreferences:{pageGuides:mergedGuides}},{merge:true});
+    if(user&&mergedGuides.length!==remoteGuides.length)await setUserDoc(cloudDoc(),{uiPreferences:{pageGuides:mergedGuides}},{merge:true});
     const knownRevision=localStorage.getItem(syncRevisionKey(session.uid));
     if(automatic&&documentData?.syncRevision&&knownRevision===String(documentData.syncRevision)&&validSyncManifest(documentData.syncManifest)&&localStorage.getItem("drawer-village-game-v1")&&(window.ParallelCity.getCharacterCount?.()??characterCount(window.ParallelCity.getState()))>0){
       publishStorageUsage(documentData.mediaManifest,null);publishEntitlements(documentData.entitlements);status(`${accountName()} · 동기화 확인 완료`);return detailed?"kept-local":false;
@@ -761,6 +773,7 @@ async function download({automatic=false,accountTransition=false,detailed=false,
       toast(localCount>0?"클라우드에 캐릭터가 없어 기기 데이터를 보호했습니다":"클라우드에 불러올 캐릭터 데이터가 없습니다");
       return detailed?"empty":false;
     }
+    await refreshMediaEpoch();assertSession(session);
     const localState=window.ParallelCity.getState();
     const characterIds=value=>new Set(Array.isArray(value?.order)?value.order:Object.keys(value?.characters||{}));
     const localIds=characterIds(localState),remoteIds=characterIds(remote);
@@ -795,7 +808,7 @@ async function submitFeedback({category,message,allowReply=false}={}){
   const cleanMessage=String(message||"").trim();
   if(!cleanMessage)throw Object.assign(new Error("피드백 내용을 입력해 주세요."),{code:"feedback/empty"});
   const feedbackId=`${user.uid}_${Date.now()}_${crypto.randomUUID?.()||Math.random().toString(36).slice(2)}`;
-  await setDoc(doc(db,"feedback",feedbackId),{
+  await setUserDoc(doc(db,"feedback",feedbackId),{
     uid:user.uid,
     category:String(category||"기타").slice(0,40),
     message:cleanMessage.slice(0,3000),
@@ -915,7 +928,7 @@ async function migrateLegacyGroup(group){
   migratingLegacyGroups.add(group.id);
   try{
     const existing=group.towns?.[0]||{},town={...independentTownPayload(group.id),id:existing.id||`multi-town-${group.id}`};
-    await setDoc(doc(db,"groups",group.id),{hostTownId:"",hostTownName:town.name,towns:[town],schemaVersion:3,updatedAt:serverTimestamp()},{merge:true});
+    await setUserDoc(doc(db,"groups",group.id),{hostTownId:"",hostTownName:town.name,towns:[town],schemaVersion:3,updatedAt:serverTimestamp()},{merge:true});
   }catch(error){console.warn("legacy multiplayer town migration failed",error)}
   finally{migratingLegacyGroups.delete(group.id)}
 }
@@ -1064,7 +1077,7 @@ async function updateGroupRules(patch={}){
     allowGifts:patch.allowGifts!==false,
     allowHomeVisits:patch.allowHomeVisits!==false
   };
-  await setDoc(doc(db,"groups",groupState.activeGroupId),{rules,updatedAt:serverTimestamp()},{merge:true});
+  await setUserDoc(doc(db,"groups",groupState.activeGroupId),{rules,updatedAt:serverTimestamp()},{merge:true});
 }
 
 async function linkGroupTown(townId){
@@ -1073,7 +1086,7 @@ async function linkGroupTown(townId){
 }
 
 async function mergeUploadedMedia(reference,manifest,session){
-  await runTransaction(db,async tx=>{const current=await tx.get(reference);assertSession(session);const latest=normalizeManifest(current.data()?.mediaManifest,null),items=[...new Map([...latest.items,...manifest.items].map(x=>[x.hash,x])).values()];if(items.length+latest.legacyCount>maxPhotos()||items.reduce((sum,item)=>sum+(Number(item.size)||0),0)>maxTotalBytes())throw Object.assign(new Error("storage-limit"),{code:"storage/total-size-limit"});tx.set(reference,{mediaManifest:{...latest,items}},{merge:true})});
+  await runTransaction(db,async tx=>{const current=await tx.get(reference);assertSession(session);const latest=normalizeManifest(current.data()?.mediaManifest,null),items=[...new Map([...latest.items,...manifest.items].map(x=>[x.hash,x])).values()];if(items.length+latest.legacyCount>maxPhotos()||items.reduce((sum,item)=>sum+(Number(item.size)||0),0)>maxTotalBytes())throw Object.assign(new Error("storage-limit"),{code:"storage/total-size-limit"});tx.set(reference,withMediaEpoch(reference,{mediaManifest:{...latest,items}}),{merge:true})});
 }
 async function publishCharacterCode(characterId){
   requireGroupUser();await activeSyncDone;const session=captureSession();
@@ -1153,7 +1166,7 @@ async function publishGroupHome(homeId,townId=""){
   const sharedHomeId=`${account.uid}_${String(homeId).replace(/[^A-Za-z0-9_-]/g,"_")}`;
   const residents=Object.values(local.characters||{}).filter(character=>character?.homeId===homeId).map(character=>String(character.name||"").slice(0,40)).filter(Boolean).slice(0,30);
   const rooms=Object.values(home.rooms||{}).map(room=>String(room?.name||"").slice(0,30)).filter(Boolean).slice(0,30);
-  await setDoc(doc(db,"groups",groupState.activeGroupId,"homes",sharedHomeId),{
+  await setUserDoc(doc(db,"groups",groupState.activeGroupId,"homes",sharedHomeId),{
     ownerUid:account.uid,ownerName:accountName(),sourceHomeId:homeId,name:String(home.name||"이름 없는 집").slice(0,40),
     kind:String(home.kind||"일반 주거").slice(0,30),townId:townId||groupState.selectedTownId||groupState.group.towns?.[0]?.id||"",
     layoutJson:JSON.stringify(sharedProfile(home)),exteriorImage:publicImage(home.exteriorImage||home.image),residentNames:residents,roomNames:rooms,
@@ -1175,7 +1188,7 @@ async function updateGroupMemberRole(uid,role){
   const nextRole=["manager","operator"].includes(role)?"manager":"member";
   // 권한의 단일 기준은 그룹의 member 문서다. 다른 사용자의 개인 색인을
   // 관리자가 수정하게 만들면 계정 경계가 흐려지므로 목록 색인은 건드리지 않는다.
-  await setDoc(doc(db,"groups",groupState.activeGroupId,"members",uid),{role:nextRole,updatedAt:serverTimestamp()},{merge:true});
+  await setUserDoc(doc(db,"groups",groupState.activeGroupId,"members",uid),{role:nextRole,updatedAt:serverTimestamp()},{merge:true});
 }
 
 async function removeGroupMember(uid){return sharedTownRequest('removeMember',{uid})}
@@ -1219,12 +1232,13 @@ if(ready){
           window.ParallelCity.replaceState(guestHandoff);
           adoptedGuest=true;
         }
-        uploadedCache.clear();
+        uploadedCache.clear();mediaEpoch="";
         publishEntitlements(null);
         storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
         publishGuideState(localGuideKeys());
         status(user?`Google 계정 연결됨 · ${user.email||accountName()}`:"Google 로그인 안 됨");
         if(user){
+          await refreshMediaEpoch();if(epoch!==accountEpoch)return;
           let initialSnapshot=null;
           try{initialSnapshot=await registerSignedInUser()}catch(error){if(epoch!==accountEpoch)return;console.warn(error)}
           if(epoch!==accountEpoch)return;
@@ -1244,8 +1258,8 @@ if(ready){
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
 async function savePublicProfile({name,photo}){
  if(!user)throw Error('Google 로그인이 필요해요.');const session=captureSession();name=String(name||'').trim();if(!name||name.length>20)throw Error('이름을 1~20자로 입력해 주세요.');
- let photoURL=accountPhoto();if(photo){if(!photo.type.startsWith('image/')||photo.size>10*1024*1024)throw Error('10MB 이하 이미지를 선택해 주세요.');const blob=await optimizeCloudImage(photo);assertSession(session);const target=ref(storage,'users/'+session.uid+'/profile/avatar');await uploadBytes(target,blob,{contentType:blob.type,cacheControl:'public,max-age=60'});photoURL=await getDownloadURL(target);assertSession(session)}
- await updateProfile(user,{displayName:name,photoURL});assertSession(session);await setDoc(cloudDoc(session.uid),{profile:{name,photoURL,configured:true}},{merge:true});
+ let photoURL=accountPhoto();if(photo){if(!photo.type.startsWith('image/')||photo.size>10*1024*1024)throw Error('10MB 이하 이미지를 선택해 주세요.');const blob=await optimizeCloudImage(photo);assertSession(session);const target=ref(storage,'users/'+session.uid+'/profile/avatar');await uploadBytes(target,blob,{customMetadata:{imageEpoch:mediaEpoch},contentType:blob.type,cacheControl:'public,max-age=60'});photoURL=await getDownloadURL(target);assertSession(session)}
+ await updateProfile(user,{displayName:name,photoURL});assertSession(session);await setUserDoc(cloudDoc(session.uid),{profile:{name,photoURL,configured:true}},{merge:true});
  for(const group of groupState.groups||[]){const member=doc(db,'groups',group.id,'members',session.uid),existing=await getDoc(member);assertSession(session);if(existing.exists())await updateDoc(member,{displayName:name,photoURL});assertSession(session)}
  profileSetupComplete=true;return {name,photoURL};
 }
@@ -1297,6 +1311,18 @@ async function deleteOwnAccount(){
  }finally{deletingAccount=false;switchingAccount=false;window.dispatchEvent(new Event('drawer-village-auth-busy'));}
 }
 
+window.DrawerVillageAccountImages={
+ async request(action,body={}){
+  if(!['preview','delete'].includes(action)||!user||busy||switchingAccount)throw Error('account-not-ready');
+  const session=captureSession();busy=true;let finish;activeSyncDone=new Promise(resolve=>{finish=resolve});window.dispatchEvent(new Event('drawer-village-auth-busy'));
+  try{const token=await user.getIdToken(true);assertSession(session);
+   const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/accountDeletionApi/images/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});
+   const result=await response.json();assertSession(session);if(!response.ok)throw Error(result.code||'image-deletion-failed');
+   if(action==='delete'&&result.deleted){mediaEpoch=result.epoch;await clearAccountImages(result.epoch);assertSession(session);uploadedCache.clear();storageUsage={...storageUsage,count:0,bytes:0};localStorage.removeItem(syncRevisionKey(session.uid));}
+   return result;
+  }finally{busy=false;finish();window.dispatchEvent(new Event('drawer-village-auth-busy'))}
+ }
+};
 window.ParallelCityAuth={
   deleteOwnAccount,
   login,upload,download,submitFeedback,savePublicProfile,markGuideSeen,resetGuides,

@@ -7,6 +7,7 @@ service firebase.storage {
       allow delete: if activeAccount() && request.auth.uid == userId;
       allow create, update: if activeAccount()
         && request.auth.uid == userId
+        && (!firestore.exists(/databases/(default)/documents/imageDeletionState/$(userId)) || (firestore.get(/databases/(default)/documents/imageDeletionState/$(userId)).data.status == 'complete' && request.resource.metadata.imageEpoch == firestore.get(/databases/(default)/documents/imageDeletionState/$(userId)).data.epoch))
         && request.resource.size <= 1572864
         && request.resource.contentType.matches('image/.*');
     }

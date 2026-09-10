@@ -1,3 +1,4 @@
+import {installImageDeletion} from './image-cleanup.js?v=20260909dev305';
 import {saleAllows,saleChangedMessage} from "./slot-sale.js?v=20260909dev305";
 // Keep native purchase state through shop rerenders and late price responses.
 function syncApplePurchaseButtons(){
@@ -774,7 +775,7 @@ async function exportProfilePdfV2(character,bodyFont){
     win.document.open();win.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${character.name}의 프로필</title><style>@page{size:A4;margin:0}*{box-sizing:border-box}html,body{margin:0;background:#eee}main{width:210mm;margin:0 auto;background:#fff}img{display:block;width:100%;height:auto}button{position:fixed;right:20px;bottom:20px;padding:12px 18px;border:0;border-radius:12px;color:#fff;background:#333}@media print{html,body,main{width:100%;background:#fff}button{display:none}}</style></head><body><main><img src="${image}" alt="${character.name}의 프로필"></main><button onclick="print()">PDF로 저장 / 인쇄</button></body></html>`);win.document.close();setTimeout(()=>win.print(),500);
   }catch(error){win.close();showToast("PDF를 만들지 못했어요. 프로필 사진의 주소를 확인해 주세요.")}
 }
-installSupporterCredits();installUserSafety();
+installSupporterCredits();installUserSafety();installImageDeletion();
 installSettingsTransfer({translate:translateText,toast:showToast,render:()=>render(),limit:characterLimit,townLimit});
 function openProfileExportDialog(){
   const character=active();if(!character)return;const dialog=document.createElement("dialog");dialog.className="profile-export-dialog";
@@ -2204,7 +2205,7 @@ async function explicitSave(label="저장 완료",{alreadySaved=false,renderAfte
     showToast(copy.characterSaving);
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
   }
-  if(!alreadySaved)save(true);
+  if(save(true)===false){showToast(({ko:"저장하지 못했어요. 기기 저장 공간을 확인하고 다시 저장해 주세요.",en:"Could not save. Check device storage and try again.",ja:"保存できませんでした。端末の空き容量を確認し、もう一度保存してください。"})[state.uiLanguage]||"저장하지 못했어요.");return false}
   if(characterSave)queueCharacterNotificationSchedule();
   if(renderAfter)render();
   const auth=window.ParallelCityAuth,info=auth?.getInfo?.();
@@ -3064,7 +3065,7 @@ function bind(){
       syncOpenCharacterEditorDraft();
       flushMobileCharacterDraft({closeEditor:true});
       mobileCharacterDialog?.close(shouldSync?"save":"close");
-      if(shouldSync){await explicitSave("캐릭터 저장",{alreadySaved:true,renderAfter:false});advanceFirstSetupAfterCharacter()}
+      if(shouldSync){if(await explicitSave("캐릭터 저장",{alreadySaved:true,renderAfter:false}))advanceFirstSetupAfterCharacter()}
     };
   });
   const mobileReorderDialog=$("[data-mobile-character-reorder-dialog]");
@@ -5638,9 +5639,9 @@ window.ParallelCity={
     setNavigationTabIntent("observe");render();
     Promise.resolve(localMediaHydration).finally(()=>refreshLocalMedia({force:true}));
   },
-  replaceState:x=>{
+  replaceState:(x,options)=>{
     const view={activeTab:state.activeTab,characterPane:state.characterPane,activeId:state.activeId,activeHomeId:state.activeHomeId};
-    replaceState(x);
+    replaceState(x,options);
     setNavigationTabIntent(view.activeTab);
     state.characterPane=view.characterPane;
     if(state.characters[view.activeId])state.activeId=view.activeId;

@@ -229,3 +229,13 @@ globalThis.DrawerVillageLocalMedia={
   persistLocalImage,initializeLocalMediaState,serializeLocalMediaState,stringifyLocalMediaState,
   informationOnlyState,preserveDevicePhotos,localMediaUsage,isPendingLocalImage
 };
+
+// Delete only blobs referenced by this account, preserving identical images used by another account.
+export async function purgeLocalImageRefs(removed,preserved=[]){
+ const refs=new Set(),keep=new Set();
+ const collect=async(value,target)=>{if(typeof value==='string'){if(isLocalRef(value))target.add(value.slice(REF_PREFIX.length));else if(isData(value))target.add(await digest(await dataUrlToBlob(value)));else if(value.startsWith('{')){try{await collect(JSON.parse(value),target)}catch{}}}else if(value&&typeof value==='object')for(const child of Object.values(value))await collect(child,target)};
+ await collect(removed,refs);await collect(preserved,keep);
+ if(refs.size)await withTimeout(transaction('readwrite',store=>{for(const id of refs)if(!keep.has(id))store.delete(id)}),'image-delete');
+ for(const ref of refToData.keys())if(refs.has(ref.slice(REF_PREFIX.length))&&!keep.has(ref.slice(REF_PREFIX.length)))refToData.delete(ref);
+ for(const [data,ref] of dataToRef)if(refs.has(ref.slice(REF_PREFIX.length))&&!keep.has(ref.slice(REF_PREFIX.length))){dataToRef.delete(data);refToData.delete(ref)}
+}

@@ -2262,10 +2262,10 @@ export function reorderTownDecoration(id,direction){
   const [item]=items.splice(index,1);items.splice(next,0,item);items.forEach((entry,i)=>entry.mapZ=20+i);save(true);return true;
 }
 export function deleteTownDecoration(id){state.world.decorations=(state.world.decorations||[]).filter(item=>item.id!==id);touchCharacterTimelines(Object.values(state.characters).filter(c=>c.townId===state.activeTownId).map(c=>c.id));save(true)}
-export function replaceState(next){
+export function replaceState(next,{preserveImages=true}={}){
   endCharacterEditor();
-  preserveLastNonempty(state,"",true);
-  const prepared=migrate(preserveDevicePhotos(state,clone(next)));
+  if(preserveImages)preserveLastNonempty(state,"",true);
+  const prepared=migrate(preserveImages?preserveDevicePhotos(state,clone(next)):clone(next));
   const serialized=stringifyLocalMediaState(prepared);
   try{
     // 영구 저장이 성공한 뒤에만 실행 중 상태를 교체한다. 예전 순서는

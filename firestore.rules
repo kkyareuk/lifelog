@@ -5,6 +5,14 @@ service cloud.firestore {
       return request.auth != null && !exists(/databases/$(database)/documents/deletedAccounts/$(request.auth.uid));
     }
 
+    function mediaWriteAllowed(uid) {
+      return !exists(/databases/$(database)/documents/imageDeletionState/$(uid))
+        || (get(/databases/$(database)/documents/imageDeletionState/$(uid)).data.status == 'complete'
+          && request.resource.data.get('_mediaEpoch','') == get(/databases/$(database)/documents/imageDeletionState/$(uid)).data.epoch);
+    }
+    match /imageDeletionState/{uid} { allow read: if signedIn() && request.auth.uid == uid; allow write: if false; }
+    match /supporterRequests/{uid} { allow read, write: if false; }
+
     function groupDocument(groupId) {
       return get(/databases/$(database)/documents/groups/$(groupId));
     }
@@ -41,12 +49,12 @@ service cloud.firestore {
       allow create:
         if signedIn()
         && request.auth.uid == userId
-        && !request.resource.data.keys().hasAny(['entitlements']);
+        && !request.resource.data.keys().hasAny(['entitlements']) && mediaWriteAllowed(userId);
 
       allow update:
         if signedIn()
         && request.auth.uid == userId
-        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['entitlements']);
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['entitlements']) && mediaWriteAllowed(userId);
 
       allow delete:
         if signedIn() && request.auth.uid == userId;
@@ -56,18 +64,18 @@ service cloud.firestore {
     // 저장한다. 사용자는 자기 UID 아래에서도 앱이 쓰지 않는 임의의 하위
     // 문서를 만들 수 없다.
     match /users/{userId}/sync/{syncDocument} {
-      allow read, create, update, delete:
-        if signedIn() && request.auth.uid == userId;
+      allow read, delete: if signedIn() && request.auth.uid == userId;
+      allow create, update: if signedIn() && request.auth.uid == userId && mediaWriteAllowed(userId);
     }
 
     match /users/{userId}/characters/{characterId} {
-      allow read, create, update, delete:
-        if signedIn() && request.auth.uid == userId;
+      allow read, delete: if signedIn() && request.auth.uid == userId;
+      allow create, update: if signedIn() && request.auth.uid == userId && mediaWriteAllowed(userId);
     }
 
     match /users/{userId}/characters/{characterId}/days/{dateId} {
-      allow read, create, update, delete:
-        if signedIn() && request.auth.uid == userId;
+      allow read, delete: if signedIn() && request.auth.uid == userId;
+      allow create, update: if signedIn() && request.auth.uid == userId && mediaWriteAllowed(userId);
     }
 
     // 사용자의 그룹 목록 색인이다. 다른 사용자의 색인은 그룹 관리자도
