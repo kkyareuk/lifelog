@@ -1,3 +1,4 @@
+import {sceneReaction} from './scene-reaction.js?v=20260909dev305';
 import {slotText} from './character-slots.js?v=20260909dev305';
 import {isFamily,relationshipReference,relationshipMemberName} from './relationship-roles.js?v=20260909dev305';
 import {relationshipInfo} from "./relationship-help.js?v=20260909dev305";
@@ -867,6 +868,7 @@ const sceneLayoutVars=(c,mode,entry=null)=>{
   return `--character-art-x:${layout.x}%;--character-art-y:${layout.y}%;--character-art-scale:${layout.scale};--character-render-scale:${globalScale*layout.scale};--character-art-rotation:${layout.rotation}deg;--character-action-x:${layout.actionX}%;--character-action-y:${layout.actionY}%`;
 };
 function sceneAvatar(c,cls="",tone="neutral",mode="sd",entry=null){
+  const reaction=sceneReaction(entry||{},tone);if(reaction)cls+=` scene-reaction reaction-${reaction}`;
   if(mode==="ld"&&hasLdArt(c,entry)){
     const src=ldArtSource(c,entry);
     return `<img class="sprite scene-ld-art ${cls}" src="${esc(src)}" alt="${esc(c.name)} LD 일러스트">`;
@@ -3042,7 +3044,7 @@ function character(){
     const current=Array.isArray(values)?values:[];
     const rows=current.map((item,index)=>`<button type="button" data-open-body-mark="${field}" data-body-mark-index="${index}"><span>${esc(item?.name||`${label} ${index+1}`)}</span><i aria-hidden="true">⌄</i></button>`).join("");
     const dialogs=current.map((item,index)=>`<dialog class="character-body-mark-dialog" data-body-mark-dialog="${field}-${index}"><form method="dialog"><header><span><small>${field==="scars"?"SCAR DETAILS":"TATTOO DETAILS"}</small><b>${esc(item?.name||`${label} ${index+1}`)}</b></span><button type="submit" value="close" aria-label="${esc(t("닫기","닫기"))}">×</button></header><div class="body-mark-fields"><label><b>${t("이름","이름")}</b><input data-body-mark-field="name" data-body-mark-collection="${field}" data-body-mark-index="${index}" maxlength="40" value="${esc(item?.name||`${label} ${index+1}`)}"></label><label><b>${t("위치","위치")}</b><select data-body-mark-field="location" data-body-mark-collection="${field}" data-body-mark-index="${index}">${markOption(locations,item?.location||"기타 위치")}</select></label><label><b>${t("유형","유형")}</b><select data-body-mark-field="type" data-body-mark-collection="${field}" data-body-mark-index="${index}">${markOption(types,item?.type||"설정하지 않음")}</select></label><label><b>${t("이 흔적에 대한 생각","이 흔적에 대한 생각")}</b><select data-body-mark-field="attitude" data-body-mark-collection="${field}" data-body-mark-index="${index}">${markOption(BODY_MARK_ATTITUDE_OPTIONS,item?.attitude||"설정하지 않음")}</select></label></div><footer><button type="submit" value="close">${t("설정 완료","설정 완료")}</button></footer></form></dialog>`).join("");
-    return `<fieldset class="body-figure-field body-${field}"><legend>${t(label,label)}</legend><div class="body-repeat-list">${rows||`<span class="body-repeat-empty">${t("없음","없음")}</span>`}</div><div class="body-repeat-actions"><button type="button" data-body-array-action="add" data-body-array-field="${field}" data-body-array-label="${label}" aria-label="${esc(t(`${label} 추가`,`${label} 추가`))}"><i>＋</i><span>${t("추가","추가")}</span></button><button type="button" data-body-array-action="remove" data-body-array-field="${field}" ${current.length?"":"disabled"} aria-label="${esc(t(`${label} 제거`,`${label} 제거`))}"><i>−</i><span>${t("제거","제거")}</span></button></div>${dialogs}</fieldset>`;
+    return `<fieldset class="body-figure-field body-${field}" ${field==="tattoos"?'data-discovery-container="bodyProfile.tattoos"':""}><legend>${t(label,label)}</legend><div class="body-repeat-list">${rows||`<span class="body-repeat-empty">${t("없음","없음")}</span>`}</div><div class="body-repeat-actions"><button type="button" data-body-array-action="add" data-body-array-field="${field}" data-body-array-label="${label}" aria-label="${esc(t(`${label} 추가`,`${label} 추가`))}"><i>＋</i><span>${t("추가","추가")}</span></button><button type="button" data-body-array-action="remove" data-body-array-field="${field}" ${current.length?"":"disabled"} aria-label="${esc(t(`${label} 제거`,`${label} 제거`))}"><i>−</i><span>${t("제거","제거")}</span></button></div>${dialogs}</fieldset>`;
   };
   const medicationCollection=values=>{
     const current=Array.isArray(values)?values:[];

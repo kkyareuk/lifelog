@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {DISCOVERY_SCENES as events,discoveryAnswer,discoveryCandidates,discoveryChoices,discoveryLocked,manualDiscoveryPatch,DISCOVERY_AXES} from '../character-discovery-rules.js';
+import {REACTION_MOTIONS,sceneReaction} from '../scene-reaction.js';
+const fresh=()=>({id:'a',ageGroup:'성인',bodyProfile:{appearance:{},tattoos:[]},discovery:{version:2}}),scene={title:'걷는 중'},q=id=>events.find(e=>e.id===id);
+assert.equal(events.length,37);assert.equal(events.slice(0,24).reduce((n,e)=>n+e.choices.length,0),192);
+for(const e of events){assert(REACTION_MOTIONS.includes(e.animation));for(const l of ['ko','en','ja'])assert(e.question[l]);for(const c of e.choices){for(const l of ['ko','en','ja'])assert(c.text[l]);for(const [f,v] of Object.entries(c.effects)){assert(DISCOVERY_AXES[f]);assert(typeof v==='number'?Math.abs(v)<=1:DISCOVERY_AXES[f].values[v.toward]);}}}
+let c=fresh();const seen=new Set();for(let i=0;i<80;i++){const picks=discoveryChoices(c,q('early'));assert.equal(picks.length,5);assert.equal(new Set(picks.map(p=>p.index)).size,5);picks.forEach(p=>seen.add(p.index));}assert.equal(seen.size,8);
+for(const e of events.slice(0,24))Object.assign(c,discoveryAnswer(c,e,0));assert.equal(c.discovery.answered.length,24);assert(!discoveryCandidates(c,scene).some(e=>e.id==='early'));assert.equal(discoveryAnswer(c,q('early'),0),null);assert(!discoveryCandidates(JSON.parse(JSON.stringify(c)),scene).some(e=>e.id==='early'));
+c=fresh();assert(!discoveryCandidates(c,scene).includes(q('profile-tattoo-location')));Object.assign(c,discoveryAnswer(c,q('profile-tattoo-encounter'),0));assert.equal(c.bodyProfile.tattoos.length,1);assert(discoveryCandidates(c,scene).includes(q('profile-tattoo-location')));assert(!discoveryCandidates(c,scene).includes(q('profile-tattoo-design')));
+assert.equal(discoveryAnswer(c,q('profile-tattoo-location'),0,100,'injected'),null);
+Object.assign(c,discoveryAnswer(c,q('profile-tattoo-location'),0,100,'왼팔'));assert.equal(c.bodyProfile.tattoos[0].location,'왼팔');assert(discoveryCandidates(c,scene).includes(q('profile-tattoo-design')));Object.assign(c,discoveryAnswer(c,q('profile-tattoo-design'),0,200,'꽃·식물'));assert.equal(c.bodyProfile.tattoos[0].type,'꽃·식물');
+for(const i of [2,3,4]){const x=fresh();Object.assign(x,discoveryAnswer(x,q('profile-tattoo-encounter'),i));assert.equal(x.bodyProfile.tattoos.length,0);assert(!discoveryCandidates(x,scene).includes(q('profile-tattoo-location')));}
+c=fresh();Object.assign(c,discoveryAnswer(c,q('profile-age-peer'),0,1,'중년'));assert.equal(c.ageGroup,'중년');assert(!discoveryCandidates(c,scene).some(e=>e.field==='ageGroup'));
+c=fresh();Object.assign(c,manualDiscoveryPatch(c,{bodyProfile:{...c.bodyProfile,heightCm:'172',appearance:{hairLength:'단발'}}}));assert(discoveryLocked(c,'bodyProfile.heightCm'));assert(discoveryLocked(c,'bodyProfile.appearance.hairLength'));assert.equal(discoveryAnswer(c,q('profile-height'),0,1,'180'),null);
+c=fresh();c.discovery.locks={'bodyProfile.tattoos':true};assert(!discoveryChoices(c,q('profile-tattoo-encounter')).some(o=>o.choice.tattoo));assert.equal(discoveryAnswer(c,q('profile-tattoo-encounter'),0),null);
+assert.equal(sceneReaction({title:'깜짝 놀라고 있어요'}),'surprise');assert.equal(sceneReaction({title:'잠을 자는 중'},'shock'),'');
+console.log('PASS 37 scenes; 192 behavior candidates; 13 profile scenes; persistent answers; random 5; tattoo prerequisites and exact dropdown validation; manual locks; shared motions');

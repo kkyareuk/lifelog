@@ -13,8 +13,8 @@ android {
         applicationId "com.drawervillage.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 325
-        versionName "1.0.292"
+        versionCode 326
+        versionName "1.0.293"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

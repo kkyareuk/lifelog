@@ -1,0 +1,18 @@
+<ko-KR>
+기존 돌발 상황에 새 행동 72개를 더해, 상황마다 8개 후보 중 5개가 무작위로 나와요.
+나이·성별·신체정보를 고르는 질문과 타투 정보에 따라 열리는 후속 질문을 추가했어요.
+답한 질문은 다시 나오지 않도록 개선했어요.
+질문과 생활 장면에 어울리는 반응 애니메이션을 추가했어요.
+</ko-KR>
+<en-US>
+Added 72 actions to existing situations, with 5 randomly drawn from 8 candidates.
+Added age, gender and appearance questions, plus tattoo follow-ups unlocked by earlier answers.
+Answered questions no longer return.
+Added reaction animations for questions and life scenes.
+</en-US>
+<ja-JP>
+既存の突発状況に72の行動を追加。8候補から5つがランダムに表示されます。
+年齢・性別・身体情報の質問と、タトゥー情報で解放される追加質問を加えました。
+回答済みの質問は再び出ないよう改善しました。
+質問と生活場面に合うリアクションの動きを追加しました。
+</ja-JP>

@@ -1,0 +1,56 @@
+// Additional actions preserve every original choice. Tri-language authored content.
+const tri=(ko,en,ja)=>({ko,en,ja});
+const rows=[
+['early','빈 의자에게 먼저 와 줘서 고맙다고 인사한다','Thank the empty chair for arriving first','空の椅子に先に来てくれてありがとうと言う','아직 오지도 않은 상대의 지각 변론을 혼자 연기한다','Act out the absent friend’s defense for being late','まだ来ない相手の遅刻の弁明を一人で演じる'],
+['rain','비에게 협상을 제안한다. 딱 집 앞까지만 참아 달라고','Negotiate with the rain: hold off until they get home','雨に交渉する。家に着くまで待ってほしい','처마에서 떨어지는 물에 비장하게 손을 내밀어 결투를 신청한다','Challenge a drip from the awning to a solemn duel','軒先のしずくに厳かに決闘を申し込む'],
+['parcel','상자에게 이름을 붙이고 임시 주민증을 만들어 준다','Name the parcel and make it a temporary resident card','箱に名前をつけて仮の住民証を作る','주인 찾기 공고를 왕실의 칙령처럼 낭독한다','Read the lost-property notice like a royal decree','持ち主募集を王室の勅令のように読み上げる'],
+['spill','살아남은 과자에게 생존을 축하한다고 속삭인다','Whisper congratulations to the biscuit that survived','無事だったお菓子に生還おめでとうとささやく','휴지를 망토처럼 펼치고 구조대 출동을 선언한다','Unfurl a tissue like a cape and announce a rescue','ティッシュをマントのように広げ救助隊出動を宣言する'],
+['lost','길을 잃은 게 아니라 지도 밖을 개척 중이라고 우긴다','Insist they are exploring beyond the map, not lost','迷子ではなく地図の外を開拓中だと言い張る','지도를 거꾸로 들고 길과 눈싸움을 한다','Turn the map upside down and stare down the road','地図を逆さにして道とにらめっこする'],
+['change','취소된 계획을 위해 짧고 장엄한 추도사를 읊는다','Deliver a grand little eulogy for the canceled plan','中止された計画に短く壮大な弔辞を読む','새 계획의 이름부터 정한다. 작전명은 거창해야 한다','Name the new plan first; its codename must be grand','新計画の名前から決める。作戦名は大げさでなくては'],
+['gift','포장지까지 가보로 지정하고 엄숙하게 보관한다','Declare even the wrapping an heirloom and store it solemnly','包装紙まで家宝に指定して厳かに保管する','선물에게 앞으로 잘 부탁한다고 악수를 청한다','Offer the gift a handshake to start their partnership','贈り物にこれからよろしくと握手を求める'],
+['noise','소음에 맞춰 지휘하다 마지막 박자에 창문을 닫는다','Conduct the noise, closing the window on the final beat','騒音を指揮して最後の拍で窓を閉める','벽에게 지금 들었냐며 증인 출석을 요구한다','Ask the wall to testify about what it just heard','壁に今の聞いたかと証人出廷を求める'],
+['queue','머릿속에서 앞사람 전원에게 결승 진출 번호를 붙인다','Assign every person ahead a finalist number in their head','頭の中で前の全員に決勝進出番号をつける','한 칸 전진할 때마다 아주 작게 승리의 포즈를 취한다','Strike a tiny victory pose whenever the line advances','一歩進むたび小さく勝利のポーズを決める'],
+['cat','고양이에게 집세는 누가 내느냐고 진지하게 묻는다','Seriously ask the cat who pays its rent','猫に家賃は誰が払うのかと真剣に聞く','고양이와 눈이 마주치자 먼저 고개를 숙여 충성을 맹세한다','Bow and swear loyalty when the cat meets their eyes','猫と目が合い、先に頭を下げて忠誠を誓う'],
+['compliment','앵콜을 요청했다가 자기가 더 민망해져 헛기침한다','Ask for an encore, then cough in embarrassment','アンコールを求めてから照れて咳払いする','그 칭찬의 보존 기간을 물으며 가슴에 손을 얹는다','Hand on heart, ask how long the compliment stays valid','胸に手を当て、その褒め言葉の保存期間を尋ねる'],
+['crowd','군중 사이를 대단한 잠입 작전처럼 빠져나간다','Slip through the crowd as if on a covert mission','群衆の間を大がかりな潜入作戦のように抜ける','혼자 속으로 입장 음악을 깔고 당당하게 걸어간다','Walk boldly to an entrance theme playing in their head','頭の中で入場曲を流し堂々と歩く'],
+['puzzle','문제에게 자백하면 선처하겠다고 속삭인다','Whisper to the puzzle that confession earns leniency','問題に自白すれば情状酌量するとささやく','풀기도 전에 성공 소감을 써 두고 스스로를 압박한다','Write their victory speech before solving it','解く前に成功の感想を書いて自分を追い込む'],
+['mistake','실수에 작전명을 붙이고 증거 수습을 시작한다','Give the mistake a codename and start cleaning up','失敗に作戦名をつけ証拠の片づけを始める','천장을 보며 방금 장면 편집 가능하냐고 묻는다','Ask the ceiling whether that scene can be edited out','天井に今の場面は編集できるかと尋ねる'],
+['evening','오늘 하루를 심사하며 별점을 후하게 줬다가 깎는다','Review the day, generously award stars, then deduct them','今日一日を審査して星を多めにつけてから減らす','그림자를 동행인 삼아 오늘 고생했다고 말한다','Thank their shadow for its work as today’s companion','影を同行者に見立て今日はお疲れさまと言う'],
+['silence','침묵이 길어졌으니 이제 이름을 붙여 줘야겠다고 한다','Suggest naming the silence now that it has stayed so long','沈黙が長居したので名前をつけようと言う','머릿속으로만 장황하게 말하고 겉으로는 고개만 끄덕인다','Deliver a speech internally while only nodding outside','頭の中だけで長々と話し、表ではうなずくだけ'],
+['seat','앉기 전에 의자의 근무 경력을 묻는다','Ask the chair about its employment history before sitting','座る前に椅子の職歴を尋ねる','빈자리를 왕좌처럼 바라보다 최대한 근엄하게 앉는다','Regard the seat as a throne and sit with utmost dignity','空席を玉座のように見つめ、できるだけ厳かに座る'],
+['postcard','답장 첫 문장을 유언장처럼 비장하게 썼다가 지운다','Draft the reply like a final testament, then erase it','返事の書き出しを遺言のように書いてから消す','우편의 긴 여정을 상상하며 종이에게 수고했다고 한다','Imagine its long journey and thank the paper','郵便の長旅を想像し、紙にお疲れさまと言う'],
+['scent','코를 탐정처럼 세우고 냄새의 용의자를 추적한다','Follow their nose like a detective hunting a suspect','探偵のように鼻を利かせ匂いの容疑者を追う','갑자기 떠오른 기억에 억울하다며 허공을 째려본다','Glare at the air for ambushing them with a memory','急に記憶を呼び起こされ、理不尽だと空をにらむ'],
+['announcement','안내 방송보다 한 박자 늦게 혼자 복창한다','Repeat the announcement to themself one beat late','案内放送を一拍遅れて一人で復唱する','안내를 듣고도 자기 인생의 예고편처럼 받아들인다','Hear the announcement as a trailer for their own life','案内なのに自分の人生の予告編として受け取る'],
+['lamp','불빛에게 야근 수당을 챙기라고 충고한다','Advise the light to claim overtime pay','明かりに残業代を請求するよう助言する','켜지는 순간 작은 태양 탄생이라며 손뼉을 친다','Applaud the birth of a tiny sun when it turns on','点いた瞬間、小さな太陽の誕生だと拍手する'],
+['tag','이름표의 글씨를 범인의 필적처럼 분석한다','Analyze the lettering like a suspect’s handwriting','名札の文字を犯人の筆跡のように分析する','이름표에게 오늘은 네가 대신 사회생활 하라고 부탁한다','Ask the name tag to do their socializing today','名札に今日は代わりに社交してくれと頼む'],
+['coin','동전에게 어느 주머니 출신인지 정중히 묻는다','Politely ask the coin which pocket it came from','硬貨にどのポケット出身か丁寧に聞く','주인을 찾아주는 일을 국가 기밀 작전처럼 수행한다','Treat returning it as a top-secret mission','持ち主に返すことを国家機密作戦のように遂行する'],
+['newtable','탁자와 영역 협상을 하고 팔꿈치 자리를 확보한다','Negotiate territory with the table for their elbows','机と領土交渉して肘の場所を確保する','탁자 위의 빈 공간에 보이지 않는 왕국을 세운다','Found an invisible kingdom on the empty tabletop','机の空いた場所に見えない王国を築く']
+];
+
+const sharper=[
+['early','상대보다 늦게 등장하려고 도착한 사실을 숨긴다','Hide their arrival so they can make the later entrance','相手より遅く登場するため到着を隠す',{interference:1,planningStyle:1,decisionStyle:-1}],
+['rain','양말부터 벗고 빗속으로 걸어 나가 버린다','Take off their socks and walk straight into the rain','靴下から脱いで雨の中へ出ていく',{impulseControl:1,planningStyle:-1,energyRhythm:1}],
+['parcel','상자 주변에 의자를 둘러놓고 주인 귀환 환영식을 준비한다','Arrange chairs around it for its owner’s welcome ceremony','箱の周りに椅子を並べ持ち主の帰還式を準備する',{interference:1,socialStyle:1,humorStyle:1}],
+['spill','자기 음료도 쏟을 뻔하다가 간신히 멈추고 아무 일 없던 척한다','Almost spill their own drink, catch it, then act innocent','自分の飲み物までこぼしかけ、止めて何食わぬ顔をする',{impulseControl:1,emotionalExpression:-1,neatness:-1}],
+['lost','길 찾기는 포기하고 이 동네에서 가장 맛있는 빵집부터 묻는다','Give up navigating and ask for the best bakery instead','道探しを諦めて一番おいしいパン屋を聞く',{planningStyle:-1,socialStyle:1,moodPersistence:-1}],
+['change','일정을 전부 지우고 오늘은 아무도 자신을 찾지 못하게 한다','Erase the whole schedule and make themself unreachable today','予定を全部消し、今日は誰にも見つからないようにする',{socialStyle:-1,planningStyle:-1,moodPersistence:1}],
+['gift','기뻐서 선물 준 사람의 손을 붙잡고 제자리에서 펄쩍 뛴다','Take the giver’s hand and jump for joy on the spot','うれしくて贈り主の手を取りその場で跳ねる',{emotionalExpression:1,energyRhythm:1,impulseControl:1}],
+['noise','항의문을 썼다가 너무 잘 써서 문장부터 흐뭇하게 감상한다','Write a complaint, then admire how beautifully it is worded','抗議文を書いたら出来がよく、まず文章に満足する',{interference:1,planningStyle:1,moodPersistence:1}],
+['queue','줄이 줄어드는 속도를 재며 속으로 운영 체계를 통째로 뜯어고친다','Time the line and redesign the entire system in their head','列の速度を計り、頭の中で運営体制を丸ごと作り直す',{interference:1,decisionStyle:-1,planningStyle:1}],
+['cat','할 일을 전부 미루고 고양이가 먼저 떠날 때까지 버틴다','Put everything off and stay until the cat leaves first','用事を全部後回しにして猫が先に去るまで粘る',{diligence:-1,moodPersistence:1,planningStyle:-1}],
+['compliment','아직 장점이 더 남았다며 손가락을 하나씩 접어 설명한다','Count off their remaining virtues on their fingers','長所はまだあると指を折って説明する',{socialStyle:1,emotionalExpression:1,interference:1}],
+['crowd','친구가 놓치지 못하게 두 팔을 번쩍 들고 자기 이름을 외친다','Raise both arms and shout their name so friends cannot miss them','友達が見失わないよう両腕を上げ自分の名を叫ぶ',{socialStyle:1,emotionalExpression:1,impulseControl:1}],
+['puzzle','이 문제를 만든 사람과 반드시 대화해야겠다며 이를 악문다','Grit their teeth, determined to have a word with its creator','作問者と必ず話すと歯を食いしばる',{interference:1,moodPersistence:1,emotionalSensitivity:1}],
+['mistake','남이 알아차리기 전에 스스로 너무 크게 자백해 모두를 돌아보게 한다','Confess so loudly everyone turns before noticing the mistake','気づかれる前に大声で自白して全員を振り向かせる',{emotionalExpression:1,impulseControl:1,socialStyle:1}],
+['evening','갑자기 내일의 자신에게 장문의 지시서를 써 내려간다','Suddenly write a long list of orders for tomorrow’s self','突然、明日の自分への長い指示書を書き始める',{planningStyle:1,interference:1,diligence:1}],
+['silence','정적을 못 견디고 방금 떠오른 최악의 농담을 꺼낸다','Break the silence with the worst joke that comes to mind','沈黙に耐えられず今浮かんだ最悪の冗談を口にする',{humorStyle:1,impulseControl:1,socialStyle:1}],
+['seat','앉았다 일어났다 하며 방 안에서 가장 완벽한 각도를 찾는다','Keep sitting and standing to find the room’s perfect angle','座っては立ち、部屋で一番完璧な角度を探す',{neatness:1,interference:1,activityTempo:1}],
+['postcard','딱 한 줄의 안부에 세 장짜리 답장을 쓰기 시작한다','Start a three-page reply to a one-line greeting','一行の挨拶に三枚分の返事を書き始める',{emotionalExpression:1,moodPersistence:1,socialStyle:1}],
+['scent','향을 놓치기 싫어 하던 말을 끊고 몇 걸음 되돌아간다','Stop mid-sentence and retrace their steps to catch the scent','香りを逃したくなくて話を止め数歩戻る',{emotionalSensitivity:1,impulseControl:1,activityTempo:1}],
+['announcement','자기와 상관없는 안내인데도 괜히 찔려 자세를 바로잡는다','Straighten up guiltily at an announcement unrelated to them','無関係な案内なのに後ろめたくなり姿勢を正す',{emotionalSensitivity:1,moodVolatility:1,neatness:1}],
+['lamp','불을 켰다 껐다 하며 혼자 극적인 등장 타이밍을 연습한다','Toggle the light to rehearse a dramatic entrance alone','明かりを点けたり消したりして一人で登場を練習する',{humorStyle:1,perceptionStyle:1,planningStyle:1}],
+['tag','이름 아래 스스로 임명한 거창한 직함을 덧붙이고 싶어진다','Want to add a grand, self-appointed title below their name','名前の下に自称の大げさな肩書きを足したくなる',{interference:1,perceptionStyle:1,humorStyle:1}],
+['coin','동전 하나의 주인을 찾는 일에 이상할 정도로 집착한다','Become strangely fixated on finding the owner of one coin','硬貨一枚の持ち主探しに妙に執着する',{moodPersistence:1,diligence:1,interference:1}],
+['newtable','자기 자리가 정해지기도 전에 모두의 배치를 지휘하려 든다','Try to direct everyone’s seating before choosing their own','自分の席より先に全員の配置を指揮しようとする',{interference:1,socialStyle:1,planningStyle:1}]
+];
+export function expandDiscovery(events){for(const [id,...texts] of rows){const q=events.find(q=>q.id===id);if(!q)throw Error(id);q.choices.push({text:tri(...texts.slice(0,3)),effects:{humorStyle:1,perceptionStyle:1,emotionalExpression:1}},{text:tri(...texts.slice(3,6)),effects:{humorStyle:1,impulseControl:1,interference:1}});}for(const [id,ko,en,ja,effects] of sharper)events.find(q=>q.id===id).choices.push({text:tri(ko,en,ja),effects});}

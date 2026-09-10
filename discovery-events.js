@@ -1,3 +1,5 @@
+import {expandDiscovery} from './discovery-extra.js?v=20260909dev305';
+import {PROFILE_EVENTS} from './discovery-profile.js?v=20260909dev305';
 // Sudden situations: players see only the scene and five actions, never the weights.
 const tri=(ko,en,ja)=>({ko,en,ja});
 const e=(id,icon,question,choices)=>({id,icon,animation:'talk',question:tri(...question),choices:choices.map(([ko,en,ja,effects])=>({text:tri(ko,en,ja),effects}))});
@@ -151,3 +153,9 @@ e('newtable','▦',['공용 탁자의 물건 배치가 어제와 달라졌어요
  ['흥미로운 변화라 생각하고 다른 쓰임새를 떠올린다','Find it interesting and imagine new ways to use it','面白い変化だと思い、別の使い方を考える',{perceptionStyle:1,emotionalBaseline:toward(7)}],
  ['익숙한 물건이 안 보여 한동안 마음이 불편하다','Feel unsettled for a while when familiar things are missing','慣れた物が見つからず、しばらく落ち着かない',{moodPersistence:1,emotionalSensitivity:1}]])
 );
+
+expandDiscovery(DISCOVERY_EVENTS);
+DISCOVERY_EVENTS.push(...PROFILE_EVENTS);
+
+const motions={early:'ponder',rain:'surprise',parcel:'ponder',spill:'surprise',lost:'ponder',change:'surprise',gift:'bounce',noise:'surprise',queue:'stretch',cat:'wave',compliment:'blush',crowd:'wave',puzzle:'ponder',mistake:'surprise',evening:'sway',silence:'ponder',seat:'stretch',postcard:'sway',scent:'sway',announcement:'surprise',lamp:'bounce',tag:'ponder',coin:'ponder',newtable:'wave'};
+for(const q of DISCOVERY_EVENTS)q.animation=motions[q.id]||q.animation;

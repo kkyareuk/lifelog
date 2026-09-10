@@ -2,7 +2,6 @@ import {considerDiscovery,bindDiscoveryLocks} from './character-discovery.js?v=2
 import {manualDiscoveryPatch} from './character-discovery-rules.js?v=20260909dev305';
 import {bindFamilyNames} from './family-names.js?v=20260909dev305';
 import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
-import {openFamilyPreview} from './family-expansion.js?v=20260909dev305';
 import {showSlotCreator} from './character-slots.js?v=20260909dev305';
 import {mountRelationshipRoles} from './relationship-roles-editor.js?v=20260909dev305';
 import {isFamily} from './relationship-roles.js?v=20260909dev305';
@@ -1813,7 +1812,7 @@ function syncOpenCharacterEditorDraft(){
     bodyFields.forEach(element=>setNestedObjectValue(bodyProfile,element.dataset.bodyField,element.value));
     patch.bodyProfile=bodyProfile;
   }
-  updateCharacter(character.id,patch,false);
+  updateCharacter(character.id,manualDiscoveryPatch(character,patch),false);
 }
 function renderPreservingPageScroll(element){
   const pageX=window.scrollX,pageY=window.scrollY;
@@ -3404,7 +3403,7 @@ function bind(){
   $$("[data-home-town]").forEach(el=>el.onchange=()=>{updateCharacter(el.dataset.homeTown,{townId:el.value});render()});
   $$("[data-personality-field]").forEach(el=>el.onchange=()=>{
     const mobileDraft=markMobileCharacterDraft(el);
-    updateCharacter(active().id,{[el.dataset.personalityField]:el.value},false);
+    updateCharacter(active().id,manualDiscoveryPatch(active(),{[el.dataset.personalityField]:el.value}),false);
     syncCharacterControls(el,"data-personality-field");
     if(!mobileDraft)save(true);
   });
@@ -3479,7 +3478,7 @@ function bind(){
         bodyProfile.appearance.rightEyeColor=el.value;
       }
       const mobileDraft=markMobileCharacterDraft(el);
-      updateCharacter(character.id,{bodyProfile},false);
+      updateCharacter(character.id,manualDiscoveryPatch(character,{bodyProfile}),false);
       syncCharacterControls(el,"data-body-field");
       if(el.dataset.bodyField==="hospitalVisitFrequency")document.querySelectorAll('[data-body-list="carePlan.weekdays"]').forEach(button=>button.classList.toggle("on",bodyProfile.carePlan?.weekdays?.includes(button.dataset.value)||false));
       if(el.dataset.bodyField==="appearance.leftEyeColor"||el.dataset.bodyField==="appearance.rightEyeColor"){
@@ -3506,7 +3505,7 @@ function bind(){
   $$('[data-body-measurement]').forEach(el=>el.addEventListener('input',()=>{
     const character=active(),bodyProfile=structuredClone(character.bodyProfile||{}),raw=Number(el.value),imperial=state.measurementUnits==="imperial";
     bodyProfile[el.dataset.bodyMeasurement]=el.value===""?"":String(Math.round((el.dataset.bodyMeasurement==="heightCm"&&imperial?raw*2.54:el.dataset.bodyMeasurement==="weightKg"&&imperial?raw/2.2046226218:raw)*10)/10);
-    updateCharacter(character.id,{bodyProfile},false);save();
+    updateCharacter(character.id,manualDiscoveryPatch(character,{bodyProfile}),false);save();
   }));
   $$('[data-open-body-mark]').forEach(button=>button.onclick=()=>{
     const dialog=document.querySelector(`[data-body-mark-dialog="${button.dataset.openBodyMark}-${button.dataset.bodyMarkIndex}"]`);
@@ -3517,7 +3516,7 @@ function bind(){
     const values=Array.isArray(bodyProfile[collection])?[...bodyProfile[collection]]:[];
     if(!values[index]||typeof values[index]!=="object")values[index]={name:`${collection==="scars"?"흉터":"문신"} ${index+1}`,location:"기타 위치",type:"설정하지 않음",attitude:"설정하지 않음"};
     values[index]={...values[index],[el.dataset.bodyMarkField]:el.value.slice(0,80)};
-    bodyProfile[collection]=values.slice(0,8);updateCharacter(character.id,{bodyProfile},false);save(true);
+    bodyProfile[collection]=values.slice(0,8);updateCharacter(character.id,manualDiscoveryPatch(character,{bodyProfile}),false);save(true);
     if(el.dataset.bodyMarkField==="name"){
       document.querySelector(`[data-open-body-mark="${collection}"][data-body-mark-index="${index}"] span`)?.replaceChildren(document.createTextNode(el.value||`${collection==="scars"?"흉터":"문신"} ${index+1}`));
       el.closest('dialog')?.querySelector('header b')?.replaceChildren(document.createTextNode(el.value||`${collection==="scars"?"흉터":"문신"} ${index+1}`));
@@ -3532,7 +3531,7 @@ function bind(){
     const medications=Array.isArray(bodyProfile.medications)?[...bodyProfile.medications]:[];
     if(!medications[index])return;
     medications[index]={...medications[index],[el.dataset.bodyMedicationField]:el.value.slice(0,160)};
-    bodyProfile.medications=medications;updateCharacter(character.id,{bodyProfile},false);save(true);
+    bodyProfile.medications=medications;updateCharacter(character.id,manualDiscoveryPatch(character,{bodyProfile}),false);save(true);
     if(el.dataset.bodyMedicationField==="name"){
       document.querySelector(`[data-open-body-medication="${index}"] span`)?.replaceChildren(document.createTextNode(el.value||`복용약 ${index+1}`));
       el.closest('dialog')?.querySelector('header b')?.replaceChildren(document.createTextNode(el.value||`복용약 ${index+1}`));
@@ -3545,7 +3544,7 @@ function bind(){
       if(medications.length>=12){showToast("복용약은 최대 12개까지 추가할 수 있어요");return}
       medications.push({name:`복용약 ${medications.length+1}`,purpose:"설정하지 않음",frequency:"설정하지 않음",notes:""});openIndex=medications.length-1;
     }else medications.pop();
-    bodyProfile.medications=medications;updateCharacter(character.id,{bodyProfile},false);save(true);render();
+    bodyProfile.medications=medications;updateCharacter(character.id,manualDiscoveryPatch(character,{bodyProfile}),false);save(true);render();
     if(openIndex>=0)requestAnimationFrame(()=>document.querySelector(`[data-body-medication-dialog="${openIndex}"]`)?.showModal());
   });
   $$('[data-body-array-action]').forEach(button=>button.onclick=()=>{
@@ -3559,7 +3558,7 @@ function bind(){
       openIndex=values.length-1;
     }else values.pop();
     bodyProfile[field]=values;
-    updateCharacter(character.id,{bodyProfile},false);save(true);render();
+    updateCharacter(character.id,manualDiscoveryPatch(character,{bodyProfile}),false);save(true);render();
     if(openIndex>=0)requestAnimationFrame(()=>{
       const dialog=document.querySelector(`[data-body-mark-dialog="${field}-${openIndex}"]`);
       if(dialog&&typeof dialog.showModal==="function")dialog.showModal();
@@ -3572,7 +3571,7 @@ function bind(){
   $$('[data-skin-tone-choice]').forEach(el=>el.onclick=()=>{
     const character=active(),bodyProfile=structuredClone(character.bodyProfile||{});
     bodyProfile.skinTone=el.dataset.skinToneChoice;
-    updateCharacter(character.id,{bodyProfile},false);save(true);
+    updateCharacter(character.id,manualDiscoveryPatch(character,{bodyProfile}),false);save(true);
     document.querySelectorAll('[data-skin-tone-choice]').forEach(button=>button.classList.toggle('on',button===el));
     const preview=document.querySelector('.body-skin-tone>button>i'),label=document.querySelector('.body-skin-tone>button>span');
     if(preview)preview.style.setProperty('--skin-tone',getComputedStyle(el).getPropertyValue('--skin-tone'));
@@ -4397,7 +4396,6 @@ function bind(){
     dialog?.showModal();
   });
   $("[data-open-relationship-map]")?.addEventListener("click",openRelationshipMap);
-  $$("[data-open-family]").forEach(button=>button.onclick=()=>{const shared=activeShared();if(!shared){openFamilyPreview(state);return;}const world=buildSharedWorld(shared,state.uiLanguage);openFamilyPreview(world,{saveArchive:(r,value)=>window.DrawerVillageGroups.propose({groupId:shared.activeGroupId,targetId:r.id,patch:{...r,roleLinks:value.roleLinks,familyArchive:value}}),saveName:(id,patch)=>window.DrawerVillageGroups.saveResident({groupId:shared.activeGroupId,id,profile:{...world.characters[id],...patch}})});});
   $("[data-open-official-relations]")?.addEventListener("click",()=>{const dialog=$("[data-official-relation-dialog]");if(dialog&&!dialog.open)dialog.showModal()});
   const bindRelationshipListFilter=(dialog,cardSelector,inputSelector,buttonSelector,kindAttribute,emptySelector)=>{
     if(!dialog)return;

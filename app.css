@@ -7960,9 +7960,20 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
 
 .character-discovery-dialog{width:min(430px,calc(100vw - 32px));max-height:90dvh;overflow:auto;box-sizing:border-box;border:2px solid #ad8c64;border-radius:24px;padding:22px;background:#fff8e9;color:#443121;box-shadow:0 14px 60px #24160c66;text-align:center}
 .character-discovery-dialog::backdrop{background:#21180f88}.character-discovery-dialog header h2{font-size:18px;margin:0 0 12px}.character-discovery-dialog h3{font-size:17px;line-height:1.5}.discovery-context{font-size:12px;color:#7d674f}.discovery-choices{display:grid;gap:10px;margin:16px 0}.discovery-choices button{padding:13px;border:1px solid #c6ac87;border-radius:14px;background:#fffdf6;color:#43301f;font-size:14px;line-height:1.5;text-align:left}.discovery-choices button:hover{background:#f6e3b9}.character-discovery-dialog>small{display:block;font-size:11px;line-height:1.6}.character-discovery-dialog>button{margin-top:10px;border:0;background:transparent;color:#806647;padding:10px}
-.discovery-animation{height:94px;display:flex;align-items:center;justify-content:center;gap:20px;background:#f2e4c8;border-radius:20px;overflow:hidden}.discovery-animation img{width:72px;height:80px;object-fit:contain}.discovery-animation span{font-size:42px;animation:discovery-float 2.5s ease-in-out infinite}.discovery-animation.tidy span{animation:discovery-tidy 2s ease-in-out infinite}.discovery-animation.read span,.discovery-animation.plan span{animation:discovery-page 2.5s ease-in-out infinite}.discovery-animation.talk span{animation:discovery-talk 1.8s ease-in-out infinite}
-@keyframes discovery-float{50%{transform:translateY(-7px)}}@keyframes discovery-tidy{50%{transform:translateX(10px) rotate(35deg)}}@keyframes discovery-page{50%{transform:rotate(-12deg)}}@keyframes discovery-talk{50%{transform:scale(1.15)}}
-@media(prefers-reduced-motion:reduce){.discovery-animation span{animation:none}}
+.discovery-animation{height:112px;display:flex;align-items:center;justify-content:center;gap:20px;background:#f2e4c8;border-radius:20px;overflow:hidden}.discovery-animation img{width:72px;height:80px;object-fit:contain}.discovery-animation span{font-size:42px}
+.discovery-animation>*,.scene-reaction{animation:var(--reaction-motion,none) 2.4s ease-in-out infinite}
+.reaction-wave{--reaction-motion:reaction-wave}.reaction-bounce{--reaction-motion:reaction-bounce}.reaction-ponder{--reaction-motion:reaction-ponder}.reaction-stretch{--reaction-motion:reaction-stretch}.reaction-surprise{--reaction-motion:reaction-surprise}.reaction-sway{--reaction-motion:reaction-sway}.reaction-blush{--reaction-motion:reaction-blush}
+@keyframes reaction-wave{0%,70%,100%{rotate:0deg}20%,45%{rotate:9deg}32%,58%{rotate:-9deg}}
+@keyframes reaction-bounce{0%,45%,100%{translate:0 0}20%,65%{translate:0 -9px}30%,75%{translate:0 -3px}}
+@keyframes reaction-ponder{0%,100%{rotate:0deg}35%,70%{rotate:-7deg}}
+@keyframes reaction-stretch{0%,100%{scale:1}35%,60%{scale:.96 1.08}}
+@keyframes reaction-surprise{0%,15%,100%{translate:0 0;scale:1}25%{translate:0 -12px;scale:1.08}35%{translate:-3px 0}42%{translate:3px 0}50%{translate:0 0;scale:1}}
+@keyframes reaction-sway{0%,100%{rotate:-4deg}50%{rotate:4deg}}
+@keyframes reaction-blush{0%,100%{rotate:0deg;filter:none}40%,65%{rotate:5deg;filter:drop-shadow(0 0 5px #e9929280)}}
+.character-discovery-dialog h3 select{display:inline-block;max-width:100%;min-width:100px;padding:8px 12px;margin:4px;border:1px solid #aa8a55;border-radius:12px;background:#fffaf0;color:#3b2a1c;font:inherit}
+
+html:is([data-animation-intensity=off],[data-animation-intensity=reduced]) :is(.discovery-animation>*,.scene-reaction){animation:none}
+@media(prefers-reduced-motion:reduce){.discovery-animation>*,.scene-reaction{animation:none}}
 
 body #app .character-book-v8 button.discovery-lock{display:inline-grid!important;place-items:center!important;flex:none!important;width:auto!important;min-width:48px!important;height:25px!important;min-height:25px!important;padding:3px 5px!important;gap:3px!important;grid-auto-flow:column!important;font-size:10px!important;white-space:nowrap!important;border:1px solid #a68b61!important;border-radius:10px!important;background:#f8eed8!important;box-shadow:none!important;color:#65451f!important;vertical-align:middle!important}
 .discovery-lock svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
