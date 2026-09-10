@@ -1,4 +1,5 @@
 export const AUTONOMOUS_ACTIVITIES={
+ art:['그림·창작','Art and crafts','絵・創作'],shopping:['쇼핑','Shopping','買い物'],grooming:['몸단장','Grooming','身支度'],gardening:['식물 돌보기','Gardening','植物の手入れ'],collecting:['수집·전시','Collecting','収集'],digital:['전자기기 만지기','Using devices','電子機器を使う'],conflict:['다툼 시작하기','Starting arguments','喧嘩を始める'],affection:['애정 표현','Affection','愛情表現'],care:['남을 챙기는 활동','Caring for others','人を気遣う'],
  talk:['서로의 생각을 나누는 활동','Exchanging thoughts','互いの考えを話す活動'],
  games:['게임하는 활동','Playing games','ゲームをする活動'],
  cleaning:['청소·정리하는 활동','Cleaning and tidying','掃除・整理する活動'],
@@ -12,7 +13,7 @@ export function autonomousActivity(scene={}){
  const title=String(scene.title||'');
  if(scene.manualDirective||scene.routineId||scene.transit||/수면|잠자|자는 중|잠든|기상|식사|먹는 중|치료|복약|sleep|asleep|waking|eating|treatment|眠|食事|治療/i.test(title))return null;
  if(AUTONOMOUS_ACTIVITIES[scene.activityFamily])return scene.activityFamily;
- const patterns=[['talk',/생각을 나누|대화|토론|이야기를 나누|exchanging.*views|exchanging.*thought|conversation|discuss|互いの考え|話し合|会話/i],['games',/게임|game|ゲーム/i],['cleaning',/청소|쓸고|먼지를 닦|정리하는|정돈하는|cleaning|tidying|掃除|整理|片づけ/i],['reading',/책을 읽|독서|reading|読書|本を読/i],['music',/음악을 듣|연주|music|音楽|演奏/i],['exercise',/운동|달리기|스트레칭|exercis|workout|stretch|運動|ストレッチ/i],['cooking',/요리|조리|cooking|料理|調理/i]];
+ const patterns=[['art',/그림|스케치|색칠|만들기|공예|painting|sketch|craft|描|工作/i],['shopping',/쇼핑|구매|shopping|買い物/i],['grooming',/머리.*손질|화장|몸단장|groom|髪.*整/i],['gardening',/화분|식물.*돌|물.*주|gardening|植物/i],['collecting',/수집|진열|collect|収集/i],['digital',/전자기기|휴대폰|사진첩|device|phone|スマホ/i],['conflict',/다투|싸우|언쟁|arguing|fighting|喧嘩/i],['affection',/포옹|키스|손.*잡|hug|kiss|抱きしめ|キス/i],['care',/챙겨|위로|달래|comfort|気遣|慰め/i],['talk',/생각을 나누|대화|토론|이야기를 나누|exchanging.*views|exchanging.*thought|conversation|discuss|互いの考え|話し合|会話/i],['games',/게임|game|ゲーム/i],['cleaning',/청소|쓸고|먼지를 닦|정리하는|정돈하는|cleaning|tidying|掃除|整理|片づけ/i],['reading',/책을 읽|독서|reading|読書|本を読/i],['music',/음악을 듣|연주|music|音楽|演奏/i],['exercise',/운동|달리기|스트레칭|exercis|workout|stretch|運動|ストレッチ/i],['cooking',/요리|조리|cooking|料理|調理/i]];
  return patterns.find(([,pattern])=>pattern.test(title))?.[0]||null;
 }
 export const autonomousAllowed=(character,scene)=>!character?.autonomousActivityBlocks?.includes(autonomousActivity(scene));

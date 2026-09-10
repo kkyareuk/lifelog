@@ -1,3 +1,4 @@
+import './activity-settings.js?v=20260909dev305';
 import {installContextMenu} from './context-menu.js?v=20260909dev305';
 import {createNotificationOpenQueue} from './notification-open-queue.js?v=20260909dev305';
 import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
@@ -2688,7 +2689,7 @@ function bind(){
   });
   $(`[data-group-rules]`)?.addEventListener("submit",event=>{
     event.preventDefault();const form=event.currentTarget,data=new FormData(form),button=form.querySelector('button[type="submit"]');
-    runGroupAction(button,()=>groupApi.updateRules({memberCharacterLimit:data.get("memberCharacterLimit"),managerCharacterLimit:data.get("managerCharacterLimit"),allowHomeVisits:data.has("allowHomeVisits"),allowRelationshipProposals:data.has("allowRelationshipProposals"),allowScheduleProposals:data.has("allowScheduleProposals"),allowCohabitation:data.has("allowCohabitation"),allowMail:data.has("allowMail"),allowGifts:data.has("allowGifts")}),({en:"Multiplayer rules saved.",ja:"マルチのルールを保存しました。",ko:"멀티 규칙을 저장했어요."}[state.uiLanguage]||"멀티 규칙을 저장했어요."));
+    runGroupAction(button,()=>groupApi.updateRules({memberCharacterLimit:data.get("memberCharacterLimit"),managerCharacterLimit:data.get("managerCharacterLimit"),allowHomeVisits:data.has("allowHomeVisits"),allowRelationshipProposals:data.has("allowRelationshipProposals"),allowCharacterGroupProposals:data.has("allowCharacterGroupProposals"),allowMemberCatalogAdd:data.has("allowMemberCatalogAdd"),allowScheduleProposals:data.has("allowScheduleProposals"),allowCohabitation:data.has("allowCohabitation"),allowMail:data.has("allowMail"),allowGifts:data.has("allowGifts")}),({en:"Multiplayer rules saved.",ja:"マルチのルールを保存しました。",ko:"멀티 규칙을 저장했어요."}[state.uiLanguage]||"멀티 규칙을 저장했어요."));
   });
   $(`[data-group-copy-code]`)?.addEventListener("click",async event=>{
     const code=groupApi?.inviteDisplay(event.currentTarget.dataset.groupCopyCode)||"";
@@ -5752,7 +5753,7 @@ window.addEventListener("drawer-village-cloud-loaded",()=>{
 });
 window.addEventListener("drawer-village-guide-state",()=>requestAnimationFrame(maybeShowPageGuide));
 window.addEventListener("drawer-village-storage-usage",()=>{if(state.activeTab==="settings")render()});
-window.addEventListener("drawer-village-groups",()=>{if(state.activeTab==="mailbox"&&!mailboxNeedsRefresh())return;if(document.querySelector(".relationship-page dialog[open],.relation-editor-dialog[open],.character-group-dialog[open],.mail-letter[open],.village-feature-dialog[open],.shared-home-dialog[open],.routine-sheet-backdrop,.shared-character-editor[open],[data-shared-create-dialog][open],.shared-residents-screen [data-create-shared-resident],.shared-residents-screen [data-residence-request]"))return;if(document.activeElement?.closest?.("[data-player-mail], [data-group-presentation], [data-group-building-form], [data-group-rules], [data-group-proposal], [data-group-perception], [data-group-response]")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(["groups","town","observe","home","relationship","mailbox","routine","character"].includes(state.activeTab))render()});
+window.addEventListener("drawer-village-groups",()=>{if(state.activeTab==="mailbox"&&!mailboxNeedsRefresh())return;if(document.querySelector(".relationship-page dialog[open],.relation-editor-dialog[open],.character-group-dialog[open],.mail-letter[open],.village-feature-dialog[open],.shared-home-dialog[open],.routine-sheet-backdrop,.shared-character-editor[open],[data-shared-create-dialog][open],.shared-residents-screen [data-create-shared-resident],.shared-residents-screen [data-residence-request]"))return;if(document.activeElement?.closest?.("[data-player-mail], [data-group-presentation], [data-group-building-form], [data-group-rules], [data-group-proposal], [data-group-perception], [data-group-response]")&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(["groups","town","observe","home","relationship","mailbox","routine","character","catalog"].includes(state.activeTab))render()});
 window.addEventListener("parallel-city-cloud-loaded",render);
 window.addEventListener("beforeinstallprompt",event=>{event.preventDefault();deferredInstallPrompt=event;showInstallButton()});
 window.addEventListener("appinstalled",()=>{deferredInstallPrompt=null;document.querySelector("#install-drawer-village")?.remove();showToast("서랍마을 앱이 설치되었습니다")});

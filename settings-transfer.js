@@ -1,25 +1,25 @@
+import {portableMedia} from './portable-media.js?v=20260909dev305';
 import {withWardrobe,restoreWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {worldTransferDialog} from './world-transfer.js?v=20260909dev305';
 import {characterCodeDialog} from "./character-code.js?v=20260909dev305";
 import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev305';
-import {informationOnlyState} from './local-media.js?v=20260909dev305';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
-const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);
+const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','sharedScene']);
 function clean(value,depth=0){
   if(depth>20)throw Error('Invalid file');
   if(Array.isArray(value)){if(value.length>1000)throw Error('Invalid file');return value.map(v=>clean(v,depth+1))}
   if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).filter(([k])=>!['__proto__','constructor','prototype'].includes(k)).map(([k,v])=>[k,clean(v,depth+1)]));
-  if(typeof value==='string'&&value.length>100000)throw Error('Invalid file');
+  if(typeof value==='string'&&value.length>(/^data:image\//.test(value)?20*1024*1024:100000))throw Error('Invalid file');
   return value;
 }
 export function characterSettingsFile(character,catalog=state.catalog){
   const packed=withWardrobe(character,catalog);
   character={...packed,inventory:{fashion:packed.inventory?.fashion||[]}};
-  return {format:'drawer-village-character',version:1,mediaPolicy:'settings-only',character:clean(Object.fromEntries(Object.entries(informationOnlyState(character)).filter(([key])=>!excluded.has(key))))};
+  return {format:'drawer-village-character',version:1,mediaPolicy:'embedded',character:clean(Object.fromEntries(Object.entries(character).filter(([key])=>!excluded.has(key))))};
 }
 export function readSettingsFile(text){
-  if(text.length>10*1024*1024)throw Error('파일이 너무 커요.');
+  if(text.length>150*1024*1024)throw Error('파일이 너무 커요.');
   const file=clean(JSON.parse(text));
   if(file.version!==1||!['drawer-village-character','drawer-village-catalog'].includes(file.format))throw Error('서랍마을 설정 파일을 선택해 주세요.');
   if(file.format==='drawer-village-character'&&(!file.character||typeof file.character.name!=='string'))throw Error('서랍마을 설정 파일을 선택해 주세요.');
@@ -31,7 +31,7 @@ export function readSettingsFile(text){
 }
 export function importCharacterSettings(file,limit){
 if(characterEditorActive()){endCharacterEditor();window.DrawerVillageGroups?.select('');state.activeTab='character'}
-  const settings=clean(Object.fromEntries(Object.entries(informationOnlyState(file.character)).filter(([key])=>!excluded.has(key)))),before=cloneState();
+  const settings=clean(Object.fromEntries(Object.entries(file.character).filter(([key])=>!excluded.has(key)))),before=cloneState();
   settings.inventory={fashion:settings.inventory?.fashion||[]};
   const id=createCharacter(limit);if(!id)throw Error('남은 캐릭터 슬롯이 없어요.');
   try{updateCharacter(id,{...restoreWardrobe(settings,id,state.catalog),discovery:settings.discovery||{version:0,locks:{}}},false);if(!save(true))throw Error('저장하지 못했어요.');return id}
@@ -51,7 +51,7 @@ export function mergeCatalogFile(file){
   state.catalog=next;if(!save(true)){replaceState(before);throw Error('저장하지 못했어요.')}
 }
 export async function downloadSettings(file,name){
-  const data=JSON.stringify(file,null,2),filename=name.replace(/[\\/:*?"<>|]/g,'_')+'.json';
+  file=await portableMedia(file,state.uiLanguage);const data=JSON.stringify(file,null,2),filename=name.replace(/[\\/:*?"<>|]/g,'_')+'.json';
   const native=window.Capacitor?.Plugins?.ProfileExport;
   if(window.Capacitor?.isNativePlatform?.()&&native?.saveJson){await native.saveJson({filename,data});return}
   const url=URL.createObjectURL(new Blob([data],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
@@ -78,17 +78,17 @@ export function installSettingsTransfer({translate,toast,render,limit,townLimit}
       if(mode==='world-transfer'){await worldTransferDialog({homeId:button.dataset.shareHome||'',townId:button.dataset.shareTown||'',kind:button.dataset.shareKind||'town',render,toast,limits:()=>({characterLimit:limit(),townLimit:townLimit()})});return}
       if(mode==='character-code-export'||mode==='character-code-import'){await characterCodeDialog(mode,limit,render,toast);return}
       if(mode==='character-export'){if(active())await downloadSettings(characterSettingsFile(active()),active().name+'-설정');return}
-      if(mode==='all-export'){await downloadSettings({format:'drawer-village-backup',version:2,mediaPolicy:'device-only',exportedAt:new Date().toISOString(),gameState:informationOnlyState(cloneState())},'서랍마을-전체백업');return}
-      if(mode==='catalog-export'){const catalog=await chooseCatalog(state.catalog);if(catalog)await downloadSettings({format:'drawer-village-catalog',version:1,catalog:informationOnlyState(catalog)},'서랍마을-선택물품');return}
+      if(mode==='all-export'){await downloadSettings({format:'drawer-village-backup',version:2,mediaPolicy:'embedded',exportedAt:new Date().toISOString(),gameState:cloneState()},'서랍마을-전체백업');return}
+      if(mode==='catalog-export'){const catalog=await chooseCatalog(state.catalog);if(catalog)await downloadSettings({format:'drawer-village-catalog',version:1,catalog},'서랍마을-선택물품');return}
       const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.hidden=true;document.body.append(input);
       input.oncancel=()=>input.remove();
       input.onchange=async()=>{
         try{
-          const selected=input.files?.[0];if(!selected)return;if(selected.size>10*1024*1024)throw Error('파일이 너무 커요.');
+          const selected=input.files?.[0];if(!selected)return;if(selected.size>150*1024*1024)throw Error('파일이 너무 커요.');
           const file=readSettingsFile(await selected.text());
           if(mode==='character-import'&&file.format!=='drawer-village-character'||mode==='catalog-import'&&file.format!=='drawer-village-catalog')throw Error('서랍마을 설정 파일을 선택해 주세요.');
           if(file.format==='drawer-village-catalog'){const catalog=await chooseCatalog(file.catalog,true);if(!catalog)return;file.catalog=catalog}
-          if(file.format==='drawer-village-character'&&!confirm(t(file.format==='drawer-village-character'?'설정을 새 캐릭터로 불러올까요? 사진·생활 로그·관계는 포함하지 않아요.':'사전을 가져올까요? 같은 항목은 갱신하고 새 항목은 추가해요. 자동으로 동기화하지 않아요.')))return;
+          if(file.format==='drawer-village-character'&&!confirm(({ko:'사진과 설정을 새 캐릭터로 불러올까요? 생활 로그·관계는 포함하지 않아요.',en:'Import photos and settings as a new character? Life logs and relationships are not included.',ja:'写真と設定を新しいキャラクターに読み込みますか？生活ログと関係は含みません。'})[state.uiLanguage]||'사진과 설정을 새 캐릭터로 불러올까요?'))return;
           if(file.format==='drawer-village-character')importCharacterSettings(file,limit());else mergeCatalogFile(file);
           document.querySelectorAll('dialog[open]').forEach(d=>d.close());render();toast('기기에 저장됨');
         }catch(error){toast(t(error.message))}finally{input.remove()}

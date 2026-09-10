@@ -1,3 +1,4 @@
+import {LIFESTYLE_EVENTS} from './discovery-lifestyle.js?v=20260909dev305';
 import {expandDiscovery,calibrateDiscovery} from './discovery-extra.js?v=20260909dev305';
 import {PROFILE_EVENTS} from './discovery-profile.js?v=20260909dev305';
 // Sudden situations: players see only the scene and five actions, never the weights.
@@ -161,3 +162,5 @@ const motions={early:'ponder',rain:'surprise',parcel:'ponder',spill:'surprise',l
 for(const q of DISCOVERY_EVENTS)q.animation=motions[q.id]||q.animation;
 
 calibrateDiscovery(DISCOVERY_EVENTS);
+
+DISCOVERY_EVENTS.push(...LIFESTYLE_EVENTS);

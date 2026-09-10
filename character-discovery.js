@@ -1,5 +1,5 @@
+import {repeatDiscoveryCandidates} from './character-discovery-rules.js?v=20260909dev305';
 import {rememberScene,storyQuestions} from './story-events.js?v=20260909dev305';
-import {AUTONOMOUS_ACTIVITIES,autonomousActivity,activityLabel} from './autonomous-activities.js?v=20260909dev305';
 import {FORM_FIELDS} from './discovery-records.js?v=20260909dev305';
 import {recordEditor} from './discovery-records-ui.js?v=20260909dev305';
 import {state,active,updateCharacter,save} from './state.js?v=20260909dev305';
@@ -47,7 +47,7 @@ export function showDiscovery(c,scene,question,context={}){
 let requestTimer=null;
 export function considerDiscovery(c,scene,context={}){
  if(!context.groupId&&c&&state.characters[c.id]===c&&rememberScene(c,scene))save(false,false);
- bindIntervention(c,scene,context);
+
  if(pendingCheck&&!pendingCheck())close();
  document.querySelector('[data-discovery-tools]')?.remove();clearTimeout(requestTimer);
  document.querySelectorAll('[data-discovery-locks-menu]').forEach(b=>b.onclick=()=>showDiscoveryGroups(c,context));
@@ -60,7 +60,7 @@ export function considerDiscovery(c,scene,context={}){
  const last=()=>{try{return Number(localStorage.getItem(storageKey)||0)}catch{return 0}};
  const paint=()=>{if(!bar.isConnected)return;const wait=discoveryWait(last());button.disabled=wait>0;label.textContent=`${Math.floor(Math.ceil(wait/1000)/60)}:${String(Math.ceil(wait/1000)%60).padStart(2,'0')}`;label.className='discovery-countdown';button.setAttribute('aria-label',t('질문받기','Get a question','質問を受ける')+(wait>0?` (${Math.ceil(wait/60000)} min)`:''));button.title=c.name+' · '+t('10분마다 질문 하나','One question every 10 minutes','10分ごとに質問を1つ');requestTimer=setTimeout(paint,1000);};
  button.onclick=()=>{if(pending||document.querySelector('dialog[open]')||discoveryWait(last()))return;const id=observedCharacterId();const current=context.groupId?sharedDiscoveryCharacter(context.groupId,id):state.characters[id];if(!current)return;
- const people=context.groupId?Object.fromEntries((window.DrawerVillageGroups.getSnapshot().residents||[]).map(r=>[r.id,r])):state.characters;const events=storyQuestions(current,people).filter(q=>discoveryChoices(current,q).some(({choice})=>Object.keys(choice.targets).some(f=>!discoveryLocked(current,f))));const candidates=events.length?events:discoveryCandidates(current,scene||{title:'질문받기'});if(!candidates.length){if(DISCOVERY_FIELDS.every(f=>discoveryLocked(current,f)))showDiscoveryGroups(current,context);else{const message=document.createElement('dialog');message.className='character-discovery-dialog';const text=document.createElement('p');text.textContent=t('현재 설정으로 받을 수 있는 질문은 모두 답했어요. 새 질문이 추가되면 다시 받을 수 있어요.','All questions available for these settings have been answered. More can be taken when new questions are added.','現在の設定で受けられる質問にはすべて回答済みです。新しい質問が追加されると、また受けられます。');const done=document.createElement('button');done.textContent=t('닫기','Close','閉じる');done.onclick=()=>message.close();message.append(text,done);message.onclose=()=>message.remove();document.body.append(message);message.showModal();}return;}
+ const people=context.groupId?Object.fromEntries((window.DrawerVillageGroups.getSnapshot().residents||[]).map(r=>[r.id,r])):state.characters;const events=storyQuestions(current,people).filter(q=>discoveryChoices(current,q).some(({choice})=>Object.keys(choice.targets).some(f=>!discoveryLocked(current,f))));let candidates=events.length?events:discoveryCandidates(current,{title:'질문받기'});if(!candidates.length){const again=repeatDiscoveryCandidates(current);candidates=again.filter(q=>!current.discovery?.recent?.includes(q.id));if(!candidates.length)candidates=again;}if(!candidates.length){if(DISCOVERY_FIELDS.every(f=>discoveryLocked(current,f)))showDiscoveryGroups(current,context);else{const message=document.createElement('dialog');message.className='character-discovery-dialog';const text=document.createElement('p');text.textContent=t('지금 바꿀 수 있는 설정이 잠겨 있어요. 전체설정에서 바꾸고 싶은 항목의 잠금을 풀면 질문을 받을 수 있어요.','The available settings are locked. Unlock a setting in full settings to receive questions.','変更できる設定がロックされています。詳細設定で変更したい項目のロックを外すと質問を受けられます。');const done=document.createElement('button');done.textContent=t('닫기','Close','閉じる');done.onclick=()=>message.close();message.append(text,done);message.onclose=()=>message.remove();document.body.append(message);message.showModal();}return;}
  try{localStorage.setItem(storageKey,String(Date.now()));}catch{label.textContent=t('저장 공간을 확인해 주세요','Please check storage','保存領域を確認してください');return;}
  showDiscovery(current,scene||{},candidates[Math.floor(Math.random()*candidates.length)],context);clearTimeout(requestTimer);paint();};
  bar.append(button);rail.insertBefore(bar,stats);paint();
@@ -95,19 +95,3 @@ export function bindDiscoveryLocks(){
  }}paint();
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){session.reset();close()}});window.addEventListener('pagehide',()=>{session.reset();close()});
-
-function bindIntervention(c,scene,context){
- document.querySelector('[data-intervene]')?.remove();
- const command=document.querySelector('[data-character-command]');if(!c||!command||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id)))return;
- const button=document.createElement('button');button.type='button';button.dataset.intervene='';button.className='game-hud-character-command game-hud-intervene';button.textContent=t('개입하기','Intervene','介入する');command.before(button);
- button.onclick=()=>{
-  if(document.querySelector('dialog[open]'))return;
-  const d=document.createElement('dialog');d.className='character-discovery-dialog';const heading=document.createElement('h2');heading.textContent=t('스스로 하지 않을 행동','Activities they will not initiate','自分からはしない行動');d.append(heading);
-  const help=document.createElement('p');help.textContent=t('체크한 활동은 자동으로 하지 않아요. 직접 시키거나 일정으로 정하면 할 수 있어요. 수면 같은 필수 행동은 막을 수 없어요.','Checked activities will not start automatically. Direct commands and schedules still work. Essential activities such as sleep cannot be blocked.','選んだ活動は自動で始めません。直接指示したり予定に入れたりすると実行できます。睡眠などの必須行動は止められません。');d.append(help);
-  const currentKey=autonomousActivity(scene||{}),selected=new Set(c.autonomousActivityBlocks||[]);
-  if(currentKey){const now=document.createElement('p');now.textContent=t('현재 활동: ','Current activity: ','現在の活動：')+activityLabel(currentKey,state.uiLanguage);d.append(now);}
-  for(const key of Object.keys(AUTONOMOUS_ACTIVITIES).sort((a,b)=>Number(b===currentKey)-Number(a===currentKey))){const row=document.createElement('label');row.className='discovery-group-lock';const input=document.createElement('input');input.type='checkbox';input.value=key;input.checked=selected.has(key);input.onchange=()=>input.checked?selected.add(key):selected.delete(key);row.append(input,document.createTextNode(activityLabel(key,state.uiLanguage)));d.append(row);}
-  const status=document.createElement('p'),saveButton=document.createElement('button'),account=uid();saveButton.textContent=t('저장','Save','保存');saveButton.onclick=async()=>{saveButton.disabled=true;try{if(account!==uid())throw Error();const current=context.groupId?sharedDiscoveryCharacter(context.groupId,c.id):state.characters[c.id];if(!current)throw Error();const patch={autonomousActivityBlocks:[...selected]};if(context.groupId)await window.DrawerVillageGroups.saveResident({groupId:context.groupId,id:c.id,profile:{...current,...patch}});else{const before=current.autonomousActivityBlocks;current.autonomousActivityBlocks=patch.autonomousActivityBlocks;if(!save(true)){current.autonomousActivityBlocks=before;throw Error();}}d.close();window.DrawerVillageNavigation?.go('observe');}catch{status.textContent=t('저장하지 못했어요. 다시 시도해 주세요.','Could not save. Please try again.','保存できませんでした。再度お試しください。');saveButton.disabled=false;}};
-  const closeButton=document.createElement('button');closeButton.textContent=t('닫기','Close','閉じる');closeButton.onclick=()=>d.close();d.append(status,saveButton,closeButton);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
- };
-}

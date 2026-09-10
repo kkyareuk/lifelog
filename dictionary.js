@@ -17,14 +17,19 @@ const ui={kind:'',place:'',search:'',sort:'default',limit:30,editing:null,draft:
 let cfg,actions,owner,saving=false;
 const drafts=new Map();
 const copy={
+ 'catalog-limit':['The shared dictionary is full (80 items total).','共有辞典は合計80項目までです。'],
+ 'catalog-id-conflict':['An item ID conflicts with an existing item. Nothing was overwritten.','既存の項目とIDが競合しています。上書きしていません。'],
  '내 사전':['My dictionary','個人の辞典'],'멀티 그룹':['Multiplayer groups','マルチグループ'],
  '방장과 관리자만 공유 사전을 편집할 수 있어요.':['Only the owner and managers can edit this shared dictionary.','共有辞典はオーナーと管理者のみ編集できます。'],
  '공유 사전에 저장됨':['Saved to the shared dictionary','共有辞典に保存しました'],
  '저장하지 못했어요. 다시 시도해 주세요.':['Could not save. Please try again.','保存できませんでした。もう一度お試しください。']};
-const tr=s=>copy[s]?.[state.uiLanguage==='en'?0:state.uiLanguage==='ja'?1:-1]||cfg?.translate?.(s,s)||s;
+const koErrors={'catalog-limit':'공유 사전은 그룹 전체 합계 80개까지예요.','catalog-id-conflict':'기존 물품과 ID가 겹쳐 추가하지 않았어요. 원래 사전은 유지했어요.'};
+const tr=s=>(state.uiLanguage==='ko'&&koErrors[s])||copy[s]?.[state.uiLanguage==='en'?0:state.uiLanguage==='ja'?1:-1]||cfg?.translate?.(s,s)||s;
 let sharedCatalog={},scope='';
 const catalog=()=>scope?sharedCatalog:state.catalog;
-const canEdit=()=>!scope||cfg.shared?.group?.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||['owner','manager','operator'].includes(cfg.shared?.members?.find(m=>(m.uid||m.id)===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role);
+const manager=()=>!scope||cfg.shared?.group?.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||['owner','manager','operator'].includes(cfg.shared?.members?.find(m=>(m.uid||m.id)===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role);
+const canAdd=()=>manager()||cfg.shared?.group?.rules?.allowMemberCatalogAdd===true;
+const canEdit=()=>manager()||canAdd()&&!!ui.editing&&!ui.original;
 function addCatalogItem(kind,item){if(!scope)return addPersonal(kind,item);if(entries().length>=80)return null;const id=crypto.randomUUID();(sharedCatalog[kind]??=[]).push({...item,id});return id}
 function updateCatalogItem(kind,id,item){if(!scope)return updatePersonal(kind,id,item);sharedCatalog[kind]=sharedCatalog[kind].map(old=>old.id===id?{...old,...item,id}:old)}
 async function deleteCatalogItem(kind,id){if(!scope)return deletePersonal(kind,id);const groupId=scope;await window.DrawerVillageGroups.saveCatalogItem({groupId,kind,id,remove:true,expected:ui.original});if(scope===groupId)sharedCatalog[kind]=sharedCatalog[kind].filter(item=>item.id!==id)}
@@ -41,7 +46,7 @@ function matches(){return filterDictionary(entries(),ui)}
 function tile(item){return `<button type="button" class="dictionary-tile" data-dict-open="${esc(item.id)}" data-kind="${item.kind}">${itemArt(item,cfg.icons[item.kind])}<b>${esc(item.name)}</b>${ratingStars(item.rating)}</button>`}
 function results(){
   const items=matches();
-  return `${items.slice(0,ui.limit).map(tile).join('')}${canEdit()?`<button type="button" class="dictionary-tile dictionary-add" data-dict-add><span>＋</span><b>${tr('물품 추가하기')}</b></button>`:''}${items.length>ui.limit?`<button type="button" class="dictionary-more" data-dict-more>${tr('더 보기')} (${ui.limit} / ${items.length})</button>`:''}${!items.length?`<p class="dictionary-no-results">${tr('해당하는 물품이 없어요.')}</p>`:''}`;
+  return `${items.slice(0,ui.limit).map(tile).join('')}${canAdd()?`<button type="button" class="dictionary-tile dictionary-add" data-dict-add><span>＋</span><b>${tr('물품 추가하기')}</b></button>`:''}${items.length>ui.limit?`<button type="button" class="dictionary-more" data-dict-more>${tr('더 보기')} (${ui.limit} / ${items.length})</button>`:''}${!items.length?`<p class="dictionary-no-results">${tr('해당하는 물품이 없어요.')}</p>`:''}`;
 }
 function options(values,value){
   // Keep existing/custom values until the user explicitly picks a replacement.
@@ -51,7 +56,7 @@ function options(values,value){
 function list(){
   const groups=cfg.shared?.groups||[];ui.scope=scope;
   const filter=(key,label,type)=>`<button type="button" data-dict-${type}="${esc(key)}" aria-current="${ui[type]===key?'true':'false'}">${esc(tr(label))}</button>`;
-  return `<div class="dictionary-toolbar"><button class="dictionary-back" type="button" data-dict-home aria-label="${tr('메인 화면으로 돌아가기')}" ><img src="./assets/dictionary/back.webp" alt=""></button><input type="search" data-dict-search value="${esc(ui.search)}" placeholder="${tr('검색')}" aria-label="${tr('사전 검색')}"><nav class="dictionary-kinds" aria-label="${tr('카테고리')}">${filter('','전체','kind')}${Object.entries(cfg.labels).map(([k,v])=>filter(k,v,'kind')).join('')}</nav><nav class="dictionary-scopes" aria-label="${tr('멀티 그룹')}">${filter('','내 사전','scope')}${groups.map(g=>filter(g.id,g.name||g.id,'scope')).join('')}</nav></div><section class="dictionary-frame"><div class="dictionary-paper"><div class="dictionary-count"><span data-dict-count>${tr('총')} ${Object.values(catalog()).flat().filter(i=>!i.ownerId).length} / 80</span><select data-dict-sort aria-label="${tr('정렬')}">${options([['default','기본순'],['name','이름순'],['rating','별점순'],['new','최근 추가순']],ui.sort)}</select></div>${scope?(!canEdit()?`<p>${tr('방장과 관리자만 공유 사전을 편집할 수 있어요.')}</p>`:''):`<div class="dictionary-transfer-actions"><button type="button" data-settings-transfer="catalog-export">${({ko:'물품 선택 다운로드',en:'Download selected items',ja:'品物を選んでダウンロード'}[state.uiLanguage]||'물품 선택 다운로드')}</button><button type="button" data-settings-transfer="catalog-import">${tr("사전 파일 불러오기")}</button></div>`}<div class="dictionary-results" data-dict-results>${results()}</div></div></section>`;
+  return `<div class="dictionary-toolbar"><button class="dictionary-back" type="button" data-dict-home aria-label="${tr('메인 화면으로 돌아가기')}" ><img src="./assets/dictionary/back.webp" alt=""></button><input type="search" data-dict-search value="${esc(ui.search)}" placeholder="${tr('검색')}" aria-label="${tr('사전 검색')}"><nav class="dictionary-kinds" aria-label="${tr('카테고리')}">${filter('','전체','kind')}${Object.entries(cfg.labels).map(([k,v])=>filter(k,v,'kind')).join('')}</nav><nav class="dictionary-scopes" aria-label="${tr('멀티 그룹')}">${filter('','내 사전','scope')}${groups.map(g=>filter(g.id,g.name||g.id,'scope')).join('')}</nav></div><section class="dictionary-frame"><div class="dictionary-paper"><div class="dictionary-count"><span data-dict-count>${tr('총')} ${Object.values(catalog()).flat().filter(i=>scope||!i.ownerId).length} / 80</span><select data-dict-sort aria-label="${tr('정렬')}">${options([['default','기본순'],['name','이름순'],['rating','별점순'],['new','최근 추가순']],ui.sort)}</select></div>${scope?`<div class="dictionary-transfer-actions"><button type="button" data-dict-export>${({ko:'사진 포함 내보내기',en:'Export with photos',ja:'写真付きで書き出す'})[state.uiLanguage]||'사진 포함 내보내기'}</button>${canAdd()?`<button type="button" data-dict-share>${({ko:'내 사전에서 추가',en:'Add from my dictionary',ja:'個人辞典から追加'})[state.uiLanguage]||'내 사전에서 추가'}</button><button type="button" data-dict-import>${({ko:'JSON에서 추가',en:'Add from JSON',ja:'JSONから追加'})[state.uiLanguage]||'JSON에서 추가'}</button>`:''}</div>`+(!canEdit()?`<p>${tr('방장과 관리자만 공유 사전을 편집할 수 있어요.')}</p>`:''):`<div class="dictionary-transfer-actions"><button type="button" data-settings-transfer="catalog-export">${({ko:'물품 선택 다운로드',en:'Download selected items',ja:'品物を選んでダウンロード'}[state.uiLanguage]||'물품 선택 다운로드')}</button><button type="button" data-settings-transfer="catalog-import">${tr("사전 파일 불러오기")}</button></div>`}<div class="dictionary-results" data-dict-results>${results()}</div></div></section>`;
 }
 function editor(){
   const d=ui.draft,kind=ui.editing.kind;
@@ -67,7 +72,7 @@ export function renderDictionary(config){
   cfg=config;
   const nextScope=config.shared?.activeGroupId||'';
   if(nextScope!==scope){scope=nextScope;owner=null}
-  if(scope&&!ui.editing)sharedCatalog=Object.fromEntries((config.shared.catalog||[]).map(c=>[c.id,structuredClone(c.items||[])]));
+  if(scope&&(!ui.editing||owner===null))sharedCatalog=Object.fromEntries((config.shared.catalog||[]).map(c=>[c.id,structuredClone(c.items||[])]));
   if(owner!==state.characters){owner=state.characters;drafts.clear();ui.editing=null;ui.draft=null;ui.kind='';ui.place='';ui.search='';ui.limit=30}
   if(ui.editing&&(!scope||ui.original)&&!catalog()[ui.editing.kind]?.some(i=>i.id===ui.editing.id)){ui.editing=null;ui.draft=null}
   return `<section class="dictionary-shell" data-dictionary>${ui.editing?editor():list()}</section>`;
@@ -102,13 +107,21 @@ function bindFields(shell){
   shell.querySelectorAll('[data-dict-keyword]').forEach(el=>el.onchange=()=>{ui.draft.keywords=[...shell.querySelectorAll('[data-dict-keyword]:checked')].map(e=>e.dataset.dictKeyword)});
   shell.querySelector('form.dictionary-editor-fields')?.addEventListener('submit',e=>e.preventDefault());
 }
-function refreshResults(){const r=document.querySelector('[data-dict-results]');if(!r)return;r.innerHTML=results();document.querySelector('[data-dict-count]').textContent=`${tr('총')} ${Object.values(catalog()).flat().filter(i=>!i.ownerId).length} / 80`;actions?.translate?.(r)}
+function refreshResults(){const r=document.querySelector('[data-dict-results]');if(!r)return;r.innerHTML=results();document.querySelector('[data-dict-count]').textContent=`${tr('총')} ${Object.values(catalog()).flat().filter(i=>scope||!i.ownerId).length} / 80`;actions?.translate?.(r)}
 export function mountDictionary(callbacks){
   actions=callbacks;const shell=document.querySelector('[data-dictionary]');if(!shell)return;bindFields(shell);
   shell.addEventListener('click',async event=>{
     const b=event.target.closest('button');if(!b||saving)return;
     if(b.hasAttribute('data-dict-scope')){window.DrawerVillageGroups?.select(b.dataset.dictScope);return}
-    if(!canEdit()&&!b.hasAttribute('data-dict-open')&&!b.hasAttribute('data-dict-kind')&&!b.hasAttribute('data-dict-home')&&!b.hasAttribute('data-dict-more')){if(b.hasAttribute('data-dict-close'))closeEditor();return}
+    if(b.hasAttribute('data-dict-export')||b.hasAttribute('data-dict-share')||b.hasAttribute('data-dict-import')){
+      const groupId=scope;b.disabled=true;try{const transfer=await import('./settings-transfer.js?v=20260909dev305');
+      if(b.hasAttribute('data-dict-export')){const chosen=await transfer.chooseCatalog(catalog());if(chosen)await transfer.downloadSettings({format:'drawer-village-catalog',version:1,mediaPolicy:'embedded',catalog:chosen},'dictionary');return}
+      if(!canAdd())return;let incoming=state.catalog;
+      if(b.hasAttribute('data-dict-import')){const file=await new Promise(resolve=>{const input=document.createElement('input');input.type='file';input.accept='.json';input.onchange=()=>resolve(input.files?.[0]);input.oncancel=()=>resolve(null);input.click()});if(!file)return;if(file.size>150*1024*1024)throw Error(({ko:'파일이 너무 커요. 항목을 나눠서 가져와 주세요.',en:'The file is too large. Import fewer items at a time.',ja:'ファイルが大きすぎます。項目を分けて読み込んでください。'})[state.uiLanguage]||'The file is too large. Import fewer items at a time.');const pack=transfer.readSettingsFile(await file.text());if(pack.format!=='drawer-village-catalog')throw Error(({ko:'사전 JSON 파일을 선택해 주세요.',en:'Choose a dictionary JSON file.',ja:'辞典のJSONファイルを選択してください。'})[state.uiLanguage]||'Choose a dictionary JSON file.');incoming=pack.catalog;}
+      const chosen=await transfer.chooseCatalog(incoming,true);if(chosen){if(scope!==groupId)throw Error(({ko:'그룹이 바뀌었어요. 다시 시도해 주세요.',en:'The group changed. Please try again.',ja:'グループが変わりました。もう一度お試しください。'})[state.uiLanguage]||'The group changed. Please try again.');await window.DrawerVillageGroups.publishCatalog(chosen);}
+      }catch(error){actions.toast(tr(error.message))}finally{b.disabled=false}return;
+    }
+    if(!canEdit()&&!(canAdd()&&b.hasAttribute('data-dict-add'))&&!b.hasAttribute('data-dict-open')&&!b.hasAttribute('data-dict-kind')&&!b.hasAttribute('data-dict-home')&&!b.hasAttribute('data-dict-more')){if(b.hasAttribute('data-dict-close'))closeEditor();return}
     if(b.hasAttribute('data-dict-home')){actions.home();return}
     if(b.hasAttribute('data-dict-kind')||b.hasAttribute('data-dict-place')){const key=b.hasAttribute('data-dict-kind')?'kind':'place';ui[key]=b.dataset[key==='kind'?'dictKind':'dictPlace'];ui.limit=30;b.parentElement.querySelectorAll('button').forEach(e=>e.setAttribute('aria-current',String(e===b)));refreshResults()}
     if(b.dataset.dictOpen)open(b.dataset.kind,b.dataset.dictOpen);

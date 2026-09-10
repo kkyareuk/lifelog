@@ -1,3 +1,4 @@
+import {LIFESTYLE_EVENTS} from './discovery-lifestyle.js?v=20260909dev305';
 import {recordFormPatch} from './discovery-records.js?v=20260909dev305';
 import {PROFILE_FIELDS,profileValue} from './discovery-profile.js?v=20260909dev305';
 import {DISCOVERY_TRAITS} from './discovery-traits.js?v=20260909dev305';
@@ -5,10 +6,10 @@ import {DISCOVERY_EVENTS} from './discovery-events.js?v=20260909dev305';
 export const DISCOVERY_SCENES=DISCOVERY_EVENTS;
 const numeric={socialStyle:'socialEnergy',perceptionStyle:'sensingIntuition',decisionStyle:'thinkingFeeling',planningStyle:'perceivingJudging'};
 export const DISCOVERY_AXES=Object.fromEntries(Object.entries(DISCOVERY_TRAITS).map(([field,axis])=>[field,{...axis,numeric:numeric[field]}]));
-export const DISCOVERY_FIELDS=[...Object.keys(DISCOVERY_AXES),...PROFILE_FIELDS];
+export const DISCOVERY_FIELDS=[...Object.keys(DISCOVERY_AXES),...PROFILE_FIELDS,...LIFESTYLE_EVENTS.flatMap(q=>q.fields)];
 const clamp=v=>Math.max(0,Math.min(100,v));
 const ORIGINAL_FIELDS=new Set(['socialStyle','neatness','energyRhythm','perceptionStyle','planningStyle','decisionStyle','interference']);
-export const fixedDiscoveryField=field=>['gender','ageGroup'].includes(field)||field.startsWith('bodyProfile.');
+export const fixedDiscoveryField=field=>['gender','ageGroup','appearanceLevel','cosmeticSurgery'].includes(field)||field.startsWith('bodyProfile.');
 export function resetLegacyDiscoveryLocks(c){if(c.discovery?.lockRevision!==333)c.discovery={...c.discovery,lockRevision:333,known:{...c.discovery?.known,...Object.fromEntries(Object.entries(c.discovery?.locks||{}).filter(([f,v])=>v&&fixedDiscoveryField(f)).map(([f])=>[f,true]))},locks:{}};return c.discovery;}
 export function fixedDiscoveryKnown(c,field){
  if(!fixedDiscoveryField(field))return false;
@@ -19,7 +20,7 @@ export const discoveryLocked=(c,field)=>{const d=resetLegacyDiscoveryLocks(c);re
 export function discoveryScore(c,field){const axis=DISCOVERY_AXES[field],saved=c.discovery?.scores?.[field];if(Number.isFinite(saved))return clamp(saved);const i=axis.values.indexOf(c[field]);if(i>=0)return i/(axis.values.length-1)*100;if(field==='aggressionLevel'&&!c[field])return 0;return axis.numeric&&Number.isFinite(c[axis.numeric])?clamp(c[axis.numeric]/6*100):50;}
 export function manualDiscoveryPatch(c,patch){
  resetLegacyDiscoveryLocks(c);
- const profileLocks={};for(const field of PROFILE_FIELDS){const root=field.split('.')[0];if(Object.hasOwn(patch,root)&&JSON.stringify(profileValue(c,field))!==JSON.stringify(profileValue({...c,...patch},field)))profileLocks[field]=true;}
+ const profileLocks={};for(const field of [...PROFILE_FIELDS,...LIFESTYLE_EVENTS.flatMap(q=>q.fields)]){const root=field.split('.')[0];if(Object.hasOwn(patch,root)&&JSON.stringify(profileValue(c,field))!==JSON.stringify(profileValue({...c,...patch},field)))profileLocks[field]=true;}
  if(Object.keys(profileLocks).length)patch={...patch,discovery:{...c.discovery,...patch.discovery,locks:{...c.discovery?.locks,...patch.discovery?.locks,...profileLocks}}};
  const aliases=Object.fromEntries(Object.entries(numeric).map(([f,n])=>[n,f])),fields=Object.keys(patch).filter(k=>JSON.stringify(patch[k])!==JSON.stringify(c[k])).map(k=>aliases[k]||k).filter(k=>Object.hasOwn(DISCOVERY_AXES,k));if(!fields.length)return patch;
  const scores={...c.discovery?.scores},affinities={...c.discovery?.affinities},result={...patch};
@@ -31,7 +32,7 @@ export function manualDiscoveryPatch(c,patch){
 }
 export function discoveryAnswered(c){return [...new Set([...(c.discovery?.answered||[]),...(c.discovery?.recent||[])])];}
 export function discoveryEligible(c,q){
- if(discoveryAnswered(c).includes(q.id))return false;
+ if(!q.repeatable&&discoveryAnswered(c).includes(q.id))return false;
  if(q.id==='profile-tattoo-encounter'&&discoveryLocked(c,'bodyProfile.tattoos'))return false;
  if(q.fields&&q.fields.every(f=>discoveryLocked(c,f)))return false;
  if(['height','weight','medications','hospital'].includes(q.form)&&q.fields.some(f=>c.discovery?.known?.[f]))return false;
@@ -50,10 +51,10 @@ export function discoveryChoices(c,q,random=Math.random){
 export function discoveryCandidates(c,scene){
  if(!scene||scene.sceneUnavailable||scene.remote||/수면|잠을 자|자는 중|sleeping|asleep|睡眠|眠って/.test([scene.title,scene.kind].join(' ')))return [];
 
- return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.keys(o.effects).some(f=>!discoveryLocked(c,f)))));
+ return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.setting&&!discoveryLocked(c,o.setting.field))||(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.keys(o.effects).some(f=>!discoveryLocked(c,f)))));
 }
 export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
- if(!discoveryEligible(c,q)||!DISCOVERY_EVENTS.includes(q)&&!q.story||!Number.isInteger(index)||!q.choices[index])return null;
+ if(!discoveryEligible(c,q)||!DISCOVERY_EVENTS.includes(q)&&!q.story&&!(q.repeatable&&DISCOVERY_EVENTS.some(e=>e.id===q.id&&!e.field&&!e.form&&!e.setting))||!Number.isInteger(index)||!q.choices[index])return null;
  const choice=q.choices[index];if(choice.tattoo&&discoveryLocked(c,'bodyProfile.tattoos'))return null;
  const patch={},known={...c.discovery?.known},scores={...c.discovery?.scores},affinities={...c.discovery?.affinities};
  for(const [field,effect] of Object.entries(q.choices[index].targets||q.choices[index].effects)){
@@ -61,6 +62,7 @@ export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
   if(typeof effect==='number'){const target=clamp(choice.targets?effect:50+effect*20);const score=Math.round((discoveryScore(c,field)*.8+target*.2)*100)/100;scores[field]=score;patch[field]=axis.values[Math.round(score/100*(axis.values.length-1))];if(axis.numeric)patch[axis.numeric]=Math.round(score/100*6);}
   else{const current=axis.values.indexOf(c[field]),old=affinities[field]||axis.values.map((_,i)=>i===current?5:0);const values=axis.values.map((_,i)=>Math.max(0,Math.min(20,(old[i]||0)*.8+(i===effect.toward?5:0)*.2)));affinities[field]=values;let winner=current<0?effect.toward:current;for(let i=0;i<values.length;i++)if(values[i]>values[winner])winner=i;patch[field]=axis.values[winner];delete scores[field];}
  }
+ if(choice.setting){const {field,value}=choice.setting;if(discoveryLocked(c,field))return null;patch[field]=value;known[field]=true;}
  if(choice.append){const {field,value,opposite}=choice.append;if(discoveryLocked(c,field))return null;if(opposite&&(c[opposite]||[]).includes(value)){if(discoveryLocked(c,opposite))return null;patch[opposite]=(c[opposite]||[]).filter(v=>v!==value);}patch[field]=[...new Set([...(c[field]||[]),value])];known[field]=true;}
  if(choice.preference){if(discoveryLocked(c,'attractionTraits')||discoveryLocked(c,'dislikedAttractionTraits'))return null;const opposite=choice.preference==='attractionTraits'?'dislikedAttractionTraits':'attractionTraits';patch[choice.preference]=[...new Set([...(c[choice.preference]||[]),'문신이 있음'])];patch[opposite]=(c[opposite]||[]).filter(v=>v!=='문신이 있음');}
  if(q.form){const values=recordFormPatch(c,q.form,selectedValue,discoveryLocked);if(values===null)return null;Object.assign(patch,values);for(const key of [...Object.keys(selectedValue.values||{}),...Object.keys(selectedValue.records||{})]){const f='bodyProfile.'+key;if(!discoveryLocked(c,f))known[f]=true;}}
@@ -111,3 +113,5 @@ export function discoveryMetric(c,field){
  if(!values)return {value:null,label:c[field]||axis.values[0],categorical:true};
  const total=values.reduce((n,v)=>n+v,0);return {value:total?Math.round((values[current]||0)/total*100):null,label:c[field]||axis.values[0],categorical:true};
 }
+
+export function repeatDiscoveryCandidates(c){return DISCOVERY_EVENTS.filter(q=>!q.field&&!q.form&&!q.setting&&!q.choices.some(o=>o.append||o.tattoo||o.preference)&&q.choices.some(o=>Object.keys(o.targets||o.effects||{}).some(f=>!discoveryLocked(c,f)))).map(q=>({...q,repeatable:true}));}

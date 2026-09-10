@@ -51,11 +51,13 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const old=JSON.parse(home.layoutJson||'{}');tx.update(homeRef,{layoutJson:JSON.stringify({...old,...clean}),layoutRevision:revision+1,updatedAt:clock()});tx.update(ref,{lifeUpdatedAt:0});return {revision:revision+1};
     }),
     saveCatalogItem:async(uid,input)=>db.runTransaction(async tx=>{
-      const {ref,member}=await context(tx,input.groupId,uid);
-      if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
+      const {ref,member,group}=await context(tx,input.groupId,uid);
+      const manager=group.ownerUid===uid||['owner','manager','operator'].includes(member.role);
+      if(!manager&&group.rules?.allowMemberCatalogAdd!==true)fail('groups/manager-required',403);
       const kinds=['food','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','ingredient','weapon','animal','flower','misc'];
       if(!kinds.includes(input.kind))fail('invalid-catalog');
       const itemId=id(input.id),existing=rows(await tx.get(ref.collection('catalog'))),document=existing.find(c=>c.id===input.kind),items=document?.items||[],old=items.find(i=>i.id===itemId)||null;
+      if(!manager&&(old||input.remove))fail('groups/manager-required',403);
       if(!require('node:util').isDeepStrictEqual(old,input.expected??null))fail('groups/edit-conflict',409);
       if(!input.remove){
         if(!input.item||input.item.id!==itemId||typeof input.item.name!=='string'||!input.item.name.trim()||input.item.name.length>200)fail('invalid-catalog-item');
@@ -67,8 +69,9 @@ function createSharedTownService({db,engine,clock=Date.now}){
       tx.set(ref.collection('catalog').doc(input.kind),{items:next,updatedAt:clock()});tx.update(ref,{lifeUpdatedAt:0});return {saved:true,items:next};
     }),
     publishCatalog:async(uid,input)=>db.runTransaction(async tx=>{
-      const {ref,member}=await context(tx,input.groupId,uid);
-      if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
+      const {ref,member,group}=await context(tx,input.groupId,uid);
+      const manager=group.ownerUid===uid||['owner','manager','operator'].includes(member.role);
+      if(!manager&&group.rules?.allowMemberCatalogAdd!==true)fail('groups/manager-required',403);
       const kinds=['food','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','ingredient','weapon','animal','flower','misc'];
       if(!input.catalog||typeof input.catalog!=='object'||Array.isArray(input.catalog))fail('invalid-catalog');
       const existing=rows(await tx.get(ref.collection('catalog')));
@@ -76,7 +79,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
       for(const kind of Object.keys(input.catalog)){
         const incoming=input.catalog[kind];if(!kinds.includes(kind)||!Array.isArray(incoming)||incoming.length>80)fail('catalog-limit');
         if(incoming.some(item=>!item||typeof item!=='object'||typeof item.id!=='string'||typeof item.name!=='string'||item.id.length>180||item.name.length>200))fail('invalid-catalog-item');
-        const items=require('./catalog-media').mergeCatalogItems(existing.find(c=>c.id===kind)?.items||[],incoming,kind);total+=items.length-(existing.find(c=>c.id===kind)?.items||[]).length;if(total>80)fail('catalog-limit',409);
+        const items=require('./catalog-media').mergeCatalogItems(existing.find(c=>c.id===kind)?.items||[],incoming,kind,manager);total+=items.length-(existing.find(c=>c.id===kind)?.items||[]).length;if(total>80)fail('catalog-limit',409);
         if(JSON.stringify(items).length>100000)fail('catalog-size-limit');
         tx.set(ref.collection('catalog').doc(kind),{items,updatedAt:clock()});
       }

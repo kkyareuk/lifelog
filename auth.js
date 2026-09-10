@@ -1071,6 +1071,8 @@ async function updateGroupRules(patch={}){
     operatorCharacterLimit:number("managerCharacterLimit",groupState.group.rules?.managerCharacterLimit||100),
     managerCharacterLimit:number("managerCharacterLimit",groupState.group.rules?.managerCharacterLimit||100),
     allowRelationshipProposals:patch.allowRelationshipProposals!==false,
+    allowCharacterGroupProposals:patch.allowCharacterGroupProposals!==false,
+    allowMemberCatalogAdd:patch.allowMemberCatalogAdd===true,
     allowScheduleProposals:patch.allowScheduleProposals!==false,
     allowCohabitation:patch.allowCohabitation!==false,
     allowMail:patch.allowMail!==false,

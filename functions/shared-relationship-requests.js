@@ -31,7 +31,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    if(kind==='relationship'&&patch.cohabitHomeId&&(typeof patch.cohabitHomeId!=='string'||patch.cohabitHomeId.includes('/')))fail('cohabit-home-required');
    if(kind==='characterGroup'&&(!patch.name||String(patch.name).length>40))fail('name-required');
    const {root,group,member}=await membership(tx,gid,uid),privileged=group.ownerUid===uid||['owner','manager','operator'].includes(member.role),requestRef=root.collection('relationshipRequests').doc(key),targetId=input.targetId?id(input.targetId):'accepted-'+key;
-   if(!privileged&&group.rules?.[kind==='schedule'?'allowScheduleProposals':'allowRelationshipProposals']===false)fail('proposals-disabled',403);
+   if(!privileged&&(kind==='characterGroup'?(group.rules?.allowCharacterGroupProposals??group.rules?.allowRelationshipProposals):group.rules?.[kind==='schedule'?'allowScheduleProposals':'allowRelationshipProposals'])===false)fail('proposals-disabled',403);
    const [existing,old,recent]=await Promise.all([tx.get(requestRef),tx.get(root.collection(collection(kind)).doc(targetId)),tx.get(root.collection('relationshipRequests').where('senderUid','==',uid))]);
    if(existing.exists){const r=existing.data();if(r.senderUid!==uid||hash(r.patch)!==hash(patch)||r.targetId!==targetId)fail('request-id-conflict',409);return {id:key,status:r.status}}
    if(input.targetId&&!old.exists)fail('relationship-missing',404);
