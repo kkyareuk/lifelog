@@ -19,7 +19,17 @@
   "android": {
     "allowMixedContent": false,
     "captureInput": false,
-    "webContentsDebuggingEnabled": false
+    "webContentsDebuggingEnabled": false,
+    "includePlugins": [
+      "@capacitor-firebase/authentication",
+      "@capacitor/app",
+      "@capacitor/browser",
+      "@capacitor/local-notifications",
+      "@capacitor/network",
+      "@capacitor/push-notifications",
+      "@capacitor/splash-screen",
+      "@capacitor/status-bar"
+    ]
   },
   "plugins": {
     "SplashScreen": {

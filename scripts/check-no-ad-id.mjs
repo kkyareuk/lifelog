@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const config=JSON.parse(readFileSync('capacitor.config.json','utf8'));
+assert(!config.android.includePlugins.includes('@capacitor-community/admob'));
+const manifest=readFileSync('android/.qa-native-build/app/intermediates/packaged_manifests/release/processReleaseManifestForPackage/AndroidManifest.xml','utf8');
+assert(!manifest.includes('com.google.android.gms.permission.AD_ID'));
+assert(!manifest.includes('android.permission.ACCESS_ADSERVICES_AD_ID'));
+assert(!manifest.includes('com.google.android.gms.ads.MobileAdsInitProvider'));
+assert(/android:name="google_analytics_adid_collection_enabled"\s+android:value="false"/.test(manifest));
+assert(!readFileSync('android/app/capacitor.build.gradle','utf8').includes('capacitor-community-admob'));
+console.log('PASS Android excludes AdMob, both advertising ID permissions and automatic ads initialization; Analytics ad ID collection disabled');
