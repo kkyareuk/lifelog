@@ -1,3 +1,4 @@
+import {contextDestination} from './context-actions.js?v=20260909dev305';
 import {kissNarrative} from './kiss-narrative.js?v=20260909dev305';
 import {cohabitWorld} from './relationship-housing.js?v=20260909dev305';
 import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
@@ -1405,6 +1406,12 @@ DIRECTIVE_COPY.rest=DIRECTIVE_COPY.relax;
 for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile','affection'])DIRECTIVE_COPY[kind]={room:'living',minutes:20,social:true};
 for(const kind of Object.keys(SOCIAL_ACTIVITIES))DIRECTIVE_COPY[kind]={room:"living",minutes:20,social:true};
 function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
+  const memory=[...(actor.storyResponses||[])].reverse().find(r=>r.targetId===target?.id&&Date.now()-r.at<7*86400000);
+  if(memory&&['talk','hangout','comfort'].includes(kind)){
+    const lines={apology:['지난번 자신이 거칠게 내뱉었던 말을 하나씩 되짚으며, 그 부분만큼은 미안했다고 먼저 꺼내고 있어요.','They revisit the harsh words they used and begin by apologizing for that part.','前に自分が言いすぎた言葉を振り返り、そのことは悪かったと先に切り出しています。'],listen:['반박할 말이 떠올라도 잠시 삼키고, 지난번 끝까지 듣지 못했던 이야기를 기다리고 있어요.','They hold back a rebuttal and wait for the words they did not hear out last time.','反論を飲み込み、前に最後まで聞けなかった話を待っています。'],care:['준비한 간식을 슬쩍 밀어 놓고는, 대수롭지 않은 이야기부터 조심스럽게 꺼내고 있어요.','They slide a snack over and cautiously begin with something ordinary.','用意したお菓子をそっと差し出し、何でもない話から慎重に切り出しています。'],distance:['지난 다툼을 곧바로 꺼내지는 않고, 짧게 말을 주고받으며 마음이 가라앉기를 기다리고 있어요.','They keep the exchange brief, giving their feelings time to settle.','前の喧嘩をすぐには持ち出さず、短く言葉を交わして気持ちが落ち着くのを待っています。'],defend:['지난번 미처 못 했던 반박을 떠올리며, 이번에는 자기 입장을 끝까지 설명하려 하고 있어요.','They recall an unfinished rebuttal and try to explain their position fully.','前に言えなかった反論を思い出し、今度は自分の立場を最後まで説明しようとしています。']};
+    if(lines[memory.intent])return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 지난 일을 이야기하는 중`,`Talking with ${target.name} about what happened`,`${target.name}と前の出来事について話しています`][i],desc:lines[memory.intent][i]}]));
+  }
+
   const copy=baseSocialDirectiveCopy(kind,actor,target,subject,topic,options);
   if(subject&&['talk','gossip','debate','custom_social'].includes(kind)){const speaker=options.initiatorId===target.id?target:actor,listener=speaker===actor?target:actor;for(const language of ['ko','en','ja']){const story=personConversation(state,speaker,listener,subject,language);if(story)copy[language]={...copy[language],desc:actor===speaker?story.speakerText:story.listenerText,relationshipCue:'person-topic:'+story.mode}}return copy;}
   if(!subject&&topic&&['talk','debate','custom_social'].includes(kind)){const speaker=options.initiatorId===target.id?target:actor,listener=speaker===actor?target:actor;for(const language of ['ko','en','ja']){const story=topicConversation(state,speaker,listener,topic,language);if(story)copy[language]={...copy[language],desc:actor===speaker?story.speakerText:story.listenerText,relationshipCue:'topic:'+story.mode}}return copy;}
@@ -1495,7 +1502,9 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     character.timelineResetAt=startedAt;delete state.dailyPlans?.[characterId];save();return true;
   }
   let destination=targetScene,otherJourney=null;
-  if(!target||kind==='affection'){
+  if(options.contextTarget){destination=contextDestination(state,character,options.contextTarget,kind,startedAt,options.lifeTask||'');if(!destination||target)return false;
+    if(kind==='nap'&&destination.furniture){const beds=(state.homes[destination.visitHomeId]?.rooms[destination.room]?.furniturePlacements||[]).filter(p=>/침대|bed/i.test(p.item)),capacity=/커플|더블|2인|double|couple/i.test(destination.furniture.item)?2:1;const sleepers=state.order.filter(id=>id!==characterId).map(id=>state.characters[id]).filter(Boolean).filter(c=>{const s=scene(c);return s.home&&(s.visitHomeId||c.homeId)===destination.visitHomeId&&s.room===destination.room&&/sleep|nap|수면|자는|잠든|눈을 붙|眠/.test([s.kind,s.title].join(' '))&&(!s.furniture?.id?beds.length<=1:s.furniture.id===destination.furniture.id)});if(sleepers.length>=capacity)return false;} }
+  else if(!target||kind==='affection'){
     const home=state.homes?.[kind==='affection'?(targetScene?.home?(targetScene.visitHomeId||target.homeId):character.homeId):character.homeId];
     if(!home)return false;
     const canEnter=(c,room)=>{const resident=c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id),owner=room.ownerCharacterIds?.includes(c.id)||room.ownerMode==='all'&&resident,mode=room.accessMode||'everyone';return mode==='everyone'||owner||mode!=='owners'&&(room.accessCharacterIds?.includes(c.id)||room.accessGroups?.includes(resident?'residents':'outsiders'))};

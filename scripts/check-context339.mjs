@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {contextDestination,contextActions} from '../context-actions.js';
+import {rememberScene,storyQuestions} from '../story-events.js';
+import {discoveryAnswer} from '../character-discovery-rules.js';
+const c={id:'a',townId:'t',homeId:'h',discovery:{locks:{},lockRevision:333},planningStyle:'계획적'};
+const w={activeTownId:'t',world:{places:[{id:'p'}]},homes:{h:{id:'h',townId:'t',rooms:{r:{accessMode:'owners',ownerCharacterIds:['a'],furniturePlacements:[{id:'bed',item:'1인 침대',x:20,y:30}]}}}},characterDirectives:{}};
+const target={type:'furniture',homeId:'h',room:'r',id:'bed'};assert.equal(contextDestination(w,c,target,'nap').goal.point.x,20);assert.equal(contextDestination(w,{...c,id:'b'},target,'nap'),null);assert.equal(contextDestination(w,c,target,'meal'),null);assert.equal(contextDestination(w,c,{...target,id:'deleted'},'nap'),null);
+w.characterDirectives.b={homeId:'h',room:'r',furniture:{id:'bed'},endsAt:Date.now()+60000};assert.equal(contextDestination(w,c,target,'nap'),null);assert(contextDestination(w,c,{type:'place',id:'p'},'walk'));assert(!contextDestination(w,c,{type:'place',id:'missing'},'walk'));
+const now=Date.now();assert(rememberScene(c,{kind:'fight',title:'다투는 중',withId:'b',home:true,minute:30},now));assert(!rememberScene(c,{kind:'fight',title:'다투는 중',withId:'b',home:true,minute:30},now));const q=storyQuestions(c,{b:{name:'루카'}},now)[0];assert(q.question.en.includes('루카'));const patch=discoveryAnswer(c,q,0,now);assert(patch.storyResponses.length===1);Object.assign(c,patch);assert.equal(storyQuestions(c,{b:{name:'루카'}},now).length,0);assert.equal(storyQuestions(c,{},now).length,0);
+for(let i=0;i<3;i++)rememberScene(c,{kind:'cook',title:'요리',home:true,minute:60+i},now+i);assert(storyQuestions(c,{},now+3).some(q=>q.id.includes('cooking')));
+assert(contextActions({type:'furniture',item:'냉장고'}).some(a=>a.lifeTask==='simple_cook'));
+console.log('PASS target access/deletion/bed occupancy, event dedupe, contextual questions, answer memory, fixed actor isolation');

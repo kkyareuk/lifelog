@@ -53,7 +53,7 @@ export function discoveryCandidates(c,scene){
  return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.keys(o.effects).some(f=>!discoveryLocked(c,f)))));
 }
 export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
- if(!discoveryEligible(c,q)||!DISCOVERY_EVENTS.includes(q)||!Number.isInteger(index)||!q.choices[index])return null;
+ if(!discoveryEligible(c,q)||!DISCOVERY_EVENTS.includes(q)&&!q.story||!Number.isInteger(index)||!q.choices[index])return null;
  const choice=q.choices[index];if(choice.tattoo&&discoveryLocked(c,'bodyProfile.tattoos'))return null;
  const patch={},known={...c.discovery?.known},scores={...c.discovery?.scores},affinities={...c.discovery?.affinities};
  for(const [field,effect] of Object.entries(q.choices[index].targets||q.choices[index].effects)){
@@ -83,6 +83,7 @@ export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
   patch.bodyProfile={...c.bodyProfile,tattoos:marks};known['bodyProfile.tattoos']=true;
  }
  if(!Object.keys(patch).length&&!q.form)return null;
+ if(q.story)patch.storyResponses=[...(c.storyResponses||[]),{id:q.id,at:now,targetId:q.targetId||'',question:q.question,text:choice.text,intent:choice.intent}].slice(-120);
  patch.discovery={...c.discovery,version:c.discovery?.version||0,scores,affinities,known,tattooIndex,answered:[...discoveryAnswered(c),q.id],lastPromptAt:now,recent:[...(c.discovery?.recent||[]).filter(id=>id!==q.id),q.id].slice(-6),answerCount:(c.discovery?.answerCount||0)+1};return patch;
 }
 export function createDiscoverySession(random=Math.random){

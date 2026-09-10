@@ -1,3 +1,4 @@
+import {reflectStory} from './story-events.js?v=20260909dev305';
 import {autonomousAllowed,applyAutonomousPolicy} from './autonomous-activities.js?v=20260909dev305';
 import {interactionPriority,strangerScene} from "./stranger-interactions.js?v=20260909dev305";
 import {hairGrooming} from './hair-grooming.js?v=20260909dev305';
@@ -4873,7 +4874,7 @@ function privateLifeEvent(c,date){
  if(target){c.lastPrivateBlock=block;target.lastPrivateBlock=block;directCharacterActivity(c.id,'affection',{targetId:target.id,now,scenes:{[c.id]:base,[target.id]:baseEventFor(target,date)}});}
 }
 export function eventFor(c,date=new Date()){
-  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return applyAutonomousPolicy(c,overheardGossip(state,c,calculateEventFor(c,date),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
+  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return reflectStory(c,applyAutonomousPolicy(c,overheardGossip(state,c,calculateEventFor(c,date),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage),date.getTime(),state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
 }
 export function resolveHomeEncounter(c,current,otherScene,date){
   if(!current?.home||!current.withId||current.groupInteraction||current.manualDirective||current.routineId||current.giftExchange||isHomeSleepScene(current))return current;

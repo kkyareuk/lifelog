@@ -1,3 +1,4 @@
+import {rememberScene,storyQuestions} from './story-events.js?v=20260909dev305';
 import {AUTONOMOUS_ACTIVITIES,autonomousActivity,activityLabel} from './autonomous-activities.js?v=20260909dev305';
 import {FORM_FIELDS} from './discovery-records.js?v=20260909dev305';
 import {recordEditor} from './discovery-records-ui.js?v=20260909dev305';
@@ -12,11 +13,12 @@ export function sharedDiscoveryCharacter(groupId,id){
  const s=window.DrawerVillageGroups?.getSnapshot?.();if(!uid()||s?.activeGroupId!==groupId)return null;
  const r=s.residents?.find(r=>r.id===id);if(!r||r.ownerUid!==uid())return null;
  let profile;try{profile=typeof r.profileJson==='string'?JSON.parse(r.profileJson):r.profileJson||{}}catch{return null;}
- return {...profile,id:r.id,name:r.name,ownerUid:r.ownerUid};
+ let life;try{life=JSON.parse(r.lifeJson||'{}')}catch{life={}}return {...profile,storyMemory:life.storyMemory||profile.storyMemory,storyDays:life.storyDays||profile.storyDays,id:r.id,name:r.name,ownerUid:r.ownerUid};
 }
 export async function applyDiscoveryChoice(c,question,index,context={}){
  const current=context.groupId?sharedDiscoveryCharacter(context.groupId,c.id):state.characters[c.id];
  if(!current||(!context.groupId&&current!==c))throw Error('Character changed');
+ if(question.story&&!storyQuestions(current,context.groupId?Object.fromEntries((window.DrawerVillageGroups.getSnapshot().residents||[]).map(r=>[r.id,r])):state.characters).some(q=>q.id===question.id))return false;
  const patch=discoveryAnswer(current,question,index,Date.now(),context.selectedValue);if(!patch)return false;
  if(context.groupId){await window.DrawerVillageGroups.saveResident({groupId:context.groupId,id:c.id,profile:{...current,...patch}});return true;}
  const before={...Object.fromEntries(Object.keys(patch).map(k=>[k,c[k]])),timelineResetAt:c.timelineResetAt};updateCharacter(c.id,patch,false);if(!save(true)){Object.assign(c,before);throw Error('Save failed')}return true;
@@ -25,7 +27,7 @@ export function showDiscovery(c,scene,question,context={}){
  if(pending)return;const account=uid(),d=document.createElement('dialog');pending=d;d.className='character-discovery-dialog';
  const valid=()=>account===uid()&&(context.groupId?!!sharedDiscoveryCharacter(context.groupId,c.id)&&observedCharacterId()===c.id:state.characters[c.id]===c&&observedCharacterId()===c.id&&!state.sharedContext);
  pendingCheck=valid;
- const heading=document.createElement('h2');heading.textContent=t('이런 일이 생긴다면?','What would they do?','こんなことが起きたら？');
+ const heading=document.createElement('h2');heading.textContent=question.story?t('그날 이후의 이야기','After that day','あの日からの物語'):t('이런 일이 생긴다면?','What would they do?','こんなことが起きたら？');
  const art=document.createElement('div');art.className='discovery-animation reaction-'+question.animation;const symbol=document.createElement('span');symbol.textContent=question.icon;art.append(symbol);if(question.id==='spill'){art.classList.add('discovery-spill');symbol.className='discovery-spill-cup';const splash=document.createElement('i');splash.textContent='💧';splash.className='discovery-spill-drop';const reaction=document.createElement('b');reaction.textContent='!';reaction.className='discovery-spill-startle';art.append(splash,reaction);}
  if(c.icon||c.photo){const image=document.createElement('img');image.src=c.icon||c.photo;image.alt=c.name;art.append(image)}
  const name=document.createElement('b');name.textContent=c.name;const prompt=document.createElement('h3');prompt.textContent=question.question[state.uiLanguage]||question.question.ko;
@@ -44,6 +46,7 @@ export function showDiscovery(c,scene,question,context={}){
 }
 let requestTimer=null;
 export function considerDiscovery(c,scene,context={}){
+ if(!context.groupId&&c&&state.characters[c.id]===c&&rememberScene(c,scene))save(false,false);
  bindIntervention(c,scene,context);
  if(pendingCheck&&!pendingCheck())close();
  document.querySelector('[data-discovery-tools]')?.remove();clearTimeout(requestTimer);
@@ -57,7 +60,7 @@ export function considerDiscovery(c,scene,context={}){
  const last=()=>{try{return Number(localStorage.getItem(storageKey)||0)}catch{return 0}};
  const paint=()=>{if(!bar.isConnected)return;const wait=discoveryWait(last());button.disabled=wait>0;label.textContent=`${Math.floor(Math.ceil(wait/1000)/60)}:${String(Math.ceil(wait/1000)%60).padStart(2,'0')}`;label.className='discovery-countdown';button.setAttribute('aria-label',t('질문받기','Get a question','質問を受ける')+(wait>0?` (${Math.ceil(wait/60000)} min)`:''));button.title=c.name+' · '+t('10분마다 질문 하나','One question every 10 minutes','10分ごとに質問を1つ');requestTimer=setTimeout(paint,1000);};
  button.onclick=()=>{if(pending||document.querySelector('dialog[open]')||discoveryWait(last()))return;const id=observedCharacterId();const current=context.groupId?sharedDiscoveryCharacter(context.groupId,id):state.characters[id];if(!current)return;
- const candidates=discoveryCandidates(current,{title:'질문받기'});if(!candidates.length){if(DISCOVERY_FIELDS.every(f=>discoveryLocked(current,f)))showDiscoveryGroups(current,context);else{const message=document.createElement('dialog');message.className='character-discovery-dialog';const text=document.createElement('p');text.textContent=t('현재 설정으로 받을 수 있는 질문은 모두 답했어요. 새 질문이 추가되면 다시 받을 수 있어요.','All questions available for these settings have been answered. More can be taken when new questions are added.','現在の設定で受けられる質問にはすべて回答済みです。新しい質問が追加されると、また受けられます。');const done=document.createElement('button');done.textContent=t('닫기','Close','閉じる');done.onclick=()=>message.close();message.append(text,done);message.onclose=()=>message.remove();document.body.append(message);message.showModal();}return;}
+ const people=context.groupId?Object.fromEntries((window.DrawerVillageGroups.getSnapshot().residents||[]).map(r=>[r.id,r])):state.characters;const events=storyQuestions(current,people).filter(q=>discoveryChoices(current,q).some(({choice})=>Object.keys(choice.targets).some(f=>!discoveryLocked(current,f))));const candidates=events.length?events:discoveryCandidates(current,scene||{title:'질문받기'});if(!candidates.length){if(DISCOVERY_FIELDS.every(f=>discoveryLocked(current,f)))showDiscoveryGroups(current,context);else{const message=document.createElement('dialog');message.className='character-discovery-dialog';const text=document.createElement('p');text.textContent=t('현재 설정으로 받을 수 있는 질문은 모두 답했어요. 새 질문이 추가되면 다시 받을 수 있어요.','All questions available for these settings have been answered. More can be taken when new questions are added.','現在の設定で受けられる質問にはすべて回答済みです。新しい質問が追加されると、また受けられます。');const done=document.createElement('button');done.textContent=t('닫기','Close','閉じる');done.onclick=()=>message.close();message.append(text,done);message.onclose=()=>message.remove();document.body.append(message);message.showModal();}return;}
  try{localStorage.setItem(storageKey,String(Date.now()));}catch{label.textContent=t('저장 공간을 확인해 주세요','Please check storage','保存領域を確認してください');return;}
  showDiscovery(current,scene||{},candidates[Math.floor(Math.random()*candidates.length)],context);clearTimeout(requestTimer);paint();};
  bar.append(button);rail.insertBefore(bar,stats);paint();

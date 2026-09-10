@@ -1,3 +1,4 @@
+import {installContextMenu} from './context-menu.js?v=20260909dev305';
 import {createNotificationOpenQueue} from './notification-open-queue.js?v=20260909dev305';
 import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
@@ -6193,6 +6194,12 @@ window.addEventListener('drawer-village-character-notification-open',event=>noti
 window.addEventListener('drawer-village-auth-busy',()=>notificationOpenQueue.flush());
 window.addEventListener("drawer-village-character-notification-received",event=>{
   if(contactMailbox.accept(event.detail||{})&&state.activeTab==="mailbox")render();
+});
+installContextMenu({
+ enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
+ world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},
+ execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});render();return true}const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,...options});if(result)renderAfterCommand();return result},
+ more:(id,context)=>{if(context.groupId){const shared=activeShared();if(shared?.activeGroupId===context.groupId)withSharedWorld(shared,()=>openDirectCommandDialog(state.characters[id]));}else openDirectCommandDialog(state.characters[id]);}
 });
 let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;
