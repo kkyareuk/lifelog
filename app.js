@@ -2484,6 +2484,7 @@ function currentCharacterBookPage(){
   return state.characterPane==="profile"?`overview-${state.characterOverviewPane}`:state.characterPane==="body"?`body-${state.characterBodyPane}`:state.characterPane==="personality"?`personality-${state.characterPersonalityPane||"core"}`:state.characterPane;
 }
 function openCharacterBookPage(next){
+  if(state.characterProfileBook&&!["visual","overview-basic"].includes(next))return false;
   if(!CHARACTER_BOOK_PAGES.includes(next))return false;
   if(next.startsWith("overview-")){
     state.characterPane="profile";
@@ -3019,14 +3020,15 @@ function bind(){
     document.querySelectorAll("[data-toggle-character-roster]").forEach(button=>button.setAttribute("aria-expanded",String(open)));
   });
   $$("[data-open-quick-character-settings]").forEach(button=>button.addEventListener("click",()=>{
-    mobileCharacterEditorPane="quick";
-    mobileCharacterDraftDirty=false;
-    mobileCharacterEditorScroll=0;
-    mobileCharacterEditorOpenDetails=[];
-    mobileCharacterEditorDetailsCaptured=false;
+    mobileCharacterEditorPane=null;
+    state.characterProfileBook=true;
+    state.characterSettingsView="full";
+    state.characterPane="visual";
+    state.characterOverviewPane="basic";
     render();
   }));
   $$("[data-open-full-character-settings]").forEach(button=>button.addEventListener("click",()=>{
+    state.characterProfileBook=false;
     state.characterSettingsView="full";
     state.characterPane="visual";
     render();
@@ -3041,6 +3043,7 @@ function bind(){
   });
   $("[data-open-advanced-ld]")?.addEventListener("click",()=>{
     state.characterSettingsView="full";
+    state.characterProfileBook=false;
     state.characterPane="closet";
     save(true);render();
   });

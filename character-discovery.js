@@ -25,7 +25,7 @@ export function bindDiscoveryLocks(){
  const paintAll=()=>document.querySelectorAll('[data-discovery-lock]').forEach(b=>{
   const fields=b.dataset.discoveryLock.split(','),locked=fields.every(f=>discoveryLocked(c,f));
   const label=locked?t('설정 고정됨 · 눌러서 해제','Settings locked · click to unlock','設定は固定中・押すと解除'):t('플레이로 변화 중 · 눌러서 고정','Shaped by play · click to lock','プレイで変化中・押すと固定');
-  b.textContent=locked?'🔒':'🔓';b.title=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed',String(locked));
+  b.innerHTML=locked?'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3M12 14v3"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0M12 14v3"/></svg>';b.title=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed',String(locked));
  });
  const add=(parent,fields)=>{if(!fields.length||parent.querySelector(':scope > [data-discovery-lock]'))return;
   const b=document.createElement('button');b.type='button';b.dataset.discoveryLock=[...new Set(fields)].join(',');b.className='discovery-lock';
@@ -35,6 +35,7 @@ export function bindDiscoveryLocks(){
   add(control.parentElement,[field]);control.addEventListener('change',()=>queueMicrotask(paintAll));
  }}
  for(const fold of document.querySelectorAll('.character-field-fold')){const fields=[...fold.querySelectorAll('[data-field]')].map(e=>aliases[e.dataset.field]||e.dataset.field).filter(f=>DISCOVERY_FIELDS.includes(f));add(fold.querySelector('summary'),fields);}
+ for(const slot of document.querySelectorAll('[data-discovery-global-lock]'))add(slot,DISCOVERY_FIELDS);
  paintAll();
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){session.reset();close()}});window.addEventListener('pagehide',()=>{session.reset();close()});

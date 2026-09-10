@@ -1,0 +1,15 @@
+<ko-KR>
+태블릿 가로 화면에서 설정 책을 크게 펼치고 입력칸 간격과 크기를 개선했어요.
+책 상단에 성향 전체 잠금을 추가하고 자물쇠 아이콘을 선명하게 바꿨어요.
+캐릭터 프로필은 사진·색상·배치와 기본 정보를 담은 두 페이지로 구성했어요.
+</ko-KR>
+<en-US>
+Enlarged the settings book on landscape tablets and improved field sizes and spacing.
+Added a book-top trait lock and clearer lock icons.
+Character profile now has two pages: images, colors and layout, followed by basic information.
+</en-US>
+<ja-JP>
+タブレット横画面の設定ブックを大きくし、入力欄の大きさと間隔を改善しました。
+本の上部に傾向の一括ロックを追加し、鍵アイコンを見やすくしました。
+キャラクタープロフィールを、写真・色・配置と基本情報の2ページ構成にしました。
+</ja-JP>

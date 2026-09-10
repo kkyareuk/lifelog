@@ -3030,7 +3030,7 @@ function character(){
     :`<nav class="character-overview-page-controls" aria-label="${esc(t("개요 페이지 이동","개요 페이지 이동"))}"><button type="button" data-character-overview-pane="basic" aria-label="${esc(t("이전 페이지","이전 페이지"))}">◀</button><b>3</b><button type="button" data-character-pane="body" aria-label="${esc(t("다음 페이지","다음 페이지"))}">▶</button></nav>`;
   const overviewPortrait=c.icon?`<img src="${esc(c.icon)}" alt="${esc(c.name)} 아이콘 미리보기">`:profileAvatar(c);
   const profileOverviewMarkup=pane=>`<section class="character-profile-overview-page" data-overview-page="${pane}"><div class="character-overview-portrait">${overviewPortrait}</div>${overviewControlsFor(pane)}${pane==="basic"?overviewBasic:overviewLife}</section>`;
-  const profileOverviewBasicPane=()=>profileOverviewMarkup("basic");
+  const profileOverviewBasicPane=()=>{const html=profileOverviewMarkup("basic");return state.characterProfileBook?html.replace(/<button[^>]*data-character-overview-pane="life"[^>]*>[\s\S]*?<\/button>/g,'') : html;};
   const profileOverviewLifePane=()=>profileOverviewMarkup("life");
   const profileOverviewPane=()=>overviewPane==="basic"?profileOverviewBasicPane():profileOverviewLifePane();
   const bodyAppearance=c.bodyProfile?.appearance||{};
@@ -3268,7 +3268,8 @@ function character(){
   </section>`;
   const draftActions=`<nav class="character-draft-actions" aria-label="${esc(t("캐릭터 관리","캐릭터 관리"))}"><button type="button" class="character-draft-action" data-export-profile><span>${t("프로필 내보내기","프로필 내보내기")}</span></button><button type="button" class="character-draft-action" data-save><span>${t("캐릭터 저장","캐릭터 저장")}</span></button><button type="button" class="character-draft-action danger" data-delete-character="${c.id}"><span>${t("캐릭터 삭제","캐릭터 삭제")}</span></button></nav>`;
   const hubActions=`<section class="character-setting-choices" aria-label="${esc(t("캐릭터 설정 방식","캐릭터 설정 방식"))}"><span class="character-setting-cloth" aria-hidden="true"><img src="./assets/character-ui/character-cloth-white.png" alt=""></span><img class="character-setting-book" src="./assets/character-ui/book.png" alt=""><img class="character-setting-tape" src="./assets/character-ui/tape.png" alt=""><img class="character-setting-key" src="./assets/character-ui/key.png" alt=""><span class="character-favorite-preview" aria-label="${esc(t("선호 물품 미리보기","선호 물품 미리보기"))}">${favoriteSlots}</span><button type="button" class="character-setting-choice character-quick-choice" data-open-quick-character-settings><span><b>${t("캐릭터 프로필","캐릭터 프로필")}</b><small>${t("기본 모습을 정하고, 플레이의 선택으로 성향을 쌓아요.","Set the basics. Shape traits through choices in play.","基本を決め、プレイ中の選択で性格を育みます。")}</small></span></button><button type="button" class="character-setting-choice character-full-choice" data-open-full-character-settings><span><b>${t("전체설정","전체설정")}</b><small>${t("성향을 직접 다듬고, 자물쇠로 변화를 잠가요.","Edit traits. Lock them to prevent changes and questions.","傾向を編集し、鍵で変化と質問を止めます。")}</small></span></button></section>`;
-  const fullPaneMeta=[["visual","사진·색상·배치"],["profile","개요"],["body","신체"],["wardrobe","의상 취향"],["personality","성격"],["taste","취향·소지품"],["closet","옷장"]];
+  const profileBook=state.characterProfileBook===true;
+  const fullPaneMeta=(profileBook?[["visual","사진·색상·배치"],["profile","개요"]]:[["visual","사진·색상·배치"],["profile","개요"],["body","신체"],["wardrobe","의상 취향"],["personality","성격"],["taste","취향·소지품"],["closet","옷장"]]);
   const fullPaneTitle=fullPaneMeta.find(([key])=>key===fullActivePane)?.[1]||"전체 설정";
   const fullNavigation=`<details class="character-book-v9-menu"><summary class="character-book-v9-composite"><i class="character-book-v9-fill" aria-hidden="true"></i><span aria-hidden="true">☰</span><b>${t(fullPaneTitle,fullPaneTitle)}</b></summary><nav aria-label="${esc(t("전체 설정 메뉴","전체 설정 메뉴"))}">${fullPaneMeta.map(([key,label])=>`<button type="button" class="character-book-v9-composite ${key===fullActivePane?"on":""}" data-character-pane="${key}" ${key===fullActivePane?'aria-current="page"':""}><i class="character-book-v9-fill" aria-hidden="true"></i><span>${t(label,label)}</span></button>`).join("")}</nav></details>`;
   const cornerInk=`<button type="button" class="character-book-v8-ink" data-save aria-label="${esc(t("잉크병을 눌러 저장","잉크병을 눌러 저장"))}"><img src="./assets/home-ui/ink.png" alt=""></button>`;
@@ -3288,6 +3289,7 @@ function character(){
     {key:"taste",pane:"taste",get html(){return tasteBookPane()}},
     {key:"closet",pane:"closet",get html(){return closetBookPane()}}
   ];
+  if(profileBook)fullPageEntries.splice(2);
   const currentFullPageIndex=Math.max(0,fullPageEntries.findIndex(page=>page.key===currentFullPageKey));
   const fullSpreadStart=Math.floor(currentFullPageIndex/2)*2;
   const fullSpreadPages=fullPageEntries.slice(fullSpreadStart,fullSpreadStart+2);
@@ -3299,7 +3301,7 @@ function character(){
       <span class="character-book-v8-stage" aria-hidden="true"><img class="character-book-v8-wood" src="./assets/character-ui/character-wood-background.png" alt=""><span class="character-book-v8-book"></span></span>
       <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
       <button type="button" class="character-book-v8-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 화면으로 돌아가기","캐릭터 화면으로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
-      ${fullNavigation}
+      ${fullNavigation}<div class="character-book-lock-slot" data-discovery-global-lock></div>
       <main class="character-book-v8-page" data-book-page="${fullActivePane}">${fullPane}</main>
       ${cornerInk}${fullSave}
     </div>${fullBookDialogs}
@@ -3310,7 +3312,7 @@ function character(){
       <span class="character-book-v8-stage" aria-hidden="true"><img class="character-book-v8-wood" src="./assets/character-ui/character-wood-background.png" alt=""><span class="character-book-v8-book"></span></span>
       <h1 class="sr-only">${esc(c.name)} · ${t("전체 설정","전체 설정")}</h1>
       <button type="button" class="character-book-v8-back" data-close-full-character-settings aria-label="${esc(t("캐릭터 화면으로 돌아가기","캐릭터 화면으로 돌아가기"))}"><img src="./assets/character-ui/back.png" alt=""></button>
-      ${fullNavigation}
+      ${fullNavigation}<div class="character-book-lock-slot" data-discovery-global-lock></div>
       <div class="character-book-v8-spread">${fullSpreadContent}</div>
       <nav class="character-book-spread-controls" aria-label="${esc(t("펼친 책 페이지 이동","펼친 책 페이지 이동"))}"><button type="button" data-character-spread-step="-1" ${fullSpreadStart===0?"disabled":""} aria-label="${esc(t("이전 두 페이지","이전 두 페이지"))}">◀</button><b>${fullSpreadStart+1}${fullSpreadPages.length>1?`–${fullSpreadEnd}`:""}</b><button type="button" data-character-spread-step="1" ${fullSpreadEnd>=fullPageEntries.length?"disabled":""} aria-label="${esc(t("다음 두 페이지","다음 두 페이지"))}">▶</button></nav>
       ${cornerInk}${fullSave}
