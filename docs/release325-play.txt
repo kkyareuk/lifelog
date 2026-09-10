@@ -1,0 +1,18 @@
+<ko-KR>
+간단한 캐릭터 프로필을 복원하고 프로필 사진·LD 사진 추가와 배치 조정을 넣었어요.
+각 성향 제목 옆에서 잠김·풀림 상태를 확인할 수 있어요.
+돌발 상황 24개와 행동 선택지 120개를 추가했어요. 선택이 쌓이면 여러 성향과 이후 로그에 조금씩 반영돼요.
+멀티에서도 본인 캐릭터의 질문에 답할 수 있도록 연결했어요.
+</ko-KR>
+<en-US>
+Restored the simple character profile with profile/LD image uploads and placement controls.
+Locks now sit beside trait titles with clear status labels.
+Added 24 situations and 120 actions that gradually shape traits and future logs.
+Connected questions for your own multiplayer characters.
+</en-US>
+<ja-JP>
+簡単なキャラクタープロフィールを復元し、プロフィール・LD画像の追加と配置調整を加えました。
+各傾向の見出し横で固定・解除を確認できます。
+24の突発状況と120の行動選択肢を追加。選択の積み重ねが傾向と以後のログに少しずつ反映されます。
+マルチでも自分のキャラクターの質問に答えられるよう接続しました。
+</ja-JP>

@@ -1,0 +1,14 @@
+[
+  {
+    "type": "apk",
+    "bytes": 62485736,
+    "sha256": "ecaea525b547634fd67019c685cf1b52694a997cd583f59d6678764ae953a431",
+    "verifiedWebAssets": 303
+  },
+  {
+    "type": "aab",
+    "bytes": 61768286,
+    "sha256": "e07796bb794d3650fa22043af56903bd7378e9a201c15014a64f67e4ee20319a",
+    "verifiedWebAssets": 303
+  }
+]

@@ -7964,8 +7964,11 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
 @keyframes discovery-float{50%{transform:translateY(-7px)}}@keyframes discovery-tidy{50%{transform:translateX(10px) rotate(35deg)}}@keyframes discovery-page{50%{transform:rotate(-12deg)}}@keyframes discovery-talk{50%{transform:scale(1.15)}}
 @media(prefers-reduced-motion:reduce){.discovery-animation span{animation:none}}
 
-.character-book-lock-slot{position:absolute;z-index:61;right:6%;top:12%;pointer-events:auto}
-body #app .character-book-v8 button.discovery-lock{display:inline-grid!important;place-items:center!important;flex:none!important;width:34px!important;min-width:34px!important;height:34px!important;min-height:34px!important;padding:6px!important;border:1px solid #a68b61!important;border-radius:10px!important;background:#f8eed8!important;box-shadow:none!important;color:#65451f!important;vertical-align:middle!important}
-.discovery-lock svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
-.discovery-lock[aria-pressed=true]{background:#dbc399!important}
-@media(min-width:721px) and (orientation:landscape){.character-book-lock-slot{right:29%;top:4%}}
+body #app .character-book-v8 button.discovery-lock{display:inline-grid!important;place-items:center!important;flex:none!important;width:auto!important;min-width:48px!important;height:25px!important;min-height:25px!important;padding:3px 5px!important;gap:3px!important;grid-auto-flow:column!important;font-size:10px!important;white-space:nowrap!important;border:1px solid #a68b61!important;border-radius:10px!important;background:#f8eed8!important;box-shadow:none!important;color:#65451f!important;vertical-align:middle!important}
+.discovery-lock svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+body #app .character-book-v8 button.discovery-lock[aria-pressed=true]{background:#65451f!important;color:#fff8eb!important;-webkit-text-fill-color:#fff8eb!important}
+body #app .character-book-v8 button.discovery-lock[aria-pressed=false]{background:#f4f5e7!important;color:#52652f!important;-webkit-text-fill-color:#52652f!important}
+body #app .character-book-v8 .discovery-title{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:5px!important;white-space:normal!important}
+.discovery-title .discovery-lock{flex-shrink:0!important}
+.character-quick-media{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.character-quick-media button{min-height:48px;padding:8px;border:1px solid #b8a995;border-radius:12px;background:#f3e7d0;color:#493829;font-size:12px;white-space:normal}

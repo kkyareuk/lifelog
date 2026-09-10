@@ -1698,7 +1698,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
-    if(!sceneDate&&!selectionOnly)requestAnimationFrame(()=>{const c=active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)});
+    if(!sceneDate&&!selectionOnly)requestAnimationFrame(()=>{const shared=activeShared();if(shared&&["observe","home"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
     if(!selectionOnly)requestAnimationFrame(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
@@ -3020,11 +3020,13 @@ function bind(){
     document.querySelectorAll("[data-toggle-character-roster]").forEach(button=>button.setAttribute("aria-expanded",String(open)));
   });
   $$("[data-open-quick-character-settings]").forEach(button=>button.addEventListener("click",()=>{
-    mobileCharacterEditorPane=null;
-    state.characterProfileBook=true;
-    state.characterSettingsView="full";
-    state.characterPane="visual";
-    state.characterOverviewPane="basic";
+    state.characterProfileBook=false;
+    state.characterSettingsView="hub";
+    mobileCharacterEditorPane="quick";
+    mobileCharacterDraftDirty=false;
+    mobileCharacterEditorScroll=0;
+    mobileCharacterEditorOpenDetails=[];
+    mobileCharacterEditorDetailsCaptured=false;
     render();
   }));
   $$("[data-open-full-character-settings]").forEach(button=>button.addEventListener("click",()=>{

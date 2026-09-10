@@ -20,7 +20,7 @@ export function syncSharedCharacterEditor(){
  const world=cached||incoming;
  if(cached){world.characters=Object.fromEntries(Object.entries(incoming.characters).map(([id,c])=>[id,cached.characters[id]||c]));world.order=incoming.order;world.homes=incoming.homes;world.towns=incoming.towns;world.world=incoming.world;}
  const defaults=runIsolatedWorld(emptyWorld(),()=>{const id=createCharacter();return structuredClone(state.characters[id])});
- for(const id of world.order)world.characters[id]={...structuredClone(defaults),...world.characters[id],id};
+ for(const id of world.order)world.characters[id]={...structuredClone(defaults),...world.characters[id],discovery:world.characters[id].discovery||{version:0,locks:{}},id};
  world.order=world.order.filter(id=>world.characters[id]?.ownerUid===uid);
  if(!world.order.includes(world.activeId))world.activeId=world.order[0];
  for(const key of ['uiLanguage','uiScale','uiFont','animationIntensity','ownerName','ownerPhoto','homeUiTheme','colorMode','visualTheme','soundMuted','soundEffectsVolume','backgroundMusicVolume','backgroundMusicMuted'])world[key]=state[key];

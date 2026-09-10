@@ -1,41 +1,55 @@
 import {state,active,updateCharacter,save} from './state.js?v=20260909dev305';
 import {DISCOVERY_FIELDS,DISCOVERY_AXES,discoveryLocked,createDiscoverySession,discoveryAnswer} from './character-discovery-rules.js?v=20260909dev305';
-const session=createDiscoverySession();let pending=null,pendingCheck=null;
+const session=createDiscoverySession();let pending=null,pendingCheck=null,worldKey='';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const close=()=>{pending?.close();pending?.remove();pending=null;pendingCheck=null};
-export function showDiscovery(c,scene,question){
- if(pending)return;const account=window.ParallelCityAuth?.getInfo?.()?.user?.uid,character=c,lang=state.uiLanguage||'ko';
- const d=document.createElement('dialog');pending=d;d.className='character-discovery-dialog';const header=document.createElement('header'),title=document.createElement('h2');title.textContent=t('조금 더 알아가는 순간','A moment to learn more','少しずつ知っていく瞬間');header.append(title);
- const art=document.createElement('div');art.className='discovery-animation '+question.animation;const symbol=document.createElement('span');symbol.textContent=question.icon;art.append(symbol);const image=c.icon||c.photo;if(image){const img=document.createElement('img');img.src=image;img.alt=c.name;art.append(img)}
- const name=document.createElement('b');name.textContent=c.name;const context=document.createElement('p');context.className='discovery-context';context.textContent=scene.title;const prompt=document.createElement('h3');prompt.textContent=question.question[lang]||question.question.ko;const choices=document.createElement('div');choices.className='discovery-choices';const status=document.createElement('p');status.setAttribute('role','status');
- const valid=()=>state.characters[c.id]===character&&account===window.ParallelCityAuth?.getInfo?.()?.user?.uid&&!state.sharedContext&&!discoveryLocked(c,question.field);
- pendingCheck=valid;
- question.choices.forEach((choice,index)=>{const b=document.createElement('button');b.type='button';b.textContent=choice.text[lang]||choice.text.ko;b.onclick=()=>{if(!valid()){close();return;}const patch=discoveryAnswer(c,question,index);if(!patch){close();return;}const old={...Object.fromEntries(Object.keys(patch).map(key=>[key,c[key]])),timelineResetAt:c.timelineResetAt};updateCharacter(c.id,patch,false);if(!save(true)){Object.assign(c,old);status.textContent=t('저장하지 못했어요. 다시 선택해 주세요.','Could not save. Please choose again.','保存できませんでした。もう一度選んでください。');return;}close();};choices.append(b)});
- const hint=document.createElement('small');hint.textContent=t('답할 때마다 성향이 조금씩 달라져 다음 로그에 반영돼요. 넘기면 바뀌지 않아요. 전체설정에서 직접 바꾸거나 고정할 수 있어요.','Each answer gradually shifts traits used in future logs. Skipping changes nothing. Edit or lock traits in full settings.','答えるたびに傾向が少しずつ変わり、以後のログに反映されます。見送ると変わりません。全設定で変更・固定できます。');const skip=document.createElement('button');skip.type='button';skip.textContent=t('지금은 넘기기','Skip for now','今は見送る');skip.onclick=close;d.append(header,art,name,context,prompt,choices,hint,status,skip);d.onclose=()=>{d.remove();if(pending===d)pending=null;pendingCheck=null};document.body.append(d);d.showModal();
+const uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
+export function sharedDiscoveryCharacter(groupId,id){
+ const s=window.DrawerVillageGroups?.getSnapshot?.();if(!uid()||s?.activeGroupId!==groupId)return null;
+ const r=s.residents?.find(r=>r.id===id);if(!r||r.ownerUid!==uid())return null;
+ let profile;try{profile=typeof r.profileJson==='string'?JSON.parse(r.profileJson):r.profileJson||{}}catch{return null;}
+ return {...profile,id:r.id,name:r.name,ownerUid:r.ownerUid};
 }
-export function considerDiscovery(c,scene){
+export async function applyDiscoveryChoice(c,question,index,context={}){
+ const current=context.groupId?sharedDiscoveryCharacter(context.groupId,c.id):state.characters[c.id];
+ if(!current||(!context.groupId&&current!==c))throw Error('Character changed');
+ const patch=discoveryAnswer(current,question,index);if(!patch)return false;
+ if(context.groupId){await window.DrawerVillageGroups.saveResident({groupId:context.groupId,id:c.id,profile:{...current,...patch}});return true;}
+ const before={...Object.fromEntries(Object.keys(patch).map(k=>[k,c[k]])),timelineResetAt:c.timelineResetAt};updateCharacter(c.id,patch,false);if(!save(true)){Object.assign(c,before);throw Error('Save failed')}return true;
+}
+export function showDiscovery(c,scene,question,context={}){
+ if(pending)return;const account=uid(),d=document.createElement('dialog');pending=d;d.className='character-discovery-dialog';
+ const valid=()=>account===uid()&&(context.groupId?!!sharedDiscoveryCharacter(context.groupId,c.id):state.characters[c.id]===c&&active()?.id===c.id&&!state.sharedContext);
+ pendingCheck=valid;
+ const heading=document.createElement('h2');heading.textContent=t('이런 일이 생긴다면?','What would they do?','こんなことが起きたら？');
+ const art=document.createElement('div');art.className='discovery-animation '+question.animation;const symbol=document.createElement('span');symbol.textContent=question.icon;art.append(symbol);
+ if(c.icon||c.photo){const image=document.createElement('img');image.src=c.icon||c.photo;image.alt=c.name;art.append(image)}
+ const name=document.createElement('b');name.textContent=c.name;const prompt=document.createElement('h3');prompt.textContent=question.question[state.uiLanguage]||question.question.ko;
+ const choices=document.createElement('div');choices.className='discovery-choices';const status=document.createElement('p');status.setAttribute('role','status');
+ question.choices.forEach((choice,index)=>{const b=document.createElement('button');b.type='button';b.textContent=choice.text[state.uiLanguage]||choice.text.ko;b.onclick=async()=>{
+  if(!valid()){close();return}choices.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent=t('선택을 저장하고 있어요…','Saving your choice…','選択を保存しています…');
+  try{await applyDiscoveryChoice(c,question,index,context);if(pending===d)close();}catch{if(!valid()){close();return}choices.querySelectorAll('button').forEach(b=>b.disabled=false);status.textContent=t('저장하지 못했어요. 다시 선택해 주세요.','Could not save. Please choose again.','保存できませんでした。もう一度選んでください。');}
+ };choices.append(b)});
+ const hint=document.createElement('small');hint.textContent=t('선택이 쌓이면 이 캐릭터의 모습도 조금씩 달라져요. 잠근 설정은 그대로 유지돼요.','Their choices gradually shape who they are. Locked settings stay unchanged.','選択を重ねると、少しずつその人らしさが育ちます。固定した設定は変わりません。');
+ const skip=document.createElement('button');skip.type='button';skip.textContent=t('지금은 넘기기','Skip for now','今は見送る');skip.onclick=close;d.append(heading,art,name,prompt,choices,hint,status,skip);d.onclose=()=>{d.remove();if(pending===d){pending=null;pendingCheck=null}};document.body.append(d);d.showModal();
+}
+export function considerDiscovery(c,scene,context={}){
+ const key=(context.groupId||'personal')+':'+(uid()||'guest');if(key!==worldKey){worldKey=key;session.reset();close();}
  if(pendingCheck&&!pendingCheck())close();
- const info=window.ParallelCityAuth?.getInfo?.();if(!c||state.sharedContext||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId||document.visibilityState==='hidden'||!['observe','home'].includes(state.activeTab)||info?.startupSyncing||info?.busy){session.reset();close();return;}
- const question=session.offer(c,scene,{blocked:!!document.querySelector('dialog[open]')});if(!question)return;
- const old=c.discovery;c.discovery={...old,lastPromptAt:Date.now()};if(!save(true)){c.discovery=old;return;}showDiscovery(c,scene,question);
+ const info=window.ParallelCityAuth?.getInfo?.();if(!c||document.visibilityState==='hidden'||!['observe','home'].includes(state.activeTab)||info?.startupSyncing||info?.busy||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id))){session.reset();close();return;}
+ const question=session.offer(c,scene,{blocked:!!document.querySelector('dialog[open]')});if(question)showDiscovery(c,scene,question,context);
 }
 export function bindDiscoveryLocks(){
- if(state.characterSettingsView!=='full'||state.sharedContext)return;const c=active();if(!c)return;
- const aliases=Object.fromEntries(Object.entries(DISCOVERY_AXES).filter(([,a])=>a.numeric).map(([f,a])=>[a.numeric,f]));
- const paintAll=()=>document.querySelectorAll('[data-discovery-lock]').forEach(b=>{
-  const fields=b.dataset.discoveryLock.split(','),locked=fields.every(f=>discoveryLocked(c,f));
-  const label=locked?t('설정 고정됨 · 눌러서 해제','Settings locked · click to unlock','設定は固定中・押すと解除'):t('플레이로 변화 중 · 눌러서 고정','Shaped by play · click to lock','プレイで変化中・押すと固定');
-  b.innerHTML=locked?'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3M12 14v3"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0M12 14v3"/></svg>';b.title=label;b.setAttribute('aria-label',label);b.setAttribute('aria-pressed',String(locked));
- });
- const add=(parent,fields)=>{if(!fields.length||parent.querySelector(':scope > [data-discovery-lock]'))return;
-  const b=document.createElement('button');b.type='button';b.dataset.discoveryLock=[...new Set(fields)].join(',');b.className='discovery-lock';
-  b.onclick=e=>{e.preventDefault();e.stopPropagation();const before=c.discovery,locked=fields.every(f=>discoveryLocked(c,f));c.discovery={...before,locks:{...before?.locks,...Object.fromEntries(fields.map(f=>[f,!locked]))}};if(!save(true)){c.discovery=before;return;}if(pendingCheck&&!pendingCheck())close();paintAll();};parent.append(b);
- };
+ if(state.characterSettingsView!=='full')return;const c=active();if(!c||state.sharedContext&&c.ownerUid!==uid())return;
+ const paint=()=>document.querySelectorAll('[data-discovery-lock]').forEach(b=>{const locked=discoveryLocked(c,b.dataset.discoveryLock);const label=locked?t('잠김','Locked','固定'):t('풀림','Unlocked','解除');
+ b.innerHTML=(locked?'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3M12 14v3"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 018 0M12 14v3"/></svg>')+'<span>'+label+'</span>';b.title=locked?t('이 값으로 고정 · 눌러서 해제','Fixed at this value · click to unlock','この値で固定・押すと解除'):t('선택에 따라 변화 · 눌러서 고정','Changes through choices · click to lock','選択で変化・押すと固定');b.setAttribute('aria-label',label+' · '+b.title);b.setAttribute('aria-pressed',String(locked));});
  for(const field of DISCOVERY_FIELDS){const numeric=DISCOVERY_AXES[field].numeric;for(const control of document.querySelectorAll(`[data-field="${field}"]${numeric?`,[data-field="${numeric}"]`:''}`)){
-  add(control.parentElement,[field]);control.addEventListener('change',()=>queueMicrotask(paintAll));
- }}
- for(const fold of document.querySelectorAll('.character-field-fold')){const fields=[...fold.querySelectorAll('[data-field]')].map(e=>aliases[e.dataset.field]||e.dataset.field).filter(f=>DISCOVERY_FIELDS.includes(f));add(fold.querySelector('summary'),fields);}
- for(const slot of document.querySelectorAll('[data-discovery-global-lock]'))add(slot,DISCOVERY_FIELDS);
- paintAll();
+  const parent=control.parentElement;if(parent.querySelector('[data-discovery-lock]'))continue;
+  const title=parent.querySelector(':scope>b,:scope>legend');if(!title)continue;title.classList.add('discovery-title');const b=document.createElement('button');b.type='button';b.className='discovery-lock';b.dataset.discoveryLock=field;title.append(b);
+  b.onclick=async e=>{e.preventDefault();e.stopPropagation();parent.querySelector('[data-lock-error]')?.remove();const before=c.discovery;c.discovery={...before,locks:{...before?.locks,[field]:!discoveryLocked(c,field)}};b.disabled=true;
+   try{if(state.sharedContext){const gid=state.sharedContext.groupId;if(!sharedDiscoveryCharacter(gid,c.id))throw Error();await window.DrawerVillageGroups.saveResident({groupId:gid,id:c.id,profile:{...c}});}else if(!save(true))throw Error();}
+   catch{c.discovery=before;let error=parent.querySelector('[data-lock-error]');if(!error){error=document.createElement('small');error.dataset.lockError='';error.setAttribute('role','status');parent.append(error);}error.textContent=t('저장하지 못했어요. 다시 눌러 주세요.','Could not save. Please try again.','保存できませんでした。もう一度お試しください。');}finally{b.disabled=false;paint();}
+  };control.addEventListener('change',()=>queueMicrotask(paint));
+ }}paint();
 }
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){session.reset();close()}});window.addEventListener('pagehide',()=>{session.reset();close()});
