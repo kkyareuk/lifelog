@@ -1,0 +1,18 @@
+<ko-KR>
+휴대폰 상점의 말풍선을 왼쪽으로 옮겨 상점주인 그림을 덜 가리도록 했어요.
+부모·자녀, 형제·자매, 친척 등 가족 설정을 기본 기능으로 복원했어요.
+기준 캐릭터를 선택하고 다른 구성원의 순서 화살표 옆에서 역할과 혈연 여부를 설정할 수 있어요.
+기본 가족 설정과 가족팩의 가족 편집 내용이 이어지도록 개선했어요.
+</ko-KR>
+<en-US>
+Moved the mobile shop speech bubble left to reveal more of the shopkeeper.
+Restored parents, children, siblings and relatives as basic family settings.
+Choose a reference character, then set each other member’s role and blood relation beside the order arrows.
+Basic family settings now stay connected with family expansion editing.
+</en-US>
+<ja-JP>
+スマートフォンのショップの吹き出しを左へ移し、店主の絵が見えやすくなりました。
+親子・きょうだい・親戚などの家族設定を基本機能に戻しました。
+基準キャラクターを選び、他のメンバーの並べ替え矢印の横で続柄と血縁を設定できます。
+基本の家族設定と家族パックの編集内容がつながるよう改善しました。
+</ja-JP>
