@@ -1,7 +1,8 @@
+import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
 // A single compressed music channel; gain starts at zero on every resume.
 let player=null,current=null,unlocked=false,pending=false,context=null,gain=null,fade=0,lastVolume=null;
-function blocked(){return !unlocked||current?.backgroundMusicMuted||!targetVolume()||document.visibilityState==='hidden'||window.ParallelCityAuth?.getInfo?.()?.startupSyncing}
-function targetVolume(){return Math.max(0,Math.min(100,Number(current?.backgroundMusicVolume??35)))/100}
+function blocked(){return !unlocked||audioSettings(current)?.backgroundMusicMuted||!targetVolume()||document.visibilityState==='hidden'||window.ParallelCityAuth?.getInfo?.()?.startupSyncing}
+function targetVolume(){return Math.max(0,Math.min(100,Number(audioSettings(current)?.backgroundMusicVolume??35)))/100}
 export function syncBackgroundMusic(state){
  current=state;const volume=targetVolume();
  if(blocked()){clearInterval(fade);lastVolume=null;player?.pause();return}

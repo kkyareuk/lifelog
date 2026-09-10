@@ -22,10 +22,13 @@ for(const [initial,expected] of [[{},8],[{characterSlotPacks:2},18],[{purchases:
 assert.equal(next({purchases:['character_slots_5']},'character_slots_5',1).characterSlotPacks,2);
 assert.equal(next({characterSingleSlots:4},'character_slots_5',2).characterSingleSlots,4);
 const catalog=source.match(/const WEB_PRODUCTS=Object.freeze\(([\s\S]*?)\);/)[1];
-const webCart=vm.runInNewContext(`const WEB_PRODUCTS=${catalog};const WEB_GAME_PAYMENT_LIMIT=50000;(${source.match(/function webCart[\s\S]*?\n}/)[0]})`);
+const webCart=vm.runInNewContext(`const WEB_PRODUCTS=${catalog};(${source.match(/function webCart[\s\S]*?\n}/)[0]})`);
 assert.equal(webCart([{packageId:'character_slot_1',quantity:3}])[0].unitAmount,1000);
 assert.equal(webCart([{packageId:'character_slots_5',quantity:1}])[0].unitAmount,1200);
-assert.throws(()=>webCart([{packageId:'character_slot_1',quantity:50}]));
+assert.equal(webCart([{packageId:'character_slot_1',quantity:50}])[0].quantity,50);
+assert.equal(webCart([{packageId:'green_tea',quantity:20}])[0].quantity,20);
+assert.throws(()=>webCart([{packageId:'green_tea',quantity:Number.MAX_SAFE_INTEGER}]));
+assert.throws(()=>webCart([{packageId:'green_tea',quantity:-1}]));
 for(const id of ['character_slot_1','character_slots_5']){
   validatePurchase({transactionId:'123',productId:'com.drawervillage.app.'+id,bundleId:'com.drawervillage.app',environment:'Sandbox',type:'Consumable',quantity:1,appAccountToken:accountToken('buyer')},'buyer','Sandbox','123');
 }

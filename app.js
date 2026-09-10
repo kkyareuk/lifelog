@@ -1,3 +1,4 @@
+import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
 import './activity-settings.js?v=20260909dev305';
 import {installContextMenu} from './context-menu.js?v=20260909dev305';
 import {createNotificationOpenQueue} from './notification-open-queue.js?v=20260909dev305';
@@ -2901,7 +2902,6 @@ function bind(){
   }catch(error){console.error("동적 편집 화면 연결 실패",error)}
   refreshCharacterSelectionSummaries();
   const cartKey="drawer-village-cart";
-  const cartLimit=50000;
   const cartPrices={character_slots_5:1200,character_slot_1:1000,town_slot_1:1900,green_tea:3000,storage_50mb:2900};
   const readCart=()=>{try{return JSON.parse(localStorage.getItem(cartKey)||"{}")||{}}catch{return {}}};
   const cartTotal=cart=>Object.entries(cart||{}).reduce((sum,[id,qty])=>sum+(Number(cartPrices[id])||0)*Math.max(0,Number(qty)||0),0);
@@ -2911,11 +2911,7 @@ function bind(){
     const price=Number(cartPrices[id])||0;
     const nextQuantity=id==="storage_50mb"?1:(Number(cart[id])||0)+1;
     const nextTotal=cartTotal(cart)+(id==="storage_50mb"&&Number(cart[id])>0?0:price);
-    if(!price||nextTotal>=cartLimit){
-      const message=state.uiLanguage==="en"?"A single checkout must stay under KRW 50,000.":state.uiLanguage==="ja"?"1回の決済金額は5万ウォン未満にしてください。":"한 번 결제 금액은 5만원 미만이어야 해요.";
-      showToast(message);
-      return false;
-    }
+    if(!price||!Number.isSafeInteger(nextQuantity)||!Number.isSafeInteger(nextTotal))return false;
     cart[id]=nextQuantity;
     writeCart(cart);
     return true;
@@ -4072,23 +4068,24 @@ function bind(){
     state.order.forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=Date.now()});
     save(true);event.currentTarget.blur();showToast(state.preventInterTownMovement?"캐릭터의 마을 사이 이동을 막았어요":"캐릭터가 다시 마을 사이를 이동할 수 있어요");
   });
-  $('[data-music-muted]')?.addEventListener('change',e=>{state.backgroundMusicMuted=e.target.checked;syncBackgroundMusic(state);save(true);render()});
-  $('[data-music-volume]')?.addEventListener('input',e=>{state.backgroundMusicVolume=Number(e.target.value);e.target.closest('label').querySelector('output').textContent=e.target.value+'%';syncBackgroundMusic(state)});
-  $('[data-music-volume]')?.addEventListener('change',()=>save(true));
+  $('[data-web-mute]')?.addEventListener('click',()=>{setAudioSetting(state,'muted',!webMuted());syncBackgroundMusic(state);stopMovementAudio();syncMovementAudio(state);render()});
+  $('[data-music-muted]')?.addEventListener('change',e=>{const local=setAudioSetting(state,'backgroundMusicMuted',e.target.checked);syncBackgroundMusic(state);if(!local)save(true);render()});
+  $('[data-music-volume]')?.addEventListener('input',e=>{setAudioSetting(state,'backgroundMusicVolume',Number(e.target.value));e.target.closest('label').querySelector('output').textContent=e.target.value+'%';syncBackgroundMusic(state)});
+  $('[data-music-volume]')?.addEventListener('change',()=>{if(!isWebAudio())save(true)});
   $('[data-sound-muted]')?.addEventListener('change',event=>{
-    state.soundMuted=event.currentTarget.checked;
-    save(true);
-    if(state.soundMuted)stopMovementAudio();
+    const local=setAudioSetting(state,"soundMuted",event.currentTarget.checked);
+    if(!local)save(true);
+    if(audioSettings(state).soundMuted)stopMovementAudio();
     renderPreservingPageScroll(event.currentTarget);
   });
   $('[data-sound-volume]')?.addEventListener('input',event=>{
-    state.soundEffectsVolume=Math.max(0,Math.min(100,Number(event.currentTarget.value)||0));
-    event.currentTarget.closest('label')?.querySelector('output')?.replaceChildren(document.createTextNode(`${Math.round(state.soundEffectsVolume)}%`));
-    save();
+    setAudioSetting(state,"soundEffectsVolume",Math.max(0,Math.min(100,Number(event.currentTarget.value)||0)));
+    event.currentTarget.closest('label')?.querySelector('output')?.replaceChildren(document.createTextNode(`${Math.round(audioSettings(state).soundEffectsVolume)}%`));
+    if(!isWebAudio())save();
     syncMovementAudio(state);
   });
   $('[data-sound-volume]')?.addEventListener('change',event=>{
-    save(true);
+    if(!isWebAudio())save(true);
     previewFootstep(state);
     event.currentTarget.blur();
   });

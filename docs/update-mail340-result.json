@@ -1,0 +1,15 @@
+{
+  "dispatch": "update-334-340-20260911-v1",
+  "pushNotificationsQueued": 0,
+  "created": 585,
+  "existing": 0,
+  "skipped": 0,
+  "stored": 585,
+  "languages": {
+    "ko": 578,
+    "en": 3,
+    "ja": 4
+  },
+  "verified": true,
+  "completedAt": 1789071463264
+}

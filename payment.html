@@ -65,7 +65,7 @@ document.querySelector("#orderLines").innerHTML=items.length?items.map(item=>{co
 document.querySelector("#itemCount").textContent=`${count}개`;
 document.querySelector("#price").textContent=`${total.toLocaleString("ko-KR")}원`;
 const button=document.querySelector("#payButton"),status=document.querySelector("#status"),account=document.querySelector("#checkoutAccount"),consent=document.querySelector("#purchaseConsent");
-const underGameLimit=total<50000;
+const validAmount=Number.isSafeInteger(total)&&total>=100;
 let signedInUser=null,submitting=false;
 const authInfo=()=>window.ParallelCityAuth?.getInfo?.()||{};
 function paintCheckoutState(){
@@ -75,7 +75,7 @@ function paintCheckoutState(){
   account.textContent=signedInUser?(signedInUser.email||signedInUser.displayName||"로그인된 Google 계정"):"결제 버튼을 누르면 이 페이지에서 Google 로그인을 진행합니다.";
   status.classList.toggle("ok",Boolean(signedInUser));
   if(!items.length){button.disabled=true;button.textContent="장바구니가 비어 있어요";status.textContent="상점에서 상품을 먼저 담아 주세요.";return}
-  if(!underGameLimit){button.disabled=true;button.textContent="결제 한도 초과";status.textContent="게임 상품은 한 번에 5만원 미만으로만 결제할 수 있어요. 수량을 줄여 주세요.";return}
+  if(!validAmount){button.disabled=true;status.textContent={ko:"결제 금액을 확인해 주세요.",en:"Please check the payment amount.",ja:"決済金額を確認してください。"}[paymentLanguage];return}
   if(!config.paymentsEnabled){button.disabled=true;button.textContent=config.beta?.enabled?"사전 체험 중 결제 불가":"결제 정보 불러오는 중";status.textContent=config.beta?.enabled?"현재 사전 체험 기간이라 실제 결제를 진행하지 않아요. 서랍마을로 돌아가 기능을 자유롭게 체험해 주세요.":"결제 정보를 불러오지 못했습니다. 페이지를 새로고침해 주세요.";return}
   button.disabled=submitting||!consent.checked;
   button.textContent=submitting?"결제창을 준비하고 있어요":signedInUser?`토스로 ${total.toLocaleString("ko-KR")}원 결제하기`:"Google로 로그인하고 결제하기";

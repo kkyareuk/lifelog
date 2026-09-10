@@ -1,3 +1,4 @@
+import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
 import {walkingGaitForElement} from "./walking-gaits.js?v=20260909dev305";
 
 const FOOTSTEP_URLS={
@@ -30,6 +31,7 @@ function movingActors(){
   return [...actors.values()];
 }
 function audioVolume(state){
+  state=audioSettings(state);
   if(state?.soundMuted)return 0;
   return Math.max(0,Math.min(1,(Number(state?.soundEffectsVolume)||0)/100));
 }

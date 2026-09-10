@@ -26,7 +26,7 @@ const WEB_PRODUCTS=Object.freeze({
 const TOSS_MID="drawerq8ht";
 const TOSS_SECRET_KEY=defineSecret("TOSS_SECRET_KEY");
 const APPLE_IAP_PRIVATE_KEY=defineSecret("APPLE_IAP_PRIVATE_KEY");
-const WEB_GAME_PAYMENT_LIMIT=50000;
+
 
 function tossCredentials(){
   const secretKey=String(TOSS_SECRET_KEY.value()||"").trim();
@@ -111,8 +111,7 @@ function webCart(rawItems){
     const product=WEB_PRODUCTS[packageId];
     if(!product||seen.has(packageId))throw Object.assign(new Error("장바구니 상품을 확인해 주세요."),{status:400});
     if(!Number.isInteger(quantity)||quantity<1)throw Object.assign(new Error("장바구니 상품 수량을 확인해 주세요."),{status:400});
-    const maxQuantity=Math.floor((WEB_GAME_PAYMENT_LIMIT-1)/product.amount);
-    if(quantity>maxQuantity)throw Object.assign(new Error("한 번에 결제할 수 있는 5만원 미만 범위를 넘는 수량입니다."),{status:400});
+    if(!Number.isSafeInteger(quantity)||!Number.isSafeInteger(quantity*product.amount))throw Object.assign(Error("상품 수량을 확인해 주세요."),{status:400});
     if(packageId==="storage_50mb"&&quantity!==1){
       throw Object.assign(new Error("사진 저장 공간 상품은 한 번에 하나만 구매할 수 있습니다."),{status:400});
     }
@@ -137,7 +136,7 @@ app.post("/payments/orders",async(request,response)=>{
     if(items.some(i=>["character_slots_5","character_slot_1"].includes(i.packageId)&&i.packageId!==activeSlot))throw Object.assign(Error("판매 구성이 변경됐습니다. 상점에서 다시 확인해 주세요."),{status:409});
     if(items.some(i=>i.packageId==="diamonds_100"))throw Object.assign(Error("판매하지 않는 상품입니다."),{status:400});
     const {amount,count,orderName}=orderSummary(items);
-    if(amount<100||amount>=WEB_GAME_PAYMENT_LIMIT)throw Object.assign(new Error("게임 상품은 한 번에 5만원 미만으로만 결제할 수 있습니다."),{status:400});
+    if(!Number.isSafeInteger(amount)||amount<100)throw Object.assign(new Error("결제 금액을 확인해 주세요."),{status:400});
     const orderId=`dv_${Date.now()}_${crypto.randomBytes(8).toString("hex")}`;
     const customerKey=`DV_${crypto.createHash("sha256").update(identity.uid).digest("hex").slice(0,40)}`;
     const order={

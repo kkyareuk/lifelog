@@ -136,9 +136,22 @@ html #app .welcome-language button[aria-pressed="true"]{border-color:#eed7a4;bac
 .web-drawer-sidebar nav button{display:flex;align-items:center;gap:12px;min-height:43px;text-align:left;border:1px solid transparent;border-radius:10px;background:#33241844;padding:7px 12px;font-size:15px}
 .web-drawer-sidebar nav button img{width:29px;height:29px;object-fit:contain}.web-drawer-sidebar nav button:hover{background:#8f6b46}.web-drawer-sidebar nav button[aria-current=page]{background:#fff2ce;color:#573e2a;border-color:#d0ac70;box-shadow:0 3px 0 #2f201e66}
 .web-account-card{margin-top:auto;display:flex;align-items:center;gap:10px;padding:13px 9px;border:1px solid #ae8a62;border-radius:12px;background:#30221ac9;text-align:left}.web-account-card>img,.web-account-card>span:first-child{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none}.web-account-card span:last-child{display:grid;gap:3px;min-width:0}.web-account-card b{overflow-wrap:anywhere}.web-account-card small{font-size:11px;color:#dec4a1}
-.web-drawer-workspace{min-width:0}.web-drawer-topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:23px 34px;border-bottom:1px solid #d7c7a9;background:#fff9eceb}.web-drawer-topbar>span{display:grid;gap:4px;font-size:12px;color:#8b7157}.web-drawer-topbar b{font-size:24px;color:#46362a}.web-drawer-topbar>div{display:flex;align-items:center;gap:15px;font-size:12px}.web-drawer-topbar button{font-size:13px;background:#f2e2bf;border:1px solid #c3a87a;border-radius:9px;padding:9px 15px;color:#513c27}
-.web-drawer-content{padding:28px 34px;max-width:1560px;margin:auto;min-width:0;min-height:76dvh}.web-drawer-content>.panel{border:1px solid #d6c5a6;border-radius:19px;background:#fffaf0;box-shadow:0 5px 18px #6145250b}.web-drawer-content .desktop-observe-scene{border:5px solid #735138;border-radius:22px;overflow:hidden;box-shadow:0 8px 0 #4c34212b}.web-drawer-content .desktop-scene-canvas{min-height:420px}.web-drawer-content .desktop-observe-lower .viewport{height:440px;min-height:0}.web-drawer-content .desktop-observe-log .native-log-card ol:has(>li:only-child){grid-template-columns:1fr}.web-drawer-content .desktop-observe-log .native-log-card li{grid-template-columns:1fr}.web-drawer-content .desktop-observe-lower{grid-template-columns:minmax(0,1fr) minmax(270px,.7fr)}
-.web-drawer-footer{display:flex;justify-content:space-between;gap:20px;padding:20px 34px;border-top:1px solid #deceb1;font-size:12px;color:#8b7157}.web-drawer-footer a{color:inherit}.web-drawer-content .multiplayer-directory{min-height:0}.web-drawer-content .village-welcome{min-height:70dvh}
+.web-drawer-content .relationship-stage{--web-rel-offset:85px}
+.web-drawer-workspace{min-width:0;background:#b18a62 url('./assets/home-design/wood.webp') center/620px auto}
+.web-drawer-content .town-native-header{height:auto;min-height:88px;display:flex;flex-wrap:wrap;gap:16px;padding:16px 20px;border:2px solid #69492f;border-radius:18px;background:#fff6e5;box-shadow:0 5px 0 #3e291c33;margin-bottom:16px}
+.web-drawer-content .town-native-back{flex:none;width:48px;height:48px;padding:0;border:0;background:transparent;box-shadow:none}
+.web-drawer-content .town-native-back img{display:block;width:48px;height:48px;object-fit:contain}
+.web-drawer-content .town-native-context{display:flex;align-items:center;gap:10px;min-width:0;flex:1;flex-wrap:wrap}
+.web-drawer-content .town-native-community{display:flex;align-items:center;gap:8px;max-width:280px;padding:6px 10px;border:1px solid #c5ab7e;background:#f2e3c4;border-radius:10px;font-size:15px}
+.web-drawer-content .town-native-community img{width:32px;height:32px;object-fit:contain}
+.web-drawer-content .town-native-town-pill{font-size:15px;padding:8px 12px;background:#fffaf0;border:1px solid #c5ab7e;border-radius:10px}
+.web-drawer-content .town-native-status{font-size:13px;color:#735a40}
+.web-drawer-content .town-native-menu{display:flex;gap:6px;flex-wrap:wrap}
+.web-drawer-content .town-native-menu button{font-size:14px;min-height:40px;padding:8px 14px;border:1px solid #856044;border-radius:10px;background:#6e4b34;color:#fff4d8}
+.web-drawer-content .town-map-scroll{border:5px solid #684a35;border-radius:20px;overflow:hidden}
+.web-drawer-topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:23px 34px;border-bottom:1px solid #d7c7a9;background:#fff9eceb}.web-drawer-topbar>span{display:grid;gap:4px;font-size:12px;color:#8b7157}.web-drawer-topbar b{font-size:24px;color:#46362a}.web-drawer-topbar>div{display:flex;align-items:center;gap:15px;font-size:12px}.web-drawer-topbar button{font-size:13px;background:#f2e2bf;border:1px solid #c3a87a;border-radius:9px;padding:9px 15px;color:#513c27}
+.web-drawer-content{padding:24px 28px;max-width:1560px;margin:auto;min-width:0;min-height:76dvh}.web-drawer-content>.panel{border:1px solid #d6c5a6;border-radius:19px;background:#fffaf0;box-shadow:0 5px 18px #6145250b}.web-drawer-content .desktop-observe-scene{border:5px solid #735138;border-radius:22px;overflow:hidden;box-shadow:0 8px 0 #4c34212b}.web-drawer-content .desktop-scene-canvas{min-height:420px}.web-drawer-content .desktop-observe-lower .viewport{height:440px;min-height:0}.web-drawer-content .desktop-observe-log .native-log-card ol:has(>li:only-child){grid-template-columns:1fr}.web-drawer-content .desktop-observe-log .native-log-card li{grid-template-columns:1fr}.web-drawer-content .desktop-observe-lower{grid-template-columns:minmax(0,1fr) minmax(270px,.7fr)}
+.web-drawer-footer{background:#fff9eceb;display:flex;justify-content:space-between;gap:20px;padding:20px 34px;border-top:1px solid #deceb1;font-size:12px;color:#8b7157}.web-drawer-footer a{color:inherit}.web-drawer-content .multiplayer-directory{min-height:0}.web-drawer-content .village-welcome{min-height:70dvh}
 @media(min-width:721px) and (max-width:1100px){.web-drawer-shell{grid-template-columns:182px minmax(0,1fr)}.web-drawer-content{padding:20px}.web-drawer-topbar{padding:18px 20px}.web-account-status{max-width:150px;overflow-wrap:anywhere}.web-drawer-content .desktop-observe-lower{grid-template-columns:1fr}.web-drawer-brand b{font-size:22px}}
 
 header{height:106px;display:flex;align-items:center;gap:28px;padding:15px 30px;background:#fff;border-bottom:1px solid var(--line);position:relative;top:0;z-index:50}.brand{display:flex;align-items:center;gap:13px;min-width:270px}.brand h1{margin:0;font-size:31px}.brand small,#save-state{color:var(--muted)}.logo{width:76px;height:68px;display:grid;place-items:center;background:transparent}.logo img{display:block;width:100%;height:100%;object-fit:contain}header nav{display:flex;gap:8px;overflow:auto;flex:1}header nav button{white-space:nowrap;font-size:19px}.account{white-space:nowrap}main{padding:26px;max-width:1900px;margin:auto}
@@ -519,7 +532,7 @@ html.native-app[data-active-tab="observe"] .native-character-picker button.on :i
    compatibility rule above, so fixed legacy whites/navies cannot win. */
 html[data-color-mode][data-visual-theme],
 html[data-color-mode][data-visual-theme] body,
-html[data-color-mode][data-visual-theme] main{
+html[data-color-mode][data-visual-theme] main:not(.web-drawer-content){
   color:var(--ink)!important;
   background:
     radial-gradient(circle at 8% -8%,color-mix(in srgb,var(--s) 18%,transparent),transparent 32%),
@@ -611,7 +624,7 @@ html[data-color-mode][data-visual-theme="baroque"] .visual-theme-options button[
    editors, dialogs and form controls together. */
 html[data-color-mode],
 html[data-color-mode] body,
-html[data-color-mode] main{
+html[data-color-mode] main:not(.web-drawer-content){
   color:var(--ink)!important;
   background:
     radial-gradient(circle at 8% -8%,color-mix(in srgb,var(--s) 18%,transparent),transparent 32%),
@@ -1073,7 +1086,7 @@ html[data-color-mode="dark"]{color-scheme:dark}
 html[data-color-mode="light"]{color-scheme:light}
 html[data-color-mode="dark"][data-active-tab="settings"],
 html[data-color-mode="dark"][data-active-tab="settings"] body,
-html[data-color-mode="dark"][data-active-tab="settings"] main{
+html[data-color-mode="dark"][data-active-tab="settings"] main:not(.web-drawer-content){
   background:
     radial-gradient(circle at 82% 6%,color-mix(in srgb,var(--p) 25%,transparent),transparent 34%),
     linear-gradient(155deg,#0d1825,#172638 58%,#0d1723)!important;
@@ -5229,7 +5242,7 @@ html[data-active-tab="settings"] .feedback-card a.feedback-email-type:focus{
 /* 화면 모드와 모바일 관찰 폭은 파일 뒤에서 최종 적용한다. */
 html[data-color-mode="dark"][data-active-tab="settings"],
 html[data-color-mode="dark"][data-active-tab="settings"] body,
-html[data-color-mode="dark"][data-active-tab="settings"] main{
+html[data-color-mode="dark"][data-active-tab="settings"] main:not(.web-drawer-content){
   background:linear-gradient(155deg,#0d1825,#172638 58%,#0d1723)!important;
   color:#f5f8fb!important;
 }
@@ -5248,7 +5261,7 @@ html[data-color-mode="light"] header:not(.direct-command-dialog>header),
 html[data-color-mode="light"].native-app .native-sub-header{border-color:#d9d0c7!important;background:color-mix(in srgb,var(--p) 18%,#fff)!important;color:#2f2924!important}
 html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]),
 html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]) body,
-html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]) main{
+html[data-color-mode="light"].native-app:is([data-active-tab="catalog"],[data-active-tab="shop"],[data-active-tab="settings"],[data-active-tab="character"],[data-active-tab="relationship"]) main:not(.web-drawer-content){
   background:#f5f1ea!important;
   color:#302a25!important;
 }
@@ -5397,13 +5410,13 @@ html[data-color-mode="light"] dialog:not(.relationship-fullscreen-dialog):not(.m
 
 /* 넓은 화면에서도 선택한 화면 모드가 헤더·패널·입력창까지 끊기지 않게 한다. */
 @media(min-width:721px){
-  html[data-color-mode="dark"],html[data-color-mode="dark"] body,html[data-color-mode="dark"] main{background:#0d1723!important;color:#f4f7fb!important}
+  html[data-color-mode="dark"],html[data-color-mode="dark"] body,html[data-color-mode="dark"] main:not(.web-drawer-content){background:#0d1723!important;color:#f4f7fb!important}
   html[data-color-mode="dark"] header{border-color:#ffffff1d!important;background:#101b29f2!important;color:#f4f7fb!important}
   html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell){border-color:#ffffff1c!important;background:#142131!important;color:#f4f7fb!important}
   html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell) :is(h1,h2,h3,h4,b,strong,label,legend){color:#f6f9fc!important;-webkit-text-fill-color:#f6f9fc!important}
   html[data-color-mode="dark"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell) :is(p,small,time){color:#b9c5d1!important;-webkit-text-fill-color:#b9c5d1!important}
   html[data-color-mode="dark"] :is(input,select,textarea),html[data-color-mode="dark"] button:not(.meeting-walker):not(.meeting-pair *):not(.town-traveler):not(.game-hud-button):not(.game-hud-profile-toggle){border-color:#ffffff22;background:#1b2a3c;color:#f4f7fb}
-  html[data-color-mode="light"],html[data-color-mode="light"] body,html[data-color-mode="light"] main{background:#f5f1ea!important;color:#302a25!important}
+  html[data-color-mode="light"],html[data-color-mode="light"] body,html[data-color-mode="light"] main:not(.web-drawer-content){background:#f5f1ea!important;color:#302a25!important}
   html[data-color-mode="light"] header{border-color:#d9d0c7!important;background:#fffdf9f2!important;color:#302a25!important}
   html[data-color-mode="light"] :is(.panel,.form,.detail,.life-log,.home,.relationship-page,.routine-shell,.catalog-shell,.shop-store,.settings-shell){border-color:#ddd3c9!important;background:#fffdf9!important;color:#302a25!important}
   html[data-color-mode="light"] :is(input,select,textarea){border-color:#d9d0c7;background:#f8f6f2;color:#302a25}
@@ -5884,18 +5897,18 @@ html[data-color-mode] .official-relation-dialog .relationship-card-grid [data-of
 /* 관계 화면은 휴대폰 고정 캔버스를 유지하되, 넓은 화면에서는 두 영역으로 재배치한다. */
 @media(min-width:721px){
   html[data-active-tab="relationship"] body>header,html[data-active-tab="relationship"] .native-sub-header{display:none!important}
-  html[data-active-tab="relationship"] main{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important}
-  html[data-active-tab="relationship"] .relationship-page.relationship-redesign{width:100vw!important;max-width:none!important;height:100dvh!important;margin:0!important;background-color:#efe2cb!important;background-image:linear-gradient(90deg,#e5d4b8,#fff9ec 22% 78%,#e5d4b8)!important}
+  html.native-app[data-active-tab="relationship"] main{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important}
+  html[data-active-tab="relationship"] .relationship-page.relationship-redesign{width:100%!important;max-width:none!important;height:100dvh!important;margin:0!important;background-color:#efe2cb!important;background-image:linear-gradient(90deg,#e5d4b8,#fff9ec 22% 78%,#e5d4b8)!important}
   html[data-active-tab="relationship"] .relationship-stage{width:min(100%,1180px)!important;max-width:1180px!important;height:100dvh!important;margin:0 auto!important;padding:0!important}
   html[data-active-tab="relationship"] .relationship-stage>.relationship-back-button{top:28px;left:3%}
-  html[data-active-tab="relationship"] .relationship-choice-row{top:66px;right:auto;left:8%;width:38%;height:105px}
-  html[data-active-tab="relationship"] .relationship-hero-pair{top:245px;right:auto;left:8%;width:38%;height:170px}
+  html[data-active-tab="relationship"] .relationship-choice-row{top:calc(66px + var(--web-rel-offset,0px));right:auto;left:8%;width:38%;height:105px}
+  html[data-active-tab="relationship"] .relationship-hero-pair{top:calc(245px + var(--web-rel-offset,0px));right:auto;left:8%;width:38%;height:170px}
   html[data-active-tab="relationship"] .relationship-hero-pair :is(.avatar,.sprite){width:clamp(132px,14vw,178px)!important;height:clamp(132px,14vw,178px)!important}
   html[data-active-tab="relationship"] .relationship-stage::after{inset:165px 49% 170px 2%}
-  html[data-active-tab="relationship"] .relationship-direction-sentence{top:450px;right:auto;left:3%;width:48%}
-  html[data-active-tab="relationship"] .relationship-official-status{top:515px;right:auto;left:3%;width:48%}
-  html[data-active-tab="relationship"] .relationship-reality-pill{top:558px;left:27%;width:min(38%,390px);font-size:15px!important}
-  html[data-active-tab="relationship"] .relationship-stage-actions{top:210px;right:6%;bottom:auto;left:55%;gap:17px}
+  html[data-active-tab="relationship"] .relationship-direction-sentence{top:calc(450px + var(--web-rel-offset,0px));right:auto;left:3%;width:48%}
+  html[data-active-tab="relationship"] .relationship-official-status{top:calc(515px + var(--web-rel-offset,0px));right:auto;left:3%;width:48%}
+  html[data-active-tab="relationship"] .relationship-reality-pill{top:calc(558px + var(--web-rel-offset,0px));left:27%;width:min(38%,390px);font-size:15px!important}
+  html[data-active-tab="relationship"] .relationship-stage-actions{top:calc(210px + var(--web-rel-offset,0px));right:6%;bottom:auto;left:55%;gap:17px}
   html[data-active-tab="relationship"] .relationship-stage-actions .relationship-composite-action{height:54px!important;min-height:54px!important;font-size:17px!important}
   html[data-active-tab="relationship"] .relationship-stage-actions .relationship-composite-action::before,html[data-active-tab="relationship"] .relationship-stage-actions .relationship-composite-action::after{height:54px}
   html[data-active-tab="relationship"] .relationship-fullscreen-dialog>form{background-image:linear-gradient(180deg,#fffdf8,#f1e6d3)!important;background-repeat:no-repeat!important}
