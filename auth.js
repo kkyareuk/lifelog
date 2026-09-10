@@ -425,7 +425,7 @@ async function registerSignedInUser(){
   const snapshot=await getDoc(reference);
   assertSession(session);
   profileSetupComplete=snapshot.exists()&&snapshot.data()?.profile?.configured!==false;
-  if(skipPresenceWrite&&snapshot.exists())return;
+  if(skipPresenceWrite&&snapshot.exists())return snapshot;
   const profile={
     name:accountName(),
     email:user.email||"",
@@ -444,7 +444,7 @@ async function registerSignedInUser(){
   };
   if(!snapshot.exists())presence.createdAt=serverTimestamp();
   await setDoc(reference,presence,{merge:true});
-  assertSession(session);stampSession(guardKey);
+  assertSession(session);stampSession(guardKey);return snapshot;
 }
 const normalizeEntitlements=value=>{
   const purchases=Array.isArray(value?.purchases)?value.purchases.filter(x=>typeof x==="string"):[];
@@ -457,6 +457,7 @@ const normalizeEntitlements=value=>{
     characterSlotPacks:Math.max(0,Number(value?.characterSlotPacks ?? purchases.filter(x=>x==="character_slots_5").length)||0),
     townSlotPacks:Math.max(0,Number(value?.townSlotPacks)||purchases.filter(x=>x==="town_slot_1").length),
     storage50:Boolean(value?.storage50||purchases.includes("storage_50mb")),
+    teaSupportCount:Math.max(0,Math.floor(Number(value?.teaSupportCount ?? purchases.filter(x=>x==="green_tea").length)||0)),
     teaSupportMonth:typeof value?.teaSupportMonth==="string"?value.teaSupportMonth:"",
     grantedBy:typeof value?.grantedBy==="string"?value.grantedBy:"",
     note:typeof value?.note==="string"?value.note:""
@@ -723,7 +724,7 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
   }finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }
 
-async function download({automatic=false,accountTransition=false,detailed=false}={}){
+async function download({automatic=false,accountTransition=false,detailed=false,initialSnapshot=null}={}){
   if(switchingAccount&&!accountTransition)return false;
   const session=captureSession();
   if(!user){if(!automatic)toast("Google 로그인이 필요합니다");return}
@@ -735,7 +736,7 @@ async function download({automatic=false,accountTransition=false,detailed=false}
     // 사용자가 누른 '불러오기'는 브라우저의 Firestore 로컬 캐시가 아니라
     // 앱이 방금 올린 서버 저장본을 직접 읽는다. 자동 불러오기는 오프라인
     // 복구를 위해 기존 Firestore 동작을 유지한다.
-    const snapshot=automatic?await getDoc(cloudDoc(session.uid)):await getDocFromServer(cloudDoc(session.uid));
+    const snapshot=automatic?(initialSnapshot||await getDoc(cloudDoc(session.uid))):await getDocFromServer(cloudDoc(session.uid));
     assertSession(session);
     const documentData=snapshot.exists()?snapshot.data():null;
     const remoteGuides=Array.isArray(documentData?.uiPreferences?.pageGuides)?documentData.uiPreferences.pageGuides:[];
@@ -1224,15 +1225,16 @@ if(ready){
         publishGuideState(localGuideKeys());
         status(user?`Google 계정 연결됨 · ${user.email||accountName()}`:"Google 로그인 안 됨");
         if(user){
-          try{await registerSignedInUser()}catch(error){if(epoch!==accountEpoch)return;console.warn(error)}
+          let initialSnapshot=null;
+          try{initialSnapshot=await registerSignedInUser()}catch(error){if(epoch!==accountEpoch)return;console.warn(error)}
           if(epoch!==accountEpoch)return;
           // Always load this account, even when it was used minutes ago.
-          const downloadOutcome=await download({automatic:true,accountTransition:true,detailed:true});
+          const downloadOutcome=await download({automatic:true,accountTransition:true,detailed:true,initialSnapshot});
           if(adoptedGuest&&!['error','cancelled'].includes(downloadOutcome)){
             await upload({silent:true,accountTransition:true});
           }
         }
-        await refreshGroups();
+        void refreshGroups().catch(error=>console.warn("Group refresh failed",error));
       }catch(error){console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
       finally{if(epoch===accountEpoch){authSettled=true;switchingAccount=false;watchMailboxSignal();window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
     });

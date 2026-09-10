@@ -303,7 +303,7 @@ function normalizeHomes(x){
   x.uiFont=["system","hanbit","mplus-rounded","dangam","haeong","dohyeon","corncorn","griun","aggro"].includes(x.uiFont)?x.uiFont:"hanbit";
   x.uiScale=["small","normal","large","xlarge"].includes(x.uiScale)?x.uiScale:"normal";
   x.uiLanguage=["ko","en","ja"].includes(x.uiLanguage)?x.uiLanguage:"ko";
-  x.colorMode=["light","dark"].includes(x.colorMode)?x.colorMode:"light";
+  x.colorMode="light";
   x.characterNotificationsEnabled=Boolean(x.characterNotificationsEnabled);
   x.characterNotificationConsent=["unknown","granted","denied"].includes(x.characterNotificationConsent)?x.characterNotificationConsent:"unknown";
   const achievementSource=x.achievements&&typeof x.achievements==="object"&&!Array.isArray(x.achievements)?x.achievements:{};

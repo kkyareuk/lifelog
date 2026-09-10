@@ -2163,7 +2163,7 @@ function openCarEditor(homeId,carId){
 
 let appliedThemeMode="";
 function applyTheme(){
-  const mode=state.colorMode==="light"?"light":"dark";
+  const mode="light";state.colorMode="light";
   if(appliedThemeMode===mode&&document.documentElement.dataset.visualTheme==="drawer-default")return;
   appliedThemeMode=mode;
   const palette={light:["#80502f","#b77a4b","#f7efe5","#fffaf4","#2f241d","#75675d","#dfcdbc"],dark:["#d9a46f","#a66e45","#16100c","#241a14","#fff7ef","#d1bfae","#6d4b34"]};

@@ -68,7 +68,7 @@ export function homeInformationMarkup(home,photo,state,t){
   return `<section class="home-feature-panel home-design-page home-design-info" data-home-feature="house-info">
     <header class="home-design-head"><button type="button" class="home-design-back" data-close-home-feature aria-label="${c.back}"></button><h2>${escape(home.name)}</h2></header>
     <button type="button" class="home-design-photo" data-home-building-shape="${id}" aria-label="${c.homePhoto}"><img src="${escape(photo)}" alt=""></button>
-    <div class="home-design-fields">
+    <button type="button" class="home-design-photo" data-home-interior-image="${id}">${home.image?`<img src="${escape(home.image)}" alt="">`:`<span>＋</span>`}<b>${c.homePhoto}</b></button><div class="home-design-fields">
       <button type="button" class="wide" data-share-kind="home" data-settings-transfer="world-transfer" data-share-home="${id}">${({ko:"집 공유 코드",en:"Home sharing code",ja:"家の共有コード"}[state.uiLanguage]||"집 공유 코드")}</button>
       <label class="wide">${t("집 이름","집 이름")}<input data-home-name data-home-id="${id}" value="${escape(home.name)}" maxlength="80"></label>
       <div>${select("kind",t("집 유형","집 유형"),["일반 주거","본가","별채","주말집","업무용 숙소","공동 주거","기숙사","사택","기타"])}${select("ownershipType",`<span class="sr-only">${t("거주 방식","거주 방식")}</span>`,["설정하지 않음","자가","전세","월세","기숙사","사택","무상 거주","임시 거주","기타"])}</div>
