@@ -3407,8 +3407,8 @@ export function catalogCardMarkup(kind,item,{editor=false}={}){
 }
 function catalog(){
   const shared=window.DrawerVillageGroups?.getSnapshot?.();
-  if(shared?.activeGroupId&&shared?.group)return renderSharedCatalog(shared);
-  return renderDictionary({labels:CATALOG_LABELS,icons:CATALOG_ICONS,categories:CATALOG_CATEGORIES,subtypes:catalogSubgenreOptions,translate:t});
+
+  return renderDictionary({shared,labels:CATALOG_LABELS,icons:CATALOG_ICONS,categories:CATALOG_CATEGORIES,subtypes:catalogSubgenreOptions,translate:t});
 }
 function legacyCatalog(){
   const sections=Object.entries(CATALOG_LABELS).map(([kind,label])=>{

@@ -1197,6 +1197,14 @@ let leavingGroup=null;
 async function leaveGroup(){if(leavingGroup)return leavingGroup;const groupId=groupState.activeGroupId;if(!groupId)return;leavingGroup=(async()=>{const result=await sharedTownRequest('removeMember',{groupId});if(groupState.activeGroupId===groupId)watchActiveGroup('');await Promise.allSettled([refreshMailbox(true),refreshSlotUsage(),refreshGroups()]);return result})().finally(()=>{leavingGroup=null});return leavingGroup}
 window.DrawerVillageGroups={
   readSafety:()=>sharedTownRequest("readSafety"),setUserBlock:input=>sharedTownRequest("setUserBlock",input),reportContent:input=>sharedTownRequest("reportContent",input),getSnapshot:groupSnapshot,refreshMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
+  saveCatalogItem:async input=>{
+    const gid=input.groupId;if(gid!==groupState.activeGroupId)throw Error('groups/context-changed');
+    const item=input.item?await prepareWorldPackage(input.item):undefined;
+    if(gid!==groupState.activeGroupId)throw Error('groups/context-changed');
+    const result=await sharedTownRequest('saveCatalogItem',{...input,...(item?{item:sharedProfile(item)}:{})});
+    if(gid===groupState.activeGroupId){groupState.catalog=[...groupState.catalog.filter(c=>c.id!==input.kind),{id:input.kind,items:result.items}];emitGroupState()}
+    return result;
+  },
   publishCatalog:async selected=>{const gid=groupState.activeGroupId,catalog=await prepareWorldPackage(selected||{});if(gid!==groupState.activeGroupId)throw Object.assign(new Error('Group changed'),{code:'groups/context-changed'});return sharedTownRequest('publishCatalog',{catalog:sharedProfile(catalog)})},
   saveGroupPresentation:input=>sharedTownRequest('saveGroupPresentation',input),
   uploadHomeMemberImage:async file=>{requireGroupUser();const session=captureSession(),gid=groupState.activeGroupId,reference=cloudDoc(session.uid),previous=await getDoc(reference);assertSession(session);const manifest=normalizeManifest(previous.data()?.mediaManifest,null),data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsDataURL(file)}),photoURL=await uploadDataUrl(data,manifest,session);await mergeUploadedMedia(reference,manifest,session);assertSession(session);if(gid!==groupState.activeGroupId)throw Error('Group changed');return photoURL},

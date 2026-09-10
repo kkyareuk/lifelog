@@ -50,6 +50,22 @@ function createSharedTownService({db,engine,clock=Date.now}){
       const clean={rooms:layout.rooms,floorCount:Math.max(1,Math.min(5,Number(layout.floorCount)||1)),activeFloor:Number(layout.activeFloor)||1};
       const old=JSON.parse(home.layoutJson||'{}');tx.update(homeRef,{layoutJson:JSON.stringify({...old,...clean}),layoutRevision:revision+1,updatedAt:clock()});tx.update(ref,{lifeUpdatedAt:0});return {revision:revision+1};
     }),
+    saveCatalogItem:async(uid,input)=>db.runTransaction(async tx=>{
+      const {ref,member}=await context(tx,input.groupId,uid);
+      if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);
+      const kinds=['food','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','ingredient','weapon','animal','flower','misc'];
+      if(!kinds.includes(input.kind))fail('invalid-catalog');
+      const itemId=id(input.id),existing=rows(await tx.get(ref.collection('catalog'))),document=existing.find(c=>c.id===input.kind),items=document?.items||[],old=items.find(i=>i.id===itemId)||null;
+      if(!require('node:util').isDeepStrictEqual(old,input.expected??null))fail('groups/edit-conflict',409);
+      if(!input.remove){
+        if(!input.item||input.item.id!==itemId||typeof input.item.name!=='string'||!input.item.name.trim()||input.item.name.length>200)fail('invalid-catalog-item');
+        require('./catalog-media').validateCatalogMedia(input.item);
+      }
+      const next=items.filter(i=>i.id!==itemId);if(!input.remove)next.push({...input.item,kind:input.kind});
+      if(existing.reduce((n,c)=>n+(c.items||[]).length,0)-items.length+next.length>80)fail('catalog-limit',409);
+      if(JSON.stringify(next).length>100000)fail('catalog-size-limit');
+      tx.set(ref.collection('catalog').doc(input.kind),{items:next,updatedAt:clock()});tx.update(ref,{lifeUpdatedAt:0});return {saved:true,items:next};
+    }),
     publishCatalog:async(uid,input)=>db.runTransaction(async tx=>{
       const {ref,member}=await context(tx,input.groupId,uid);
       if(!['owner','manager','operator'].includes(member.role))fail('groups/manager-required',403);

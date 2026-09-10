@@ -1014,14 +1014,15 @@ const catalogIllustration=(kind="hobby",index=0)=>{
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320"><defs><filter id="s"><feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#07111f" flood-opacity=".24"/></filter></defs><path d="M79 230c-19-39-11-99 20-133 30-34 84-50 134-36 49 14 102 58 104 108 3 51-44 91-94 106-49 15-137-1-164-45Z" fill="${accent}" opacity=".36"/><text x="210" y="220" text-anchor="middle" font-size="156" font-family="Apple Color Emoji,Segoe UI Emoji,Noto Color Emoji,sans-serif" filter="url(#s)">${symbol}</text></svg>`;
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
-function openCatalogIllustrationPicker(itemId,kind){
-  const item=state.catalog?.[kind]?.find(entry=>entry.id===itemId);if(!item)return;
+function openCatalogIllustrationPicker(itemId,kind,options={}){
+  const item=options.item||state.catalog?.[kind]?.find(entry=>entry.id===itemId);if(!item)return;
   const dialog=document.createElement("dialog");dialog.className="catalog-illustration-dialog";
   const symbols=CATALOG_APP_ART[kind]||CATALOG_APP_ART.hobby;
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>앱 기본 그림</small><h2>${htmlEsc(item.name||"항목")} 일러스트</h2></div><button value="close" aria-label="닫기">×</button></div><p>사진 첨부와 별개인 서랍마을 기본 일러스트예요. 투명 배경과 원본 비율로 표시됩니다.</p><div class="catalog-illustration-grid">${symbols.map((symbol,index)=>`<button type="button" data-catalog-app-art="${index}"><img src="${catalogIllustration(kind,index)}" alt=""><span>${symbol} 일러스트 ${index+1}</span></button>`).join("")}</div></form>`;
   dialog.querySelectorAll("[data-catalog-app-art]").forEach(button=>button.onclick=()=>{
-    updateCatalogItem(kind,itemId,{image:catalogIllustration(kind,Number(button.dataset.catalogAppArt)),imageSource:"app"});
-    dialog.close();replaceCatalogCard(kind,itemId,{open:true});
+    const patch={image:catalogIllustration(kind,Number(button.dataset.catalogAppArt)),imageSource:"app"};
+    if(options.onSelect)options.onSelect(patch);else updateCatalogItem(kind,itemId,patch);
+    dialog.close();if(!options.onSelect)replaceCatalogCard(kind,itemId,{open:true});
   });
   dialog.onclose=()=>{dialog.remove();if(state.activeTab==="mailbox")render()};document.body.append(dialog);dialog.showModal();
 }

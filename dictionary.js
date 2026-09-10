@@ -1,4 +1,4 @@
-import {state,addCatalogItem,updateCatalogItem,deleteCatalogItem,save} from './state.js?v=20260909dev305';
+import {state,addCatalogItem as addPersonal,updateCatalogItem as updatePersonal,deleteCatalogItem as deletePersonal,save} from './state.js?v=20260909dev305';
 import {initializeLocalMediaState} from './local-media.js?v=20260909dev305';
 
 const esc=(x='')=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -16,8 +16,19 @@ export function ratingStars(value){
 const ui={kind:'',place:'',search:'',sort:'default',limit:30,editing:null,draft:null,scroll:0};
 let cfg,actions,owner,saving=false;
 const drafts=new Map();
-const tr=s=>cfg?.translate?.(s,s)||s;
-function entries(){return Object.entries(state.catalog||{}).flatMap(([kind,items])=>items.map(item=>({...item,kind})))}
+const copy={
+ '내 사전':['My dictionary','個人の辞典'],'멀티 그룹':['Multiplayer groups','マルチグループ'],
+ '방장과 관리자만 공유 사전을 편집할 수 있어요.':['Only the owner and managers can edit this shared dictionary.','共有辞典はオーナーと管理者のみ編集できます。'],
+ '공유 사전에 저장됨':['Saved to the shared dictionary','共有辞典に保存しました'],
+ '저장하지 못했어요. 다시 시도해 주세요.':['Could not save. Please try again.','保存できませんでした。もう一度お試しください。']};
+const tr=s=>copy[s]?.[state.uiLanguage==='en'?0:state.uiLanguage==='ja'?1:-1]||cfg?.translate?.(s,s)||s;
+let sharedCatalog={},scope='';
+const catalog=()=>scope?sharedCatalog:state.catalog;
+const canEdit=()=>!scope||cfg.shared?.group?.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||['owner','manager','operator'].includes(cfg.shared?.members?.find(m=>(m.uid||m.id)===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role);
+function addCatalogItem(kind,item){if(!scope)return addPersonal(kind,item);if(entries().length>=80)return null;const id=crypto.randomUUID();(sharedCatalog[kind]??=[]).push({...item,id});return id}
+function updateCatalogItem(kind,id,item){if(!scope)return updatePersonal(kind,id,item);sharedCatalog[kind]=sharedCatalog[kind].map(old=>old.id===id?{...old,...item,id}:old)}
+async function deleteCatalogItem(kind,id){if(!scope)return deletePersonal(kind,id);const groupId=scope;await window.DrawerVillageGroups.saveCatalogItem({groupId,kind,id,remove:true,expected:ui.original});if(scope===groupId)sharedCatalog[kind]=sharedCatalog[kind].filter(item=>item.id!==id)}
+function entries(){return Object.entries(catalog()||{}).flatMap(([kind,items])=>items.map(item=>({...item,kind})))}
 export function filterDictionary(items,{kind='',search='',sort='default',allowed=null}={}){
   const query=search.trim().toLocaleLowerCase();
   const result=items.filter(item=>(!kind||item.kind===kind)&&(!allowed||allowed.has(item.id))&&(!query||[item.name,item.category,item.subtype,...(item.tags||[])].join(' ').toLocaleLowerCase().includes(query)));
@@ -26,16 +37,11 @@ export function filterDictionary(items,{kind='',search='',sort='default',allowed
   if(sort==='new')result.reverse();
   return result;
 }
-function matches(){
-  let allowed=null;
-  if(ui.place==='집')allowed=new Set(Object.values(state.characters||{}).flatMap(c=>Object.values(c.inventory||{}).flat()));
-  else if(ui.place)allowed=new Set((state.world.places||[]).filter(p=>p.type===ui.place).flatMap(p=>p.stock||[]));
-  return filterDictionary(entries(),{...ui,allowed});
-}
+function matches(){return filterDictionary(entries(),ui)}
 function tile(item){return `<button type="button" class="dictionary-tile" data-dict-open="${esc(item.id)}" data-kind="${item.kind}">${itemArt(item,cfg.icons[item.kind])}<b>${esc(item.name)}</b>${ratingStars(item.rating)}</button>`}
 function results(){
   const items=matches();
-  return `${items.slice(0,ui.limit).map(tile).join('')}<button type="button" class="dictionary-tile dictionary-add" data-dict-add><span>＋</span><b>${tr('물품 추가하기')}</b></button>${items.length>ui.limit?`<button type="button" class="dictionary-more" data-dict-more>${tr('더 보기')} (${ui.limit} / ${items.length})</button>`:''}${!items.length?`<p class="dictionary-no-results">${tr('해당하는 물품이 없어요.')}</p>`:''}`;
+  return `${items.slice(0,ui.limit).map(tile).join('')}${canEdit()?`<button type="button" class="dictionary-tile dictionary-add" data-dict-add><span>＋</span><b>${tr('물품 추가하기')}</b></button>`:''}${items.length>ui.limit?`<button type="button" class="dictionary-more" data-dict-more>${tr('더 보기')} (${ui.limit} / ${items.length})</button>`:''}${!items.length?`<p class="dictionary-no-results">${tr('해당하는 물품이 없어요.')}</p>`:''}`;
 }
 function options(values,value){
   // Keep existing/custom values until the user explicitly picks a replacement.
@@ -43,9 +49,9 @@ function options(values,value){
   return values.map(v=>{const [key,label]=Array.isArray(v)?v:[v,v];return `<option value="${esc(key)}" ${String(key)===String(value)?'selected':''}>${esc(tr(label))}</option>`}).join('');
 }
 function list(){
-  const places=[...new Set(['집','사무실','음식점','카페','병원',...(state.world.places||[]).map(p=>p.type).filter(Boolean)])];
+  const groups=cfg.shared?.groups||[];ui.scope=scope;
   const filter=(key,label,type)=>`<button type="button" data-dict-${type}="${esc(key)}" aria-current="${ui[type]===key?'true':'false'}">${esc(tr(label))}</button>`;
-  return `<div class="dictionary-toolbar"><button class="dictionary-back" type="button" data-dict-home aria-label="${tr('메인 화면으로 돌아가기')}" ><img src="./assets/dictionary/back.webp" alt=""></button><input type="search" data-dict-search value="${esc(ui.search)}" placeholder="${tr('검색')}" aria-label="${tr('사전 검색')}"><nav class="dictionary-kinds" aria-label="${tr('카테고리')}">${filter('','전체','kind')}${Object.entries(cfg.labels).map(([k,v])=>filter(k,v,'kind')).join('')}</nav><nav class="dictionary-places" aria-label="${tr('이용 장소')}">${filter('','전체','place')}${places.map(p=>filter(p,p,'place')).join('')}</nav></div><section class="dictionary-frame"><div class="dictionary-paper"><div class="dictionary-count"><span data-dict-count>${tr('총')} ${Object.values(state.catalog).flat().filter(i=>!i.ownerId).length} / 80</span><select data-dict-sort aria-label="${tr('정렬')}">${options([['default','기본순'],['name','이름순'],['rating','별점순'],['new','최근 추가순']],ui.sort)}</select></div><div class="dictionary-transfer-actions"><button type="button" data-settings-transfer="catalog-export">${({ko:'물품 선택 다운로드',en:'Download selected items',ja:'品物を選んでダウンロード'}[state.uiLanguage]||'물품 선택 다운로드')}</button><button type="button" data-settings-transfer="catalog-import">${tr("사전 파일 불러오기")}</button></div><div class="dictionary-results" data-dict-results>${results()}</div></div></section>`;
+  return `<div class="dictionary-toolbar"><button class="dictionary-back" type="button" data-dict-home aria-label="${tr('메인 화면으로 돌아가기')}" ><img src="./assets/dictionary/back.webp" alt=""></button><input type="search" data-dict-search value="${esc(ui.search)}" placeholder="${tr('검색')}" aria-label="${tr('사전 검색')}"><nav class="dictionary-kinds" aria-label="${tr('카테고리')}">${filter('','전체','kind')}${Object.entries(cfg.labels).map(([k,v])=>filter(k,v,'kind')).join('')}</nav><nav class="dictionary-scopes" aria-label="${tr('멀티 그룹')}">${filter('','내 사전','scope')}${groups.map(g=>filter(g.id,g.name||g.id,'scope')).join('')}</nav></div><section class="dictionary-frame"><div class="dictionary-paper"><div class="dictionary-count"><span data-dict-count>${tr('총')} ${Object.values(catalog()).flat().filter(i=>!i.ownerId).length} / 80</span><select data-dict-sort aria-label="${tr('정렬')}">${options([['default','기본순'],['name','이름순'],['rating','별점순'],['new','최근 추가순']],ui.sort)}</select></div>${scope?(!canEdit()?`<p>${tr('방장과 관리자만 공유 사전을 편집할 수 있어요.')}</p>`:''):`<div class="dictionary-transfer-actions"><button type="button" data-settings-transfer="catalog-export">${({ko:'물품 선택 다운로드',en:'Download selected items',ja:'品物を選んでダウンロード'}[state.uiLanguage]||'물품 선택 다운로드')}</button><button type="button" data-settings-transfer="catalog-import">${tr("사전 파일 불러오기")}</button></div>`}<div class="dictionary-results" data-dict-results>${results()}</div></div></section>`;
 }
 function editor(){
   const d=ui.draft,kind=ui.editing.kind;
@@ -59,14 +65,19 @@ function editor(){
 }
 export function renderDictionary(config){
   cfg=config;
+  const nextScope=config.shared?.activeGroupId||'';
+  if(nextScope!==scope){scope=nextScope;owner=null}
+  if(scope&&!ui.editing)sharedCatalog=Object.fromEntries((config.shared.catalog||[]).map(c=>[c.id,structuredClone(c.items||[])]));
   if(owner!==state.characters){owner=state.characters;drafts.clear();ui.editing=null;ui.draft=null;ui.kind='';ui.place='';ui.search='';ui.limit=30}
-  if(ui.editing&&!state.catalog[ui.editing.kind]?.some(i=>i.id===ui.editing.id)){ui.editing=null;ui.draft=null}
+  if(ui.editing&&(!scope||ui.original)&&!catalog()[ui.editing.kind]?.some(i=>i.id===ui.editing.id)){ui.editing=null;ui.draft=null}
   return `<section class="dictionary-shell" data-dictionary>${ui.editing?editor():list()}</section>`;
 }
 function redraw(){const shell=document.querySelector('[data-dictionary]');if(!shell)return;shell.innerHTML=ui.editing?editor():list();bindFields(shell);actions?.translate?.(shell)}
 function collect(){document.querySelectorAll('[data-dict-field]').forEach(el=>{ui.draft[el.dataset.dictField]=el.dataset.dictField==='rating'?normalizeRating(el.value):['spicy','sweet','acidity','carbonation'].includes(el.dataset.dictField)?Number(el.value):el.value})}
 async function commit(){
-  collect();updateCatalogItem(ui.editing.kind,ui.editing.id,ui.draft);
+  collect();
+  if(scope){const groupId=scope,editing=ui.editing,draft=structuredClone(ui.draft);const result=await window.DrawerVillageGroups.saveCatalogItem({groupId,kind:editing.kind,id:editing.id,item:draft,expected:ui.original});if(scope===groupId&&ui.editing===editing)updateCatalogItem(editing.kind,editing.id,result.items?.find(i=>i.id===editing.id)||draft);return true}
+  updateCatalogItem(ui.editing.kind,ui.editing.id,ui.draft);
   if(save(true))return true;
   // An uploaded/restored image may still occupy the small snapshot store.
   // Wait for its durable media copy before retrying; never remove the photo.
@@ -75,10 +86,11 @@ async function commit(){
   return state.characters===characters&&save(true);
 }
 function closeEditor(){ui.editing=null;ui.draft=null;redraw();const results=document.querySelector('.dictionary-results');if(results)results.scrollTop=ui.scroll}
-function open(kind,id){const item=state.catalog[kind]?.find(i=>i.id===id);if(!item)return;ui.scroll=document.querySelector('.dictionary-results')?.scrollTop||0;ui.editing={kind,id};ui.draft=structuredClone(drafts.get(`${kind}:${id}`)||item);redraw()}
-export function refreshDictionaryImage(kind,id){if(ui.editing?.kind!==kind||ui.editing?.id!==id)return;const item=state.catalog[kind]?.find(i=>i.id===id);if(!item)return;collect();ui.draft.image=item.image;ui.draft.imageSource=item.imageSource;redraw()}
+function open(kind,id){const item=catalog()[kind]?.find(i=>i.id===id);if(!item)return;ui.scroll=document.querySelector('.dictionary-results')?.scrollTop||0;ui.editing={kind,id};ui.original=cfg.shared?.catalog?.find(c=>c.id===kind)?.items?.find(i=>i.id===id)||null;ui.draft=structuredClone(drafts.get(`${kind}:${id}`)||item);redraw()}
+export function refreshDictionaryImage(kind,id){if(ui.editing?.kind!==kind||ui.editing?.id!==id)return;const item=catalog()[kind]?.find(i=>i.id===id);if(!item)return;collect();ui.draft.image=item.image;ui.draft.imageSource=item.imageSource;redraw()}
 function popup(title,body){const d=document.createElement('dialog');d.className='dictionary-picker';d.innerHTML=`<form method="dialog"><header><h2>${tr(title)}</h2><button aria-label="${tr('닫기')}">×</button></header>${body}</form>`;d.onclose=()=>d.remove();document.body.append(d);actions?.translate?.(d);d.showModal();return d}
 function bindFields(shell){
+  if(!canEdit()){shell.querySelectorAll('.dictionary-editor-fields input,.dictionary-editor-fields select,.dictionary-editor-fields textarea,.dictionary-editor-fields button,.dictionary-book-actions button,.dictionary-save').forEach(el=>el.disabled=true)}
   const input=shell.querySelector('[data-dict-search]');if(input)input.oninput=()=>{ui.search=input.value;ui.limit=30;refreshResults()};
   shell.querySelector('[data-dict-sort]')?.addEventListener('change',e=>{ui.sort=e.target.value;refreshResults()});
   shell.querySelectorAll('[data-dict-field]').forEach(el=>el.addEventListener('input',()=>{
@@ -90,11 +102,13 @@ function bindFields(shell){
   shell.querySelectorAll('[data-dict-keyword]').forEach(el=>el.onchange=()=>{ui.draft.keywords=[...shell.querySelectorAll('[data-dict-keyword]:checked')].map(e=>e.dataset.dictKeyword)});
   shell.querySelector('form.dictionary-editor-fields')?.addEventListener('submit',e=>e.preventDefault());
 }
-function refreshResults(){const r=document.querySelector('[data-dict-results]');if(!r)return;r.innerHTML=results();document.querySelector('[data-dict-count]').textContent=`${tr('총')} ${Object.values(state.catalog).flat().filter(i=>!i.ownerId).length} / 80`;actions?.translate?.(r)}
+function refreshResults(){const r=document.querySelector('[data-dict-results]');if(!r)return;r.innerHTML=results();document.querySelector('[data-dict-count]').textContent=`${tr('총')} ${Object.values(catalog()).flat().filter(i=>!i.ownerId).length} / 80`;actions?.translate?.(r)}
 export function mountDictionary(callbacks){
   actions=callbacks;const shell=document.querySelector('[data-dictionary]');if(!shell)return;bindFields(shell);
   shell.addEventListener('click',async event=>{
     const b=event.target.closest('button');if(!b||saving)return;
+    if(b.hasAttribute('data-dict-scope')){window.DrawerVillageGroups?.select(b.dataset.dictScope);return}
+    if(!canEdit()&&!b.hasAttribute('data-dict-open')&&!b.hasAttribute('data-dict-kind')&&!b.hasAttribute('data-dict-home')&&!b.hasAttribute('data-dict-more')){if(b.hasAttribute('data-dict-close'))closeEditor();return}
     if(b.hasAttribute('data-dict-home')){actions.home();return}
     if(b.hasAttribute('data-dict-kind')||b.hasAttribute('data-dict-place')){const key=b.hasAttribute('data-dict-kind')?'kind':'place';ui[key]=b.dataset[key==='kind'?'dictKind':'dictPlace'];ui.limit=30;b.parentElement.querySelectorAll('button').forEach(e=>e.setAttribute('aria-current',String(e===b)));refreshResults()}
     if(b.dataset.dictOpen)open(b.dataset.kind,b.dataset.dictOpen);
@@ -110,7 +124,7 @@ export function mountDictionary(callbacks){
       try{
         const stored=await commit();
         if(owner!==saveOwner||ui.editing!==editing)return;
-        if(stored){drafts.delete(key);closeEditor();actions.toast('기기에 저장됨')}
+        if(stored){drafts.delete(key);closeEditor();actions.toast(scope?tr('공유 사전에 저장됨'):'기기에 저장됨')}
         else{
           drafts.set(key,structuredClone(ui.draft));
           actions.toast('저장하지 못했어요. 입력 내용은 앱을 닫기 전까지 유지돼요.');
@@ -120,10 +134,10 @@ export function mountDictionary(callbacks){
             dialog.querySelector('[data-leave-editor]').onclick=()=>{dialog.close();closeEditor()};
           }
         }
-      }finally{saving=false;b.disabled=false}
+      }catch{actions.toast(tr('저장하지 못했어요. 다시 시도해 주세요.'))}finally{saving=false;b.disabled=false}
       return;
     }
-    if(b.hasAttribute('data-dict-delete')&&confirm(tr('이 항목을 삭제할까요?'))){deleteCatalogItem(ui.editing.kind,ui.editing.id);ui.editing=null;ui.draft=null;redraw()}
+    if(b.hasAttribute('data-dict-delete')&&confirm(tr('이 항목을 삭제할까요?'))){const editing=ui.editing;try{await deleteCatalogItem(editing.kind,editing.id);if(ui.editing!==editing)return}catch{actions.toast(tr('저장하지 못했어요. 다시 시도해 주세요.'));return}ui.editing=null;ui.draft=null;redraw()}
     if(b.hasAttribute('data-dict-copy')){collect();const {id,...copy}=ui.draft;const newId=addCatalogItem(ui.editing.kind,{...copy,name:`${copy.name} (${tr('복제')})`});if(newId)open(ui.editing.kind,newId);else actions.toast('전체 80개까지 추가할 수 있어요.')}
     if(b.hasAttribute('data-dict-tag-add')){collect();const d=popup('태그 추가',`<input maxlength="40" aria-label="${tr('태그')}" autofocus><button type="button" data-add>${tr('추가')}</button>`);d.querySelector('[data-add]').onclick=()=>{const tag=d.querySelector('input').value.trim().replace(/^#+/,'');if(tag)ui.draft.tags=[...new Set([...(ui.draft.tags||[]),tag])];d.close();redraw()}}
     if(b.hasAttribute('data-dict-remove-tag')){collect();ui.draft.tags.splice(Number(b.dataset.dictRemoveTag),1);redraw()}
@@ -132,6 +146,8 @@ export function mountDictionary(callbacks){
       d.querySelectorAll('[data-source]').forEach(e=>e.onclick=()=>{
         d.close();const {kind,id}=ui.editing;
         if(e.dataset.source==='link'){const url=popup('이미지 링크',`<input type="url" placeholder="https://…" aria-label="${tr('이미지 링크')}"><p role="status"></p><button type="button" data-apply>${tr('적용')}</button>`);url.querySelector('[data-apply]').onclick=()=>{const value=url.querySelector('input').value.trim();if(!/^https?:\/\//i.test(value)){url.querySelector('[role=status]').textContent=tr('http 또는 https 이미지 링크를 넣어 주세요.');return}ui.draft.image=value;ui.draft.imageSource='user';url.close();redraw()}}
+        else if(scope&&e.dataset.source==='app'){const editing=ui.editing;actions.illustration(id,kind,{item:ui.draft,onSelect:patch=>{if(ui.editing!==editing)return;Object.assign(ui.draft,patch);redraw()}})}
+        else if(scope){const input=document.createElement('input');input.type='file';input.accept='image/*';const editing=ui.editing;input.onchange=()=>{const file=input.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{if(ui.editing!==editing)return;ui.draft.image=reader.result;ui.draft.imageSource='user';redraw()};reader.readAsDataURL(file)};input.click()}
         else{
           updateCatalogItem(kind,id,ui.draft);
           e.dataset.source==='app'?actions.illustration(id,kind):actions.upload('catalogImage',id,kind);
