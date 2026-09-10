@@ -1,3 +1,4 @@
+import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {clearAccountImages} from './image-cleanup.js?v=20260909dev305';
 import {initializeLocalMediaState} from './local-media.js?v=20260909dev305';
 import {applyCharacterTransfers} from './character-transfers.js?v=20260909dev305';
@@ -1126,7 +1127,7 @@ async function refreshSharedResidents(){
   if(groupState.activeGroupId!==gid)return;
   const batch=writeBatch(db);
   for(const r of mine){const c=cloud.characters?.[r.sourceCharacterId];if(!c)continue;
-    batch.update(doc(db,'groups',gid,'residents',r.id),{profileJson:JSON.stringify(sharedProfile(c)),scheduleJson:JSON.stringify({routines:cloud.routines?.[c.id]||[],monthlyRoutines:cloud.monthlyRoutines?.[c.id]||[]}),sourceHomeId:c.homeId||'',icon:publicImage(c.icon),photo:publicImage(c.photo),name:c.name,job:c.jobTitle||c.job||'',updatedAt:serverTimestamp()});
+    batch.update(doc(db,'groups',gid,'residents',r.id),{profileJson:JSON.stringify(sharedProfile(withWardrobe(c,cloud.catalog))),scheduleJson:JSON.stringify({routines:cloud.routines?.[c.id]||[],monthlyRoutines:cloud.monthlyRoutines?.[c.id]||[]}),sourceHomeId:c.homeId||'',icon:publicImage(c.icon),photo:publicImage(c.photo),name:c.name,job:c.jobTitle||c.job||'',updatedAt:serverTimestamp()});
   }
   for(const h of groupState.homes.filter(h=>h.ownerUid===account.uid)){const home=cloud.homes?.[h.sourceHomeId];if(home)batch.update(doc(db,'groups',gid,'homes',h.id),{layoutJson:JSON.stringify(sharedProfile(home)),exteriorImage:publicImage(home.exteriorImage||home.image),updatedAt:serverTimestamp()});}
   await batch.commit();await advanceSharedLife(true);
@@ -1153,7 +1154,7 @@ async function addGroupResident(characterId,townId=""){
 async function requestGroupAdmission(characterId,townId=""){
   requireGroupUser();const gid=groupState.activeGroupId,cloud=await sharedCloudState(),c=cloud.characters?.[characterId];
   if(!c||gid!==groupState.activeGroupId)throw Error('Character or group changed');
-  const h=cloud.homes?.[c.homeId],resident={sourceCharacterId:c.id,name:c.name,job:c.jobTitle||c.job||'',townId:townId||groupState.selectedTownId||groupState.group.towns[0].id,sourceHomeId:c.homeId||'',profileJson:JSON.stringify(sharedProfile(c)),scheduleJson:JSON.stringify({routines:cloud.routines?.[c.id]||[],monthlyRoutines:cloud.monthlyRoutines?.[c.id]||[]}),photo:publicImage(c.photo),icon:publicImage(c.icon)};
+  const h=cloud.homes?.[c.homeId],resident={sourceCharacterId:c.id,name:c.name,job:c.jobTitle||c.job||'',townId:townId||groupState.selectedTownId||groupState.group.towns[0].id,sourceHomeId:c.homeId||'',profileJson:JSON.stringify(sharedProfile(withWardrobe(c,cloud.catalog))),scheduleJson:JSON.stringify({routines:cloud.routines?.[c.id]||[],monthlyRoutines:cloud.monthlyRoutines?.[c.id]||[]}),photo:publicImage(c.photo),icon:publicImage(c.icon)};
   return sharedTownRequest('requestResidence',{requestId:crypto.randomUUID(),kind:'admission',resident,...(h?{home:{sourceHomeId:c.homeId,name:h.name,layoutJson:JSON.stringify(sharedProfile(h))}}:{})});
 }
 async function removeGroupResident(residentId){const result=await sharedTownRequest('removeMember',{residentId});await refreshMailbox(true);await refreshSlotUsage();return result}

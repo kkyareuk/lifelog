@@ -1,0 +1,9 @@
+<ko-KR>
+개인 마을에서 공유마을로 입주할 때 옷장 상세 정보와 코디의 옷 연결이 함께 유지되도록 수정했어요. 기존 개인 데이터가 남아 있으면 이전 입주 캐릭터의 옷장도 다시 표시해요. 선물 목록이 비어 있을 때 보낼 수 있는 물품 분류를 안내하고, 유저 우편과 캐릭터 선물의 차이를 설명했어요.
+</ko-KR>
+<en-US>
+Clothing details and outfit links now travel with characters moving from personal to shared towns. Older wardrobes can reappear when the original personal data remains. Added guidance for empty gift lists and clarified that user mail is text-only while gifts go to characters.
+</en-US>
+<ja-JP>
+個人の村から共有の村へ入居する際、服の詳細とコーデの参照を引き継ぐよう修正しました。元の個人データが残っていれば、以前入居したキャラクターの服も再表示します。贈り物一覧が空の際の案内と、ユーザー宛の文章のみの手紙・キャラクター宛の贈り物の違いを追加しました。
+</ja-JP>

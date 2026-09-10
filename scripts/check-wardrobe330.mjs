@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {withWardrobe,restoreWardrobe} from '../shared-wardrobe.js';
+const original={id:'personal',inventory:{fashion:['shirt'],book:['book']},savedOutfits:[{name:'Daily',itemIds:['shirt']}]};
+const items={fashion:[{id:'shirt',ownerId:'personal',name:'Blue shirt',image:'https://example.test/shirt.png',colors:['blue']},{id:'other',ownerId:'someone',name:'Other'}]};
+const packed=withWardrobe(original,items);assert.equal(packed.wardrobeItems.length,1);
+const catalog={fashion:[]},restored=restoreWardrobe(packed,'resident',catalog);
+assert.equal(catalog.fashion[0].ownerId,'resident');assert.equal(catalog.fashion[0].image,items.fashion[0].image);assert.deepEqual(restored.inventory.fashion,['resident::shirt']);assert.deepEqual(restored.savedOutfits[0].itemIds,restored.inventory.fashion);assert.deepEqual(restored.inventory.book,['book']);
+const saved=withWardrobe({...restored,id:'resident'},catalog);const again=restoreWardrobe(saved,'resident',catalog);assert.deepEqual(again.inventory.fashion,restored.inventory.fashion);assert.equal(catalog.fashion.length,1);
+const moved=restoreWardrobe(saved,'second',catalog);assert.deepEqual(moved.inventory.fashion,['second::shirt']);assert.equal(catalog.fashion.length,2);assert.equal(original.inventory.fashion[0],'shirt');
+console.log('PASS wardrobe definitions, ownership, outfit references, image, idempotency, second group and original isolation');

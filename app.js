@@ -1,3 +1,4 @@
+import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
 import {considerDiscovery,bindDiscoveryLocks} from './character-discovery.js?v=20260909dev305';
 import {manualDiscoveryPatch} from './character-discovery-rules.js?v=20260909dev305';
@@ -5675,6 +5676,7 @@ window.ParallelCity={
   cropUserProfile:file=>cropImage(file,"userProfile"),
   getState:cloneState,
   getPersonalStateForSharing:()=>structuredClone(personalState()),
+  getPersonalWardrobeForSharing:id=>{const world=personalState(),c=world.characters?.[id];return c?structuredClone(withWardrobe(c,world.catalog).wardrobeItems):null},
   getCharacterCount:()=>personalState().order.length,getActiveTab:()=>state.activeTab,
   getMeetingPositions:ids=>captureMeetingPositions(ids,activeShared()?.selectedTownId||activeShared()?.group?.towns?.[0]?.id||state.activeTownId),
   getCharacterForSharing:async id=>{const c=state.characters[id];if(!c)return null;const {days,...profile}=c,result=structuredClone(profile),media=await initializeLocalMediaState(result);if(media.pending)throw Error(({ko:"사진을 아직 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",en:"Some photos are not ready. Please try again shortly.",ja:"写真をまだ読み込めません。少し待ってから再試行してください。"})[state.uiLanguage]);return result},

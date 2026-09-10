@@ -1,3 +1,4 @@
+import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {showSharedResidentCreator} from './shared-create-resident.js?v=20260909dev305';
 import {state,beginCharacterEditor,endCharacterEditor,characterEditorActive,emptyWorld,runIsolatedWorld,createCharacter} from './state.js?v=20260909dev305';
 import {buildSharedWorld} from './shared-world.js?v=20260909dev305';
@@ -33,7 +34,7 @@ export function characterGroupSelector(){
 }
 export function saveSharedCharacter(){
  if(!session||!characterEditorActive())return null;
- const {uid,groupId}=session,id=state.activeId,profile=structuredClone(state.characters[id]);
+ const {uid,groupId}=session,id=state.activeId,profile=withWardrobe(structuredClone(state.characters[id]),state.catalog);
  if(!profile||profile.ownerUid!==uid)throw Error('Character owner required');
  return runBackgroundAction('resident-edit:'+groupId+':'+id,async()=>{
   if(window.ParallelCityAuth.getInfo().user?.uid!==uid)throw Error('Account changed');
