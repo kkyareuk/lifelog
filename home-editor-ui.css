@@ -148,3 +148,5 @@ html body #app .home-journal-content .resident-current>img{width:100%;max-height
 @media(prefers-reduced-motion:reduce){.home-furniture-drawer{transition:none}}
 
 .sleep-settings{display:grid;gap:10px;grid-column:1/-1;border:1px solid #a58965;border-radius:16px;padding:14px}.sleep-settings .check{display:flex;align-items:center;gap:10px}.sleep-settings input[type="checkbox"]{appearance:auto;width:18px!important;height:18px!important;min-width:18px!important;accent-color:#80603e}.sleep-settings small{font-size:.85em;line-height:1.5}
+
+.building-photo-choice{display:grid;gap:10px;padding:16px;margin:12px 0;border:1px solid #bda17b;border-radius:16px;background:#fff8e9;color:#463324}.building-photo-choice input{max-width:100%}.building-photo-choice small{font-size:.85em}

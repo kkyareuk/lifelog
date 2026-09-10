@@ -23,7 +23,7 @@ function createSharedTownService({db,engine,clock=Date.now}){
           if(['message','remote_checkin','phone_call','taunt','insult','fight','tea','drinks','cook_together','argue','debate','compete','play_together','study_together','read_together','custom_social','talk','hangout','comfort','compliment','gossip','dine','hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection'].concat(advance.socialKinds||[]).includes(input.command.kind)&&!residents.some(r=>r.id===input.command.targetId&&r.id!==c.id&&r.townId===c.townId))fail('invalid-companion');
           if(['kiss','kiss_cautious','kiss_reconcile','affection','handhold','lean','hug'].includes(input.command.kind)){
             const target=residents.find(r=>r.id===input.command.targetId),profiles=[c,target].map(r=>{try{return JSON.parse(r.profileJson||'{}')}catch{return {}}});
-            if(input.command.kind!=='hug'&&profiles.some(p=>!['성인','노인'].includes(p.ageGroup)))fail('adult-characters-required');
+            if(['kiss','kiss_cautious','kiss_reconcile','affection'].includes(input.command.kind)&&profiles.some(p=>!['성인','노인'].includes(p.ageGroup)))fail('adult-characters-required');
           }
           const contact=residents.find(r=>r.id===input.command.targetId);if(contact)await require('./user-safety').allowContact(db,tx,uid,contact.ownerUid);
           if(now-Number(c.commandAt||0)<5000)fail('command-rate-limit',429);

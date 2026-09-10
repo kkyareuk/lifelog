@@ -1,3 +1,4 @@
+import {contactFailure} from './state.js?v=20260909dev305';
 import {installImageDeletion} from './image-cleanup.js?v=20260909dev305';
 import {saleAllows,saleChangedMessage} from "./slot-sale.js?v=20260909dev305";
 // Keep native purchase state through shop rerenders and late price responses.
@@ -337,7 +338,7 @@ const FALLBACK_BUILDING_SHAPES=[
   {id:"type-park",name:"마을 공원",src:"world-assets/building-types/park-handdrawn.png",types:["공원"],features:["직접 그린 건물","시간별 조명","원화의 흰색 유지"]},
   {id:"red-roof-home",name:"빨간 지붕 집",src:"world-assets/building-types/red-roof-home-handdrawn.png",types:["집","숙박"],features:["직접 그린 건물","시간별 조명","원화의 흰색 유지"]},
   {id:"type-restaurant",name:"음식점",src:"world-assets/building-types/restaurant-handdrawn.png",types:["음식점"]},
-  {id:"drawer-building",name:"쌍둥이 서랍 건물",src:"world-assets/drawer-building.png"},
+  {id:"drawer-building",name:"옥상 정원 건물",src:"world-assets/building-types/generic-building-handdrawn.png"},
   {id:"medieval-castle",name:"중세 성채",src:"world-assets/medieval-castle.svg"},
   {id:"medieval-tavern",name:"중세 여관",src:"world-assets/medieval-tavern.svg"},
   {id:"medieval-market",name:"중세 시장",src:"world-assets/medieval-market.svg"}
@@ -492,8 +493,19 @@ function openBuildingShapeDialog(targetId,targetKind="place",sharedSave){
   const buildingType=isHome?"집":target.type;
   const dialog=document.createElement("dialog");dialog.className="building-shape-dialog";
   const recommended=BUILDING_SHAPES.filter(shape=>shape.types?.includes(buildingType)||isHome&&shape.id==="red-roof-home");
-  const ordered=[...recommended,...BUILDING_SHAPES.filter(shape=>!recommended.includes(shape))];
+  const ordered=[...recommended,...BUILDING_SHAPES.filter(shape=>!recommended.includes(shape))].filter(shape=>shape.id!=="drawer-building");
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><h2>건물 모양 선택</h2><small><b>${buildingType}</b> 유형에 어울리는 모양을 먼저 보여드려요. 보유한 건물 아이콘 팩의 그림도 이곳에 나타나요.</small></div><button value="cancel">×</button></div><div class="building-shape-dex">${ordered.map(shape=>`<button type="button" data-building-shape="${shape.id}" class="${target.iconPreset===shape.id?"on":""} ${recommended.includes(shape)?"recommended":""}"><span>${recommended.includes(shape)?"이 유형 추천":""}</span><img src="${shape.src}" alt=""><b>${shape.name}</b>${shape.features?.length?`<small>${shape.features.join(" · ")}</small>`:""}</button>`).join("")}</div></form>`;
+  const photoLabel=({ko:'내 건물 사진 선택',en:'Choose my building image',ja:'自分の建物画像を選ぶ'}[state.uiLanguage]||'내 건물 사진 선택');
+  const photo=document.createElement('label');photo.className='building-photo-choice';photo.innerHTML=`<b>${photoLabel}</b><input type="file" accept="image/*" aria-label="${photoLabel}"><small>${({ko:'선택한 이미지의 비율과 투명 배경을 유지해요.',en:'Keeps the image’s proportions and transparent background.',ja:'画像の縦横比と透過背景を維持します。'}[state.uiLanguage])}</small>`;
+  dialog.querySelector('.building-shape-dex').before(photo);
+  photo.querySelector('input').onchange=async event=>{
+    const file=event.target.files?.[0];if(!file)return;event.target.disabled=true;
+    try{const data=await prepareLargeArt(file);if(!data)return;
+      if(sharedSave){const blob=await(await fetch(data)).blob();const url=await groupApi.uploadHomeMemberImage(blob);const result=await sharedSave({[isHome?'exteriorImage':'image']:url});if(result===false)return;}
+      else await applyImage(isHome?'homeExterior':'place',targetId,'',data);
+      dialog.close();render();showToast(({ko:'건물 사진을 바꿨어요.',en:'Building image updated.',ja:'建物画像を変更しました。'}[state.uiLanguage]));
+    }catch(error){showToast(({ko:'사진을 저장하지 못했어요. 다시 시도해 주세요.',en:'Could not save the image. Please try again.',ja:'画像を保存できませんでした。もう一度お試しください。'}[state.uiLanguage]));}finally{event.target.disabled=false;event.target.value='';}
+  };
   dialog.querySelectorAll("[data-building-shape]").forEach(button=>button.onclick=()=>{
     if(button.dataset.buildingShape.startsWith("medieval-")&&!window.ParallelCityAuth?.getInfo?.().entitlements?.dlcPacks?.includes("medieval")){showToast("중세 건물 모양은 중세의 하루 DLC에 포함돼요");return}
     const iconPreset=button.dataset.buildingShape;
@@ -1981,7 +1993,7 @@ function bindDirectActivityCommand(root,characterId,close){
     if(!targetId)return showToast(copy.chooseTarget);
     const custom=command.querySelector("[data-direct-custom-topic]")?.value.trim(),topic=custom||command.dataset.directTopic||"";
     let accepted=false;event.currentTarget.disabled=true;try{accepted=await execute(kind,{targetId,subjectId,topic,payment:command.querySelector("[data-direct-payment]")?.value||"split"})}catch(error){showToast(error.message);return}finally{command.querySelector("[data-direct-social-submit]").disabled=false}
-    if(accepted){close();renderAfterCommand()}else showToast(({ko:'나이·신체접촉 설정과 집 안의 침대·욕조·샤워기·의자를 확인해 주세요.',en:'Check age, contact preferences and a bed, bath, shower or chair at home.',ja:'年齢・接触設定と家のベッド・浴槽・シャワー・椅子を確認してください。'}[state.uiLanguage]));
+    if(accepted){close();renderAfterCommand()}else showToast(contactFailure(state.characters[characterId],state.characters[targetId],kind,state.uiLanguage)||({ko:'행동할 장소를 찾지 못했어요. 캐릭터의 집 연결과 현재 위치를 확인해 주세요.',en:'No location is available. Check the character’s home connection and current location.',ja:'行動できる場所が見つかりません。家の接続と現在地を確認してください。'}[state.uiLanguage]));
   });
 }
 
@@ -4556,6 +4568,7 @@ async function applyImage(type,id,room,data){
   else if(type==="roomScene")setRoomFloorImage(id,room,data,"custom");
   else if(type==="home")setHomeBackground(id,data);
   else if(type==="homeExterior")setHomeExteriorImage(id,data);
+  else if(type==="place")updatePlace(id,{image:data},true);
   else if(type==="placeInterior")setPlaceInteriorImage(id,data);
   else if(type==="townPhoto"){state.world.photo=data;save(true)}
   else if(type==="petPhoto")setPetImage(id,room,"photo",data);

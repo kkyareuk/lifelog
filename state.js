@@ -1433,12 +1433,20 @@ function baseSocialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   }[kind]||null;
   return copy?Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:copy[language][0],desc:copy[language][1]}])):null;
 }
-export function contactAllowed(a,b,kind){
+export function contactFailure(a,b,kind,lang='ko'){
+ const text=(ko,en,ja)=>({ko,en,ja}[lang]||ko);
  const levels=['신체 접촉 없음','인사·부축 같은 의례적 접촉만','손잡기·팔짱까지','포옹·기대기까지','가벼운 입맞춤까지','깊은 입맞춤까지','성인 간 친밀한 접촉까지'];
  const required={handhold:2,lean:3,hug:3,kiss:4,kiss_cautious:4,kiss_reconcile:4,affection:6}[kind];
- if(required===undefined)return true;
- return [a,b].every((c,i)=>c&&!/몸에 손이 닿는 것을 (극도로 꺼림|싫어함)|접촉.*(싫|피함|거부)/.test(c.touchReaction||'')&&levels.indexOf(characterViewFor(c.id,[a,b][1-i].id).touchIntensity)>=required);
+ if(required===undefined)return '';
+ if(!a||!b||a.id===b.id)return text('함께할 다른 캐릭터를 골라 주세요.','Choose another character.','相手のキャラクターを選んでください。');
+ if(required>=4&&[a,b].some(c=>!['성인','노인'].includes(c.ageGroup)))return text('이 행동은 두 캐릭터 모두 성인 또는 노인으로 설정되어야 해요. 나이대가 서로 같을 필요는 없어요.','Both characters must be adults or seniors for this action. Their age groups do not need to match.','この行動は双方が成人または高齢者である必要があります。年齢区分が同じである必要はありません。');
+ for(const [c,other] of [[a,b],[b,a]]){
+  const level=String(characterViewFor(c.id,other.id).touchIntensity||'').trim().replace('성인 간 합의된 친밀한 접촉까지','성인 간 친밀한 접촉까지');
+  if(levels.indexOf(level)<required)return text(`${c.name} → ${other.name}의 시선에서 신체 접촉 허용 범위를 확인해 주세요. 두 방향 모두 이 행동을 허용해야 해요.`, `Check the contact limit in ${c.name}'s view of ${other.name}. Both directions must allow this action.`,`${c.name}から${other.name}への視線で接触の範囲を確認してください。双方の設定でこの行動を許可する必要があります。`);
+ }
+ return '';
 }
+export function contactAllowed(a,b,kind){return !contactFailure(a,b,kind)}
 export function directCharacterActivity(characterId,kind="wake",options={}){
   const character=state.characters?.[characterId];let definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
   if(!character)return false;
@@ -1450,11 +1458,11 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
-  if(['affection','kiss','kiss_cautious','kiss_reconcile','handhold','lean'].includes(kind)&&(!['성인','노인'].includes(character.ageGroup)||!['성인','노인'].includes(target?.ageGroup)))return false;
+  if(contactFailure(character,target,kind))return false;
   // Explicit mutual contact settings also permit a directed kiss. A custom
   // relationship name must not silently veto the user's settings.
   if(ROMANTIC_ACTIVITIES.includes(kind)&&!hasRomanticRelationship(state.relationships,character.id,target?.id)&&!contactAllowed(character,target,kind))return false;
-  const contactRejected=!contactAllowed(character,target,kind);if(contactRejected){kind='talk';definition=DIRECTIVE_COPY.talk;}
+  const contactRejected=false;
   if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
   if(kind==="drinks"&&[character,target].some(c=>!["성인","노인"].includes(c?.ageGroup)))return false;
   options={...options,initiatorId:character.id,payment:["split","treat","request"].includes(options.payment)?options.payment:"split",payerName:options.payment==="request"?target?.name:character.name};
@@ -1472,11 +1480,12 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(!target||kind==='affection'){
     const home=state.homes?.[kind==='affection'?(targetScene?.home?(targetScene.visitHomeId||target.homeId):character.homeId):character.homeId];
     if(!home)return false;
-    const rooms=Object.entries(home.rooms||{});let chosen;
+    const canEnter=(c,room)=>{const resident=c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id),owner=room.ownerCharacterIds?.includes(c.id)||room.ownerMode==='all'&&resident,mode=room.accessMode||'everyone';return mode==='everyone'||owner||mode!=='owners'&&(room.accessCharacterIds?.includes(c.id)||room.accessGroups?.includes(resident?'residents':'outsiders'))};
+    const rooms=Object.entries(home.rooms||{}).filter(([,room])=>kind!=='affection'||canEnter(character,room)&&canEnter(target,room));let chosen;
     if(kind==='affection'){
       const ordered=rooms.slice().sort(([a],[b])=>Number(b===targetScene?.room)-Number(a===targetScene?.room));
       for(const [key,room] of ordered){const items=room.furniturePlacements?.length?room.furniturePlacements:(room.furniture||[]).map(item=>({item,x:50,y:60}));const furniture=items.find(p=>!/아기|baby/i.test(p.item)&&/침대|욕조|샤워|의자|bed|bath|shower|chair/i.test(p.item));if(furniture){chosen={key,furniture};break}}
-      if(!chosen)return false;
+      if(!chosen){const room=ordered.find(([key])=>key===targetScene?.room)||ordered.find(([,r])=>r.type==="living")||ordered[0];if(room)chosen={key:room[0]};else return false;}
     }else{const room=rooms.find(([key,r])=>key===definition.room||r.type===definition.room)||rooms[0];if(!room)return false;chosen={key:room[0]}}
     destination={home:true,visitHomeId:home.id,room:chosen.key,townId:home.townId||character.townId};
     if(task?.id==='groceries'){const shop=(state.world?.places||[]).find(p=>/마트|시장|편의점|식료품|슈퍼/.test([p.name,p.kind,p.type].join(' ')));if(shop)destination={home:false,placeId:shop.id,townId:character.townId}}
