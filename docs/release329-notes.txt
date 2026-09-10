@@ -1,0 +1,9 @@
+<ko-KR>
+관심사·취미·기술, 좋아하는 음료와 싫어하는 음료를 정하는 질문을 추가했어요. 답변에 따른 성향 변화와 과격한 선택지를 조정했어요. 개입하기에서 캐릭터가 스스로 하지 않을 활동을 설정할 수 있어요. 질문 아이콘을 일정과 통계 사이로 옮기고, 대기 중에는 반투명하게 표시해요. 설정 잠금은 공식 관계 메뉴로 옮겼어요. 구버전 캐릭터의 질문이 막히던 문제와 설정 항목 겹침을 수정했어요.
+</ko-KR>
+<en-US>
+Added questions for interests, hobbies, skills, and liked or disliked drinks. Refined trait changes and added more forceful choices. Use Intervene to limit autonomous activities. Moved questions between the calendar and statistics, with a faded cooldown icon. Moved setting locks to Official Relationships. Fixed unavailable questions for older characters and overlapping settings.
+</en-US>
+<ja-JP>
+興味・趣味・技能、好きな飲み物と苦手な飲み物を決める質問を追加しました。回答による性格変化と激しい選択肢を調整しました。介入から自発的にしない活動を設定できます。質問アイコンを予定と統計の間に移し、待機中は半透明にしました。設定の固定を公式関係メニューに移動しました。旧キャラクターで質問が出ない問題と設定項目の重なりを修正しました。
+</ja-JP>

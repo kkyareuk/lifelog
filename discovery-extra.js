@@ -1,3 +1,4 @@
+import {DISCOVERY_TRAITS} from './discovery-traits.js?v=20260909dev305';
 // Contrasting reactions grounded in each situation; existing five actions stay available.
 const tri=(ko,en,ja)=>({ko,en,ja});
 const rows=[
@@ -99,3 +100,18 @@ const rows=[
  ['다른 사람들이 먼저 고를 때까지 기다린다','Wait until everyone else has chosen','他の人が選び終わるまで待つ',{decisionStyle:1,interference:-2},'considerate']]
 ];
 export function expandDiscovery(events){for(const [id,...choices] of rows){const q=events.find(q=>q.id===id);if(!q)throw Error(id);q.choices.push(...choices.map(([ko,en,ja,effects,stance])=>({text:tri(ko,en,ja),effects,stance})));}}
+
+export function calibrateDiscovery(events){
+ const add=(id,ko,en,ja,targets)=>events.find(q=>q.id===id).choices.push({text:tri(ko,en,ja),stance:'violent',effects:Object.fromEntries(Object.keys(targets).map(f=>[f,2])),targets});
+ add('rain','화를 못 이겨 옆의 빈 의자를 걷어차고 고함을 지른다','Kick an empty chair and shout in a fit of anger','怒りに任せて脇の空いた椅子を蹴り、大声を上げる',{aggressionLevel:94,impulseControl:92,interference:76});
+ add('spill','테이블을 거칠게 밀치며 제대로 치우라고 고함친다','Shove the table and shout at them to clean it up','テーブルを乱暴に押し、きちんと片づけろと怒鳴る',{aggressionLevel:91,impulseControl:89,interference:84,decisionStyle:17});
+ add('early','도착한 상대 앞에서 가방을 내던지며 난리를 친다','Throw their bag down and cause a scene when the other person arrives','相手が来ると鞄を投げつけるように置き、騒ぎ立てる',{aggressionLevel:88,impulseControl:93,interference:81});
+ for(const q of events)for(const choice of q.choices){
+  const targets=Object.fromEntries(Object.keys(DISCOVERY_TRAITS).map(f=>[f,null]));
+  for(const [field,effect] of Object.entries(choice.effects))targets[field]=typeof effect==='number'?({2:87,1:68,'-1':33,'-2':13}[effect]??50):effect;
+  if(choice.stance!=='violent'&&targets.aggressionLevel!==null)targets.aggressionLevel=choice.effects.aggressionLevel===2?29:18;
+  if(q.id==='rain'&&choice.stance==='prepared')Object.assign(targets,{planningStyle:91,impulseControl:16});
+  if(q.id==='early'&&choice.stance==='hostile')Object.assign(targets,{planningStyle:81,interference:78,impulseControl:69});
+  choice.targets={...targets,...choice.targets};
+ }
+}

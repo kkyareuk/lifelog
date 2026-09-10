@@ -1,4 +1,4 @@
-import {expandDiscovery} from './discovery-extra.js?v=20260909dev305';
+import {expandDiscovery,calibrateDiscovery} from './discovery-extra.js?v=20260909dev305';
 import {PROFILE_EVENTS} from './discovery-profile.js?v=20260909dev305';
 // Sudden situations: players see only the scene and five actions, never the weights.
 const tri=(ko,en,ja)=>({ko,en,ja});
@@ -159,3 +159,5 @@ DISCOVERY_EVENTS.push(...PROFILE_EVENTS);
 
 const motions={early:'ponder',rain:'surprise',parcel:'ponder',spill:'surprise',lost:'ponder',change:'surprise',gift:'bounce',noise:'surprise',queue:'stretch',cat:'wave',compliment:'blush',crowd:'wave',puzzle:'ponder',mistake:'surprise',evening:'sway',silence:'ponder',seat:'stretch',postcard:'sway',scent:'sway',announcement:'surprise',lamp:'bounce',tag:'ponder',coin:'ponder',newtable:'wave'};
 for(const q of DISCOVERY_EVENTS)q.animation=motions[q.id]||q.animation;
+
+calibrateDiscovery(DISCOVERY_EVENTS);

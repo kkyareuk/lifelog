@@ -8,7 +8,7 @@ export const DISCOVERY_AXES=Object.fromEntries(Object.entries(DISCOVERY_TRAITS).
 export const DISCOVERY_FIELDS=[...Object.keys(DISCOVERY_AXES),...PROFILE_FIELDS];
 const clamp=v=>Math.max(0,Math.min(100,v));
 const ORIGINAL_FIELDS=new Set(['socialStyle','neatness','energyRhythm','perceptionStyle','planningStyle','decisionStyle','interference']);
-export const discoveryLocked=(c,field)=>c.discovery?.locks?.[field]??!(c.discovery?.version>=2||c.discovery?.version===1&&ORIGINAL_FIELDS.has(field));
+export const discoveryLocked=(c,field)=>c.discovery?.locks?.[field]??false;
 export function discoveryScore(c,field){const axis=DISCOVERY_AXES[field],saved=c.discovery?.scores?.[field];if(Number.isFinite(saved))return clamp(saved);const i=axis.values.indexOf(c[field]);if(i>=0)return i/(axis.values.length-1)*100;if(field==='aggressionLevel'&&!c[field])return 0;return axis.numeric&&Number.isFinite(c[axis.numeric])?clamp(c[axis.numeric]/6*100):50;}
 export function manualDiscoveryPatch(c,patch){
  const profileLocks={};for(const field of PROFILE_FIELDS){const root=field.split('.')[0];if(Object.hasOwn(patch,root)&&JSON.stringify(profileValue(c,field))!==JSON.stringify(profileValue({...c,...patch},field)))profileLocks[field]=true;}
@@ -33,25 +33,26 @@ export function discoveryEligible(c,q){
  return true;
 }
 export function discoveryChoices(c,q,random=Math.random){
- const available=q.choices.map((choice,index)=>({choice,index})).filter(({choice})=>(!choice.tattoo||!discoveryLocked(c,'bodyProfile.tattoos'))&&(!choice.preference||!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits')));
+ const available=q.choices.map((choice,index)=>({choice,index})).filter(({choice})=>(!choice.append||!discoveryLocked(c,choice.append.field)&&!(choice.append.opposite&&discoveryLocked(c,choice.append.opposite)&&(c[choice.append.opposite]||[]).includes(choice.append.value)))&&(!choice.tattoo||!discoveryLocked(c,'bodyProfile.tattoos'))&&(!choice.preference||!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits')));
  for(let i=available.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[available[i],available[j]]=[available[j],available[i]];}
- if(q.choices.length===8&&available.filter(o=>o.choice.stance).length>=2&&available.filter(o=>!o.choice.stance).length>=3){const mixed=[...available.filter(o=>o.choice.stance).slice(0,2),...available.filter(o=>!o.choice.stance).slice(0,3)];for(let i=mixed.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[mixed[i],mixed[j]]=[mixed[j],mixed[i]];}return mixed;}
+ if(q.choices.length>=8&&available.filter(o=>o.choice.stance).length>=2&&available.filter(o=>!o.choice.stance).length>=3){const mixed=[...available.filter(o=>o.choice.stance).slice(0,2),...available.filter(o=>!o.choice.stance).slice(0,3)];for(let i=mixed.length-1;i>0;i--){const j=Math.floor(random()*(i+1));[mixed[i],mixed[j]]=[mixed[j],mixed[i]];}return mixed;}
  return available.slice(0,5);
 }
 export function discoveryCandidates(c,scene){
  if(!scene||scene.sceneUnavailable||scene.remote||/수면|잠을 자|자는 중|sleeping|asleep|睡眠|眠って/.test([scene.title,scene.kind].join(' ')))return [];
 
- return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.keys(o.effects).some(f=>!discoveryLocked(c,f)))));
+ return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.keys(o.effects).some(f=>!discoveryLocked(c,f)))));
 }
 export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
  if(!discoveryEligible(c,q)||!DISCOVERY_EVENTS.includes(q)||!Number.isInteger(index)||!q.choices[index])return null;
  const choice=q.choices[index];if(choice.tattoo&&discoveryLocked(c,'bodyProfile.tattoos'))return null;
  const patch={},known={...c.discovery?.known},scores={...c.discovery?.scores},affinities={...c.discovery?.affinities};
- for(const [field,effect] of Object.entries(q.choices[index].effects)){
-  if(discoveryLocked(c,field))continue;const axis=DISCOVERY_AXES[field];
-  if(typeof effect==='number'){const target=clamp(50+effect*20);const score=Math.round((discoveryScore(c,field)*.8+target*.2)*100)/100;scores[field]=score;patch[field]=axis.values[Math.round(score/100*(axis.values.length-1))];if(axis.numeric)patch[axis.numeric]=Math.round(score/100*6);}
+ for(const [field,effect] of Object.entries(q.choices[index].targets||q.choices[index].effects)){
+  if(effect===null||discoveryLocked(c,field))continue;const axis=DISCOVERY_AXES[field];
+  if(typeof effect==='number'){const target=clamp(choice.targets?effect:50+effect*20);const score=Math.round((discoveryScore(c,field)*.8+target*.2)*100)/100;scores[field]=score;patch[field]=axis.values[Math.round(score/100*(axis.values.length-1))];if(axis.numeric)patch[axis.numeric]=Math.round(score/100*6);}
   else{const current=axis.values.indexOf(c[field]),old=affinities[field]||axis.values.map((_,i)=>i===current?5:0);const values=axis.values.map((_,i)=>Math.max(0,Math.min(20,(old[i]||0)*.8+(i===effect.toward?5:0)*.2)));affinities[field]=values;let winner=current<0?effect.toward:current;for(let i=0;i<values.length;i++)if(values[i]>values[winner])winner=i;patch[field]=axis.values[winner];delete scores[field];}
  }
+ if(choice.append){const {field,value,opposite}=choice.append;if(discoveryLocked(c,field))return null;if(opposite&&(c[opposite]||[]).includes(value)){if(discoveryLocked(c,opposite))return null;patch[opposite]=(c[opposite]||[]).filter(v=>v!==value);}patch[field]=[...new Set([...(c[field]||[]),value])];known[field]=true;}
  if(choice.preference){if(discoveryLocked(c,'attractionTraits')||discoveryLocked(c,'dislikedAttractionTraits'))return null;const opposite=choice.preference==='attractionTraits'?'dislikedAttractionTraits':'attractionTraits';patch[choice.preference]=[...new Set([...(c[choice.preference]||[]),'문신이 있음'])];patch[opposite]=(c[opposite]||[]).filter(v=>v!=='문신이 있음');}
  if(q.form){const values=recordFormPatch(c,q.form,selectedValue,discoveryLocked);if(values===null)return null;Object.assign(patch,values);for(const key of [...Object.keys(selectedValue.values||{}),...Object.keys(selectedValue.records||{})]){const f='bodyProfile.'+key;if(!discoveryLocked(c,f))known[f]=true;}}
  if(q.field){

@@ -1,3 +1,4 @@
+import {autonomousAllowed,applyAutonomousPolicy} from './autonomous-activities.js?v=20260909dev305';
 import {interactionPriority,strangerScene} from "./stranger-interactions.js?v=20260909dev305";
 import {hairGrooming} from './hair-grooming.js?v=20260909dev305';
 import {automaticConversation} from "./automatic-activities.js?v=20260909dev305";
@@ -1938,6 +1939,7 @@ const homeActivityPoolFor=(c,date=new Date(),minute=nowMin(date))=>{
   const hobbies=[...settingList(c.hobbies),...settingList(c.interests)].map(String);
   const likes=pattern=>hobbies.some(value=>pattern.test(value));
   const pool=[...HOME_ACTIVITY_POOL,...EXPANDED_LIFE_ACTIVITY_POOL,...localizedHomeActivities()].filter(([title,description])=>{
+    if(!autonomousAllowed(c,{title,desc:description}))return false;
     if(!mealActivityAllowed(c,`${title} ${description}`,minute,date))return false;
     if(/액세서리|악세서리|accessor|アクセサリー/i.test(title))return c.accessoryUse==="착용함";
     if(title.includes("낮잠 준비"))return date.getHours()>=11&&date.getHours()<18&&likes(/낮잠/);
@@ -2581,7 +2583,7 @@ export function personalSceneChoices(c,date=new Date()){
  return profileSettingScenePool(c,date).filter(scene=>scene.copy&&scene.category!=='speech'&&!scene.category.startsWith('relationship')).map(scene=>({id:'ambient:'+scene.category,kind:'relax',room:scene.room,minutes:20,labels:['ko','en','ja'].map(lang=>scene.copy[lang].title),copy:scene.copy}));
 }
 function profileSettingEvents(c,times,date){
-  const pool=profileSettingScenePool(c,date);
+  const pool=profileSettingScenePool(c,date).filter(scene=>autonomousAllowed(c,scene));
   if(!pool.length)return [];
   const firstIndex=hash(`${c.id}:${dayKey(date)}:profile-first`)%pool.length,first=pool[firstIndex];
   const remaining=pool.filter(scene=>scene.category!==first.category),second=remaining.length?remaining[hash(`${c.id}:${dayKey(date)}:profile-second`)%remaining.length]:null;
@@ -4871,7 +4873,7 @@ function privateLifeEvent(c,date){
  if(target){c.lastPrivateBlock=block;target.lastPrivateBlock=block;directCharacterActivity(c.id,'affection',{targetId:target.id,now,scenes:{[c.id]:base,[target.id]:baseEventFor(target,date)}});}
 }
 export function eventFor(c,date=new Date()){
-  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return overheardGossip(state,c,calculateEventFor(c,date),date.getTime(),state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
+  try{return withSimulationBatch(()=>{privateLifeEvent(c,date);return applyAutonomousPolicy(c,overheardGossip(state,c,calculateEventFor(c,date),date.getTime(),state.uiLanguage),state.characters,state.uiLanguage)})}catch(error){return sceneFailure(c,date,error)}
 }
 export function resolveHomeEncounter(c,current,otherScene,date){
   if(!current?.home||!current.withId||current.groupInteraction||current.manualDirective||current.routineId||current.giftExchange||isHomeSleepScene(current))return current;
@@ -4963,6 +4965,7 @@ function calculateEventFor(c,date){
     // 만남이 생기던 오류를 이 경계에서 차단한다.
     if(!everyoneActuallyHere)current=adaptAccessibilityWording(c,soloSceneFrom(baseEventFor(c,date)));
   }
+  current=applyAutonomousPolicy(c,current,state.characters,state.uiLanguage);
   if(current?.groupInteraction){
     // 등록 일정의 공동 장면은 화면을 연 현재 시각이 아니라 사용자가 정한
     // 시작 시각을 보존한다. 같은 일정을 다시 열어도 새 시각의 로그가 생기지 않는다.
