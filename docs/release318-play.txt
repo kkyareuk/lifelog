@@ -1,0 +1,21 @@
+<ko-KR>
+두 캐릭터의 성향 차이와 시선을 반영해 교류 로그를 더 구체적으로 다듬었어요.
+성향 항목 이름을 ‘통제욕’으로 정리했어요.
+멀티 구성원 목록의 ＋새 캐릭터에서 데려오기와 새로 만들기를 선택할 수 있어요.
+캐릭터 생성·이사 중 대기 안내와 재시도 처리를 개선했어요.
+멀티 재연결과 이전 연결의 오류 표시를 수정했어요.
+</ko-KR>
+<en-US>
+Interactions now describe specific behavior based on both characters’ traits and perspectives.
+Renamed the control-related trait.
+Use + New character in multiplayer to create or bring a character.
+Added loading guidance and safer retries.
+Improved reconnection and handling of outdated connection errors.
+</en-US>
+<ja-JP>
+双方の性格と視線をもとに、交流の行動描写を具体的にしました。
+性格項目の名称を「支配欲」に整理しました。
+マルチの「＋新しいキャラクター」から作成・引っ越しを選べます。
+作成・引っ越し中の案内と再試行を改善しました。
+再接続と古い接続エラーの表示を修正しました。
+</ja-JP>

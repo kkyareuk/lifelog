@@ -1,3 +1,4 @@
+import {personalityObservation} from './personality-observation.js?v=20260909dev305';
 import {narrativeRate} from "./official-relationship-details.js?v=20260909dev305";
 import {relationshipMemory} from "./relationship-memories.js?v=20260909dev305";
 // Directional observations: a relationship supplies context, never mutual feelings.
@@ -35,7 +36,7 @@ const alternate={
  attention:line('자기 일을 하면서도 상대가 멈추는 순간을 알아차리고 필요한지 물었어요.','While working, they noticed the other person pause and asked whether anything was needed.','自分の作業をしながら相手が手を止めたことに気づき、必要な物があるか尋ねました。'),
  jealousy:line('함께할 일이 끝나 가자 다음에 둘이 시간을 낼 수 있는지 확인했어요.','As their shared task drew to an end, they checked when they could spend time together again.','一緒の作業が終わりに近づくと、次に二人で時間を取れるか確かめました。'),
  aggressionAction:line('욱한 순간 바로 반응하지 않고, 손에 든 것을 내려놓은 뒤 생각을 가다듬었어요.','They set down what they were holding and collected themselves instead of reacting on impulse.','かっとなってもすぐには反応せず、手にした物を置いて考えを整えました。'),
- aggression:line('거슬리는 부분에서 잠시 멈췄지만 바로 충돌하지 않고 자기 자리를 정리했어요.','They paused at something irritating but settled their own space instead of confronting the other person immediately.','気に障るところで少し止まりましたが、すぐ衝突せず自分の場所を整えました。'),
+
  touchIntensity:line('필요한 물건의 위치를 가리켜 알려 주고 상대가 직접 가져갈 때까지 기다렸어요.','They pointed out the needed item and waited for the other person to take it.','必要な物の位置を指して伝え、相手が自分で取るまで待ちました。')
 };
 // A cue is selected for the present action; the complete profile is not printed.
@@ -78,7 +79,9 @@ export function relationshipReaction(actor,other,view={},relation=null,{seed='',
   const chosen=ranked[0];
   const alternativeAllowed=chosen&&(chosen.key!=='trust'||s.distrust)&&(chosen.key!=='annoyance'||s.annoyed);
   if(alternativeAllowed&&alternate[chosen.key]&&hash(`${seed}:${actor.id}:variation`)%2)chosen.copy=alternate[chosen.key];
-  const fallback=line('상대가 하던 부분을 확인하고, 겹치지 않는 일을 이어 갔어요.','They checked what the other person was doing and continued with a separate part.','相手がしていることを確認し、重ならない作業を続けました。');
+  const observation=personalityObservation(actor,other,view,s,seed);
+  if(observation&&(!chosen||['personality','aggression','aggressionAction','annoyance','conflictIntensity'].includes(chosen.key))){if(chosen)chosen.copy=observation.copy;}
+  const fallback=observation?.copy||line('상대가 하던 부분을 확인하고, 겹치지 않는 일을 이어 갔어요.','They checked what the other person was doing and continued with a separate part.','相手がしていることを確認し、重ならない作業を続けました。');
   let context=null;
   if(relation?.temporalStatus==='past')context=line('예전에 알던 방식을 그대로 기대하지 않고 지금의 의사를 확인했어요.','They checked what the other person wanted now instead of assuming their old habits still applied.','昔のやり方をそのまま期待せず、今の意思を確認しました。');
   else if(relation?.type==='사제 관계'){
