@@ -9,3 +9,5 @@
 - Original supplied sprite sheet copied without raster editing; CSS selects requested ID icon.
 - Tests: check-discovery328, qa-discovery328 (3languages x384/1180px, forms, manual request cooldown, group lock save, no folds, score badges,26stat rows), syntax, app prepare/module closure, web build, signed Android APK/AAB.310www assets byte-identical in both packages. Actual Android/iOS and live2-account multiplayer untested.
 - Backend request counts/billing were not measured. Cooldown and calculations add no backend calls; answer/lock save uses existing pipeline.
+
+- Profile personality keyword legend states maximum4 in KO/EN/JA. Existing click handler and normalization both enforce4.
