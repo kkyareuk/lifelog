@@ -1,10 +1,11 @@
+import {withWardrobe,restoreWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {worldTransferDialog} from './world-transfer.js?v=20260909dev305';
 import {characterCodeDialog} from "./character-code.js?v=20260909dev305";
 import {state,active,endCharacterEditor,characterEditorActive,createCharacter,updateCharacter,save,cloneState,replaceState} from './state.js?v=20260909dev305';
 import {informationOnlyState} from './local-media.js?v=20260909dev305';
 
 const kinds=['food','ingredient','drink','fashion','music','idol','book','movie','game','perfume','hobby','electronics','weapon','animal','flower','misc'];
-const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','inventory','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);
+const excluded=new Set(['id','ownerUid','homeId','townId','residences','sleepRoomId','workplaceId','days','createdAt','timelineResetAt','favorites','dislikes','wallet','money','balance','lastSaved','sceneImages','photo','icon','image','sharedScene']);
 function clean(value,depth=0){
   if(depth>20)throw Error('Invalid file');
   if(Array.isArray(value)){if(value.length>1000)throw Error('Invalid file');return value.map(v=>clean(v,depth+1))}
@@ -12,7 +13,9 @@ function clean(value,depth=0){
   if(typeof value==='string'&&value.length>100000)throw Error('Invalid file');
   return value;
 }
-export function characterSettingsFile(character){
+export function characterSettingsFile(character,catalog=state.catalog){
+  const packed=withWardrobe(character,catalog);
+  character={...packed,inventory:{fashion:packed.inventory?.fashion||[]}};
   return {format:'drawer-village-character',version:1,mediaPolicy:'settings-only',character:clean(Object.fromEntries(Object.entries(informationOnlyState(character)).filter(([key])=>!excluded.has(key))))};
 }
 export function readSettingsFile(text){
@@ -28,9 +31,10 @@ export function readSettingsFile(text){
 }
 export function importCharacterSettings(file,limit){
 if(characterEditorActive()){endCharacterEditor();window.DrawerVillageGroups?.select('');state.activeTab='character'}
-  const settings=characterSettingsFile(file.character).character,before=cloneState();
+  const settings=clean(Object.fromEntries(Object.entries(informationOnlyState(file.character)).filter(([key])=>!excluded.has(key)))),before=cloneState();
+  settings.inventory={fashion:settings.inventory?.fashion||[]};
   const id=createCharacter(limit);if(!id)throw Error('남은 캐릭터 슬롯이 없어요.');
-  try{updateCharacter(id,{...settings,discovery:settings.discovery||{version:0,locks:{}}},false);if(!save(true))throw Error('저장하지 못했어요.');return id}
+  try{updateCharacter(id,{...restoreWardrobe(settings,id,state.catalog),discovery:settings.discovery||{version:0,locks:{}}},false);if(!save(true))throw Error('저장하지 못했어요.');return id}
   catch(error){replaceState(before);throw error}
 }
 export function mergeCatalogFile(file){

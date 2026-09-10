@@ -6,6 +6,7 @@ export function withWardrobe(profile,catalog={}){
  return {...profile,wardrobeItems:[...items.values()].filter(i=>ids.has(i.id)||i.ownerId===profile.id)};
 }
 export function restoreWardrobe(profile,residentId,catalog){
+ catalog.fashion??=[];
  const map=new Map();for(const item of profile.wardrobeItems||[]){
   const source=item.wardrobeSourceId||item.id,id=residentId+'::'+source;map.set(item.id,id);
   const value={...item,id,wardrobeSourceId:source,ownerId:residentId};

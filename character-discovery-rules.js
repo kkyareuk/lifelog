@@ -8,9 +8,17 @@ export const DISCOVERY_AXES=Object.fromEntries(Object.entries(DISCOVERY_TRAITS).
 export const DISCOVERY_FIELDS=[...Object.keys(DISCOVERY_AXES),...PROFILE_FIELDS];
 const clamp=v=>Math.max(0,Math.min(100,v));
 const ORIGINAL_FIELDS=new Set(['socialStyle','neatness','energyRhythm','perceptionStyle','planningStyle','decisionStyle','interference']);
-export const discoveryLocked=(c,field)=>c.discovery?.locks?.[field]??false;
+export const fixedDiscoveryField=field=>['gender','ageGroup'].includes(field)||field.startsWith('bodyProfile.');
+export function resetLegacyDiscoveryLocks(c){if(c.discovery?.lockRevision!==333)c.discovery={...c.discovery,lockRevision:333,known:{...c.discovery?.known,...Object.fromEntries(Object.entries(c.discovery?.locks||{}).filter(([f,v])=>v&&fixedDiscoveryField(f)).map(([f])=>[f,true]))},locks:{}};return c.discovery;}
+export function fixedDiscoveryKnown(c,field){
+ if(!fixedDiscoveryField(field))return false;
+ if(c.discovery?.known?.[field])return true;
+ const value=profileValue(c,field);return Array.isArray(value)?value.length>0:value!==undefined&&value!==null&&String(value).trim()!==''&&value!=='설정하지 않음';
+}
+export const discoveryLocked=(c,field)=>{const d=resetLegacyDiscoveryLocks(c);return fixedDiscoveryKnown(c,field)||!!d.locks?.[field];};
 export function discoveryScore(c,field){const axis=DISCOVERY_AXES[field],saved=c.discovery?.scores?.[field];if(Number.isFinite(saved))return clamp(saved);const i=axis.values.indexOf(c[field]);if(i>=0)return i/(axis.values.length-1)*100;if(field==='aggressionLevel'&&!c[field])return 0;return axis.numeric&&Number.isFinite(c[axis.numeric])?clamp(c[axis.numeric]/6*100):50;}
 export function manualDiscoveryPatch(c,patch){
+ resetLegacyDiscoveryLocks(c);
  const profileLocks={};for(const field of PROFILE_FIELDS){const root=field.split('.')[0];if(Object.hasOwn(patch,root)&&JSON.stringify(profileValue(c,field))!==JSON.stringify(profileValue({...c,...patch},field)))profileLocks[field]=true;}
  if(Object.keys(profileLocks).length)patch={...patch,discovery:{...c.discovery,...patch.discovery,locks:{...c.discovery?.locks,...patch.discovery?.locks,...profileLocks}}};
  const aliases=Object.fromEntries(Object.entries(numeric).map(([f,n])=>[n,f])),fields=Object.keys(patch).filter(k=>JSON.stringify(patch[k])!==JSON.stringify(c[k])).map(k=>aliases[k]||k).filter(k=>Object.hasOwn(DISCOVERY_AXES,k));if(!fields.length)return patch;
@@ -24,6 +32,7 @@ export function manualDiscoveryPatch(c,patch){
 export function discoveryAnswered(c){return [...new Set([...(c.discovery?.answered||[]),...(c.discovery?.recent||[])])];}
 export function discoveryEligible(c,q){
  if(discoveryAnswered(c).includes(q.id))return false;
+ if(q.id==='profile-tattoo-encounter'&&discoveryLocked(c,'bodyProfile.tattoos'))return false;
  if(q.fields&&q.fields.every(f=>discoveryLocked(c,f)))return false;
  if(['height','weight','medications','hospital'].includes(q.form)&&q.fields.some(f=>c.discovery?.known?.[f]))return false;
  if(q.field&&(discoveryLocked(c,q.field)||c.discovery?.known?.[q.field]&&q.field!=='bodyProfile.tattoos'))return false;

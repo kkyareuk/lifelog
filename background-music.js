@@ -16,6 +16,6 @@ export function syncBackgroundMusic(state){
  else{clearInterval(fade);if(restart)player.volume=0;fade=setInterval(()=>{const difference=targetVolume()-player.volume;player.volume=Math.max(0,Math.min(1,player.volume+Math.sign(difference)*Math.min(.025,Math.abs(difference))));if(Math.abs(difference)<.026)clearInterval(fade)},40)}
  if(restart&&!pending){pending=true;player.play().catch(()=>{}).finally(()=>{pending=false;if(current.backgroundMusicMuted||!targetVolume()||document.visibilityState==='hidden')player.pause()})}
 }
-for(const event of ['pointerdown','keydown'])document.addEventListener(event,()=>{if(unlocked)return;unlocked=true;if(current)syncBackgroundMusic(current)},{passive:true});
+for(const event of ['pointerdown','keydown'])document.addEventListener(event,()=>{const retry=!unlocked||!player||player?.paused||context?.state==='suspended';unlocked=true;if(context?.state==='suspended')void context.resume().catch(()=>{});if(current&&retry)syncBackgroundMusic(current)},{passive:true});
 document.addEventListener('visibilitychange',()=>{if(current)syncBackgroundMusic(current)});
 window.addEventListener('pagehide',()=>{clearInterval(fade);player?.pause()});

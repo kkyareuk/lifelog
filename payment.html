@@ -32,6 +32,7 @@
   <footer class="business"><b>꺄륵</b> · 대표 김세은 · 사업자등록번호 540-17-02654<br>사업장 주소 서울특별시 양천구 신정중앙로 68, 403-133호(신정동, 해풍빌딩)<br>고객센터 010-7663-0610 · kkyaareuk@gmail.com</footer>
 </main>
 <script type="module">
+import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {saleAllows} from "./slot-sale.js?v=20260909dev305";
 const config=window.PARALLEL_CITY_CONFIG||{};
 if(config.beta?.enabled){
@@ -42,6 +43,10 @@ if(config.beta?.enabled){
 }
 const CART_KEY="drawer-village-cart";
 const paymentLanguage=new URLSearchParams(location.search).get("lang")||"ko";
+const reviewMessage={ko:'웹 결제는 카드사 심사 중이라 아직 이용할 수 없어요. 장바구니는 유지되며 실제 결제는 진행되지 않아요.',en:'Web payments are awaiting payment-provider review. Your cart is kept and no payment will be made.',ja:'ウェブ決済はカード会社の審査中です。カートは保持され、決済は行われません。'}[paymentLanguage]||'웹 결제는 카드사 심사 중입니다.';
+const reviewMode=config.paymentEnvironment==='test';
+if(reviewMode){document.querySelector('.hero p').textContent=reviewMessage;document.querySelectorAll('.legal').forEach(e=>{if(e.textContent.includes('실제 결제'))e.textContent=reviewMessage;});}
+const checkoutScope=localStorage.scope;
 const products={
   character_slots_5:{packageId:"character_slots_5",name:"캐릭터 슬롯 5개 추가",amount:1200},
   character_slot_1:{packageId:"character_slot_1",name:"캐릭터 슬롯 1개 추가",amount:1000},
@@ -65,6 +70,8 @@ let signedInUser=null,submitting=false;
 const authInfo=()=>window.ParallelCityAuth?.getInfo?.()||{};
 function paintCheckoutState(){
   signedInUser=authInfo().user||null;
+  if(localStorage.scope!==checkoutScope){button.disabled=true;status.textContent='계정이 변경됐어요. 상점으로 돌아가 장바구니를 확인해 주세요.';return;}
+  if(reviewMode){button.disabled=true;button.textContent={ko:'웹 결제 준비 중',en:'Web payments coming soon',ja:'ウェブ決済準備中'}[paymentLanguage]||'웹 결제 준비 중';status.textContent=reviewMessage;return;}
   account.textContent=signedInUser?(signedInUser.email||signedInUser.displayName||"로그인된 Google 계정"):"결제 버튼을 누르면 이 페이지에서 Google 로그인을 진행합니다.";
   status.classList.toggle("ok",Boolean(signedInUser));
   if(!items.length){button.disabled=true;button.textContent="장바구니가 비어 있어요";status.textContent="상점에서 상품을 먼저 담아 주세요.";return}
@@ -84,7 +91,7 @@ paintCheckoutState();
 button.addEventListener("click",async()=>{
   const clientKey=String(config.tossPaymentsClientKey||"").trim();
   const backend=String(config.paymentBackendUrl||"").replace(/\/$/,"");
-  if(!config.paymentsEnabled||!items.length)return;
+  if(reviewMode||localStorage.scope!==checkoutScope||!config.paymentsEnabled||!items.length)return;
   if(!clientKey||!backend){status.textContent="결제 승인 서버 설정이 아직 끝나지 않았어요.";return}
   submitting=true;paintCheckoutState();status.textContent="Google 로그인 상태를 확인하고 있어요.";
   try{
@@ -96,7 +103,9 @@ button.addEventListener("click",async()=>{
       for(let i=0;i<120&&!token;i++){token=await window.ParallelCityAuth?.getIdToken?.()||"";if(!token)await new Promise(resolve=>setTimeout(resolve,100))}
     }
     if(!token)throw new Error("Google 로그인을 완료하지 못했습니다. 팝업 차단을 해제한 뒤 다시 시도해 주세요.");
-    signedInUser=authInfo().user||null;paintCheckoutState();status.textContent="안전한 주문을 만들고 있어요.";
+    signedInUser=authInfo().user||null;
+  if(localStorage.scope!==checkoutScope){button.disabled=true;status.textContent='계정이 변경됐어요. 상점으로 돌아가 장바구니를 확인해 주세요.';return;}
+  if(reviewMode){button.disabled=true;button.textContent={ko:'웹 결제 준비 중',en:'Web payments coming soon',ja:'ウェブ決済準備中'}[paymentLanguage]||'웹 결제 준비 중';status.textContent=reviewMessage;return;}paintCheckoutState();status.textContent="안전한 주문을 만들고 있어요.";
     const response=await fetch(backend+"/payments/orders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},body:JSON.stringify({items,cartVersion:1})});
     if(response.status===401)throw new Error("먼저 Google 계정으로 로그인해 주세요.");
     const order=await response.json();

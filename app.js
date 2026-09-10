@@ -1699,7 +1699,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
-    if(!sceneDate&&!selectionOnly)requestAnimationFrame(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
+    requestAnimationFrame(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
     if(!selectionOnly)requestAnimationFrame(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
@@ -1883,7 +1883,7 @@ function maybeShowPageGuide(){
   const dialog=document.createElement("dialog");dialog.className="page-guide";
   dialog.innerHTML=`<form method="dialog"><div class="page-guide-heading"><span>${({observe:"◉",home:"⌂",character:"✦",catalog:"♡",relationship:"↝",routine:"▦",town:"⌖",shop:"◇",settings:"⚙"}[tab]||"·")}</span><div><small>화면 사용법</small><h2>${guide[0]}</h2></div><button value="ok" aria-label="안내 닫기">×</button></div><p>${guide[1]}</p><button class="primary" value="ok">확인했어요</button></form>`;
   dialog.onclose=()=>{localStorage.setItem(key,"1");window.ParallelCityAuth?.markGuideSeen?.(tab);guidePending.delete(tab);dialog.remove()};
-  document.body.append(dialog);dialog.show();
+  document.body.append(dialog);dialog.showModal();
 }
 
 function showToast(message){
@@ -5679,7 +5679,7 @@ window.ParallelCity={
   getPersonalWardrobeForSharing:id=>{const world=personalState(),c=world.characters?.[id];return c?structuredClone(withWardrobe(c,world.catalog).wardrobeItems):null},
   getCharacterCount:()=>personalState().order.length,getActiveTab:()=>state.activeTab,
   getMeetingPositions:ids=>captureMeetingPositions(ids,activeShared()?.selectedTownId||activeShared()?.group?.towns?.[0]?.id||state.activeTownId),
-  getCharacterForSharing:async id=>{const c=state.characters[id];if(!c)return null;const {days,...profile}=c,result=structuredClone(profile),media=await initializeLocalMediaState(result);if(media.pending)throw Error(({ko:"사진을 아직 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",en:"Some photos are not ready. Please try again shortly.",ja:"写真をまだ読み込めません。少し待ってから再試行してください。"})[state.uiLanguage]);return result},
+  getCharacterForSharing:async id=>{const c=state.characters[id];if(!c)return null;const {days,...profile}=c,result=structuredClone(withWardrobe(profile,state.catalog)),media=await initializeLocalMediaState(result);if(media.pending)throw Error(({ko:"사진을 아직 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.",en:"Some photos are not ready. Please try again shortly.",ja:"写真をまだ読み込めません。少し待ってから再試行してください。"})[state.uiLanguage]);return result},
   switchAccount:uid=>{
     // Removing a stale dialog must not fire its save-on-close handler.
     document.querySelectorAll("dialog").forEach(dialog=>dialog.remove());

@@ -18,7 +18,7 @@
   window.PARALLEL_CITY_CONFIG.paymentBackendUrl="https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api";
   window.PARALLEL_CITY_CONFIG.paymentMid="drawerq8ht";
   window.PARALLEL_CITY_CONFIG.paymentEnvironment=tossPaymentsClientKey.startsWith("test_ck_")?"test":tossPaymentsClientKey.startsWith("live_ck_")?"live":"disabled";
-  window.PARALLEL_CITY_CONFIG.paymentsEnabled=Boolean(tossPaymentsClientKey);
+  window.PARALLEL_CITY_CONFIG.paymentsEnabled=window.PARALLEL_CITY_CONFIG.paymentEnvironment==="live";
   window.PARALLEL_CITY_CONFIG.playBilling=window.PARALLEL_CITY_CONFIG.playBilling||{
     enabled:true,
     backendUrl:"https://asia-northeast3-lifelog-98fff.cloudfunctions.net/api",

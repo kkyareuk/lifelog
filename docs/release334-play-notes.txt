@@ -1,0 +1,9 @@
+<ko-KR>
+공유 마을 사전 표시와 캐릭터 내보내기 시 옷장·코디 누락을 수정했습니다. 질문이 현재 선택한 캐릭터에게 표시되며, 이미 정한 기본·신체 정보는 다시 묻지 않습니다. 웹 장바구니와 배경음악 재생을 개선하고 화면 안내 겹침을 수정했습니다. 후원자 명단과 일요일 반영 안내를 추가했습니다.
+</ko-KR>
+<en-US>
+Fixed shared dictionaries and missing wardrobe/outfit data in character exports. Questions now target the selected character and skip established identity and body details. Improved web carts and music playback, fixed overlapping help panels, and updated supporter credits with the Sunday review notice.
+</en-US>
+<ja-JP>
+共有辞典の表示とキャラクター書き出し時の服・コーデの欠落を修正しました。質問は選択中の人物に表示され、設定済みの基本・身体情報は再質問しません。WebのカートとBGM再生、画面案内の重なりを改善しました。支援者一覧と日曜日の反映案内を追加しました。
+</ja-JP>

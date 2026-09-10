@@ -4831,6 +4831,8 @@ html[data-color-mode="light"] .direct-submit{background:#715139!important;color:
   position:fixed;
   inset:auto 18px 18px auto;
   width:min(440px,calc(100vw - 36px));
+  max-height:calc(100dvh - 100px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  overflow-y:auto;
   max-width:none;
   margin:0;
   border:1px solid #ffffff2b;
