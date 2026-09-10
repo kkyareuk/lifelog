@@ -1,0 +1,18 @@
+<ko-KR>
+시키기에 구체적인 생활 행동 24개와 교류 18개를 추가했어요.
+나답게 메뉴에서 캐릭터 설정이 반영된 평소 생활 장면도 고를 수 있어요.
+취미 로그를 더 세세하게 만들고, 캐릭터 탭의 불필요한 로딩을 줄였어요.
+우측 아이콘은 위치와 간격을 유지하고 흰 테두리를 제거했어요.
+</ko-KR>
+<en-US>
+Added 24 detailed daily activities and 18 social interactions.
+Choose everyday scenes based on character settings in the personal activity menu.
+Added more hobby details and reduced unnecessary loading in the character tab.
+Removed white outlines from right-side icons, keeping their position and spacing.
+</en-US>
+<ja-JP>
+指示メニューに具体的な日常行動24種類と交流18種類を追加しました。
+キャラクター設定を反映した普段の生活シーンも選べます。
+趣味のログを細かくし、キャラクタータブの不要な読み込みを減らしました。
+右側アイコンの位置と間隔はそのままに、白い縁取りを削除しました。
+</ja-JP>
