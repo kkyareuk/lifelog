@@ -4721,6 +4721,8 @@ document.addEventListener("click",captureTabClick,true);
 // 설정 카테고리는 URL과 화면 상태를 함께 바꾼다. 이를 한 함수에서
 // 처리해야 주소만 바뀌거나 화면만 남는 두 상태가 다시 생기지 않는다.
 function openSettingsPane(pane="home"){
+  setNavigationTabIntent("settings");
+  state.activeTab="settings";
   setSettingsPane(pane);
   if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   resetScrollAfterRender=true;

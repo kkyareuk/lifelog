@@ -1,0 +1,26 @@
+{
+  "_delivery": {
+    "status": "approved",
+    "authorization": "User requested cumulative 314 to 334 in-game notice; no push.",
+    "fromVersion": 314,
+    "toVersion": 334
+  },
+  "ko": {
+    "sender": "서랍마을 운영팀",
+    "recipient": "서랍마을 주민님",
+    "subject": "서랍마을 1.0.301 업데이트 안내 (314 → 334)",
+    "body": "314(1.0.281) → 334(1.0.301) 업데이트 내용을 안내드립니다.\n\n[캐릭터를 알아가는 질문]\n• 홈의 신분증 모양 버튼에서 현재 보고 있는 캐릭터의 질문을 받을 수 있어요. 10분마다 다시 받을 수 있고, 접속하지 않은 동안 쌓이지 않아요.\n• 상황별로 다양한 선택지가 나오며 성향은 답변에 따라 조금씩 달라져요. 전체설정과 통계에서 점수와 요약을 확인할 수 있어요.\n• 관심사·취미·기술·호불호와 신체정보를 알아가는 질문을 추가했어요. 이미 정한 성별·나이·외형·문신·복용약 등은 질문으로 덮어쓰지 않으며 직접 수정할 수 있어요.\n• 성향은 기본적으로 잠금 해제되어 있어요. 고정하고 싶은 성향은 잠금으로 유지할 수 있어요. 다른 캐릭터의 질문이 나오는 문제와 일부 입력칸 겹침을 수정했어요.\n\n[관계와 생활]\n• 관계 배경·단계·각자의 시선과 성격 차이를 반영해 대화, 회상, 취미와 교류 묘사를 더 구체적으로 다듬었어요. 낯선 캐릭터와도 교류할 수 있어요.\n• 키스 등 세부 행동을 상황에 맞게 표현하고, 머리 손질에 머리 설정을 반영했어요. 신체접촉 허용 범위와 성인 판정 오류를 수정했어요.\n• 개입하기에서 캐릭터에게 어울리지 않는 자율 행동을 줄일 수 있어요.\n• 방 출입 권한과 지정한 자는 방을 반영하고, 가끔 다른 곳에서 자는 설정과 빈도를 추가했어요. 1인 침대 중복 사용과 다른 방에 있는데 함께 있는 듯한 장면을 개선했어요.\n\n[멀티·저장·화면]\n• 멀티 구성원에서 새 캐릭터 생성과 데려오기를 선택할 수 있어요. 사용·남은 슬롯과 일반 회원의 생성 승인 상태를 표시해요.\n• 멀티 캐릭터 슬롯은 본인 소유만 계산해요. 참여 시 각자 마을 1칸, 서버 안 추가 마을은 만든 사람의 슬롯을 사용해요.\n• 멀티 이동과 프로필 내보내기에서 옷장·착장 정보가 빠지는 문제, 공유사전이 선택 화면에 늦게 반영되거나 개인사전만 보이는 문제를 수정했어요.\n• 캐릭터 삭제와 관계 화면 오류, 생성 중 닫기와 재연결 처리를 개선했어요. 마지막 거주자를 삭제하면 빈 일반 주거지도 정리해요.\n• 건물 외형에 내 사진을 사용할 수 있고, 미완성 기본 건물을 회사 건물 그림으로 교체했어요. 태블릿 설정 화면과 간편설정을 다듬었어요.\n• 우편함을 공지사항 / 받은우편 / 보낸우편 / 쓰기로 정리했어요. 운영 안내는 공지사항에서 확인해 주세요.\n• 후원자 이름은 매주 일요일 확인 후 반영해요.\n• 웹 장바구니 정보와 BGM 재생 재시도, 안내창 겹침을 수정했어요.\n\n보내주신 제보와 의견에 감사드립니다. 즐거운 서랍마을 생활이 되도록 계속 다듬겠습니다!"
+  },
+  "en": {
+    "sender": "Drawer Village",
+    "recipient": "Resident",
+    "subject": "Drawer Village 1.0.301 update (314 → 334)",
+    "body": "Changes from 314 (1.0.281) to 334 (1.0.301)\n\nDISCOVERY QUESTIONS\n• The ID-card button asks about the character currently on screen. A new question is available after 10 minutes; questions do not accumulate while away.\n• Varied choices gradually shape personality. See scores and summaries in Full settings and Statistics.\n• Added questions about interests, hobbies, skills, likes, dislikes and physical details. Established age, gender, appearance, tattoos and medication are not overwritten by questions; you can edit them yourself.\n• Personality starts unlocked and can be locked when desired. Fixed questions targeting another character and overlapping fields.\n\nRELATIONSHIPS & DAILY LIFE\n• More descriptive conversations, memories and activities reflect backgrounds, relationship stages, individual perspectives and personality differences. Strangers can interact too.\n• Kisses adapt to the situation; grooming reflects hair settings. Fixed contact permission and adult age checks.\n• Intervention lets you discourage unsuitable autonomous activities.\n• Improved room access, assigned bedrooms and single-bed occupancy. Added optional sleeping elsewhere with frequency settings. Face-to-face scenes respect room locations.\n\nMULTIPLAYER, SAVING & SCREENS\n• Create or bring characters from multiplayer members, with slot counts and approval status.\n• Only your characters use your character slots. Joining uses one town slot per member; extra towns use their creator’s slots.\n• Fixed wardrobe/outfit loss during moves and profile export, and shared dictionary visibility in selection screens.\n• Improved character deletion, relationship screens, closing creation and reconnection. Empty regular homes are cleaned up after their last resident is deleted.\n• Use custom building exterior images. Replaced unfinished building art and refined tablet and simple settings layouts.\n• Mail now has Notices, Inbox, Sent and Write. Operator updates appear in Notices.\n• Supporter names are reviewed and added on Sundays.\n• Fixed web cart storage, BGM playback retries and guide overlays.\n\nThank you for your reports and ideas!"
+  },
+  "ja": {
+    "sender": "ひきだし村 運営",
+    "recipient": "村のみなさま",
+    "subject": "ひきだし村 1.0.301 更新のお知らせ（314 → 334）",
+    "body": "314（1.0.281）→334（1.0.301）の更新内容です。\n\n【キャラクターを知る質問】\n・身分証アイコンから、現在表示中のキャラクターの質問を受け取れます。10分後に再び受け取れ、留守中に蓄積されません。\n・多様な選択肢によって性格が少しずつ変化します。全設定と統計でスコアと要約を確認できます。\n・関心・趣味・技能・好き嫌い・身体情報の質問を追加しました。設定済みの性別・年齢・外見・タトゥー・服薬などは質問で上書きされず、自分で編集できます。\n・性格は初期状態では固定されません。必要な傾向は鍵で固定できます。別のキャラクターの質問が出る問題と入力欄の重なりを修正しました。\n\n【関係と暮らし】\n・関係の背景・段階・各自の視線・性格の違いに沿って、会話や回想、趣味や交流を具体的に描写します。知らない相手とも交流できます。\n・キスは状況に応じて表現し、髪の手入れには髪の設定を反映します。接触許可と成人判定を修正しました。\n・介入から、似合わない自発的な活動を減らせます。\n・入室権限と寝る部屋を反映し、別の場所で寝る設定と頻度を追加しました。1人用ベッドの重複使用と、別室なのに一緒にいる描写を改善しました。\n\n【マルチ・保存・画面】\n・メンバー画面から作成と引っ越しを選べます。枠数と一般メンバーの承認状態を表示します。\n・キャラクター枠は自分の所有分だけを数えます。参加は各自の村枠を1つ、追加の村は作成者の枠を使います。\n・引っ越しやプロフィール書き出しで衣装・着こなしが欠ける問題、選択画面に共有辞典が反映されない問題を修正しました。\n・削除・関係画面・作成中の閉じる操作・再接続を改善しました。最後の住人を削除すると空いた通常の家も整理します。\n・建物外観に自分の画像を使えます。未完成の建物絵を交換し、タブレットと簡単設定の画面を整えました。\n・郵便箱を「お知らせ・受信・送信済み・書く」に整理しました。運営からの案内はお知らせで確認できます。\n・支援者のお名前は毎週日曜日に確認して反映します。\n・Webのカート情報、BGMの再生再試行、案内の重なりを修正しました。\n\nご報告とご意見をありがとうございます！"
+  }
+}

@@ -50,9 +50,9 @@ export function considerDiscovery(c,scene,context={}){
  document.querySelectorAll('[data-discovery-locks-menu]').forEach(b=>b.onclick=()=>showDiscoveryGroups(c,context));
  const info=window.ParallelCityAuth?.getInfo?.();
  if(!c||document.visibilityState==='hidden'||!['observe','home'].includes(state.activeTab)||info?.startupSyncing||info?.busy||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id)))return;
- const rail=document.querySelector('.game-hud-side-right'),stats=rail?.querySelector('[data-tab=statistics]');if(!rail||!stats)return;
+ const rail=document.querySelector('.game-hud-side-right,[data-web-discovery-rail]'),stats=rail?.querySelector('[data-tab=statistics]');if(!rail||!stats)return;
  const bar=document.createElement('div');bar.dataset.discoveryTools='';bar.className='discovery-rail-item';
- const button=document.createElement('button');button.type='button';button.className='game-hud-button discovery-rail-button';const icon=document.createElement('i');icon.className='discovery-question-icon';icon.setAttribute('aria-hidden','true');const label=document.createElement('em');button.append(icon,label);
+ const button=document.createElement('button');button.type='button';button.className='game-hud-button discovery-rail-button';const icon=document.createElement('i');icon.className='discovery-question-icon';icon.setAttribute('aria-hidden','true');const label=document.createElement('em');button.append(icon,label);if(rail.matches('[data-web-discovery-rail]')){const caption=document.createElement('span');caption.textContent=t('질문받기','Get a question','質問を受ける');button.append(caption);}
  const storageKey='drawer-discovery-request:'+String(uid()||'guest');
  const last=()=>{try{return Number(localStorage.getItem(storageKey)||0)}catch{return 0}};
  const paint=()=>{if(!bar.isConnected)return;const wait=discoveryWait(last());button.disabled=wait>0;label.textContent=`${Math.floor(Math.ceil(wait/1000)/60)}:${String(Math.ceil(wait/1000)%60).padStart(2,'0')}`;label.className='discovery-countdown';button.setAttribute('aria-label',t('질문받기','Get a question','質問を受ける')+(wait>0?` (${Math.ceil(wait/60000)} min)`:''));button.title=c.name+' · '+t('10분마다 질문 하나','One question every 10 minutes','10分ごとに質問を1つ');requestTimer=setTimeout(paint,1000);};
