@@ -9,3 +9,5 @@ Mobile retains Android game HUD. Web shop reuses shopkeeper art/layout, with acc
 Verification: qa-web335 (Chrome: desktop KO/EN/JA, account/settings, multiplayer navigation, mobile HUD, web cart and no native billing buttons), navigation boundary 9 checks, production web module closure106. No real card charge or live two-account multiplayer test. New interface/notice copy KO/EN/JA complete; overall existing translation coverage not remeasured.
 
 Cumulative 314→334 notice: scripts/send-update334-mail.cjs, docs/update-mail334.json. Dispatch update-314-334-20260911-v1:576 accounts (KO569/EN3/JA4), push0, Firestore and mailbox readback verified. Public notes exclude unreleased DLC and superseded intermediate designs.
+
+Deployed https://drawervillage.com via Cloudflare Pages 6e459b13 (source54d8f81). Public source/cache/live client checks passed. Deploy from dist so Firebase functions are not interpreted as Pages functions. App main remains the Android production/hotfix branch; website changes committed/pushed to dev.
