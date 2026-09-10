@@ -1,3 +1,5 @@
+import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
+import {openFamilyPreview} from './family-expansion.js?v=20260909dev305';
 import {showSlotCreator} from './character-slots.js?v=20260909dev305';
 import {mountRelationshipRoles} from './relationship-roles-editor.js?v=20260909dev305';
 import {isFamily} from './relationship-roles.js?v=20260909dev305';
@@ -2562,6 +2564,7 @@ function refreshCharacterSelectionSummaries(root=document){
 }
 
 function bind(){
+  bindCharacterFolds();
   if(state.activeTab==="credits")openSupporterCredits();
   const groupApi=window.DrawerVillageGroups;
   let directoryFilter="all";
@@ -2832,6 +2835,7 @@ function bind(){
   }));
   $("[data-open-town-switcher]")?.addEventListener("click",()=>$("[data-town-switch-dialog]")?.showModal());
   $("[data-open-multiplayer-switcher]")?.addEventListener("click",()=>$("[data-multiplayer-switch-dialog]")?.showModal());
+  $$('[data-multiplayer-dropdown]').forEach(select=>select.addEventListener('change',()=>{groupApi?.setDetailActive?.(false);groupApi?.select(select.value);render()}));
   $$('[data-multiplayer-select]').forEach(button=>button.addEventListener("click",()=>{
     button.closest("dialog")?.close();
     groupApi?.setDetailActive?.(false);
@@ -4382,6 +4386,7 @@ function bind(){
     dialog?.showModal();
   });
   $("[data-open-relationship-map]")?.addEventListener("click",openRelationshipMap);
+  $$("[data-open-family]").forEach(button=>button.onclick=()=>{const shared=activeShared();if(!shared){openFamilyPreview(state);return;}const world=buildSharedWorld(shared,state.uiLanguage);openFamilyPreview(world,{saveArchive:(r,value)=>window.DrawerVillageGroups.propose({groupId:shared.activeGroupId,targetId:r.id,patch:{...r,familyArchive:value}}),saveName:(id,patch)=>window.DrawerVillageGroups.saveResident({groupId:shared.activeGroupId,id,profile:{...world.characters[id],...patch}})});});
   $("[data-open-official-relations]")?.addEventListener("click",()=>{const dialog=$("[data-official-relation-dialog]");if(dialog&&!dialog.open)dialog.showModal()});
   const bindRelationshipListFilter=(dialog,cardSelector,inputSelector,buttonSelector,kindAttribute,emptySelector)=>{
     if(!dialog)return;
@@ -5423,7 +5428,7 @@ function openAnniversaryDialog(id=""){
   };
 }
 
-const RELATION_TYPES=["가족","친구","연인","약혼","부부","동거인","소꿉친구","학창 시절 친구들","친구 모임","산악회","동아리 동료","직장 동료","사제 관계","라이벌","혐관","기타"];
+const RELATION_TYPES=["가족","친구","연인","약혼","부부","동거인","소꿉친구","친구 모임","직장 동료","사제 관계","라이벌","혐관","기타"];
 const RELATION_STAGES={
   가족:["연락이 끊긴 사이","서로 불편한 사이","필요할 때만 연락함","무난한 가족","서로 의지하는 가족","무척 각별한 가족"],
   약혼:["파혼을 고민하는 중","계획이 어긋나는 중","미래를 조율하는 사이","안정적으로 준비하는 사이","서로를 믿고 준비하는 사이"],
@@ -5485,7 +5490,7 @@ function openRelationDialog(id="",sharedSave){
     <label class="official-name-field"><span>${copy.name}</span><input name="name" maxlength="50" value="${htmlEsc(old?.name||"")}" placeholder="${copy.nameHint}"></label>
     <section class="official-member-section"><b>${copy.members}</b><div class="official-member-picker">${editorState.order.map(cid=>`<button type="button" data-official-member="${htmlEsc(cid)}">${htmlEsc(editorState.characters[cid]?.name||"")}</button>`).join("")}</div><select name="a" hidden>${characterOptions(aId)}</select><select name="b" hidden>${characterOptions(bId)}</select></section>
     <div class="official-relation-fields">
-      <label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${translateText(type)}</option>`).join("")}</select></label>
+      <label class="official-type-title"><span>${copy.type}</span><select name="type">${[...new Set([...RELATION_TYPES,...(old?.type&&!RELATION_TYPES.includes(old.type)&&!isFamily(old.type)?[old.type]:[])])].map(type=>`<option value="${type}">${translateText(type)}</option>`).join("")}</select></label>
       <label class="official-mentor-field" hidden><b>${translateText("스승")}</b><select name="teacherId"></select></label><label class="official-stage-field"><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
       <fieldset class="official-relationship-details" data-relationship-details></fieldset>
       <label class="official-past-toggle"><b>${copy.past}</b><input type="checkbox" name="temporalPast"><small>${copy.pastHint}</small><input type="hidden" name="temporalStatus" value="current"></label>
@@ -5545,7 +5550,9 @@ function openRelationDialog(id="",sharedSave){
   };
   refreshPair();refreshType();
   const readRelationshipDetails=mountRelationshipDetails(f,isFamily(old?.type)&&old?.type!=='가족'?{...old,type:'가족',details:old.type==='같은 가문'?{origin:'1'}:{}}:old,language);
-  rolesEditor=mountRelationshipRoles(f,old,()=>selectedMemberIds,editorState.characters,sharedSave?window.ParallelCityAuth?.getInfo?.()?.user?.uid:null,language);rolesEditor.decorate();
+  rolesEditor={decorate:()=>{f.querySelector('.official-order-card').hidden=false;},read:()=>({referenceId:old?.referenceId||'',roleLinks:old?.roleLinks||[],sourceRole:old?.sourceRole||'',targetRole:old?.targetRole||'',teacherId:old?.teacherId||''})};rolesEditor.decorate();
+  f.querySelector('.official-order-card>b').textContent=({ko:'관계 구성원 표시 순서',en:'Member display order',ja:'メンバーの表示順'})[language];
+  const bloodLabel=document.createElement('label');bloodLabel.className='official-blood-choice';bloodLabel.innerHTML=`<input type="checkbox" name="familyBlood" ${old?.kinship==='nonblood'?'':'checked'}><span>${({ko:'혈연으로 맺어진 가족',en:'Related by blood',ja:'血縁で結ばれた家族'})[language]}</span>`;f.querySelector('.official-order-card').after(bloodLabel);const refreshBlood=()=>bloodLabel.hidden=!isFamily(f.type.value);f.type.addEventListener('change',refreshBlood);refreshBlood();
   const housing=document.createElement('label');housing.className='official-cohabit-home';housing.innerHTML=`<span>${({ko:'함께 살 집',en:'Shared home',ja:'一緒に住む家'})[language]}</span><select name="cohabitHomeId"></select><small>${({ko:'이사 후 비는 일반 주거지는 삭제해요. 별장·별채와 다른 구성원이 남은 집은 유지해요.',en:'Empty regular homes are removed after moving. Secondary homes and homes with other residents are kept.',ja:'引っ越し後の空いた通常の家は削除します。別荘・別宅や他の住人が残る家は維持します。'})[language]}</small>`;f.cohabit.closest('label').after(housing);
   const refreshHousing=()=>{housing.hidden=!f.cohabit.checked;const select=housing.querySelector('select'),previous=select.value||old?.cohabitHomeId||editorState.characters[selectedMemberIds[0]]?.homeId;const eligible=new Set(selectedMemberIds.flatMap(id=>[editorState.characters[id]?.homeId,...(editorState.characters[id]?.residences||[]).map(r=>r.homeId)]));select.innerHTML=Object.values(editorState.homes).filter(h=>eligible.has(h.id)).map(h=>`<option value="${htmlEsc(h.id)}">${htmlEsc(h.name)}</option>`).join('');if(eligible.has(previous))select.value=previous;select.required=f.cohabit.checked;select.disabled=!f.cohabit.checked;};f.cohabit.onchange=refreshHousing;f.addEventListener('change',()=>refreshHousing());refreshHousing();
   const tagPanel=f.querySelector(".official-tag-panel"),tagCount=f.querySelector("[data-relation-tag-count]");
@@ -5576,6 +5583,7 @@ function openRelationDialog(id="",sharedSave){
       const legalRegistration=["부부","가족"].includes(f.type.value)?f.legalRegistration.value:"";
       const roleValues=rolesEditor.read();
       const patch={a,b,...roleValues,cohabitHomeId:f.cohabit.checked?f.cohabitHomeId.value:"",details:readRelationshipDetails(),teacherId:roleValues.teacherId,sourceRole:isFamily(f.type.value)||f.type.value==="사제 관계"?roleValues.sourceRole:f.sourceRole.value.trim(),targetRole:isFamily(f.type.value)||f.type.value==="사제 관계"?roleValues.targetRole:f.targetRole.value.trim(),name:relationshipName,tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.legalStatus.value,legalRegistration,marriageRegistration:f.type.value==="부부"?legalRegistration:"",socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[...selectedMemberIds],animationPlacement:Object.fromEntries(selectedMemberIds.map(cid=>[cid,animationPlacement[cid]||"random"])),directional:f.type.value==="부모·자녀",groupId:old?.groupId||"",groupMembers:selectedMemberIds.length>2?[...selectedMemberIds]:[]};
+      if(isFamily(f.type.value))patch.kinship=f.familyBlood.checked?"blood":"nonblood";
       if(f.type.value==="부모·자녀")Object.assign(patch,{parentId:a,childId:b,parentRole:f.parentRole.value,kinship:f.kinship.value,kinshipByPair:{[pairKey]:f.kinship.value}});
       if(f.type.value==="형제·자매")Object.assign(patch,{siblingOrder:{[a]:1,[b]:2},siblingKinshipByPair:{[pairKey]:f.siblingKinship.value}});
       if(sharedSave){const ok=await sharedSave(patch,id);if(ok===false){dialog.returnValue="";dialog.showModal();return}dialog.remove();return}

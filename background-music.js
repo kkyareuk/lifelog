@@ -1,5 +1,5 @@
 // A single compressed music channel; gain starts at zero on every resume.
-let player=null,current=null,unlocked=false,pending=false,context=null,gain=null,fade=0;
+let player=null,current=null,unlocked=false,pending=false,context=null,gain=null,fade=0,lastVolume=null;
 function targetVolume(){return Math.max(0,Math.min(100,Number(current?.backgroundMusicVolume??35)))/100}
 export function syncBackgroundMusic(state){
  current=state;const volume=targetVolume();
@@ -10,10 +10,12 @@ export function syncBackgroundMusic(state){
   if(Context){try{context=new Context();const source=context.createMediaElementSource(player),compressor=context.createDynamicsCompressor();compressor.threshold.value=-24;compressor.knee.value=20;compressor.ratio.value=4;compressor.attack.value=.01;compressor.release.value=.3;gain=context.createGain();gain.gain.value=0;source.connect(compressor);compressor.connect(gain);gain.connect(context.destination);player.volume=1}catch{gain=null}}
  }
  const restart=player.paused;
+ if(!restart&&lastVolume===volume)return;
+ lastVolume=volume;
  if(gain){const t=context.currentTime;gain.gain.cancelScheduledValues(t);gain.gain.setValueAtTime(restart?0:gain.gain.value,t);gain.gain.linearRampToValueAtTime(volume,t+.8);void context.resume().catch(()=>{})}
  else{clearInterval(fade);if(restart)player.volume=0;fade=setInterval(()=>{const difference=targetVolume()-player.volume;player.volume=Math.max(0,Math.min(1,player.volume+Math.sign(difference)*Math.min(.025,Math.abs(difference))));if(Math.abs(difference)<.026)clearInterval(fade)},40)}
  if(restart&&!pending){pending=true;player.play().catch(()=>{}).finally(()=>{pending=false;if(current.backgroundMusicMuted||!targetVolume()||document.visibilityState==='hidden')player.pause()})}
 }
-for(const event of ['pointerdown','keydown'])document.addEventListener(event,()=>{unlocked=true;if(current)syncBackgroundMusic(current)},{passive:true});
+for(const event of ['pointerdown','keydown'])document.addEventListener(event,()=>{if(unlocked)return;unlocked=true;if(current)syncBackgroundMusic(current)},{passive:true});
 document.addEventListener('visibilitychange',()=>{if(current)syncBackgroundMusic(current)});
 window.addEventListener('pagehide',()=>{clearInterval(fade);player?.pause()});

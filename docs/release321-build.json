@@ -1,0 +1,20 @@
+{
+  "versionCode": 321,
+  "versionName": "1.0.288",
+  "artifacts": [
+    {
+      "type": "aab",
+      "bytes": 61742249,
+      "sha256": "8b14b323179858b7b6f7890f349a0c76cb225ab8de904819d57f4d08a030a3f6",
+      "verifiedWebAssets": 298,
+      "artifact": "C:\\Users\\김세은\\OneDrive\\문서\\평행도시 게임 만들기\\앱 전달\\dev321\\drawer-village-1.0.288-321.aab"
+    },
+    {
+      "type": "apk",
+      "bytes": 62459761,
+      "sha256": "7c41f2a9f728082a321398a136f2b16957bf68dccc3110eafed823378273a1e6",
+      "verifiedWebAssets": 298,
+      "artifact": "C:\\Users\\김세은\\OneDrive\\문서\\평행도시 게임 만들기\\앱 전달\\dev321\\drawer-village-1.0.288-321.apk"
+    }
+  ]
+}

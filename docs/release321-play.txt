@@ -1,0 +1,22 @@
+<ko-KR>
+기본 가족 설정을 혈연 여부와 표시 순서로 간단히 정리했어요.
+결혼 배경을 더 구체적으로 선택할 수 있어요.
+‘가문과 유산’ 개발 미리보기에 가족 편집·유산과 계승자 기록·이름 구성·설정 복사를 추가했어요.
+전체설정의 긴 항목을 접고 펼칠 수 있어요.
+공유·백업 안내를 보완하고 BGM의 불필요한 재생 갱신을 줄였어요.
+멀티 참여는 각자 마을 1칸, 추가 마을은 만든 사람만 차감해요. 캐릭터는 본인 소유만 계산해요.
+</ko-KR>
+<en-US>
+Simplified basic family settings and expanded marriage backgrounds.
+Added a development preview of Lineage and Legacy: family editing, heritage and successors, name components, and settings copy.
+Long settings sections can now collapse.
+Clarified sharing and backup, and reduced redundant BGM updates.
+Each joined server uses one town slot per member; extra towns use their creator’s slots. Characters count only toward their owner’s slots.
+</en-US>
+<ja-JP>
+基本の家族設定を血縁と表示順に整理し、結婚の背景を増やしました。
+「家門と遺産」の開発プレビューに家族編集、遺産と継承者の記録、名前の構成、設定コピーを追加しました。
+全設定の長い項目を折りたためます。
+共有・バックアップの説明を補い、BGMの不要な更新を減らしました。
+マルチ参加は各自の村枠を1つ、追加の村は作成者の枠を使います。キャラクター枠は本人の所有分だけを数えます。
+</ja-JP>

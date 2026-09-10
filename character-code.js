@@ -10,7 +10,7 @@ if(characterEditorActive()){endCharacterEditor();window.DrawerVillageGroups?.sel
 export async function characterCodeDialog(mode,limit,render,toast){
  const text=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko),api=window.DrawerVillageGroups||window.ParallelCityAuth,d=document.createElement('dialog');d.className='character-code-dialog';
  const h=document.createElement('h2');h.textContent=text('캐릭터 공유 코드','Character sharing code','キャラクター共有コード');const close=document.createElement('button');close.textContent=text('닫기','Close','閉じる');close.onclick=()=>d.close();d.append(h,close);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
- const info=document.createElement('p');info.textContent=text('코드를 아는 사람은 사진과 설정을 불러올 수 있어요. 불러온 캐릭터는 원본과 별개로 편집돼요.','Anyone with the code can import photos and settings. Imported characters are edited independently.','コードを知っている人は写真と設定を読み込めます。読み込んだ人物は元の人物とは別に編集できます。');d.append(info);
+ const info=document.createElement('p');info.textContent=text('코드를 아는 사람은 사진과 설정을 불러올 수 있어요. 불러온 캐릭터는 원본과 별개로 편집돼요. 받는 계정의 빈 캐릭터 슬롯 1개가 필요해요.','Anyone with the code can import photos and settings. Imported characters are edited independently and need one free slot on the receiving account.','コードを知っている人は写真と設定を読み込めます。読み込んだ人物は元の人物とは別に編集でき、受け取るアカウントに空き枠が1つ必要です。');d.append(info);
  const account=window.ParallelCityAuth?.getInfo?.().user?.uid;const sameAccount=()=>{if(account!==window.ParallelCityAuth?.getInfo?.().user?.uid)throw Error(text('계정이 바뀌었어요. 다시 열어 주세요.','Account changed. Please reopen.','アカウントが変わりました。開き直してください。'))};
  try{if(mode==='character-code-export'){
  const result=await api.publishCharacterCode(active().id);sameAccount();if(!d.isConnected)return;

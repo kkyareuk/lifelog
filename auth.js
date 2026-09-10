@@ -903,7 +903,7 @@ const publicImage=value=>{
   return /^https:\/\//i.test(source)?source.slice(0,1500):"";
 };
 const townSlotCapacity=()=>2+Math.max(0,Number(entitlements?.townSlotPacks)||0);
-const ownedMultiplayerTownCount=()=>groupState.groups.filter(group=>group.ownerUid===user?.uid).reduce((n,g)=>n+Math.max(1,g.towns?.length||0),0);
+const ownedMultiplayerTownCount=()=>groupState.groups.reduce((n,g)=>n+1+(g.towns||[]).slice(1).filter(t=>(t.slotOwnerUid||g.ownerUid)===user?.uid).length,0);
 const localTownCount=()=>window.ParallelCity?.getState?.()?.towns?.length||0;
 const assertMultiplayerTownSlot=()=>{
   const limit=townSlotCapacity(),used=localTownCount()+Math.max(ownedMultiplayerTownCount(),slotUsage.towns||0);
@@ -1055,10 +1055,8 @@ async function joinGroup(rawCode){
   if(!invite.exists()||invite.data()?.active!==true)throw Object.assign(new Error("Invite not found"),{code:"groups/code-not-found"});
   const groupId=String(invite.data().groupId||"");
   if(!groupId)throw Object.assign(new Error("Invite missing group"),{code:"groups/code-invalid"});
-  const batch=writeBatch(db),joinedAt=serverTimestamp();
-  batch.set(doc(db,"groups",groupId,"members",account.uid),{uid:account.uid,displayName:accountName(),role:"member",inviteCode,joinedAt},{merge:true});
-  batch.set(groupIndexRef(account.uid,groupId),{groupId,role:"member",joinedAt},{merge:true});
-  await batch.commit();
+  if(!groupState.groups.some(group=>group.id===groupId)){if(!await upload({silent:true,reason:'멀티 참여'}))throw Error('Cloud upload failed');await refreshSlotUsage();assertMultiplayerTownSlot();}
+  await sharedTownRequest('joinGroup',{inviteCode,displayName:accountName()});
   await refreshGroups({preferredId:groupId});
   return groupId;
 }

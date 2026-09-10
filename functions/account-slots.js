@@ -9,7 +9,7 @@ async function usage(db,tx,uid){
  transfers.filter(t=>t.location==='personal'&&Number(local.characterTransferVersions?.[t.personalId]||0)<Number(t.revision)).forEach(t=>personalIds.add(t.personalId));
  let characters=0,towns=0;
  await Promise.all(memberships.docs.map(async membership=>{const groupRef=db.collection('groups').doc(membership.id);const [group,residents]=await Promise.all([tx.get(groupRef),tx.get(groupRef.collection('residents').where('ownerUid','==',uid))]);if(!group.exists)return;
-  const g=group.data();towns+=(g.towns||[]).filter(t=>(t.slotOwnerUid||g.ownerUid)===uid).length;characters+=residents.docs.filter(d=>d.data().independentCharacter).length;
+  const g=group.data();towns+=1+(g.towns||[]).slice(1).filter(t=>(t.slotOwnerUid||g.ownerUid)===uid).length;characters+=residents.docs.filter(d=>d.data().independentCharacter).length;
  }));
  return {characters,towns,personalCharacters:personalIds.size,personalTowns:array(local.towns).length,characterLimit:5+Math.max(0,Number(entitlements.characterSlotPacks ?? (entitlements.purchases||[]).filter(x=>x==='character_slots_5').length)||0)*5+Math.max(0,Number(entitlements.characterSingleSlots)||0),townLimit:2+Math.max(0,Number(entitlements.townSlotPacks)||(entitlements.purchases||[]).filter(x=>x==='town_slot_1').length),reserve:()=>tx.set(lock,{value:(Number(revision.data()?.value)||0)+1})};
 }

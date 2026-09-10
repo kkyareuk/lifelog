@@ -18,7 +18,7 @@ function validate(input){
  for(const h of Object.values(p.homes))if(!h.rooms||Array.isArray(h.rooms)||Object.keys(h.rooms).length>50)fail('invalid-home');
  return p;
 }
-const scalar=new Set('id a b teacherId parentId childId sourceId targetId characterId homeId sharedHomeId sourceHomeId townId workplaceId placeId visitHomeId ownerCharacterId partnerId'.split(' '));
+const scalar=new Set('id from to successorId a b teacherId parentId childId sourceId targetId characterId homeId sharedHomeId sourceHomeId townId workplaceId placeId visitHomeId ownerCharacterId partnerId'.split(' '));
 const arrays=new Set('memberIds groupMembers participantIds withIds displayOrder ownerCharacterIds ownerIds characterIds assignedCharacterIds allowedCharacterIds'.split(' '));
 function remap(v,map,key=''){
  if(Array.isArray(v))return v.map(x=>typeof x==='string'&&arrays.has(key)?map[x]||x:remap(x,map));

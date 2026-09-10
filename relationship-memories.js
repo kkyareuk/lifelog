@@ -1,3 +1,4 @@
+import {familyLegacyLine} from './family-archive.js?v=20260909dev305';
 import {OFFICIAL_RELATIONSHIP_DETAILS,normalizeRelationshipDetails,relationshipReality,detailText} from './official-relationship-details.js?v=20260909dev305';
 import {routineMemory} from './relationship-routines.js?v=20260909dev305';
 const tri=(ko,en,ja)=>({ko,en,ja});
@@ -47,7 +48,13 @@ const memories={
  '부부':[
  tri('연인으로 만나던 때와 부부가 된 뒤의 하루를 나란히 떠올렸어요.','They set a day from their dating years beside a day of married life in their mind.','恋人だった頃の一日と、夫婦になってからの一日を並べて思い浮かべました。'),
  tri('정략결혼을 앞두고 서로의 조건을 확인하던 날, 대화 사이의 침묵이 떠올랐어요.','They recalled the silences between discussing terms before their arranged marriage.','政略結婚を前に条件を確かめた日、会話の合間の沈黙を思い出しました。'),
- tri('계약서의 마지막 줄을 확인하고 이름을 적던 순간을 떠올렸어요.','They recalled checking the final line of the contract and writing their name.','契約書の最後の行を確かめ、名前を書いた瞬間を思い出しました。')],
+ tri('계약서의 마지막 줄을 확인하고 이름을 적던 순간을 떠올렸어요.','They recalled checking the final line of the contract and writing their name.','契約書の最後の行を確かめ、名前を書いた瞬間を思い出しました。'),
+ tri('자신들이 태어나기도 전에 혼인을 약속했다는 이야기를 처음 들었던 순간이 떠올랐어요.','They recalled first hearing that their marriage had been promised before they were born.','生まれる前に婚姻が約束されていたと初めて聞いた瞬間を思い出しました。'),
+ tri('어릴 적 상대를 약혼자라고 소개받고 무슨 말을 해야 할지 몰라 눈만 마주쳤던 날을 떠올렸어요.','They remembered being introduced as betrothed children and meeting each other’s eyes without knowing what to say.','幼い頃、婚約者だと紹介され、何を言えばよいか分からず目を合わせた日を思い出しました。'),
+ tri('혼례 이야기가 오가던 자리에서 두 가문의 이름이 자신들의 이름보다 먼저 불리던 순간을 떠올렸어요.','They recalled the families’ names being spoken before their own during the marriage discussions.','婚姻の話し合いで、自分たちより先に二つの家の名が呼ばれた瞬間を思い出しました。'),
+ tri('집안의 사정을 듣고 혼인을 받아들이기로 했던 날, 쉽게 말을 꺼내지 못하던 사람들의 얼굴이 떠올랐어요.','They recalled the hesitant faces around them on the day they agreed to marry after hearing their family’s circumstances.','家の事情を聞いて婚姻を受け入れた日、言葉を切り出せなかった人々の顔を思い出しました。'),
+ tri('계약서에 적힌 마지막 날짜를 짚으며 서로의 조건을 확인하던 손끝을 떠올렸어요.','They recalled a fingertip resting on the contract’s end date as they checked each other’s terms.','契約書の終了日を指さし、互いの条件を確かめた指先を思い出しました。'),
+ tri('둘만 아는 사정을 감추기 위해 사람들 앞에서 처음 부부처럼 인사하던 날을 떠올렸어요.','They recalled first greeting others as spouses to conceal circumstances only the two of them knew.','二人だけの事情を隠すため、人前で初めて夫婦として挨拶した日を思い出しました。')],
  '부모·자녀':[
  tri('어릴 때 같은 집에서 오가던 인사와 지금의 인사를 겹쳐 떠올렸어요.','They set childhood greetings in the shared home beside the greetings of today.','幼い頃、同じ家で交わした挨拶と今の挨拶を重ねました。'),
  tri('성장하던 중 새 가족으로 서로를 알아가던 때의 호칭이 떠올랐어요.','They recalled what they called each other while getting to know a new family during childhood.','成長の途中、新しい家族として知り合っていった頃の呼び方を思い出しました。'),
@@ -117,7 +124,8 @@ const endings={
 const hash=s=>[...String(s)].reduce((h,c)=>(Math.imul(h,31)+c.charCodeAt(0))>>>0,0);
 export function relationshipMemory(actor,other,relation,view={},options={}){
  const details=normalizeRelationshipDetails(relation?.type,relation?.details),reality=relationshipReality(relation,view),language=options.language||'ko';
- const choices=[];if(details.origin!==undefined)choices.push({id:'origin',copy:memories[relation.type]?.[Number(details.origin)]});if(details.firstMeeting)choices.push({id:'firstMeeting',copy:first[details.firstMeeting]});if(details.routine!==undefined)choices.push({id:'routine',copy:routineMemory(relation.type,details.routine)});
+ const legacy=relation?.familyArchive&&familyLegacyLine(relation,actor,other,language,hash(options.seed||actor.id));
+ const choices=[];if(legacy)choices.push({id:'heritage',copy:{ko:legacy,en:legacy,ja:legacy}});if(details.origin!==undefined)choices.push({id:'origin',copy:memories[relation.type]?.[Number(details.origin)]});if(details.firstMeeting)choices.push({id:'firstMeeting',copy:first[details.firstMeeting]});if(details.routine!==undefined)choices.push({id:'routine',copy:routineMemory(relation.type,details.routine)});
  if(!choices.length)return null;
  const n=hash(`${options.seed||''}:${actor.id}:${relation.id||relation.type}`),choice=choices[n%choices.length],variant=Math.floor(n/choices.length)%3;
  let ending=(endings[reality.tone]||endings.neutral)[variant];
@@ -128,7 +136,7 @@ export function relationshipMemory(actor,other,relation,view={},options={}){
  tri('지금의 어긋남이 전부 그날의 탓인지는 단정하지 못한 채, 바꿀 수 있는 부분부터 생각했어요.','They could not blame all of today’s difficulties on that day and considered what could still change.','今のすれ違いが全てあの日のせいとは決めつけず、変えられる部分から考えました。')
  ][variant];
  // Regret requires both a deteriorated official stage and this actor's negative view.
- if(relation.type==='부부'&&['1','2'].includes(details.origin)&&reality.tone==='strained')ending=[
+ if(relation.type==='부부'&&['1','2','3','4','5','6','7','8'].includes(details.origin)&&reality.tone==='strained')ending=[
  tri('불편해진 사이를 생각하자, 그때 받아들인 조건을 지금도 선택할 수 있을지 선뜻 답하지 못했어요.','Thinking of their strained marriage, they could not readily say they would accept those terms again.','険悪になった仲を思うと、あの条件を今も選ぶか、すぐには答えられませんでした。'),
  tri('지금의 불편한 마음과 그날의 결정을 나란히 놓고 후회가 남는 지점을 되짚었어요.','They set their current reservations beside that decision and examined where regret remained.','今の居心地の悪さとあの日の決断を並べ、後悔が残るところをたどりました。'),
  tri('결혼을 정하던 때와 달라진 사이를 생각하며, 그 선택을 되돌릴 수 있었다면 어땠을지 한동안 머물렀어요.','They lingered over how the marriage had changed and what it would mean to undo that choice.','結婚を決めた頃と変わった仲を思い、選び直せたならとしばらく考えました。')

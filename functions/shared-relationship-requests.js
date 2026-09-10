@@ -2,7 +2,7 @@ const crypto=require('node:crypto');
 const fail=(code,status=400)=>{throw Object.assign(new Error(code),{code,status})};
 const clean=value=>Array.isArray(value)?value.map(clean):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().filter(k=>!['__proto__','constructor','prototype'].includes(k)).map(k=>[k,clean(value[k])])):value;
 const hash=value=>crypto.createHash('sha256').update(JSON.stringify(clean(value||null))).digest('hex');
-const fields=new Set('referenceId roleLinks cohabitHomeId details a b teacherId sourceRole targetRole name tags type temporalStatus stage faultParty faultReason legalStatus legalRegistration marriageRegistration socialAcceptance interactions interactionsAll cohabit stayTogether intimacy conflict updatedAt displayOrder animationPlacement directional groupId groupMembers parentId childId parentRole kinship kinshipByPair siblingOrder siblingKinshipByPair memberIds'.split(' '));
+const fields=new Set('familyArchive referenceId roleLinks cohabitHomeId details a b teacherId sourceRole targetRole name tags type temporalStatus stage faultParty faultReason legalStatus legalRegistration marriageRegistration socialAcceptance interactions interactionsAll cohabit stayTogether intimacy conflict updatedAt displayOrder animationPlacement directional groupId groupMembers parentId childId parentRole kinship kinshipByPair siblingOrder siblingKinshipByPair memberIds'.split(' '));
 module.exports=({db,membership,notify,clock,id})=>{
  const collection=kind=>kind==='schedule'?'schedules':kind==='characterGroup'?'characterGroups':'relationships';
  const members=(patch,kind)=>[...new Set((['characterGroup','schedule'].includes(kind)?patch.memberIds:patch.groupMembers?.length?patch.groupMembers:[patch.a,patch.b])||[])];
@@ -17,6 +17,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    if(!input.patch||typeof input.patch!=='object'||Array.isArray(input.patch)||JSON.stringify(input.patch).length>50000)fail('invalid-relationship');
    const allowed=kind==='schedule'?new Set('memberIds sourceId title type start end days date monthly cancelled townId placeId visitHomeId destinationType notes dressCode outfitId clothingMode'.split(' ')):fields;
    const patch=clean(Object.fromEntries(Object.entries(input.patch).filter(([k])=>allowed.has(k))));
+   if(patch.familyArchive){const {normalizeFamilyArchive}=await import('./runtime/family-archive.js');patch.familyArchive=normalizeFamilyArchive(patch.familyArchive,members(patch,kind));}
    if(kind==='schedule'){if(!patch.title||String(patch.title).length>80||!/^([01]\d|2[0-3]):[0-5]\d$/.test(patch.start)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(patch.end))fail('invalid-schedule');if(patch.monthly?!/^\d{4}-\d{2}-\d{2}$/.test(patch.date):!Array.isArray(patch.days)||!patch.days.length||patch.days.some(d=>!Number.isInteger(d)||d<0||d>6))fail('invalid-schedule');}
    for(const key of ['memberIds','groupMembers','tags','interactions'])if(key in patch&&(!Array.isArray(patch[key])||patch[key].length>200||patch[key].some(v=>typeof v!=='string'||v.length>500)))fail('invalid-relationship');
    for(const key of ['a','b','teacherId','type','name','sourceRole','targetRole','parentRole','temporalStatus','stage','faultReason'])if(key in patch&&(typeof patch[key]!=='string'||patch[key].length>2000))fail('invalid-relationship');

@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve,extname,sep} from 'node:path';
+import {createRequire} from 'node:module';
+const require=createRequire(import.meta.url),{chromium}=require(process.env.PLAYWRIGHT_MODULE||'C:/Users/김세은/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const root=resolve('.'),out=resolve('qa-relationships321');await mkdir(out,{recursive:true});
+const types={'.html':'text/html','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.svg':'image/svg+xml','.woff2':'font/woff2','.ttf':'font/ttf'};
+const server=createServer(async(req,res)=>{try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname),file=resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!file.startsWith(root+sep))throw Error();let body=await readFile(pathname==='/auth.js'?resolve('scripts/ios-preview-auth.mjs'):file);res.writeHead(200,{'Content-Type':types[extname(file)]||'application/octet-stream'}).end(body)}catch{res.writeHead(404).end()}});await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({channel:'chrome',headless:true});
+try{for(const language of ['ko','en','ja'])for(const width of [384,1180]){
+ const p=await browser.newPage({viewport:{width,height:832},hasTouch:true}),errors=[];p.setDefaultTimeout(8000);p.on('pageerror',e=>errors.push(e.message));await p.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await p.goto(origin+'/?native-preview=1');await p.waitForFunction(()=>window.ParallelCity&&window.ParallelCityAuth);
+ await p.evaluate(async language=>{window.game=await import('/state.js?v=20260909dev305');game.createCharacter();game.createCharacter();game.state.uiLanguage=language;document.querySelectorAll('dialog[open]').forEach(d=>d.close());window.DrawerVillageNavigation.go('relationship')},language);
+ const menu=await p.locator('.relationship-stage-actions button').evaluateAll(es=>es.map(e=>Object.keys(e.dataset)[0]));assert(menu.indexOf('openFamily')>menu.indexOf('openOfficialRelations'));assert(menu.indexOf('openFamily')<menu.indexOf('openCharacterGroups'));
+ await p.locator('[data-add-rel]').first().evaluate(e=>e.click());const d=p.locator('.relation-editor-dialog[open]');await d.waitFor();const types=await d.locator('[name=type] option').evaluateAll(es=>es.map(e=>e.value));for(const removed of ['산악회','동아리 동료','학창 시절 친구들'])assert(!types.includes(removed));
+ for(const type of types){await d.locator('[name=type]').selectOption(type);assert(await d.locator('.official-order-card').isVisible());assert.equal(await d.locator('[data-role-reference]').count(),0);assert.equal(await d.locator('[data-member-role]').count(),0);}
+ await d.locator('[name=type]').selectOption('부부');assert.equal(await d.locator('[data-detail=origin] option').count(),10);await d.locator('[data-detail=origin]').selectOption('3');
+ await d.locator('[name=type]').selectOption('가족');assert(await d.locator('[name=familyBlood]').isChecked());await d.locator('[name=familyBlood]').uncheck();const bounds=await d.locator('.official-blood-choice').evaluate(e=>{const a=e.querySelector('input').getBoundingClientRect(),b=e.querySelector('span').getBoundingClientRect();return a.right<=b.left});if(!bounds){console.log(await d.locator('.official-blood-choice').evaluate(e=>[...e.children].map(x=>({tag:x.tagName,rect:x.getBoundingClientRect().toJSON(),position:getComputedStyle(x).position,display:getComputedStyle(x).display,transform:getComputedStyle(x).transform}))));await p.screenshot({path:out+'/blood-bug.png'});}assert(bounds);
+ await d.locator('.relationship-editor-actions [value=save]').click();await d.waitFor({state:'detached'});await p.waitForFunction(()=>Object.values(game.state.relationships).some(r=>r.type==='가족'));assert.equal(await p.evaluate(()=>Object.values(game.state.relationships).find(r=>r.type==='가족').kinship),'nonblood');
+ await p.locator('[data-open-family]').first().evaluate(e=>e.click());await p.locator('.family-workshop').waitFor();await p.locator('.family-workshop [data-role]').selectOption('sibling');assert((await p.locator('.family-workshop [data-scene]').textContent()).length>15);
+ await p.locator('[data-clan]').fill('Holstein');await p.locator('[data-history]').fill('A family of travelers.');
+ await p.locator('[data-add-heritage]').click();await p.locator('[data-h-label]').fill('Silver compass');await p.locator('[data-h-successor]').selectOption({index:1});
+ await p.locator('[data-given]').fill('Nerine');await p.locator('[data-surname]').fill('Holstein');await p.locator('[data-middle]').fill('A');await p.locator('[data-name-order]').selectOption('family-first');await p.locator('[data-save-name]').click();
+ assert(await p.evaluate(()=>Object.values(game.state.characters).some(c=>c.name==='Holstein Nerine A')));
+ await p.locator('[data-copy]').click();const copied=await p.locator('[data-transfer]').inputValue();assert.equal(JSON.parse(copied).archive.heritages[0].label,'Silver compass');
+ await p.locator('[data-clan]').fill('Unwanted');await p.locator('[data-paste]').click();assert.equal(await p.locator('[data-clan]').inputValue(),'Holstein');
+ await p.locator('[data-save]').click();assert.equal(await p.evaluate(()=>Object.values(game.state.relationships).find(r=>r.type==='가족').familyArchive.heritages[0].label),'Silver compass');
+ await p.locator('.family-workshop [data-close]').click();await p.locator('[data-open-family]').first().evaluate(e=>e.click());assert.equal(await p.locator('[data-clan]').inputValue(),'Holstein');assert.equal(await p.locator('[data-h-label]').inputValue(),'Silver compass');assert.equal(await p.locator('[data-role]').inputValue(),'sibling');
+ await p.screenshot({path:out+`/family-${width}-${language}.png`});
+await p.locator('.family-workshop [data-close]').click();
+ assert.deepEqual(errors,[]);console.log('PASS basic family checkbox/order, removed roles/types, nine spouse backgrounds, DLC preview',width,language);await p.close();
+}}finally{await browser.close();server.close()}
