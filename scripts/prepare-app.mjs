@@ -167,7 +167,7 @@ index=index.replace("</head>",`  <meta name="drawer-village-app" content="${plat
     document.documentElement.classList.add("native-app","native-platform");
     window.DRAWER_VILLAGE_NATIVE=true;
     window.DRAWER_VILLAGE_PLATFORM="${platform}";
-window.DRAWER_VILLAGE_NATIVE_BUILD="20260910dev319";
+window.DRAWER_VILLAGE_NATIVE_BUILD="20260910dev320";
     window.DRAWER_VILLAGE_APP_VERSION="${appVersionName}";
     window.DRAWER_VILLAGE_VERSION_CODE="${appVersionCode}";
     if("serviceWorker" in navigator){

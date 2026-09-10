@@ -1,3 +1,4 @@
+import {showSlotCreator} from './character-slots.js?v=20260909dev305';
 import {mountRelationshipRoles} from './relationship-roles-editor.js?v=20260909dev305';
 import {isFamily} from './relationship-roles.js?v=20260909dev305';
 import {mountRelationshipDetails} from "./relationship-details-editor.js?v=20260909dev305";
@@ -337,11 +338,11 @@ const FALLBACK_BUILDING_SHAPES=[
   {id:"type-suitcase-hotel",name:"여행가방 호텔",src:"world-assets/building-types/suitcase-hotel-handdrawn.png",types:["숙박"],features:["직접 그린 건물","원화의 흰색 유지"]},
   {id:"type-clock-school",name:"시계탑 학교",src:"world-assets/building-types/clock-school-handdrawn.png",types:["학교"],features:["직접 그린 건물","원화의 흰색 유지"]},
   {id:"type-library",name:"책더미 도서관",src:"world-assets/building-types/library-handdrawn.png",types:["도서관"],features:["직접 그린 건물","원화의 흰색 유지"]},
-  {id:"type-generic-building",name:"옥상 정원 건물",src:"world-assets/building-types/generic-building-handdrawn.png",types:["집","사무실","기타"],features:["직접 그린 건물","원화의 흰색 유지"]},
+  {id:"type-generic-building",name:"회사 건물",src:"world-assets/building-types/office-handdrawn.png",types:["집","사무실","기타"],features:["직접 그린 건물","원화의 흰색 유지"]},
   {id:"type-park",name:"마을 공원",src:"world-assets/building-types/park-handdrawn.png",types:["공원"],features:["직접 그린 건물","시간별 조명","원화의 흰색 유지"]},
   {id:"red-roof-home",name:"빨간 지붕 집",src:"world-assets/building-types/red-roof-home-handdrawn.png",types:["집","숙박"],features:["직접 그린 건물","시간별 조명","원화의 흰색 유지"]},
   {id:"type-restaurant",name:"음식점",src:"world-assets/building-types/restaurant-handdrawn.png",types:["음식점"]},
-  {id:"drawer-building",name:"옥상 정원 건물",src:"world-assets/building-types/generic-building-handdrawn.png"},
+  {id:"drawer-building",name:"회사 건물",src:"world-assets/building-types/office-handdrawn.png"},
   {id:"medieval-castle",name:"중세 성채",src:"world-assets/medieval-castle.svg"},
   {id:"medieval-tavern",name:"중세 여관",src:"world-assets/medieval-tavern.svg"},
   {id:"medieval-market",name:"중세 시장",src:"world-assets/medieval-market.svg"}
@@ -2958,7 +2959,7 @@ function bind(){
   $$("[data-closet-filter]").forEach(button=>button.onclick=()=>{closetFilter=button.dataset.closetFilter;$$("[data-closet-filter]").forEach(value=>value.classList.toggle("on",value===button));applyClosetFilter()});
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
   $$("[data-edit-outfit]").forEach(el=>el.onclick=()=>openOutfitEditor(el.dataset.editOutfit));
-  $$("[data-new]").forEach(el=>el.onclick=()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`현재 캐릭터 슬롯은 ${limit}명까지예요`);render()});
+  $$("[data-new]").forEach(el=>el.onclick=()=>showSlotCreator(state,()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`현재 캐릭터 슬롯은 ${limit}명까지예요`);render()}));
   $("[data-welcome-create]")?.addEventListener("click",()=>{
     if(window.ParallelCityAuth?.getInfo?.().busy||state.order.length)return;
     if(!createCharacter(characterLimit()))return;

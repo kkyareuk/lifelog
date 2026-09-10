@@ -1,0 +1,21 @@
+<ko-KR>
+미완성 기본 건물을 완성된 회사 건물 그림으로 교체했어요.
+캐릭터 생성 시 사용·남은 슬롯을 표시해요. 멀티 일반 회원은 관리자 승인을 받고, 처리한 사람을 확인할 수 있어요.
+멀티 생성의 중복 처리와 대기를 줄이고 생성 중 닫기를 고쳤어요.
+캐릭터 삭제·관계 화면 오류를 수정하고 마지막 거주자 삭제 시 빈집을 정리해요.
+배려·이해와 키스 세부 선택을 정리하고 상황에 따른 반응을 사용해요. 머리 손질에 머리 설정을 반영했어요.
+</ko-KR>
+<en-US>
+Replaced the unfinished default building with the office artwork.
+Creation shows used and remaining slots. Multiplayer members need manager approval, with the responder shown.
+Removed duplicate creation work and allowed closing while waiting.
+Fixed deletion and relationship screens; empty homes are removed with their last resident.
+Simplified care and kiss choices. Hair grooming now reflects hair settings.
+</en-US>
+<ja-JP>
+未完成の標準建物を会社の完成イラストに変更しました。
+作成時に使用済み・残り枠を表示します。マルチの一般メンバーは管理者の承認が必要で、対応者も確認できます。
+作成の重複処理と待機を減らし、処理中も閉じられるようにしました。
+削除・関係画面の不具合を修正し、最後の住人の削除時に空き家を整理します。
+気遣い・理解とキスの選択を整理しました。髪の手入れに髪の設定を反映します。
+</ja-JP>

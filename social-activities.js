@@ -307,7 +307,7 @@ export function hasRomanticRelationship(relationships,a,b){return Object.values(
 export const SOCIAL_SECTIONS=[
  {id:'friendly',labels:['친근한 활동','Friendly activities','親しい交流'],actions:['talk','debate','gossip','custom_social','hangout','comfort','compliment','dine','tea','drinks','cook_together','play_together','study_together','read_together','compete']},
  {id:'conflict',labels:['갈등','Conflict','対立'],actions:['taunt','insult','argue','fight']},
- {id:'romance',labels:['애정 표현','Affection','愛情表現'],actions:['hug','handhold','lean','kiss','kiss_cautious','kiss_reconcile','affection']}
+ {id:'romance',labels:['애정 표현','Affection','愛情表現'],actions:['hug','handhold','lean','kiss','affection']}
 ];
 
 export function workTasks(character){

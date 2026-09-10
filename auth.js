@@ -843,15 +843,15 @@ async function saveSharedResident({groupId=groupState.activeGroupId,id,profile})
  await mergeUploadedMedia(reference,prepared.mediaManifest,session);assertSession(session);
  const value=sharedProfile(prepared.gameState.character);return sharedTownRequest('saveResident',{groupId,id,profile:value});
 }
-async function createSharedResident(input){
+const pendingResidentCreates=new Map();
+function createSharedResident(input){const key=user?.uid+':'+(input.groupId||groupState.activeGroupId)+':'+input.id;if(pendingResidentCreates.has(key))return pendingResidentCreates.get(key);const task=createSharedResidentOnce(input).finally(()=>pendingResidentCreates.delete(key));pendingResidentCreates.set(key,task);return task;}
+async function createSharedResidentOnce(input){
  requireGroupUser();const session=captureSession(),groupId=input.groupId||groupState.activeGroupId,key=session.uid+':'+groupId+':'+input.id;
  let result=createdResidents.get(key);
  if(!result){
   if(!await upload({silent:true,reason:'멀티 캐릭터 생성',metadataOnly:true}))throw Error('Cloud upload failed');assertSession(session);
-  result=await sharedTownRequest('createResident',{...input,groupId,profile:sharedProfile(input.profile)});createdResidents.set(key,result);void refreshSlotUsage().catch(()=>{});
+  result=await sharedTownRequest('createResident',{...input,groupId,profile:sharedProfile(input.profile)});createdResidents.set(key,result);if(result.resident&&result.home&&groupState.activeGroupId===groupId){groupState.residents=[...groupState.residents.filter(r=>r.id!==result.id),result.resident];groupState.homes=[...groupState.homes.filter(h=>h.id!==result.home.id),result.home];emitGroupState()}void refreshSlotUsage().catch(()=>{});
  }
- try{await saveSharedResident({groupId,id:result.id,profile:input.profile})}
- catch(error){throw Error(({ko:'캐릭터는 만들어졌지만 사진·설정 전송을 완료하지 못했어요. 다시 시도하면 같은 캐릭터에 이어서 저장해요. ',en:'Character created, but photos/settings are still pending. Retry to finish the same character. ',ja:'キャラクターは作成されましたが写真・設定の送信が未完了です。再試行すると同じキャラクターに保存します。'})[document.documentElement.lang]+error.message)}
  return result;
 }
 let groupUnsubscribers=[];

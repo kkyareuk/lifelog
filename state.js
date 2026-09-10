@@ -1,3 +1,4 @@
+import {kissNarrative} from './kiss-narrative.js?v=20260909dev305';
 import {cohabitWorld} from './relationship-housing.js?v=20260909dev305';
 import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
 import {leisureNarrative} from "./leisure-narrative.js?v=20260909dev305";
@@ -1134,7 +1135,10 @@ export function deleteCharacter(id){
   if(!state.characters[id])return;
   state.deletedCharacterIds=Array.isArray(state.deletedCharacterIds)?state.deletedCharacterIds:[];
   if(!state.deletedCharacterIds.includes(id))state.deletedCharacterIds.push(id);
+  const removedCharacter=state.characters[id],homeIds=new Set([removedCharacter.homeId,...(removedCharacter.residences||[]).filter(r=>r.isPrimary||r.role==='주거지').map(r=>r.homeId)].filter(Boolean));
   delete state.characters[id];
+  for(const homeId of homeIds){if(!Object.values(state.characters).some(c=>c.homeId===homeId||(c.residences||[]).some(r=>r.homeId===homeId))){delete state.homes[homeId];state.deletedHomeIds=[...new Set([...(state.deletedHomeIds||[]),homeId])];if(state.activeHomeId===homeId)state.activeHomeId="";}}
+  state.characterGroups=(state.characterGroups||[]).map(g=>({...g,memberIds:(g.memberIds||[]).filter(cid=>cid!==id)}));
   state.order=state.order.filter(characterId=>characterId!==id);
   Object.keys(state.relationships).forEach(relationId=>{
     const relation=state.relationships[relationId];
@@ -1147,6 +1151,9 @@ export function deleteCharacter(id){
       delete state.relationships[relationId];
     }
   });
+  for(const r of Object.values(state.relationships)){r.groupMembers=(r.groupMembers||[]).filter(cid=>cid!==id);r.displayOrder=(r.displayOrder||[]).filter(cid=>cid!==id);r.roleLinks=(r.roleLinks||[]).filter(link=>link.from!==id&&link.to!==id);if(r.referenceId===id)r.referenceId=r.a;}
+  for(const [cid,d] of Object.entries(state.characterDirectives||{}))if(cid===id||d.targetId===id){delete state.characterDirectives[cid];delete state.dailyPlans?.[cid];if(state.characters[cid])state.characters[cid].timelineResetAt=Date.now();}
+  for(const home of Object.values(state.homes))for(const room of Object.values(home.rooms||{})){if(room.ownerCharacterIds)room.ownerCharacterIds=room.ownerCharacterIds.filter(cid=>cid!==id);if(room.accessCharacterIds)room.accessCharacterIds=room.accessCharacterIds.filter(cid=>cid!==id);}
   delete state.routines[id];
   delete state.monthlyRoutines[id];
   state.activeId=state.order[0]||null;
@@ -1418,6 +1425,7 @@ function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   return copy;
 }
 function baseSocialDirectiveCopy(kind,actor,target,subject,topic,options={}){
+  if(['kiss','kiss_cautious','kiss_reconcile'].includes(kind))return kissNarrative(state,actor,target,characterViewFor(actor.id,target.id),characterViewFor(target.id,actor.id),options.now??Date.now());
   if(kind==='gossip'&&subject){const criticizing=dislikesPerson(state,actor,subject)&&!ignoresOthers(actor),distant=ignoresOthers(actor);const reasons=gossipReasons(characterViewFor(actor.id,subject.id),subject);const desc=criticizing&&reasons.length?reasons[Math.floor(seededChoice(actor.id+':'+subject.id+':'+(options.now||Math.floor(Date.now()/60000)))()*reasons.length)]:distant?['남의 이야기에 별 관심이 없어 짧게 듣고 다른 화제로 돌리려 해요.','They show little interest in gossip and try to change the subject.','他人の話にはあまり関心を示さず、話題を変えようとしています。']:['상대의 불만을 듣지만 섣불리 맞장구치지는 않고 있어요.','They listen to the complaint without rushing to agree.','相手の不満を聞きつつ、すぐには同調していません。'];return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 ${subject.name}에 대해 이야기하는 중`,`Talking with ${target.name} about ${subject.name}`,`${target.name}と${subject.name}について話すところ`][i],desc:desc[i]}]))}
 
   const extra=socialActivityCopy(kind,actor,target,topic,options);if(extra)return extra;

@@ -1,3 +1,4 @@
+import {hairGrooming} from './hair-grooming.js?v=20260909dev305';
 import {automaticConversation} from "./automatic-activities.js?v=20260909dev305";
 import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
 import {leisureNarrative} from "./leisure-narrative.js?v=20260909dev305";
@@ -954,7 +955,7 @@ function appearanceMorningEntry(c,time,date){
   if(hair){
     if(!title)title="머리를 정돈하며 외출을 준비하는 중";
     const style=hairStyles.length?hairStyles[hash(`${c.id}:${dayKey(date)}:hair-style`)%hairStyles.length]:"평소 방식";
-    parts.push(style==="평소 방식"?`${hair}의 결을 살피며 평소 손질 순서대로 흐트러진 부분을 정돈했어요.`:hairStyleRoutine(c,style,hair,date));
+    parts.push(hairGrooming(c,"ko"));
   }
   if(careLevel==="세심하게 공들임"){
     if(!title)title="아침 외모 관리를 꼼꼼히 하는 중";
@@ -2748,7 +2749,7 @@ function build(c,date=new Date()){
   const morningCare=[mobilityMorning,morningAppearance].filter(Boolean);
   const morningCareTitle=mobilityMorning?.title||morningAppearance?.title||"욕실에서 씻는 중";
   const morningCareDescription=["세면대 앞에서 세수하고 이를 닦으며 잠을 깨고 있어요.",...morningCare.map(item=>item.desc)].join(" ");
-  list.push(homeEntry(c,wake+30,morningCareTitle,morningCareDescription,mobilityMorning?"bedroom":"bath",morningCare.length?{careRoutine:"morning-care"}:{}));
+  list.push(homeEntry(c,wake+30,morningCareTitle,morningCareDescription,mobilityMorning?"bedroom":"bath",morningCare.length?{careRoutine:"morning-care",...(morningAppearance?{localizedCopy:Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[morningCareTitle,'Getting ready for the day','身だしなみを整えているところ'][i],desc:i===0?morningCareDescription:['','They wash their face, brush their teeth, and check their appearance. ','洗顔と歯磨きを済ませ、身だしなみを確かめています。'][i]+hairGrooming(c,lang)}]))}:{})}:{}));
   const makeupLevel=appearanceProfile(c).makeupLevel||"하지 않음";
   const appearanceCareMinutes={"거의 신경 쓰지 않음":0,"필요한 만큼만":2,"기본적으로 단정하게":4,"꾸준히 관리함":8,"세심하게 공들임":12}[c.appearanceCareLevel]||0;
   const breakfastMinute=wake+65+appearanceCareMinutes+({스킨케어만:4,"선크림·기초만":7,"가벼운 메이크업":10,"포인트 메이크업":14,"풀 메이크업":18}[makeupLevel]||0);

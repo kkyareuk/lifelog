@@ -23,7 +23,7 @@ const snapshot=()=>window.DrawerVillageGroups?.getSnapshot?.()||{};
 const storageKey=()=> 'drawer-player-mail:'+ (window.ParallelCityAuth?.getInfo?.()?.user?.uid||'guest');
 const localLetters=()=>{try{return JSON.parse(localStorage.getItem(storageKey())||'[]')}catch{return []}};
 const status=p=>p.awaitingOthers?mt('다른 참여자 답변 대기','Waiting for other participants','ほかの参加者の返答待ち'):p.status==='pending'?mt('답변 대기','Awaiting response','返答待ち'):p.status==='accepted'?mt('수락됨','Accepted','承認済み'):mt('거절됨','Declined','辞退済み');
-function summary(p){return p.kind==='schedule'?mt('일정 제안','Schedule proposal','予定の提案'):p.kind==='characterGroup'?mt('캐릭터 그룹 제안','Character group proposal','キャラクターグループの提案'):p.kind==='admission'?mt('입주 신청','Move-in application','入居申請'):p.kind==='cohabitation'?mt('동거 제안','Shared-home proposal','同居提案'):mt('관계 제안','Relationship proposal','関係の提案')}
+function summary(p){return p.kind==='create-resident'?mt('캐릭터 생성 신청','Character creation request','キャラクター作成申請'):p.kind==='schedule'?mt('일정 제안','Schedule proposal','予定の提案'):p.kind==='characterGroup'?mt('캐릭터 그룹 제안','Character group proposal','キャラクターグループの提案'):p.kind==='admission'?mt('입주 신청','Move-in application','入居申請'):p.kind==='cohabitation'?mt('동거 제안','Shared-home proposal','同居提案'):mt('관계 제안','Relationship proposal','関係の提案')}
 export function proposalTitle(p){return proposalCopy(p,mt).title}
 export function proposalBody(p){return proposalCopy(p,mt).body}
 export const isAnnouncement=p=>p.announcement===true;

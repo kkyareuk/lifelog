@@ -1,6 +1,6 @@
 const {usage,check}=require('./account-slots');
 const fail=(message,status=400)=>{throw Object.assign(Error(message),{status})};
-module.exports=({db,clock=Date.now})=>async(uid,input)=>db.runTransaction(async tx=>{
+async function create({db,clock=Date.now},tx,uid,input,approved=false){
  for(const key of ['groupId','townId','id'])if(typeof input[key]!=='string'||!input[key]||input[key].length>180||/[\/]/.test(input[key]))fail('invalid-id');
  const root=db.collection('groups').doc(input.groupId),ref=root.collection('residents').doc(uid+'_'+input.id),homeRef=root.collection('homes').doc(uid+'_'+input.id);
  const [group,member,old,all,slots]=await Promise.all([tx.get(root),tx.get(root.collection('members').doc(uid)),tx.get(ref),tx.get(root.collection('residents')),usage(db,tx,uid)]);
@@ -10,9 +10,15 @@ module.exports=({db,clock=Date.now})=>async(uid,input)=>db.runTransaction(async 
  if(all.docs.length>=200||all.docs.filter(d=>d.data().ownerUid===uid).length>=limit)fail('resident-limit',409);
  const profile=input.profile,home=input.home;
  if(!profile||typeof profile!=='object'||Array.isArray(profile)||typeof profile.name!=='string'||!profile.name.trim()||profile.name.length>40||JSON.stringify(profile).length>120000||!home?.rooms||JSON.stringify(home).length>180000)fail('invalid-profile');
+ if(!approved&&group.data().ownerUid!==uid&&!['owner','manager','operator'].includes(role))return require('./resident-approval').request({db,clock},tx,root,uid,input,member.data());
  const clean={...profile,id:ref.id,homeId:homeRef.id,townId:input.townId,days:{},createdAt:clock(),timelineResetAt:clock()};for(const key of ['sharedScene','sharedContext','ownerUid','residences'])delete clean[key];
  slots.reserve();
- tx.create(homeRef,{ownerUid:uid,sourceHomeId:input.id,townId:input.townId,name:profile.name+'의 집',layoutJson:JSON.stringify(home),mapX:50,mapY:50,layoutRevision:0,residentNames:[profile.name],visitPolicy:'members'});
- tx.create(ref,{ownerUid:uid,ownerName:member.data().displayName||'',sourceCharacterId:input.id,sourceHomeId:input.id,sharedHomeId:homeRef.id,independentCharacter:true,name:profile.name,job:profile.jobTitle||profile.job||'',townId:input.townId,profileJson:JSON.stringify(clean),scheduleJson:JSON.stringify(input.schedule||{}),icon:profile.icon||'',photo:profile.photo||'',joinedAt:clock(),updatedAt:clock()});
- tx.update(root,{lifeUpdatedAt:0});return {id:ref.id,status:'accepted'};
-});
+ const cleanHome={...home,id:homeRef.id,townId:input.townId,rooms:Object.fromEntries(Object.entries(home.rooms).map(([key,room])=>[key,{...room,...(room.ownerCharacterIds?{ownerCharacterIds:room.ownerCharacterIds.map(id=>id===input.id?ref.id:id)}:{}),...(room.accessCharacterIds?{accessCharacterIds:room.accessCharacterIds.map(id=>id===input.id?ref.id:id)}:{})}]))};
+ const homeRecord={ownerUid:uid,sourceHomeId:input.id,townId:input.townId,name:profile.name+'의 집',layoutJson:JSON.stringify(cleanHome),mapX:50,mapY:50,layoutRevision:0,residentNames:[profile.name],visitPolicy:'members'};
+ tx.create(homeRef,homeRecord);
+ const resident={ownerUid:uid,ownerName:member.data().displayName||'',sourceCharacterId:input.id,sourceHomeId:input.id,sharedHomeId:homeRef.id,independentCharacter:true,name:profile.name,job:profile.jobTitle||profile.job||'',townId:input.townId,profileJson:JSON.stringify(clean),scheduleJson:JSON.stringify(input.schedule||{}),icon:profile.icon||'',photo:profile.photo||'',joinedAt:clock(),updatedAt:clock()};
+ tx.create(ref,resident);
+ tx.update(root,{lifeUpdatedAt:0});return {id:ref.id,status:'accepted',resident:{id:ref.id,...resident},home:{id:homeRef.id,...homeRecord}};
+}
+module.exports=options=>(uid,input)=>options.db.runTransaction(tx=>create(options,tx,uid,input));
+module.exports.inTransaction=create;

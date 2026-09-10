@@ -8,11 +8,9 @@ async function usage(db,tx,uid){
  const transfers=transferDocs.docs.map(d=>d.data());transfers.filter(t=>['group','deleted'].includes(t.location)).forEach(t=>personalIds.delete(t.personalId));
  transfers.filter(t=>t.location==='personal'&&Number(local.characterTransferVersions?.[t.personalId]||0)<Number(t.revision)).forEach(t=>personalIds.add(t.personalId));
  let characters=0,towns=0;
- for(const membership of memberships.docs){const groupRef=db.collection('groups').doc(membership.id),group=await tx.get(groupRef);if(!group.exists)continue;
-  const g=group.data();towns+=(g.towns||[]).filter(t=>(t.slotOwnerUid||g.ownerUid)===uid).length;
-  const residents=await tx.get(groupRef.collection('residents').where('ownerUid','==',uid));
-  characters+=residents.docs.filter(d=>d.data().independentCharacter).length;
- }
+ await Promise.all(memberships.docs.map(async membership=>{const groupRef=db.collection('groups').doc(membership.id);const [group,residents]=await Promise.all([tx.get(groupRef),tx.get(groupRef.collection('residents').where('ownerUid','==',uid))]);if(!group.exists)return;
+  const g=group.data();towns+=(g.towns||[]).filter(t=>(t.slotOwnerUid||g.ownerUid)===uid).length;characters+=residents.docs.filter(d=>d.data().independentCharacter).length;
+ }));
  return {characters,towns,personalCharacters:personalIds.size,personalTowns:array(local.towns).length,characterLimit:5+Math.max(0,Number(entitlements.characterSlotPacks ?? (entitlements.purchases||[]).filter(x=>x==='character_slots_5').length)||0)*5+Math.max(0,Number(entitlements.characterSingleSlots)||0),townLimit:2+Math.max(0,Number(entitlements.townSlotPacks)||(entitlements.purchases||[]).filter(x=>x==='town_slot_1').length),reserve:()=>tx.set(lock,{value:(Number(revision.data()?.value)||0)+1})};
 }
 const check=(value,kind)=>{if(value[kind]+value[kind==='characters'?'personalCharacters':'personalTowns']>=value[kind==='characters'?'characterLimit':'townLimit'])fail(kind==='characters'?'character-slot-required':'groups/town-slot-required')};

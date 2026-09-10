@@ -1,3 +1,4 @@
+import {hairGrooming} from './hair-grooming.js?v=20260909dev305';
 import {CONCRETE_LIFE_TASKS} from './concrete-life.js?v=20260909dev305';
 export const LIFE_TASKS=[
   {
@@ -705,6 +706,7 @@ export function lifeCopy(task,character={}){
  }
  const length=character.bodyProfile?.appearance?.hairLength;
  if(['hair_wash','hair_dry'].includes(task.id)&&['가슴 길이','허리 길이','허리보다 김'].includes(length))detail=task.id==='hair_wash'?['긴 머리를 나누어 두피부터 씻고, 끝부분에 거품이 남지 않도록 헹구고 있어요.','They section their long hair, wash from the scalp and rinse the ends free of lather.','長い髪を分けて頭皮から洗い、毛先に泡が残らないようすすいでいます。']:['긴 머리의 물기를 먼저 눌러 닦고, 안쪽과 끝부분을 나누어 말리고 있어요.','They press the water from their long hair, then dry the inner layers and ends separately.','長い髪の水気を先に押さえて拭き、内側と毛先を分けて乾かしています。'];
+ if(task.id==='hair')detail=['ko','en','ja'].map(lang=>hairGrooming(character,lang));
  if(detail)for(const [i,lang] of ['ko','en','ja'].entries())copy[lang][1]=practical?copy[lang][1]+' '+detail[i]:detail[i];
  return copy;
 }

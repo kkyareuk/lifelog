@@ -44,6 +44,7 @@ function createService({db,clock=Date.now,engine}){
     const gid=id(input.groupId),proposalId=id(input.proposalId),status=input.accept?'accepted':'declined';
     return db.runTransaction(async tx=>{
       const {root}=await membership(tx,gid,uid),ref=root.collection('proposals').doc(proposalId),snap=await tx.get(ref),proposal=data(snap);
+      if(proposal?.kind==='create-resident')return require('./resident-approval').respond({db,clock},tx,root,uid,input,proposal);
       if(['admission','cohabitation'].includes(proposal?.kind))return residency.respond(tx,root,uid,input,proposal);
       if(proposal?.requestRoot)return requests.respond(tx,root,uid,input,proposal);
       if(!proposal||proposal.recipientUid!==uid)fail('recipient-required',403);await require('./user-safety').allowContact(db,tx,uid,proposal.senderUid);
