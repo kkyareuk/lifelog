@@ -1576,6 +1576,21 @@ function renderAfterCommand(){
  requestAnimationFrame(()=>setTimeout(()=>{commandRenderQueued=false;render()},0));
 }
 
+let renderCleanup=[];
+function cleanupRenderedScreen(){
+  const pending=renderCleanup;renderCleanup=[];
+  pending.forEach(dispose=>dispose());
+}
+function afterScreenRender(callback){
+  const frame=requestAnimationFrame(()=>{
+    renderCleanup=renderCleanup.filter(dispose=>dispose!==cancel);
+    callback();
+  });
+  const cancel=()=>cancelAnimationFrame(frame);
+  renderCleanup.push(cancel);
+}
+window.addEventListener("pagehide",cleanupRenderedScreen);
+
 function render({force=false,selectionOnly=false,sceneDate=null}={}){
   if(!force&&document.querySelector('.direct-command-dialog[open]')){deferredCommandRender=true;return}
   deferredCommandRender=false;
@@ -1660,6 +1675,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     if(["character","mailbox"].includes(state.activeTab))ensureDailyQuestionSchedule();
     prepareActiveHomeLife();
     relationshipRailCleanup.splice(0).forEach(cleanup=>cleanup());
+    cleanupRenderedScreen();
     renderApp(state,sceneDate||new Date(),{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen});
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
@@ -1688,19 +1704,19 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     bind();
     document.querySelectorAll('textarea,input:not([type]),input[type=text]').forEach(el=>{if(el.maxLength<0||el.maxLength>500)el.maxLength=500});
     applyTheme();
-    requestAnimationFrame(()=>syncMovementAudio(state));
-    requestAnimationFrame(bindRelationshipRoulette);
-    requestAnimationFrame(restoreMobileCharacterDialogs);
-    requestAnimationFrame(showSetupCoach);
-    requestAnimationFrame(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
-    requestAnimationFrame(maybeShowPageGuide);
+    afterScreenRender(()=>syncMovementAudio(state));
+    afterScreenRender(bindRelationshipRoulette);
+    afterScreenRender(restoreMobileCharacterDialogs);
+    afterScreenRender(showSetupCoach);
+    afterScreenRender(()=>document.querySelectorAll(".life-log ol").forEach(log=>{log.scrollTop=log.scrollHeight}));
+    afterScreenRender(maybeShowPageGuide);
     // The desktop observation map is already positioned by CSS. Smoothly
     // scrolling its large canvas after every render made the whole site feel
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
-    requestAnimationFrame(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
-    if(!selectionOnly)requestAnimationFrame(()=>scheduleLiveSceneRefresh());
+    afterScreenRender(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
+    if(!selectionOnly)afterScreenRender(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
       if(main){main.scrollLeft=0;main.scrollTop=0}
@@ -2569,6 +2585,15 @@ function refreshCharacterSelectionSummaries(root=document){
   });
 }
 
+// Persistent footer links must not capture a new bind() scope on every render.
+document.addEventListener("click",event=>{
+  const link=event.target.closest?.("[data-email-compose]");
+  if(!link)return;
+  event.preventDefault();
+  const opened=window.open(link.href,"_blank");
+  if(!opened)window.location.href="mailto:kkyaareuk@gmail.com";
+});
+
 function bind(){
 
   bindCharacterFolds();
@@ -3177,11 +3202,6 @@ function bind(){
   }));
   $$("[data-open-furniture-layout]").forEach(button=>button.addEventListener("click",event=>{
     event.preventDefault();event.stopPropagation();openFurniturePlacementDialog(button.dataset.openFurnitureLayout||state.activeHomeId);
-  }));
-  $$("[data-email-compose]").forEach(link=>link.addEventListener("click",event=>{
-    event.preventDefault();
-    const opened=window.open(link.href,"_blank");
-    if(!opened)window.location.href="mailto:kkyaareuk@gmail.com";
   }));
   $$("[data-add-room]").forEach(button=>button.addEventListener("click",()=>{
     const canvas=button.closest("[data-room-canvas]")||document.querySelector(`[data-room-canvas][data-home-id="${CSS.escape(state.activeHomeId||"")}"]`);
