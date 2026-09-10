@@ -1,0 +1,3 @@
+# iOS 1.0.269 (33)
+Only UI/review navigation changes: page guide uses modal top layer, bounded safe-area scrolling and 44px close target; Basic shop is first tab with existing three IAPs. Prices, grants, backend and game features unchanged. Fix stale user-safety.js baseline hash: bytes unchanged from HEAD (already committed safety source), no safety code modified.
+Local Chrome checks: iPhone/iPad sizes, KO/EN/JA, all three product buttons and no horizontal overflow. Actual StoreKit flow and on-device performance require Apple environment; existing recordings retained. CI compiles/signs/uploads; submission separately via App Store Connect.

@@ -1,9 +1,9 @@
 {
   "version": "1.0.269",
-  "build": 32,
+  "build": 33,
   "internalOnly": false,
   "uploadToTestFlight": true,
   "submitForReview": false,
-  "requestedAt": "2026-09-09",
-  "reason": "Include selected dictionary photo upload and broken shared photo repair"
+  "requestedAt": "2026-09-11",
+  "reason": "Only fix help panel stacking and prioritize the IAP shop tab for review"
 }
