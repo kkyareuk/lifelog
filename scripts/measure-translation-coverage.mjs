@@ -15,6 +15,7 @@ const context=vm.createContext({UI_TEXT:undefined,UI_TEXT_MORE:undefined,I18N:un
 const directEnd=source.indexOf("const t=");
 vm.runInContext(source.slice(source.indexOf("const I18N="),directEnd).replace("const I18N=","I18N="),context);
 for(const match of source.slice(directEnd).matchAll(/Object\.assign\(I18N\.(?:en|ja),\{[\s\S]*?\}\);/g))vm.runInContext(match[0],context);
+for(const match of source.matchAll(/for\(const \[ko,en,ja\] of \[[\s\S]*?\]\)\{I18N\.en\[ko\]=en;I18N\.ja\[ko\]=ja;\}/g))vm.runInContext(match[0],context);
 vm.runInContext(`${prelude}\nObject.assign(UI_TEXT.en,UI_TEXT_MORE.en);Object.assign(UI_TEXT.ja,UI_TEXT_MORE.ja);`,context);
 for(const match of source.slice(dynamicStart).matchAll(/Object\.assign\(UI_TEXT\.(?:en|ja),\{[\s\S]*?\}\);/g)){
   vm.runInContext(match[0],context);

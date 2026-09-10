@@ -1,0 +1,8 @@
+import {writeFile} from 'node:fs/promises';
+import {DISCOVERY_SCENES as events,DISCOVERY_AXES} from '../character-discovery-rules.js';
+import {FORM_FIELDS,RECORD_OPTIONS} from '../discovery-records.js';
+let text='# 서랍마을 328 · 돌발 상황·선택지·가중치\n\n';
+text+=`${events.length}개 상황. 행동 상황은 기존 5개 중 3개와 추가 3개 중 2개를 섞어 5개를 표시합니다. 현재값80% + 답변목표20%로 반영하며, 잠근 항목은 바뀌지 않습니다. 충동성 수치가 높을수록 충동적인 쪽입니다.\n\n질문받기 버튼으로 10분마다 하나를 받습니다. 대기는 만료되거나 누적되지 않습니다. 답한 질문은 다시 나오지 않으며 넘긴 질문만 다시 후보가 됩니다. 미접속 질문은 쌓이지 않습니다. 타투에 대한 호감/비호감은 이상형·싫어하는 타입이며 본인 타투 여부와 별개입니다.\n\n`;
+for(const q of events){text+=`## ${q.question.ko}\n\nID: ${q.id} · 동작: ${q.animation}\n\n`;if(q.requires)text+='해금 조건: '+JSON.stringify(q.requires)+'\n\n';if(q.form)text+='한 번에 저장하는 항목: '+FORM_FIELDS[q.form].join(', ')+'\n\n';if(q.options)text+='정보 선택: '+q.options.map(o=>o.text.ko).join(' / ')+'\n\n';text+='| 선택지 | 저장·가중치 |\n|---|---|\n';for(const c of q.choices){const values=Object.entries(c.effects).map(([f,v])=>`${f==='impulseControl'?'충동성':DISCOVERY_AXES[f]?.label||f} ${typeof v==='number'?'목표 '+Math.max(0,Math.min(100,50+v*20)):JSON.stringify(v)}`);if(c.tattoo)values.push('내 타투 있음: '+c.tattoo);if(c.preference)values.push(c.preference==='attractionTraits'?'이상형에 타투 추가':'싫어하는 타입에 타투 추가');if(q.field||q.form)values.push('입력한 정보 저장');text+=`| ${c.text.ko} | ${values.join(' / ')||'성향 변화 없음'} |\n`;}text+='\n';}
+text+='## 반복 입력 폼 선택값\n\n';for(const [key,options] of Object.entries(RECORD_OPTIONS))text+=`- ${key}: ${options.map(o=>o.text.ko).join(' / ')}\n`;
+await writeFile('docs/release328-discovery-weights.md',text);await writeFile('../앱 전달/서랍마을-328-돌발상황-선택지-가중치.md',text);

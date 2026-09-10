@@ -276,7 +276,7 @@ body #app .character-book-v8 :is(.personality-type-book,.personality-direct-choi
 @media(max-width:560px){.clothing-multi-grid,.clothing-layout-grid{grid-template-columns:1fr}.clothing-art-pair{grid-template-columns:minmax(88px,.7fr) minmax(145px,1.3fr)}}
 
 /* Disclosures retain the book's existing field controls and page navigation. */
-.book-form-grid[data-folded]{overflow-y:auto;overscroll-behavior:contain;align-content:start;scrollbar-width:thin}
+.book-form-grid[data-flat-fields]{overflow-y:auto;overscroll-behavior:contain;align-content:start;scrollbar-width:thin}
 .character-field-fold{pointer-events:auto;grid-column:1/-1;min-width:0;border:1px solid #c8baa5;border-radius:2cqw;background:#fffaf0;padding:2cqw}
 .character-field-fold>summary{cursor:pointer;font-size:3cqw;line-height:1.4;color:#493324;padding:1cqw;overflow-wrap:anywhere}
 .character-field-fold-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3cqw;padding:3cqw 0}

@@ -49,8 +49,8 @@ export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
  const patch={},known={...c.discovery?.known},scores={...c.discovery?.scores},affinities={...c.discovery?.affinities};
  for(const [field,effect] of Object.entries(q.choices[index].effects)){
   if(discoveryLocked(c,field))continue;const axis=DISCOVERY_AXES[field];
-  if(typeof effect==='number'){const score=clamp(discoveryScore(c,field)+effect);scores[field]=score;patch[field]=axis.values[Math.round(score/100*(axis.values.length-1))];if(axis.numeric)patch[axis.numeric]=Math.round(score/100*6);}
-  else{const current=axis.values.indexOf(c[field]),old=affinities[field]||axis.values.map((_,i)=>i===current?5:0);const values=axis.values.map((_,i)=>Math.max(0,Math.min(20,(old[i]||0)+(i===effect.toward?effect.weight:-.15))));affinities[field]=values;let winner=current<0?effect.toward:current;for(let i=0;i<values.length;i++)if(values[i]>values[winner])winner=i;patch[field]=axis.values[winner];delete scores[field];}
+  if(typeof effect==='number'){const target=clamp(50+effect*20);const score=Math.round((discoveryScore(c,field)*.8+target*.2)*100)/100;scores[field]=score;patch[field]=axis.values[Math.round(score/100*(axis.values.length-1))];if(axis.numeric)patch[axis.numeric]=Math.round(score/100*6);}
+  else{const current=axis.values.indexOf(c[field]),old=affinities[field]||axis.values.map((_,i)=>i===current?5:0);const values=axis.values.map((_,i)=>Math.max(0,Math.min(20,(old[i]||0)*.8+(i===effect.toward?5:0)*.2)));affinities[field]=values;let winner=current<0?effect.toward:current;for(let i=0;i<values.length;i++)if(values[i]>values[winner])winner=i;patch[field]=axis.values[winner];delete scores[field];}
  }
  if(choice.preference){if(discoveryLocked(c,'attractionTraits')||discoveryLocked(c,'dislikedAttractionTraits'))return null;const opposite=choice.preference==='attractionTraits'?'dislikedAttractionTraits':'attractionTraits';patch[choice.preference]=[...new Set([...(c[choice.preference]||[]),'문신이 있음'])];patch[opposite]=(c[opposite]||[]).filter(v=>v!=='문신이 있음');}
  if(q.form){const values=recordFormPatch(c,q.form,selectedValue,discoveryLocked);if(values===null)return null;Object.assign(patch,values);for(const key of [...Object.keys(selectedValue.values||{}),...Object.keys(selectedValue.records||{})]){const f='bodyProfile.'+key;if(!discoveryLocked(c,f))known[f]=true;}}
@@ -87,4 +87,16 @@ export function createDiscoverySession(random=Math.random){
   if(previous===undefined||previous===key||now<nextAt||now-Number(c.discovery?.lastPromptAt||0)<180000||random()>.35)return null;
   nextAt=now+180000+random()*300000;return choices[Math.floor(random()*choices.length)]||null;
  }};
+}
+
+export const DISCOVERY_INTERVAL=10*60*1000;
+export const discoveryWait=(last,now=Date.now())=>Math.max(0,Math.min(DISCOVERY_INTERVAL,Number(last||0)+DISCOVERY_INTERVAL-now));
+
+export function discoveryMetric(c,field){
+ const axis=DISCOVERY_AXES[field];
+ const categorical=DISCOVERY_EVENTS.some(q=>q.choices.some(o=>typeof o.effects[field]==='object'));
+ if(!categorical){const value=discoveryScore(c,field);return {value,label:axis.values[Math.round(value/100*(axis.values.length-1))],categorical:false};}
+ const current=axis.values.indexOf(c[field]),values=c.discovery?.affinities?.[field];
+ if(!values)return {value:null,label:c[field]||axis.values[0],categorical:true};
+ const total=values.reduce((n,v)=>n+v,0);return {value:total?Math.round((values[current]||0)/total*100):null,label:c[field]||axis.values[0],categorical:true};
 }

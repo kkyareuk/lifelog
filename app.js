@@ -1,7 +1,8 @@
+import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
 import {considerDiscovery,bindDiscoveryLocks} from './character-discovery.js?v=20260909dev305';
 import {manualDiscoveryPatch} from './character-discovery-rules.js?v=20260909dev305';
 import {bindFamilyNames} from './family-names.js?v=20260909dev305';
-import {bindCharacterFolds} from './character-folds.js?v=20260909dev305';
+
 import {showSlotCreator} from './character-slots.js?v=20260909dev305';
 import {mountRelationshipRoles} from './relationship-roles-editor.js?v=20260909dev305';
 import {isFamily} from './relationship-roles.js?v=20260909dev305';
@@ -1697,7 +1698,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
-    if(!sceneDate&&!selectionOnly)requestAnimationFrame(()=>{const shared=activeShared();if(shared&&["observe","home"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
+    if(!sceneDate&&!selectionOnly)requestAnimationFrame(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
     if(!selectionOnly)requestAnimationFrame(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
@@ -2568,8 +2569,10 @@ function refreshCharacterSelectionSummaries(root=document){
 }
 
 function bind(){
+
   bindCharacterFolds();
   bindDiscoveryLocks();
+  document.querySelector('[data-discovery-stat-character]')?.addEventListener('change',e=>{state.statisticsCharacterId=e.target.value;render();});
   bindFamilyNames(render);
   if(state.activeTab==="credits")openSupporterCredits();
   const groupApi=window.DrawerVillageGroups;

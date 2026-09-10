@@ -1,7 +1,7 @@
 import {FORM_FIELDS} from './discovery-records.js?v=20260909dev305';
 import {recordEditor} from './discovery-records-ui.js?v=20260909dev305';
 import {state,active,updateCharacter,save} from './state.js?v=20260909dev305';
-import {DISCOVERY_FIELDS,DISCOVERY_AXES,discoveryChoices,discoveryLocked,createDiscoverySession,discoveryAnswer} from './character-discovery-rules.js?v=20260909dev305';
+import {DISCOVERY_FIELDS,DISCOVERY_AXES,discoveryChoices,discoveryLocked,createDiscoverySession,discoveryAnswer,discoveryCandidates,discoveryWait,discoveryMetric} from './character-discovery-rules.js?v=20260909dev305';
 const session=createDiscoverySession();let pending=null,pendingCheck=null,worldKey='';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 const close=()=>{pending?.close();pending?.remove();pending=null;pendingCheck=null};
@@ -40,11 +40,37 @@ export function showDiscovery(c,scene,question,context={}){
  const hint=document.createElement('small');hint.textContent=(question.options||question.form)?t('고른 정보가 캐릭터 설정에 저장돼요. 답한 질문은 다시 나오지 않아요.','Your chosen information is saved to the character. Answered questions do not return.','選んだ情報をキャラクター設定に保存します。回答済みの質問は再び出ません。'):t('선택이 쌓이면 이 캐릭터의 모습도 조금씩 달라져요. 잠근 설정은 그대로 유지돼요.','Their choices gradually shape who they are. Locked settings stay unchanged.','選択を重ねると、少しずつその人らしさが育ちます。固定した設定は変わりません。');
  const skip=document.createElement('button');skip.type='button';skip.textContent=t('지금은 넘기기','Skip for now','今は見送る');skip.onclick=close;d.append(heading,art,name,prompt);if(editor)d.append(editor.root);d.append(choices,hint,status,skip);d.onclose=()=>{d.remove();if(pending===d){pending=null;pendingCheck=null}};document.body.append(d);d.showModal();
 }
+let requestTimer=null;
 export function considerDiscovery(c,scene,context={}){
- const key=(context.groupId||'personal')+':'+(uid()||'guest');if(key!==worldKey){worldKey=key;session.reset();close();}
  if(pendingCheck&&!pendingCheck())close();
- const info=window.ParallelCityAuth?.getInfo?.();if(!c||document.visibilityState==='hidden'||!['observe','home'].includes(state.activeTab)||info?.startupSyncing||info?.busy||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id))){session.reset();close();return;}
- const question=session.offer(c,scene,{blocked:!!document.querySelector('dialog[open]')});if(question)showDiscovery(c,scene,question,context);
+ document.querySelector('[data-discovery-tools]')?.remove();clearTimeout(requestTimer);
+ const info=window.ParallelCityAuth?.getInfo?.();
+ if(!c||document.visibilityState==='hidden'||!['observe','home','character'].includes(state.activeTab)||info?.startupSyncing||info?.busy||(context.groupId&&!sharedDiscoveryCharacter(context.groupId,c.id)))return;
+ const bar=document.createElement('div');bar.dataset.discoveryTools='';bar.className='discovery-tools';
+ const button=document.createElement('button');button.type='button';const icon=document.createElement('i');icon.className='discovery-question-icon';icon.setAttribute('aria-hidden','true');const label=document.createElement('span');button.append(icon,label);
+ const storageKey='drawer-discovery-request:'+String(uid()||'guest');
+ const last=()=>{try{return Number(localStorage.getItem(storageKey)||0)}catch{return 0}};
+ const paint=()=>{if(!bar.isConnected)return;const wait=discoveryWait(last());button.disabled=wait>0;label.textContent=wait>0?`${Math.floor(Math.ceil(wait/1000)/60)}:${String(Math.ceil(wait/1000)%60).padStart(2,'0')}`:t('질문받기','Get a question','質問を受ける');button.title=c.name+' · '+t('10분마다 질문 하나','One question every 10 minutes','10分ごとに質問を1つ');requestTimer=setTimeout(paint,1000);};
+ button.onclick=()=>{if(pending||document.querySelector('dialog[open]')||discoveryWait(last()))return;const current=context.groupId?sharedDiscoveryCharacter(context.groupId,c.id):state.characters[c.id];if(!current)return;
+ const candidates=discoveryCandidates(current,{title:'질문받기'});if(!candidates.length){label.textContent=t('받을 질문이 없어요','No questions available','質問がありません');return;}
+ try{localStorage.setItem(storageKey,String(Date.now()));}catch{label.textContent=t('저장 공간을 확인해 주세요','Please check storage','保存領域を確認してください');return;}
+ showDiscovery(current,scene||{},candidates[Math.floor(Math.random()*candidates.length)],context);clearTimeout(requestTimer);paint();};
+ const locks=document.createElement('button');locks.type='button';locks.textContent=t('설정 잠금','Setting locks','設定の固定');locks.onclick=()=>showDiscoveryGroups(c,context);
+ bar.append(button,locks);document.body.append(bar);paint();
+}
+function showDiscoveryGroups(c,context){
+ if(document.querySelector('dialog[open]'))return;
+ const groups=[
+  [t('성격·감정·행동','Personality, emotions & behavior','性格・感情・行動'),DISCOVERY_FIELDS.filter(f=>DISCOVERY_AXES[f])],
+  [t('기본 정보·취향','Identity & preferences','基本情報・好み'),DISCOVERY_FIELDS.filter(f=>!DISCOVERY_AXES[f]&&!f.startsWith('bodyProfile.'))],
+  [t('외형·신체','Appearance & body','外見・身体'),DISCOVERY_FIELDS.filter(f=>f.startsWith('bodyProfile.')&&!/health|hospital|medication/.test(f))],
+  [t('건강·병원·복용약','Health, visits & medication','健康・通院・服薬'),DISCOVERY_FIELDS.filter(f=>/health|hospital|medication/.test(f))]
+ ];
+ const d=document.createElement('dialog');d.className='character-discovery-dialog';const title=document.createElement('h2');title.textContent=t('분류별 설정 잠금','Lock settings by category','分類ごとの設定固定');d.append(title);
+ const help=document.createElement('p');help.textContent=t('잠그면 이 분류는 질문으로 바뀌지 않아요. 일부 항목만 잠겼다면 빼기 표시가 보여요.','Locked categories do not change through questions. A dash means some fields are locked.','固定した分類は質問で変わりません。一部だけ固定中の場合は横線が表示されます。');d.append(help);const changes=new Map();
+ for(const [name,fields] of groups){if(!fields.length)continue;const row=document.createElement('label');row.className='discovery-group-lock';const input=document.createElement('input');input.type='checkbox';const n=fields.filter(f=>discoveryLocked(c,f)).length;input.checked=n===fields.length;input.indeterminate=n>0&&n<fields.length;const copy=document.createTextNode(name+` (${n}/${fields.length})`);row.append(input,copy);input.onchange=()=>{fields.forEach(f=>changes.set(f,input.checked));copy.textContent=name+` (${input.checked?fields.length:0}/${fields.length})`;};d.append(row);}
+ const status=document.createElement('p'),saveButton=document.createElement('button');saveButton.textContent=t('저장','Save','保存');saveButton.onclick=async()=>{saveButton.disabled=true;const current=context.groupId?sharedDiscoveryCharacter(context.groupId,c.id):state.characters[c.id];if(!current){d.close();return;}const before=current.discovery,next={...before,locks:{...before?.locks,...Object.fromEntries(changes)}};try{if(context.groupId)await window.DrawerVillageGroups.saveResident({groupId:context.groupId,id:c.id,profile:{...current,discovery:next}});else{current.discovery=next;if(!save(true)){current.discovery=before;throw Error();}}d.close();bindDiscoveryLocks();}catch{status.textContent=t('저장하지 못했어요. 다시 시도해 주세요.','Could not save. Please try again.','保存できませんでした。再度お試しください。');saveButton.disabled=false;}};
+ const cancel=document.createElement('button');cancel.textContent=t('닫기','Close','閉じる');cancel.onclick=()=>d.close();d.append(status,saveButton,cancel);d.onclose=()=>d.remove();document.body.append(d);d.showModal();
 }
 export function bindDiscoveryLocks(){
  if(state.characterSettingsView!=='full')return;const c=active();if(!c||state.sharedContext&&c.ownerUid!==uid())return;
@@ -54,7 +80,7 @@ export function bindDiscoveryLocks(){
  b.innerHTML=(locked?'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3M12 14v3"/></svg>':'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 018 0M12 14v3"/></svg>')+'<span>'+label+'</span>';b.title=locked?t('이 값으로 고정 · 눌러서 해제','Fixed at this value · click to unlock','この値で固定・押すと解除'):t('선택에 따라 변화 · 눌러서 고정','Changes through choices · click to lock','選択で変化・押すと固定');b.setAttribute('aria-label',label+' · '+b.title);b.setAttribute('aria-pressed',String(locked));});
  for(const field of DISCOVERY_FIELDS){const numeric=DISCOVERY_AXES[field]?.numeric;for(const control of document.querySelectorAll(`[data-discovery-container="${field}"],[data-field="${field}"]${field.startsWith('bodyProfile.')?`,[data-body-field="${field.slice(12)}"],[data-body-measurement="${field.slice(12)}"]`:''}${numeric?`,[data-field="${numeric}"]`:''}`)){
   const parent=control.matches('[data-discovery-container]')?control:control.parentElement;if(parent.querySelector('[data-discovery-lock]'))continue;
-  const title=parent.querySelector(':scope>b,:scope>legend');if(!title)continue;title.classList.add('discovery-title');const b=document.createElement('button');b.type='button';b.className='discovery-lock';b.dataset.discoveryLock=field;title.append(b);
+  const title=parent.querySelector(':scope>b,:scope>legend');if(!title)continue;title.classList.add('discovery-title');if(DISCOVERY_AXES[field]){const metric=discoveryMetric(c,field),badge=document.createElement('small');badge.className='discovery-score';badge.textContent=metric.value===null?t('직접 설정','Manual','直接設定'):Math.round(metric.value)+(metric.categorical?'%':'/100');badge.title=metric.categorical?t('선택한 반응 유형의 비중','Share of the selected response type','選択された反応の割合'):t('현재 성향 점수','Current trait score','現在の傾向スコア');parent.append(badge);}const b=document.createElement('button');b.type='button';b.className='discovery-lock';b.dataset.discoveryLock=field;title.append(b);
   b.onclick=async e=>{e.preventDefault();e.stopPropagation();parent.querySelector('[data-lock-error]')?.remove();const before=c.discovery;c.discovery={...before,locks:{...before?.locks,...Object.fromEntries(groupFields(field).map(f=>[f,!groupLocked(field)]))}};b.disabled=true;
    try{if(state.sharedContext){const gid=state.sharedContext.groupId;if(!sharedDiscoveryCharacter(gid,c.id))throw Error();await window.DrawerVillageGroups.saveResident({groupId:gid,id:c.id,profile:{...c}});}else if(!save(true))throw Error();}
    catch{c.discovery=before;let error=parent.querySelector('[data-lock-error]');if(!error){error=document.createElement('small');error.dataset.lockError='';error.setAttribute('role','status');parent.append(error);}error.textContent=t('저장하지 못했어요. 다시 눌러 주세요.','Could not save. Please try again.','保存できませんでした。もう一度お試しください。');}finally{b.disabled=false;paint();}
