@@ -2,7 +2,7 @@ const crypto=require('node:crypto');
 const fail=(code,status=400)=>{throw Object.assign(new Error(code),{code,status})};
 const clean=value=>Array.isArray(value)?value.map(clean):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().filter(k=>!['__proto__','constructor','prototype'].includes(k)).map(k=>[k,clean(value[k])])):value;
 const hash=value=>crypto.createHash('sha256').update(JSON.stringify(clean(value||null))).digest('hex');
-const fields=new Set('a b teacherId sourceRole targetRole name tags type temporalStatus stage faultParty faultReason legalStatus legalRegistration marriageRegistration socialAcceptance interactions interactionsAll cohabit stayTogether intimacy conflict updatedAt displayOrder animationPlacement directional groupId groupMembers parentId childId parentRole kinship kinshipByPair siblingOrder siblingKinshipByPair memberIds'.split(' '));
+const fields=new Set('details a b teacherId sourceRole targetRole name tags type temporalStatus stage faultParty faultReason legalStatus legalRegistration marriageRegistration socialAcceptance interactions interactionsAll cohabit stayTogether intimacy conflict updatedAt displayOrder animationPlacement directional groupId groupMembers parentId childId parentRole kinship kinshipByPair siblingOrder siblingKinshipByPair memberIds'.split(' '));
 module.exports=({db,membership,notify,clock,id})=>{
  const collection=kind=>kind==='schedule'?'schedules':kind==='characterGroup'?'characterGroups':'relationships';
  const members=(patch,kind)=>[...new Set((['characterGroup','schedule'].includes(kind)?patch.memberIds:patch.groupMembers?.length?patch.groupMembers:[patch.a,patch.b])||[])];
@@ -21,6 +21,7 @@ module.exports=({db,membership,notify,clock,id})=>{
    for(const key of ['memberIds','groupMembers','tags','interactions'])if(key in patch&&(!Array.isArray(patch[key])||patch[key].length>200||patch[key].some(v=>typeof v!=='string'||v.length>500)))fail('invalid-relationship');
    for(const key of ['a','b','teacherId','type','name','sourceRole','targetRole','parentRole','temporalStatus','stage','faultReason'])if(key in patch&&(typeof patch[key]!=='string'||patch[key].length>2000))fail('invalid-relationship');
    for(const key of ['cohabit','stayTogether','interactionsAll','directional'])if(key in patch&&typeof patch[key]!=='boolean')fail('invalid-relationship');
+   if(kind==='relationship'&&'details' in patch){const {normalizeRelationshipDetails}=await import('./runtime/official-relationship-details.js');if(!patch.details||Array.isArray(patch.details)||typeof patch.details!=='object'||hash(normalizeRelationshipDetails(patch.type,patch.details))!==hash(patch.details))fail('invalid-relationship-details');}
    const ids=members(patch,kind);if(ids.length<(kind!=='relationship'?1:2)||ids.length>200||ids.some(x=>typeof x!=='string'))fail('invalid-participants');ids.forEach(id);
    if(kind==='relationship'&&(!patch.type||!ids.includes(patch.a)||!ids.includes(patch.b)||patch.a===patch.b))fail('invalid-relationship');
    if(kind==='relationship'&&patch.teacherId&&!ids.includes(patch.teacherId))fail('invalid-teacher');

@@ -1,3 +1,4 @@
+import {relationshipInfo} from "./relationship-help.js?v=20260909dev305";
 import {sleepSettingsMarkup} from './sleep-settings.js?v=20260909dev305';
 import {characterSlotProduct,saleAllows} from "./slot-sale.js?v=20260909dev305";
 import {characterGroupSelector} from './shared-characters.js?v=20260909dev305';
@@ -190,7 +191,7 @@ const UI_TEXT_MORE={
     "캐릭터 삭제 전 경고를 확인한 뒤 이 캐릭터와 연결된 기록을 정리해요.":"Review the warning before removing this character and their linked records.",
     "관계인 캐릭터별 시선":"Each character's point of view","두 이름을 눌러 누구의 마음이 누구에게 향하는지 고르세요.":"Choose two names to decide whose feelings are directed at whom.","함께 다니기":"Stay together","둘 다 별도 일정이 없을 때 같은 장소에서 함께 행동하고, 생활 로그에도 함께 표시해요.":"When neither has a separate schedule, they stay in the same place and appear together in the life log.",
     "선택한 방향의 마음":"Selected point of view","이 시선 편집하기":"Edit this point of view","+ 공식 관계 설정":"+ Add official relationship","공식 관계 목록":"Official relationships","관계도 보기":"View relationship map",
-    "전체적인 감정":"Overall feelings","중요도":"Importance","감정 자각":"Awareness of feelings","상대의 마음을 아는 정도":"Awareness of the other's feelings",
+    "전체적인 감정":"Overall feelings","중요도":"Importance","관계 비중":"Narrative weight","감정 자각":"Awareness of feelings","상대의 마음을 아는 정도":"Awareness of the other's feelings",
     "신뢰":"Trust","정서적 친밀감":"Emotional closeness","함께 있을 때의 편안함과 대화 호흡":"Comfort and conversational chemistry","성가심":"Annoyance",
     "챙기고 신경 쓰는 정도":"Attention and care","질투·독점욕":"Jealousy and possessiveness","갈등 강도":"Conflict intensity","관계에 대한 기대":"Expectations for the relationship",
     "허용하고 표현하는 스킨십 범위":"Comfortable physical affection","공격·위해 충동":"Aggressive impulses","충동을 실제로 표현하는 단계":"How impulses are acted on",
@@ -222,7 +223,7 @@ const UI_TEXT_MORE={
     "대표 테마색":"メインテーマカラー","그라데이션 보조색":"グラデーション補助色","보조색으로 그라데이션 사용":"補助色でグラデーションを使用",
     "관계인 캐릭터별 시선":"キャラクターごとの視点","두 이름을 눌러 누구의 마음이 누구에게 향하는지 고르세요.":"2人の名前を押して、誰の気持ちが誰に向いているか選んでください。","함께 다니기":"一緒に行動する","둘 다 별도 일정이 없을 때 같은 장소에서 함께 행동하고, 생활 로그에도 함께 표시해요.":"2人とも別の予定がない時は同じ場所で一緒に行動し、生活ログにも一緒に表示します。",
     "선택한 방향의 마음":"選択した方向の気持ち","이 시선 편집하기":"この視点を編集","+ 공식 관계 설정":"＋公式関係を設定","공식 관계 목록":"公式関係一覧","관계도 보기":"関係図を見る",
-    "전체적인 감정":"全体的な感情","중요도":"重要度","감정 자각":"感情の自覚","상대의 마음을 아는 정도":"相手の気持ちの理解","신뢰":"信頼","정서적 친밀감":"心の親密さ",
+    "전체적인 감정":"全体的な感情","중요도":"重要度","관계 비중":"物語での比重","감정 자각":"感情の自覚","상대의 마음을 아는 정도":"相手の気持ちの理解","신뢰":"信頼","정서적 친밀감":"心の親密さ",
     "함께 있을 때의 편안함과 대화 호흡":"一緒にいる時の安心感と会話の相性","성가심":"煩わしさ","챙기고 신경 쓰는 정도":"気にかける度合い","질투·독점욕":"嫉妬・独占欲","갈등 강도":"対立の強さ","관계에 대한 기대":"関係への期待",
     "허용하고 표현하는 스킨십 범위":"許容・表現するスキンシップ","공격·위해 충동":"攻撃・加害衝動","충동을 실제로 표현하는 단계":"衝動を実際に表す段階","이 시선 초기화":"この視点をリセット","편집 완료":"編集完了","공식 관계 없음 · 이방인":"公式関係なし・他人",
     "밝은 화면과 어두운 화면 중 읽기 편한 쪽을 고르세요.":"ライトとダークから読みやすい表示を選んでください。","화이트·다크 모드는 밝기를, 색상 테마는 버튼과 강조색을 정해요.":"ライト・ダークは明るさを、カラーテーマはボタンと強調色を設定します。",
@@ -3439,7 +3440,7 @@ function overallViewPhrase(value){
   return phrases[value]||String(value||"어떤 사람인지 판단하지 않음");
 }
 const characterViewOptions=key=>{
-  if(key==="importance")return["선택하지 않음",...state.order.map((_,index)=>`${index+1}순위${index===0?" · 가장 중요한 사람":""}`)];
+  if(key==="importance")return ["비중 없음","낮음","보통","높음","매우 높음"];
   return (CHARACTER_VIEW_OPTIONS[key]||[]).map(value=>value==="정하지 않음"?"선택하지 않음":value);
 };
 function relationshipMotionFor(sourceId,targetId,official=[]){
@@ -3466,8 +3467,8 @@ const relationshipScreenCopy=()=>({
 const characterViewEditor=()=>{
   const copy=relationshipScreenCopy();
   const translatedFieldLabels=({
-    en:{"전체적인 감정":"Overall feeling","중요도":"Importance","신뢰":"Trust","정서적 친밀감":"Emotional closeness","함께 있을 때의 편안함":"Comfort together","감정 자각":"Feeling awareness","상대의 마음을 아는 정도":"Understands their feelings","두려움 정도":"Fear","성가심":"Annoyance","챙기고 신경 쓰는 정도":"Attention and care","질투·독점욕":"Jealousy","갈등 강도":"Conflict","관계에 대한 기대":"Relationship expectations","스킨십 범위":"Touch boundaries","공격·위해 충동":"Aggressive impulse","충동을 실제로 표현하는 단계":"Acts on impulses"},
-    ja:{"전체적인 감정":"全体的な感情","중요도":"重要度","신뢰":"信頼","정서적 친밀감":"心の近さ","함께 있을 때의 편안함":"一緒にいる時の安心感","감정 자각":"感情の自覚","상대의 마음을 아는 정도":"相手の気持ちの理解","두려움 정도":"恐れ","성가심":"煩わしさ","챙기고 신경 쓰는 정도":"気にかける度合い","질투·독점욕":"嫉妬・独占欲","갈등 강도":"対立の強さ","관계에 대한 기대":"関係への期待","스킨십 범위":"触れ合いの範囲","공격·위해 충동":"攻撃衝動","충동을 실제로 표현하는 단계":"衝動を行動に移す段階"}
+    en:{"전체적인 감정":"Overall feeling","중요도":"Importance","관계 비중":"Narrative weight","신뢰":"Trust","정서적 친밀감":"Emotional closeness","함께 있을 때의 편안함":"Comfort together","감정 자각":"Feeling awareness","상대의 마음을 아는 정도":"Understands their feelings","두려움 정도":"Fear","성가심":"Annoyance","챙기고 신경 쓰는 정도":"Attention and care","질투·독점욕":"Jealousy","갈등 강도":"Conflict","관계에 대한 기대":"Relationship expectations","스킨십 범위":"Touch boundaries","공격·위해 충동":"Aggressive impulse","충동을 실제로 표현하는 단계":"Acts on impulses"},
+    ja:{"전체적인 감정":"全体的な感情","중요도":"重要度","관계 비중":"物語での比重","신뢰":"信頼","정서적 친밀감":"心の近さ","함께 있을 때의 편안함":"一緒にいる時の安心感","감정 자각":"感情の自覚","상대의 마음을 아는 정도":"相手の気持ちの理解","두려움 정도":"恐れ","성가심":"煩わしさ","챙기고 신경 쓰는 정도":"気にかける度合い","질투·독점욕":"嫉妬・独占欲","갈등 강도":"対立の強さ","관계에 대한 기대":"関係への期待","스킨십 범위":"触れ合いの範囲","공격·위해 충동":"攻撃衝動","충동을 실제로 표현하는 단계":"衝動を行動に移す段階"}
   }[state.uiLanguage]||null)||{};
   const sourceId=state.order.includes(state.characterViewSource)?state.characterViewSource:state.order[0];
   const targetIds=state.order.filter(id=>id!==sourceId);
@@ -3485,7 +3486,7 @@ const characterViewEditor=()=>{
     const minorPair=[sourceId,targetId].some(id=>["영아","유아","어린이","청소년"].includes(state.characters[id]?.ageGroup));
     if(key==="touchIntensity"&&minorPair)options=options.filter(value=>value!=="성인 간 친밀한 접촉까지");
     const legacy=current!=="선택하지 않음"&&!options.includes(current)?[current]:[];
-    return `<label class="relationship-view-field view-${key}" title="${esc(help)}"><b>${esc(translatedFieldLabels[label]||label)}</b><select data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${[...legacy,...options].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select></label>`;
+    return `<div class="relationship-view-field view-${key}"><div class="relationship-field-heading"><label for="view-${sourceId}-${targetId}-${key}"><b>${esc(translatedFieldLabels[label]||label)}</b></label>${relationshipInfo(key,state.uiLanguage)}</div><select id="view-${sourceId}-${targetId}-${key}" data-character-view data-source="${sourceId}" data-target="${targetId}" data-view-field="${key}">${[...legacy,...options].map(value=>`<option ${value===current?"selected":""}>${value}</option>`).join("")}</select></div>`;
   };
   if(!source||!target){
     const emptyCopy=({ko:{title:"함께할 이야기를 기다리고 있어요",hint:"캐릭터가 두 명 이상이면 서로의 관계와 마음을 정할 수 있어요.",create:"캐릭터 만들기"},en:{title:"A story to share",hint:"Add a second character to set their relationship and feelings toward each other.",create:"Create character"},ja:{title:"一緒に紡ぐ物語を待っています",hint:"キャラクターが2人以上になると、関係や相手への気持ちを設定できます。",create:"キャラクターを作る"}})[state.uiLanguage]||{title:"함께할 이야기를 기다리고 있어요",hint:"캐릭터가 두 명 이상이면 서로의 관계와 마음을 정할 수 있어요.",create:"캐릭터 만들기"};
@@ -3499,7 +3500,7 @@ const characterViewEditor=()=>{
   // second selection on the right; scene-placement preferences do not apply.
   const heroLeft=source,heroRight=target;
   const relationshipMotion=relationshipMotionFor(sourceId,targetId,official);
-  const viewFields=`${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"importance","중요도","이 캐릭터의 삶에서 상대가 얼마나 중요한지 정해요.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요.")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함","둘이 같은 공간에 있을 때의 편안함과 대화 호흡을 정해요.")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 감정을 얼마나 파악하고 있는지 정해요.")}${field(sourceId,targetId,"fear","두려움 정도","상대를 얼마나 우습게 보거나 두려워하는지 강도를 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살필지 정해요.")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개로 정해요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개인 실제 충돌 강도예요.")}${field(sourceId,targetId,"expectation","관계에 대한 기대","이 관계가 얼마나 이어질 거라 생각하는지 정해요.")}${field(sourceId,targetId,"touchIntensity","스킨십 범위","두 캐릭터의 범위가 다르면 더 낮은 쪽까지만 반영돼요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","충동만으로 실제 공격하지 않아요.")}${field(sourceId,targetId,"aggressionAction","충동을 실제로 표현하는 단계","충동 단계보다 센 행동은 절대 나오지 않아요.")}`;
+  const viewFields=`${field(sourceId,targetId,"overall","전체적인 감정","공식 관계와 별개인 이 캐릭터만의 속마음")}${field(sourceId,targetId,"importance","관계 비중","이 관계를 이야기에서 얼마나 비중 있게 다룰지 정해요. 좋아하는 정도가 아니며, 실제 감정은 관계 단계와 각자의 시선을 따라요.")}${field(sourceId,targetId,"trust","신뢰","좋아하더라도 믿지 않을 수 있어요.")}${field(sourceId,targetId,"closeness","정서적 친밀감","상대를 자기 삶의 얼마나 안쪽 사람으로 느끼는지예요.")}${field(sourceId,targetId,"comfort","함께 있을 때의 편안함","둘이 같은 공간에 있을 때의 편안함과 대화 호흡을 정해요.")}${field(sourceId,targetId,"awareness","감정 자각","자기 마음을 우정·경쟁심·불편함으로 잘못 해석할 수도 있어요.")}${field(sourceId,targetId,"mutualAwareness","상대의 마음을 아는 정도","상대의 감정을 얼마나 파악하고 있는지 정해요.")}${field(sourceId,targetId,"fear","두려움 정도","상대를 얼마나 우습게 보거나 두려워하는지 강도를 정해요.")}${field(sourceId,targetId,"annoyance","성가심","좋아하고 사랑하면서도 많이 귀찮아할 수 있어요.")}${field(sourceId,targetId,"attention","챙기고 신경 쓰는 정도","상태와 일정을 얼마나 살필지 정해요.")}${field(sourceId,targetId,"jealousy","질투·독점욕","사랑과 별개로 정해요.")}${field(sourceId,targetId,"conflictIntensity","갈등 강도","사랑이나 가족애와 별개인 실제 충돌 강도예요.")}${field(sourceId,targetId,"expectation","관계에 대한 기대","이 관계가 얼마나 이어질 거라 생각하는지 정해요.")}${field(sourceId,targetId,"touchIntensity","스킨십 범위","두 캐릭터의 범위가 다르면 더 낮은 쪽까지만 반영돼요.")}${field(sourceId,targetId,"aggression","공격·위해 충동","충동만으로 실제 공격하지 않아요.")}${field(sourceId,targetId,"aggressionAction","충동을 실제로 표현하는 단계","충동 단계보다 센 행동은 절대 나오지 않아요.")}`;
   const characterSelector=(role,ids,selectedId,character)=>`<div class="relationship-character-selector selector-${role}">
     <button type="button" class="relationship-character-selected" data-toggle-relationship-roster="${role}" aria-label="${esc(character.name)} · ${copy.selected}"><span>${avatar(character)}</span><b><i aria-hidden="true"></i><em>${copy.selected}</em></b></button>
     <div class="relationship-character-roster" data-relationship-roster="${role}" hidden><div>${ids.map(id=>{const person=state.characters[id];return `<button type="button" class="relationship-character-roster-entry ${id===selectedId?"on":""}" data-relationship-character="${role}" data-character-id="${id}" aria-label="${esc(person.name)}">${avatar(person)}<small>${esc(person.name)}</small></button>`}).join("")}</div><button type="button" class="relationship-character-roster-close" data-toggle-relationship-roster="${role}" aria-label="${copy.close}">×</button></div>

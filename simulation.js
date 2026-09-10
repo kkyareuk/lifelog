@@ -1,3 +1,9 @@
+import {automaticConversation} from "./automatic-activities.js?v=20260909dev305";
+import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
+import {leisureNarrative} from "./leisure-narrative.js?v=20260909dev305";
+import {narrativeRate} from "./official-relationship-details.js?v=20260909dev305";
+import {relationshipMemory} from "./relationship-memories.js?v=20260909dev305";
+import {isAdultAge} from "./age-groups.js?v=20260909dev305";
 import {isHomeSleepScene} from './home-simulation.js?v=20260909dev305';
 import {CONCRETE_LIFE_TASKS} from './concrete-life.js?v=20260909dev305';
 import {relationshipReaction,relationshipBetween,relationshipMembers,viewSignals,automaticConflictAllowed} from './relationship-context.js?v=20260909dev305';
@@ -1049,20 +1055,7 @@ function morningScripts(c,date){
     ["경기와 플레이를 분석하는 중","인상적인 장면을 다시 보며 전략과 선택의 이유를 혼자 정리하고 있어요.","living"],
     ["퍼즐과 전략을 연구하는 중","여러 가능성을 시험하고 더 나은 해결 순서를 찾는 데 집중하고 있어요.","study"]
   );
-  if(storyGenres.length){
-    const genre=storyGenres[hash(seed+":genre")%storyGenres.length];
-    choices.push(
-      [`${genre} 작품을 골라 보는 중`,`좋아하는 ${genre} 장르의 책과 영상 후보를 비교하며 오늘 이어 볼 작품을 고르고 있어요.`,"study"],
-      [`${genre} 이야기를 감상하는 중`,`취향에 맞는 ${genre} 작품을 펼쳐 인상적인 장면과 대사를 천천히 따라가고 있어요.`,"living"]
-    );
-  }
-  if(videoTypes.length){
-    const type=videoTypes[hash(seed+":video-type")%videoTypes.length];
-    choices.push(
-      [`${type} 새 영상을 찾아보는 중`,`구독 목록과 추천 목록에서 좋아하는 ${type} 영상을 골라 재생 목록에 담고 있어요.`,"living"],
-      [`${type} 영상을 이어 보는 중`,`관심 있던 ${type} 영상의 다음 편을 켜고 인상적인 부분을 놓치지 않으려고 집중하고 있어요.`,"living"]
-    );
-  }
+  for(const [values,room]of [[storyGenres,"study"],[videoTypes,"living"]])if(values.length){const topic=values[hash(seed+room)%values.length];for(let variant=0;variant<2;variant++){const narrative=leisureNarrative(c,topic,`${seed}:${variant}`,state.uiLanguage);choices.push([narrative.title,narrative.text,room])}}
   if(likes.some(x=>/뜨개|재봉|자수|가죽|프라모델|피규어|우표|레코드/.test(x)))choices.push(
     ["수집품과 재료를 정리하는 중","작은 부품과 재료를 종류별로 나누고 다음 작업에 쓸 것을 손이 닿기 좋은 곳에 놓고 있어요.","study"],
     ["손으로 만드는 작업에 집중하는 중","도안과 완성된 부분을 번갈아 확인하며 한 땀씩 세부를 다듬고 있어요.","study"]
@@ -1090,7 +1083,7 @@ function morningScripts(c,date){
     while(used.has(choiceIndex))choiceIndex=(choiceIndex+1)%choices.length;
     used.add(choiceIndex);picked.push(choices[choiceIndex]);
   }
-  return picked.map((script,index)=>[script[0],personalityFlavor(c,script[1],`morning:${index}`,date),script[2]]);
+  return picked.map((script,index)=>[script[0],script[0]===leisureNarrative(c,'',seed,state.uiLanguage).title?script[1]:personalityFlavor(c,script[1],`morning:${index}`,date),script[2]]);
 }
 
 function sharedHomeEntry(c,other,time,date){
@@ -2537,11 +2530,9 @@ function profileSettingScenePool(c,date){
     "입맛에 맞게 간을 조절하는 중",`${favoriteFood?`${favoriteFood}을(를) 준비하며 `:""}한 입씩 맛을 보고 좋아하는 매운맛과 단맛이 될 때까지 양념을 조금씩 더했어요.`,
     "Adjusting the flavor to their taste",`${favoriteFood?`While preparing ${favoriteFood}, t`:"T"}hey tasted each addition and adjusted the seasoning until the heat and sweetness felt right.`,
     "好みに合わせて味を調整するところ",`${favoriteFood?`${favoriteFood}を用意しながら、`:""}少しずつ味見し、好みの辛さと甘さになるまで調味料を加えました。`,"kitchen",["foodPreferences","spiceTolerance","sweetPreference"]);
+  for(const [fieldName,topic] of [["favoriteStoryGenres",settingList(c.favoriteStoryGenres)[0]],["favoriteVideoGenres",settingList(c.favoriteVideoGenres)[0]],["hobbies",settingList(c.hobbies)[0]]])if(topic){const copies=["ko","en","ja"].map(language=>leisureNarrative(c,topic,dayKey(date),language));add("leisure-"+fieldName,copies[0].title,copies[0].text,copies[1].title,copies[1].text,copies[2].title,copies[2].text,"study",[fieldName,"personalityTypes"])}
   const music=settingList(c.musicGenres)[0];
-  if(music)add("music",
-    `${music}을(를) 골라 듣는 중`,`평소 자주 듣는 ${music} 재생 목록을 열고, 지금 기분에 맞는 곡부터 차례로 듣고 있어요.`,
-    `Listening to ${music}`,`They opened a playlist from a favorite genre, ${music}, and chose a track that matched the moment.`,
-    `${music}を選んで聴いているところ`,`好きなジャンルに設定した${music}のプレイリストを開き、今の気分に合う曲を選びました。`,`bedroom`,["musicGenres"]);
+  if(music){const copies=["ko","en","ja"].map(language=>leisureNarrative(c,"음악 "+music,dayKey(date),language));add("music",copies[0].title,copies[0].text,copies[1].title,copies[1].text,copies[2].title,copies[2].text,"bedroom",["musicGenres","personalityTypes"])}
   if(/잘 입음|감각적으로|개성/.test(c.fashionSense||""))add("fashion",
     "옷과 소품의 균형을 맞추는 중","색과 소재를 번갈아 대 보고, 자기 취향이 드러나면서도 오늘 일정에 어울리는 조합을 골랐어요.",
     "Balancing clothes and accessories","They compared colors and textures, choosing an outfit that showed their taste and suited the day's plans.",
@@ -2550,6 +2541,7 @@ function profileSettingScenePool(c,date){
     "외출 전 운전 준비를 확인하는 중","익숙하게 다닐 수 있는 길과 주차할 곳을 확인하고, 무리하지 않을 이동 계획을 세웠어요.",
     "Checking the drive before leaving","Based on their driving experience, they checked the route and parking and planned a manageable trip.",
     "外出前に運転の準備を確認するところ","運転経験に合わせて経路と駐車場所を確認し、無理のない移動計画を立てました。","entry",["driverLicense"]);
+  for(const r of relationList().filter(r=>relationshipMembers(r).includes(c.id))){const other=state.characters[relationshipMembers(r).find(id=>id!==c.id)];if(!other)continue;const memory=relationshipMemory(c,other,r,characterViewFor(c.id,other.id),{seed:dayKey(date),language:state.uiLanguage});if(memory&&hash(`${c.id}:${r.id}:${dayKey(date)}:memory-frequency`)%100<narrativeRate(characterViewFor(c.id,other.id).importance)){const copies=['ko','en','ja'].map(language=>relationshipMemory(c,other,r,characterViewFor(c.id,other.id),{seed:dayKey(date),language}));add('memory-official',copies[0].title,copies[0].text,copies[1].title,copies[1].text,copies[2].title,copies[2].text,'living',memory.fields)}}
   const relationship=preferredRelation(c,{sameHome:true,date});
   if(relationship){
     const name=relationship.other.name;
@@ -4364,6 +4356,12 @@ export function relationCombinationScene(place,first,second,relation,date){
 function concreteInteraction(place,first,second,relation,date=new Date()){
   relation=relationshipBetween(state,first.id,second.id)||relation;
   const a=characterViewFor(first.id,second.id),b=characterViewFor(second.id,first.id);
+  const topicSeed=`${first.id}:${second.id}:${dayKey(date)}:${Math.floor(nowMin(date)/45)}`;
+  if(hash(topicSeed+':topic')%3===0){
+    const choice=automaticConversation(state,first,second,'talk',topicSeed),subject=state.characters[choice.subjectId],views={relationships:state.relationships,characterViews:{[first.id]:{[second.id]:a,...(subject?{[subject.id]:characterViewFor(first.id,subject.id)}:{})},[second.id]:{[first.id]:b,...(subject?{[subject.id]:characterViewFor(second.id,subject.id)}:{})}}};
+    const options={allowConflict:automaticConflictAllowed(first,second,a,b,date,state)},story=subject?personConversation(views,first,second,subject,state.uiLanguage,options):topicConversation(views,first,second,choice.topic,state.uiLanguage,options);
+    if(story){const title=state.uiLanguage==='en'?'Exchanging their views':state.uiLanguage==='ja'?'互いの考えを話すところ':'서로의 생각을 나누는 중';return {title,firstTitle:title,secondTitle:title,first:story.speakerText,second:story.listenerText,relationshipContext:true,relationshipCues:{[first.id]:'topic:'+story.mode,[second.id]:'topic:'+story.mode},automaticConflict:story.mode==='argument'}}
+  }
   const hasContext=relation||Object.keys(explicitCharacterViewFor(first.id,second.id)).length||Object.keys(explicitCharacterViewFor(second.id,first.id)).length;
   const safeView=view=>{const v=viewSignals(view);return !v.afraid&&!v.distrust&&!v.hostile&&!v.guarded&&!v.uncomfortable&&!v.annoyed&&!v.unaware&&v.conflict<=0&&v.urge<=0};
   // Keep the established affectionate scenes when both perspectives support
@@ -4864,7 +4862,7 @@ function privateLifeEvent(c,date){
  }
  const block=Math.floor(now/7200000),eager=/먼저 다가|신체 접촉을 좋아|적극/.test([c.touchReaction,c.affectionStyle].join(' ')),roll=[...c.id+String(block)].reduce((n,x)=>(n*31+x.charCodeAt(0))>>>0,0);
  if(roll%(eager?6:24)!==0||c.lastPrivateBlock===block||Math.floor(Number(currentDirective?.startedAt)/7200000)===block)return;
- const target=others.find(other=>c.id<other.id&&contactAllowed(c,other,'affection')&&['성인','노인'].includes(c.ageGroup)&&['성인','노인'].includes(other.ageGroup)&&!(state.characterDirectives[other.id]?.endsAt>now)&&!activeScheduledRoutine(other,date)&&Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(other.id))&&(()=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!/자는|수면|sleep|寝/.test(e.title||'')})());
+ const target=others.find(other=>c.id<other.id&&contactAllowed(c,other,'affection')&&isAdultAge(c.ageGroup)&&isAdultAge(other.ageGroup)&&!(state.characterDirectives[other.id]?.endsAt>now)&&!activeScheduledRoutine(other,date)&&Object.values(state.relationships||{}).some(r=>r.temporalStatus!=='past'&&['연인','부부'].includes(r.type)&&[r.a,r.b].includes(c.id)&&[r.a,r.b].includes(other.id))&&(()=>{const e=baseEventFor(other,date);return e.home&&(e.visitHomeId||other.homeId)===homeId&&e.room===base.room&&!/자는|수면|sleep|寝/.test(e.title||'')})());
  if(target){c.lastPrivateBlock=block;target.lastPrivateBlock=block;directCharacterActivity(c.id,'affection',{targetId:target.id,now,scenes:{[c.id]:base,[target.id]:baseEventFor(target,date)}});}
 }
 export function eventFor(c,date=new Date()){

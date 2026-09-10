@@ -1,3 +1,4 @@
+import {isAdultAge} from "./age-groups.js?v=20260909dev305";
 import {matchingHobbyTasks} from './concrete-life.js?v=20260909dev305';
 export const seededChoice=seed=>{let h=2166136261;for(const c of String(seed))h=Math.imul(h^c.charCodeAt(0),16777619);return()=>{h+=0x6D2B79F5;let t=h;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return ((t^t>>>14)>>>0)/4294967296}};
 const values=v=>Array.isArray(v)?v.filter(x=>typeof x==='string'&&x.trim()):[];
@@ -8,12 +9,12 @@ export function automaticConversation(world,c,target,kind,seed){
  if(!ignoresOthers(c)&&disliked.length&&(kind==='gossip'||kind==='talk'&&random()<.25)){const subject=pick(disliked);return {kind:'gossip',subjectId:subject.id,topic:subject.name}}
  const catalog=Object.values(world.catalog||{}).flat().filter(x=>x&&typeof x.name==='string');const liked=new Set(Object.values(c.favorites||{}).flat());const preferred=catalog.filter(x=>liked.has(x.id));
  const themes=[...values(c.hobbies),...values(c.interests),...(preferred.length?preferred:catalog).map(x=>x.name)];
- if(!ignoresOthers(c))for(const other of others){themes.push(other.name+'에 대한 생각')}
+ if(!ignoresOthers(c)&&others.length&&random()<.5){const subject=pick(others);return {kind:kind==='gossip'?'talk':kind,subjectId:subject.id,topic:subject.name}}
  return {kind:kind==='gossip'?'talk':kind,subjectId:'',topic:themes.length?pick(themes):'오늘 하루'};
 }
 export function hobbyNames(world,c){return [...new Set([...values(c?.hobbies),...(world?.catalog?.hobby||[]).filter(item=>(c?.favorites?.hobby||[]).includes(item.id)).map(item=>item.name)].filter(name=>typeof name==='string'&&name.trim()).map(name=>name.trim()))]}
 export function hobbyChoice(world,c,seed){const random=seededChoice(seed),list=hobbyNames(world,c);if(!list.length)return null;const name=list[Math.floor(random()*list.length)],kind=/요리|제빵|베이킹/.test(name)?'meal':/원예|식물|정원|수집/.test(name)?'chores':/독서|책|만화/.test(name)?'read':/음악|노래|악기|연주/.test(name)?'music':/게임/.test(name)?'game':/운동|수영|요가|축구|농구|헬스/.test(name)?'exercise':/산책|여행|등산/.test(name)?'walk':'art';const concrete=matchingHobbyTasks(name);if(concrete.length)return {...concrete[Math.floor(random()*concrete.length)],hobby:true};return {id:'hobby_auto',kind,room:kind==='meal'?'kitchen':kind==='exercise'||/원예|식물|정원/.test(name)?'living':'study',minutes:60,labels:[name,name,name],hobby:true}}
-export function personalChoices(world,c){const choices=[],adult=['성인','노인'].includes(c.ageGroup),traits=[...values(c.personalityTypes),c.neatness,c.interference,c.conflictStyle,c.activityTempo,c.humorStyle].join(' '),others=Object.values(world.characters||{}).filter(x=>x.id!==c.id&&x.townId===c.townId);
+export function personalChoices(world,c){const choices=[],adult=isAdultAge(c.ageGroup),traits=[...values(c.personalityTypes),c.neatness,c.interference,c.conflictStyle,c.activityTempo,c.humorStyle].join(' '),others=Object.values(world.characters||{}).filter(x=>x.id!==c.id&&x.townId===c.townId);
  if(adult&&['가끔 흡연','전자담배 사용','흡연'].includes(c.smokingStatus))choices.push({id:'smoke',kind:'relax',lifeTask:'smoke',labels:['흡연하기','Smoke','喫煙する']});
  if(!ignoresOthers(c)&&/통제|완고|간섭|바로 따짐/.test(traits)){const target=others.find(x=>dislikesPerson(world,c,x));if(target)choices.push({kind:'taunt',targetId:target.id,labels:[`${target.name}에게 한마디하기`,`Confront ${target.name}`,`${target.name}に一言言う`]})}
  if(/다정|세심|챙기/.test(traits)&&others.length)choices.push({kind:'comfort',targetId:others[0].id,labels:[`${others[0].name} 챙겨주기`,`Check on ${others[0].name}`,`${others[0].name}を気遣う`]});

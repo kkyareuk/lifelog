@@ -1,3 +1,5 @@
+import {narrativeRate} from "./official-relationship-details.js?v=20260909dev305";
+import {relationshipMemory} from "./relationship-memories.js?v=20260909dev305";
 // Directional observations: a relationship supplies context, never mutual feelings.
 const list=value=>Array.isArray(value)?value:[];
 export const relationshipMembers=r=>[...new Set([r?.a,r?.b,...list(r?.groupMembers),...list(r?.memberIds),...list(r?.characterIds)].filter(Boolean))];
@@ -38,6 +40,8 @@ const alternate={
 };
 // A cue is selected for the present action; the complete profile is not printed.
 export function relationshipReaction(actor,other,view={},relation=null,{seed='',language='ko',previousKeys=[],moodScore=0,kind='talk'}={}){
+  const memory=relationshipMemory(actor,other,relation,view,{seed,language});
+  if(memory&&['talk','hangout','tea','dine'].includes(kind)&&!previousKeys.some(k=>String(k).startsWith('memory:'))&&hash(`${seed}:${actor.id}:memory-frequency`)%100<narrativeRate(view.importance))return {...memory,signals:viewSignals(view)};
   const s=viewSignals(view),candidates=[];
   const add=(key,weight,copy)=>candidates.push({key,weight,copy});
   const guarded=s.afraid||s.distrust||s.hostile||s.guarded||s.uncomfortable;
@@ -58,7 +62,7 @@ export function relationshipReaction(actor,other,view={},relation=null,{seed='',
   if(!guarded&&/가장 가까운|가까운 사이/.test(view.closeness))add('closeness',40,line('설명을 길게 하지 않아도 함께 쓰던 순서를 떠올려 다음 일을 이어 갔어요.','They picked up their familiar routine without needing a long explanation.','長く説明しなくても、いつもの手順を思い出して次の作業に移りました。'));
   if(!guarded&&/말없이 함께|완벽하게 편안/.test(view.comfort))add('comfort',45,line('말이 끊겨도 새 화제를 찾지 않고, 같은 자리에서 각자의 일을 이어 갔어요.','When conversation paused, they stayed together and continued their own tasks without filling the silence.','会話が途切れても話題を探さず、同じ場所でそれぞれの作業を続けました。'));
   if(/자주 살핌|최우선/.test(view.attention))add('attention',45,line('하던 일 사이사이 상대가 어디까지 했는지 살피고 기다릴 때를 맞췄어요.','Between steps, they checked the other person’s progress and timed their pauses to match.','作業の合間に相手の進み具合を見て、待つタイミングを合わせました。'));
-  if(/^[12]순위/.test(view.importance))add('importance',40,line('자기 일의 순서를 잠시 바꾸어 상대에게 필요한 시간을 먼저 비워 두었어요.','They rearranged their own tasks to make time for the other person first.','自分の作業の順番を少し変え、相手のための時間を先に空けました。'));
+
   if(/은근히 질투|질투가 심|독점/.test(view.jealousy)&&['talk','hangout','tea','dine'].includes(kind))add('jealousy',50,line('함께할 시간이 얼마나 남았는지 확인하고, 조금 더 같이할 일을 찾아보았어요.','They checked how much time remained together and looked for something that would let it last a little longer.','一緒にいられる時間がどれだけ残っているか確かめ、もう少し一緒にできることを探しました。'));
   if(/곧 헤어질|언제든 끝날/.test(view.expectation))add('expectation',60,line('다음 약속까지 정하기보다는 오늘 하기로 한 일에만 답을 주었어요.','They committed only to today’s task instead of making plans for another time.','次の約束まで決めるより、今日することだけに返事をしました。'));
   else if(!guarded&&/오래 함께|평생/.test(view.expectation))add('expectation',35,line('오늘 못 마친 부분은 다음에 이어 할 수 있도록 따로 정리해 두었어요.','They set aside the unfinished part so they could return to it together another time.','今日終わらなかった分は、次に一緒に続けられるよう分けておきました。'));

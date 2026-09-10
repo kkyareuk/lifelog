@@ -29,7 +29,7 @@ assert.deepEqual(lifeCopy(lifeTask('full_cook'),{planningStyle:'계획적',speec
 
 const neutral=game.characterViewFor(aid,bid);
 const fields={overall:'매우 싫어함',importance:'1순위 · 가장 중요한 사람',awareness:'감정을 우정으로 착각함',mutualAwareness:'상대의 마음을 전혀 모름',trust:'전혀 믿지 않음',fear:'많이 두려움',closeness:'남보다도 멂',comfort:'함께 있으면 매우 불편하고 대화도 전혀 통하지 않음',annoyance:'많이 귀찮고 성가심',attention:'늘 최우선으로 챙김',jealousy:'질투가 심함',conflictIntensity:'자주 충돌함',expectation:'곧 헤어질 거라고 예상함',touchIntensity:'신체 접촉 없음',aggression:'거친 말을 하고 싶은 충동',aggressionAction:'행동으로 옮기지 않음'};
-for(const [field,value] of Object.entries(fields)){
+for(const [field,value] of Object.entries(fields).filter(([field])=>field!=='importance')){
   const view={...neutral,[field]:value};
   if(['awareness','mutualAwareness'].includes(field))view.overall='깊이 사랑함';
   if(field==='aggressionAction')view.aggression='거친 말을 하고 싶은 충동';
@@ -81,5 +81,5 @@ for(let day=1;day<=30;day++)for(let hour=8;hour<=22;hour++){
 assert(fights>0&&fights<150,`Frequent conflict is possible, not every encounter (${fights}/450)`);
 a.days={[key]:{entries:[{minute:date.getHours()*60+date.getMinutes()-30,withId:bid,title:'B와 말다툼하는 중',automaticConflict:true}]}};
 assert.equal(automaticConflictAllowed(a,b,tense,tense,date,state),false,'A recent fight gives the pair a cooldown');
-console.log(`PASS settings-to-command path, 16 directional fields, official/explicit views, 3 languages, historical snapshots, conflict frequency (${fights}/450)`);
+console.log(`PASS settings-to-command path, 15 feeling fields (narrative weight tested separately in check-relationships317), official/explicit views, 3 languages, historical snapshots, conflict frequency (${fights}/450)`);
 game.flushSave(false);

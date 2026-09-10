@@ -1,3 +1,4 @@
+import {mountRelationshipDetails} from "./relationship-details-editor.js?v=20260909dev305";
 import {contactFailure} from './state.js?v=20260909dev305';
 import {installImageDeletion} from './image-cleanup.js?v=20260909dev305';
 import {saleAllows,saleChangedMessage} from "./slot-sale.js?v=20260909dev305";
@@ -5419,8 +5420,9 @@ function openAnniversaryDialog(id=""){
   };
 }
 
-const RELATION_TYPES=[...EXTRA_FAMILY,"친구","연인","부부","부모·자녀","형제·자매","동거인","소꿉친구","학창 시절 친구들","친구 모임","산악회","동아리 동료","직장 동료","사제 관계","라이벌","혐관","기타"];
+const RELATION_TYPES=[...EXTRA_FAMILY,"친구","연인","약혼","부부","부모·자녀","형제·자매","동거인","소꿉친구","학창 시절 친구들","친구 모임","산악회","동아리 동료","직장 동료","사제 관계","라이벌","혐관","기타"];
 const RELATION_STAGES={
+  약혼:["파혼을 고민하는 중","계획이 어긋나는 중","미래를 조율하는 사이","안정적으로 준비하는 사이","서로를 믿고 준비하는 사이"],
   "사제 관계":["배움을 시작한 사이","서로 신뢰하는 사제","가르침을 이어가는 사이"],
   연인:["이별 통보 직전","마음이 멀어지는 중","위태로운 사이","서로 알아가는 중","편안한 연인","서로를 깊이 사랑함","운명의 상대"],
   부부:["이혼 서류가 오가는 중","별거를 고민하는 중","권태기","생활 동반자","애정이 깊은 부부","서로 없이는 못 사는 사이","운명의 상대"],
@@ -5433,6 +5435,7 @@ const RELATION_STAGES={
   default:["매우 불편함","서먹함","조금 가까움","편안함","가까움","매우 가까움"]
 };
 const PAST_RELATION_STAGES={
+  약혼:["파혼 직후","정리할 일이 남은 전 약혼자","연락이 끊긴 전 약혼자","각자의 길을 가는 전 약혼자"],
   연인:["헤어진 직후라 마음을 추스르는 중","미련이 남은 전 연인","어색한 전 연인","가끔 연락하는 전 연인","완전히 정리된 전 연인"],
   부부:["이혼 직후라 슬퍼하는 중","재산과 생활을 정리하는 중","갈등이 남은 이혼 상대","필요할 때만 연락하는 이혼 상대","완전히 정리된 이혼 상대"],
   친구:["절교 직후","서로 피하는 옛 친구","연락이 끊긴 친구","가끔 소식을 듣는 옛 친구","추억으로 남은 친구"],
@@ -5481,6 +5484,7 @@ function openRelationDialog(id="",sharedSave){
       <label class="official-type-title"><span>${copy.type}</span><select name="type">${RELATION_TYPES.map(type=>`<option value="${type}">${translateText(type)}</option>`).join("")}</select></label>
       <label class="official-mentor-field" hidden><b>${translateText("스승")}</b><select name="teacherId"></select></label><label class="official-stage-field"><b data-stage-label>${copy.stage}</b><select name="stage"></select></label>
       <label class="official-past-toggle"><b>${copy.past}</b><input type="checkbox" name="temporalPast"><small>${copy.pastHint}</small><input type="hidden" name="temporalStatus" value="current"></label>
+      <fieldset class="official-relationship-details" data-relationship-details></fieldset>
       <section class="official-order-card"><b>${copy.order}</b><small>${copy.orderHint}</small><div class="official-order-list" data-official-order-list></div></section>
       <label class="official-outside-field"><b>${copy.outside}</b><select name="legalStatus">${legalStatusOptions(officialValues)}</select></label>
       <fieldset class="official-legal-registration" hidden><legend>${copy.registration}</legend><label><input type="radio" name="legalRegistration" value="registered"><span>${copy.legalRegistered}</span></label><label><input type="radio" name="legalRegistration" value="unregistered"><span>${copy.legalUnregistered}</span></label></fieldset>
@@ -5534,6 +5538,7 @@ function openRelationDialog(id="",sharedSave){
     refreshStages();
   };
   refreshPair();refreshType();
+  const readRelationshipDetails=mountRelationshipDetails(f,old,language);
   const tagPanel=f.querySelector(".official-tag-panel"),tagCount=f.querySelector("[data-relation-tag-count]");
   const refreshTagCount=()=>{if(tagCount)tagCount.textContent=copy.tagCount(selectedRelationTags.size)};
   const tagList=f.querySelector("[data-relation-tag-list]"),tagInput=f.querySelector("[data-new-relation-tag]");
@@ -5560,7 +5565,7 @@ function openRelationDialog(id="",sharedSave){
       const a=f.a.value,b=f.b.value,temporal=f.temporalStatus.value,levels=stagesFor(f.type.value,temporal),index=Math.max(0,levels.indexOf(f.stage.value)),ratio=levels.length<=1?1:index/(levels.length-1),hostile=f.type.value==="혐관",pairKey=[a,b].sort().join("~");
       const relationshipName=String(f.elements.namedItem("name")?.value||"").trim();
       const legalRegistration=["부부","부모·자녀","형제·자매"].includes(f.type.value)?f.legalRegistration.value:"";
-      const patch={a,b,teacherId:f.type.value==="사제 관계"?f.teacherId.value:"",sourceRole:f.type.value==="사제 관계"?(f.teacherId.value===a?"스승":"제자"):f.sourceRole.value.trim(),targetRole:f.type.value==="사제 관계"?(f.teacherId.value===b?"스승":"제자"):f.targetRole.value.trim(),name:relationshipName,tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.legalStatus.value,legalRegistration,marriageRegistration:f.type.value==="부부"?legalRegistration:"",socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[...selectedMemberIds],animationPlacement:Object.fromEntries(selectedMemberIds.map(cid=>[cid,animationPlacement[cid]||"random"])),directional:f.type.value==="부모·자녀",groupId:old?.groupId||"",groupMembers:selectedMemberIds.length>2?[...selectedMemberIds]:[]};
+      const patch={a,b,details:readRelationshipDetails(),teacherId:f.type.value==="사제 관계"?f.teacherId.value:"",sourceRole:f.type.value==="사제 관계"?(f.teacherId.value===a?"스승":"제자"):f.sourceRole.value.trim(),targetRole:f.type.value==="사제 관계"?(f.teacherId.value===b?"스승":"제자"):f.targetRole.value.trim(),name:relationshipName,tags:[...selectedRelationTags],type:f.type.value,temporalStatus:temporal,stage:f.stage.value,faultParty:"",faultReason:temporal==="past"?f.faultReason.value:"",legalStatus:f.legalStatus.value,legalRegistration,marriageRegistration:f.type.value==="부부"?legalRegistration:"",socialAcceptance:f.socialAcceptance.value,interactions:old?.interactions||[],interactionsAll:Boolean(old?.interactionsAll),cohabit:f.cohabit.checked||f.type.value==="동거인",stayTogether:f.stayTogether.checked&&temporal!=="past",intimacy:hostile?Math.round(35+ratio*30):Math.round(ratio*100),conflict:hostile?Math.round(100-ratio*55):Math.round((1-ratio)*75),updatedAt:Date.now(),displayOrder:[...selectedMemberIds],animationPlacement:Object.fromEntries(selectedMemberIds.map(cid=>[cid,animationPlacement[cid]||"random"])),directional:f.type.value==="부모·자녀",groupId:old?.groupId||"",groupMembers:selectedMemberIds.length>2?[...selectedMemberIds]:[]};
       if(f.type.value==="부모·자녀")Object.assign(patch,{parentId:a,childId:b,parentRole:f.parentRole.value,kinship:f.kinship.value,kinshipByPair:{[pairKey]:f.kinship.value}});
       if(f.type.value==="형제·자매")Object.assign(patch,{siblingOrder:{[a]:1,[b]:2},siblingKinshipByPair:{[pairKey]:f.siblingKinship.value}});
       if(sharedSave){const ok=await sharedSave(patch,id);if(ok===false){dialog.returnValue="";dialog.showModal();return}dialog.remove();return}

@@ -1,0 +1,24 @@
+<ko-KR>
+약혼과 관계별 배경·일상 설정을 추가했어요.
+관계 단계와 각자의 시선에 따라 회상의 내용이 달라져요.
+관계 비중은 호감도와 별개로 이야기의 비중을 조절해요.
+인물·취향 대화와 취미 로그를 더 구체적으로 다듬었어요.
+설정 옆 ⓘ에서 짧은 설명을 볼 수 있어요.
+청년·중년·장년·노년의 성인 접촉 판정 오류를 수정했어요.
+</ko-KR>
+<en-US>
+Added engagement and relationship-specific history and routines.
+Memories now reflect relationship stages and individual perspectives.
+Narrative weight controls story emphasis, separately from affection.
+Refined conversations and leisure scenes.
+Tap the info icon for short setting explanations.
+Fixed adult age-group checks for physical contact.
+</en-US>
+<ja-JP>
+婚約と、関係ごとの背景・日常設定を追加しました。
+関係段階と各自の視線に応じて回想が変わります。
+関係の比重は好感度とは別に、物語での扱いを調整します。
+人物・好みの会話と趣味の描写を具体的にしました。
+設定のⓘから短い説明を確認できます。
+成人に当たる年齢区分の接触判定を修正しました。
+</ja-JP>

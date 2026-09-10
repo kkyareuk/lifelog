@@ -1,3 +1,7 @@
+import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
+import {leisureNarrative} from "./leisure-narrative.js?v=20260909dev305";
+import {isAdultAge} from "./age-groups.js?v=20260909dev305";
+import {normalizeRelationshipDetails,narrativeWeight} from "./official-relationship-details.js?v=20260909dev305";
 import {relationshipReaction,relationshipBetween,relationshipMembers} from './relationship-context.js?v=20260909dev305';
 import {characterMood} from './character-mood.js?v=20260909dev305';
 import {lifeTask,lifeCopy} from './life-tasks.js?v=20260909dev305';
@@ -1392,6 +1396,8 @@ for(const kind of ['handhold','lean','kiss_cautious','kiss_reconcile','affection
 for(const kind of Object.keys(SOCIAL_ACTIVITIES))DIRECTIVE_COPY[kind]={room:"living",minutes:20,social:true};
 function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   const copy=baseSocialDirectiveCopy(kind,actor,target,subject,topic,options);
+  if(subject&&['talk','gossip','debate','custom_social'].includes(kind)){const speaker=options.initiatorId===target.id?target:actor,listener=speaker===actor?target:actor;for(const language of ['ko','en','ja']){const story=personConversation(state,speaker,listener,subject,language);if(story)copy[language]={...copy[language],desc:actor===speaker?story.speakerText:story.listenerText,relationshipCue:'person-topic:'+story.mode}}return copy;}
+  if(!subject&&topic&&['talk','debate','custom_social'].includes(kind)){const speaker=options.initiatorId===target.id?target:actor,listener=speaker===actor?target:actor;for(const language of ['ko','en','ja']){const story=topicConversation(state,speaker,listener,topic,language);if(story)copy[language]={...copy[language],desc:actor===speaker?story.speakerText:story.listenerText,relationshipCue:'topic:'+story.mode}}return copy;}
   if(!copy||(!SOCIAL_ACTIVITIES[kind]?.contextual&&!['talk','hangout','dine','tea','drinks','cook_together','debate','custom_social'].includes(kind)))return copy;
   const date=new Date(options.now??Date.now()),minute=date.getHours()*60+date.getMinutes();
   const key=`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
@@ -1439,7 +1445,7 @@ export function contactFailure(a,b,kind,lang='ko'){
  const required={handhold:2,lean:3,hug:3,kiss:4,kiss_cautious:4,kiss_reconcile:4,affection:6}[kind];
  if(required===undefined)return '';
  if(!a||!b||a.id===b.id)return text('함께할 다른 캐릭터를 골라 주세요.','Choose another character.','相手のキャラクターを選んでください。');
- if(required>=4&&[a,b].some(c=>!['성인','노인'].includes(c.ageGroup)))return text('이 행동은 두 캐릭터 모두 성인 또는 노인으로 설정되어야 해요. 나이대가 서로 같을 필요는 없어요.','Both characters must be adults or seniors for this action. Their age groups do not need to match.','この行動は双方が成人または高齢者である必要があります。年齢区分が同じである必要はありません。');
+ if(required>=4&&[a,b].some(c=>!isAdultAge(c.ageGroup)))return text('이 행동은 두 캐릭터 모두 청년·성인·중년·장년·노년 중 하나로 설정되어야 해요. 나이대가 서로 같을 필요는 없어요.','Both characters must be adults or seniors for this action. Their age groups do not need to match.','この行動は双方が成人または高齢者である必要があります。年齢区分が同じである必要はありません。');
  for(const [c,other] of [[a,b],[b,a]]){
   const level=String(characterViewFor(c.id,other.id).touchIntensity||'').trim().replace('성인 간 합의된 친밀한 접촉까지','성인 간 친밀한 접촉까지');
   if(levels.indexOf(level)<required)return text(`${c.name} → ${other.name}의 시선에서 신체 접촉 허용 범위를 확인해 주세요. 두 방향 모두 이 행동을 허용해야 해요.`, `Check the contact limit in ${c.name}'s view of ${other.name}. Both directions must allow this action.`,`${c.name}から${other.name}への視線で接触の範囲を確認してください。双方の設定でこの行動を許可する必要があります。`);
@@ -1451,10 +1457,10 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   const character=state.characters?.[characterId];let definition=DIRECTIVE_COPY[kind]||DIRECTIVE_COPY.wake;
   if(!character)return false;
   let task=String(options.lifeTask||'').startsWith('ambient:')?personalSceneChoicesFor(character,new Date(options.now??Date.now())).find(t=>t.id===options.lifeTask):options.lifeTask==='hobby_auto'?hobbyChoice(state,character,characterId+':'+(options.now||Date.now())):lifeTask(options.lifeTask);
-  if(options.lifeTask==='smoke'){if(!['성인','노인'].includes(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
+  if(options.lifeTask==='smoke'){if(!isAdultAge(character.ageGroup)||!['가끔 흡연','전자담배 사용','흡연'].includes(character.smokingStatus))return false;task={id:'smoke',kind:'relax',room:'balcony',minutes:10,labels:['흡연하기','Smoke','喫煙する']}}
   if(options.lifeTask&&!task)return false;
-  if(task){if(task.id==='alcohol'&&!['성인','노인'].includes(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
-  if(['talk','gossip','debate','custom_social'].includes(kind)&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
+  if(task){if(task.id==='alcohol'&&!isAdultAge(character.ageGroup))return false;kind=task.kind;definition={...DIRECTIVE_COPY[kind],room:task.room,minutes:task.minutes,...(task.copy?Object.fromEntries(["ko","en","ja"].map(lang=>[lang,[task.copy[lang].title,task.copy[lang].desc]])):lifeCopy(task,character))}}
+  if(['talk','gossip','debate','custom_social'].includes(kind)&&!options.subjectId&&!options.topic&&state.characters?.[options.targetId]){const choice=automaticConversation(state,character,state.characters[options.targetId],kind,character.id+':'+(options.now||Date.now()));kind=choice.kind;options={...options,...choice};definition=DIRECTIVE_COPY[kind]}
   if(kind==='work'&&options.workTask){const task=workTasks(character).find(t=>t.id===options.workTask);if(!task)return false;definition={...definition,...Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,[task.labels[i],task.labels[i]]]))}}
   const target=definition.social?state.characters?.[options.targetId]:null,subject=definition.social?state.characters?.[options.subjectId]:null;
   if(definition.social&&(!target||target.id===character.id))return false;
@@ -1464,9 +1470,10 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   if(ROMANTIC_ACTIVITIES.includes(kind)&&!hasRomanticRelationship(state.relationships,character.id,target?.id)&&!contactAllowed(character,target,kind))return false;
   const contactRejected=false;
   if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
-  if(kind==="drinks"&&[character,target].some(c=>!["성인","노인"].includes(c?.ageGroup)))return false;
+  if(kind==="drinks"&&[character,target].some(c=>!isAdultAge(c?.ageGroup)))return false;
   options={...options,initiatorId:character.id,payment:["split","treat","request"].includes(options.payment)?options.payment:"split",payerName:options.payment==="request"?target?.name:character.name};
   const startedAt=Number.isFinite(options.now)?options.now:Date.now(),copy=options.giftSource&&giftCopyResolver?giftCopyResolver(character,options.giftSource,new Date(startedAt)):definition.social?socialDirectiveCopy(kind,character,target,subject,options.topic,options):Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:definition[language][0],desc:definition[language][1]}]));
+  if(!target&&(!task||task.id==='hobby_auto')&&['read','music','game','art','research'].includes(kind)){const topic=kind==='music'?(character.musicGenres||[]).join(' '):kind==='read'?(character.favoriteStoryGenres||[]).join(' '):kind==='game'?'게임':kind==='art'?(character.hobbies||[]).join(' '):'자료';for(const language of ['ko','en','ja']){const story=leisureNarrative(character,topic,startedAt,language);copy[language]={...copy[language],desc:story.text}}}
   const directiveId=uid(),withIds=target?[character.id,target.id]:[];
   state.characterDirectives=state.characterDirectives&&typeof state.characterDirectives==="object"?state.characterDirectives:{};
   const scene=c=>options.scenes?.[c.id]||(c.sharedScene?meetingScene(c.sharedScene,state.characterDirectives?.[c.id],c.id,startedAt,state.uiLanguage):directiveSceneResolver?.(c,new Date(startedAt)))||{home:true,room:c.sleepRoomId||"living",townId:c.townId};
@@ -1949,12 +1956,12 @@ export function relationshipViewDefaults(type,temporalStatus="current",orderLeng
     const resolved=Math.min(Math.max(1,Math.max(1,Number(orderLength)||1)-1),wanted);
     return `${resolved}순위${resolved===1?" · 가장 중요한 사람":""}`;
   };
-  if(temporalStatus==="past")return {overall:"그저 그런 사람",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",fear:"설정하지 않음",closeness:"거리감 있음",comfort:"어색하지만 필요한 대화는 무난함",annoyance:"가끔 성가심",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(["연인","부부"].includes(type))return {overall:"연애 감정으로 좋아함",importance:rank("1순위"),awareness:"자기 감정을 분명히 자각함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"자주 살핌",jealousy:"가끔 신경 쓰임",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(["부모·자녀","형제·자매"].includes(type))return {overall:"소중하게 여김",importance:rank(type==="부모·자녀"?"1순위":"2순위"),awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"가끔 성가심",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"평생 이어질 관계라고 믿음",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(["친구","소꿉친구","학창 시절 친구들","친구 모임"].includes(type))return {overall:"친구로 좋아함",importance:rank("3순위"),awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"편한 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"인사·부축 같은 의례적 접촉만",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
-  if(type==="혐관")return {overall:"매우 싫어함",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"전혀 믿지 않음",fear:"설정하지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"자주 충돌함",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"거친 말을 하고 싶은 충동",aggressionAction:"대부분 참지만 가끔 거친 말이 나옴"};
-  return {overall:"그저 그런 사람",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"보통",fear:"설정하지 않음",closeness:"보통",comfort:"어색하지만 필요한 대화는 무난함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"필요할 때만 봄",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
+  if(temporalStatus==="past")return {overall:"그저 그런 사람",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",fear:"설정하지 않음",closeness:"거리감 있음",comfort:"어색하지만 필요한 대화는 무난함",annoyance:"가끔 성가심",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
+  if(["연인","부부"].includes(type))return {overall:"연애 감정으로 좋아함",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"자주 살핌",jealousy:"가끔 신경 쓰임",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
+  if(["부모·자녀","형제·자매"].includes(type))return {overall:"소중하게 여김",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"가끔 성가심",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"가끔 부딪힘",expectation:"평생 이어질 관계라고 믿음",touchIntensity:"포옹·기대기까지",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
+  if(["친구","소꿉친구","학창 시절 친구들","친구 모임"].includes(type))return {overall:"친구로 좋아함",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"어느 정도 믿음",fear:"설정하지 않음",closeness:"편한 사이",comfort:"편안하고 농담과 장난이 잘 통함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"오래 함께할 거라 기대함",touchIntensity:"인사·부축 같은 의례적 접촉만",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
+  if(type==="혐관")return {overall:"매우 싫어함",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대가 느끼는 감정을 알고 있음",trust:"전혀 믿지 않음",fear:"설정하지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함",attention:"종종 신경 씀",jealousy:"질투하지 않음",conflictIntensity:"자주 충돌함",expectation:"언제든 끝날 수 있다고 생각함",touchIntensity:"신체 접촉 없음",aggression:"거친 말을 하고 싶은 충동",aggressionAction:"대부분 참지만 가끔 거친 말이 나옴"};
+  return {overall:"그저 그런 사람",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"보통",fear:"설정하지 않음",closeness:"보통",comfort:"어색하지만 필요한 대화는 무난함",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"필요할 때만 봄",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
 }
 function withoutOrphanedGeneratedView(explicit,relations){
   if(!explicit||typeof explicit!=="object")return explicit||{};
@@ -2018,7 +2025,7 @@ export function characterViewFor(sourceId,targetId,indexedRelations=null){
   const explicit=explicitCharacterViewFor(sourceId,targetId,relations);
   if(explicit.touchIntensity==="성인 간 합의된 친밀한 접촉까지")explicit.touchIntensity="성인 간 친밀한 접촉까지";
   const currentRelations=relations.filter(item=>item.temporalStatus!=="past");
-  let defaults={overall:"낯선 사람으로 여김",importance:"선택하지 않음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",fear:"설정하지 않음",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
+  let defaults={overall:"낯선 사람으로 여김",importance:"비중 없음",awareness:"자기 감정을 분명히 자각함",mutualAwareness:"상대의 마음을 전혀 모름",trust:"조심스럽게 지켜봄",fear:"설정하지 않음",closeness:"낯선 사이",comfort:"긴장하고 대화도 조심스러움",annoyance:"전혀 귀찮거나 성가시지 않음",attention:"관심 없음",jealousy:"질투하지 않음",conflictIntensity:"갈등이 거의 없음",expectation:"정하지 않음",touchIntensity:"신체 접촉 없음",aggression:"공격 충동 없음",aggressionAction:"행동으로 옮기지 않음"};
   if(currentRelations.length){
     if(currentRelations.some(relation=>["연인","부부"].includes(relation.type)))defaults={...defaults,overall:"연애 감정으로 좋아함",mutualAwareness:"서로의 마음을 확인함",trust:"어느 정도 믿음",closeness:"가까운 사이",comfort:"편안하고 농담과 장난이 잘 통함",attention:"종종 신경 씀",touchIntensity:"포옹·기대기까지"};
     else if(currentRelations.some(relation=>["혐관","원수"].includes(relation.type)||/원수|이별 통보|이혼 서류/.test(relation.stage||"")))defaults={...defaults,overall:"매우 싫어함",trust:"전혀 믿지 않음",closeness:"거리감 있음",comfort:"함께 있으면 매우 불편하고 대화도 전혀 통하지 않음",annoyance:"보기만 해도 피곤함"};
@@ -2028,6 +2035,7 @@ export function characterViewFor(sourceId,targetId,indexedRelations=null){
   }else if(relations.length){
     defaults={...defaults,overall:"그저 그런 사람",trust:"조심스럽게 지켜봄",closeness:"거리감 있음",comfort:"어색하지만 필요한 대화는 무난함",attention:"관심 없음"};
   }
+  if(currentRelations.some(r=>(r.type==="부부"&&["1","2"].includes(r.details?.origin)||r.type==="약혼"&&r.details?.origin==="2"))){defaults={...defaults,overall:"그저 그런 사람",mutualAwareness:"상대의 마음을 전혀 모름",trust:"보통",closeness:"보통",comfort:"어색하지만 필요한 대화는 무난함",attention:"필요할 때만 봄",touchIntensity:"신체 접촉 없음"};}
   // 예전에는 공간 편안함과 대화 호흡을 따로 저장했다. 이 둘을 합치는
   // 변환은 구형 필드가 실제로 남아 있을 때 한 번만 한다. 최신 comfort를
   // 매 렌더링마다 구형 문장으로 해석하면 사용자가 고른 값이 기본 문구로
@@ -2065,7 +2073,7 @@ export function characterViewFor(sourceId,targetId,indexedRelations=null){
   };
   const {rapport:_oldRapport,spaceComfort:_oldSpaceComfort,_editedFields:_editedFields,...cleanExplicit}=explicit;
   const migratedFear=fearMigration[cleanExplicit.fear]||cleanExplicit.fear||defaults.fear;
-  return {...defaults,...cleanExplicit,fear:migratedFear,comfort:migratedComfort||defaults.comfort};
+  return {...defaults,...cleanExplicit,importance:narrativeWeight(cleanExplicit.importance),fear:migratedFear,comfort:migratedComfort||defaults.comfort};
 }
 function canonicalRelationshipType(type){
   return ({
@@ -2095,6 +2103,7 @@ export function addRelationship(data){
   data={
     ...data,
     stage:data?.stage||"관계 단계 미설정",
+    details:normalizeRelationshipDetails(data?.type,data?.details),
     legalStatus:normalizeRelationshipLegalStatus(data?.legalStatus),
     legalRegistration:normalizeLegalRegistration(data?.type,data?.legalRegistration,data?.marriageRegistration,data?.legalStatus),
     marriageRegistration:data?.type==="부부"?normalizeLegalRegistration(data?.type,data?.legalRegistration,data?.marriageRegistration,data?.legalStatus):""
@@ -2119,7 +2128,9 @@ export function updateRelationship(id,data){
   const previousIdentity=relationshipIdentity(relation);
   const wasCohabiting=Boolean(relation.cohabit);
   if(Object.prototype.hasOwnProperty.call(data||{},"stage")&&!(data?._automatic))relation.autoManagedStage=false;
+  if(data.type&&data.type!==relation.type&&!Object.prototype.hasOwnProperty.call(data,"details"))relation.details={};
   Object.assign(relation,data);
+  relation.details=normalizeRelationshipDetails(relation.type,relation.details);
   delete relation._automatic;
   relation.legalRegistration=normalizeLegalRegistration(relation.type,relation.legalRegistration,relation.marriageRegistration,relation.legalStatus);
   relation.marriageRegistration=relation.type==="부부"?relation.legalRegistration:"";
