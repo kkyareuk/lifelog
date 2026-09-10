@@ -1,5 +1,6 @@
-const CACHE_VERSION="drawer-village-v20260910-dev318-personality";
+const CACHE_VERSION="drawer-village-v20260910-dev319-relationships";
 const CORE=[
+  "./relationship-roles.js?v=20260909dev305","./relationship-roles-editor.js?v=20260909dev305","./relationship-housing.js?v=20260909dev305",
   "./personality-observation.js?v=20260909dev305", "./shared-create-resident.js?v=20260909dev305",
   "./diamond-shop.css?v=20260910dev305","./diamond-shop.js?v=20260909dev305",
   "./relationship-context.js?v=20260909dev305",

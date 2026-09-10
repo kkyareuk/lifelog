@@ -26,7 +26,8 @@ const rows=[
 ['혐관','Hostile relationship','険悪な関係','불화의 계기|Source of discord|不和のきっかけ','서로 다른 이해관계|Conflicting interests|利害の不一致','과거의 오해|A past misunderstanding|過去の誤解','지켜지지 않은 약속|An unkept promise|守られなかった約束','피할 수 없는 접점|Unavoidable connection|避けられない接点','공동의 일을 처리|Handling shared affairs|共通の用事を処理する','같은 공간 사용|Using the same space|同じ場所を使う','주변 사람을 통해 연락|Contact through others|周囲の人を介した連絡'],
 ['기타','Other','その他','관계의 시작|How it began|関係の始まり','공통의 목적|A shared purpose|共通の目的','우연히 얽힌 사건|A chance event|偶然関わった出来事','당사자끼리 정한 약속|An agreement between them|当事者同士の約束','이어지는 접점|Ongoing connection|続く接点','함께 맡은 일|A shared responsibility|共に担う仕事','주고받는 정보|Exchanging information|情報の交換','정기적인 만남|Regular meetings|定期的な面会']
 ];
-export const OFFICIAL_RELATIONSHIP_DETAILS=Object.fromEntries(rows.map(([ko,en,ja,b,...rest])=>[ko,{label:{ko,en,ja},fields:[field('origin',b,rest.slice(0,3)),field('routine',rest[3],rest.slice(4,7))]}]));
+export const OFFICIAL_RELATIONSHIP_DETAILS=Object.fromEntries(rows.map(([ko,en,ja,b,...rest])=>[ko,{label:{ko,en,ja},fields:[field('origin',b,rest.slice(0,3))]}]));
+OFFICIAL_RELATIONSHIP_DETAILS['가족']={label:words('가족|Family|家族'),fields:[field('origin','관계 배경|Relationship background|関係の背景',['혈연으로 맺어진 가족|Family by blood|血縁で結ばれた家族','같은 가문 사람|Members of the same clan|同じ一族の人','어쩔 수 없이 같이 살게 된 가족|Family brought together by circumstances|事情により共に暮らす家族','계약 상의 가족|Family by contract|契約上の家族'])]};
 export const detailText=(value,language='ko')=>value?.[language]||value?.ko||'';
 export const NARRATIVE_WEIGHTS=['매우 높음','높음','보통','낮음','비중 없음'];
 export function narrativeWeight(value){if(NARRATIVE_WEIGHTS.includes(value))return value;const rank=Number(String(value||'').match(/^(\d+)순위/)?.[1]);return rank?rank===1?'매우 높음':rank===2?'높음':rank===3?'보통':'낮음':'비중 없음'}
@@ -34,7 +35,7 @@ export const narrativeRate=value=>({'매우 높음':40,'높음':28,'보통':16,'
 export function normalizeRelationshipDetails(type,value){
  const spec=OFFICIAL_RELATIONSHIP_DETAILS[type];if(!spec||!value||typeof value!=='object'||Array.isArray(value))return {};
  const result={};for(const f of spec.fields)if(f.options.some(o=>o.id===value[f.id]))result[f.id]=value[f.id];
- if(['spring','rain','document','introduced','help'].includes(value.firstMeeting))result.firstMeeting=value.firstMeeting;
+
  return result;
 }
 export const FIRST_MEETINGS=[

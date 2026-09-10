@@ -8,5 +8,5 @@ function include(relative){
  const text=fs.readFileSync(source,'utf8'),dest=path.join(out,relative);fs.mkdirSync(path.dirname(dest),{recursive:true});fs.writeFileSync(dest,text);
  for(const match of text.matchAll(/(?:from\s*|import\s*\(\s*)["'](\.[^"']+)["']/g))include(path.normalize(path.join(path.dirname(relative),match[1].split('?')[0])));
 }
-include('server-life.mjs');fs.writeFileSync(path.join(out,'package.json'),'{"type":"module"}\n');
+include('server-life.mjs');include('relationship-roles.js');include('relationship-housing.js');fs.writeFileSync(path.join(out,'package.json'),'{"type":"module"}\n');
 console.log(`Prepared shared server life engine (${seen.size} modules).`);

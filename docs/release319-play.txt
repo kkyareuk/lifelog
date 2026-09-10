@@ -1,0 +1,18 @@
+<ko-KR>
+관계 설정 순서를 정리하고 관계 배경을 간결하게 바꿨어요.
+가족·사제 관계에 구성원별 역할과 기준 캐릭터 표시를 추가했어요.
+함께 살 집을 선택하고, 이사 후 비는 일반 주거지를 정리할 수 있어요.
+우편함을 공지사항·받은우편·보낸우편·쓰기로 나누고 본문 글자 크기를 조정했어요.
+</ko-KR>
+<en-US>
+Simplified relationship settings and backgrounds.
+Added member roles and a reference character for family and mentor relationships.
+Choose a shared home and remove empty regular homes after moving.
+Mail now has Notices, Inbox, Sent, and Write tabs with smaller body text.
+</en-US>
+<ja-JP>
+関係設定の順序と背景の項目を整理しました。
+家族・師弟関係にメンバーの役割と基準キャラクター表示を追加しました。
+一緒に住む家を選び、引っ越し後に空いた通常の家を整理できます。
+郵便箱を「お知らせ・受信・送信済み・書く」に分け、本文の文字サイズを調整しました。
+</ja-JP>

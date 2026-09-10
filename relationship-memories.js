@@ -3,6 +3,11 @@ import {routineMemory} from './relationship-routines.js?v=20260909dev305';
 const tri=(ko,en,ja)=>({ko,en,ja});
 // These details only enter the story after the user selects the corresponding fact.
 const memories={
+ '가족':[
+ tri('같은 피를 나눴다는 말 뒤에 저마다 다른 삶이 이어져 왔다는 생각을 했어요.','They thought of the separate lives behind the words shared blood.','同じ血を引くという言葉の向こうに、それぞれの人生があると思いました。'),
+ tri('같은 가문의 이름을 말할 때마다 함께 따라오는 기대와 책임을 떠올렸어요.','They recalled the expectations and responsibilities that came with naming their clan.','一族の名を口にするたびについてくる期待と責任を思い出しました。'),
+ tri('각자의 사정이 한 지붕 아래로 모였던 때를 떠올리며, 함께 살기 전과 달라진 일상을 짚었어요.','They recalled the circumstances that brought them under one roof and considered how daily life had changed.','それぞれの事情で一つ屋根の下に集まった頃を思い、変わった日々を振り返りました。'),
+ tri('가족으로 지내기 위해 약속했던 조건을 떠올리며, 지금도 지켜지고 있는 부분을 하나씩 짚었어요.','They recalled the terms of living as a family and considered which still held.','家族として過ごすために約束した条件を思い出し、今も守られている点を確かめました。')],
  '조부모·손자녀':[
  tri('어릴 적 함께 살던 집의 문을 열면 누가 먼저 돌아와 있었는지 떠올렸어요.','They pictured who used to be home first when the door opened in childhood.','幼い頃、家の扉を開けると誰が先に帰っていたか思い浮かべました。'),
  tri('방학이 시작되면 방문할 날을 세던 달력이 떠올랐어요.','They remembered counting down the days to a school-holiday visit.','休みに入ると、訪ねる日まで数えていたカレンダーを思い出しました。'),

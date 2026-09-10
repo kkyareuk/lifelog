@@ -1,3 +1,4 @@
+import {isFamily,relationshipReference,relationshipMemberName} from './relationship-roles.js?v=20260909dev305';
 import {relationshipInfo} from "./relationship-help.js?v=20260909dev305";
 import {sleepSettingsMarkup} from './sleep-settings.js?v=20260909dev305';
 import {characterSlotProduct,saleAllows} from "./slot-sale.js?v=20260909dev305";
@@ -39,6 +40,8 @@ const I18N={
   en:{brandName:"Drawer Village",observe:"Observe",mailbox:"Mailbox",home:"Home",character:"Characters",catalog:"Dictionary",relationship:"Relationships",routine:"Schedule",statistics:"Statistics",town:"Town",shop:"Shop",settings:"Settings",saved:"Saved on this device",brandTagline:"Character life observation game",currentMoment:"Current moment",todayLog:"Today's log",expand:"Expand",collapse:"Collapse",viewAll:"View all",viewHome:"View home",gridEdit:"Grid edit",floorUp:"Go up one floor",floorDown:"Go down one floor",floorLabel:n=>`F${n}`,language:"Language",languageHelp:"English covers the main interface, and more life scenes and relationship text are translated with every update.",languageNote:"English Beta · Interface and selected life scenes translated; coverage keeps expanding.",mailArrived:"A letter has arrived",mailReady:"Open it when you are ready. Your choice will continue into their actual schedule.",mailEmpty:"No letters have arrived yet",mailEmptyHelp:"Questions, choices, worries, and check-ins from your characters will arrive here.",mailboxHelp:"Read all character letters in one place.",openLetter:"Open letter",characterPicker:"Choose a character to observe",currentTownResidents:"Characters in this town",moveToAnotherTown:"Move to another town",close:"Close",noSleepingRoom:"Other · None (does not stay overnight)",locationExterior:"Current building exterior",inTransit:"In transit",outAndAbout:"Out and about",emptyTownTitle:"No characters live in this town yet",emptyTownHelp:"Choose a home town from the Characters screen.",openCharacterSettings:"Open character settings"},
   ja:{brandName:"ひきだし村",observe:"観察",mailbox:"郵便箱",home:"家",character:"人物",catalog:"辞典",relationship:"関係",routine:"予定",statistics:"統計",town:"村",shop:"店",settings:"設定",saved:"端末に保存済み",brandTagline:"引き出しの中のキャラクター生活観察ゲーム",currentMoment:"今この瞬間",todayLog:"今日の記録",expand:"開く",collapse:"閉じる",viewAll:"すべて見る",viewHome:"家を見る",gridEdit:"グリッド編集",floorUp:"一つ上の階へ",floorDown:"一つ下の階へ",floorLabel:n=>`${n}階`,language:"言語",languageHelp:"日本語は基本画面に対応し、生活シーンや関係文もアップデートごとに翻訳を増やしています。",languageNote:"日本語ベータ・基本画面と一部の生活シーンに対応。翻訳範囲を継続して拡大します。",mailArrived:"手紙が届きました",mailReady:"準備ができたら手紙を開いてください。選択は実際の生活予定に反映されます。",mailEmpty:"届いた手紙はまだありません",mailEmptyHelp:"キャラクターからの質問・選択・悩み・近況はここに届きます。",mailboxHelp:"キャラクターからの手紙をここでまとめて確認できます。",openLetter:"手紙を開く",characterPicker:"観察する人物を選ぶ",currentTownResidents:"この村の人物",moveToAnotherTown:"別の村へ移動",close:"閉じる",noSleepingRoom:"その他・なし（宿泊しない）",locationExterior:"現在の建物の外観",inTransit:"移動中",outAndAbout:"外出中",emptyTownTitle:"この村にはまだキャラクターが住んでいません",emptyTownHelp:"キャラクター画面で生活する村を選んでください。",openCharacterSettings:"キャラクター設定を開く"}
 };
+Object.assign(I18N.en,{"가족":"Family","연락이 끊긴 사이":"No longer in contact","서로 불편한 사이":"Uncomfortable with each other","필요할 때만 연락함":"Contact only when needed","무난한 가족":"An ordinary family bond","서로 의지하는 가족":"Family who rely on each other","무척 각별한 가족":"An especially close family","과거의 가족":"Former family relationship"});
+Object.assign(I18N.ja,{"가족":"家族","연락이 끊긴 사이":"連絡が途絶えた仲","서로 불편한 사이":"互いに居心地の悪い仲","필요할 때만 연락함":"必要な時だけ連絡する","무난한 가족":"穏やかな家族関係","서로 의지하는 가족":"互いに頼り合う家族","무척 각별한 가족":"とても特別な家族","과거의 가족":"過去の家族関係"});
 Object.assign(I18N.en,dictionaryCopy.en);Object.assign(I18N.ja,dictionaryCopy.ja);
 Object.assign(I18N.en,{"동물":"Animals","개":"Dogs","고양이":"Cats","새":"Birds","토끼":"Rabbits","말":"Horses","소형 포유류":"Small mammals","파충류·양서류":"Reptiles & amphibians","어류":"Fish","곤충·절지동물":"Insects & arthropods","가축":"Farm animals","야생동물":"Wild animals","판타지 생물":"Fantasy creatures"});
 Object.assign(I18N.ja,{"동물":"動物","개":"犬","고양이":"猫","새":"鳥","토끼":"ウサギ","말":"馬","소형 포유류":"小型哺乳類","파충류·양서류":"爬虫類・両生類","어류":"魚類","곤충·절지동물":"昆虫・節足動物","가축":"家畜","야생동물":"野生動物","판타지 생물":"ファンタジー生物"});
@@ -3544,12 +3547,12 @@ function siblingWord(relation){
   return pairs.length&&pairs.every(value=>value==="nonblood")?`의${base}`:base;
 }
 function currentOfficialLabel(relation){
-  const base=relation.type==="형제·자매"?siblingWord(relation):relation.type;
+  const base=isFamily(relation.type)?"가족":relation.type;
   if(relation.temporalStatus==="past"){
     const past={연인:"헤어진 연인",부부:"이혼한 부부",친구:"절연한 친구","소꿉친구":"멀어진 소꿉친구","학창 시절 친구들":"멀어진 학창 시절 친구","직장 동료":"전 직장 동료",동거인:"옛 동거인","부모·자녀":"절연한 부모·자녀","형제·자매":`절연한 ${base}`,라이벌:"과거의 라이벌",혐관:"과거의 악연"};
     return past[relation.type]||`과거의 ${base}`;
   }
-  return relation.legalStatus==="관계를 따로 명명하지 않음"?`유사 ${base}`:base;
+  return base;
 }
 function relationshipReality(a,b,official=[]){
   const av=characterViewFor(a,b),bv=characterViewFor(b,a);
@@ -3656,26 +3659,27 @@ function relationship(sharedPass=false){
     ja:{title:"人物関係図",hint:"矢印の色は、出発点の人物が相手に向ける感情を表します。",scope:"表示する人物",all:"すべての人物",custom:"個別選択",town:"タウン",group:"グループ",choose:"人物を選択",refresh:"関係図を更新",save:"PNGで保存",loading:"関係図を準備中…",empty:"関係または視線設定がある人物を2人以上選んでください。",legend:["強い愛","恋愛感情","友好・好意","信頼・安心","尊敬・憧れ","警戒・煩わしさ","恐れ","嫌悪・敵意","中立・未定"]},
     ko:{title:"인물 관계도",hint:"화살표 색은 출발점의 캐릭터가 상대를 보는 감정을 나타냅니다.",scope:"표시할 캐릭터",all:"전체 캐릭터",custom:"개별 선택",town:"마을",group:"그룹",choose:"캐릭터 고르기",refresh:"관계도 갱신",save:"PNG로 저장",loading:"관계도를 준비하는 중이에요.",empty:"관계나 시선 설정이 있는 캐릭터를 두 명 이상 골라 주세요.",legend:["강한 사랑","연애 감정","친구·우호","신뢰·편안","존경·동경","경계·성가심","두려움","싫음·적의","중립·미정"]}
   }[state.uiLanguage]||null)||null;
-  const relationKind=relation=>relation.groupId||relation.groupMembers?.length>2?"groups":["부모·자녀","형제·자매","부부"].includes(relation.type)?"family":["연인","짝사랑"].includes(relation.type)?"romance":["혐관","라이벌","원수"].includes(relation.type)?"rivals":"friends";
+  const relationKind=relation=>relation.groupId||relation.groupMembers?.length>2?"groups":["가족","부모·자녀","형제·자매","부부"].includes(relation.type)?"family":["연인","짝사랑"].includes(relation.type)?"romance":["혐관","라이벌","원수"].includes(relation.type)?"rivals":"friends";
+  const memberLabel=(r,c)=>relationshipMemberName(r,c,state.characters,relationshipReference(r,state.characters,state.activeId,window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId?window.ParallelCityAuth?.getInfo?.()?.user?.uid:null),state.uiLanguage);
   const cards=all.map(r=>{
     if(r.groupId||r.groupMembers?.length>2){
       if(r.groupId&&shownGroups.has(r.groupId))return"";
       if(r.groupId)shownGroups.add(r.groupId);
       const group=r.groupId?all.filter(item=>item.groupId===r.groupId):[r],memberIds=[...new Set(r.groupMembers?.length?r.groupMembers:group.flatMap(item=>[item.a,item.b]))];
       const orderedIds=Array.isArray(r.displayOrder)&&r.displayOrder.length===memberIds.length&&r.displayOrder.every(id=>memberIds.includes(id))?r.displayOrder:memberIds;
-      const members=orderedIds.map(id=>state.characters[id]).filter(Boolean),memberNames=members.map(member=>member.name).join(" × ");
+      const members=orderedIds.map(id=>state.characters[id]).filter(Boolean),memberNames=members.map(member=>memberLabel(r,member)).join(" × ");
       const title=r.name||memberNames||currentOfficialLabel(r),search=`${title} ${memberNames} ${r.type} ${r.stage||""} ${(r.tags||[]).join(" ")}`;
       return `<article class="relationship-list-card relation group-relation" data-official-card data-relation-kind="groups" data-relation-search="${esc(search.toLocaleLowerCase())}"><div class="relation-avatars">${members.map(member=>avatar(member)).join("")}</div><h2>${esc(title)}</h2><p>${esc(memberNames)}</p><p>${esc(currentOfficialLabel(r))} · ${r.temporalStatus==="past"?"과거 관계":"현재 관계"}</p><p class="relation-stage">${esc(r.stage||"편안한 사이")}</p><div class="relation-actions"><button data-edit-rel="${r.id}">${copy.edit}</button><button class="danger" ${r.groupId?`data-delete-group="${r.groupId}"`:`data-delete-rel="${r.id}"`}>${copy.remove}</button></div></article>`;
     }
     const orderedIds=!r.directional&&Array.isArray(r.displayOrder)&&r.displayOrder.length===2?r.displayOrder:[r.a,r.b],a=state.characters[orderedIds[0]],b=state.characters[orderedIds[1]];
     if(!a||!b)return"";
-    const pair=r.type==="부모·자녀"?`${state.characters[r.parentId||r.a]?.name||a.name}(${r.parentRole||"부모"}) → ${state.characters[r.childId||r.b]?.name||b.name}`:`${a.name} ${r.type==="짝사랑"?"→":"×"} ${b.name}`;
+    const pair=isFamily(r.type)||r.type==="사제 관계"?`${memberLabel(r,a)} × ${memberLabel(r,b)}`:r.type==="부모·자녀"?`${state.characters[r.parentId||r.a]?.name||a.name}(${r.parentRole||"부모"}) → ${state.characters[r.childId||r.b]?.name||b.name}`:`${a.name} ${r.type==="짝사랑"?"→":"×"} ${b.name}`;
     const title=r.name||pair,search=`${title} ${pair} ${r.type} ${r.stage||""} ${(r.tags||[]).join(" ")}`;
     return `<article class="relationship-list-card relation" data-official-card data-relation-kind="${relationKind(r)}" data-relation-search="${esc(search.toLocaleLowerCase())}"><div class="relation-avatars">${avatar(a)}${avatar(b)}</div><h2>${esc(title)}</h2><p>${esc(pair)}</p><p>${esc(currentOfficialLabel(r))} · ${r.cohabit?"함께 거주":"따로 거주"}</p><p class="relation-stage">${r.temporalStatus==="past"?"과거 관계 · ":""}${esc(r.stage||"편안한 사이")}</p>${(r.tags||[]).length?`<p class="relation-tags">${r.tags.map(tag=>`#${esc(tag)}`).join(" ")}</p>`:""}<div class="relation-actions"><button data-edit-rel="${r.id}">${copy.edit}</button><button class="danger" data-delete-rel="${r.id}">${copy.remove}</button></div></article>`;
   }).join("");
   const filters=[["all",copy.all],["family",copy.family],["friends",copy.friends],["romance",copy.romance],["groups",copy.groups],["rivals",copy.rivals]];
   const groupCards=(state.characterGroups||[]).map(group=>{
-    const members=(group.memberIds||[]).map(id=>state.characters[id]).filter(Boolean),names=members.map(member=>member.name).join(" × "),search=`${group.name||""} ${names}`.toLocaleLowerCase();
+    const members=(group.memberIds||[]).map(id=>state.characters[id]).filter(Boolean),names=members.map(member=>memberLabel(r,member)).join(" × "),search=`${group.name||""} ${names}`.toLocaleLowerCase();
     const related=all.filter(relation=>(group.memberIds||[]).includes(relation.a)&&(group.memberIds||[]).includes(relation.b)),kind=related.length?relationKind(related[0]):"groups";
     return `<article class="relationship-group-list-card" data-group-card data-group-kind="${kind}" data-group-search="${esc(search)}"><div class="relation-avatars">${members.slice(0,4).map(member=>avatar(member)).join("")}</div><span><h2>${esc(group.name||"이름 없는 그룹")}</h2><p>${esc(names||"구성원 없음")}</p></span><div class="relation-actions"><button data-edit-character-group="${group.id}">${copy.edit}</button><button class="danger" data-delete-character-group="${group.id}">${copy.remove}</button></div></article>`;
   }).join("");

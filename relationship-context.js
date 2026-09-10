@@ -1,3 +1,4 @@
+import {relativeRole} from './relationship-roles.js?v=20260909dev305';
 import {personalityObservation} from './personality-observation.js?v=20260909dev305';
 import {narrativeRate} from "./official-relationship-details.js?v=20260909dev305";
 import {relationshipMemory} from "./relationship-memories.js?v=20260909dev305";
@@ -86,7 +87,8 @@ export function relationshipReaction(actor,other,view={},relation=null,{seed='',
   if(relation?.temporalStatus==='past')context=line('예전에 알던 방식을 그대로 기대하지 않고 지금의 의사를 확인했어요.','They checked what the other person wanted now instead of assuming their old habits still applied.','昔のやり方をそのまま期待せず、今の意思を確認しました。');
   else if(relation?.type==='사제 관계'){
     const teacher=relation.teacherId||(relation.targetRole==='스승'?relation.b:relation.a);
-    context=actor.id===teacher?line('배운 내용을 어디까지 해 보았는지 먼저 살폈어요.','They first checked how far the other person had tried applying what they learned.','教えたことをどこまで試したか、先に確かめました。'):line('배운 것 중 혼자 해 보다가 막힌 부분을 짚었어요.','They pointed out where they had got stuck while trying what they learned.','習ったことを自分で試して、つまずいた部分を示しました。');
+    const pairRole=relativeRole(relation,actor.id,other.id,{[actor.id]:actor,[other.id]:other}).role;
+    context=relation.roleLinks?.length&&!['mentor','student'].includes(pairRole)?null:(pairRole==='student'||!relation.roleLinks?.length&&actor.id===teacher)?line('배운 내용을 어디까지 해 보았는지 먼저 살폈어요.','They first checked how far the other person had tried applying what they learned.','教えたことをどこまで試したか、先に確かめました。'):line('배운 것 중 혼자 해 보다가 막힌 부분을 짚었어요.','They pointed out where they had got stuck while trying what they learned.','習ったことを自分で試して、つまずいた部分を示しました。');
   }else if(relation?.type==='부부')context=line('함께 정할 일과 각자 정할 일을 나누어 확인했어요.','They distinguished shared decisions from things each would decide individually.','一緒に決めることと、それぞれで決めることを分けて確認しました。');
   else if(relation?.type==='부모·자녀')context=line('가족이라는 이유로 대신 결정하지 않고 상대의 선택을 확인했어요.','They checked the other person’s choice instead of deciding for them as family.','家族だからと代わりに決めず、相手の選択を確かめました。');
   else if(relation?.type==='라이벌')context=line('서로 다른 방법으로 한 부분을 나란히 놓고 비교했어요.','They compared the parts they had approached differently.','違う方法で取り組んだ部分を並べて比べました。');

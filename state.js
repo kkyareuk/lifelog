@@ -1,3 +1,4 @@
+import {cohabitWorld} from './relationship-housing.js?v=20260909dev305';
 import {personConversation,topicConversation} from "./conversation-narrative.js?v=20260909dev305";
 import {leisureNarrative} from "./leisure-narrative.js?v=20260909dev305";
 import {isAdultAge} from "./age-groups.js?v=20260909dev305";
@@ -49,7 +50,7 @@ const uid=()=>crypto.randomUUID?.()||`${Date.now()}-${Math.random()}`;
 const clone=x=>JSON.parse(JSON.stringify(x));
 const RELATIONSHIP_OUTSIDE_STATUSES=new Set(["관계를 따로 명명하지 않음","당사자끼리만 관계를 인정함","가까운 사람에게만 알림","누구에게나 공개함"]);
 const normalizeRelationshipLegalStatus=value=>RELATIONSHIP_OUTSIDE_STATUSES.has(value)?value:"가까운 사람에게만 알림";
-const LEGALLY_REGISTERABLE_RELATION_TYPES=new Set(["부부","부모·자녀","형제·자매"]);
+const LEGALLY_REGISTERABLE_RELATION_TYPES=new Set(["부부","가족","부모·자녀","형제·자매"]);
 const normalizeLegalRegistration=(type,value,legacyValue="",legacyLegalStatus="")=>LEGALLY_REGISTERABLE_RELATION_TYPES.has(type)
   ?(value==="unregistered"||legacyValue==="unregistered"||legacyLegalStatus==="법적으로 관계가 등록되지 않음"?"unregistered":"registered")
   :"";
@@ -2079,7 +2080,7 @@ function canonicalRelationshipType(type){
   return ({
     "폴리 관계":"연인","유사 연인":"연인","비공식 연인":"연인","연애 관계":"연인","커플":"연인",
     "절친":"친구","대학 동기":"친구","젊은 날의 친구들":"친구",
-    "유사가족":"동거인","가족":"동거인","보호·피보호":"동거인"
+    "유사가족":"가족","보호·피보호":"가족"
   })[type]||String(type||"친구");
 }
 function normalizeRelationshipTombstoneKey(value){
@@ -2187,21 +2188,11 @@ export function deleteRelationship(id){
 }
 function applyCohabit(r){
   if(!r.cohabit)return;
-  const a=state.characters[r.a],b=state.characters[r.b];if(!a||!b)return;
-  const target=a.homeId;
-  if(!target||!state.homes[target])return;
-  b.residences=Array.isArray(b.residences)?b.residences:[];
-  let residence=b.residences.find(item=>item.homeId===target);
-  if(!residence){
-    const home=state.homes[target],sleepRoomId=home.rooms?.bedroom?"bedroom":Object.keys(home.rooms||{})[0]||"";
-    residence={homeId:target,role:"주거지",stayPattern:"상시 거주",visitDays:[],visitDates:"",notes:"",isPrimary:true,sleepRoomId,sourceRelationshipId:r.id};
-    b.residences.push(residence);
-  }
-  b.residences.forEach(item=>item.isPrimary=item===residence);
-  b.homeId=target;
-  b.sleepRoomId=residence.sleepRoomId||"";
-  b.townId=state.homes[target].townId||a.townId;
+  const target=r.cohabitHomeId||state.characters[r.a]?.homeId;
+  if(!state.homes[target])return;
+  cohabitWorld(state,{...r,cohabitHomeId:target});
 }
+
 export function setWorldBackground(value){
   const art=TOWN_ILLUSTRATIONS.find(item=>item.src===value&&item.pack==="base");
   if(!art)return false;

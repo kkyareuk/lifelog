@@ -2,7 +2,7 @@ const crypto=require('node:crypto');
 const fail=(code,status=400)=>{throw Object.assign(new Error(code),{code,status})};
 const clean=value=>Array.isArray(value)?value.map(clean):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().filter(k=>!['__proto__','constructor','prototype'].includes(k)).map(k=>[k,clean(value[k])])):value;
 const hash=value=>crypto.createHash('sha256').update(JSON.stringify(clean(value||null))).digest('hex');
-const fields=new Set('details a b teacherId sourceRole targetRole name tags type temporalStatus stage faultParty faultReason legalStatus legalRegistration marriageRegistration socialAcceptance interactions interactionsAll cohabit stayTogether intimacy conflict updatedAt displayOrder animationPlacement directional groupId groupMembers parentId childId parentRole kinship kinshipByPair siblingOrder siblingKinshipByPair memberIds'.split(' '));
+const fields=new Set('referenceId roleLinks cohabitHomeId details a b teacherId sourceRole targetRole name tags type temporalStatus stage faultParty faultReason legalStatus legalRegistration marriageRegistration socialAcceptance interactions interactionsAll cohabit stayTogether intimacy conflict updatedAt displayOrder animationPlacement directional groupId groupMembers parentId childId parentRole kinship kinshipByPair siblingOrder siblingKinshipByPair memberIds'.split(' '));
 module.exports=({db,membership,notify,clock,id})=>{
  const collection=kind=>kind==='schedule'?'schedules':kind==='characterGroup'?'characterGroups':'relationships';
  const members=(patch,kind)=>[...new Set((['characterGroup','schedule'].includes(kind)?patch.memberIds:patch.groupMembers?.length?patch.groupMembers:[patch.a,patch.b])||[])];
@@ -21,10 +21,13 @@ module.exports=({db,membership,notify,clock,id})=>{
    for(const key of ['memberIds','groupMembers','tags','interactions'])if(key in patch&&(!Array.isArray(patch[key])||patch[key].length>200||patch[key].some(v=>typeof v!=='string'||v.length>500)))fail('invalid-relationship');
    for(const key of ['a','b','teacherId','type','name','sourceRole','targetRole','parentRole','temporalStatus','stage','faultReason'])if(key in patch&&(typeof patch[key]!=='string'||patch[key].length>2000))fail('invalid-relationship');
    for(const key of ['cohabit','stayTogether','interactionsAll','directional'])if(key in patch&&typeof patch[key]!=='boolean')fail('invalid-relationship');
-   if(kind==='relationship'&&'details' in patch){const {normalizeRelationshipDetails}=await import('./runtime/official-relationship-details.js');if(!patch.details||Array.isArray(patch.details)||typeof patch.details!=='object'||hash(normalizeRelationshipDetails(patch.type,patch.details))!==hash(patch.details))fail('invalid-relationship-details');}
+   if(kind==='relationship'&&'details' in patch){const {normalizeRelationshipDetails}=await import('./runtime/official-relationship-details.js');if(!patch.details||Array.isArray(patch.details)||typeof patch.details!=='object')fail('invalid-relationship-details');const legacy={...patch.details};if('routine' in legacy){if(!['0','1','2'].includes(legacy.routine))fail('invalid-relationship-details');delete legacy.routine}if('firstMeeting' in legacy){if(!['spring','rain','document','introduced','help'].includes(legacy.firstMeeting))fail('invalid-relationship-details');delete legacy.firstMeeting}const normalized=normalizeRelationshipDetails(patch.type,legacy);if(hash(normalized)!==hash(legacy))fail('invalid-relationship-details');patch.details=normalized;}
+   if(kind==='relationship'&&'roleLinks' in patch){const {normalizeRoleLinks}=await import('./runtime/relationship-roles.js');if(!Array.isArray(patch.roleLinks)||hash(normalizeRoleLinks(patch))!==hash(patch.roleLinks))fail('invalid-relationship-roles');}
    const ids=members(patch,kind);if(ids.length<(kind!=='relationship'?1:2)||ids.length>200||ids.some(x=>typeof x!=='string'))fail('invalid-participants');ids.forEach(id);
    if(kind==='relationship'&&(!patch.type||!ids.includes(patch.a)||!ids.includes(patch.b)||patch.a===patch.b))fail('invalid-relationship');
    if(kind==='relationship'&&patch.teacherId&&!ids.includes(patch.teacherId))fail('invalid-teacher');
+   if(kind==='relationship'&&patch.referenceId&&!ids.includes(patch.referenceId))fail('invalid-reference');
+   if(kind==='relationship'&&patch.cohabitHomeId&&(typeof patch.cohabitHomeId!=='string'||patch.cohabitHomeId.includes('/')))fail('cohabit-home-required');
    if(kind==='characterGroup'&&(!patch.name||String(patch.name).length>40))fail('name-required');
    const {root,group,member}=await membership(tx,gid,uid),privileged=group.ownerUid===uid||['owner','manager','operator'].includes(member.role),requestRef=root.collection('relationshipRequests').doc(key),targetId=input.targetId?id(input.targetId):'accepted-'+key;
    if(!privileged&&group.rules?.[kind==='schedule'?'allowScheduleProposals':'allowRelationshipProposals']===false)fail('proposals-disabled',403);
@@ -43,9 +46,10 @@ module.exports=({db,membership,notify,clock,id})=>{
    const sourceName=residents.filter(r=>privileged?r.id===ids[0]:r.data().ownerUid===uid).map(r=>r.data().name).join(' · '),targetName=residents.filter(r=>privileged?r.id!==ids[0]:r.data().ownerUid!==uid).map(r=>r.data().name).join(' · ');
    await Promise.all([...new Set(Object.values(owners))].map(owner=>require("./user-safety").allowContact(db,tx,uid,owner)));
    const request={kind,targetId,patch,baseHash:hash(old.exists?old.data():null),participantIds:ids,owners,recipientUids:recipients,approvals:[],senderUid:uid,sourceName,targetName,status:recipients.length?'pending':'accepted',createdAt:clock()};
+   const applyHousing=!recipients.length&&kind==='relationship'?await require('./relationship-housing')(tx,root,patch):()=>{};
    tx.create(requestRef,request);
    for(const owner of recipients){const proposalId=key+'-'+owner;tx.create(root.collection('proposals').doc(proposalId),{requestRoot:key,sourceId:ids[0],targetId:ids[1]||ids[0],sourceName,targetName,senderUid:uid,recipientUid:owner,type:kind==='schedule'?patch.title:patch.type||patch.name,kind,editing:Boolean(input.targetId),patch,status:'pending',createdAt:clock()});notify(tx,owner,gid+'-'+proposalId+'-requested',gid,proposalId,kind==='schedule'?'schedule-request':'relationship-request')}
-   if(!recipients.length)apply(tx,root,request,key);
+   if(!recipients.length){applyHousing();apply(tx,root,request,key);}
    return {id:key,status:request.status};
   }),
   respond:async(tx,root,uid,input,proposal)=>{
@@ -59,11 +63,12 @@ module.exports=({db,membership,notify,clock,id})=>{
    const accounts=await Promise.all([...new Set(Object.values(request.owners))].map(owner=>tx.get(root.collection('members').doc(owner))));if(accounts.some(a=>!a.exists))fail('recipient-left-group',409);
    await require('./user-safety').allowContact(db,tx,uid,proposal.senderUid);
    const approvals=[...request.approvals,uid],status=!input.accept?'declined':request.recipientUids.every(owner=>approvals.includes(owner))?'accepted':'pending';
+   const applyHousing=status==='accepted'&&request.kind==='relationship'?await require('./relationship-housing')(tx,root,request.patch):()=>{};
    tx.update(requestRef,{approvals:input.accept?approvals:request.approvals,status});
    const reason=input.accept?'':String(input.reason||'').trim().slice(0,500);
    if(status==='pending')tx.update(root.collection('proposals').doc(input.proposalId),{status:'accepted',awaitingOthers:true});
    else for(const owner of request.recipientUids)tx.update(root.collection('proposals').doc(key+'-'+owner),{status,reason,awaitingOthers:false,respondedAt:clock()});
-   if(status==='accepted')apply(tx,root,request,key);
+   if(status==='accepted'){applyHousing();apply(tx,root,request,key);}
    if(status!=='pending')notify(tx,request.senderUid,root.id+'-'+key+'-'+status,root.id,input.proposalId,(request.kind==='schedule'?'schedule-':'relationship-')+(status==='accepted'?'accepted':'declined'));
    return {id:input.proposalId,status};
   }

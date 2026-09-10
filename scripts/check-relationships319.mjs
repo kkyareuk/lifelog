@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {relativeRole,normalizeRoleLinks,relationshipReference} from '../relationship-roles.js';
+import {cohabitWorld} from '../relationship-housing.js';
+import {normalizeRelationshipDetails} from '../official-relationship-details.js';
+const chars={a:{id:'a',ownerUid:'u1',gender:'여성'},b:{id:'b',ownerUid:'u2',gender:'여성'},c:{id:'c',ownerUid:'u1'}};
+const r={a:'a',b:'b',type:'가족',referenceId:'a',groupMembers:['a','b','c'],roleLinks:[{from:'a',to:'b',role:'maternalAunt',blood:true},{from:'b',to:'c',role:'child',blood:true}]};
+assert.deepEqual(relativeRole(r,'a','b',chars),{role:'maternalAunt',blood:true});assert.deepEqual(relativeRole(r,'b','a',chars),{role:'nibling',blood:true});assert.deepEqual(relativeRole(r,'a','c',chars),{role:'cousin',blood:true});
+assert.equal(relationshipReference(r,chars,'a','u2'),'b');assert.equal(relationshipReference(r,chars,'c','u1'),'c');
+r.roleLinks[0].blood=false;assert.equal(relativeRole(r,'a','c',chars).blood,false);
+assert.equal(normalizeRoleLinks({...r,roleLinks:[{from:'a',to:'foreign',role:'child',blood:true}]}).length,0);
+for(const type of ['가족','부부','친구'])assert.deepEqual(normalizeRelationshipDetails(type,{origin:'1',routine:'0',firstMeeting:'spring'}),{origin:'1'});
+const world={characters:{a:{homeId:'ha',residences:[{homeId:'ha',role:'주거지'}]},b:{homeId:'hb',residences:[{homeId:'hb',role:'주거지'},{homeId:'villa',role:'별장'}]},c:{homeId:'hc',residences:[]},d:{homeId:'hc',residences:[]}},homes:{ha:{rooms:{bedroom:{}},townId:'t'},hb:{rooms:{}},hc:{rooms:{}},villa:{kind:'별장',rooms:{}}}};
+const moved=cohabitWorld(world,{id:'r',a:'a',b:'b',groupMembers:['a','b','c'],cohabit:true,cohabitHomeId:'ha'});assert.deepEqual(moved.removed,['hb']);assert(world.homes.villa);assert(world.homes.hc);assert.equal(world.characters.c.homeId,'ha');assert.equal(world.characters.d.homeId,'hc');assert.equal(world.characters.b.residences.find(x=>x.homeId==='villa').isPrimary,false);
+const before=JSON.stringify(world);assert.throws(()=>cohabitWorld(world,{a:'a',b:'b',cohabit:true,cohabitHomeId:'missing'}),/cohabit-home-required/);assert.equal(JSON.stringify(world),before);
+console.log('PASS inverse aunt/niece, own-character perspective, cousin inference, nonblood, invalid roles, origin-only background, multi-member housing, protected second homes and occupants');
