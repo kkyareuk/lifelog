@@ -1055,7 +1055,7 @@ async function createGroup({name}={}){
   return {groupId,inviteCode:inviteDisplay(inviteCode)};
 }
 
-async function joinGroup(rawCode){
+async function joinGroup(rawCode,profile={}){
   const account=requireGroupUser(),inviteCode=cleanInviteCode(rawCode);
   if(inviteCode.length<6)throw Object.assign(new Error("Invalid invite code"),{code:"groups/code-invalid"});
   const invite=await getDoc(doc(db,"groupInvites",inviteCode));
@@ -1063,7 +1063,7 @@ async function joinGroup(rawCode){
   const groupId=String(invite.data().groupId||"");
   if(!groupId)throw Object.assign(new Error("Invite missing group"),{code:"groups/code-invalid"});
   if(!groupState.groups.some(group=>group.id===groupId)){if(!await upload({silent:true,reason:'멀티 참여'}))throw Error('Cloud upload failed');await refreshSlotUsage();assertMultiplayerTownSlot();}
-  await sharedTownRequest('joinGroup',{inviteCode,displayName:accountName()});
+  await sharedTownRequest('joinGroup',{inviteCode,displayName:profile.name||accountName()});
   await refreshGroups({preferredId:groupId});
   return groupId;
 }
@@ -1204,6 +1204,14 @@ async function removeGroupMember(uid){return sharedTownRequest('removeMember',{u
 let leavingGroup=null;
 async function leaveGroup(){if(leavingGroup)return leavingGroup;const groupId=groupState.activeGroupId;if(!groupId)return;leavingGroup=(async()=>{const result=await sharedTownRequest('removeMember',{groupId});if(groupState.activeGroupId===groupId)watchActiveGroup('');await Promise.allSettled([refreshMailbox(true),refreshSlotUsage(),refreshGroups()]);return result})().finally(()=>{leavingGroup=null});return leavingGroup}
 window.DrawerVillageGroups={
+  previewMemberProfile:async rawCode=>{
+    const account=requireGroupUser(),invite=await getDoc(doc(db,'groupInvites',cleanInviteCode(rawCode)));
+    if(!invite.exists()||invite.data()?.active!==true)throw Object.assign(Error('Invite not found'),{code:'groups/code-not-found'});
+    try{const member=await getDoc(doc(db,'groups',invite.data().groupId,'members',account.uid));if(member.exists())return member.data()}
+    catch(error){if(error.code!=='permission-denied')throw error}
+    return {displayName:accountName().slice(0,20),photoURL:account.photoURL||''};
+  },
+  saveMemberProfile:async({groupId,name,photoURL})=>{const account=requireGroupUser();name=String(name||'').trim();if(!name||name.length>20)throw Error('Name must contain 1–20 characters');if(photoURL&&!/^https:\/\//.test(photoURL))throw Error('Invalid photo URL');await updateDoc(doc(db,'groups',groupId,'members',account.uid),{displayName:name,photoURL:String(photoURL||'')});},
   readSafety:()=>sharedTownRequest("readSafety"),setUserBlock:input=>sharedTownRequest("setUserBlock",input),reportContent:input=>sharedTownRequest("reportContent",input),getSnapshot:groupSnapshot,refreshMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
   saveCatalogItem:async input=>{
     const gid=input.groupId;if(gid!==groupState.activeGroupId)throw Error('groups/context-changed');
@@ -1276,7 +1284,7 @@ async function savePublicProfile({name,photo}){
  if(!user)throw Error('Google 로그인이 필요해요.');const session=captureSession();name=String(name||'').trim();if(!name||name.length>20)throw Error('이름을 1~20자로 입력해 주세요.');
  let photoURL=accountPhoto();if(photo){if(!photo.type.startsWith('image/')||photo.size>10*1024*1024)throw Error('10MB 이하 이미지를 선택해 주세요.');const blob=await optimizeCloudImage(photo);assertSession(session);const target=ref(storage,'users/'+session.uid+'/profile/avatar');await uploadBytes(target,blob,{customMetadata:{imageEpoch:mediaEpoch},contentType:blob.type,cacheControl:'public,max-age=60'});photoURL=await getDownloadURL(target);assertSession(session)}
  await updateProfile(user,{displayName:name,photoURL});assertSession(session);await setUserDoc(cloudDoc(session.uid),{profile:{name,photoURL,configured:true}},{merge:true});
- await mapConcurrent(groupState.groups||[],4,async group=>{assertSession(session);const member=doc(db,'groups',group.id,'members',session.uid),existing=await getDoc(member);assertSession(session);if(existing.exists())await updateDoc(member,{displayName:name,photoURL});assertSession(session)});
+
  profileSetupComplete=true;return {name,photoURL};
 }
 

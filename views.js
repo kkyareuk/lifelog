@@ -3193,6 +3193,7 @@ function character(){
   ];
   const personalityCorePane=()=>`<section class="character-book-form-page personality-book-page"><div class="personality-type-book"><b>${t("이 캐릭터의 전체적인 유형","이 캐릭터의 전체적인 유형")}</b><div>${PERSONALITY_TYPES.map(value=>`<button type="button" data-personality-type="${value}" class="${(c.personalityTypes||[]).includes(value)?"on":""}">${value}</button>`).join("")}</div></div><div class="book-form-grid">${personalityCoreFields.map(([label,field,options])=>bookField(label,field,options,c[field]||(field==="morality"?"상황에 따라 판단함":options[0]))).join("")}</div>${bookPageControls(8,'data-character-pane="wardrobe"','data-character-personality-pane="emotion"')}</section>`;
   const personalityEmotionFields=[
+    ["도덕성","morality",DISCOVERY_AXES.morality.values],
     ["평소 정서의 방향","emotionalBaseline",["매우 낙천적임","낙천적인 편","대체로 밝은 편","쾌활한 편","열정적인 편","다정한 편","유혹적인 편","호기심 많은 편","차분한 편","현실적인 편","무덤덤한 편","냉소적인 편","까칠한 편","예민한 편","걱정이 많은 편","불안한 편","침울한 편","비관적인 편","분노를 품은 편"]],
     ["기분 변화 폭","moodVolatility",["거의 흔들리지 않음","안정적인 편","상황에 따라 달라짐","변화가 잦은 편","변화 폭이 큼"]],
     ["감정이 남는 시간","moodPersistence",["금방 지나감","짧게 남음","보통","오래 남음","매우 오래 남음"]],

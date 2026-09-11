@@ -26,4 +26,14 @@
 @media(prefers-reduced-motion:reduce){.supporter-dialog *{animation:none!important}}
 .supporter-dialog[data-page-hidden=true] *{animation-play-state:paused!important}
 
-.supporter-page{width:100%;min-height:100dvh;max-height:none;border:0;border-radius:0;box-shadow:none}.supporter-page .supporter-body{max-height:none;overflow:visible;background:#70523d url("./assets/supporter-wood.png") center/640px auto;min-height:calc(100dvh - 80px)}.supporter-page .supporter-body> :is(h3,p){background:#fff6df;border-radius:12px;padding:14px 18px;color:#44372e}.supporter-page .supporter-list>.supporter-name-wrap{background:#fff6df;border:1px solid #b89770;border-radius:12px;box-shadow:0 3px 0 #33211755}.supporter-page>header{position:sticky;top:0;background:#fff9ed;z-index:1}
+[data-active-tab="credits"] #app main[data-credits-page]{padding:0;margin:0;max-width:none;background:#70523d url("./assets/supporter-wood.png") center/640px auto}
+.supporter-page{width:100%;min-height:100dvh;max-height:none;border:0;border-radius:0;box-shadow:none;background:#70523d url("./assets/supporter-wood.png") center/640px auto;color:#fff6df}
+.supporter-page .supporter-body{max-height:none;overflow:visible;min-height:calc(100dvh - 120px);padding:20px clamp(18px,5vw,60px)}
+.supporter-page .supporter-body>h3{font-size:clamp(19px,4vw,30px);margin:0 0 12px}.supporter-page .supporter-body>p{color:#fff6df}
+.supporter-page>.credits-header{display:flex;align-items:center;position:relative;min-height:120px;box-sizing:border-box;padding:36px 22px 20px 106px;border:0;background:transparent}
+.supporter-page .credits-back{position:absolute;left:22px;top:36px;width:64px;height:64px;min-height:0;padding:0;border:0;border-radius:50%;background:transparent;box-shadow:none}
+.supporter-page .credits-back img{width:100%;height:100%;object-fit:contain}
+.supporter-page input[type=search]{width:100%;padding:12px 16px;border:1px solid #b99a72;border-radius:22px;background:#fff6df;color:#44372e}
+.supporter-page .supporter-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 10px;align-items:center}
+.supporter-page .supporter-name-wrap{display:block;text-align:center;padding:12px 2px;background:none;border:0;box-shadow:none}
+.supporter-page .supporter-name{text-shadow:0 1px 2px #fff,0 0 5px #fff;font-size:clamp(14px,4vw,var(--supporter-size,24px))}

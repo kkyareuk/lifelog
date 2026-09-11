@@ -1,3 +1,4 @@
+import {openMemberProfile} from './group-member-profile.js?v=20260909dev305';
 import {withLogNameBatch} from './life-log-localization.js?v=20260909dev305';
 import {frameTask} from './frame-task.js?v=20260909dev305';
 import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
@@ -1729,7 +1730,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     // delayed and could briefly place an invisible scroll layer over the nav.
     document.documentElement.dataset.drawerRendered="1";
     scheduleHomeLifeRefresh();
-    afterScreenRender(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();return {c:c?structuredClone(c):null,scene:c?eventFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?eventFor(c):null)}});
+    afterScreenRender(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();return {c:c?structuredClone(c):null,scene:c?currentSceneFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?currentSceneFor(c):null)}});
     if(!selectionOnly)afterScreenRender(()=>scheduleLiveSceneRefresh());
     if(fullCharacterBookActive){
       const main=document.querySelector("#app>main");
@@ -2445,7 +2446,7 @@ function bindCharacterSceneLayoutEditors(){
 function activateCharacterInObservedTown(id,date=new Date()){
   const character=state.characters[id];
   if(!character)return;
-  const townId=eventFor(character,date)?.townId||character.townId;
+  const townId=currentSceneFor(character,date)?.townId||character.townId;
   if(townId&&townId!==state.activeTownId&&state.towns.some(town=>town.id===townId))switchTown(townId,{deferSave:true});
   setActive(id);
 }
@@ -2616,6 +2617,15 @@ function bind(){
   bindFamilyNames(render);
   if(state.activeTab==="credits")openSupporterCredits();
   const groupApi=window.DrawerVillageGroups;
+  document.querySelector('[data-member-profile-edit]')?.addEventListener('click',()=>{
+    const snapshot=groupApi.getSnapshot(),uid=window.ParallelCityAuth?.getInfo?.().user?.uid,groupId=snapshot.activeGroupId;
+    const profile=(snapshot.members||[]).find(member=>member.uid===uid)||{};
+    openMemberProfile({language:state.uiLanguage,profile,onSave:async values=>{
+      if(groupApi.getSnapshot().activeGroupId!==groupId)throw Error('Group changed');
+      const photoURL=values.file?await groupApi.uploadHomeMemberImage(values.file):values.photoURL;
+      await groupApi.saveMemberProfile({groupId,name:values.name,photoURL});
+    },onComplete:()=>render()});
+  });
   let directoryFilter="all";
   const filterDirectory=()=>{const query=$("[data-directory-search]")?.value.toLocaleLowerCase()||"";let count=0;Array.from(document.querySelectorAll("[data-directory-name]")).forEach(card=>{card.hidden=!(card.dataset.directoryName.toLocaleLowerCase().includes(query)&&(directoryFilter==="all"||card.dataset.groupOwned==="true"));if(!card.hidden)count++});$("[data-directory-count]")?.replaceChildren(document.createTextNode(count))};
   Array.from(document.querySelectorAll("[data-directory-filter]")).forEach(button=>button.onclick=()=>{directoryFilter=button.dataset.directoryFilter;Array.from(document.querySelectorAll("[data-directory-filter]")).forEach(b=>b.setAttribute("aria-pressed",String(b===button)));filterDirectory()});
@@ -2661,8 +2671,15 @@ function bind(){
   });
   $(`[data-group-join]`)?.addEventListener("submit",event=>{
     event.preventDefault();const form=event.currentTarget,button=form.querySelector('button[type="submit"]');
-    showMultiplayerDetail();
-    runGroupAction(button,()=>groupApi.join(new FormData(form).get("code")),({en:"Joined multiplayer.",ja:"マルチに参加しました。",ko:"멀티에 참여했어요."}[state.uiLanguage]||"멀티에 참여했어요."));
+    const code=new FormData(form).get("code");
+    runGroupAction(button,async()=>{
+      const profile=await groupApi.previewMemberProfile(code);
+      openMemberProfile({language:state.uiLanguage,profile,joining:true,onSave:async values=>{
+        const groupId=await groupApi.join(code,{name:values.name});
+        const photoURL=values.file?await groupApi.uploadHomeMemberImage(values.file):values.photoURL;
+        await groupApi.saveMemberProfile({groupId,name:values.name,photoURL});
+      },onComplete:()=>{showMultiplayerDetail();render()}});
+    });
   });
   $$(`[data-group-open]`).forEach(button=>button.addEventListener("click",()=>{showMultiplayerDetail();groupApi?.select(button.dataset.groupOpen)}));
   $$(`[data-group-section-open]`).forEach(button=>button.addEventListener("click",()=>{
@@ -4660,7 +4677,7 @@ function recordTabHistory(tab,replace=false){
   if(replace)history.replaceState(next,"",url);
   else if(history.state?.drawerVillageTab!==tab)history.pushState(next,"",url);
 }
-function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false}={}){
+function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false,homeId=""}={}){
   if(!APP_TABS.includes(tab))return;
   // Read/reset the old viewport before replacing DOM. Reading scrollX after
   // render forced the new screen layout inside the tap handler.
@@ -4683,8 +4700,8 @@ function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false}={}){
   if(tab==="settings"&&!new URLSearchParams(location.hash.replace(/^#/,"")).get("pane"))setSettingsPane("home");
   if(tab==="home"){
     if(state.activeTab!=="home")state.homeEditMode=false;
-    const character=active(),current=character?eventFor(character):null;
-    const currentHomeId=current?.home?(current.visitHomeId||character?.homeId):character?.homeId;
+    const character=active(),current=character&&!homeId?currentSceneFor(character):null;
+    const currentHomeId=homeId||(current?.home?(current.visitHomeId||character?.homeId):character?.homeId);
     if(currentHomeId&&state.homes[currentHomeId])setActiveHome(currentHomeId);
   }
   if(tab==="relationship"&&state.characters[state.activeId]){
@@ -6210,6 +6227,7 @@ window.addEventListener("drawer-village-character-notification-received",event=>
   if(contactMailbox.accept(event.detail||{})&&state.activeTab==="mailbox")render();
 });
 installContextMenu({
+ openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},
  execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});render();return true}const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result},

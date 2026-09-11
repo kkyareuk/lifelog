@@ -31,7 +31,7 @@ for(const asset of gameWebp.assets){
 }
 const includedFiles=new Set([
   "diamond-shop.css","diamond-shop.js",
-  "life-tasks.js","automatic-activities.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
+  "life-tasks.js","automatic-activities.js","group-member-profile.css","group-member-profile.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
   "world-transfer.css","mailbox.css","groups.css","multiplayer-directory.css","dictionary.css","home-editor-ui.css",
   "index.html","app.css","character-book.css","shop.css","interface-system.css","home-scene-layout.css","theme.css","app.js","auth.js","config.js",
   "font-preferences.css","manifest.webmanifest",

@@ -10,7 +10,7 @@ html[data-color-mode][data-visual-theme]{
 html[data-color-mode="dark"][data-visual-theme]{color-scheme:dark}
 html[data-color-mode][data-visual-theme],
 html[data-color-mode][data-visual-theme] body,
-html[data-color-mode][data-visual-theme] main:not(.web-drawer-content){
+html[data-color-mode][data-visual-theme] main:not(.web-drawer-content):not([data-credits-page]){
   color:var(--ink)!important;
   background:
     radial-gradient(circle at 8% -8%,color-mix(in srgb,var(--s) 18%,transparent),transparent 34%),

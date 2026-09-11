@@ -328,6 +328,8 @@ for(const action of ['joinGroup','readSafety','setUserBlock','reportContent','pu
   try{const identity=await signedInUser(req);res.json(await sharedService[action](identity.uid,req.body||{}))}
   catch(error){const status=Number(error.status);res.status(status>=400&&status<600?status:503).json({message:error.status?error.message:'groups/server-error'})}
 });
+const noticeAdmin=require('./notice-admin').createService({db});
+for(const action of ['list','save','publish'])sharedApp.post('/notice-admin/'+action,async(req,res)=>{try{const identity=await signedInUser(req);res.json(await noticeAdmin[action](identity,req.body||{}))}catch(e){res.status(e.status||503).json({message:e.status?e.message:'처리하지 못했어요. 다시 시도해 주세요.'})}});
 exports.sharedTownApi=onRequest({region:'asia-northeast3',timeoutSeconds:60,memory:'512MiB',maxInstances:4,concurrency:4},sharedApp);
 
 exports.relationshipNotification=require('./shared-notifications')({db});

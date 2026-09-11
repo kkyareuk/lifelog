@@ -1,0 +1,6 @@
+.member-profile-dialog{width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 40px);box-sizing:border-box;overflow:auto;border:3px solid #967659;border-radius:24px;padding:24px;background:#fff8e8;color:#443327}
+.member-profile-dialog::backdrop{background:#21190e99}
+.member-profile-dialog form{display:grid;gap:16px}.member-profile-dialog h2,.member-profile-dialog p{margin:0}.member-profile-dialog p{font-size:14px;line-height:1.5}
+.member-profile-dialog label{display:grid;gap:8px;font-size:16px}.member-profile-dialog input{min-width:0;width:100%;box-sizing:border-box;font:inherit;padding:10px;border:1px solid #bba48c;border-radius:10px;background:#fffdf8}
+.member-profile-dialog img{object-fit:cover;border-radius:50%;justify-self:center}.member-profile-dialog img[hidden]{display:none}
+.member-profile-dialog button{font:inherit;min-height:44px;border:1px solid #a78c6d;border-radius:12px;padding:8px 14px;background:#f7ead0;color:inherit}.member-profile-dialog footer{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}

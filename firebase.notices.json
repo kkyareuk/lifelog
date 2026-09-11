@@ -1,0 +1,21 @@
+{
+  "hosting": {
+    "site": "drawer-village-notices",
+    "public": "notice-site",
+    "ignore": [
+      "firebase.json",
+      "**/.*"
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-store"
+          }
+        ]
+      }
+    ]
+  }
+}
