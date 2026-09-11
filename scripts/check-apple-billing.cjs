@@ -4,8 +4,9 @@ const {accountToken,validatePurchase,installAppleBilling,productMap}=require('..
 const express=require('../functions/node_modules/express');
 (async()=>{
 const uid='buyer',environment='Sandbox';
-const slotProduct=process.argv.includes('--diamonds')?'diamonds_100':process.argv.includes('--single')?'character_slot_1':'character_slots_5';
-const slotField=slotProduct==='diamonds_100'?'diamondPaid':slotProduct==='character_slot_1'?'characterSingleSlots':'characterSlotPacks';
+const chosen=process.argv.find(a=>a.startsWith('--product='))?.split('=')[1];
+const slotProduct=chosen||(process.argv.includes('--diamonds')?'diamonds_100':process.argv.includes('--single')?'character_slot_1':'character_slots_5');
+const slotField=slotProduct==='diamonds_100'?'diamondPaid':slotProduct==='character_slot_1'?'characterSingleSlots':slotProduct==='town_slot_1'?'townSlotPacks':slotProduct==='green_tea'?'teaSupportCount':'characterSlotPacks';
 const grant=slotProduct==='diamonds_100'?100:1;
 const purchase={transactionId:'123',productId:'com.drawervillage.app.'+slotProduct,bundleId:'com.drawervillage.app',environment,type:'Consumable',quantity:1,appAccountToken:accountToken(uid)};
 assert.match(accountToken(uid),/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
@@ -38,5 +39,10 @@ await billing.purchase(slotProduct);assert.equal(finish,1);
 verified=false;await assert.rejects(()=>billing.purchase(slotProduct));assert.equal(finish,1);
 verified=true;await billing.restorePurchases(false);loggedIn=false;const before=buy;await assert.rejects(()=>billing.purchase(slotProduct),/로그인/);assert.equal(buy,before);
 loggedIn=true;verified=true;cancel=true;await assert.rejects(()=>billing.purchase(slotProduct),/취소/);assert.equal(finish,1);
+cancel=false;window.ParallelCityAuth.refreshEntitlements=async()=>{throw Error('optional-refresh-offline')};
+assert.equal((await billing.restorePurchases(false)).accountChecked,true);
+history=[{transactionId:'123'}];verified=false;await assert.rejects(()=>billing.restorePurchases(false));
+const beforeRetry=buy;await assert.rejects(()=>billing.purchase(slotProduct));assert.equal(buy,beforeRetry,'Unverified unfinished payment must block new charges');
+history=[];verified=true;await billing.purchase(slotProduct);assert.equal(buy,beforeRetry+1,'Earlier restore failure must not permanently block a fresh purchase');
 console.log('PASS Apple billing: identity, signed-receipt rejection, transaction idempotency, sandbox separation, refund replay, server-before-finish, login gate, cancellation, price/product mapping');
 })().catch(e=>{console.error(e);process.exitCode=1});

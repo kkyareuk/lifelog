@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import vm from 'node:vm';
+import {inputIdleDelay,installInputBoundary} from '../input-boundary.js';
+const listeners=new Map();const root={addEventListener:(k,fn)=>listeners.set(k,fn),removeEventListener:k=>listeners.delete(k)};
+assert.equal(inputIdleDelay(),0);const dispose=installInputBoundary(root);listeners.get('pointermove')();assert(inputIdleDelay()>300);dispose();assert.equal(listeners.size,0);
+const src=fs.readFileSync(new URL('../state.js',import.meta.url),'utf8');const code=src.slice(src.indexOf('export function save('),src.indexOf('export function flushSave(')).replace('export ','');
+let task,delay=200,writes=0;const context={isolatedWorldDepth:0,editorPersonalState:null,timer:null,pendingNotify:false,document:{querySelector:()=>null,activeElement:null},clearTimeout(){},setTimeout:(fn)=>{task=fn;return 1},inputIdleDelay:()=>delay,clearDeferredTextSave(){},writeState:()=>{writes++;return true}};vm.createContext(context);vm.runInContext(code,context);
+context.save();task();assert.equal(writes,0);delay=0;task();assert.equal(writes,1);delay=350;context.save(true);assert.equal(writes,2,'Explicit save bypasses input deferral');
+console.log('PASS input delays bulk storage; idle writes; explicit save bypasses; listeners cleaned');

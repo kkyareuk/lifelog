@@ -31,7 +31,7 @@ function appleServices(privateKey,environment=process.env.APPLE_IAP_ENVIRONMENT)
  return {environment,verifier,api};
 }
 function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimestamp,privateKey,services=environment=>appleServices(privateKey(),environment)}){
- const handle=fn=>async(req,res)=>{try{await fn(req,res)}catch(e){res.status(Number.isInteger(e.status)&&e.status>=400&&e.status<=599?e.status:503).json({verified:false,entitlementApplied:false,code:e.code||'APPLE_VERIFICATION_FAILED'})}};
+ const handle=fn=>async(req,res)=>{try{await fn(req,res)}catch(e){res.status(Number.isInteger(e.status)&&e.status>=400&&e.status<=599?e.status:503).json({verified:false,entitlementApplied:false,code:e.message==='Account deletion in progress'?'ACCOUNT_DELETION_IN_PROGRESS':e.status===401?'AUTH_REQUIRED':e.code||'APPLE_VERIFICATION_FAILED'})}};
  // Read-only recovery of already verified test purchases; never writes production grants.
  app.post('/apple-billing/entitlements',handle(async(req,res)=>{const identity=await signedInUser(req);const snapshot=await db.collection('appleSandboxAccounts').doc(identity.uid).get();res.json({uid:identity.uid,sandboxEntitlements:snapshot.data()?.appleSandboxEntitlements||{}})}));
  app.post('/apple-billing/prepare',handle(async(req,res)=>{const identity=await signedInUser(req),service=services();res.json({appAccountToken:accountToken(identity.uid),environment:service.environment,products:productMap})}));

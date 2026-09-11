@@ -3012,7 +3012,7 @@ function bind(){
     button.disabled=true;
     try{
       const result=await window.DrawerVillagePlayBilling?.restorePurchases?.();
-      showToast(result?.restored?`${result.restored}개의 구매 내역을 복원했습니다`:"복원할 구매 내역이 없습니다");
+      showToast(result?.accountChecked?({ko:"계정의 구매 내역을 확인하고 반영했어요.",en:"Account purchases checked and applied.",ja:"アカウントの購入履歴を確認・反映しました。"}[state.uiLanguage]):result?.restored?`${result.restored}개의 구매 내역을 복원했습니다`:"복원할 구매 내역이 없습니다");
     }catch(error){showToast(error?.message||"구매 내역을 확인하지 못했습니다")}
     finally{button.disabled=false}
   });

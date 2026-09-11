@@ -28,7 +28,9 @@ assert.ok(read("ios/App/App/public/auth.js").includes("signInWithCredential"));
 assert.ok(read("ios/App/App/public/config.js").includes("appleBilling"));
 assert.ok(read("ios/App/App/public/config.js").includes("playBilling||{}),enabled:false"));
 assert.ok(read("ios/App/Podfile").includes("CapacitorFirebaseAuthentication/Google"));
+assert(config.plugins.FirebaseAuthentication.providers.includes("apple.com"),"Apple reauthentication provider missing");
 console.log("PASS iOS preparation: Xcode project, version, seven native plugins, bundled modules/audio, configured Google login and Apple billing bridge preparation (not live purchase verification).");
 if(process.argv.includes("--release")){
  assert.equal(release.appStoreReady,true,"NOT READY: signing, device QA, final icon, Apple login, StoreKit/server verification, account deletion and privacy review remain. Simulator compilation alone is not release approval. See APP-IOS.md.");
 }
+

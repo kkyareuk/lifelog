@@ -1,3 +1,4 @@
+import {accountIdentity} from "./account-identity.js";
 import {bootstrapAuth} from './auth-bootstrap.js';
 import {requestDeadline} from './request-deadline.js';
 import {mapConcurrent} from './bounded-work.js?v=20260909dev305';
@@ -1281,7 +1282,7 @@ if(ready){
         publishEntitlements(null);
         storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
         publishGuideState(localGuideKeys());
-        status(user?`Google 계정 연결됨 · ${user.email||accountName()}`:"Google 로그인 안 됨");
+        status(accountIdentity(user,window.ParallelCity?.getState?.()?.uiLanguage)+ (user?` · ${user.email||accountName()}`:""));
         if(user){
           await refreshMediaEpoch();if(epoch!==accountEpoch)return;
           let initialSnapshot=null;
@@ -1321,7 +1322,7 @@ async function revokeAppleDeletionAuthorization(current,authorizationCode){
   // Use the authenticated web session. Native Firebase has no current user when
   // skipNativeAuth is enabled. CODE/3 is the same token type used by its iOS SDK.
   const response=await fetch('https://identitytoolkit.googleapis.com/v2/accounts:revokeToken?key='+encodeURIComponent(cfg.apiKey),{method:'POST',headers:{'Content-Type':'application/json','X-Ios-Bundle-Identifier':'com.drawervillage.app'},body:JSON.stringify({providerId:'apple.com',tokenType:'CODE',token:authorizationCode,idToken}),signal:controller.signal});
-  if(!response.ok)throw Error('apple-revocation-failed');
+  if(!response.ok){const body=await requestDeadline(response.json(),'delete-revoke-response').catch(()=>({}));const reason=String(body.error?.message||'apple-revocation-failed').split(' : ')[0].replace(/[^a-zA-Z0-9_-]/g,'').slice(0,80);throw Object.assign(Error(reason),{code:reason})}
   if(user?.uid!==uid)throw Error('account-changed');
  }finally{clearTimeout(timer)}
 }
@@ -1334,7 +1335,7 @@ async function deleteOwnAccount(){
  const apple=current.providerData.some(p=>p.providerId==='apple.com');
  if(!apple&&!current.providerData.some(p=>p.providerId==='google.com'))throw Error(text('이 로그인 방식은 삭제 요청 메일로 문의해 주세요.','Please use the deletion request email for this sign-in method.','このログイン方式は削除依頼メールをご利用ください。'));
  if(!confirm(text('계정과 클라우드 게임 데이터 및 사진을 삭제할까요? 되돌릴 수 없습니다. 본인 확인 후 삭제 범위를 한 번 더 확인합니다.','Delete your account, cloud game data and photos? This cannot be undone. After reauthentication, you will confirm the scope.','アカウントとクラウドのゲームデータ・写真を削除しますか？元に戻せません。本人確認後、削除範囲を再確認します。')))return false;
- deletingAccount=true;window.dispatchEvent(new Event("drawer-village-auth-busy"));
+ deletingAccount=true;status(text("본인 확인 중… Apple 또는 Google 인증창을 확인해 주세요.","Verifying identity… Check the Apple or Google sign-in window.","本人確認中… AppleまたはGoogleの認証画面をご確認ください。"));window.dispatchEvent(new Event("drawer-village-auth-busy"));
  const call=async(action,body={})=>{if(user?.uid!==uid)throw Error('account-changed');const token=await requestDeadline(current.getIdToken(true),'delete-token');if(user?.uid!==uid)throw Error('account-changed');const response=await requestDeadline(fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/accountDeletionApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)}),'delete-'+action,30000);const result=await requestDeadline(response.json(),'delete-response');if(user?.uid!==uid)throw Error('account-changed');if(!response.ok)throw Error(result.code||'account-deletion-failed');return result};
  try{
   const native=window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication;
@@ -1343,11 +1344,12 @@ async function deleteOwnAccount(){
   else if(native){const result=await requestDeadline(native.signInWithGoogle({skipNativeAuth:true,useCredentialManager:false}),"delete-reauth",60000);if(!result?.credential?.idToken)throw Error('missing-id-token');await requestDeadline(reauthenticateWithCredential(current,GoogleAuthProvider.credential(result.credential.idToken)),"delete-credential");}
   else await requestDeadline(reauthenticateWithPopup(current,apple?new OAuthProvider('apple.com'):new GoogleAuthProvider()),"delete-reauth",60000);
   if(user?.uid!==uid)throw Error('account-changed');
+  status(text('삭제할 데이터 범위를 확인하는 중…','Checking data to delete…','削除対象のデータを確認中…'));
   const preview=await call('preview');
   const groups=(preview.ownedGroups||[]).map(g=>g.name).join(', ');
-   if(!confirm(text('최종 확인','Final confirmation','最終確認')+'\n'+text('계정의 게임 데이터와 사진을 삭제합니다. 방장인 멀티 그룹도 함께 삭제됩니다.','Your game data and photos will be deleted, including multiplayer groups you own.','ゲームデータ・写真と、自分がホストのマルチグループも削除します。')+'\n'+groups+'\n'+text('결제 관련 보관 기록은 별도로 유지될 수 있습니다. 삭제할까요?','Retained payment records may remain separately. Delete now?','決済の保管記録は別途残る場合があります。削除しますか？')))return false;
+   if(!confirm(text('최종 확인','Final confirmation','最終確認')+'\n'+text('계정의 게임 데이터와 사진을 삭제합니다. 방장인 멀티 그룹도 함께 삭제됩니다.','Your game data and photos will be deleted, including multiplayer groups you own.','ゲームデータ・写真と、自分がホストのマルチグループも削除します。')+'\n'+groups+'\n'+text('결제 관련 보관 기록은 별도로 유지될 수 있습니다. 삭제할까요?','Retained payment records may remain separately. Delete now?','決済の保管記録は別途残る場合があります。削除しますか？'))){status(text('계정 삭제를 취소했어요.','Account deletion cancelled.','アカウント削除をキャンセルしました。'));return false;}
   status(text('계정을 삭제하는 중… 앱을 닫지 말아 주세요.','Deleting your account… Keep the app open.','アカウントを削除中…アプリを閉じないでください。'));
-  if(appleAuthorizationCode){try{await revokeAppleDeletionAuthorization(current,appleAuthorizationCode)}catch(error){throw Error(text('Apple 연결을 해제하지 못했어요. 잠시 후 계정 삭제를 다시 시도해 주세요.','Could not revoke Apple access. Please try account deletion again shortly.','Apple連携を解除できませんでした。しばらくしてからアカウント削除を再試行してください。'))}}
+  if(appleAuthorizationCode){try{await revokeAppleDeletionAuthorization(current,appleAuthorizationCode)}catch(error){throw Error(text('Apple 연결을 해제하지 못했어요. 잠시 후 계정 삭제를 다시 시도해 주세요.','Could not revoke Apple access. Please try account deletion again shortly.','Apple連携を解除できませんでした。しばらくしてからアカウント削除を再試行してください。')+' ('+String(error.code||error.message).replace(/[^a-zA-Z0-9_/-]/g,'').slice(0,80)+')')}}
   await requestDeadline(activeSyncDone,'delete-sync');accountEpoch+=1;
   const deletion=await call('delete',{confirm:true,deleteOwnedGroups:true});if(deletion.deleted!==true)throw Error('account-deletion-unconfirmed');
   await requestDeadline(signOut(auth),'delete-signout').catch(()=>{});if(native)await requestDeadline(native.signOut(),'delete-native-signout').catch(()=>{});
@@ -1356,7 +1358,7 @@ async function deleteOwnAccount(){
   localStorage.switchScope('guest');
   alert(text('계정과 클라우드 데이터 삭제가 완료됐어요.','Your account and cloud data have been deleted.','アカウントとクラウドデータの削除が完了しました。'));
   location.reload();return true;
- }catch(error){if(error?.code==='sync/request-timeout')throw Error(text('계정 삭제 절차의 응답을 확인하지 못했어요. 삭제 완료를 확인하기 전에는 기기 기록을 지우지 않습니다.','Could not confirm the account deletion response. Device records will remain until deletion is confirmed.','アカウント削除手続きの応答を確認できませんでした。削除完了を確認するまで端末の記録は消しません。')+' ('+(error.phase||error.code)+')');throw error;}finally{deletingAccount=false;window.dispatchEvent(new Event('drawer-village-auth-busy'));}
+ }catch(error){if(error?.code==='sync/request-timeout'){const failure=Error(text('계정 삭제 절차의 응답을 확인하지 못했어요. 삭제 완료를 확인하기 전에는 기기 기록을 지우지 않습니다.','Could not confirm the account deletion response. Device records will remain until deletion is confirmed.','アカウント削除手続きの応答を確認できませんでした。削除完了を確認するまで端末の記録は消しません。')+' ('+(error.phase||error.code)+')');status(failure.message);throw failure;}status(error.message);throw error;}finally{deletingAccount=false;window.dispatchEvent(new Event('drawer-village-auth-busy'));}
 }
 
 window.DrawerVillageAccountImages={

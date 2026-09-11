@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-12-appstore360-slots-tablet-deletion",
-  "version": "1.0.326",
-  "build": 360,
+  "request": "2026-09-12-appstore361-restore-identity-input",
+  "version": "1.0.327",
+  "build": 361,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

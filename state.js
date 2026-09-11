@@ -1,3 +1,4 @@
+import {inputIdleDelay} from "./input-boundary.js?v=20260909dev305";
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {writeAnswerDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
@@ -1073,6 +1074,8 @@ export function save(immediate=false,notify=true){
   pendingNotify=pendingNotify||notify;
   document.querySelector("#save-state")?.replaceChildren(document.createTextNode("저장 중…"));
   const run=()=>{
+    const idleDelay=immediate?0:inputIdleDelay();
+    if(idleDelay>0){timer=setTimeout(run,idleDelay);return;}
     const focused=document.activeElement;
     const type=String(focused?.type||"text").toLowerCase();
     const editingText=focused&&(focused.tagName==="TEXTAREA"||(focused.tagName==="INPUT"&&!['checkbox','radio','range','color','file','button','submit'].includes(type))||focused.isContentEditable);

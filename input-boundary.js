@@ -3,6 +3,9 @@ export function createInputBoundary(now=()=>performance.now()){
  let boundary=0;
  return {commit(){boundary=now()},stale(stamp){return Number.isFinite(stamp)&&stamp>0&&stamp+1<boundary},get boundary(){return boundary}};
 }
+let lastInteraction=-Infinity;
+export const inputIdleDelay=(now=performance.now())=>Math.max(0,350-(now-lastInteraction));
+const noteInteraction=()=>{lastInteraction=performance.now()};
 const guard=createInputBoundary();
 export const commitInputBoundary=()=>guard.commit();
 export function installInputBoundary(root=document){
@@ -11,6 +14,7 @@ export function installInputBoundary(root=document){
  let discardedGesture=false;
  const check=event=>{
   if(!event.isTrusted)return;
+  noteInteraction();
   const old=guard.stale(normalize(event));
   if(event.type==='pointerdown')discardedGesture=old;
   if(event.type==='pointerup'&&old)discardedGesture=true;
@@ -20,6 +24,7 @@ export function installInputBoundary(root=document){
   if(event.type==='click')queueMicrotask(commitInputBoundary);
  };
  for(const kind of ['pointerdown','pointerup','click'])root.addEventListener(kind,check,{capture:true,passive:false});
+ for(const kind of ['pointermove','wheel','keydown'])root.addEventListener(kind,noteInteraction,{capture:true,passive:true});
  root.addEventListener('close',commitInputBoundary,true);
- return ()=>{for(const kind of ['pointerdown','pointerup','click'])root.removeEventListener(kind,check,true);root.removeEventListener('close',commitInputBoundary,true)};
+ return ()=>{for(const kind of ['pointermove','wheel','keydown'])root.removeEventListener(kind,noteInteraction,true);for(const kind of ['pointerdown','pointerup','click'])root.removeEventListener(kind,check,true);root.removeEventListener('close',commitInputBoundary,true)};
 }
