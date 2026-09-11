@@ -54,4 +54,3 @@ await page.setViewportSize({width:384,height:854});await page.evaluate(()=>{wind
 await page.evaluate(()=>{window.PARALLEL_CITY_FIREBASE={apiKey:'fixture',projectId:'fixture',authDomain:'fixture'};window.DrawerVillageAuthStartupError='timeout';window.ParallelCity.mediaChanged()});await page.locator('[data-auth-retry]').waitFor();assert.equal(await page.locator('[data-welcome-create]').count(),0);assert.equal(await page.locator('.shop-store').count(),0);assert((await page.locator('.village-account-loading').innerText()).includes('기록은 지우지 않았어요'));
 assert.deepEqual(errors,[]);console.log('PASS real book hidden native select / custom popup, room common/public/private permissions, unchanged room keeps timeline');
 }finally{await browser.close();server.close()}
-

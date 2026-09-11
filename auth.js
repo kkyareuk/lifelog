@@ -678,7 +678,8 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
     status(`${accountName()} · 올리는 중`);
     await refreshMediaEpoch();assertSession(session);
     const localState=window.ParallelCity.getState();
-    const allowedCharacters=5+(Math.max(0,Number(entitlements.characterSlotPacks)||0)*5)+Math.max(0,Number(entitlements.characterSingleSlots)||0);
+    const localAccess=effectiveEntitlements();
+    const allowedCharacters=5+(Math.max(0,Number(localAccess.characterSlotPacks)||0)*5)+Math.max(0,Number(localAccess.characterSingleSlots)||0);
     const localCharacterCount=Array.isArray(localState?.order)
       ?new Set(localState.order.filter(id=>localState.characters?.[id])).size
       :Object.keys(localState?.characters||{}).length;
