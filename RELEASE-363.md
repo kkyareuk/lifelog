@@ -9,3 +9,14 @@ Multiplayer verifies Firebase tokens and group membership/owner UID separately f
 No new player copy; previous scoped EN/JA copy complete. Overall translation not remeasured. Android360 unchanged.
 
 Upload34645610856 accepted build363; final signed app and profile both verified Apple sign-in entitlement. No review submission. New reports remain open: accounts missing reciprocally in multiplayer roster (group codes awaited), Android360 personal-town input freeze after multiplayer. Local browser fixture with three repeated actual multiplayer-switcher -> personal town -> back -> swipe interactions passes after dismissing first-use guide; does not reproduce device/network conditions or establish device fix.
+
+## 2026-09-12 release submission
+User confirmed successful account deletion on363 after earlier purchase restoration success and explicitly requested iOS release. User also confirmed mutual test blocking/reporting explains the roster visibility report. Android360 report corrected from persistent freeze to delayed response after multiplayer; unresolved, no full-performance-fix claim.
+
+App Store Connect version1.0.327 build363 submitted successfully: submission81a957b3-e919-4c05-a6b9-fa76b0e05b83, review pending. Release AFTER_APPROVAL, immediate rollout, existing ratings retained. KO/EN whats-new saved, review notes replaced with current restore/deletion/IAP directions. Existing three IAP products approved. Separate one-slot6811144000 remains prepare-for-submission and is NOT part of this submission. Source is726d467, later membership fix6cfd96c excluded. No public release observed yet.
+
+JA translation of release notes (not uploaded: no existing JA App Store localization):
+・購入履歴の復元と購入済みキャラクター枠の表示を改善しました。
+・アカウント確認と削除時の不具合を修正しました。
+・キャラクター設定、部屋の写真管理、予定画面の使いやすさを改善しました。
+・画面移動と保存処理の安定性を改善しました。
