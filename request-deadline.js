@@ -1,1 +1,1 @@
-export function requestDeadline(promise,label,ms=15000){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Object.assign(new Error(label),{code:'sync/request-timeout'})),ms)})]).finally(()=>clearTimeout(timer));}
+export function requestDeadline(promise,label,ms=15000){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Object.assign(new Error(label),{code:'sync/request-timeout',phase:label})),ms)})]).finally(()=>clearTimeout(timer));}

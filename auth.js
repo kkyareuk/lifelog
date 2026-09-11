@@ -1,3 +1,4 @@
+import {bootstrapAuth} from './auth-bootstrap.js';
 import {requestDeadline} from './request-deadline.js';
 import {mapConcurrent} from './bounded-work.js?v=20260909dev305';
 import {readCloudCharacters} from './cloud-character-reader.js?v=20260909dev305';
@@ -9,7 +10,7 @@ import {chooseProposalMode} from './proposal-mode.js?v=20260909dev305';
 import {sharedProfile} from './shared-world.js?v=20260909dev305';
 import {accountStorage as localStorage} from "./account-storage.js?v=20260909dev305";
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import {getAuth,OAuthProvider,GoogleAuthProvider,reauthenticateWithPopup,reauthenticateWithCredential,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+import {getAuth,initializeAuth,indexedDBLocalPersistence,OAuthProvider,GoogleAuthProvider,reauthenticateWithPopup,reauthenticateWithCredential,setPersistence,browserLocalPersistence,onAuthStateChanged,signInWithPopup,signInWithRedirect,getRedirectResult,signInWithCredential,signOut,updateProfile} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import {getFirestore,initializeFirestore,doc,getDoc,getDocFromServer,setDoc,updateDoc,collection,getDocs,getCountFromServer,getDocsFromServer,deleteDoc,deleteField,serverTimestamp,arrayUnion,runTransaction,onSnapshot,writeBatch,query,where} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {getStorage,ref,uploadBytes,getDownloadURL} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 import {gzip as gzipBytes,ungzip as ungzipBytes} from "./vendor/pako.esm.mjs";
@@ -146,7 +147,7 @@ const takeGuestHandoff=()=>{
   return characterCount(candidate)>0?clone(candidate):null;
 };
 let profileSetupComplete=false;
-let startupError="";
+let startupError="",lastDownloadError="";
 const accountPhoto=()=>window.ParallelCity?.getState?.()?.ownerPhoto||user?.photoURL||'';
 const accountName=()=>String(
   window.ParallelCity?.getState?.()?.ownerName||
@@ -795,7 +796,7 @@ async function download({automatic=false,accountTransition=false,detailed=false,
       ?`기기와 클라우드 인물을 합쳐 ${Object.keys(imported.characters||{}).length}명 불러왔습니다`
       :automatic?"자동으로 불러왔습니다":"불러왔습니다");
     return detailed?"loaded":true;
-  }catch(error){if(error?.code==="sync/account-changed")return detailed?"cancelled":false;console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);return detailed?"error":false}finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
+  }catch(error){if(error?.code==="sync/account-changed")return detailed?"cancelled":false;console.error(error);status(`불러오기 실패 · ${shortError(error)}`);if(!automatic)toast(`불러오기 실패 · ${shortError(error)}`);lastDownloadError=[error?.code||"account-download",error?.phase].filter(Boolean).join(":");return detailed?"error":false}finally{busy=false;finishSync();window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }
 
 async function submitFeedback({category,message,allowReply=false}={}){
@@ -1248,7 +1249,7 @@ window.DrawerVillageGroups={
 
 if(ready){
   try{
-    const app=initializeApp(cfg);auth=getAuth(app);db=(/Android/i.test(navigator.userAgent)||window.Capacitor?.isNativePlatform?.())?initializeFirestore(app,{experimentalForceLongPolling:true}):getFirestore(app);storage=getStorage(app);
+    const app=initializeApp(cfg);auth=bootstrapAuth(app,Boolean(window.Capacitor?.isNativePlatform?.()),{initializeAuth,getAuth,indexedDBLocalPersistence,browserLocalPersistence});db=(/Android/i.test(navigator.userAgent)||window.Capacitor?.isNativePlatform?.())?initializeFirestore(app,{experimentalForceLongPolling:true}):getFirestore(app);storage=getStorage(app);
     await requestDeadline(setPersistence(auth,browserLocalPersistence),"auth-persistence");
     if(!window.Capacitor?.isNativePlatform?.()){try{await requestDeadline(getRedirectResult(auth),"auth-redirect")}catch(error){console.warn(error)}}
     onAuthStateChanged(auth,async next=>{
@@ -1279,17 +1280,17 @@ if(ready){
           // Always load this account, even when it was used minutes ago.
           const downloadOutcome=await download({automatic:true,accountTransition:true,detailed:true,initialSnapshot});
           if(epoch!==accountEpoch)return;
-          startupError=downloadOutcome==="error"?"account-download":"";
+          startupError=downloadOutcome==="error"?(lastDownloadError||"account-download"):"";
           if(adoptedGuest&&!['error','cancelled'].includes(downloadOutcome)){
             await upload({silent:true,accountTransition:true});
           }
         }
         if(!next)startupError="";
         void refreshGroups().catch(error=>console.warn("Group refresh failed",error));
-      }catch(error){if(epoch!==accountEpoch)return;startupError=error?.code||"account-startup";console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
+      }catch(error){if(epoch!==accountEpoch)return;startupError=[error?.code||"account-startup",error?.phase].filter(Boolean).join(":");console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
       finally{clearTimeout(startupWatch);if(epoch===accountEpoch){authSettled=true;switchingAccount=false;watchMailboxSignal();window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
     });
-  }catch(error){startupError=error?.code||"auth-init";authSettled=true;status(`로그인 초기화 실패 · ${shortError(error)}`);window.dispatchEvent(new Event("drawer-village-auth-busy"))}
+  }catch(error){startupError=[error?.code||"auth-init",error?.phase].filter(Boolean).join(":");authSettled=true;status(`로그인 초기화 실패 · ${shortError(error)}`);window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}

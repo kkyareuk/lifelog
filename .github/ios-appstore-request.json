@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-12-appstore358-auth-recovery",
-  "version": "1.0.324",
-  "build": 358,
+  "request": "2026-09-12-appstore359-native-auth",
+  "version": "1.0.325",
+  "build": 359,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
