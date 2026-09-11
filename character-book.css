@@ -280,3 +280,17 @@ body #app .character-book-v8 :is(.personality-type-book,.personality-direct-choi
 .character-field-fold{pointer-events:auto;grid-column:1/-1;min-width:0;border:1px solid #c8baa5;border-radius:2cqw;background:#fffaf0;padding:2cqw}
 .character-field-fold>summary{cursor:pointer;font-size:3cqw;line-height:1.4;color:#493324;padding:1cqw;overflow-wrap:anywhere}
 .character-field-fold-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3cqw;padding:3cqw 0}
+
+/* Speech style chooser: preserve native field persistence, show examples in a scrollable dialog. */
+select[data-speech-picker="1"]{display:none}
+.speech-picker-trigger{width:100%;text-align:left;white-space:normal;min-height:36px}
+.speech-picker-dialog{width:min(92vw,560px);max-height:80dvh;padding:20px;border:2px solid #9c7954;border-radius:22px;background:#fff8e8;color:#34251d}
+.speech-picker-dialog::backdrop{background:#25170f88}
+.speech-picker-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.speech-picker-dialog h2{font-size:1.2rem;margin:0}
+.speech-picker-dialog header button{min-width:44px;min-height:44px}
+.speech-picker-options{display:grid;gap:8px;overflow:auto;max-height:60dvh;margin-top:14px}
+.speech-picker-options button{text-align:left;padding:12px;border:1px solid #cbb799;border-radius:12px;background:#fffdf7;color:inherit}
+.speech-picker-options button[aria-pressed=true]{border:2px solid #896035;background:#f6e4b8}
+.speech-picker-options b,.speech-picker-options small{display:block;white-space:normal}
+.speech-picker-options small{margin-top:6px;line-height:1.5;font-size:.9rem}

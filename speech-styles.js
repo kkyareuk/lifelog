@@ -12,7 +12,6 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "사무적인 말투 · 직장 메일체",
   "판교어 · 스타트업 업무체",
   "다정하고 부드러운 말투",
-  "상냥하고 배려하는 말투",
   "소심하고 머뭇거리는 말투",
   "열정적인 말투",
   "능글맞고 여유로운 말투",
@@ -23,7 +22,6 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "귀여니체 · 2000년대 인터넷소설체",
   "하드보일드 누아르체",
   "고풍스러운 말투",
-  "사극 선비 말투",
   "군인식 말투",
   "마왕의 말투",
   "군주의 말투",
@@ -34,7 +32,7 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
 ]);
 
 export function effectiveSpeechStyle(character){
-  const selected=character?.speechStyle||SPEECH_STYLE_OPTIONS[0];
+  const selected=canonicalSpeechStyle(character?.speechStyle)||SPEECH_STYLE_OPTIONS[0];
   if(selected!==SPEECH_STYLE_OPTIONS[0])return selected;
   const traits=character?.personalityTypes||[];
   if(traits.includes("수줍고 내향적"))return "소심하고 머뭇거리는 말투";
@@ -224,4 +222,54 @@ export function characterPlanSpeech(character,language="ko"){
     "반말":"오늘은 이 순서대로 해 볼게.","했다체 · 건조한 서술":"오늘은 이 순서대로 하기로 했다.","존댓말 · 해요체":"오늘은 이 순서대로 해 볼게요.","격식 있는 존댓말 · 하십시오체":"오늘은 이 순서대로 진행하겠습니다.","극존칭":"오늘은 분부해 주신 순서대로 행하겠사옵니다.","무뚝뚝한 단답":"이 순서. 그대로 해.","기계적인 말투":"작업 순서 확인. 계획을 실행합니다.","사무적인 말투 · 직장 메일체":"금일 일정은 해당 순서로 진행 예정입니다.","판교어 · 스타트업 업무체":"오늘 액션 아이템은 이 순서로 얼라인해서 진행할게요.","다정하고 부드러운 말투":"오늘은 이 순서대로 천천히 해 볼게요.","상냥하고 배려하는 말투":"무리하지 않게 이 순서대로 해 볼게요.","소심하고 머뭇거리는 말투":"저… 오늘은 이 순서대로 해 봐도 될까요?", "열정적인 말투":"좋아요! 오늘은 이 순서대로 힘차게 해 볼게요!", "능글맞고 여유로운 말투":"뭐, 오늘은 이 순서가 제일 재밌겠네.","냉소적인 말투":"계획대로 된다는 보장은 없지만, 일단 이 순서지.","걸걸한 아저씨 말투":"좋아, 오늘은 이 순서대로 시원하게 해 보자고.","거칠고 상스러운 말투 · 순화":"복잡하게 굴 것 없이 이 순서대로 확 해치우자고.","중2병 말투":"정해진 운명의 순서대로 오늘의 의식을 시작하지.","귀여니체 · 2000년대 인터넷소설체":"오늘은 이 순서대루 해볼꺼야아 >_<", "하드보일드 누아르체":"순서는 정해졌다. 남은 건 묵묵히 걷는 일뿐이다.","고풍스러운 말투":"오늘은 이 순서대로 행해 보겠네.","사극 선비 말투":"오늘은 정한 차례에 따라 행하겠소.","군인식 말투":"금일 일정 확인. 순서대로 수행하겠습니다.","마왕의 말투":"정해진 순서대로 오늘의 권능을 펼치리라.","군주의 말투":"오늘은 이 순서대로 국사를 돌보겠다.","신탁을 내리는 신의 말투":"정해진 순서대로 행하라. 길이 열릴지니.","옛날 번역기체":"오늘 나는 이 순서에 의하여 행동할 것입니다.","귀엽고 애교 있는 말투":"오늘은 이 순서대로 해 볼게요오.","수다스럽고 말이 많은 말투":"오늘 할 게 꽤 많긴 한데요, 일단 이 순서대로 하나씩 해 보면 딱 좋을 것 같아요."
   };
   return lines[style]||"오늘은 이 순서대로 해 볼게요.";
+}
+
+
+export function canonicalSpeechStyle(value){
+ return ({'상냥하고 배려하는 말투':'다정하고 부드러운 말투','사극 선비 말투':'고풍스러운 말투'})[value]||value;
+}
+
+// The native select remains the source of truth for existing save/draft handlers.
+export function bindSpeechStylePickers(root,character,language='ko'){
+ const tr=(ko,en,ja)=>language==='en'?en:language==='ja'?ja:ko;
+ for(const select of root.querySelectorAll('select[data-field="speechStyle"]')){
+  if(select.dataset.speechPicker)continue;
+  select.dataset.speechPicker='1';select.value=canonicalSpeechStyle(character?.speechStyle)||SPEECH_STYLE_OPTIONS[0];
+  const trigger=document.createElement('button');trigger.type='button';trigger.className='speech-picker-trigger';trigger.setAttribute('aria-haspopup','dialog');
+  const update=()=>{trigger.textContent=(select.selectedOptions[0]?.textContent||select.value)+' ▾'};update();select.hidden=true;select.after(trigger);
+  trigger.addEventListener('click',()=>{
+   const dialog=document.createElement('dialog');dialog.className='speech-picker-dialog';
+   const header=document.createElement('header'),title=document.createElement('h2'),close=document.createElement('button');
+   title.textContent=tr('말투와 예문','Speech styles and examples','口調と例文');close.type='button';close.textContent='×';close.setAttribute('aria-label',tr('닫기','Close','閉じる'));close.onclick=()=>dialog.close();header.append(title,close);dialog.append(header);
+   const list=document.createElement('div');list.className='speech-picker-options';
+   for(const option of select.options){
+    const button=document.createElement('button');button.type='button';button.setAttribute('aria-pressed',String(select.value===option.value));
+    const name=document.createElement('b'),sample=document.createElement('small');name.textContent=option.textContent;
+    sample.textContent=speechStyleExample({...character,speechStyle:option.value},{kind:'weekend',language,base:tr('이번 주말에는 뭘 할까요?','What shall we do this weekend?','今週末は何をしましょうか？')});
+    button.append(name,sample);button.onclick=()=>{select.value=option.value;update();dialog.close();select.dispatchEvent(new Event('change',{bubbles:true}))};list.append(button);
+   }
+   dialog.append(list);dialog.addEventListener('close',()=>dialog.remove(),{once:true});root.append(dialog);dialog.showModal();
+  });
+ }
+}
+
+export function speechStyleExample(character,options={}){
+ const style=canonicalSpeechStyle(character?.speechStyle),lang=options.language;
+ const examples={
+ '반말':['What do you wanna do this weekend?','週末、何しよっか？'],
+ '했다체 · 건조한 서술':['It was time to decide how to spend the weekend.','週末の過ごし方を決める時だった。'],
+ '격식 있는 존댓말 · 하십시오체':['Would you please select our plans for the weekend?','週末の予定をお選びいただけますか。'],
+ '극존칭':['Might I humbly ask how you wish to spend the weekend?','恐れながら、週末のご意向をお伺いしてもよろしいでしょうか。'],
+ '다정하고 부드러운 말투':["Take your time. Shall we choose something nice together?",'ゆっくりでいいですよ。一緒に楽しい予定を考えませんか？'],
+ '능글맞고 여유로운 말투':["The weekend, huh? I bet you've got something interesting in mind.",'週末ねえ。君なら面白いことを思いつきそうだ。'],
+ '냉소적인 말투':["The world will keep spinning either way. So, what's the plan?",'何を選んでも世界は回るけどね。で、どうする？'],
+ '걸걸한 아저씨 말투':["Come on, let's pick a plan and make a day of it!",'なあ、週末どうする？ 景気よく決めようぜ！'],
+ '거칠고 상스러운 말투 · 순화':["Enough messing around. Just pick a damn plan.",'ぐずぐずすんなよ。さっさと決めちまおうぜ。'],
+ '귀여니체 · 2000년대 인터넷소설체':["weekend plan?? i cant choooose T_T",'週末どぉするぅ…？ 選べなぃよぉ T_T'],
+ '고풍스러운 말투':["Pray, what wouldst thou have us do this weekend?",'週末はいかに過ごそうか。そなたの考えを聞かせておくれ。'],
+ '군인식 말투':["Requesting orders for the weekend. Awaiting your decision.",'週末の予定、指示を要請します。ご判断をお願いします。'],
+ '수다스럽고 말이 많은 말투':["We could go out, or stay in, or try that place I mentioned—what do you think?",'出かけるのも家にいるのもいいし、この前のお店も気になるし、どれがいいと思います？']
+ };
+ if(examples[style]&&(lang==='en'||lang==='ja'))return examples[style][lang==='en'?0:1];
+ return characterQuestionPrompt(character,options);
 }

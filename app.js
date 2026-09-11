@@ -70,7 +70,7 @@ import {currentSceneFor,currentTimelineFor,nativeLogContents,homeLogMarkup,build
 import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260909dev305";
 import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260909dev305";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260909dev305";
-import {SPEECH_STYLE_OPTIONS,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260909dev305";
+import {SPEECH_STYLE_OPTIONS,bindSpeechStylePickers,characterQuestionPrompt,characterContactSpeech,characterContactTitle} from "./speech-styles.js?v=20260909dev305";
 import {CONTACT_VOICE_VERSION,characterMomentSpeech} from "./contact-voice.js?v=20260909dev305";
 import {characterNotificationsAvailable,characterNotificationPermission,requestCharacterNotificationPermission,initializeCharacterNotifications,replaceCharacterNotifications,scheduleCharacterNotification,cancelCharacterNotifications,characterNotificationLargeIcon} from "./character-notifications.js?v=20260909dev305";
 import {mergeImportedBackupState} from "./sync-merge.js?v=20260909dev305";
@@ -1469,6 +1469,7 @@ function replaceFeedbackFormWithEmailLink(){
 }
 
 function restoreWindowScroll(x,y){
+  if(x===0&&y===0)return;
   const main=document.querySelector("#app>main");
   const restore=()=>{if(main!==document.querySelector("#app>main"))return;if(window.scrollX!==x||window.scrollY!==y)window.scrollTo({left:x,top:y,behavior:"auto"})};
   requestAnimationFrame(()=>{restore();requestAnimationFrame(restore)});
@@ -1712,6 +1713,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
       grid.insertBefore(card,grid.lastElementChild);
     }
     bind();
+    bindSpeechStylePickers(document.querySelector("#app"),active(),state.uiLanguage);
     document.querySelectorAll('textarea,input:not([type]),input[type=text]').forEach(el=>{if(el.maxLength<0||el.maxLength>500)el.maxLength=500});
     applyTheme();
     afterScreenRender(()=>syncBackgroundMusic(state));
@@ -4715,9 +4717,9 @@ function navigateToTab(tab,{recordHistory=true,multiplayerDetail=false,homeId=""
   // 있었다. 실제 화면을 먼저 확정한 다음 히스토리를 기록한다.
   if(document.activeElement instanceof HTMLElement)document.activeElement.blur();
   resetScrollAfterRender=true;
-  render({force:true});
   if(recordHistory)recordTabHistory(tab);
-  if(tab==="town"&&!townMapPositions.has(document.querySelector(".mobile-town-shell")?.dataset.townId))centerMobileTownMap(undefined,{animate:false});
+  render({force:true});
+  if(tab==="town")afterScreenRender(()=>{if(!townMapPositions.has(document.querySelector(".mobile-town-shell")?.dataset.townId))centerMobileTownMap(undefined,{animate:false})});
 }
 
 function navigateBackToObserve(){
@@ -6237,17 +6239,20 @@ function scheduleLiveSceneRefresh(){
   if(document.visibilityState==="hidden"||!["observe","home"].includes(state.activeTab)||state.homeEditMode){liveSceneRefreshTimer=0;return}
   const now=new Date();
   const characters=state.order.map(id=>state.characters[id]).filter(Boolean);
-  const delay=withSimulationBatch(()=>[...characters.map(character=>nextSceneRefreshDelay(character,now)),10*60*1000].reduce((soonest,value)=>Math.min(soonest,value),10*60*1000));
-  liveSceneRefreshTimer=setTimeout(()=>{
-    liveSceneRefreshTimer=0;
-    if(document.visibilityState!=="hidden"&&["observe","home"].includes(state.activeTab)&&!state.homeEditMode){
-      const now=new Date();
-      settleScheduledChoices(now.getTime());
-      withSimulationBatch(()=>state.order.map(id=>state.characters[id]).filter(Boolean).forEach(character=>eventFor(character,now)));
-      render();
-    }
-    // render() owns the next refresh; do not repeat all-character deadline work here.
-  },Math.max(1000,delay));
+  // Scan deadlines in small tasks. A cold timeline for 80 residents must not
+  // monopolize the input thread after the screen has just appeared.
+  let index=0,delay=10*60*1000;const started=Date.now();
+  const scan=()=>{
+    if(document.visibilityState==='hidden'||!['observe','home'].includes(state.activeTab))return;
+    const sliceStart=performance.now();
+    withSimulationBatch(()=>{do{delay=Math.min(delay,nextSceneRefreshDelay(characters[index++],now))}while(index<characters.length&&performance.now()-sliceStart<6)});
+    if(index<characters.length){liveSceneRefreshTimer=setTimeout(scan,0);return}
+    liveSceneRefreshTimer=setTimeout(()=>{
+      liveSceneRefreshTimer=0;
+      if(document.visibilityState!=='hidden'&&['observe','home'].includes(state.activeTab)&&!state.homeEditMode){settleScheduledChoices(Date.now());render()}
+    },Math.max(1000,delay-(Date.now()-started)));
+  };
+  liveSceneRefreshTimer=setTimeout(scan,0);
 }
 setTimeout(scheduleLiveSceneRefresh,0);
 ensureDailyQuestionSchedule();

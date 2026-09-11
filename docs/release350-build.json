@@ -1,0 +1,18 @@
+{
+  "versionCode": 350,
+  "versionName": "1.0.317",
+  "files": [
+    {
+      "name": "서랍마을-350-1.0.317.apk",
+      "bytes": 71334352,
+      "sha256": "30c90bd951ffd7a2815c7e15e87c9253b43da80a7b9dcdb9d7478fdc095bf9f8"
+    },
+    {
+      "name": "서랍마을-350-1.0.317.aab",
+      "bytes": 70505779,
+      "sha256": "747d0292e91822454098e047d9c2a64d4adeab58196637f47f29a7914a4afabf"
+    }
+  ],
+  "playUploaded": false,
+  "gameWebsiteDeployed": false
+}
