@@ -1,0 +1,19 @@
+{
+  "versionCode": 348,
+  "versionName": "1.0.315",
+  "files": [
+    {
+      "name": "서랍마을-348-1.0.315.apk",
+      "bytes": 71328123,
+      "sha256": "ecde759205b9b8afb60eeee4bc89cb3567536990b9d9689b2471e47ddc137a04"
+    },
+    {
+      "name": "서랍마을-348-1.0.315.aab",
+      "bytes": 70499520,
+      "sha256": "0657d6eda5377f3c954caa963717740bee21a383d3ee2ebcf23912907d06c21e"
+    }
+  ],
+  "serverCommit": "fc6fd30",
+  "noticePublished": false,
+  "playUploaded": false
+}
