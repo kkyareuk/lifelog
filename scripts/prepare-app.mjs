@@ -4,6 +4,7 @@ import {relative,join,dirname} from "node:path";
 import {fileURLToPath} from "node:url";
 import {promisify} from "node:util";
 import {tmpdir} from "node:os";
+import {prepareGameWebp} from './prepare-game-webp.mjs';
 
 const root=new URL("../",import.meta.url);
 const platform=process.argv.includes("--ios")?"ios":"android";
@@ -23,6 +24,10 @@ const excludedAndroidAssets=new Set([
   "assets/character-ui/paper.png"
 ]);
 const excludedAndroidAssetPrefixes=[];
+const gameWebp=JSON.parse(await readFile(new URL('../game-webp-manifest.json',import.meta.url),'utf8'));
+for(const asset of gameWebp.assets){
+ if(excludedAndroidAssets.has(asset.source)||!asset.preferred)excludedAndroidAssets.add(asset.webp);
+}
 const includedFiles=new Set([
   "diamond-shop.css","diamond-shop.js",
   "life-tasks.js","automatic-activities.js","supporter-credits.css","supporter-credits.js","supporter-model.js","supporter-data.js",
@@ -193,4 +198,5 @@ if(platform==="ios"){
 }
 await writeFile(configPath,config,"utf8");
 
+await prepareGameWebp(output);
 console.log(`${platform} 앱용 웹 파일을 www 폴더에 준비했습니다.`);

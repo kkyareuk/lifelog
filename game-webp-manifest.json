@@ -1,0 +1,905 @@
+{
+  "mode": "lossless-rgba-exact",
+  "assets": [
+    {
+      "source": "assets/character-ui/add.png",
+      "webp": "assets/character-ui/add.webp",
+      "originalBytes": 25621,
+      "webpBytes": 16206,
+      "preferred": true,
+      "width": 224,
+      "height": 224
+    },
+    {
+      "source": "assets/character-ui/back.png",
+      "webp": "assets/character-ui/back.webp",
+      "originalBytes": 28905,
+      "webpBytes": 17780,
+      "preferred": true,
+      "width": 224,
+      "height": 223
+    },
+    {
+      "source": "assets/character-ui/book-right-page.png",
+      "webp": "assets/character-ui/book-right-page.webp",
+      "originalBytes": 515245,
+      "webpBytes": 312590,
+      "preferred": true,
+      "width": 605,
+      "height": 1032
+    },
+    {
+      "source": "assets/character-ui/book.png",
+      "webp": "assets/character-ui/book.webp",
+      "originalBytes": 1174890,
+      "webpBytes": 745404,
+      "preferred": true,
+      "width": 1230,
+      "height": 1032
+    },
+    {
+      "source": "assets/character-ui/character-book-stage-v11.png",
+      "webp": "assets/character-ui/character-book-stage-v11.webp",
+      "originalBytes": 29658,
+      "webpBytes": 114610,
+      "preferred": false,
+      "width": 412,
+      "height": 917
+    },
+    {
+      "source": "assets/character-ui/character-book-stage-v12.png",
+      "webp": "assets/character-ui/character-book-stage-v12.webp",
+      "originalBytes": 264798,
+      "webpBytes": 240730,
+      "preferred": true,
+      "width": 824,
+      "height": 1834
+    },
+    {
+      "source": "assets/character-ui/character-book-stage-v13.png",
+      "webp": "assets/character-ui/character-book-stage-v13.webp",
+      "originalBytes": 332544,
+      "webpBytes": 291480,
+      "preferred": true,
+      "width": 824,
+      "height": 1834
+    },
+    {
+      "source": "assets/character-ui/character-book-stage-v14.png",
+      "webp": "assets/character-ui/character-book-stage-v14.webp",
+      "originalBytes": 846742,
+      "webpBytes": 621508,
+      "preferred": true,
+      "width": 824,
+      "height": 1834
+    },
+    {
+      "source": "assets/character-ui/character-book-stage-v15.png",
+      "webp": "assets/character-ui/character-book-stage-v15.webp",
+      "originalBytes": 1787996,
+      "webpBytes": 972340,
+      "preferred": true,
+      "width": 824,
+      "height": 1834
+    },
+    {
+      "source": "assets/character-ui/character-cloth-white.png",
+      "webp": "assets/character-ui/character-cloth-white.webp",
+      "originalBytes": 38350,
+      "webpBytes": 18028,
+      "preferred": true,
+      "width": 882,
+      "height": 864
+    },
+    {
+      "source": "assets/character-ui/character-cloth.png",
+      "webp": "assets/character-ui/character-cloth.webp",
+      "originalBytes": 40621,
+      "webpBytes": 24494,
+      "preferred": true,
+      "width": 690,
+      "height": 671
+    },
+    {
+      "source": "assets/character-ui/character-wood-background.png",
+      "webp": "assets/character-ui/character-wood-background.webp",
+      "originalBytes": 691290,
+      "webpBytes": 401636,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/character-ui/clip.png",
+      "webp": "assets/character-ui/clip.webp",
+      "originalBytes": 49354,
+      "webpBytes": 33930,
+      "preferred": true,
+      "width": 246,
+      "height": 323
+    },
+    {
+      "source": "assets/character-ui/key.png",
+      "webp": "assets/character-ui/key.webp",
+      "originalBytes": 42806,
+      "webpBytes": 24240,
+      "preferred": true,
+      "width": 360,
+      "height": 161
+    },
+    {
+      "source": "assets/character-ui/notebook.png",
+      "webp": "assets/character-ui/notebook.webp",
+      "originalBytes": 88537,
+      "webpBytes": 54320,
+      "preferred": true,
+      "width": 497,
+      "height": 755
+    },
+    {
+      "source": "assets/character-ui/paper.png",
+      "webp": "assets/character-ui/paper-lossless.webp",
+      "originalBytes": 2666854,
+      "webpBytes": 1784598,
+      "preferred": true,
+      "width": 1206,
+      "height": 1806
+    },
+    {
+      "source": "assets/character-ui/question-sheet.png",
+      "webp": "assets/character-ui/question-sheet.webp",
+      "originalBytes": 8751313,
+      "webpBytes": 5083580,
+      "preferred": true,
+      "width": 4766,
+      "height": 5301
+    },
+    {
+      "source": "assets/character-ui/registration-card.png",
+      "webp": "assets/character-ui/registration-card.webp",
+      "originalBytes": 57070,
+      "webpBytes": 41688,
+      "preferred": true,
+      "width": 576,
+      "height": 359
+    },
+    {
+      "source": "assets/character-ui/tape.png",
+      "webp": "assets/character-ui/tape.webp",
+      "originalBytes": 17179,
+      "webpBytes": 11320,
+      "preferred": true,
+      "width": 153,
+      "height": 244
+    },
+    {
+      "source": "assets/character-ui/wallet.png",
+      "webp": "assets/character-ui/wallet.webp",
+      "originalBytes": 310481,
+      "webpBytes": 177432,
+      "preferred": true,
+      "width": 1421,
+      "height": 970
+    },
+    {
+      "source": "assets/furniture/couple-bed/couple-bed-base.png",
+      "webp": "assets/furniture/couple-bed/couple-bed-base.webp",
+      "originalBytes": 155708,
+      "webpBytes": 97358,
+      "preferred": true,
+      "width": 640,
+      "height": 684
+    },
+    {
+      "source": "assets/furniture/couple-bed/couple-bed-footboard.png",
+      "webp": "assets/furniture/couple-bed/couple-bed-footboard.webp",
+      "originalBytes": 99411,
+      "webpBytes": 64204,
+      "preferred": true,
+      "width": 640,
+      "height": 684
+    },
+    {
+      "source": "assets/furniture/couple-bed/couple-bed-quilt.png",
+      "webp": "assets/furniture/couple-bed/couple-bed-quilt.webp",
+      "originalBytes": 118095,
+      "webpBytes": 79198,
+      "preferred": true,
+      "width": 640,
+      "height": 684
+    },
+    {
+      "source": "assets/home-surfaces/apricot-planks.png",
+      "webp": "assets/home-surfaces/apricot-planks.webp",
+      "originalBytes": 705663,
+      "webpBytes": 430452,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/home-surfaces/charcoal-planks.png",
+      "webp": "assets/home-surfaces/charcoal-planks.webp",
+      "originalBytes": 613251,
+      "webpBytes": 310970,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/home-surfaces/cream-planks.png",
+      "webp": "assets/home-surfaces/cream-planks.webp",
+      "originalBytes": 706448,
+      "webpBytes": 445908,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/home-surfaces/natural-planks.png",
+      "webp": "assets/home-surfaces/natural-planks.webp",
+      "originalBytes": 691290,
+      "webpBytes": 401636,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/home-surfaces/walnut-planks.png",
+      "webp": "assets/home-surfaces/walnut-planks.webp",
+      "originalBytes": 665398,
+      "webpBytes": 363178,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/home-ui/back.png",
+      "webp": "assets/home-ui/back.webp",
+      "originalBytes": 30176,
+      "webpBytes": 18108,
+      "preferred": true,
+      "width": 263,
+      "height": 262
+    },
+    {
+      "source": "assets/home-ui/catalog.png",
+      "webp": "assets/home-ui/catalog.webp",
+      "originalBytes": 49253,
+      "webpBytes": 24638,
+      "preferred": true,
+      "width": 302,
+      "height": 256
+    },
+    {
+      "source": "assets/home-ui/close.png",
+      "webp": "assets/home-ui/close.webp",
+      "originalBytes": 29394,
+      "webpBytes": 18360,
+      "preferred": true,
+      "width": 263,
+      "height": 260
+    },
+    {
+      "source": "assets/home-ui/home.png",
+      "webp": "assets/home-ui/home.webp",
+      "originalBytes": 49934,
+      "webpBytes": 30748,
+      "preferred": true,
+      "width": 264,
+      "height": 266
+    },
+    {
+      "source": "assets/home-ui/ink.png",
+      "webp": "assets/home-ui/ink.webp",
+      "originalBytes": 47981,
+      "webpBytes": 30936,
+      "preferred": true,
+      "width": 209,
+      "height": 304
+    },
+    {
+      "source": "assets/home-ui/mailbox.png",
+      "webp": "assets/home-ui/mailbox.webp",
+      "originalBytes": 54241,
+      "webpBytes": 33090,
+      "preferred": true,
+      "width": 248,
+      "height": 308
+    },
+    {
+      "source": "assets/home-ui/pill-active.png",
+      "webp": "assets/home-ui/pill-active.webp",
+      "originalBytes": 14651,
+      "webpBytes": 10016,
+      "preferred": true,
+      "width": 315,
+      "height": 124
+    },
+    {
+      "source": "assets/home-ui/pill-left.png",
+      "webp": "assets/home-ui/pill-left.webp",
+      "originalBytes": 4405,
+      "webpBytes": 2708,
+      "preferred": true,
+      "width": 60,
+      "height": 124
+    },
+    {
+      "source": "assets/home-ui/pill-middle.png",
+      "webp": "assets/home-ui/pill-middle.webp",
+      "originalBytes": 251,
+      "webpBytes": 160,
+      "preferred": true,
+      "width": 3,
+      "height": 124
+    },
+    {
+      "source": "assets/home-ui/pill-right.png",
+      "webp": "assets/home-ui/pill-right.webp",
+      "originalBytes": 3772,
+      "webpBytes": 2304,
+      "preferred": true,
+      "width": 60,
+      "height": 124
+    },
+    {
+      "source": "assets/home-ui/pill.png",
+      "webp": "assets/home-ui/pill.webp",
+      "originalBytes": 10886,
+      "webpBytes": 6780,
+      "preferred": true,
+      "width": 250,
+      "height": 124
+    },
+    {
+      "source": "assets/home-ui/profile-placeholder.png",
+      "webp": "assets/home-ui/profile-placeholder.webp",
+      "originalBytes": 35623,
+      "webpBytes": 18704,
+      "preferred": true,
+      "width": 210,
+      "height": 304
+    },
+    {
+      "source": "assets/home-ui/profile-ring.png",
+      "webp": "assets/home-ui/profile-ring.webp",
+      "originalBytes": 30155,
+      "webpBytes": 17824,
+      "preferred": true,
+      "width": 279,
+      "height": 277
+    },
+    {
+      "source": "assets/home-ui/red-tape-wide.png",
+      "webp": "assets/home-ui/red-tape-wide.webp",
+      "originalBytes": 9235,
+      "webpBytes": 5856,
+      "preferred": true,
+      "width": 370,
+      "height": 90
+    },
+    {
+      "source": "assets/home-ui/red-tape.png",
+      "webp": "assets/home-ui/red-tape.webp",
+      "originalBytes": 7185,
+      "webpBytes": 4422,
+      "preferred": true,
+      "width": 272,
+      "height": 105
+    },
+    {
+      "source": "assets/home-ui/relationship-mosaic.png",
+      "webp": "assets/home-ui/relationship-mosaic.webp",
+      "originalBytes": 872567,
+      "webpBytes": 627684,
+      "preferred": true,
+      "width": 690,
+      "height": 1045
+    },
+    {
+      "source": "assets/home-ui/relationship.png",
+      "webp": "assets/home-ui/relationship.webp",
+      "originalBytes": 37472,
+      "webpBytes": 22532,
+      "preferred": true,
+      "width": 251,
+      "height": 275
+    },
+    {
+      "source": "assets/home-ui/round.png",
+      "webp": "assets/home-ui/round.webp",
+      "originalBytes": 24099,
+      "webpBytes": 15610,
+      "preferred": true,
+      "width": 263,
+      "height": 260
+    },
+    {
+      "source": "assets/home-ui/routine.png",
+      "webp": "assets/home-ui/routine.webp",
+      "originalBytes": 30848,
+      "webpBytes": 19942,
+      "preferred": true,
+      "width": 188,
+      "height": 174
+    },
+    {
+      "source": "assets/home-ui/settings.png",
+      "webp": "assets/home-ui/settings.webp",
+      "originalBytes": 42075,
+      "webpBytes": 25798,
+      "preferred": true,
+      "width": 190,
+      "height": 188
+    },
+    {
+      "source": "assets/home-ui/shop.png",
+      "webp": "assets/home-ui/shop.webp",
+      "originalBytes": 54978,
+      "webpBytes": 35266,
+      "preferred": true,
+      "width": 261,
+      "height": 310
+    },
+    {
+      "source": "assets/home-ui/statistics.png",
+      "webp": "assets/home-ui/statistics.webp",
+      "originalBytes": 21591,
+      "webpBytes": 17270,
+      "preferred": true,
+      "width": 155,
+      "height": 168
+    },
+    {
+      "source": "assets/home-ui/town.png",
+      "webp": "assets/home-ui/town.webp",
+      "originalBytes": 44520,
+      "webpBytes": 25988,
+      "preferred": true,
+      "width": 274,
+      "height": 234
+    },
+    {
+      "source": "assets/home-ui/wood-strip.png",
+      "webp": "assets/home-ui/wood-strip.webp",
+      "originalBytes": 234102,
+      "webpBytes": 146516,
+      "preferred": true,
+      "width": 1450,
+      "height": 180
+    },
+    {
+      "source": "assets/home-ui/wood-top.png",
+      "webp": "assets/home-ui/wood-top.webp",
+      "originalBytes": 213031,
+      "webpBytes": 123114,
+      "preferred": true,
+      "width": 1450,
+      "height": 280
+    },
+    {
+      "source": "assets/home-walls/amber-tile.png",
+      "webp": "assets/home-walls/amber-tile.webp",
+      "originalBytes": 37798,
+      "webpBytes": 21188,
+      "preferred": true,
+      "width": 186,
+      "height": 319
+    },
+    {
+      "source": "assets/home-walls/cream-panel.png",
+      "webp": "assets/home-walls/cream-panel.webp",
+      "originalBytes": 27462,
+      "webpBytes": 14160,
+      "preferred": true,
+      "width": 186,
+      "height": 319
+    },
+    {
+      "source": "assets/home-walls/cream-plain.png",
+      "webp": "assets/home-walls/cream-plain.webp",
+      "originalBytes": 3536,
+      "webpBytes": 3378,
+      "preferred": true,
+      "width": 186,
+      "height": 319
+    },
+    {
+      "source": "assets/home-walls/navy-tile.png",
+      "webp": "assets/home-walls/navy-tile.webp",
+      "originalBytes": 35931,
+      "webpBytes": 20924,
+      "preferred": true,
+      "width": 186,
+      "height": 319
+    },
+    {
+      "source": "assets/home-walls/sky-tile.png",
+      "webp": "assets/home-walls/sky-tile.webp",
+      "originalBytes": 39633,
+      "webpBytes": 21638,
+      "preferred": true,
+      "width": 186,
+      "height": 319
+    },
+    {
+      "source": "assets/home-walls/stone-panel.png",
+      "webp": "assets/home-walls/stone-panel.webp",
+      "originalBytes": 27311,
+      "webpBytes": 14040,
+      "preferred": true,
+      "width": 186,
+      "height": 319
+    },
+    {
+      "source": "assets/home-walls/taupe-panel.png",
+      "webp": "assets/home-walls/taupe-panel.webp",
+      "originalBytes": 25443,
+      "webpBytes": 14964,
+      "preferred": true,
+      "width": 186,
+      "height": 319
+    },
+    {
+      "source": "assets/mailbox/wood.png",
+      "webp": "assets/mailbox/wood.webp",
+      "originalBytes": 665398,
+      "webpBytes": 363178,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/multiplayer/reference-0.png",
+      "webp": "assets/multiplayer/reference-0.webp",
+      "originalBytes": 665398,
+      "webpBytes": 363178,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/multiplayer/reference-1.png",
+      "webp": "assets/multiplayer/reference-1.webp",
+      "originalBytes": 1007338,
+      "webpBytes": 478032,
+      "preferred": true,
+      "width": 2048,
+      "height": 2048
+    },
+    {
+      "source": "assets/multiplayer/reference-2.png",
+      "webp": "assets/multiplayer/reference-2.webp",
+      "originalBytes": 6398662,
+      "webpBytes": 2889390,
+      "preferred": true,
+      "width": 4096,
+      "height": 2654
+    },
+    {
+      "source": "assets/shop/character-slots-5.png",
+      "webp": "assets/shop/character-slots-5.webp",
+      "originalBytes": 103327,
+      "webpBytes": 65684,
+      "preferred": true,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "source": "assets/shop/drawer-shop-nerine.png",
+      "webp": "assets/shop/drawer-shop-nerine.webp",
+      "originalBytes": 810087,
+      "webpBytes": 390476,
+      "preferred": true,
+      "width": 1191,
+      "height": 1459
+    },
+    {
+      "source": "assets/shop/drawer-shop-seller.png",
+      "webp": "assets/shop/drawer-shop-seller.webp",
+      "originalBytes": 659540,
+      "webpBytes": 324512,
+      "preferred": true,
+      "width": 828,
+      "height": 828
+    },
+    {
+      "source": "assets/shop/drawer-shop-wood.jpg",
+      "webp": "assets/shop/drawer-shop-wood.webp",
+      "originalBytes": 239008,
+      "webpBytes": 835268,
+      "preferred": false,
+      "width": 1236,
+      "height": 1236
+    },
+    {
+      "source": "assets/supporter-wood.png",
+      "webp": "assets/supporter-wood.webp",
+      "originalBytes": 665398,
+      "webpBytes": 363178,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "assets/town-ui/building-info-wood.png",
+      "webp": "assets/town-ui/building-info-wood.webp",
+      "originalBytes": 665398,
+      "webpBytes": 363178,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "shop-assets/resume-expansion.png",
+      "webp": "shop-assets/resume-expansion.webp",
+      "originalBytes": 170852,
+      "webpBytes": 118120,
+      "preferred": true,
+      "width": 512,
+      "height": 512
+    },
+    {
+      "source": "theme-assets/moonlit-drawer-png/button-default.png",
+      "webp": "theme-assets/moonlit-drawer-png/button-default.webp",
+      "originalBytes": 3388,
+      "webpBytes": 2274,
+      "preferred": true,
+      "width": 240,
+      "height": 96
+    },
+    {
+      "source": "theme-assets/moonlit-drawer-png/button-selected.png",
+      "webp": "theme-assets/moonlit-drawer-png/button-selected.webp",
+      "originalBytes": 3349,
+      "webpBytes": 2366,
+      "preferred": true,
+      "width": 240,
+      "height": 96
+    },
+    {
+      "source": "theme-assets/moonlit-drawer-png/card-frame.png",
+      "webp": "theme-assets/moonlit-drawer-png/card-frame.webp",
+      "originalBytes": 4963,
+      "webpBytes": 2902,
+      "preferred": true,
+      "width": 128,
+      "height": 128
+    },
+    {
+      "source": "theme-assets/moonlit-drawer-png/panel-frame.png",
+      "webp": "theme-assets/moonlit-drawer-png/panel-frame.webp",
+      "originalBytes": 5896,
+      "webpBytes": 3982,
+      "preferred": true,
+      "width": 192,
+      "height": 192
+    },
+    {
+      "source": "theme-assets/moonlit-drawer-png/tab-default.png",
+      "webp": "theme-assets/moonlit-drawer-png/tab-default.webp",
+      "originalBytes": 1544,
+      "webpBytes": 830,
+      "preferred": true,
+      "width": 200,
+      "height": 72
+    },
+    {
+      "source": "theme-assets/moonlit-drawer-png/tab-selected.png",
+      "webp": "theme-assets/moonlit-drawer-png/tab-selected.webp",
+      "originalBytes": 1578,
+      "webpBytes": 904,
+      "preferred": true,
+      "width": 200,
+      "height": 72
+    },
+    {
+      "source": "world-assets/building-types/cafe-handdrawn.png",
+      "webp": "world-assets/building-types/cafe-handdrawn.webp",
+      "originalBytes": 379306,
+      "webpBytes": 203332,
+      "preferred": true,
+      "width": 799,
+      "height": 818
+    },
+    {
+      "source": "world-assets/building-types/cafe-light.png",
+      "webp": "world-assets/building-types/cafe-light.webp",
+      "originalBytes": 18976,
+      "webpBytes": 8882,
+      "preferred": true,
+      "width": 799,
+      "height": 818
+    },
+    {
+      "source": "world-assets/building-types/clock-school-handdrawn.png",
+      "webp": "world-assets/building-types/clock-school-handdrawn.webp",
+      "originalBytes": 198861,
+      "webpBytes": 127800,
+      "preferred": true,
+      "width": 640,
+      "height": 642
+    },
+    {
+      "source": "world-assets/building-types/dress-shop-handdrawn.png",
+      "webp": "world-assets/building-types/dress-shop-handdrawn.webp",
+      "originalBytes": 145865,
+      "webpBytes": 84638,
+      "preferred": true,
+      "width": 640,
+      "height": 698
+    },
+    {
+      "source": "world-assets/building-types/generic-building-handdrawn.png",
+      "webp": "world-assets/building-types/generic-building-handdrawn.webp",
+      "originalBytes": 98898,
+      "webpBytes": 56600,
+      "preferred": true,
+      "width": 640,
+      "height": 574
+    },
+    {
+      "source": "world-assets/building-types/graduation-school-handdrawn.png",
+      "webp": "world-assets/building-types/graduation-school-handdrawn.webp",
+      "originalBytes": 201450,
+      "webpBytes": 124506,
+      "preferred": true,
+      "width": 640,
+      "height": 640
+    },
+    {
+      "source": "world-assets/building-types/hospital-handdrawn.png",
+      "webp": "world-assets/building-types/hospital-handdrawn.webp",
+      "originalBytes": 296541,
+      "webpBytes": 145318,
+      "preferred": true,
+      "width": 765,
+      "height": 764
+    },
+    {
+      "source": "world-assets/building-types/hospital-light.png",
+      "webp": "world-assets/building-types/hospital-light.webp",
+      "originalBytes": 25732,
+      "webpBytes": 11434,
+      "preferred": true,
+      "width": 765,
+      "height": 764
+    },
+    {
+      "source": "world-assets/building-types/library-handdrawn.png",
+      "webp": "world-assets/building-types/library-handdrawn.webp",
+      "originalBytes": 243530,
+      "webpBytes": 164526,
+      "preferred": true,
+      "width": 640,
+      "height": 641
+    },
+    {
+      "source": "world-assets/building-types/office-handdrawn.png",
+      "webp": "world-assets/building-types/office-handdrawn.webp",
+      "originalBytes": 360245,
+      "webpBytes": 173210,
+      "preferred": true,
+      "width": 786,
+      "height": 798
+    },
+    {
+      "source": "world-assets/building-types/office-light.png",
+      "webp": "world-assets/building-types/office-light.webp",
+      "originalBytes": 50586,
+      "webpBytes": 21286,
+      "preferred": true,
+      "width": 786,
+      "height": 798
+    },
+    {
+      "source": "world-assets/building-types/park-handdrawn.png",
+      "webp": "world-assets/building-types/park-handdrawn.webp",
+      "originalBytes": 328323,
+      "webpBytes": 180482,
+      "preferred": true,
+      "width": 804,
+      "height": 668
+    },
+    {
+      "source": "world-assets/building-types/park-light.png",
+      "webp": "world-assets/building-types/park-light.webp",
+      "originalBytes": 15893,
+      "webpBytes": 7986,
+      "preferred": true,
+      "width": 804,
+      "height": 668
+    },
+    {
+      "source": "world-assets/building-types/piano-hall-handdrawn.png",
+      "webp": "world-assets/building-types/piano-hall-handdrawn.webp",
+      "originalBytes": 385855,
+      "webpBytes": 211516,
+      "preferred": true,
+      "width": 720,
+      "height": 770
+    },
+    {
+      "source": "world-assets/building-types/piano-hall-light.png",
+      "webp": "world-assets/building-types/piano-hall-light.webp",
+      "originalBytes": 46772,
+      "webpBytes": 26142,
+      "preferred": true,
+      "width": 720,
+      "height": 770
+    },
+    {
+      "source": "world-assets/building-types/red-roof-home-handdrawn.png",
+      "webp": "world-assets/building-types/red-roof-home-handdrawn.webp",
+      "originalBytes": 391613,
+      "webpBytes": 210820,
+      "preferred": true,
+      "width": 904,
+      "height": 765
+    },
+    {
+      "source": "world-assets/building-types/red-roof-home-light.png",
+      "webp": "world-assets/building-types/red-roof-home-light.webp",
+      "originalBytes": 14250,
+      "webpBytes": 6418,
+      "preferred": true,
+      "width": 904,
+      "height": 765
+    },
+    {
+      "source": "world-assets/building-types/restaurant-handdrawn.png",
+      "webp": "world-assets/building-types/restaurant-handdrawn.webp",
+      "originalBytes": 987156,
+      "webpBytes": 464424,
+      "preferred": true,
+      "width": 2150,
+      "height": 2150
+    },
+    {
+      "source": "world-assets/building-types/stadium-handdrawn.png",
+      "webp": "world-assets/building-types/stadium-handdrawn.webp",
+      "originalBytes": 203019,
+      "webpBytes": 128110,
+      "preferred": true,
+      "width": 640,
+      "height": 550
+    },
+    {
+      "source": "world-assets/building-types/suitcase-hotel-handdrawn.png",
+      "webp": "world-assets/building-types/suitcase-hotel-handdrawn.webp",
+      "originalBytes": 198712,
+      "webpBytes": 133784,
+      "preferred": true,
+      "width": 640,
+      "height": 609
+    },
+    {
+      "source": "world-assets/common-building.png",
+      "webp": "world-assets/common-building.webp",
+      "originalBytes": 692614,
+      "webpBytes": 449874,
+      "preferred": true,
+      "width": 1254,
+      "height": 1254
+    },
+    {
+      "source": "world-assets/drawer-building.png",
+      "webp": "world-assets/drawer-building.webp",
+      "originalBytes": 1262963,
+      "webpBytes": 591502,
+      "preferred": true,
+      "width": 2150,
+      "height": 2150
+    },
+    {
+      "source": "world-assets/drawer-home.png",
+      "webp": "world-assets/drawer-home.webp",
+      "originalBytes": 208465,
+      "webpBytes": 77964,
+      "preferred": true,
+      "width": 2150,
+      "height": 2150
+    }
+  ]
+}
