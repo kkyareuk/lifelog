@@ -3,6 +3,25 @@ const STORE_NAME="media";
 const REF_PREFIX="local-media://";
 const dataToRef=new Map();
 const refToData=new Map();
+// Rendering only: keep base64 payloads out of repeatedly parsed HTML. Original
+// state and exports continue to contain the durable image data, never blob URLs.
+const displayImages=new Map();
+let displayImageBytes=0;
+const DISPLAY_IMAGE_LIMIT=32*1024*1024;
+export function displayImageSource(value){
+  if(typeof value!=="string"||!value.startsWith("data:image/"))return value;
+  if(displayImages.has(value))return displayImages.get(value);
+  if(displayImages.size>=128||displayImageBytes+value.length>DISPLAY_IMAGE_LIMIT)return value;
+  const match=/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/.exec(value);
+  if(!match||typeof URL.createObjectURL!=="function")return value;
+  try{
+    const decoded=atob(match[2]),bytes=new Uint8Array(decoded.length);
+    for(let i=0;i<decoded.length;i++)bytes[i]=decoded.charCodeAt(i);
+    const url=URL.createObjectURL(new Blob([bytes],{type:match[1]}));
+    displayImages.set(value,url);displayImageBytes+=value.length;
+    return url;
+  }catch{return value}
+}
 const OPERATION_TIMEOUT_MS=5000;
 
 const isData=value=>typeof value==="string"&&value.startsWith("data:image/");
