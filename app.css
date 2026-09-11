@@ -7235,7 +7235,7 @@ html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hu
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-moment p{font-size:clamp(10px,.95vw,14px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-character-command{font-size:clamp(8px,.8vw,12px)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side{top:auto!important;bottom:0!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;grid-template-rows:1fr!important;gap:.546875vw!important;width:18.75%!important;height:13.75dvh!important}
-  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left{left:62.96875%!important;right:auto!important}
+  html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-left{left:auto!important;right:calc(25% + .546875vw)!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side-right{left:auto!important;right:0!important;top:auto!important;bottom:0!important;gap:.546875vw!important;width:25%!important;height:13.75dvh!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:1fr!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side :is(button>span,.game-hud-menu-art){width:4.921875vw!important;height:7.875dvh!important}
   html.native-platform[data-active-tab="observe"] .game-observe-hud[data-native-hud-version="4"] .game-hud-side button>small{display:grid!important;top:6.125dvh!important;width:5.546875vw!important;height:4dvh!important;font-size:clamp(7px,.68vw,10px)!important}
@@ -7768,6 +7768,7 @@ html.native-platform[data-color-mode="light"] .onboarding-dialog:has(.onboarding
     position:relative!important;display:block!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;
     margin:0!important;padding:0!important;overflow:hidden!important;isolation:isolate!important;background:#efe9dc!important;color:#241b17!important
   }
+  html.native-app[data-active-tab="character"] .character-slot-count{position:absolute;z-index:31;top:1dvh;left:22%;right:4%;margin:0;text-align:right;font-size:clamp(12px,1.8dvh,17px);line-height:1.5;color:#fff7e5;text-shadow:0 1px 3px #342214}
   html.native-app[data-active-tab="character"] .character-wood-background{
     position:absolute!important;z-index:0!important;left:50%!important;top:50%!important;display:block!important;width:100dvh!important;height:100vw!important;max-width:none!important;max-height:none!important;
     object-fit:cover!important;transform:translate(-50%,-50%) rotate(90deg)!important;background:transparent!important;pointer-events:none!important

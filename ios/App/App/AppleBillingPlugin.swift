@@ -42,7 +42,7 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
         Task { @MainActor in
             let controller = bridge?.viewController
             let scene = controller?.viewIfLoaded?.window?.windowScene
-            call.resolve(["build": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "", "hasWindow": controller?.viewIfLoaded?.window != nil, "hasScene": scene != nil, "sceneActive": scene?.activationState == .foregroundActive, "purchaseActive": purchaseActive, "waitingSeconds": purchaseStarted.map { Int(Date().timeIntervalSince($0)) } ?? 0, "errorCode": lastErrorCode])
+            call.resolve(["build": Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "", "sandboxReceipt": Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt", "hasWindow": controller?.viewIfLoaded?.window != nil, "hasScene": scene != nil, "sceneActive": scene?.activationState == .foregroundActive, "purchaseActive": purchaseActive, "waitingSeconds": purchaseStarted.map { Int(Date().timeIntervalSince($0)) } ?? 0, "errorCode": lastErrorCode])
         }
     }
     @objc func getProducts(_ call: CAPPluginCall) {

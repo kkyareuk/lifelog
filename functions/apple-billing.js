@@ -32,6 +32,8 @@ function appleServices(privateKey,environment=process.env.APPLE_IAP_ENVIRONMENT)
 }
 function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimestamp,privateKey,services=environment=>appleServices(privateKey(),environment)}){
  const handle=fn=>async(req,res)=>{try{await fn(req,res)}catch(e){res.status(Number.isInteger(e.status)&&e.status>=400&&e.status<=599?e.status:503).json({verified:false,entitlementApplied:false,code:e.code||'APPLE_VERIFICATION_FAILED'})}};
+ // Read-only recovery of already verified test purchases; never writes production grants.
+ app.post('/apple-billing/entitlements',handle(async(req,res)=>{const identity=await signedInUser(req);const snapshot=await db.collection('appleSandboxAccounts').doc(identity.uid).get();res.json({uid:identity.uid,sandboxEntitlements:snapshot.data()?.appleSandboxEntitlements||{}})}));
  app.post('/apple-billing/prepare',handle(async(req,res)=>{const identity=await signedInUser(req),service=services();res.json({appAccountToken:accountToken(identity.uid),environment:service.environment,products:productMap})}));
  app.post('/apple-billing/verify',handle(async(req,res)=>{
   const identity=await signedInUser(req),id=String(req.body?.transactionId||'');if(!/^\d{1,30}$/.test(id))throw fail('APPLE_INVALID_TRANSACTION',400);
@@ -65,7 +67,7 @@ function installAppleBilling(app,{db,signedInUser,nextEntitlements,serverTimesta
    grantedEntitlements=nextEntitlements(user.data()?.[field],productId,quantity);
    tx.set(userRef,{[field]:grantedEntitlements,updatedAt:serverTimestamp()},{merge:true});
   });
-  res.json({verified:true,entitlementApplied:true,alreadyApplied,productId,quantity,environment:service.environment,entitlements:grantedEntitlements});
+  res.json({uid:identity.uid,verified:true,entitlementApplied:true,alreadyApplied,productId,quantity,environment:service.environment,entitlements:grantedEntitlements});
  }));
  // A refund arriving before verification leaves a tombstone, so replay cannot grant it.
  app.post('/apple-billing/notifications',handle(async(req,res)=>{

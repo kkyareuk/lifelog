@@ -1,6 +1,6 @@
 export function slotText(world,info,usage=info?.slotUsage){
  const lang=world.uiLanguage||'ko',p=info?.entitlements||info?.purchases||{};
- const total=usage?.characterLimit??(5+(Number(p.characterSlotPacks)||0)*5+(Number(p.characterSingleSlots)||0));
+ const total=(info?.appleSandbox?undefined:usage?.characterLimit)??(5+(Number(p.characterSlotPacks)||0)*5+(Number(p.characterSingleSlots)||0));
  const shared=!!window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId;
  const used=(shared?(usage?.personalCharacters??0):(world.order||[]).length)+(usage?.characters||0),remaining=Math.max(0,total-used);
  return {used,remaining,total,text:({ko:`사용한 슬롯 ${used} / 남은 슬롯 ${remaining}`,en:`Slots used ${used} / remaining ${remaining}`,ja:`使用済み ${used}枠 / 残り ${remaining}枠`})[lang]};

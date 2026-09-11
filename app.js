@@ -14,7 +14,7 @@ import {considerDiscovery,bindDiscoveryLocks} from './character-discovery.js?v=2
 import {manualDiscoveryPatch} from './character-discovery-rules.js?v=20260909dev305';
 import {bindFamilyNames} from './family-names.js?v=20260909dev305';
 
-import {showSlotCreator} from './character-slots.js?v=20260909dev305';
+
 import {mountRelationshipRoles} from './relationship-roles-editor.js?v=20260909dev305';
 import {isFamily} from './relationship-roles.js?v=20260909dev305';
 import {mountRelationshipDetails} from "./relationship-details-editor.js?v=20260909dev305";
@@ -3034,7 +3034,7 @@ function bind(){
   $$("[data-closet-filter]").forEach(button=>button.onclick=()=>{closetFilter=button.dataset.closetFilter;$$("[data-closet-filter]").forEach(value=>value.classList.toggle("on",value===button));applyClosetFilter()});
   $("[data-new-outfit]")?.addEventListener("click",()=>openOutfitEditor());
   $$("[data-edit-outfit]").forEach(el=>el.onclick=()=>openOutfitEditor(el.dataset.editOutfit));
-  $$("[data-new]").forEach(el=>el.onclick=()=>showSlotCreator(state,()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`현재 캐릭터 슬롯은 ${limit}명까지예요`);render()}));
+  $$("[data-new]").forEach(el=>el.onclick=()=>{const limit=characterLimit();if(!createCharacter(limit))showToast(`현재 캐릭터 슬롯은 ${limit}명까지예요`);render()});
   $("[data-welcome-create]")?.addEventListener("click",()=>{
     if(window.ParallelCityAuth?.getInfo?.().busy||state.order.length)return;
     if(!createCharacter(characterLimit()))return;

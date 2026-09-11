@@ -20,7 +20,7 @@
  const getState=()=>({busy,phase,label:(phaseText[phase]||[])[String(document.documentElement.lang).startsWith('en')?1:String(document.documentElement.lang).startsWith('ja')?2:0]||''});
  const setPhase=value=>{phase=value;window.dispatchEvent?.(new CustomEvent('drawer-village-billing-state',{detail:getState()}))};
  const bounded=(work,ms=25000)=>new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(error('FAILED')),ms);Promise.resolve(work).then(resolve,reject).finally(()=>clearTimeout(timer))});
- const refreshAccount=()=>{void Promise.resolve().then(()=>window.ParallelCityAuth?.download?.({automatic:false})).catch(()=>{})};
+ const refreshAccount=()=>{void Promise.resolve().then(()=>window.ParallelCityAuth?.refreshEntitlements?.()).catch(()=>{})};
  async function token(){const value=await bounded(window.ParallelCityAuth?.getIdToken?.());if(!value)throw error('LOGIN_REQUIRED');return value}
  async function request(path,body,auth){
   const backend=String(config().backendUrl||'').replace(/\/$/,'');if(!backend)throw error('APPLE_NOT_CONFIGURED');
@@ -33,7 +33,7 @@
   // StoreKit retains unfinished transactions across restarts until the server commits.
   await bounded(bridge.finishPurchase({transactionId:purchase.transactionId}));
   if(result.productId==="diamonds_100")window.dispatchEvent?.(new CustomEvent("drawer-village-diamonds-charged",{detail:result}));
-  if(result.environment==="Sandbox")window.ParallelCityAuth?.setAppleSandboxEntitlements?.(result.entitlements);
+  if(result.environment==="Sandbox")window.ParallelCityAuth?.setAppleSandboxEntitlements?.(result.entitlements,result.uid);
   return result;
  }
  async function exclusive(run){if(busy)throw error('BUSY');busy=true;try{return await run()}catch(e){if(messages[e.code])throw error(e.code);throw error('FAILED')}finally{busy=false;setPhase('idle')}}
@@ -43,6 +43,10 @@
    setPhase('restoring');
    // A quiet login check must not download the whole save or block on an empty history.
    const result=await bounded(bridge.restorePurchases({interactive}));
+   const uid=window.ParallelCityAuth?.getInfo?.().user?.uid;
+   const diagnostics=await bounded(bridge.getDiagnostics());
+   if(uid&&diagnostics.sandboxReceipt){const saved=await request('entitlements',{},await token());if(saved.uid===uid)window.ParallelCityAuth?.setAppleSandboxEntitlements?.(saved.sandboxEntitlements,uid)}
+   await bounded(window.ParallelCityAuth?.refreshEntitlements?.());
    if(!(result.purchases||[]).length)return {restored:0,failed:0};
    const auth=await token();await request('prepare',{},auth);let restored=0,failed=0;
    for(const purchase of result.purchases||[]){try{await settle(purchase,auth);restored++}catch{failed++}}

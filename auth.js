@@ -468,11 +468,18 @@ const normalizeEntitlements=value=>{
     note:typeof value?.note==="string"?value.note:""
   };
 };
+let appleSandboxEntitlements=null,appleSandboxUid="";
+const effectiveEntitlements=()=>{
+ if(!appleSandboxEntitlements||appleSandboxUid!==user?.uid)return entitlements;
+ const result={...entitlements};
+ for(const key of ["characterSlotPacks","characterSingleSlots","townSlotPacks"])result[key]=(entitlements[key]||0)+(appleSandboxEntitlements[key]||0);
+ return result;
+};
 const publishEntitlements=value=>{
   entitlements=normalizeEntitlements(value);
   storageUsage={...storageUsage,maxCount:maxPhotos(),maxBytes:maxTotalBytes(),unlimited:false};
   localStorage.setItem("drawer-village-storage-usage",JSON.stringify(storageUsage));
-  window.ParallelCity?.setEntitlements?.(entitlements);
+  window.ParallelCity?.setEntitlements?.(effectiveEntitlements());
 };
 const accessLabel=()=>[
   (entitlements.characterSlotPacks*5+entitlements.characterSingleSlots)?`캐릭터 슬롯 +${entitlements.characterSlotPacks*5+entitlements.characterSingleSlots}`:"",
@@ -654,9 +661,10 @@ async function login(){
 }
 
 async function upload({silent=false,reason="",accountTransition=false,metadataOnly=false}={}){
-  if(switchingAccount&&!accountTransition)return false;
+  if(deletingAccount||(switchingAccount&&!accountTransition))return false;
   const session=captureSession();
   await window.DrawerVillageLocalMedia?.ready;
+  if(deletingAccount)return false;
   if(session.epoch!==accountEpoch||session.uid!==user?.uid)return false;
   if(!user){if(!silent)toast("Google 로그인이 필요합니다");return false}
   if(busy){
@@ -1268,6 +1276,7 @@ if(ready){
           adoptedGuest=true;
         }
         uploadedCache.clear();mediaEpoch="";
+        appleSandboxEntitlements=null;appleSandboxUid="";
         publishEntitlements(null);
         storageUsage={count:0,bytes:0,maxCount:MAX_PHOTOS,maxBytes:FREE_TOTAL_BYTES};
         publishGuideState(localGuideKeys());
@@ -1305,7 +1314,7 @@ async function savePublicProfile({name,photo}){
 let deletingAccount=false;
 async function revokeAppleDeletionAuthorization(current,authorizationCode){
  const uid=current.uid;if(user?.uid!==uid)throw Error('account-changed');
- const idToken=await current.getIdToken(true);if(user?.uid!==uid)throw Error('account-changed');
+ const idToken=await requestDeadline(current.getIdToken(true),'delete-revoke-token');if(user?.uid!==uid)throw Error('account-changed');
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),25000);
  try{
   // Use the authenticated web session. Native Firebase has no current user when
@@ -1324,29 +1333,29 @@ async function deleteOwnAccount(){
  const apple=current.providerData.some(p=>p.providerId==='apple.com');
  if(!apple&&!current.providerData.some(p=>p.providerId==='google.com'))throw Error(text('이 로그인 방식은 삭제 요청 메일로 문의해 주세요.','Please use the deletion request email for this sign-in method.','このログイン方式は削除依頼メールをご利用ください。'));
  if(!confirm(text('계정과 클라우드 게임 데이터 및 사진을 삭제할까요? 되돌릴 수 없습니다. 본인 확인 후 삭제 범위를 한 번 더 확인합니다.','Delete your account, cloud game data and photos? This cannot be undone. After reauthentication, you will confirm the scope.','アカウントとクラウドのゲームデータ・写真を削除しますか？元に戻せません。本人確認後、削除範囲を再確認します。')))return false;
- deletingAccount=true;switchingAccount=true;
- const call=async(action,body={})=>{if(user?.uid!==uid)throw Error('account-changed');const token=await current.getIdToken(true);const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/accountDeletionApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)});const result=await response.json();if(!response.ok)throw Error(result.code||'account-deletion-failed');return result};
+ deletingAccount=true;window.dispatchEvent(new Event("drawer-village-auth-busy"));
+ const call=async(action,body={})=>{if(user?.uid!==uid)throw Error('account-changed');const token=await requestDeadline(current.getIdToken(true),'delete-token');if(user?.uid!==uid)throw Error('account-changed');const response=await requestDeadline(fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/accountDeletionApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(body)}),'delete-'+action,30000);const result=await requestDeadline(response.json(),'delete-response');if(user?.uid!==uid)throw Error('account-changed');if(!response.ok)throw Error(result.code||'account-deletion-failed');return result};
  try{
   const native=window.Capacitor?.isNativePlatform?.()&&window.Capacitor?.Plugins?.FirebaseAuthentication;
   let appleAuthorizationCode='';
-  if(native&&apple){const result=await native.signInWithApple({skipNativeAuth:true,scopes:['email','name']});const credential=result?.credential;if(!credential?.idToken||!credential?.nonce||!credential?.authorizationCode)throw Error('missing-apple-credential');await reauthenticateWithCredential(current,new OAuthProvider('apple.com').credential({idToken:credential.idToken,rawNonce:credential.nonce}));appleAuthorizationCode=credential.authorizationCode;}
-  else if(native){const result=await native.signInWithGoogle({skipNativeAuth:true,useCredentialManager:false});if(!result?.credential?.idToken)throw Error('missing-id-token');await reauthenticateWithCredential(current,GoogleAuthProvider.credential(result.credential.idToken));}
-  else await reauthenticateWithPopup(current,apple?new OAuthProvider('apple.com'):new GoogleAuthProvider());
+  if(native&&apple){const result=await requestDeadline(native.signInWithApple({skipNativeAuth:true,scopes:['email','name']}),"delete-reauth",60000);const credential=result?.credential;if(!credential?.idToken||!credential?.nonce||!credential?.authorizationCode)throw Error('missing-apple-credential');await requestDeadline(reauthenticateWithCredential(current,new OAuthProvider('apple.com').credential({idToken:credential.idToken,rawNonce:credential.nonce})),"delete-credential");appleAuthorizationCode=credential.authorizationCode;}
+  else if(native){const result=await requestDeadline(native.signInWithGoogle({skipNativeAuth:true,useCredentialManager:false}),"delete-reauth",60000);if(!result?.credential?.idToken)throw Error('missing-id-token');await requestDeadline(reauthenticateWithCredential(current,GoogleAuthProvider.credential(result.credential.idToken)),"delete-credential");}
+  else await requestDeadline(reauthenticateWithPopup(current,apple?new OAuthProvider('apple.com'):new GoogleAuthProvider()),"delete-reauth",60000);
   if(user?.uid!==uid)throw Error('account-changed');
   const preview=await call('preview');
   const groups=(preview.ownedGroups||[]).map(g=>g.name).join(', ');
    if(!confirm(text('최종 확인','Final confirmation','最終確認')+'\n'+text('계정의 게임 데이터와 사진을 삭제합니다. 방장인 멀티 그룹도 함께 삭제됩니다.','Your game data and photos will be deleted, including multiplayer groups you own.','ゲームデータ・写真と、自分がホストのマルチグループも削除します。')+'\n'+groups+'\n'+text('결제 관련 보관 기록은 별도로 유지될 수 있습니다. 삭제할까요?','Retained payment records may remain separately. Delete now?','決済の保管記録は別途残る場合があります。削除しますか？')))return false;
   status(text('계정을 삭제하는 중… 앱을 닫지 말아 주세요.','Deleting your account… Keep the app open.','アカウントを削除中…アプリを閉じないでください。'));
   if(appleAuthorizationCode){try{await revokeAppleDeletionAuthorization(current,appleAuthorizationCode)}catch(error){throw Error(text('Apple 연결을 해제하지 못했어요. 잠시 후 계정 삭제를 다시 시도해 주세요.','Could not revoke Apple access. Please try account deletion again shortly.','Apple連携を解除できませんでした。しばらくしてからアカウント削除を再試行してください。'))}}
-  await activeSyncDone;accountEpoch+=1;
-  await call('delete',{confirm:true,deleteOwnedGroups:true});
-  await signOut(auth).catch(()=>{});if(native)await native.signOut().catch(()=>{});
+  await requestDeadline(activeSyncDone,'delete-sync');accountEpoch+=1;
+  const deletion=await call('delete',{confirm:true,deleteOwnedGroups:true});if(deletion.deleted!==true)throw Error('account-deletion-unconfirmed');
+  await requestDeadline(signOut(auth),'delete-signout').catch(()=>{});if(native)await requestDeadline(native.signOut(),'delete-native-signout').catch(()=>{});
   const prefix='drawer-account:'+encodeURIComponent(uid)+':';
   for(const key of Object.keys(window.localStorage))if(key.startsWith(prefix))window.localStorage.removeItem(key);
   localStorage.switchScope('guest');
   alert(text('계정과 클라우드 데이터 삭제가 완료됐어요.','Your account and cloud data have been deleted.','アカウントとクラウドデータの削除が完了しました。'));
   location.reload();return true;
- }finally{deletingAccount=false;switchingAccount=false;window.dispatchEvent(new Event('drawer-village-auth-busy'));}
+ }catch(error){if(error?.code==='sync/request-timeout')throw Error(text('계정 삭제 절차의 응답을 확인하지 못했어요. 삭제 완료를 확인하기 전에는 기기 기록을 지우지 않습니다.','Could not confirm the account deletion response. Device records will remain until deletion is confirmed.','アカウント削除手続きの応答を確認できませんでした。削除完了を確認するまで端末の記録は消しません。')+' ('+(error.phase||error.code)+')');throw error;}finally{deletingAccount=false;window.dispatchEvent(new Event('drawer-village-auth-busy'));}
 }
 
 window.DrawerVillageAccountImages={
@@ -1364,6 +1373,7 @@ window.DrawerVillageAccountImages={
 window.ParallelCityAuth={
   deleteOwnAccount,
   login,upload,download,submitFeedback,savePublicProfile,markGuideSeen,resetGuides,
+  setAppleSandboxEntitlements:(value,uid)=>{if(!uid||uid!==user?.uid||!window.Capacitor?.isNativePlatform?.()||window.Capacitor?.getPlatform?.()!=="ios")return;appleSandboxEntitlements=normalizeEntitlements(value);appleSandboxUid=uid;window.ParallelCity?.setEntitlements?.(effectiveEntitlements())},
   refreshEntitlements:async()=>{const account=user?.uid;if(!account)return;const snapshot=await getDocFromServer(doc(db,"users",account));if(user?.uid===account)publishEntitlements(snapshot.data()?.entitlements)},
   logout:async()=>{
     try{await window.DrawerVillageGroupPush?.disable?.()}catch{}
@@ -1374,7 +1384,7 @@ window.ParallelCityAuth={
     }
   },
   getIdToken:async()=>user?user.getIdToken():null,
-  getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupError,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,slotUsage:slotUsageUid===user?.uid?slotUsage:{characters:0,towns:0},storageUsage,guideState})
+  getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupError,startupSyncing:switchingAccount,busy:busy||loginBusy||deletingAccount||switchingAccount||!authSettled,entitlements:effectiveEntitlements(),appleSandbox:appleSandboxUid===user?.uid&&!!appleSandboxEntitlements,slotUsage:slotUsageUid===user?.uid?slotUsage:{characters:0,towns:0},storageUsage,guideState})
 };
 
 setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home"].includes((window.ParallelCity?.getActiveTab?.()||window.ParallelCity?.getState?.()?.activeTab)))void advanceSharedLife().catch(()=>{})},60000+Math.floor(Math.random()*8000));
