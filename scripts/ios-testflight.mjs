@@ -8,10 +8,12 @@ import {preflight,findBuild,saveStatus} from './ios-asc-status.mjs';
 
 assert.equal(process.platform,'darwin','Signing only runs on the macOS runner');
 assert.equal(process.env.GITHUB_REF,'refs/heads/dev','No production branch signing');
-const request=JSON.parse(readFileSync('.github/ios-testflight-request.json','utf8'));
+const storeRelease=process.argv.includes('--app-store');
+const request=JSON.parse(readFileSync(storeRelease?'.github/ios-appstore-request.json':'.github/ios-testflight-request.json','utf8'));
 const release=JSON.parse(readFileSync('ios-release.json','utf8'));
 assert.equal(request.uploadToTestFlight,true);
-assert.equal(request.internalOnly,true);
+assert.equal(request.internalOnly,!storeRelease);
+if(storeRelease)assert.equal(request.appStoreUpload,true);
 assert.equal(request.submitForReview,false);
 assert.equal(release.appStoreReady,false,'This path is an internal preview, not a store release');
 assert.equal(request.build,release.build);
@@ -93,7 +95,7 @@ try{
   assert.equal(info.CFBundleVersion,String(release.build));
   stage='export';
   const exportOptions=path.join(temp,'ExportOptions.plist');
-  writeFileSync(exportOptions,plist({method:'app-store-connect',destination:'export',teamID:team,signingStyle:'manual',signingCertificate:'Apple Distribution',provisioningProfiles:{[bundle]:profile.UUID},manageAppVersionAndBuildNumber:false,stripSwiftSymbols:true,uploadSymbols:true,testFlightInternalTestingOnly:true}));
+  writeFileSync(exportOptions,plist({method:'app-store-connect',destination:'export',teamID:team,signingStyle:'manual',signingCertificate:'Apple Distribution',provisioningProfiles:{[bundle]:profile.UUID},manageAppVersionAndBuildNumber:false,stripSwiftSymbols:true,uploadSymbols:true,...(storeRelease?{}:{testFlightInternalTestingOnly:true})}));
   run('xcodebuild',['-exportArchive','-archivePath',archive,'-exportPath',exportDir,'-exportOptionsPlist',exportOptions]);
   const ipas=readdirSync(exportDir).filter(name=>name.endsWith('.ipa'));
   assert.equal(ipas.length,1,'Expected one signed IPA');
@@ -109,7 +111,7 @@ try{
   stage='upload';
   run('xcrun',['altool','--upload-app','--file',ipa,'--type','ios',...auth],{env:uploadEnv});
   uploadAccepted=true;
-  saveStatus('upload',{appId,version:release.version,build:release.build,internalOnly:true,uploadAccepted:true,submittedForReview:false,source:env.GITHUB_SHA});
+  saveStatus('upload',{appId,version:release.version,build:release.build,internalOnly:!storeRelease,uploadAccepted:true,submittedForReview:false,source:env.GITHUB_SHA});
   console.log('Apple accepted the upload. Checking processing status (bounded wait).');
   stage='processing';
   let build=null;

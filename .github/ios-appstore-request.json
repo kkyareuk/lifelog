@@ -1,0 +1,9 @@
+{
+  "request": "2026-09-12-appstore357",
+  "version": "1.0.323",
+  "build": 357,
+  "uploadToTestFlight": true,
+  "internalOnly": false,
+  "appStoreUpload": true,
+  "submitForReview": false
+}
