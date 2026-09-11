@@ -7,3 +7,5 @@
 - iOS StoreKit allow-list includes character_slot_1; Android/iOS sources share 1.0.323. TestFlight internal-only build 356 requested, no App Store submission/public release.
 
 Validation: qa-navigation356 browser tests (selection writes, real speech menu, stale input, room permissions, photo removal), home-surface checks, mocked Apple single-slot validation, Android signed APK/AAB build and asset verifier. Actual device multi-second stalls and live Apple purchase remain unverified. No notification sent. New notice/photo help translated EN/JA; overall app translation coverage not measured.
+
+Mac runner 34631910977: signed archive and IPA validation/upload succeeded. Apple accepted version 1.0.323 (356), internalOnly=true, submittedForReview=false, source7de6f8d. Bounded processing lookup returned build:null, so tester availability and live purchases remain unverified.
