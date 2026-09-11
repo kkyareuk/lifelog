@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {writeAnswerDelta,replayAnswerDeltas,clearAnswerDeltas} from '../character-answer-journal.js';
+const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v),removeItem:k=>data.delete(k)};
+writeAnswerDelta(storage,'a',{planningStyle:'planned',discovery:{answered:['rain']}},20);
+const recovered=replayAnswerDeltas(storage,{lastSaved:10,characters:{a:{name:'A'}}});assert.equal(recovered.characters.a.planningStyle,'planned');assert.deepEqual(recovered.characters.a.discovery.answered,['rain']);
+assert.equal(replayAnswerDeltas(storage,{lastSaved:30,characters:{a:{planningStyle:'manual'}}}).characters.a.planningStyle,'manual');
+assert.deepEqual(replayAnswerDeltas(storage,{lastSaved:10,characters:{}}).characters,{});
+assert.equal(replayAnswerDeltas(storage,{gameResetAt:25,characters:{a:{}}}).characters.a.planningStyle,undefined);
+writeAnswerDelta(storage,'a',{impulseControl:'low'},21);assert.equal(replayAnswerDeltas(storage,{characters:{a:{}}}).characters.a.planningStyle,'planned');
+clearAnswerDeltas(storage);assert.equal(data.size,0);
+assert.throws(()=>writeAnswerDelta({...storage,setItem(){throw Error('quota')}},'a',{x:1}));
+console.log('PASS durable replay, latest manual save wins, deleted/reset characters protected, deltas merged, quota error propagated');

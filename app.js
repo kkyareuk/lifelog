@@ -64,7 +64,7 @@ import {eventFor,forceCharactersHome,nextSceneRefreshDelay,timeline,withSimulati
 import {setCharacterSceneImage} from "./state.js?v=20260909dev305";
 import {SCENE_IMAGE_VARIANTS,normalizeSceneImageVariants} from "./character-scene-image.js?v=20260909dev305";
 import {mountDictionary,refreshDictionaryImage} from "./dictionary.js?v=20260909dev305";
-import {nativeLogContents,homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260909dev305";
+import {currentSceneFor,currentTimelineFor,nativeLogContents,homeLogMarkup,buildingDetailDialogs,entranceTransitionEnds} from "./views.js?v=20260909dev305";
 import {mailEnvelope,createContactMailbox} from "./notification-mail.js?v=20260909dev305";
 import {renderApp, relationshipMapMarkup, catalogCardMarkup, catalogSubgenreOptions, setAccountLabel, setAccountEntitlements, setMobileTownMode, setMobileTownPanel, setMobileTownPlacement, setSettingsPane, setNativeShopSection, translateDynamicInterface, appearancePreviewColor, hairCurlPreviewPath} from "./views.js?v=20260909dev305";
 import {initializeLocalMediaState,persistLocalImage,informationOnlyState,localMediaUsage,isPendingLocalImage} from "./local-media.js?v=20260909dev305";
@@ -1556,9 +1556,9 @@ function prepareActiveHomeLife(now=new Date()){
   homeLifeObservationKey=observationKey;
   const contexts={},minute=now.getHours()*60+now.getMinutes(),dayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),characterIds=state.order.filter(characterId=>{
     const character=state.characters[characterId];if(!character)return false;
-    const scene=eventFor(character,now),sceneHomeId=scene?.visitHomeId||character.homeId;
+    const scene=currentSceneFor(character,now),sceneHomeId=scene?.visitHomeId||character.homeId;
     if(!scene?.home||sceneHomeId!==homeId)return false;
-    const entries=timeline(character,now),next=entries.find(entry=>Number(entry?.minute)>minute),sceneMinute=Number.isFinite(Number(scene.minute))?Math.max(0,Number(scene.minute)):minute;
+    const entries=currentTimelineFor(character,now),next=entries.find(entry=>Number(entry?.minute)>minute),sceneMinute=Number.isFinite(Number(scene.minute))?Math.max(0,Number(scene.minute)):minute;
     const interactionId=scene.groupInteraction?scene.interactionId||"":"";
     // 같은 공동 장면의 표현 문구가 다시 계산되어도 이동 장면은 하나다.
     // 제목을 sceneKey에 넣으면 화면 재진입 때마다 새 행동으로 오인해 두 사람이
@@ -6211,8 +6211,7 @@ window.addEventListener("drawer-village-character-notification-received",event=>
 installContextMenu({
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},
- execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});render();return true}const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,...options});if(result)renderAfterCommand();return result},
- more:(id,context)=>{if(context.groupId){const shared=activeShared();if(shared?.activeGroupId===context.groupId)withSharedWorld(shared,()=>openDirectCommandDialog(state.characters[id]));}else openDirectCommandDialog(state.characters[id]);}
+ execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});render();return true}const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result},
 });
 let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;

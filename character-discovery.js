@@ -2,7 +2,7 @@ import {repeatDiscoveryCandidates} from './character-discovery-rules.js?v=202609
 import {rememberScene,storyQuestions} from './story-events.js?v=20260909dev305';
 import {FORM_FIELDS} from './discovery-records.js?v=20260909dev305';
 import {recordEditor} from './discovery-records-ui.js?v=20260909dev305';
-import {state,active,updateCharacter,save} from './state.js?v=20260909dev305';
+import {state,active,updateCharacter,save,saveDiscoveryPatch} from './state.js?v=20260909dev305';
 import {fixedDiscoveryKnown,DISCOVERY_FIELDS,DISCOVERY_AXES,discoveryChoices,discoveryLocked,createDiscoverySession,discoveryAnswer,discoveryCandidates,discoveryWait,discoveryMetric} from './character-discovery-rules.js?v=20260909dev305';
 const session=createDiscoverySession();let pending=null,pendingCheck=null,worldKey='';
 const t=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
@@ -21,7 +21,7 @@ export async function applyDiscoveryChoice(c,question,index,context={}){
  if(question.story&&!storyQuestions(current,context.groupId?Object.fromEntries((window.DrawerVillageGroups.getSnapshot().residents||[]).map(r=>[r.id,r])):state.characters).some(q=>q.id===question.id))return false;
  const patch=discoveryAnswer(current,question,index,Date.now(),context.selectedValue);if(!patch)return false;
  if(context.groupId){await window.DrawerVillageGroups.saveResident({groupId:context.groupId,id:c.id,profile:{...current,...patch}});return true;}
- const before={...Object.fromEntries(Object.keys(patch).map(k=>[k,c[k]])),timelineResetAt:c.timelineResetAt};updateCharacter(c.id,patch,false);if(!save(true)){Object.assign(c,before);throw Error('Save failed')}return true;
+ return saveDiscoveryPatch(c.id,patch);
 }
 export function showDiscovery(c,scene,question,context={}){
  if(pending)return;const account=uid(),d=document.createElement('dialog');pending=d;d.className='character-discovery-dialog';

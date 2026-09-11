@@ -1,0 +1,18 @@
+<ko-KR>
+캐릭터 추천 행동과 같은 메뉴 안에서 고르는 상호작용 분류를 추가했어요.
+포옹·키스의 양쪽 반응을 다양화하고 포옹 애니메이션을 추가했어요.
+개인 캐릭터 질문의 저장 대기를 줄였어요.
+네트워크 복구 후 멀티 목록이 돌아오도록 보완했어요.
+</ko-KR>
+<en-US>
+Added suggested actions and interaction categories within the same menu.
+Added distinct reactions to hugs and kisses, plus hug animations.
+Reduced saving delays for personal character questions.
+Improved multiplayer list recovery after connection loss.
+</en-US>
+<ja-JP>
+おすすめの行動と、同じメニュー内で選べる交流カテゴリを追加しました。
+抱擁・キスの双方の反応を増やし、抱擁アニメーションを追加しました。
+個人キャラクターの質問回答の保存待ちを短縮しました。
+再接続後のマルチ一覧の復帰を改善しました。
+</ja-JP>

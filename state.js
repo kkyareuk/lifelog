@@ -1,3 +1,5 @@
+import {writeAnswerDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
+import {contactNarrative,rejectsContact} from './contact-narrative.js?v=20260909dev305';
 import {contextDestination} from './context-actions.js?v=20260909dev305';
 import {kissNarrative} from './kiss-narrative.js?v=20260909dev305';
 import {cohabitWorld} from './relationship-housing.js?v=20260909dev305';
@@ -924,7 +926,7 @@ function normalizeHomes(x){
   return renameBrand(x);
 }
 function load(){
-  const parse=raw=>{try{return raw?migrate(JSON.parse(raw)):null}catch{return null}};
+  const parse=raw=>{try{return raw?replayAnswerDeltas(localStorage,migrate(JSON.parse(raw))):null}catch{return null}};
   const count=value=>Object.keys(value?.characters||{}).length;
   const primary=parse(localStorage.getItem(KEY));
   if(count(primary)>0||primary?.gameResetAt)return primary;
@@ -1044,6 +1046,7 @@ function writeState(notify=true){
     state.lastSaved=Date.now();
     const serialized=stringifyLocalMediaState(state,{characterSettingsView:"hub"});
     localStorage.setItem(KEY,serialized);
+    clearAnswerDeltas(localStorage);
     preserveLastNonempty(state,serialized);
     stored=true;
   }catch(error){
@@ -1168,6 +1171,13 @@ const touchCharacterTimelines=ids=>{
   const stamp=Date.now();
   [...new Set((ids||[]).map(String))].forEach(id=>{if(state.characters[id])state.characters[id].timelineResetAt=stamp});
 };
+export function saveDiscoveryPatch(id,patch){
+ const c=state.characters[id];if(!c||isolatedWorldDepth||editorPersonalState)throw Error('Character changed');
+ const before={...c};
+ try{updateCharacter(id,patch,false);writeAnswerDelta(localStorage,id,{...Object.fromEntries(Object.keys(patch).map(k=>[k,c[k]])),timelineResetAt:c.timelineResetAt});}
+ catch(error){for(const key of Object.keys(c))if(!Object.hasOwn(before,key))delete c[key];Object.assign(c,before);throw error;}
+ save();return true;
+}
 export function updateCharacter(id,patch,persist=true){
   const c=state.characters[id];if(!c)return;
   Object.assign(c,patch);
@@ -1434,7 +1444,7 @@ function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
   return copy;
 }
 function baseSocialDirectiveCopy(kind,actor,target,subject,topic,options={}){
-  if(['kiss','kiss_cautious','kiss_reconcile'].includes(kind))return kissNarrative(state,actor,target,characterViewFor(actor.id,target.id),characterViewFor(target.id,actor.id),options.now??Date.now());
+  if(['hug','kiss','kiss_cautious','kiss_reconcile'].includes(kind))return contactNarrative(state,actor,target,characterViewFor(actor.id,target.id),kind==='hug'?'hug':'kiss',options);
   if(kind==='gossip'&&subject){const criticizing=dislikesPerson(state,actor,subject)&&!ignoresOthers(actor),distant=ignoresOthers(actor);const reasons=gossipReasons(characterViewFor(actor.id,subject.id),subject);const desc=criticizing&&reasons.length?reasons[Math.floor(seededChoice(actor.id+':'+subject.id+':'+(options.now||Math.floor(Date.now()/60000)))()*reasons.length)]:distant?['남의 이야기에 별 관심이 없어 짧게 듣고 다른 화제로 돌리려 해요.','They show little interest in gossip and try to change the subject.','他人の話にはあまり関心を示さず、話題を変えようとしています。']:['상대의 불만을 듣지만 섣불리 맞장구치지는 않고 있어요.','They listen to the complaint without rushing to agree.','相手の不満を聞きつつ、すぐには同調していません。'];return Object.fromEntries(['ko','en','ja'].map((lang,i)=>[lang,{title:[`${target.name}와 ${subject.name}에 대해 이야기하는 중`,`Talking with ${target.name} about ${subject.name}`,`${target.name}と${subject.name}について話すところ`][i],desc:desc[i]}]))}
 
   const extra=socialActivityCopy(kind,actor,target,topic,options);if(extra)return extra;
@@ -1486,10 +1496,10 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   // Explicit mutual contact settings also permit a directed kiss. A custom
   // relationship name must not silently veto the user's settings.
   if(ROMANTIC_ACTIVITIES.includes(kind)&&!hasRomanticRelationship(state.relationships,character.id,target?.id)&&!contactAllowed(character,target,kind))return false;
-  const contactRejected=false;
+  const contactRejected=['hug','kiss','kiss_cautious','kiss_reconcile'].includes(kind)&&rejectsContact(characterViewFor(target.id,character.id));
   if(kind==="gossip"&&(!subject||subject.id===character.id||subject.id===target.id))return false;
   if(kind==="drinks"&&[character,target].some(c=>!isAdultAge(c?.ageGroup)))return false;
-  options={...options,initiatorId:character.id,payment:["split","treat","request"].includes(options.payment)?options.payment:"split",payerName:options.payment==="request"?target?.name:character.name};
+  options={...options,contactRejected,initiatorId:character.id,payment:["split","treat","request"].includes(options.payment)?options.payment:"split",payerName:options.payment==="request"?target?.name:character.name};
   const startedAt=Number.isFinite(options.now)?options.now:Date.now(),copy=options.giftSource&&giftCopyResolver?giftCopyResolver(character,options.giftSource,new Date(startedAt)):definition.social?socialDirectiveCopy(kind,character,target,subject,options.topic,options):Object.fromEntries(["ko","en","ja"].map(language=>[language,{title:definition[language][0],desc:definition[language][1]}]));
   if(!target&&(!task||task.id==='hobby_auto')&&['read','music','game','art','research'].includes(kind)){const topic=kind==='music'?(character.musicGenres||[]).join(' '):kind==='read'?(character.favoriteStoryGenres||[]).join(' '):kind==='game'?'게임':kind==='art'?(character.hobbies||[]).join(' '):'자료';for(const language of ['ko','en','ja']){const story=leisureNarrative(character,topic,startedAt,language);copy[language]={...copy[language],desc:story.text}}}
   const directiveId=uid(),withIds=target?[character.id,target.id]:[];
@@ -1541,7 +1551,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
     delete state.dailyPlans?.[target.id];
     if(!contactRejected&&!SOCIAL_ACTIVITIES[kind]?.negative)recordAutomaticRelationshipMoment([character.id,target.id],`directive:${directiveId}`,kind==="kiss"||kind==="hug"?2:1,false);
   }
-  if(contactRejected){for(const id of [character.id,target.id]){const d=state.characterDirectives[id],other=state.characters[d.targetId];d.copy={ko:{title:`${other.name}와 접촉에 대한 마음을 이야기하는 중`,desc:'상대가 원하지 않아 접촉하지 않기로 했어요. 서로의 의사를 확인하고 거리를 지켜 대화를 마무리해요.'},en:{title:`Talking about boundaries with ${other.name}`,desc:'The contact was declined. They respect the answer and finish their conversation without touching.'},ja:{title:`${other.name}と触れ合いについて話すところ`,desc:'相手が望まないため触れ合いは控えました。気持ちを尊重し、距離を保って会話を終えます。'}};}}
+
   save();
   return true;
 }

@@ -196,6 +196,7 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
     else if(/은근히|장난스럽게|직접 호응/.test(flirtResponse))add(eventValue(10),'호감 신호를 자기 방식으로 받아들임','They welcomed the signal in their own way','好意のサインを自分らしく受け止めた');
   }
   if(restEvent.test(copy))add(recoveryStyle==='쉬거나 자면서 회복'?7:3,'쉬면서 조금씩 회복 중','Recovering gradually through rest','休みながら少しずつ回復している');
+  if(entry?.contactRejected&&entry.meetingActorId===character.id)add(-12,'접촉을 거절당한 말이 마음에 남음','The refusal of contact still stings','触れ合いを断られた言葉が心に残っている');
   const score=Math.max(-100,Math.min(100,reasons.reduce((number,reason)=>number+reason.value,0)));
   const praiseOrSuccess=/성공|칭찬|해냈|완성|success|praise|complete|成功|褒め|完成/i.test(copy),giftOrFavorite=/선물|맛있|좋아하는|favorite|gift|delicious|贈り物|好き|おいし/i.test(copy),playful=/웃|농담|장난|즐거|laugh|joke|playful|笑|冗談|楽しい/i.test(copy),rejection=/거절|무시|외면|reject|ignore|拒絶|無視/i.test(copy),loss=/상실|잃어|떠나|이별|loss|lost|leave|喪失|失く|別れ/i.test(copy),lonely=/외롭|혼자 남|고립|lonely|isolat|寂し|孤立/i.test(copy),embarrassed=/당황|민망|실수|embarrass|awkward|mistake|戸惑|気まず|失敗/i.test(copy),disgusted=dislikedMatches.length&&/냄새|맛|음식|향|혐오|역겨|smell|taste|disgust|臭|味|嫌悪/i.test(copy);
   let label,icon,tone;

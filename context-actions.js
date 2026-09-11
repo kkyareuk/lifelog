@@ -1,3 +1,7 @@
+import {characterMood} from './character-mood.js?v=20260909dev305';
+import {SOCIAL_ACTIVITIES} from './social-activities.js?v=20260909dev305';
+import {LIFE_TASKS} from './life-tasks.js?v=20260909dev305';
+import {relationshipBetween,viewSignals} from './relationship-context.js?v=20260909dev305';
 const label=(ko,en,ja)=>({ko,en,ja});
 export function contextActions(target){
  if(target.type==='person')return [
@@ -30,4 +34,27 @@ export function contextDestination(world,c,target,kind,now=Date.now(),lifeTask='
   if(used>=capacity)return null;
  }
  return {home:true,visitHomeId:home.id,room:target.room,townId:home.townId||c.townId,...(furniture?{furniture,goal:{homeId:home.id,room:target.room,point:{x:Number(furniture.x)||50,y:Number(furniture.y)||60}}}:{})};
+}
+
+const action=(kind,ko,en,ja)=>({kind,label:label(ko,en,ja)});
+export function contextGroups(target,actor){
+ if(target.type==='furniture'||target.type==='place')return [{label:label('다른 행동','Other activities','ほかの行動'),actions:contextActions(target)}];
+ if(target.type!=='person'||target.id===actor?.id)return [{label:label('혼자 하는 행동','Personal activities','一人ですること'),actions:[...contextActions(target).filter(a=>target.type!=='person'),...LIFE_TASKS.filter(t=>!t.social).map(t=>({kind:t.kind,lifeTask:t.id,label:label(...t.labels)})),action('walk','산책하기','Take a walk','散歩する')]}];
+ const socials=Object.entries(SOCIAL_ACTIVITIES).map(([kind,a])=>({...a,kind,label:label(...a.labels)}));
+ return [
+ {label:label('대화하기','Conversation','会話'),actions:[action('talk','대화하기','Talk','話す'),action('comfort','위로하기','Comfort','慰める'),...socials.filter(a=>a.section==='conversation'||a.kind==='debate')]},
+ {label:label('연락하기','Contact','連絡'),actions:socials.filter(a=>a.remote)},
+ {label:label('애정 상호작용','Affection','愛情表現'),actions:[action('hug','포옹하기','Hug','抱きしめる'),action('kiss','키스하기','Kiss','キスする'),action('compliment','칭찬하기','Compliment','褒める'),action('handhold','손잡기','Hold hands','手をつなぐ'),action('lean','어깨에 기대기','Lean on their shoulder','肩に寄り添う')]},
+ {label:label('갈등 상호작용','Conflict','対立'),actions:socials.filter(a=>a.negative)},
+ {label:label('선물하기','Gifts','贈り物'),actions:[action('gift','선물 건네기','Give a gift','贈り物を渡す')]},
+ {label:label('동행하기','Together','一緒に行動'),actions:[action('hangout','함께 시간 보내기','Spend time together','一緒に過ごす'),...socials.filter(a=>['dine','cook_together','play_together','study_together','read_together'].includes(a.kind))]}
+ ];
+}
+export function recommendedContextActions(target,world,actor){
+ if(!actor)return [];
+ const groups=contextGroups(target,actor);if(target.type!=='person')return contextActions(target);
+ if(target.id===actor?.id)return groups[0].actions.filter(a=>a.lifeTask==='hair'||a.kind==='walk'||a.kind==='rest').slice(0,4);
+ const view=(world.characterViews||{})[actor?.id]?.[target.id]||{},signals=viewSignals(view),relation=relationshipBetween(world,actor?.id,target.id);
+ const mood=characterMood(actor,actor?.sharedScene||{},world),all=groups.flatMap(g=>g.actions),score=a=>{let n=a.kind==='talk'?6:0;if(mood.score<-10){if(a.remote)n+=4;if(a.kind==='hug')n-=3;}if(/외향|활발/.test(actor?.socialStyle||'')&&['talk','hangout'].includes(a.kind))n+=3;if(a.kind==='hug')n+=signals.romantic?10:signals.caring?6:relation?2:-4;if(signals.hostile||signals.guarded){if(a.kind==='hug'||a.kind==='kiss')n-=20;if(a.negative)n+=/충동|즉흥/.test(actor?.impulseControl||'')?7:1;if(a.remote)n+=3;}if(a.kind==='hangout')n+=relation?5:1;if(a.kind==='comfort')n+=/공감|이타|배려/.test([actor?.decisionStyle,...(actor?.characterTraits||[])].join(' '))?5:0;return n};
+ return all.filter((a,i,arr)=>arr.findIndex(b=>b.kind===a.kind)===i).sort((a,b)=>score(b)-score(a)).slice(0,4);
 }
