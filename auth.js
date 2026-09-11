@@ -860,6 +860,13 @@ function watchMailboxSignal(){
  },error=>console.warn('Mailbox signal',error.code));
 }
 const groupSnapshot=()=>{const s={...groupState,...(accountMailbox.uid===user?.uid?accountMailbox.data:{})};return window.DrawerVillageSafety?.filterSnapshot(s)||s};
+let olderMailboxRequest=null;
+async function loadOlderMailbox(){
+ if(olderMailboxRequest)return olderMailboxRequest;
+ const uid=user?.uid,base=accountMailbox;if(!uid||base.uid!==uid)return;
+ olderMailboxRequest=(async()=>{const data=await sharedTownRequest('readMailbox',{cursors:base.data.mailCursors||{}});if(user?.uid!==uid||accountMailbox!==base)return;
+ const merged={...base.data,mailCursors:data.mailCursors};for(const key of ['incomingMail','outgoingMail','incomingProposals','outgoingProposals'])merged[key]=[...new Map([...(base.data[key]||[]),...(data[key]||[])].map(m=>[(m.groupId||'')+':'+m.id,m])).values()];accountMailbox={...base,data:merged};emitGroupState();})().finally(()=>{olderMailboxRequest=null});return olderMailboxRequest;
+}
 async function refreshMailbox(force=false){
  if(!user)return;if(accountMailbox.uid!==user.uid)accountMailbox={uid:user.uid,at:0,data:{}};
  if(mailboxRequest){if(force)mailboxRefreshQueued=true;return mailboxRequest}if(!force&&Date.now()-accountMailbox.at<300000)return;
@@ -1146,7 +1153,7 @@ async function sharedTownRequest(action,body={}){
   requireGroupUser();const gid=groupState.activeGroupId;
   const token=await user.getIdToken();
   const response=await fetch('https://asia-northeast3-lifelog-98fff.cloudfunctions.net/sharedTownApi/'+action,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({groupId:gid,...body})});
-  const result=await response.json();if(response.ok&&action==='advance'&&result.lives&&groupState.activeGroupId===gid&&Number(groupState.group?.lifeUpdatedAt||0)<=Number(result.lifeUpdatedAt||0)){const updates=new Map(result.lives.map(l=>[l.id,l]));groupState.residents=groupState.residents.map(r=>updates.has(r.id)?{...r,...updates.get(r.id)}:r);groupState.group={...groupState.group,lifeUpdatedAt:result.lifeUpdatedAt,lifeNextAt:result.lifeNextAt};emitGroupState()}if(!response.ok)throw Object.assign(new Error(result.message||'Shared town failed'),{code:result.message||'groups/server-error'});if(['sendMail','respond','propose','requestResidence','removeMember'].includes(action))await refreshMailbox(true).catch(error=>console.warn('Mailbox refresh',error.code));return result;
+  const result=await response.json();if(response.ok&&action==='advance'&&result.lives&&groupState.activeGroupId===gid&&Number(groupState.group?.lifeUpdatedAt||0)<=Number(result.lifeUpdatedAt||0)){const updates=new Map(result.lives.map(l=>[l.id,l]));groupState.residents=groupState.residents.map(r=>updates.has(r.id)?{...r,...updates.get(r.id)}:r);groupState.group={...groupState.group,lifeUpdatedAt:result.lifeUpdatedAt,lifeNextAt:result.lifeNextAt};emitGroupState()}if(!response.ok)throw Object.assign(new Error(result.message||'Shared town failed'),{code:result.message||'groups/server-error'});if(['deleteMail','sendMail','respond','propose','requestResidence','removeMember'].includes(action))await refreshMailbox(true).catch(error=>console.warn('Mailbox refresh',error.code));return result;
 }
 async function advanceSharedLife(force=false){
   const gid=groupState.activeGroupId;if(!gid||!groupState.group||advancingShared||(!force&&Date.now()-(lastSharedAdvance.get(gid)||0)<60000))return;
@@ -1212,7 +1219,7 @@ window.DrawerVillageGroups={
     return {displayName:accountName().slice(0,20),photoURL:account.photoURL||''};
   },
   saveMemberProfile:async({groupId,name,photoURL})=>{const account=requireGroupUser();name=String(name||'').trim();if(!name||name.length>20)throw Error('Name must contain 1–20 characters');if(photoURL&&!/^https:\/\//.test(photoURL))throw Error('Invalid photo URL');await updateDoc(doc(db,'groups',groupId,'members',account.uid),{displayName:name,photoURL:String(photoURL||'')});},
-  readSafety:()=>sharedTownRequest("readSafety"),setUserBlock:input=>sharedTownRequest("setUserBlock",input),reportContent:input=>sharedTownRequest("reportContent",input),getSnapshot:groupSnapshot,refreshMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
+  deleteMail:input=>sharedTownRequest('deleteMail',input),readSafety:()=>sharedTownRequest("readSafety"),setUserBlock:input=>sharedTownRequest("setUserBlock",input),reportContent:input=>sharedTownRequest("reportContent",input),getSnapshot:groupSnapshot,refreshMailbox,loadOlderMailbox,refresh:refreshGroups,create:createGroup,join:joinGroup,
   saveCatalogItem:async input=>{
     const gid=input.groupId;if(gid!==groupState.activeGroupId)throw Error('groups/context-changed');
     const item=input.item?await prepareWorldPackage(input.item):undefined;

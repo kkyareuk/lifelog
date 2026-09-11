@@ -10,7 +10,7 @@ const identity=p=>JSON.stringify([p.groupId||'',p.id,!!p.asResponse]);
 export const mailWasRead=p=>Boolean(p.read||p.readAt||load()[identity(p)]);
 export function markMailRead(p){
  if(mailWasRead(p))return;
- const now=Date.now(),next=Object.fromEntries(Object.entries(load()).filter(([,at])=>at>now-30*86400000));
+ const now=Date.now(),next={...load()};
  next[identity(p)]=now;
  try{accountStorage.setItem(key,JSON.stringify(next));raw=JSON.stringify(next)}catch{/* Keep a session read mark when device storage is full. */}
  scope=accountStorage.scope;marks=next;

@@ -12,13 +12,14 @@ function createSafety({db,clock=Date.now}){
   const data=doc.data();if(!membership.exists&&(!['mail','proposal'].includes(kind)||![data.senderUid,data.recipientUid].includes(uid)))fail('group-membership-required',403);
   if(['mail','proposal'].includes(kind)&&![data.senderUid,data.recipientUid].includes(uid))fail('mail-access-required',403);
   const owner=kind==='member'?doc.id:kind==='group'?data.ownerUid:kind==='resident'?data.ownerUid:kind==='proposal'&&data.senderUid===uid&&data.respondedAt?data.recipientUid:data.senderUid;if(!owner||owner===uid)fail('invalid-report-target');
-  const account=kind==='member'?doc:await tx.get(root.collection('members').doc(owner));return {uid:owner,name:String(account.data()?.displayName||owner.slice(0,8)).slice(0,80),evidence:JSON.stringify(data).slice(0,120000)};
+  const account=kind==='member'?doc:await tx.get(root.collection('members').doc(owner));return {announcement:kind==='mail'&&data.announcement===true,uid:owner,name:String(account.data()?.displayName||owner.slice(0,8)).slice(0,80),evidence:JSON.stringify(data).slice(0,120000)};
  }
  return {
   readSafety:async uid=>({blocked:(await safetyRef(db,uid).get()).data()?.blocked||[]}),
   setUserBlock:async(uid,input)=>db.runTransaction(async tx=>{
    const ref=safetyRef(db,uid),old=await tx.get(ref),list=old.data()?.blocked||[];
    const person=input.block===false?{uid:id(input.targetUid)}:await target(tx,uid,input);
+   if(person.announcement)fail('announcement-not-blockable',403);
    const next=list.filter(x=>x.uid!==person.uid);if(input.block!==false){if(next.length>=200)fail('block-limit');next.push({uid:person.uid,name:person.name,at:clock()})}
    if(input.removeMember===true){
     if(input.block!==true||input.kind!=='member')fail('invalid-block-removal');
