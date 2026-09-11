@@ -26,7 +26,7 @@
 @media(prefers-reduced-motion:reduce){.supporter-dialog *{animation:none!important}}
 .supporter-dialog[data-page-hidden=true] *{animation-play-state:paused!important}
 
-[data-active-tab="credits"] #app main[data-credits-page]{padding:0;margin:0;max-width:none;background:#70523d url("./assets/supporter-wood.png") center/640px auto}
+[data-active-tab="credits"] #app [data-credits-page]{padding:0;margin:0;max-width:none;background:#70523d url("./assets/supporter-wood.png") center/640px auto}
 .supporter-page{width:100%;min-height:100dvh;max-height:none;border:0;border-radius:0;box-shadow:none;background:#70523d url("./assets/supporter-wood.png") center/640px auto;color:#fff6df}
 .supporter-page .supporter-body{max-height:none;overflow:visible;min-height:calc(100dvh - 120px);padding:20px clamp(18px,5vw,60px)}
 .supporter-page .supporter-body>h3{font-size:clamp(19px,4vw,30px);margin:0 0 12px}.supporter-page .supporter-body>p{color:#fff6df}

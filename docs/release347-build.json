@@ -1,0 +1,19 @@
+{
+  "versionCode": 347,
+  "versionName": "1.0.314",
+  "files": [
+    {
+      "name": "서랍마을-347-1.0.314.apk",
+      "bytes": 71326902,
+      "sha256": "8b543fb2a0c9809fb25802ddcf748fbc7b9510424c2b342a62e999cd7af5e25d"
+    },
+    {
+      "name": "서랍마을-347-1.0.314.aab",
+      "bytes": 70498281,
+      "sha256": "42d156e1e06528a153089c80d57ce9156ec19b3f0227ee1405322c2d3d029c0a"
+    }
+  ],
+  "verifiedAssets": 326,
+  "noticeSite": "https://drawer-village-notices.web.app",
+  "noticePublished": false
+}

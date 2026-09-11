@@ -4665,7 +4665,7 @@ function view(){
   if(configured&&!window.DrawerVillageAuthStartupFailed&&(!authInfo||!authInfo.ready||authInfo.startupSyncing))return accountLoading();
   if(!state.order.length&&state.activeTab==='character'&&(state.sharedContext||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId))return emptySharedCharacter();
   if(!state.order.length&&!window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId){
-    if(state.activeTab==="credits")return `<main data-credits-page></main>`;
+    if(state.activeTab==="credits")return `<div data-credits-page></div>`;
     if(state.activeTab==="settings")return settings();
     if(state.activeTab==="groups")return renderGroups();
     if(state.activeTab==="shop")return shop();
@@ -4673,7 +4673,7 @@ function view(){
     if(!authInfo||!authInfo.ready||authInfo.busy)return accountLoading();
     return welcome();
   }
-  if(state.activeTab==="credits")return `<main data-credits-page></main>`;
+  if(state.activeTab==="credits")return `<div data-credits-page></div>`;
   const content=({observe,mailbox,home,character,catalog,relationship,routine,statistics,town:townMobile,groups:renderGroups,shop,settings}[state.activeTab]||observe)();
   return content;
 }
@@ -4710,9 +4710,9 @@ function renderAppContents(next){
   document.documentElement.dataset.activeTab=showingWelcome?"welcome":state.activeTab;
   appRoot.classList.toggle("is-welcome",showingWelcome);
   appRoot.classList.toggle("is-account-loading",showingAccountLoading);
-  const desktopWeb=!document.documentElement.classList.contains("native-app")&&!showingAccountLoading;
+  const desktopWeb=!document.documentElement.classList.contains("native-app")&&!showingAccountLoading&&state.activeTab!=="credits";
   appRoot.classList.toggle("is-desktop-web",desktopWeb);
-  appRoot.innerHTML=desktopWeb?desktopWebShell(content):`${showingWelcome||showingAccountLoading||showingMultiplayerDirectory||state.activeTab==="mailbox"?"":header()}<main>${content}</main>`;
+  appRoot.innerHTML=state.activeTab==="credits"?content:desktopWeb?desktopWebShell(content):`${showingWelcome||showingAccountLoading||showingMultiplayerDirectory||state.activeTab==="mailbox"?"":header()}<main>${content}</main>`;
   scheduleTownLighting(document);
   appRoot.querySelectorAll("img").forEach((image,index)=>{
     image.decoding="async";
