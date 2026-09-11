@@ -1,3 +1,4 @@
+import {latestSaveQueue} from './latest-save-queue.js?v=20260909dev305';
 import {snapFurniturePosition,furnitureGridForRoom,furnitureFootprint} from './furniture-layout.js?v=20260909dev305';
 import {state,runIsolatedWorld,addFurniturePlacement,updateFurniturePlacement,moveFurniturePlacement,deleteFurniturePlacement,deleteRoom,addRoom,updateRoom,setHomeFloorCount,assignFurnitureBed} from './state.js?v=20260909dev305';
 import {buildSharedWorld,sharedSelection} from './shared-world.js?v=20260909dev305';
@@ -7,9 +8,21 @@ import {bindSharedHomeMembers} from './shared-home-members.js?v=20260909dev305';
 const queues=new Map();
 export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  const api=window.DrawerVillageGroups,selection=sharedSelection(s),world=buildSharedWorld(s,state.uiLanguage),home=world.homes[world.activeHomeId];if(!home)return;
- const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=s.group?.ownerUid===uid||home.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role)),key=s.activeGroupId+':'+home.id;
+ const uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,canEdit=s.group?.ownerUid===uid||home.ownerUid===uid||s.members?.some(m=>(m.uid||m.id)===uid&&['owner','manager','operator'].includes(m.role)),key=uid+':'+s.activeGroupId+':'+home.id;
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
- function commit(){const layout=structuredClone({rooms:home.rooms,deletedRoomKeys:home.deletedRoomKeys||[],floorCount:home.floorCount,activeFloor:home.activeFloor});selection.homeDrafts??={};selection.homeDrafts[home.id]=layout;const previous=queues.get(key)||Promise.resolve();const next=previous.catch(()=>{}).then(async()=>{const current=api.getSnapshot();if(current.activeGroupId!==s.activeGroupId)throw Error(mt('그룹이 바뀌었어요.','The group changed.','グループが変わりました。'));const record=current.homes.find(h=>h.id===home.id),result=await api.saveHomeLayout({id:home.id,revision:Number(record.layoutRevision)||0,layout});record.layoutRevision=result.revision;record.layoutJson=JSON.stringify({...JSON.parse(record.layoutJson||'{}'),...layout})});queues.set(key,next);next.catch(e=>toast(e.message));return next}
+ function commit(){
+  const layout=structuredClone({rooms:home.rooms,deletedRoomKeys:home.deletedRoomKeys||[],floorCount:home.floorCount,activeFloor:home.activeFloor});
+  selection.homeDrafts??={};selection.homeDrafts[home.id]=layout;
+  let queue=queues.get(key);
+  if(!queue){queue=latestSaveQueue(async layout=>{
+   const current=api.getSnapshot();
+   if(window.ParallelCityAuth?.getInfo?.()?.user?.uid!==uid||current.activeGroupId!==s.activeGroupId)throw Error(mt('그룹이나 계정이 바뀌었어요.','The group or account changed.','グループまたはアカウントが変わりました。'));
+   const record=current.homes.find(h=>h.id===home.id);if(!record)throw Error(mt('집을 찾지 못했어요.','The home could not be found.','家が見つかりません。'));
+   const result=await api.saveHomeLayout({id:home.id,revision:Number(record.layoutRevision)||0,layout});
+   record.layoutRevision=result.revision;record.layoutJson=JSON.stringify({...JSON.parse(record.layoutJson||'{}'),...layout});
+  });queues.set(key,queue)}
+  const next=queue.push(layout);next.catch(e=>toast(e.message));return next;
+ }
  const change=fn=>{if(!canEdit)return;const result=runIsolatedWorld(world,fn);commit();return result};
  root.querySelectorAll('[data-home-edit]').forEach(b=>b.disabled=!canEdit);
  root.querySelectorAll('[data-room-drag],[data-room-resize]').forEach(h=>{h.disabled=!canEdit;if(canEdit&&bindRoomGeometry)bindRoomGeometry(h,h.hasAttribute('data-room-drag')?'move':'resize',{world,update:(...args)=>{runIsolatedWorld(world,()=>updateRoom(...args.slice(0,3),false));if(args[3])commit()},saveAll:()=>{}})});
@@ -20,7 +33,7 @@ export function bindSharedHome(root,s,render,toast,bindRoomGeometry){
  root.addEventListener('change',e=>{if(e.target.matches('[data-home-floor-count]')){stop(e);if(canEdit){change(()=>setHomeFloorCount(home.id,e.target.value));render()}}},true);
  root.addEventListener('click',e=>{
   const b=e.target.closest('button,[data-furniture-placement],[data-open-room-editor]');if(!b)return;
-  if(b.matches('[data-home-edit]')){stop(e);if(!canEdit)return;if(selection.homeEditMode){const button=b;button.disabled=true;(queues.get(key)||Promise.resolve()).then(()=>{selection.homeEditMode=false;delete selection.homeDrafts?.[home.id];render()}).catch(()=>{button.disabled=false})}else{selection.homeEditMode=true;render()}return}
+  if(b.matches('[data-home-edit]')){stop(e);if(!canEdit)return;if(selection.homeEditMode){const button=b;button.disabled=true;(queues.get(key)?.done||Promise.resolve()).then(()=>{selection.homeEditMode=false;delete selection.homeDrafts?.[home.id];render()}).catch(()=>{button.disabled=false})}else{selection.homeEditMode=true;render()}return}
   if(b.matches('[data-close-home-feature]')&&b.closest('[data-home-feature="room-info"]')){stop(e);selection.homeEditMode=false;render();return}
   if(b.matches('[data-add-room]')){stop(e);change(()=>addRoom(home.id,home.activeFloor||1));render();return}
   if(b.matches('[data-open-room-editor],[data-open-furniture-layout],[data-room-info-edit]')){if(e.target.closest('[data-home-occupant],[data-home-person],[data-furniture-placement],.room-drag-handle,.room-resize-handle'))return;stop(e);if(canEdit)roomDialog(b.dataset.roomInfoEdit||b.dataset.openRoomEditor||Object.keys(home.rooms)[0]);return}

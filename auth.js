@@ -1,4 +1,5 @@
 import {mapConcurrent} from './bounded-work.js?v=20260909dev305';
+import {readCloudCharacters} from './cloud-character-reader.js?v=20260909dev305';
 import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {clearAccountImages} from './image-cleanup.js?v=20260909dev305';
 import {initializeLocalMediaState} from './local-media.js?v=20260909dev305';
@@ -291,21 +292,10 @@ async function readRawCloudGameState(rootData,{fresh=false,uid=user?.uid}={}){
     ?decodeCompressedLegacyState(rootData.gameStateGzip)
     :decodeFirestoreState(rootData?.gameState||null);
   const coreData=decodeFirestoreState(coreSnapshot.data()?.state||{});
-  const characters={};
   const characterSnapshots=await readDocuments(cloudCharacters(uid));
-  for(const characterSnapshot of characterSnapshots.docs){
-    const documentData=characterSnapshot.data()||{};
-    const character=decodeFirestoreState(documentData.character||{});
-    const characterId=String(documentData.characterId||character.id||characterSnapshot.id);
-    const days={};
-    const daySnapshots=await readDocuments(cloudDays(characterId,uid));
-    daySnapshots.forEach(daySnapshot=>{
-      const dayData=daySnapshot.data()||{};
-      const dateKey=String(dayData.dateKey||daySnapshot.id);
-      days[dateKey]=decodeFirestoreState(dayData.day||{});
-    });
-    characters[characterId]={...character,id:character.id||characterId,days};
-  }
+  const characters=await readCloudCharacters(characterSnapshots.docs,{
+    readDays:characterId=>readDocuments(cloudDays(characterId,uid)),decode:decodeFirestoreState
+  });
   return {...coreData,characters};
 }
 
@@ -1275,7 +1265,7 @@ async function savePublicProfile({name,photo}){
  if(!user)throw Error('Google 로그인이 필요해요.');const session=captureSession();name=String(name||'').trim();if(!name||name.length>20)throw Error('이름을 1~20자로 입력해 주세요.');
  let photoURL=accountPhoto();if(photo){if(!photo.type.startsWith('image/')||photo.size>10*1024*1024)throw Error('10MB 이하 이미지를 선택해 주세요.');const blob=await optimizeCloudImage(photo);assertSession(session);const target=ref(storage,'users/'+session.uid+'/profile/avatar');await uploadBytes(target,blob,{customMetadata:{imageEpoch:mediaEpoch},contentType:blob.type,cacheControl:'public,max-age=60'});photoURL=await getDownloadURL(target);assertSession(session)}
  await updateProfile(user,{displayName:name,photoURL});assertSession(session);await setUserDoc(cloudDoc(session.uid),{profile:{name,photoURL,configured:true}},{merge:true});
- for(const group of groupState.groups||[]){const member=doc(db,'groups',group.id,'members',session.uid),existing=await getDoc(member);assertSession(session);if(existing.exists())await updateDoc(member,{displayName:name,photoURL});assertSession(session)}
+ await mapConcurrent(groupState.groups||[],4,async group=>{assertSession(session);const member=doc(db,'groups',group.id,'members',session.uid),existing=await getDoc(member);assertSession(session);if(existing.exists())await updateDoc(member,{displayName:name,photoURL});assertSession(session)});
  profileSetupComplete=true;return {name,photoURL};
 }
 

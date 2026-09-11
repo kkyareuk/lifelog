@@ -176,5 +176,5 @@ if(!index.includes(expectedModuleCache))throw new Error("최신 글꼴 CSS 캐�
 if(!index.includes(expectedModuleCache)||!app.includes(expectedModuleCache))throw new Error("최신 인지·감각 UI 캐시 표식이 없습니다.");
 if(!serviceWorker.includes("drawer-village-web341-20260911"))throw new Error("최신 서비스워커 캐시 표식이 없습니다.");
 
-await prepareGameWebp(output);
+if(process.env.DRAWER_WEBP==='1')await prepareGameWebp(output);
 console.log(`Cloudflare Pages용 최신 웹 파일과 모듈 ${visitedModules.size}개를 dist 폴더에 준비했습니다.`);

@@ -25,8 +25,9 @@ const excludedAndroidAssets=new Set([
 ]);
 const excludedAndroidAssetPrefixes=[];
 const gameWebp=JSON.parse(await readFile(new URL('../game-webp-manifest.json',import.meta.url),'utf8'));
+const useGameWebp=process.env.DRAWER_WEBP==='1';
 for(const asset of gameWebp.assets){
- if(excludedAndroidAssets.has(asset.source)||!asset.preferred)excludedAndroidAssets.add(asset.webp);
+ if(!useGameWebp||excludedAndroidAssets.has(asset.source)||!asset.preferred)excludedAndroidAssets.add(asset.webp);
 }
 const includedFiles=new Set([
   "diamond-shop.css","diamond-shop.js",
@@ -198,5 +199,5 @@ if(platform==="ios"){
 }
 await writeFile(configPath,config,"utf8");
 
-await prepareGameWebp(output);
+if(useGameWebp)await prepareGameWebp(output);
 console.log(`${platform} 앱용 웹 파일을 www 폴더에 준비했습니다.`);

@@ -1,0 +1,21 @@
+<ko-KR>
+캐릭터가 많은 마을에서 화면 갱신과 계정 복원 속도를 개선했어요.
+멀티 집을 연속 편집할 때 저장 대기가 길어지는 문제를 줄였어요.
+멀티에서 본인 집의 외형·위치와 소유 캐릭터를 편집할 수 있도록 수정했어요.
+멀티 방 삭제, 벽지·바닥·출입·방 주인 설정과 가구의 방 이동을 보완했어요.
+문의 메일에 계정 UID가 자동으로 포함돼요.
+</ko-KR>
+<en-US>
+Improved screen updates and account restoration for larger villages.
+Reduced save queues when editing multiplayer homes.
+Fixed editing permissions for your own home, including its appearance, position and character owner.
+Added multiplayer room deletion, wallpaper, flooring, access and room-owner settings, plus moving furniture between rooms.
+Support emails now include your account UID.
+</en-US>
+<ja-JP>
+キャラクターが多い村の画面更新とアカウント復元を改善しました。
+マルチの家を続けて編集した際の保存待ちを短縮しました。
+自分の家の外観・位置・所有キャラクターを編集できるよう修正しました。
+マルチで部屋の削除、壁紙・床・入室・部屋の持ち主の設定、家具の部屋間移動を追加しました。
+問い合わせメールにアカウントUIDが自動で添付されます。
+</ja-JP>

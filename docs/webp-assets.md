@@ -17,3 +17,5 @@ No player-facing strings were added. English/Japanese translation additions: not
 
 Regenerate with Python + Pillow: `python scripts/convert-game-webp.py`.
 Verify: `node scripts/check-game-webp.mjs`.
+
+For the 344 performance release, WebP packaging is opt-in with `DRAWER_WEBP=1`. The default native package retains existing paths and omits newly converted duplicates.
