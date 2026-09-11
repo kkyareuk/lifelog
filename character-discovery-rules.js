@@ -51,7 +51,7 @@ export function discoveryChoices(c,q,random=Math.random){
 export function discoveryCandidates(c,scene){
  if(!scene||scene.sceneUnavailable||scene.remote||/수면|잠을 자|자는 중|sleeping|asleep|睡眠|眠って/.test([scene.title,scene.kind].join(' ')))return [];
 
- return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.setting&&!discoveryLocked(c,o.setting.field))||(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.keys(o.effects).some(f=>!discoveryLocked(c,f)))));
+ return DISCOVERY_EVENTS.filter(q=>discoveryEligible(c,q)&&(q.form||q.field||q.choices.some(o=>(o.setting&&!discoveryLocked(c,o.setting.field))||(o.append&&!discoveryLocked(c,o.append.field)&&!(o.append.opposite&&discoveryLocked(c,o.append.opposite)&&(c[o.append.opposite]||[]).includes(o.append.value)))||(o.tattoo&&!discoveryLocked(c,'bodyProfile.tattoos'))||(o.preference&&!discoveryLocked(c,'attractionTraits')&&!discoveryLocked(c,'dislikedAttractionTraits'))||Object.entries(o.targets||o.effects||{}).some(([f,v])=>v!==null&&!discoveryLocked(c,f)))));
 }
 export function discoveryAnswer(c,q,index,now=Date.now(),selectedValue){
  if(!discoveryEligible(c,q)||!DISCOVERY_EVENTS.includes(q)&&!q.story&&!(q.repeatable&&DISCOVERY_EVENTS.some(e=>e.id===q.id&&!e.field&&!e.form&&!e.setting))||!Number.isInteger(index)||!q.choices[index])return null;
@@ -114,4 +114,4 @@ export function discoveryMetric(c,field){
  const total=values.reduce((n,v)=>n+v,0);return {value:total?Math.round((values[current]||0)/total*100):null,label:c[field]||axis.values[0],categorical:true};
 }
 
-export function repeatDiscoveryCandidates(c){return DISCOVERY_EVENTS.filter(q=>!q.field&&!q.form&&!q.setting&&!q.choices.some(o=>o.append||o.tattoo||o.preference)&&q.choices.some(o=>Object.keys(o.targets||o.effects||{}).some(f=>!discoveryLocked(c,f)))).map(q=>({...q,repeatable:true}));}
+export function repeatDiscoveryCandidates(c){return DISCOVERY_EVENTS.filter(q=>!q.field&&!q.form&&!q.setting&&!q.choices.some(o=>o.append||o.tattoo||o.preference)&&q.choices.some(o=>Object.entries(o.targets||o.effects||{}).some(([f,v])=>v!==null&&!discoveryLocked(c,f)))).map(q=>({...q,repeatable:true}));}

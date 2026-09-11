@@ -705,7 +705,7 @@ let renderSceneDate=null;
 const sharedLifeEntry=(entry,c)=>entry.copy?.[state.uiLanguage]?{...entry,...entry.copy[state.uiLanguage]}:localizeLifeLog(entry,state.uiLanguage,state,c.id);
 const entranceTransitions=createEntranceTransitions();
 export const entranceTransitionEnds=now=>entranceTransitions.ends(now);
-let projectedRenderScenes=new WeakMap();
+let projectedRenderScenes=new WeakMap(),renderPartnerIndex=null;
 const eventFor=(c,date=renderSceneDate||new Date())=>{
   if(c&&date===renderSceneDate&&projectedRenderScenes.has(c))return projectedRenderScenes.get(c);
   const scene=entranceTransitions.project(state,c,meetingScene(rawViewEvent(c,date),state.characterDirectives?.[c?.id],c?.id,date.getTime(),state.uiLanguage),date.getTime(),state.sharedContext?.groupId||window.ParallelCityAuth?.getInfo?.()?.user?.uid||'local');
@@ -1319,6 +1319,11 @@ function strongestSceneEmotion(scores){
   }
   return best;
 }
+function reciprocalSceneCandidates(id){
+  let index=renderPartnerIndex;
+  if(!index){index=new Map();for(const otherId of state.order){const other=state.characters[otherId];if(!other)continue;const scene=eventFor(other);for(const target of new Set([...(scene?.participantOrder||[]),...(scene?.withIds||[]),scene?.withId].filter(Boolean))){if(!index.has(target))index.set(target,[]);index.get(target).push(otherId)}}if(renderSceneDate)renderPartnerIndex=index}
+  return index.get(id)||[];
+}
 function nativeScenePresentation(c,entry,visualMode="sd"){
   const text=`${entry?.title||""} ${entry?.desc||""} ${entry?.mood||""}`;
   const sleeping=/자는 중|잠든|수면/.test(text);
@@ -1326,7 +1331,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   // 공동 장면은 어느 캐릭터 탭에서 보더라도 같은 두 사람을 보여야 한다.
   // 상대 쪽 이벤트에만 withId가 남아 있는 예전 저장 데이터도 현재 시각·장소와
   // 상호 참조를 확인해 양방향으로 복원한다.
-  const mirroredPartnerIds=state.order.filter(id=>{
+  const mirroredPartnerIds=reciprocalSceneCandidates(c.id).filter(id=>{
     if(id===c.id||!state.characters?.[id])return false;
     const other=state.characters[id];
     const otherEntry=eventFor(other);
@@ -4679,11 +4684,11 @@ function view(){
 }
 export function nativeLogContents(){const c=active();return c?dailyLogItems(displayTimeline(c,eventFor(c)),c):""}
 let characterRenderOptions={};
-export function renderApp(next,date=new Date(),options={}){
+export function renderApp(next,date=new Date(),options={},prepare=null){
   const previousOptions=characterRenderOptions;characterRenderOptions=options;
-  const previous=renderSceneDate,previousProjected=projectedRenderScenes;
-  projectedRenderScenes=new WeakMap();renderSceneDate=date;
-  try{return withLogNameBatch(()=>withSimulationBatch(()=>renderAppContents(next)))}finally{renderSceneDate=previous;projectedRenderScenes=previousProjected;characterRenderOptions=previousOptions}
+  const previous=renderSceneDate,previousProjected=projectedRenderScenes,previousPartners=renderPartnerIndex;
+  projectedRenderScenes=new WeakMap();renderPartnerIndex=null;renderSceneDate=date;
+  try{return withLogNameBatch(()=>withSimulationBatch(()=>{prepare?.();return renderAppContents(next)}))}finally{renderSceneDate=previous;projectedRenderScenes=previousProjected;renderPartnerIndex=previousPartners;characterRenderOptions=previousOptions}
 }
 function desktopWebShell(content){
   const copy=({ko:{observe:"관찰",home:"내 서랍",play:"마을 생활",records:"기록과 관리",account:"내 정보 · 로그인",guest:"여행자",multi:"멀티 마을",hint:"함께 만드는 작은 일상",today:"오늘의 서랍",profile:"내 프로필",saved:"기기에 저장됨"},en:{observe:"Observe",home:"My drawer",play:"Village life",records:"Journal & settings",account:"Account & sign-in",guest:"Visitor",multi:"Multiplayer",hint:"Little lives, shared stories",today:"Your drawer today",profile:"My profile",saved:"Saved on this device"},ja:{observe:"観察",home:"自分のひきだし",play:"村の暮らし",records:"記録と管理",account:"アカウント・ログイン",guest:"旅人",multi:"マルチの村",hint:"一緒につくる小さな日常",today:"今日のひきだし",profile:"マイプロフィール",saved:"端末に保存済み"}})[state.uiLanguage]||{};
@@ -4716,8 +4721,9 @@ function renderAppContents(next){
   scheduleTownLighting(document);
   appRoot.querySelectorAll("img").forEach((image,index)=>{
     image.decoding="async";
-    const currentArt=image.matches(".native-main-character,.native-scene-lineup-person img")||image.closest(".game-hud-profile,.character-registration-photo,.native-current-scene,.home-current-scene,.app-loading-card");
+    const currentArt=image.matches(".welcome-landscape,.native-observe-background,.native-main-character,.native-scene-lineup-person img,.app-loading-logo")||image.closest(".game-hud-profile,.character-registration-photo,.native-current-scene,.home-current-scene,.app-loading-card");
     image.loading=currentArt||index<=2?"eager":"lazy";
+    image.fetchPriority=currentArt?"high":"low";
     if(image.classList.contains("world-bg")||image.closest("dialog,.building-detail-dialog"))image.fetchPriority="low";
   });
   normalizeDisplayedParticles(appRoot);

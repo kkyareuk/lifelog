@@ -163,6 +163,48 @@ DISCOVERY_EVENTS.push(...PROFILE_EVENTS);
 const motions={early:'ponder',rain:'surprise',parcel:'ponder',spill:'surprise',lost:'ponder',change:'surprise',gift:'bounce',noise:'surprise',queue:'stretch',cat:'wave',compliment:'blush',crowd:'wave',puzzle:'ponder',mistake:'surprise',evening:'sway',silence:'ponder',seat:'stretch',postcard:'sway',scent:'sway',announcement:'surprise',lamp:'bounce',tag:'ponder',coin:'ponder',newtable:'wave'};
 for(const q of DISCOVERY_EVENTS)q.animation=motions[q.id]||q.animation;
 
+
+// Moral choices are independent of sociability and aggression: quiet cruelty is possible.
+const dilemmas=[
+ ['credit','📋','함께 한 일인데 다른 사람만 칭찬받고 있어요.','Someone else gets all the credit for a shared task.','一緒にした仕事なのに、相手だけが褒められています。',[
+ ['내가 한 부분을 사실대로 덧붙인다','Explain their own contribution honestly','自分が担当した部分を正直に付け加える',{morality:78,interference:62,impulseControl:28}],
+ ['웃으며 축하한 뒤, 그 사람의 실수를 슬쩍 흘린다','Congratulate them, then casually mention their mistakes','笑顔で祝った後、相手の失敗をそれとなく広める',{morality:14,planningStyle:83,aggressionLevel:19}],
+ ['내가 거의 다 했다고 부풀려 말한다','Exaggerate and claim they did almost everything','ほとんど自分がやったと話を盛る',{morality:21,interference:86,socialStyle:74}],
+ ['다음에는 혼자 하겠다고 마음먹고 입을 다문다','Stay silent and decide to work alone next time','次は一人でやろうと決め、黙っている',{socialStyle:18,moodPersistence:81,interference:27}],
+ ['참다못해 자료를 탁 내려치며 말을 끊는다','Slam the papers down and interrupt','我慢できず資料を叩きつけ、話を遮る',{aggressionLevel:79,impulseControl:91,interference:88}]]],
+ ['last-dessert','🍰','공용 냉장고에 이름표가 붙은 케이크 한 조각이 남았어요.','One labelled slice of cake remains in the shared fridge.','共有の冷蔵庫に、名前のついたケーキが一切れ残っています。',[
+ ['먹어도 되는지 주인에게 먼저 물어본다','Ask the owner before eating it','食べてもよいか持ち主に先に聞く',{morality:89,impulseControl:19}],
+ ['냉큼 먹고 빈 접시까지 씻어 놓는다','Eat it immediately and wash the empty plate','さっさと食べ、空いた皿まで洗っておく',{morality:9,impulseControl:84,neatness:72}],
+ ['한 입만 먹고 모양을 슬쩍 다듬어 둔다','Take a bite and disguise the missing piece','一口食べ、欠けた部分をごまかしておく',{morality:18,planningStyle:71}],
+ ['내 간식을 꺼내 먹으며 애써 눈길을 돌린다','Eat their own snack and try not to look','自分のおやつを食べながら、必死に目をそらす',{morality:76,impulseControl:31}],
+ ['누가 먹었다고 둘러댈지부터 정한다','Decide whom to blame before taking it','食べる前に、誰のせいにするか決める',{morality:4,planningStyle:94,aggressionLevel:12}]]],
+ ['wrong-change','🪙','거스름돈이 더 왔어요. 직원은 아직 눈치채지 못했어요.','They receive too much change. The cashier has not noticed.','お釣りを多くもらいました。店員はまだ気づいていません。',[
+ ['계산이 다른 것 같다며 돈을 돌려준다','Point out the mistake and return the extra money','計算が違うようだと余分なお金を返す',{morality:96,planningStyle:63}],
+ ['표정 하나 바꾸지 않고 주머니에 넣는다','Pocket it without changing their expression','顔色ひとつ変えずにポケットへ入れる',{morality:8,impulseControl:23}],
+ ['더 받을 수 있을까 싶어 아직 모자란 척한다','Pretend it is still short, hoping to get more','もっと取れそうだと、まだ足りないふりをする',{morality:2,interference:79,planningStyle:82}],
+ ['괜히 공범이 된 기분이라 허둥지둥 되돌아간다','Hurry back, feeling oddly complicit','なぜか共犯になった気がして、慌てて戻る',{morality:83,emotionalSensitivity:88,impulseControl:67}],
+ ['일단 영수증과 금액을 차분히 다시 맞춰 본다','Calmly check the receipt and count again','落ち着いてレシートと金額を照らし合わせる',{planningStyle:92,impulseControl:11}]]],
+ ['borrowed-item','📚','빌려 간 물건을 돌려달라는 연락이 왔어요.','Someone asks for their borrowed item back.','借りていた物を返してほしいと連絡が来ました。',[
+ ['돌려줄 날짜를 정하고 가방에 챙긴다','Set a return date and pack it','返す日を決め、鞄に入れる',{morality:86,planningStyle:88,diligence:82}],
+ ['아직 쓰고 싶어서 메시지를 못 본 척한다','Ignore the message because they still want to use it','まだ使いたくて、メッセージを見ていないふりをする',{morality:27,diligence:22}],
+ ['이미 돌려줬다며 상대의 기억을 의심하게 만든다','Claim it was returned and question their memory','もう返したと言い張り、相手の記憶を疑わせる',{morality:3,interference:91,planningStyle:77}],
+ ['망가뜨린 부분을 솔직히 말하고 변상하겠다고 한다','Admit they damaged it and offer to pay','壊したことを正直に話し、弁償を申し出る',{morality:93,impulseControl:26}],
+ ['독촉이 짜증 나 물건을 거칠게 던져 놓는다','Throw it down in irritation at being reminded','催促にいら立ち、物を乱暴に放り出す',{aggressionLevel:85,impulseControl:89,morality:24}]]],
+ ['small-secret','🤫','상대가 비밀이라며 속상한 일을 털어놓았어요.','Someone confides an upsetting secret.','相手が秘密だと言って、つらかったことを打ち明けました。',[
+ ['말을 재촉하지 않고 끝까지 들어준다','Listen patiently without rushing them','話を急かさず、最後まで聞く',{decisionStyle:86,morality:91,interference:24}],
+ ['걱정하는 척하며 남에게 전할 대목을 골라 듣는다','Pretend to care while picking out gossip to repeat','心配するふりをしながら、人に話せる部分を拾う',{morality:6,planningStyle:81}],
+ ['나중에 유리하게 써먹을 수 있겠다며 기억해 둔다','Remember it as something to exploit later','後で有利に使えそうだと覚えておく',{morality:5,interference:89,planningStyle:96}],
+ ['무슨 말을 해야 할지 몰라 휴지만 조용히 건넨다','Silently offer a tissue, unsure what to say','何を言えばいいか分からず、そっとティッシュを渡す',{socialStyle:17,decisionStyle:74,morality:82}],
+ ['지금은 들을 여유가 없다며 다음에 이야기하자고 한다','Say they cannot listen properly now and suggest another time','今は聞く余裕がないと伝え、別の時に話そうと提案する',{interference:18,impulseControl:21}]]],
+ ['queue-gap','🚶','줄 앞쪽에 잠깐 빈틈이 생겼어요.','A small gap opens near the front of the queue.','列の前の方に、一瞬隙間ができました。',[
+ ['빠진 사람이 돌아올 자리 같아 그대로 기다린다','Keep waiting, assuming someone will return','誰かが戻る場所だろうと、そのまま待つ',{morality:87,impulseControl:17}],
+ ['일행인 척 자연스럽게 끼어든다','Slip in while pretending to be with someone','連れのふりをして、自然に割り込む',{morality:12,socialStyle:73,planningStyle:69}],
+ ['항의하면 못 들은 척하고 앞만 본다','Ignore complaints and keep facing forward','文句を言われても聞こえないふりをして前を向く',{morality:9,interference:82}],
+ ['기다리는 시간이 아까워 그냥 다른 곳으로 간다','Leave for somewhere else rather than keep waiting','待ち時間が惜しくて、別の場所へ行く',{impulseControl:63,interference:16}],
+ ['뒤에서 밀자 돌아서서 거칠게 밀쳐낸다','Turn and shove back when pushed from behind','後ろから押され、振り返って乱暴に押し返す',{aggressionLevel:92,impulseControl:94,interference:86}]]]
+];
+for(const [id,icon,ko,en,ja,answers] of dilemmas)DISCOVERY_EVENTS.push({id:'dilemma-'+id,icon,animation:'ponder',question:tri(ko,en,ja),choices:answers.map(([ko,en,ja,targets])=>({text:tri(ko,en,ja),effects:{},targets}))});
+
 calibrateDiscovery(DISCOVERY_EVENTS);
 
 DISCOVERY_EVENTS.push(...LIFESTYLE_EVENTS);

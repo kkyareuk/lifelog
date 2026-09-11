@@ -1475,6 +1475,8 @@ function restoreWindowScroll(x,y){
   setTimeout(restore,40);
 }
 function restoreMainScroll(left,top,openCatalogKeys=[]){
+  // Newly mounted main starts at zero; reading scroll offsets would force layout.
+  if(left===0&&top===0&&!openCatalogKeys.length)return;
   const main=document.querySelector("#app>main");
   const restore=()=>{
     if(!main?.isConnected)return;
@@ -1596,11 +1598,13 @@ function cleanupRenderedScreen(){
   pending.forEach(dispose=>dispose());
 }
 function afterScreenRender(callback){
-  const frame=requestAnimationFrame(()=>{
+  // rAF runs BEFORE paint. Yield to a separate task so the new screen appears first.
+  let timer=0;
+  const frame=requestAnimationFrame(()=>{timer=setTimeout(()=>{
     renderCleanup=renderCleanup.filter(dispose=>dispose!==cancel);
     callback();
-  });
-  const cancel=()=>cancelAnimationFrame(frame);
+  },0)});
+  const cancel=()=>{cancelAnimationFrame(frame);clearTimeout(timer)};
   renderCleanup.push(cancel);
 }
 window.addEventListener("pagehide",cleanupRenderedScreen);
@@ -1609,10 +1613,10 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
   if(!force&&document.querySelector('.direct-command-dialog[open]')){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
-  syncBackgroundMusic(state);
+
   if(!selectionOnly&&state.activeTab==="observe")void window.DrawerVillageGroups?.refreshMailbox?.().catch(()=>{});
   if(!force&&state.activeTab==='mailbox'&&document.querySelector('dialog[open]'))return;
-  if(!selectionOnly)scheduleMeetingRefresh();
+  if(!selectionOnly)clearTimeout(meetingRefreshTimer);
   clearTimeout(mailboxRefreshTimer);
   if(state.activeTab==="mailbox"&&document.visibilityState!=="hidden"){
     const due=contactMailbox.nextAt();
@@ -1690,7 +1694,7 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     const renderDate=sceneDate||new Date();
     relationshipRailCleanup.splice(0).forEach(cleanup=>cleanup());
     cleanupRenderedScreen();
-    withLogNameBatch(()=>withSimulationBatch(()=>{prepareActiveHomeLife(renderDate);renderApp(state,renderDate,{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen})}));
+    withLogNameBatch(()=>withSimulationBatch(()=>renderApp(state,renderDate,{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen},()=>prepareActiveHomeLife(renderDate))));
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
     // enclosing form. Accidental form submissions were jumping mobile pages
@@ -1698,14 +1702,6 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     document.querySelectorAll("#app button:not([type])").forEach(button=>{
       if(button.closest('form[method="dialog"]')&&button.hasAttribute("value"))return;
       button.type="button";
-    });
-    // 사진과 일러스트가 많아져도 첫 화면을 막지 않도록, 현재 관찰 장면과
-    // 로고를 제외한 아래쪽 이미지는 브라우저의 지연 디코딩에 맡긴다.
-    document.querySelectorAll("#app img").forEach(image=>{
-      image.decoding="async";
-      const currentArt=image.matches(".welcome-landscape,.native-observe-background,.native-main-character,.native-scene-lineup-person img,.app-loading-logo")||image.closest(".game-hud-profile,.character-registration-photo,.native-current-scene,.home-current-scene");
-      image.loading=currentArt?"eager":"lazy";
-      image.fetchPriority=currentArt?"high":"low";
     });
     const grid=document.querySelector(".shop-product-grid");
     if(grid&&!grid.querySelector('[data-product-id="green_tea"]')){
@@ -1718,6 +1714,8 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     bind();
     document.querySelectorAll('textarea,input:not([type]),input[type=text]').forEach(el=>{if(el.maxLength<0||el.maxLength>500)el.maxLength=500});
     applyTheme();
+    afterScreenRender(()=>syncBackgroundMusic(state));
+    if(!selectionOnly)afterScreenRender(scheduleMeetingRefresh);
     afterScreenRender(()=>syncMovementAudio(state));
     afterScreenRender(bindRelationshipRoulette);
     afterScreenRender(restoreMobileCharacterDialogs);
