@@ -1,0 +1,18 @@
+{
+  "versionCode": 346,
+  "versionName": "1.0.313",
+  "commit": "3ddd3f1",
+  "comparisonBuild": 345,
+  "files": [
+    {
+      "name": "서랍마을-346-1.0.313.apk",
+      "bytes": 71323519,
+      "sha256": "20f7f2054215dac557c3d07ffb9de821ad1299da893039a7723df82086e518be"
+    },
+    {
+      "name": "서랍마을-346-1.0.313.aab",
+      "bytes": 70494891,
+      "sha256": "ab67ed288b8a3836cb3e4b29595b579a033486afab997463820f680c44fa52fe"
+    }
+  ]
+}
