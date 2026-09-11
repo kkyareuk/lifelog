@@ -4004,8 +4004,8 @@ html[lang="en"].native-app[data-active-tab="home"] .home-native-side .home-nativ
 
   html.native-app[data-active-tab="routine"] .routine-shell{
     --routine-paper:#efe3d4;--routine-brown:#624737;--routine-ink:#2d2019;
-    position:relative;display:grid;grid-template-rows:auto auto auto minmax(0,1fr);gap:10px;width:100%;height:100%;padding:14px 12px 12px;
-    overflow:hidden;background:linear-gradient(#ffffff14,#ffffff14),#c6c2bd!important;color:var(--routine-ink)!important;font-family:"KCCHanbit",var(--ui-font)!important
+    position:relative;display:grid;grid-template-rows:auto auto auto minmax(320px,1fr);gap:10px;width:100%;height:100%;padding:14px 12px 12px;
+    overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;background:linear-gradient(#ffffff14,#ffffff14),#c6c2bd!important;color:var(--routine-ink)!important;font-family:"KCCHanbit",var(--ui-font)!important
   }
   html.native-app[data-active-tab="routine"] main{padding:0!important;overflow:hidden!important;background:#c6c2bd!important;color:var(--routine-ink)!important}
   html.native-app[data-active-tab="routine"] .native-sub-header{display:none!important}

@@ -1045,6 +1045,9 @@ function openRoomImageMenu(homeId,roomKey,{returnToEditor=true}={}){
   let movedForward=false;
   const dialog=document.createElement("dialog");dialog.className="room-image-dialog";
   dialog.innerHTML=`<form method="dialog"><div class="title"><div><small>${room.name||"방"}</small><h2>어떤 사진을 넣을까요?</h2></div><button value="close" aria-label="닫기">×</button></div><div class="room-image-choice"><button type="button" data-room-illustrations>🎨<b>일러스트 고르기</b><small>앱에 준비된 배경</small></button><button type="button" data-room-file>🖼️<b>이미지 첨부하기</b><small>내 기기에서 선택 · ${usedMB}MB / ${maxMB}MB 사용 중</small></button><button type="button" data-room-link>🔗<b>링크 추가하기</b><small>공개 이미지 주소 · 저장 용량 미사용</small></button></div></form>`;
+  const photoCopy=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
+  const help=document.createElement('p');help.className='room-photo-help';help.textContent=photoCopy('방 사진은 캐릭터 관찰 화면에도 표시돼요. 벽지·바닥 대신 사진 사용을 해제하면 설정된 벽지와 바닥으로 돌아가며 사진은 보관돼요. 사진 자체를 없애려면 방 사진 지우기를 눌러 주세요.','Room photos also appear in character observation. Turn off photo mode to show the configured walls and floor while keeping the photo. Use Remove room photo to delete it.','部屋写真は観察画面にも表示されます。写真使用をオフにすると設定済みの壁と床に戻り、写真は保存されます。写真を消すには部屋写真を削除を押してください。');
+  const remove=document.createElement('button');remove.type='button';remove.dataset.removeRoomPhoto='';remove.textContent=photoCopy('방 사진 지우기','Remove room photo','部屋写真を削除');remove.disabled=!room.image;remove.onclick=()=>{updateRoom(homeId,roomKey,{image:'',usePhoto:false});dialog.close()};dialog.querySelector('form').append(remove,help);
   dialog.querySelector("[data-room-illustrations]").onclick=()=>{movedForward=true;dialog.close();openRoomIllustrations(homeId,roomKey)};
   dialog.querySelector("[data-room-file]").onclick=()=>{movedForward=true;dialog.close();pickImage("room",homeId,roomKey)};
   dialog.querySelector("[data-room-link]").onclick=async()=>{movedForward=true;dialog.close();await useImageUrl("room",homeId,roomKey)};
@@ -1115,7 +1118,7 @@ function openRoomEditor(homeId,roomKey){
   dialog.querySelector("[data-edit-room-photo]").setAttribute("aria-label","관찰·집 정보용 방 사진");
   const sync=()=>{
     if(!state.homes[homeId]?.rooms?.[roomKey])return;
-    updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floorMaterial:!dialog.querySelector('[name="usePhoto"]').checked&&dialog.querySelector('[name="floorMaterial"]').value==="custom"?"natural":dialog.querySelector('[name="floorMaterial"]').value,wallMaterial:dialog.querySelector('[name="wallMaterial"]').value,usage:dialog.querySelector('[name="usage"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,usePhoto:dialog.querySelector('[name="usePhoto"]').checked,cleanliness:Number(dialog.querySelector('[name="cleanliness"]').value),...readRoomPermissionEditor(dialog)});
+    updateRoom(homeId,roomKey,{name:dialog.querySelector('[name="name"]').value.trim()||"방",floorMaterial:dialog.querySelector('[name="floorMaterial"]').value,wallMaterial:dialog.querySelector('[name="wallMaterial"]').value,usage:dialog.querySelector('[name="usage"]').value,interiorStyle:dialog.querySelector('[name="interiorStyle"]').value,usePhoto:dialog.querySelector('[name="usePhoto"]').checked,cleanliness:Number(dialog.querySelector('[name="cleanliness"]').value),...readRoomPermissionEditor(dialog)});
     const nextType=dialog.querySelector('[name="type"]').value;if(nextType!==room.type)setRoomType(homeId,roomKey,nextType);
   };
   dialog.querySelector('[name="floorMaterial"]').onchange=drawFloorButton;
@@ -1133,11 +1136,6 @@ function openRoomEditor(homeId,roomKey){
   extra.className="room-design-extra";
   extra.innerHTML=`<label class="room-use-photo check">벽지·바닥 대신 사진 사용<input type="checkbox" name="usePhoto" ${room.usePhoto??(currentFloorMaterial==="custom")?"checked":""}></label><label class="room-cleanliness">청결도<select name="cleanliness">${[0,25,50,75,100].map(v=>`<option value="${v}" ${v===(room.cleanliness??100)?"selected":""}>${v}%</option>`).join("")}</select></label>${roomPermissionMarkup(state.homes[homeId],room,state)}`;
   fields.append(extra);
-  const photoCopy=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
-  const photoHelp=document.createElement('p');photoHelp.className='room-photo-help';photoHelp.textContent=photoCopy('방 사진은 캐릭터 관찰 화면에도 표시돼요. 체크를 해제해도 사진은 남아요. 바닥 타일은 벽을 유지하고, 방 전체 그림은 벽 없이 표시돼요. 사진을 없애려면 아래에서 지워 주세요.','Room photos also appear in character observation. Unchecking the option keeps the photo saved. Floor tiles keep the walls; full-room art hides them. Use the buttons below to remove photos.','部屋写真はキャラクターの観察画面にも表示されます。チェックを外しても写真は残ります。床タイルは壁を残し、部屋全体の絵は壁なしで表示します。写真は下のボタンで削除できます。');
-  const photoActions=document.createElement('div');photoActions.className='room-editor-actions';
-  for(const [kind,label,available]of [['photo',photoCopy('방 사진 지우기','Remove room photo','部屋写真を削除'),room.image],['floor',photoCopy('바닥 그림 지우기','Remove floor image','床画像を削除'),room.floorImage],['all',photoCopy('기본 벽지·바닥으로 돌아가기','Restore default walls and floor','標準の壁と床に戻す'),room.image||room.floorImage||room.usePhoto]]){const button=document.createElement('button');button.type='button';button.dataset.resetRoomArtwork=kind;button.textContent=label;button.disabled=!available;button.onclick=()=>{sync();const patch=kind==='photo'?{image:'',usePhoto:room.floorMaterial==='custom'&&!!room.floorImage}:kind==='floor'?{floorImage:'',floorMaterial:'natural',usePhoto:false}:{image:'',floorImage:'',floorMaterial:'natural',wallMaterial:'cream-panel',usePhoto:false};updateRoom(homeId,roomKey,patch);save(true);dialog.close('reopen');render();openRoomEditor(homeId,roomKey)};photoActions.append(button)}
-  fields.after(photoHelp,photoActions);
   bindRoomPermissionEditor(dialog);
   const samples=document.createElement("div");samples.className="room-design-samples";
   samples.innerHTML=`<button type="button" data-wall-sample aria-label="벽지"><img src="${wallSurfaceImage(currentWallMaterial,currentFloorMaterial,room.floorImage,room.type)}" alt=""></button><button type="button" data-floor-sample aria-label="바닥재"><img src="${floorSource()}" alt=""></button>`;
@@ -1895,7 +1893,7 @@ function renderPreservingPageScroll(element){
 function flushMobileCharacterDraft({closeEditor=true}={}){
   if(mobileCharacterDraftDirty){
     syncOpenCharacterEditorDraft();
-    save(true);
+    save(false);
   }
   mobileCharacterDraftDirty=false;
   if(closeEditor)mobileCharacterEditorPane="";

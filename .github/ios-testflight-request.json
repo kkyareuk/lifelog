@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-05-internal-testflight-build5-tablet",
-  "version": "1.0.198",
-  "build": 5,
+  "request": "2026-09-12-navigation356",
+  "version": "1.0.323",
+  "build": 356,
   "internalOnly": true,
   "uploadToTestFlight": true,
   "submitForReview": false

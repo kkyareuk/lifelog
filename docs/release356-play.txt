@@ -1,0 +1,12 @@
+<ko-KR>
+캐릭터·집 선택 시 불필요한 전체 저장을 줄였습니다.
+방 사진 안내와 삭제 버튼을 사진 선택 창으로 옮겼습니다. 사진 사용을 해제해도 설정한 벽지·바닥을 유지합니다.
+일정 화면의 스크롤과 상점 안내문 가독성을 개선했습니다.
+9월 14일부터 캐릭터 슬롯 1개 가격이 1,000원으로 변경됩니다.
+</ko-KR>
+<en-US>
+Reduced full saves when switching characters or homes. Moved room-photo help and removal into the photo picker. Turning photo mode off preserves configured surfaces. Improved schedule scrolling and shop notice readability. From September 14 (Korea time), one character slot costs KRW 1,000.
+</en-US>
+<ja-JP>
+キャラクターや家の切替時の不要な全体保存を減らしました。部屋写真の案内と削除を写真選択画面に移動しました。写真使用をオフにしても壁と床の設定を保持します。予定画面のスクロールとショップ案内の読みやすさを改善しました。9月14日（韓国時間）からキャラクター枠1個は1,000ウォンになります。
+</ja-JP>

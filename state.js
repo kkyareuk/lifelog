@@ -958,6 +958,10 @@ function load(){
 }
 
 export let state=load();
+// View selection is tiny device-local UI state, not a game-world mutation.
+function saveNavigationSelection(){try{localStorage.setItem('drawer-navigation-v1',JSON.stringify({activeId:state.activeId,activeHomeId:state.activeHomeId,characterPane:state.characterPane}))}catch{}}
+try{const nav=JSON.parse(localStorage.getItem('drawer-navigation-v1')||'null');if(nav){if(state.characters[nav.activeId])state.activeId=nav.activeId;if(state.homes[nav.activeHomeId])state.activeHomeId=nav.activeHomeId;if(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(nav.characterPane))state.characterPane=nav.characterPane;}}catch{}
+
 let editorPersonalState=null;
 let pendingPersonalTransferSave=false;
 let isolatedPersonalState=null;
@@ -1132,8 +1136,8 @@ export function createCharacter(limit=5){
   state.monthlyRoutines[id]=[];
   state.activeId=id;state.activeTab="character";state.characterSettingsView="hub";save(true);return id;
 }
-export function setActive(id){if(state.characters[id]&&state.activeId!==id){state.activeId=id;save(false,false)}}
-export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(value)?value:"profile");save()}
+export function setActive(id){if(state.characters[id]&&state.activeId!==id){state.activeId=id;saveNavigationSelection()}}
+export function setCharacterPane(value){state.characterPane=value==="traits"?"personality":value==="worldTaste"?"taste":(["visual","profile","body","wardrobe","personality","taste","closet","manage"].includes(value)?value:"profile");saveNavigationSelection()}
 export function moveCharacter(id,direction){
   const from=state.order.indexOf(id),to=from+direction;
   if(from<0||to<0||to>=state.order.length)return;
@@ -1984,7 +1988,7 @@ export function togglePlaceStock(placeId,itemId){
   const list=Array.isArray(p.stock)?[...p.stock]:[];
   p.stock=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
 }
-export function setActiveHome(id){if(state.homes[id]&&state.activeHomeId!==id){state.activeHomeId=id;save(false,false)}}
+export function setActiveHome(id){if(state.homes[id]&&state.activeHomeId!==id){state.activeHomeId=id;saveNavigationSelection()}}
 export function relationshipViewDefaults(type,temporalStatus="current",orderLength=state.order.length){
   const rank=value=>{
     const wanted=Number(String(value||"").match(/^\d+/)?.[0])||1;

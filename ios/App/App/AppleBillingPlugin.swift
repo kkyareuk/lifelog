@@ -15,7 +15,7 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
         CAPPluginMethod(name: "restorePurchases", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "finishPurchase", returnType: CAPPluginReturnPromise)
     ]
-    private let allowed: Set<String> = ["com.drawervillage.app.character_slots_5", "com.drawervillage.app.town_slot_1", "com.drawervillage.app.green_tea"]
+    private let allowed: Set<String> = ["com.drawervillage.app.character_slot_1", "com.drawervillage.app.character_slots_5", "com.drawervillage.app.town_slot_1", "com.drawervillage.app.green_tea"]
     @MainActor private var loadedProducts: [String: Product] = [:]
     @MainActor private var purchaseActive = false
     @MainActor private var purchaseStarted: Date?
