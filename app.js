@@ -1,3 +1,4 @@
+import {withLogNameBatch} from './life-log-localization.js?v=20260909dev305';
 import {frameTask} from './frame-task.js?v=20260909dev305';
 import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
 import './activity-settings.js?v=20260909dev305';
@@ -1685,10 +1686,10 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     if(maintenanceEnabled()){renderMaintenance();return}
     document.body.classList.remove("maintenance-mode");
     if(["character","mailbox"].includes(state.activeTab))ensureDailyQuestionSchedule();
-    withSimulationBatch(()=>prepareActiveHomeLife());
+    const renderDate=sceneDate||new Date();
     relationshipRailCleanup.splice(0).forEach(cleanup=>cleanup());
     cleanupRenderedScreen();
-    renderApp(state,sceneDate||new Date(),{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen});
+    withLogNameBatch(()=>withSimulationBatch(()=>{prepareActiveHomeLife(renderDate);renderApp(state,renderDate,{quick:!!mobileCharacterEditorPane,reorder:mobileCharacterReorderOpen})}));
     replaceFeedbackFormWithEmailLink();
     // A data-action button without an explicit type must never submit an
     // enclosing form. Accidental form submissions were jumping mobile pages
@@ -4400,7 +4401,7 @@ function bind(){
       state.characterViewSource=id;setActive(id);
       if(state.characterViewTarget===id||!state.characters[state.characterViewTarget])state.characterViewTarget=state.order.find(cid=>cid!==id)||"";
     }else if(role==="target"&&id!==state.characterViewSource)state.characterViewTarget=id;
-    save(true);render();
+    save(false,false);render();
   });
   $$("[data-view-source]").forEach(control=>control.onchange=()=>{
     state.characterViewSource=control.value;
@@ -4408,13 +4409,13 @@ function bind(){
     if(state.characterViewTarget===state.characterViewSource||!state.characters[state.characterViewTarget]){
       state.characterViewTarget=state.order.find(id=>id!==state.characterViewSource)||"";
     }
-    save(true);
+    save(false,false);
     render();
   });
   $$("[data-view-target]").forEach(control=>control.onchange=()=>{
     if(control.value===state.characterViewSource)return;
     state.characterViewTarget=control.value;
-    save(true);
+    save(false,false);
     render();
   });
   $$("[data-open-view-dialog]").forEach(button=>button.onclick=()=>{

@@ -1,11 +1,11 @@
 import {relationshipBetween,viewSignals} from './relationship-context.js?v=20260909dev305';
 const pick=(ko,en,ja,language)=>({ko,en,ja}[language]||ko);
-const traits=c=>[...(Array.isArray(c?.personalityTypes)?c.personalityTypes:[]),c?.socialStyle,c?.conflictStyle,c?.affectionStyle].filter(Boolean).join(' ');
+const traits=c=>[...(Array.isArray(c?.personalityTypes)?c.personalityTypes:[]),c?.socialStyle,c?.conflictStyle,c?.affectionStyle,c?.impulseControl,c?.aggressionLevel,c?.interference,c?.moodBaseline,c?.morality].filter(Boolean).join(' ');
 export function topicConversation(world,speaker,listener,topic,language='ko',{allowConflict=true}={}){
  const detail=String(topic||'').trim();if(!detail)return null;
  const preferences=c=>({like:[...(c.hobbies||[]),...(c.interests||[]),...(c.favoriteStoryGenres||[]),...(c.favoriteVideoGenres||[]),...(c.musicGenres||[])],dislike:[...(c.dislikedStoryGenres||[]),...(c.dislikedVideoGenres||[]),...(c.dislikedMusicGenres||[])]});
  const stance=c=>{const p=preferences(c),match=v=>typeof v==='string'&&(detail.includes(v)||v.includes(detail));return p.dislike.some(match)?-1:p.like.some(match)?1:0};
- const a=stance(speaker),b=stance(listener),opposed=a*b<0,view=world.characterViews?.[listener.id]?.[speaker.id]||{},signals=viewSignals(view),direct=/직설|바로 따짐|완고|맞서는/.test(traits(listener)),quiet=/수줍|내향|피하는/.test(traits(listener));
+ const a=stance(speaker),b=stance(listener),opposed=a*b<0,view=world.characterViews?.[listener.id]?.[speaker.id]||{},signals=viewSignals(view),direct=/직설|바로 따짐|완고|맞서는|컨트롤프릭|공격적인 반응이 잦|매우 공격/.test(traits(listener)),quiet=/수줍|내향|피하는/.test(traits(listener));
  const subject= /청춘|성장|학원/.test(detail)?pick('서툰 감정을 오래 따라가는 이야기','stories that linger on awkward feelings','不器用な感情をじっくり追う物語',language):/추리|범죄|미스터리/.test(detail)?pick('흩어진 단서가 뒤늦게 맞물리는 구성','scattered clues falling into place','散らばった手がかりが後からつながる構成',language):/음악|재즈|록|팝|클래식|발라드/.test(detail)?pick('되풀이해 들어도 다르게 들리는 부분','passages that sound different with each listen','繰り返し聴いても違って聞こえる部分',language):detail;
  const opening=a>0?pick(`${subject}에서 어떤 점이 마음에 남는지 예를 들어 설명했어요.`,`They gave an example of what stayed with them about ${subject}.`,`${subject}のどこが心に残るか、例を挙げて説明しました。`,language):a<0?pick(`${subject}에서 취향과 맞지 않는 부분을 짚고, 어떤 점이 달랐으면 하는지 덧붙였어요.`,`They pointed out what did not suit their taste about ${subject} and what they would change.`,`${subject}で好みに合わないところを挙げ、どう違えばよいか付け加えました。`,language):pick(`${subject} 이야기가 나오자 먼저 아는 부분부터 꺼내고, 확실하지 않은 것은 되물었어요.`,`When ${subject} came up, they began with what they knew and asked about the rest.`,`${subject}の話になると知っていることから話し、確かでない点は問い返しました。`,language);
  let response,mode='exchange';
@@ -13,7 +13,7 @@ export function topicConversation(world,speaker,listener,topic,language='ko',{al
  else if(opposed&&(quiet||signals.afraid)){mode='polite-distance';response=pick('듣던 쪽은 고개만 끄덕였어요. 이유는 들었지만 같은 재미를 느끼지는 못해 다른 화제로 넘어갔어요.','The listener nodded but could not find the same appeal, and moved to another topic.','聞き手はうなずきましたが同じ面白さは感じられず、別の話題に移りました。',language)}
  else if(opposed)response=pick('듣던 쪽은 자신에게는 반대로 느껴진다며, 어디서 생각이 갈리는지 한 번 더 물었어요.','The listener said it felt the opposite to them and asked where their views diverged.','聞き手は自分には逆に感じると、どこで考えが分かれるのかもう一度尋ねました。',language);
  else response=pick('듣던 쪽은 눈에 들어온 다른 부분을 보태고, 설명이 달랐던 지점을 나란히 비교했어요.','The listener added another detail and compared where their explanations differed.','聞き手も気づいた別のところを加え、説明が違った点を比べました。',language);
- return {speakerText:opening+' '+response,listenerText:pick(`${speaker.name}의 설명을 들었어요.`,`They listened to ${speaker.name}'s explanation.`,`${speaker.name}の説明を聞きました。`,language)+' '+response,mode};
+ return {speakerText:opening,listenerText:response,mode};
 }
 export function personConversation(world,speaker,listener,subject,language='ko',{allowConflict=true}={}){
  if(!speaker||!listener||!subject||[speaker.id,listener.id].includes(subject.id))return null;
@@ -40,5 +40,5 @@ export function personConversation(world,speaker,listener,subject,language='ko',
   else{mode='question';response=pick('왜 그렇게 받아들였는지 한 번 더 물었어요. 설명은 이해하려 했지만 자기 판단까지 바꾸지는 않았어요.','They asked why it came across that way. They tried to understand without changing their own judgment.','なぜそう受け取ったのかもう一度尋ね、理解しようとはしましたが自分の判断までは変えませんでした。',language)}
  }else if((s.romantic||s.caring)&&(l.romantic||l.caring))response=pick('듣던 쪽도 자신이 좋게 보는 점을 하나 보태며, 둘이 주목한 부분을 비교했어요.','The listener added something they appreciated, and they compared what each noticed.','聞き手も良いと思うところを一つ加え、二人が注目した点を比べました。',language);
  else response=pick('듣던 쪽은 설명에서 새로 알게 된 부분만 되물으며, 상대의 평가를 자기 생각처럼 따라 말하지 않았어요.','The listener asked about what was new without adopting the speaker’s judgment as their own.','聞き手は新しく知った点だけを問い返し、相手の評価を自分の考えのようには繰り返しませんでした。',language);
- return {speakerText:[observation,delivery,response].filter(Boolean).join(' '),listenerText:pick(`${speaker.name}의 이야기를 들었어요.`, `They listened to ${speaker.name}.`,`${speaker.name}の話を聞きました。`,language)+' '+response,mode,subjectId:subject.id};
+ return {speakerText:observation,listenerText:response,mode,subjectId:subject.id};
 }

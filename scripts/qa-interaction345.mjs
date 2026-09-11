@@ -17,6 +17,7 @@ const server=createServer(async(request,response)=>{
     if(!file.startsWith(root+sep)||!mime[extname(file)])return response.writeHead(404).end();
     let body=pathname==="/auth.js"?previewAuth:await readFile(file);
     if(pathname==="/views.js")body=body.toString().replace("const rawViewEvent=(c,date)=>{","const rawViewEvent=(c,date)=>{window.qaSceneCalls=(window.qaSceneCalls||0)+1;").replace("if(c&&date===renderSceneDate&&projectedRenderScenes.has(c))","if(!window.qaDisableCache&&c&&date===renderSceneDate&&projectedRenderScenes.has(c))");
+    if(pathname==='/views.js')body=body.toString()+'\nexport {nativeScenePresentation as qaPresentation};';
     response.writeHead(200,{"Content-Type":mime[extname(file)],"Cache-Control":"no-store"}).end(body);
   }catch{response.writeHead(404).end()}
 });
@@ -36,10 +37,10 @@ for(const lang of ['ko','en','ja']){
 }
 const checks=await page.evaluate(async()=>{
  const n=await import('/contact-narrative.js?v=20260909dev305'),[a,b]=g.state.order.map(id=>g.state.characters[id]);
- const offered=n.contactNarrative(g.state,a,b,{},'hug',{initiatorId:a.id});const received=n.contactNarrative(g.state,b,a,{overall:'연애 감정',awareness:'전혀 모름'},'hug',{initiatorId:a.id});
+ const v=await import('/views.js?v=20260909dev305');const visual=v.qaPresentation(b,{title:'포옹하는 중',desc:'등을 쓸어 주자 놀랐지만 싫지 않았어요.',meetingKind:'hug',contactTone:'romantic',home:true});if(visual.actionKind!=='hug'||visual.tone!=='date-romantic')throw Error('accepted hug misclassified '+JSON.stringify({action:visual.actionKind,tone:visual.tone}));const offered=n.contactNarrative(g.state,a,b,{},'hug',{initiatorId:a.id});const received=n.contactNarrative(g.state,b,a,{overall:'연애 감정',awareness:'전혀 모름'},'hug',{initiatorId:a.id});
  g.state.uiLanguage='ko';g.directCharacterActivity(a.id,'hug',{targetId:b.id,now:Date.now()-120000,scenes:{[a.id]:{home:true,visitHomeId:a.homeId,room:'living',townId:a.townId},[b.id]:{home:true,visitHomeId:a.homeId,room:'living',townId:a.townId}}});window.DrawerVillageNavigation.go('home');
- return {different:offered.ko.desc!==received.ko.desc,unaware:received.ko.desc.includes('왜 놓기'),directive:g.state.characterDirectives[a.id]?.kind,animated:!!document.querySelector('.is-hugging'),animationName:document.querySelector('.meeting-pair.is-hugging button')?getComputedStyle(document.querySelector('.meeting-pair.is-hugging button')).animationName:'native',logsDiffer:g.state.characterDirectives[a.id]?.copy?.ko?.desc!==g.state.characterDirectives[b.id]?.copy?.ko?.desc,names:[a.id,b.id]};
-});console.log(checks);assert(checks.different&&checks.unaware&&checks.directive==='hug'&&checks.animated&&checks.logsDiffer);assert.notEqual(checks.animationName,'none');console.log(JSON.stringify(checks));
+ return {different:offered.ko.desc!==received.ko.desc,romantic:received.ko.contactTone==='romantic',directive:g.state.characterDirectives[a.id]?.kind,animated:!!document.querySelector('.is-hugging'),animationName:document.querySelector('.meeting-pair.is-hugging button')?getComputedStyle(document.querySelector('.meeting-pair.is-hugging button')).animationName:'native',logsDiffer:g.state.characterDirectives[a.id]?.copy?.ko?.desc!==g.state.characterDirectives[b.id]?.copy?.ko?.desc,names:[a.id,b.id]};
+});console.log(checks);assert(checks.different&&checks.romantic&&checks.directive==='hug'&&checks.animated&&checks.logsDiffer);assert.notEqual(checks.animationName,'none');console.log(JSON.stringify(checks));
 const timings=await page.evaluate(()=>{const a=g.active();for(let i=2;i<80;i++){const c=structuredClone(a);c.id='load-'+i;g.state.characters[c.id]=c;g.state.order.push(c.id)}let start=performance.now();g.save(true);const fullSave=performance.now()-start;start=performance.now();g.saveDiscoveryPatch(a.id,{planningStyle:'계획적'});return {fullSave,answerSave:performance.now()-start}});console.log(JSON.stringify(timings));
 await page.evaluate(()=>{const [a,b]=g.state.order.map(id=>g.state.characters[id]);g.updateCharacterView(b.id,a.id,'overall','매우 싫음');if(!g.directCharacterActivity(a.id,'hug',{targetId:b.id}))throw Error('refusal should create a response');if(!g.state.characterDirectives[a.id].contactRejected)throw Error('missing refusal');});
 assert(!errors.length,errors.join('\n'));console.log('PASS same-menu categories, KO/EN/JA, directional hug logs, answer delta save');

@@ -40,7 +40,7 @@ const settingList=value=>Array.isArray(value)?value:typeof value==='string'&&val
 const mins=t=>{const [h,m]=String(t||"00:00").split(":").map(Number);return h*60+m};
 const clock=n=>`${String(Math.floor(n/60)%24).padStart(2,"0")}:${String(n%60).padStart(2,"0")}`;
 const usableSleepRoom=value=>value==="__none__"?"":String(value||"");
-const hash=s=>[...String(s)].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,2166136261);
+const hash=s=>{let value=2166136261;for(const char of String(s))value=(value*31+char.charCodeAt(0))>>>0;return value};
 const hasBatchim=value=>{
   const chars=[...String(value||"").trim()];
   const code=chars.at(-1)?.charCodeAt(0);
@@ -329,7 +329,13 @@ function relationIndex(){
 }
 const relationList=()=>sceneBatch?relationIndex().list:Object.values(state.relationships||{});
 const pairRelations=(a,b)=>relationIndex().pairs.get(a)?.get(b)||[];
-const characterViewFor=(a,b)=>readCharacterViewFor(a,b,sceneBatch?pairRelations(a,b):null);
+const characterViewFor=(a,b)=>{
+  if(!sceneBatch)return readCharacterViewFor(a,b);
+  if(sceneBatch.views?.revision!==sceneBatch.relationshipRevision)sceneBatch.views={revision:sceneBatch.relationshipRevision,values:new Map()};
+  const key=JSON.stringify([a,b]),cache=sceneBatch.views.values;
+  if(!cache.has(key))cache.set(key,readCharacterViewFor(a,b,pairRelations(a,b)));
+  return cache.get(key);
+};
 const relationPriority={"부모·자녀":10,"형제·자매":9,부부:9,연인:8,소꿉친구:6,친구:5,"학창 시절 친구들":5,"친구 모임":4,산악회:4,동거인:4,"동아리 동료":3,"직장 동료":3,라이벌:2,혐관:1,기타:1};
 const related=c=>{
   const grouped=new Map();
@@ -3647,6 +3653,11 @@ function calculateBaseEvent(c,date=new Date()){
   const list=calculateTimeline(c,date);
   const directed=manualDirectiveEventFor(c,date);if(directed)return commitLiveEntry(c,date,directed);
   const gift=currentGiftFor(c,date);if(gift)return commitLiveEntry(c,date,gift);
+  const activeRoutine=activeScheduledRoutine(c,date);
+  const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&!item.routineReturned&&Number(item.minute)<=n&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
+  // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
+  // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
+  if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,routineType:activeRoutine.type,routineTitle:activeRoutine.title},date),c,state,date.getTime(),state.uiLanguage);
   const forced=forcedHomeEventFor(c,date);if(forced)return forced;
   if(sleepingNow(c,date)){
     const wake=wakeAt(c,date),sleep=sleepAt(c,date),sleepMinute=n<wake?0:sleep;
@@ -3654,11 +3665,6 @@ function calculateBaseEvent(c,date=new Date()){
     if(existing)return withResidenceLocation(c,existing,date);
     return commitLiveEntry(c,date,withResidenceLocation(c,entry(sleepMinute,"자는 중",sleepScene(c,date),{home:true,room:"bedroom",mood:"수면",stress:0,holdMinutes:Math.max(30,(n<wake?wake:1440)-sleepMinute)}),date));
   }
-  const activeRoutine=activeScheduledRoutine(c,date);
-  const activeRoutineEntry=activeRoutine?[...list].reverse().find(item=>item.routineId===activeRoutine.id&&!item.routineReturned&&Number(item.minute)<=n&&Number(item.routineStartMinute)<=n&&n<Number(item.routineEndMinute)):null;
-  // 등록 일정은 시작부터 종료까지 현재 행동의 최우선 기준이다. 일정 도중
-  // 자동으로 만든 생활 장면이나 대화가 일정 제목과 장소를 덮어쓰지 않는다.
-  if(activeRoutineEntry)return routineScene(withResidenceLocation(c,{...activeRoutineEntry,routineType:activeRoutine.type,routineTitle:activeRoutine.title},date),c,state,date.getTime(),state.uiLanguage);
   const sources=giftSources(date);
   const past=list.filter(x=>!x.manualDirective&&(!x.routineId||x.routineReturned||x.returningHome||!Number.isFinite(Number(x.routineEndMinute))||n<Number(x.routineEndMinute))&&dateEntryBelongsTo(c,x)&&x.minute<=n&&(!x.giftExchange||sources.some(source=>(!source.endedAt||source.endedAt>date.getTime())&&source.interactionId===x.interactionId&&source.actorId===x.giftActorId&&source.targetId===x.giftTargetId)));
   const last=past.at(-1);

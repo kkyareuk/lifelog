@@ -1,0 +1,9 @@
+<ko-KR>
+도덕성 설정과 다양한 동전 질문을 추가했어요. 마을 성향 평균 통계, 포옹·키스 표현과 효과, 대화 로그를 개선했어요. 관계·집 화면의 중복 처리를 줄이고, 일정 우선 적용 및 멀티 방장 권한 표시를 수정했어요.
+</ko-KR>
+<en-US>
+Added morality settings and more coin-event choices. Improved village trait averages, affectionate contact effects and dialogue. Reduced repeated processing when changing relationships or homes. Fixed active schedule priority and multiplayer owner permission displays.
+</en-US>
+<ja-JP>
+道徳性の設定と硬貨を見つけた時の選択肢を追加しました。村の傾向の平均、抱擁・キスの表現と演出、会話ログを改善しました。関係・家の切り替え時の重複処理を削減し、予定の優先適用とマルチの村主権限表示を修正しました。
+</ja-JP>

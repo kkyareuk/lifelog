@@ -49,7 +49,7 @@ export function renderGroups(){
   if(!auth?.user)return groupPage(`<div class="multiplayer-building-shell"><header class="multiplayer-catalog-head"><button type="button" class="multiplayer-page-back" data-tab="town" aria-label="${esc(text.back)}">←</button><div><small>MULTIPLAYER</small><h1>${text.title}</h1><p>${text.intro}</p></div></header><article class="multiplayer-login-card"><span aria-hidden="true">🏘️</span><p>${text.login}</p><button type="button" class="primary" data-google-login>${text.loginButton}</button></article></div>`,`groups-login`);
   const group=snapshot.group;
   if(viewMode!=="detail"||!group)return multiplayerList(text,snapshot,groups);
-  const myMember=(snapshot.members||[]).find(member=>member.uid===auth.user.uid),myRole=myMember?.role||(group.ownerUid===auth.user.uid?"owner":"member"),manager=["owner","manager"].includes(myRole);
+  const myMember=(snapshot.members||[]).find(member=>member.uid===auth.user.uid),myRole=group.ownerUid===auth.user.uid?"owner":myMember?.role||"member",manager=["owner","manager"].includes(myRole);
   const towns=Array.isArray(group.towns)?group.towns:[],town=linkedTown(group),selectedTownId=snapshot.selectedTownId||town?.id||"";
   const residents=(snapshot.residents||[]).filter(item=>!selectedTownId||item.townId===selectedTownId),homes=(snapshot.homes||[]).filter(item=>!selectedTownId||item.townId===selectedTownId);
   const myResidentIds=new Set((snapshot.residents||[]).filter(item=>item.ownerUid===auth.user.uid).map(item=>item.sourceCharacterId));
@@ -97,7 +97,7 @@ export function groupErrorMessage(error){
 
 const groupText=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
 export function renderGroupBuildings(snapshot){
-  const g=snapshot.group,uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,role=(snapshot.members||[]).find(m=>m.uid===uid)?.role||(g.ownerUid===uid?'owner':'member');
+  const g=snapshot.group,uid=window.ParallelCityAuth?.getInfo?.()?.user?.uid,role=g.ownerUid===uid?'owner':(snapshot.members||[]).find(m=>m.uid===uid)?.role||'member';
   const editable=['owner','manager','operator'].includes(role),town=g.towns?.find(t=>t.id===snapshot.selectedTownId)||g.towns?.[0];
   if(!town)return '';
   const types=[['음식점','Restaurant','飲食店'],['카페','Cafe','カフェ'],['공원','Park','公園'],['상점','Shop','店'],['병원','Hospital','病院'],['직장','Workplace','職場'],['학교','School','学校'],['도서관','Library','図書館']];

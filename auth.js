@@ -952,7 +952,7 @@ function watchActiveGroup(groupId,{force=false}={}){
       ?snapshot.docs.map(item=>({id:item.id,...item.data()}))
       :snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;
     const groups=key==="group"&&value
-      ?groupState.groups.map(item=>item.id===value.id?{...item,...value,myRole:item.myRole}:item)
+      ?groupState.groups.map(item=>item.id===value.id?{...item,...value,myRole:value.ownerUid===user?.uid?"owner":item.myRole}:item)
       :['members','residents'].includes(key)?groupState.groups.map(item=>item.id===groupId?{...item,[key==='members'?'memberCount':'residentCount']:value.length}:item):groupState.groups;
     if(key==="group"&&!value){watchActiveGroup("");void refreshGroups();return}
     const presentation=value=>JSON.stringify(Object.fromEntries(Object.entries(value||{}).filter(([k])=>!["lifeUpdatedAt","lifeNextAt","updatedAt"].includes(k))));
@@ -1007,7 +1007,7 @@ async function refreshGroups({preferredId=""}={}){
       try{
         const snapshot=await getDocFromServer(doc(db,"groups",membership.groupId||membership.id));
         if(!snapshot.exists())return null;
-        const result={id:snapshot.id,...snapshot.data(),myRole:membership.role||"member"};
+        const result={id:snapshot.id,...snapshot.data(),myRole:snapshot.data().ownerUid===session.uid?"owner":membership.role||"member"};
         const cached=groupState.groups.find(g=>g.id===snapshot.id);result.memberCount=cached?.memberCount||0;result.residentCount=cached?.residentCount||0;
         return result;
       }catch(error){console.warn("group membership temporarily unavailable",membership.id,error);const cached=groupState.groups.find(g=>g.id===(membership.groupId||membership.id));if(cached)return cached;throw error}

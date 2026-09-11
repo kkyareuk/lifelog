@@ -5,7 +5,7 @@ const latinWord=/[A-Za-z]{3,}/;
 const values=value=>Array.isArray(value)?value:[];
 
 let batchNames=null;
-export function withLogNameBatch(callback){const previous=batchNames;batchNames=new WeakMap();try{return callback()}finally{batchNames=previous}}
+export function withLogNameBatch(callback){if(batchNames)return callback();const previous=batchNames;batchNames=new WeakMap();try{return callback()}finally{batchNames=previous}}
 function entityNames(world){
  const refs=[world.characters,world.homes,world.towns,world.catalog],cached=batchNames?.get(world);if(cached&&refs.every((value,i)=>value===cached.refs[i]))return cached.names;
  const names=[...Object.values(world.characters||{}),...Object.values(world.homes||{}),...(world.towns||[]),...(world.towns||[]).flatMap(town=>town.places||[]),...Object.values(world.catalog||{}).flatMap(values)]

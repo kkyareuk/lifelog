@@ -201,7 +201,9 @@ export function characterMood(character,entry,world,language=world.uiLanguage||'
   const praiseOrSuccess=/성공|칭찬|해냈|완성|success|praise|complete|成功|褒め|完成/i.test(copy),giftOrFavorite=/선물|맛있|좋아하는|favorite|gift|delicious|贈り物|好き|おいし/i.test(copy),playful=/웃|농담|장난|즐거|laugh|joke|playful|笑|冗談|楽しい/i.test(copy),rejection=/거절|무시|외면|reject|ignore|拒絶|無視/i.test(copy),loss=/상실|잃어|떠나|이별|loss|lost|leave|喪失|失く|別れ/i.test(copy),lonely=/외롭|혼자 남|고립|lonely|isolat|寂し|孤立/i.test(copy),embarrassed=/당황|민망|실수|embarrass|awkward|mistake|戸惑|気まず|失敗/i.test(copy),disgusted=dislikedMatches.length&&/냄새|맛|음식|향|혐오|역겨|smell|taste|disgust|臭|味|嫌悪/i.test(copy);
   let label,icon,tone;
   const affectionateContact=entry?.groupInteraction&&!entry.transit&&!/거절|원하지|불편|강요|reject|拒否/.test(copy)&&(entry.meetingKind==="affection"||/키스|입맞춤|스킨십|스킨쉽|kiss|キス/.test(copy))&&primaryRelationship?.flags?.loving;
-  if(affectionateContact){label=/화해|누그러|reconcil|仲直り/.test(copy)?text(language,'누그러짐','Softened','和らいでいる'):(entry.meetingKind==="affection"||/뜨거|열정|스킨십|스킨쉽|passion/.test(copy))?text(language,'불타오름','Passionate','情熱的'):text(language,'설렘','Fluttering','ときめき');icon='♥';tone='excited'}
+  if(entry?.contactTone==='romantic'&&!entry.contactRejected){label=text(language,'설렘','Fluttering','ときめき');icon='♥';tone='excited'}
+  else if(entry?.contactTone==='warm'&&!entry.contactRejected){label=text(language,'포근함','Warmth','ぬくもり');icon='♥';tone='happy'}
+  else if(affectionateContact){label=/화해|누그러|reconcil|仲直り/.test(copy)?text(language,'누그러짐','Softened','和らいでいる'):(entry.meetingKind==="affection"||/뜨거|열정|스킨십|스킨쉽|passion/.test(copy))?text(language,'불타오름','Passionate','情熱的'):text(language,'설렘','Fluttering','ときめき');icon='♥';tone='excited'}
   else if(hasTiredEvent&&/졸리|잠|sleepy|眠/.test(copy)){label=text(language,'졸림','Sleepy','眠い');icon='☾';tone='tired'}
   else if(hasTiredEvent&&/야근|밤샘|지쳤|exhaust|overtime|all.nighter|夜更|疲れ切/.test(copy)){label=text(language,'지침','Exhausted','疲れ切っている');icon='☾';tone='tired'}
   else if(hasTiredEvent){label=text(language,'피곤함','Tired','疲れている');icon='☾';tone='tired'}

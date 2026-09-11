@@ -1439,7 +1439,7 @@ function socialDirectiveCopy(kind,actor,target,subject,topic,options={}){
     const localizedTopic=detail==='오늘 하루'?['오늘 하루','their day','今日の出来事'][i]:detail;
     const action=localizedTopic&&['talk','debate','custom_social'].includes(kind)?[`${localizedTopic}에 관한 이야기를 이어 가고 있어요.`,`They continue discussing ${localizedTopic}.`,`${localizedTopic}について話を続けています。`][i]:SOCIAL_ACTIVITIES[kind]?.contextual?copy[language].desc:(actions[kind]||actions.talk)[i];
     const payment=socialPaymentCopy(kind,actor,options)[i];
-    copy[language]={...copy[language],desc:[action,reaction.text,payment].filter(Boolean).join(' '),relationshipCue:reaction.key};
+    copy[language]={...copy[language],desc:[reaction.text||action,payment].filter(Boolean).join(' '),relationshipCue:reaction.key};
   }
   return copy;
 }
@@ -1979,7 +1979,7 @@ export function togglePlaceStock(placeId,itemId){
   const list=Array.isArray(p.stock)?[...p.stock]:[];
   p.stock=list.includes(itemId)?list.filter(x=>x!==itemId):[...list,itemId];save(true);
 }
-export function setActiveHome(id){if(state.homes[id]){state.activeHomeId=id;save()}}
+export function setActiveHome(id){if(state.homes[id]&&state.activeHomeId!==id){state.activeHomeId=id;save(false,false)}}
 export function relationshipViewDefaults(type,temporalStatus="current",orderLength=state.order.length){
   const rank=value=>{
     const wanted=Number(String(value||"").match(/^\d+/)?.[0])||1;

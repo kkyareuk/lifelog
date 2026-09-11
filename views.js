@@ -1419,11 +1419,11 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const playfulInteraction=Boolean(partner&&!dating&&!fighting&&!/무시|못마땅|짜증|대꾸하지|눈살/.test(text)&&/티격태격|장난|농담|놀리|웃음|웃었|게임|내기|재잘/.test(text));
   const tenseInteraction=Boolean(partner&&!dating&&!fighting&&!playfulInteraction&&/경계|불편|신경전|성가시|못마땅|퉁명|날 선|거리.{0,8}두/.test(`${text} ${viewText}`));
   const warmInteraction=Boolean(partner&&!dating&&!fighting&&!tenseInteraction&&/함께|대화|이야기|도와|챙기|나누|맞춰|건넸|안부|곁/.test(text));
-  const actionKind=sleeping?"sleep"
+  const actionKind=entry?.contactTone&&entry.contactTone!=="declined"?(entry.meetingKind==='hug'?"hug":"kiss"):sleeping?"sleep"
     :drowsy?"drowsy"
     :/손톱|손톱줄|네일/.test(text)?"nail-care"
     :/차를 우리는|차를 우려|차를 내리|찻물을|차 한 잔|차를 마시|티백|홍차|녹차|보이차|말차/.test(text)?"tea"
-    :/빗자루|바닥.{0,12}(쓸|청소)|쓸고|쓸어/.test(text)?"sweeping"
+    :/빗자루|바닥.{0,12}(쓸|청소)|먼지.{0,12}쓸/.test(text)?"sweeping"
       :/세수|세안|이를 닦|양치|칫솔|치약|샤워|목욕|머리를 감|몸을 씻|손을 씻|면도/.test(text)?"washing-up"
       :/설거지|그릇.{0,12}(씻|닦)|식기.{0,12}(씻|닦)|접시.{0,12}(씻|닦)|컵.{0,12}(씻|닦)|도구.{0,12}(씻|닦)|물뿌리개.{0,12}(씻|닦)|세척/.test(text)?"dishwashing"
         :/(?:신발|구두|운동화|부츠).{0,18}(?:손질|닦|솔질|광|먼지|얼룩)|(?:손질|닦|솔질|광).{0,18}(?:신발|구두|운동화|부츠)/.test(text)?"shoe-care"
@@ -1474,7 +1474,7 @@ function nativeScenePresentation(c,entry,visualMode="sd"){
   const sceneEmotion=explicitNegative?explicitEmotion:strongestSceneEmotion(emotionScores);
   const sceneEmotionScore=emotionScores[sceneEmotion]||0;
   const ambientMood=characterMood(c,entry,state).tone;
-  const tone=sleeping?"sleep"
+  const tone=entry?.contactTone==='romantic'&&!entry.contactRejected?"date-romantic":entry?.contactTone==='warm'&&!entry.contactRejected?"interaction-warm":sleeping?"sleep"
     :drowsy?"drowsy"
       :sceneEmotion==="shock"&&sceneEmotionScore>=2?"shock"
         :sceneEmotion==="anger"&&sceneEmotionScore>=2?(fighting&&partner?(coldFight?"fight-ice":"fight-fire"):"interaction-tense")
@@ -4563,7 +4563,7 @@ function townMobile(sharedPass=false){
   const character=multiplayer?null:state.characters[characterId];
   const multiplayerName=multiplayer?.name||state.personalTownLabel||t("내 마을","내 마을"),headerTownName=multiplayerTown?.name||state.world.name;
   const desktopTabs=`<div class="town-tabs">${state.towns.map(town=>`<button data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}">🏙️ ${esc(town.name)}</button>`).join("")}${mobileTownMode==="town"?`<button data-add-town>+ ${t("마을 추가","마을 추가")}</button>${state.towns.length>1?`<button class="danger" data-delete-town="${state.activeTownId}">${t("현재 마을 삭제","현재 마을 삭제")}</button>`:""}`:""}</div>`;
-  const canEditShared=!multiplayer||['owner','manager','operator'].includes(multiplayerSnapshot.members?.find(m=>m.uid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||m.id===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role||multiplayerSnapshot.role||(multiplayer.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid?'owner':''));
+  const canEditShared=!multiplayer||multiplayer.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||['owner','manager','operator'].includes(multiplayerSnapshot.members?.find(m=>m.uid===window.ParallelCityAuth?.getInfo?.()?.user?.uid||m.id===window.ParallelCityAuth?.getInfo?.()?.user?.uid)?.role||multiplayerSnapshot.role||(multiplayer.ownerUid===window.ParallelCityAuth?.getInfo?.()?.user?.uid?'owner':''));
   const menuButtons=`<button type="button" class="home-native-pill" data-tab="groups"><span>${t("멀티","멀티")}</span></button>${multiplayer?`<button type="button" class="home-native-pill" data-shared-residents><span>${t("구성원","구성원")}</span></button>`:""}<button type="button" class="home-native-pill" data-mobile-town-layout-mode><span>${t("마을 정보","마을 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-building-edit-mode><span>${t("건물 정보","건물 정보")}</span></button><button type="button" class="home-native-pill" data-mobile-town-decoration-mode ${canEditShared?'':'disabled'}><span>${mobileTownMode==="decorations"?t("편집완료","편집완료"):t("편집모드","편집모드")}</span></button>`;
   const townHeader=`<header class="town-native-header"><button type="button" class="home-native-back town-native-back" data-tab="observe" aria-label="${esc(t("메인 화면으로 돌아가기","메인 화면으로 돌아가기"))}"><img src="${esc(homeUiAsset(character||active(),"back.png"))}" alt=""></button><div class="town-native-context"><button type="button" class="town-native-community" data-open-multiplayer-switcher aria-label="${esc(t("멀티 변경","멀티 변경"))}"><img src="${esc(homeUiAsset(character||active(),"town.png"))}" alt=""><span>${esc(multiplayerName)}</span></button><button type="button" class="town-native-town-pill" data-open-town-switcher aria-label="${esc(t("마을 이동","마을 이동"))}"><span>${esc(headerTownName)}</span></button></div><span class="town-native-status">${t("현재 {current}명 · 거주 {resident}명","현재 {current}명 · 거주 {resident}명").replace("{current}",localIds.length).replace("{resident}",residentIds.length)}</span><div class="town-native-menu" role="navigation" aria-label="${esc(t("마을 메뉴","마을 메뉴"))}">${menuButtons}</div></header>`;
   const townSwitchOptions=multiplayer?(multiplayer.towns||[]).map(town=>`<button type="button" data-multiplayer-town-open="${esc(town.id||"")}" class="${town.id===multiplayerSnapshot.selectedTownId||town===multiplayerTown?"on":""}"><i aria-hidden="true"></i><span><b>${esc(town.name||multiplayer.hostTownName||t("멀티 마을 없음","No multiplayer town"))}</b><small>${({ko:"현재 멀티 마을",en:"Current multiplayer town",ja:"現在のマルチタウン"}[state.uiLanguage]||"현재 멀티 마을")}</small></span></button>`).join(""):state.towns.map(town=>`<button type="button" data-town-select="${town.id}" class="${town.id===state.activeTownId?"on":""}"><i aria-hidden="true"></i><span><b>${esc(town.name)}</b><small>${town.id===state.activeTownId?t("현재 마을","현재 마을"):t("이 마을로 이동","이 마을로 이동")}</small></span></button>`).join("")+`<button type="button" class="town-switch-add" data-add-town data-add-town-switcher><i aria-hidden="true">＋</i><span><b>${t("새 마을 만들기","새 마을 만들기")}</b><small>${t("새로운 마을 슬롯을 추가해요","새로운 마을 슬롯을 추가해요")}</small></span></button>`;
