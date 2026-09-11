@@ -916,6 +916,7 @@ const groupRefs=groupId=>({
 });
 const groupIndexRef=(uid,groupId)=>doc(db,"users",uid,"groupMemberships",groupId);
 let groupDetailActive=false;
+let groupRefreshGeneration=0;
 const migratingLegacyGroups=new Set();
 async function migrateLegacyGroup(group){
   if(!group?.id||group.ownerUid!==user?.uid||Number(group.schemaVersion)>=3&&!group.towns?.some(town=>town?.sourceTownId||town?.ownerUid))return;
@@ -935,13 +936,18 @@ function watchActiveGroup(groupId,{force=false}={}){
   const nextGroupId=String(groupId||""),remembered=readGroupContext(),sameGroup=groupState.activeGroupId===nextGroupId;
   const selectedTownId=sameGroup?groupState.selectedTownId:remembered.groupId===nextGroupId?remembered.townId:"";
   const selectedResidentId=sameGroup?groupState.selectedResidentId:remembered.groupId===nextGroupId?remembered.residentId:"";
+  const previousGroupState=groupState;
   groupState={...groupState,activeGroupId:nextGroupId,error:null,loadedCollections:[],subscriptionErrors:{},group:null,members:[],residents:[],homes:[],catalog:[],relationships:[],characterGroups:[],perceptions:[],incomingProposals:[],outgoingProposals:[],incomingMail:[],outgoingMail:[],schedules:[],selectedTownId,selectedResidentId,visitingHomeId:""};
+  // Reconnecting the same group must retain its last usable data.
+  if(sameGroup&&nextGroupId)groupState={...previousGroupState,error:null,subscriptionErrors:{}};
   writeGroupContext({groupId:nextGroupId,townId:selectedTownId,residentId:selectedResidentId});
   if(!groupId||!user){emitGroupState();return}
   groupSubscriptionKey=subscriptionKey;
   const refs=groupRefs(groupId);
-  const listen=(reference,key,mapSnapshot)=>onSnapshot(reference,snapshot=>{
+  const listen=(reference,key,mapSnapshot)=>onSnapshot(reference,{includeMetadataChanges:true},snapshot=>{
     if(groupSubscriptionKey!==subscriptionKey)return;
+    // An empty local cache is not evidence of server deletion.
+    if(snapshot.metadata?.fromCache&&(mapSnapshot?snapshot.empty:!snapshot.exists()))return;
     const value=mapSnapshot
       ?snapshot.docs.map(item=>({id:item.id,...item.data()}))
       :snapshot.exists()?{id:snapshot.id,...snapshot.data()}:null;
@@ -977,7 +983,11 @@ function watchActiveGroup(groupId,{force=false}={}){
   ];
 }
 
-window.addEventListener('online',()=>{if(user&&groupState.activeGroupId){const gid=groupState.activeGroupId;stopGroupSubscriptions();watchActiveGroup(gid)}});
+window.addEventListener('online',()=>{
+  if(!user)return;
+  if(groupState.activeGroupId)watchActiveGroup(groupState.activeGroupId,{force:true});
+  void refreshGroups();
+});
 function setGroupDetailActive(active){
   const next=Boolean(active);
   if(groupDetailActive===next)return;
@@ -987,22 +997,23 @@ function setGroupDetailActive(active){
 
 async function refreshGroups({preferredId=""}={}){
   if(!ready||!db||!user){stopGroupSubscriptions();groupState=emptyGroupState();emitGroupState();return groupState}
-  const session=captureSession();
+  const session=captureSession(),generation=++groupRefreshGeneration;
   groupState={...groupState,loading:true,error:""};emitGroupState();
   try{
-    const indexSnapshot=await getDocs(collection(db,"users",session.uid,"groupMemberships"));
+    const indexSnapshot=await getDocsFromServer(collection(db,"users",session.uid,"groupMemberships"));
     assertSession(session);
     const indexed=indexSnapshot.docs.map(item=>({id:item.id,...item.data()}));
-    const groups=(await Promise.all(indexed.map(async membership=>{
+    const groups=(await mapConcurrent(indexed,4,async membership=>{
       try{
-        const snapshot=await getDoc(doc(db,"groups",membership.groupId||membership.id));
+        const snapshot=await getDocFromServer(doc(db,"groups",membership.groupId||membership.id));
         if(!snapshot.exists())return null;
         const result={id:snapshot.id,...snapshot.data(),myRole:membership.role||"member"};
         const cached=groupState.groups.find(g=>g.id===snapshot.id);result.memberCount=cached?.memberCount||0;result.residentCount=cached?.residentCount||0;
         return result;
       }catch(error){console.warn("group membership temporarily unavailable",membership.id,error);const cached=groupState.groups.find(g=>g.id===(membership.groupId||membership.id));if(cached)return cached;throw error}
-    }))).filter(Boolean);
+    })).filter(Boolean);
     assertSession(session);
+    if(generation!==groupRefreshGeneration)return groupState;
     // A membership refresh must not silently replace the personal town with
     // the first multiplayer space. Only an explicit selection activates one.
     const rememberedId=readGroupContext().groupId;
@@ -1013,7 +1024,7 @@ async function refreshGroups({preferredId=""}={}){
     if(groups.length)void refreshSlotUsage().catch(error=>console.warn('Slot refresh',error.code));else slotUsage={characters:0,towns:0};
     return groupState;
   }catch(error){
-    if(error?.code==="sync/account-changed")return groupState;
+    if(error?.code==="sync/account-changed"||generation!==groupRefreshGeneration)return groupState;
     console.error("group list failed",error);groupState={...groupState,loading:false,error:error?.code||"groups/load-failed"};emitGroupState();return groupState;
   }
 }
