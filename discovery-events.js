@@ -142,11 +142,13 @@ e('tag','♧',['옷깃에 작은 실밥이 보이는데 약속 시간이 다가�
  ['곁에 있는 사람에게 잠깐 봐 달라고 부탁한다','Ask someone nearby to take a quick look','そばの人に少し見てほしいと頼む',{socialStyle:1,touchReaction:toward(8)}],
  ['다른 옷으로 갈아입느라 서두른다','Hurry to change into something else','別の服に着替えようと急ぐ',{activityTempo:1,emotionalSensitivity:1}]]),
 e('coin','○',['걸어가다가 누군가 떨어뜨린 동전 소리를 들었어요.','While walking, they hear someone drop a coin.','歩いていると、誰かが硬貨を落とす音がしました。'],[
- ['바로 뒤돌아 떨어뜨린 사람을 부른다','Turn around and call to the person immediately','すぐ振り向き、落とした人を呼ぶ',{socialStyle:1,activityTempo:1}],
- ['굴러간 방향을 살펴 손으로 가리켜 준다','Watch where it rolls and point it out','転がった先を見て指で示す',{perceptionStyle:-1,affectionStyle:toward(3)}],
- ['상대가 찾을 때까지 옆에서 조용히 기다린다','Wait quietly nearby while they search','相手が探す間、そばで静かに待つ',{activityTempo:-1,interference:-1}],
- ['주변에 밟히지 않도록 잠깐 길을 비켜 달라고 한다','Ask others to make room so it is not stepped on','踏まれないよう、周囲に少しよけてもらう',{interference:1,socialStyle:1}],
- ['이미 찾는 것을 보고 안심하며 걸음을 이어 간다','See that they found it and continue walking, relieved','見つけた様子を見て安心し、そのまま歩く',{moodPersistence:-1,emotionalContagion:1}]]),
+ ['냉큼 주워 주머니에 넣는다. 오늘 운이 좋네.','Pocket it at once. Lucky day.','さっと拾ってポケットへ。今日はついてる。',{morality:-2,impulseControl:1}],
+ ['떨어뜨린 사람을 불러 돌려준다.','Call the owner and return it.','落とした人を呼んで返す。',{morality:2,socialStyle:1}],
+ ['발끝으로 가려 두고, 주인이 지나가길 기다린다.','Hide it under a shoe and wait for the owner to leave.','つま先で隠し、持ち主が去るのを待つ。',{morality:-2,planningStyle:1,impulseControl:-1}],
+ ['줍다가 눈이 마주치면 돌려주려던 척한다.','Pick it up and pretend to return it if caught looking.','拾って、目が合ったら返すつもりだったふりをする。',{morality:-1,interference:-1}],
+ ['귀찮다. 찾든 말든 그냥 지나간다.','Too much trouble. Walk on whether they find it or not.','面倒だ。見つかろうが知ったことかと通り過ぎる。',{interference:-2}],
+ ['손으로 굴러간 곳을 가리켜 준다.','Point to where it rolled.','転がった場所を指で教える。',{morality:1,perceptionStyle:-1}],
+ ['돌려주고는 사례금은 없냐며 능청스럽게 웃는다.','Return it, then grin and ask about a finder’s fee.','返してから、お礼はないのとおどけて笑う。',{morality:1,socialStyle:1}]]),
 e('newtable','▦',['공용 탁자의 물건 배치가 어제와 달라졌어요.','The arrangement on a shared table has changed since yesterday.','共有テーブルの物の配置が昨日と変わっています。'],[
  ['새 배치에 맞춰 필요한 물건부터 찾는다','Find what they need in the new arrangement','新しい配置で必要な物から探す',{planningStyle:-1,perceptionStyle:-1}],
  ['누가 바꿨는지 물으며 이유를 들어 본다','Ask who changed it and listen to their reasons','誰が変えたのか尋ね、理由を聞く',{socialStyle:1,decisionStyle:1}],

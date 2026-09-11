@@ -280,3 +280,5 @@ export const DISCOVERY_TRAITS={
 };
 
 DISCOVERY_TRAITS.aggressionLevel={label:"폭력성",values:["공격적인 반응이 거의 없음","공격적인 반응이 드묾","때때로 거칠게 반응함","공격적인 반응이 잦음","매우 공격적으로 반응함"]};
+
+DISCOVERY_TRAITS.morality={label:"도덕성",values:["이익을 위해 선을 넘음","내 이익을 먼저 따짐","상황에 따라 판단함","양심을 지키려 함","손해를 봐도 원칙을 지킴"]};
