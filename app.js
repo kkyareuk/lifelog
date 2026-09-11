@@ -1,3 +1,5 @@
+import {installInputBoundary} from './input-boundary.js?v=20260909dev305';
+installInputBoundary();
 import {timeOperation,performanceSummary} from './performance-diagnostics.js?v=20260909dev305';
 import {openMemberProfile} from './group-member-profile.js?v=20260909dev305';
 import {withLogNameBatch} from './life-log-localization.js?v=20260909dev305';

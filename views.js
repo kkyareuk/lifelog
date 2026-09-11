@@ -1,3 +1,4 @@
+import {commitInputBoundary} from './input-boundary.js?v=20260909dev305';
 import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {displayImageSource} from "./local-media.js?v=20260909dev305";
 import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
@@ -4706,7 +4707,7 @@ export function renderApp(next,date=new Date(),options={},prepare=null){
   const previousOptions=characterRenderOptions;characterRenderOptions=options;
   const previous=renderSceneDate,previousProjected=projectedRenderScenes,previousPartners=renderPartnerIndex;
   projectedRenderScenes=new WeakMap();renderPartnerIndex=null;renderSceneDate=date;
-  try{return withLogNameBatch(()=>withSimulationBatch(()=>{prepare?.();return renderAppContents(next)}))}finally{renderSceneDate=previous;projectedRenderScenes=previousProjected;renderPartnerIndex=previousPartners;characterRenderOptions=previousOptions}
+  try{return withLogNameBatch(()=>withSimulationBatch(()=>{prepare?.();return renderAppContents(next)}))}finally{commitInputBoundary();renderSceneDate=previous;projectedRenderScenes=previousProjected;renderPartnerIndex=previousPartners;characterRenderOptions=previousOptions}
 }
 function desktopWebShell(content){
   const copy=({ko:{observe:"관찰",home:"내 서랍",play:"마을 생활",records:"기록과 관리",account:"내 정보 · 로그인",guest:"여행자",multi:"멀티 마을",hint:"함께 만드는 작은 일상",today:"오늘의 서랍",profile:"내 프로필",saved:"기기에 저장됨"},en:{observe:"Observe",home:"My drawer",play:"Village life",records:"Journal & settings",account:"Account & sign-in",guest:"Visitor",multi:"Multiplayer",hint:"Little lives, shared stories",today:"Your drawer today",profile:"My profile",saved:"Saved on this device"},ja:{observe:"観察",home:"自分のひきだし",play:"村の暮らし",records:"記録と管理",account:"アカウント・ログイン",guest:"旅人",multi:"マルチの村",hint:"一緒につくる小さな日常",today:"今日のひきだし",profile:"マイプロフィール",saved:"端末に保存済み"}})[state.uiLanguage]||{};
@@ -4736,6 +4737,7 @@ function renderAppContents(next){
   const desktopWeb=!document.documentElement.classList.contains("native-app")&&!showingAccountLoading&&state.activeTab!=="credits";
   appRoot.classList.toggle("is-desktop-web",desktopWeb);
   appRoot.innerHTML=state.activeTab==="credits"?content:desktopWeb?desktopWebShell(content):`${showingWelcome||showingAccountLoading||showingMultiplayerDirectory||state.activeTab==="mailbox"?"":header()}<main>${content}</main>`;
+  commitInputBoundary();
   scheduleTownLighting(document);
   appRoot.querySelectorAll("img").forEach((image,index)=>{
     image.decoding="async";
