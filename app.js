@@ -5843,14 +5843,20 @@ function openDailyCharacterQuestion(question,now=new Date()){
   const character=state.characters[question.characterId];if(!character)return;
   const language=state.uiLanguage||"ko",copy=questionCopy(language),targets=relatedTargets(character),target=state.characters[question.targetId]||targets[Math.floor(Math.random()*targets.length)];
   let options=question.kind==="weekend"?weekendOptions(character,now):question.kind==="work"?workOptions(character,now):question.kind==="gift"&&target?giftOptions(character,target,now):everydayOptions(character,now);
+  const savedOptions=question.mailId&&contactMailbox.get(question.mailId)?.extra?.questionOptions;
+  if(Array.isArray(savedOptions)&&savedOptions.length)options=savedOptions.filter(option=>option.kind!=="gift"||state.characters[option.targetId]);
   if(!options.length)options=everydayOptions(character,now);
   const kind=question.kind==="gift"&&target?"gift":question.kind==="work"?"work":question.kind==="weekend"?"weekend":"everyday";
   const basePrompt=kind==="gift"?copy.gift(target.name):copy[kind];
   const prompt=question.mailBody||characterQuestionPrompt(character,{kind,target:target?.name||"",language,base:basePrompt});
-  if(!question.mailId){const mailId='daily:'+question.day+':'+question.characterId;const extra={mailOwner:localStorage.scope,mailId,scheduledAt:now.toISOString(),mailTitle:prompt,mailBody:prompt,characterId:character.id,mode:'question',questionKind:kind,targetId:question.targetId||'',senderImage:character.icon||character.photo||''};contactMailbox.record([{extra}]);question={...question,mailId,mailBody:prompt};setDailyQuestion(question)}
+  if(!question.mailId){const mailId='daily:'+question.day+':'+question.characterId;const extra={mailOwner:localStorage.scope,mailId,scheduledAt:now.toISOString(),mailTitle:prompt,mailBody:prompt,characterId:character.id,mode:'question',questionKind:kind,targetId:question.targetId||'',senderImage:character.icon||character.photo||'',questionOptions:options};contactMailbox.record([{extra}]);question={...question,mailId,mailBody:prompt};setDailyQuestion(question)}
+  if(question.mailId){const letter=contactMailbox.get(question.mailId);if(letter&&!letter.extra?.questionOptions)contactMailbox.mark(question.mailId,{extra:{...letter.extra,questionOptions:options}});}
   const dialog=document.createElement("dialog"),image=character.icon||character.photo;
   dialog.className="character-question-dialog mail-letter";
   dialog.innerHTML=`<form method="dialog">${letterWatermark(image)}<button value="later" class="mail-letter-close" aria-label="${copy.later}">×</button><div class="character-question-speaker">${image?`<img src="${htmlEsc(image)}" alt="">`:`<span>${htmlEsc(character.name.slice(0,1))}</span>`}<div><small>${copy.label}</small><b>${htmlEsc(character.name)}</b></div></div><h2>${htmlEsc(prompt)}</h2><p>${copy.saved}</p><div class="character-question-options">${options.map((option,index)=>`<button type="button" data-character-question-option="${index}">${htmlEsc(option.label[language]||option.label.ko)}</button>`).join("")}</div><button value="later" class="character-question-later">${copy.later}</button></form>`;
+  const decline=document.createElement('button');decline.type='button';decline.dataset.characterQuestionDecline='';decline.textContent=({ko:'이번에는 하지 않기',en:'Not this time',ja:'今回はしない'})[language]||'이번에는 하지 않기';
+  decline.onclick=()=>{if(question.mailId)contactMailbox.mark(question.mailId,{answered:true,read:true,declined:true});if(state.dailyQuestion?.mailId===question.mailId)setDailyQuestion({...state.dailyQuestion,answered:true});dialog.close('declined');showToast(({ko:'이번에는 하지 않기로 했어요.',en:'They decided not to do it this time.',ja:'今回はしないことにしました。'})[language]);render();};
+  dialog.querySelector('.character-question-options').append(decline);
   dialog.querySelectorAll("[data-character-question-option]").forEach(button=>button.onclick=()=>{
     const option=options[Number(button.dataset.characterQuestionOption)];
     if(scheduleCharacterChoice(option)){
@@ -6171,7 +6177,7 @@ function openContactMail(id){
   const e=letter.extra||{},sender=state.characters[e.characterId];
   // Received envelopes remain readable after the sender moves or is removed.
   // Interactive answers require the original local participants to still exist.
-  if(sender&&e.mode==="question"&&!letter.answered&&(e.questionKind!=="gift"||state.characters[e.targetId])){
+  if(sender&&e.mode==="question"&&!letter.answered){
     contactMailbox.mark(id,{read:true});
     const now=new Date();
     const question={day:localDateKey(now),minute:now.getHours()*60+now.getMinutes(),characterId:e.characterId,targetId:e.targetId||"",kind:e.questionKind||"everyday",shown:true,answered:false};

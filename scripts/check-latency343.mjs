@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import {mapConcurrent} from '../bounded-work.js';
+let live=0,peak=0;const started=performance.now();
+const results=await mapConcurrent(Array.from({length:12},(_,i)=>i),4,async i=>{live++;peak=Math.max(peak,live);await new Promise(r=>setTimeout(r,30));live--;return i*2});
+assert.deepEqual(results,Array.from({length:12},(_,i)=>i*2));assert.equal(peak,4);assert.equal(live,0);
+let settled=0;await assert.rejects(mapConcurrent([1,2,3],2,async i=>{await new Promise(r=>setTimeout(r,5));settled++;if(i===1)throw Error('failure')}),/failure/);assert(settled>=1);
+const source=await readFile(new URL('../auth.js',import.meta.url),'utf8');let reads=0,requests=[];
+const context={requireGroupUser(){},captureSession:()=>({uid:'test'}),stateHasPendingDataImages:()=>false,sharedProfile:x=>x,sharedTownRequest:async(...args)=>{requests.push(args);return {id:'c'}},cloudDoc(){reads++;throw Error('unexpected cloud read')},groupState:{activeGroupId:'g'}};
+vm.createContext(context);vm.runInContext(source.slice(source.indexOf('async function saveSharedResident('),source.indexOf('const pendingResidentCreates=')),context);
+await context.saveSharedResident({groupId:'g',id:'c',profile:{name:'Test'}});assert.equal(reads,0);assert.equal(requests.length,1);assert.equal(requests[0][0],'saveResident');
+console.log(JSON.stringify({passed:true,peak,simulated12RequestsMs:Math.round(performance.now()-started),unchangedPhotoReads:reads,saveRequests:requests.length}));

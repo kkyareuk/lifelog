@@ -1,3 +1,4 @@
+import {mapConcurrent} from './bounded-work.js?v=20260909dev305';
 import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
 import {clearAccountImages} from './image-cleanup.js?v=20260909dev305';
 import {initializeLocalMediaState} from './local-media.js?v=20260909dev305';
@@ -334,7 +335,7 @@ async function writeCloudGameState(gameState,session,previousManifest){
     }
   }
 
-  for(const [characterId,source] of Object.entries(characters)){
+  await mapConcurrent(Object.entries(characters),4,async([characterId,source])=>{
     assertSession(session);
     const character=clone(source||{});
     const days=character.days&&typeof character.days==="object"?character.days:{};
@@ -358,7 +359,7 @@ async function writeCloudGameState(gameState,session,previousManifest){
     }).map(([dateKey,day])=>setUserDoc(cloudDayDoc(characterId,dateKey,uid),{
         dateKey:String(dateKey),day:encodeFirestoreState(day),updatedAt:serverTimestamp()
       })));
-  }
+  });
   // 루트의 syncRevision이 최종 완료 표식이다. core도 달라졌을 때만 쓴다.
   assertSession(session);
   if(!canUseManifest||previousManifest.coreHash!==manifest.coreHash)await setUserDoc(cloudCoreDoc(uid),{state:encodeFirestoreState(next),updatedAt:serverTimestamp()});
@@ -580,10 +581,11 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
   };
   walk(next,[]);
   let photoFailures=0;const photoErrors=[];
-  for(let i=0;i<jobs.length;i+=1){
-    if(!uploadPhotos){const previousValue=jobs[i].path.reduce((value,key)=>value&&typeof value==="object"?value[key]:undefined,previousState);jobs[i].node[jobs[i].key]=typeof previousValue==="string"&&!isData(previousValue)?previousValue:"";continue}
+  const photoJobs=new Map();
+  await mapConcurrent(jobs,3,async(job,i)=>{
+    if(!uploadPhotos){const previousValue=jobs[i].path.reduce((value,key)=>value&&typeof value==="object"?value[key]:undefined,previousState);jobs[i].node[jobs[i].key]=typeof previousValue==="string"&&!isData(previousValue)?previousValue:"";return}
     status(`${accountName()} · 사진 ${i+1}/${jobs.length} 올리는 중`);
-    try{assertSession(session);jobs[i].node[jobs[i].key]=await uploadDataUrl(jobs[i].value,manifest,session)}
+    try{assertSession(session);if(!photoJobs.has(job.value))photoJobs.set(job.value,uploadDataUrl(job.value,manifest,session));jobs[i].node[jobs[i].key]=await photoJobs.get(job.value)}
     catch(error){
       if(error?.code==="sync/account-changed")throw error;
       console.warn("사진 업로드에 실패했지만 기존 클라우드 사진과 정보 동기화를 유지합니다",error);
@@ -591,7 +593,7 @@ async function prepareState(local,manifest,previousState,session,{uploadPhotos=t
       const previousValue=jobs[i].path.reduce((value,key)=>value&&typeof value==="object"?value[key]:undefined,previousState);
       jobs[i].node[jobs[i].key]=typeof previousValue==="string"&&!isData(previousValue)?previousValue:"";
     }
-  }
+  });
   const usedUrls=storedPhotoUrls(next);
   manifest.items=manifest.items.filter(item=>usedUrls.has(item.url));
   manifest.legacyCount=Math.max(0,usedUrls.size-manifest.items.length);
@@ -838,7 +840,9 @@ let slotUsage={characters:0,towns:0},slotUsageUid="";
 async function refreshSlotUsage(){if(!user)return;const session=captureSession();const value=await sharedTownRequest('readSlotUsage');assertSession(session);slotUsage=value;slotUsageUid=session.uid;return value}
 const createdResidents=new Map();
 async function saveSharedResident({groupId=groupState.activeGroupId,id,profile}){
- requireGroupUser();const session=captureSession(),reference=cloudDoc(session.uid),previous=await getDoc(reference);
+ requireGroupUser();const session=captureSession();
+ if(!stateHasPendingDataImages(profile))return sharedTownRequest('saveResident',{groupId,id,profile:sharedProfile(profile)});
+ const reference=cloudDoc(session.uid),previous=await getDoc(reference);
  const prepared=await prepareState({character:profile},structuredClone(normalizeManifest(previous.data()?.mediaManifest,null)),null,session);assertSession(session);
  if(prepared.photoFailures)throw Error((prepared.photoErrors||[]).join(', ')+' · '+({ko:'사진을 올리지 못했어요. 설정과 사진을 다시 전송할 수 있어요.',en:'Photos could not be uploaded. You can retry saving.',ja:'写真をアップロードできませんでした。再試行できます。'})[document.documentElement.lang]||'사진 업로드에 실패했어요. 다시 시도해 주세요.');
  await mergeUploadedMedia(reference,prepared.mediaManifest,session);assertSession(session);
@@ -914,7 +918,7 @@ const independentTownPayload=groupId=>({
   id:`multi-town-${groupId}`,name:"새 마을1",illustrationId:"owner-forest",previewImage:"",independent:true,createdAt:Date.now()
 });
 const activeGroupMember=()=>groupState.members.find(member=>member.uid===user?.uid);
-const activeGroupRole=()=>activeGroupMember()?.role||(groupState.group?.ownerUid===user?.uid?"owner":"member");
+const activeGroupRole=()=>groupState.group?.ownerUid===user?.uid?"owner":activeGroupMember()?.role||"member";
 const isGroupManager=()=>["owner","manager"].includes(activeGroupRole());
 const groupRefs=groupId=>({
   group:doc(db,"groups",groupId),members:collection(db,"groups",groupId,"members"),
@@ -960,7 +964,7 @@ function watchActiveGroup(groupId,{force=false}={}){
     const errors={...groupState.subscriptionErrors};delete errors[key];
     groupState={...groupState,[key]:value,loadedCollections:[...new Set([...(groupState.loadedCollections||[]),key])],groups,subscriptionErrors:errors,error:Object.values(errors)[0]||'',loading:false};
     if(key==="group"&&!groupState.selectedTownId)groupState.selectedTownId=value?.towns?.[0]?.id||"";
-    emitGroupState();
+    if(!clockOnly)emitGroupState();
     if(key==="group"&&value)void migrateLegacyGroup(value);
     if(key==="residents"&&value.length){
       const migrationKey=`${user?.uid}:${groupId}`;
@@ -1004,9 +1008,9 @@ async function refreshGroups({preferredId=""}={}){
         const snapshot=await getDoc(doc(db,"groups",membership.groupId||membership.id));
         if(!snapshot.exists())return null;
         const result={id:snapshot.id,...snapshot.data(),myRole:membership.role||"member"};
-        await Promise.all([['members','memberCount'],['residents','residentCount']].map(async([path,key])=>{try{result[key]=(await getCountFromServer(collection(db,'groups',snapshot.id,path))).data().count}catch(error){console.warn('Group count unavailable',key,error.code)}}));
+        const cached=groupState.groups.find(g=>g.id===snapshot.id);result.memberCount=cached?.memberCount||0;result.residentCount=cached?.residentCount||0;
         return result;
-      }catch(error){console.warn("stale group membership",membership.id,error);return null}
+      }catch(error){console.warn("group membership temporarily unavailable",membership.id,error);const cached=groupState.groups.find(g=>g.id===(membership.groupId||membership.id));if(cached)return cached;throw error}
     }))).filter(Boolean);
     assertSession(session);
     // A membership refresh must not silently replace the personal town with
@@ -1015,7 +1019,8 @@ async function refreshGroups({preferredId=""}={}){
     const activeId=[preferredId,groupState.activeGroupId,rememberedId].find(id=>groups.some(group=>group.id===id))||"";
     groupState={...groupState,groups,loading:false,error:""};
     watchActiveGroup(activeId);
-    if(groups.length)await refreshSlotUsage();else slotUsage={characters:0,towns:0};
+    void mapConcurrent(groups,4,async group=>{const counts=await Promise.all(['members','residents'].map(path=>getCountFromServer(collection(db,'groups',group.id,path)).then(s=>s.data().count)));assertSession(session);groupState.groups=groupState.groups.map(g=>g.id===group.id?{...g,memberCount:counts[0],residentCount:counts[1]}:g);emitGroupState();}).catch(error=>console.warn('Group counts',error.code));
+    if(groups.length)void refreshSlotUsage().catch(error=>console.warn('Slot refresh',error.code));else slotUsage={characters:0,towns:0};
     return groupState;
   }catch(error){
     if(error?.code==="sync/account-changed")return groupState;

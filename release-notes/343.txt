@@ -1,0 +1,9 @@
+<ko-KR>
+질문에 ‘캐릭터스러운 답이 없어요!’ 의견 보내기를 추가했어요. 캐릭터 우편에서 ‘이번에는 하지 않기’를 선택할 수 있어요. 저장 후 질문 아이콘이 사라지는 문제를 수정하고 우편 질문의 선택지를 유지했어요. 멀티 설정 저장과 동기화 대기를 줄이고 재입장 권한 처리를 개선했어요. 방 사진 삭제·기본 벽지와 바닥 복원, 선물 보내기 안내, 일부 영어 표시를 개선했어요.
+</ko-KR>
+<en-US>
+Report when no answer fits your character. Choose “Not this time” in character letters. Fixed disappearing question icons and preserved letter choices. Reduced unnecessary multiplayer save and sync requests and improved rejoin permissions. Added room photo removal, default wall/floor restoration, gift instructions, and fixes for some untranslated labels.
+</en-US>
+<ja-JP>
+キャラらしい回答がない質問に意見を送れるようになりました。手紙に「今回はしない」を追加。質問アイコンの消失を修正し、手紙の選択肢を保持します。マルチの保存・同期の待ち時間と再参加時の権限処理を改善。部屋写真の削除、標準の壁・床への復元、贈り物の案内、一部翻訳を改善しました。
+</ja-JP>
