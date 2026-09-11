@@ -1121,7 +1121,7 @@ function openRoomEditor(homeId,roomKey){
   floorButton.onclick=()=>{const mode=dialog.querySelector('[name="floorMaterial"]').value==="customTile"?"customTile":"custom";dialog.querySelector('[name="floorMaterial"]').value=mode;dialog.querySelector('[name="usePhoto"]').checked=mode==="custom";sync();dialog.returnValue="floor";dialog.close();pickImage(mode==="customTile"?"roomFloor":"roomScene",homeId,roomKey)};
   dialog.querySelector("[data-room-layout-reset]")?.addEventListener("click",()=>{updateRoom(homeId,roomKey,{layout:undefined},false);delete state.homes[homeId].rooms[roomKey].layout;save(true);dialog.close();render();showToast("이 층의 자동 배치 기준으로 되돌렸어요")});
   dialog.querySelector("[data-room-delete]").onclick=()=>{if(confirm(`${room.name||"이 방"}을 삭제할까요?`)){deleteRoom(homeId,roomKey);dialog.close();explicitSave("방 삭제")}};
-  dialog.onclose=()=>{if(!["photo","floor","reopen"].includes(dialog.returnValue)){sync();setHomeEditMode(false);save(true);render()}dialog.remove()};
+  dialog.onclose=()=>{if(!["photo","floor","reopen"].includes(dialog.returnValue)){sync();setHomeEditMode(false);dialog.remove();render()}dialog.remove()};
 
   const fields=dialog.querySelector(".room-editor-fields");
   fields.before(dialog.querySelector("[data-edit-room-photo]"));
@@ -1732,11 +1732,8 @@ function render({force=false,selectionOnly=false,sceneDate=null}={}){
     scheduleHomeLifeRefresh();
     afterScreenRender(()=>{const shared=activeShared();if(shared&&["observe","home","character"].includes(state.activeTab)){const current=withSharedWorld(shared,()=>{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();return {c:c?structuredClone(c):null,scene:c?currentSceneFor(c):null}});considerDiscovery(current.c,current.scene,{groupId:shared.activeGroupId});}else{const c=state.characters[document.querySelector('[data-observed-character]')?.dataset.observedCharacter]||active();considerDiscovery(c,["observe","home"].includes(state.activeTab)&&c?currentSceneFor(c):null)}});
     if(!selectionOnly)afterScreenRender(()=>scheduleLiveSceneRefresh());
-    if(fullCharacterBookActive){
-      const main=document.querySelector("#app>main");
-      if(main){main.scrollLeft=0;main.scrollTop=0}
-      window.scrollTo(0,0);
-    }
+    // The freshly mounted book/main already starts at zero. Writing its scroll
+    // position here forced layout before the new page could paint.
     if(previousTownPosition){
       const scroller=document.querySelector(".town-map-scroll");
       if(scroller&&scroller.closest(".mobile-town-shell")?.dataset.townId===currentTownId){
@@ -1861,7 +1858,7 @@ function renderPreservingPageScroll(element){
     if(!renderedMain?.isConnected)return;
     restoreWindowScroll(pageX,pageY);
     const nextMain=document.querySelector("#app>main");
-    if(nextMain){nextMain.scrollLeft=mainLeft;nextMain.scrollTop=mainTop}
+    if(nextMain&&(mainLeft||mainTop)){nextMain.scrollLeft=mainLeft;nextMain.scrollTop=mainTop}
     if(placeId){
       const marker=document.querySelector(`[data-place-id="${CSS.escape(placeId)}"],[data-place-audience="${CSS.escape(placeId)}"],[data-place-stock="${CSS.escape(placeId)}"]`);
       if(marker?.closest("details"))marker.closest("details").open=true;
@@ -6230,7 +6227,7 @@ installContextMenu({
  openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},
- execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});render();return true}const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result},
+ execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});render();return true}const failure=contactFailure(state.characters[id],state.characters[target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result},
 });
 let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;

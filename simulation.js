@@ -1,3 +1,4 @@
+import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {reflectStory} from './story-events.js?v=20260909dev305';
 import {autonomousAllowed,applyAutonomousPolicy} from './autonomous-activities.js?v=20260909dev305';
 import {interactionPriority,strangerScene} from "./stranger-interactions.js?v=20260909dev305";
@@ -739,16 +740,8 @@ const isHomeResident=(c,home)=>Boolean(c&&home&&(
 const ownsRoom=(c,home,room)=>Boolean(c&&room&&(
   (room.ownerMode==="all"&&isHomeResident(c,home))||(room.ownerCharacterIds||[]).includes(c.id)
 ));
-export function roomAllowsCharacter(c,home,room){
-  if(!c||!home||!room)return false;
-  const mode=room.accessMode||((room.accessCharacterIds||[]).length?"selected":"everyone");
-  if(mode==="everyone")return true;
-  if(ownsRoom(c,home,room))return true;
-  if(mode==="owners")return false;
-  if((room.accessCharacterIds||[]).includes(c.id))return true;
-  const groups=room.accessGroups||[];
-  return isHomeResident(c,home)?groups.includes("residents"):groups.includes("outsiders");
-}
+export function roomAllowsCharacter(c,home,room){return roomEntryAllowed(c,home,room)}
+
 export function resolveHomeRoomForActivity(c,home,requestedRoom,item={},date=new Date()){
   const rooms=home?.rooms||{},ordered=Object.entries(rooms).sort((a,b)=>(Number(a[1]?.order)||0)-(Number(b[1]?.order)||0));
   if(!ordered.length)return"";

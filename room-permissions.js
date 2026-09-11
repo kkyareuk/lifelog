@@ -31,3 +31,13 @@ export function readRoomPermissionEditor(root){
  const values=name=>[...root.querySelectorAll(`[name="${name}"]:checked`)].map(input=>input.value);
  return {ownerMode:root.querySelector('[name="ownerAll"]').checked?"all":"selected",ownerCharacterIds:values("ownerCharacterIds"),accessMode:root.querySelector('[name="accessMode"]').value,accessGroups:values("accessGroups"),accessCharacterIds:values("accessCharacterIds"),accessPetIds:values("accessPetIds"),accessCustom:[...new Set(root.querySelector('[name="accessCustom"]').value.split(/\r?\n/).map(v=>v.trim()).filter(Boolean))].slice(0,40)};
 }
+
+// Unassigned owner-only rooms are common space; explicit guest lists still apply.
+export function roomEntryAllowed(c,home,room){
+ if(!c||!home||!room)return false;
+ const resident=c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id);
+ const owners=room.ownerCharacterIds||[],mode=room.accessMode||((room.accessCharacterIds||[]).length?'selected':'everyone');
+ if(mode==='everyone'||owners.includes(c.id)||room.ownerMode==='all'&&resident)return true;
+ if(mode==='owners')return room.ownerMode!=='all'&&!owners.length;
+ return !!(room.accessCharacterIds?.includes(c.id)||room.accessGroups?.includes(resident?'residents':'outsiders'));
+}

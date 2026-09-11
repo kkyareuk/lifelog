@@ -1972,7 +1972,7 @@ function discoveryStatistics(characters){
   if(!members.length)return '';
   const metrics=members.map(c=>discoveryMetric(c,field));let value,summary;
   if(metrics[0].categorical){const totals=new Map();for(const m of metrics)totals.set(m.label,(totals.get(m.label)||0)+1);const counts=[...totals].sort((a,b)=>b[1]-a[1]);const [label,count]=counts[0]||['',0];value=Math.round(count/members.length*100)+'%';summary=t(label,label);}
-  else{const mean=metrics.reduce((n,m)=>n+m.value,0)/metrics.length;value=mean.toFixed(1)+' / 100';let index=Math.round(mean/100*(axis.values.length-1));if(axis.values[index]==='균형형'&&mean!==50)index+=mean<50?-1:1;summary=t(axis.values[index],axis.values[index]);if(mean!==50&&Math.abs(mean-50)<10)summary=t('약간 '+summary,'Slightly: '+summary,'やや：'+summary);}
+  else{const mean=metrics.reduce((n,m)=>n+m.value,0)/metrics.length;value=mean.toFixed(1)+' / 100';const low=t(axis.values[0],axis.values[0]),high=t(axis.values.at(-1),axis.values.at(-1));summary=mean===50?t('균형형','Balanced','バランス型'):(mean<50?low:high)+' · '+t('중앙에서 ','From midpoint: ','中間から ')+Math.abs(mean-50).toFixed(1)+t('점',' points','点')+` (${low} 0 ↔ ${high} 100)`;}
   return `<tr><th>${esc(t(axis.label,axis.label))}</th><td>${value}</td><td>${esc(summary)} <small>(${members.length})</small></td></tr>`;
  }).join('');
  return `<section class="statistics-card discovery-statistics"><h2>${t('마을 성향 평균','Village trait averages','村の傾向の平均')}</h2><p>${t('선택한 마을의 설정된 값만 평균에 포함해요. 유형 항목은 가장 많은 반응과 비율을 보여줘요.','Averages include configured values in the selected scope. Categories show the most common response and its share.','選んだ範囲の設定済みの値を平均します。種類の項目は最も多い反応と割合を表示します。')}</p><table><tbody>${rows}</tbody></table></section>`;

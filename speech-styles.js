@@ -236,7 +236,7 @@ export function bindSpeechStylePickers(root,character,language='ko'){
   if(select.dataset.speechPicker)continue;
   select.dataset.speechPicker='1';select.value=canonicalSpeechStyle(character?.speechStyle)||SPEECH_STYLE_OPTIONS[0];
   const trigger=document.createElement('button');trigger.type='button';trigger.className='speech-picker-trigger';trigger.setAttribute('aria-haspopup','dialog');
-  const update=()=>{trigger.textContent=(select.selectedOptions[0]?.textContent||select.value)+' ▾'};update();select.hidden=true;select.after(trigger);
+  const update=()=>{trigger.textContent=(select.selectedOptions[0]?.textContent||select.value)+' ▾'};update();select.hidden=true;select.setAttribute("aria-hidden","true");select.tabIndex=-1;select.style.setProperty("display","none","important");select.after(trigger);
   trigger.addEventListener('click',()=>{
    const dialog=document.createElement('dialog');dialog.className='speech-picker-dialog';
    const header=document.createElement('header'),title=document.createElement('h2'),close=document.createElement('button');

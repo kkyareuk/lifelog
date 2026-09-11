@@ -1,3 +1,4 @@
+import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {writeAnswerDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
 import {contactNarrative,rejectsContact} from './contact-narrative.js?v=20260909dev305';
 import {contextDestination} from './context-actions.js?v=20260909dev305';
@@ -1314,6 +1315,8 @@ export function updateRoom(homeId,roomKey,patch,persist=true){
   const h=state.homes[homeId];if(!h)return;
   h.rooms=h.rooms||rooms();
   const previousRoom=h.rooms[roomKey];
+  patch=Object.fromEntries(Object.entries(patch||{}).filter(([key,value])=>JSON.stringify(previousRoom?.[key])!==JSON.stringify(value)));
+  if(!Object.keys(patch).length)return false;
   h.rooms[roomKey]={...previousRoom,...patch};
   const room=h.rooms[roomKey];
   if((room.type==="bedroom"||roomKey==="bedroom")&&(Object.hasOwn(patch,"ownerCharacterIds")||Object.hasOwn(patch,"ownerMode"))){
@@ -1517,7 +1520,7 @@ export function directCharacterActivity(characterId,kind="wake",options={}){
   else if(!target||kind==='affection'){
     const home=state.homes?.[kind==='affection'?(targetScene?.home?(targetScene.visitHomeId||target.homeId):character.homeId):character.homeId];
     if(!home)return false;
-    const canEnter=(c,room)=>{const resident=c.homeId===home.id||c.residences?.some(r=>r.homeId===home.id),owner=room.ownerCharacterIds?.includes(c.id)||room.ownerMode==='all'&&resident,mode=room.accessMode||'everyone';return mode==='everyone'||owner||mode!=='owners'&&(room.accessCharacterIds?.includes(c.id)||room.accessGroups?.includes(resident?'residents':'outsiders'))};
+    const canEnter=(c,room)=>roomEntryAllowed(c,home,room);
     const rooms=Object.entries(home.rooms||{}).filter(([,room])=>kind!=='affection'||canEnter(character,room)&&canEnter(target,room));let chosen;
     if(kind==='affection'){
       const ordered=rooms.slice().sort(([a],[b])=>Number(b===targetScene?.room)-Number(a===targetScene?.room));
