@@ -1443,6 +1443,7 @@ function replaceFeedbackFormWithEmailLink(){
   const appVersion=String(window.DRAWER_VILLAGE_APP_VERSION||"web"),versionCode=String(window.DRAWER_VILLAGE_VERSION_CODE||"-");
   const deviceModel=navigator.userAgentData?.model||String(navigator.userAgent||"").match(/Android[^;]*;\s*([^;)]+?)\s+Build\//)?.[1]||"not exposed by this browser";
   const diagnostics=[
+    `Account UID: ${window.ParallelCityAuth?.getInfo?.()?.user?.uid||({ko:"로그인하지 않음",en:"Not signed in",ja:"未ログイン"}[state.uiLanguage]||"Not signed in")}`,
     `Version: ${appVersion} / code ${versionCode}`,
     `Build: ${build} (${window.DRAWER_VILLAGE_NATIVE?(window.DRAWER_VILLAGE_PLATFORM==="ios"?"iOS app":"Android app"):"Web"})`,
     `Device/model: ${deviceModel}`,
