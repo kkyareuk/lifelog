@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-12-appstore357",
-  "version": "1.0.323",
-  "build": 357,
+  "request": "2026-09-12-appstore358-auth-recovery",
+  "version": "1.0.324",
+  "build": 358,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,

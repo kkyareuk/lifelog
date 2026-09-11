@@ -2619,6 +2619,7 @@ document.addEventListener("click",event=>{
 });
 
 function bind(){
+  $("[data-auth-retry]")?.addEventListener("click",()=>location.reload());
 
   bindCharacterFolds();
   bindDiscoveryLocks();
@@ -6331,9 +6332,11 @@ render();
 scheduleAchievementRefresh({announce:false});
 if(!maintenanceEnabled())showInstallButton();
 if(!maintenanceEnabled()){
-import("./auth.js?v=20260909dev305").catch(error=>{
-    console.warn("로그인 기능을 불러오지 못했지만 게임은 계속 실행됩니다.",error);
-    window.DrawerVillageAuthStartupFailed=true;
+const authLoadDeadline=setTimeout(()=>{window.DrawerVillageAuthStartupError="module-timeout";render()},20000);
+import("./auth.js?v=20260909dev305").then(()=>{clearTimeout(authLoadDeadline);window.DrawerVillageAuthStartupError="";render()}).catch(error=>{
+    clearTimeout(authLoadDeadline);
+    console.warn("로그인 기능을 불러오지 못했습니다. 계정 기록을 보호하고 재시도를 안내합니다.",error);
+    window.DrawerVillageAuthStartupError="module-load";
     setAccountLabel("Google 로그인");
     render();
   });

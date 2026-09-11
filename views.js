@@ -4674,6 +4674,8 @@ function welcome(){
   </section>`;
 }
 function accountLoading(){
+  const failed=window.DrawerVillageAuthStartupError||window.ParallelCityAuth?.getInfo?.().startupError,copy=(ko,en,ja)=>({ko,en,ja}[state.uiLanguage]||ko);
+  if(failed)return `<section class="village-account-loading" role="alert"><div><b>${esc(copy("계정 기록을 불러오지 못했어요.","Could not load your account save.","アカウントの記録を読み込めませんでした。"))}</b><p>${esc(copy("기록은 지우지 않았어요. 연결을 확인하고 다시 시도해 주세요.","Your saves have not been deleted. Check your connection and try again.","記録は削除していません。接続を確認して再試行してください。"))}</p><button type="button" data-auth-retry>${esc(copy("다시 시도","Retry","再試行"))}</button></div></section>`;
   return `<section class="village-account-loading" role="status" aria-live="polite"><img src="./world-assets/owner-forest-town.webp" alt=""><div><span aria-hidden="true"></span><b>${esc(t("계정 기록을 확인하는 중…","계정 기록을 확인하는 중…"))}</b><p>${esc(t("저장된 마을을 확인한 뒤 이어서 열게요.","저장된 마을을 확인한 뒤 이어서 열게요."))}</p></div></section>`;
 }
 function emptySharedCharacter(){
@@ -4686,6 +4688,7 @@ function view(){
   // A remembered Google session must finish its account switch and initial
   // cloud download before any local game screen is exposed.  Manual syncs do
   // not use startupSyncing, so they never replace an already-open screen.
+  if(configured&&(window.DrawerVillageAuthStartupError||authInfo?.startupError))return accountLoading();
   if(configured&&!window.DrawerVillageAuthStartupFailed&&(!authInfo||!authInfo.ready||authInfo.startupSyncing))return accountLoading();
   if(!state.order.length&&state.activeTab==='character'&&(state.sharedContext||window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId))return emptySharedCharacter();
   if(!state.order.length&&!window.DrawerVillageGroups?.getSnapshot?.()?.activeGroupId){

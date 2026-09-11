@@ -1,3 +1,4 @@
+import {requestDeadline} from './request-deadline.js';
 import {mapConcurrent} from './bounded-work.js?v=20260909dev305';
 import {readCloudCharacters} from './cloud-character-reader.js?v=20260909dev305';
 import {withWardrobe} from './shared-wardrobe.js?v=20260909dev305';
@@ -145,6 +146,7 @@ const takeGuestHandoff=()=>{
   return characterCount(candidate)>0?clone(candidate):null;
 };
 let profileSetupComplete=false;
+let startupError="";
 const accountPhoto=()=>window.ParallelCity?.getState?.()?.ownerPhoto||user?.photoURL||'';
 const accountName=()=>String(
   window.ParallelCity?.getState?.()?.ownerName||
@@ -230,7 +232,7 @@ let mediaEpoch='';
 const withMediaEpoch=(reference,data)=>(String(reference.path||reference)==='users/'+user?.uid||String(reference.path||reference).startsWith('users/'+user?.uid+'/'))?{...data,_mediaEpoch:mediaEpoch}:data;
 const setUserDoc=(reference,data,options)=>setDoc(reference,withMediaEpoch(reference,data),options);
 async function refreshMediaEpoch(){
- const session=captureSession(),snap=await getDoc(doc(db,'imageDeletionState',session.uid));assertSession(session);
+ const session=captureSession(),snap=await requestDeadline(getDoc(doc(db,'imageDeletionState',session.uid)),'image-epoch');assertSession(session);
  const value=snap.data();mediaEpoch=value?.epoch||'';
  if(value?.status==='deleting')throw Object.assign(Error('image-deletion-in-progress'),{code:'images/deleting'});
  if(mediaEpoch&&localStorage.getItem('drawer-images-cleared-epoch')!==mediaEpoch){await clearAccountImages(mediaEpoch);assertSession(session);uploadedCache.clear();localStorage.removeItem(syncRevisionKey(session.uid))}
@@ -424,7 +426,7 @@ async function registerSignedInUser(){
   const guardKey=`drawer-village-login-write-${user.uid}`;
   const skipPresenceWrite=Date.now()-sessionStamp(guardKey)<REFRESH_GUARD_MS;
   const reference=cloudDoc();
-  const snapshot=await getDoc(reference);
+  const snapshot=await requestDeadline(getDoc(reference),"account-profile");
   assertSession(session);
   profileSetupComplete=snapshot.exists()&&snapshot.data()?.profile?.configured!==false;
   if(skipPresenceWrite&&snapshot.exists())return snapshot;
@@ -445,8 +447,8 @@ async function registerSignedInUser(){
     accountSchemaVersion:2
   };
   if(!snapshot.exists())presence.createdAt=serverTimestamp();
-  await setUserDoc(reference,presence,{merge:true});
-  assertSession(session);stampSession(guardKey);return snapshot;
+  void requestDeadline(setUserDoc(reference,presence,{merge:true}),"login-presence").then(()=>{assertSession(session);stampSession(guardKey)}).catch(error=>console.warn("Login presence update deferred",error));
+  return snapshot;
 }
 const normalizeEntitlements=value=>{
   const purchases=Array.isArray(value?.purchases)?value.purchases.filter(x=>typeof x==="string"):[];
@@ -677,7 +679,7 @@ async function upload({silent=false,reason="",accountTransition=false,metadataOn
         detail:`${localCharacterCount}/${allowedCharacters}`
       });
     }
-    const previousSnapshot=await getDoc(cloudDoc(session.uid)),previous=previousSnapshot.exists()?previousSnapshot.data():null;
+    const previousSnapshot=await requestDeadline(getDoc(cloudDoc(session.uid)),"account-save"),previous=previousSnapshot.exists()?previousSnapshot.data():null;
     // 우리가 마지막으로 내려받거나 올린 revision과 서버 revision이 같고
     // 새 data URL 사진도 없다면 로컬은 서버의 정확한 후속 상태다. 이 경우
     // 수백 개의 과거 날짜 문서를 다시 읽지 않는다.
@@ -741,18 +743,18 @@ async function download({automatic=false,accountTransition=false,detailed=false,
     // 사용자가 누른 '불러오기'는 브라우저의 Firestore 로컬 캐시가 아니라
     // 앱이 방금 올린 서버 저장본을 직접 읽는다. 자동 불러오기는 오프라인
     // 복구를 위해 기존 Firestore 동작을 유지한다.
-    const snapshot=automatic?(initialSnapshot||await getDoc(cloudDoc(session.uid))):await getDocFromServer(cloudDoc(session.uid));
+    const snapshot=initialSnapshot||await requestDeadline(automatic?getDoc(cloudDoc(session.uid)):getDocFromServer(cloudDoc(session.uid)),"account-save");
     assertSession(session);
     const documentData=snapshot.exists()?snapshot.data():null;
     const remoteGuides=Array.isArray(documentData?.uiPreferences?.pageGuides)?documentData.uiPreferences.pageGuides:[];
     const mergedGuides=[...new Set([...remoteGuides,...localGuideKeys()])];
     publishGuideState(mergedGuides);
-    if(user&&mergedGuides.length!==remoteGuides.length)await setUserDoc(cloudDoc(),{uiPreferences:{pageGuides:mergedGuides}},{merge:true});
+    if(user&&mergedGuides.length!==remoteGuides.length)void requestDeadline(setUserDoc(cloudDoc(session.uid),{uiPreferences:{pageGuides:mergedGuides}},{merge:true}),"guide-preferences").catch(error=>console.warn("Guide preferences update deferred",error));
     const knownRevision=localStorage.getItem(syncRevisionKey(session.uid));
     if(automatic&&documentData?.syncRevision&&knownRevision===String(documentData.syncRevision)&&validSyncManifest(documentData.syncManifest)&&localStorage.getItem("drawer-village-game-v1")&&(window.ParallelCity.getCharacterCount?.()??characterCount(window.ParallelCity.getState()))>0){
       publishStorageUsage(documentData.mediaManifest,null);publishEntitlements(documentData.entitlements);status(`${accountName()} · 동기화 확인 완료`);return detailed?"kept-local":false;
     }
-    const remote=await readCloudGameState(documentData,{fresh:!automatic,uid:session.uid});
+    const remote=await requestDeadline(readCloudGameState(documentData,{fresh:!automatic,uid:session.uid}),"account-content");
     assertSession(session);
     publishStorageUsage(documentData?.mediaManifest,remote);
     publishEntitlements(documentData?.entitlements);
@@ -1246,11 +1248,12 @@ window.DrawerVillageGroups={
 
 if(ready){
   try{
-    const app=initializeApp(cfg);auth=getAuth(app);db=/Android/i.test(navigator.userAgent)?initializeFirestore(app,{experimentalForceLongPolling:true}):getFirestore(app);storage=getStorage(app);
-    await setPersistence(auth,browserLocalPersistence);
-    try{await getRedirectResult(auth)}catch(error){console.warn(error)}
+    const app=initializeApp(cfg);auth=getAuth(app);db=(/Android/i.test(navigator.userAgent)||window.Capacitor?.isNativePlatform?.())?initializeFirestore(app,{experimentalForceLongPolling:true}):getFirestore(app);storage=getStorage(app);
+    await requestDeadline(setPersistence(auth,browserLocalPersistence),"auth-persistence");
+    if(!window.Capacitor?.isNativePlatform?.()){try{await requestDeadline(getRedirectResult(auth),"auth-redirect")}catch(error){console.warn(error)}}
     onAuthStateChanged(auth,async next=>{
-      const epoch=++accountEpoch;switchingAccount=true;profileSetupComplete=false;user=next;
+      const epoch=++accountEpoch;startupError="";switchingAccount=true;profileSetupComplete=false;user=next;
+      const startupWatch=setTimeout(()=>{if(epoch===accountEpoch){startupError="account-timeout";window.dispatchEvent(new Event("drawer-village-auth-busy"))}},20000);
       mailboxSignalStop?.();mailboxSignalStop=null;clearTimeout(mailboxSignalTimer);
       try{
         await activeSyncDone;
@@ -1275,15 +1278,18 @@ if(ready){
           if(epoch!==accountEpoch)return;
           // Always load this account, even when it was used minutes ago.
           const downloadOutcome=await download({automatic:true,accountTransition:true,detailed:true,initialSnapshot});
+          if(epoch!==accountEpoch)return;
+          startupError=downloadOutcome==="error"?"account-download":"";
           if(adoptedGuest&&!['error','cancelled'].includes(downloadOutcome)){
             await upload({silent:true,accountTransition:true});
           }
         }
+        if(!next)startupError="";
         void refreshGroups().catch(error=>console.warn("Group refresh failed",error));
-      }catch(error){console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
-      finally{if(epoch===accountEpoch){authSettled=true;switchingAccount=false;watchMailboxSignal();window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
+      }catch(error){if(epoch!==accountEpoch)return;startupError=error?.code||"account-startup";console.error(error);status("계정 데이터를 전환하지 못했습니다 · 다시 로그인해 주세요")}
+      finally{clearTimeout(startupWatch);if(epoch===accountEpoch){authSettled=true;switchingAccount=false;watchMailboxSignal();window.dispatchEvent(new Event("drawer-village-auth-busy"))}}
     });
-  }catch(error){authSettled=true;status(`로그인 초기화 실패 · ${shortError(error)}`);window.dispatchEvent(new Event("drawer-village-auth-busy"))}
+  }catch(error){startupError=error?.code||"auth-init";authSettled=true;status(`로그인 초기화 실패 · ${shortError(error)}`);window.dispatchEvent(new Event("drawer-village-auth-busy"))}
 }else status("Firebase 설정 필요");
 
 try{storageUsage={...storageUsage,...JSON.parse(localStorage.getItem("drawer-village-storage-usage")||"{}"),maxBytes:FREE_TOTAL_BYTES,maxCount:MAX_PHOTOS,unlimited:false}}catch{}
@@ -1367,7 +1373,7 @@ window.ParallelCityAuth={
     }
   },
   getIdToken:async()=>user?user.getIdToken():null,
-  getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,slotUsage:slotUsageUid===user?.uid?slotUsage:{characters:0,towns:0},storageUsage,guideState})
+  getInfo:()=>({ready:authSettled,user,profileSetupComplete,startupError,startupSyncing:switchingAccount,busy:busy||loginBusy||switchingAccount||!authSettled,entitlements,slotUsage:slotUsageUid===user?.uid?slotUsage:{characters:0,towns:0},storageUsage,guideState})
 };
 
 setInterval(()=>{if(document.visibilityState!=="hidden"&&["observe","town","home"].includes((window.ParallelCity?.getActiveTab?.()||window.ParallelCity?.getState?.()?.activeTab)))void advanceSharedLife().catch(()=>{})},60000+Math.floor(Math.random()*8000));

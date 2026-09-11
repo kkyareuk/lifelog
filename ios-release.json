@@ -1,7 +1,7 @@
 {
-  "version": "1.0.323",
-  "build": 357,
-  "sourceAndroidCode": 356,
+  "version": "1.0.324",
+  "build": 358,
+  "sourceAndroidCode": 357,
   "stage": "device-validation-pending",
   "appStoreReady": false
 }
