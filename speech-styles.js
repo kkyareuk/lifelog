@@ -22,6 +22,7 @@ export const SPEECH_STYLE_OPTIONS=Object.freeze([
   "귀여니체 · 2000년대 인터넷소설체",
   "하드보일드 누아르체",
   "고풍스러운 말투",
+  "사극 선비 말투",
   "군인식 말투",
   "마왕의 말투",
   "군주의 말투",
@@ -226,7 +227,7 @@ export function characterPlanSpeech(character,language="ko"){
 
 
 export function canonicalSpeechStyle(value){
- return ({'상냥하고 배려하는 말투':'다정하고 부드러운 말투','사극 선비 말투':'고풍스러운 말투'})[value]||value;
+ return ({'상냥하고 배려하는 말투':'다정하고 부드러운 말투'})[value]||value;
 }
 
 // The native select remains the source of truth for existing save/draft handlers.
@@ -267,6 +268,7 @@ export function speechStyleExample(character,options={}){
  '거칠고 상스러운 말투 · 순화':["Enough messing around. Just pick a damn plan.",'ぐずぐずすんなよ。さっさと決めちまおうぜ。'],
  '귀여니체 · 2000년대 인터넷소설체':["weekend plan?? i cant choooose T_T",'週末どぉするぅ…？ 選べなぃよぉ T_T'],
  '고풍스러운 말투':["Pray, what wouldst thou have us do this weekend?",'週末はいかに過ごそうか。そなたの考えを聞かせておくれ。'],
+ '사극 선비 말투':["Would you care to share your plans for the weekend? I would gladly hear them.",'週末はどう過ごされるかな。そなたの考えをぜひ聞かせてほしい。'],
  '군인식 말투':["Requesting orders for the weekend. Awaiting your decision.",'週末の予定、指示を要請します。ご判断をお願いします。'],
  '수다스럽고 말이 많은 말투':["We could go out, or stay in, or try that place I mentioned—what do you think?",'出かけるのも家にいるのもいいし、この前のお店も気になるし、どれがいいと思います？']
  };

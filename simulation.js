@@ -1,3 +1,4 @@
+import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {reflectStory} from './story-events.js?v=20260909dev305';
 import {autonomousAllowed,applyAutonomousPolicy} from './autonomous-activities.js?v=20260909dev305';
@@ -2739,7 +2740,8 @@ function townProfileEvent(c,date){
   const copy=copies[language]||copies.ko;
   return entry(minute,copy.title,copy.desc,{townId:town.id,placeId:"",movementKind:"village-walk",mood:"관찰",townProfileLog:true});
 }
-function build(c,date=new Date()){
+function build(c,date=new Date()){return timeOperation('scene-build',()=>buildScene(c,date))}
+function buildScene(c,date){
   const currentHomeId=homeIdForDate(c,date);
   const wake=wakeAt(c,date), sleep=sleepAt(c,date);
   const sleepMinute=sleep<=wake?sleep+1440:sleep;
@@ -2997,7 +2999,8 @@ const ENGINE_VERSION="20260902-language-scene-203";
 // 코드 업데이트는 이미 저장된 생활을 바꾸지 않습니다.
 // 캐릭터·관계·일정처럼 사용자가 직접 바꾼 설정만 새 장면 계산에 반영합니다.
 const signatureCache=new WeakMap();
-function signature(c){
+function signature(c){return timeOperation('scene-signature',()=>calculateSignature(c))}
+function calculateSignature(c){
   // Most screens ask for both the current event and the visible timeline.
   // Both used to serialize the same large simulation input independently.
   // Character simulation fields update timelineResetAt and relationship/town

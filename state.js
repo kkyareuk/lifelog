@@ -1,3 +1,4 @@
+import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {roomEntryAllowed} from "./room-permissions.js?v=20260909dev305";
 import {writeAnswerDelta,replayAnswerDeltas,clearAnswerDeltas} from './character-answer-journal.js?v=20260909dev305';
 import {contactNarrative,rejectsContact} from './contact-narrative.js?v=20260909dev305';
@@ -1037,7 +1038,8 @@ function preserveLastNonempty(value,serialized="",force=false){
     return true;
   }catch{return false}
 }
-function writeState(notify=true){
+function writeState(notify=true){return timeOperation('save',()=>writeStateNow(notify))}
+function writeStateNow(notify=true){
   if(editorPersonalState)return true;
   if(saveRunning)return false;
   saveRunning=true;

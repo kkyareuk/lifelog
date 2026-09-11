@@ -1,3 +1,4 @@
+import {timeOperation,performanceSummary} from './performance-diagnostics.js?v=20260909dev305';
 import {openMemberProfile} from './group-member-profile.js?v=20260909dev305';
 import {withLogNameBatch} from './life-log-localization.js?v=20260909dev305';
 import {frameTask} from './frame-task.js?v=20260909dev305';
@@ -1457,6 +1458,7 @@ function replaceFeedbackFormWithEmailLink(){
     `Time zone: ${Intl.DateTimeFormat().resolvedOptions().timeZone||"unknown"}`,
     `Online: ${navigator.onLine?"yes":"no"}`,
     `Theme: ${state.colorMode||"light"} / ${state.visualTheme||"monochrome"}`,
+    `Performance: ${performanceSummary()}`,
     `Data counts: characters ${state.order?.length||0}, towns ${state.towns?.length||0}`,
     `Media restore: found ${lastLocalMediaResult.found}, restored ${lastLocalMediaResult.resolved}, pending ${lastLocalMediaResult.pending}`
   ].join("\n");
@@ -1587,6 +1589,15 @@ function scheduleHomeLifeRefresh(){
 let relationshipRailCleanup=[];
 let deferredCommandRender=false;
 let commandRenderQueued=false;
+function resumeAfterCommandDismissal(){
+ // Cancel changes no game state. Resume the normal clock instead of rebuilding
+ // the entire house synchronously after dismissing a picker. Actions schedule
+ // their own renderAfterCommand after a successful state change.
+ if(!deferredCommandRender)return;
+ deferredCommandRender=false;
+ scheduleHomeLifeRefresh();
+}
+window.addEventListener('drawer-context-dismissed',resumeAfterCommandDismissal);
 function renderAfterCommand(){
  if(commandRenderQueued)return;
  commandRenderQueued=true;
@@ -1610,8 +1621,9 @@ function afterScreenRender(callback){
 }
 window.addEventListener("pagehide",cleanupRenderedScreen);
 
-function render({force=false,selectionOnly=false,sceneDate=null}={}){
-  if(!force&&document.querySelector('.direct-command-dialog[open]')){deferredCommandRender=true;return}
+function render(options={}){return timeOperation('render',()=>renderScreen(options))}
+function renderScreen({force=false,selectionOnly=false,sceneDate=null}={}){
+  if(!force&&document.querySelector('.direct-command-dialog[open],.context-action-menu[open]')){deferredCommandRender=true;return}
   deferredCommandRender=false;
   syncSharedCharacterEditor();
 
@@ -2074,7 +2086,7 @@ function openDirectCommandDialog(character,sleeping=false){
  const copy=DIRECT_ACTIVITY_UI[state.uiLanguage]||DIRECT_ACTIVITY_UI.ko;
  const dialog=document.createElement('dialog');dialog.className='direct-command-dialog';
  dialog.innerHTML=`<header><span><small>${htmlEsc(character.name)}</small><h2>${htmlEsc(({ko:"활동 선택",en:"Choose an activity",ja:"活動を選ぶ"})[state.uiLanguage])}</h2></span><button type="button" data-command-close aria-label="${({ko:'닫기',en:'Close',ja:'閉じる'})[state.uiLanguage]}">×</button></header><div class="direct-command-body">${directActivityCommandMarkup(character,sleeping)}</div>`;
- const close=()=>dialog.close();dialog.querySelector('[data-command-close]').onclick=close;dialog.addEventListener('close',()=>{dialog.remove();if(deferredCommandRender)renderAfterCommand()},{once:true});document.body.append(dialog);bindDirectActivityCommand(dialog,character.id,close);dialog.showModal();
+ const close=()=>dialog.close();dialog.querySelector('[data-command-close]').onclick=close;dialog.addEventListener('close',()=>{dialog.remove();resumeAfterCommandDismissal()},{once:true});document.body.append(dialog);bindDirectActivityCommand(dialog,character.id,close);dialog.showModal();
 }
 
 function openTownCharacterSheet(button){
@@ -6227,7 +6239,7 @@ installContextMenu({
  openHome:(homeId,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return;if(context.groupId){window.DrawerVillageGroups.visitHome?.(homeId);}navigateToTab('home',{homeId});},
  enabled:()=>['home','town'].includes(state.activeTab)&&!state.homeEditMode&&!document.querySelector('.home.is-editing,.mobile-town-shell[data-town-mode]:not([data-town-mode=""])'),
  world:()=>{const shared=activeShared();return shared?withSharedWorld(shared,()=>({state:{...state},groupId:shared.activeGroupId,uid:window.ParallelCityAuth?.getInfo?.()?.user?.uid})):({state,groupId:'',uid:''})},
- execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});render();return true}const failure=contactFailure(state.characters[id],state.characters[target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result},
+ execute:async(id,action,target,context)=>{if((activeShared()?.activeGroupId||'')!==context.groupId)return false;const options=target.type==='person'?{targetId:target.id}:target.type==='self'?{}:{contextTarget:target};if(context.groupId){await window.DrawerVillageGroups.command({characterId:id,kind:action.kind,lifeTask:action.lifeTask,...options});renderAfterCommand();return true}const failure=contactFailure(state.characters[id],state.characters[target.id],action.kind,state.uiLanguage);if(failure)throw new Error(failure);const now=new Date(),scenes=withSimulationBatch(()=>Object.fromEntries([id,target.id].filter(cid=>state.characters[cid]).map(cid=>[cid,currentSceneFor(state.characters[cid],now)])));const result=directCharacterActivity(id,action.kind,{lifeTask:action.lifeTask,now:now.getTime(),scenes,...options});if(result)renderAfterCommand();return result},
 });
 let liveSceneRefreshTimer=0;
 let lastForegroundSceneRefreshAt=0;

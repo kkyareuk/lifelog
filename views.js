@@ -1,3 +1,4 @@
+import {timeOperation} from './performance-diagnostics.js?v=20260909dev305';
 import {displayImageSource} from "./local-media.js?v=20260909dev305";
 import {audioSettings,setAudioSetting,isWebAudio,webMuted} from './web-audio.js?v=20260909dev305';
 import {DISCOVERY_AXES,discoveryMetric} from "./character-discovery-rules.js?v=20260909dev305";
@@ -651,11 +652,14 @@ const displayEntityNames=()=>[
   ...(state.towns||[]).flatMap(town=>[town?.name,...(town?.places||[]).map(place=>place?.name)]),
   ...Object.values(state.catalog||{}).flatMap(items=>(items||[]).map(item=>item?.name))
 ].filter(Boolean).map(String).sort((a,b)=>b.length-a.length);
-let displayParticleMatcherRevision="",cachedDisplayParticleMatcher=null;
+let displayParticleMatcherRevision="",displayParticleSourceRevision="",cachedDisplayParticleMatcher=null;
 const displayParticleMatcher=()=>{
-  const revision=`${Number(state.lastSaved||0)}:${state.order.length}:${Object.keys(state.homes||{}).length}`;
+  const sourceRevision=`${Number(state.lastSaved||0)}:${state.order.length}:${Object.keys(state.homes||{}).length}`;
+  if(sourceRevision===displayParticleSourceRevision)return cachedDisplayParticleMatcher;
+  displayParticleSourceRevision=sourceRevision;
+  const names=[...new Set(displayEntityNames())];
+  const revision=JSON.stringify(names);
   if(revision===displayParticleMatcherRevision)return cachedDisplayParticleMatcher;
-  const names=displayEntityNames();
   cachedDisplayParticleMatcher=names.length?new RegExp(`(${names.map(regexEscape).join("|")})(은|는|이|가|을|를|과|와)(?=[\\s,.!?·'\"’”)]|$)`,"g"):null;
   displayParticleMatcherRevision=revision;
   return cachedDisplayParticleMatcher;
@@ -677,16 +681,29 @@ function resolveDisplayParticles(text,matcher=displayParticleMatcher()){
   }
   return result;
 }
+let particlePass=0;
 function normalizeDisplayedParticles(root){
+  const pass=++particlePass;
   if(!root||typeof document.createTreeWalker!=="function")return;
-  // A large character/village can contain thousands of text nodes. Building
-  // the entity-name list and every regular expression for every text node was
-  // the main source of input and tab-navigation stalls on the web build.
-  const matcher=displayParticleMatcher();
-  const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
-  const nodes=[];
-  while(walker.nextNode())nodes.push(walker.currentNode);
-  nodes.forEach(node=>{const next=resolveDisplayParticles(node.nodeValue,matcher);if(next!==node.nodeValue)node.nodeValue=next});
+  // Text polish must not hold the navigation click. Process a bounded slice
+  // after paint, and abandon old DOM immediately on the next render.
+  requestAnimationFrame(()=>setTimeout(()=>{
+    if(pass!==particlePass||!root.isConnected)return;
+    const matcher=displayParticleMatcher(),walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+    const step=()=>{
+      if(pass!==particlePass||!root.isConnected)return;
+      let more=true;
+      timeOperation('particles',()=>{
+        const until=performance.now()+4;
+        do{const node=walker.nextNode();if(!node){more=false;break}
+          const next=resolveDisplayParticles(node.nodeValue,matcher);
+          if(next!==node.nodeValue)node.nodeValue=next;
+        }while(performance.now()<until);
+      });
+      if(more)setTimeout(step,0);
+    };
+    step();
+  },0));
 }
 const sceneFailureIds=new Set();
 const fallbackEvent=c=>{
