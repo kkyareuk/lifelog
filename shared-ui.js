@@ -11,7 +11,10 @@ const messages={"다른 구성원이 먼저 수정했어요. 새 배치를 확�
 const tr=text=>messages[text]?.[{en:0,ja:1}[state.uiLanguage]]||text;
 const api=()=>window.DrawerVillageGroups, snapshot=()=>withTownEditDraft(api()?.getSnapshot?.()),uid=()=>window.ParallelCityAuth?.getInfo?.()?.user?.uid;
 export const activeShared=()=>{const s=snapshot();return s?.activeGroupId&&s.group?s:null};
-export const canEditShared=s=>['owner','manager','operator'].includes(s.members?.find(m=>(m.uid||m.id)===uid())?.role||s.role||(s.group?.ownerUid===uid()?'owner':''));
+export const canEditShared=s=>s.group?.ownerUid===uid()||['owner','manager','operator'].includes(s.members?.find(m=>(m.uid||m.id)===uid())?.role||s.role);
+const ownsHome=(s,id)=>!!uid()&&s.homes?.some(h=>h.id===id&&h.ownerUid===uid());
+const canEditItem=(s,kind,id)=>canEditShared(s)||kind==='home'&&ownsHome(s,id);
+const canEnterTownEdit=s=>canEditShared(s)||s.homes?.some(h=>h.ownerUid===uid());
 const town=s=>s.group.towns?.find(t=>t.id===s.selectedTownId)||s.group.towns?.[0];
 let serial=Promise.resolve();
 function enqueue(run,toast){const next=serial.then(run);serial=next.catch(e=>toast(e.code==='groups/edit-conflict'?'다른 구성원이 먼저 수정했어요. 새 배치를 확인한 뒤 다시 시도해 주세요.':e.message||e.code||'저장하지 못했어요'));return next.catch(()=>false)}
@@ -23,7 +26,7 @@ export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPa
  if(root.matches('.mobile-town-shell')&&townEditDraft(s)){const cancel=document.createElement('button');cancel.type='button';cancel.disabled=!!townEditDraft(s).saving;cancel.className='home-native-pill';cancel.innerHTML='<span>'+residentText('편집 취소','Cancel edits','編集を取り消す')+'</span>';cancel.onclick=()=>{if(!discardTownEdit(s))return;setMode('');setPlacement();render()};root.querySelector('[data-mobile-town-decoration-mode]')?.parentElement.append(cancel)}
  const select=sharedSelection(s),owned=id=>canEditShared(s)||s.residents?.find(r=>r.id===id)?.ownerUid===uid();
  const stop=e=>{e.preventDefault();e.stopImmediatePropagation()};
- const stage=(action,input)=>{if(townEditDraft(s)?.saving)return Promise.resolve(false);if(!canEditShared(s)){toast('건물 편집 권한이 필요해요');return Promise.resolve(false)}stageTownEdit(snapshot(),action,input);render();return Promise.resolve(true)};
+ const stage=(action,input)=>{if(townEditDraft(s)?.saving)return Promise.resolve(false);if(!canEditShared(s)&&!(action==='saveHomePlacement'&&!input.create&&ownsHome(s,input.id))){toast('건물 편집 권한이 필요해요');return Promise.resolve(false)}stageTownEdit(snapshot(),action,input);render();return Promise.resolve(true)};
  const saveBuilding=(id,patch={},extra={})=>stage('saveBuilding',{id,patch,...extra});
  const saveView=(sourceId,targetId,field,value,reset=false)=>enqueue(async()=>{if(!owned(sourceId))throw Error('내 캐릭터의 시선만 설정할 수 있어요');await api().saveView({sourceId,targetId,field,value,reset});const current=activeShared();if(current?.activeGroupId!==s.activeGroupId)return;current.perceptions??=[];let p=current.perceptions.find(p=>p.sourceId===sourceId&&p.targetId===targetId);if(!p){p={sourceId,targetId};current.perceptions.push(p)}p.viewJson=JSON.stringify(reset?{}:{...decodeShared(p.viewJson),[field]:value});},toast);
 
@@ -32,7 +35,7 @@ export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPa
  const finish=()=>enqueue(async()=>{root.querySelectorAll('input,select,textarea,button').forEach(el=>el.disabled=true);const result=await commitTownEdit(snapshot(),api());if(result){applyTown(s,result);const current=api().getSnapshot();for(const home of result.homes||[]){const old=current.homes.find(h=>h.id===home.id);if(old)Object.assign(old,home);else current.homes.push(home)}}history.undo=[];history.redo=[];setPlacement();setMode('');toast('저장했어요');render()},toast).then(result=>{if(result===false)render();return result});
  const itemFor=el=>el?.dataset.place?['place',town(snapshot()).places.find(p=>p.id===el.dataset.place)]:el?.dataset.homeMap?['home',snapshot().homes.find(h=>h.id===el.dataset.homeMap)]:['decoration',town(snapshot()).decorations?.find(d=>d.id===el?.dataset.townDecoration)];
  const history=select.history??={undo:[],redo:[]};
- root.querySelectorAll('[data-town-placement-command=undo],[data-town-placement-command=redo]').forEach(el=>el.disabled=!canEditShared(s)||!history[el.dataset.townPlacementCommand].length);
+ root.querySelectorAll('[data-town-placement-command=undo],[data-town-placement-command=redo]').forEach(el=>el.disabled=!canEnterTownEdit(s)||!history[el.dataset.townPlacementCommand].length);
  function moveItem(kind,item,patch){const before=Object.fromEntries(Object.keys(patch).map(k=>[k,item[k]??(['mapX','mapY','x','y'].includes(k)?50:['scale','mapScale','imageScale'].includes(k)?1:['flipX','mapFlipX'].includes(k)?false:0)]));saveItem(kind,item.id,patch).then(ok=>{if(ok!==false){history.undo.push({kind,id:item.id,before,after:patch});history.redo=[];render()}})}
  function official(){const dialog=document.createElement('dialog');dialog.className='directory-create-dialog shared-official-dialog';dialog.innerHTML=renderGroupRelations(snapshot());document.body.append(dialog);dialog.querySelector('[data-shared-dialog-close]').onclick=()=>dialog.close();dialog.onclose=()=>{dialog.remove();render()};dialog.querySelector('[data-group-proposal]')?.addEventListener('submit',e=>{e.preventDefault();const input=Object.fromEntries(new FormData(e.currentTarget));enqueue(async()=>{await api().propose(input);dialog.close();toast('관계 제안을 보냈어요')},toast)});dialog.querySelectorAll('[data-group-response]').forEach(form=>form.onsubmit=e=>{e.preventDefault();enqueue(async()=>{await api().respond({proposalId:form.dataset.groupResponse,accept:e.submitter?.name==='accept',reason:form.elements.reason.value});dialog.close()},toast)});dialog.showModal()}
  root.querySelectorAll('[data-character-view]').forEach(el=>el.disabled=!owned(el.dataset.source));
@@ -107,7 +110,9 @@ export function bindSharedUi({bindRoomGeometry,render,toast:notify,setMode,setPa
  if(root.matches('.mobile-town-shell')){
   if(!canEditShared(s)){root.querySelectorAll('[data-place-field],[data-home-field],[data-home-name],[data-world-name],[data-world-description],[data-add-place],[data-delete-place],[data-mobile-town-decoration-mode]').forEach(el=>el.disabled=true);root.querySelectorAll('input,select,textarea,[data-world-transport]').forEach(el=>{if([...el.attributes].some(a=>/^data-(world-|home-|place-)/.test(a.name)))el.disabled=true})}
   root.querySelectorAll('[data-home-field="townId"],[data-place-field="townId"],[data-add-town],[data-delete-town]').forEach(el=>el.disabled=true);
-  root.querySelectorAll('.town-edit .place').forEach(el=>{el.onpointerdown=null;if(!canEditShared(s)||!['buildings','decorations'].includes(root.dataset.townMode))return;
+  if(canEnterTownEdit(s))root.querySelectorAll('[data-mobile-town-decoration-mode]').forEach(el=>el.disabled=false);
+  root.querySelectorAll('[data-home-field],[data-home-name]').forEach(el=>{const id=el.dataset.homeId;if(ownsHome(s,id)&&el.dataset.homeField!=='townId')el.disabled=false});
+  root.querySelectorAll('.town-edit .place').forEach(el=>{el.onpointerdown=null;const [itemKind,editableItem]=itemFor(el);if(!editableItem||!canEditItem(s,itemKind,editableItem.id)||!['buildings','decorations'].includes(root.dataset.townMode))return;
    el.onpointerdown=e=>{if(e.button!==0||townEditDraft(s)?.saving)return;e.preventDefault();e.stopPropagation();const [kind,item]=itemFor(el);if(!item)return;
     const xKey=kind==='home'?'mapX':'x',yKey=kind==='home'?'mapY':'y',rect=el.parentElement.getBoundingClientRect(),start={x:e.clientX,y:e.clientY};let x=item[xKey]??50,y=item[yKey]??50,moved=false;el.setPointerCapture(e.pointerId);
     el.onpointermove=move=>{const dx=move.clientX-start.x,dy=move.clientY-start.y;if(Math.abs(dx)+Math.abs(dy)<5&&!moved)return;moved=true;x=Math.max(5,Math.min(95,(item[xKey]??50)+dx/rect.width*100));y=Math.max(5,Math.min(95,(item[yKey]??50)+dy/rect.height*100));x=Math.max(6,Math.min(94,Math.round(x/2)*2));y=Math.max(7,Math.min(94.5,Math.round(y/3.5)*3.5));el.style.left=x+'%';el.style.top=y+'%'};
