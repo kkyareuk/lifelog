@@ -20,14 +20,14 @@ const game=await import('../state.js?v=20260909dev305');
 const {accountStorage}=await import('../account-storage.js?v=20260909dev305');
 const character=(id)=>({id,name:id,days:{}});
 const cloud=new Map([['A',{syncFormat:1,gameState:{schema:31,characters:{a:character('a')},order:['a'],lastSaved:100}}],['B',{}]]);
-let callback,hold=null,hangPresence=true,redirectCalls=0;const writes=[];
+let callback,hold=null,hangPresence=true,stallImage=false,redirectCalls=0;const writes=[];
 const pathOf=parts=>parts.filter(part=>typeof part==='string').join('/');
 const snapshot=(path)=>({exists:()=>cloud.has(path.split('/')[1]),data:()=>cloud.get(path.split('/')[1])});
 const fakeWindow={Capacitor:{isNativePlatform:()=>true},addEventListener(){},PARALLEL_CITY_FIREBASE:{apiKey:'test',projectId:'test',authDomain:'test'},dispatchEvent(){},ParallelCity:{getState:game.cloneState,switchAccount:game.switchAccountState,replaceState:game.replaceState,setAccountStatus(){},setEntitlements(){},toast(){}}};
 class FakeGoogleAuthProvider{setCustomParameters(){}}
-const context={mapConcurrent,readCloudCharacters,withWardrobe,gzipBytes,ungzipBytes,requestDeadline:(promise,label,ms)=>requestDeadline(promise,label,label==="login-presence"?30:ms),applyCharacterTransfers,onSnapshot:()=>()=>{},window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
+const context={mapConcurrent,readCloudCharacters,withWardrobe,gzipBytes,ungzipBytes,requestDeadline:(promise,label,ms)=>requestDeadline(promise,label,["login-presence","image-epoch"].includes(label)?30:ms),applyCharacterTransfers,onSnapshot:()=>()=>{},window:fakeWindow,document:globalThis.document,localStorage:accountStorage,console,Event,Date,Map,Set,Promise,setTimeout,clearTimeout,setInterval:()=>0,clearInterval(){},URL,Blob,TextEncoder,crypto:globalThis.crypto,location:{origin:'http://test',href:'http://test'},navigator:{userAgent:'test'},alert(){},mergeCloudRestoreState,mergeDeviceAndCloudState,
  initializeApp:()=>({}),getAuth:()=>({}),getFirestore:()=>({}),initializeFirestore:()=>({}),getStorage:()=>({}),setPersistence:async()=>{},browserLocalPersistence:{},getRedirectResult:async()=>{redirectCalls++},onAuthStateChanged:(_,fn)=>{callback=fn},
- doc:(...parts)=>pathOf(parts),collection:(...parts)=>pathOf(parts),getDoc:async path=>{if(hold&&path==='users/A')await hold.promise;return snapshot(path)},getDocFromServer:async path=>snapshot(path),getDocs:async()=>({docs:[]}),getDocsFromServer:async()=>({docs:[]}),
+ doc:(...parts)=>pathOf(parts),collection:(...parts)=>pathOf(parts),getDoc:async path=>{if(stallImage&&path.startsWith("imageDeletionState/"))return new Promise(()=>{});if(hold&&path==='users/A')await hold.promise;return snapshot(path)},getDocFromServer:async path=>snapshot(path),getDocs:async()=>({docs:[]}),getDocsFromServer:async()=>({docs:[]}),
  setDoc:async(path,data)=>{if(hangPresence&&data.lastLoginOrigin)return new Promise(()=>{});writes.push({path,data});if(path.split('/').length===2)cloud.set(path.split('/')[1],{...cloud.get(path.split('/')[1]),...data})},deleteDoc:async()=>{},deleteField:()=>undefined,serverTimestamp:()=>0,arrayUnion:(...x)=>x,signOut:async()=>callback(null),
  GoogleAuthProvider:FakeGoogleAuthProvider,signInWithPopup:async()=>callback({uid:'C',email:'c@test'}),signInWithRedirect:async()=>{},signInWithCredential:async()=>{}
 };
@@ -93,3 +93,5 @@ assert(writes.some(write=>write.path.includes('/C/')&&JSON.stringify(write.data)
 console.log('PASS account switch/reset/reload isolation, guest preservation, stale download and upload rejection, same-account upload');
 console.log('PASS actual automatic and manual download handlers under simulated full device storage');
 console.log('PASS explicit first login adopts and uploads the pre-login guest character without deleting its recovery copy');
+
+const preserved=JSON.stringify(game.cloneState());stallImage=true;await callback({uid:"C",email:"c@test"});assert.equal(auth.getInfo().startupError,"sync/request-timeout");assert.equal(game.state.characters[guestFirst]?.name,"첫 로그인 전 캐릭터");assert(memory.has("drawer-account:C:drawer-village-game-v1"));console.log("PASS stalled account read exits into recoverable error without deleting account records");
