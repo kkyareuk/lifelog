@@ -21,7 +21,7 @@ for (const lang of ['ko','en','ja']) {
   assert.equal(events[0],'drawer-village-auth-busy');
   assert.ok(messages[0].includes({ko:'기기 안에서',en:'play locally',ja:'端末内'}[lang]));
   const views=read('views.js');
-  const route=views.slice(views.indexOf('function view(){'),views.indexOf('export function renderApp'));
+  const route=views.slice(views.indexOf('function view(){'),views.indexOf('export function nativeLogContents'));
   const screen=vm.runInNewContext(route+'\nview();',{
     window,state:{order:[],activeTab:'observe'},
     accountLoading:()=> 'blocked',welcome:()=> 'welcome'
