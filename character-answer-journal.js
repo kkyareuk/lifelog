@@ -7,7 +7,7 @@ export function writeAnswerDelta(storage,id,patch,at=Date.now()){
 }
 export function replayAnswerDeltas(storage,world){
  try{const pending=JSON.parse(storage.getItem(KEY)||'{}');for(const [id,item] of Object.entries(pending)){
-  if(world?.characters?.[id]&&item.at>Number(world.lastSaved||0)&&item.at>Number(world.gameResetAt||0))Object.assign(world.characters[id],item.patch);
+  if(world?.characters?.[id]&&item.at>=Number(world.lastSaved||0)&&item.at>Number(world.gameResetAt||0))Object.assign(world.characters[id],item.patch);
  }}catch{}return world;
 }
 export function clearAnswerDeltas(storage){try{storage.removeItem(KEY)}catch{}}
