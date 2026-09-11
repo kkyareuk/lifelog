@@ -87,7 +87,15 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
         let interactive = call.getBool("interactive") ?? true
         Task { @MainActor in
             do {
-                if interactive && !purchaseActive { try await AppStore.sync() }
+                var syncError = ""
+                if interactive && !purchaseActive {
+                    do { try await AppStore.sync() }
+                    catch {
+                        let detail = error as NSError
+                        syncError = "\(detail.domain):\(detail.code)"
+                        lastErrorCode = syncError
+                    }
+                }
                 var purchases: [String: [String: Any]] = [:]
                 for await result in StoreKit.Transaction.unfinished {
                     if case .verified(let transaction) = result, allowed.contains(transaction.productID), transaction.revocationDate == nil { purchases[String(transaction.id)] = try payload(result) }
@@ -95,7 +103,8 @@ public class AppleBillingPlugin: CAPPlugin, CAPBridgedPlugin {
                 for await result in StoreKit.Transaction.currentEntitlements {
                     if case .verified(let transaction) = result, allowed.contains(transaction.productID), transaction.revocationDate == nil { purchases[String(transaction.id)] = try payload(result) }
                 }
-                call.resolve(["purchases": Array(purchases.values)])
+                // A failed interactive sync must not hide locally verified unfinished purchases.
+                call.resolve(["purchases": Array(purchases.values), "syncError": syncError])
             } catch { call.reject("RESTORE_FAILED", "RESTORE_FAILED") }
         }
     }

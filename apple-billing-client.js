@@ -3,6 +3,7 @@
  if(!window.Capacitor?.isNativePlatform?.()||window.Capacitor.getPlatform()!=='ios')return;
  const bridge=window.Capacitor.Plugins.AppleBilling,config=()=>window.PARALLEL_CITY_CONFIG?.appleBilling||{};
  const messages={
+ RESTORE_FAILED:["Apple 구매 내역 동기화를 완료하지 못했어요.","Apple purchase history could not be synced.","Appleの購入履歴を同期できませんでした。"],
  NETWORK_UNAVAILABLE:["구매 서버에 연결하지 못했어요. 잠시 후 구매 내역 복원을 다시 눌러 주세요.","Could not reach the purchase server. Try restoring purchases again shortly.","購入サーバーに接続できませんでした。しばらくしてから購入の復元をお試しください。"],
  AUTH_REQUIRED:["게임 계정의 로그인을 다시 확인해 주세요.","Please check your game account sign-in.","ゲームアカウントのログインをご確認ください。"],
  ACCOUNT_DELETION_IN_PROGRESS:["계정 삭제가 진행 중이어서 구매 내역을 불러올 수 없어요.","Purchases cannot be loaded while account deletion is in progress.","アカウント削除中のため購入履歴を読み込めません。"],
@@ -41,21 +42,39 @@
   if(result.environment==="Sandbox")window.ParallelCityAuth?.setAppleSandboxEntitlements?.(result.entitlements,result.uid);
   return result;
  }
- async function exclusive(run){if(busy)throw error('BUSY');busy=true;lastFailure=null;try{return await run()}catch(e){throw explain(e)}finally{busy=false;setPhase('idle')}}
+ async function exclusive(run){if(busy)throw error('BUSY');busy=true;lastFailure=null;try{return await run()}catch(e){throw e?.reported?e:explain(e)}finally{busy=false;setPhase('idle')}}
  async function restorePurchases(interactive=true){
   if(backgroundRestore)await backgroundRestore;
   const result=await exclusive(async()=>{
-   setPhase('restoring');
-   // A quiet login check must not download the whole save or block on an empty history.
-   const result=await bounded(bridge.restorePurchases({interactive}));
-   const uid=window.ParallelCityAuth?.getInfo?.().user?.uid;let accountChecked=false;
+   setPhase('account');
+   const uid=window.ParallelCityAuth?.getInfo?.().user?.uid;let accountChecked=false,savedPurchases=false;
    const diagnostics=await bounded(bridge.getDiagnostics()).catch(()=>({}));
-   if(uid&&diagnostics.sandboxReceipt){const saved=await request('entitlements',{},await token());if(saved.uid===uid)window.ParallelCityAuth?.setAppleSandboxEntitlements?.(saved.sandboxEntitlements,uid);accountChecked=true}
-   refreshAccount();
-   if(!(result.purchases||[]).length)return {restored:0,failed:0,accountChecked};
-   const auth=await token();await request('prepare',{},auth);let restored=0,failed=0,firstError=null;
-   for(const purchase of result.purchases||[]){try{await settle(purchase,auth);restored++}catch(e){failed++;firstError??=e}}
-   if(restored)refreshAccount();if(failed)throw firstError;return {restored,failed,accountChecked};
+   // Finished consumables are absent from StoreKit.currentEntitlements. Recover
+   // the server-verified account ledger before attempting interactive Apple sync.
+   if(uid&&diagnostics.sandboxReceipt){
+    const saved=await request('entitlements',{},await token());
+    if(saved.uid!==uid||window.ParallelCityAuth?.getInfo?.().user?.uid!==uid)throw error('APPLE_ACCOUNT_MISMATCH','entitlements');
+    window.ParallelCityAuth?.setAppleSandboxEntitlements?.(saved.sandboxEntitlements,uid);accountChecked=true;
+    savedPurchases=['characterSlotPacks','characterSingleSlots','townSlotPacks','teaSupportCount'].some(key=>Number(saved.sandboxEntitlements?.[key])>0);
+   }
+   refreshAccount();setPhase('restoring');
+   let result,appleError;
+   try{result=await bounded(bridge.restorePurchases({interactive}));if(result.syncError)appleError=error('RESTORE_FAILED','apple-sync')}
+   catch(e){appleError=e;result=await bounded(bridge.restorePurchases({interactive:false})).catch(()=>({purchases:[]}))}
+   let restored=0,failed=0,firstError=null;
+   if((result.purchases||[]).length){
+    const auth=await token();await request('prepare',{},auth);
+    for(const purchase of result.purchases){try{await settle(purchase,auth);restored++}catch(e){failed++;firstError??=e}}
+   }
+   if(restored)refreshAccount();if(failed)throw firstError;
+   if(appleError){
+    const failure=explain(appleError),nativeCode=String(result.syncError||'').replace(/[^a-zA-Z0-9_.:-]/g,'').slice(0,100);
+    failure.reported=true;if(nativeCode)failure.message+=' ['+nativeCode+']';
+    if(!savedPurchases&&!restored)throw failure;
+    const lang=String(document.documentElement.lang),index=lang.startsWith('en')?1:lang.startsWith('ja')?2:0;
+    return {restored,failed:0,accountChecked,appleCheckFailed:true,warning:["확인된 구매는 반영했어요. Apple의 추가 구매 내역 확인은 완료하지 못했어요.","Verified purchases were applied. Apple's additional purchase history check did not finish.","確認済みの購入は反映しました。Appleの追加購入履歴の確認は完了していません。"][index]+' ('+(nativeCode||'RESTORE_FAILED')+')'};
+   }
+   return {restored,failed:0,accountChecked};
   });backgroundRestoreError=null;return result;
  }
  async function recoverPayment(){

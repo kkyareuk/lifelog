@@ -1,7 +1,7 @@
 {
-  "request": "2026-09-12-appstore361-restore-identity-input",
+  "request": "2026-09-12-appstore362-restore-sync-fallback",
   "version": "1.0.327",
-  "build": 361,
+  "build": 362,
   "uploadToTestFlight": true,
   "internalOnly": false,
   "appStoreUpload": true,
